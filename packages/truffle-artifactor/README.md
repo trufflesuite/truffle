@@ -12,8 +12,15 @@ Pudding is intended to be used both within Node and within a browser. Although i
 
 ### Install
 
+**Node**
 ```
 npm install pudding-contract
+```
+
+**Browser**
+```
+<!-- Note: web3 is required. The bluebird is a needed for promises, but not required. -->
+<script type="text/javascript" src="./build/pudding-contract.min.js"></script>
 ```
 
 ### Using Pudding
@@ -73,6 +80,15 @@ coin.sendCoin(account_two, 3, {from: account_one}).then (tx) ->
 ```
 
 The above example may not be used within an app (you wouldn’t send the wrong amount on purpose, for example’s sake) -- but you can easily see how it might apply to an automated test.
+
+### Building
+
+You can create a pure Javascript and minified Javascript version of Pudding by first installing and then running `grunt`.
+
+```
+$ npm install -g grunt-cli
+$ grunt
+```
 
 ### License
 

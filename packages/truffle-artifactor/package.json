@@ -1,0 +1,24 @@
+{
+  "name": "pudding-contract",
+  "version": "0.0.1",
+  "description": "Pudding - a (more) delightful Ethereum contract abstraction",
+  "author": "Tim Coulter",
+  "main": "dist/pudding-contract.js",
+  "private": false,
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/consensys/pudding-contract.git"
+  },
+  "dependencies": {
+    "web3": "*",
+    "bluebird": "*"
+  },
+  "devDependencies": {
+    "grunt": "*",
+    "grunt-contrib-clean": "*",
+    "grunt-contrib-coffee": "*",
+    "grunt-contrib-uglify": "*"
+  },
+  "license": "MIT License. Copyright Consensys LLC, and authors. All rights reserved."
+}
