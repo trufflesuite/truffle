@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Pudding - a (more) delightful Ethereum contract abstraction",
   "author": "Tim Coulter",
-  "main": "dist/pudding-contract.js",
+  "main": "build/pudding-contract.js",
   "private": false,
   "scripts": {},
   "repository": {
