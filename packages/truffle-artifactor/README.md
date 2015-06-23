@@ -30,13 +30,13 @@ web3.setProvider(new web3.Providers.HttpProvider("http://localhost:8545"))
 # Before performing the next step, you'll need to compile your contract
 # and have the ABI available, just as you would with web3.eth.contract().
 
-MyContract = Pudding(abi) # You need to provide abi
+MyContract = Pudding.whisk(abi) # You need to provide abi
 ```
 
 So far, Pudding isn’t much different from web3’s contract abstraction. Here’s an example using the MetaCoin contract in [Dapps For Beginners](https://dappsforbeginners.wordpress.com/tutorials/your-first-dapp/):
 
 ```coffeescript
-MetaCoin = Pudding(metaCoinABI)
+MetaCoin = Pudding.whisk(metaCoinABI)
 
 # In this scenario, two users will send MetaCoin back and forth, showing
 # how Pudding allows for easy control flow. 
@@ -73,3 +73,7 @@ coin.sendCoin(account_two, 3, {from: account_one}).then (tx) ->
 ```
 
 The above example may not be used within an app (you wouldn’t send the wrong amount on purpose, for example’s sake) -- but you can easily see how it might apply to an automated test.
+
+### License
+
+MIT
