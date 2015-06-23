@@ -25,7 +25,7 @@ npm install pudding-contract
 
 ### Using Pudding
 
-Using Pudding in your app is very similar to using web3’s contract abstraction. In fact, Pudding calls web3’s abstraction under the hood. Like with web3, you need to provide an ABI (Application Binary Interface) object in order to create your contract class. Programs like `solc` -- the Solidity compiler from [cpp-ethereum](https://github.com/ethereum/cpp-ethereum) -- can provide you with an ABI.
+Using Pudding in your app is very similar to using web3’s contract abstraction. In fact, Pudding calls web3’s abstraction under the hood. Like with web3, you need to provide an ABI ([Application Binary Interface](https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI)) object in order to create your contract class. Programs like `solc` -- the Solidity compiler from [cpp-ethereum](https://github.com/ethereum/cpp-ethereum) -- can provide you with an ABI.
 
 ```coffeescript
 web3 = require "web3"
@@ -83,7 +83,7 @@ The above example may not be used within an app (you wouldn’t send the wrong a
 
 ### Building
 
-You can create a pure Javascript and minified Javascript version of Pudding by first installing and then running `grunt`.
+You can create a pure Javascript and minified Javascript version of Pudding by first installing and then running `grunt`. These files will be placed in the `./build` directory.
 
 ```
 $ npm install -g grunt-cli
