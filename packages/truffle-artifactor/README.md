@@ -1,6 +1,6 @@
 # The Proof is in the Pudding
 
-A Pudding contract (or just “Pudding”) is an extension of web3’s contract abstraction that makes life as a Dapp developer a whole lot easier. With Pudding, you can cleanly write distributed Ethereum applications and automated tests with less hassle and more reliability, ensuring that each will run against any (read: every) RPC client. When used with the associated TestRPC, you can develop Dapps faster.
+A Pudding contract (or just “Pudding”) is an extension of [web3’s](https://github.com/ethereum/web3.js/tree/master) contract abstraction that makes life as a Dapp developer a whole lot easier. With Pudding, you can cleanly write distributed Ethereum applications and automated tests with less hassle and more reliability, ensuring that each will run against any (read: every) RPC client. When used with the Consensys [TestRPC](https://github.com/ConsenSys/testrpc), you can develop Dapps faster.
 
 Pudding is intended to be used both within Node and within a browser. Although it’s very little code, it packs a whole lot of punch.  
 
@@ -19,13 +19,13 @@ npm install pudding-contract
 
 **Browser**
 ```
-<!-- Note: web3 is required. The bluebird is a needed for promises, but not required. -->
+<!-- Note: web3 is required. Bluebird is a needed for promises, but not required. -->
 <script type="text/javascript" src="./build/pudding-contract.min.js"></script>
 ```
 
 ### Using Pudding
 
-Using Pudding in your app is very similar to using web3’s contract abstraction. In fact, Pudding calls web3’s abstraction under the hood. 
+Using Pudding in your app is very similar to using web3’s contract abstraction. In fact, Pudding calls web3’s abstraction under the hood. Like with web3, you need to provide an ABI (Application Binary Interface) object in order to create your contract class. Programs like `solc` -- the Solidity compiler from [cpp-ethereum](https://github.com/ethereum/cpp-ethereum) -- can provide you with an ABI.
 
 ```coffeescript
 web3 = require "web3"
