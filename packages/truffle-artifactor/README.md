@@ -83,7 +83,7 @@ The above example may not be used within an app (you wouldn’t send the wrong a
 
 ### More Examples
 
-* [Setting global, contract-level and instance-level defaults](./wiki/Setting-global,-contract-level-and-instance-level-defaults)
+* [Setting global, contract-level and instance-level defaults](/ConsenSys/ether-pudding/wiki/Setting-global,-contract-level-and-instance-level-defaults)
 
 ### Building
 
