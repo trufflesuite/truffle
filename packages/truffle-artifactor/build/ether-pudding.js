@@ -8,7 +8,7 @@
 
       Pudding.global_defaults = {};
 
-      Pudding.recipe = function(abi, class_defaults) {
+      Pudding.whisk = function(abi, class_defaults) {
         var contract;
         contract = web3.eth.contract(abi);
         contract = Pudding.inject_defaults(contract, class_defaults);

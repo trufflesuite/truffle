@@ -4,7 +4,7 @@ factory = (Promise, web3) ->
     @global_defaults: {} 
 
     # Main function for creating a Pudding contract.
-    @recipe: (abi, class_defaults) ->
+    @whisk: (abi, class_defaults) ->
       contract = web3.eth.contract(abi)
       # Note: inject_defaults() changes the at() function to take two parameters.
       contract = Pudding.inject_defaults(contract, class_defaults)
