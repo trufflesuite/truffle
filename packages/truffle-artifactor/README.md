@@ -84,7 +84,7 @@ The above example may not be used within an app (you wouldn’t send the wrong a
 ### More Examples
 
 * [Setting global, contract-level and instance-level defaults](/ConsenSys/ether-pudding/wiki/Setting-global,-contract-level-and-instance-level-defaults)
-* [When not to use synchronized transactions (and how to do it)](https://github.com/ConsenSys/ether-pudding/wiki/When-not-to-use-synchronized-transactions-(and-how-to-do-it))
+* [When not to use synchronized transactions, and how to do it](/ConsenSys/ether-pudding/wiki/When-not-to-use-synchronized-transactions,-and-how-to-do-it)
 
 ### Building
 
