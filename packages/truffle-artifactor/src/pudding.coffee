@@ -28,13 +28,13 @@ factory = (Promise, web3) ->
         # at time of class creation. 
         merged_defaults = {}
         for key, value of @global_defaults
-          defaults[key] = value
+          merged_defaults[key] = value
 
         for key, value of class_defaults
-          defaults[key] = value
+          merged_defaults[key] = value
 
         for key, value of instance_defaults
-          defaults[key] = value
+          merged_defaults[key] = value
 
         for abi_object in contract_class.abi
           fn_name = abi_object.name

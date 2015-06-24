@@ -41,15 +41,15 @@
           ref = this.global_defaults;
           for (key in ref) {
             value = ref[key];
-            defaults[key] = value;
+            merged_defaults[key] = value;
           }
           for (key in class_defaults) {
             value = class_defaults[key];
-            defaults[key] = value;
+            merged_defaults[key] = value;
           }
           for (key in instance_defaults) {
             value = instance_defaults[key];
-            defaults[key] = value;
+            merged_defaults[key] = value;
           }
           ref1 = contract_class.abi;
           for (i = 0, len = ref1.length; i < len; i++) {
