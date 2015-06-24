@@ -1,6 +1,6 @@
 # The Proof is in the Pudding
 
-A Pudding contract (or just “Pudding”) is an extension of [web3’s](https://github.com/ethereum/web3.js/tree/master) contract abstraction that makes life as a Dapp developer a whole lot easier. With Pudding, you can cleanly write distributed Ethereum applications and automated tests with less hassle and more reliability, ensuring that each will run against any (read: every) RPC client. When used with the Consensys [TestRPC](https://github.com/ConsenSys/testrpc), you can develop Dapps faster.
+Ether Pudding (or just “Pudding”) is an extension of [web3’s](https://github.com/ethereum/web3.js/tree/master) contract abstraction that makes life as a Dapp developer a whole lot easier. With Pudding, you can cleanly write distributed Ethereum applications and automated tests with less hassle and more reliability, ensuring that each will run against any (read: every) RPC client. When used with the Consensys [TestRPC](https://github.com/ConsenSys/testrpc), you can develop Dapps faster.
 
 Pudding is intended to be used both within Node and within a browser. Although it’s very little code, it packs a whole lot of punch.  
 
@@ -14,13 +14,13 @@ Pudding is intended to be used both within Node and within a browser. Although i
 
 **Node**
 ```
-npm install pudding-contract
+npm install ether-pudding
 ```
 
 **Browser**
 ```
 <!-- Note: web3 is required. Bluebird is a needed for promises, but not required. -->
-<script type="text/javascript" src="./build/pudding-contract.min.js"></script>
+<script type="text/javascript" src="./build/ether-pudding.min.js"></script>
 ```
 
 ### Using Pudding
@@ -29,7 +29,7 @@ Using Pudding in your app is very similar to using web3’s contract abstraction
 
 ```coffeescript
 web3 = require "web3"
-Pudding = require "pudding-contract"
+Pudding = require "ether-pudding"
 
 # Set the provider, as you would normally. 
 web3.setProvider(new web3.Providers.HttpProvider("http://localhost:8545"))
