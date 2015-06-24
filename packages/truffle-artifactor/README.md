@@ -81,6 +81,10 @@ coin.sendCoin(account_two, 3, {from: account_one}).then (tx) ->
 
 The above example may not be used within an app (you wouldn’t send the wrong amount on purpose, for example’s sake) -- but you can easily see how it might apply to an automated test.
 
+### More Examples
+
+* [Setting global, contract-level and instance-level defaults](./wiki/Setting-global,-contract-level-and-instance-level-defaults)
+
 ### Building
 
 You can create a pure Javascript and minified Javascript version of Pudding by first installing and then running `grunt`. These files will be placed in the `./build` directory.

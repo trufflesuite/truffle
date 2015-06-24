@@ -6,10 +6,12 @@
     Pudding = (function() {
       function Pudding() {}
 
-      Pudding.whisk = function(abi, defaults) {
+      Pudding.global_defaults = {};
+
+      Pudding.recipe = function(abi, class_defaults) {
         var contract;
         contract = web3.eth.contract(abi);
-        contract = Pudding.inject_transaction_defaults(contract, defaults);
+        contract = Pudding.inject_defaults(contract, class_defaults);
         contract = Pudding.synchronize_contract(contract);
         if (Promise != null) {
           contract = Pudding.promisify_contract(contract);
@@ -17,41 +19,67 @@
         return contract;
       };
 
-      Pudding.inject_transaction_defaults = function(contract_class, defaults) {
+      Pudding.defaults = function(new_global_defaults) {
+        var i, key, len, value;
+        if (new_global_defaults == null) {
+          new_global_defaults = {};
+        }
+        for (value = i = 0, len = new_global_defaults.length; i < len; value = ++i) {
+          key = new_global_defaults[value];
+          this.global_defaults[key] = value;
+        }
+        return this.global_defaults;
+      };
+
+      Pudding.inject_defaults = function(contract_class, class_defaults) {
         var old_at;
         old_at = contract_class.at;
-        contract_class.at = function(address) {
-          var abi_object, fn, fn_name, i, instance, key, len, ref, value;
+        contract_class.at = function(address, instance_defaults) {
+          var abi_object, fn, fn_name, i, instance, key, len, merged_defaults, ref, ref1, value;
           instance = old_at.call(contract_class, address);
-          ref = contract_class.abi;
-          for (i = 0, len = ref.length; i < len; i++) {
-            abi_object = ref[i];
+          merged_defaults = {};
+          ref = this.global_defaults;
+          for (key in ref) {
+            value = ref[key];
+            defaults[key] = value;
+          }
+          for (key in class_defaults) {
+            value = class_defaults[key];
+            defaults[key] = value;
+          }
+          for (key in instance_defaults) {
+            value = instance_defaults[key];
+            defaults[key] = value;
+          }
+          ref1 = contract_class.abi;
+          for (i = 0, len = ref1.length; i < len; i++) {
+            abi_object = ref1[i];
             fn_name = abi_object.name;
             fn = instance[fn_name];
             if (fn == null) {
               continue;
             }
-            instance[fn_name] = Pudding.inject_transaction_defaults_into_function(instance, fn, defaults);
+            instance[fn_name] = Pudding.inject_defaults_into_function(instance, fn, merged_defaults);
             for (key in fn) {
               value = fn[key];
               instance[fn_name][key] = value;
             }
-            instance[fn_name].sendTransaction = Pudding.inject_transaction_defaults_into_function(instance, fn.sendTransaction, defaults);
-            instance[fn_name].call = Pudding.inject_transaction_defaults_into_function(instance, fn.call, defaults);
+            instance[fn_name].sendTransaction = Pudding.inject_defaults_into_function(instance, fn.sendTransaction, merged_defaults);
+            instance[fn_name].call = Pudding.inject_defaults_into_function(instance, fn.call, merged_defaults);
           }
           return instance;
         };
         return contract_class;
       };
 
-      Pudding.inject_transaction_defaults_into_function = function(instance, fn, defaults) {
+      Pudding.inject_defaults_into_function = function(instance, fn, merged_defaults) {
         return function() {
           var args, callback, key, old_options, options, value;
           args = Array.prototype.slice.call(arguments);
           callback = args.pop();
           options = {};
-          for (key in defaults) {
-            value = defaults[key];
+          for (key in merged_defaults) {
+            value = merged_defaults[key];
             options[key] = value;
           }
           if (typeof args[args.length - 1] === "object") {

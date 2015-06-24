@@ -1,17 +1,40 @@
 factory = (Promise, web3) ->
   class Pudding
-    @whisk: (abi, defaults) ->
+    # Not to be accessed directly.
+    @global_defaults: {} 
+
+    # Main function for creating a Pudding contract.
+    @recipe: (abi, class_defaults) ->
       contract = web3.eth.contract(abi)
-      contract = Pudding.inject_transaction_defaults contract, defaults
+      # Note: inject_defaults() changes the at() function to take two parameters.
+      contract = Pudding.inject_defaults(contract, class_defaults)
       contract = Pudding.synchronize_contract(contract)
       if Promise?
         contract = Pudding.promisify_contract(contract)
       return contract
 
-    @inject_transaction_defaults: (contract_class, defaults) ->
+    # Set and return defaults.
+    @defaults: (new_global_defaults={}) ->
+      for key, value in new_global_defaults
+        @global_defaults[key] = value
+      @global_defaults
+
+    @inject_defaults: (contract_class, class_defaults) ->
       old_at = contract_class.at
-      contract_class.at = (address) ->
+      contract_class.at = (address, instance_defaults) ->
         instance = old_at.call(contract_class, address)
+
+        # Merge global defaults, class defaults and instance defaults
+        # at time of class creation. 
+        merged_defaults = {}
+        for key, value of @global_defaults
+          defaults[key] = value
+
+        for key, value of class_defaults
+          defaults[key] = value
+
+        for key, value of instance_defaults
+          defaults[key] = value
 
         for abi_object in contract_class.abi
           fn_name = abi_object.name
@@ -19,34 +42,35 @@ factory = (Promise, web3) ->
 
           continue if !fn?
 
-          # First inject defaults for the whole function
-          instance[fn_name] = Pudding.inject_transaction_defaults_into_function(instance, fn, defaults)
+          # First inject merged defaults for the whole function
+          instance[fn_name] = Pudding.inject_defaults_into_function(instance, fn, merged_defaults)
 
           # Copy over properties of that function to the new one.
           for key, value of fn
             instance[fn_name][key] = value
 
-          # Then inject defaults into sendTransaction and call functions
-          instance[fn_name].sendTransaction = Pudding.inject_transaction_defaults_into_function(instance, fn.sendTransaction, defaults)
-          instance[fn_name].call = Pudding.inject_transaction_defaults_into_function(instance, fn.call, defaults)
+          # Then inject merged defaults into sendTransaction and call functions
+          instance[fn_name].sendTransaction = Pudding.inject_defaults_into_function(instance, fn.sendTransaction, merged_defaults)
+          instance[fn_name].call = Pudding.inject_defaults_into_function(instance, fn.call, merged_defaults)
 
         return instance
+
       return contract_class
 
-    @inject_transaction_defaults_into_function: (instance, fn, defaults) ->
+    @inject_defaults_into_function: (instance, fn, merged_defaults) ->
       return () ->
         args = Array.prototype.slice.call(arguments)
         callback = args.pop()
 
-        # Would be nice to have lodash, but no need to add that
-        # dependency here.
+        # Start with the defaults, creating a new object.
         options = {}
-        for key, value of defaults
+        for key, value of merged_defaults
           options[key] = value
 
         if typeof args[args.length - 1] == "object"
           old_options = args.pop()
           
+          # Override defaults with tx details pased into function.
           for key, value of old_options
             options[key] = value
 
