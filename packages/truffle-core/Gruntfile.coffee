@@ -35,7 +35,7 @@ module.exports = (grunt) ->
             grunt.log.writeln("  #{heading} => #{options.currentTask.info}")
     watch: 
       build: 
-        files: ["#{working_dir}/src/**/*", "#{working_dir}/lib/**/*", "#{working_dir}/config/**/*"] 
+        files: ["#{working_dir}/app/**/*", "#{working_dir}/config/**/*"] 
         tasks: ["build"] 
         options: 
           interrupt: true
