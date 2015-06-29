@@ -140,7 +140,7 @@ class Contracts
           return 
 
         display_directory = "." + config.environments.current.contracts_filename.replace(config.working_dir, "")
-        console.log "Writing contracts to #{display_directory}"
+        console.log "Writing contracts to #{display_directory}" unless config.grunt.option("quiet-deploy")
         fs.writeFileSync(config.environments.current.contracts_filename, JSON.stringify(config.contracts.classes, null, 2), {flag: "w+"})
 
         done_deploying()
