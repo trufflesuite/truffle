@@ -125,6 +125,45 @@ We recommend the configuration files in `./config/development` not be committed 
 
 **Note:** All JSON files in Truffle allow Javascript comments which are ignored by our JSON parser. This is non-standard JSON syntax, and should be removed if its causing you issue.
 
+### Building / Distributing Your App
+
+Truffle uses the term “build” to mean compiling your assets into an executable app -- i.e., raw HTML, CSS and Javascript. To do this, simply run:
+
+```
+$ truffle build
+```
+
+This will create a new, non-minified version of the app. To run it, open `./build/index.html` in your browser.
+
+Running `truffle build` can get cumbersome, however, as you’d have to do so after every change. Fortunately, Truffle can watch for changes and do this automatically for you:
+
+```
+$ truffle watch
+Waiting...
+```
+
+This will automatically rebuild your app as files within the `./app` or `./config` directory change. Using `truffle watch`, development feels like traditional web development, where all that’s required is a refresh.
+
+When you’re ready to create a version of your app ready for distribution, simply run:
+
+```
+$ truffle dist
+```
+
+This will create another version of your app with the Javascript minified in the `./dist` directory. The file structure of both the `./build` directory and the `./dist` directory looks like this:
+
+```
+build/
+    |___ assets/     # Copied assets
+    |___ app.js      # Compiled Javascript
+    |___ app.css     # Compiled CSS
+    |___ index.html  # Main index file.
+```
+
+Notice that the Javascript and CSS files listed in `app.json` have compiled down to a single `app.js` and `app.css` file, respectively. Your assets directory was copied over directly.
+
+We recommend you ignore committing the `./build` directory in your code repository as it’s only used for development. However, we strongly recommend the `./dist` be included as it represents last good distributable version of the app. 
+
 ### Interacting With Contracts
 
 Truffle apps use [Pudding](https://github.com/ConsenSys/ether-pudding) under the hood. This allows for easy control flow within your app and tests while still giving you the standard contract abstraction provided by `web3`. 
@@ -140,6 +179,7 @@ contract 'MyCoin', (addresses, accounts) ->
     coin = MyCoin.at(addresses["MyCoin"])
     coin.balances.call().then (my_balance) ->
       assert.isTrue(20000, my_balance, "I was not given 20000 on contract creation!")
+      done()
     .catch done   
 ```
 
