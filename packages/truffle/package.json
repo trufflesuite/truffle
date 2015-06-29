@@ -1,0 +1,50 @@
+{
+  "name": "truffle",
+  "namespace": "consensys",
+  "version": "0.0.1",
+  "description": "truffle - Simple development framework for Ethereum",
+  "dependencies": {
+    "coffee-script": "*",
+    "node-sass": "*",
+    "uglify-js": "*",
+    "grunt": "*",
+    "grunt-cli": "*",
+    "grunt-available-tasks": "*",
+    "grunt-contrib-watch": "*",
+    "bluebird": "*",
+    "web3": "*",
+    "bignumber.js": "*",
+    "ether-pudding": "*",
+    "deasync": "*",
+    "async": "*",
+    "node-dir": "*",
+    "mkdirp": "*",
+    "rimraf": "*",
+    "lodash": "*",
+    "jsmin": "*",
+    "cpr": "*",
+    "mocha": "*",
+    "chai": "*"
+  },
+  "devDependencies": {},
+  "bin": {
+    "truffle": "./truffle.bash"
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ConsenSys/dapp-store.git"
+  },
+  "homepage": "https://github.com/ConsenSys/dapp-store",
+  "bugs": {
+    "url": "https://github.com/ConsenSys/dapp-store/issues"
+  },
+  "author": "consensys.net",
+  "authors": [
+    {
+      "name": "Tim Coulter",
+      "email": "tim@timothyjcoulter.com",
+      "url": "https://github.com/tcoulter"
+    }
+  ]
+}
