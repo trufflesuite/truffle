@@ -1,0 +1,19 @@
+{
+  "javascripts": [
+    // Paths relative to "javascripts" directory that should be
+    // concatenated during build, and minified during distribution.
+    "app.coffee"
+  ],
+  "stylesheets": [
+    // Paths relative to "stylesheets" directory that should be
+    // concatenated during build, and minified during distribution.
+    "app.scss"
+  ],
+  "deploy": [
+    "Example"
+  ],
+  "rpc": {
+    "host": "localhost",
+    "port": 8545
+  }
+}
