@@ -125,11 +125,11 @@ We recommend the configuration files in `./config/development` not be committed 
 
 **Note:** All JSON files in Truffle allow Javascript comments which are ignored by our JSON parser. This is non-standard JSON syntax, and should be removed if its causing you issue.
 
-### Interacting with your contracts
+### Interacting With Contracts
 
 Truffle apps use [Pudding](https://github.com/ConsenSys/ether-pudding) under the hood. This allows for easy control flow within your app and tests while still giving you the standard contract abstraction provided by `web3`. 
 
-### Testing
+### Testing Contracts
 
 Truffle standardizes on [Mocha](http://mochajs.org/) for running tests and [Chai](http://chaijs.com/) for assertions. By default, Truffle uses the `assert` style of assertions provided by chai, but you’re not prevented from using other styles. An example test for a coin-like contract looks like this: 
 
@@ -155,9 +155,11 @@ Tims-MacBook-Pro:test tim$ truffle test
   1 passing (4ms)
 ```
 
-Note that in your tests, your contract classes are created for you, and are globally accessible. That’s why we could access `MyCoin` directly. Note that the `contract` function is synonymous for Mocha’s `describe`, except that it provides better output.
+Note that in your tests, your contract classes are created for you, and are globally accessible (e.g., `MyCoin`). Similarly, `web3` is already included and the default provider has already been set based on your environment’s RPC configuration.  Note that the `contract` function is synonymous for Mocha’s `describe`, except that it provides better output.
 
 All transactions made within your tests are sent from the first account available (`accounts[0]`) and have a default `gasLimit` of 3141592. You can override these through Pudding or through the transaction function’s own parameters.
+
+Currently, every test run deploys a new set of contracts to the network. Given the current functionality, you shouldn’t run tests within a different environment (e.g., production) as it’ll overwrite your production contract configuration during testing.
 
 ### Command Parameters
 
