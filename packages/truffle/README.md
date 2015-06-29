@@ -125,6 +125,40 @@ We recommend the configuration files in `./config/development` not be committed 
 
 **Note:** All JSON files in Truffle allow Javascript comments which are ignored by our JSON parser. This is non-standard JSON syntax, and should be removed if its causing you issue.
 
+### Interacting with your contracts
+
+Truffle apps use [Pudding](https://github.com/ConsenSys/ether-pudding) under the hood. This allows for easy control flow within your app and tests while still giving you the standard contract abstraction provided by `web3`. 
+
+### Testing
+
+Truffle standardizes on [Mocha](http://mochajs.org/) for running tests and [Chai](http://chaijs.com/) for assertions. By default, Truffle uses the `assert` style of assertions provided by chai, but you’re not prevented from using other styles. An example test for a coin-like contract looks like this: 
+
+```coffeescript
+contract 'MyCoin', (addresses, accounts) ->
+
+  it "should give me 20000 coins on contract creation", (done) -> 
+    coin = MyCoin.at(addresses["MyCoin"])
+    coin.balances.call().then (my_balance) ->
+      assert.isTrue(20000, my_balance, "I was not given 20000 on contract creation!")
+    .catch done   
+```
+
+To run this test, simply type:
+
+```
+$ truffle test
+Tims-MacBook-Pro:test tim$ truffle test
+
+  Contract: MyCoin
+    ✓ should give me 20000 coins on contract creation
+
+  1 passing (4ms)
+```
+
+Note that in your tests, your contract classes are created for you, and are globally accessible. That’s why we could access `MyCoin` directly. Note that the `contract` function is synonymous for Mocha’s `describe`, except that it provides better output.
+
+All transactions made within your tests are sent from the first account available (`accounts[0]`) and have a default `gasLimit` of 3141592. You can override these through Pudding or through the transaction function’s own parameters.
+
 ### Command Parameters
 
 Many commands read everything they need from your app configuration. However, some require (or, optionally provide) additional parameters. Those commands are listed here:  
@@ -147,7 +181,7 @@ $ truffle create:contracts --name=“MyContract”
 
 ##### test
 
-Takes an optional parameter of `--no-color` if you want to prevent the test output from displaying color information (such as when not run inside a terminal). 
+Takes an optional parameter of `--no-color` if you want to prevent the test output from displaying color information (such as when run outside of a terminal). 
 
 
 
