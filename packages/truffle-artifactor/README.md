@@ -5,7 +5,7 @@ Ether Pudding (or just “Pudding”) is an extension of [web3’s](https://gith
 Pudding is intended to be used both within Node and within a browser. Although it’s very little code, it packs a whole lot of punch.  
 
 ### Reasons to Use Pudding (short list)
-* Transactions can be “synchronized” with the network, so your app/tests won’t receive callbacks until the transactions have been processed. This makes control flow easier to manage.
+* Transactions can be “synchronized” with the network, so your app/tests won’t receive callbacks until the transactions have been processed. This makes control flow easier to manage. (See [this example](https://github.com/ConsenSys/ether-pudding/wiki/When-not-to-use-synchronized-transactions,-and-how-to-do-it) for when not to used network-synchronized transactions.)
 * Contract functions are “promisified” using bluebird. This makes sequential calls and transactions easier to write.
 * Transaction defaults (like a default “from” address) are DRY. You can specify defaults for an individual instance of a contract, for all instances derived from a contract class, or across all Pudding contracts. This makes your code DRY, too.
 * With all of the above, developing on Ethereum gets a whole lot easier.    
