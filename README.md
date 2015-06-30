@@ -226,5 +226,40 @@ $ truffle create:contracts --name=“MyContract”
 Takes an optional parameter of `--no-color` if you want to prevent the test output from displaying color information (such as when run outside of a terminal). 
 
 
+### Extending the Pipeline: Integrating ReactJS & CJSX (example)
 
+Though Truffle comes built-in with CoffeeScript and SCSS support for the frontend, you may want to use something fancier. Here we’ll show you an example of how to integrate ReactJS, not only using it in the app but including CJSX (CoffeeScript + JSX) files within the pipeline.
+
+First, download [ReactJS](https://fb.me/react-0.13.3.js) and add it to your `app.json`:
+
+```
+"javascripts": {
+  "react-0.13.3.js",
+  ...
+},
+...
+```
+
+From here, React would technically be included in your application, but you couldn’t include CJSX files within the configuration as Truffle wouldn’t know how to process those apps. To tell Truffle how to use it, you need to create a “processor” that converts CJSX files to Javascript. Suppose we created a directory called “lib” within our app and added to it the following file -- let's call it `cjsx.coffee`:
+
+```
+transform = require 'coffee-react-transform'
+fs = require 'fs'
+
+module.exports = (path, config, callback) ->
+  try 
+    callback null, transform(fs.readFileSync(path, 'utf8'))
+  catch e
+    callback e
+```
+
+The last thing to do is to register that processor in the pipeline. That’s easy! Back in app.json, add the following attribute to the main object:
+
+```
+"processors": {
+  "cjsx": "./lib/cjsx.coffee"
+}
+```
+
+You can then add `cjsx` files into the Javsacripts pipeline as you would any other file!
 

@@ -10,9 +10,11 @@
     "app.scss"
   ],
   "deploy": [
+    // Names of contracts that should be deployed to the network.
     "Example"
   ],
   "rpc": {
+    // Default RPC configuration.
     "host": "localhost",
     "port": 8545
   }
