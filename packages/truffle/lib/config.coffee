@@ -66,6 +66,11 @@ class Config
         html_filename: "#{working_dir}/dist/index.html"
         assets:
           directory: "#{working_dir}/dist/assets"
+      processors:
+        js: "#{truffle_dir}/lib/processors/js.coffee"
+        coffee: "#{truffle_dir}/lib/processors/coffee.coffee"
+        css: "#{truffle_dir}/lib/processors/css.coffee"
+        scss: "#{truffle_dir}/lib/processors/scss.coffee"
     
     config.environments.current.directory = "#{config.environments.directory}/#{config.environment}"
     config.environments.current.filename = "#{config.environments.current.directory}/config.json"
@@ -84,6 +89,23 @@ class Config
     # Now overwrite any values from the environment config.
     if fs.existsSync(config.environments.current.filename)
       config.app = loadconf(config.environments.current.filename, config.app)
+
+    # Helper function for expecting paths to exist.
+    config.expect = (path, description, extra="") ->
+      if !fs.existsSync(path)
+        display_path = "." + path.replace(@working_dir, "")
+        console.log "Couldn't find #{description} at #{display_path}. #{extra}"
+        process.exit(1) 
+
+    # Find the processors and then turn them into executable functions.
+    for extension, file of config.processors
+      config.processors[extension] = require(file)
+
+    for extension, file of config.app.processors
+      full_path = "#{working_dir}/#{file}"
+      extension = extension.toLowerCase()
+      config.expect(full_path, "specified .#{extension} processor", "Check your app config.")
+      config.processors[extension] = require(full_path)
 
     # Get contracts in working directory, if available.
     if fs.existsSync(config.contracts.directory)
@@ -104,12 +126,6 @@ class Config
     #     if !error?
     #       console.log " <   " + JSON.stringify(result, null, 2).split("\n").join("\n <   ")
     #     callback(error, result)
-
-    config.expect = (path, description, extra="") ->
-      if !fs.existsSync(path)
-        display_path = "." + path.replace(@working_dir, "")
-        console.log "Couldn't find #{description} at #{display_path}. #{extra}"
-        process.exit(1) 
 
     return config
 
