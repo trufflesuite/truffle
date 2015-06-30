@@ -15,9 +15,9 @@ factory = (Promise, web3) ->
 
     # Set and return defaults.
     @defaults: (new_global_defaults={}) ->
-      for key, value in new_global_defaults
-        @global_defaults[key] = value
-      @global_defaults
+      for key, value of new_global_defaults
+        Pudding.global_defaults[key] = value
+      Pudding.global_defaults
 
     @inject_defaults: (contract_class, class_defaults) ->
       old_at = contract_class.at
@@ -27,8 +27,6 @@ factory = (Promise, web3) ->
         # Merge global defaults, class defaults and instance defaults
         # at time of class creation. 
         merged_defaults = {}
-        for key, value of @global_defaults
-          merged_defaults[key] = value
 
         for key, value of class_defaults
           merged_defaults[key] = value
@@ -58,18 +56,21 @@ factory = (Promise, web3) ->
       return contract_class
 
     @inject_defaults_into_function: (instance, fn, merged_defaults) ->
-      return () ->
+      return () =>
         args = Array.prototype.slice.call(arguments)
         callback = args.pop()
 
         # Start with the defaults, creating a new object.
         options = {}
+        for key, value of Pudding.global_defaults
+          options[key] = value
+
         for key, value of merged_defaults
           options[key] = value
 
         if typeof args[args.length - 1] == "object"
           old_options = args.pop()
-          
+
           # Override defaults with tx details pased into function.
           for key, value of old_options
             options[key] = value
@@ -80,8 +81,8 @@ factory = (Promise, web3) ->
 
     @promisify_contract: (contract_class) ->
       old_at = contract_class.at
-      contract_class.at = (address) ->
-        instance = old_at.call(contract_class, address)
+      contract_class.at = (address, instance_defaults={}) ->
+        instance = old_at.call(contract_class, address, instance_defaults)
         # Promisify .call() and .sendTransaction() for functions.
         for key, fn of instance
           continue if typeof fn != "object" and typeof fn != "function"
@@ -144,8 +145,8 @@ factory = (Promise, web3) ->
     # be processed. 
     @synchronize_contract: (contract_class) ->
       old_at = contract_class.at
-      contract_class.at = (address) ->
-        instance = old_at.call(contract_class, address)
+      contract_class.at = (address, instance_defaults={}) ->
+        instance = old_at.call(contract_class, address, instance_defaults)
 
         for abi_object in contract_class.abi
           fn_name = abi_object.name
