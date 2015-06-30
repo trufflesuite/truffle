@@ -261,5 +261,4 @@ The last thing to do is to register that processor in the pipeline. That’s eas
 }
 ```
 
-You can then add `cjsx` files into the Javsacripts pipeline as you would any other file!
-
+You can then add `cjsx` files into the Javsacripts pipeline as you would any other file. Of course, make sure to add `coffee-react-transform` into your app’s `package.json` and run `npm install` within your app so Truffle can find the correct dependencies. 
