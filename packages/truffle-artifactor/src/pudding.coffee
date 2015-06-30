@@ -21,7 +21,7 @@ factory = (Promise, web3) ->
 
     @inject_defaults: (contract_class, class_defaults) ->
       old_at = contract_class.at
-      contract_class.at = (address, instance_defaults) ->
+      contract_class.at = (address, instance_defaults={}) ->
         instance = old_at.call(contract_class, address)
 
         # Merge global defaults, class defaults and instance defaults

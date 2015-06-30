@@ -36,6 +36,9 @@
         old_at = contract_class.at;
         contract_class.at = function(address, instance_defaults) {
           var abi_object, fn, fn_name, i, instance, key, len, merged_defaults, ref, ref1, value;
+          if (instance_defaults == null) {
+            instance_defaults = {};
+          }
           instance = old_at.call(contract_class, address);
           merged_defaults = {};
           ref = this.global_defaults;
