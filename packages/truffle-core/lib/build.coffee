@@ -30,22 +30,18 @@ class Build
   )
 
   @process: Promise.promisify((config, file, callback) ->
-    extension = path.extname(file).substring(1)
+    extension = path.extname(file).substring(1).toLowerCase()
     
     # Is there a user specified extension?
-    try
-      processor = require "#{config.working_dir}/#{config.app.processors[extension]}"
-    catch e
-      # do nothing
-
+    processor = config.processors[extension]
+    
     if !processor?
-      try
-        processor = require "./processors/#{extension}.coffee"
-      catch e
-        callback("Could not find processor for file type '#{extension}'. File: #{file}")
-        return
+      callback("Could not find processor for file type '#{extension}'. File: #{file}")
+      return
 
-    processor file, config, callback
+    fs.readFileAsync(file, "utf8").then (contents) ->
+      processor contents, config, callback
+    .catch callback
   )
 
   @base: Promise.promisify((config, key, callback) ->

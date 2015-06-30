@@ -15,14 +15,9 @@
 CoffeeScript = require 'coffee-script'
 fs = require "fs"
 
-module.exports = (path, config, callback) ->
-  fs.readFile path, "utf8", (err, data) ->
-    if err?
-      callback(err)
-      return
-
-    try
-      callback null, CoffeeScript.compile(data)
-    catch e
-      callback(e)
+module.exports = (contents, config, callback) ->
+  try
+    callback null, CoffeeScript.compile(contents)
+  catch e
+    callback(e)
   
