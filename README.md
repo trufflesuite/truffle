@@ -210,7 +210,7 @@ Many commands read everything they need from your app configuration. However, so
 Takes an optional `--name` parameter that will create new contract with that name. Name is expected to be camel-case. New contract is placed in the `./app/contracts` directory.
 
 ```
-$ truffle create:contracts --name=“MyContract”
+$ truffle create:contract --name=“MyContract”
 ```
 
 ##### create:test
@@ -218,7 +218,7 @@ $ truffle create:contracts --name=“MyContract”
 Takes an optional `--name` parameter that will create new test with that name, and expect a contract of the same name. Name is expected to be camel-case. New test is placed in the `./test` directory.
 
 ```
-$ truffle create:contracts --name=“MyContract”
+$ truffle create:test --name=“MyContract”
 ```
 
 ##### test
@@ -244,14 +244,15 @@ From here, React would technically be included in your application, but you coul
 
 ```
 transform = require 'coffee-react-transform'
-fs = require 'fs'
 
-module.exports = (path, config, callback) ->
+module.exports = (contents, config, callback) ->
   try 
-    callback null, transform(fs.readFileSync(path, 'utf8'))
+    config.processors.coffee(transform(contents), config, callback)
   catch e
     callback e
 ```
+
+Note that we “string together” processors by passing the results of react transform down to the coffee processor. 
 
 The last thing to do is to register that processor in the pipeline. That’s easy! Back in app.json, add the following attribute to the main object:
 
