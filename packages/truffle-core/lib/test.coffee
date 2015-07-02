@@ -10,16 +10,13 @@ loadconf = require "./loadconf"
 
 # Use custom assertions.
 global.assert = chai.assert
-#chai.use(require "./assertions")
+chai.use(require "./assertions")
 
 class Test
   @setup: (config, callback) ->
 
     # Variables that are passed to each contract which are
     # populated by the global before() hook.
-    contracts = {}
-    addresses = {}
-    abi = {}
     accounts = []
 
     BEFORE_TIMEOUT = 120000
@@ -33,34 +30,44 @@ class Test
     global.contract = (name, tests) ->
       describe "Contract: #{name}", () ->
         @timeout(TEST_TIMEOUT)
-        tests(addresses, accounts)
+        
+        before "redeploy before each contract", (done) ->
+          @timeout(BEFORE_TIMEOUT)
 
+          # Redeploy contracts before each contract.
+          Contracts.deploy config, (err) ->
+            if err?
+              done(err)
+              return
+
+            # Prepare the objects that get passed to the tests.
+            loadconf config.environments.current.contracts_filename, (err, json) ->
+              for name, contract of json
+                global[name] = Pudding.whisk(contract.abi)
+                global[name].deployed_address = contract.address if contract.address?
+
+              done()
+
+        tests(accounts)
+
+    # Compile all the contracts and get the available accounts.
+    # We only need to do this one, and can get it outside of 
+    # mocha.
     Contracts.compile_all config, (err) ->
       if err? 
         callback(err)
         return
 
-      Contracts.deploy config, (err) ->
-        if err?
-          callback(err)
-          return
+      web3.eth.getAccounts (error, accs) ->
+        for account in accs
+          accounts.push account
 
-        web3.eth.getAccounts (error, accs) ->
-          for account in accs
-            accounts.push account
+        Pudding.defaults {
+          from: accounts[0]
+          gas: 3141592
+        }
 
-          Pudding.defaults {
-            from: accounts[0]
-            gas: 3141592
-          }
-
-          # Prepare the objects that get passed to the tests.
-          loadconf config.environments.current.contracts_filename, (err, json) ->
-            for name, contract of json
-              addresses[name] = contract.address
-              global[name] = Pudding.whisk(contract.abi)
-            
-            callback()
+        callback()
 
   
   @run: (config, callback) ->
@@ -80,7 +87,7 @@ class Test
           useColors: true
         })
 
-        for file in files
+        for file in files.sort()
           mocha.addFile(file)
 
         mocha.run (failures) ->

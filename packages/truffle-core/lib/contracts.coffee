@@ -10,9 +10,9 @@ class Contracts
   @resolve: (root, callback) ->
     imported = {}
 
-    import_path = (file) -> 
+    import_file = (file) -> 
       code = fs.readFileSync(file, "utf-8")
-      
+
       # Remove comments
       code = code.replace /(\/\/.*(\n|$))/g, ""
       code = code.replace /(\/\*(.|\n)*?\*\/)/g, ""
@@ -32,11 +32,11 @@ class Contracts
 
         imported[import_name] = true
 
-        return import_path(import_path) + "\n\n"
+        return import_file(import_path) + "\n\n"
       return code
 
     try 
-      callback null, import_path(root)
+      callback null, import_file(root)
     catch e
       callback e
 
@@ -44,6 +44,7 @@ class Contracts
     async.mapSeries Object.keys(config.contracts.classes), (key, finished) =>
       contract = config.contracts.classes[key]
       source = contract.source
+
       display_name = source.substring(source.lastIndexOf("/") + 1)
       console.log "Compiling #{display_name}..." unless config.grunt.option("quiet-deploy")
       @resolve source, (err, code) ->

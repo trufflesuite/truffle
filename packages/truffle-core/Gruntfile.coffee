@@ -5,11 +5,14 @@ Config = require "./lib/config"
 Contracts = require "./lib/contracts"
 Build = require "./lib/build"
 Test = require "./lib/test"
+Exec = require "./lib/exec"
 
 truffle_dir = process.env.TRUFFLE_NPM_LOCATION
 working_dir = process.env.TRUFFLE_WORKING_DIRECTORY
 
 module.exports = (grunt) ->
+  grunt.option("stack", true)
+
   config = Config.gather(truffle_dir, working_dir, grunt)
 
   web3.setProvider(config.provider)
@@ -40,6 +43,7 @@ module.exports = (grunt) ->
         options: 
           interrupt: true
           spawn: false
+          atBegin: true
                  
 
   grunt.loadNpmTasks 'grunt-available-tasks'
@@ -97,7 +101,8 @@ module.exports = (grunt) ->
         console.log err
         console.log ""
         console.log "Hint: Some clients don't send helpful error messages through the RPC. See client logs for more details."
-      done()
+        err = new Error("Compilation failed. See above.")
+      done(err)
 
   grunt.registerTask 'deploy', "Deploy contracts to the network", ["compile", "deploy:contracts"]
   grunt.registerTask 'deploy:contracts', "Hidden: Actual deployment function", () ->
@@ -107,7 +112,10 @@ module.exports = (grunt) ->
     Contracts.deploy config, (err) ->
       if err?
         console.log err
-      done()
+        done(err)
+      else
+        done()
+        grunt.task.run("build")
 
   grunt.registerTask 'build', "Build development version of app; creates ./build directory", () ->
     done = @async()
@@ -122,6 +130,19 @@ module.exports = (grunt) ->
     Build.dist(config).then(done).catch (err) ->
       console.log err.stack
       done()
+
+  grunt.registerTask 'exec', "Execute a Coffee/JS file within truffle environment. Script *must* call process.exit() when finished.", () ->
+    done = @async()
+
+    # Remove grunt's writeln function. We'll do all the output'ing.
+    grunt.log.writeln = () ->
+
+    if typeof grunt.option("file") != "string"
+      console.log "Please specify --file option, passing the path of the script you'd like the run. Note that all scripts *must* call process.exit() when finished."
+      done()
+      return
+
+    Exec.file(config, grunt.option("file"))
 
   # Supported options:
   # --no-color: Disable color

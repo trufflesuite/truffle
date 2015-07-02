@@ -9,6 +9,10 @@ rimraf = Promise.promisify(require "rimraf" );
 fs = Promise.promisifyAll(require "fs")
 copy = Promise.promisify(require "./copy")
 File = require "./file"
+normalfs = require "fs"
+_ = require "lodash"
+
+CoffeeScript = require "coffee-script"
 
 class Build
   # A bit of a mess. I promisified everything for the sake of the base() function.
@@ -19,7 +23,10 @@ class Build
       separator = "\n\n"
 
     async.reduce(files, "", (memo, file, iterator_callback) =>
-      full_path = "#{base_path}/#{file}"
+      if base_path?
+        full_path = "#{base_path}/#{file}"
+      else 
+        full_path = file
 
       config.expect(full_path, description)
 
@@ -44,6 +51,33 @@ class Build
     .catch callback
   )
 
+  @insert_contracts: Promise.promisify((config, key, callback) ->
+    binary_found = false
+    for name, contract of config.contracts.classes
+      if contract.binary? 
+        binary_found = true
+        break
+
+    if !binary_found and Object.keys(config.contracts.classes).length > 0
+      console.log "Warning: No compiled contracts found. Did you deploy your contracts before building?"
+
+    File.process config[key].javascript_filename, (contents) ->
+
+      contracts = JSON.stringify(config.contracts.classes, null, 2)
+      inserter_code = normalfs.readFileSync(config.javascripts.contract_inserter_filename, "utf8").replace("{{CONTRACTS}}", contracts)
+      inserter_code = CoffeeScript.compile(inserter_code)
+
+      return inserter_code + "\n\n" + contents
+    , callback
+  )
+
+  @insert_frontend_includes: Promise.promisify((config, key, callback) ->
+    @concat_and_process(config, "script", config.javascripts.frontend_includes, null).then (processed) ->
+      File.process config[key].javascript_filename, (contents) ->
+        return processed + "\n\n" + contents
+      , callback
+  )
+
   @base: Promise.promisify((config, key, callback) ->
     # Remember: All these functions are promises. 
 
@@ -60,6 +94,10 @@ class Build
       @concat_and_process config, "script", config.app.javascripts, config.javascripts.directory
     .then (processed) ->
       fs.writeFile config[key].javascript_filename, processed, 'utf8'
+    .then () =>
+      @insert_contracts config, key
+    .then () =>
+      @insert_frontend_includes config, key
     .then () =>
       @concat_and_process config, "stylesheet", config.app.stylesheets, config.stylesheets.directory
     .then (processed) ->
