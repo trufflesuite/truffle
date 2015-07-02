@@ -28,7 +28,8 @@
   },
   "devDependencies": {},
   "bin": {
-    "truffle": "./truffle.bash"
+    "truffle": "./truffle.bash",
+    "truffle-exec": "./truffle-exec.bash"
   },
   "scripts": {},
   "repository": {

@@ -164,9 +164,23 @@ Notice that the Javascript and CSS files listed in `app.json` have compiled down
 
 We recommend you ignore committing the `./build` directory in your code repository as it’s only used for development. However, we strongly recommend the `./dist` be included as it represents last good distributable version of the app. 
 
-### Interacting With Contracts
+### Interacting With Contracts (Frontend)
 
-Truffle apps use [Pudding](https://github.com/ConsenSys/ether-pudding) under the hood. This allows for easy control flow within your app and tests while still giving you the standard contract abstraction provided by `web3`. 
+Truffle apps use [Pudding](https://github.com/ConsenSys/ether-pudding) under the hood for interfacing with contracts and the network. Pudding allows for easy control flow within your app and tests while still giving you the standard contract abstraction provided by `web3`. 
+
+In order to provide the same interface both within your app’s frontend as well as within your tests, when you build your app, the following is included for you as part of your compiled javascript (in this order):
+
+* `Promise`, provided by bluebird.
+* `web3`: The web3 library
+* `ether-pudding`: The Pudding abstraction on top of web3
+* Your contracts (via Pudding). These are added as globally acessible variables, so if you have a contract called `MyCoin`, for instance, the `MyCoin` class will be available to you.
+
+To get the deployed address of contract within your app, simply type `MyCoin.deployed_address`. You also have access to `MyCoin.abi` as well.
+```
+deployed = MyCoin.at(__contracts.MyCoin.address)
+```
+
+Note that the above will likely change in the future as Pudding evolves and the abstraction becomes easier to work with.
 
 ### Testing Contracts
 
@@ -240,7 +254,7 @@ First, download [ReactJS](https://fb.me/react-0.13.3.js) and add it to your `app
 ...
 ```
 
-From here, React would technically be included in your application, but you couldn’t include CJSX files within the configuration as Truffle wouldn’t know how to process those apps. To tell Truffle how to use it, you need to create a “processor” that converts CJSX files to Javascript. Suppose we created a directory called “lib” within our app and added to it the following file -- let's call it `cjsx.coffee`:
+From here, React would technically be included in your application, but you couldn’t include CJSX files within the configuration as Truffle wouldn’t know how to process those files. To tell Truffle how to use it, you need to create a “processor” that converts CJSX files to Javascript. Suppose we created a directory called “lib” within our app and added to it the following file -- let's call it `cjsx.coffee`:
 
 ```
 transform = require 'coffee-react-transform'

@@ -31,6 +31,12 @@ class Config
         processors: {}
       javascripts: 
         directory: "#{working_dir}/app/javascripts"
+        contract_inserter_filename: "#{truffle_dir}/lib/insert_contracts.coffee"
+        frontend_includes: [
+          "#{truffle_dir}/node_modules/bluebird/js/browser/bluebird.js"
+          "#{truffle_dir}/node_modules/web3/dist/web3.min.js"
+          "#{truffle_dir}/node_modules/ether-pudding/build/ether-pudding.js"
+        ]
       stylesheets: 
         directory: "#{working_dir}/app/stylesheets"
       html: 
@@ -115,17 +121,25 @@ class Config
           source: file
         }
 
+    # Now merge those contracts with what's in the configuration, if any.
+    if fs.existsSync(config.environments.current.contracts_filename)
+      for name, contract of loadconf(config.environments.current.contracts_filename)
+        # Don't import any deleted contracts.
+        continue if !fs.existsSync(contract.source)
+        config.contracts.classes[name] = contract
+
     config.provider = new web3.providers.HttpProvider("http://#{config.app.rpc.host}:#{config.app.rpc.port}")
 
-    # # If you want to see what web3 is sending and receiving.
-    # oldAsync = config.provider.sendAsync
-    # config.provider.sendAsync = (options, callback) ->
-    #   console.log config.provider
-    #   console.log "   > " + JSON.stringify(options, null, 2).split("\n").join("\n   > ")
-    #   oldAsync.call config.provider, options, (error, result) ->
-    #     if !error?
-    #       console.log " <   " + JSON.stringify(result, null, 2).split("\n").join("\n <   ")
-    #     callback(error, result)
+
+    if grunt.option("verbose-rpc")?
+      # # If you want to see what web3 is sending and receiving.
+      oldAsync = config.provider.sendAsync
+      config.provider.sendAsync = (options, callback) ->
+        console.log "   > " + JSON.stringify(options, null, 2).split("\n").join("\n   > ")
+        oldAsync.call config.provider, options, (error, result) ->
+          if !error?
+            console.log " <   " + JSON.stringify(result, null, 2).split("\n").join("\n <   ")
+          callback(error, result)
 
     return config
 
