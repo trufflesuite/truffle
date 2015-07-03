@@ -559,6 +559,10 @@ Adding a custom named processor is exactly the same as adding an extension-based
 }
 ```
 
+### License
+
+MIT
+
 
 
 
