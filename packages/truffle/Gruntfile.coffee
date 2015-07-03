@@ -52,6 +52,8 @@ module.exports = (grunt) ->
   grunt.registerTask 'list', "List all available tasks", () ->
     console.log "Truffle v#{grunt.config().pkg.version} - a development framework for Ethereum"
     console.log ""
+    console.log "Usage: truffle [command] [options]"
+    console.log ""
     console.log "Commands:"
     console.log ""
     grunt.task.run "availabletasks"

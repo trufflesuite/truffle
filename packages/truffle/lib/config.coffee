@@ -23,31 +23,25 @@ class Config
         current: {}       
       app:
         configfile: "#{working_dir}/config/app.json"
+        directory: "#{working_dir}/app"
         # Default config objects that'll be overwritten by working_dir config.
-        javascripts: []
-        stylesheets: []
-        deploy: []
-        rpc: {}
-        processors: {}
-      javascripts: 
-        directory: "#{working_dir}/app/javascripts"
+        resolved:
+          frontend: {}
+          deploy: []
+          rpc: {}
+          processors: {}
+      frontend: 
         contract_inserter_filename: "#{truffle_dir}/lib/insert_contracts.coffee"
-        frontend_includes: [
+        includes: [
           "#{truffle_dir}/node_modules/bluebird/js/browser/bluebird.js"
           "#{truffle_dir}/node_modules/web3/dist/web3.min.js"
           "#{truffle_dir}/node_modules/ether-pudding/build/ether-pudding.js"
         ]
-      stylesheets: 
-        directory: "#{working_dir}/app/stylesheets"
-      html: 
-        filename: "#{working_dir}/app/index.html"
-      assets:
-        directory: "#{working_dir}/app/assets"
       example:
         directory: "#{truffle_dir}/example"
         contract:
-          directory: "#{truffle_dir}/example/app/contracts"
-          filename: "#{truffle_dir}/example/app/contracts/Example.sol"
+          directory: "#{truffle_dir}/example/contracts"
+          filename: "#{truffle_dir}/example/contracts/Example.sol"
           name: "Example"
           variable: "example"
         test:
@@ -55,28 +49,36 @@ class Config
           filename: "#{truffle_dir}/example/test/example.coffee" 
       contracts:
         classes: {}
-        directory: "#{working_dir}/app/contracts"
+        directory: "#{working_dir}/contracts"
       tests:
         directory: "#{working_dir}/test"
       build:
         directory: "#{working_dir}/build"
-        javascript_filename: "#{working_dir}/build/app.js"
-        stylesheet_filename: "#{working_dir}/build/app.css"
-        html_filename: "#{working_dir}/build/index.html"
-        assets:
-          directory: "#{working_dir}/build/assets"
+        defaults:
+          "post-process":
+            "app.js": [
+              "insert-contracts"
+              "frontend-dependencies"
+            ]
       dist:
         directory: "#{working_dir}/dist"
-        javascript_filename: "#{working_dir}/dist/app.js"
-        stylesheet_filename: "#{working_dir}/dist/app.css"
-        html_filename: "#{working_dir}/dist/index.html"
-        assets:
-          directory: "#{working_dir}/dist/assets"
+        defaults:
+          "post-process":
+            "app.js": [
+              "insert-contracts"
+              "frontend-dependencies"
+              "uglify"
+            ]
       processors:
-        js: "#{truffle_dir}/lib/processors/js.coffee"
-        coffee: "#{truffle_dir}/lib/processors/coffee.coffee"
-        css: "#{truffle_dir}/lib/processors/css.coffee"
-        scss: "#{truffle_dir}/lib/processors/scss.coffee"
+        ".html": "#{truffle_dir}/lib/processors/html.coffee"
+        ".js": "#{truffle_dir}/lib/processors/js.coffee"
+        ".coffee": "#{truffle_dir}/lib/processors/coffee.coffee"
+        ".css": "#{truffle_dir}/lib/processors/css.coffee"
+        ".scss": "#{truffle_dir}/lib/processors/scss.coffee"
+        "null": "#{truffle_dir}/lib/processors/null.coffee"
+        "uglify": "#{truffle_dir}/lib/processors/post/uglify.coffee"
+        "frontend-dependencies": "#{truffle_dir}/lib/processors/post/frontend_dependencies.coffee"
+        "insert-contracts": "#{truffle_dir}/lib/processors/post/insert_contracts.coffee"
     
     config.environments.current.directory = "#{config.environments.directory}/#{config.environment}"
     config.environments.current.filename = "#{config.environments.current.directory}/config.json"
@@ -90,11 +92,11 @@ class Config
 
     # Load the app config.
     if fs.existsSync(config.app.configfile)
-      config.app = loadconf(config.app.configfile, config.app)
+      config.app.resolved = loadconf(config.app.configfile, config.app.resolved)
 
     # Now overwrite any values from the environment config.
     if fs.existsSync(config.environments.current.filename)
-      config.app = loadconf(config.environments.current.filename, config.app)
+      config.app.resolved = loadconf(config.environments.current.filename, config.app.resolved)
 
     # Helper function for expecting paths to exist.
     config.expect = (path, description, extra="") ->
@@ -107,11 +109,35 @@ class Config
     for extension, file of config.processors
       config.processors[extension] = require(file)
 
-    for extension, file of config.app.processors
+    for extension, file of config.app.resolved.processors
       full_path = "#{working_dir}/#{file}"
       extension = extension.toLowerCase()
       config.expect(full_path, "specified .#{extension} processor", "Check your app config.")
       config.processors[extension] = require(full_path)
+
+    # Evaluate frontend targets, making the configuration conform, adding 
+    # default post processing, if any.
+    for target, options of config.app.resolved.frontend
+      if typeof options == "string"
+        options = [options]
+
+      if options instanceof Array
+        options = {
+          files: options
+          "post-process": 
+            build: []
+            dist: []
+        }
+
+      options["post-process"] = {build: [], dist: []} if !options["post-process"]?
+
+      # Check for default post processing for this target,
+      # and add it if the target hasn't specified any post processing.
+      for key in ["build", "dist"]
+        if config[key].defaults["post-process"][target]? and options["post-process"][key].length == 0
+          options["post-process"][key] = config[key].defaults["post-process"][target]
+
+      config.app.resolved.frontend[target] = options
 
     # Get contracts in working directory, if available.
     if fs.existsSync(config.contracts.directory)
@@ -128,7 +154,7 @@ class Config
         continue if !fs.existsSync(contract.source)
         config.contracts.classes[name] = contract
 
-    config.provider = new web3.providers.HttpProvider("http://#{config.app.rpc.host}:#{config.app.rpc.port}")
+    config.provider = new web3.providers.HttpProvider("http://#{config.app.resolved.rpc.host}:#{config.app.resolved.rpc.port}")
 
 
     if grunt.option("verbose-rpc")?

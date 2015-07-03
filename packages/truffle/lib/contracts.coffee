@@ -72,13 +72,12 @@ class Contracts
           c(error, result)
       (c) ->
         # Put them on the network
-        async.mapSeries config.app.deploy, (key, callback) ->
+        async.mapSeries config.app.resolved.deploy, (key, callback) ->
           contract = config.contracts.classes[key]
 
           if !contract
             callback("Could not find contract '#{key}' for deployment. Check app.json.")
             return
-
 
           display_name = contract.source.substring(contract.source.lastIndexOf("/") + 1)
           console.log "Sending #{display_name} to the network..." unless config.grunt.option("quiet-deploy")
@@ -110,7 +109,7 @@ class Contracts
 
         interval = null
         verify = () ->
-          last = config.app.deploy[config.app.deploy.length - 1]
+          last = config.app.resolved.deploy[config.app.resolved.deploy.length - 1]
           contract = config.contracts.classes[last]
 
           web3.eth.getCode contract.address, (err, response) ->

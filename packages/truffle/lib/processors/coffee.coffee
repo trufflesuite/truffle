@@ -15,7 +15,7 @@
 CoffeeScript = require 'coffee-script'
 fs = require "fs"
 
-module.exports = (contents, config, callback) ->
+module.exports = (contents, file, config, process, callback) ->
   try
     callback null, CoffeeScript.compile(contents)
   catch e
