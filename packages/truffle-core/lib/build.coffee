@@ -1,7 +1,5 @@
 path = require "path"
 async = require "async"
-uglify = require "uglify-js"
-Config = require "./config"
 
 Promise = require "bluebird"
 mkdirp = Promise.promisify(require "mkdirp")
@@ -17,66 +15,85 @@ CoffeeScript = require "coffee-script"
 class Build
   # A bit of a mess. I promisified everything for the sake of the base() function.
 
-  @concat_and_process: Promise.promisify((config, description, files, base_path, separator, callback) ->
+  @process_file: (config, file, callback) ->
+    extension = path.extname(file).toLowerCase()
+    processor = config.processors[extension]
+
+    if !processor?
+      callback(new Error("Could not find processor for file type '#{extension}'. File: #{file}"))
+      return
+
+    normalfs.readFile file, "utf8", (err, contents) =>
+      if err?
+        callback(err)
+        return
+
+      processor(contents, file, config, Build.process_files, callback)
+
+  @process_files: (config, files, base_path, separator, callback) ->
+    if typeof base_path == "function"
+      separator = base_path
+      base_path = null
+
     if typeof separator == "function"
       callback = separator
       separator = "\n\n"
 
-    async.reduce(files, "", (memo, file, iterator_callback) =>
+    if typeof files == "string"
+      files = [files]
+
+    async.reduce files, "", (memo, file, iterator_callback) =>
       if base_path?
         full_path = "#{base_path}/#{file}"
       else 
         full_path = file
 
-      config.expect(full_path, description)
+      config.expect(full_path)
 
-      @process(config, full_path).then (processed) ->
+      # Call this function from the Build object since
+      # @process_files is passed around and may not always have
+      # the correct scope.
+      Build.process_file config, full_path, (err, processed) ->
+        if err?
+          iterator_callback(err)
+          return
+
         iterator_callback(null, memo + separator + processed)
-      .catch iterator_callback
-    , callback)
-  )
-
-  @process: Promise.promisify((config, file, callback) ->
-    extension = path.extname(file).substring(1).toLowerCase()
-    
-    # Is there a user specified extension?
-    processor = config.processors[extension]
-    
-    if !processor?
-      callback("Could not find processor for file type '#{extension}'. File: #{file}")
-      return
-
-    fs.readFileAsync(file, "utf8").then (contents) ->
-      processor contents, config, callback
-    .catch callback
-  )
-
-  @insert_contracts: Promise.promisify((config, key, callback) ->
-    binary_found = false
-    for name, contract of config.contracts.classes
-      if contract.binary? 
-        binary_found = true
-        break
-
-    if !binary_found and Object.keys(config.contracts.classes).length > 0
-      console.log "Warning: No compiled contracts found. Did you deploy your contracts before building?"
-
-    File.process config[key].javascript_filename, (contents) ->
-
-      contracts = JSON.stringify(config.contracts.classes, null, 2)
-      inserter_code = normalfs.readFileSync(config.javascripts.contract_inserter_filename, "utf8").replace("{{CONTRACTS}}", contracts)
-      inserter_code = CoffeeScript.compile(inserter_code)
-
-      return inserter_code + "\n\n" + contents
     , callback
-  )
 
-  @insert_frontend_includes: Promise.promisify((config, key, callback) ->
-    @concat_and_process(config, "script", config.javascripts.frontend_includes, null).then (processed) ->
-      File.process config[key].javascript_filename, (contents) ->
-        return processed + "\n\n" + contents
-      , callback
-  )
+  @process_target: (config, target, key, callback) ->
+    files = config.app.resolved.frontend[target].files
+    post_processing = config.app.resolved.frontend[target]["post-process"][key]
+    target_file = "#{config[key].directory}/#{target}"
+
+    @process_files config, files, config.app.directory, (err, processed) =>
+      if err?
+        callback(err)
+        return
+
+      # Now do post processing.
+      async.reduce post_processing, processed, (memo, processor_name, post_processor_finished) =>
+        post_processor = config.processors[processor_name]
+
+        if !post_processor?
+          post_processor_finished(new Error("Cannot find processor named '#{processor_name}' during post-processing. Check app configuration."))
+          return
+
+        post_processor(memo, target_file, config, Build.process_files, post_processor_finished)
+      , (err, final_post_processed) ->
+        if err?
+          callback(err)
+          return
+
+        mkdirp(path.dirname(target_file)).then () ->
+          fs.writeFile target_file, final_post_processed, 'utf8'
+        .then(callback)
+        .catch(callback)
+
+  @process_all_targets: (config, key, callback) ->
+    async.eachSeries Object.keys(config.app.resolved.frontend), (target, finished_with_target) =>
+      @process_target config, target, key, finished_with_target
+    , callback
 
   @base: Promise.promisify((config, key, callback) ->
     # Remember: All these functions are promises. 
@@ -84,33 +101,12 @@ class Build
     # Clean first.
     rimraf(config[key].directory).then () ->
       mkdirp(config[key].directory)
-    .then () ->
-      mkdirp(config[key].assets.directory)
-    .then () ->
-      copy(config.assets.directory, config[key].directory)
-    .then () ->
-      File.duplicate(config.html.filename, config[key].html_filename)
     .then () =>
-      @concat_and_process config, "script", config.app.javascripts, config.javascripts.directory
-    .then (processed) ->
-      fs.writeFile config[key].javascript_filename, processed, 'utf8'
-    .then () =>
-      @insert_contracts config, key
-    .then () =>
-      @insert_frontend_includes config, key
-    .then () =>
-      @concat_and_process config, "stylesheet", config.app.stylesheets, config.stylesheets.directory
-    .then (processed) ->
-      fs.writeFile config[key].stylesheet_filename, processed, 'utf8'
-    .then(callback)
-    .catch (e) ->
-      callback(e)
+      @process_all_targets(config, key, callback)
   )
 
   @expect: (config) ->
     config.expect(config.app.configfile, "app configuration")
-    config.expect(config.javascripts.directory, "javascripts directory")
-    config.expect(config.stylesheets.directory, "stylesheets directory")
 
   @build: Promise.promisify((config, callback) ->
     @expect(config)
@@ -119,11 +115,7 @@ class Build
 
   @dist: Promise.promisify((config, callback) ->
     @expect(config)
-    @base(config, "dist").then () ->
-      File.process(config.dist.javascript_filename, (js) ->
-        return uglify.minify(js, {fromString: true}).code
-      , callback)
-    .catch(callback)
+    @base(config, "dist").then(callback).catch(callback)
   )
 
 module.exports = Build
