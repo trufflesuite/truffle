@@ -10,13 +10,12 @@ web3 = require "web3"
 loadconf = deasync(require "./loadconf")
 
 class Config
-  @gather: (truffle_dir, working_dir, grunt) ->
+  @gather: (truffle_dir, working_dir, grunt, desired_environment) ->
     config = {}
     config = _.merge config, 
       grunt: grunt
       truffle_dir: truffle_dir
       working_dir: working_dir
-      environment: process.env.NODE_ENV || grunt.option("e") || grunt.option("environment") || "development"
       environments: 
         directory: "#{working_dir}/config"
         available: {}
@@ -57,7 +56,7 @@ class Config
         defaults:
           "post-process":
             "app.js": [
-              "insert-contracts"
+              "inject-contracts"
               "frontend-dependencies"
             ]
       dist:
@@ -65,7 +64,7 @@ class Config
         defaults:
           "post-process":
             "app.js": [
-              "insert-contracts"
+              "inject-contracts"
               "frontend-dependencies"
               "uglify"
             ]
@@ -78,11 +77,28 @@ class Config
         "null": "#{truffle_dir}/lib/processors/null.coffee"
         "uglify": "#{truffle_dir}/lib/processors/post/uglify.coffee"
         "frontend-dependencies": "#{truffle_dir}/lib/processors/post/frontend_dependencies.coffee"
-        "insert-contracts": "#{truffle_dir}/lib/processors/post/insert_contracts.coffee"
+        "inject-contracts": "#{truffle_dir}/lib/processors/post/inject_contracts.coffee"
     
-    config.environments.current.directory = "#{config.environments.directory}/#{config.environment}"
-    config.environments.current.filename = "#{config.environments.current.directory}/config.json"
-    config.environments.current.contracts_filename = "#{config.environments.current.directory}/contracts.json"
+    desired_environment = grunt.option("e") || grunt.option("environment") || process.env.NODE_ENV || desired_environment
+
+    # Try to find the desired environment, and fall back to development if we don't find it.
+    for environment in [desired_environment, "development"]
+      environment_directory = "#{config.environments.directory}/#{environment}"
+      continue if !fs.existsSync(environment_directory)
+      
+      if environment != desired_environment
+        console.log "Warning: Couldn't find environment #{desired_environment}."
+
+      config.environment = desired_environment
+      config.environments.current.directory = environment_directory
+      config.environments.current.filename = "#{environment_directory}/config.json"
+      config.environments.current.contracts_filename = "#{environment_directory}/contracts.json"
+
+      break
+
+    if !config.environment? and desired_environment?
+      console.log "Couldn't find any suitable environment. Check environment configuration."
+      process.exit(1)
 
     # Get environments in working directory, if available.
     if fs.existsSync(config.environments.directory)
@@ -155,7 +171,7 @@ class Config
         config.contracts.classes[name] = contract
 
     config.provider = new web3.providers.HttpProvider("http://#{config.app.resolved.rpc.host}:#{config.app.resolved.rpc.port}")
-
+    web3.setProvider(config.provider)
 
     if grunt.option("verbose-rpc")?
       # # If you want to see what web3 is sending and receiving.
