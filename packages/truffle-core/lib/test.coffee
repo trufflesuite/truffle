@@ -34,11 +34,17 @@ class Test
         before "redeploy before each contract", (done) ->
           @timeout(BEFORE_TIMEOUT)
 
+          # Don't output stack traces for compile errors.
+          config.grunt.option("stack", false)
+
           # Redeploy contracts before each contract.
           Contracts.deploy config, (err) ->
             if err?
               done(err)
               return
+
+            # From here, set the stack option so stack traces are printed.
+            config.grunt.option("stack", true)
 
             # Prepare the objects that get passed to the tests.
             loadconf config.environments.current.contracts_filename, (err, json) ->
