@@ -60,7 +60,14 @@ class Contracts
           contract["binary"] = result[key].code
           contract["abi"] = result[key].info.abiDefinition
           finished(null, contract)
-    , callback
+    , (err, result) ->
+      if err?
+        console.log ""
+        console.log err
+        console.log ""
+        console.log "Hint: Some clients don't send helpful error messages through the RPC. See client logs for more details."
+        err = new Error("Compilation failed. See above.")
+      callback(err)
 
   @deploy: (config, done_deploying) ->
     coinbase = null
@@ -70,6 +77,8 @@ class Contracts
         web3.eth.getCoinbase (error, result) ->
           coinbase = result
           c(error, result)
+      (c) =>
+        @compile_all(config, c)
       (c) ->
         # Put them on the network
         async.mapSeries config.app.resolved.deploy, (key, callback) ->

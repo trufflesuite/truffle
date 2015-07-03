@@ -11,13 +11,6 @@ truffle_dir = process.env.TRUFFLE_NPM_LOCATION
 working_dir = process.env.TRUFFLE_WORKING_DIRECTORY
 
 module.exports = (grunt) ->
-  grunt.option("stack", true)
-
-  config = Config.gather(truffle_dir, working_dir, grunt)
-
-  web3.setProvider(config.provider)
-  #console.log JSON.stringify(config, null, 2)
-
   # Remove grunt header and footer output.
   grunt.log.header = () ->
   grunt.fail.report = () ->
@@ -28,7 +21,7 @@ module.exports = (grunt) ->
       tasks: 
         options:
           filter: 'exclude',
-          tasks: ['availabletasks', 'default', 'list:after', 'deploy:contracts']
+          tasks: ['availabletasks', 'default', 'list:after', 'deploy']
           descriptions:
             watch: 'Watch project for changes and rebuild app automatically'
           reporter: (options) ->
@@ -38,7 +31,7 @@ module.exports = (grunt) ->
             grunt.log.writeln("  #{heading} => #{options.currentTask.info}")
     watch: 
       build: 
-        files: ["#{working_dir}/app/**/*", "#{working_dir}/config/**/*"] 
+        files: ["#{working_dir}/app/**/*", "#{working_dir}/config/**/*", "#{working_dir}/contracts/**/*"] 
         tasks: ["build"] 
         options: 
           interrupt: true
@@ -66,18 +59,23 @@ module.exports = (grunt) ->
     console.log "Truffle v#{grunt.config().pkg.version}"
 
   grunt.registerTask 'init', "Initialize new Ethereum project, including example contracts and tests", () ->
+    config = Config.gather(truffle_dir, working_dir, grunt)
     Init.all(config, @async())
 
   grunt.registerTask 'init:contracts', "Initialize default contracts directory", () ->
+    config = Config.gather(truffle_dir, working_dir, grunt)
     Init.contracts(config, @async())
 
   grunt.registerTask 'init:config', "Initialize default project configuration", () ->
+    config = Config.gather(truffle_dir, working_dir, grunt)
     Init.config(config, @async())
     
   grunt.registerTask 'init:tests', "Initialize tests directory structure and helpers", () ->
+    config = Config.gather(truffle_dir, working_dir, grunt)
     Init.tests(config, @async())
 
   grunt.registerTask 'create:contract', "Create a basic contract", () ->
+    config = Config.gather(truffle_dir, working_dir, grunt)
     try 
       if typeof grunt.option("name") != "string"
         console.log "Please specify --name. Example: truffle create:contract --name 'MyContract'"
@@ -87,6 +85,7 @@ module.exports = (grunt) ->
       console.log e.stack
 
   grunt.registerTask 'create:test', "Create a basic test", () ->
+    config = Config.gather(truffle_dir, working_dir, grunt)
     try 
       if typeof grunt.option("name") != "string"
         console.log "Please specify --name. Example: truffle create:test --name 'MyContract'"
@@ -97,23 +96,17 @@ module.exports = (grunt) ->
 
   grunt.registerTask 'compile', "Compile contracts", () ->
     done = @async()
-    Contracts.compile_all config, (err) ->
-      if err?
-        console.log ""
-        console.log err
-        console.log ""
-        console.log "Hint: Some clients don't send helpful error messages through the RPC. See client logs for more details."
-        err = new Error("Compilation failed. See above.")
-      done(err)
+    config = Config.gather(truffle_dir, working_dir, grunt, "development")
+    Contracts.compile_all config, done
 
-  grunt.registerTask 'deploy', "Deploy contracts to the network", ["compile", "deploy:contracts"]
-  grunt.registerTask 'deploy:contracts', "Hidden: Actual deployment function", () ->
-    grunt.task.requires("compile")
-
+  grunt.registerTask 'deploy', "Deploy contracts to the network", () ->
     done = @async()
+    config = Config.gather(truffle_dir, working_dir, grunt, "development")
+
+    console.log "Using environment #{config.environment}."
+
     Contracts.deploy config, (err) ->
       if err?
-        console.log err
         done(err)
       else
         done()
@@ -121,20 +114,23 @@ module.exports = (grunt) ->
 
   grunt.registerTask 'build', "Build development version of app; creates ./build directory", () ->
     done = @async()
+    config = Config.gather(truffle_dir, working_dir, grunt, "development")
+
     # This one's a promise...
-    Build.build(config).then(done).catch (err) ->
-      console.log err.stack
-      done()
+    Build.build(config).then(done).catch(done)
 
   grunt.registerTask 'dist', "Create distributable version of app (minified); creates ./dist directory", () ->
     done = @async()
+    config = Config.gather(truffle_dir, working_dir, grunt, "production")
+
+    console.log "Using environment #{config.environment}."
+
     # This one's a promise...
-    Build.dist(config).then(done).catch (err) ->
-      console.log err.stack
-      done()
+    Build.dist(config).then(done).catch(done)
 
   grunt.registerTask 'exec', "Execute a Coffee/JS file within truffle environment. Script *must* call process.exit() when finished.", () ->
     done = @async()
+    config = Config.gather(truffle_dir, working_dir, grunt, "development")
 
     # Remove grunt's writeln function. We'll do all the output'ing.
     grunt.log.writeln = () ->
@@ -151,14 +147,11 @@ module.exports = (grunt) ->
   # More to come.
   grunt.registerTask 'test', "Run tests", () ->
     done = @async()
+    config = Config.gather(truffle_dir, working_dir, grunt, "test")
 
-    # Override the environment and reset the config.
-    process.env.NODE_ENV = "test"
-    config = Config.gather(truffle_dir, working_dir, grunt)
+    console.log "Using environment #{config.environment}."
+
     grunt.option("quiet-deploy", true)
-    Test.run config, (err, failures) ->
-      if err?
-        console.log err.stack
-      process.exit(failures)
+    Test.run(config, done)
 
   grunt.registerTask 'default', ['list']

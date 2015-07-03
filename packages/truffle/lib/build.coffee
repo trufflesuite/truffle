@@ -61,7 +61,23 @@ class Build
         iterator_callback(null, memo + separator + processed)
     , callback
 
+  @process_directory: (config, target, key, callback) ->
+    value = config.app.resolved.frontend[target]
+    destination_directory = "#{config[key].directory}/#{target}"
+    source_directory = "#{config.app.directory}/#{value.files[0]}"
+
+    config.expect(source_directory, "source directory for target #{target}", "Check app configuration.")
+
+    mkdirp(destination_directory).then () ->
+      copy(source_directory, destination_directory).then () ->
+    .then(callback).catch(callback)
+
   @process_target: (config, target, key, callback) ->
+    # Is this a directory? 
+    if target[target.length - 1] == "/"
+      @process_directory(config, target, key, callback)
+      return
+
     files = config.app.resolved.frontend[target].files
     post_processing = config.app.resolved.frontend[target]["post-process"][key]
     target_file = "#{config[key].directory}/#{target}"
