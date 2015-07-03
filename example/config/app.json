@@ -1,14 +1,18 @@
 {
-  "javascripts": [
-    // Paths relative to "javascripts" directory that should be
-    // concatenated during build, and minified during distribution.
-    "app.coffee"
-  ],
-  "stylesheets": [
-    // Paths relative to "stylesheets" directory that should be
-    // concatenated during build, and minified during distribution.
-    "app.scss"
-  ],
+  "frontend": {
+    // Copy ./app/index.html (right hand side) to ./build/index.html.
+    "index.html": "index.html",
+    "app.js": [
+      // Paths relative to "app" directory that should be
+      // concatenated and processed during build.
+      "javascripts/app.coffee" 
+    ],
+    "app.css": [
+      // Paths relative to "app" directory that should be
+      // concatenated and processed during build.
+      "stylesheets/app.scss"
+    ]
+  },
   "deploy": [
     // Names of contracts that should be deployed to the network.
     "Example"
