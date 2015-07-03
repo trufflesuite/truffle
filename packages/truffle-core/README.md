@@ -108,7 +108,8 @@ The configuration you’re given out of the box looks like this:
       // Paths relative to "app" directory that should be
       // concatenated and processed during build.
       "stylesheets/app.scss"
-    ]
+    ],
+    "images/": "images/"
   },
   "deploy": [
     // Names of contracts that should be deployed to the network.
