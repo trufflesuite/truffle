@@ -159,10 +159,10 @@ The default frontend configuration looks like this:
     // Paths relative to "app" directory that should be
     // concatenated and processed during build.
     "stylesheets/app.scss"
-  ]
+  ],
   // Note: You can also include directories.
   // This will copy a static images directory to the build directory.
-  // "images/": "images/"
+  "images/": "images/"
 }
 ```
 
