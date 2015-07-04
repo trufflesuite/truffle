@@ -13,7 +13,10 @@ module.exports = (contents, file, config, process, callback) ->
       console.log "Warning: No compiled contracts found. Did you deploy your contracts before building?"
 
     contracts = JSON.stringify(config.contracts.classes, null, 2)
-    inserter_code = fs.readFileSync(config.frontend.contract_inserter_filename, "utf8").replace("{{CONTRACTS}}", contracts)
+    inserter_code = fs.readFileSync(config.frontend.contract_inserter_filename, "utf8")
+    inserter_code = inserter_code.replace("{{CONTRACTS}}", contracts)
+    inserter_code = inserter_code.replace("{{HOST}}", config.app.resolved.rpc.host)
+    inserter_code = inserter_code.replace("{{PORT}}", config.app.resolved.rpc.port)
     inserter_code = CoffeeScript.compile(inserter_code)
 
     callback(null, inserter_code + "\n\n" + contents)
