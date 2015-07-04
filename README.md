@@ -421,7 +421,7 @@ $ truffle watch
 
 ### Extending the Pipeline
 
-Truffle's asset pipeline is completely extensible. For instance, you have to ability to change the way Truffle processes Javascript (say, you want to use [Babel](https://babeljs.io/)), and you can also tell Truffle how to process new file types it doesn't understand by default. Beyond that, you can tell Truffle how it should post-process files (if at all) after sending them through the pipeline. We'll discuss each of these situations below.
+Truffle's asset pipeline is completely extensible. For instance, you have the ability to change the way Truffle processes Javascript (say, you want to use [Babel](https://babeljs.io/)), and you can also tell Truffle how to process new file types it doesn't understand by default. Beyond that, you can tell Truffle how it should post-process files (if at all) after sending them through the pipeline. We'll discuss each of these situations below.
 
 ##### Basics
 
