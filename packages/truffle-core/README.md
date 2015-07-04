@@ -52,6 +52,7 @@ watch           => Watch project for changes and rebuild app automatically
 
 ```
 $ truffle init
+$ truffle deploy
 $ truffle build
 $ truffle test
 
@@ -169,7 +170,7 @@ The default frontend configuration looks like this:
 
 The `frontend` configuration allows for any number of key/value pairs, called "targets". Each target has a file name as a key and an array of paths as the value. The key specifies the resultant file that the array of paths will be compiled down into. The paths are relative to the `./app` directory, and -- based on the file extension -- each path will be sent through a specific preprocessor. The only preprocessors that are shipped by default with Truffle are `.coffee` (turning CoffeeScript files into Javascript) and `.scss` (turning SCSS files into CSS). **You're not required to use CoffeeScript and SCSS**, however.
 
-Some files go through post-processing after the array of files are preprocessed. `app.js` is considered special to Truffle: If given, Truffle will inject your contracts and a few dependencies (like `web3`) so they're automatically made available to you on the frontend. You can remove this post-processing step, however, if desired. See the Extending the Pipeline section below. 
+Some files go through post-processing after the array of files are preprocessed. `app.js` is considered special to Truffle: If given, Truffle will inject your contracts and a few dependencies (like `web3`) so they're automatically made available to you on the frontend. Truffle will also set web3's provider for you based on your environment's RPC configuration. You can remove this post-processing step, however, if desired. See the Extending the Pipeline section below. 
 
 If a target is given a string instead of an array, that target will be assumed to have only one file, which will be preprocessed as normal. Targets can also be directories: If this is the case, the target's key must end in `/` and the value must be a string specifying where the directory should be copied, relative to the build directory. This is a direct copy and won't incur any pre- or post-processing.
 
@@ -559,6 +560,10 @@ Adding a custom named processor is exactly the same as adding an extension-based
   "my-named-processor": "path/to/some/processor.coffee"
 }
 ```
+
+### Contributors
+
+[@tcoulter](https://github.com/tcoulter) - original author
 
 ### License
 
