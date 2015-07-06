@@ -121,6 +121,13 @@ class Config
         console.log "Couldn't find #{description} at #{display_path}. #{extra}"
         process.exit(1) 
 
+    config.test_connection = (callback) ->
+      web3.eth.getCoinbase (error, coinbase) ->
+        if error?
+          error = new Error("Could not connect to your RPC client. Please check your RPC configuration.")
+
+        callback(error, coinbase)
+
     # Find the processors and then turn them into executable functions.
     for extension, file of config.processors
       config.processors[extension] = require(file)
