@@ -97,7 +97,7 @@ module.exports = (grunt) ->
   grunt.registerTask 'compile', "Compile contracts", () ->
     done = @async()
     config = Config.gather(truffle_dir, working_dir, grunt, "development")
-    Contracts.compile_all config, done
+    Contracts.compile config, done
 
   grunt.registerTask 'deploy', "Deploy contracts to the network", () ->
     done = @async()
