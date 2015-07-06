@@ -40,6 +40,45 @@ class Contracts
     catch e
       callback e
 
+  # Support the breaking change that made sendTransaction return a transaction
+  # hash instead of an address hash when committing a new contract.
+  @get_contract_address: (config, address_or_tx, callback) ->
+    if address_or_tx.length == 42
+      callback(null, address_or_tx)
+      return
+
+    attempts = 0
+    max_attempts = 120
+
+    interval = null
+    verify = () ->
+      # Call the method via the provider directly as it hasn't yet been 
+      # implemented in web3.
+      config.provider.sendAsync
+        jsonrpc: "2.0"
+        method: "eth_getTransactionReceipt"
+        params:[address_or_tx]
+        id: new Date().getTime()
+      , (err, result) ->
+        # Ignore errors.
+        return if err?
+
+        result = result.result
+
+        # Gotta love inconsistent responses.
+        if result? and result != "" and result != "0x"
+          clearInterval(interval)
+          callback(null, result.contractAddress)
+          return
+
+        attempts += 1
+
+        if attempts >= max_attempts
+          clearInterval(interval)
+          callback("Contracts not deployed after #{attempts} seconds!")
+
+    interval = setInterval verify, 1000
+
   @check_for_valid_compiler: (file, callback) ->
     if path.extname(file) == ".sol"
       compiler_name = "solidity"
@@ -52,6 +91,9 @@ class Contracts
       if err?
         callback(err)
         return
+
+      result = result.map (x) ->
+        x.toLowerCase()
 
       if result.indexOf(compiler_name) < 0
         callback(new Error("Your RPC client doesn't support compiling files with the #{path.extname(file)} extension. Please make sure you have the relevant compilers installed and your RPC client is configured correctly. The compilers supported by your RPC client are: [#{result.join(', ')}]"))
@@ -116,9 +158,9 @@ class Contracts
           c(error, result)
       (c) =>
         @compile_all(config, c)
-      (c) ->
+      (c) =>
         # Put them on the network
-        async.mapSeries config.app.resolved.deploy, (key, callback) ->
+        async.mapSeries config.app.resolved.deploy, (key, callback) =>
           contract = config.contracts.classes[key]
 
           if !contract
@@ -133,11 +175,13 @@ class Contracts
             gas: 3141592
             gasPrice: 1000000000000 # I have no idea why this is so high, but geth updates made me do it.
             data: contract.binary
-          , (err, result) ->
+          , (err, result) =>
             if err?
               callback(err, result)
-            else
-              contract.address = result
+              return
+            
+            @get_contract_address config, result, (err, address) ->
+              contract.address = address
               callback(err, contract)
 
         , (err, results) ->
