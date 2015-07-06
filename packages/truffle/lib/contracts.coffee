@@ -40,6 +40,25 @@ class Contracts
     catch e
       callback e
 
+  @check_for_valid_compiler: (file, callback) ->
+    if path.extname(file) == ".sol"
+      compiler_name = "solidity"
+
+    if !compiler_name? 
+      callback(new Error("Compiler for #{path.extname(file)} not yet supported by Truffle. We hope to support every compiler eventually. Express your interested by filing a bug report on Github."))
+      return
+
+    web3.eth.getCompilers (err, result) ->
+      if err?
+        callback(err)
+        return
+
+      if result.indexOf(compiler_name) < 0
+        callback(new Error("Your RPC client doesn't support compiling files with the #{path.extname(file)} extension. Please make sure you have the relevant compilers installed and your RPC client is configured correctly. The compilers supported by your RPC client are: [#{result.join(', ')}]"))
+        return 
+
+      callback()
+
   @compile_all: (config, callback) ->
     async.mapSeries Object.keys(config.contracts.classes), (key, finished) =>
       contract = config.contracts.classes[key]
@@ -47,27 +66,45 @@ class Contracts
 
       display_name = source.substring(source.lastIndexOf("/") + 1)
       console.log "Compiling #{display_name}..." unless config.grunt.option("quiet-deploy")
-      @resolve source, (err, code) ->
-        if err?
-          callback(err)
+
+      @check_for_valid_compiler source, (err) =>
+        if err? 
+          finished(err)
           return
-        
-        web3.eth.compile.solidity code, (err, result) ->
+
+        @resolve source, (err, code) ->
           if err?
-            finished(err, result)
+            finished(err)
             return
-        
-          contract["binary"] = result[key].code
-          contract["abi"] = result[key].info.abiDefinition
-          finished(null, contract)
+          
+          web3.eth.compile.solidity code, (err, result) ->
+            if err?
+              finished(err, result)
+              return
+          
+            contract["binary"] = result[key].code
+            contract["abi"] = result[key].info.abiDefinition
+            finished(null, contract)
     , (err, result) ->
       if err?
         console.log ""
-        console.log err
+        console.log err.message
         console.log ""
         console.log "Hint: Some clients don't send helpful error messages through the RPC. See client logs for more details."
         err = new Error("Compilation failed. See above.")
       callback(err)
+
+  @compile: (config, callback) ->
+    async.series [
+      (c) ->
+        config.test_connection (error, coinbase) ->
+          if error?
+            callback(new Error("Could not connect to your Ethereum client. Truffle uses your Ethereum client to compile contracts. Please ensure your client is running and can compile the all contracts within the contracts directory."))
+          else
+            c()
+      (c) =>
+        @compile_all(config, callback)
+    ]
 
   @deploy: (config, done_deploying) ->
     coinbase = null
