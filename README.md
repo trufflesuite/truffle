@@ -21,13 +21,15 @@ Truffle shares many similarities to the [Embark Framework](https://iurimatias.gi
 
 * **The RPC is King:** The application and tests all use the RPC to communicate with the network. This gives you assurance your app will work for your users, and the ability to test your app across many different Ethereum clients without writing a drop of new code.
 
-* **Use Any Ethereum Client:** Use any RPC client either in develpoment or testing. Pro tip: If you want to do things faster, we suggest the [TestRPC](https://github.com/ConsenSys/testrpc).
+* **Client Agnostic:** Use any RPC client either in develpoment or testing. Pro tip: If you want to do things faster, we suggest the [TestRPC](https://github.com/ConsenSys/testrpc).
 
 * **No Stubbing:** Truffle tests interact with *real* contracts on *real* networks. Contracts aren’t stubbed, so you know you’re getting real results.
 
 ### Installation
 
-`npm install -g truffle`
+`$ npm install -g truffle`
+
+Ensure you're also running an RPC client that can compile Solidity contracts.
 
 ### Usage & Available Commands:
 
