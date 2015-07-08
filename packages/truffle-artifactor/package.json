@@ -1,6 +1,6 @@
 {
   "name": "ether-pudding",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Pudding - a (more) delightful Ethereum contract abstraction",
   "author": "Tim Coulter",
   "main": "build/ether-pudding.js",
@@ -18,7 +18,8 @@
     "grunt": "*",
     "grunt-contrib-clean": "*",
     "grunt-contrib-coffee": "*",
-    "grunt-contrib-uglify": "*"
+    "grunt-contrib-uglify": "*",
+    "grunt-contrib-watch": "*"
   },
   "license": "MIT License. Copyright Consensys LLC, and authors. All rights reserved."
 }

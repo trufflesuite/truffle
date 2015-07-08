@@ -16,10 +16,19 @@ module.exports = (grunt) ->
           'build/<%= pkg.name %>.min.js': [
             "build/<%= pkg.name %>.js"
           ]
+    watch: 
+      build: 
+        files: ["./src/**/*", "./Gruntfile.coffee"] 
+        tasks: ["default"] 
+        options: 
+          interrupt: true
+          spawn: false
+          atBegin: true
 
   grunt.loadNpmTasks 'grunt-contrib-clean'
   grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.loadNpmTasks 'grunt-contrib-uglify'
+  grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.registerTask 'default', [
     'coffee'
     'uglify'

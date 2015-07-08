@@ -37,7 +37,9 @@ web3.setProvider(new web3.Providers.HttpProvider("http://localhost:8545"))
 # Before performing the next step, you'll need to compile your contract
 # and have the ABI available, just as you would with web3.eth.contract().
 
-MyContract = Pudding.whisk(abi) # You need to provide abi
+# You need to provide your contract's abi and binary code.
+# You can get these by compiling your contracts with solidity compiler, solc.
+MyContract = Pudding.whisk(abi, binary) 
 ```
 
 So far, Pudding isn’t much different from web3’s contract abstraction. Here’s an example using the MetaCoin contract in [Dapps For Beginners](https://dappsforbeginners.wordpress.com/tutorials/your-first-dapp/):
@@ -80,6 +82,18 @@ coin.sendCoin(account_two, 3, {from: account_one}).then (tx) ->
 ```
 
 The above example may not be used within an app (you wouldn’t send the wrong amount on purpose, for example’s sake) -- but you can easily see how it might apply to an automated test.
+
+Because you provided your contract's binary code in `Pudding.whisk()`, you can create new contracts that get added to the network really easily:
+
+```
+MetaCoin.new().then (coin) ->
+  # From here, the example becomes just like the above.
+  # Note that coin.address is the addres of the newly created contract.
+  coin.sendCoin(...)
+.catch (err) ->
+  console.log "Error creating contract!"
+  console.log err.stack
+```
 
 ### More Examples
 

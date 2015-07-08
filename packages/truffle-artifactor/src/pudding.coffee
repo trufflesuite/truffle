@@ -4,11 +4,17 @@ factory = (Promise, web3) ->
     @global_defaults: {} 
 
     # Main function for creating a Pudding contract.
-    @whisk: (abi, class_defaults) ->
+    @whisk: (abi, code, class_defaults) ->
+      if typeof code == "object"
+        class_defaults = code
+        code = null
+
       contract = web3.eth.contract(abi)
       # Note: inject_defaults() changes the at() function to take two parameters.
       contract = Pudding.inject_defaults(contract, class_defaults)
       contract = Pudding.synchronize_contract(contract)
+      contract = Pudding.make_nicer_new(contract, code)
+
       if Promise?
         contract = Pudding.promisify_contract(contract)
       return contract
@@ -19,20 +25,24 @@ factory = (Promise, web3) ->
         Pudding.global_defaults[key] = value
       Pudding.global_defaults
 
+    @merge: () ->
+      merged = {}
+
+      for object in arguments
+        for key, value of object
+          merged[key] = value
+
+      merged
+
     @inject_defaults: (contract_class, class_defaults) ->
       old_at = contract_class.at
-      contract_class.at = (address, instance_defaults={}) ->
-        instance = old_at.call(contract_class, address)
+      old_new = contract_class.new
+
+      inject = (instance, instance_defaults={}) =>
 
         # Merge global defaults, class defaults and instance defaults
         # at time of class creation. 
-        merged_defaults = {}
-
-        for key, value of class_defaults
-          merged_defaults[key] = value
-
-        for key, value of instance_defaults
-          merged_defaults[key] = value
+        merged_defaults = @merge(class_defaults, instance_defaults)
 
         for abi_object in contract_class.abi
           fn_name = abi_object.name
@@ -53,6 +63,36 @@ factory = (Promise, web3) ->
 
         return instance
 
+      contract_class.at = (address, instance_defaults={}) ->
+        instance = old_at.call(contract_class, address)
+        return inject(instance, instance_defaults)
+
+      contract_class.new = () =>
+        args = Array.prototype.slice.call(arguments)
+        callback = args.pop()
+
+        if typeof args[args.length - 1] == "object" and typeof args[args.length - 2] == "object"
+          instance_defaults = args.pop()
+          tx_params = args.pop()
+        else
+          instance_defaults = {}
+
+          if args[args.length - 1] == "object"
+            tx_params = args.pop()
+          else
+            tx_params = {}
+
+        tx_params = @merge(Pudding.global_defaults, class_defaults, tx_params)
+
+        args.push tx_params, (err, instance) ->
+          if err? 
+            callback(err)
+            return
+
+          callback(null, inject(instance))
+          
+        old_new.apply(contract_class, args)
+
       return contract_class
 
     @inject_defaults_into_function: (instance, fn, merged_defaults) ->
@@ -61,19 +101,13 @@ factory = (Promise, web3) ->
         callback = args.pop()
 
         # Start with the defaults, creating a new object.
-        options = {}
-        for key, value of Pudding.global_defaults
-          options[key] = value
-
-        for key, value of merged_defaults
-          options[key] = value
+        options = @merge(Pudding.global_defaults, merged_defaults)
 
         if typeof args[args.length - 1] == "object"
           old_options = args.pop()
 
           # Override defaults with tx details pased into function.
-          for key, value of old_options
-            options[key] = value
+          options = @merge(options, old_options)
 
         args.push options, callback
 
@@ -81,8 +115,9 @@ factory = (Promise, web3) ->
 
     @promisify_contract: (contract_class) ->
       old_at = contract_class.at
-      contract_class.at = (address, instance_defaults={}) ->
-        instance = old_at.call(contract_class, address, instance_defaults)
+      old_new = contract_class.new
+
+      promisify = (instance) ->
         # Promisify .call() and .sendTransaction() for functions.
         for key, fn of instance
           continue if typeof fn != "object" and typeof fn != "function"
@@ -92,8 +127,51 @@ factory = (Promise, web3) ->
             fn[k] = Promise.promisify(v, instance)
 
           instance[key] = Promise.promisify(fn, instance)
-        # Promisify functions themselves, which translate to sendTransaction()
+
         return instance
+
+      contract_class.at = (address, instance_defaults={}) ->
+        instance = old_at.call(contract_class, address, instance_defaults)
+        return promisify(instance)
+
+      contract_class.new = Promise.promisify(() ->
+        args = Array.prototype.slice.call(arguments)
+        callback = args.pop()
+
+        args.push (err, instance) ->
+          if err?
+            callback(err)
+
+          callback null, promisify(instance)
+
+        old_new.apply(contract_class, args)
+      )
+
+      return contract_class
+
+    @make_nicer_new: (contract_class, code="") ->
+      old_new = contract_class.new
+      contract_class.new = () ->
+        args = Array.prototype.slice.call(arguments)
+        callback = args.pop()
+
+        if typeof args[args.length - 1] == "object" and typeof args[args.length - 2] == "object"
+          instance_defaults = args.pop()
+          tx_params = args.pop()
+        else
+          instance_defaults = {}
+
+          if args[args.length - 1] == "object"
+            tx_params = args.pop()
+          else
+            tx_params = {}
+        
+        if !tx_params.data?
+          tx_params.data = code
+
+        args.push(tx_params, instance_defaults, callback)
+
+        return old_new.apply(contract_class, args)
       return contract_class
 
     # Assumes the last argument is always a callback
@@ -145,9 +223,9 @@ factory = (Promise, web3) ->
     # be processed. 
     @synchronize_contract: (contract_class) ->
       old_at = contract_class.at
-      contract_class.at = (address, instance_defaults={}) ->
-        instance = old_at.call(contract_class, address, instance_defaults)
+      old_new = contract_class.new
 
+      synchronize = (instance) ->
         for abi_object in contract_class.abi
           fn_name = abi_object.name
           fn = instance[fn_name]
@@ -163,6 +241,24 @@ factory = (Promise, web3) ->
             instance[fn_name][key] = value
 
         return instance
+
+      contract_class.at = (address, instance_defaults={}) ->
+        instance = old_at.call(contract_class, address, instance_defaults)
+        return synchronize(instance)
+
+      contract_class.new = () ->
+        args = Array.prototype.slice.call(arguments)
+        callback = args.pop()
+
+        args.push (err, instance) ->
+          if err? 
+            callback(err)
+            return
+
+          callback(null, synchronize(instance))
+
+        instance = old_new.apply(contract_class, arguments)
+
       return contract_class
 
   Pudding

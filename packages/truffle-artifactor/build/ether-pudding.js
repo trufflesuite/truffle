@@ -8,11 +8,16 @@
 
       Pudding.global_defaults = {};
 
-      Pudding.whisk = function(abi, class_defaults) {
+      Pudding.whisk = function(abi, code, class_defaults) {
         var contract;
+        if (typeof code === "object") {
+          class_defaults = code;
+          code = null;
+        }
         contract = web3.eth.contract(abi);
         contract = Pudding.inject_defaults(contract, class_defaults);
         contract = Pudding.synchronize_contract(contract);
+        contract = Pudding.make_nicer_new(contract, code);
         if (Promise != null) {
           contract = Pudding.promisify_contract(contract);
         }
@@ -31,67 +36,97 @@
         return Pudding.global_defaults;
       };
 
+      Pudding.merge = function() {
+        var i, key, len, merged, object, value;
+        merged = {};
+        for (i = 0, len = arguments.length; i < len; i++) {
+          object = arguments[i];
+          for (key in object) {
+            value = object[key];
+            merged[key] = value;
+          }
+        }
+        return merged;
+      };
+
       Pudding.inject_defaults = function(contract_class, class_defaults) {
-        var old_at;
+        var inject, old_at, old_new;
         old_at = contract_class.at;
+        old_new = contract_class["new"];
+        inject = (function(_this) {
+          return function(instance, instance_defaults) {
+            var abi_object, fn, fn_name, i, key, len, merged_defaults, ref, value;
+            if (instance_defaults == null) {
+              instance_defaults = {};
+            }
+            merged_defaults = _this.merge(class_defaults, instance_defaults);
+            ref = contract_class.abi;
+            for (i = 0, len = ref.length; i < len; i++) {
+              abi_object = ref[i];
+              fn_name = abi_object.name;
+              fn = instance[fn_name];
+              if (fn == null) {
+                continue;
+              }
+              instance[fn_name] = Pudding.inject_defaults_into_function(instance, fn, merged_defaults);
+              for (key in fn) {
+                value = fn[key];
+                instance[fn_name][key] = value;
+              }
+              instance[fn_name].sendTransaction = Pudding.inject_defaults_into_function(instance, fn.sendTransaction, merged_defaults);
+              instance[fn_name].call = Pudding.inject_defaults_into_function(instance, fn.call, merged_defaults);
+            }
+            return instance;
+          };
+        })(this);
         contract_class.at = function(address, instance_defaults) {
-          var abi_object, fn, fn_name, i, instance, key, len, merged_defaults, ref, value;
+          var instance;
           if (instance_defaults == null) {
             instance_defaults = {};
           }
           instance = old_at.call(contract_class, address);
-          merged_defaults = {};
-          for (key in class_defaults) {
-            value = class_defaults[key];
-            merged_defaults[key] = value;
-          }
-          for (key in instance_defaults) {
-            value = instance_defaults[key];
-            merged_defaults[key] = value;
-          }
-          ref = contract_class.abi;
-          for (i = 0, len = ref.length; i < len; i++) {
-            abi_object = ref[i];
-            fn_name = abi_object.name;
-            fn = instance[fn_name];
-            if (fn == null) {
-              continue;
-            }
-            instance[fn_name] = Pudding.inject_defaults_into_function(instance, fn, merged_defaults);
-            for (key in fn) {
-              value = fn[key];
-              instance[fn_name][key] = value;
-            }
-            instance[fn_name].sendTransaction = Pudding.inject_defaults_into_function(instance, fn.sendTransaction, merged_defaults);
-            instance[fn_name].call = Pudding.inject_defaults_into_function(instance, fn.call, merged_defaults);
-          }
-          return instance;
+          return inject(instance, instance_defaults);
         };
+        contract_class["new"] = (function(_this) {
+          return function() {
+            var args, callback, instance_defaults, tx_params;
+            args = Array.prototype.slice.call(arguments);
+            callback = args.pop();
+            if (typeof args[args.length - 1] === "object" && typeof args[args.length - 2] === "object") {
+              instance_defaults = args.pop();
+              tx_params = args.pop();
+            } else {
+              instance_defaults = {};
+              if (args[args.length - 1] === "object") {
+                tx_params = args.pop();
+              } else {
+                tx_params = {};
+              }
+            }
+            tx_params = _this.merge(Pudding.global_defaults, class_defaults, tx_params);
+            args.push(tx_params, function(err, instance) {
+              if (err != null) {
+                callback(err);
+                return;
+              }
+              return callback(null, inject(instance));
+            });
+            return old_new.apply(contract_class, args);
+          };
+        })(this);
         return contract_class;
       };
 
       Pudding.inject_defaults_into_function = function(instance, fn, merged_defaults) {
         return (function(_this) {
           return function() {
-            var args, callback, key, old_options, options, ref, value;
+            var args, callback, old_options, options;
             args = Array.prototype.slice.call(arguments);
             callback = args.pop();
-            options = {};
-            ref = Pudding.global_defaults;
-            for (key in ref) {
-              value = ref[key];
-              options[key] = value;
-            }
-            for (key in merged_defaults) {
-              value = merged_defaults[key];
-              options[key] = value;
-            }
+            options = _this.merge(Pudding.global_defaults, merged_defaults);
             if (typeof args[args.length - 1] === "object") {
               old_options = args.pop();
-              for (key in old_options) {
-                value = old_options[key];
-                options[key] = value;
-              }
+              options = _this.merge(options, old_options);
             }
             args.push(options, callback);
             return fn.apply(instance, args);
@@ -100,14 +135,11 @@
       };
 
       Pudding.promisify_contract = function(contract_class) {
-        var old_at;
+        var old_at, old_new, promisify;
         old_at = contract_class.at;
-        contract_class.at = function(address, instance_defaults) {
-          var fn, instance, k, key, v;
-          if (instance_defaults == null) {
-            instance_defaults = {};
-          }
-          instance = old_at.call(contract_class, address, instance_defaults);
+        old_new = contract_class["new"];
+        promisify = function(instance) {
+          var fn, k, key, v;
           for (key in instance) {
             fn = instance[key];
             if (typeof fn !== "object" && typeof fn !== "function") {
@@ -123,6 +155,56 @@
             instance[key] = Promise.promisify(fn, instance);
           }
           return instance;
+        };
+        contract_class.at = function(address, instance_defaults) {
+          var instance;
+          if (instance_defaults == null) {
+            instance_defaults = {};
+          }
+          instance = old_at.call(contract_class, address, instance_defaults);
+          return promisify(instance);
+        };
+        contract_class["new"] = Promise.promisify(function() {
+          var args, callback;
+          args = Array.prototype.slice.call(arguments);
+          callback = args.pop();
+          args.push(function(err, instance) {
+            if (err != null) {
+              callback(err);
+            }
+            return callback(null, promisify(instance));
+          });
+          return old_new.apply(contract_class, args);
+        });
+        return contract_class;
+      };
+
+      Pudding.make_nicer_new = function(contract_class, code) {
+        var old_new;
+        if (code == null) {
+          code = "";
+        }
+        old_new = contract_class["new"];
+        contract_class["new"] = function() {
+          var args, callback, instance_defaults, tx_params;
+          args = Array.prototype.slice.call(arguments);
+          callback = args.pop();
+          if (typeof args[args.length - 1] === "object" && typeof args[args.length - 2] === "object") {
+            instance_defaults = args.pop();
+            tx_params = args.pop();
+          } else {
+            instance_defaults = {};
+            if (args[args.length - 1] === "object") {
+              tx_params = args.pop();
+            } else {
+              tx_params = {};
+            }
+          }
+          if (tx_params.data == null) {
+            tx_params.data = code;
+          }
+          args.push(tx_params, instance_defaults, callback);
+          return old_new.apply(contract_class, args);
         };
         return contract_class;
       };
@@ -169,14 +251,11 @@
       };
 
       Pudding.synchronize_contract = function(contract_class) {
-        var old_at;
+        var old_at, old_new, synchronize;
         old_at = contract_class.at;
-        contract_class.at = function(address, instance_defaults) {
-          var abi_object, fn, fn_name, i, instance, key, len, ref, value;
-          if (instance_defaults == null) {
-            instance_defaults = {};
-          }
-          instance = old_at.call(contract_class, address, instance_defaults);
+        old_new = contract_class["new"];
+        synchronize = function(instance) {
+          var abi_object, fn, fn_name, i, key, len, ref, value;
           ref = contract_class.abi;
           for (i = 0, len = ref.length; i < len; i++) {
             abi_object = ref[i];
@@ -192,6 +271,27 @@
             }
           }
           return instance;
+        };
+        contract_class.at = function(address, instance_defaults) {
+          var instance;
+          if (instance_defaults == null) {
+            instance_defaults = {};
+          }
+          instance = old_at.call(contract_class, address, instance_defaults);
+          return synchronize(instance);
+        };
+        contract_class["new"] = function() {
+          var args, callback, instance;
+          args = Array.prototype.slice.call(arguments);
+          callback = args.pop();
+          args.push(function(err, instance) {
+            if (err != null) {
+              callback(err);
+              return;
+            }
+            return callback(null, synchronize(instance));
+          });
+          return instance = old_new.apply(contract_class, arguments);
         };
         return contract_class;
       };
