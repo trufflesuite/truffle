@@ -257,7 +257,7 @@ factory = (Promise, web3) ->
 
           callback(null, synchronize(instance))
 
-        instance = old_new.apply(contract_class, arguments)
+        old_new.apply(contract_class, args)
 
       return contract_class
 

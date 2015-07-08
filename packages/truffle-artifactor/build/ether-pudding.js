@@ -281,7 +281,7 @@
           return synchronize(instance);
         };
         contract_class["new"] = function() {
-          var args, callback, instance;
+          var args, callback;
           args = Array.prototype.slice.call(arguments);
           callback = args.pop();
           args.push(function(err, instance) {
@@ -291,7 +291,7 @@
             }
             return callback(null, synchronize(instance));
           });
-          return instance = old_new.apply(contract_class, arguments);
+          return old_new.apply(contract_class, args);
         };
         return contract_class;
       };
