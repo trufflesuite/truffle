@@ -34,6 +34,9 @@ factory = (Promise, web3) ->
 
       merged
 
+    @is_object: (val) ->
+      return typeof val == "object" and !(val instanceof Array)
+
     @inject_defaults: (contract_class, class_defaults) ->
       old_at = contract_class.at
       old_new = contract_class.new
@@ -71,7 +74,7 @@ factory = (Promise, web3) ->
         args = Array.prototype.slice.call(arguments)
         callback = args.pop()
 
-        if typeof args[args.length - 1] == "object" and typeof args[args.length - 2] == "object"
+        if @is_object(args[args.length - 1]) and @is_object(args[args.length - 2])
           instance_defaults = args.pop()
           tx_params = args.pop()
         else
@@ -103,7 +106,7 @@ factory = (Promise, web3) ->
         # Start with the defaults, creating a new object.
         options = @merge(Pudding.global_defaults, merged_defaults)
 
-        if typeof args[args.length - 1] == "object"
+        if @is_object(args[args.length - 1])
           old_options = args.pop()
 
           # Override defaults with tx details pased into function.
@@ -151,17 +154,17 @@ factory = (Promise, web3) ->
 
     @make_nicer_new: (contract_class, code="") ->
       old_new = contract_class.new
-      contract_class.new = () ->
+      contract_class.new = () =>
         args = Array.prototype.slice.call(arguments)
         callback = args.pop()
 
-        if typeof args[args.length - 1] == "object" and typeof args[args.length - 2] == "object"
+        if @is_object(args[args.length - 1]) and @is_object(args[args.length - 2])
           instance_defaults = args.pop()
           tx_params = args.pop()
         else
           instance_defaults = {}
 
-          if args[args.length - 1] == "object"
+          if @is_object(args[args.length - 1])
             tx_params = args.pop()
           else
             tx_params = {}

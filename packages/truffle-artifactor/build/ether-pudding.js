@@ -49,6 +49,10 @@
         return merged;
       };
 
+      Pudding.is_object = function(val) {
+        return typeof val === "object" && !(val instanceof Array);
+      };
+
       Pudding.inject_defaults = function(contract_class, class_defaults) {
         var inject, old_at, old_new;
         old_at = contract_class.at;
@@ -92,7 +96,7 @@
             var args, callback, instance_defaults, tx_params;
             args = Array.prototype.slice.call(arguments);
             callback = args.pop();
-            if (typeof args[args.length - 1] === "object" && typeof args[args.length - 2] === "object") {
+            if (_this.is_object(args[args.length - 1]) && _this.is_object(args[args.length - 2])) {
               instance_defaults = args.pop();
               tx_params = args.pop();
             } else {
@@ -124,7 +128,7 @@
             args = Array.prototype.slice.call(arguments);
             callback = args.pop();
             options = _this.merge(Pudding.global_defaults, merged_defaults);
-            if (typeof args[args.length - 1] === "object") {
+            if (_this.is_object(args[args.length - 1])) {
               old_options = args.pop();
               options = _this.merge(options, old_options);
             }
@@ -185,27 +189,29 @@
           code = "";
         }
         old_new = contract_class["new"];
-        contract_class["new"] = function() {
-          var args, callback, instance_defaults, tx_params;
-          args = Array.prototype.slice.call(arguments);
-          callback = args.pop();
-          if (typeof args[args.length - 1] === "object" && typeof args[args.length - 2] === "object") {
-            instance_defaults = args.pop();
-            tx_params = args.pop();
-          } else {
-            instance_defaults = {};
-            if (args[args.length - 1] === "object") {
+        contract_class["new"] = (function(_this) {
+          return function() {
+            var args, callback, instance_defaults, tx_params;
+            args = Array.prototype.slice.call(arguments);
+            callback = args.pop();
+            if (_this.is_object(args[args.length - 1]) && _this.is_object(args[args.length - 2])) {
+              instance_defaults = args.pop();
               tx_params = args.pop();
             } else {
-              tx_params = {};
+              instance_defaults = {};
+              if (_this.is_object(args[args.length - 1])) {
+                tx_params = args.pop();
+              } else {
+                tx_params = {};
+              }
             }
-          }
-          if (tx_params.data == null) {
-            tx_params.data = code;
-          }
-          args.push(tx_params, instance_defaults, callback);
-          return old_new.apply(contract_class, args);
-        };
+            if (tx_params.data == null) {
+              tx_params.data = code;
+            }
+            args.push(tx_params, instance_defaults, callback);
+            return old_new.apply(contract_class, args);
+          };
+        })(this);
         return contract_class;
       };
 
