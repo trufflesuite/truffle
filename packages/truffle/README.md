@@ -493,7 +493,7 @@ module.exports = (contents, file, config, process, callback) ->
   try
     # See: https://babeljs.io/docs/usage/api/ 
     options = {} # Edit your desired options
-    callback null, babel.transform(contents, options)
+    callback null, babel.transform(contents, options).code
   catch e
     callback e
 ```
@@ -510,9 +510,9 @@ Since Babel supports file types of `.es6`, `.es`, `.jsx` and `.js` out of the bo
 
 ```
 "processors": {
-  ".es6": "./lib/babel.coffee"
-  ".es": "./lib/babel.coffee"
-  ".jsx": "./lib/babel.coffee"
+  ".es6": "./lib/babel.coffee",
+  ".es": "./lib/babel.coffee",
+  ".jsx": "./lib/babel.coffee",
   ".js": "./lib/babel.coffee"
 }
 ```
@@ -546,7 +546,7 @@ You have complete control over this post processing in your `app.json` file, and
       ],
       "dist": [
         "inject-contracts",
-        "frontend-dependencies"
+        "frontend-dependencies",
         "uglify"
       ]
     }
