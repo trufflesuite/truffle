@@ -34,8 +34,9 @@ class Test
         before "redeploy before each contract", (done) ->
           @timeout(BEFORE_TIMEOUT)
 
-          # Redeploy contracts before each contract.
-          Contracts.deploy config, (err) ->
+          # Redeploy contracts before each contract suite,
+          # but don't recompile.
+          Contracts.deploy config, false, (err) ->
             if err?
               done(err)
               return

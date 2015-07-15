@@ -29,6 +29,7 @@ class Config
           deploy: []
           rpc: {}
           processors: {}
+          provider: null
       frontend: 
         contract_inserter_filename: "#{truffle_dir}/lib/insert_contracts.coffee"
         includes: [
@@ -177,7 +178,14 @@ class Config
         continue if !fs.existsSync(contract.source)
         config.contracts.classes[name] = contract
 
-    config.provider = new web3.providers.HttpProvider("http://#{config.app.resolved.rpc.host}:#{config.app.resolved.rpc.port}")
+    if !config.app.resolved.provider?
+      config.provider = new web3.providers.HttpProvider("http://#{config.app.resolved.rpc.host}:#{config.app.resolved.rpc.port}")
+    else
+      config.provider = require("#{config.working_dir}/#{config.app.resolved.provider}")
+
+    if !config.provider?
+      throw "Could not correctly set your web3 provider. Please check your app configuration."
+
     web3.setProvider(config.provider)
 
     if grunt.option("verbose-rpc")?
