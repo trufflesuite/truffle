@@ -60,8 +60,9 @@ class Contracts
         params:[address_or_tx]
         id: new Date().getTime()
       , (err, result) ->
-        # Ignore errors.
-        return if err?
+        if err?
+          callback err
+          return
 
         result = result.result
 
@@ -75,7 +76,7 @@ class Contracts
 
         if attempts >= max_attempts
           clearInterval(interval)
-          callback("Contracts not deployed after #{attempts} seconds!")
+          callback(new Error("Contracts not deployed after #{attempts} seconds!"))
 
     interval = setInterval verify, 1000
 
@@ -148,7 +149,7 @@ class Contracts
         @compile_all(config, callback)
     ]
 
-  @deploy: (config, done_deploying) ->
+  @deploy: (config, compile=true, done_deploying) ->
     coinbase = null
 
     async.series [
@@ -157,14 +158,17 @@ class Contracts
           coinbase = result
           c(error, result)
       (c) =>
-        @compile_all(config, c)
+        if compile == true
+          @compile_all(config, c)
+        else
+          c()
       (c) =>
         # Put them on the network
         async.mapSeries config.app.resolved.deploy, (key, callback) =>
           contract = config.contracts.classes[key]
 
-          if !contract
-            callback("Could not find contract '#{key}' for deployment. Check app.json.")
+          if !contract?
+            callback(new Error("Could not find contract '#{key}' for deployment. Check app.json."))
             return
 
           display_name = contract.source.substring(contract.source.lastIndexOf("/") + 1)
@@ -215,7 +219,7 @@ class Contracts
 
             if attempts >= max_attempts
               clearInterval(interval)
-              c("Contracts not deployed after #{attempts} seconds!")
+              c(new Error("Contracts not deployed after #{attempts} seconds!"))
 
         interval = setInterval verify, 1000
 
