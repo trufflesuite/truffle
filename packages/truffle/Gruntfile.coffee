@@ -6,6 +6,7 @@ Contracts = require "./lib/contracts"
 Build = require "./lib/build"
 Test = require "./lib/test"
 Exec = require "./lib/exec"
+Repl = require "./lib/repl"
 
 truffle_dir = process.env.TRUFFLE_NPM_LOCATION
 working_dir = process.env.TRUFFLE_WORKING_DIRECTORY
@@ -105,7 +106,8 @@ module.exports = (grunt) ->
 
     console.log "Using environment #{config.environment}."
 
-    Contracts.deploy config, (err) ->
+    # Compile and deploy.
+    Contracts.deploy config, true, (err) ->
       if err?
         done(err)
       else
@@ -153,5 +155,10 @@ module.exports = (grunt) ->
 
     grunt.option("quiet-deploy", true)
     Test.run(config, done)
+
+  grunt.registerTask 'console', "Run a console with deployed contracts instanciated and available (REPL)", () ->
+    done = @async()
+    config = Config.gather(truffle_dir, working_dir, grunt, "development")
+    Repl.run(config, done)
 
   grunt.registerTask 'default', ['list']
