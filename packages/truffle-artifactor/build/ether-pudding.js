@@ -191,7 +191,7 @@
         old_new = contract_class["new"];
         contract_class["new"] = (function(_this) {
           return function() {
-            var args, callback, instance_defaults, tx_params;
+            var args, callback, instance_defaults, intermediary, tx_params;
             args = Array.prototype.slice.call(arguments);
             callback = args.pop();
             if (_this.is_object(args[args.length - 1]) && _this.is_object(args[args.length - 2])) {
@@ -208,7 +208,12 @@
             if (tx_params.data == null) {
               tx_params.data = code;
             }
-            args.push(tx_params, instance_defaults, callback);
+            intermediary = function(err, created_instance) {
+              if (created_instance.address != null) {
+                return callback(err, created_instance);
+              }
+            };
+            args.push(tx_params, instance_defaults, intermediary);
             return old_new.apply(contract_class, args);
           };
         })(this);

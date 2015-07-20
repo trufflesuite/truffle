@@ -172,7 +172,14 @@ factory = (Promise, web3) ->
         if !tx_params.data?
           tx_params.data = code
 
-        args.push(tx_params, instance_defaults, callback)
+        # web3 0.9.0 calls this callback twice. Abstract this out so it's
+        # only called once with the new instance. 
+        intermediary = (err, created_instance) ->
+          if created_instance.address?
+            callback(err, created_instance)
+
+
+        args.push(tx_params, instance_defaults, intermediary)
 
         return old_new.apply(contract_class, args)
       return contract_class
