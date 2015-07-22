@@ -9,6 +9,7 @@ Package.describe({
 
 Package.onUse(function(api) {
   api.versionsFrom('1.0.3.2');
+  api.use('mvrx:bluebird@0.0.1', 'client');
 
   api.export(['Pudding'], ['client']);
   
