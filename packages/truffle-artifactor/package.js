@@ -3,7 +3,7 @@ Package.describe({
   name: 'tcoulter:meteor-ether-pudding',
   version: '0.0.1',
   summary: 'Pudding - a (more) delightful contract abstraction, based on web3',
-  git: 'https://github.com/tcoulter/meteor-ether-pudding',
+  git: 'https://github.com/consensys/ether-pudding',
   documentation: 'README.md'
 });
 
