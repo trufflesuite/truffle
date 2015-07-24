@@ -137,6 +137,18 @@ class Contracts
         err = new Error("Compilation failed. See above.")
       callback(err)
 
+  @write_contracts: (config, description="contracts", callback) ->
+    mkdirp config.environments.current.directory, (err, result) ->
+      if err?
+        callback(err)
+        return 
+
+      display_directory = "." + config.environments.current.contracts_filename.replace(config.working_dir, "")
+      console.log "Writing #{description} to #{display_directory}" unless config.grunt.option("quiet-deploy")
+      fs.writeFileSync(config.environments.current.contracts_filename, JSON.stringify(config.contracts.classes, null, 2), {flag: "w+"})
+      callback()
+
+
   @compile: (config, callback) ->
     async.series [
       (c) ->
@@ -146,8 +158,10 @@ class Contracts
           else
             c()
       (c) =>
-        @compile_all(config, callback)
-    ]
+        @compile_all(config, c)
+      (c) =>
+        @write_contracts(config, "contracts", c)
+    ], callback
 
   @deploy: (config, compile=true, done_deploying) ->
     coinbase = null
@@ -223,21 +237,12 @@ class Contracts
 
         interval = setInterval verify, 1000
 
-    ], (err) ->
+    ], (err) =>
       if err?
         done_deploying(err)
         return
       
-      mkdirp config.environments.current.directory, (err, result) ->
-        if err?
-          done_deploying(err)
-          return 
-
-        display_directory = "." + config.environments.current.contracts_filename.replace(config.working_dir, "")
-        console.log "Writing contracts to #{display_directory}" unless config.grunt.option("quiet-deploy")
-        fs.writeFileSync(config.environments.current.contracts_filename, JSON.stringify(config.contracts.classes, null, 2), {flag: "w+"})
-
-        done_deploying()
+      @write_contracts(config, "contracts and deployed addresses", done_deploying)
 
 
 module.exports = Contracts
