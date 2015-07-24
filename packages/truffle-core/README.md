@@ -37,6 +37,7 @@ Ensure you're also running an RPC client that can compile Solidity contracts.
 Usage: truffle [command] [options]
 
 build           => Build development version of app; creates ./build directory
+console         => Run a console with deployed contracts instanciated and available (REPL)
 compile         => Compile contracts
 create:contract => Create a basic contract
 create:test     => Create a basic test
@@ -285,6 +286,21 @@ Optional parameter:
 * `-e environment`: Specify the environment. Default is "development".
 
 When building, if a build target of `app.js` is specified, Truffle will include the environment's contracts as a dependency. 
+
+##### console
+
+Run a console with your contract objects instantiated and ready to use (REPL). 
+
+```
+$ truffle console
+```
+
+Once the console starts you can then use your contracts via the comamnd line like you would in your code. 
+
+Optional parameters:
+
+* `-e environment`: Specify the environment. Default is "development". 
+* `--verbose-rpc`: Log communication between Truffle and the RPC.
 
 ##### compile
 
