@@ -5,6 +5,7 @@
   "description": "truffle - Simple development framework for Ethereum",
   "dependencies": {
     "coffee-script": "*",
+    "babel": "*",
     "node-sass": "*",
     "uglify-js": "*",
     "grunt": "*",
