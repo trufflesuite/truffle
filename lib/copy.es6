@@ -22,7 +22,7 @@ module.exports = function(from, to, extra_options, callback) {
     // Remove placeholders. Placeholders allow us to copy "empty" directories,
     // but lets NPM and git not ignore them.
     files = files || [];
-    for (var file in files) {
+    for (var file of files) {
       if (file.match(/.*PLACEHOLDER.*/) != null) {
         fs.unlinkSync(file);
         continue;
