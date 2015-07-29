@@ -13,7 +13,7 @@ var _ = require("lodash");
 var CoffeeScript = require("coffee-script");
 
 var Build = {
-  process_file: function(config, file, callback) {
+  process_file(config, file, callback) {
     var extension = path.extname(file).toLowerCase()
     var processor = config.processors[extension]
 
@@ -32,7 +32,7 @@ var Build = {
     });
   },
 
-  process_files: function(config, files, base_path, separator, callback) {
+  process_files(config, files, base_path, separator, callback) {
     if (typeof base_path == "function") {
       separator = base_path;
       base_path = null;
@@ -67,7 +67,7 @@ var Build = {
     }, callback);
   },
 
-  process_directory: function(config, target, key, callback) {
+  process_directory(config, target, key, callback) {
     var value = config.app.resolved.frontend[target];
     var destination_directory = `${config[key].directory}/${target}`;
     var source_directory = `${config.app.directory}/${value.files[0]}`;
@@ -79,7 +79,7 @@ var Build = {
     }).then(callback).catch(callback)
   },
 
-  process_target: function(config, target, key, callback) {
+  process_target(config, target, key, callback) {
     // Is this a directory?
     if (target[target.length - 1] == "/") {
       this.process_directory(config, target, key, callback);
@@ -119,7 +119,7 @@ var Build = {
     });
   },
 
-  process_all_targets: function(config, key, callback) {
+  process_all_targets(config, key, callback) {
     async.eachSeries(Object.keys(config.app.resolved.frontend), (target, finished_with_target) => {
       this.process_target(config, target, key, finished_with_target);
     }, callback);
@@ -134,7 +134,7 @@ var Build = {
     });
   }),
 
-  expect: function(config) {
+  expect(config) {
     config.expect(config.app.configfile, "app configuration");
   },
 

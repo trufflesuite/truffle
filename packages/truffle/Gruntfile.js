@@ -118,13 +118,13 @@ module.exports = function(grunt) {
   });
 
   grunt.registerTask('compile', "Compile contracts", function() {
-    done = this.async();
+    var done = this.async();
     var config = Config.gather(truffle_dir, working_dir, grunt, "development");
     Contracts.compile(config, done);
   });
 
   grunt.registerTask('deploy', "Deploy contracts to the network", function() {
-    done = this.async();
+    var done = this.async();
     var config = Config.gather(truffle_dir, working_dir, grunt, "development");
 
     console.log("Using environment " + config.environment + ".");

@@ -1,12 +1,12 @@
 fs = require "fs"
 CoffeeScript = require "coffee-script"
-provision = require "../../provision.coffee"
+provision = require "../../provision"
 
 module.exports = (contents, file, config, process, callback) ->
   try
     binary_found = false
     for name, contract of config.contracts.classes
-      if contract.binary? 
+      if contract.binary?
         binary_found = true
         break
 
