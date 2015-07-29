@@ -8,7 +8,7 @@ var web3 = require("web3");
 var loadconf = deasync(require("./loadconf"));
 
 var Config = {
-  gather: function(truffle_dir, working_dir, grunt, desired_environment) {
+  gather(truffle_dir, working_dir, grunt, desired_environment) {
     var config = {};
     config = _.merge(config, {
       grunt: grunt,
@@ -32,7 +32,7 @@ var Config = {
         }
       },
       frontend: {
-        contract_inserter_filename: `${truffle_dir}/lib/insert_contracts.coffee`,
+        contract_inserter_filename: `${truffle_dir}/lib/insert_contracts.js`,
         includes: [
           `${truffle_dir}/node_modules/bluebird/js/browser/bluebird.js`,
           `${truffle_dir}/node_modules/web3/dist/web3.min.js`,
@@ -88,7 +88,7 @@ var Config = {
         ".coffee": `${truffle_dir}/lib/processors/coffee.coffee`,
         ".css": `${truffle_dir}/lib/processors/css.coffee`,
         ".scss": `${truffle_dir}/lib/processors/scss.coffee`,
-        "null": `${truffle_dir}/lib/processors/null.coffee`,
+        "null": `${truffle_dir}/lib/processors/null.coffee`, // does nothing; useful in some edge cases.
         "uglify": `${truffle_dir}/lib/processors/post/uglify.coffee`,
         "frontend-dependencies": `${truffle_dir}/lib/processors/post/frontend_dependencies.coffee`,
         "inject-contracts": `${truffle_dir}/lib/processors/post/inject_contracts.coffee`
@@ -104,8 +104,9 @@ var Config = {
         continue;
       }
 
-      if (environment != desired_environment) {
-        console.log `Warning: Couldn't find environment ${desired_environment}.`;
+      // I put this warning here but now I'm not sure if I want it.
+      if (environment != desired_environment && desired_environment != null) {
+        console.log(`Warning: Couldn't find environment ${desired_environment}.`);
       }
 
       config.environment = desired_environment;
