@@ -1,11 +1,11 @@
 var repl = require("repl");
-var provision = require("./provision.coffee");
+var provision = require("./provision");
 
 global.web3 = require("web3");
 global.Pudding = require("ether-pudding");
 
 var Repl = {
-  run: function(config, done) {
+  run(config, done) {
     var provisioner = provision.asModule(config);
     provisioner.provision_contracts(global);
 
