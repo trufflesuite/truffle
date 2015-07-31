@@ -27,7 +27,7 @@ module.exports = function(grunt) {
             watch: "Watch project for changes and rebuild app automatically"
           },
           reporter: function(options) {
-            heading = options.currentTask.name
+            var heading = options.currentTask.name
             while (heading.length < options.meta.longest) {
               heading += " ";
             }
