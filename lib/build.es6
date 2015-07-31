@@ -10,16 +10,15 @@ var File = require("./file");
 var normalfs = require("fs");
 var _ = require("lodash");
 
-var CoffeeScript = require("coffee-script");
-
 var Build = {
   process_file(config, file, callback) {
-    var extension = path.extname(file).toLowerCase()
-    var processor = config.processors[extension]
+    var extension = path.extname(file).toLowerCase();
+    var processor = config.processors[extension];
 
     if (processor == null) {
-      callback(new Error(`Could not find processor for file type '${extension}'. File: ${file}`));
-      return;
+      var display_name = "." + file.replace(config.working_dir, "");
+      console.log(`Warning: Could not find processor for ${display_name}. Including as is.`);
+      processor = config.processors["null"];
     }
 
     normalfs.readFile(file, "utf8", (err, contents) => {
