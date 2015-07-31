@@ -24,7 +24,7 @@ var Config = {
         directory: `${working_dir}/app`,
         // Default config objects that'll be overwritten by working_dir config.
         resolved: {
-          frontend: {},
+          build: {},
           deploy: [],
           rpc: {},
           processors: {},
@@ -152,6 +152,11 @@ var Config = {
       config.app.resolved = loadconf(config.environments.current.filename, config.app.resolved);
     }
 
+    // Allow for deprecated build configuration.
+    if (config.app.resolved.frontend != null) {
+      config.app.resolved.build = config.app.resolved.frontend;
+    }
+
     // Helper function for expecting paths to exist.
     config.expect = function(path, description, extra="") {
       if (!fs.existsSync(path)) {
@@ -185,10 +190,10 @@ var Config = {
       config.processors[extension] = require(full_path);
     }
 
-    // Evaluate frontend targets, making the configuration conform, adding
+    // Evaluate build targets, making the configuration conform, adding
     // default post processing, if any.
-    for (var target in config.app.resolved.frontend) {
-      var options = config.app.resolved.frontend[target];
+    for (var target in config.app.resolved.build) {
+      var options = config.app.resolved.build[target];
       if (typeof options == "string") options = [options];
       if (options instanceof Array) {
         options = {
@@ -214,7 +219,7 @@ var Config = {
         }
       }
 
-      config.app.resolved.frontend[target] = options;
+      config.app.resolved.build[target] = options;
     }
 
     // Get contracts in working directory, if available.
