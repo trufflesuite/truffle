@@ -83,17 +83,28 @@ var Config = {
         }
       },
       processors: {
-        ".html": `${truffle_dir}/lib/processors/html.coffee`,
-        ".js": `${truffle_dir}/lib/processors/js.coffee`,
-        ".coffee": `${truffle_dir}/lib/processors/coffee.coffee`,
-        ".css": `${truffle_dir}/lib/processors/css.coffee`,
-        ".scss": `${truffle_dir}/lib/processors/scss.coffee`,
-        "null": `${truffle_dir}/lib/processors/null.coffee`, // does nothing; useful in some edge cases.
-        "uglify": `${truffle_dir}/lib/processors/post/uglify.coffee`,
-        "frontend-dependencies": `${truffle_dir}/lib/processors/post/frontend_dependencies.coffee`,
-        "inject-contracts": `${truffle_dir}/lib/processors/post/inject_contracts.coffee`
+        // These processors do nothing, but are registered to reduce warnings.
+        ".html": `${truffle_dir}/lib/processors/html.es6`,
+        ".js": `${truffle_dir}/lib/processors/null.es6`,
+        ".css": `${truffle_dir}/lib/processors/null.es6`,
+        ".json": `${truffle_dir}/lib/processors/null.es6`,
+
+        // Helpful default processors.
+        ".coffee": `${truffle_dir}/lib/processors/coffee.es6`,
+        ".scss": `${truffle_dir}/lib/processors/scss.es6`,
+
+        // Babel-related processors.
+        ".es6": `${truffle_dir}/lib/processors/babel.es6`,
+        ".es": `${truffle_dir}/lib/processors/babel.es6`,
+        ".jsx": `${truffle_dir}/lib/processors/babel.es6`,
+
+        // Named processors for post-processing.
+        "null": `${truffle_dir}/lib/processors/null.es6`, // does nothing; useful in some edge cases.
+        "uglify": `${truffle_dir}/lib/processors/post/uglify.es6`,
+        "frontend-dependencies": `${truffle_dir}/lib/processors/post/frontend_dependencies.es6`,
+        "inject-contracts": `${truffle_dir}/lib/processors/post/inject_contracts.es6`
       }
-    })
+    });
 
     desired_environment = grunt.option("e") || grunt.option("environment") || process.env.NODE_ENV || desired_environment;
 
