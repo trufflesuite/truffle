@@ -17,7 +17,7 @@ var Build = {
 
     if (processor == null) {
       var display_name = "." + file.replace(config.working_dir, "");
-      console.log(`Warning: Could not find processor for ${display_name}. Including as is.`);
+      console.log(`Warning: Couldn't find processor for ${display_name}. Including as is.`);
       processor = config.processors["null"];
     }
 
@@ -67,7 +67,7 @@ var Build = {
   },
 
   process_directory(config, target, key, callback) {
-    var value = config.app.resolved.frontend[target];
+    var value = config.app.resolved.build[target];
     var destination_directory = `${config[key].directory}/${target}`;
     var source_directory = `${config.app.directory}/${value.files[0]}`;
 
@@ -85,8 +85,8 @@ var Build = {
       return;
     }
 
-    var files = config.app.resolved.frontend[target].files;
-    var post_processing = config.app.resolved.frontend[target]["post-process"][key];
+    var files = config.app.resolved.build[target].files;
+    var post_processing = config.app.resolved.build[target]["post-process"][key];
     var target_file = `${config[key].directory}/${target}`;
 
     this.process_files(config, files, config.app.directory, (err, processed) => {
@@ -119,7 +119,7 @@ var Build = {
   },
 
   process_all_targets(config, key, callback) {
-    async.eachSeries(Object.keys(config.app.resolved.frontend), (target, finished_with_target) => {
+    async.eachSeries(Object.keys(config.app.resolved.build), (target, finished_with_target) => {
       this.process_target(config, target, key, finished_with_target);
     }, callback);
   },
