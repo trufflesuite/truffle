@@ -5,25 +5,25 @@
 
 Truffle is a development environment, testing framework and asset pipeline for Ethereum, aiming to make life as an Ethereum developer easier. With Truffle, you get:
 
-* Quick contract compilation and deployment to the Ethereum network on any RPC client, with no extra code.
 * Automated contract testing with Mocha and Chai.
-* Helpers for creating new contracts and tests (think, `rails generate`)
-* An extensible and configurable pipeline that’s not married to a particular frontend or architecture.
-* Instant rebuilding of assets as they change (see the `watch` command)
+* A configurable build pipeline that supports both web apps and console apps.
+* Generators for creating new contracts and tests (like `rails generate`)
+* Instant rebuilding of assets during development (`truffle watch`)
+* Console to easily work with your compiled contracts (`truffle console`)
+* Contract compilation and deployment using the RPC client of your choice.
+* Support for JavaScript, CoffeeScript, SASS, ES6 and JSX built in.
 
 Truffle shares many similarities to the [Embark Framework](https://iurimatias.github.io/embark-framework/) but differs in philosophy. The main development goals of Truffle are: 
 
-* **Flat Files:** App deployment isn’t tied to IPFS or Swarm. Truffle aims to support any deployment platform, and it does so by compiling frontend code down to processed HTML, CSS and Javascript. 
+* **Platform Agnostic Build Process:** Truffle aims to support everything from web applications with full user interfaces to Etherum-backed console applications to standalone library wrappers that help you interact with specific contracts, all with their own unique build requirements. You can think of Truffle as a replacement for grunt. Since it builds everything down to flat files, it's guaranteed to work with your environment.
+ 
+* **Client Agnostic Development Process:** When you're developing you want your results fast and quick. But when you're gearing up to deploy production contracts you want your code stable and correct. Truffle is built without a dependency on any specific Ethereum client, so when you're developing you can use something the [TestRPC](https://github.com/ConsenSys/testrpc) to quickly get the results you want, but when you're ready to deploy you can double check your app against `geth` or `eth` to make sure is working as intended.
 
-* **Configurable Frontend:** Frontend code architecuture is completely configurable, and can be changed to fit your needs (see examples below).
+* **Language Agnostic Codebase:** Truffle ships with support for JavaScript, CoffeeScript, SASS, ES6 and JSX already, but if you want to use a different langage like HAML or CJSX or Handlebars or Jade you can easily tell Truffle how to process it. 
 
-* **Programmable Pipeline:** Want to use a file type that’s not currently supported by Truffle? For instance, React + JSX? Or Babel for ES6 JS? Easy. See the “Extending the Pipeline” section below.
+* **Fully Configurable Directory Structure:** As Truffle is meant to support any style of application, the `app` directory is your oyster. You're not required to have the typical `css`,`javascript`, and `html` directories. You have full control over the build process and can easily specify how your app should be structured within your `app.json` config file.
 
-* **The RPC is King:** The application and tests all use the RPC to communicate with the network. This gives you assurance your app will work for your users, and the ability to test your app across many different Ethereum clients without writing a drop of new code.
-
-* **Client Agnostic:** Use any RPC client either in develpoment or testing. Pro tip: If you want to do things faster, we suggest the [TestRPC](https://github.com/ConsenSys/testrpc).
-
-* **No Stubbing:** Truffle tests interact with *real* contracts on *real* networks. Contracts aren’t stubbed, so you know you’re getting real results.
+* **Real Tests:** Truffle is hell-bent on allowing you to run *real* contract code on *real* Ethereum clients so you know how your contracts will actually perform for your users. Though we suggest you use the [TestRPC](https://github.com/ConsenSys/testrpc) during development, you can easily swap it out for `geth` or `eth` and re-run your tests without changing a single line of code.
 
 ### Installation
 
@@ -69,15 +69,15 @@ $ truffle test
 
 ```
 
-The above will initialize a new Ethereum application with an example contract and an example test. Then it will build that application’s frontend and run the test.
+The above will initialize a new Ethereum application with an example contract and an example test. Then it will deploy the contracts to the network, build the application’s frontend and then run the tests.
 
 ### dApp Structure
 
 ```
-app/...                      # Frontend code. See "App Configuration", below.
+app/...                      # App code. See "App Configuration", below.
 contracts/                   # Solidity contracts
 config/
-    |___ app.json            # App configuration (frontend, rpc, deployed contracts, etc.)
+    |___ app.json            # App configuration (build, rpc, deployed contracts, etc.)
     |___ development/        # Environment directory (development)
         |___ config.json     # Environment configuration (overrides app.json)
         |___ contracts.json  # Contract configuration (built during contract deployment)
@@ -91,19 +91,19 @@ dist/                        # Built and minified app (created by `truffle dist`
 
 ### Environments & App Configuration
 
-Truffle infers your app configuration by first reading `./config/app.json`, and then overriding those values with the `config.json` of your current environment. If none is specified, the **default environment** is **development**. In this sense, `app.json` acts as a base configuration that your current environment can then modify. 
+Truffle infers your app configuration by first reading `./config/app.json`, and then overriding those values with the `config.json` of your current environment. If no environment is specified, the **default environment** is **development**. In this sense, `app.json` acts as a base configuration that your current environment can then modify. 
 
 Your `app.json` file and environment configuration files (collectively, `config.json`) make up your app’s configuration. They expect three main values to be set:
 
-* `frontend`
+* `build`
 * `deploy`, and
 * `rpc`
 
-The configuration you’re given out of the box looks like this:
+When using `truffle init`, you'll be given the configuration below that's meant to be used for web-based distributed application. Everything you see is completely configurable:
 
 ```javascript
 {
-  "frontend": {
+  "build": {
     // Copy ./app/index.html (right hand side) to ./build/index.html.
     "index.html": "index.html",
     "app.js": [
@@ -130,7 +130,7 @@ The configuration you’re given out of the box looks like this:
 }
 ```
 
-Let's look at the three main objects, starting with `rpc`.
+Let's look at the three main objects within this configuration, starting with `rpc`.
 
 ##### RPC Configuration
 
@@ -148,14 +148,14 @@ Truffle allows you to specify which contracts should be deployed by adding the `
 ]
 ```
 
-##### Frontend Configuration
+##### Build Configuration
 
-Truffle allows you to have a completely configurable frontend file structure so you’re not forced to organize your files in any specific way. Though you have a lot of power, we'll only mention the basics here. See the section below about Extending the Pipeline for more details.
+Truffle allows you to have a completely configurable directory structure so you’re not forced to organize your files in any specific way. Though you have a lot of power, we'll only mention the basics here. See the section below about Extending the Pipeline for more details.
 
-The default frontend configuration looks like this:
+The default build configuration looks like this:
 
 ```javascript
-"frontend": {
+"build": {
   // Copy ./app/index.html (right hand side) to ./<build or dist>/index.html.
   "index.html": "index.html",
   "app.js": [
@@ -174,7 +174,20 @@ The default frontend configuration looks like this:
 }
 ```
 
-The `frontend` configuration allows for any number of key/value pairs, called "targets". Each target has a file name as a key and an array of paths as the value. The key specifies the resultant file that the array of paths will be compiled down into. The paths are relative to the `./app` directory, and -- based on the file extension -- each path will be sent through a specific preprocessor. The only preprocessors that are shipped by default with Truffle are `.coffee` (turning CoffeeScript files into Javascript) and `.scss` (turning SCSS files into CSS). **You're not required to use CoffeeScript and SCSS**, however.
+The `build` configuration allows for any number of key/value pairs, called "targets". Each target has a file name as a key and an array of paths as the value. The key specifies the resultant file that the array of paths will be compiled down into. The paths are relative to the `./app` directory, and -- based on the file extension -- will be sent through a specific preprocessor. Truffle ships with support for the following preprocessors:
+
+* `.es`     (compiles down to JS via Babel) 
+* `.es6`    (compiles down to JS via Babel)
+* `.jsx`    (compiles down to JS via Babel)
+* `.coffee` (compiles down to JS via CoffeeScript)
+* `.scss`   (compiles down to CSS via node-sass). 
+
+Even though the following five processors are available, you can still write your code using traditional extensions, like:
+
+* `.js`
+* `.css`
+* `.html`
+* `.json`
 
 Some files go through post-processing after the array of files are preprocessed. `app.js` is considered special to Truffle: If given, Truffle will inject your contracts and a few dependencies (like `web3`) so they're automatically made available to you on the frontend. Truffle will also set web3's provider for you based on your environment's RPC configuration. You can remove this post-processing step, however, if desired. See the Extending the Pipeline section below. 
 
@@ -184,7 +197,7 @@ If a target is given a string instead of an array, that target will be assumed t
 
 ### Building & Distributing Your App
 
-Truffle uses the term “build” to mean compiling your assets into an executable app -- i.e., sending your assets through the pipeline to produce raw HTML, CSS and Javascript. Building is easy. Simply run:
+Truffle uses the term “build” to mean transforming your `app` code into an executable and distributable package, sending your code through the pipeline to produce raw HTML, CSS and Javascript (e.g., if you're building a web app). Building is easy. Simply run:
 
 ```
 $ truffle build
@@ -234,23 +247,26 @@ Note that since Truffle aims to be extensible, it will **only** provide these de
 
 Once in your app's frontend, you can get the deployed address of contract by accessing `YourContract.deployed_address`. If you're contract was called `MyCoin`, you could access the previously deployed contract like this:
 
-```
-deployed = MyCoin.at(MyCoin.deployed_address)
+```javascript
+var deployed = MyCoin.at(MyCoin.deployed_address);
 ```
 
 ### Testing Contracts
 
 Truffle standardizes on [Mocha](http://mochajs.org/) for running tests and [Chai](http://chaijs.com/) for assertions. By default, Truffle uses the `assert` style of assertions provided by Chai, but you’re not prevented from using other styles. An example test for a coin-like contract looks like this: 
 
-```coffeescript
-contract 'MyCoin', (accounts) ->
+```javascript
+contract('MyCoin', function(accounts) {
 
-  it "should give me 20000 coins on contract creation", (done) -> 
-    coin = MyCoin.at(MyCoin.deployed_address)
-    coin.balances.call().then (my_balance) ->
-      assert.isTrue(20000, my_balance, "I was not given 20000 on contract creation!")
-      done()
-    .catch done   
+  it("should give me 20000 coins on contract creation", function(done) { 
+    var coin = MyCoin.at(MyCoin.deployed_address);
+    coin.balances.call().then(function(my_balance) {
+      assert.isTrue(20000, my_balance, "I was not given 20000 on contract creation!");
+      done();
+    }).catch(done);
+  });
+  
+});   
 ```
 
 To run this test, simply type:
@@ -434,7 +450,7 @@ $ truffle version
 
 ##### watch
 
-Watch for changes to contracts, frontend and configuration files. When there's a change, rebuild the app using `truffle build`.
+Watch for changes to contracts, app and configuration files. When there's a change, rebuild the app using `truffle build`.
 
 ```
 $ truffle watch
@@ -446,7 +462,7 @@ Truffle's asset pipeline is completely extensible. For instance, you have the ab
 
 ##### Basics
 
-For each target listed in your app's `frontend` configuration, the pipeline consists of three steps:
+For each target listed in your app's `build` configuration, the pipeline consists of three steps:
 
 1. Process each file in the array of files associated with the target, using the file extension to determine which processor to use.
 2. After processing each file, concatenate all the results.
@@ -468,14 +484,16 @@ First, download [ReactJS](https://fb.me/react-0.13.3.js) and add it to your `app
 
 Next, we need to tell Truffle how to process CSJX files, so if it finds one in any build target it knows what to do. First create a file within your project called `cjsx.coffee` (we'll put ours in a `./lib` directory), then add the following code. In it, we tell Truffle to use `coffee-react-transform` on the file's contents and then send the result back down to the default CoffeeScript processor:
 
-```
-transform = require 'coffee-react-transform'
+```javascript
+var transform = require('coffee-react-transform');
 
-module.exports = (contents, file, config, process, callback) ->
-  try 
-    config.processors['.coffee'](transform(contents), file, config, process callback)
-  catch e
-    callback e
+module.exports = function(contents, file, config, process, callback) {
+  try {
+    config.processors['.coffee'](transform(contents), file, config, process callback);
+  } catch(e) {
+    callback(e);
+  }
+};
 ```
 
 In Truffle parlance, the above is dubbed a "processor". Processors are modules that take five parameters:
@@ -496,61 +514,22 @@ The last thing to do is register the processor in the pipeline. In `app.json`, a
 
 Now Truffle knows how to process any CJSX file. **Caution:** Since your CJSX processor lives within your project's directory, you'll need to make sure you've added `coffee-react-transform` to your project's `package.json` and the `coffee-react-transform` node module.
 
-##### Example: Integrating Babel
-
-Babel provides the next generation Javascript syntax today, so it's no wonder you might want to use it. Integrating Babel is much like adding support for CJSX above, but instead we overwrite Truffle's default behavior when processing Javascript.
-
-The steps are the same as before. First, we need to create a processor. We'll call it `babel.coffee`, and save it in our project's `./lib` directory:
-
-```
-babel = require 'babel-core'
-
-module.exports = (contents, file, config, process, callback) ->
-  try
-    # See: https://babeljs.io/docs/usage/api/ 
-    options = {} # Edit your desired options
-    callback null, babel.transform(contents, options).code
-  catch e
-    callback e
-```
-
-Next, instead of creating a new file extension, we'll overwrite the `.js` processor to use Babel. To do this, add the following to `app.json`:
-
-```
-"processors": {
-  ".js": "./lib/babel.coffee"
-}
-```
-
-Since Babel supports file types of `.es6`, `.es`, `.jsx` and `.js` out of the box, we can go even further:
-
-```
-"processors": {
-  ".es6": "./lib/babel.coffee",
-  ".es": "./lib/babel.coffee",
-  ".jsx": "./lib/babel.coffee",
-  ".js": "./lib/babel.coffee"
-}
-```
-
-Viola! Beautissimo!
-
 ##### Example: Custom Post-processing
 
 You have a lot of control over what Truffle can do. So far you've only seen processors that are based on file extensions; however, you can add *named* processors that take effect once preprocessing is completed. 
 
 By default, Truffle looks for the `app.js` build target and if it finds it, performs the following post-processing:
 
-* `inject-contracts`: Inserts usable contract abstractions into the frontend.
+* `inject-contracts`: Inserts usable contract abstractions into the build.
 * `frontend-dependencies`: Inserts dependencies ([web3](https://github.com/ethereum/web3.js), Promise via [bluebird](https://github.com/petkaantonov/bluebird), and [ether-pudding](https://github.com/ConsenSys/ether-pudding)) needed by those contracts.
-* `uglify`: Minify Javascript. Only called when `build dist` is run.
+* `uglify`: Minify Javascript. Only called when `truffle dist` is run.
 
 Each of these named processors looks like the processor example above.
 
 You have complete control over this post processing in your `app.json` file, and a configuration for the default behavior above would look like this:
 
 ```
-"frontend": {
+"build": {
   "app.js": {
     "files": [
       // list of files to process...
