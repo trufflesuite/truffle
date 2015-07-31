@@ -10,16 +10,17 @@ Truffle is a development environment, testing framework and asset pipeline for E
 * Generators for creating new contracts and tests (like `rails generate`)
 * Instant rebuilding of assets during development (`truffle watch`)
 * Console to easily work with your compiled contracts (`truffle console`)
+* Script runner that lets you run JS/Coffee files with your contracts included (`truffle exec`) 
 * Contract compilation and deployment using the RPC client of your choice.
-* Support for JavaScript, CoffeeScript, SASS, ES6 and JSX built in.
+* Support for JavaScript, CoffeeScript, SASS, ES6 and JSX built-in.
 
 Truffle shares many similarities to the [Embark Framework](https://iurimatias.github.io/embark-framework/) but differs in philosophy. The main development goals of Truffle are: 
 
 * **Platform Agnostic Build Process:** Truffle aims to support everything from web applications with full user interfaces to Etherum-backed console applications to standalone library wrappers that help you interact with specific contracts, all with their own unique build requirements. You can think of Truffle as a replacement for grunt. Since it builds everything down to flat files, it's guaranteed to work with your environment.
  
-* **Client Agnostic Development Process:** When you're developing you want your results fast and quick. But when you're gearing up to deploy production contracts you want your code stable and correct. Truffle is built without a dependency on any specific Ethereum client, so when you're developing you can use something the [TestRPC](https://github.com/ConsenSys/testrpc) to quickly get the results you want, but when you're ready to deploy you can double check your app against `geth` or `eth` to make sure is working as intended.
+* **Client Agnostic Development Process:** When you're developing you want your results fast and quick. But when you're gearing up to deploy production contracts you want your code stable and correct. Truffle is built without a dependency on any specific Ethereum client, so when you're developing you can use something the [TestRPC](https://github.com/ConsenSys/testrpc) to quickly get the results you want, but when you're ready to deploy you can double check your app against `geth` or `eth` to make sure it is working as intended.
 
-* **Language Agnostic Codebase:** Truffle ships with support for JavaScript, CoffeeScript, SASS, ES6 and JSX already, but if you want to use a different langage like HAML or CJSX or Handlebars or Jade you can easily tell Truffle how to process it. 
+* **Language Agnostic Codebase:** Truffle ships with support for JavaScript, CoffeeScript, SASS, ES6 and JSX built-in, but if you want to use a different langage like HAML or CJSX or Handlebars or Jade you can easily tell Truffle how to process it. 
 
 * **Fully Configurable Directory Structure:** As Truffle is meant to support any style of application, the `app` directory is your oyster. You're not required to have the typical `css`,`javascript`, and `html` directories. You have full control over the build process and can easily specify how your app should be structured within your `app.json` config file.
 
