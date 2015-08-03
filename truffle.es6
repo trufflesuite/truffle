@@ -18,5 +18,4 @@ fork(`${process.env.TRUFFLE_NPM_LOCATION}/node_modules/.bin/grunt`, args, {
     TRUFFLE_NPM_LOCATION: process.env.TRUFFLE_NPM_LOCATION,
     TRUFFLE_WORKING_DIRECTORY: process.env.TRUFFLE_WORKING_DIRECTORY
   }
-})
-
+});
