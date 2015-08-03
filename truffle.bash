@@ -10,8 +10,12 @@ then
 fi
 
 # Hack. babel-node will clobber -e, and it doesn't look like `--` will stop it.
-args=$@
-args=${args//-e/--environment}
+args=" $@"
+args=${args// -e / --environment }
+args=${args// -e=/ --environment=}
+args=${args// -environment/ --environment}
+
+echo ${args}
 
 cd $TRUFFLE_NPM_LOCATION
 $TRUFFLE_NPM_LOCATION/node_modules/.bin/babel-node -- $TRUFFLE_NPM_LOCATION/truffle.es6 ${args}
