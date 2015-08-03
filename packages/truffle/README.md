@@ -110,7 +110,7 @@ When using `truffle init`, you'll be given the configuration below that's meant 
     "app.js": [
       // Paths relative to "app" directory that should be
       // concatenated and processed during build.
-      "javascripts/app.coffee" 
+      "javascripts/app.js" 
     ],
     "app.css": [
       // Paths relative to "app" directory that should be
@@ -162,7 +162,7 @@ The default build configuration looks like this:
   "app.js": [
     // Paths relative to "app" directory that should be
     // concatenated and processed during build.
-    "javascripts/app.coffee" 
+    "javascripts/app.js" 
   ],
   "app.css": [
     // Paths relative to "app" directory that should be
@@ -483,7 +483,7 @@ First, download [ReactJS](https://fb.me/react-0.13.3.js) and add it to your `app
 ...
 ```
 
-Next, we need to tell Truffle how to process CSJX files, so if it finds one in any build target it knows what to do. First create a file within your project called `cjsx.coffee` (we'll put ours in a `./lib` directory), then add the following code. In it, we tell Truffle to use `coffee-react-transform` on the file's contents and then send the result back down to the default CoffeeScript processor:
+Next, we need to tell Truffle how to process CSJX files, so if it finds one in any build target it knows what to do. First create a file within your project called `cjsx.js` (we'll put ours in a `./lib` directory), then add the following code. In it, we tell Truffle to use `coffee-react-transform` on the file's contents and then send the result back down to the default CoffeeScript processor:
 
 ```javascript
 var transform = require('coffee-react-transform');
@@ -509,7 +509,7 @@ The last thing to do is register the processor in the pipeline. In `app.json`, a
 
 ```
 "processors": {
-  ".cjsx": "./lib/cjsx.coffee"
+  ".cjsx": "./lib/cjsx.js"
 }
 ```
 
@@ -558,7 +558,7 @@ Adding a custom named processor is exactly the same as adding an extension-based
 
 ```
 "processors": {
-  "my-named-processor": "path/to/some/processor.coffee"
+  "my-named-processor": "path/to/some/processor.js"
 }
 ```
 
