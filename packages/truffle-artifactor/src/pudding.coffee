@@ -1,7 +1,7 @@
 factory = (Promise, web3) ->
   class Pudding
     # Not to be accessed directly.
-    @global_defaults: {} 
+    @global_defaults: {}
 
     # Main function for creating a Pudding contract.
     @whisk: (abi, code, class_defaults) ->
@@ -44,7 +44,7 @@ factory = (Promise, web3) ->
       inject = (instance, instance_defaults={}) =>
 
         # Merge global defaults, class defaults and instance defaults
-        # at time of class creation. 
+        # at time of class creation.
         merged_defaults = @merge(class_defaults, instance_defaults)
 
         for abi_object in contract_class.abi
@@ -88,12 +88,12 @@ factory = (Promise, web3) ->
         tx_params = @merge(Pudding.global_defaults, class_defaults, tx_params)
 
         args.push tx_params, (err, instance) ->
-          if err? 
+          if err?
             callback(err)
             return
 
           callback(null, inject(instance))
-          
+
         old_new.apply(contract_class, args)
 
       return contract_class
@@ -168,15 +168,18 @@ factory = (Promise, web3) ->
             tx_params = args.pop()
           else
             tx_params = {}
-        
+
         if !tx_params.data?
           tx_params.data = code
 
         # web3 0.9.0 calls this callback twice. Abstract this out so it's
-        # only called once with the new instance. 
+        # only called once with the new instance.
         intermediary = (err, created_instance) ->
-          if created_instance.address?
+          if err?
             callback(err, created_instance)
+
+          if !err? and created_instance? and created_instance.address?
+            callback(null, created_instance)
 
 
         args.push(tx_params, instance_defaults, intermediary)
@@ -192,7 +195,7 @@ factory = (Promise, web3) ->
       return () ->
         args = Array.prototype.slice.call(arguments)
         callback = args.pop()
-        
+
         new_callback = (error, response) ->
           if error?
             callback(error, response)
@@ -226,11 +229,11 @@ factory = (Promise, web3) ->
 
 
     # All functions that call transaction functions should wait for the transaction
-    # to be processed before calling their callback. This only applies to abi 
-    # functions, and not to fn.sendTransaction() and fn.call(). You can use 
+    # to be processed before calling their callback. This only applies to abi
+    # functions, and not to fn.sendTransaction() and fn.call(). You can use
     # fn.sendTransaction() to make a non-synchronous call, for instance, if you
-    # want to queue up many transactions before waiting for the last one to 
-    # be processed. 
+    # want to queue up many transactions before waiting for the last one to
+    # be processed.
     @synchronize_contract: (contract_class) ->
       old_at = contract_class.at
       old_new = contract_class.new
@@ -261,7 +264,7 @@ factory = (Promise, web3) ->
         callback = args.pop()
 
         args.push (err, instance) ->
-          if err? 
+          if err?
             callback(err)
             return
 

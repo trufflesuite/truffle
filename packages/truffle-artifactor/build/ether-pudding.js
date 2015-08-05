@@ -209,8 +209,11 @@
               tx_params.data = code;
             }
             intermediary = function(err, created_instance) {
-              if (created_instance.address != null) {
-                return callback(err, created_instance);
+              if (err != null) {
+                callback(err, created_instance);
+              }
+              if ((err == null) && (created_instance != null) && (created_instance.address != null)) {
+                return callback(null, created_instance);
               }
             };
             args.push(tx_params, instance_defaults, intermediary);

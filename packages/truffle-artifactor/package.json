@@ -1,6 +1,6 @@
 {
   "name": "ether-pudding",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Pudding - a (more) delightful Ethereum contract abstraction",
   "author": "Tim Coulter",
   "main": "build/ether-pudding.js",
