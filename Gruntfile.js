@@ -152,7 +152,7 @@ module.exports = function(grunt) {
     var done = this.async();
     var config = Config.gather(truffle_dir, working_dir, grunt, "production");
 
-    console.log("Using environment " + config.environment + ".");
+    console.log("Using environment " + config.environment + ".".green);
 
     // This one's a promise...
     Build.dist(config).then(done).catch(done);
