@@ -5,7 +5,7 @@ var Promise = require("bluebird");
 var mkdirp = Promise.promisify(require("mkdirp"));
 var rimraf = Promise.promisify(require("rimraf"));
 var fs = Promise.promisifyAll(require("fs"));
-var copy = Promise.promisify(require("./copy"));
+var copy = require("./copy");
 var File = require("./file");
 var normalfs = require("fs");
 var _ = require("lodash");
@@ -74,8 +74,8 @@ var Build = {
     config.expect(source_directory, `source directory for target ${target}`, "Check app configuration.");
 
     mkdirp(destination_directory).then(function() {
-      return copy(source_directory, destination_directory);
-    }).then(callback).catch(callback)
+      copy(source_directory, destination_directory, callback);
+    }).catch(callback)
   },
 
   process_target(config, target, key, callback) {
