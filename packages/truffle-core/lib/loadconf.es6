@@ -8,7 +8,7 @@ module.exports = function(full_path, base={}, callback) {
     base = {};
   }
 
-  fs.readFile(full_path, "utf8", function(err, file_contents) {
+  fs.readFile(full_path, {encoding: "utf8"}, function(err, file_contents) {
     if (err != null) {
       callback(err, file_contents);
       return;
