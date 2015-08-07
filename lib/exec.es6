@@ -26,7 +26,7 @@ var Exec = {
     }
 
     try {
-      CoffeeScript.run(fs.readFileSync(file, "utf8"), {filename: file});
+      CoffeeScript.run(fs.readFileSync(file, {encoding: "utf8"}), {filename: file});
     } catch(e) {
       console.log(e.stack);
       process.exit(1);
