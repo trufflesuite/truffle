@@ -15,7 +15,7 @@
     "bluebird": "*",
     "web3": "*",
     "bignumber.js": "*",
-    "ether-pudding": "*",
+    "ether-pudding": "0.10.0",
     "deasync": "*",
     "async": "*",
     "node-dir": "*",
