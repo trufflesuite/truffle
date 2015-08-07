@@ -4,10 +4,9 @@ var async = require("async");
 var Promise = require("bluebird");
 var mkdirp = Promise.promisify(require("mkdirp"));
 var rimraf = Promise.promisify(require("rimraf"));
-var fs = Promise.promisifyAll(require("fs"));
+var fs = require("fs");
 var copy = require("./copy");
 var File = require("./file");
-var normalfs = require("fs");
 var _ = require("lodash");
 
 var Build = {
@@ -21,7 +20,7 @@ var Build = {
       processor = config.processors["null"];
     }
 
-    normalfs.readFile(file, "utf8", (err, contents) => {
+    fs.readFile(file, {encoding: "utf8"}, (err, contents) => {
       if (err != null) {
         callback(err);
         return;
@@ -112,8 +111,8 @@ var Build = {
         }
 
         mkdirp(path.dirname(target_file)).then(function() {
-          return fs.writeFile(target_file, final_post_processed, 'utf8');
-        }).then(callback).catch(callback);
+          fs.writeFile(target_file, final_post_processed, {encoding: 'utf8'}, callback);
+        }).catch(callback);
       });
     });
   },

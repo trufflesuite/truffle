@@ -84,7 +84,7 @@ var Config = {
       },
       processors: {
         // These processors do nothing, but are registered to reduce warnings.
-        ".html": `${truffle_dir}/lib/processors/html.es6`,
+        ".html": `${truffle_dir}/lib/processors/null.es6`,
         ".js": `${truffle_dir}/lib/processors/null.es6`,
         ".css": `${truffle_dir}/lib/processors/null.es6`,
         ".json": `${truffle_dir}/lib/processors/null.es6`,
@@ -207,6 +207,15 @@ var Config = {
 
       if (options["post-process"] == null) {
         options["post-process"] = {build: [], dist: []};
+      }
+
+      // If an array was passed, use the same post processing in both contexts.
+      if (options["post-process"] instanceof Array) {
+        var new_post_process = {
+          build: options["post-process"],
+          dist: options["post-process"]
+        }
+        options["post-process"] = new_post_process;
       }
 
       // Check for default post processing for this target,

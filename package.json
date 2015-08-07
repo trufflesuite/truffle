@@ -13,7 +13,7 @@
     "colors": "^1.1.2",
     "cpr": "*",
     "deasync": "*",
-    "ether-pudding": "*",
+    "ether-pudding": "0.10.0",
     "grunt": "*",
     "grunt-available-tasks": "*",
     "grunt-cli": "*",
