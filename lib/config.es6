@@ -130,7 +130,7 @@ var Config = {
 
     // If we didn't find an environment, but asked for one, error.
     if (config.environment == null && desired_environment != null) {
-      console.log("Couldn't find any suitable environment. Check environment configuration.");
+      console.log("Couldn't find any suitable environment. Check environment configuration.".red);
       process.exit(1);
     }
 

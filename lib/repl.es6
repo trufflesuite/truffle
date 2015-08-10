@@ -10,6 +10,7 @@ var Repl = {
     provisioner.provision_contracts(global);
 
     try {
+      console.log("Starting Truffle console...".green);
       var r = repl.start(`truffle(${config.environment})> `);
       r.on("exit", function() {
         process.exit(1);

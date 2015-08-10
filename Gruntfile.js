@@ -53,7 +53,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
 
   grunt.registerTask('list', "List all available tasks", function() {
-    console.log("Truffle v" + grunt.config().pkg.version + " - a development framework for Ethereum");
+    console.log(`Truffle v${grunt.config().pkg.version} - a development framework for Ethereum`.green);
     console.log("");
     console.log("Usage: truffle [command] [options]");
     console.log("");
@@ -68,7 +68,7 @@ module.exports = function(grunt) {
   });
 
   grunt.registerTask('version', "Show version number and exit", function() {
-    console.log("Truffle v" + grunt.config().pkg.version);
+    console.log(`Truffle v${grunt.config().pkg.version}`.green);
   });
 
   grunt.registerTask('init', "Initialize new Ethereum project, including example contracts and tests", function() {
@@ -95,7 +95,7 @@ module.exports = function(grunt) {
     var config = Config.gather(truffle_dir, working_dir, grunt);
     try {
       if (typeof grunt.option("name") != "string") {
-        console.log("Please specify --name. Example: truffle create:contract --name 'MyContract'");
+        console.log("Please specify --name. Example: truffle create:contract --name 'MyContract'".yellow);
       } else {
         Create.contract(config, grunt.option("name"), this.async());
       }
@@ -108,7 +108,7 @@ module.exports = function(grunt) {
     var config = Config.gather(truffle_dir, working_dir, grunt);
     try {
       if (typeof grunt.option("name") != "string") {
-        console.log("Please specify --name. Example: truffle create:test --name 'MyContract'");
+        console.log("Please specify --name. Example: truffle create:test --name 'MyContract'".yellow);
       } else {
         Create.test(config, grunt.option("name"), this.async());
       }
@@ -127,7 +127,7 @@ module.exports = function(grunt) {
     var done = this.async();
     var config = Config.gather(truffle_dir, working_dir, grunt, "development");
 
-    console.log("Using environment " + config.environment + ".");
+    console.log(`Using environment ${config.environment}.`.green);
 
     // Compile and deploy.
     Contracts.deploy(config, true, function(err) {
@@ -152,7 +152,7 @@ module.exports = function(grunt) {
     var done = this.async();
     var config = Config.gather(truffle_dir, working_dir, grunt, "production");
 
-    console.log("Using environment " + config.environment + ".");
+    console.log(`Using environment ${config.environment}.`.green);
 
     // This one's a promise...
     Build.dist(config).then(done).catch(done);
@@ -181,7 +181,7 @@ module.exports = function(grunt) {
     var done = this.async();
     var config = Config.gather(truffle_dir, working_dir, grunt, "test");
 
-    console.log("Using environment " + config.environment + ".");
+    console.log("Using environment " + config.environment + ".".green);
 
     grunt.option("quiet-deploy", true);
     Test.run(config, done);

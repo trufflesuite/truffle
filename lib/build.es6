@@ -16,7 +16,7 @@ var Build = {
 
     if (processor == null) {
       var display_name = "." + file.replace(config.working_dir, "");
-      console.log(`Warning: Couldn't find processor for ${display_name}. Including as is.`);
+      console.log(`Warning: Couldn't find processor for ${display_name}. Including as is.`.red);
       processor = config.processors["null"];
     }
 
@@ -142,8 +142,8 @@ var Build = {
   }),
 
   dist: Promise.promisify(function(config, callback) {
-    this.expect(config)
-    this.base(config, "dist").then(callback).catch(callback)
+    this.expect(config);
+    this.base(config, "dist").then(callback).catch(callback);
   })
 }
 

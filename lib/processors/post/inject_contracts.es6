@@ -12,7 +12,7 @@ module.exports = function(contents, file, config, process, callback) {
     }
 
     if (!binary_found && Object.keys(config.contracts.classes).length > 0) {
-      console.log("Warning: No compiled contracts found. Did you deploy your contracts before building?");
+      console.log("Warning: No compiled contracts found. Did you deploy your contracts before building?".red);
     }
 
     var inserter_code = provision.asString(config);

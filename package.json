@@ -5,9 +5,12 @@
   "description": "truffle - Simple development framework for Ethereum",
   "dependencies": {
     "coffee-script": "*",
+    "colors": "^1.1.2",
     "babel": "*",
     "node-sass": "*",
     "uglify-js": "*",
+    "cpr": "*",
+    "deasync": "*",
     "grunt": "*",
     "grunt-cli": "*",
     "grunt-available-tasks": "*",
