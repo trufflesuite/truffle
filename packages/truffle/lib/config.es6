@@ -160,8 +160,8 @@ var Config = {
     // Helper function for expecting paths to exist.
     config.expect = function(path, description, extra="") {
       if (!fs.existsSync(path)) {
-        display_path = "." + path.replace(this.working_dir, "");
-        console.log `Couldn't find ${description} at ${display_path}. ${extra}`;
+        var display_path = "." + path.replace(this.working_dir, "");
+        console.log(`Couldn't find ${description} at ${display_path}. ${extra}`);
         process.exit(1)
       }
     };
