@@ -49,7 +49,7 @@ var Config = {
         },
         test: {
           directory: `${truffle_dir}/example/test`,
-          filename: `${truffle_dir}/example/test/example.coffee`
+          filename: `${truffle_dir}/example/test/example.js`
         }
       },
       contracts: {
