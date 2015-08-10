@@ -9,6 +9,8 @@
     "babel": "*",
     "node-sass": "*",
     "uglify-js": "*",
+    "cpr": "*",
+    "deasync": "*",
     "grunt": "*",
     "grunt-cli": "*",
     "grunt-available-tasks": "*",
