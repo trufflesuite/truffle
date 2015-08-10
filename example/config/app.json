@@ -1,5 +1,5 @@
 {
-  "frontend": {
+  "build": {
     // Copy ./app/index.html (right hand side) to ./build/index.html.
     "index.html": "index.html",
     "app.js": [

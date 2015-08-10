@@ -5,14 +5,14 @@ var Provision = {
   asString(config) {
     var provider = "";
     if (config.app.resolved.provider != null) {
-      provider = fs.readFileSync(path.join(config.working_dir, config.app.resolved.provider), "utf8");
+      provider = fs.readFileSync(path.join(config.working_dir, config.app.resolved.provider), {encoding: "utf8"});
     }
 
     provider = provider.replace(/"/g, '\\"');
 
     // Double stringify. We'll parse in the inserter code.
     var contracts = JSON.stringify(JSON.stringify(config.contracts.classes, null, 2));
-    var inserter_code = fs.readFileSync(config.frontend.contract_inserter_filename, "utf8");
+    var inserter_code = fs.readFileSync(config.frontend.contract_inserter_filename, {encoding: "utf8"});
     inserter_code = inserter_code.replace(/\{\{CONTRACTS\}\}/g, contracts);
     inserter_code = inserter_code.replace(/\{\{HOST\}\}/g, config.app.resolved.rpc.host || "");
     inserter_code = inserter_code.replace(/\{\{PORT\}\}/g, config.app.resolved.rpc.port || "");
