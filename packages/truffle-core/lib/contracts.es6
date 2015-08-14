@@ -295,7 +295,9 @@ var Contracts = {
 
             if (attempts >= max_attempts) {
               clearInterval(interval);
-              c(new Error(`Contracts not deployed after ${attempts} seconds!`));
+              c(new Error(`Contracts not deployed after ${attempts} seconds!
+                           This might be because your contract's constructor
+                           is encountering a runtime error.`));
             }
           });
         };
