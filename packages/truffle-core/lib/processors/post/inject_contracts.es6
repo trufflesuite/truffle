@@ -15,9 +15,11 @@ module.exports = function(contents, file, config, process, callback) {
       console.log("Warning: No compiled contracts found. Did you deploy your contracts before building?");
     }
 
-    var inserter_code = provision.asString(config);
+    var provisioner = provision.asString(config);
 
-    callback(null, inserter_code + "\n\n" + contents);
+    var result = provisioner + "__provisioner.provision_contracts(window);\n\n" + contents + "; __provisioner.set_provider(window);"
+
+    callback(null, result);
   } catch(e) {
     callback(e);
   }
