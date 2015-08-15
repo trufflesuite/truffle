@@ -13,7 +13,7 @@
     "grunt-available-tasks": "*",
     "grunt-contrib-watch": "*",
     "bluebird": "*",
-    "web3": "*",
+    "web3": "0.10.0",
     "bignumber.js": "*",
     "ether-pudding": "0.10.0",
     "deasync": "*",
