@@ -3,6 +3,7 @@ var async = require("async");
 var fs = require("fs");
 var mkdirp = require("mkdirp");
 var path = require("path");
+var provision = require("./provision");
 
 var Contracts = {
   resolve(root, callback) {
@@ -60,7 +61,7 @@ var Contracts = {
     var verify = function() {
       // Call the method via the provider directly as it hasn't yet been
       // implemented in web3.
-      config.provider.sendAsync({
+      web3.currentProvider.sendAsync({
         jsonrpc: "2.0",
         method: "eth_getTransactionReceipt",
         params:[address_or_tx],
@@ -226,35 +227,44 @@ var Contracts = {
       },
       (c) => {
         // Put them on the network
+        var provisioner = provision.asModule(config);
+        provisioner.provision_contracts(global);
+
         async.mapSeries(config.app.resolved.deploy, (key, callback) => {
-          var contract = config.contracts.classes[key];
+          var contract = global[key]; //config.contracts.classes[key];
+          var contract_class = config.contracts.classes[key];
 
           if (contract == null) {
             callback(new Error(`Could not find contract '${key}' for deployment. Check app.json.`));
             return;
           }
 
-          var display_name = contract.source.substring(contract.source.lastIndexOf("/") + 1);
+          var display_name = contract_class.source.substring(contract_class.source.lastIndexOf("/") + 1);
           if (!config.grunt.option("quiet-deploy")) {
             console.log(`Sending ${display_name} to the network...`);
           }
 
-          web3.eth.sendTransaction({
+          contract.new({
             from: coinbase,
             gas: 3141592,
-            gasPrice: 1000000000000, // I have no idea why this is so high, but geth updates made me do it.
-            data: contract.binary
-          }, (err, result) => {
-            if (err != null) {
-              callback(err, result);
-              return;
-            }
+            gasPrice: 1000000000000 // I'm not sure why this is so high. geth made me do it.
+          }).then(function(instance) {
+            contract_class.address = instance.address;
+            callback(null, contract_class);
+          }).catch(callback);
 
-            this.get_contract_address(config, result, function(err, address) {
-              contract.address = address;
-              callback(err, contract);
-            });
-          });
+          // web3.eth.sendTransaction({
+          //   from: coinbase,
+          //
+          //   data: contract.binary
+          // }, (err, result) => {
+          //
+          //
+          //   this.get_contract_address(config, result, function(err, address) {
+          //     contract.address = address;
+          //     callback(err, contract);
+          //   });
+          // });
 
         }, function(err, results) {
           if (err != null) {
