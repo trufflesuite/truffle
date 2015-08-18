@@ -8,7 +8,10 @@ var Provision = {
       provider = fs.readFileSync(path.join(config.working_dir, config.app.resolved.provider), {encoding: "utf8"});
     }
 
-    provider = provider.replace(/"/g, '\\"');
+    // Convert code into a single, one line string. Expects JS, with correct semicolons, etc.
+    // TODO: There's got to be a better way to do this using some grammar that parses the JS.
+    //provider = provider.replace(/"/g, '\\"');
+    //provider = provider.replace(/\n/g, ""); //
 
     // Double stringify. We'll parse in the inserter code.
     var contracts = JSON.stringify(JSON.stringify(config.contracts.classes, null, 2));
