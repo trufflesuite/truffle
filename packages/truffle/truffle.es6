@@ -2,6 +2,8 @@
 // Coffee intermediary to massage arguments before calling grunt.
 var fork = require("child_process").fork;
 
+debugger;
+
 // Filter command line arguments, swapping some grunt defaults for our own.
 var args = [];
 var index = -1;

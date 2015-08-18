@@ -6,6 +6,7 @@ var subdirSync = deasync(dir.subdirs);
 var _ = require("lodash");
 var web3 = require("web3");
 var loadconf = deasync(require("./loadconf"));
+var path = require("path");
 
 var Config = {
   gather(truffle_dir, working_dir, grunt, desired_environment) {
@@ -158,9 +159,9 @@ var Config = {
     }
 
     // Helper function for expecting paths to exist.
-    config.expect = function(path, description, extra="") {
-      if (!fs.existsSync(path)) {
-        var display_path = "." + path.replace(this.working_dir, "");
+    config.expect = function(expected_path, description, extra="") {
+      if (!fs.existsSync(expected_path)) {
+        var display_path = "." + expected_path.replace(this.working_dir, "");
         console.log(`Couldn't find ${description} at ${display_path}. ${extra}`);
         process.exit(1)
       }
@@ -255,24 +256,25 @@ var Config = {
     }
 
     if (config.app.resolved.provider == null) {
-      config.provider = new web3.providers.HttpProvider(`http://${config.app.resolved.rpc.host}:${config.app.resolved.rpc.port}`)
+      var provider = new web3.providers.HttpProvider(`http://${config.app.resolved.rpc.host}:${config.app.resolved.rpc.port}`);
+      web3.setProvider(provider);
     } else {
-      config.provider = require(`${config.working_dir}/${config.app.resolved.provider}`)
+      var file = path.join(config.working_dir, config.app.resolved.provider);
+      var provider = require(file);
+      web3.setProvider(provider);
     }
 
-    if (config.provider == null) {
-      throw "Could not correctly set your web3 provider. Please check your app configuration."
+    if (web3.currentProvider == null) {
+      throw new Error("Could not correctly set your web3 provider. Please check your app configuration.");
     }
-
-    web3.setProvider(config.provider);
 
     if (grunt.option("verbose-rpc") != null) {
       // // If you want to see what web3 is sending and receiving.
-      var oldAsync = config.provider.sendAsync;
-      config.provider.sendAsync = function(options, callback) {
+      var oldAsync = web3.currentProvider.sendAsync;
+      web3.currentProvider.sendAsync = function(options, callback) {
         console.log("   > " + JSON.stringify(options, null, 2).split("\n").join("\n   > "));
-        oldAsync.call(config.provider, options, function(error, result) {
-          if (error != null) {
+        oldAsync.call(web3.currentProvider, options, function(error, result) {
+          if (error == null) {
             console.log(" <   " + JSON.stringify(result, null, 2).split("\n").join("\n <   "));
           }
           callback(error, result)
