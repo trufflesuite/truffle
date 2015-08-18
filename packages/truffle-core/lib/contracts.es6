@@ -253,19 +253,6 @@ var Contracts = {
             callback(null, contract_class);
           }).catch(callback);
 
-          // web3.eth.sendTransaction({
-          //   from: coinbase,
-          //
-          //   data: contract.binary
-          // }, (err, result) => {
-          //
-          //
-          //   this.get_contract_address(config, result, function(err, address) {
-          //     contract.address = address;
-          //     callback(err, contract);
-          //   });
-          // });
-
         }, function(err, results) {
           if (err != null) {
             console.log("ERROR sending contract:");
@@ -274,45 +261,6 @@ var Contracts = {
             c();
           }
         });
-      },
-      (c) => {
-        // Verifying deployment of contracts
-        if (!config.grunt.option("quiet-deploy")) {
-          console.log("Verifying deployment...");
-        }
-
-        var attempts = 0;
-        var max_attempts = 120;
-
-        var interval = null;
-        var verify = function() {
-          var last = config.app.resolved.deploy[config.app.resolved.deploy.length - 1];
-          var contract = config.contracts.classes[last]
-
-          web3.eth.getCode(contract.address, function(err, response) {
-            // Ignore errors.
-            if (err != null) {
-              return;
-            }
-
-            if (response != "" && response != "0x") {
-              clearInterval(interval);
-              c();
-              return;
-            }
-
-            attempts += 1;
-
-            if (attempts >= max_attempts) {
-              clearInterval(interval);
-              c(new Error(`Contracts not deployed after ${attempts} seconds!
-                           This might be because your contract's constructor
-                           is encountering a runtime error.`));
-            }
-          });
-        };
-
-        interval = setInterval(verify, 1000);
       }
     ], (err) => {
       if (err != null) {
