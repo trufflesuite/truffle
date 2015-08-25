@@ -131,7 +131,7 @@ var Contracts = {
       var source = contract.source;
 
       var display_name = source.substring(source.lastIndexOf("/") + 1);
-      if (!config.grunt.option("quiet-deploy")) {
+      if (config.argv.quietDeploy == null) {
         console.log(`Compiling ${display_name}...`);
       }
 
@@ -179,7 +179,7 @@ var Contracts = {
       }
 
       var display_directory = "." + config.environments.current.contracts_filename.replace(config.working_dir, "");
-      if (!config.grunt.option("quiet-deploy")) {
+      if (config.argv.quietDeploy == null) {
         console.log(`Writing ${description} to ${display_directory}`);
       }
 
@@ -240,7 +240,7 @@ var Contracts = {
           }
 
           var display_name = contract_class.source.substring(contract_class.source.lastIndexOf("/") + 1);
-          if (!config.grunt.option("quiet-deploy")) {
+          if (config.argv.quietDeploy == null) {
             console.log(`Sending ${display_name} to the network...`);
           }
 

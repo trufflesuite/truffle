@@ -7,12 +7,13 @@ var _ = require("lodash");
 var web3 = require("web3");
 var loadconf = deasync(require("./loadconf"));
 var path = require("path");
+var ConfigurationError = require('./errors/configurationerror');
 
 var Config = {
-  gather(truffle_dir, working_dir, grunt, desired_environment) {
+  gather(truffle_dir, working_dir, argv, desired_environment) {
     var config = {};
     config = _.merge(config, {
-      grunt: grunt,
+      argv: argv,
       truffle_dir: truffle_dir,
       working_dir: working_dir,
       environments: {
@@ -107,7 +108,7 @@ var Config = {
       }
     });
 
-    desired_environment = grunt.option("e") || grunt.option("environment") || process.env.NODE_ENV || desired_environment;
+    desired_environment = argv.e || argv.environment || process.env.NODE_ENV || desired_environment;
 
     // Try to find the desired environment, and fall back to development if we don't find it.
     for (var environment of [desired_environment, "development"]) {
@@ -131,8 +132,7 @@ var Config = {
 
     // If we didn't find an environment, but asked for one, error.
     if (config.environment == null && desired_environment != null) {
-      console.log("Couldn't find any suitable environment. Check environment configuration.");
-      process.exit(1);
+      throw new ConfigurationError("Couldn't find any suitable environment. Check environment configuration.");
     }
 
     // Get environments in working directory, if available.
@@ -159,11 +159,10 @@ var Config = {
     }
 
     // Helper function for expecting paths to exist.
-    config.expect = function(expected_path, description, extra="") {
+    config.expect = function(expected_path, description="file", extra="") {
       if (!fs.existsSync(expected_path)) {
         var display_path = "." + expected_path.replace(this.working_dir, "");
-        console.log(`Couldn't find ${description} at ${display_path}. ${extra}`);
-        process.exit(1)
+        throw new ConfigurationError(`Couldn't find ${description} at ${display_path}. ${extra}`);
       }
     };
 
@@ -187,7 +186,7 @@ var Config = {
       var file = config.app.resolved.processors[extension];
       var full_path = `${working_dir}/${file}`
       extension = extension.toLowerCase();
-      config.expect(full_path, `specified .${extension} processor`, "Check your app config.")
+      config.expect(full_path, `specified .${extension} processor`, "Check your app config.");
       config.processors[extension] = require(full_path);
     }
 
@@ -265,10 +264,10 @@ var Config = {
     }
 
     if (web3.currentProvider == null) {
-      throw new Error("Could not correctly set your web3 provider. Please check your app configuration.");
+      throw new ConfigurationError("Could not correctly set your web3 provider. Please check your app configuration.");
     }
 
-    if (grunt.option("verbose-rpc") != null) {
+    if (argv.verboseRpc != null) {
       // // If you want to see what web3 is sending and receiving.
       var oldAsync = web3.currentProvider.sendAsync;
       web3.currentProvider.sendAsync = function(options, callback) {
