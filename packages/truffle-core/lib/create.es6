@@ -22,7 +22,7 @@ var Create = {
 
     var underscored = util.toUnderscoreFromCamel(name);
     var from = config.example.test.filename;
-    var to = `${config.tests.directory}/${underscored}.coffee`;
+    var to = `${config.tests.directory}/${underscored}.js`;
 
     file.duplicate(from, to, function(err) {
       if (err != null) {

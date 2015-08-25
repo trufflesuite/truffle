@@ -8,10 +8,6 @@
     "babel": "*",
     "node-sass": "*",
     "uglify-js": "*",
-    "grunt": "*",
-    "grunt-cli": "*",
-    "grunt-available-tasks": "*",
-    "grunt-contrib-watch": "*",
     "bluebird": "*",
     "web3": "0.10.0",
     "bignumber.js": "*",
@@ -25,14 +21,21 @@
     "jsmin": "*",
     "cpr": "*",
     "mocha": "*",
-    "chai": "*"
+    "chai": "*",
+    "yargs": "*",
+    "watchr": "*",
+    "colors": "*"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "temp": "*"
+  },
   "bin": {
     "truffle": "./truffle.bash",
     "truffle-exec": "./truffle-exec.bash"
   },
-  "scripts": {},
+  "scripts": {
+    "test": "./test.bash"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/ConsenSys/truffle.git"
