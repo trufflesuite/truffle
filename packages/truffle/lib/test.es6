@@ -100,6 +100,11 @@ var Test = {
           mocha.addFile(file);
         }
 
+
+        // Change current working directory to that of the project.
+        process.chdir(config.working_dir);
+        __dirname = process.cwd();
+
         mocha.run(function(failures) {
           callback(null, failures);
         });

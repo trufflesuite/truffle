@@ -123,28 +123,28 @@ var Build = {
     }, callback);
   },
 
-  base: Promise.promisify(function(config, key, callback) {
+  base: function(config, key, callback) {
     // Clean first.
     rimraf(config[key].directory).then(function() {
       return mkdirp(config[key].directory);
     }).then(() => {
       this.process_all_targets(config, key, callback);
-    });
-  }),
+    }).catch(callback);
+  },
 
   expect(config) {
     config.expect(config.app.configfile, "app configuration");
   },
 
-  build: Promise.promisify(function(config, callback) {
+  build: function(config, callback) {
     this.expect(config);
-    this.base(config, "build").then(callback).catch(callback)
-  }),
+    this.base(config, "build", callback);
+  },
 
-  dist: Promise.promisify(function(config, callback) {
+  dist: function(config, callback) {
     this.expect(config)
-    this.base(config, "dist").then(callback).catch(callback)
-  })
+    this.base(config, "dist", callback);
+  }
 }
 
 module.exports = Build;
