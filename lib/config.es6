@@ -7,6 +7,7 @@ var _ = require("lodash");
 var web3 = require("web3");
 var loadconf = deasync(require("./loadconf"));
 var path = require("path");
+var Exec = require("./exec");
 var ConfigurationError = require('./errors/configurationerror');
 
 var Config = {
@@ -159,11 +160,30 @@ var Config = {
     }
 
     // Helper function for expecting paths to exist.
-    config.expect = function(expected_path, description="file", extra="") {
+    config.expect = function(expected_path, description="file", extra="", callback) {
+      if (typeof description == "function") {
+        callback = description;
+        description = "file";
+        extra = "";
+      }
+
+      if (typeof extra == "function") {
+        callback = description;
+        extra = "";
+      }
+
       if (!fs.existsSync(expected_path)) {
         var display_path = "." + expected_path.replace(this.working_dir, "");
-        throw new ConfigurationError(`Couldn't find ${description} at ${display_path}. ${extra}`);
+        var error = new ConfigurationError(`Couldn't find ${description} at ${display_path}. ${extra}`);
+
+        if (callback != null) {
+          callback(error);
+          return false;
+        } else {
+          throw error;
+        }
       }
+      return true;
     };
 
     config.test_connection = function(callback) {
@@ -184,7 +204,7 @@ var Config = {
 
     for (var extension in config.app.resolved.processors) {
       var file = config.app.resolved.processors[extension];
-      var full_path = `${working_dir}/${file}`
+      var full_path = path.join(working_dir, file);
       extension = extension.toLowerCase();
       config.expect(full_path, `specified .${extension} processor`, "Check your app config.");
       config.processors[extension] = require(full_path);
