@@ -1,6 +1,6 @@
 var path = require("path");
 var async = require("async");
-
+var colors = require("colors");
 var Promise = require("bluebird");
 var mkdirp = Promise.promisify(require("mkdirp"));
 var rimraf = Promise.promisify(require("rimraf"));
@@ -16,7 +16,7 @@ var Build = {
 
     if (processor == null) {
       var display_name = "." + file.replace(config.working_dir, "");
-      console.log(`Warning: Couldn't find processor for ${display_name}. Including as is.`);
+      console.log(colors.yellow(`Warning: Couldn't find processor for ${display_name}. Including as is.`));
       processor = config.processors["null"];
     }
 
