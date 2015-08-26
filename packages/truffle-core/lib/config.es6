@@ -23,8 +23,8 @@ var Config = {
         current: {}
       },
       app: {
-        configfile: `${working_dir}/config/app.json`,
-        directory: `${working_dir}/app`,
+        configfile: path.join(working_dir, "config", "app.json"),
+        directory: path.join(working_dir, "app"),
         // Default config objects that'll be overwritten by working_dir config.
         resolved: {
           build: {},
@@ -51,8 +51,8 @@ var Config = {
           variable: "example"
         },
         test: {
-          directory: `${truffle_dir}/example/test`,
-          filename: `${truffle_dir}/example/test/example.js`
+          directory: path.join(truffle_dir, "example", "test"),
+          filename: path.join(truffle_dir, "example", "test", "example.js")
         }
       },
       contracts: {
@@ -301,7 +301,7 @@ var Config = {
       };
     }
 
-    return config
+    return config;
   }
 }
 

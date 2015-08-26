@@ -1,6 +1,7 @@
 var fs = require("fs");
 var jsmin = require("jsmin").jsmin;
 var _ = require("lodash");
+var ConfigurationError = require('./errors/configurationerror');
 
 module.exports = function(full_path, base={}, callback) {
   if (typeof base == "function") {
@@ -17,8 +18,13 @@ module.exports = function(full_path, base={}, callback) {
     // Run the results through jsmin to remove any comments.
     // It's nice to have comments in config files even through
     // it's not valid JSON.
-    file_contents = JSON.parse(jsmin(file_contents));
-    file_contents = _.merge(base, file_contents);
+    try {
+      file_contents = JSON.parse(jsmin(file_contents));
+      file_contents = _.merge(base, file_contents);
+    } catch(e) {
+      callback(new ConfigurationError(`Error while parsing ${full_path}: ${e.message || e}`));
+      return;
+    }
 
     callback(null, file_contents);
   });
