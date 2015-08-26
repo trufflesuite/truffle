@@ -1,4 +1,6 @@
 #!/usr/bin/env ./node_modules/.bin/babel-node
+require("coffee-script/register");
+
 var web3 = require("web3");
 var path = require("path");
 var fs = require("fs");
@@ -46,6 +48,7 @@ var runTask = function(task, args) {
     if (e instanceof ConfigurationError) {
       console.log(colors.red(e.message));
     } else {
+      console.log("It was caught");
       // Bubble up all other unexpected errors.
       console.log(e.stack);
     }
@@ -116,10 +119,12 @@ registerTask('list', "List all available tasks", function(done) {
   }
 
   console.log("");
+  done();
 });
 
 registerTask('version', "Show version number and exit", function(done) {
   console.log("Truffle v" + pkg.version);
+  done();
 });
 
 registerTask('init', "Initialize new Ethereum project, including example contracts and tests", function(done) {
@@ -144,27 +149,33 @@ registerTask('init:tests', "Initialize tests directory structure and helpers", f
 
 registerTask('create:contract', "Create a basic contract", function(done) {
   var config = Config.gather(truffle_dir, working_dir, argv);
-  try {
-    if (typeof argv.name != "string") {
-      console.log("Please specify --name. Example: truffle create:contract --name 'MyContract'");
-    } else {
-      Create.contract(config, argv.name, done);
-    }
-  } catch(e) {
-    console.log(e.stack);
+
+  var name = argv.name;
+
+  if (name == null && argv._.length > 1) {
+    name = argv._[1];
+  }
+
+  if (name == null) {
+    throw new ConfigurationError("Please specify a name. Example: truffle create:contract MyContract");
+  } else {
+    Create.contract(config, name, done);
   }
 });
 
 registerTask('create:test', "Create a basic test", function(done) {
   var config = Config.gather(truffle_dir, working_dir, argv);
-  try {
-    if (typeof argv.name != "string") {
-      console.log("Please specify --name. Example: truffle create:test --name 'MyContract'");
-    } else {
-      Create.test(config, argv.name, done);
-    }
-  } catch(e) {
-    console.log(e.stack);
+
+  var name = argv.name;
+
+  if (name == null && argv._.length > 1) {
+    name = argv._[1];
+  }
+
+  if (name == null) {
+    throw new ConfigurationError("Please specify a name. Example: truffle create:test MyTest");
+  } else {
+    Create.test(config, name, done);
   }
 });
 
@@ -203,13 +214,19 @@ registerTask('dist', "Create distributable version of app (minified); creates ./
 registerTask('exec', "Execute a Coffee/JS file within truffle environment. Script *must* call process.exit() when finished.", function(done) {
   var config = Config.gather(truffle_dir, working_dir, argv, "development");
 
-  if (typeof argv.file != "string") {
-    console.log("Please specify --file option, passing the path of the script you'd like the run. Note that all scripts *must* call process.exit() when finished.");
+  var file = argv.file;
+
+  if (file == null && argv._.length > 1) {
+    file = argv._[1];
+  }
+
+  if (file == null) {
+    console.log("Please specify a file, passing the path of the script you'd like the run. Note that all scripts *must* call process.exit() when finished.");
     done();
     return;
   }
 
-  Exec.file(config, argv.file);
+  Exec.file(config, file);
 });
 
 // Supported options:
@@ -239,7 +256,8 @@ if (current_task == null) {
 }
 
 if (tasks[current_task] == null) {
-  throw new Error("Unknown command: " + current_task);
+  console.log(colors.red("Unknown command: " + current_task));
+  process.exit(1);
 }
 
 // Something is keeping the process open. I'm not sure what.

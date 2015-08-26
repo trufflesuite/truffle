@@ -3,7 +3,9 @@ var file = require("./file");
 
 var Create = {
   contract(config, name, callback) {
-    config.expect(config.contracts.directory, "contracts directory");
+    if (!config.expect(config.contracts.directory, "contracts directory", callback)) {
+      return;
+    }
 
     var from = config.example.contract.filename;
     var to = `${config.contracts.directory}/${name}.sol`;
@@ -18,7 +20,9 @@ var Create = {
     });
   },
   test(config, name, callback) {
-    config.expect(config.tests.directory, "tests directory");
+    if (!config.expect(config.tests.directory, "tests directory", callback)) {
+      return;
+    }
 
     var underscored = util.toUnderscoreFromCamel(name);
     var from = config.example.test.filename;

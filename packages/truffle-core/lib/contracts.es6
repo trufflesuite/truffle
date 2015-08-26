@@ -4,6 +4,7 @@ var fs = require("fs");
 var mkdirp = require("mkdirp");
 var path = require("path");
 var provision = require("./provision");
+var ConfigurationError = require("./errors/configurationerror");
 
 var Contracts = {
   resolve(root, callback) {
@@ -165,7 +166,7 @@ var Contracts = {
         console.log(err.message);
         console.log("");
         console.log("Hint: Some clients don't send helpful error messages through the RPC. See client logs for more details.");
-        err = new Error("Compilation failed. See above.");
+        err = new ConfigurationError("Compilation failed. See above.");
       }
       callback(err)
     });
