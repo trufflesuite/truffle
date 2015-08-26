@@ -33,24 +33,17 @@ var registerTask = function(name, description, fn) {
   };
 }
 
-var runTask = function(task, args) {
-  if (args == null) {
-    args = [];
-  }
-
-  // TODO: Handle all errors gracefully.
-  var fn = deasync(tasks[task].fn);
-
+var runTask = function(name) {
   try {
-    fn.apply(null, args);
+    var fn = deasync(tasks[name].fn);
+    fn();
     return 0;
   } catch (e) {
     if (e instanceof ConfigurationError) {
       console.log(colors.red(e.message));
     } else {
-      console.log("It was caught");
       // Bubble up all other unexpected errors.
-      console.log(e.stack);
+      console.log(e.stack || e.toString());
     }
     return 1;
   }
