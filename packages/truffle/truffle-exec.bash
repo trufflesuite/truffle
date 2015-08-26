@@ -17,4 +17,4 @@ args=${args// -e=/ --environment=}
 args=${args// -environment/ --environment}
 
 cd $TRUFFLE_NPM_LOCATION
-$TRUFFLE_NPM_LOCATION/node_modules/.bin/babel-node -- $TRUFFLE_NPM_LOCATION/truffle-exec.es6 ${args}
+$TRUFFLE_NPM_LOCATION/node_modules/.bin/babel-node -- $TRUFFLE_NPM_LOCATION/truffle.es6 exec ${args}

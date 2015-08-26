@@ -49,7 +49,9 @@ var Build = {
         full_path = `${base_path}/${file}`;
       }
 
-      config.expect(full_path);
+      if (!config.expect(full_path, iterator_callback)) {
+        return;
+      }
 
       // Call this function from the Build object since
       // @process_files is passed around and may not always have
@@ -70,7 +72,9 @@ var Build = {
     var destination_directory = `${config[key].directory}/${target}`;
     var source_directory = `${config.app.directory}/${value.files[0]}`;
 
-    config.expect(source_directory, `source directory for target ${target}`, "Check app configuration.");
+    if (!config.expect(source_directory, `source directory for target ${target}`, "Check app configuration.", callback)) {
+      return;
+    }
 
     mkdirp(destination_directory).then(function() {
       copy(source_directory, destination_directory, callback);
@@ -132,18 +136,20 @@ var Build = {
     }).catch(callback);
   },
 
-  expect(config) {
-    config.expect(config.app.configfile, "app configuration");
+  expect(config, callback) {
+    return config.expect(config.app.configfile, "app configuration", callback);
   },
 
   build: function(config, callback) {
-    this.expect(config);
-    this.base(config, "build", callback);
+    if (this.expect(config, callback)) {
+      this.base(config, "build", callback);
+    }
   },
 
   dist: function(config, callback) {
-    this.expect(config)
-    this.base(config, "dist", callback);
+    if (this.expect(config, callback)) {
+      this.base(config, "dist", callback);
+    }
   }
 }
 
