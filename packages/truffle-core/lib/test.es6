@@ -2,6 +2,9 @@ var Mocha = require("mocha");
 var chai = require("chai");
 var dir = require("node-dir");
 var path = require("path");
+var web3 = require("web3");
+var fs = require("fs");
+var temp = require("temp");
 
 var Contracts = require("./contracts");
 
@@ -137,11 +140,43 @@ var Test = {
           return;
         }
 
+        // if running via the 'watch:tests' task, we want to be able to run
+        // (require) our test files repeatedly, so this is a hack to make it
+        // work. we copy each test file to a temp filename and load that
+        // instead of the original to avoid getting cached.
+        files = files.map(function(f) {
+          var src = fs.readFileSync(f);
+          f = temp.path({prefix: "truffle-", suffix: path.extname(f)})
+          fs.writeFileSync(f, src);
+          return f;
+        });
+
+        var mocha = new Mocha({
+          useColors: true
+        });
+
         for (var file of files.sort()) {
           mocha.addFile(file);
         }
 
-        runMocha();
+
+        // Change current working directory to that of the project.
+        process.chdir(config.working_dir);
+        __dirname = process.cwd();
+
+        // If errors aren't caught in Promises, make sure they're thrown
+        // and don't keep the process open.
+        Promise.onPossiblyUnhandledRejection(function(e, promise) {
+          throw e;
+        });
+
+        // TODO: Catch any errors here, and fail.
+        mocha.run(function(failures) {
+          files.forEach(function(f) {
+            fs.unlinkSync(f); // cleanup our temp files
+          });
+          callback(null, failures);
+        });
       });
     });
   }

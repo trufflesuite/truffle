@@ -329,6 +329,57 @@ registerTask('serve', "Serve app on http://localhost:8080 and rebuild changes as
   });
 });
 
+
+
+registerTask('watch:tests', "Watch filesystem for changes and rerun tests automatically", function(done) {
+  var needs_rebuild = true;
+
+  watchr.watch({
+    paths: [
+      path.join(working_dir, "app"),
+      path.join(working_dir, "config"),
+      path.join(working_dir, "contracts"),
+      path.join(working_dir, "test")
+    ],
+    next: function() {
+      console.log("Watching...")
+    },
+    listener: function(changeType, filePath, fileCurrentStat, filePreviousStat) {
+      if (filePath.match(/\/config\/.*?\/contracts\.json$/)) {
+        // ignore changes to /config/*/contracts.json since these changes every time
+        // tests are run
+        return;
+      }
+      process.stdout.write("\u001b[2J\u001b[0;0H"); // clear screen
+      var display_path = "./" + filePath.replace(working_dir, "");
+      console.log(colors.cyan(`>> File ${display_path} changed.`));
+      needs_rebuild = true;
+    },
+    persistent: true,
+    interval: 100, // use values from grunt-contrib-watch
+    catchupDelay: 500
+  });
+
+  var check_rebuild = function() {
+    if (needs_rebuild == true) {
+      needs_rebuild = false;
+      console.log("Running tests...");
+
+      process.chdir(working_dir);
+      var config = Config.gather(truffle_dir, working_dir, argv, "test");
+
+      // Ensure we're quiet about deploys during tests.
+      config.argv.quietDeploy = true;
+
+      Test.run(config, function() { console.log("> test run complete; watching for changes..."); });
+    }
+    setTimeout(check_rebuild, 100);
+  };
+
+  setInterval(check_rebuild, 100);
+});
+
+
 // Default to listing available commands.
 var current_task = argv._[0];
 
