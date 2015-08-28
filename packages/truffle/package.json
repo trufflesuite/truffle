@@ -23,7 +23,7 @@
     "mocha": "*",
     "chai": "*",
     "yargs": "*",
-    "watchr": "*",
+    "gaze": "*",
     "colors": "*"
   },
   "devDependencies": {
