@@ -353,6 +353,7 @@ registerTask('watch:tests', "Watch filesystem for changes and rerun tests automa
       console.log(colors.cyan(`>> File ${display_path} changed.`));
       run_tests();
     },
+    preferredMethods: ["watchFile", "watch"],
     persistent: true,
     interval: 100, // use values from grunt-contrib-watch
     catchupDelay: 500
