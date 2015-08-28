@@ -9,7 +9,7 @@
     "node-sass": "*",
     "uglify-js": "*",
     "bluebird": "*",
-    "web3": "0.10.0",
+    "web3": "0.12.2",
     "bignumber.js": "*",
     "ether-pudding": "0.10.0",
     "deasync": "*",
