@@ -11,7 +11,23 @@ var Exec = {
     var provisioner = provision.asModule(config);
     provisioner.provision_contracts(global);
 
-    require(file);
+    if (path.isAbsolute(file) == false) {
+      file = path.join(process.cwd(), file);
+    }
+
+    web3.eth.getAccounts((error, accounts) => {
+      if (error) {
+        done(error);
+      } else {
+
+        Pudding.defaults({
+          from: accounts[0],
+          gas: 3141592
+        });
+
+        require(file);
+      }
+    });
   }
 }
 

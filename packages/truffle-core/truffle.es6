@@ -62,7 +62,7 @@ registerTask('watch', "Watch filesystem for changes and rebuild the project auto
       console.log("Watching...")
     },
     listener: function(changeType, filePath, fileCurrentStat, filePreviousStat) {
-      var display_path = "./" + filePath.replace(working_dir, "");
+      var display_path = path.join("./", filePath.replace(working_dir, ""));
       console.log(colors.cyan(`>> File ${display_path} changed.`));
       needs_rebuild = true;
     },

@@ -333,18 +333,18 @@ Optional parameter:
 
 ##### create:contract
 
-Helper method to scaffold a new contract. `--name` paramter is required. Name must be camel-case.
+Helper method to scaffold a new contract. Name must be camel-case.
 
 ```
-$ truffle create:contract --name=“MyContract”
+$ truffle create:contract MyContract
 ```
 
 ##### create:test
 
-Helper method to scaffold a new test for a contract. `--name` paramter is required. Name must be camel-case.
+Helper method to scaffold a new test for a contract. Name must be camel-case.
 
 ```
-$ truffle create:test --name=“MyContract”
+$ truffle create:test MyTest
 ```
 
 ##### deploy
@@ -378,10 +378,10 @@ When building, if a build target of `app.js` is specified, Truffle will include 
 
 ##### exec
 
-Execute a Javascript or CoffeeScript file within the Truffle environment. This will include `web3`, set the default provider based on the app configuration, and include the environment's contracts within the specified script. **This is a limited function.** Your script **must** call process.exit() when it is finished or `truffle exec` will never exit. The `--file` parameter is required.
+Execute a Javascript or CoffeeScript file within the Truffle environment. This will include `web3`, set the default provider based on the app configuration, and include the environment's contracts within the specified script. **This is a limited function.** Your script **must** call process.exit() when it is finished or `truffle exec` will never exit.
 
 ```
-$ truffle exec --file="/path/to/my/script.js"
+$ truffle exec /path/to/my/script.js
 ```
 
 Optional parameter:
