@@ -332,8 +332,6 @@ registerTask('serve', "Serve app on http://localhost:8080 and rebuild changes as
 
 
 registerTask('watch:tests', "Watch filesystem for changes and rerun tests automatically", function(done) {
-  var needs_rebuild = true;
-
   watchr.watch({
     paths: [
       path.join(working_dir, "app"),
@@ -353,30 +351,24 @@ registerTask('watch:tests', "Watch filesystem for changes and rerun tests automa
       process.stdout.write("\u001b[2J\u001b[0;0H"); // clear screen
       var display_path = "./" + filePath.replace(working_dir, "");
       console.log(colors.cyan(`>> File ${display_path} changed.`));
-      needs_rebuild = true;
+      run_tests();
     },
     persistent: true,
     interval: 100, // use values from grunt-contrib-watch
     catchupDelay: 500
   });
 
-  var check_rebuild = function() {
-    if (needs_rebuild == true) {
-      needs_rebuild = false;
-      console.log("Running tests...");
+  var run_tests = function() {
+    console.log("Running tests...");
 
-      process.chdir(working_dir);
-      var config = Config.gather(truffle_dir, working_dir, argv, "test");
+    process.chdir(working_dir);
+    var config = Config.gather(truffle_dir, working_dir, argv, "test");
+    config.argv.quietDeploy = true; // Ensure we're quiet about deploys during tests
 
-      // Ensure we're quiet about deploys during tests.
-      config.argv.quietDeploy = true;
-
-      Test.run(config, function() { console.log("> test run complete; watching for changes..."); });
-    }
-    setTimeout(check_rebuild, 100);
+    Test.run(config, function() { console.log("> test run complete; watching for changes..."); });
   };
+  run_tests(); // run once immediately
 
-  setInterval(check_rebuild, 100);
 });
 
 
