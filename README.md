@@ -38,7 +38,7 @@ Ensure you're also running an RPC client that can compile Solidity contracts.
 Usage: truffle [command] [options]
 
 build           => Build development version of app; creates ./build directory
-console         => Run a console with deployed contracts instanciated and available (REPL)
+console         => Run a console with deployed contracts instantiated and available (REPL)
 compile         => Compile contracts
 create:contract => Create a basic contract
 create:test     => Create a basic test
@@ -139,7 +139,7 @@ The `rpc` object within your app's configuration specifies the host and port Tru
 
 ##### Deployable Contracts Configuration
 
-If you're building a complex set of contracts, you likely don't want to deploy all of them to the network. For instance, you may be building a hub contract that, when a function is called, creates instances of other "spoke" contracts. You'll want to compile each of these contracts up front so you're frotend can interact with them when the time comes, but you'll only want to deploy the hub contract initially.   
+If you're building a complex set of contracts, you likely don't want to deploy all of them to the network. For instance, you may be building a hub contract that, when a function is called, creates instances of other "spoke" contracts. You'll want to compile each of these contracts up front so your frontend can interact with them when the time comes, but you'll only want to deploy the hub contract initially.   
 
 Truffle allows you to specify which contracts should be deployed by adding the `deploy` array to `app.json`. This array is simply a list of contract names, where every name matches up with its associated contract. For instance, the following will tell Truffle to only deploy `Example.sol`:
 
@@ -312,7 +312,7 @@ Run a console with your contract objects instantiated and ready to use (REPL).
 $ truffle console
 ```
 
-Once the console starts you can then use your contracts via the comamnd line like you would in your code. 
+Once the console starts you can then use your contracts via the command line like you would in your code. 
 
 Optional parameters:
 
@@ -333,7 +333,7 @@ Optional parameter:
 
 ##### create:contract
 
-Helper method to scaffold a new contract. `--name` paramter is required. Name must be camel-case.
+Helper method to scaffold a new contract. `--name` parameter is required. Name must be camel-case.
 
 ```
 $ truffle create:contract --name=“MyContract”
@@ -483,7 +483,7 @@ First, download [ReactJS](https://fb.me/react-0.13.3.js) and add it to your `app
 ...
 ```
 
-Next, we need to tell Truffle how to process CSJX files, so if it finds one in any build target it knows what to do. First create a file within your project called `cjsx.js` (we'll put ours in a `./lib` directory), then add the following code. In it, we tell Truffle to use `coffee-react-transform` on the file's contents and then send the result back down to the default CoffeeScript processor:
+Next, we need to tell Truffle how to process CJSX files, so if it finds one in any build target it knows what to do. First create a file within your project called `cjsx.js` (we'll put ours in a `./lib` directory), then add the following code. In it, we tell Truffle to use `coffee-react-transform` on the file's contents and then send the result back down to the default CoffeeScript processor:
 
 ```javascript
 var transform = require('coffee-react-transform');
@@ -527,7 +527,7 @@ By default, Truffle looks for the `app.js` build target and if it finds it, perf
 
 Each of these named processors looks like the processor example above.
 
-You have complete control over this post processing in your `app.json` file, and a configuration for the default behavior above would look like this:
+You have complete control over this post-processing in your `app.json` file, and a configuration for the default behavior above would look like this:
 
 ```
 "build": {
