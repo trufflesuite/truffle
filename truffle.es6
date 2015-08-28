@@ -4,7 +4,7 @@ require("coffee-script/register");
 var web3 = require("web3");
 var path = require("path");
 var fs = require("fs");
-var watchr = require("watchr");
+var gaze = require('gaze');
 var deasync = require("deasync");
 var colors = require('colors/safe');
 var Init = require("./lib/init");
@@ -52,23 +52,13 @@ var runTask = function(name) {
 registerTask('watch', "Watch filesystem for changes and rebuild the project automatically", function(done) {
   var needs_rebuild = true;
 
-  watchr.watch({
-    paths: [
-      path.join(working_dir, "app"),
-      path.join(working_dir, "config"),
-      path.join(working_dir, "contracts")
-    ],
-    next: function() {
-      console.log("Watching...")
-    },
-    listener: function(changeType, filePath, fileCurrentStat, filePreviousStat) {
+  gaze(["app/**/*", "config/**/*", "contracts/**/*"], {cwd: working_dir, interval: 1000, debounceDelay: 500}, function() {
+    // On changed/added/deleted
+    this.on('all', function(event, filePath) {
       var display_path = path.join("./", filePath.replace(working_dir, ""));
       console.log(colors.cyan(`>> File ${display_path} changed.`));
       needs_rebuild = true;
-    },
-    persistent: true,
-    interval: 100, // use values from grunt-contrib-watch
-    catchupDelay: 500
+    });
   });
 
   var check_rebuild = function() {
