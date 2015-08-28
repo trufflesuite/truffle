@@ -34,31 +34,56 @@ var Test = {
     var BEFORE_TIMEOUT = 120000;
     var TEST_TIMEOUT = 300000;
 
-    global.contract = function(name, tests) {
+    // Deploy all configured contracts to the chain without recompiling
+    var redeploy_contracts = function(recompile, done) {
+      this.timeout(BEFORE_TIMEOUT);
+
+      Contracts.deploy(config, recompile, function(err) {
+        if (err != null) {
+
+          // Format our error messages so they print better with mocha.
+          if (err instanceof ExtendableError) {
+            err.formatForMocha();
+          }
+
+          done(err);
+          return;
+        }
+
+        Pudding.setWeb3(web3);
+        PuddingLoader.load(config.environments.current.directory, Pudding, global, done);
+      });
+    };
+
+    global.contract = function(name, opts, tests) {
+      var always_redeploy = false;
+      var recompile = false;
+      if (arguments.length === 3) {
+        if (opts) {
+          if (opts.always_redeploy) {
+            always_redeploy = true;
+            //recompile = true;
+          }
+          if (opts.recompile) {
+            recompile = true;
+          }
+        }
+      } else {
+        tests = opts;
+      }
+
       describe(`Contract: ${name}`, function() {
         this.timeout(TEST_TIMEOUT);
 
-        before("redeploy before each contract", function(done) {
-          this.timeout(BEFORE_TIMEOUT);
-
-          // Redeploy contracts before each contract suite,
-          // but don't recompile.
-          Contracts.deploy(config, false, function(err) {
-            if (err != null) {
-
-              // Format our error messages so they print better with mocha.
-              if (err instanceof ExtendableError) {
-                err.formatForMocha();
-              }
-
-              done(err);
-              return;
-            }
-
-            Pudding.setWeb3(web3);
-            PuddingLoader.load(config.environments.current.directory, Pudding, global, done);
+        if (always_redeploy) {
+          beforeEach("redeploy before each test", function(done) {
+            redeploy_contracts.call(this, recompile, done);
           });
-        });
+        } else {
+          before("redeploy before each contract", function(done) {
+            redeploy_contracts.call(this, recompile, done);
+          });
+        }
 
         tests(accounts);
       });
