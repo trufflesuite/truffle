@@ -129,7 +129,7 @@ var Build = {
 
   base: function(config, key, callback) {
     // Clean first.
-    rimraf(config[key].directory).then(function() {
+    rimraf(config[key].directory + '/*').then(function() {
       return mkdirp(config[key].directory);
     }).then(() => {
       this.process_all_targets(config, key, callback);
