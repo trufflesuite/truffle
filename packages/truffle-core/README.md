@@ -37,6 +37,8 @@ Ensure you're also running an RPC client that can compile Solidity contracts.
 ```
 Usage: truffle [command] [options]
 
+Commands:
+
 build           => Build development version of app; creates ./build directory
 console         => Run a console with deployed contracts instanciated and available (REPL)
 compile         => Compile contracts
@@ -50,6 +52,7 @@ init:config     => Initialize default project configuration
 init:contracts  => Initialize default contracts directory
 init:tests      => Initialize tests directory structure and helpers
 list            => List all available tasks
+serve           => Serve app on http://localhost:8080 and rebuild changes as needed (good for web apps)
 test            => Run tests
 version         => Show version number and exit
 watch           => Watch project for changes and rebuild app automatically
@@ -427,6 +430,18 @@ List all available commands and exit. Synonymous with `--help`.
 ```
 $ truffle list
 ```
+
+##### serve
+
+Serve the built app from `http://localhost:8080`, rebuilding changes as needed. Like `truffle watch`, but with the web server component added.
+
+```
+$ truffle serve
+```
+
+Optional parameters:
+
+* `-e environment`: Specify the environment. Default is "development".
 
 ##### test
 
