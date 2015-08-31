@@ -10,6 +10,9 @@ var Pudding = require("ether-pudding");
 var loadconf = require("./loadconf");
 var Promise = require("bluebird");
 
+// Make Promise global so tests have access to it.
+global.Promise = Promise;
+
 // Use custom assertions.
 global.assert = chai.assert;
 chai.use(require("./assertions"));
