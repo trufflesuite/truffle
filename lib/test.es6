@@ -8,6 +8,7 @@ var Provision = require("./provision");
 
 var Pudding = require("ether-pudding");
 var loadconf = require("./loadconf");
+var Promise = require("bluebird");
 
 // Use custom assertions.
 global.assert = chai.assert;
@@ -46,6 +47,8 @@ var Test = {
 
               done();
             });
+
+
           });
         });
 
@@ -105,6 +108,13 @@ var Test = {
         process.chdir(config.working_dir);
         __dirname = process.cwd();
 
+        // If errors aren't caught in Promises, make sure they're thrown
+        // and don't keep the process open.
+        Promise.onPossiblyUnhandledRejection(function(e, promise) {
+          throw e;
+        });
+
+        // TODO: Catch any errors here, and fail.
         mocha.run(function(failures) {
           callback(null, failures);
         });
