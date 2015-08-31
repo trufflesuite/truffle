@@ -249,7 +249,7 @@ registerTask('console', "Run a console with deployed contracts instanciated and 
   Repl.run(config, done);
 });
 
-registerTask('serve', "Serve the app via a web server and rebuild as changes are made.", function(done) {
+registerTask('serve', "Serve app on http://localhost:8080 and rebuild changes as needed", function(done) {
   var config = Config.gather(truffle_dir, working_dir, argv, "development");
   console.log("Using environment " + config.environment + ".");
   Serve.start(config, function() {
