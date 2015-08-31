@@ -33,6 +33,14 @@ var registerTask = function(name, description, fn) {
   };
 }
 
+var printSuccess = function() {
+  console.log(colors.green(`Completed without errors on ${new Date().toString()}`));
+};
+
+var printFailure = function() {
+  console.log(colors.red(`Completed with errors on ${new Date().toString()}`));
+};
+
 var runTask = function(name) {
   try {
     var fn = deasync(tasks[name].fn);
@@ -65,10 +73,8 @@ registerTask('watch', "Watch filesystem for changes and rebuild the project auto
     if (needs_rebuild == true) {
       needs_rebuild = false;
       console.log("Rebuilding...");
-      if (runTask("build") == 0) {
-        console.log(colors.green(`Completed without errors on ${new Date().toString()}`));
-      } else {
-        console.log(colors.red(`Error during build. See above.`));
+      if (runTask("build") != 0) {
+        printFailure();
       }
     }
     setTimeout(check_rebuild, 500);
@@ -177,6 +183,7 @@ registerTask('deploy', "Deploy contracts to the network", function(done) {
     if (err != null) {
       done(err);
     } else {
+      console.log("Rebuilding app with new contracts...");
       runTask("build");
       done();
     }
@@ -185,13 +192,23 @@ registerTask('deploy', "Deploy contracts to the network", function(done) {
 
 registerTask('build', "Build development version of app; creates ./build directory", function(done) {
   var config = Config.gather(truffle_dir, working_dir, argv, "development");
-  Build.build(config, done);
+  Build.build(config, function(err) {
+    done(err);
+    if (err == null) {
+      printSuccess();
+    }
+  });
 });
 
 registerTask('dist', "Create distributable version of app (minified); creates ./dist directory", function(done) {
   var config = Config.gather(truffle_dir, working_dir, argv, "production");
   console.log("Using environment " + config.environment + ".");
-  Build.dist(config, done);
+  Build.dist(config, function(err) {
+    done(err);
+    if (err == null) {
+      printSuccess();
+    }
+  });
 });
 
 registerTask('exec', "Execute a Coffee/JS file within truffle environment. Script *must* call process.exit() when finished.", function(done) {

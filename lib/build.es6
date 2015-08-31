@@ -8,6 +8,7 @@ var fs = require("fs");
 var copy = require("./copy");
 var File = require("./file");
 var _ = require("lodash");
+var colors = require("colors");
 
 var Build = {
   process_file(config, file, callback) {
@@ -46,7 +47,7 @@ var Build = {
     async.reduce(files, "", (memo, file, iterator_callback) => {
       var full_path = file;
       if (base_path != null) {
-        full_path = `${base_path}/${file}`;
+        full_path = path.join(base_path, file);
       }
 
       if (!config.expect(full_path, iterator_callback)) {
@@ -58,6 +59,9 @@ var Build = {
       // the correct scope.
       Build.process_file(config, full_path, function(err, processed) {
         if (err != null) {
+          console.log("");
+          console.log(colors.red(`Error in ${file}:`));
+          console.log("");
           iterator_callback(err);
           return;
         }
