@@ -171,7 +171,7 @@ var Test = {
         // instead of the original to avoid getting cached.
         files = files.map(function(f) {
           var src = fs.readFileSync(f);
-          f = temp.path({prefix: "truffle-", suffix: path.extname(f)})
+          f = temp.path({prefix: "truffle-", suffix: "-"+path.basename(f)})
           fs.writeFileSync(f, src);
           return f;
         });
