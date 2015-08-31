@@ -1,5 +1,10 @@
 module.exports = function(contents, file, config, process, callback) {
-  process(config, config.frontend.includes, function(err, processed) {
+
+  var includes = config.frontend.includes_order.map(function(key) {
+    return config.frontend.includes[key];
+  });
+
+  process(config, includes, function(err, processed) {
     if (err != null) {
       callback(err);
       return;
