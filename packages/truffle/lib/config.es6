@@ -63,7 +63,7 @@ var Config = {
         directory: `${working_dir}/test`
       },
       build: {
-        directory: `${working_dir}/build`,
+        directory: path.join(working_dir, "build"),
         defaults: {
           "post-process": {
             "app.js": [

@@ -15,6 +15,7 @@ var Build = require("./lib/build");
 var Test = require("./lib/test");
 var Exec = require("./lib/exec");
 var Repl = require("./lib/repl");
+var Serve = require("./lib/serve");
 
 var ConfigurationError = require("./lib/errors/configurationerror");
 
@@ -246,6 +247,14 @@ registerTask('test', "Run tests", function(done) {
 registerTask('console', "Run a console with deployed contracts instanciated and available (REPL)", function(done) {
   var config = Config.gather(truffle_dir, working_dir, argv, "development");
   Repl.run(config, done);
+});
+
+registerTask('serve', "Serve the app via a web server and rebuild as changes are made.", function(done) {
+  var config = Config.gather(truffle_dir, working_dir, argv, "development");
+  console.log("Using environment " + config.environment + ".");
+  Serve.start(config, function() {
+    runTask("watch");
+  });
 });
 
 // Default to listing available commands.
