@@ -31,7 +31,8 @@ var Config = {
           deploy: [],
           rpc: {},
           processors: {},
-          provider: null
+          provider: null,
+          web3: null
         }
       },
       frontend: {
@@ -65,7 +66,8 @@ var Config = {
         directory: `${working_dir}/contracts`
       },
       tests: {
-        directory: `${working_dir}/test`
+        directory: `${working_dir}/test`,
+        web3: path.join(truffle_dir, "node_modules", "web3", "index.js")
       },
       build: {
         directory: path.join(working_dir, "build"),
@@ -279,15 +281,19 @@ var Config = {
       }
     }
 
-    // Set the provider.
-    if (config.app.resolved.provider == null) {
-      var provider = new web3.providers.HttpProvider(`http://${config.app.resolved.rpc.host}:${config.app.resolved.rpc.port}`);
-      web3.setProvider(provider);
-    } else {
-      var file = path.join(config.working_dir, config.app.resolved.provider);
-      var provider = require(file);
-      web3.setProvider(provider);
+    config.setProviderFor = function(_web3) {
+      // Set the provider.
+      if (this.app.resolved.provider == null) {
+        var provider = new _web3.providers.HttpProvider(`http://${this.app.resolved.rpc.host}:${this.app.resolved.rpc.port}`);
+        _web3.setProvider(provider);
+      } else {
+        var file = path.join(this.working_dir, this.app.resolved.provider);
+        var provider = require(file);
+        _web3.setProvider(provider);
+      }
     }
+
+    config.setProviderFor(web3);
 
     if (web3.currentProvider == null) {
       throw new ConfigurationError("Could not correctly set your web3 provider. Please check your app configuration.");
@@ -297,9 +303,16 @@ var Config = {
     // the frontend, let's make sure it exists and add it to the
     // frontend dependencies.
     if (config.app.resolved.web3 != null) {
-      config.app.resolved.web3 = path.join(working_dir, config.app.resolved.web3);
-      config.frontend.includes.web3 = config.app.resolved.web3;
-      config.expect(config.frontend.includes.web3, "alternate version of web3 specified in app.json");
+      if (!path.isAbsolute(config.app.resolved.web3)) {
+        config.frontend.includes.web3 = path.join(working_dir, config.app.resolved.web3, "dist", "web3.min.js");
+        config.tests.web3 = path.join(working_dir, config.app.resolved.web3, "index.js");
+      } else {
+        config.frontend.includes.web3 = path.join(truffle_dir, "node_modules", "web3", "dist", "web3.min.js");
+        config.tests.web3 = path.join(truffle_dir, "node_modules", "index.js");
+      }
+
+      config.expect(config.frontend.includes.web3, "frontend version of web3 specified in app.json");
+      config.expect(config.tests.web3, "node version of web3 specified in app.json");
     }
 
     if (argv.verboseRpc != null) {
