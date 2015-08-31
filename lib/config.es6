@@ -36,10 +36,15 @@ var Config = {
       },
       frontend: {
         contract_inserter_filename: `${truffle_dir}/lib/insert_contracts.js`,
-        includes: [
-          `${truffle_dir}/node_modules/bluebird/js/browser/bluebird.js`,
-          `${truffle_dir}/node_modules/web3/dist/web3.min.js`,
-          `${truffle_dir}/node_modules/ether-pudding/build/ether-pudding.js`
+        includes: {
+          bluebird: `${truffle_dir}/node_modules/bluebird/js/browser/bluebird.js`,
+          web3: `${truffle_dir}/node_modules/web3/dist/web3.min.js`,
+          pudding: `${truffle_dir}/node_modules/ether-pudding/build/ether-pudding.js`
+        },
+        includes_order: [
+          "bluebird",
+          "web3",
+          "pudding"
         ]
       },
       example: {
@@ -274,6 +279,7 @@ var Config = {
       }
     }
 
+    // Set the provider.
     if (config.app.resolved.provider == null) {
       var provider = new web3.providers.HttpProvider(`http://${config.app.resolved.rpc.host}:${config.app.resolved.rpc.port}`);
       web3.setProvider(provider);
@@ -285,6 +291,15 @@ var Config = {
 
     if (web3.currentProvider == null) {
       throw new ConfigurationError("Could not correctly set your web3 provider. Please check your app configuration.");
+    }
+
+    // If app.json specifies a version of web3 to use for tests and
+    // the frontend, let's make sure it exists and add it to the
+    // frontend dependencies.
+    if (config.app.resolved.web3 != null) {
+      config.app.resolved.web3 = path.join(working_dir, config.app.resolved.web3);
+      config.frontend.includes.web3 = config.app.resolved.web3;
+      config.expect(config.frontend.includes.web3, "alternate version of web3 specified in app.json");
     }
 
     if (argv.verboseRpc != null) {
