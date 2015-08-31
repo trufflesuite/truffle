@@ -24,7 +24,9 @@
     "chai": "*",
     "yargs": "*",
     "gaze": "*",
-    "colors": "*"
+    "colors": "*",
+    "finalhandler": "*",
+    "serve-static": "*"
   },
   "devDependencies": {
     "temp": "*"
