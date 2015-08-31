@@ -1,7 +1,7 @@
 var Mocha = require("mocha");
 var chai = require("chai");
 var dir = require("node-dir");
-var web3 = require("web3");
+var path = require("path");
 
 var Contracts = require("./contracts");
 var Provision = require("./provision");
@@ -19,9 +19,13 @@ chai.use(require("./assertions"));
 
 var Test = {
   setup(config, callback) {
+    // Use the user-specified version of web3 in the tests.
+    global.web3 = require(config.tests.web3);;
+    config.setProviderFor(web3);
+
     // Variables that are passed to each contract which are
     // populated by the global before() hook.
-    var accounts = []
+    var accounts = [];
 
     var BEFORE_TIMEOUT = 120000
     var TEST_TIMEOUT = 300000
