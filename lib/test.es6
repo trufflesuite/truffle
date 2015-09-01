@@ -36,11 +36,10 @@ var Test = {
 
     // Deploy all configured contracts to the chain without recompiling
     var redeploy_contracts = function(recompile, done) {
-      this.timeout(BEFORE_TIMEOUT);
+      this && this.timeout && this.timeout(BEFORE_TIMEOUT);
 
       Contracts.deploy(config, recompile, function(err) {
         if (err != null) {
-
           // Format our error messages so they print better with mocha.
           if (err instanceof ExtendableError) {
             err.formatForMocha();
@@ -53,6 +52,10 @@ var Test = {
         Pudding.setWeb3(web3);
         PuddingLoader.load(config.environments.current.directory, Pudding, global, done);
       });
+    };
+
+    global.Truffle = {
+      redeploy: redeploy_contracts,
     };
 
     global.contract = function(name, opts, tests) {
