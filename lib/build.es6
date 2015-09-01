@@ -111,6 +111,11 @@ var Build = {
           return;
         }
 
+        if (typeof post_processor != "function") {
+          post_processor_finished(new Error(`Couldn't load custom processor '${processor_name}'; processor function not correctly exported.`));
+          return;
+        }
+
         post_processor(memo, target_file, config, Build.process_files, post_processor_finished);
       }, function(err, final_post_processed) {
         if (err != null) {
