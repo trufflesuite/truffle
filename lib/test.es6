@@ -5,6 +5,7 @@ var path = require("path");
 var web3 = require("web3");
 var fs = require("fs");
 var temp = require("temp");
+var Promise = require("bluebird");
 
 var Contracts = require("./contracts");
 
@@ -56,6 +57,7 @@ var Test = {
 
     global.Truffle = {
       redeploy: redeploy_contracts,
+      handle_errs: (done) => { Promise.onPossiblyUnhandledRejection(done); }
     };
 
     global.contract = function(name, opts, tests) {
