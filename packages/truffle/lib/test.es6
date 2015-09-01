@@ -55,22 +55,43 @@ var Test = {
       });
     };
 
+    var rpc = function(method, arg, cb) {
+      var req = {
+        jsonrpc: "2.0",
+        method: method,
+        id: new Date().getTime()
+      };
+      if (arguments.length == 3) {
+        req.params = [arg];
+      } else {
+        cb = arg;
+      }
+      web3.currentProvider.sendAsync(req, cb);
+    };
+
     global.Truffle = {
       redeploy: redeploy_contracts,
-      handle_errs: (done) => { Promise.onPossiblyUnhandledRejection(done); }
+      handle_errs: (done) => { Promise.onPossiblyUnhandledRejection(done); },
+
+      reset: function(cb) {
+        rpc("evm_reset", cb);
+      },
+
+      snapshot: function(cb) {
+        rpc("evm_snapshot", cb);
+      },
+
+      revert: function(snapshot_id, cb) {
+        rpc("evm_revert", snapshot_id, cb);
+      }
     };
 
     global.contract = function(name, opts, tests) {
-      var always_redeploy = false;
-      var recompile = false;
+      var reset_state = true;
       if (arguments.length === 3) {
         if (opts) {
-          if (opts.always_redeploy) {
-            always_redeploy = true;
-            //recompile = true;
-          }
-          if (opts.recompile) {
-            recompile = true;
+          if (opts.reset_state) {
+            reset_state = opts.reset_state;
           }
         }
       } else {
@@ -80,13 +101,25 @@ var Test = {
       describe(`Contract: ${name}`, function() {
         this.timeout(TEST_TIMEOUT);
 
-        if (always_redeploy) {
-          beforeEach("redeploy before each test", function(done) {
-            redeploy_contracts.call(this, recompile, done);
+        before("redeploy before each suite", function(done) {
+          redeploy_contracts.call(this, true, function() {
+            done();
           });
-        } else {
-          before("redeploy before each contract", function(done) {
-            redeploy_contracts.call(this, recompile, done);
+        });
+
+        if (reset_state) {
+          var snapshot_id;
+          beforeEach("snapshot state before each test", function(done) {
+            Truffle.snapshot(function(err, ret) {
+              snapshot_id = ret.result;
+              done();
+            });
+          });
+
+          afterEach("revert state after each test", function(done) {
+            Truffle.revert(snapshot_id, function(err, ret) {
+              done();
+            });
           });
         }
 
