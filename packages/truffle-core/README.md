@@ -199,6 +199,32 @@ If a target is given a string instead of an array, that target will be assumed t
 
 **Note:** All JSON files in Truffle allow Javascript comments which are ignored by our JSON parser. This is non-standard JSON syntax, and should be removed if its causing you issue.
 
+##### Advanced Configuration Options
+
+All of the following configuration options should be placed at the same level in `app.json` as `build`, `rpc` and `deploy`.
+
+* **web3:** Specify a path to a different version of web3 that you'd like Truffle to use in your frontend as well as your tests. This path must be relative to your project directory (i.e., the parent of your `app` directory) and must point to a version of web3 installed via npm. i.e., `./node_modules/web3`. Example:
+
+  ```
+  {
+    // ...
+    "web3": "./node_modules/web3
+  }
+  
+  ```
+
+* **provider:** Specify a different provider for web3. Use this option **instead of** the `rpc` configuration option; do not use both together. Must be a path to a Javascript/ES6/CoffeeScript file that can be `require()`'d by Node as well as used in the frontend, if desired. Check for existence of `module` in this script to distinguish between the too. Note that in Node you must export the provider, and in the browser you should set the provider yourself through `web3.setProvider()`
+
+  ```
+  {
+    // ...
+    // Do not use `rpc`
+    "provider": "./lib/custom_provider.es6"
+  }
+  ```
+  
+  Example provider can be found [here](https://github.com/ConsenSys/blockapps-web3/blob/master/app/truffle-provider.es6).
+
 ### Building & Distributing Your App
 
 Truffle uses the term “build” to mean transforming your `app` code into an executable and distributable package, sending your code through the pipeline to produce raw HTML, CSS and Javascript (e.g., if you're building a web app). Building is easy. Simply run:
