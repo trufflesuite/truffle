@@ -332,17 +332,10 @@ registerTask('serve', "Serve app on http://localhost:8080 and rebuild changes as
 
 
 registerTask('watch:tests', "Watch filesystem for changes and rerun tests automatically", function(done) {
-  watchr.watch({
-    paths: [
-      path.join(working_dir, "app"),
-      path.join(working_dir, "config"),
-      path.join(working_dir, "contracts"),
-      path.join(working_dir, "test")
-    ],
-    next: function() {
-      console.log("Watching...")
-    },
-    listener: function(changeType, filePath, fileCurrentStat, filePreviousStat) {
+
+  gaze(["app/**/*", "config/**/*", "contracts/**/*", "test/**/*"], {cwd: working_dir, interval: 1000, debounceDelay: 500}, function() {
+    // On changed/added/deleted
+    this.on('all', function(event, filePath) {
       if (filePath.match(/\/config\/.*?\/contracts\.json$/)) {
         // ignore changes to /config/*/contracts.json since these changes every time
         // tests are run
@@ -352,11 +345,7 @@ registerTask('watch:tests', "Watch filesystem for changes and rerun tests automa
       var display_path = "./" + filePath.replace(working_dir, "");
       console.log(colors.cyan(`>> File ${display_path} changed.`));
       run_tests();
-    },
-    preferredMethods: ["watchFile", "watch"],
-    persistent: true,
-    interval: 100, // use values from grunt-contrib-watch
-    catchupDelay: 500
+    });
   });
 
   var run_tests = function() {
