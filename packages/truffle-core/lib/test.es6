@@ -51,7 +51,16 @@ var Test = {
         }
 
         Pudding.setWeb3(web3);
-        PuddingLoader.load(config.environments.current.directory, Pudding, global, done);
+        PuddingLoader.load(config.environments.current.directory, Pudding, global, function(err, contract_names) {
+          for (var name in contract_names) {
+            var contract = global[name];
+            var inst = contract.at(contract.deployed_address);
+            Truffle.log_filters.push(inst.allEvents({fromBlock: 0, toBlock: 'latest'}, function(err, results) {
+              // no-op, don't worry abuot tracking events just now
+            }));
+          }
+          done();
+        });
       });
     };
 
@@ -62,7 +71,7 @@ var Test = {
         id: new Date().getTime()
       };
       if (arguments.length == 3) {
-        req.params = [arg];
+        req.params = arg;
       } else {
         cb = arg;
       }
@@ -70,6 +79,9 @@ var Test = {
     };
 
     global.Truffle = {
+
+      log_filters: [],
+
       redeploy: redeploy_contracts,
       handle_errs: (done) => { Promise.onPossiblyUnhandledRejection(done); },
 
@@ -82,7 +94,7 @@ var Test = {
       },
 
       revert: function(snapshot_id, cb) {
-        rpc("evm_revert", snapshot_id, cb);
+        rpc("evm_revert", [snapshot_id, true], cb);
       }
     };
 
@@ -105,6 +117,45 @@ var Test = {
           redeploy_contracts.call(this, true, function() {
             done();
           });
+        });
+
+        afterEach("check logs on failure", function(done) {
+          if (this.currentTest.state == "failed") {
+
+            var logs = [];
+            Truffle.log_filters.forEach(function(filter) {
+              logs = logs.concat(filter.get());
+            });
+            logs.sort(function(a, b) {
+              var ret = a.blockNumber - b.blockNumber;
+              if (ret == 0) {
+                return a.logIndex - b.logIndex;
+              }
+              return ret;
+            });
+
+            if (logs.length > 0) {
+              console.log("\n    Events emitted during test:");
+              console.log(  "    ---------------------------");
+              logs.forEach(function(log) {
+                if (log.event.toLowerCase() == "debug") {
+                  console.log("[DEBUG]", log.args.msg);
+                  return;
+                }
+                var data = {};
+                for (var key in log.args) {
+                  data[key] = log.args[key].toString();
+                }
+                console.log({event: log.event, data: data})
+              });
+              console.log(  "\n    --------------------------- END EVENTS");
+            } else {
+              console.log("    > No events were emitted");
+            }
+
+
+          }
+          done();
         });
 
         if (reset_state) {
