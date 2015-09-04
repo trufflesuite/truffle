@@ -130,7 +130,14 @@ var Test = {
 
             var logs = [];
             Truffle.log_filters.forEach(function(filter) {
-              logs = logs.concat(filter.get());
+              try {
+                logs = logs.concat(filter.get());
+              } catch (e) {
+                if (e.message.match(/Invalid parameters/)) {
+                  // filter is invalid because the contract no longer exists
+                  filter.stopWatching();
+                }
+              }
             });
             logs.sort(function(a, b) {
               var ret = a.blockNumber - b.blockNumber;
