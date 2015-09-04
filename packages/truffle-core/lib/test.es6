@@ -113,8 +113,18 @@ var Test = {
       describe(`Contract: ${name}`, function() {
         this.timeout(TEST_TIMEOUT);
 
+        var _original_contracts = {};
+
         before("redeploy before each suite", function(done) {
           redeploy_contracts.call(this, true, function() {
+
+            // Store address that was first deployed, in case we redeploy
+            // from within a test
+            for (var name in config.contracts.classes) {
+              var contract = global[name];
+              _original_contracts[name] = contract.deployed_address;
+            }
+
             done();
           });
         });
@@ -122,6 +132,13 @@ var Test = {
         after("clear all filters after each suite", function(done) {
           Truffle.log_filters.forEach(function(f) { f.stopWatching(); });
           Truffle.log_filters = [];
+          done();
+        });
+
+        afterEach("restore contract address", function(done) {
+          for (var name in _original_contracts) {
+            global[name].deployed_address = _original_contracts[name];
+          }
           done();
         });
 
