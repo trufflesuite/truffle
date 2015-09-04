@@ -119,6 +119,12 @@ var Test = {
           });
         });
 
+        after("clear all filters after each suite", function(done) {
+          Truffle.log_filters.forEach(function(f) { f.stopWatching(); });
+          Truffle.log_filters = [];
+          done();
+        });
+
         afterEach("check logs on failure", function(done) {
           if (this.currentTest.state == "failed") {
 
