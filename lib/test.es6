@@ -168,6 +168,9 @@ var Test = {
               console.log("\n    Events emitted during test:");
               console.log(  "    ---------------------------");
               logs.forEach(function(log) {
+                if (!log.event) {
+                  return; // only want log events
+                }
                 if (log.event.toLowerCase() == "debug") {
                   console.log("[DEBUG]", log.args.msg);
                   return;
