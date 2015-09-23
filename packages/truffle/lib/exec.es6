@@ -12,7 +12,7 @@ var Exec = {
     provisioner.provision_contracts(global);
 
     if (path.isAbsolute(file) == false) {
-      file = path.join(process.cwd(), file);
+      file = path.join(config.working_dir, file);
     }
 
     web3.eth.getAccounts((error, accounts) => {
