@@ -132,8 +132,8 @@ var Config = {
 
       config.environment = desired_environment;
       config.environments.current.directory = environment_directory;
-      config.environments.current.filename = `${environment_directory}/config.json`;
-      config.environments.current.contracts_filename = `${environment_directory}/contracts.json`;
+      config.environments.current.filename = path.join(environment_directory, "config.json");
+      config.environments.current.contracts_filename = path.join(environment_directory, "contracts.json");
 
       break;
     }
@@ -262,8 +262,9 @@ var Config = {
     if (fs.existsSync(config.contracts.directory)) {
       for (file of filesSync(config.contracts.directory)) {
         var name = file.substring(file.lastIndexOf("/") + 1, file.lastIndexOf("."));
+        var relative_path = file.replace(config.working_dir, "./");
         config.contracts.classes[name] = {
-          source: file
+          source: relative_path
         }
       }
     }
