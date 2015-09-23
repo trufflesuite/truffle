@@ -130,10 +130,10 @@ var Contracts = {
     async.mapSeries(Object.keys(config.contracts.classes), (key, finished) => {
       var contract = config.contracts.classes[key];
       var source = contract.source;
+      var full_path = path.resolve(config.working_dir, source);
 
-      var display_name = source.substring(source.lastIndexOf("/") + 1);
       if (config.argv.quietDeploy == null) {
-        console.log(`Compiling ${display_name}...`);
+        console.log(`Compiling ${source}...`);
       }
 
       this.check_for_valid_compiler(source, (err) => {
@@ -142,7 +142,7 @@ var Contracts = {
           return;
         }
 
-        this.resolve(source, function(err, code) {
+        this.resolve(full_path, function(err, code) {
           if (err != null) {
             finished(err);
             return;
@@ -179,7 +179,7 @@ var Contracts = {
         return;
       }
 
-      var display_directory = "." + config.environments.current.contracts_filename.replace(config.working_dir, "");
+      var display_directory = "./" + config.environments.current.contracts_filename.replace(config.working_dir, "");
       if (config.argv.quietDeploy == null) {
         console.log(`Writing ${description} to ${display_directory}`);
       }
