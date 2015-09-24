@@ -17,7 +17,7 @@ module.exports = function(contents, file, config, process, callback) {
 
     var provisioner = provision.asString(config);
 
-    var result = provisioner + "__provisioner.provision_contracts(window);\n\n" + contents + "; __provisioner.set_provider(window);"
+    var result = provisioner + "; if( module == null ) { __provisioner.provision_contracts(window); };\n\n" + contents + "; if( module == null ) { __provisioner.set_provider(window); };"
 
     callback(null, result);
   } catch(e) {
