@@ -17,7 +17,7 @@ module.exports = function(contents, file, config, process, callback) {
 
     var provisioner = provision.asString(config);
 
-    var result = 'if( module != null ) { var Pudding = require("ether-pudding"); }' + provisioner + "; if( module == null ) { \n __provisioner.provision_contracts(window); };\n\n" + contents + "; if( module == null ) { __provisioner.set_provider(window); };"
+    var result = 'if( module != null ) { var Pudding = require("ether-pudding"); var web3    = require("web3"); }' + provisioner + "; if( module == null ) { \n __provisioner.provision_contracts(window); };\n\n" + contents + "; if( module == null ) { __provisioner.set_provider(window); };"
 
     callback(null, result);
   } catch(e) {
