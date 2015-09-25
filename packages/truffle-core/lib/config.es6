@@ -275,7 +275,7 @@ var Config = {
       for (var name in current_contracts) {
         var contract = current_contracts[name];
         // Don't import any deleted contracts.
-        if (!fs.existsSync(contract.source)) {
+        if (!fs.existsSync(path.join(working_dir, contract.source))) {
           continue;
         }
         config.contracts.classes[name] = contract;
