@@ -1,4 +1,4 @@
-# The Proof is in the Pudding
+// The Proof is in the Pudding
 
 Ether Pudding (or just “Pudding”) is an extension of [web3’s](https://github.com/ethereum/web3.js/tree/master) contract abstraction that makes life as a Dapp developer a whole lot easier. With Pudding, you can cleanly write distributed Ethereum applications and automated tests with less hassle and more reliability, ensuring that each will run against any (read: every) RPC client. When used with the Consensys [TestRPC](https://github.com/ConsenSys/testrpc), you can develop Dapps faster.
 
@@ -31,14 +31,14 @@ Using Pudding in your app is very similar to using web3’s contract abstraction
 var web3 = require("web3");
 var Pudding = require("ether-pudding");
 
-# Set the provider, as you would normally. 
+// Set the provider, as you would normally. 
 web3.setProvider(new web3.Providers.HttpProvider("http://localhost:8545"));
 
-# Before performing the next step, you'll need to compile your contract
-# and have the ABI available, just as you would with web3.eth.contract().
+// Before performing the next step, you'll need to compile your contract
+// and have the ABI available, just as you would with web3.eth.contract().
 
-# You need to provide your contract's abi and binary code.
-# You can get these by compiling your contracts with solidity compiler, solc.
+// You need to provide your contract's abi and binary code.
+// You can get these by compiling your contracts with solidity compiler, solc.
 var MyContract = Pudding.whisk(abi, binary);
 ```
 
@@ -47,8 +47,8 @@ So far, Pudding isn’t much different from web3’s contract abstraction. Here�
 ```javascript
 var MetaCoin = Pudding.whisk(metaCoinABI)
 
-# In this scenario, two users will send MetaCoin back and forth, showing
-# how Pudding allows for easy control flow. 
+// In this scenario, two users will send MetaCoin back and forth, showing
+// how Pudding allows for easy control flow. 
 var account_one = "5b42bd01ff...";
 var account_two = "e1fd0d4a52...";
 
@@ -57,27 +57,27 @@ var contract_address = "8e2e2cf785...";
 var coin = MetaCoin.at(contract_address, {gasLimit: 3141592});
 
 coin.sendCoin(account_two, 3, {from: account_one}).then(function(tx) {
-  # This code block will not be executed until Pudding has verified 
-  # the transaction has been processed and it is included in a mined block.
-  # Pudding will error if the transaction hasn't been processed in 120 seconds.
+  // This code block will not be executed until Pudding has verified 
+  // the transaction has been processed and it is included in a mined block.
+  // Pudding will error if the transaction hasn't been processed in 120 seconds.
   
-  # Since we're using promises (and this is coffeescript), we can return a 
-  # promise for a call that will check account two's balance.
+  // Since we're using promises (and this is coffeescript), we can return a 
+  // promise for a call that will check account two's balance.
   coin.balances.call(account_two)
 }).then(function(balance_of_account_two) {
-  alert("Balance of account two is " + balance_of_account_two + "!"); # => 3
+  alert("Balance of account two is " + balance_of_account_two + "!"); // => 3
   
-  # But maybe too much was sent. Let's send some back.
-  # Like before, will create a transaction that returns a promise, where
-  # the callback won't be executed until the transaction has been processed.
+  // But maybe too much was sent. Let's send some back.
+  // Like before, will create a transaction that returns a promise, where
+  // the callback won't be executed until the transaction has been processed.
   coin.sendCoin(account_one, 1.5, {from: account_two});
 }).then(function(tx) {
-  # Again, get the balance of account two
+  // Again, get the balance of account two
   coin.balances.call(account_two)
 }).then(function(balance_of_account_two) {
-  alert("Balance of account two is " + balance_of_account_two + "!") # => 1.5
+  alert("Balance of account two is " + balance_of_account_two + "!") // => 1.5
 }).catch(function(err) {
-  # Easily catch all errors along the whole execution.
+  // Easily catch all errors along the whole execution.
   alert("ERROR! " + err.message);
 });
 ```
@@ -88,8 +88,8 @@ Because you provided your contract's binary code in `Pudding.whisk()`, you can c
 
 ```javascript
 MetaCoin.new().then(function(coin) {
-  # From here, the example becomes just like the above.
-  # Note that coin.address is the addres of the newly created contract.
+  // From here, the example becomes just like the above.
+  // Note that coin.address is the addres of the newly created contract.
   return coin.sendCoin(...);
 )}.catch(function(err) {
   console.log("Error creating contract!");
