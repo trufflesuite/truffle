@@ -1,7 +1,7 @@
 {
   "name": "truffle",
   "namespace": "consensys",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "truffle - Simple development framework for Ethereum",
   "dependencies": {
     "coffee-script": "*",
@@ -9,9 +9,9 @@
     "node-sass": "*",
     "uglify-js": "*",
     "bluebird": "*",
-    "web3": "0.12.2",
+    "web3": "0.13.0",
     "bignumber.js": "*",
-    "ether-pudding": "0.10.0",
+    "ether-pudding": "0.13.1",
     "deasync": "*",
     "async": "*",
     "node-dir": "*",
