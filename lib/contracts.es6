@@ -154,6 +154,14 @@ var Contracts = {
               return;
             }
 
+            if(result[key] == null && Object.keys(result).length > 0) {
+              var contractName = Object.keys(result)[0];
+              if ((contractName.toUpperCase() == key.toUpperCase()) && (contractName != key)) {
+                callback(new Error("Could not get compiler results because contract name '" + contractName + "' is not identical to file name '" + key + "'."));
+                return;
+              }
+            }
+
             contract["binary"] = result[key].code;
             contract["abi"] = result[key].info.abiDefinition;
             finished(null, contract);
