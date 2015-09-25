@@ -1,0 +1,22 @@
+{
+  "build": {
+    "ether-pudding.js": [
+      "pudding.coffee"
+    ],
+    "ether-pudding.min.js": {
+      "files": [
+        "../build/ether-pudding.js"
+      ],
+      "post-process": [
+        "uglify"
+      ]
+    }
+  },
+  "deploy": [
+    "Example"
+  ],
+  "rpc": {
+    "host": "localhost",
+    "port": 8545
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "Example": {
+    "source": "./contracts/Example.sol",
+    "binary": "0x60606040525b60016000600050819055505b608880601d6000396000f360606040526000357c0100000000000000000000000000000000000000000000000000000000900480633fa4f2451460415780635524107714606057603f565b005b604a6004506071565b6040518082815260200191505060405180910390f35b606f600480359060200150607a565b005b60006000505481565b806000600050819055505b5056",
+    "abi": [
+      {
+        "inputs": [],
+        "constant": true,
+        "name": "value",
+        "outputs": [
+          {
+            "type": "uint256",
+            "name": ""
+          }
+        ],
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "type": "uint256",
+            "name": "val"
+          }
+        ],
+        "constant": false,
+        "name": "setValue",
+        "outputs": [],
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "type": "constructor"
+      }
+    ],
+    "address": "0x66548b4ad6d6be74bc2dbb53ef8c4df0f7b671b3"
+  }
+}

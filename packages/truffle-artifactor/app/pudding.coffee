@@ -4,19 +4,24 @@ factory = (Promise, web3) ->
     @global_defaults: {}
 
     # Main function for creating a Pudding contract.
-    @whisk: (abi, code, class_defaults) ->
-      if typeof code == "object"
-        class_defaults = code
+    @whisk: (abi, binary, class_defaults) ->
+      if typeof binary == "object"
+        class_defaults = binary
         code = null
 
       contract = web3.eth.contract(abi)
+
+      # Give direct access to the code.
+      contract.binary = binary
+
+      contract = @add_helpers(contract)
       # Note: inject_defaults() changes the at() function to take two parameters.
-      contract = Pudding.inject_defaults(contract, class_defaults)
-      contract = Pudding.synchronize_contract(contract)
-      contract = Pudding.make_nicer_new(contract, code)
+      contract = @inject_defaults(contract, class_defaults)
+      contract = @synchronize_contract(contract)
+      contract = @make_nicer_new(contract, binary)
 
       if Promise?
-        contract = Pudding.promisify_contract(contract)
+        contract = @promisify_contract(contract)
       return contract
 
     # Set and return defaults.
@@ -34,8 +39,44 @@ factory = (Promise, web3) ->
 
       merged
 
+    @extend: () ->
+      args = Array.prototype.slice.call(arguments)
+      obj = args.shift()
+
+      for object in arguments
+        for key, value of object
+          obj[key] = value
+
+      obj
+
     @is_object: (val) ->
       return typeof val == "object" and !(val instanceof Array)
+
+    @apply_extensions = (contract_class, instance) ->
+      @extend(instance, contract_class._extended)
+      return instance
+
+    @add_helpers: (contract_class) ->
+      contract_class._extended = {}
+
+      # When Class.extend() is called, we extend a private variable.
+      # The extensions are applied at at() or new() time.
+      contract_class.extend = () ->
+        args = Array.prototype.slice.call(arguments)
+        args.unshift(contract_class._extended)
+        Pudding.extend.apply(null, args)
+
+      old_at = contract_class.at
+      old_new = contract_class.new
+
+      contract_class.at = (address) ->
+        instance = old_at.call(contract_class, address)
+        return Pudding.apply_extensions(contract_class, instance)
+
+      # Note: For the new() function, extensions are applied
+      # within the intermediary for make_nicer_new.
+
+      return contract_class
 
     @inject_defaults: (contract_class, class_defaults) ->
       old_at = contract_class.at
@@ -121,12 +162,19 @@ factory = (Promise, web3) ->
       old_new = contract_class.new
 
       promisify = (instance) ->
-        # Promisify .call() and .sendTransaction() for functions.
-        for key, fn of instance
-          continue if typeof fn != "object" and typeof fn != "function"
+        # Promisify .call() and .sendTransaction() for abi functions.
+        for item in contract_class.abi
+          continue if item.type != "function"
+          key = item.name
+          fn = instance[key]
+
+          #continue if typeof fn != "object" and typeof fn != "function"
 
           for k, v of fn
             continue if typeof fn != "object" and typeof fn != "function"
+            continue if k == "request"
+            continue if k == "estimateGas"
+
             fn[k] = Promise.promisify(v, instance)
 
           instance[key] = Promise.promisify(fn, instance)
@@ -179,8 +227,8 @@ factory = (Promise, web3) ->
             callback(err, created_instance)
 
           if !err? and created_instance? and created_instance.address?
+            created_instance = Pudding.apply_extensions(contract_class, created_instance)
             callback(null, created_instance)
-
 
         args.push(tx_params, instance_defaults, intermediary)
 
@@ -277,7 +325,7 @@ factory = (Promise, web3) ->
   Pudding
 
 if module? and module.exports?
-  module.exports = factory(require("bluebird"), require("web3"))
+  module.exports = factory(require("bluebird"), web3 || require("web3"))
 else
   # We expect Promise to already be included.
   window.Pudding = factory(Promise, web3)

@@ -1,3 +1,5 @@
+
+
 (function() {
   var factory;
 
@@ -8,18 +10,20 @@
 
       Pudding.global_defaults = {};
 
-      Pudding.whisk = function(abi, code, class_defaults) {
-        var contract;
-        if (typeof code === "object") {
-          class_defaults = code;
+      Pudding.whisk = function(abi, binary, class_defaults) {
+        var code, contract;
+        if (typeof binary === "object") {
+          class_defaults = binary;
           code = null;
         }
         contract = web3.eth.contract(abi);
-        contract = Pudding.inject_defaults(contract, class_defaults);
-        contract = Pudding.synchronize_contract(contract);
-        contract = Pudding.make_nicer_new(contract, code);
+        contract.binary = binary;
+        contract = this.add_helpers(contract);
+        contract = this.inject_defaults(contract, class_defaults);
+        contract = this.synchronize_contract(contract);
+        contract = this.make_nicer_new(contract, binary);
         if (Promise != null) {
-          contract = Pudding.promisify_contract(contract);
+          contract = this.promisify_contract(contract);
         }
         return contract;
       };
@@ -49,8 +53,46 @@
         return merged;
       };
 
+      Pudding.extend = function() {
+        var args, i, key, len, obj, object, value;
+        args = Array.prototype.slice.call(arguments);
+        obj = args.shift();
+        for (i = 0, len = arguments.length; i < len; i++) {
+          object = arguments[i];
+          for (key in object) {
+            value = object[key];
+            obj[key] = value;
+          }
+        }
+        return obj;
+      };
+
       Pudding.is_object = function(val) {
         return typeof val === "object" && !(val instanceof Array);
+      };
+
+      Pudding.apply_extensions = function(contract_class, instance) {
+        this.extend(instance, contract_class._extended);
+        return instance;
+      };
+
+      Pudding.add_helpers = function(contract_class) {
+        var old_at, old_new;
+        contract_class._extended = {};
+        contract_class.extend = function() {
+          var args;
+          args = Array.prototype.slice.call(arguments);
+          args.unshift(contract_class._extended);
+          return Pudding.extend.apply(null, args);
+        };
+        old_at = contract_class.at;
+        old_new = contract_class["new"];
+        contract_class.at = function(address) {
+          var instance;
+          instance = old_at.call(contract_class, address);
+          return Pudding.apply_extensions(contract_class, instance);
+        };
+        return contract_class;
       };
 
       Pudding.inject_defaults = function(contract_class, class_defaults) {
@@ -143,15 +185,24 @@
         old_at = contract_class.at;
         old_new = contract_class["new"];
         promisify = function(instance) {
-          var fn, k, key, v;
-          for (key in instance) {
-            fn = instance[key];
-            if (typeof fn !== "object" && typeof fn !== "function") {
+          var fn, i, item, k, key, len, ref, v;
+          ref = contract_class.abi;
+          for (i = 0, len = ref.length; i < len; i++) {
+            item = ref[i];
+            if (item.type !== "function") {
               continue;
             }
+            key = item.name;
+            fn = instance[key];
             for (k in fn) {
               v = fn[k];
               if (typeof fn !== "object" && typeof fn !== "function") {
+                continue;
+              }
+              if (k === "request") {
+                continue;
+              }
+              if (k === "estimateGas") {
                 continue;
               }
               fn[k] = Promise.promisify(v, instance);
@@ -213,6 +264,7 @@
                 callback(err, created_instance);
               }
               if ((err == null) && (created_instance != null) && (created_instance.address != null)) {
+                created_instance = Pudding.apply_extensions(contract_class, created_instance);
                 return callback(null, created_instance);
               }
             };
@@ -317,7 +369,7 @@
   };
 
   if ((typeof module !== "undefined" && module !== null) && (module.exports != null)) {
-    module.exports = factory(require("bluebird"), require("web3"));
+    module.exports = factory(require("bluebird"), web3 || require("web3"));
   } else {
     window.Pudding = factory(Promise, web3);
   }
