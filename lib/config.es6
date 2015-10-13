@@ -275,7 +275,9 @@ var Config = {
       for (var name in current_contracts) {
         var contract = current_contracts[name];
         // Don't import any deleted contracts.
-        if (!fs.existsSync(path.join(working_dir, contract.source))) {
+        var source = path.resolve(config.working_dir, contract.source);
+
+        if (!fs.existsSync(source)) {
           continue;
         }
         config.contracts.classes[name] = contract;
@@ -291,6 +293,20 @@ var Config = {
         var file = path.join(this.working_dir, this.app.resolved.provider);
         var provider = require(file);
         _web3.setProvider(provider);
+      }
+
+      if (argv.verboseRpc != null) {
+        // // If you want to see what web3 is sending and receiving.
+        var oldAsync = web3.currentProvider.sendAsync;
+        web3.currentProvider.sendAsync = function(options, callback) {
+          console.log("   > " + JSON.stringify(options, null, 2).split("\n").join("\n   > "));
+          oldAsync.call(web3.currentProvider, options, function(error, result) {
+            if (error == null) {
+              console.log(" <   " + JSON.stringify(result, null, 2).split("\n").join("\n <   "));
+            }
+            callback(error, result)
+          });
+        };
       }
     }
 
@@ -314,20 +330,6 @@ var Config = {
 
       config.expect(config.frontend.includes.web3, "frontend version of web3 specified in app.json");
       config.expect(config.tests.web3, "node version of web3 specified in app.json");
-    }
-
-    if (argv.verboseRpc != null) {
-      // // If you want to see what web3 is sending and receiving.
-      var oldAsync = web3.currentProvider.sendAsync;
-      web3.currentProvider.sendAsync = function(options, callback) {
-        console.log("   > " + JSON.stringify(options, null, 2).split("\n").join("\n   > "));
-        oldAsync.call(web3.currentProvider, options, function(error, result) {
-          if (error == null) {
-            console.log(" <   " + JSON.stringify(result, null, 2).split("\n").join("\n <   "));
-          }
-          callback(error, result)
-        });
-      };
     }
 
     return config;

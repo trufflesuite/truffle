@@ -60,17 +60,34 @@ var runTask = function(name) {
 
 registerTask('watch', "Watch filesystem for changes and rebuild the project automatically", function(done) {
   var needs_rebuild = true;
+  // var needs_redeploy = false;
 
   gaze(["app/**/*", "config/**/*", "contracts/**/*"], {cwd: working_dir, interval: 1000, debounceDelay: 500}, function() {
     // On changed/added/deleted
     this.on('all', function(event, filePath) {
       var display_path = path.join("./", filePath.replace(working_dir, ""));
       console.log(colors.cyan(`>> File ${display_path} changed.`));
+
       needs_rebuild = true;
+
+      // if (display_path.indexOf("contracts/") == 0) {
+      //   needs_redeploy = true;
+      // } else {
+      //   needs_rebuild = true;
+      // }
     });
   });
 
   var check_rebuild = function() {
+    // if (needs_redeploy == true) {
+    //   needs_redeploy = false;
+    //   needs_rebuild = false;
+    //   console.log("Redeploying...");
+    //   if (runTask("deploy") != 0) {
+    //     printFailure();
+    //   }
+    // }
+
     if (needs_rebuild == true) {
       needs_rebuild = false;
       console.log("Rebuilding...");
@@ -78,6 +95,7 @@ registerTask('watch', "Watch filesystem for changes and rebuild the project auto
         printFailure();
       }
     }
+
     setTimeout(check_rebuild, 500);
   };
 
@@ -166,6 +184,30 @@ registerTask('create:test', "Create a basic test", function(done) {
     throw new ConfigurationError("Please specify a name. Example: truffle create:test MyTest");
   } else {
     Create.test(config, name, done);
+  }
+});
+
+registerTask('resolve', "Resolve dependencies in contract file and print result", function(done) {
+  var config = Config.gather(truffle_dir, working_dir, argv, "development");
+
+  var file = argv.file;
+
+  if (file == null && argv._.length > 1) {
+    file = argv._[1];
+  }
+
+  if (file == null) {
+    throw new ConfigurationError("Please specify a contract file. Example: truffle resolve ./contracts/Example.sol");
+  } else {
+    file = path.resolve(file);
+    Contracts.resolve(file, function(err, code) {
+      if (err != null) {
+        done(err);
+      } else {
+        console.log(code);
+        done();
+      }
+    });
   }
 });
 

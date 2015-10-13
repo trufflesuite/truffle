@@ -4,6 +4,7 @@ var fs = require("fs");
 var mkdirp = require("mkdirp");
 var path = require("path");
 var provision = require("./provision");
+var solc = require("solc");
 var ConfigurationError = require("./errors/configurationerror");
 
 var Contracts = {
@@ -136,29 +137,19 @@ var Contracts = {
         console.log(`Compiling ${source}...`);
       }
 
-      this.check_for_valid_compiler(source, (err) => {
+      this.resolve(full_path, function(err, code) {
         if (err != null) {
           finished(err);
           return;
         }
 
-        this.resolve(full_path, function(err, code) {
-          if (err != null) {
-            finished(err);
-            return;
-          }
+        var result = solc.compile(code, 1);
+        var compiled_contract = result.contracts[key];
 
-          web3.eth.compile.solidity(code, function(err, result) {
-            if (err != null) {
-              finished(err, result);
-              return;
-            }
+        contract["binary"] = compiled_contract.bytecode;
+        contract["abi"] = JSON.parse(compiled_contract.interface);
 
-            contract["binary"] = result[key].code;
-            contract["abi"] = result[key].info.abiDefinition;
-            finished(null, contract);
-          });
-        });
+        finished(null, contract);
       });
     }, function(err, result) {
       if (err != null) {
@@ -179,7 +170,7 @@ var Contracts = {
         return;
       }
 
-      var display_directory = "./" + config.environments.current.contracts_filename.replace(config.working_dir, "");
+      var display_directory = "./" + path.join("./", config.environments.current.contracts_filename.replace(config.working_dir, ""));
       if (config.argv.quietDeploy == null) {
         console.log(`Writing ${description} to ${display_directory}`);
       }
@@ -229,10 +220,11 @@ var Contracts = {
       (c) => {
         // Put them on the network
         var provisioner = provision.asModule(config);
-        provisioner.provision_contracts(global);
+        var provisioned = {};
+        provisioner.provision_contracts(provisioned);
 
         async.mapSeries(config.app.resolved.deploy, (key, callback) => {
-          var contract = global[key]; //config.contracts.classes[key];
+          var contract = provisioned[key]; //config.contracts.classes[key];
           var contract_class = config.contracts.classes[key];
 
           if (contract == null) {
