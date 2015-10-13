@@ -8,10 +8,69 @@ var solc = require("solc");
 var ConfigurationError = require("./errors/configurationerror");
 
 var Contracts = {
-  resolve(root, callback) {
+  resolve_headers(root) {
+    root = path.resolve(root);
+    var contract_name = path.basename(root).replace(/\.[^\.]*$/, "");
+
+    var reduce_signature = function(signature) {
+      return signature.reduce(function(previous, current, index) {
+        var sig = "";
+        if (index > 0) {
+          sig += ", ";
+        }
+        sig += current.type;
+        if (current.name != null && current.name != "") {
+          sig += ` ${current.name}`;
+        }
+        return previous + sig;
+      }, "");
+    };
+
+    var make_function = function(name, fn) {
+      var returns = "";
+
+      if (fn.outputs != null && fn.outputs.length > 0) {
+        returns = ` returns (${reduce_signature(fn.outputs)})`;
+      }
+
+      return `  function ${name}(${reduce_signature(fn.inputs)})${returns}; \n`;
+    };
+
+    var code = this.resolve(root);
+
+    var result = solc.compile(code, 0);
+
+    if (result.errors != null) {
+      throw new Error(result.errors.join());
+    }
+
+    var compiled_contract = result.contracts[contract_name];
+    var abi = JSON.parse(compiled_contract.interface);
+
+    var headers = `contract ${contract_name} { \n`;
+
+    for (var fn of abi) {
+      switch(fn.type) {
+        case "constructor":
+          headers += make_function(contract_name, fn)
+          break;
+        case "function":
+          headers += make_function(fn.name, fn);
+          break;
+        default:
+          throw new Error(`Unknown type ${fn.type} found in ${root}`);
+      }
+    }
+
+    headers += `} \n`;
+
+    return headers;
+  },
+
+  resolve(root) {
     var imported = {};
 
-    var import_file = function(file) {
+    var import_file = (file) => {
       var code = fs.readFileSync(file, "utf-8");
 
       // Remove comments
@@ -20,7 +79,7 @@ var Contracts = {
       code = code.replace("*/", ""); // Edge case.
 
       // Perform imports.
-      code = code.replace(/import ('|")[^'"]+('|");/g, function(match) {
+      code = code.replace(/import(_headers)? ('|")[^'"]+('|");/g, (match) => {
         match = match.replace(/'/g, '"');
         var import_name = match.split('"')[1];
         var import_path = path.dirname(file) + "/" + import_name + ".sol";
@@ -36,16 +95,16 @@ var Contracts = {
 
         imported[import_name] = true;
 
-        return import_file(import_path) + "\n\n";
+        if (match.indexOf("import_headers") == 0) {
+          return this.resolve_headers(import_path) + "\n\n";
+        } else {
+          return import_file(import_path) + "\n\n";
+        }
       });
       return code;
     };
 
-    try {
-      callback(null, import_file(root));
-    } catch(e) {
-      callback(e);
-    }
+    return import_file(root);
   },
 
   // Support the breaking change that made sendTransaction return a transaction
@@ -137,26 +196,32 @@ var Contracts = {
         console.log(`Compiling ${source}...`);
       }
 
-      this.resolve(full_path, function(err, code) {
-        if (err != null) {
-          finished(err);
-          return;
-        }
+      var code;
 
-        var result = solc.compile(code, 1);
-        var compiled_contract = result.contracts[key];
+      try {
+        code = this.resolve(full_path);
+      } catch (e) {
+        finished(e);
+        return;
+      }
 
-        contract["binary"] = compiled_contract.bytecode;
-        contract["abi"] = JSON.parse(compiled_contract.interface);
+      var result = solc.compile(code, 1);
 
-        finished(null, contract);
-      });
+      if (result.errors != null) {
+        finished(new Error(result.errors.join()));
+        return;
+      }
+
+      var compiled_contract = result.contracts[key];
+
+      contract["binary"] = compiled_contract.bytecode;
+      contract["abi"] = JSON.parse(compiled_contract.interface);
+
+      finished(null, contract);
     }, function(err, result) {
       if (err != null) {
         console.log("");
         console.log(err.message);
-        console.log("");
-        console.log("Hint: Some clients don't send helpful error messages through the RPC. See client logs for more details.");
         err = new ConfigurationError("Compilation failed. See above.");
       }
       callback(err)

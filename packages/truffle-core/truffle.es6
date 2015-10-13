@@ -200,14 +200,18 @@ registerTask('resolve', "Resolve dependencies in contract file and print result"
     throw new ConfigurationError("Please specify a contract file. Example: truffle resolve ./contracts/Example.sol");
   } else {
     file = path.resolve(file);
-    Contracts.resolve(file, function(err, code) {
-      if (err != null) {
-        done(err);
-      } else {
-        console.log(code);
-        done();
-      }
-    });
+
+    var code;
+
+    try {
+      code = Contracts.resolve(file);
+    } catch (e) {
+      done(e);
+      return;
+    }
+
+    console.log(code);
+    done();
   }
 });
 
