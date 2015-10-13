@@ -1,7 +1,7 @@
 {
   "name": "truffle",
   "namespace": "consensys",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "description": "truffle - Simple development framework for Ethereum",
   "dependencies": {
     "coffee-script": "*",
@@ -26,7 +26,8 @@
     "gaze": "*",
     "colors": "*",
     "finalhandler": "*",
-    "serve-static": "*"
+    "serve-static": "*",
+    "solc": "*"
   },
   "devDependencies": {
     "temp": "*"
