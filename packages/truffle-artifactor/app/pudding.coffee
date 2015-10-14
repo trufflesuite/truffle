@@ -121,7 +121,7 @@ factory = (Promise, web3) ->
         else
           instance_defaults = {}
 
-          if args[args.length - 1] == "object"
+          if @is_object(args[args.length - 1])
             tx_params = args.pop()
           else
             tx_params = {}
@@ -192,6 +192,7 @@ factory = (Promise, web3) ->
         args.push (err, instance) ->
           if err?
             callback(err)
+            return
 
           callback null, promisify(instance)
 
@@ -220,13 +221,19 @@ factory = (Promise, web3) ->
         if !tx_params.data?
           tx_params.data = code
 
+        found_error = null
+
         # web3 0.9.0 calls this callback twice. Abstract this out so it's
         # only called once with the new instance.
+        # Also, be double absolutely sure callbacks aren't called twice on
+        # error. Can't trust that web3.
         intermediary = (err, created_instance) ->
-          if err?
-            callback(err, created_instance)
+          if !found_error? and err?
+            found_error = err
+            callback(found_error)
+            return
 
-          if !err? and created_instance? and created_instance.address?
+          if !found_error? and !err? and created_instance? and created_instance.address?
             created_instance = Pudding.apply_extensions(contract_class, created_instance)
             callback(null, created_instance)
 

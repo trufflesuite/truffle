@@ -143,7 +143,7 @@
               tx_params = args.pop();
             } else {
               instance_defaults = {};
-              if (args[args.length - 1] === "object") {
+              if (_this.is_object(args[args.length - 1])) {
                 tx_params = args.pop();
               } else {
                 tx_params = {};
@@ -226,6 +226,7 @@
           args.push(function(err, instance) {
             if (err != null) {
               callback(err);
+              return;
             }
             return callback(null, promisify(instance));
           });
@@ -242,7 +243,7 @@
         old_new = contract_class["new"];
         contract_class["new"] = (function(_this) {
           return function() {
-            var args, callback, instance_defaults, intermediary, tx_params;
+            var args, callback, found_error, instance_defaults, intermediary, tx_params;
             args = Array.prototype.slice.call(arguments);
             callback = args.pop();
             if (_this.is_object(args[args.length - 1]) && _this.is_object(args[args.length - 2])) {
@@ -259,11 +260,14 @@
             if (tx_params.data == null) {
               tx_params.data = code;
             }
+            found_error = null;
             intermediary = function(err, created_instance) {
-              if (err != null) {
-                callback(err, created_instance);
+              if ((found_error == null) && (err != null)) {
+                found_error = err;
+                callback(found_error);
+                return;
               }
-              if ((err == null) && (created_instance != null) && (created_instance.address != null)) {
+              if ((found_error == null) && (err == null) && (created_instance != null) && (created_instance.address != null)) {
                 created_instance = Pudding.apply_extensions(contract_class, created_instance);
                 return callback(null, created_instance);
               }
