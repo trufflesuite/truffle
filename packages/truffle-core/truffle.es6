@@ -18,6 +18,7 @@ var Repl = require("./lib/repl");
 var Serve = require("./lib/serve");
 
 var ConfigurationError = require("./lib/errors/configurationerror");
+var ExtendableError = require("./lib/errors/extendableerror");
 
 var truffle_dir = process.env.TRUFFLE_NPM_LOCATION;
 var working_dir = process.env.TRUFFLE_WORKING_DIRECTORY;
@@ -48,8 +49,8 @@ var runTask = function(name) {
     fn();
     return 0;
   } catch (e) {
-    if (e instanceof ConfigurationError) {
-      console.log(colors.red(e.message));
+    if (e instanceof ExtendableError) {
+      console.log(e.message);
     } else {
       // Bubble up all other unexpected errors.
       console.log(e.stack || e.toString());
@@ -287,7 +288,23 @@ registerTask('test', "Run tests", function(done) {
   // Ensure we're quiet about deploys during tests.
   config.argv.quietDeploy = true;
 
-  Test.run(config, done);
+  var file = argv.file;
+
+  if (file == null && argv._.length > 1) {
+    file = argv._[1];
+  }
+
+  if (file == null) {
+    Test.run(config, done);
+  } else {
+    if (path.isAbsolute(file) == false) {
+      file = path.resolve(file);
+    }
+
+    Test.run(config, file, done);
+  }
+
+
 });
 
 registerTask('console', "Run a console with deployed contracts instanciated and available (REPL)", function(done) {

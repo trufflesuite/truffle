@@ -5,7 +5,10 @@ var mkdirp = require("mkdirp");
 var path = require("path");
 var provision = require("./provision");
 var solc = require("solc");
+var path = require("path");
 var ConfigurationError = require("./errors/configurationerror");
+var CompileError = require("./errors/compileerror");
+var DeployError = require("./errors/deployerror");
 
 var Contracts = {
   resolve_headers(root) {
@@ -41,7 +44,7 @@ var Contracts = {
     var result = solc.compile(code, 0);
 
     if (result.errors != null) {
-      throw new Error(result.errors.join());
+      throw new CompileError(result.errors.join(), root);
     }
 
     var compiled_contract = result.contracts[contract_name];
@@ -208,7 +211,7 @@ var Contracts = {
       var result = solc.compile(code, 1);
 
       if (result.errors != null) {
-        finished(new Error(result.errors.join()));
+        finished(new CompileError(result.errors.join(), source));
         return;
       }
 
@@ -218,14 +221,7 @@ var Contracts = {
       contract["abi"] = JSON.parse(compiled_contract.interface);
 
       finished(null, contract);
-    }, function(err, result) {
-      if (err != null) {
-        console.log("");
-        console.log(err.message);
-        err = new ConfigurationError("Compilation failed. See above.");
-      }
-      callback(err)
-    });
+    }, callback);
   },
 
   write_contracts(config, description="contracts", callback) {
@@ -297,7 +293,7 @@ var Contracts = {
             return;
           }
 
-          var display_name = contract_class.source.substring(contract_class.source.lastIndexOf("/") + 1);
+          var display_name = path.basename(contract_class.source);
           if (config.argv.quietDeploy == null) {
             console.log(`Sending ${display_name} to the network...`);
           }
@@ -309,16 +305,11 @@ var Contracts = {
           }).then(function(instance) {
             contract_class.address = instance.address;
             callback(null, contract_class);
-          }).catch(callback);
+          }).catch(function(err) {
+            callback(new DeployError(err.message, key));
+          });
 
-        }, function(err, results) {
-          if (err != null) {
-            console.log("ERROR sending contract:");
-            c(err);
-          } else {
-            c();
-          }
-        });
+        }, c);
       }
     ], (err) => {
       if (err != null) {
