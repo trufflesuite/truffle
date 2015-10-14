@@ -10,6 +10,8 @@ var Pudding = require("ether-pudding");
 var loadconf = require("./loadconf");
 var Promise = require("bluebird");
 
+var ExtendableError = require("./errors/extendableerror");
+
 // Make Promise global so tests have access to it.
 global.Promise = Promise;
 
@@ -27,8 +29,8 @@ var Test = {
     // populated by the global before() hook.
     var accounts = [];
 
-    var BEFORE_TIMEOUT = 120000
-    var TEST_TIMEOUT = 300000
+    var BEFORE_TIMEOUT = 120000;
+    var TEST_TIMEOUT = 300000;
 
     global.contract = function(name, tests) {
       describe(`Contract: ${name}`, function() {
@@ -41,6 +43,12 @@ var Test = {
           // but don't recompile.
           Contracts.deploy(config, false, function(err) {
             if (err != null) {
+
+              // Format our error messages so they print better with mocha.
+              if (err instanceof ExtendableError) {
+                err.formatForMocha();
+              }
+
               done(err);
               return;
             }
@@ -87,12 +95,46 @@ var Test = {
     });
   },
 
-  run(config, callback) {
-    config.expect(config.tests.directory, "tests directory");
+  // file must be absolute, or null.
+  run(config, file, callback) {
+    if (typeof file == "function") {
+      callback = file;
+      file = null;
+      config.expect(config.tests.directory, "tests directory");
+    } else {
+      config.expect(file, "test file");
+    }
 
     this.setup(config, function(err) {
       if (err != null) {
         callback(err);
+        return;
+      }
+
+      // Change current working directory to that of the project.
+      process.chdir(config.working_dir);
+      __dirname = process.cwd();
+
+      // If errors aren't caught in Promises, make sure they're thrown
+      // and don't keep the process open.
+      Promise.onPossiblyUnhandledRejection(function(e, promise) {
+        throw e;
+      });
+
+      var mocha = new Mocha({
+        useColors: true
+      });
+
+      var runMocha = function() {
+        // TODO: Catch any errors here, and fail.
+        mocha.run(function(failures) {
+          callback(null, failures);
+        });
+      };
+
+      if (file != null) {
+        mocha.addFile(file);
+        runMocha();
         return;
       }
 
@@ -102,29 +144,11 @@ var Test = {
           return;
         }
 
-        var mocha = new Mocha({
-          useColors: true
-        });
-
         for (var file of files.sort()) {
           mocha.addFile(file);
         }
 
-
-        // Change current working directory to that of the project.
-        process.chdir(config.working_dir);
-        __dirname = process.cwd();
-
-        // If errors aren't caught in Promises, make sure they're thrown
-        // and don't keep the process open.
-        Promise.onPossiblyUnhandledRejection(function(e, promise) {
-          throw e;
-        });
-
-        // TODO: Catch any errors here, and fail.
-        mocha.run(function(failures) {
-          callback(null, failures);
-        });
+        runMocha();
       });
     });
   }
