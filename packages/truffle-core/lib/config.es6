@@ -112,7 +112,8 @@ var Config = {
         "null": `${truffle_dir}/lib/processors/null.es6`, // does nothing; useful in some edge cases.
         "uglify": `${truffle_dir}/lib/processors/post/uglify.es6`,
         "frontend-dependencies": `${truffle_dir}/lib/processors/post/frontend_dependencies.es6`,
-        "inject-contracts": `${truffle_dir}/lib/processors/post/inject_contracts.es6`
+        "inject-contracts": `${truffle_dir}/lib/processors/post/inject_contracts.es6`,
+        "include-contracts": `${truffle_dir}/lib/processors/post/include_contracts.es6`
       }
     });
 
