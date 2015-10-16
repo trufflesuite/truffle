@@ -332,7 +332,7 @@ factory = (Promise, web3) ->
   Pudding
 
 if module? and module.exports?
-  module.exports = factory(require("bluebird"), web3 || require("web3"))
+  module.exports = factory(require("bluebird"), require("web3"))
 else
   # We expect Promise to already be included.
   window.Pudding = factory(Promise, web3)

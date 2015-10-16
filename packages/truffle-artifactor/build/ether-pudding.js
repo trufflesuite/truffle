@@ -373,7 +373,7 @@
   };
 
   if ((typeof module !== "undefined" && module !== null) && (module.exports != null)) {
-    module.exports = factory(require("bluebird"), web3 || require("web3"));
+    module.exports = factory(require("bluebird"), require("web3"));
   } else {
     window.Pudding = factory(Promise, web3);
   }
