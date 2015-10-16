@@ -25,11 +25,14 @@ module.exports = function(contents, file, config, process, callback) {
 
         if (typeof window !== 'undefined') {
           __global = window;
+          __pudding = Pudding;
         } else {
+          // Node
           __global = global;
+          __pudding = require("ether-pudding");
         }
 
-        __provisioner.provision_contracts(__global);
+        __provisioner.provision_contracts(__global, __pudding);
       })();
       ${contents}
     `;
