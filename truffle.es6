@@ -51,6 +51,11 @@ var runTask = function(name) {
   } catch (e) {
     if (e instanceof ExtendableError) {
       console.log(e.message);
+
+      if (argv.stack != null) {
+        console.log(e.stack);
+      }
+
     } else {
       // Bubble up all other unexpected errors.
       console.log(e.stack || e.toString());
