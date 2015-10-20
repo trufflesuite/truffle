@@ -57,6 +57,8 @@ var Test = {
             loadconf(config.environments.current.contracts_filename, function(err, json) {
               config.contracts.classes = json;
 
+              Pudding.setWeb3(web3);
+
               var provisioner = Provision.asModule(config);
               provisioner.provision_contracts(global);
 

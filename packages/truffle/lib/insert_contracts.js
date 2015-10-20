@@ -19,10 +19,11 @@ var __provisioner = {
       scope[key] = __Pudding.whisk(contract.abi, contract.binary);
       if (contract.address != null) {
         scope[key].deployed_address = contract.address;
+        scope[key].address = contract.address;
       }
     }
   },
-  set_provider: function(scope, __web3) {
+  set_provider: function(__web3) {
     if (__web3 == null) {
       __web3 = web3;
     }
