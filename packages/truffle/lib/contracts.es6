@@ -1,9 +1,7 @@
-var web3 = require("web3");
 var async = require("async");
 var fs = require("fs");
 var mkdirp = require("mkdirp");
 var path = require("path");
-var provision = require("./provision");
 var solc = require("solc");
 var path = require("path");
 var Pudding = require("ether-pudding");
@@ -127,7 +125,7 @@ var Contracts = {
     var verify = function() {
       // Call the method via the provider directly as it hasn't yet been
       // implemented in web3.
-      web3.currentProvider.sendAsync({
+      config.web3.currentProvider.sendAsync({
         jsonrpc: "2.0",
         method: "eth_getTransactionReceipt",
         params:[address_or_tx],
@@ -157,38 +155,6 @@ var Contracts = {
     };
 
     interval = setInterval(verify, 1000);
-  },
-
-  check_for_valid_compiler(file, callback) {
-    var compiler_name = null;
-
-    if (path.extname(file) == ".sol") {
-      compiler_name = "solidity";
-    }
-
-    if (compiler_name == null) {
-      callback(new Error(`Compiler for ${path.extname(file)} not yet supported by Truffle. We hope to support every compiler eventually. Express your interested by filing a bug report on Github.`));
-      return;
-    }
-
-    web3.eth.getCompilers(function(err, result) {
-      if (err != null) {
-        callback(err);
-        return;
-      }
-
-      // Make all compiler names lower case for comparison.
-      result = result.map(function(x) {
-        return x.toLowerCase();
-      });
-
-      if (result.indexOf(compiler_name) < 0) {
-        callback(new Error(`Your RPC client doesn't support compiling files with the ${path.extname(file)} extension. Please make sure you have the relevant compilers installed and your RPC client is configured correctly. The compilers supported by your RPC client are: [${result.join(', ')}]`));
-        return;
-      }
-
-      callback();
-    });
   },
 
   compile_all(config, callback) {
@@ -238,7 +204,7 @@ var Contracts = {
         console.log(`Writing ${description} to ${display_directory}`);
       }
 
-      PuddingGenerator(config.contracts.classes, config.environments.current.directory, {removeExisting: true});
+      PuddingGenerator.save(config.contracts.classes, config.environments.current.directory, {removeExisting: true});
 
       callback();
     });
@@ -269,7 +235,7 @@ var Contracts = {
 
     async.series([
       (c) => {
-        web3.eth.getCoinbase(function(error, result) {
+        config.web3.eth.getCoinbase(function(error, result) {
           coinbase = result;
           c(error, result);
         });
@@ -284,14 +250,13 @@ var Contracts = {
       (c) => {
         // Put them on the network
         async.mapSeries(config.app.resolved.deploy, (key, callback) => {
-          // var contract = provisioned[key]; //config.contracts.classes[key];
           var contract_class = config.contracts.classes[key];
 
           class contract extends Pudding {}
 
           contract.abi = contract_class.abi;
           contract.binary = contract_class.binary;
-          contract.setWeb3(web3);
+          contract.setWeb3(config.web3);
 
           if (contract == null) {
             callback(new Error(`Could not find contract '${key}' for deployment. Check app.json.`));
