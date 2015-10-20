@@ -1,381 +1,419 @@
 
 
-(function() {
-  var factory;
+"use strict";
 
-  factory = function(Promise, web3) {
-    var Pudding;
-    Pudding = (function() {
-      function Pudding() {}
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
 
-      Pudding.global_defaults = {};
+var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-      Pudding.whisk = function(abi, binary, class_defaults) {
-        var code, contract;
-        if (typeof binary === "object") {
-          class_defaults = binary;
-          code = null;
-        }
-        contract = web3.eth.contract(abi);
-        contract.binary = binary;
-        contract = this.add_helpers(contract);
-        contract = this.inject_defaults(contract, class_defaults);
-        contract = this.synchronize_contract(contract);
-        contract = this.make_nicer_new(contract, binary);
-        if (Promise != null) {
-          contract = this.promisify_contract(contract);
-        }
-        return contract;
-      };
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-      Pudding.defaults = function(new_global_defaults) {
-        var key, value;
-        if (new_global_defaults == null) {
-          new_global_defaults = {};
-        }
-        for (key in new_global_defaults) {
-          value = new_global_defaults[key];
-          Pudding.global_defaults[key] = value;
-        }
-        return Pudding.global_defaults;
-      };
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-      Pudding.merge = function() {
-        var i, key, len, merged, object, value;
-        merged = {};
-        for (i = 0, len = arguments.length; i < len; i++) {
-          object = arguments[i];
-          for (key in object) {
-            value = object[key];
-            merged[key] = value;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var factory = function factory(Promise, web3) {
+  var Pudding = (function () {
+    function Pudding(contract) {
+      _classCallCheck(this, Pudding);
+
+      if (!this.constructor.abi) {
+        throw new Error("Contract ABI not set. Please override Pudding and set static .abi variable with contract abi.");
+      }
+
+      this.contract = contract;
+      this.address = contract.address;
+
+      if (!this.web3) {
+        this.web3 = Pudding.web3;
+      }
+
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = this.constructor.abi[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var fn = _step.value;
+
+          if (fn.type == "function") {
+            this[fn.name] = this.constructor.synchronizeFunction(this.contract[fn.name]);
+            this[fn.name].call = this.constructor.promisifyFunction(this.contract[fn.name].call);
+            this[fn.name].sendTransaction = this.constructor.promisifyFunction(this.contract[fn.name].sendTransaction);
+            this[fn.name].request = this.contract[fn.name].request;
+          }
+
+          if (fn.type == "event") {
+            this[fn.name] = this.contract[fn.name];
           }
         }
-        return merged;
-      };
-
-      Pudding.extend = function() {
-        var args, i, key, len, obj, object, value;
-        args = Array.prototype.slice.call(arguments);
-        obj = args.shift();
-        for (i = 0, len = arguments.length; i < len; i++) {
-          object = arguments[i];
-          for (key in object) {
-            value = object[key];
-            obj[key] = value;
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator["return"]) {
+            _iterator["return"]();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
           }
         }
-        return obj;
-      };
+      }
+    }
 
-      Pudding.is_object = function(val) {
-        return typeof val === "object" && !(val instanceof Array);
-      };
+    //
 
-      Pudding.apply_extensions = function(contract_class, instance) {
-        this.extend(instance, contract_class._extended);
-        return instance;
-      };
+    _createClass(Pudding, null, [{
+      key: "new",
+      value: function _new() {
+        var _this = this;
 
-      Pudding.add_helpers = function(contract_class) {
-        var old_at, old_new;
-        contract_class._extended = {};
-        contract_class.extend = function() {
-          var args;
-          args = Array.prototype.slice.call(arguments);
-          args.unshift(contract_class._extended);
-          return Pudding.extend.apply(null, args);
-        };
-        old_at = contract_class.at;
-        old_new = contract_class["new"];
-        contract_class.at = function(address) {
-          var instance;
-          instance = old_at.call(contract_class, address);
-          return Pudding.apply_extensions(contract_class, instance);
-        };
-        return contract_class;
-      };
+        var args = Array.prototype.slice.call(arguments);
 
-      Pudding.inject_defaults = function(contract_class, class_defaults) {
-        var inject, old_at, old_new;
-        old_at = contract_class.at;
-        old_new = contract_class["new"];
-        inject = (function(_this) {
-          return function(instance, instance_defaults) {
-            var abi_object, fn, fn_name, i, key, len, merged_defaults, ref, value;
-            if (instance_defaults == null) {
-              instance_defaults = {};
-            }
-            merged_defaults = _this.merge(class_defaults, instance_defaults);
-            ref = contract_class.abi;
-            for (i = 0, len = ref.length; i < len; i++) {
-              abi_object = ref[i];
-              fn_name = abi_object.name;
-              fn = instance[fn_name];
-              if (fn == null) {
-                continue;
-              }
-              instance[fn_name] = Pudding.inject_defaults_into_function(instance, fn, merged_defaults);
-              for (key in fn) {
-                value = fn[key];
-                instance[fn_name][key] = value;
-              }
-              instance[fn_name].sendTransaction = Pudding.inject_defaults_into_function(instance, fn.sendTransaction, merged_defaults);
-              instance[fn_name].call = Pudding.inject_defaults_into_function(instance, fn.call, merged_defaults);
-            }
-            return instance;
-          };
-        })(this);
-        contract_class.at = function(address, instance_defaults) {
-          var instance;
-          if (instance_defaults == null) {
-            instance_defaults = {};
+        if (!this.binary) {
+          throw new Error("Contract binary not set. Please override Pudding and set .binary before calling new()");
+        }
+
+        return new Promise(function (accept, reject) {
+          var contract_class = _this.web3.eth.contract(_this.abi);
+          var tx_params = {};
+
+          if (_this.is_object(args[args.length - 1])) {
+            tx_params = args.pop();
           }
-          instance = old_at.call(contract_class, address);
-          return inject(instance, instance_defaults);
-        };
-        contract_class["new"] = (function(_this) {
-          return function() {
-            var args, callback, instance_defaults, tx_params;
-            args = Array.prototype.slice.call(arguments);
-            callback = args.pop();
-            if (_this.is_object(args[args.length - 1]) && _this.is_object(args[args.length - 2])) {
-              instance_defaults = args.pop();
-              tx_params = args.pop();
-            } else {
-              instance_defaults = {};
-              if (_this.is_object(args[args.length - 1])) {
-                tx_params = args.pop();
-              } else {
-                tx_params = {};
-              }
-            }
-            tx_params = _this.merge(Pudding.global_defaults, class_defaults, tx_params);
-            args.push(tx_params, function(err, instance) {
-              if (err != null) {
-                callback(err);
-                return;
-              }
-              return callback(null, inject(instance));
-            });
-            return old_new.apply(contract_class, args);
-          };
-        })(this);
-        return contract_class;
-      };
 
-      Pudding.inject_defaults_into_function = function(instance, fn, merged_defaults) {
-        return (function(_this) {
-          return function() {
-            var args, callback, old_options, options;
-            args = Array.prototype.slice.call(arguments);
-            callback = args.pop();
-            options = _this.merge(Pudding.global_defaults, merged_defaults);
-            if (_this.is_object(args[args.length - 1])) {
-              old_options = args.pop();
-              options = _this.merge(options, old_options);
-            }
-            args.push(options, callback);
-            return fn.apply(instance, args);
-          };
-        })(this);
-      };
+          tx_params = _this.merge(Pudding.class_defaults, _this.class_defaults, tx_params);
 
-      Pudding.promisify_contract = function(contract_class) {
-        var old_at, old_new, promisify;
-        old_at = contract_class.at;
-        old_new = contract_class["new"];
-        promisify = function(instance) {
-          var fn, i, item, k, key, len, ref, v;
-          ref = contract_class.abi;
-          for (i = 0, len = ref.length; i < len; i++) {
-            item = ref[i];
-            if (item.type !== "function") {
-              continue;
-            }
-            key = item.name;
-            fn = instance[key];
-            for (k in fn) {
-              v = fn[k];
-              if (typeof fn !== "object" && typeof fn !== "function") {
-                continue;
-              }
-              if (k === "request") {
-                continue;
-              }
-              if (k === "estimateGas") {
-                continue;
-              }
-              fn[k] = Promise.promisify(v, instance);
-            }
-            instance[key] = Promise.promisify(fn, instance);
+          if (tx_params.data == null) {
+            tx_params.data = _this.binary;
           }
-          return instance;
-        };
-        contract_class.at = function(address, instance_defaults) {
-          var instance;
-          if (instance_defaults == null) {
-            instance_defaults = {};
-          }
-          instance = old_at.call(contract_class, address, instance_defaults);
-          return promisify(instance);
-        };
-        contract_class["new"] = Promise.promisify(function() {
-          var args, callback;
-          args = Array.prototype.slice.call(arguments);
-          callback = args.pop();
-          args.push(function(err, instance) {
+
+          // web3 0.9.0 and above calls new twice this callback twice.
+          // Why, I have no idea...
+          var intermediary = function intermediary(err, web3_instance) {
             if (err != null) {
-              callback(err);
+              reject(err);
               return;
             }
-            return callback(null, promisify(instance));
-          });
-          return old_new.apply(contract_class, args);
+
+            if (err == null && web3_instance != null && web3_instance.address != null) {
+              accept(new _this(web3_instance));
+            }
+          };
+
+          args.push(tx_params, intermediary);
+
+          contract_class["new"].apply(contract_class, args);
         });
-        return contract_class;
-      };
-
-      Pudding.make_nicer_new = function(contract_class, code) {
-        var old_new;
-        if (code == null) {
-          code = "";
+      }
+    }, {
+      key: "at",
+      value: function at(address) {
+        return new this(this.web3.eth.contract(this.abi).at(address));
+      }
+    }, {
+      key: "deployed",
+      value: function deployed() {
+        if (!this.address) {
+          throw new Error("Contract address not set - deployed() relies on the contract class having a static 'address' value; please set that before using deployed().");
         }
-        old_new = contract_class["new"];
-        contract_class["new"] = (function(_this) {
-          return function() {
-            var args, callback, found_error, instance_defaults, intermediary, tx_params;
-            args = Array.prototype.slice.call(arguments);
-            callback = args.pop();
-            if (_this.is_object(args[args.length - 1]) && _this.is_object(args[args.length - 2])) {
-              instance_defaults = args.pop();
-              tx_params = args.pop();
-            } else {
-              instance_defaults = {};
-              if (_this.is_object(args[args.length - 1])) {
-                tx_params = args.pop();
-              } else {
-                tx_params = {};
+
+        return this.at(this.address);
+      }
+
+      // Backward compatibility.
+    }, {
+      key: "extend",
+      value: function extend() {
+        var args = Array.prototype.slice.call(arguments);
+
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+          for (var _iterator2 = arguments[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var object = _step2.value;
+            var _iteratorNormalCompletion3 = true;
+            var _didIteratorError3 = false;
+            var _iteratorError3 = undefined;
+
+            try {
+              for (var _iterator3 = Object.entries(object)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                var _step3$value = _slicedToArray(_step3.value, 2);
+
+                var key = _step3$value[0];
+                var value = _step3$value[1];
+
+                this.prototype[key] = value;
+              }
+            } catch (err) {
+              _didIteratorError3 = true;
+              _iteratorError3 = err;
+            } finally {
+              try {
+                if (!_iteratorNormalCompletion3 && _iterator3["return"]) {
+                  _iterator3["return"]();
+                }
+              } finally {
+                if (_didIteratorError3) {
+                  throw _iteratorError3;
+                }
               }
             }
-            if (tx_params.data == null) {
-              tx_params.data = code;
+          }
+        } catch (err) {
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion2 && _iterator2["return"]) {
+              _iterator2["return"]();
             }
-            found_error = null;
-            intermediary = function(err, created_instance) {
-              if ((found_error == null) && (err != null)) {
-                found_error = err;
-                callback(found_error);
+          } finally {
+            if (_didIteratorError2) {
+              throw _iteratorError2;
+            }
+          }
+        }
+      }
+
+      // Backward compatibility.
+    }, {
+      key: "whisk",
+      value: function whisk(abi, binary) {
+        var defaults = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+
+        var Contract = (function (_Pudding) {
+          _inherits(Contract, _Pudding);
+
+          function Contract() {
+            _classCallCheck(this, Contract);
+
+            _get(Object.getPrototypeOf(Contract.prototype), "constructor", this).apply(this, arguments);
+          }
+
+          return Contract;
+        })(Pudding);
+
+        ;
+        Contract.abi = abi;
+        Contract.binary = binary;
+        Contract.class_defaults = defaults;
+        return Contract;
+      }
+    }, {
+      key: "defaults",
+      value: function defaults(class_defaults) {
+        if (this.class_defaults == null) {
+          this.class_defaults = {};
+        }
+
+        var _iteratorNormalCompletion4 = true;
+        var _didIteratorError4 = false;
+        var _iteratorError4 = undefined;
+
+        try {
+          for (var _iterator4 = Object.entries(class_defaults)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+            var _step4$value = _slicedToArray(_step4.value, 2);
+
+            var key = _step4$value[0];
+            var value = _step4$value[1];
+
+            this.class_defaults[key] = value;
+          }
+        } catch (err) {
+          _didIteratorError4 = true;
+          _iteratorError4 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion4 && _iterator4["return"]) {
+              _iterator4["return"]();
+            }
+          } finally {
+            if (_didIteratorError4) {
+              throw _iteratorError4;
+            }
+          }
+        }
+
+        return this.class_defaults;
+      }
+    }, {
+      key: "setWeb3",
+      value: function setWeb3(web3) {
+        this.web3 = web3;
+      }
+    }, {
+      key: "is_object",
+      value: function is_object(val) {
+        return typeof val == "object" && !(val instanceof Array);
+      }
+    }, {
+      key: "merge",
+      value: function merge() {
+        var merged = {};
+        var args = Array.prototype.slice.call(arguments);
+
+        var _iteratorNormalCompletion5 = true;
+        var _didIteratorError5 = false;
+        var _iteratorError5 = undefined;
+
+        try {
+          for (var _iterator5 = args[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+            var object = _step5.value;
+            var _iteratorNormalCompletion6 = true;
+            var _didIteratorError6 = false;
+            var _iteratorError6 = undefined;
+
+            try {
+              for (var _iterator6 = Object.entries(object)[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+                var _step6$value = _slicedToArray(_step6.value, 2);
+
+                var key = _step6$value[0];
+                var value = _step6$value[1];
+
+                merged[key] = value;
+              }
+            } catch (err) {
+              _didIteratorError6 = true;
+              _iteratorError6 = err;
+            } finally {
+              try {
+                if (!_iteratorNormalCompletion6 && _iterator6["return"]) {
+                  _iterator6["return"]();
+                }
+              } finally {
+                if (_didIteratorError6) {
+                  throw _iteratorError6;
+                }
+              }
+            }
+          }
+        } catch (err) {
+          _didIteratorError5 = true;
+          _iteratorError5 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion5 && _iterator5["return"]) {
+              _iterator5["return"]();
+            }
+          } finally {
+            if (_didIteratorError5) {
+              throw _iteratorError5;
+            }
+          }
+        }
+
+        return merged;
+      }
+    }, {
+      key: "promisifyFunction",
+      value: function promisifyFunction(fn) {
+        var self = this;
+        return function () {
+          var _this2 = this;
+
+          var args = Array.prototype.slice.call(arguments);
+          var tx_params = {};
+
+          if (self.is_object(args[args.length - 1])) {
+            tx_params = args.pop();
+          }
+
+          tx_params = self.merge(Pudding.class_defaults, self.class_defaults, tx_params);
+
+          return new Promise(function (accept, reject) {
+            var callback = function callback(error, result) {
+              if (error != null) {
+                reject(error);
+              } else {
+                accept(result);
+              }
+            };
+            args.push(tx_params, callback);
+            fn.apply(_this2.contract, args);
+          });
+        };
+      }
+    }, {
+      key: "synchronizeFunction",
+      value: function synchronizeFunction(fn) {
+        var self = this;
+        return function () {
+          var _this3 = this;
+
+          var args = Array.prototype.slice.call(arguments);
+          var tx_params = {};
+
+          if (self.is_object(args[args.length - 1])) {
+            tx_params = args.pop();
+          }
+
+          tx_params = self.merge(Pudding.class_defaults, self.class_defaults, tx_params);
+
+          return new Promise(function (accept, reject) {
+
+            var callback = function callback(error, tx) {
+              var interval = null;
+              var max_attempts = 240;
+              var attempts = 0;
+
+              if (error != null) {
+                reject(error);
                 return;
               }
-              if ((found_error == null) && (err == null) && (created_instance != null) && (created_instance.address != null)) {
-                created_instance = Pudding.apply_extensions(contract_class, created_instance);
-                return callback(null, created_instance);
-              }
-            };
-            args.push(tx_params, instance_defaults, intermediary);
-            return old_new.apply(contract_class, args);
-          };
-        })(this);
-        return contract_class;
-      };
 
-      Pudding.synchronize_function = function(instance, fn) {
-        var attempts, interval, max_attempts;
-        interval = null;
-        max_attempts = 240;
-        attempts = 0;
-        return function() {
-          var args, callback, new_callback;
-          args = Array.prototype.slice.call(arguments);
-          callback = args.pop();
-          new_callback = function(error, response) {
-            var make_attempt, tx;
-            if (error != null) {
-              callback(error, response);
-              return;
-            }
-            tx = response;
-            interval = null;
-            make_attempt = function() {
-              return web3.eth.getTransaction(tx, function(e, tx_info) {
-                if (e != null) {
-                  return;
-                }
-                if (tx_info.blockHash != null) {
-                  clearInterval(interval);
-                  callback(null, tx);
-                }
-                if (attempts >= max_attempts) {
-                  clearInterval(interval);
-                  callback("Transaction " + tx + " wasn't processed in " + attempts + " attempts!", tx);
-                }
-                return attempts += 1;
-              });
-            };
-            interval = setInterval(make_attempt, 1000);
-            return make_attempt();
-          };
-          args.push(new_callback);
-          return fn.apply(instance, args);
-        };
-      };
+              var interval;
 
-      Pudding.synchronize_contract = function(contract_class) {
-        var old_at, old_new, synchronize;
-        old_at = contract_class.at;
-        old_new = contract_class["new"];
-        synchronize = function(instance) {
-          var abi_object, fn, fn_name, i, key, len, ref, value;
-          ref = contract_class.abi;
-          for (i = 0, len = ref.length; i < len; i++) {
-            abi_object = ref[i];
-            fn_name = abi_object.name;
-            fn = instance[fn_name];
-            if (fn == null) {
-              continue;
-            }
-            instance[fn_name] = Pudding.synchronize_function(instance, fn);
-            for (key in fn) {
-              value = fn[key];
-              instance[fn_name][key] = value;
-            }
-          }
-          return instance;
-        };
-        contract_class.at = function(address, instance_defaults) {
-          var instance;
-          if (instance_defaults == null) {
-            instance_defaults = {};
-          }
-          instance = old_at.call(contract_class, address, instance_defaults);
-          return synchronize(instance);
-        };
-        contract_class["new"] = function() {
-          var args, callback;
-          args = Array.prototype.slice.call(arguments);
-          callback = args.pop();
-          args.push(function(err, instance) {
-            if (err != null) {
-              callback(err);
-              return;
-            }
-            return callback(null, synchronize(instance));
+              var make_attempt = function make_attempt() {
+                //console.log "Interval check //{attempts}..."
+                self.web3.eth.getTransaction(tx, function (e, tx_info) {
+                  // If there's an error ignore it.
+                  if (e != null) {
+                    return;
+                  }
+
+                  if (tx_info.blockHash != null) {
+                    clearInterval(interval);
+                    accept(tx);
+                  }
+
+                  if (attempts >= max_attempts) {
+                    clearInterval(interval);
+                    reject(new Error("Transaction " + tx + " wasn't processed in " + attempts + " attempts!"));
+                  }
+
+                  attempts += 1;
+                });
+              };
+
+              interval = setInterval(make_attempt, 1000);
+              make_attempt();
+            };
+
+            args.push(tx_params, callback);
+            fn.apply(_this3.contract, args);
           });
-          return old_new.apply(contract_class, args);
         };
-        return contract_class;
-      };
+      }
+    }]);
 
-      return Pudding;
-
-    })();
     return Pudding;
-  };
+  })();
 
-  if ((typeof module !== "undefined" && module !== null) && (module.exports != null)) {
-    module.exports = factory(require("bluebird"), require("web3"));
-  } else {
-    window.Pudding = factory(Promise, web3);
-  }
+  ; // end class
 
-}).call(this);
+  Pudding.version = "0.13.3";
+
+  return Pudding;
+};
+
+if (typeof module != "undefined") {
+  module.exports = factory(require("bluebird"));
+} else {
+  // We expect Promise to already be included.
+  window.Pudding = factory(Promise);
+}

@@ -1,8 +1,13 @@
 {
   "build": {
-    "ether-pudding.js": [
-      "pudding.coffee"
-    ],
+    "ether-pudding.js": {
+      "files": [
+        "pudding.es6"
+      ],
+      "post-process": [
+        "version"
+      ]
+    },
     "ether-pudding.min.js": {
       "files": [
         "../build/ether-pudding.js"
@@ -12,8 +17,12 @@
       ]
     }
   },
+  "processors": {
+    "version": "./app/version.js"
+  },
   "deploy": [
-    "Example"
+    "Example",
+    "TestWithConstructor"
   ],
   "rpc": {
     "host": "localhost",
