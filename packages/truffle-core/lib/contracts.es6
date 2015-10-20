@@ -6,6 +6,8 @@ var path = require("path");
 var provision = require("./provision");
 var solc = require("solc");
 var path = require("path");
+var Pudding = require("ether-pudding");
+var PuddingGenerator = require("ether-pudding/generator");
 var ConfigurationError = require("./errors/configurationerror");
 var CompileError = require("./errors/compileerror");
 var DeployError = require("./errors/deployerror");
@@ -236,7 +238,8 @@ var Contracts = {
         console.log(`Writing ${description} to ${display_directory}`);
       }
 
-      fs.writeFileSync(config.environments.current.contracts_filename, JSON.stringify(config.contracts.classes, null, 2), {flag: "w+"});
+      PuddingGenerator(config.contracts.classes, config.environments.current.directory, {removeExisting: true});
+
       callback();
     });
   },
@@ -280,13 +283,15 @@ var Contracts = {
       },
       (c) => {
         // Put them on the network
-        var provisioner = provision.asModule(config);
-        var provisioned = {};
-        provisioner.provision_contracts(provisioned);
-
         async.mapSeries(config.app.resolved.deploy, (key, callback) => {
-          var contract = provisioned[key]; //config.contracts.classes[key];
+          // var contract = provisioned[key]; //config.contracts.classes[key];
           var contract_class = config.contracts.classes[key];
+
+          class contract extends Pudding {}
+
+          contract.abi = contract_class.abi;
+          contract.binary = contract_class.binary;
+          contract.setWeb3(web3);
 
           if (contract == null) {
             callback(new Error(`Could not find contract '${key}' for deployment. Check app.json.`));
@@ -305,9 +310,10 @@ var Contracts = {
           }).then(function(instance) {
             contract_class.address = instance.address;
             callback(null, contract_class);
-          }).catch(function(err) {
-            callback(new DeployError(err.message, key));
-          });
+          })
+          // }).catch(function(err) {
+          //   callback(new DeployError(err.message, key));
+          // });
 
         }, c);
       }
