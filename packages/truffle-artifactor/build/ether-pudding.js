@@ -406,6 +406,7 @@ var factory = function factory(Promise, web3) {
 
   ; // end class
 
+  Pudding.class_defaults = {};
   Pudding.version = "0.13.3";
 
   return Pudding;

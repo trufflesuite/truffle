@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "web3": "*",
-    "bluebird": "*"
+    "bluebird": "*",
+    "rimraf": "*"
   },
   "license": "MIT License. Copyright Consensys LLC, and authors. All rights reserved."
 }

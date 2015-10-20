@@ -1,4 +1,4 @@
 node_modules
 .DS_Store
-config/development/contracts.json
-config/test/contracts.json
+config/development
+config/test

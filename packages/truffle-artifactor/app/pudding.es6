@@ -218,6 +218,7 @@ var factory = function(Promise, web3) {
 
   }; // end class
 
+  Pudding.class_defaults = {};
   Pudding.version = "{{VERSION}}";
 
   return Pudding;
