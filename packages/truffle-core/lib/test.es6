@@ -4,9 +4,9 @@ var dir = require("node-dir");
 var path = require("path");
 
 var Contracts = require("./contracts");
-var Provision = require("./provision");
 
 var Pudding = require("ether-pudding");
+var PuddingLoader = require("ether-pudding/loader");
 var loadconf = require("./loadconf");
 var Promise = require("bluebird");
 
@@ -21,9 +21,8 @@ chai.use(require("./assertions"));
 
 var Test = {
   setup(config, callback) {
-    // Use the user-specified version of web3 in the tests.
-    global.web3 = require(config.tests.web3);;
-    config.setProviderFor(web3);
+
+    global.web3 = config.web3;
 
     // Variables that are passed to each contract which are
     // populated by the global before() hook.
@@ -53,19 +52,8 @@ var Test = {
               return;
             }
 
-            // Prepare the newly deployed contract classes, using the provisioner.
-            loadconf(config.environments.current.contracts_filename, function(err, json) {
-              config.contracts.classes = json;
-
-              Pudding.setWeb3(web3);
-
-              var provisioner = Provision.asModule(config);
-              provisioner.provision_contracts(global);
-
-              done();
-            });
-
-
+            Pudding.setWeb3(web3);
+            PuddingLoader.load(config.environments.current.directory, Pudding, global, done);
           });
         });
 

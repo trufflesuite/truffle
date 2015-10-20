@@ -1,23 +1,24 @@
 var repl = require("repl");
-var provision = require("./provision");
 
 global.web3 = require("web3");
 global.Pudding = require("ether-pudding");
+Pudding.setWeb3(web3);
+
+var PuddingLoader = require("ether-pudding/loader");
 
 var Repl = {
   run(config, done) {
-    var provisioner = provision.asModule(config);
-    provisioner.provision_contracts(global);
-
-    try {
-      var r = repl.start(`truffle(${config.environment})> `);
-      r.on("exit", function() {
+    PuddingLoader.load(config.environments.current.directory, Pudding, global, function() {
+      try {
+        var r = repl.start(`truffle(${config.environment})> `);
+        r.on("exit", function() {
+          process.exit(1);
+        });
+      } catch(e) {
+        console.log(e.stack);
         process.exit(1);
-      });
-    } catch(e) {
-      console.log(e.stack);
-      process.exit(1);
-    }
+      }
+    });
   }
 }
 

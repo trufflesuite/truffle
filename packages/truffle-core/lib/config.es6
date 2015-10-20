@@ -4,7 +4,7 @@ var deasync = require("deasync");
 var filesSync = deasync(dir.files);
 var subdirSync = deasync(dir.subdirs);
 var _ = require("lodash");
-var web3 = require("web3");
+var Web3 = require("web3");
 var loadconf = deasync(require("./loadconf"));
 var path = require("path");
 var Exec = require("./exec");
@@ -17,6 +17,7 @@ var Config = {
       argv: argv,
       truffle_dir: truffle_dir,
       working_dir: working_dir,
+      web3: new Web3(),
       environments: {
         directory: `${working_dir}/config`,
         available: {},
@@ -30,9 +31,7 @@ var Config = {
           build: {},
           deploy: [],
           rpc: {},
-          processors: {},
-          provider: null,
-          web3: null
+          processors: {}
         }
       },
       frontend: {
@@ -66,15 +65,14 @@ var Config = {
         directory: `${working_dir}/contracts`
       },
       tests: {
-        directory: `${working_dir}/test`,
-        web3: path.join(truffle_dir, "node_modules", "web3", "index.js")
+        directory: `${working_dir}/test`
       },
       build: {
         directory: path.join(working_dir, "build"),
         defaults: {
           "post-process": {
             "app.js": [
-              "inject-contracts",
+              "bootstrap",
               "frontend-dependencies"
             ]
           }
@@ -85,7 +83,7 @@ var Config = {
         defaults: {
           "post-process": {
             "app.js": [
-              "inject-contracts",
+              "bootstrap",
               "frontend-dependencies",
               "uglify"
             ]
@@ -112,7 +110,7 @@ var Config = {
         "null": `${truffle_dir}/lib/processors/null.es6`, // does nothing; useful in some edge cases.
         "uglify": `${truffle_dir}/lib/processors/post/uglify.es6`,
         "frontend-dependencies": `${truffle_dir}/lib/processors/post/frontend_dependencies.es6`,
-        "inject-contracts": `${truffle_dir}/lib/processors/post/inject_contracts.es6`,
+        "bootstrap": `${truffle_dir}/lib/processors/post/bootstrap.es6`,
         "include-contracts": `${truffle_dir}/lib/processors/post/include_contracts.es6`
       }
     });
@@ -195,7 +193,7 @@ var Config = {
     };
 
     config.test_connection = function(callback) {
-      web3.eth.getCoinbase(function(error, coinbase) {
+      config.web3.eth.getCoinbase(function(error, coinbase) {
         if (error != null) {
           error = new Error("Could not connect to your RPC client. Please check your RPC configuration.");
         }
@@ -285,52 +283,21 @@ var Config = {
       }
     }
 
-    config.setProviderFor = function(_web3) {
-      // Set the provider.
-      if (this.app.resolved.provider == null) {
-        var provider = new _web3.providers.HttpProvider(`http://${this.app.resolved.rpc.host}:${this.app.resolved.rpc.port}`);
-        _web3.setProvider(provider);
-      } else {
-        var file = path.join(this.working_dir, this.app.resolved.provider);
-        var provider = require(file);
-        _web3.setProvider(provider);
-      }
+    var provider = new Web3.providers.HttpProvider(`http://${config.app.resolved.rpc.host}:${config.app.resolved.rpc.port}`);
+    config.web3.setProvider(provider);
 
-      if (argv.verboseRpc != null) {
-        // // If you want to see what web3 is sending and receiving.
-        var oldAsync = web3.currentProvider.sendAsync;
-        web3.currentProvider.sendAsync = function(options, callback) {
-          console.log("   > " + JSON.stringify(options, null, 2).split("\n").join("\n   > "));
-          oldAsync.call(web3.currentProvider, options, function(error, result) {
-            if (error == null) {
-              console.log(" <   " + JSON.stringify(result, null, 2).split("\n").join("\n <   "));
-            }
-            callback(error, result)
-          });
-        };
-      }
-    }
-
-    config.setProviderFor(web3);
-
-    if (web3.currentProvider == null) {
-      throw new ConfigurationError("Could not correctly set your web3 provider. Please check your app configuration.");
-    }
-
-    // If app.json specifies a version of web3 to use for tests and
-    // the frontend, let's make sure it exists and add it to the
-    // frontend dependencies.
-    if (config.app.resolved.web3 != null) {
-      if (!path.isAbsolute(config.app.resolved.web3)) {
-        config.frontend.includes.web3 = path.join(working_dir, config.app.resolved.web3, "dist", "web3.min.js");
-        config.tests.web3 = path.join(working_dir, config.app.resolved.web3, "index.js");
-      } else {
-        config.frontend.includes.web3 = path.join(truffle_dir, "node_modules", "web3", "dist", "web3.min.js");
-        config.tests.web3 = path.join(truffle_dir, "node_modules", "index.js");
-      }
-
-      config.expect(config.frontend.includes.web3, "frontend version of web3 specified in app.json");
-      config.expect(config.tests.web3, "node version of web3 specified in app.json");
+    if (argv.verboseRpc != null) {
+      // // If you want to see what web3 is sending and receiving.
+      var oldAsync = config.web3.currentProvider.sendAsync;
+      config.web3.currentProvider.sendAsync = function(options, callback) {
+        console.log("   > " + JSON.stringify(options, null, 2).split("\n").join("\n   > "));
+        oldAsync.call(config.web3.currentProvider, options, function(error, result) {
+          if (error == null) {
+            console.log(" <   " + JSON.stringify(result, null, 2).split("\n").join("\n <   "));
+          }
+          callback(error, result)
+        });
+      };
     }
 
     return config;
