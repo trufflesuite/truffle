@@ -13,7 +13,9 @@
   "dependencies": {
     "web3": "*",
     "bluebird": "*",
-    "rimraf": "*"
+    "rimraf": "*",
+    "node-dir": "*",
+    "babel": "*"
   },
   "license": "MIT License. Copyright Consensys LLC, and authors. All rights reserved."
 }

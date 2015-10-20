@@ -2,8 +2,6 @@
 
 "use strict";
 
-var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
-
 var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -18,7 +16,7 @@ var factory = function factory(Promise, web3) {
       _classCallCheck(this, Pudding);
 
       if (!this.constructor.abi) {
-        throw new Error("Contract ABI not set. Please override Pudding and set static .abi variable with contract abi.");
+        throw new Error("Contract ABI not set. Please inherit Pudding and set static .abi variable with contract abi.");
       }
 
       this.contract = contract;
@@ -76,6 +74,8 @@ var factory = function factory(Promise, web3) {
           throw new Error("Contract binary not set. Please override Pudding and set .binary before calling new()");
         }
 
+        var self = this;
+
         return new Promise(function (accept, reject) {
           var contract_class = _this.web3.eth.contract(_this.abi);
           var tx_params = {};
@@ -99,7 +99,7 @@ var factory = function factory(Promise, web3) {
             }
 
             if (err == null && web3_instance != null && web3_instance.address != null) {
-              accept(new _this(web3_instance));
+              accept(new self(web3_instance));
             }
           };
 
@@ -111,7 +111,9 @@ var factory = function factory(Promise, web3) {
     }, {
       key: "at",
       value: function at(address) {
-        return new this(this.web3.eth.contract(this.abi).at(address));
+        var contract_class = this.web3.eth.contract(this.abi);
+        var contract = contract_class.at(address);
+        return new this(contract);
       }
     }, {
       key: "deployed",
@@ -141,12 +143,10 @@ var factory = function factory(Promise, web3) {
             var _iteratorError3 = undefined;
 
             try {
-              for (var _iterator3 = Object.entries(object)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-                var _step3$value = _slicedToArray(_step3.value, 2);
+              for (var _iterator3 = Object.keys(object)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                var key = _step3.value;
 
-                var key = _step3$value[0];
-                var value = _step3$value[1];
-
+                var value = object[key];
                 this.prototype[key] = value;
               }
             } catch (err) {
@@ -216,12 +216,10 @@ var factory = function factory(Promise, web3) {
         var _iteratorError4 = undefined;
 
         try {
-          for (var _iterator4 = Object.entries(class_defaults)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-            var _step4$value = _slicedToArray(_step4.value, 2);
+          for (var _iterator4 = Object.keys(class_defaults)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+            var key = _step4.value;
 
-            var key = _step4$value[0];
-            var value = _step4$value[1];
-
+            var value = class_defaults[key];
             this.class_defaults[key] = value;
           }
         } catch (err) {
@@ -269,12 +267,10 @@ var factory = function factory(Promise, web3) {
             var _iteratorError6 = undefined;
 
             try {
-              for (var _iterator6 = Object.entries(object)[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-                var _step6$value = _slicedToArray(_step6.value, 2);
+              for (var _iterator6 = Object.keys(object)[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+                var key = _step6.value;
 
-                var key = _step6$value[0];
-                var value = _step6$value[1];
-
+                var value = object[key];
                 merged[key] = value;
               }
             } catch (err) {
@@ -398,6 +394,48 @@ var factory = function factory(Promise, web3) {
             fn.apply(_this3.contract, args);
           });
         };
+      }
+    }, {
+      key: "load",
+      value: function load(factories, scope) {
+        // Use the global scope if none specified.
+        if (scope == null) {
+          if (typeof module == "undefined") {
+            scope = window;
+          } else {
+            scope = global;
+          }
+        }
+
+        if (!(factories instanceof Array)) {
+          factories = [factories];
+        }
+
+        var _iteratorNormalCompletion7 = true;
+        var _didIteratorError7 = false;
+        var _iteratorError7 = undefined;
+
+        try {
+          for (var _iterator7 = factories[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+            var factory = _step7.value;
+
+            var result = factory(this);
+            scope[result.contract_name] = result;
+          }
+        } catch (err) {
+          _didIteratorError7 = true;
+          _iteratorError7 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion7 && _iterator7["return"]) {
+              _iterator7["return"]();
+            }
+          } finally {
+            if (_didIteratorError7) {
+              throw _iteratorError7;
+            }
+          }
+        }
       }
     }]);
 

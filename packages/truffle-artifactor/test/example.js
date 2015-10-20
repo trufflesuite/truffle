@@ -9,6 +9,8 @@ contract('Example', function(accounts) {
   it("should get and set values via methods and get values via .call", function(done) {
     var example = Example.deployed();
 
+    debugger;
+
     example.value.call().then(function(value) {
       assert.equal(value.valueOf(), 1, "Starting value should be 1");
       return example.setValue(5);

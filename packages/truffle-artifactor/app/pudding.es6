@@ -3,7 +3,7 @@ var factory = function(Promise, web3) {
   class Pudding {
     constructor(contract) {
       if (!this.constructor.abi) {
-        throw new Error("Contract ABI not set. Please override Pudding and set static .abi variable with contract abi.");
+        throw new Error("Contract ABI not set. Please inherit Pudding and set static .abi variable with contract abi.");
       }
 
       this.contract = contract;
@@ -35,6 +35,8 @@ var factory = function(Promise, web3) {
         throw new Error("Contract binary not set. Please override Pudding and set .binary before calling new()");
       }
 
+      var self = this;
+
       return new Promise((accept, reject) => {
         var contract_class = this.web3.eth.contract(this.abi);
         var tx_params = {};
@@ -58,7 +60,7 @@ var factory = function(Promise, web3) {
           }
 
           if (err == null && web3_instance != null && web3_instance.address != null) {
-            accept(new this(web3_instance));
+            accept(new self(web3_instance));
           }
         };
 
@@ -69,7 +71,9 @@ var factory = function(Promise, web3) {
     }
 
     static at(address) {
-      return new this(this.web3.eth.contract(this.abi).at(address));
+      var contract_class = this.web3.eth.contract(this.abi);
+      var contract = contract_class.at(address);
+      return new this(contract);
     }
 
     static deployed() {
@@ -85,7 +89,8 @@ var factory = function(Promise, web3) {
       var args = Array.prototype.slice.call(arguments);
 
       for (var object of arguments) {
-        for (var [key, value] of Object.entries(object)) {
+        for (var key of Object.keys(object)) {
+          var value = object[key];
           this.prototype[key] = value;
         }
       }
@@ -105,7 +110,8 @@ var factory = function(Promise, web3) {
         this.class_defaults = {};
       }
 
-      for (var [key, value] of Object.entries(class_defaults)) {
+      for (var key of Object.keys(class_defaults)) {
+        var value = class_defaults[key];
         this.class_defaults[key] = value;
       }
       return this.class_defaults;
@@ -124,7 +130,8 @@ var factory = function(Promise, web3) {
       var args = Array.prototype.slice.call(arguments);
 
       for (var object of args) {
-        for (var [key, value] of Object.entries(object)) {
+        for (var key of Object.keys(object)) {
+          var value = object[key];
           merged[key] = value;
         }
       }
@@ -214,6 +221,26 @@ var factory = function(Promise, web3) {
           fn.apply(this.contract, args);
         });
       };
+    }
+
+    static load(factories, scope) {
+      // Use the global scope if none specified.
+      if (scope == null) {
+        if (typeof module == "undefined") {
+          scope = window;
+        } else {
+          scope = global;
+        }
+      }
+
+      if (!(factories instanceof Array)) {
+        factories = [factories];
+      }
+
+      for (var factory of factories) {
+        var result = factory(this);
+        scope[result.contract_name] = result;
+      }
     }
 
   }; // end class
