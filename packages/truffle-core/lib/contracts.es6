@@ -275,10 +275,9 @@ var Contracts = {
           }).then(function(instance) {
             contract_class.address = instance.address;
             callback(null, contract_class);
-          })
-          // }).catch(function(err) {
-          //   callback(new DeployError(err.message, key));
-          // });
+          }).catch(function(err) {
+            callback(new DeployError(err.message, key));
+          });
 
         }, c);
       }
