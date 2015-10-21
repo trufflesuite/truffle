@@ -66,7 +66,7 @@ var runTask = function(name) {
 
 registerTask('watch', "Watch filesystem for changes and rebuild the project automatically", function(done) {
   var needs_rebuild = true;
-  // var needs_redeploy = false;
+  var needs_redeploy = false;
 
   gaze(["app/**/*", "config/**/*", "contracts/**/*"], {cwd: working_dir, interval: 1000, debounceDelay: 500}, function() {
     // On changed/added/deleted
@@ -76,23 +76,23 @@ registerTask('watch', "Watch filesystem for changes and rebuild the project auto
 
       needs_rebuild = true;
 
-      // if (display_path.indexOf("contracts/") == 0) {
-      //   needs_redeploy = true;
-      // } else {
-      //   needs_rebuild = true;
-      // }
+      if (display_path.indexOf("contracts/") == 0) {
+        needs_redeploy = true;
+      } else {
+        needs_rebuild = true;
+      }
     });
   });
 
   var check_rebuild = function() {
-    // if (needs_redeploy == true) {
-    //   needs_redeploy = false;
-    //   needs_rebuild = false;
-    //   console.log("Redeploying...");
-    //   if (runTask("deploy") != 0) {
-    //     printFailure();
-    //   }
-    // }
+    if (needs_redeploy == true) {
+      needs_redeploy = false;
+      needs_rebuild = false;
+      console.log("Redeploying...");
+      if (runTask("deploy") != 0) {
+        printFailure();
+      }
+    }
 
     if (needs_rebuild == true) {
       needs_rebuild = false;
@@ -236,8 +236,8 @@ registerTask('deploy', "Deploy contracts to the network", function(done) {
     if (err != null) {
       done(err);
     } else {
-      console.log("Rebuilding app with new contracts...");
-      runTask("build");
+      // console.log("Rebuilding app with new contracts...");
+      // runTask("build");
       done();
     }
   });
