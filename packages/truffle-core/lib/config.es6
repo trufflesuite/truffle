@@ -9,6 +9,8 @@ var loadconf = deasync(require("./loadconf"));
 var path = require("path");
 var Exec = require("./exec");
 var ConfigurationError = require('./errors/configurationerror');
+var Pudding = require("ether-pudding");
+var PuddingLoader = require("ether-pudding/loader");
 
 var Config = {
   gather(truffle_dir, working_dir, argv, desired_environment) {
@@ -132,7 +134,6 @@ var Config = {
       config.environment = desired_environment;
       config.environments.current.directory = environment_directory;
       config.environments.current.filename = path.join(environment_directory, "config.json");
-      config.environments.current.contracts_filename = path.join(environment_directory, "contracts.json");
 
       break;
     }
@@ -257,32 +258,6 @@ var Config = {
       config.app.resolved.build[target] = options;
     }
 
-    // Get contracts in working directory, if available.
-    if (fs.existsSync(config.contracts.directory)) {
-      for (file of filesSync(config.contracts.directory)) {
-        var name = file.substring(file.lastIndexOf("/") + 1, file.lastIndexOf("."));
-        var relative_path = file.replace(config.working_dir, "./");
-        config.contracts.classes[name] = {
-          source: relative_path
-        }
-      }
-    }
-
-    // Now merge those contracts with what's in the configuration, if any.
-    if (fs.existsSync(config.environments.current.contracts_filename)) {
-      var current_contracts = loadconf(config.environments.current.contracts_filename);
-      for (var name in current_contracts) {
-        var contract = current_contracts[name];
-        // Don't import any deleted contracts.
-        var source = path.resolve(config.working_dir, contract.source);
-
-        if (!fs.existsSync(source)) {
-          continue;
-        }
-        config.contracts.classes[name] = contract;
-      }
-    }
-
     var provider = new Web3.providers.HttpProvider(`http://${config.app.resolved.rpc.host}:${config.app.resolved.rpc.port}`);
     config.web3.setProvider(provider);
 
@@ -298,6 +273,36 @@ var Config = {
           callback(error, result)
         });
       };
+    }
+
+    // Get contracts in working directory, if available.
+    if (fs.existsSync(config.contracts.directory)) {
+      for (file of filesSync(config.contracts.directory)) {
+        var name = file.substring(file.lastIndexOf("/") + 1, file.lastIndexOf("."));
+        var relative_path = file.replace(config.working_dir, "./");
+        config.contracts.classes[name] = {
+          source: relative_path
+        }
+      }
+    }
+
+    // Now merge those contracts with what's in the configuration, if any, using the loader.
+    Pudding.setWeb3(config.web3);
+    var loader = deasync(PuddingLoader.load);
+    var contracts = {};
+
+    var names = loader(config.environments.current.directory, Pudding, contracts);
+
+    for (var name of names) {
+      // Don't load a contract that's been deleted.
+      if (!config.contracts.classes[name]) {
+        continue;
+      }
+
+      var contract = contracts[name];
+      config.contracts.classes[name].abi = contract.abi;
+      config.contracts.classes[name].binary = contract.binary;
+      config.contracts.classes[name].address = contract.address;
     }
 
     return config;
