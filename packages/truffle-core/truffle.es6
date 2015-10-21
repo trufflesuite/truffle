@@ -23,6 +23,10 @@ var ExtendableError = require("./lib/errors/extendableerror");
 var truffle_dir = process.env.TRUFFLE_NPM_LOCATION;
 var working_dir = process.env.TRUFFLE_WORKING_DIRECTORY;
 
+if (working_dir[working_dir.length - 1] != "/") {
+  working_dir += "/";
+}
+
 var argv = require('yargs').argv;
 var pkg = JSON.parse(fs.readFileSync(path.join(truffle_dir, "package.json"), {encoding: "utf8"}));
 
