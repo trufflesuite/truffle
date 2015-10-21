@@ -20,15 +20,18 @@ module.exports = {
         var filename = path.basename(file);
         if (filename.indexOf(".sol.js") > 0) {
           var class_name = path.basename(filename, ".sol.js");
-          factories.push(require(file));
+
+          // Load file without require, to avoid caching.
+          var code = fs.readFileSync(file, {encoding: "utf8"});
+          var Module = module.constructor;
+          var m = new Module();
+          m._compile(code);
+
+          factories.push(m.exports);
         }
       }
 
-      var names = factories.map(function(factory) {
-        return factory.contract_name;
-      });
-
-      Pudding.load(factories, scope);
+      var names = Pudding.load(factories, scope);
 
       callback(null, names);
     });

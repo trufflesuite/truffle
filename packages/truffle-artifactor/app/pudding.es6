@@ -220,7 +220,7 @@ var factory = function(Promise, web3) {
           };
 
           args.push(tx_params, callback);
-          fn.apply(this.contract, args);
+          fn(...args);
         });
       };
     }
@@ -239,10 +239,15 @@ var factory = function(Promise, web3) {
         factories = [factories];
       }
 
+      var names = [];
+
       for (var factory of factories) {
         var result = factory(this);
+        names.push(result.contract_name);
         scope[result.contract_name] = result;
       }
+
+      return names;
     }
 
   }; // end class

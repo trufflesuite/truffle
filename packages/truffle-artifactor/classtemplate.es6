@@ -10,6 +10,9 @@ var factory = function(Pudding) {
 
   if ("{{ADDRESS}}" != "") {
     {{NAME}}.address = "{{ADDRESS}}";
+
+    // Backward compatibility; Deprecated.
+    {{NAME}}.deployed_address = "{{ADDRESS}}";
   }
 
   {{NAME}}.generated_with = "{{PUDDING_VERSION}}";

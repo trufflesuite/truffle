@@ -6,6 +6,8 @@ var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_a
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -341,8 +343,6 @@ var factory = function factory(Promise, web3) {
       value: function synchronizeFunction(fn) {
         var self = this;
         return function () {
-          var _this3 = this;
-
           var args = Array.prototype.slice.call(arguments);
           var tx_params = {};
 
@@ -393,7 +393,7 @@ var factory = function factory(Promise, web3) {
             };
 
             args.push(tx_params, callback);
-            fn.apply(_this3.contract, args);
+            fn.apply(undefined, _toConsumableArray(args));
           });
         };
       }
@@ -413,6 +413,8 @@ var factory = function factory(Promise, web3) {
           factories = [factories];
         }
 
+        var names = [];
+
         var _iteratorNormalCompletion7 = true;
         var _didIteratorError7 = false;
         var _iteratorError7 = undefined;
@@ -422,6 +424,7 @@ var factory = function factory(Promise, web3) {
             var factory = _step7.value;
 
             var result = factory(this);
+            names.push(result.contract_name);
             scope[result.contract_name] = result;
           }
         } catch (err) {
@@ -438,6 +441,8 @@ var factory = function factory(Promise, web3) {
             }
           }
         }
+
+        return names;
       }
     }]);
 
