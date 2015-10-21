@@ -64,6 +64,9 @@ var Test = {
     // Compile all the contracts and get the available accounts.
     // We only need to do this one, and can get it outside of
     // mocha.
+
+    console.log("Compiling contracts...");
+
     Contracts.compile_all(config, function(err) {
       if (err != null) {
         callback(err);

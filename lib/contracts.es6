@@ -110,53 +110,6 @@ var Contracts = {
     return import_file(root);
   },
 
-  // Support the breaking change that made sendTransaction return a transaction
-  // hash instead of an address hash when committing a new contract.
-  get_contract_address(config, address_or_tx, callback) {
-    if (address_or_tx.length == 42) {
-      callback(null, address_or_tx);
-      return;
-    }
-
-    var attempts = 0;
-    var max_attempts = 120;
-
-    var interval = null;
-    var verify = function() {
-      // Call the method via the provider directly as it hasn't yet been
-      // implemented in web3.
-      config.web3.currentProvider.sendAsync({
-        jsonrpc: "2.0",
-        method: "eth_getTransactionReceipt",
-        params:[address_or_tx],
-        id: new Date().getTime()
-      }, function(err, result) {
-        if (err != null) {
-          callback(err);
-          return;
-        }
-
-        result = result.result;
-
-        // Gotta love inconsistent responses.
-        if (result != null && result != "" && result != "0x") {
-          clearInterval(interval);
-          callback(null, result.contractAddress);
-          return;
-        }
-
-        attempts += 1;
-
-        if (attempts >= max_attempts) {
-          clearInterval(interval);
-          callback(new Error(`Contracts not deployed after ${attempts} seconds!`));
-        }
-      });
-    };
-
-    interval = setInterval(verify, 1000);
-  },
-
   compile_all(config, callback) {
     async.mapSeries(Object.keys(config.contracts.classes), (key, finished) => {
       var contract = config.contracts.classes[key];
@@ -199,7 +152,7 @@ var Contracts = {
         return;
       }
 
-      var display_directory = "./" + path.join("./", config.environments.current.contracts_filename.replace(config.working_dir, ""));
+      var display_directory = "./" + path.join("./", config.environments.current.directory.replace(config.working_dir, ""));
       if (config.argv.quietDeploy == null) {
         console.log(`Writing ${description} to ${display_directory}`);
       }
@@ -248,20 +201,18 @@ var Contracts = {
         }
       },
       (c) => {
+        Pudding.setWeb3(config.web3);
+
         // Put them on the network
         async.mapSeries(config.app.resolved.deploy, (key, callback) => {
           var contract_class = config.contracts.classes[key];
 
-          class contract extends Pudding {}
-
-          contract.abi = contract_class.abi;
-          contract.binary = contract_class.binary;
-          contract.setWeb3(config.web3);
-
-          if (contract == null) {
+          if (contract_class == null) {
             callback(new Error(`Could not find contract '${key}' for deployment. Check app.json.`));
             return;
           }
+
+          var contract = Pudding.whisk(contract_class.abi, contract_class.binary);
 
           var display_name = path.basename(contract_class.source);
           if (config.argv.quietDeploy == null) {
@@ -287,7 +238,7 @@ var Contracts = {
         return;
       }
 
-      this.write_contracts(config, "contracts and deployed addresses", done_deploying);
+      this.write_contracts(config, "contract files", done_deploying);
     });
   }
 }
