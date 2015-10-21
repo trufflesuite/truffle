@@ -24,9 +24,13 @@ module.exports = {
         }
       }
 
+      var names = factories.map(function(factory) {
+        return factory.contract_name;
+      });
+
       Pudding.load(factories, scope);
 
-      callback();
+      callback(null, names);
     });
   },
 
