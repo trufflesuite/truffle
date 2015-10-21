@@ -80,7 +80,7 @@ PuddingGenerator.save(contracts, destination);
 
 The Pudding loader can be used to easily bootstrap Pudding classes into your environment.
 
-Loading classes in Node:
+Loading classes for use in Node:
 
 ```
 var source = "/path/to/source/directory";
