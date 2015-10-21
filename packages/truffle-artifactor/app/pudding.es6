@@ -25,6 +25,8 @@ var factory = function(Promise, web3) {
           this[fn.name] = this.contract[fn.name];
         }
       }
+
+      this.allEvents = this.contract.allEvents;
     }
 
     //
@@ -98,7 +100,7 @@ var factory = function(Promise, web3) {
 
     // Backward compatibility.
     static whisk(abi, binary, defaults={}) {
-      class Contract extends Pudding {};
+      class Contract extends this {};
       Contract.abi = abi;
       Contract.binary = binary;
       Contract.class_defaults = defaults;
