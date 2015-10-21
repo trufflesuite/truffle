@@ -15,7 +15,12 @@ var factory = function(Promise, web3) {
 
       for (var fn of this.constructor.abi) {
         if (fn.type == "function") {
-          this[fn.name] = this.constructor.synchronizeFunction(this.contract[fn.name]);
+          if (fn.constant == true) {
+            this[fn.name] = this.constructor.promisifyFunction(this.contract[fn.name]);
+          } else {
+            this[fn.name] = this.constructor.synchronizeFunction(this.contract[fn.name]);
+          }
+
           this[fn.name].call = this.constructor.promisifyFunction(this.contract[fn.name].call);
           this[fn.name].sendTransaction = this.constructor.promisifyFunction(this.contract[fn.name].sendTransaction);
           this[fn.name].request = this.contract[fn.name].request;

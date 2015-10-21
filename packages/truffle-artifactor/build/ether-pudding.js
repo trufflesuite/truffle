@@ -37,7 +37,12 @@ var factory = function factory(Promise, web3) {
           var fn = _step.value;
 
           if (fn.type == "function") {
-            this[fn.name] = this.constructor.synchronizeFunction(this.contract[fn.name]);
+            if (fn.constant == true) {
+              this[fn.name] = this.constructor.promisifyFunction(this.contract[fn.name]);
+            } else {
+              this[fn.name] = this.constructor.synchronizeFunction(this.contract[fn.name]);
+            }
+
             this[fn.name].call = this.constructor.promisifyFunction(this.contract[fn.name].call);
             this[fn.name].sendTransaction = this.constructor.promisifyFunction(this.contract[fn.name].sendTransaction);
             this[fn.name].request = this.contract[fn.name].request;
@@ -452,7 +457,7 @@ var factory = function factory(Promise, web3) {
   ; // end class
 
   Pudding.class_defaults = {};
-  Pudding.version = "0.13.3";
+  Pudding.version = "1.0.1";
 
   return Pudding;
 };

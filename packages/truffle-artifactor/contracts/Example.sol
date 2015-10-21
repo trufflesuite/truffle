@@ -6,5 +6,9 @@ contract Example {
   function setValue(uint val) {
     value = val;
   }
+  function getValue() constant returns(uint) {
+    return value;
+  }
   event ExampleEvent(address indexed _from);
+
 }
