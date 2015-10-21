@@ -59,6 +59,8 @@ var factory = function factory(Promise, web3) {
           }
         }
       }
+
+      this.allEvents = this.contract.allEvents;
     }
 
     //
@@ -186,8 +188,8 @@ var factory = function factory(Promise, web3) {
       value: function whisk(abi, binary) {
         var defaults = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
-        var Contract = (function (_Pudding) {
-          _inherits(Contract, _Pudding);
+        var Contract = (function (_ref) {
+          _inherits(Contract, _ref);
 
           function Contract() {
             _classCallCheck(this, Contract);
@@ -196,7 +198,7 @@ var factory = function factory(Promise, web3) {
           }
 
           return Contract;
-        })(Pudding);
+        })(this);
 
         ;
         Contract.abi = abi;
