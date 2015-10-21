@@ -48,7 +48,7 @@ web3.setProvider(new Web3.Providers.HttpProvider("http://localhost:8545"));
 var MyContract = Pudding.whisk(abi, binary);
 ```
 
-See [Interacting With Your Contracts](#asdfasd) below for details on how to use the newly created `MyContract` object.
+See [Interacting With Your Contracts](https://github.com/ConsenSys/ether-pudding#interacting-with-your-contracts) below for details on how to use the newly created `MyContract` object.
 
 ### Using Pudding: Advanced 
 
