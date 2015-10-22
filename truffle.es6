@@ -336,9 +336,9 @@ registerTask('watch:tests', "Watch filesystem for changes and rerun tests automa
   gaze(["app/**/*", "config/**/*", "contracts/**/*", "test/**/*"], {cwd: working_dir, interval: 1000, debounceDelay: 500}, function() {
     // On changed/added/deleted
     this.on('all', function(event, filePath) {
-      if (filePath.match(/\/config\/.*?\/contracts\.json$/)) {
-        // ignore changes to /config/*/contracts.json since these changes every time
-        // tests are run
+      if (filePath.match(/\/config\/.*?\/.*?\.sol\.js$/)) {
+        // ignore changes to /config/*/*.sol.js since these changes every time
+        // tests are run (when contracts are compiled)
         return;
       }
       process.stdout.write("\u001b[2J\u001b[0;0H"); // clear screen
