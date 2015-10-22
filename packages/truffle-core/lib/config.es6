@@ -288,21 +288,24 @@ var Config = {
 
     // Now merge those contracts with what's in the configuration, if any, using the loader.
     Pudding.setWeb3(config.web3);
-    var loader = deasync(PuddingLoader.load);
-    var contracts = {};
 
-    var names = loader(config.environments.current.directory, Pudding, contracts);
+    if (fs.existsSync(config.environments.current.directory)) {
+      var loader = deasync(PuddingLoader.load);
+      var contracts = {};
 
-    for (var name of names) {
-      // Don't load a contract that's been deleted.
-      if (!config.contracts.classes[name]) {
-        continue;
+      var names = loader(config.environments.current.directory, Pudding, contracts);
+
+      for (var name of names) {
+        // Don't load a contract that's been deleted.
+        if (!config.contracts.classes[name]) {
+          continue;
+        }
+
+        var contract = contracts[name];
+        config.contracts.classes[name].abi = contract.abi;
+        config.contracts.classes[name].binary = contract.binary;
+        config.contracts.classes[name].address = contract.address;
       }
-
-      var contract = contracts[name];
-      config.contracts.classes[name].abi = contract.abi;
-      config.contracts.classes[name].binary = contract.binary;
-      config.contracts.classes[name].address = contract.address;
     }
 
     return config;
