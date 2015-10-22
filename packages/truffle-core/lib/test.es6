@@ -2,10 +2,8 @@ var Mocha = require("mocha");
 var chai = require("chai");
 var dir = require("node-dir");
 var path = require("path");
-var web3 = require("web3");
 var fs = require("fs");
 var temp = require("temp");
-var Promise = require("bluebird");
 
 var Contracts = require("./contracts");
 
@@ -52,7 +50,7 @@ var Test = {
 
         Pudding.setWeb3(web3);
         PuddingLoader.load(config.environments.current.directory, Pudding, global, function(err, contract_names) {
-          for (var name in contract_names) {
+          for (var name in config.contracts.classes) {
             var contract = global[name];
             var inst = contract.at(contract.deployed_address);
             Truffle.log_filters.push(inst.allEvents({fromBlock: 0, toBlock: 'latest'}, function(err, results) {
