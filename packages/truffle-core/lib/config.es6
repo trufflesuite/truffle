@@ -180,7 +180,7 @@ var Config = {
       }
 
       if (!fs.existsSync(expected_path)) {
-        var display_path = "." + expected_path.replace(this.working_dir, "");
+        var display_path = expected_path.replace(this.working_dir, "./");
         var error = new ConfigurationError(`Couldn't find ${description} at ${display_path}. ${extra}`);
 
         if (callback != null) {

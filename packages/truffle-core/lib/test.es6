@@ -61,40 +61,50 @@ var Test = {
       });
     };
 
-    // Compile all the contracts and get the available accounts.
-    // We only need to do this one, and can get it outside of
-    // mocha.
 
-    console.log("Compiling contracts...");
+    // Get the accounts
+    web3.eth.getAccounts(function(error, accs) {
+      for (var account of accs) {
+        accounts.push(account);
+      }
 
-    Contracts.compile_all(config, function(err) {
-      if (err != null) {
-        callback(err);
+      Pudding.defaults({
+        from: accounts[0],
+        gas: 3141592
+      });
+
+      if (config.argv.compile === false) {
+        callback();
         return;
       }
 
-      web3.eth.getAccounts(function(error, accs) {
-        for (var account of accs) {
-          accounts.push(account);
+      // Compile all the contracts and get the available accounts.
+      // We only need to do this once, and can get it outside of
+      // mocha.
+      console.log("Compiling contracts...");
+      Contracts.compile_all(config, function(err) {
+        if (err != null) {
+          callback(err);
+          return;
         }
-
-        Pudding.defaults({
-          from: accounts[0],
-          gas: 3141592
-        });
 
         callback();
       });
     });
   },
 
-  // file must be absolute, or null.
   run(config, file, callback) {
     if (typeof file == "function") {
       callback = file;
       file = null;
       config.expect(config.tests.directory, "tests directory");
-    } else {
+    }
+
+    if (file != null) {
+      if (path.isAbsolute(file) == false) {
+        file = path.resolve(config.working_dir, file);
+      }
+
       config.expect(file, "test file");
     }
 
