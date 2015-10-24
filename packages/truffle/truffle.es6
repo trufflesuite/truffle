@@ -235,8 +235,14 @@ registerTask('deploy', "Deploy contracts to the network", function(done) {
 
   console.log("Using environment " + config.environment + ".");
 
+  var compile = true;
+
+  if (argv.compile === false) {
+    compile = false;
+  }
+
   // Compile and deploy.
-  Contracts.deploy(config, true, function(err) {
+  Contracts.deploy(config, compile, function(err) {
     if (err != null) {
       done(err);
     } else {
@@ -306,14 +312,8 @@ registerTask('test', "Run tests", function(done) {
   if (file == null) {
     Test.run(config, done);
   } else {
-    if (path.isAbsolute(file) == false) {
-      file = path.resolve(file);
-    }
-
     Test.run(config, file, done);
   }
-
-
 });
 
 registerTask('console', "Run a console with deployed contracts instanciated and available (REPL)", function(done) {

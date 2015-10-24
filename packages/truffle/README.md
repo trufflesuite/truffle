@@ -454,6 +454,7 @@ $ truffle test [/path/to/test/file]
 Optional parameters:
 
 * `-e environment`: Specify the environment. Default is "test".
+* `--no-compile`: Don't compile the contracts before running tests.
 * `--verbose-rpc`: Log communication between Truffle and the RPC.
 
 ##### version
