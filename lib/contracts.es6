@@ -60,6 +60,8 @@ var Contracts = {
         case "function":
           headers += make_function(fn.name, fn);
           break;
+        case "event":
+          break;
         default:
           throw new Error(`Unknown type ${fn.type} found in ${root}`);
       }
