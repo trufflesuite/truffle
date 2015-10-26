@@ -53,9 +53,7 @@ var Test = {
           for (var name in config.contracts.classes) {
             var contract = global[name];
             var inst = contract.at(contract.deployed_address);
-            Truffle.log_filters.push(inst.allEvents({fromBlock: 0, toBlock: 'latest'}, function(err, results) {
-              // no-op, don't worry abuot tracking events just now
-            }));
+            Truffle.log_filters.push(inst.allEvents({fromBlock: 0, toBlock: 'latest'}));
           }
           done();
         });
