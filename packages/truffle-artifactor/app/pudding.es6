@@ -13,6 +13,10 @@ var factory = function(Promise, web3) {
         this.web3 = Pudding.web3;
       }
 
+      if (!this.web3) {
+        throw new Error("Please call Pudding.setWeb3() before using any Pudding class.");
+      }
+
       for (var fn of this.constructor.abi) {
         if (fn.type == "function") {
           if (fn.constant == true) {
@@ -47,8 +51,10 @@ var factory = function(Promise, web3) {
       return new Promise((accept, reject) => {
         var contract_class = this.web3.eth.contract(this.abi);
         var tx_params = {};
+        var last_arg = args[args.length - 1];
 
-        if (this.is_object(args[args.length - 1])) {
+        // It's only tx_params if it's an object and not a BigNumber.
+        if (this.is_object(last_arg) && last_arg instanceof Pudding.BigNumber == false) {
           tx_params = args.pop();
         }
 
@@ -126,6 +132,12 @@ var factory = function(Promise, web3) {
 
     static setWeb3(web3) {
       this.web3 = web3;
+
+      if (this.web3.toBigNumber == null) {
+        throw new Error("Pudding.setWeb3() must be passed an instance of Web3 and not Web3 itself.");
+      }
+
+      this.BigNumber = this.web3.toBigNumber(0).constructor;
     }
 
     static is_object(val) {
@@ -151,8 +163,10 @@ var factory = function(Promise, web3) {
       return function() {
         var args = Array.prototype.slice.call(arguments);
         var tx_params = {};
+        var last_arg = args[args.length - 1];
 
-        if (self.is_object(args[args.length - 1])) {
+        // It's only tx_params if it's an object and not a BigNumber.
+        if (self.is_object(last_arg) && last_arg instanceof Pudding.BigNumber == false) {
           tx_params = args.pop();
         }
 
@@ -177,8 +191,10 @@ var factory = function(Promise, web3) {
       return function() {
         var args = Array.prototype.slice.call(arguments);
         var tx_params = {};
+        var last_arg = args[args.length - 1];
 
-        if (self.is_object(args[args.length - 1])) {
+        // It's only tx_params if it's an object and not a BigNumber.
+        if (self.is_object(last_arg) && last_arg instanceof Pudding.BigNumber == false) {
           tx_params = args.pop();
         }
 

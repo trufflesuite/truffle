@@ -55,4 +55,25 @@ contract('Example', function(accounts) {
       assert.equal(value.valueOf(), 5, "Value should have been retrieved without explicitly calling .call()");
     }).then(done).catch(done);
   });
+
+  it("should allow BigNumbers as input parameters, and not confuse them as transaction objects", function(done) {
+    // BigNumber passed on new()
+    var example = null;
+    Example.new(new Pudding.BigNumber(30)).then(function(instance) {
+      example = instance;
+      return example.value.call();
+    }).then(function(value) {
+      assert.equal(value.valueOf(), 30, "Starting value should be 30");
+      // BigNumber passed in a transaction.
+      return example.setValue(new Pudding.BigNumber(25));
+    }).then(function(tx) {
+      return example.value.call();
+    }).then(function(value) {
+      assert.equal(value.valueOf(), 25, "Ending value should be twenty-five");
+      // BigNumber passed in a call.
+      return example.parrot.call(new Pudding.BigNumber(865));
+    }).then(function(parrot_value) {
+      assert.equal(parrot_value.valueOf(), 865, "Parrotted value should equal 865")
+    }).then(done).catch(done);
+  })
 });

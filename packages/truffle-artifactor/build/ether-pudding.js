@@ -2,7 +2,7 @@
 
 "use strict";
 
-var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
@@ -26,6 +26,10 @@ var factory = function factory(Promise, web3) {
 
       if (!this.web3) {
         this.web3 = Pudding.web3;
+      }
+
+      if (!this.web3) {
+        throw new Error("Please call Pudding.setWeb3() before using any Pudding class.");
       }
 
       var _iteratorNormalCompletion = true;
@@ -88,8 +92,10 @@ var factory = function factory(Promise, web3) {
         return new Promise(function (accept, reject) {
           var contract_class = _this.web3.eth.contract(_this.abi);
           var tx_params = {};
+          var last_arg = args[args.length - 1];
 
-          if (_this.is_object(args[args.length - 1])) {
+          // It's only tx_params if it's an object and not a BigNumber.
+          if (_this.is_object(last_arg) && last_arg instanceof Pudding.BigNumber == false) {
             tx_params = args.pop();
           }
 
@@ -252,6 +258,12 @@ var factory = function factory(Promise, web3) {
       key: "setWeb3",
       value: function setWeb3(web3) {
         this.web3 = web3;
+
+        if (this.web3.toBigNumber == null) {
+          throw new Error("Pudding.setWeb3() must be passed an instance of Web3 and not Web3 itself.");
+        }
+
+        this.BigNumber = this.web3.toBigNumber(0).constructor;
       }
     }, {
       key: "is_object",
@@ -323,8 +335,10 @@ var factory = function factory(Promise, web3) {
 
           var args = Array.prototype.slice.call(arguments);
           var tx_params = {};
+          var last_arg = args[args.length - 1];
 
-          if (self.is_object(args[args.length - 1])) {
+          // It's only tx_params if it's an object and not a BigNumber.
+          if (self.is_object(last_arg) && last_arg instanceof Pudding.BigNumber == false) {
             tx_params = args.pop();
           }
 
@@ -350,8 +364,10 @@ var factory = function factory(Promise, web3) {
         return function () {
           var args = Array.prototype.slice.call(arguments);
           var tx_params = {};
+          var last_arg = args[args.length - 1];
 
-          if (self.is_object(args[args.length - 1])) {
+          // It's only tx_params if it's an object and not a BigNumber.
+          if (self.is_object(last_arg) && last_arg instanceof Pudding.BigNumber == false) {
             tx_params = args.pop();
           }
 
