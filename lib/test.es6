@@ -52,7 +52,7 @@ var Test = {
               return;
             }
 
-            Pudding.setWeb3(web3);
+            Pudding.setWeb3(config.web3);
             PuddingLoader.load(config.environments.current.directory, Pudding, global, done);
           });
         });
