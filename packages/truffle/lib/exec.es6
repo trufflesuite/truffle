@@ -2,10 +2,7 @@ var fs = require("fs");
 var m = require("module");
 var path = require("path");
 
-global.web3 = require("web3");
 global.Pudding = require("ether-pudding");
-Pudding.setWeb3(web3);
-
 var PuddingLoader = require("ether-pudding/loader");
 
 var Exec = {
@@ -19,6 +16,8 @@ var Exec = {
         done(error);
         return;
       }
+
+      Pudding.setWeb3(config.web3);
 
       Pudding.defaults({
         from: accounts[0],
