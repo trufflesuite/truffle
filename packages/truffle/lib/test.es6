@@ -115,6 +115,10 @@ var Test = {
 
         var _original_contracts = {};
 
+        before("reset evm before each suite", function(done) {
+          Truffle.reset(done);
+        });
+
         before("redeploy before each suite", function(done) {
           redeploy_contracts.call(this, true, function() {
 
