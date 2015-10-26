@@ -80,7 +80,11 @@ var Test = {
 
       log_filters: [],
 
-      redeploy: redeploy_contracts,
+      redeploy: function(recompile, done) {
+        return new Promise(function(resolve, reject) {
+          redeploy_contracts(recompile, resolve);
+        });
+      },
       handle_errs: (done) => { Promise.onPossiblyUnhandledRejection(done); },
 
       reset: function(cb) {
