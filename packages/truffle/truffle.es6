@@ -289,7 +289,7 @@ registerTask('exec', "Execute a Coffee/JS file within truffle environment. Scrip
     return;
   }
 
-  Exec.file(config, file);
+  Exec.file(config, file, done);
 });
 
 // Supported options:

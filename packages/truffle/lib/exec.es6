@@ -1,9 +1,12 @@
 var fs = require("fs");
 var m = require("module");
 var path = require("path");
+var vm = require("vm");
 
-global.Pudding = require("ether-pudding");
+var Pudding = require("ether-pudding");
 var PuddingLoader = require("ether-pudding/loader");
+
+var _ = require("lodash");
 
 var Exec = {
   file(config, file, done) {
@@ -11,7 +14,7 @@ var Exec = {
       file = path.join(config.working_dir, file);
     }
 
-    web3.eth.getAccounts((error, accounts) => {
+    config.web3.eth.getAccounts((error, accounts) => {
       if (error) {
         done(error);
         return;
@@ -24,12 +27,33 @@ var Exec = {
         gas: 3141592
       });
 
-      PuddingLoader.load(config.environments.current.directory, Pudding, global, function(err) {
+      var sandbox = {};
+
+      // Create a sandbox that looks just like the global scope.
+      sandbox = _.merge(sandbox, global, {
+        web3: config.web3,
+        Pudding: Pudding,
+        process: {
+          exit: function(exit_code) {
+            if (exit_code != null && exit_code != 0) {
+              done(new Error(`Script ${file} exited with non-zero exit code: ${exit_code}`));
+            } else {
+              done();
+            }
+          }
+        }
+      });
+
+      PuddingLoader.load(config.environments.current.directory, Pudding, sandbox, function(err) {
         if (err != null) {
           done(err);
-        } else {
-          require(file);
+          return;
         }
+
+        var context = vm.createContext(sandbox);
+        var code = fs.readFileSync(file);
+        var script = new vm.Script(code, { filename: file});
+        script.runInContext(context);
       });
     });
   }

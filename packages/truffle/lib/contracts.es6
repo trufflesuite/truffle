@@ -4,6 +4,7 @@ var mkdirp = require("mkdirp");
 var path = require("path");
 var solc = require("solc");
 var path = require("path");
+var Exec = require("./exec");
 var Pudding = require("ether-pudding");
 var PuddingGenerator = require("ether-pudding/generator");
 var ConfigurationError = require("./errors/configurationerror");
@@ -233,15 +234,28 @@ var Contracts = {
           });
 
         }, c);
+      },
+      (c) => {
+        this.write_contracts(config, "contract files", c);
+      },
+      (c) => {
+        this.after_deploy(config, c);
       }
     ], (err) => {
       if (err != null) {
         done_deploying(err);
         return;
+      } else {
+        done_deploying();
       }
-
-      this.write_contracts(config, "contract files", done_deploying);
     });
+  },
+
+  after_deploy(config, done) {
+    async.eachSeries(config.app.resolved.after_deploy, function(file, iterator_callback) {
+      console.log(`Running post deploy script ${file}...`)
+      Exec.file(config, file, iterator_callback);
+    }, done);
   }
 }
 
