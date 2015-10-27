@@ -76,6 +76,8 @@ var Test = {
 
     global.Truffle = {
 
+      can_revert: false,
+
       log_filters: [],
 
       redeploy: function(recompile, done) {
@@ -116,7 +118,15 @@ var Test = {
         var _original_contracts = {};
 
         before("reset evm before each suite", function(done) {
-          Truffle.reset(done);
+          if (!Truffle.can_revert) {
+            return done();
+          }
+          Truffle.reset(function(err, res) {
+            if (res.error && res.error.code && res.error.code !== 0) {
+              Truffle.can_revert = false;
+            }
+            done();
+          });
         });
 
         before("redeploy before each suite", function(done) {
@@ -198,6 +208,10 @@ var Test = {
         if (reset_state) {
           var snapshot_id;
           beforeEach("snapshot state before each test", function(done) {
+            if (!Truffle.can_revert) {
+              // can't snapshot/revert, redeploy instead
+              return redeploy_contracts(false, done);
+            }
             Truffle.snapshot(function(err, ret) {
               snapshot_id = ret.result;
               done();
@@ -205,6 +219,9 @@ var Test = {
           });
 
           afterEach("revert state after each test", function(done) {
+            if (!Truffle.can_revert) {
+              return done();
+            }
             Truffle.revert(snapshot_id, function(err, ret) {
               done();
             });
