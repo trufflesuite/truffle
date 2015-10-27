@@ -32,6 +32,7 @@ var Config = {
         resolved: {
           build: {},
           deploy: [],
+          after_deploy: [],
           rpc: {},
           processors: {}
         }
