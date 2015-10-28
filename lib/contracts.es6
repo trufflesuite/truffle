@@ -253,7 +253,9 @@ var Contracts = {
 
   after_deploy(config, done) {
     async.eachSeries(config.app.resolved.after_deploy, function(file, iterator_callback) {
-      console.log(`Running post deploy script ${file}...`)
+      if (config.argv.quietDeploy == null) {
+        console.log(`Running post deploy script ${file}...`);
+      }
       Exec.file(config, file, iterator_callback);
     }, done);
   }
