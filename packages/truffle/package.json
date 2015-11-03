@@ -1,7 +1,7 @@
 {
   "name": "truffle",
   "namespace": "consensys",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "truffle - Simple development framework for Ethereum",
   "dependencies": {
     "async": "^1.4.2",
@@ -24,7 +24,7 @@
     "node-sass": "^3.3.3",
     "rimraf": "^2.4.3",
     "serve-static": "^1.10.0",
-    "solc": "^0.1.5",
+    "solc": "^0.1.6",
     "uglify-js": "^2.5.0",
     "web3": "0.14.0",
     "yargs": "^3.27.0"
