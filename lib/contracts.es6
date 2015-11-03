@@ -225,7 +225,7 @@ var Contracts = {
           contract.new({
             from: coinbase,
             gas: 3141592,
-            gasPrice: 1000000000000 // I'm not sure why this is so high. geth made me do it.
+            gasPrice: 50000000000 // 50 Shannon
           }).then(function(instance) {
             contract_class.address = instance.address;
             callback(null, contract_class);
