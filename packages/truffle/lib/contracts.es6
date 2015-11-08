@@ -186,6 +186,30 @@ var Contracts = {
     ], callback);
   },
 
+  createContractAndWait(config, tx) {
+    return new Promise((accept, reject) => {
+      config.web3.eth.sendTransaction(tx, (err, hash) => {
+        if (err != null) {
+          return reject(err);
+        }
+
+        var interval = setInterval(() => {
+          config.web3.eth.getTransactionReceipt(hash, (err, receipt) => {
+            if (err != null) {
+              clearInterval(interval);
+              return reject(err);
+            }
+
+            if (receipt != null) {
+              accept(receipt.contractAddress);
+              clearInterval(interval);
+            }
+          });
+        }, 1000);
+      })
+    });
+  },
+
   deploy(config, compile=true, done_deploying) {
     var coinbase = null;
 
@@ -206,8 +230,10 @@ var Contracts = {
       (c) => {
         Pudding.setWeb3(config.web3);
 
-        // Put them on the network
-        async.mapSeries(config.app.resolved.deploy, (key, callback) => {
+        var txs = [];
+
+        for (var i = 0; i < config.app.resolved.deploy.length; i++) {
+          var key = config.app.resolved.deploy[i];
           var contract_class = config.contracts.classes[key];
 
           if (contract_class == null) {
@@ -222,18 +248,26 @@ var Contracts = {
             console.log(`Sending ${display_name} to the network...`);
           }
 
-          contract.new({
+          txs.push(this.createContractAndWait(config, {
             from: coinbase,
             gas: 3141592,
-            gasPrice: 50000000000 // 50 Shannon
-          }).then(function(instance) {
-            contract_class.address = instance.address;
-            callback(null, contract_class);
-          }).catch(function(err) {
-            callback(new DeployError(err.message, key));
-          });
+            //gasPrice: 50000000000, // 50 Shannon
+            gasPrice: 100000000000, // 100 Shannon
+            data: contract_class.binary
+          }));
+        }
 
-        }, c);
+        Promise.all(txs).then(function(addresses) {
+          for (var i = 0; i < addresses.length; i++) {
+            var address = addresses[i];
+            var key = config.app.resolved.deploy[i];
+            var contract_class = config.contracts.classes[key];
+            contract_class.address = address;
+          }
+          c();
+        }).catch(function(err) {
+          c(new DeployError(err.message, key));
+        });
       },
       (c) => {
         this.write_contracts(config, "contract files", c);
