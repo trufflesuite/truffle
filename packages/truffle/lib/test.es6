@@ -80,8 +80,6 @@ var Test = {
       redeploy: function(recompile) {
         return new Promise(function(resolve, reject) {
           redeploy_contracts(config, recompile, function(err) {
-            console.log(error)
-
             if (err != null) {
               reject(err);
             } else {
