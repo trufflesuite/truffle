@@ -329,6 +329,39 @@ registerTask('serve', "Serve app on http://localhost:8080 and rebuild changes as
   });
 });
 
+
+
+registerTask('watch:tests', "Watch filesystem for changes and rerun tests automatically", function(done) {
+
+  gaze(["app/**/*", "config/**/*", "contracts/**/*", "test/**/*"], {cwd: working_dir, interval: 1000, debounceDelay: 500}, function() {
+    // On changed/added/deleted
+    this.on('all', function(event, filePath) {
+      if (filePath.match(/\/config\/.*?\/.*?\.sol\.js$/)) {
+        // ignore changes to /config/*/*.sol.js since these changes every time
+        // tests are run (when contracts are compiled)
+        return;
+      }
+      process.stdout.write("\u001b[2J\u001b[0;0H"); // clear screen
+      var display_path = "./" + filePath.replace(working_dir, "");
+      console.log(colors.cyan(`>> File ${display_path} changed.`));
+      run_tests();
+    });
+  });
+
+  var run_tests = function() {
+    console.log("Running tests...");
+
+    process.chdir(working_dir);
+    var config = Config.gather(truffle_dir, working_dir, argv, "test");
+    config.argv.quietDeploy = true; // Ensure we're quiet about deploys during tests
+
+    Test.run(config, function() { console.log("> test run complete; watching for changes..."); });
+  };
+  run_tests(); // run once immediately
+
+});
+
+
 // Default to listing available commands.
 var current_task = argv._[0];
 

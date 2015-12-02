@@ -27,10 +27,10 @@
     "solc": "^0.1.6",
     "uglify-js": "^2.5.0",
     "web3": "0.14.0",
-    "yargs": "^3.27.0"
+    "yargs": "^3.27.0",
+    "temp": "^0.8.3"
   },
   "devDependencies": {
-    "temp": "*"
   },
   "bin": {
     "truffle": "./truffle.bash",
