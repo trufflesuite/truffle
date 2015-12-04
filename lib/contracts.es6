@@ -139,6 +139,11 @@ var Contracts = {
         return;
       }
 
+      if (result.contracts[key] === undefined) {
+        finished(new CompileError("Expected contract was not found: " + key, source));
+        return;
+      }
+
       var compiled_contract = result.contracts[key];
 
       contract["binary"] = compiled_contract.bytecode;
