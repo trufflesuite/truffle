@@ -27,7 +27,22 @@ var rpc = function(method, arg, cb) {
   } else {
     cb = arg;
   }
-  web3.currentProvider.sendAsync(req, cb);
+
+  var intermediary = function(err, result) {
+    if (err != null) {
+      cb(err);
+      return;
+    }
+
+    if (result.error != null) {
+      cb(new Error(result.error.message || result.error));
+      return;
+    }
+
+    cb(null, result);
+  };
+
+  web3.currentProvider.sendAsync(req, intermediary);
 };
 
 // Deploy all configured contracts to the chain without recompiling
@@ -73,7 +88,8 @@ var Test = {
     global.assert = chai.assert;
 
     global.Truffle = {
-      can_revert: false,
+      can_snapshot: false,
+      starting_snapshot_id: null,
 
       log_filters: [],
 
@@ -92,7 +108,24 @@ var Test = {
       handle_errs: (done) => { Promise.onPossiblyUnhandledRejection(done); },
 
       reset: function(cb) {
-        rpc("evm_reset", cb);
+        var self = this;
+        this.revert(this.starting_snapshot_id, function(err, result) {
+          if (err != null) {
+            cb(err);
+            return;
+          }
+
+          // Snapshot again, resetting the snapshot id.
+          self.snapshot(function(err, result) {
+            if (err != null) {
+              cb(err);
+              return;
+            }
+
+            Truffle.starting_snapshot_id = result.result;
+            cb();
+          });
+        });
       },
 
       snapshot: function(cb) {
@@ -100,7 +133,7 @@ var Test = {
       },
 
       revert: function(snapshot_id, cb) {
-        rpc("evm_revert", [snapshot_id, true], cb);
+        rpc("evm_revert", [snapshot_id], cb);
       }
     };
 
@@ -124,19 +157,41 @@ var Test = {
         before("reset evm before each suite", function(done) {
           this.timeout(BEFORE_TIMEOUT);
 
-          if (!Truffle.can_revert) {
+          if (Truffle.can_snapshot == false) {
             return done();
           }
-          Truffle.reset(function(err, res) {
-            if (res.error && res.error.code && res.error.code !== 0) {
-              Truffle.can_revert = false;
-            }
-            done();
-          });
+
+          // If we can snapshot, but haven't yet deployed, let's
+          // deploy for the first time.
+          if (Truffle.starting_snapshot_id == null) {
+            redeploy_contracts.call(this, config, false, function(err) {
+              if (err != null) {
+                done(err);
+                return;
+              }
+
+              Truffle.snapshot(function(err, result) {
+                if (err != null) {
+                  done(err);
+                  return;
+                }
+
+                Truffle.starting_snapshot_id = result.result;
+                done();
+              });
+            });
+          } else {
+            Truffle.reset(done);
+          }
         });
 
         before("redeploy before each suite", function(done) {
           this.timeout(BEFORE_TIMEOUT);
+
+          // We don't need this step if we were able to reset.
+          if (Truffle.can_snapshot == true) {
+            return done();
+          }
 
           redeploy_contracts.call(this, config, false, function(err) {
 
@@ -193,10 +248,6 @@ var Test = {
                 if (!log.event) {
                   return; // only want log events
                 }
-                if (log.event.toLowerCase() == "debug") {
-                  console.log("[DEBUG]", log.args.msg);
-                  return;
-                }
                 var line = `    ${log.event}(`;
                 var first = true;
                 for (var key in log.args) {
@@ -222,18 +273,18 @@ var Test = {
         if (opts.reset_state == true) {
           var snapshot_id;
           beforeEach("snapshot state before each test", function(done) {
-            if (!Truffle.can_revert) {
+            if (!Truffle.can_snapshot) {
               // can't snapshot/revert, redeploy instead
               return redeploy_contracts(false, done);
             }
-            Truffle.snapshot(function(err, ret) {
-              snapshot_id = ret.result;
+            Truffle.snapshot(function(err, result) {
+              snapshot_id = result.result;
               done();
             });
           });
 
           afterEach("revert state after each test", function(done) {
-            if (!Truffle.can_revert) {
+            if (!Truffle.can_snapshot) {
               return done();
             }
             Truffle.revert(snapshot_id, function(err, ret) {
@@ -246,36 +297,57 @@ var Test = {
       });
     };
 
-
-    // Get the accounts
-    web3.eth.getAccounts(function(error, accs) {
-      for (var account of accs) {
-        accounts.push(account);
-      }
-
-      Pudding.defaults({
-        from: accounts[0],
-        gas: 3141592
-      });
-
-      if (config.argv.compile === false) {
-        callback();
-        return;
-      }
-
-      // Compile all the contracts and get the available accounts.
-      // We only need to do this once, and can get it outside of
-      // mocha.
-      console.log("Compiling contracts...");
-      Contracts.compile_all(config, function(err) {
-        if (err != null) {
-          callback(err);
+    (new Promise(function(accept, reject) {
+      // Get the accounts
+      web3.eth.getAccounts(function(error, accs) {
+        if (error != null) {
+          reject(error);
           return;
         }
 
-        callback();
+        for (var account of accs) {
+          accounts.push(account);
+        }
+
+        Pudding.defaults({
+          from: accounts[0],
+          gas: 3141592
+        });
+
+        accept();
       });
-    });
+    })).then(function() {
+      return new Promise(function(accept, reject) {
+        // Compile if needed.
+
+        if (config.argv.compile === false) {
+          accept();
+          return;
+        }
+
+        // Compile all the contracts and get the available accounts.
+        // We only need to do this once, and can get it outside of
+        // mocha.
+        console.log("Compiling contracts...");
+        Contracts.compile_all(config, function(err) {
+          if (err != null) {
+            reject(err);
+          } else {
+            accept();
+          }
+        });
+      });
+    }).then(function() {
+      return new Promise(function(accept, reject) {
+        // Check to see if the ethereum client can snapshot
+        Truffle.snapshot(function(err, result) {
+          if (err == null) {
+            Truffle.can_snapshot = true;
+          }
+          accept();
+        });
+      });
+    }).then(callback).catch(callback);
   },
 
   run(config, file, callback) {
