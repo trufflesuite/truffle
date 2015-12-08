@@ -14,8 +14,15 @@ ${result};
 ${contents};
 
 // Added by Truffle bootstrap.
-window.web3 = new Web3();
-window.web3.setProvider(new Web3.providers.HttpProvider("http://${config.app.resolved.rpc.host}:${config.app.resolved.rpc.port}"));
+// Supports Mist, and other wallets that provide 'web3'.
+if (typeof web3 !== 'undefined') {
+  // Use the Mist/wallet provider.
+  window.web3 = new Web3(web3.currentProvider);
+} else {
+  // Use the provider from the config.
+  window.web3 = new Web3(new Web3.providers.HttpProvider("http://${config.app.resolved.rpc.host}:${config.app.resolved.rpc.port}"));
+}
+
 Pudding.setWeb3(window.web3);
 Pudding.load([${contract_names}], window);
 `;
