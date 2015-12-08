@@ -123,6 +123,10 @@ var factory = function(Promise, web3) {
         this.class_defaults = {};
       }
 
+      if (class_defaults == null) {
+        class_defaults = {};
+      }
+
       for (var key of Object.keys(class_defaults)) {
         var value = class_defaults[key];
         this.class_defaults[key] = value;
