@@ -14,8 +14,6 @@ Truffle is a development environment, testing framework and asset pipeline for E
 * Contract compilation and deployment using the RPC client of your choice.
 * Support for JavaScript, CoffeeScript, SASS, ES6 and JSX built-in.
 
-Truffle shares many similarities to the [Embark Framework](https://iurimatias.github.io/embark-framework/). In the long run **Truffle and Embark hope to merge efforts**, though currently Truffle is still being maintained.
-
 ### Installation
 
 `$ npm install -g truffle`
