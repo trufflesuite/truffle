@@ -21,12 +21,12 @@ var Config = {
       working_dir: working_dir,
       web3: new Web3(),
       environments: {
-        directory: `${working_dir}/config`,
+        directory: `${working_dir}/environments`,
         available: {},
         current: {}
       },
       app: {
-        configfile: path.join(working_dir, "config", "app.json"),
+        configfile: path.join(working_dir, "truffle.json"),
         directory: path.join(working_dir, "app"),
         // Default config objects that'll be overwritten by working_dir config.
         resolved: {
@@ -65,13 +65,14 @@ var Config = {
       },
       contracts: {
         classes: {},
-        directory: `${working_dir}/contracts`
+        directory: `${working_dir}/contracts`,
+        build_directory: null
       },
       tests: {
         directory: `${working_dir}/test`
       },
       build: {
-        directory: path.join(working_dir, "build"),
+        directory: null,
         defaults: {
           "post-process": {
             "app.js": [
@@ -82,7 +83,7 @@ var Config = {
         }
       },
       dist: {
-        directory: `${working_dir}/dist`,
+        directory: null,
         defaults: {
           "post-process": {
             "app.js": [
@@ -161,6 +162,11 @@ var Config = {
     if (fs.existsSync(config.environments.current.filename)) {
       config.app.resolved = loadconf(config.environments.current.filename, config.app.resolved);
     }
+
+    // Overwrite build and dist directories
+    config.build.directory = path.join(config.environments.current.directory, "build");
+    config.dist.directory = path.join(config.environments.current.directory, "dist");
+    config.contracts.build_directory = path.join(config.environments.current.directory, "contracts");
 
     // Allow for deprecated build configuration.
     if (config.app.resolved.frontend != null) {
@@ -290,11 +296,11 @@ var Config = {
     // Now merge those contracts with what's in the configuration, if any, using the loader.
     Pudding.setWeb3(config.web3);
 
-    if (fs.existsSync(config.environments.current.directory)) {
+    if (fs.existsSync(config.contracts.build_directory)) {
       var loader = deasync(PuddingLoader.load);
       var contracts = {};
 
-      var names = loader(config.environments.current.directory, Pudding, contracts);
+      var names = loader(config.contracts.build_directory, Pudding, contracts);
 
       for (var name of names) {
         // Don't load a contract that's been deleted.

@@ -149,18 +149,19 @@ var Contracts = {
   },
 
   write_contracts(config, description="contracts", callback) {
-    mkdirp(config.environments.current.directory, function(err, result) {
+    var destination = config.contracts.build_directory;
+    mkdirp(destination, function(err, result) {
       if (err != null) {
         callback(err);
         return;
       }
 
-      var display_directory = "./" + path.join("./", config.environments.current.directory.replace(config.working_dir, ""));
+      var display_directory = "./" + path.join("./", destination.replace(config.working_dir, ""));
       if (config.argv.quietDeploy == null) {
         console.log(`Writing ${description} to ${display_directory}`);
       }
 
-      PuddingGenerator.save(config.contracts.classes, config.environments.current.directory, {removeExisting: true});
+      PuddingGenerator.save(config.contracts.classes, destination, {removeExisting: true});
 
       callback();
     });
@@ -237,7 +238,7 @@ var Contracts = {
           var contract_class = config.contracts.classes[key];
 
           if (contract_class == null) {
-            callback(new Error(`Could not find contract '${key}' for deployment. Check app.json.`));
+            callback(new Error(`Could not find contract '${key}' for deployment. Check truffle.json.`));
             return;
           }
 
@@ -270,7 +271,7 @@ var Contracts = {
         });
       },
       (c) => {
-        this.write_contracts(config, "contract files", c);
+        this.write_contracts(config, "built contract files", c);
       },
       (c) => {
         this.after_deploy(config, c);
