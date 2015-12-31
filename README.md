@@ -28,7 +28,7 @@ Usage: truffle [command] [options]
 Commands:
 
 build           => Build development version of app; creates ./build directory
-console         => Run a console with deployed contracts instanciated and available (REPL)
+console         => Run a console with deployed contracts instantiated and available (REPL)
 compile         => Compile contracts
 create:contract => Create a basic contract
 create:test     => Create a basic test
