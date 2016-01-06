@@ -119,6 +119,21 @@ var Config = {
       }
     });
 
+    // Check to see if we're working on a dapp meant for 0.2.x or older
+    if (fs.existsSync(path.join(working_dir, "config", "app.json"))) {
+      console.log("Your dapp is meant for an older version of Truffle. Don't worry, there are two solutions!")
+      console.log("");
+      console.log("1) Upgrade you're dapp using the followng instructions (it's easy):");
+      console.log("   https://github.com/ConsenSys/truffle/wiki/Migrating-from-v0.2.x-to-v0.3.0");
+      console.log("");
+      console.log("   ( OR )")
+      console.log("");
+      console.log("2) Downgrade to Truffle 0.2.x");
+      console.log("");
+      console.log("Cheers! And file an issue if you run into trouble! https://github.com/ConsenSys/truffle/issues")
+      process.exit();
+    }
+
     desired_environment = argv.e || argv.environment || process.env.NODE_ENV || desired_environment;
 
     // Try to find the desired environment, and fall back to development if we don't find it.
@@ -163,10 +178,12 @@ var Config = {
       config.app.resolved = loadconf(config.environments.current.filename, config.app.resolved);
     }
 
-    // Overwrite build and dist directories
-    config.build.directory = path.join(config.environments.current.directory, "build");
-    config.dist.directory = path.join(config.environments.current.directory, "dist");
-    config.contracts.build_directory = path.join(config.environments.current.directory, "contracts");
+    if (fs.existsSync(config.environments.current.directory)) {
+      // Overwrite build and dist directories
+      config.build.directory = path.join(config.environments.current.directory, "build");
+      config.dist.directory = path.join(config.environments.current.directory, "dist");
+      config.contracts.build_directory = path.join(config.environments.current.directory, "contracts");
+    }
 
     // Allow for deprecated build configuration.
     if (config.app.resolved.frontend != null) {

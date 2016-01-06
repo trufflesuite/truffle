@@ -253,7 +253,7 @@ registerTask('deploy', "Deploy contracts to the network", function(done) {
   });
 });
 
-registerTask('build', "Build development version of app; creates ./build directory", function(done) {
+registerTask('build', "Build development version of app", function(done) {
   var config = Config.gather(truffle_dir, working_dir, argv, "development");
   Build.build(config, function(err) {
     done(err);
@@ -263,7 +263,7 @@ registerTask('build', "Build development version of app; creates ./build directo
   });
 });
 
-registerTask('dist', "Create distributable version of app (minified); creates ./dist directory", function(done) {
+registerTask('dist', "Create distributable version of app (minified)", function(done) {
   var config = Config.gather(truffle_dir, working_dir, argv, "production");
   console.log("Using environment " + config.environment + ".");
   Build.dist(config, function(err) {
