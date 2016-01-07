@@ -9,7 +9,6 @@ describe('truffle:init', function() {
   var truffle_dir = path.resolve("./");
 
   it('successfully copies example configuration', function(done) {
-
     var temp_dir = temp.mkdirSync();
     var config = Config.gather(truffle_dir, temp_dir, {}, null);
 
@@ -19,7 +18,7 @@ describe('truffle:init', function() {
       }
 
       assert.isTrue(fs.existsSync(path.join(temp_dir, "app")), "app directory not created successfully");
-      assert.isTrue(fs.existsSync(path.join(temp_dir, "config")), "config directory not created successfully");
+      assert.isTrue(fs.existsSync(path.join(temp_dir, "environments")), "config directory not created successfully");
       assert.isTrue(fs.existsSync(path.join(temp_dir, "contracts")), "contracts directory not created successfully");
       assert.isTrue(fs.existsSync(path.join(temp_dir, "test")), "tests directory not created successfully");
 
