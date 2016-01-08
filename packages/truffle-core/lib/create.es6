@@ -7,7 +7,7 @@ var Create = {
       return;
     }
 
-    var from = config.example.contract.filename;
+    var from = config.templates.contract.filename;
     var to = `${config.contracts.directory}/${name}.sol`;
 
     file.duplicate(from, to, function(err) {
@@ -16,7 +16,7 @@ var Create = {
         return;
       }
 
-      file.replace(to, config.example.contract.name, name, callback);
+      file.replace(to, config.templates.contract.name, name, callback);
     });
   },
   test(config, name, callback) {
@@ -25,7 +25,7 @@ var Create = {
     }
 
     var underscored = util.toUnderscoreFromCamel(name);
-    var from = config.example.test.filename;
+    var from = config.templates.test.filename;
     var to = `${config.tests.directory}/${underscored}.js`;
 
     file.duplicate(from, to, function(err) {
@@ -34,8 +34,8 @@ var Create = {
         return;
       }
 
-      file.replace(to, config.example.contract.name, name, function() {
-        file.replace(to, config.example.contract.variable, underscored, callback);
+      file.replace(to, config.templates.contract.name, name, function() {
+        file.replace(to, config.templates.contract.variable, underscored, callback);
       });
     });
   }

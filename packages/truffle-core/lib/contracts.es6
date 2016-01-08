@@ -238,7 +238,7 @@ var Contracts = {
           var contract_class = config.contracts.classes[key];
 
           if (contract_class == null) {
-            callback(new Error(`Could not find contract '${key}' for deployment. Check truffle.json.`));
+            c(new DeployError(`Could not find contract '${key}' for deployment. Check truffle.json.`));
             return;
           }
 
