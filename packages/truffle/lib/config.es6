@@ -51,16 +51,17 @@ var Config = {
         ]
       },
       example: {
-        directory: `${truffle_dir}/example`,
-        contract: {
-          directory: `${truffle_dir}/example/contracts`,
-          filename: `${truffle_dir}/example/contracts/Example.sol`,
-          name: "Example",
+        directory: `${truffle_dir}/example`
+      },
+      templates: {
+        test: {
+          filename: path.join(truffle_dir, "templates", "example.js"),
           variable: "example"
         },
-        test: {
-          directory: path.join(truffle_dir, "example", "test"),
-          filename: path.join(truffle_dir, "example", "test", "example.js")
+        contract: {
+          filename: path.join(truffle_dir, "templates", "Example.sol"),
+          name: "Example",
+          variable: "example"
         }
       },
       contracts: {

@@ -72,7 +72,7 @@ registerTask('watch', "Watch filesystem for changes and rebuild the project auto
   var needs_rebuild = true;
   var needs_redeploy = false;
 
-  gaze(["app/**/*", "config/**/*", "contracts/**/*"], {cwd: working_dir, interval: 1000, debounceDelay: 500}, function() {
+  gaze(["app/**/*", "environments/*/contracts/**/*", "contracts/**/*"], {cwd: working_dir, interval: 1000, debounceDelay: 500}, function() {
     // On changed/added/deleted
     this.on('all', function(event, filePath) {
       var display_path = path.join("./", filePath.replace(working_dir, ""));
@@ -148,21 +148,6 @@ registerTask('version', "Show version number and exit", function(done) {
 registerTask('init', "Initialize new Ethereum project, including example contracts and tests", function(done) {
   var config = Config.gather(truffle_dir, working_dir, argv);
   Init.all(config, done);
-});
-
-registerTask('init:contracts', "Initialize default contracts directory", function(done) {
-  var config = Config.gather(truffle_dir, working_dir, argv);
-  Init.contracts(config, done);
-});
-
-registerTask('init:config', "Initialize default project configuration", function(done) {
-  var config = Config.gather(truffle_dir, working_dir, argv);
-  Init.config(config, done);
-});
-
-registerTask('init:tests', "Initialize tests directory structure and helpers", function(done) {
-  var config = Config.gather(truffle_dir, working_dir, argv);
-  Init.tests(config, done);
 });
 
 registerTask('create:contract', "Create a basic contract", function(done) {

@@ -1,27 +1,18 @@
 {
   "build": {
-    // Copy ./app/index.html (right hand side) to ./build/index.html.
     "index.html": "index.html",
     "app.js": [
-      // Paths relative to "app" directory that should be
-      // concatenated and processed during build.
       "javascripts/app.js"
     ],
     "app.css": [
-      // Paths relative to "app" directory that should be
-      // concatenated and processed during build.
       "stylesheets/app.css"
     ],
-    // Note: You can also include directories.
-    // This will copy a static images directory to the build directory.
     "images/": "images/"
   },
   "deploy": [
-    // Names of contracts that should be deployed to the network.
-    "Example"
+    "MetaCoin"
   ],
   "rpc": {
-    // Default RPC configuration.
     "host": "localhost",
     "port": 8545
   }
