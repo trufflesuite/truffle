@@ -1,3 +1,4 @@
+//NOTE: This is just a simple example. If you want to actullay deploy a fully, standards compatible, token/coin onto the Ethereum network (so that it talks as expected to the other contracts), have a look at the code here: https://github.com/ConsenSys/Tokens. It contains up to date token code.
 contract MetaCoin {
 	mapping (address => uint) balances;
 
