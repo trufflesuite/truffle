@@ -76,6 +76,10 @@ var contracts = {
 PuddingGenerator.save(contracts, destination);
 ```
 
+###### `generate`
+
+The `generate` method simply generates the Javascript class file that would be saved to a file when you use the `save` method, but returns it to you as a string to do whatever you want with it. 
+
 ##### Pudding Loader
 
 The Pudding loader can be used to easily bootstrap Pudding classes into your environment.

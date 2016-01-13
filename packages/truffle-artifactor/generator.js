@@ -23,11 +23,11 @@ module.exports = {
       var contract_data = contracts[contract_name];
       var output_path = path.join(destination, contract_name + ".sol.js");
 
-      fs.writeFileSync(output_path, this.compileContractToString( contract_name, contract_data ), {encoding: "utf8"});
+      fs.writeFileSync(output_path, this.generate( contract_name, contract_data ), {encoding: "utf8"});
     }
   },
 
-  compileContractToString: function(contract_name, contract_data, options) {
+  generate: function(contract_name, contract_data, options) {
     var classfile = class_template;
 
     classfile = classfile.replace(/\{\{NAME\}\}/g, contract_name);
