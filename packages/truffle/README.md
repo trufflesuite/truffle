@@ -23,7 +23,9 @@ Truffle is a development environment, testing framework and asset pipeline for E
 
 `$ npm install -g truffle`
 
-Ensure you're also running an RPC client that can compile Solidity contracts.
+### Requirements
+
+Truffle requires you to have a running Ethereum client that supports RPC requests (nearly all of them). You can choose from official clients such as [go-ethereum](https://github.com/ethereum/go-ethereum), [cpp-ethereum](https://github.com/ethereum/webthree-umbrella), as well as non-official clients like [ethereumjs-testrpc](https://github.com/ethereumjs/testrpc). For those new to Ethereum, we recommend ethereumjs-testrpc: It's fast and meant specifically for development.
 
 ### Usage & Available Commands:
 
@@ -48,10 +50,6 @@ test            => Run tests
 version         => Show version number and exit
 watch           => Watch project for changes and rebuild app automatically
 ```
-
-### Requirements
-
-Truffle requires you to have a running Ethereum client that supports RPC requests (nearly all of them). You can choose from official clients such as [go-ethereum](https://github.com/ethereum/go-ethereum), [cpp-ethereum](https://github.com/ethereum/webthree-umbrella), as well as non-official clients like [ethereumjs-testrpc](https://github.com/ethereumjs/testrpc). For those new to Ethereum, we recommend ethereumjs-testrpc: It's fast and meant specifically for development.
 
 ### Example Workflow
 
