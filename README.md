@@ -2,7 +2,7 @@
 
 [![Join the chat at https://gitter.im/consensys/truffle](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/consensys/truffle?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-**UPDATE:** The newest version of Truffle, v0.3.0, requires changes to the structure of your dapp. Make sure to check out the [migration instructions](https://github.com/ConsenSys/truffle/wiki/Migrating-from-v0.2.x-to-v0.3.0)!
+**UPDATE:** The newest version of Truffle, v0.3.x, requires changes to the structure of your dapp. Make sure to check out the [migration instructions](https://github.com/ConsenSys/truffle/wiki/Migrating-from-v0.2.x-to-v0.3.0)!
 
 
 -----------------------
