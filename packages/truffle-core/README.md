@@ -52,6 +52,7 @@ watch           => Watch project for changes and rebuild app automatically
 ### Example Workflow
 
 ```
+$ (Start your Ethereum client of choice; see Requirements section above) 
 $ truffle init
 $ truffle deploy
 $ truffle build
