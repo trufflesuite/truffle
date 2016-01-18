@@ -15,5 +15,6 @@
   "rpc": {
     "host": "localhost",
     "port": 8545
-  }
+  },
+  "truffle": "0.3.1"
 }
