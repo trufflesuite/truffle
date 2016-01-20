@@ -42,7 +42,7 @@ var Contracts = {
 
     var code = this.resolve(root);
 
-    var result = solc.compile(code, 0);
+    var result = solc.compile(code, 1);
 
     if (result.errors != null) {
       throw new CompileError(result.errors.join(), root);

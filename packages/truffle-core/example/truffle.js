@@ -1,5 +1,5 @@
-{
-  "build": {
+module.exports = {
+  build: {
     "index.html": "index.html",
     "app.js": [
       "javascripts/app.js"
@@ -9,11 +9,11 @@
     ],
     "images/": "images/"
   },
-  "deploy": [
+  deploy: [
     "MetaCoin"
   ],
-  "rpc": {
-    "host": "localhost",
-    "port": 8545
+  rpc: {
+    host: "localhost",
+    port: 8545
   }
-}
+};

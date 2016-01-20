@@ -26,29 +26,18 @@ var Config = {
         current: {}
       },
       app: {
-        configfile: path.join(working_dir, "truffle.json"),
+        configfile: path.join(working_dir, "truffle.js"),
+        oldconfigfile: path.join(working_dir, "truffle.json"),
         directory: path.join(working_dir, "app"),
         // Default config objects that'll be overwritten by working_dir config.
         resolved: {
           build: {},
+          include_contracts: true,
           deploy: [],
           after_deploy: [],
           rpc: {},
-          processors: {}
+          processors: {},
         }
-      },
-      frontend: {
-        contract_inserter_filename: `${truffle_dir}/lib/insert_contracts.js`,
-        includes: {
-          bluebird: `${truffle_dir}/node_modules/bluebird/js/browser/bluebird.js`,
-          web3: `${truffle_dir}/node_modules/web3/dist/web3.min.js`,
-          pudding: `${truffle_dir}/node_modules/ether-pudding/build/ether-pudding.js`
-        },
-        includes_order: [
-          "bluebird",
-          "web3",
-          "pudding"
-        ]
       },
       example: {
         directory: `${truffle_dir}/example`
@@ -74,49 +63,9 @@ var Config = {
       },
       build: {
         directory: null,
-        defaults: {
-          "post-process": {
-            "app.js": [
-              "bootstrap",
-              "frontend-dependencies"
-            ]
-          }
-        }
       },
       dist: {
         directory: null,
-        defaults: {
-          "post-process": {
-            "app.js": [
-              "bootstrap",
-              "frontend-dependencies",
-              "uglify"
-            ]
-          }
-        }
-      },
-      processors: {
-        // These processors do nothing, but are registered to reduce warnings.
-        ".html": `${truffle_dir}/lib/processors/null.es6`,
-        ".js": `${truffle_dir}/lib/processors/null.es6`,
-        ".css": `${truffle_dir}/lib/processors/null.es6`,
-        ".json": `${truffle_dir}/lib/processors/null.es6`,
-
-        // Helpful default processors.
-        ".coffee": `${truffle_dir}/lib/processors/coffee.es6`,
-        ".scss": `${truffle_dir}/lib/processors/scss.es6`,
-
-        // Babel-related processors.
-        ".es6": `${truffle_dir}/lib/processors/babel.es6`,
-        ".es": `${truffle_dir}/lib/processors/babel.es6`,
-        ".jsx": `${truffle_dir}/lib/processors/babel.es6`,
-
-        // Named processors for post-processing.
-        "null": `${truffle_dir}/lib/processors/null.es6`, // does nothing; useful in some edge cases.
-        "uglify": `${truffle_dir}/lib/processors/post/uglify.es6`,
-        "frontend-dependencies": `${truffle_dir}/lib/processors/post/frontend_dependencies.es6`,
-        "bootstrap": `${truffle_dir}/lib/processors/post/bootstrap.es6`,
-        "include-contracts": `${truffle_dir}/lib/processors/post/include_contracts.es6`
       }
     });
 
@@ -134,6 +83,12 @@ var Config = {
       console.log("Cheers! And file an issue if you run into trouble! https://github.com/ConsenSys/truffle/issues")
       process.exit();
     }
+
+    config.requireNoCache = function(filePath) {
+      //console.log("Requring w/o cache: " + path.resolve(filePath));
+    	delete require.cache[path.resolve(filePath)];
+    	return require(filePath);
+    };
 
     desired_environment = argv.e || argv.environment || process.env.NODE_ENV || desired_environment;
 
@@ -170,8 +125,11 @@ var Config = {
     }
 
     // Load the app config.
+    // For now, support both new and old config files.
     if (fs.existsSync(config.app.configfile)) {
-      config.app.resolved = loadconf(config.app.configfile, config.app.resolved);
+      _.merge(config.app.resolved, config.requireNoCache(config.app.configfile));
+    } else if (fs.existsSync(config.app.oldconfigfile)) {
+      config.app.resolved = loadconf(config.app.oldconfigfile, config.app.resolved);
     }
 
     // Now overwrite any values from the environment config.
@@ -192,7 +150,7 @@ var Config = {
     }
 
     // Helper function for expecting paths to exist.
-    config.expect = function(expected_path, description="file", extra="", callback) {
+    config.expect = function(expected_path, description = "file", extra = "", callback) {
       if (typeof description == "function") {
         callback = description;
         description = "file";
@@ -200,7 +158,7 @@ var Config = {
       }
 
       if (typeof extra == "function") {
-        callback = description;
+        callback = extra;
         extra = "";
       }
 
@@ -228,59 +186,11 @@ var Config = {
       });
     };
 
-    // Find the processors and then turn them into executable functions.
-    for (var extension in config.processors) {
-      var file = config.processors[extension];
-      config.processors[extension] = require(file);
-    }
-
+    // DEPRECATED: Resolve paths for default builder's extra processors.
     for (var extension in config.app.resolved.processors) {
       var file = config.app.resolved.processors[extension];
       var full_path = path.join(working_dir, file);
-      extension = extension.toLowerCase();
-      config.expect(full_path, `specified .${extension} processor`, "Check your app config.");
-      config.processors[extension] = require(full_path);
-    }
-
-    // Evaluate build targets, making the configuration conform, adding
-    // default post processing, if any.
-    for (var target in config.app.resolved.build) {
-      var options = config.app.resolved.build[target];
-      if (typeof options == "string") options = [options];
-      if (options instanceof Array) {
-        options = {
-          files: options,
-          "post-process": {
-            build: [],
-            dist: []
-          }
-        }
-      }
-
-      if (options["post-process"] == null) {
-        options["post-process"] = {build: [], dist: []};
-      }
-
-      // If an array was passed, use the same post processing in both contexts.
-      if (options["post-process"] instanceof Array) {
-        var new_post_process = {
-          build: options["post-process"],
-          dist: options["post-process"]
-        }
-        options["post-process"] = new_post_process;
-      }
-
-      // Check for default post processing for this target,
-      // and add it if the target hasn't specified any post processing.
-      var contexts = ["build", "dist"];
-      for (var index in contexts) {
-        var context = contexts[index];
-        if (config[context].defaults["post-process"][target] != null && options["post-process"][context].length == 0) {
-          options["post-process"][context] = config[context].defaults["post-process"][target];
-        }
-      }
-
-      config.app.resolved.build[target] = options;
+      config.app.resolved.processors[extension] = full_path;
     }
 
     var provider = new Web3.providers.HttpProvider(`http://${config.app.resolved.rpc.host}:${config.app.resolved.rpc.port}`);

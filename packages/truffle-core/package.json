@@ -5,7 +5,9 @@
   "description": "truffle - Simple development framework for Ethereum",
   "dependencies": {
     "async": "^1.4.2",
-    "babel": "^5.8.23",
+    "babel-cli": "^6.4.0",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-preset-stage-2": "^6.3.13",
     "bignumber.js": "^2.0.8",
     "bluebird": "^2.10.2",
     "chai": "^3.3.0",
@@ -13,7 +15,7 @@
     "colors": "^1.1.2",
     "cpr": "^0.4.3",
     "deasync": "^0.1.3",
-    "ether-pudding": "1.0.4",
+    "ether-pudding": "1.1.0",
     "finalhandler": "^0.4.0",
     "gaze": "^0.5.2",
     "jsmin": "^1.0.1",
@@ -24,13 +26,15 @@
     "node-sass": "^3.3.3",
     "rimraf": "^2.4.3",
     "serve-static": "^1.10.0",
-    "solc": "^0.1.6",
-    "uglify-js": "^2.5.0",
+    "solc": "^0.2.0-1",
+    "temp": "^0.8.3",
+    "truffle-default-builder": "0.0.1",
+    "uglify-js": "^2.6.1",
     "web3": "0.14.0",
-    "yargs": "^3.27.0",
-    "temp": "^0.8.3"
+    "yargs": "^3.27.0"
   },
   "devDependencies": {
+    "truffle-webpack-builder": "0.0.1"
   },
   "bin": {
     "truffle": "./truffle.bash",
