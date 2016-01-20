@@ -2,7 +2,7 @@
 
 [![Join the chat at https://gitter.im/consensys/truffle](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/consensys/truffle?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-**UPDATE:** The newest version of Truffle, v0.3.0, requires changes to the structure of your dapp. Make sure to check out the [migration instructions](https://github.com/ConsenSys/truffle/wiki/Migrating-from-v0.2.x-to-v0.3.0)!
+**UPDATE:** The newest version of Truffle, v0.3.x, requires changes to the structure of your dapp. Make sure to check out the [migration instructions](https://github.com/ConsenSys/truffle/wiki/Migrating-from-v0.2.x-to-v0.3.0)!
 
 
 -----------------------
@@ -23,7 +23,11 @@ Truffle is a development environment, testing framework and asset pipeline for E
 
 `$ npm install -g truffle`
 
-Ensure you're also running an RPC client that can compile Solidity contracts.
+### Requirements
+
+Truffle requires you to have a running Ethereum client that supports RPC requests (which is nearly all of them). You can choose from official clients like [go-ethereum](https://github.com/ethereum/go-ethereum), [cpp-ethereum](https://github.com/ethereum/webthree-umbrella), as well as non-official clients like [ethereumjs-testrpc](https://github.com/ethereumjs/testrpc). For those new to Ethereum, we recommend ethereumjs-testrpc: It's fast and meant specifically for development. 
+
+You'll need to choose an Ethereum client before proceeding.
 
 ### Usage & Available Commands:
 
@@ -50,6 +54,8 @@ watch           => Watch project for changes and rebuild app automatically
 ```
 
 ### Example Workflow
+
+First start your Ethereum client of choice; see Requirements section above. Then:
 
 ```
 $ truffle init
