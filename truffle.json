@@ -1,6 +1,0 @@
-{
-  "rpc": {
-    "host": "localhost",
-    "port": 8545
-  }
-}
