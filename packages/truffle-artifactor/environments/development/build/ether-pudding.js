@@ -2,18 +2,20 @@
 
 "use strict";
 
-var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var factory = function factory(Promise) {
-  var Pudding = (function () {
+  var Pudding = function () {
     function Pudding(contract) {
       _classCallCheck(this, Pudding);
 
@@ -61,8 +63,8 @@ var factory = function factory(Promise) {
         _iteratorError = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion && _iterator["return"]) {
-            _iterator["return"]();
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
           }
         } finally {
           if (_didIteratorError) {
@@ -120,7 +122,7 @@ var factory = function factory(Promise) {
 
           args.push(tx_params, intermediary);
 
-          contract_class["new"].apply(contract_class, args);
+          contract_class.new.apply(contract_class, args);
         });
       }
     }, {
@@ -141,6 +143,7 @@ var factory = function factory(Promise) {
       }
 
       // Backward compatibility.
+
     }, {
       key: "extend",
       value: function extend() {
@@ -169,8 +172,8 @@ var factory = function factory(Promise) {
               _iteratorError3 = err;
             } finally {
               try {
-                if (!_iteratorNormalCompletion3 && _iterator3["return"]) {
-                  _iterator3["return"]();
+                if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                  _iterator3.return();
                 }
               } finally {
                 if (_didIteratorError3) {
@@ -184,8 +187,8 @@ var factory = function factory(Promise) {
           _iteratorError2 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion2 && _iterator2["return"]) {
-              _iterator2["return"]();
+            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+              _iterator2.return();
             }
           } finally {
             if (_didIteratorError2) {
@@ -196,22 +199,23 @@ var factory = function factory(Promise) {
       }
 
       // Backward compatibility.
+
     }, {
       key: "whisk",
       value: function whisk(abi, binary) {
         var defaults = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
-        var Contract = (function (_ref) {
+        var Contract = function (_ref) {
           _inherits(Contract, _ref);
 
           function Contract() {
             _classCallCheck(this, Contract);
 
-            _get(Object.getPrototypeOf(Contract.prototype), "constructor", this).apply(this, arguments);
+            return _possibleConstructorReturn(this, Object.getPrototypeOf(Contract).apply(this, arguments));
           }
 
           return Contract;
-        })(this);
+        }(this);
 
         ;
         Contract.abi = abi;
@@ -246,8 +250,8 @@ var factory = function factory(Promise) {
           _iteratorError4 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion4 && _iterator4["return"]) {
-              _iterator4["return"]();
+            if (!_iteratorNormalCompletion4 && _iterator4.return) {
+              _iterator4.return();
             }
           } finally {
             if (_didIteratorError4) {
@@ -272,7 +276,7 @@ var factory = function factory(Promise) {
     }, {
       key: "is_object",
       value: function is_object(val) {
-        return typeof val == "object" && !(val instanceof Array);
+        return (typeof val === "undefined" ? "undefined" : _typeof(val)) == "object" && !(val instanceof Array);
       }
     }, {
       key: "merge",
@@ -303,8 +307,8 @@ var factory = function factory(Promise) {
               _iteratorError6 = err;
             } finally {
               try {
-                if (!_iteratorNormalCompletion6 && _iterator6["return"]) {
-                  _iterator6["return"]();
+                if (!_iteratorNormalCompletion6 && _iterator6.return) {
+                  _iterator6.return();
                 }
               } finally {
                 if (_didIteratorError6) {
@@ -318,8 +322,8 @@ var factory = function factory(Promise) {
           _iteratorError5 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion5 && _iterator5["return"]) {
-              _iterator5["return"]();
+            if (!_iteratorNormalCompletion5 && _iterator5.return) {
+              _iterator5.return();
             }
           } finally {
             if (_didIteratorError5) {
@@ -335,7 +339,7 @@ var factory = function factory(Promise) {
       value: function promisifyFunction(fn) {
         var self = this;
         return function () {
-          var _this2 = this;
+          var _this3 = this;
 
           var args = Array.prototype.slice.call(arguments);
           var tx_params = {};
@@ -357,7 +361,7 @@ var factory = function factory(Promise) {
               }
             };
             args.push(tx_params, callback);
-            fn.apply(_this2.contract, args);
+            fn.apply(_this3.contract, args);
           });
         };
       }
@@ -457,8 +461,8 @@ var factory = function factory(Promise) {
           _iteratorError7 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion7 && _iterator7["return"]) {
-              _iterator7["return"]();
+            if (!_iteratorNormalCompletion7 && _iterator7.return) {
+              _iterator7.return();
             }
           } finally {
             if (_didIteratorError7) {
@@ -472,7 +476,7 @@ var factory = function factory(Promise) {
     }]);
 
     return Pudding;
-  })();
+  }();
 
   ; // end class
 

@@ -1,7 +1,9 @@
 var fs = require("fs");
 var path = require("path");
 var rimraf = require("rimraf");
-var babel = require("babel");
+var babel = require("babel-core");
+var es2015 = require("babel-preset-es2015");
+var stagetwo = require("babel-preset-stage-2")
 var class_template = fs.readFileSync(path.join(__dirname, "./classtemplate.es6"), {encoding: "utf8"});
 
 // TODO: This should probably be asynchronous.
@@ -36,6 +38,17 @@ module.exports = {
     classfile = classfile.replace(/\{\{ADDRESS\}\}/g, contract_data.address || "");
     classfile = classfile.replace(/\{\{PUDDING_VERSION\}\}/g, Pudding.version);
 
-    return babel.transform(classfile).code;
+    var code = babel.transform(classfile, {
+      filename: contract_name + ".sol.js",
+      compact: false,
+      presets: [
+        es2015,
+        //react,
+        stagetwo
+      ],
+      ast: false,
+    }).code;
+
+    return code;
   }
 };
