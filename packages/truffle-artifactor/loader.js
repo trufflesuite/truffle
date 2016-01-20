@@ -2,33 +2,53 @@ var fs = require("fs");
 var path = require("path");
 var dir = require("node-dir");
 
-module.exports = {
-  load: function(source, Pudding, scope, callback) {
-    if (!fs.existsSync(source)) {
-      throw new Error("Source directory " + source + " doesn't exist!");
+var PuddingLoader = {
+  contract_data: function(source_directory, callback) {
+    if (!fs.existsSync(source_directory)) {
+      throw new Error("Source directory " + source_directory + " doesn't exist!");
     }
 
-    dir.files(source, function(err, files) {
+    dir.files(source_directory, function(err, files) {
       if (err != null) {
         callback(err);
         return;
       }
 
-      var factories = [];
+      var found = [];
 
       for (var file of files) {
-        var filename = path.basename(file);
-        if (filename.indexOf(".sol.js") > 0) {
-          var class_name = path.basename(filename, ".sol.js");
-
-          // Load file without require, to avoid caching.
-          var code = fs.readFileSync(file, {encoding: "utf8"});
-          var Module = module.constructor;
-          var m = new Module();
-          m._compile(code);
-
-          factories.push(m.exports);
+        if (path.basename(file).indexOf(".sol.js") > 0) {
+          var class_name = path.basename(file, ".sol.js");
+          found.push({
+            name: class_name,
+            file: file,
+            code: fs.readFileSync(file, {encoding: "utf8"}) + ";\n\n"
+          });
         }
+      }
+
+      callback(null, found);
+    });
+  },
+
+  load: function(source_directory, Pudding, scope, callback) {
+    if (!fs.existsSync(source_directory)) {
+      throw new Error("Source directory " + source_directory + " doesn't exist!");
+    }
+
+    PuddingLoader.contract_data(source_directory, function(err, contracts) {
+      if (err) return callback(err);
+
+      var factories = [];
+      for (var i = 0; i < contracts.length; i++) {
+        var contract = contracts[i];
+
+        // Load file without require, to avoid caching.
+        var Module = module.constructor;
+        var m = new Module();
+        m._compile(contract.code);
+
+        factories.push(m.exports);
       }
 
       var names = Pudding.load(factories, scope);
@@ -37,27 +57,23 @@ module.exports = {
     });
   },
 
-  packageSource: function(source, callback) {
-    if (!fs.existsSync(source)) {
-      throw new Error("Source directory " + source + " doesn't exist!");
+  packageSource: function(source_directory, callback) {
+    if (!fs.existsSync(source_directory)) {
+      throw new Error("Source directory " + source_directory + " doesn't exist!");
     }
 
-    dir.files(source, function(err, files) {
-      if (err != null) {
-        callback(err);
-        return;
-      }
+    PuddingLoader.contract_data(source_directory, function(err, contracts) {
+      if (err) return callback(err);
 
       var output = "";
 
-      for (var file of files) {
-        var filename = path.basename(file);
-        if (filename.indexOf(".sol.js") > 0) {
-          output += fs.readFileSync(file, {encoding: "utf8"}) + ";\n\n";
-        }
+      for (var i = 0; i < contract.length; i++) {
+        output += contract[i].code;
       }
 
       callback(null, output);
     });
   }
 };
+
+module.exports = PuddingLoader;

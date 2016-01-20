@@ -10,13 +10,14 @@
     },
     "ether-pudding.min.js": {
       "files": [
-        "../build/ether-pudding.js"
+        "../environments/development/build/ether-pudding.js"
       ],
       "post-process": [
         "uglify"
       ]
     }
   },
+  "include_contracts": false,
   "processors": {
     "version": "./app/version.js"
   },

@@ -1,4 +1,4 @@
-var factory = function(Promise, web3) {
+var factory = function(Promise) {
 
   class Pudding {
     constructor(contract) {

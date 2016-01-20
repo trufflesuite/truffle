@@ -2,7 +2,7 @@ contract('Example', function(accounts) {
 
   before("version check", function(done) {
     var pkg = require("../package.json");
-    assert.equal(Pudding.version, pkg.version, "Pudding version must match pkg.json version; check your configuration and read 'Running Tests' section of README");
+    assert.equal(Pudding.version, pkg.version, "Pudding version must match pkg.json version; check your configuration and read 'Running Tests' section of README. If you're receiving this error, it means your test environment isn't set up correctly.");
     done();
   });
 

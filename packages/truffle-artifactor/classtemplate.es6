@@ -24,7 +24,7 @@ var factory = function(Pudding) {
 // Nicety for Node.
 factory.load = factory;
 
-if (typeof module != "undefined") {
+if (typeof module != "undefined" && typeof module.exports != "undefined") {
   module.exports = factory;
 } else {
   // There will only be one version of Pudding in the browser,
