@@ -8,7 +8,7 @@ var class_template = fs.readFileSync(path.join(__dirname, "./classtemplate.es6")
 
 // TODO: This should probably be asynchronous.
 module.exports = {
-  save: function(contracts, destination, options) {
+  save: function(contracts, destination, options, Pudding) {
     if (!fs.existsSync(destination)) {
       throw new Error("Desination " + destination + " doesn't exist!");
     }
@@ -29,7 +29,7 @@ module.exports = {
     }
   },
 
-  generate: function(contract_name, contract_data, options) {
+  generate: function(contract_name, contract_data, options, Pudding) {
     var classfile = class_template;
 
     classfile = classfile.replace(/\{\{NAME\}\}/g, contract_name);
