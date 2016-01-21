@@ -25,7 +25,7 @@ module.exports = {
       var contract_data = contracts[contract_name];
       var output_path = path.join(destination, contract_name + ".sol.js");
 
-      fs.writeFileSync(output_path, this.generate( contract_name, contract_data ), {encoding: "utf8"});
+      fs.writeFileSync(output_path, this.generate( contract_name, contract_data, Pudding ), {encoding: "utf8"});
     }
   },
 
