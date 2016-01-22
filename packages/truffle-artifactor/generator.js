@@ -29,7 +29,7 @@ module.exports = {
     }
   },
 
-  generate: function(contract_name, contract_data, options, Pudding) {
+  generate: function(contract_name, contract_data, Pudding) {
     var classfile = class_template;
 
     classfile = classfile.replace(/\{\{NAME\}\}/g, contract_name);
