@@ -1,0 +1,304 @@
+var Promise = require("bluebird");
+var pkg = require("./package.json");
+
+function Pudding(contract) {
+  if (!this.abi) {
+    throw new Error("Contract ABI not set. Please inherit Pudding and set static .abi variable with contract abi.");
+  }
+
+  this.contract = contract;
+  this.address = contract.address;
+
+  for (var fn of this.abi) {
+    if (fn.type == "function") {
+      if (fn.constant == true) {
+        this[fn.name] = this.constructor.promisifyFunction(this.contract[fn.name]);
+      } else {
+        this[fn.name] = this.constructor.synchronizeFunction(this.contract[fn.name]);
+      }
+
+      this[fn.name].call = this.constructor.promisifyFunction(this.contract[fn.name].call);
+      this[fn.name].sendTransaction = this.constructor.promisifyFunction(this.contract[fn.name].sendTransaction);
+      this[fn.name].request = this.contract[fn.name].request;
+    }
+
+    if (fn.type == "event") {
+      this[fn.name] = this.contract[fn.name];
+    }
+  }
+
+  this.allEvents = this.contract.allEvents;
+};
+
+Pudding.new = function() {
+  var args = Array.prototype.slice.call(arguments);
+  var web3 = Pudding.getWeb3();
+
+  if (!this.prototype.binary) {
+    throw new Error("Contract binary not set. Please override Pudding and set .binary before calling new()");
+  }
+
+  var self = this;
+
+  return new Promise(function(accept, reject) {
+    var contract_class = web3.eth.contract(self.prototype.abi);
+    var tx_params = {};
+    var last_arg = args[args.length - 1];
+
+    // It's only tx_params if it's an object and not a BigNumber.
+    if (Pudding.is_object(last_arg) && last_arg instanceof Pudding.BigNumber == false) {
+      tx_params = args.pop();
+    }
+
+    tx_params = Pudding.merge(Pudding.class_defaults, self.prototype.class_defaults, tx_params);
+
+    if (tx_params.data == null) {
+      tx_params.data = self.prototype.binary;
+    }
+
+    // web3 0.9.0 and above calls new twice this callback twice.
+    // Why, I have no idea...
+    var intermediary = function(err, web3_instance) {
+      if (err != null) {
+        reject(err);
+        return;
+      }
+
+      if (err == null && web3_instance != null && web3_instance.address != null) {
+        accept(new self(web3_instance));
+      }
+    };
+
+    args.push(tx_params, intermediary);
+
+    contract_class.new.apply(contract_class, args);
+  });
+};
+
+Pudding.at = function(address) {
+  var web3 = Pudding.getWeb3();
+  var contract_class = web3.eth.contract(this.prototype.abi);
+  var contract = contract_class.at(this.prototype.address);
+
+  return new this(contract);
+};
+
+Pudding.deployed = function() {
+  if (!this.prototype.address) {
+    throw new Error("Contract address not set - deployed() relies on the contract class having a static 'address' value; please set that before using deployed().");
+  }
+
+  return this.at(this.prototype.address);
+};
+
+Pudding.extend = function() {
+  var args = Array.prototype.slice.call(arguments);
+
+  for (var object of arguments) {
+    for (var key of Object.keys(object)) {
+      var value = object[key];
+      this.prototype[key] = value;
+    }
+  }
+};
+
+Pudding.whisk = function(data, constructor) {
+  if (this.web3 == null) {
+    throw "Please call Pudding.setWeb3() before calling Pudding.whisk().";
+  }
+
+  var Contract = constructor;
+
+  if (constructor == null) {
+    Contract = function(contract) {
+      Pudding.apply(this, arguments);
+    };
+  }
+
+  Contract.prototype = Object.create(Pudding.prototype);
+
+  Contract.prototype.abi = data.abi;
+  Contract.prototype.binary = data.binary;
+  Contract.prototype.class_defaults = data.defaults || {};
+  Contract.address = Contract.prototype.address = data.address;
+  Contract.deployed_address = Contract.prototype.deployed_address = data.address; // deprecated
+  Contract.prototype.generated_with = data.generated_with;
+
+  Contract.prototype.contract_name = Contract.contract_name = data.contract_name;
+
+  Contract.prototype.address = data.address;
+
+  // Post-whisked loads just return the contract.
+  Contract.load = function() {
+    return Contract;
+  };
+
+  Contract.new = Pudding.new.bind(Contract);
+  Contract.at = Pudding.at.bind(Contract);
+  Contract.deployed = Pudding.deployed.bind(Contract);
+  Contract.extend = Pudding.extend.bind(Contract);
+
+  return Contract;
+}
+
+Pudding.load = function(factories, scope) {
+  if (scope == null) {
+    scope = {};
+  }
+
+  if (!(factories instanceof Array)) {
+    factories = [factories];
+  }
+
+  var names = [];
+
+  for (var factory of factories) {
+    var result = factory.load(this);
+    names.push(result.contract_name);
+    scope[result.contract_name] = result;
+  }
+
+  return names;
+};
+
+Pudding.defaults = function(class_defaults) {
+  if (this.class_defaults == null) {
+    this.class_defaults = {};
+  }
+
+  if (class_defaults == null) {
+    class_defaults = {};
+  }
+
+  for (var key of Object.keys(class_defaults)) {
+    var value = class_defaults[key];
+    this.class_defaults[key] = value;
+  }
+  return this.class_defaults;
+}
+
+Pudding.setWeb3 = function(web3) {
+  this.web3 = web3;
+
+  if (this.web3.toBigNumber == null) {
+    throw new Error("Pudding.setWeb3() must be passed an instance of Web3 and not Web3 itself.");
+  }
+
+  this.BigNumber = this.web3.toBigNumber(0).constructor;
+};
+
+Pudding.getWeb3 = function() {
+  return this.web3 || Pudding.web3; // Note: Pudding often times === this;
+}
+
+Pudding.is_object = function(val) {
+  return typeof val == "object" && !(val instanceof Array);
+};
+
+Pudding.merge = function() {
+  var merged = {};
+  var args = Array.prototype.slice.call(arguments);
+
+  for (var object of args) {
+    for (var key of Object.keys(object)) {
+      var value = object[key];
+      merged[key] = value;
+    }
+  }
+
+  return merged;
+};
+
+Pudding.promisifyFunction = function(fn) {
+  var self = this;
+  return function() {
+    var args = Array.prototype.slice.call(arguments);
+    var tx_params = {};
+    var last_arg = args[args.length - 1];
+
+    // It's only tx_params if it's an object and not a BigNumber.
+    if (Pudding.is_object(last_arg) && last_arg instanceof Pudding.BigNumber == false) {
+      tx_params = args.pop();
+    }
+
+    tx_params = Pudding.merge(Pudding.class_defaults, self.class_defaults, tx_params);
+
+    return new Promise((accept, reject) => {
+      var callback = function(error, result) {
+        if (error != null) {
+          reject(error);
+        } else {
+          accept(result);
+        }
+      };
+      args.push(tx_params, callback);
+      fn.apply(this.contract, args);
+    });
+  };
+};
+
+Pudding.synchronizeFunction = function(fn) {
+  var self = this;
+  var web3 = Pudding.getWeb3();
+  return function() {
+    var args = Array.prototype.slice.call(arguments);
+    var tx_params = {};
+    var last_arg = args[args.length - 1];
+
+    // It's only tx_params if it's an object and not a BigNumber.
+    if (Pudding.is_object(last_arg) && last_arg instanceof Pudding.BigNumber == false) {
+      tx_params = args.pop();
+    }
+
+    tx_params = Pudding.merge(Pudding.class_defaults, self.class_defaults, tx_params);
+
+    return new Promise(function(accept, reject) {
+
+      var callback = function(error, tx) {
+        var interval = null;
+        var max_attempts = 240;
+        var attempts = 0;
+
+        if (error != null) {
+          reject(error);
+          return;
+        }
+
+        var interval;
+
+        var make_attempt = function() {
+          //console.log "Interval check //{attempts}..."
+          web3.eth.getTransaction(tx, function(e, tx_info) {
+            // If there's an error ignore it.
+            if (e != null) {
+              return;
+            }
+
+            if (tx_info.blockHash != null) {
+              clearInterval(interval);
+              accept(tx);
+            }
+
+            if (attempts >= max_attempts) {
+              clearInterval(interval);
+              reject(new Error(`Transaction ${tx} wasn't processed in ${attempts} attempts!`));
+            }
+
+            attempts += 1;
+          });
+        };
+
+        interval = setInterval(make_attempt, 1000);
+        make_attempt();
+      };
+
+      args.push(tx_params, callback);
+      fn.apply(self, args);
+    });
+  };
+};
+
+Pudding.class_defaults = {};
+Pudding.version = pkg.version;
+
+module.exports = Pudding;

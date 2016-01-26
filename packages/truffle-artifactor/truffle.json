@@ -1,26 +1,5 @@
 {
-  "build": {
-    "ether-pudding.js": {
-      "files": [
-        "pudding.es6"
-      ],
-      "post-process": [
-        "version"
-      ]
-    },
-    "ether-pudding.min.js": {
-      "files": [
-        "../environments/development/build/ether-pudding.js"
-      ],
-      "post-process": [
-        "uglify"
-      ]
-    }
-  },
-  "include_contracts": false,
-  "processors": {
-    "version": "./app/version.js"
-  },
+  "build": "webpack",
   "deploy": [
     "Example",
     "TestWithConstructor"

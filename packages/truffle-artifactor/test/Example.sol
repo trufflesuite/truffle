@@ -17,5 +17,4 @@ contract Example {
     return val;
   }
   event ExampleEvent(address indexed _from);
-
 }

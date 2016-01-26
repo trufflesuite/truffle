@@ -1,15 +1,54 @@
-contract('Example', function(accounts) {
+// Override Pudding
+var assert = require("chai").assert;
+var Pudding = require("../");
+var temp = require("temp").track();;
+var solc = require("solc");
+var fs = require("fs");
+var TestRPC = require("ethereumjs-testrpc");
+var Web3 = require("web3");
+var PuddingGenerator = require("../generator");
+var PuddingLoader = require("../loader");
 
-  before("version check", function(done) {
-    var pkg = require("../package.json");
-    assert.equal(Pudding.version, pkg.version, "Pudding version must match pkg.json version; check your configuration and read 'Running Tests' section of README. If you're receiving this error, it means your test environment isn't set up correctly.");
-    done();
+// Compile first
+var result = solc.compile(fs.readFileSync("./test/Example.sol", {encoding: "utf8"}), 1);
+var compiled = result.contracts["Example"];
+var abi = JSON.parse(compiled.interface);
+var binary = compiled.bytecode;
+
+// Setup
+var web3 = new Web3();
+web3.setProvider(TestRPC.provider());
+Pudding.setWeb3(web3);
+
+var tests = function(contract_instantiator) {
+  var Example;
+  var accounts;
+
+  before(function(done) {
+    contract_instantiator(function(err, Ex) {
+      Example = Ex;
+      done(err);
+    });
+  });
+
+  before(function(done) {
+    web3.eth.getAccounts(function(err, accs) {
+      accounts = accs;
+
+      Pudding.defaults({
+        from: accounts[0]
+      });
+
+      done(err);
+    });
   });
 
   it("should get and set values via methods and get values via .call", function(done) {
-    var example = Example.deployed();
-
-    example.value.call().then(function(value) {
+    var example;
+    Example.new().then(function(instance) {
+      example = instance;
+      return example.value.call();
+    }).then(function(value) {
       assert.equal(value.valueOf(), 1, "Starting value should be 1");
       return example.setValue(5);
     }).then(function(tx) {
@@ -50,8 +89,11 @@ contract('Example', function(accounts) {
   });
 
   it("shouldn't synchronize constant functions", function(done) {
-    var example = Example.deployed();
-    example.getValue().then(function(value) {
+    var example;
+    Example.new(5).then(function(instance) {
+      example = instance;
+      return example.getValue();
+    }).then(function(value) {
       assert.equal(value.valueOf(), 5, "Value should have been retrieved without explicitly calling .call()");
     }).then(done).catch(done);
   });
@@ -75,5 +117,40 @@ contract('Example', function(accounts) {
     }).then(function(parrot_value) {
       assert.equal(parrot_value.valueOf(), 865, "Parrotted value should equal 865")
     }).then(done).catch(done);
-  })
+  });
+};
+
+describe("Contract abstractions", function() {
+
+  describe("when using .whisk()", function() {
+    tests(function(callback) {
+      callback(null, Pudding.whisk({
+        abi: abi,
+        binary: binary,
+        contract_name: "Example",
+        address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01", // random; meant to check default values
+      }));
+    });
+  });
+
+  describe("when using generator/loader:", function() {
+    tests(function(callback) {
+      var dirPath = temp.mkdirSync('ether-pudding-generator');
+
+      PuddingGenerator.save({
+        "Example": {
+          abi: abi,
+          binary: binary,
+          address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01"
+        }
+      }, dirPath, {removeExisting: true});
+
+      var scope = {};
+
+      PuddingLoader.load(dirPath, Pudding, scope, function(err, names) {
+        callback(err, scope["Example"]);
+      });
+    });
+  });
+
 });
