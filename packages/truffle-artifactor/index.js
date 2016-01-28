@@ -9,7 +9,8 @@ function Pudding(contract) {
   this.contract = contract;
   this.address = contract.address;
 
-  for (var fn of this.abi) {
+  for (var i = 0; i < this.abi.length; i++) {
+    var fn = this.abi[i];
     if (fn.type == "function") {
       if (fn.constant == true) {
         this[fn.name] = this.constructor.promisifyFunction(this.contract[fn.name]);
@@ -78,7 +79,7 @@ Pudding.new = function() {
 Pudding.at = function(address) {
   var web3 = Pudding.getWeb3();
   var contract_class = web3.eth.contract(this.prototype.abi);
-  var contract = contract_class.at(this.prototype.address);
+  var contract = contract_class.at(address);
 
   return new this(contract);
 };
@@ -94,8 +95,11 @@ Pudding.deployed = function() {
 Pudding.extend = function() {
   var args = Array.prototype.slice.call(arguments);
 
-  for (var object of arguments) {
-    for (var key of Object.keys(object)) {
+  for (var i = 0; i < arguments.length; i++) {
+    var object = arguments[i];
+    var keys = Object.keys(object);
+    for (var j = 0; j < keys.length; j++) {
+      var key = keys[j];
       var value = object[key];
       this.prototype[key] = value;
     }
@@ -152,7 +156,8 @@ Pudding.load = function(factories, scope) {
 
   var names = [];
 
-  for (var factory of factories) {
+  for (var i = 0; i < factories.length; i++) {
+    var factory = factories[i];
     var result = factory.load(this);
     names.push(result.contract_name);
     scope[result.contract_name] = result;
@@ -170,7 +175,9 @@ Pudding.defaults = function(class_defaults) {
     class_defaults = {};
   }
 
-  for (var key of Object.keys(class_defaults)) {
+  var keys = Object.keys(class_defaults);
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
     var value = class_defaults[key];
     this.class_defaults[key] = value;
   }
@@ -199,8 +206,11 @@ Pudding.merge = function() {
   var merged = {};
   var args = Array.prototype.slice.call(arguments);
 
-  for (var object of args) {
-    for (var key of Object.keys(object)) {
+  for (var i = 0; i < args.length; i++) {
+    var object = args[i];
+    var keys = Object.keys(object);
+    for (var j = 0; j < keys.length; j++) {
+      var key = keys[j];
       var value = object[key];
       merged[key] = value;
     }
@@ -212,6 +222,8 @@ Pudding.merge = function() {
 Pudding.promisifyFunction = function(fn) {
   var self = this;
   return function() {
+    var instance = this;
+
     var args = Array.prototype.slice.call(arguments);
     var tx_params = {};
     var last_arg = args[args.length - 1];
@@ -223,7 +235,7 @@ Pudding.promisifyFunction = function(fn) {
 
     tx_params = Pudding.merge(Pudding.class_defaults, self.class_defaults, tx_params);
 
-    return new Promise((accept, reject) => {
+    return new Promise(function(accept, reject) {
       var callback = function(error, result) {
         if (error != null) {
           reject(error);
@@ -232,7 +244,7 @@ Pudding.promisifyFunction = function(fn) {
         }
       };
       args.push(tx_params, callback);
-      fn.apply(this.contract, args);
+      fn.apply(instance.contract, args);
     });
   };
 };
@@ -281,7 +293,7 @@ Pudding.synchronizeFunction = function(fn) {
 
             if (attempts >= max_attempts) {
               clearInterval(interval);
-              reject(new Error(`Transaction ${tx} wasn't processed in ${attempts} attempts!`));
+              reject(new Error("Transaction " + tx + " wasn't processed in " + attempts + " attempts!"));
             }
 
             attempts += 1;
