@@ -213,50 +213,23 @@ MetaCoin.new().then(function(coin) {
 
 ### Building
 
-Pudding is a [Truffle](https://github.com/ConsenSys/truffle) project. First install Truffle:
+First install webpack:
 
 ```
-npm install -g truffle
+npm install -g webpack
 ```
 
 Then build: 
 
 ```
-$ truffle build
+$ wepback
 ```
 
 ### Running Tests
 
-Since Pudding is a Truffle project, and Truffle uses Pudding, we need to run Truffle in a special way so that Truffle uses the development version of Pudding.
-
-##### Setup
-
-From your workspace directory, do the following:
-
 ```
-$ git clone https://github.com/ConsenSys/truffle
-$ git clone https://github.com/ConsenSys/ether-pudding
-$ cd ether-pudding
-$ npm install
-$ npm link
-$ cd ../truffle
-$ npm install
-$ npm link ether-pudding 
+$ npm test
 ```
-
-##### Running Tests
-
-With the above, you checked out the latest version of Truffle and the latest version of Pudding, and through `npm link` told Truffle to use that version of Pudding. From here, we need to run Truffle from a local install, which is different than if we installed Truffle globally. From the Truffle directory:
-
-```
-$ TRUFFLE_NPM_LOCATION=`pwd` TRUFFLE_WORKING_DIRECTORY="/full/path/to/ether-pudding" ./truffle.bash test 
-```
-
-This ensures the local version of Truffle knows where its files are stored and knows which project it is acting on (ether-pudding). Use the `truffle.bash` command as you would use the truffle version installed globally.
-
-**Important Note to Developers:** `npm link` links Truffle with the built version of Pudding, so if you're running tests while actively developing Pudding, you'll want to run the tests in one terminal window while you run `truffle watch` from the `ether-pudding` directory in another.
-
-I know this is complicated, but it's a trade off between a complicated test setup or even more complicated tests, where we'd need to distinguish between two different versions of Pudding. Ick.
 
 ### License
 
