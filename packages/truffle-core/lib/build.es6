@@ -90,6 +90,14 @@ var Build = {
 
     var builder = config.app.resolved.build;
 
+    // No builder specified. Ignore the build then.
+    if (typeof builder == "undefined") {
+      if (config.argv.quietDeploy == null) {
+        console.log(`No build configuration specified. Not building.`);
+      }
+      return callback();
+    }
+
     if (typeof builder == "string") {
       builder = new CommandBuilder(builder);
     } else if (typeof builder !== "function") {
