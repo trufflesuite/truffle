@@ -154,7 +154,7 @@
 
 	Pudding.whisk = function(data, constructor) {
 	  if (this.web3 == null) {
-	    throw "Please call Pudding.setWeb3() before calling Pudding.whisk().";
+	    throw new Error("Please call Pudding.setWeb3() before calling Pudding.whisk().");
 	  }
 
 	  var Contract = constructor;
