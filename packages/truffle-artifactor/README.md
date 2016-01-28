@@ -1,3 +1,7 @@
+**UPGRADE WARNING:** When upgrading to `ether-pudding` v2.x from v1.x, make sure to upgrade any saved `.sol.js` files, especially those in production. [More details here.](https://github.com/ConsenSys/ether-pudding/wiki/Upgrading-from-1.x-to-2.x)
+
+-----------------------------
+
 # The Proof is in the Pudding
 
 Ether Pudding (or just “Pudding”) is an extension of [web3’s](https://github.com/ethereum/web3.js/tree/master) contract abstraction that makes life as a Dapp developer a whole lot easier. With Pudding, you can cleanly write distributed Ethereum applications with less hassle and more reliability, as your app's changes to the blockchain are synchronized so you can easily manage control flow.
