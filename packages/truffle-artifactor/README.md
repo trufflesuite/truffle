@@ -41,11 +41,17 @@ Once you have those, you can whisk that together to make a Pudding class:
 var Web3 = require("web3");
 var web3 = new Web3();
 var Pudding = require("ether-pudding");
+Pudding.setWeb3(web3);
 
 // Set the provider, as you would normally. 
 web3.setProvider(new Web3.Providers.HttpProvider("http://localhost:8545"));
 
-var MyContract = Pudding.whisk(abi, binary);
+var MyContract = Pudding.whisk({
+  abi: abi, 
+  binary: binary,
+  contract_name: "MyContract", // optional
+  address: "0xabcd...", // optional, needed for MyContract.deployed()
+});
 ```
 
 See [Interacting With Your Contracts](https://github.com/ConsenSys/ether-pudding#interacting-with-your-contracts) below for details on how to use the newly created `MyContract` object.
@@ -54,18 +60,28 @@ See [Interacting With Your Contracts](https://github.com/ConsenSys/ether-pudding
 
 Often, having to manage your contract's ABIs and binaries is an arduous task, and passing around JSON doesn't fit well into most build environments. This is why Pudding ships with a Node-based generator and loader to make your life much easier.
 
-##### Pudding Generator
+#### Using Pudding Contracts
 
-You can use Pudding's generator to save honest-to-goodness javascript class files that can fit into any build or runtime environment. These class files have the contract's abi and binary embedded in them, making them easy to include in web frontends as well as `require`'d from Node.
+Files produced by the generator are called "Pudding contracts", and come packaged within a `.sol.js` file. All `.sol.js` files have an extra step in initialization before they can be used:
 
-To generate the files, make sure you have a JSON object containing your contracts names, ABIs and binaries like below. The class files will be stored with a `.sol.js` extension in the `destination` directory you provide.
+```
+var Pudding = require("ether-pudding");
+var MyContract = require("./js/MyContract.sol.js");
+MyContract.load(Pudding);
+```
+
+You **must** call the `.load()` method on all Pudding contracts `require`'d into your project. This `.load()` method exists to ensure a single instance of Pudding is used throughout your Pudding contracts. `.load()` changes the contract object in place; once loaded, you can interact with the class like normal.
+
+#### Pudding Generator
+
+You can use Pudding's generator to save `.sol.js` files. Make sure you have a JSON object containing your contracts names, ABIs and binaries, and that `destination` is the directory you'd like them saved into.
 
 ```
 var PuddingGenerator = require("ether-pudding/generator");
 var destination = "/path/to/destination/directory";
 
 var contracts = {
-  "ContractName": {
+  "MyContract": {
     abi: ...,
     binary: "...",
     address: "..." // deployed address; optional
@@ -76,22 +92,33 @@ var contracts = {
 PuddingGenerator.save(contracts, destination);
 ```
 
-###### `generate`
+##### Alternative: `generate`
 
-The `generate` method simply generates the Javascript class file that would be saved to a file when you use the `save` method, but returns it to you as a string to do whatever you want with it. 
+If you'd rather generate the the Pudding contract source code without saving a file, you can do that per-contract using the `generate` method:
 
-##### Pudding Loader
+```
+var PuddingGenerator = require("ether-pudding/generator");
+var source = PuddingGenerator.generate("MyContract", {
+  abi: abi,
+  binary: binary,
+  address: "0xabcd...", // optional
+});
+```
 
-The Pudding loader can be used to easily bootstrap Pudding classes into your environment.
+Note that the `generate()` function needs to be called per-contract, whereas the `save()` method can be passed data for multiple contracts at once.
 
-Loading classes for use in Node:
+#### Pudding Loader
+
+In conjunction with the generator, the Pudding Loader can be used to load multiple Pudding contracts into your project at once.
+
+Loading all `.sol.js` classes from a source directory:
 
 ```
 var source = "/path/to/source/directory";
 var Pudding = require("ether-pudding");
 var PuddingLoader = require("ether-pudding/loader");
 Pudding.setWeb3(web3);
-PuddingLoader.load(source, Pudding, global, function(error, names) {
+PuddingLoader.load(source_directory, Pudding, global, function(error, names) {
   // names represents all classes loaded to the
   // (in this case) global scope. These contracts can
   // now be used immediately. i.e.,
@@ -100,19 +127,16 @@ PuddingLoader.load(source, Pudding, global, function(error, names) {
   // MyContract.someFunction().then(...);
 });
 
-// Alternative: you can require and load classes individually.
-var MyContract = require("./path/to/contract/class").load(Pudding);
-
 ``` 
 
-Packaging classes for the Browser (executed from within Node):
+You can also get the source code for all Pudding classes in a directory as a single string:
 
 ```
 var source = "/path/to/source/directory";
 var Pudding = require("ether-pudding");
 var PuddingLoader = require("ether-pudding/loader");
 Pudding.setWeb3(web3);
-PuddingLoader.packageSource(source, function(error, all_contracts) {
+PuddingLoader.packageSource(source_directory, function(error, all_contracts) {
   // all_contracts is a single string containing the source
   // code of all contracts, which you can then include in your
   // build process.
@@ -123,31 +147,6 @@ PuddingLoader.packageSource(source, function(error, all_contracts) {
 ```
 
 Note that using `packageSource()` isn't necessary if you have a build process that can include the generated classes via different means.
-
-##### Bootstrapping Classes in Browser
-
-Because it's important to keep specific references to Pudding intact, Pudding classes require a little bit of extra bootstrapping when in the browser. Consider the following file structure:
-
-```
-/classes
-  - ContractOne.sol.js
-  - ContractTwo.sol.js
-  - ContractThree.sol.js
-``` 
-
-If you used the Pudding loader's `packageSource()` function, or used some other build process to include all of these files, you'll still need to bootstrap those classes so they can be usable. You can do that via the following example. Imagine that in this example both `Web3` and `Pudding` were previously included via the build process.
-
-```
-var web3 = new Web3();
-web3.setProvider(new Web3.providers.HttpProvider("http://localhost:8545"));
-Pudding.setWeb3(web3);
-Pudding.defaults({
-  // Optionally set defaults that apply to all contracts
-});
-Pudding.load([ContractOne, ContractTwo, ContractThree], window);
-```
-
-This will bootstrap those classes, applying them to the `window` object and making them usuable within your application.
 
 ### Interacting With Your Contracts
 
