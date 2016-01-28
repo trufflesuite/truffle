@@ -12,7 +12,7 @@ var contract_data = {
 
 function Contract() {
   if (Contract.Pudding == null) {
-    throw "Please call load() first before creating new instance of this contract.";
+    throw new Error("{{NAME}} error: Please call load() first before creating new instance of this contract.");
   }
 
   Contract.Pudding.apply(this, arguments);
@@ -29,7 +29,7 @@ Contract.load = function(Pudding) {
 
 Contract.new = function() {
   if (Contract.Pudding == null) {
-    throw "Please call load() first before calling new().";
+    throw new Error("{{NAME}} error: Please call load() first before calling new().");
   }
 
   return Contract.Pudding.new.apply(Contract, arguments);
@@ -37,7 +37,7 @@ Contract.new = function() {
 
 Contract.at = function() {
   if (Contract.Pudding == null) {
-    throw "Please call load() first before calling at().";
+    throw new Error("{{NAME}} error: lease call load() first before calling at().");
   }
 
   return Contract.Pudding.at.apply(Contract, arguments);
@@ -45,7 +45,7 @@ Contract.at = function() {
 
 Contract.deployed = function() {
   if (Contract.Pudding == null) {
-    throw "Please call load() first before calling deployed().";
+    throw new Error("{{NAME}} error: Please call load() first before calling deployed().");
   }
 
   return Contract.Pudding.deployed.apply(Contract, arguments);

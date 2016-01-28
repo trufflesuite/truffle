@@ -3,6 +3,7 @@ var path = require("path");
 var rimraf = require("rimraf");
 var class_template = fs.readFileSync(path.join(__dirname, "./classtemplate.es6"), {encoding: "utf8"});
 var pkg = require("./package.json");
+var dir = require("node-dir");
 
 // TODO: This should probably be asynchronous.
 module.exports = {
@@ -37,5 +38,42 @@ module.exports = {
     classfile = classfile.replace(/\{\{PUDDING_VERSION\}\}/g, pkg.version);
 
     return classfile;
+  },
+
+  // Will upgrade all .sol.js files in place.
+  upgrade: function(source_directory, callback) {
+    var self = this;
+    var Pudding = require(".");
+
+    if (!fs.existsSync(source_directory)) {
+      callback(new Error("Source directory " + source_directory + " doesn't exist!"));
+    }
+
+    dir.files(source_directory, function(err, files) {
+      if (err != null) {
+        callback(err);
+        return;
+      }
+
+      var found = [];
+
+      for (var file of files) {
+        if (path.basename(file).indexOf(".sol.js") > 0) {
+          var cls = require(file);
+          cls = cls.load(Pudding);
+
+          var source = self.generate(cls.contract_name, {
+            abi: cls.abi,
+            binary: cls.binary,
+            address: cls.address
+          });
+
+          fs.writeFileSync(file, source, {encoding: "utf8"});
+        }
+      }
+
+      callback(null, found);
+    });
+
   }
 };
