@@ -237,9 +237,9 @@ var Config = {
         }
 
         var contract = contracts[name];
-        config.contracts.classes[name].abi = contract.abi;
-        config.contracts.classes[name].binary = contract.binary;
-        config.contracts.classes[name].address = contract.address;
+        config.contracts.classes[name].abi = contract.prototype.abi;
+        config.contracts.classes[name].binary = contract.prototype.binary;
+        config.contracts.classes[name].address = contract.prototype.address;
       }
     }
 
