@@ -114,38 +114,37 @@ var Contracts = {
   },
 
   compile_all(config, callback) {
-    async.mapSeries(Object.keys(config.contracts.classes), (key, finished) => {
+    var sources = {};
+    var contracts = Object.keys(config.contracts.classes);
+    for (var i = 0; i < contracts.length; i++) {
+      var key = contracts[i];
       var contract = config.contracts.classes[key];
-      var source = contract.source;
-      var full_path = path.resolve(config.working_dir, source);
+      var source = contract.source.replace("./contracts/", "");
+      var full_path = path.resolve(config.working_dir, contract.source)
+      sources[source] = fs.readFileSync(full_path, {encoding: "utf8"});
+    }
 
-      if (config.argv.quietDeploy == null) {
-        console.log(`Compiling ${source}...`);
-      }
+    var result = solc.compile({sources: sources}, 1);
 
-      var code;
+    if (result.errors != null) {
+      callback(new CompileError(result.errors.join()));
+      return;
+    }
 
-      try {
-        code = this.resolve(full_path);
-      } catch (e) {
-        finished(e);
-        return;
-      }
+    var compiled_contract = result.contracts[key];
 
-      var result = solc.compile(code, 1);
-
-      if (result.errors != null) {
-        finished(new CompileError(result.errors.join(), source));
-        return;
-      }
-
+    for (var i = 0; i < contracts.length; i++) {
+      var key = contracts[i];
+      var contract = config.contracts.classes[key];
       var compiled_contract = result.contracts[key];
-
       contract["binary"] = compiled_contract.bytecode;
       contract["abi"] = JSON.parse(compiled_contract.interface);
+    }
 
-      finished(null, contract);
-    }, callback);
+    callback();
+
+    //   finished(null, contract);
+    // }, callback);
   },
 
   write_contracts(config, description="contracts", callback) {
@@ -242,7 +241,11 @@ var Contracts = {
             return;
           }
 
-          var contract = Pudding.whisk(contract_class.abi, contract_class.binary);
+          var contract = Pudding.whisk({
+            abi: contract_class.abi,
+            binary: contract_class.binary,
+            contract_name: key
+          });
 
           var display_name = path.basename(contract_class.source);
           if (config.argv.quietDeploy == null) {
