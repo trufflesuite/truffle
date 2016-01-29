@@ -1,5 +1,6 @@
 var pkg = require("./package.json");
 var webpack = require("webpack");
+var path = require("path");
 
 var entry = {};
 entry[`${pkg.name}.js`] = "./index.js";
@@ -24,5 +25,11 @@ module.exports = {
         warnings: false
       }
     })
-  ]
+  ],
+  resolve: {
+    root: [
+      path.join(__dirname, "./", "node_modules"),
+    ],
+    extensions: ['', '.js', '.json']
+  }
 };

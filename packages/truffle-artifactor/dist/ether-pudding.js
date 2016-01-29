@@ -391,7 +391,7 @@
 	 * 
 	 */
 	/**
-	 * bluebird build version 3.1.4
+	 * bluebird build version 3.1.5
 	 * Features enabled: core, race, call_get, generators, map, nodeify, promisify, props, reduce, settle, some, using, timers, filter, any, each
 	*/
 	!function(e){if(true)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Promise=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
@@ -5885,7 +5885,7 @@
 
 	module.exports = {
 		"name": "ether-pudding",
-		"version": "1.1.4",
+		"version": "2.0.1",
 		"description": "Pudding - a (more) delightful Ethereum contract abstraction",
 		"author": "Tim Coulter",
 		"main": "./index.js",
@@ -5907,6 +5907,10 @@
 			"temp": "^0.8.3",
 			"web3": "^0.15.1",
 			"webpack": "^1.12.11"
+		},
+		"dependencies": {
+			"bluebird": "^3.1.5",
+			"node-dir": "^0.1.11"
 		}
 	};
 
