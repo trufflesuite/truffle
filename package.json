@@ -26,7 +26,7 @@
     "node-sass": "^3.3.3",
     "rimraf": "^2.4.3",
     "serve-static": "^1.10.0",
-    "solc": "^0.2.0-1",
+    "solc": "^0.2.1-1",
     "temp": "^0.8.3",
     "truffle-default-builder": "0.0.6",
     "uglify-js": "^2.6.1",
