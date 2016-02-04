@@ -59,7 +59,8 @@ var Config = {
         build_directory: null
       },
       tests: {
-        directory: `${working_dir}/test`
+        directory: `${working_dir}/test`,
+        filter: /.*\.(js|es|es6|jsx|coffee)$/
       },
       build: {
         directory: null,
