@@ -432,7 +432,9 @@ var Test = {
         });
 
         for (var file of files.sort()) {
-          mocha.addFile(file);
+          if (file.match(config.tests.filter)) {
+            mocha.addFile(file);
+          }
         }
 
         // Change current working directory to that of the project.
