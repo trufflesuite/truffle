@@ -1,3 +1,5 @@
+import "ConvertLib.sol";
+
 contract MetaCoin {
 	mapping (address => uint) balances;
 
@@ -11,8 +13,10 @@ contract MetaCoin {
 		balances[receiver] += amount;
 		return true;
 	}
-
-  function getBalance(address addr) returns(uint) {
-    return balances[addr];
-  }
+	function getBalanceInEth(address addr) returns(uint){
+		return ConvertLib.convert(getBalance(addr),2);
+	}
+  	function getBalance(address addr) returns(uint) {
+    	return balances[addr];
+  	}
 }

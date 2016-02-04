@@ -6,7 +6,22 @@ contract('MetaCoin', function(accounts) {
       assert.equal(balance.valueOf(), 10000, "10000 wasn't in the first account");
     }).then(done).catch(done);
   });
+  it("should call a function that depends on a linked library  ", function(done){
+    var meta = MetaCoin.deployed();
+    var metaCoinBalance;
+    var metaCoinEthBalance;
 
+    meta.getBalance.call(accounts[0]).then(function(outCoinBalance){
+      metaCoinBalance = outCoinBalance.toNumber();
+      return meta.getBalanceInEth.call(accounts[0]);
+    }).then(function(outCoinBalanceEth){
+      metaCoinEthBalance = outCoinBalanceEth.toNumber();
+      
+    }).then(function(){
+      assert.equal(metaCoinEthBalance,2*metaCoinBalance,"Library function returned unexpeced function, linkage may be broken");
+      
+    }).then(done).catch(done);
+  });
   it("should send coin correctly", function(done) {
     var meta = MetaCoin.deployed();
 
