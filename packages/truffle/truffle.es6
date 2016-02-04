@@ -222,10 +222,12 @@ registerTask('deploy', "Deploy contracts to the network", function(done) {
   console.log("Using environment " + config.environment + ".");
 
   var compile = true;
+  var link = true;
 
   if (argv.compile === false) {
     compile = false;
   }
+ 
 
   // Compile and deploy.
   Contracts.deploy(config, compile, function(err) {
