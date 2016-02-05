@@ -233,8 +233,7 @@ var Contracts = {
             errorCallback(new DeployError(`Error  could not find contract '${key}' for linking. Check truffle.json.`));
             return null;
           }
-          console.log("BINARY: "+contract_class.binary);
-              
+               
           if(contract_class.binary == null){
             errorCallback(new DeployError(`Error  could not find compiled binary for contract '${key}'. Check truffle.json.`));
             return null;
