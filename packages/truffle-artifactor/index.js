@@ -21,7 +21,7 @@ function Pudding(contract) {
       this[fn.name].call = this.constructor.promisifyFunction(this.contract[fn.name].call);
       this[fn.name].sendTransaction = this.constructor.promisifyFunction(this.contract[fn.name].sendTransaction);
       this[fn.name].request = this.contract[fn.name].request;
-      this[fn.name].estimateGas = this.constructor.promisifyFunction(this.contract[fn.name].estimateGas)
+      this[fn.name].estimateGas = this.constructor.promisifyFunction(this.contract[fn.name].estimateGas);
     }
 
     if (fn.type == "event") {
@@ -311,10 +311,5 @@ Pudding.synchronizeFunction = function(fn) {
 
 Pudding.class_defaults = {};
 Pudding.version = pkg.version;
-
-//Allow use in meteor
-if (typeof window !== 'undefined' && typeof window.Pudding === 'undefined') {
-    window.Pudding = Pudding;
-}
 
 module.exports = Pudding;
