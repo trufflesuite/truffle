@@ -233,6 +233,12 @@ var Contracts = {
             errorCallback(new DeployError(`Error  could not find contract '${key}' for linking. Check truffle.json.`));
             return null;
           }
+          console.log("BINARY: "+contract_class.binary);
+              
+          if(contract_class.binary == null){
+            errorCallback(new DeployError(`Error  could not find compiled binary for contract '${key}'. Check truffle.json.`));
+            return null;
+          }
           //Add the contract to the depend graph  
           dependsGraph.setNode(key);
 
@@ -294,19 +300,24 @@ var Contracts = {
       (c) => {
         if (compile == true) {
           this.compile_all(config, c);
+
         } else {
           c();
         }
       },
       (c) =>{
+          
+
           Pudding.setWeb3(config.web3);
           var dependsGraph = this.build_dependency_graph(config,c);
+          if(dependsGraph == null)
+             return;
+          
           var dependsOrdering = postOrder(dependsGraph,dependsGraph.nodes());
           var deploy_promise = null;
           var contract_name ; //This is in global scope so that it can be used in the .catch below
 
-
-          //Iterate over the dependency grpah in post order, deploy libraries first so we can
+         //Iterate over the dependency grpah in post order, deploy libraries first so we can
           //capture their addresses and use them to deploy the contracts that depend on them
           for(var i =0 ; i< dependsOrdering.length ;i++)
           {
@@ -317,7 +328,7 @@ var Contracts = {
                 c(new DeployError(`Could not find contract '${key}' for deployment. Check truffle.json.`));
                 return;
               }
-             
+
               var contract_data = { from: coinbase,
                                     gas: 3141592,
                                     //gasPrice: 50000000000, // 50 Shannon
@@ -335,6 +346,7 @@ var Contracts = {
                   binary: contract_class.binary,
                   contract_name: contract_name
                 });
+
                 deploy_promise = this.createContractAndWait(config,contract_data,contract_name);
 
                 //Store the promise in the graph so we can fetch it later
