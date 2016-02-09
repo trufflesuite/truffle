@@ -121,7 +121,7 @@ Pudding.whisk = function(data, constructor) {
 
   Contract.prototype = Object.create(Pudding.prototype);
 
-  Contract.prototype.abi = data.abi;
+  Contract.abi = Contract.prototype.abi = data.abi;
   Contract.prototype.binary = data.binary;
   Contract.prototype.class_defaults = data.defaults || {};
   Contract.address = Contract.prototype.address = data.address;

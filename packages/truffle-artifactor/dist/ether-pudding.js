@@ -167,7 +167,7 @@
 
 	  Contract.prototype = Object.create(Pudding.prototype);
 
-	  Contract.prototype.abi = data.abi;
+	  Contract.abi = Contract.prototype.abi = data.abi;
 	  Contract.prototype.binary = data.binary;
 	  Contract.prototype.class_defaults = data.defaults || {};
 	  Contract.address = Contract.prototype.address = data.address;
@@ -5885,7 +5885,7 @@
 
 	module.exports = {
 		"name": "ether-pudding",
-		"version": "2.0.1",
+		"version": "2.0.2",
 		"description": "Pudding - a (more) delightful Ethereum contract abstraction",
 		"author": "Tim Coulter",
 		"main": "./index.js",
