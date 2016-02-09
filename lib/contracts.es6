@@ -121,10 +121,10 @@ var Contracts = {
 
   compile_all(config, callback) {
     var sources = {};
-    var contracts = Object.keys(config.contracts.classes);
+    var contracts = Object.keys(config.contracts.filenames);
     for (var i = 0; i < contracts.length; i++) {
       var key = contracts[i];
-      var contract = config.contracts.classes[key];
+      var contract = config.contracts.filenames[key];
       var source = contract.source.replace("./contracts/", "");
       var full_path = path.resolve(config.working_dir, contract.source)
       sources[source] = fs.readFileSync(full_path, {encoding: "utf8"});
@@ -137,14 +137,14 @@ var Contracts = {
       return;
     }
 
-    var compiled_contract = result.contracts[key];
-
-    for (var i = 0; i < contracts.length; i++) {
-      var key = contracts[i];
-      var contract = config.contracts.classes[key];
-      var compiled_contract = result.contracts[key];
-      contract["binary"] = compiled_contract.bytecode;
-      contract["abi"] = JSON.parse(compiled_contract.interface);
+    for (var contractKey in result.contracts){
+      if(result.contracts.hasOwnProperty(contractKey)){
+        config.contracts.classes[contractKey] = {
+          source: "./" + contractKey + ".sol",
+          binary: result.contracts[contractKey].bytecode,
+          abi: JSON.parse(result.contracts[contractKey].interface)
+        }
+      }
     }
 
     callback();

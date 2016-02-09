@@ -54,6 +54,7 @@ var Config = {
         }
       },
       contracts: {
+        filenames: {},
         classes: {},
         directory: `${working_dir}/contracts`,
         build_directory: null
@@ -216,8 +217,17 @@ var Config = {
       for (file of filesSync(config.contracts.directory)) {
         var name = file.substring(file.lastIndexOf("/") + 1, file.lastIndexOf("."));
         var relative_path = file.replace(config.working_dir, "./");
-        config.contracts.classes[name] = {
+        config.contracts.filenames[name] = {
           source: relative_path
+        }
+        var code = fs.readFileSync(file, {encoding: "utf8"});
+        var myRegex = /contract\s([a-zA-Z0-9_\-]+)/g;
+        var match = myRegex.exec(code);
+        while (match != null){
+          config.contracts.classes[match[1]] = {
+            source: "./" + match[1] + ".sol"
+          }
+          match = myRegex.exec(code);
         }
       }
     }
