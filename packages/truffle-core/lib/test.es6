@@ -14,6 +14,8 @@ var Promise = require("bluebird");
 
 var ExtendableError = require("./errors/extendableerror");
 
+var SolidityCoder = require("web3/lib/solidity/coder.js");
+
 chai.use(require("./assertions"));
 
 var rpc = function(method, arg, cb) {
@@ -60,11 +62,27 @@ var redeploy_contracts = function(config, recompile, done) {
 
     Pudding.setWeb3(config.web3);
     PuddingLoader.load(config.environments.current.directory, Pudding, global, function(err, contract_names) {
-      for (var name in config.contracts.classes) {
-        var contract = global[name];
-        var inst = contract.at(contract.address);
-        Truffle.log_filters.push(inst.allEvents({fromBlock: 0, toBlock: 'latest'}));
+      // Go through all abis and record events we know about.
+      for (var i = 0; i < contract_names.length; i++) {
+        var name = contract_names[i];
+        Truffle.contracts[name] = global[name];
+
+        var abi = global[name].abi;
+
+        for (var j = 0; j < abi.length; j++) {
+          var item = abi[j];
+
+          if (item.type == "event") {
+            var signature = item.name + "(" + item.inputs.map(function(param) {return param.type;}).join(",") + ")";
+
+            Truffle.known_events["0x" + web3.sha3(signature)] = {
+              signature: signature,
+              abi_entry: item
+            };
+          }
+        }
       }
+
       done();
     });
   });
@@ -90,8 +108,8 @@ var Test = {
     global.Truffle = {
       can_snapshot: false,
       starting_snapshot_id: null,
-
-      log_filters: [],
+      contracts: {},
+      known_events: {},
 
       redeploy: function(recompile) {
         return new Promise(function(resolve, reject) {
@@ -206,12 +224,6 @@ var Test = {
           });
         });
 
-        after("clear all filters after each suite", function(done) {
-          Truffle.log_filters.forEach(function(f) { f.stopWatching(); });
-          Truffle.log_filters = [];
-          done();
-        });
-
         // afterEach("restore contract address", function(done) {
         //   for (var name in _original_contracts) {
         //     global[name].address = _original_contracts[name];
@@ -219,55 +231,91 @@ var Test = {
         //   done();
         // });
 
-        afterEach("check logs on failure", function(done) {
-          if (this.currentTest.state == "failed") {
-            var logs = [];
-            Truffle.log_filters.forEach(function(filter) {
-              try {
-                logs = logs.concat(filter.get());
-              } catch (e) {
-                if (e.message.match(/Invalid parameters/)) {
-                  // filter is invalid because the contract no longer exists
-                  filter.stopWatching();
-                }
-              }
-            });
-            logs.sort(function(a, b) {
-              var ret = a.blockNumber - b.blockNumber;
-              if (ret == 0) {
-                return a.logIndex - b.logIndex;
-              }
-              return ret;
-            });
+        var startingBlock;
 
-            if (logs.length > 0) {
-              console.log("\n    Events emitted during test:");
-              console.log(  "    ---------------------------");
-              console.log("");
-              logs.forEach(function(log) {
-                if (!log.event) {
-                  return; // only want log events
-                }
-                var line = `    ${log.event}(`;
-                var first = true;
-                for (var key in log.args) {
-                  if (first == false) {
-                    line += ", ";
-                  } else {
-                    first = false;
-                  }
-                  var value = log.args[key].toString();
-                  line += `${key}: ${value}`;
-                }
-                line += ")";
-                console.log(line);
-              });
-              console.log(  "\n    ---------------------------");
-            } else {
-              console.log("    > No events were emitted");
-            }
+        beforeEach("record block number of test start", function(done) {
+          web3.eth.getBlockNumber(function(err, result) {
+            if (err) return done(err);
+
+            result = web3.toBigNumber(result);
+
+            // Add one in base 10
+            startingBlock = result.plus(1, 10);
+
+            done();
+          });
+        });
+
+        afterEach("check logs on failure", function(done) {
+          if (this.currentTest.state != "failed") {
+            return done();
           }
-          done();
+          var logs = [];
+
+          // There's no API for eth_getLogs?
+          web3.currentProvider.sendAsync({
+            id: new Date().getTime(),
+            jsonrpc: "2.0",
+            method: "eth_getLogs",
+            params: [{
+              fromBlock: "0x" + startingBlock.toString(16)
+            }]
+          }, function(err, result) {
+            if (err) return done(err);
+
+            var logs = result.result;
+
+            if (logs.length == 0) {
+              console.log("    > No events were emitted");
+              return done();
+            }
+
+            console.log("\n    Events emitted during test:");
+            console.log(  "    ---------------------------");
+            console.log("");
+
+            // logs.sort(function(a, b) {
+            //   var ret = a.blockNumber - b.blockNumber;
+            //   if (ret == 0) {
+            //     return a.logIndex - b.logIndex;
+            //   }
+            //   return ret;
+            // });
+
+
+            logs.forEach(function(log) {
+              var event = Truffle.known_events[log.topics[0]];
+
+              if (event == null) {
+                return;
+              }
+
+              var types = event.abi_entry.inputs.map(function(input) {
+                return input.indexed == true ? null : input.type;
+              }).filter(function(type) {
+                return type != null;
+              });
+              var values = SolidityCoder.decodeParams(types, log.data.replace("0x", ""));
+              var index = 0;
+
+              var line = `    ${event.abi_entry.name}(`;
+              line += event.abi_entry.inputs.map(function(input) {
+                var value;
+                if (input.indexed == true) {
+                  value = "<indexed>";
+                } else {
+                  value = values[index];
+                  index += 1;
+                }
+
+                return `${input.name}: ${value.toString()}`;
+              }).join(", ");
+              line += ")";
+              console.log(line);
+            });
+            console.log(  "\n    ---------------------------");
+            done();
+          });
         });
 
         if (opts.reset_state == true) {
