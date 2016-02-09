@@ -191,104 +191,111 @@ var Contracts = {
       }
     ], callback);
   },
+
   createContractAndWait(config, tx,contract_name) {
-  
     return new Promise((accept, reject) => {
-      
       config.web3.eth.sendTransaction(tx, (err, hash) => {
         if (err != null) {
           return reject(err);
         }
 
         var interval = setInterval(() => {
-         
           config.web3.eth.getTransactionReceipt(hash, (err, receipt) => {
             if (err != null) {
               clearInterval(interval);
-              
+
               return reject(err);
             }
             if (receipt != null) {
-               console.log("Deployed: "+contract_name+" to address: "+receipt.contractAddress);
-           
-              accept({name:contract_name,address:receipt.contractAddress});
+              if (config.argv.quietDeploy == null) {
+                console.log("Deployed: "+contract_name+" to address: "+receipt.contractAddress);
+              }
+
+              accept({
+                name: contract_name,
+                address: receipt.contractAddress
+              });
               clearInterval(interval);
             }
           });
-
-        }, 1000);
+        }, 500);
       })
     });
   },
-  build_dependency_graph(config,errorCallback)
-  {     
-        console.log("Collecting dependencies...");
-        //Iterate through all the contracts looking for libraries and building a dependency graph 
-        var dependsGraph = new Graph();
-        for (var i = 0; i < config.app.resolved.deploy.length; i++) {
-          var key = config.app.resolved.deploy[i];
-          var contract_class = config.contracts.classes[key];
 
-          if (contract_class == null) {
-            errorCallback(new DeployError(`Error  could not find contract '${key}' for linking. Check truffle.json.`));
-            return null;
-          }
-               
-          if(contract_class.binary == null){
-            errorCallback(new DeployError(`Error  could not find compiled binary for contract '${key}'. Check truffle.json.`));
-            return null;
-          }
-          //Add the contract to the depend graph  
-          dependsGraph.setNode(key);
+  build_dependency_graph(config, errorCallback) {
+    if (config.argv.quietDeploy == null) {
+      console.log("Collecting dependencies...");
+    }
+    // Iterate through all the contracts looking for libraries and building a dependency graph
+    var dependsGraph = new Graph();
+    for (var i = 0; i < config.app.resolved.deploy.length; i++) {
+      var key = config.app.resolved.deploy[i];
+      var contract_class = config.contracts.classes[key];
 
-          //Find references to any librarys 
-          //Library references are embedded in the bytecode of contracts with the format
-          // "__Lib___________________________________" , where "Lib" is your library name and the whole
-          // string is 40 characters long. This is the placeholder for the Lib's address.
+      if (contract_class == null) {
+        errorCallback(new DeployError(`Could not find contract '${key}' for linking. Check truffle.json.`));
+        return null;
+      }
 
-          var regex = /__([^_]*)_*/g;
-          var matches;
-          while ( (matches = regex.exec(contract_class.binary)) !== null ) {
-                var lib = matches[1];
-                if(!dependsGraph.hasEdge(key,lib))
-                   dependsGraph.setEdge(key, lib);
-          }
+      if (contract_class.binary == null){
+        errorCallback(new DeployError(`Could not find compiled binary for contract '${key}'. Check truffle.json.`));
+        return null;
+      }
+      // Add the contract to the depend graph
+      dependsGraph.setNode(key);
+
+      // Find references to any librarys
+      // Library references are embedded in the bytecode of contracts with the format
+      //  "__Lib___________________________________" , where "Lib" is your library name and the whole
+      //  string is 40 characters long. This is the placeholder for the Lib's address.
+
+      var regex = /__([^_]*)_*/g;
+      var matches;
+      while ( (matches = regex.exec(contract_class.binary)) !== null ) {
+        var lib = matches[1];
+        if (!dependsGraph.hasEdge(key,lib)) {
+          dependsGraph.setEdge(key, lib);
         }
-        //Check for cycles in the graph, the dependency graph needs to be a tree otherwise there's an error
-        if(!isAcyclic(dependsGraph))
-        {
-           console.log("ERROR: Cycles in dependency graph");
-           dependsGraph.edges().forEach(function(o){
-              console.log(o.v+" -- depends on --> "+o.w);
-           });
-           errorCallback(new DeployError(`Error  linker found cyclic dependencies. Adjust your import statements to remove cycles.`));
-           return null;
-        }
-        return dependsGraph;
-       
+      }
+    }
+    // Check for cycles in the graph, the dependency graph needs to be a tree otherwise there's an error
+    if (!isAcyclic(dependsGraph))
+    {
+      console.log("ERROR: Cycles in dependency graph");
+      dependsGraph.edges().forEach(function(o){
+        console.log(o.v+" -- depends on --> "+o.w);
+      });
+      errorCallback(new DeployError(`Error  linker found cyclic dependencies. Adjust your import statements to remove cycles.`));
+      return null;
+    }
+    return dependsGraph;
   },
-  link_dependencies(config,contract_data,contract_class,contract_name)
-  {
+
+  link_dependencies(config,contract_data,contract_class,contract_name) {
     return (dependency_addresses) => {
-          //All of the library dependencies to this contract have been deployed
-          //Inject the address of each lib into this contract and then deploy it.
-          dependency_addresses.forEach(function(lib){
-            console.log("Linking Library: "+lib.name+" to contract: "+contract_name+" at address: "+lib.address);
-            var bin_address = lib.address.replace("0x","");
-            var re = new RegExp("__"+lib.name+"_*","g");
-            contract_data.data = contract_data.data.replace(re,bin_address);
-          });
-          var contract = Pudding.whisk({
-              abi: contract_class.abi,
-              binary: contract_class.binary,
-              contract_name: contract_name
-            });
-          return this.createContractAndWait(config,contract_data,contract_name);
+      //All of the library dependencies to this contract have been deployed
+      //Inject the address of each lib into this contract and then deploy it.
+      dependency_addresses.forEach(function(lib) {
+        if (config.argv.quietDeploy == null) {
+          console.log("Linking Library: " + lib.name + " to contract: " + contract_name + " at address: " + lib.address);
+        }
+        var bin_address = lib.address.replace("0x","");
+        var re = new RegExp("__"+lib.name+"_*","g");
+        contract_data.data = contract_data.data.replace(re, bin_address);
+      });
+      var contract = Pudding.whisk({
+        abi: contract_class.abi,
+        binary: contract_class.binary,
+        contract_name: contract_name
+      });
+      return this.createContractAndWait(config,contract_data,contract_name);
     }
   },
+
   deploy(config, compile=true, done_deploying) {
     var coinbase = null;
-    
+
     async.series([
       (c) => {
         config.web3.eth.getCoinbase(function(error, result) {
@@ -304,88 +311,86 @@ var Contracts = {
           c();
         }
       },
-      (c) =>{
-          
+      (c) => {
+        Pudding.setWeb3(config.web3);
+        var dependsGraph = this.build_dependency_graph(config,c);
 
-          Pudding.setWeb3(config.web3);
-          var dependsGraph = this.build_dependency_graph(config,c);
-          if(dependsGraph == null)
-             return;
-          
-          var dependsOrdering = postOrder(dependsGraph,dependsGraph.nodes());
-          var deploy_promise = null;
-          var contract_name ; //This is in global scope so that it can be used in the .catch below
+        if( dependsGraph == null) {
+          return;
+        }
 
-         //Iterate over the dependency grpah in post order, deploy libraries first so we can
-          //capture their addresses and use them to deploy the contracts that depend on them
-          for(var i =0 ; i< dependsOrdering.length ;i++)
-          {
-              contract_name = dependsOrdering[i];
-              var contract_class = config.contracts.classes[contract_name];
-              
-              if (contract_class == null) {
-                c(new DeployError(`Could not find contract '${key}' for deployment. Check truffle.json.`));
-                return;
-              }
+        var dependsOrdering = postOrder(dependsGraph, dependsGraph.nodes());
+        var deploy_promise = null;
+        var contract_name; // This is in global scope so that it can be used in the .catch below
 
-              var contract_data = { from: coinbase,
-                                    gas: 3141592,
-                                    //gasPrice: 50000000000, // 50 Shannon
-                                    gasPrice: 100000000000, // 100 Shannon
-                                    data: contract_class.binary
-                                  };
-              var dependencies = dependsGraph.successors(contract_name);
+        // Iterate over the dependency grpah in post order, deploy libraries first so we can
+        // capture their addresses and use them to deploy the contracts that depend on them
+        for(var i = 0; i < dependsOrdering.length; i++) {
+          contract_name = dependsOrdering[i];
+          var contract_class = config.contracts.classes[contract_name];
 
-              //When we encounter a Library that is not dependant on other libraries, we can just
-              //deploy it as normal
-              if(dependencies.length == 0 )
-              {
-                 var contract = Pudding.whisk({
-                  abi: contract_class.abi,
-                  binary: contract_class.binary,
-                  contract_name: contract_name
-                });
-
-                deploy_promise = this.createContractAndWait(config,contract_data,contract_name);
-
-                //Store the promise in the graph so we can fetch it later
-                dependsGraph.setNode(contract_name,deploy_promise);
-              }
-              //Contracts that have dependencies need to wait until those dependencies have been deployed
-              //so we can inject the address into their byte code 
-              else
-              {
-                //Collect all the promises for the libraries this contract depends on into a list
-                //NOTE: since this loop is traversing in post-order, we can be assured that this list
-                //will contain ALL of the dependencies of this contract
-                var depends_promises = dependencies.map(dependsGraph.node,dependsGraph);
-
-                //Wait for all the dependencies to be committed and then do the linking step
-                deploy_promise = Promise.all(depends_promises)
-                                        .then(this.link_dependencies(config,contract_data,contract_class,contract_name));
-                
-                //It's possible that this contract is a dependency of some other contract so we store
-                //it in the graph just in case
-                dependsGraph.setNode(contract_name,deploy_promise);
-               
-              }
+          if (contract_class == null) {
+            c(new DeployError(`Could not find contract '${key}' for deployment. Check truffle.json.`));
+            return;
           }
-          ///Now wait for all of the outstanding deployments to complete
-          Promise.all(dependsGraph.nodes().map(dependsGraph.node,dependsGraph))
-          .then(function(deployed_contracts) {
 
-            deployed_contracts.forEach(function(a){config.contracts.classes[a.name].address = a.address;});
-            
-            c();
-          }).catch(function(err) {
-            c(new DeployError(err.message, contract_name));
+          var contract_data = {
+            from: coinbase,
+            gas: 3141592,
+            //gasPrice: 50000000000, // 50 Shannon
+            gasPrice: 100000000000, // 100 Shannon
+            data: contract_class.binary
+          };
+          var dependencies = dependsGraph.successors(contract_name);
+
+          // When we encounter a Library that is not dependant on other libraries, we can just
+          // deploy it as normal
+          if (dependencies.length == 0) {
+            var contract = Pudding.whisk({
+              abi: contract_class.abi,
+              binary: contract_class.binary,
+              contract_name: contract_name
+            });
+
+            deploy_promise = this.createContractAndWait(config,contract_data,contract_name);
+
+            // Store the promise in the graph so we can fetch it later
+            dependsGraph.setNode(contract_name,deploy_promise);
+          }
+          // Contracts that have dependencies need to wait until those dependencies have been deployed
+          // so we can inject the address into their byte code
+          else
+          {
+            // Collect all the promises for the libraries this contract depends on into a list
+            // NOTE: since this loop is traversing in post-order, we can be assured that this list
+            // will contain ALL of the dependencies of this contract
+            var depends_promises = dependencies.map(dependsGraph.node,dependsGraph);
+
+            // Wait for all the dependencies to be committed and then do the linking step
+            deploy_promise = Promise.all(depends_promises).then(
+              this.link_dependencies(config,contract_data,contract_class,contract_name)
+            );
+
+            // It's possible that this contract is a dependency of some other contract so we store
+            // it in the graph just in case
+            dependsGraph.setNode(contract_name,deploy_promise);
+          }
+        }
+        ///Now wait for all of the outstanding deployments to complete
+        Promise.all(dependsGraph.nodes().map(dependsGraph.node, dependsGraph))
+        .then(function(deployed_contracts) {
+          deployed_contracts.forEach(function(a) {
+            config.contracts.classes[a.name].address = a.address;
           });
-
+          c();
+        }).catch(function(err) {
+          c(new DeployError(err.message, contract_name));
+        });
       },
-    (c) => {
+      (c) => {
         this.write_contracts(config, "built contract files", c);
-    },
-    (c) => {
+      },
+      (c) => {
         this.after_deploy(config, c);
       }
     ], (err) => {
