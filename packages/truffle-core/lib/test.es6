@@ -377,7 +377,7 @@ var Test = {
         // We only need to do this once, and can get it outside of
         // mocha.
         console.log("Compiling contracts...");
-        Contracts.compile_all(config, function(err) {
+        Contracts.compile(config, function(err) {
           if (err != null) {
             reject(err);
           } else {
