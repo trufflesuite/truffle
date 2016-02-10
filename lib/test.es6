@@ -441,7 +441,7 @@ var Test = {
         throw e;
       });
 
-      var mocha = new Mocha({
+      var mocha = new Mocha(config.app.resolved.mocha || {
         useColors: true
       });
 
@@ -475,7 +475,7 @@ var Test = {
         //   return f;
         // });
 
-        var mocha = new Mocha({
+        var mocha = new Mocha(config.app.resolved.mocha || {
           useColors: true
         });
 
