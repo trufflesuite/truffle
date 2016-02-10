@@ -221,7 +221,8 @@ var Config = {
         config.contracts.classes[name] = {
           file: file,
           source: relative_path,
-          source_modified_time: (stats.mtime || stats.ctime).getTime()
+          source_modified_time: (stats.mtime || stats.ctime).getTime(),
+          compiled_time: 0 // This will be overwritten if we find a compiled file
         }
       }
     }

@@ -43,7 +43,7 @@ var Contracts = {
         var name = contract_names[i];
         var contract = config.contracts.classes[name];
 
-        if (contract.source_modified_time > contract.compiled_time) {
+        if (contract.source_modified_time > contract.compiled_time || config.argv.compileAll === true) {
           updated[name] = true;
         }
       }
