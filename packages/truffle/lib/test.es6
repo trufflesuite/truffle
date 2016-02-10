@@ -37,7 +37,7 @@ var rpc = function(method, arg, cb) {
     }
 
     if (result.error != null) {
-      cb(new Error(result.error.message || result.error));
+      cb(new Error("RPC Error: " + (result.error.message || result.error)));
       return;
     }
 
@@ -253,14 +253,9 @@ var Test = {
           var logs = [];
 
           // There's no API for eth_getLogs?
-          web3.currentProvider.sendAsync({
-            id: new Date().getTime(),
-            jsonrpc: "2.0",
-            method: "eth_getLogs",
-            params: [{
-              fromBlock: "0x" + startingBlock.toString(16)
-            }]
-          }, function(err, result) {
+          rpc("eth_getLogs", [{
+            fromBlock: "0x" + startingBlock.toString(16)
+          }], function(err, result) {
             if (err) return done(err);
 
             var logs = result.result;
