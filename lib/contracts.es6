@@ -144,7 +144,7 @@ var Contracts = {
     ], callback);
   },
 
-  createContractAndWait(config, tx,contract_name) {
+  createContractAndWait(config, tx, contract_name) {
     return new Promise((accept, reject) => {
       config.web3.eth.sendTransaction(tx, (err, hash) => {
         if (err != null) {
@@ -285,12 +285,11 @@ var Contracts = {
         var re = new RegExp("__"+lib.name+"_*","g");
         contract_data.data = contract_data.data.replace(re, bin_address);
       });
-      var contract = Pudding.whisk({
-        abi: contract_class.abi,
-        binary: contract_class.binary,
-        contract_name: contract_name
-      });
-      return this.createContractAndWait(config,contract_data,contract_name);
+
+      // Update the contract data we'll write to disk
+      config.contracts.classes[contract_name].binary = contract_data.data;
+
+      return this.createContractAndWait(config, contract_data, contract_name);
     }
   },
 
