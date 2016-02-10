@@ -12,123 +12,100 @@ var CompileError = require("./errors/compileerror");
 var DeployError = require("./errors/deployerror");
 var Graph = require("graphlib").Graph;
 var isAcyclic = require("graphlib/lib/alg").isAcyclic;
-var preOrder = require("graphlib/lib/alg").preorder;
 var postOrder = require("graphlib/lib/alg").postorder;
+var topsort = require("graphlib/lib/alg").topsort;
 
 var BlueBirdPromise = require('bluebird');
 
 var Contracts = {
-  resolve_headers(root) {
-    root = path.resolve(root);
-    var contract_name = path.basename(root).replace(/\.[^\.]*$/, "");
+  update_sources(config, callback) {
+    var contract_names = Object.keys(config.contracts.classes);
+    async.each(contract_names, function(name, done) {
+      var contract = config.contracts.classes[name];
+      fs.readFile(contract.file, {encoding: "utf8"}, function(err, body) {
+        if (err) return done(err);
 
-    var reduce_signature = function(signature) {
-      return signature.reduce(function(previous, current, index) {
-        var sig = "";
-        if (index > 0) {
-          sig += ", ";
-        }
-        sig += current.type;
-        if (current.name != null && current.name != "") {
-          sig += ` ${current.name}`;
-        }
-        return previous + sig;
-      }, "");
-    };
-
-    var make_function = function(name, fn) {
-      var returns = "";
-
-      if (fn.outputs != null && fn.outputs.length > 0) {
-        returns = ` returns (${reduce_signature(fn.outputs)})`;
-      }
-
-      return `  function ${name}(${reduce_signature(fn.inputs)})${returns}; \n`;
-    };
-
-    var code = this.resolve(root);
-
-    var result = solc.compile(code, 1);
-
-    if (result.errors != null) {
-      throw new CompileError(result.errors.join(), root);
-    }
-
-    var compiled_contract = result.contracts[contract_name];
-    var abi = JSON.parse(compiled_contract.interface);
-
-    var headers = `contract ${contract_name} { \n`;
-
-    for (var fn of abi) {
-      switch(fn.type) {
-        case "constructor":
-          headers += make_function(contract_name, fn)
-          break;
-        case "function":
-          headers += make_function(fn.name, fn);
-          break;
-        case "event":
-          break;
-        default:
-          throw new Error(`Unknown type ${fn.type} found in ${root}`);
-      }
-    }
-
-    headers += `} \n`;
-
-    return headers;
-  },
-
-  resolve(root) {
-    var imported = {};
-
-    var import_file = (file) => {
-      var code = fs.readFileSync(file, "utf-8");
-
-      // Remove comments
-      code = code.replace(/(\/\/.*(\n|$))/g, "");
-      code = code.replace(/(\/\*(.|\n)*?\*\/)/g, "");
-      code = code.replace("*/", ""); // Edge case.
-
-      // Perform imports.
-      code = code.replace(/import(_headers)? ('|")[^'"]+('|");/g, (match) => {
-        match = match.replace(/'/g, '"');
-        var import_name = match.split('"')[1];
-        var import_path = path.dirname(file) + "/" + import_name + ".sol";
-
-        // Don't import the same thing twice if there are two of the same dependency.
-        if (imported[import_name] == true) {
-          return "";
-        }
-
-        if (!fs.existsSync(import_path)) {
-          throw `Could not find source for '${import_name} from ${file}'. Expected: ${import_path}`
-        }
-
-        imported[import_name] = true;
-
-        if (match.indexOf("import_headers") == 0) {
-          return this.resolve_headers(import_path) + "\n\n";
-        } else {
-          return import_file(import_path) + "\n\n";
-        }
+        contract.body = body;
+        done();
       });
-      return code;
-    };
-
-    return import_file(root);
+    }, callback);
   },
 
   compile_all(config, callback) {
+    var contract_names = Object.keys(config.contracts.classes);
+
     var sources = {};
-    var contracts = Object.keys(config.contracts.classes);
-    for (var i = 0; i < contracts.length; i++) {
-      var key = contracts[i];
-      var contract = config.contracts.classes[key];
-      var source = contract.source.replace("./contracts/", "");
-      var full_path = path.resolve(config.working_dir, contract.source)
-      sources[source] = fs.readFileSync(full_path, {encoding: "utf8"});
+    var updated = {};
+    var included = {};
+
+    for (var i = 0; i < contract_names.length; i++) {
+      var name = contract_names[i];
+      var contract = config.contracts.classes[name];
+
+      if (contract.source_modified_time > contract.compiled_time) {
+        updated[name] = true;
+      }
     }
+
+    if (Object.keys(updated).length == 0 && config.argv.quietDeploy == null) {
+      console.log("No contracts have been updated, skipping compilation.");
+      return callback();
+    }
+
+    var dependsGraph = this.build_compile_dependency_graph(config, callback);
+
+    if (dependsGraph == null) {
+      return;
+    }
+
+    var dependsOrdering = topsort(dependsGraph, dependsGraph.nodes());
+
+    function is_updated(contract_name) {
+      return updated[contract_name] === true;
+    }
+
+    function include_source_for(contract_name) {
+      var contract = config.contracts.classes[contract_name];
+      var source_path = contract.source.replace("./contracts/", "");
+
+      if (sources[source_path] != null) {
+        return;
+      }
+
+      var full_path = path.resolve(config.working_dir, contract.source)
+      sources[source_path] = fs.readFileSync(full_path, {encoding: "utf8"});
+
+      // For graph traversing
+      included[contract_name] = true;
+    }
+
+    // Iterate over the dependency grpah from the top, including the contracts
+    // source for compilation if either it has been updated or one of its
+    // predecessors has been updated.
+    for(var i = 0; i < dependsOrdering.length; i++) {
+      var name = dependsOrdering[i];
+      var contract = config.contracts.classes[name];
+
+      if (contract == null) {
+        c(new CompileError(`Could not find contract '${key}' for compilation. Check truffle.json.`));
+        return;
+      }
+
+      var predecessors = dependsGraph.predecessors(name);
+      var predecessors_are_included = predecessors.some(function (item) {
+        return included[item] === true;
+      });
+
+      if (is_updated(name) || predecessors_are_included) {
+        include_source_for(name);
+      }
+    }
+
+    Object.keys(sources).forEach(function(file_path) {
+      if (config.argv.quietDeploy == null) {
+        console.log("Compiling " + file_path + "...");
+      }
+    });
 
     var result = solc.compile({sources: sources}, 1);
 
@@ -137,20 +114,21 @@ var Contracts = {
       return;
     }
 
-    var compiled_contract = result.contracts[key];
+    for (var i = 0; i < contract_names.length; i++) {
+      var name = contract_names[i];
+      var contract = config.contracts.classes[name];
+      var compiled_contract = result.contracts[name];
 
-    for (var i = 0; i < contracts.length; i++) {
-      var key = contracts[i];
-      var contract = config.contracts.classes[key];
-      var compiled_contract = result.contracts[key];
+      // If we didn't compile this contract this run, continue.
+      if (compiled_contract == null) {
+        continue;
+      }
+
       contract["binary"] = compiled_contract.bytecode;
       contract["abi"] = JSON.parse(compiled_contract.interface);
     }
 
     callback();
-
-    //   finished(null, contract);
-    // }, callback);
   },
 
   write_contracts(config, description="contracts", callback) {
@@ -182,6 +160,9 @@ var Contracts = {
             c();
           }
         });
+      },
+      (c) => {
+        this.update_sources(config, c);
       },
       (c) => {
         this.compile_all(config, c);
@@ -223,7 +204,56 @@ var Contracts = {
     });
   },
 
-  build_dependency_graph(config, errorCallback) {
+  build_compile_dependency_graph(config, errorCallback) {
+    if (config.argv.quietDeploy == null) {
+      console.log("Checking sources...");
+    }
+    // Iterate through all the contracts looking for libraries and building a dependency graph
+    var dependsGraph = new Graph();
+    var contract_names = Object.keys(config.contracts.classes);
+    for (var i = 0; i < contract_names.length; i++) {
+      var name = contract_names[i]
+      var contract = config.contracts.classes[name];
+
+      if (contract == null) {
+        errorCallback(new CompileError(`Could not find contract '${name}' for compiling. Check truffle.json.`));
+        return null;
+      }
+
+      // Add the contract to the depend graph
+      dependsGraph.setNode(name);
+
+      // Find import statements and resolve those import paths, adding them to the graph.
+      contract.body.split(/;|\n/).filter(function(line) {
+        return line.indexOf("import") >= 0;
+      }).forEach(function(line) {
+        var regex = /import.*("|')([^"']+)("|')*/g;
+        var match = regex.exec(line);
+
+        if (match == null) return;
+
+        var file = match[2];
+        var dependency_name = path.basename(file, ".sol");
+
+        if (!dependsGraph.hasEdge(name, dependency_name)) {
+          dependsGraph.setEdge(name, dependency_name);
+        }
+      });
+    }
+    // Check for cycles in the graph, the dependency graph needs to be a tree otherwise there's an error
+    if (!isAcyclic(dependsGraph))
+    {
+      console.log("ERROR: Cycles in dependency graph");
+      dependsGraph.edges().forEach(function(o){
+        console.log(o.v+" -- depends on --> "+o.w);
+      });
+      errorCallback(new CompileError(`Found cyclic dependencies. Adjust your import statements to remove cycles.`));
+      return null;
+    }
+    return dependsGraph;
+  },
+
+  build_deploy_dependency_graph(config, errorCallback) {
     if (config.argv.quietDeploy == null) {
       console.log("Collecting dependencies...");
     }
@@ -306,14 +336,13 @@ var Contracts = {
       (c) => {
         if (compile == true) {
           this.compile_all(config, c);
-
         } else {
           c();
         }
       },
       (c) => {
         Pudding.setWeb3(config.web3);
-        var dependsGraph = this.build_dependency_graph(config,c);
+        var dependsGraph = this.build_deploy_dependency_graph(config, c);
 
         if( dependsGraph == null) {
           return;

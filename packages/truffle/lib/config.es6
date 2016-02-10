@@ -216,8 +216,12 @@ var Config = {
       for (file of filesSync(config.contracts.directory)) {
         var name = file.substring(file.lastIndexOf("/") + 1, file.lastIndexOf("."));
         var relative_path = file.replace(config.working_dir, "./");
+        var stats = fs.statSync(file);
+
         config.contracts.classes[name] = {
-          source: relative_path
+          file: file,
+          source: relative_path,
+          source_modified_time: (stats.mtime || stats.ctime).getTime()
         }
       }
     }
@@ -225,24 +229,44 @@ var Config = {
     // Now merge those contracts with what's in the configuration, if any, using the loader.
     Pudding.setWeb3(config.web3);
 
-    if (fs.existsSync(config.contracts.build_directory)) {
-      var loader = deasync(PuddingLoader.load);
-      var contracts = {};
-
-      var names = loader(config.contracts.build_directory, Pudding, contracts);
-
-      for (var name of names) {
-        // Don't load a contract that's been deleted.
-        if (!config.contracts.classes[name]) {
-          continue;
-        }
-
-        var contract = contracts[name];
-        config.contracts.classes[name].abi = contract.prototype.abi;
-        config.contracts.classes[name].binary = contract.prototype.binary;
-        config.contracts.classes[name].address = contract.prototype.address;
+    // Functionalize this so we can make it synchronous.
+    function loadContracts(callback) {
+      if (fs.existsSync(config.contracts.build_directory) == false) {
+        return callback();
       }
-    }
+
+      var contracts = {};
+      PuddingLoader.load(config.contracts.build_directory, Pudding, contracts, function(err, names, data) {
+        if (err) return callback(err);
+
+        data.forEach(function(item) {
+          var name = item.name;
+
+          // Don't load a contract that's been deleted.
+          if (!config.contracts.classes[name]) {
+            return;
+          }
+
+          var stats;
+          try {
+            var stats = fs.statSync(item.file);
+          } catch (e) {
+            return callback(e);
+          }
+
+          var contract = contracts[name];
+          config.contracts.classes[name].abi = contract.prototype.abi;
+          config.contracts.classes[name].binary = contract.prototype.binary;
+          config.contracts.classes[name].address = contract.prototype.address;
+          config.contracts.classes[name].compiled_time = (stats.mtime || stats.ctime).getTime();
+        });
+
+        callback();
+      });
+    };
+
+    var loader = deasync(loadContracts);
+    loader();
 
     return config;
   }
