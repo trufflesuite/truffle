@@ -31,120 +31,103 @@ var Contracts = {
     }, callback);
   },
 
-  compile_all(config, callback) {
-    var contract_names = Object.keys(config.contracts.classes);
+  compile_necessary(config, callback) {
+    this.update_sources(config, () => {
+      var contract_names = Object.keys(config.contracts.classes);
 
-    var sources = {};
-    var updated = {};
-    var included = {};
+      var sources = {};
+      var updated = {};
+      var included = {};
 
-    for (var i = 0; i < contract_names.length; i++) {
-      var name = contract_names[i];
-      var contract = config.contracts.classes[name];
+      for (var i = 0; i < contract_names.length; i++) {
+        var name = contract_names[i];
+        var contract = config.contracts.classes[name];
 
-      if (contract.source_modified_time > contract.compiled_time) {
-        updated[name] = true;
+        if (contract.source_modified_time > contract.compiled_time) {
+          updated[name] = true;
+        }
       }
-    }
 
-    if (Object.keys(updated).length == 0 && config.argv.quietDeploy == null) {
-      console.log("No contracts have been updated, skipping compilation.");
-      return callback();
-    }
+      if (Object.keys(updated).length == 0 && config.argv.quietDeploy == null) {
+        console.log("No contracts have been updated, skipping compilation.");
+        return callback();
+      }
 
-    var dependsGraph = this.build_compile_dependency_graph(config, callback);
+      var dependsGraph = this.build_compile_dependency_graph(config, callback);
 
-    if (dependsGraph == null) {
-      return;
-    }
-
-    var dependsOrdering = topsort(dependsGraph, dependsGraph.nodes());
-
-    function is_updated(contract_name) {
-      return updated[contract_name] === true;
-    }
-
-    function include_source_for(contract_name) {
-      var contract = config.contracts.classes[contract_name];
-      var source_path = contract.source.replace("./contracts/", "");
-
-      if (sources[source_path] != null) {
+      if (dependsGraph == null) {
         return;
       }
 
-      var full_path = path.resolve(config.working_dir, contract.source)
-      sources[source_path] = fs.readFileSync(full_path, {encoding: "utf8"});
+      var dependsOrdering = topsort(dependsGraph, dependsGraph.nodes());
 
-      // For graph traversing
-      included[contract_name] = true;
-    }
-
-    // Iterate over the dependency grpah from the top, including the contracts
-    // source for compilation if either it has been updated or one of its
-    // predecessors has been updated.
-    for(var i = 0; i < dependsOrdering.length; i++) {
-      var name = dependsOrdering[i];
-      var contract = config.contracts.classes[name];
-
-      if (contract == null) {
-        c(new CompileError(`Could not find contract '${key}' for compilation. Check truffle.json.`));
-        return;
+      function is_updated(contract_name) {
+        return updated[contract_name] === true;
       }
 
-      var predecessors = dependsGraph.predecessors(name);
-      var predecessors_are_included = predecessors.some(function (item) {
-        return included[item] === true;
+      function include_source_for(contract_name) {
+        var contract = config.contracts.classes[contract_name];
+        var source_path = contract.source.replace("./contracts/", "");
+
+        if (sources[source_path] != null) {
+          return;
+        }
+
+        var full_path = path.resolve(config.working_dir, contract.source)
+        sources[source_path] = fs.readFileSync(full_path, {encoding: "utf8"});
+
+        // For graph traversing
+        included[contract_name] = true;
+      }
+
+      // Iterate over the dependency grpah from the top, including the contracts
+      // source for compilation if either it has been updated or one of its
+      // predecessors has been updated.
+      for(var i = 0; i < dependsOrdering.length; i++) {
+        var name = dependsOrdering[i];
+        var contract = config.contracts.classes[name];
+
+        if (contract == null) {
+          c(new CompileError(`Could not find contract '${key}' for compilation. Check truffle.json.`));
+          return;
+        }
+
+        var predecessors = dependsGraph.predecessors(name);
+        var predecessors_are_included = predecessors.some(function (item) {
+          return included[item] === true;
+        });
+
+        if (is_updated(name) || predecessors_are_included) {
+          include_source_for(name);
+        }
+      }
+
+      Object.keys(sources).forEach(function(file_path) {
+        if (config.argv.quietDeploy == null) {
+          console.log("Compiling " + file_path + "...");
+        }
       });
 
-      if (is_updated(name) || predecessors_are_included) {
-        include_source_for(name);
-      }
-    }
+      var result = solc.compile({sources: sources}, 1);
 
-    Object.keys(sources).forEach(function(file_path) {
-      if (config.argv.quietDeploy == null) {
-        console.log("Compiling " + file_path + "...");
-      }
-    });
-
-    var result = solc.compile({sources: sources}, 1);
-
-    if (result.errors != null) {
-      callback(new CompileError(result.errors.join()));
-      return;
-    }
-
-    for (var i = 0; i < contract_names.length; i++) {
-      var name = contract_names[i];
-      var contract = config.contracts.classes[name];
-      var compiled_contract = result.contracts[name];
-
-      // If we didn't compile this contract this run, continue.
-      if (compiled_contract == null) {
-        continue;
-      }
-
-      contract["binary"] = compiled_contract.bytecode;
-      contract["abi"] = JSON.parse(compiled_contract.interface);
-    }
-
-    callback();
-  },
-
-  write_contracts(config, description="contracts", callback) {
-    var destination = config.contracts.build_directory;
-    mkdirp(destination, function(err, result) {
-      if (err != null) {
-        callback(err);
+      if (result.errors != null) {
+        callback(new CompileError(result.errors.join()));
         return;
       }
 
-      var display_directory = "./" + path.join("./", destination.replace(config.working_dir, ""));
-      if (config.argv.quietDeploy == null) {
-        console.log(`Writing ${description} to ${display_directory}`);
-      }
+      for (var i = 0; i < contract_names.length; i++) {
+        var name = contract_names[i];
+        var contract = config.contracts.classes[name];
+        var compiled_contract = result.contracts[name];
 
-      PuddingGenerator.save(config.contracts.classes, destination, {removeExisting: true});
+        // If we didn't compile this contract this run, continue.
+        if (compiled_contract == null) {
+          continue;
+        }
+
+        contract["binary"] = compiled_contract.bytecode;
+        contract["abi"] = JSON.parse(compiled_contract.interface);
+      }
 
       callback();
     });
@@ -153,19 +136,7 @@ var Contracts = {
   compile(config, callback) {
     async.series([
       (c) => {
-        config.test_connection(function(error, coinbase) {
-          if (error != null) {
-            callback(new Error("Could not connect to your Ethereum client. Truffle uses your Ethereum client to compile contracts. Please ensure your client is running and can compile the all contracts within the contracts directory."));
-          } else {
-            c();
-          }
-        });
-      },
-      (c) => {
-        this.update_sources(config, c);
-      },
-      (c) => {
-        this.compile_all(config, c);
+        this.compile_necessary(config, c);
       },
       (c) => {
         this.write_contracts(config, "contracts", c);
@@ -335,7 +306,7 @@ var Contracts = {
       },
       (c) => {
         if (compile == true) {
-          this.compile_all(config, c);
+          this.compile_necessary(config, c);
         } else {
           c();
         }
@@ -439,6 +410,25 @@ var Contracts = {
       }
       Exec.file(config, file, iterator_callback);
     }, done);
+  },
+
+  write_contracts(config, description="contracts", callback) {
+    var destination = config.contracts.build_directory;
+    mkdirp(destination, function(err, result) {
+      if (err != null) {
+        callback(err);
+        return;
+      }
+
+      var display_directory = "./" + path.join("./", destination.replace(config.working_dir, ""));
+      if (config.argv.quietDeploy == null) {
+        console.log(`Writing ${description} to ${display_directory}`);
+      }
+
+      PuddingGenerator.save(config.contracts.classes, destination, {removeExisting: true});
+
+      callback();
+    });
   }
 }
 
