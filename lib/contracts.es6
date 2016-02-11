@@ -10,12 +10,10 @@ var PuddingGenerator = require("ether-pudding/generator");
 var ConfigurationError = require("./errors/configurationerror");
 var CompileError = require("./errors/compileerror");
 var DeployError = require("./errors/deployerror");
+var graphlib = require("graphlib");
 var Graph = require("graphlib").Graph;
 var isAcyclic = require("graphlib/lib/alg").isAcyclic;
 var postOrder = require("graphlib/lib/alg").postorder;
-var topsort = require("graphlib/lib/alg").topsort;
-
-var BlueBirdPromise = require('bluebird');
 
 var Contracts = {
   update_sources(config, callback) {
@@ -49,7 +47,7 @@ var Contracts = {
       }
 
       if (Object.keys(updated).length == 0 && config.argv.quietDeploy == null) {
-        console.log("No contracts have been updated, skipping compilation.");
+        console.log("No contracts updated; skipping compilation.");
         return callback();
       }
 
@@ -58,8 +56,6 @@ var Contracts = {
       if (dependsGraph == null) {
         return;
       }
-
-      var dependsOrdering = topsort(dependsGraph, dependsGraph.nodes());
 
       function is_updated(contract_name) {
         return updated[contract_name] === true;
@@ -80,29 +76,49 @@ var Contracts = {
         included[contract_name] = true;
       }
 
-      // Iterate over the dependency grpah from the top, including the contracts
-      // source for compilation if either it has been updated or one of its
-      // predecessors has been updated.
-      for(var i = 0; i < dependsOrdering.length; i++) {
-        var name = dependsOrdering[i];
-        var contract = config.contracts.classes[name];
-
-        if (contract == null) {
-          c(new CompileError(`Could not find contract '${key}' for compilation. Check truffle.json.`));
+      function walk_down(contract_name) {
+        if (included[contract_name] === true) {
           return;
         }
 
-        var predecessors = dependsGraph.predecessors(name);
-        var predecessors_are_included = predecessors.some(function (item) {
-          return included[item] === true;
-        });
+        include_source_for(contract_name);
 
-        if (is_updated(name) || predecessors_are_included) {
-          include_source_for(name);
+        var dependencies = dependsGraph.successors(contract_name);
+
+        // console.log("At: " + contract_name);
+        // console.log("   Dependencies: ", dependencies);
+
+        if (dependencies.length > 0) {
+          dependencies.forEach(walk_down);
         }
       }
 
-      Object.keys(sources).forEach(function(file_path) {
+      function walk_from(contract_name) {
+        // if (included[contract_name] === true) {
+        //   return;
+        // }
+
+        var ancestors = dependsGraph.predecessors(contract_name);
+        var dependencies = dependsGraph.successors(contract_name);
+
+        // console.log("At: " + contract_name);
+        // console.log("   Ancestors: ", ancestors);
+        // console.log("   Dependencies: ", dependencies);
+
+        include_source_for(contract_name);
+
+        if (ancestors.length > 0) {
+          ancestors.forEach(walk_from);
+        }
+
+        if (dependencies.length > 0) {
+          dependencies.forEach(walk_down);
+        }
+      }
+
+      Object.keys(updated).forEach(walk_from);
+
+      Object.keys(sources).sort().forEach(function(file_path) {
         if (config.argv.quietDeploy == null) {
           console.log("Compiling " + file_path + "...");
         }
