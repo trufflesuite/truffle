@@ -16,6 +16,23 @@ var isAcyclic = require("graphlib/lib/alg").isAcyclic;
 var postOrder = require("graphlib/lib/alg").postorder;
 
 var Contracts = {
+  account: null,
+
+  get_account: function(callback) {
+    var self = this;
+
+    if (this.account != null) {
+      return callback(null, this.account);
+    }
+
+    web3.eth.getAccounts(function(err, result) {
+      if (err != null) return callback(err);
+
+      self.account = result[0];
+      callback(null, self.account);
+    });
+  },
+
   update_sources(config, callback) {
     var contract_names = Object.keys(config.contracts.classes);
     async.each(contract_names, function(name, done) {
@@ -141,8 +158,9 @@ var Contracts = {
           continue;
         }
 
-        contract["binary"] = compiled_contract.bytecode;
-        contract["abi"] = JSON.parse(compiled_contract.interface);
+        contract.binary = compiled_contract.bytecode;
+        contract.unlinked_binary = compiled_contract.bytecode;
+        contract.abi = JSON.parse(compiled_contract.interface);
       }
 
       callback();
@@ -160,7 +178,15 @@ var Contracts = {
     ], callback);
   },
 
-  createContractAndWait(config, tx, contract_name) {
+  createContractAndWait(config, contract_name) {
+    var tx = {
+      from: this.account,
+      gas: 3141592,
+      //gasPrice: 50000000000, // 50 Shannon
+      gasPrice: 100000000000, // 100 Shannon
+      data: config.contracts.classes[contract_name].binary
+    };
+
     return new Promise((accept, reject) => {
       config.web3.eth.sendTransaction(tx, (err, hash) => {
         if (err != null) {
@@ -269,7 +295,7 @@ var Contracts = {
 
       var regex = /__([^_]*)_*/g;
       var matches;
-      while ( (matches = regex.exec(contract_class.binary)) !== null ) {
+      while ( (matches = regex.exec(contract_class.unlinked_binary)) !== null ) {
         var lib = matches[1];
         if (!dependsGraph.hasEdge(key,lib)) {
           dependsGraph.setEdge(key, lib);
@@ -289,35 +315,32 @@ var Contracts = {
     return dependsGraph;
   },
 
-  link_dependencies(config,contract_data,contract_class,contract_name) {
+  link_dependencies(config, contract_name) {
     return (dependency_addresses) => {
+      var contract = config.contracts.classes[contract_name];
+
       //All of the library dependencies to this contract have been deployed
       //Inject the address of each lib into this contract and then deploy it.
       dependency_addresses.forEach(function(lib) {
         if (config.argv.quietDeploy == null) {
           console.log("Linking Library: " + lib.name + " to contract: " + contract_name + " at address: " + lib.address);
         }
-        var bin_address = lib.address.replace("0x","");
-        var re = new RegExp("__"+lib.name+"_*","g");
-        contract_data.data = contract_data.data.replace(re, bin_address);
+
+        var bin_address = lib.address.replace("0x", "");
+        var re = new RegExp("__" + lib.name + "_*", "g");
+        contract.binary = contract.unlinked_binary.replace(re, bin_address);
       });
 
-      // Update the contract data we'll write to disk
-      config.contracts.classes[contract_name].binary = contract_data.data;
-
-      return this.createContractAndWait(config, contract_data, contract_name);
+      return this.createContractAndWait(config, contract_name);
     }
   },
 
   deploy(config, compile=true, done_deploying) {
-    var coinbase = null;
+    var self = this;
 
     async.series([
       (c) => {
-        config.web3.eth.getCoinbase(function(error, result) {
-          coinbase = result;
-          c(error, result);
-        });
+        self.get_account(c);
       },
       (c) => {
         if (compile == true) {
@@ -349,28 +372,15 @@ var Contracts = {
             return;
           }
 
-          var contract_data = {
-            from: coinbase,
-            gas: 3141592,
-            //gasPrice: 50000000000, // 50 Shannon
-            gasPrice: 100000000000, // 100 Shannon
-            data: contract_class.binary
-          };
           var dependencies = dependsGraph.successors(contract_name);
 
           // When we encounter a Library that is not dependant on other libraries, we can just
           // deploy it as normal
           if (dependencies.length == 0) {
-            var contract = Pudding.whisk({
-              abi: contract_class.abi,
-              binary: contract_class.binary,
-              contract_name: contract_name
-            });
-
-            deploy_promise = this.createContractAndWait(config,contract_data,contract_name);
+            deploy_promise = this.createContractAndWait(config, contract_name);
 
             // Store the promise in the graph so we can fetch it later
-            dependsGraph.setNode(contract_name,deploy_promise);
+            dependsGraph.setNode(contract_name, deploy_promise);
           }
           // Contracts that have dependencies need to wait until those dependencies have been deployed
           // so we can inject the address into their byte code
@@ -379,11 +389,11 @@ var Contracts = {
             // Collect all the promises for the libraries this contract depends on into a list
             // NOTE: since this loop is traversing in post-order, we can be assured that this list
             // will contain ALL of the dependencies of this contract
-            var depends_promises = dependencies.map(dependsGraph.node,dependsGraph);
+            var depends_promises = dependencies.map(dependsGraph.node, dependsGraph);
 
             // Wait for all the dependencies to be committed and then do the linking step
             deploy_promise = Promise.all(depends_promises).then(
-              this.link_dependencies(config,contract_data,contract_class,contract_name)
+              this.link_dependencies(config, contract_name)
             );
 
             // It's possible that this contract is a dependency of some other contract so we store
