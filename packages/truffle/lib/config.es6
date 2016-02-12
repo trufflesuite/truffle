@@ -256,9 +256,10 @@ var Config = {
           }
 
           var contract = contracts[name];
-          config.contracts.classes[name].abi = contract.prototype.abi;
-          config.contracts.classes[name].binary = contract.prototype.binary;
-          config.contracts.classes[name].address = contract.prototype.address;
+          config.contracts.classes[name].abi = contract.abi;
+          config.contracts.classes[name].binary = contract.binary;
+          config.contracts.classes[name].unlinked_binary = contract.unlinked_binary || contract.binary;
+          config.contracts.classes[name].address = contract.address;
           config.contracts.classes[name].compiled_time = (stats.mtime || stats.ctime).getTime();
         });
 
