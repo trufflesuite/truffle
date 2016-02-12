@@ -5,6 +5,7 @@
 var contract_data = {
   abi: {{ABI}},
   binary: "{{BINARY}}",
+  unlinked_binary: "{{UNLINKED_BINARY}}",
   address: "{{ADDRESS}}",
   generated_with: "{{PUDDING_VERSION}}",
   contract_name: "{{NAME}}"

@@ -168,15 +168,13 @@
 	  Contract.prototype = Object.create(Pudding.prototype);
 
 	  Contract.abi = Contract.prototype.abi = data.abi;
-	  Contract.prototype.binary = data.binary;
+	  Contract.binary = Contract.prototype.binary = data.binary;
+	  Contract.unlinked_binary = Contract.prototype.unlinked_binary = data.unlinked_binary || data.binary;
 	  Contract.prototype.class_defaults = data.defaults || {};
 	  Contract.address = Contract.prototype.address = data.address;
 	  Contract.deployed_address = Contract.prototype.deployed_address = data.address; // deprecated
-	  Contract.prototype.generated_with = data.generated_with;
-
-	  Contract.prototype.contract_name = Contract.contract_name = data.contract_name;
-
-	  Contract.prototype.address = data.address;
+	  Contract.generated_with = Contract.prototype.generated_with = data.generated_with;
+	  Contract.contract_name = Contract.prototype.contract_name = data.contract_name;
 
 	  // Post-whisked loads just return the contract.
 	  Contract.load = function() {
