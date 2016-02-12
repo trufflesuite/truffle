@@ -227,7 +227,6 @@ registerTask('deploy', "Deploy contracts to the network", function(done) {
   if (argv.compile === false) {
     compile = false;
   }
- 
 
   // Compile and deploy.
   Contracts.deploy(config, compile, function(err) {
