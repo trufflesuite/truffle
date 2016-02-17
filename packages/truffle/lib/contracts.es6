@@ -15,17 +15,18 @@ var Graph = require("graphlib").Graph;
 var isAcyclic = require("graphlib/lib/alg").isAcyclic;
 var postOrder = require("graphlib/lib/alg").postorder;
 
+
 var Contracts = {
   account: null,
 
-  get_account: function(callback) {
+  get_account: function(config, callback) {
     var self = this;
 
     if (this.account != null) {
       return callback(null, this.account);
     }
 
-    web3.eth.getAccounts(function(err, result) {
+    config.web3.eth.getAccounts(function(err, result) {
       if (err != null) return callback(err);
 
       self.account = result[0];
@@ -340,7 +341,7 @@ var Contracts = {
 
     async.series([
       (c) => {
-        self.get_account(c);
+        self.get_account(config, c);
       },
       (c) => {
         if (compile == true) {
