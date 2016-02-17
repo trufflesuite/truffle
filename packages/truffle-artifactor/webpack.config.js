@@ -10,7 +10,14 @@ module.exports = {
   entry: entry,
   output: {
     path: "./dist",
-    filename: `[name]`
+    filename: `[name]`,
+
+    // Output as a library usable outside of webpack
+    libraryTarget: "var",
+    library: "Pudding"
+  },
+  externals: {
+    "bluebird": "Promise"
   },
   module: {
     loaders: [
