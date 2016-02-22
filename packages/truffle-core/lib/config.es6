@@ -67,6 +67,13 @@ var Config = {
       },
       dist: {
         directory: null,
+      },
+      rpc: {
+        defaults: {
+          gas: 3141592,
+          gasPrice: 100000000000, // 100 Shannon,
+          from: null
+        }
       }
     });
 
@@ -132,6 +139,11 @@ var Config = {
     } else if (fs.existsSync(config.app.oldconfigfile)) {
       config.app.resolved = loadconf(config.app.oldconfigfile, config.app.resolved);
     }
+
+    // Now merge default rpc details, only overwriting if not specified.
+    _.mergeWith(config.app.resolved.rpc, config.rpc.defaults, function(objValue, srcValue) {
+      return objValue != null ? objValue : srcValue;
+    });
 
     // Now overwrite any values from the environment config.
     if (fs.existsSync(config.environments.current.filename)) {
