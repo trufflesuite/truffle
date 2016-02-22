@@ -22,6 +22,10 @@ var Contracts = {
   get_account: function(config, callback) {
     var self = this;
 
+    if (config.app.resolved.rpc.from != null) {
+      this.account = config.app.resolved.rpc.from;
+    }
+
     if (this.account != null) {
       return callback(null, this.account);
     }
@@ -182,9 +186,8 @@ var Contracts = {
   createContractAndWait(config, contract_name) {
     var tx = {
       from: this.account,
-      gas: 3141592,
-      //gasPrice: 50000000000, // 50 Shannon
-      gasPrice: 100000000000, // 100 Shannon
+      gas: config.app.resolved.rpc.gas || config.app.resolved.rpc.gasLimit,
+      gasPrice: config.app.resolved.rpc.gasPrice, // 100 Shannon
       data: config.contracts.classes[contract_name].binary
     };
 
