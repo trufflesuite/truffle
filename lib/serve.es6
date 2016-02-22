@@ -3,7 +3,7 @@ var finalhandler = require('finalhandler');
 var serveStatic = require('serve-static');
 
 var Serve = {
-  start: function(config, done) {
+  start: function(config, port, done) {
     var serve = serveStatic(config.build.directory);
 
     var server = http.createServer(function(req, res) {
@@ -11,8 +11,8 @@ var Serve = {
       serve(req, res, done);
     });
 
-    server.listen(8080);
-    console.log("Serving app on port 8080...");
+    server.listen(port);
+    console.log("Serving app on port " + port + "...");
     done();
   }
 };

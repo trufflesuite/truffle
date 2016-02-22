@@ -37,20 +37,20 @@ Usage: truffle [command] [options]
 Commands:
 
 build           => Build development version of app
-console         => Run a console with deployed contracts instanciated and available (REPL)
 compile         => Compile contracts
+console         => Run a console with deployed contracts instanciated and available (REPL)
 create:contract => Create a basic contract
 create:test     => Create a basic test
-deploy          => Deploy contracts to the network
+deploy          => Deploy contracts to the network, compiling if needed
 dist            => Create distributable version of app (minified)
-exec            => Execute a Coffee/JS file within truffle environment. Script must call process.exit() when finished.
+exec            => Execute a JS file within truffle environment. Script *must* call process.exit() when finished.
 init            => Initialize new Ethereum project, including example contracts and tests
 list            => List all available tasks
 resolve         => Resolve dependencies in contract file and print result
-serve           => Serve app on http://localhost:8080 and rebuild changes as needed (good for web apps)
+serve           => Serve app on localhost and rebuild changes as needed
 test            => Run tests
 version         => Show version number and exit
-watch           => Watch project for changes and rebuild app automatically
+watch           => Watch filesystem for changes and rebuild the project automatically
 ```
 
 ### Example Workflow
@@ -322,7 +322,7 @@ Optional parameters:
 
 ##### compile
 
-Compile your contracts. This will only compile and display compile errors if there are any. It does not modify any project state or deploy to the network. The `compile` command uses the RPC to compile contracts, so you need to make sure your RPC client is capable of compiling your desired contract language.
+Intelligently compile your contracts. This will only compile contracts that have changed since the last compile, unless otherwise specified.
 
 ```
 $ truffle compile
@@ -330,7 +330,7 @@ $ truffle compile
 
 Optional parameter:
 
-* `--verbose-rpc`: Log communication between Truffle and the RPC.
+* `--compile-all`: Compile all contracts instead of intelligently choosing.
 
 ##### create:contract
 
@@ -350,7 +350,7 @@ $ truffle create:test MyTest
 
 ##### deploy
 
-Compile and deploy contracts to the network. Will only deploy the contracts specified in the app configuration's `deploy` array.
+Compile and deploy contracts to the network. Will only deploy the contracts specified in the app's `deploy` configuration. Contracts are compiled intelligently unless otherwise specified.
 
 ```
 $ truffle deploy
@@ -359,9 +359,10 @@ $ truffle deploy
 Optional parameters:
 
 * `-e environment`: Specify the environment. Default is "development". 
+* `--compile-all`: Compile all contracts instead of intelligently choosing.
 * `--verbose-rpc`: Log communication between Truffle and the RPC.
 
-Deploying contracts will save [Pudding](https://github.com/ConsenSys/ether-pudding) class files within your environment directory that correspond to each of your contracts. These class files can be used in Truffle's build process or your own build process to interact with the Ethereum network.
+Deploying contracts will save [Pudding](https://github.com/ConsenSys/ether-pudding) class files within your environment's `contracts` directory that correspond to each of your contracts. These class files can be used in Truffle's build process or your own build process to interact with the Ethereum network.
 
 ##### dist           
 
@@ -448,6 +449,7 @@ $ truffle serve
 Optional parameters:
 
 * `-e environment`: Specify the environment. Default is "development".
+* `-p port`: Specify the port to serve on. Default is 8080.
 
 ##### test
 
@@ -460,7 +462,7 @@ $ truffle test [/path/to/test/file]
 Optional parameters:
 
 * `-e environment`: Specify the environment. Default is "test".
-* `--no-compile`: Don't compile the contracts before running tests.
+* `--compile-all`: Compile all contracts instead of intelligently choosing.
 * `--verbose-rpc`: Log communication between Truffle and the RPC.
 
 ##### version

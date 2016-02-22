@@ -216,7 +216,7 @@ registerTask('compile', "Compile contracts", function(done) {
   Contracts.compile(config, done);
 });
 
-registerTask('deploy', "Deploy contracts to the network", function(done) {
+registerTask('deploy', "Deploy contracts to the network, compiling if needed", function(done) {
   var config = Config.gather(truffle_dir, working_dir, argv, "development");
 
   console.log("Using environment " + config.environment + ".");
@@ -261,7 +261,7 @@ registerTask('dist', "Create distributable version of app (minified)", function(
   });
 });
 
-registerTask('exec', "Execute a Coffee/JS file within truffle environment. Script *must* call process.exit() when finished.", function(done) {
+registerTask('exec', "Execute a JS file within truffle environment. Script *must* call process.exit() when finished.", function(done) {
   var config = Config.gather(truffle_dir, working_dir, argv, "development");
 
   var file = argv.file;
@@ -308,10 +308,10 @@ registerTask('console', "Run a console with deployed contracts instanciated and 
   Repl.run(config, done);
 });
 
-registerTask('serve', "Serve app on http://localhost:8080 and rebuild changes as needed", function(done) {
+registerTask('serve', "Serve app on localhost and rebuild changes as needed", function(done) {
   var config = Config.gather(truffle_dir, working_dir, argv, "development");
   console.log("Using environment " + config.environment + ".");
-  Serve.start(config, function() {
+  Serve.start(config, argv.port || argv.p || "8080", function() {
     runTask("watch");
   });
 });
