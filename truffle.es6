@@ -303,7 +303,7 @@ registerTask('test', "Run tests", function(done) {
   }
 });
 
-registerTask('console', "Run a console with deployed contracts instanciated and available (REPL)", function(done) {
+registerTask('console', "Run a console with deployed contracts instantiated and available (REPL)", function(done) {
   var config = Config.gather(truffle_dir, working_dir, argv, "development");
   Repl.run(config, done);
 });
