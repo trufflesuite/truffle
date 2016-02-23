@@ -1,4 +1,4 @@
-<img src="https://github.com/ConsenSys/truffle/blob/master/logo.png" width="200">
+<img src="https://github.com/ConsenSys/truffle/blob/master/assets/logo.png" width="200">
 
 [![Join the chat at https://gitter.im/consensys/truffle](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/consensys/truffle?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
