@@ -149,8 +149,18 @@ var Contracts = {
       var result = solc.compile({sources: sources}, 1);
 
       if (result.errors != null) {
-        callback(new CompileError(result.errors.join()));
-        return;
+        return callback(new CompileError(result.errors.join()));
+      }
+
+      // Examine the sources, and ensure the contract we expected was defined
+      var filenames = Object.keys(sources);
+      for (var i = 0; i < filenames.length; i++) {
+        var filename = filenames[i];
+        var expected_contract = path.basename(filename, ".sol");
+
+        if (result[expected_contract] == null) {
+          return callback(new CompileError("Could not find expected contract or library in '" + filename + "': contract or library '" + expected_contract + "' not found."));
+        }
       }
 
       for (var i = 0; i < contract_names.length; i++) {
