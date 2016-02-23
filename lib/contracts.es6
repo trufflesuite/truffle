@@ -158,7 +158,7 @@ var Contracts = {
         var filename = filenames[i];
         var expected_contract = path.basename(filename, ".sol");
 
-        if (result[expected_contract] == null) {
+        if (result.contracts[expected_contract] == null) {
           return callback(new CompileError("Could not find expected contract or library in '" + filename + "': contract or library '" + expected_contract + "' not found."));
         }
       }
