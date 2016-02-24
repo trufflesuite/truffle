@@ -4,7 +4,7 @@ require("coffee-script/register");
 var web3 = require("web3");
 var path = require("path");
 var fs = require("fs");
-var gaze = require('gaze');
+var chokidar = require('chokidar');
 var deasync = require("deasync");
 var colors = require('colors/safe');
 var Init = require("./lib/init");
@@ -73,20 +73,22 @@ registerTask('watch', "Watch filesystem for changes and rebuild the project auto
   var needs_rebuild = true;
   var needs_redeploy = false;
 
-  gaze(["app/**/*", "environments/*/contracts/**/*", "contracts/**/*"], {cwd: working_dir, interval: 1000, debounceDelay: 500}, function() {
+  chokidar.watch(["app/**/*", "environments/*/contracts/**/*", "contracts/**/*", "truffle.json", "truffle.js"], {
+    ignored: /[\/\\]\./, // Ignore files prefixed with "."
+    cwd: working_dir,
+    ignoreInitial: true
+  }).on('all', (event, filePath) => {
     // On changed/added/deleted
-    this.on('all', function(event, filePath) {
-      var display_path = path.join("./", filePath.replace(working_dir, ""));
-      console.log(colors.cyan(`>> File ${display_path} changed.`));
+    var display_path = path.join("./", filePath.replace(working_dir, ""));
+    console.log(colors.cyan(`>> File ${display_path} changed.`));
 
+    needs_rebuild = true;
+
+    if (display_path.indexOf("contracts/") == 0) {
+      needs_redeploy = true;
+    } else {
       needs_rebuild = true;
-
-      if (display_path.indexOf("contracts/") == 0) {
-        needs_redeploy = true;
-      } else {
-        needs_rebuild = true;
-      }
-    });
+    }
   });
 
   var check_rebuild = function() {
@@ -107,10 +109,10 @@ registerTask('watch', "Watch filesystem for changes and rebuild the project auto
       }
     }
 
-    setTimeout(check_rebuild, 500);
+    setTimeout(check_rebuild, 200);
   };
 
-  setInterval(check_rebuild, 500);
+  check_rebuild();
 });
 
 registerTask('list', "List all available tasks", function(done) {
