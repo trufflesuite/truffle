@@ -12,7 +12,7 @@ Package.onUse(function(api) {
   api.use('mvrx:bluebird@0.0.1', 'client');
 
   api.export(['Pudding'], ['client']);
-  
-  api.add_files('build/ether-pudding.js', 'client');
+
+  api.add_files('dist/ether-pudding.js', 'client');
   api.add_files('package-init.js', 'client');
 });
