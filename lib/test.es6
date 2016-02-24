@@ -3,7 +3,6 @@ var chai = require("chai");
 var dir = require("node-dir");
 var path = require("path");
 var fs = require("fs");
-var temp = require("temp");
 
 var Contracts = require("./contracts");
 
