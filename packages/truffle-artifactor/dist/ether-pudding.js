@@ -373,7 +373,7 @@ var Pudding =
 
 	module.exports = {
 		"name": "ether-pudding",
-		"version": "2.0.3",
+		"version": "2.0.5",
 		"description": "Pudding - a (more) delightful Ethereum contract abstraction",
 		"author": "Tim Coulter",
 		"main": "./index.js",
