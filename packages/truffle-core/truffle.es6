@@ -1,6 +1,4 @@
 #!/usr/bin/env ./node_modules/.bin/babel-node
-require("coffee-script/register");
-
 var web3 = require("web3");
 var path = require("path");
 var fs = require("fs");
@@ -22,8 +20,8 @@ var ExtendableError = require("./lib/errors/extendableerror");
 
 var argv = require('yargs').argv;
 
-var truffle_dir = process.env.TRUFFLE_NPM_LOCATION || argv.n || argv.npm_directory;
-var working_dir = process.env.TRUFFLE_WORKING_DIRECTORY || argv.w || argv.working_directory;
+var truffle_dir = process.env.TRUFFLE_NPM_LOCATION || argv.n || argv.npm_directory || __dirname;
+var working_dir = process.env.TRUFFLE_WORKING_DIRECTORY || argv.w || argv.working_directory || process.cwd();
 
 if (working_dir[working_dir.length - 1] != "/") {
   working_dir += "/";
