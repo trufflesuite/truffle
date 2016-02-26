@@ -37,11 +37,11 @@
     "temp": "^0.8.3"
   },
   "bin": {
-    "truffle": "./truffle.bash",
-    "truffle-exec": "./truffle-exec.bash"
+    "truffle": "node ./cli.js",
+    "truffle-exec": "node ./cli.js --exec"
   },
   "scripts": {
-    "test": "./test.bash"
+    "test": "node ./cli.js test"
   },
   "repository": {
     "type": "git",

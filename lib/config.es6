@@ -21,7 +21,7 @@ var Config = {
       working_dir: working_dir,
       web3: new Web3(),
       environments: {
-        directory: `${working_dir}/environments`,
+        directory: path.join(working_dir, "environments"),
         available: {},
         current: {}
       },
@@ -40,7 +40,7 @@ var Config = {
         }
       },
       example: {
-        directory: `${truffle_dir}/example`
+        directory: path.join(truffle_dir, "example")
       },
       templates: {
         test: {
@@ -55,11 +55,11 @@ var Config = {
       },
       contracts: {
         classes: {},
-        directory: `${working_dir}/contracts`,
+        directory: path.join(working_dir, "contracts"),
         build_directory: null
       },
       tests: {
-        directory: `${working_dir}/test`,
+        directory: path.join(working_dir, "test"),
         filter: /.*\.(js|es|es6|jsx|coffee)$/
       },
       build: {
@@ -226,7 +226,7 @@ var Config = {
     // Get contracts in working directory, if available.
     if (fs.existsSync(config.contracts.directory)) {
       for (file of filesSync(config.contracts.directory)) {
-        var name = file.substring(file.lastIndexOf("/") + 1, file.lastIndexOf("."));
+        var name = path.basename(file, ".sol");
         var relative_path = file.replace(config.working_dir, "./");
         var stats = fs.statSync(file);
 
