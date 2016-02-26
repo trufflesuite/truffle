@@ -85,7 +85,7 @@ var Contracts = {
 
       function include_source_for(contract_name) {
         var contract = config.contracts.classes[contract_name];
-        var source_path = contract.source.replace("./contracts/", "");
+        var source_path = path.relative(config.contracts.directory, contract.source);
 
         if (sources[source_path] != null) {
           return;
@@ -216,7 +216,7 @@ var Contracts = {
             }
             if (receipt != null) {
               if (config.argv.quietDeploy == null) {
-                console.log("Deployed: "+contract_name+" to address: "+receipt.contractAddress);
+                console.log("Deployed: " + contract_name + " to address: " + receipt.contractAddress);
               }
 
               accept({
@@ -459,7 +459,7 @@ var Contracts = {
         return;
       }
 
-      var display_directory = "./" + path.join("./", destination.replace(config.working_dir, ""));
+      var display_directory = "." + path.sep + path.relative(config.working_dir, destination); // path.join("./", destination.replace(config.working_dir, ""));
       if (config.argv.quietDeploy == null) {
         console.log(`Writing ${description} to ${display_directory}`);
       }
