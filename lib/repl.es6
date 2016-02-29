@@ -6,6 +6,7 @@ var PuddingLoader = require("ether-pudding/loader");
 var Repl = {
   run(config, done) {
     Pudding.setWeb3(config.web3);
+    global.web3 = config.web3
     PuddingLoader.load(config.environments.current.directory, Pudding, global, function() {
       try {
         var r = repl.start(`truffle(${config.environment})> `);
@@ -19,5 +20,4 @@ var Repl = {
     });
   }
 }
-
 module.exports = Repl;
