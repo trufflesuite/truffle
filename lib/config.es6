@@ -226,6 +226,12 @@ var Config = {
     // Get contracts in working directory, if available.
     if (fs.existsSync(config.contracts.directory)) {
       for (file of filesSync(config.contracts.directory)) {
+
+        // Ignore any files that aren't solidity files.
+        if (path.extname(file) != ".sol" || path.basename(file)[0] == ".") {
+          continue;
+        }
+
         var name = path.basename(file, ".sol");
         var relative_path = file.replace(config.working_dir, "./");
         var stats = fs.statSync(file);
