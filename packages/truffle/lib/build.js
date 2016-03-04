@@ -9,43 +9,41 @@ var BuildError = require("./errors/builderror");
 var child_process = require("child_process");
 var _ = require("lodash");
 
-class CommandBuilder {
-  constructor(command) {
-    this.command = command;
-  }
+function CommandBuilder(command) {
+  this.command = command;
+};
 
-  build(options, callback) {
-    console.log("Running `" + this.command + "`...")
+CommandBuilder.prototype.build = function(options, callback) {
+  console.log("Running `" + this.command + "`...")
 
-    var cmd = child_process.spawn(this.command, {
-      detached: false,
-      cwd: options.working_directory,
-      env: _.merge(process.env, {
-        WORKING_DIRECTORY: options.working_directory,
-        NODE_ENV: options.environment,
-        BUILD_DESTINATION_DIRECTORY: options.destination_directory,
-        BUILD_CONTRACTS_DIRECTORY: options.contracts_directory,
-        WEB3_PROVIDER_LOCATION: "http://" + options.rpc.host + ":" + options.rpc.port
-      })
-    });
+  var cmd = child_process.spawn(this.command, {
+    detached: false,
+    cwd: options.working_directory,
+    env: _.merge(process.env, {
+      WORKING_DIRECTORY: options.working_directory,
+      NODE_ENV: options.environment,
+      BUILD_DESTINATION_DIRECTORY: options.destination_directory,
+      BUILD_CONTRACTS_DIRECTORY: options.contracts_directory,
+      WEB3_PROVIDER_LOCATION: "http://" + options.rpc.host + ":" + options.rpc.port
+    })
+  });
 
-    cmd.stdout.on('data', (data) => {
-      console.log(`${data}`);
-    });
+  cmd.stdout.on('data', function(data) {
+    console.log(data.toString());
+  });
 
-    cmd.stderr.on('data', (data) => {
-      console.log(`build error: ${data}`);
-    });
+  cmd.stderr.on('data', function(data) {
+    console.log("build error: " + data);
+  });
 
-    cmd.on('close', (code) => {
-      var error = null;
-      if (code !== 0) {
-        error = `Command exited with code ${code}`;
-      }
-      callback(error);
-    });
-  }
-}
+  cmd.on('close', function(code) {
+    var error = null;
+    if (code !== 0) {
+      error = "Command exited with code " + code;
+    }
+    callback(error);
+  });
+};
 
 var Build = {
   clean: function(destination, callback) {
@@ -83,6 +81,8 @@ var Build = {
   // Note: key is a legacy parameter that will eventually be removed.
   // It's specific to the default builder and we should phase it out.
   build: function(config, key, callback) {
+    var self = this;
+
     if (typeof key == "function") {
       callback = key;
       key = "build";
@@ -93,7 +93,7 @@ var Build = {
     // No builder specified. Ignore the build then.
     if (typeof builder == "undefined") {
       if (config.argv.quietDeploy == null) {
-        console.log(`No build configuration specified. Not building.`);
+        console.log("No build configuration specified. Not building.");
       }
       return callback();
     }
@@ -120,10 +120,10 @@ var Build = {
       clean = builder.clean;
     }
 
-    clean(config.build.directory, (err) => {
+    clean(config.build.directory, function(err) {
       if (err) return callback(err);
 
-      this.get_contract_data(config, function(err, contracts) {
+      self.get_contract_data(config, function(err, contracts) {
         if (err) return callback(err);
 
         var options = {

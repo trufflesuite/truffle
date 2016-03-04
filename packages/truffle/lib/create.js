@@ -1,5 +1,6 @@
 var util = require("./util");
 var file = require("./file");
+var path = require("path");
 
 var Create = {
   contract(config, name, callback) {
@@ -8,7 +9,7 @@ var Create = {
     }
 
     var from = config.templates.contract.filename;
-    var to = `${config.contracts.directory}/${name}.sol`;
+    var to = path.join(config.contracts.directory, name + ".sol");
 
     file.duplicate(from, to, function(err) {
       if (err != null) {
@@ -26,7 +27,7 @@ var Create = {
 
     var underscored = util.toUnderscoreFromCamel(name);
     var from = config.templates.test.filename;
-    var to = `${config.tests.directory}/${underscored}.js`;
+    var to = path.join(config.tests.directory, underscored + ".js");
 
     file.duplicate(from, to, function(err) {
       if (err != null) {

@@ -122,7 +122,7 @@ var Test = {
         });
       },
 
-      handle_errs: (done) => { Promise.onPossiblyUnhandledRejection(done); },
+      handle_errs: function(done) { Promise.onPossiblyUnhandledRejection(done); },
 
       reset: function(cb) {
         var self = this;
@@ -166,7 +166,7 @@ var Test = {
         opts.reset_state = false;
       }
 
-      describe(`Contract: ${name}`, function() {
+      describe("Contract: " + name, function() {
         this.timeout(TEST_TIMEOUT);
 
         //var _original_contracts = {};
@@ -292,7 +292,7 @@ var Test = {
               var values = SolidityCoder.decodeParams(types, log.data.replace("0x", ""));
               var index = 0;
 
-              var line = `    ${event.abi_entry.name}(`;
+              var line = "    " + event.abi_entry.name + "(";
               line += event.abi_entry.inputs.map(function(input) {
                 var value;
                 if (input.indexed == true) {
@@ -302,7 +302,7 @@ var Test = {
                   index += 1;
                 }
 
-                return `${input.name}: ${value.toString()}`;
+                return input.name + ": " + value.toString();
               }).join(", ");
               line += ")";
               console.log(line);

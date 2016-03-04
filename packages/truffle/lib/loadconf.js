@@ -3,11 +3,13 @@ var jsmin = require("jsmin").jsmin;
 var _ = require("lodash");
 var ConfigurationError = require('./errors/configurationerror');
 
-module.exports = function(full_path, base={}, callback) {
+module.exports = function(full_path, base, callback) {
   if (typeof base == "function") {
     callback = base;
     base = {};
   }
+
+  base = base || {};
 
   fs.readFile(full_path, {encoding: "utf8"}, function(err, file_contents) {
     if (err != null) {
@@ -22,7 +24,7 @@ module.exports = function(full_path, base={}, callback) {
       file_contents = JSON.parse(jsmin(file_contents));
       file_contents = _.merge(base, file_contents);
     } catch(e) {
-      callback(new ConfigurationError(`Error while parsing ${full_path}: ${e.message || e}`));
+      callback(new ConfigurationError("Error while parsing " + full_path + ": " + (e.message || e)));
       return;
     }
 

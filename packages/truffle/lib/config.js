@@ -100,23 +100,25 @@ var Config = {
 
     desired_environment = argv.e || argv.environment || process.env.NODE_ENV || desired_environment;
 
-    // Try to find the desired environment, and fall back to development if we don't find it.
-    for (var environment of [desired_environment, "development"]) {
-      var environment_directory = `${config.environments.directory}/${environment}`;
-      if (!fs.existsSync(environment_directory)) {
-        continue;
+    if (desired_environment) {
+      // Try to find the desired environment, and fall back to development if we don't find it.
+      for (var environment of [desired_environment, "development"]) {
+        var environment_directory = path.join(config.environments.directory, environment);
+        if (!fs.existsSync(environment_directory)) {
+          continue;
+        }
+
+        // I put this warning here but now I'm not sure if I want it.
+        if (environment != desired_environment && desired_environment != null) {
+          console.log("Warning: Couldn't find environment " + desired_environment + ".");
+        }
+
+        config.environment = desired_environment;
+        config.environments.current.directory = environment_directory;
+        config.environments.current.filename = path.join(environment_directory, "config.json");
+
+        break;
       }
-
-      // I put this warning here but now I'm not sure if I want it.
-      if (environment != desired_environment && desired_environment != null) {
-        console.log(`Warning: Couldn't find environment ${desired_environment}.`);
-      }
-
-      config.environment = desired_environment;
-      config.environments.current.directory = environment_directory;
-      config.environments.current.filename = path.join(environment_directory, "config.json");
-
-      break;
     }
 
     // If we didn't find an environment, but asked for one, error.
@@ -163,7 +165,7 @@ var Config = {
     }
 
     // Helper function for expecting paths to exist.
-    config.expect = function(expected_path, description = "file", extra = "", callback) {
+    config.expect = function(expected_path, description, extra, callback) {
       if (typeof description == "function") {
         callback = description;
         description = "file";
@@ -175,9 +177,17 @@ var Config = {
         extra = "";
       }
 
+      if (description == null) {
+        description = "file";
+      }
+
+      if (extra == null) {
+        extra = "";
+      }
+
       if (!fs.existsSync(expected_path)) {
         var display_path = expected_path.replace(this.working_dir, "./");
-        var error = new ConfigurationError(`Couldn't find ${description} at ${display_path}. ${extra}`);
+        var error = new ConfigurationError("Couldn't find " + description + " at " + display_path + ". " + extra);
 
         if (callback != null) {
           callback(error);
@@ -206,7 +216,7 @@ var Config = {
       config.app.resolved.processors[extension] = full_path;
     }
 
-    var provider = new Web3.providers.HttpProvider(`http://${config.app.resolved.rpc.host}:${config.app.resolved.rpc.port}`);
+    var provider = new Web3.providers.HttpProvider("http://" + config.app.resolved.rpc.host + ":" + config.app.resolved.rpc.port);
     config.web3.setProvider(provider);
 
     if (argv.verboseRpc != null) {
