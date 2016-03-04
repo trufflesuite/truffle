@@ -37,8 +37,8 @@
     "temp": "^0.8.3"
   },
   "bin": {
-    "truffle": "node ./cli.js",
-    "truffle-exec": "node ./cli.js --exec"
+    "truffle": "./cli.js",
+    "truffle-exec": "./exec.js"
   },
   "scripts": {
     "test": "node ./cli.js test"
