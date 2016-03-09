@@ -15,7 +15,6 @@ pages:
   - Interacting with your contracts: 'getting_started/contracts.md'
 - Advanced:
   - Configuration: 'advanced/configuration.md'
-  - Custom build processes:
-    - Overview: 'advanced/build/overview.md'
-    - Using Webpack: 'advanced/build/webpack.md'
+  - Custom build processes: 'advanced/build/overview.md'
+  - Using Webpack: 'advanced/build/webpack.md'
   - Command Reference: 'advanced/commands.md'
