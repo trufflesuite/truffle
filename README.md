@@ -77,7 +77,7 @@ The above will initialize a new Ethereum application with an example contract an
 ```
 app/...                        # App code. See "App Configuration", below.
 contracts/...                  # Solidity contracts (*.sol)
-environemnts/
+environments/
     |___ development/          # Environment directory (development)
         |___ contracts/...     # Built contract classes (*.sol.js, created by `truffle deploy`)
         |___ build/...         # Built app (created by `truffle build`)
