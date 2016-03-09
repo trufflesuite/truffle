@@ -2,12 +2,13 @@
 site_name: Truffle
 repo_url: https://github.com/Consensys/truffle
 site_description: Truffle Documentation
+theme: readthedocs
 pages:
 - Introduction: 'index.md'
 - Getting Started:
-  - Install Truffle: 'getting_started/installation.md'
-  - Your first project: 'getting_started/firstproject.md'
+  - Installation: 'getting_started/installation.md'
   - Choosing an Ethereum client: 'getting_started/client.md'
+  - Creating a project: 'getting_started/project.md'
   - Compiling your contracts: 'getting_started/compile.md'
   - Deploying to the network: 'getting_started/deploy.md'
   - Building your frontend: 'getting_started/build.md'
@@ -15,6 +16,7 @@ pages:
   - Interacting with your contracts: 'getting_started/contracts.md'
 - Advanced:
   - Configuration: 'advanced/configuration.md'
-  - Custom build processes: 'advanced/build/overview.md'
-  - Using Webpack: 'advanced/build/webpack.md'
+  - Environments: 'advanced/environments.md'
+  - Deployment Options: 'advanced/deploy.md'
+  - Build Processes: 'advanced/build.md'
   - Command Reference: 'advanced/commands.md'

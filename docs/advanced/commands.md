@@ -1,34 +1,16 @@
-### Usage
+# Usage
 
-```
-Usage: truffle [command] [options]
-
-Commands:
-
-build           => Build development version of app
-compile         => Compile contracts
-console         => Run a console with deployed contracts instantiated and available (REPL)
-create:contract => Create a basic contract
-create:test     => Create a basic test
-deploy          => Deploy contracts to the network, compiling if needed
-dist            => Create distributable version of app (minified)
-exec            => Execute a JS file within truffle environment. Script *must* call process.exit() when finished.
-init            => Initialize new Ethereum project, including example contracts and tests
-list            => List all available tasks
-resolve         => Resolve dependencies in contract file and print result
-serve           => Serve app on localhost and rebuild changes as needed
-test            => Run tests
-version         => Show version number and exit
-watch           => Watch filesystem for changes and rebuild the project automatically
+```none
+$ truffle [command] [options]
 ```
 
-### Available Commands
+# Available Commands
 
 ##### build           
 
 Build a development version of the app; creates the `./environments/<name>/build` directory.
 
-```
+```none
 $ truffle build
 ```
 
@@ -42,7 +24,7 @@ When building, if a build target of `app.js` is specified, Truffle will include 
 
 Run a console with your contract objects instantiated and ready to use (REPL).
 
-```
+```none
 $ truffle console
 ```
 
@@ -57,7 +39,7 @@ Optional parameters:
 
 Intelligently compile your contracts. This will only compile contracts that have changed since the last compile, unless otherwise specified.
 
-```
+```none
 $ truffle compile
 ```
 
@@ -69,7 +51,7 @@ Optional parameter:
 
 Helper method to scaffold a new contract. Name must be camel-case.
 
-```
+```none
 $ truffle create:contract MyContract
 ```
 
@@ -77,7 +59,7 @@ $ truffle create:contract MyContract
 
 Helper method to scaffold a new test for a contract. Name must be camel-case.
 
-```
+```none
 $ truffle create:test MyTest
 ```
 
@@ -85,7 +67,7 @@ $ truffle create:test MyTest
 
 Compile and deploy contracts to the network. Will only deploy the contracts specified in the app's `deploy` configuration. Contracts are compiled intelligently unless otherwise specified.
 
-```
+```none
 $ truffle deploy
 ```
 
@@ -97,11 +79,11 @@ Optional parameters:
 
 Deploying contracts will save [Pudding](https://github.com/ConsenSys/ether-pudding) class files within your environment's `contracts` directory that correspond to each of your contracts. These class files can be used in Truffle's build process or your own build process to interact with the Ethereum network.
 
-##### dist           
+##### dist (deprecated)      
 
 Build a distributable version of the app; creates the `./environments/<name>/dist` directory.
 
-```
+```none
 $ truffle dist
 ```
 
@@ -115,7 +97,7 @@ When building, if a build target of `app.js` is specified, Truffle will include 
 
 Execute a Javascript or CoffeeScript file within the Truffle environment. This will include `web3`, set the default provider based on the app configuration, and include the environment's contracts within the specified script. **This is a limited function.** Your script **must** call process.exit() when it is finished or `truffle exec` will never exit.
 
-```
+```none
 $ truffle exec /path/to/my/script.js
 ```
 
@@ -127,7 +109,7 @@ Optional parameter:
 
 Create a completely new app within the current working directory. Will add default contracts, tests and frontend configuration.
 
-```
+```none
 $ truffle init
 ```
 
@@ -135,7 +117,7 @@ $ truffle init
 
 Like `truffle init`, but only initializes the `config` directory.
 
-```
+```none
 $ truffle init:config
 ```
 
@@ -143,7 +125,7 @@ $ truffle init:config
 
 Like `truffle init`, but only initializes the `contracts` directory.
 
-```
+```none
 $ truffle init:contracts
 ```
 
@@ -151,7 +133,7 @@ $ truffle init:contracts
 
 Like `truffle init`, but only initializes the `test` directory.
 
-```
+```none
 $ truffle init:tests
 ```
 
@@ -159,7 +141,7 @@ $ truffle init:tests
 
 List all available commands and exit. Synonymous with `--help`.
 
-```
+```none
 $ truffle list
 ```
 
@@ -167,7 +149,7 @@ $ truffle list
 
 Resolve all dependencies within solidity files and print the result.
 
-```
+```none
 $ truffle resolve ./path/to/contract/file.sol
 ```
 
@@ -175,7 +157,7 @@ $ truffle resolve ./path/to/contract/file.sol
 
 Serve the built app from `http://localhost:8080`, rebuilding and redeploying changes as needed. Like `truffle watch`, but with the web server component added.
 
-```
+```none
 $ truffle serve
 ```
 
@@ -188,7 +170,7 @@ Optional parameters:
 
 Run all tests within the `./test` directory, or optionally run a single test.
 
-```
+```none
 $ truffle test [/path/to/test/file]
 ```
 
@@ -202,7 +184,7 @@ Optional parameters:
 
 Show version number and exit.
 
-```
+```none
 $ truffle version
 ```
 
@@ -210,6 +192,6 @@ $ truffle version
 
 Watch for changes to contracts, app and configuration files. When there's a change, rebuild the app and redeploy changes to the contracts if necessary.
 
-```
+```none
 $ truffle watch
 ```

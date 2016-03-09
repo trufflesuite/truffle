@@ -1,4 +1,4 @@
-![Truffle Logo](img/logo200.png)
+![logo](img/logo.png)
 
 Truffle is a development environment, testing framework and asset pipeline for Ethereum, aiming to make life as an Ethereum developer easier. With Truffle, you get:
 
