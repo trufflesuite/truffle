@@ -3,7 +3,7 @@ site_name: Truffle
 repo_url: https://github.com/Consensys/truffle
 site_description: Truffle Documentation
 pages:
-- 'Introduction to Truffle': 'introduction.md'
+- Introduction to Truffle: 'index.md'
 - Getting Started:
   - 'Your first project': 'getting_started/firstproject.md'
 - Configuration: 'configuration.md'
