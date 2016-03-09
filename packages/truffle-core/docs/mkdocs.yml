@@ -3,8 +3,9 @@ site_name: Truffle
 repo_url: https://github.com/Consensys/truffle
 site_description: Truffle Documentation
 pages:
-- Introduction to Truffle: 'index.md'
+- Introduction: 'index.md'
 - Getting Started:
+  - Install Truffle: 'getting_started/installation.md'
   - Your first project: 'getting_started/firstproject.md'
   - Choosing an Ethereum client: 'getting_started/client.md'
   - Compiling your contracts: 'getting_started/compile.md'
