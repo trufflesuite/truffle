@@ -5,5 +5,5 @@ site_description: Truffle Documentation
 pages:
 - 'Introduction to Truffle': 'introduction.md'
 - Getting Started:
-  - 'Your first project': 'getting_started/firstproject.md''
+  - 'Your first project': 'getting_started/firstproject.md'
 - Configuration: 'configuration.md'
