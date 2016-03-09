@@ -19,39 +19,7 @@ Truffle is a development environment, testing framework and asset pipeline for E
 * Contract compilation and deployment using the RPC client of your choice.
 * Support for JavaScript, CoffeeScript, SASS, ES6 and JSX built-in.
 
-### Installation
 
-`$ npm install -g truffle`
-
-### Requirements
-
-Truffle requires you to have a running Ethereum client that supports RPC requests (which is nearly all of them). You can choose from official clients like [go-ethereum](https://github.com/ethereum/go-ethereum), [cpp-ethereum](https://github.com/ethereum/webthree-umbrella), as well as non-official clients like [ethereumjs-testrpc](https://github.com/ethereumjs/testrpc). For those new to Ethereum, we recommend ethereumjs-testrpc: It's fast and meant specifically for development. 
-
-You'll need to choose an Ethereum client before proceeding.
-
-### Usage & Available Commands:
-
-```
-Usage: truffle [command] [options]
-
-Commands:
-
-build           => Build development version of app
-compile         => Compile contracts
-console         => Run a console with deployed contracts instantiated and available (REPL)
-create:contract => Create a basic contract
-create:test     => Create a basic test
-deploy          => Deploy contracts to the network, compiling if needed
-dist            => Create distributable version of app (minified)
-exec            => Execute a JS file within truffle environment. Script *must* call process.exit() when finished.
-init            => Initialize new Ethereum project, including example contracts and tests
-list            => List all available tasks
-resolve         => Resolve dependencies in contract file and print result
-serve           => Serve app on localhost and rebuild changes as needed
-test            => Run tests
-version         => Show version number and exit
-watch           => Watch filesystem for changes and rebuild the project automatically
-```
 
 ### Example Workflow
 

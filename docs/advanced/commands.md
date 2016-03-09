@@ -1,3 +1,29 @@
+### Usage
+
+```
+Usage: truffle [command] [options]
+
+Commands:
+
+build           => Build development version of app
+compile         => Compile contracts
+console         => Run a console with deployed contracts instantiated and available (REPL)
+create:contract => Create a basic contract
+create:test     => Create a basic test
+deploy          => Deploy contracts to the network, compiling if needed
+dist            => Create distributable version of app (minified)
+exec            => Execute a JS file within truffle environment. Script *must* call process.exit() when finished.
+init            => Initialize new Ethereum project, including example contracts and tests
+list            => List all available tasks
+resolve         => Resolve dependencies in contract file and print result
+serve           => Serve app on localhost and rebuild changes as needed
+test            => Run tests
+version         => Show version number and exit
+watch           => Watch filesystem for changes and rebuild the project automatically
+```
+
+### Available Commands
+
 ##### build           
 
 Build a development version of the app; creates the `./environments/<name>/build` directory.
