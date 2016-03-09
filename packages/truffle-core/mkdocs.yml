@@ -3,6 +3,7 @@ site_name: Truffle
 repo_url: https://github.com/Consensys/truffle
 site_description: Truffle Documentation
 theme: readthedocs
+extra_css: [extra.css]
 pages:
 - Introduction: 'index.md'
 - Getting Started:
