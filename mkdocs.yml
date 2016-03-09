@@ -3,5 +3,6 @@ site_name: Truffle
 repo_url: https://github.com/Consensys/truffle
 site_description: Truffle Documentation
 pages:
+- 'inroduction.md'
 - Getting Started: 'index.md'
 - Configuration: 'configuration.md'
