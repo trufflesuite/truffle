@@ -3,5 +3,5 @@ site_name: Truffle
 repo_url: https://github.com/Consensys/truffle
 site_description: Truffle Documentation
 pages:
-- ['index.md', 'Getting Started']
-- ['configuartion.md', 'Configuration']
+- Getting Started: 'index.md'
+- Configuration: 'configuration.md'
