@@ -6,5 +6,15 @@ pages:
 - Introduction to Truffle: 'index.md'
 - Getting Started:
   - Your first project: 'getting_started/firstproject.md'
+  - Choosing an Ethereum client: 'getting_started/client.md'
+  - Compiling your contracts: 'getting_started/compile.md'
+  - Deploying to the network: 'getting_started/deploy.md'
+  - Building your frontend: 'getting_started/build.md'
+  - Writing tests: 'getting_started/tests.md'
+  - Interacting with your contracts: 'getting_started/contracts.md'
 - Advanced:
-  - Configuration: 'configuration.md'
+  - Configuration: 'advanced/configuration.md'
+  - Custom build processes:
+    - Overview: 'advanced/build/overview.md'
+    - Using Webpack: 'advanced/build/webpack.md'
+  - Command Reference: 'advanced/commands.md'
