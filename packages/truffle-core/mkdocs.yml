@@ -13,11 +13,12 @@ pages:
   - Compiling contracts: 'getting_started/compile.md'
   - Deploying to the network: 'getting_started/deploy.md'
   - Building your frontend: 'getting_started/build.md'
-  - Writing tests: 'getting_started/tests.md'
+  - Testing your contracts: 'getting_started/testing.md'
   - Interacting with your contracts: 'getting_started/contracts.md'
 - Advanced:
   - Configuration: 'advanced/configuration.md'
   - Environments: 'advanced/environments.md'
   - Deployment Options: 'advanced/deployment_options.md'
   - Build Processes: 'advanced/build_processes.md'
+  - Testing: 'advanced/testing.md'
   - Command Reference: 'advanced/commands.md'

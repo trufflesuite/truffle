@@ -4,7 +4,7 @@ There are many Ethereum clients to choose from. We recommend using different cli
 
 * EthereumJS TestRPC: [https://github.com/ethereumjs/testrpc](https://github.com/ethereumjs/testrpc)
 
-When developing your Truffle-based application, we recommend using the [EthereumJS TestRPC](https://github.com/ethereumjs/testrpc). It's a complete blockchain-in-memory that runs only on your development machine. It processes transactions instantly instead of waiting for the default block time -- so you can test your code works quickly -- and it tells you immediately when your smart contracts run into errors. It also makes a great client for automated testing, and Truffle knows how to use its special features to speed up tests by nearly 50%.
+When developing your Truffle-based application, we recommend using the [EthereumJS TestRPC](https://github.com/ethereumjs/testrpc). It's a complete blockchain-in-memory that runs only on your development machine. It processes transactions instantly instead of waiting for the default block time -- so you can test that your code works quickly -- and it tells you immediately when your smart contracts run into errors. It also makes a great client for automated testing, and Truffle knows how to use its special features to speed up test runtime by almost 90%.
 
 # When Deploying
 
