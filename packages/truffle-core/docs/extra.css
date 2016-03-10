@@ -8,6 +8,18 @@ img[alt="logo"] {
 
 code.hljs {
   padding: 0.6em;
-  font-size: 0.8em;
+  font-size: 0.9em;
   line-height: 1.5em;
+}
+
+li {
+  font-size: 16px;
+}
+
+.wy-side-nav-search {
+  background-color: #2BBFA7;
+}
+
+.wy-side-nav-search input[type=text] {
+  border-color: #1E8776;
 }
