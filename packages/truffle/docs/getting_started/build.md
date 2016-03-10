@@ -10,7 +10,7 @@ The default builder comes with a few standard niceties meant to get you started 
 * Inclusion of recommended dependencies, including [bluebird](http://bluebirdjs.com/docs/getting-started.html) Promises, [web3](https://github.com/ethereum/web3.js/tree/master), and [Ether Pudding](https://github.com/ConsenSys/ether-pudding).
 * Support for ES6 and JSX built-in.
 * SASS support for manageable CSS.
-* And UglifyJS support for creating minified versions of your Javascript assets
+* And UglifyJS support for creating minified versions of your Javascript assets.
 
 # Configuration
 
@@ -26,7 +26,7 @@ app/
 - index.html
 ```
 
-It's corresponding configuration within `truffle.js` looks very similar:
+It's corresponding configuration within your [project configuration](/advanced/configuration) looks very similar:
 
 ```javascript
 {
@@ -56,7 +56,7 @@ This configuration describes "targets" (left hand side) with files, folders and 
 
 You can change this configuration and directory structure at any time. You aren't required to have a `javascripts` and `stylesheets` directory, for example, but make sure you edit your configuration accordingly.
 
-**Special note:** If you want the default builder to boostrap your application on the frontend, make sure you have a build target called `app.js` which the default builder can append code to. It will not bootstrap Javascript with any other filename.
+**Special note:** If you want the default builder to boostrap your application on the frontend, make sure you have a build target called `app.js` which the default builder can append code to. It will not bootstrap your application with any other filename.
 
 # Command
 
@@ -74,7 +74,7 @@ Your build artifacts are saved within your environment. The default environment 
 
 The default builder is easy to use for most projects, and allows you to quickly get started. However, it has some drawbacks:
 
-* It doesn't currently support `import`, `require`, etc., provided to you by tools like Browserify, Webpack, and CommonJS, making dependencies management harder than it should be.
+* It doesn't currently support `import`, `require`, etc., provided to you by tools like Browserify, Webpack, and CommonJS, making dependency management harder than it should be.
 * It's a custom build system, and doesn't easily integrate with other popular build systems.
 * It is extensible, but again, using custom methods and APIs.
 
