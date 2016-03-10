@@ -35,6 +35,10 @@ contract('MetaCoin', function(accounts) {
 
 Note that the string `'MetaCoin'` passed to the `contract()` function is for display purposes only.
 
+# Contracts
+
+Truffle provides a contract abstraction for you that makes interacting with your contracts easy. You can see this abstraction at work within the `var meta = MetaCoin.deployed()` line of code. Truffle ensures that interacting with contracts within your tests is the same as interacting with contracts within your frontend, and you can read more about [that interaction](/getting_started/contracts) in the next section.
+
 # Command
 
 To run all tests, simply run:
