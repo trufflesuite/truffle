@@ -12,6 +12,10 @@ code.hljs {
   line-height: 1.5em;
 }
 
+pre.indented {
+  font-size: 0.9em;
+}
+
 li {
   font-size: 16px;
 }
