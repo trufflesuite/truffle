@@ -74,3 +74,7 @@ To deploy to the [Morden testnet](https://github.com/ethereum/wiki/wiki/Morden),
 ```
 $ truffle deploy -e morden
 ```
+
+# Repository Considerations
+
+We recommend you do not commit the contents of the `./environments/development` directory to your repository as it contains build artifacts specific to the developer who generated them. However, we highly recommend you commit the contents of the `production` environment -- and any other environment where you're maintaining a deployment, like `staging` -- in order to keep those artifacts managed in one place.
