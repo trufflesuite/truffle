@@ -61,4 +61,4 @@ The [EthereumJS TestRPC](https://github.com/ethereumjs/testrpc) is significantly
 
 # Advanced
 
-Truffle gives you access to Mocha's configuration so you can change how Mocha behaves. See the [advanced testing](/advanced/testing) section for more details.
+Truffle gives you access to Mocha's configuration so you can change how Mocha behaves. See the [project configuration](/advanced/configuration/#mocha) section for more details.
