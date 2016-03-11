@@ -269,7 +269,7 @@ registerTask('test', "Run tests", function(done) {
 
 registerTask('console', "Run a console with deployed contracts instantiated and available (REPL)", function(done) {
   var config = Truffle.config.gather(truffle_dir, working_dir, argv, "development");
-  Repl.run(config, done);
+  Truffle.console.run(config, done);
 });
 
 registerTask('serve', "Serve app on localhost and rebuild changes as needed", function(done) {
