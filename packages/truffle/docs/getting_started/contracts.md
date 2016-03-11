@@ -57,7 +57,7 @@ contract MetaCoin {
 }
 ```
 
-This contract has three methods (`sendCoin`, `getBalanceInEth`, and `getBalance`), one storage variable (the mapping `balances`), and a constructor function (`MetaCoin()`). All three methods can be executed as either a transaction or a call.
+This contract has three methods aside from the constructor (`sendCoin`, `getBalanceInEth`, and `getBalance`). All three methods can be executed as either a transaction or a call.
 
 Now let's look at the Javascript object called `MetaCoin` provided for us by Truffle and Ether Pudding, made available within our frontend:
 
@@ -75,17 +75,17 @@ console.log(MetaCoin.deployed());
 // - sendCoin: ()
 ```
 
-Notice that the contract abstraction contains the exact same functions that exist within our contract. It also contains an address which points to the deployed version of the MetaCoin contract.
+Notice that the abstraction contains the exact same functions that exist within our contract. It also contains an address which points to the deployed version of the MetaCoin contract.
 
 ### Executing Contract Functions
 
-Using the abstraction you can easily call functions that talk to the Ethereum network.
+Using the abstraction you can easily execute contract functions on the Ethereum network.
 
 ##### Making a Transaction
 
-There are three functions on the MetaCoin contract that we can call. If you analyze each of them, you'll see that `sendCoin` is the only function that aims to make changes to the network. The goal of `sendCoin` is to "send" some Meta coins from one account to the next. These account changes need to persist.
+There are three functions on the MetaCoin contract that we can execute. If you analyze each of them, you'll see that `sendCoin` is the only function that aims to make changes to the network. The goal of `sendCoin` is to "send" some Meta coins from one account to the next, and these changes should persist.
 
-When calling `sendCoin`, we'll execute that function as a transaction. In the following example, we'll send 10 Meta coin from one account to another, and have that transaction persist on the network:
+When calling `sendCoin`, we'll execute it as a transaction. In the following example, we'll send 10 Meta coin from one account to another, in a way that persists changes on the network:
 
 ```javascript
 var account_one = "0x1234..."; // an address
@@ -102,11 +102,11 @@ meta.sendCoin(account_two, 10, {from: account_one}).then(function(tx_id) {
 })
 ```
 
-Note that there are a few things interesting about the code above.
+There are a few things interesting about the above code:
 
-* We called the `sendCoin` function directly. This will result in a transaction by default (i.e, writing data) instead of call.
-* The callback function on success isn't fired until the transaction is processed. This makes life easy and means you don't have to check the status of the transaction yourself.
-* We passed an object as the third parameter. Note that the `sendCoin` function in the Solidity contract doesn't have a third parameter. What you see above is a special object that can always be passed as the last parameter letting us edit specific details about the transaction. Here, we set the `from` address ensuring this transaction came from `account_one`.
+* We called the abstraction's `sendCoin` function directly. This will result in a transaction by default (i.e, writing data) instead of call.
+* When the transaction is successful, the callback function isn't fired until the transaction is processed. This makes life easy and means you don't have to check the status of the transaction yourself.
+* We passed an object as the third parameter to `sendCoin`. Note that the `sendCoin` function in our Solidity contract doesn't have a third parameter. What you see above is a special object that can always be passed as the last parameter to a function that lets you edit specific details about the transaction. Here, we set the `from` address ensuring this transaction came from `account_one`.
 
 
 ##### Making a Call
@@ -130,9 +130,9 @@ meta.getBalance.call(account_one, {from: account_one}).then(function(balance) {
 What's interesting here:
 
 * We had to execute the `.call()` function explicitly to let the Ethereum network know we're not intending to persist any changes.
-* We received a return value instead of a transaction id. Note that since the Etheruem network can handle very large numbers, we're given a [BigNumber](https://github.com/MikeMcl/bignumber.js/) object which we then convert to a number.
+* We received a return value instead of a transaction id on success. Note that since the Etheruem network can handle very large numbers, we're given a [BigNumber](https://github.com/MikeMcl/bignumber.js/) object which we then convert to a number.
 
-**Warning:** We convert the return value to a number because in our case the numbers are small. However, if you try to convert a BigNumber that's larger than the largest integer supported by Javascript, you'll likely run into errors or unexpected behavior.
+**Warning:** We convert the return value to a number because in this example the numbers are small. However, if you try to convert a BigNumber that's larger than the largest integer supported by Javascript, you'll likely run into errors or unexpected behavior.
 
 
 ### Method: deployed()
