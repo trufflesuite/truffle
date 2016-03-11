@@ -15,6 +15,8 @@ pages:
   - Building your frontend: 'getting_started/build.md'
   - Testing your contracts: 'getting_started/testing.md'
   - Interacting with your contracts: 'getting_started/contracts.md'
+  - Using the console: 'getting_started/console.md'
+  - Writing external scripts: 'getting_started/scripts.md'
 - Advanced:
   - Configuration: 'advanced/configuration.md'
   - Environments: 'advanced/environments.md'
