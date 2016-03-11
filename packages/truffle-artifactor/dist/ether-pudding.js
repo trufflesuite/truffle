@@ -68,6 +68,7 @@ var Pudding =
 	      this[fn.name].call = this.constructor.promisifyFunction(this.contract[fn.name].call);
 	      this[fn.name].sendTransaction = this.constructor.promisifyFunction(this.contract[fn.name].sendTransaction);
 	      this[fn.name].request = this.contract[fn.name].request;
+	      this[fn.name].estimateGas = this.constructor.promisifyFunction(this.contract[fn.name].estimateGas);
 	    }
 
 	    if (fn.type == "event") {
@@ -373,7 +374,7 @@ var Pudding =
 
 	module.exports = {
 		"name": "ether-pudding",
-		"version": "2.0.5",
+		"version": "2.0.6",
 		"description": "Pudding - a (more) delightful Ethereum contract abstraction",
 		"author": "Tim Coulter",
 		"main": "./index.js",
