@@ -40,7 +40,7 @@
 
   Contract.at = function() {
     if (Contract.Pudding == null) {
-      throw new Error("{{NAME}} error: lease call load() first before calling at().");
+      throw new Error("{{NAME}} error: Please call load() first before calling at().");
     }
 
     return Contract.Pudding.at.apply(Contract, arguments);
