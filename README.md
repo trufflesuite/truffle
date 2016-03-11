@@ -255,7 +255,7 @@ var myCoin = MyCoin.deployed();
 
 ### Testing Contracts
 
-Truffle standardizes on [Mocha](http://mochajs.org/) for running tests and [Chai](http://chaijs.com/) for assertions. By default, Truffle uses the `assert` style of assertions provided by Chai, but you’re not prevented from using other styles. An example test for a coin-like contract looks like this: 
+Truffle standardizes on [Mocha](http://mochajs.org/) for running tests and [Chai](http://chaijs.com/) for assertions. By default, Truffle uses the `assert` style of assertions provided by Chai, but you’re not prevented from using other styles. Note that as tests use Pudding, [contract function calls will block until the tx is processed and mined in a block](https://github.com/ConsenSys/ether-pudding#interacting-with-your-contracts). An example test for a coin-like contract looks like this: 
 
 ```javascript
 contract('MyCoin', function(accounts) {
@@ -263,6 +263,7 @@ contract('MyCoin', function(accounts) {
   it("should give me 20000 coins on contract creation", function(done) { 
     var coin = MyCoin.deployed();
     coin.balances.call().then(function(my_balance) {
+      // this code will be executed after the tx is processed and included in mined block
       assert.isTrue(20000, my_balance, "I was not given 20000 on contract creation!");
       done();
     }).catch(done);
