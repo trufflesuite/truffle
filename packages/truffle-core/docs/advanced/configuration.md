@@ -95,6 +95,18 @@ rpc: {
 }
 ```
 
-# Environments
+### mocha
+
+Configuration options for the [MochaJS](http://mochajs.org/) testing framework. This configuration expects an object as detailed in Mocha's [documentation](https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically#set-options).
+
+**Example:**
+
+```javascript
+mocha: {
+  useColors: true
+}
+```
+
+# Considerations
 
 You can override any of the settings specified in `truffle.js` for each of your environments. See more details in the [environments](/advanced/getting_started) section.
