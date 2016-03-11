@@ -17,10 +17,10 @@ pages:
   - Interacting with your contracts: 'getting_started/contracts.md'
   - Using the console: 'getting_started/console.md'
   - Writing external scripts: 'getting_started/scripts.md'
+  - Recommended workflow: 'getting_started/workflow.md'
 - Advanced:
   - Configuration: 'advanced/configuration.md'
   - Environments: 'advanced/environments.md'
   - Deployment Options: 'advanced/deployment_options.md'
   - Build Processes: 'advanced/build_processes.md'
-  - Testing: 'advanced/testing.md'
   - Command Reference: 'advanced/commands.md'
