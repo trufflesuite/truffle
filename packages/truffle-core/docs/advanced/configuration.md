@@ -27,7 +27,7 @@ module.exports = {
 };
 ```
 
-The default configuration ships with three options specified: `build`, `deploy`, and `rpc`. These options as well as non-default options are detailed below:
+The default configuration ships with three options specified: `build`, `deploy`, and `rpc`. These options as well as non-default options are detailed below.
 
 # Options
 
@@ -94,3 +94,7 @@ rpc: {
   port: 8545
 }
 ```
+
+# Environments
+
+You can override any of the settings specified in `truffle.js` for each of your environments. See more details in the [environments](/advanced/getting_started) section.
