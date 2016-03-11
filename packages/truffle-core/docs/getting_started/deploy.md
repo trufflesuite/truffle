@@ -23,4 +23,4 @@ Though this deployment support is narrow, we believe it requires you to think cl
 
 # Custom Deployment
 
-You can extend Truffle's deployment capabilities if you have custom deployment requirements or you'd like to run a script after every deploy. See the [advanced deployment configuration](/advanced/deployment_options) section for more details.
+You can extend Truffle's deployment capabilities if you have custom deployment requirements or you'd like to run a script after every deploy. See the [after_deploy](/advanced/configuration/#after_deploy) configuration option for more details.
