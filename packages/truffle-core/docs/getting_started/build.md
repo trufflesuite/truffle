@@ -56,7 +56,7 @@ This configuration describes "targets" (left hand side) with files, folders and 
 
 You can change this configuration and directory structure at any time. You aren't required to have a `javascripts` and `stylesheets` directory, for example, but make sure you edit your configuration accordingly.
 
-**Special note:** If you want the default builder to boostrap your application on the frontend, make sure you have a build target called `app.js` which the default builder can append code to. It will not bootstrap your application with any other filename.
+**Special note:** If you want the default builder to bootstrap your application on the frontend, make sure you have a build target called `app.js` which the default builder can append code to. It will not bootstrap your application with any other filename.
 
 # Command
 
