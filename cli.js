@@ -260,10 +260,14 @@ registerTask('test', "Run tests", function(done) {
     file = argv._[1];
   }
 
+  var finished = function(err, failures) {
+    process.exit(failures);
+  };
+
   if (file == null) {
-    Truffle.test.run(config, done);
+    Truffle.test.run(config, finished);
   } else {
-    Truffle.test.run(config, file, done);
+    Truffle.test.run(config, file, finished);
   }
 });
 
