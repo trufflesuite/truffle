@@ -155,13 +155,15 @@ var Contracts = {
         errors = errors.filter(function(error) {
           return error.indexOf("Warning:") < 0;
         });
-        warnings = result.errors.filter(function(error) {
+        warnings = warnings.filter(function(error) {
           return error.indexOf("Warning:") >= 0;
         });
 
-        warnings.forEach(function(warning) {
-          console.log(warning);
-        });
+        if (config.argv.quietDeploy == null) {
+          warnings.forEach(function(warning) {
+            console.log(warning);
+          });
+        }
       }
 
       if (errors.length > 0) {
