@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+require("babel-register");
+
 var web3 = require("web3");
 var path = require("path");
 var fs = require("fs");
