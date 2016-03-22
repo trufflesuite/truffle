@@ -43,8 +43,7 @@ var printFailure = function() {
 var runTask = function(name) {
   try {
     var fn = deasync(tasks[name].fn);
-    fn();
-    return 0;
+    return fn() || 0;
   } catch (e) {
     if (e instanceof ExtendableError) {
       console.log(e.message);
@@ -262,14 +261,10 @@ registerTask('test', "Run tests", function(done) {
     file = argv._[1];
   }
 
-  var finished = function(err, failures) {
-    process.exit(failures);
-  };
-
   if (file == null) {
-    Truffle.test.run(config, finished);
+    Truffle.test.run(config, done);
   } else {
-    Truffle.test.run(config, file, finished);
+    Truffle.test.run(config, file, done);
   }
 });
 
