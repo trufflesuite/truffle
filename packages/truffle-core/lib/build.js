@@ -7,6 +7,7 @@ var DefaultBuilder = require("truffle-default-builder");
 var PuddingLoader = require("ether-pudding/loader");
 var BuildError = require("./errors/builderror");
 var child_process = require("child_process");
+var spawnargs = require("spawn-args");
 var _ = require("lodash");
 
 function CommandBuilder(command) {
@@ -16,7 +17,10 @@ function CommandBuilder(command) {
 CommandBuilder.prototype.build = function(options, callback) {
   console.log("Running `" + this.command + "`...")
 
-  var cmd = child_process.spawn(this.command, {
+  var args = spawnargs(this.command);
+  var ps = args.shift();
+
+  var cmd = child_process.spawn(ps, args, {
     detached: false,
     cwd: options.working_directory,
     env: _.merge(process.env, {
