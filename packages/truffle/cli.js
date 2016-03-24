@@ -33,11 +33,11 @@ var registerTask = function(name, description, fn) {
 }
 
 var printSuccess = function() {
-  console.log(colors.green(`Completed without errors on ${new Date().toString()}`));
+  console.log(colors.green("Completed without errors on " + new Date().toString()));
 };
 
 var printFailure = function() {
-  console.log(colors.red(`Completed with errors on ${new Date().toString()}`));
+  console.log(colors.red("Completed with errors on " + new Date().toString()));
 };
 
 var runTask = function(name) {
@@ -71,7 +71,7 @@ registerTask('watch', "Watch filesystem for changes and rebuild the project auto
   }).on('all', function(event, filePath) {
     // On changed/added/deleted
     var display_path = path.join("./", filePath.replace(working_dir, ""));
-    console.log(colors.cyan(`>> File ${display_path} changed.`));
+    console.log(colors.cyan(">> File " + display_path + " changed."));
 
     needs_rebuild = true;
 
@@ -156,7 +156,7 @@ registerTask('create:contract', "Create a basic contract", function(done) {
   if (name == null) {
     throw new ConfigurationError("Please specify a name. Example: truffle create:contract MyContract");
   } else {
-    Create.contract(config, name, done);
+    Truffle.create.contract(config, name, done);
   }
 });
 
@@ -172,7 +172,7 @@ registerTask('create:test', "Create a basic test", function(done) {
   if (name == null) {
     throw new ConfigurationError("Please specify a name. Example: truffle create:test MyTest");
   } else {
-    Create.test(config, name, done);
+    Truffle.create.test(config, name, done);
   }
 });
 
@@ -295,7 +295,7 @@ registerTask('serve', "Serve app on localhost and rebuild changes as needed", fu
 //       }
 //       process.stdout.write("\u001b[2J\u001b[0;0H"); // clear screen
 //       var display_path = "./" + filePath.replace(working_dir, "");
-//       console.log(colors.cyan(`>> File ${display_path} changed.`));
+//       console.log(colors.cyan(">> File " + display_path + " changed."));
 //       run_tests();
 //     });
 //   });
