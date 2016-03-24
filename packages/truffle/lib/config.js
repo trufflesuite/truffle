@@ -22,6 +22,8 @@ var Config = {
       web3: new Web3(),
       environments: {
         directory: path.join(working_dir, "environments"),
+        configfilename: "config.js",
+        oldconfigfilename: "config.json",
         available: {},
         current: {}
       },
@@ -115,7 +117,8 @@ var Config = {
 
         config.environment = desired_environment;
         config.environments.current.directory = environment_directory;
-        config.environments.current.filename = path.join(environment_directory, "config.json");
+        config.environments.current.filename = path.join(environment_directory, config.environments.configfilename);
+        config.environments.current.oldfilename = path.join(environment_directory, config.environments.oldconfigfilename);
 
         break;
       }
@@ -147,9 +150,11 @@ var Config = {
       return objValue != null ? objValue : srcValue;
     });
 
-    // Now overwrite any values from the environment config.
+    // Load environment config
     if (fs.existsSync(config.environments.current.filename)) {
-      config.app.resolved = loadconf(config.environments.current.filename, config.app.resolved);
+      _.merge(config.app.resolved, config.requireNoCache(config.environments.current.filename));
+    } else if (fs.existsSync(config.environments.current.oldfilename)) {
+      config.app.resolved = loadconf(config.environments.current.oldfilename, config.app.resolved);
     }
 
     if (fs.existsSync(config.environments.current.directory)) {
