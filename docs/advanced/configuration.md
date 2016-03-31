@@ -109,4 +109,4 @@ mocha: {
 
 # Considerations
 
-You can override any of the settings specified in `truffle.js` for each of your environments. See more details in the [environments](/advanced/getting_started) section.
+You can override any of the settings specified in `truffle.js` for each of your environments. See more details in the [environments](/advanced/environments) section.
