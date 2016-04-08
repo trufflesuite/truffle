@@ -51,7 +51,7 @@ var Contracts = {
     }, callback);
   },
 
-  compile_necessary(config, callback) {
+  compile_necessary: function(config, callback) {
     var self = this;
     this.update_sources(config, function() {
       var contract_names = Object.keys(config.contracts.classes);
@@ -200,7 +200,7 @@ var Contracts = {
     });
   },
 
-  compile(config, callback) {
+  compile: function(config, callback) {
     var self = this;
     async.series([
       function(c) {
@@ -212,7 +212,7 @@ var Contracts = {
     ], callback);
   },
 
-  createContractAndWait(config, contract_name) {
+  createContractAndWait: function(config, contract_name) {
     var self = this;
 
     var tx = {
@@ -252,7 +252,7 @@ var Contracts = {
     });
   },
 
-  build_compile_dependency_graph(config, errorCallback) {
+  build_compile_dependency_graph: function(config, errorCallback) {
     if (config.argv.quietDeploy == null) {
       console.log("Checking sources...");
     }
@@ -301,7 +301,7 @@ var Contracts = {
     return dependsGraph;
   },
 
-  build_deploy_dependency_graph(config, errorCallback) {
+  build_deploy_dependency_graph: function(config, errorCallback) {
     if (config.argv.quietDeploy == null) {
       console.log("Collecting dependencies...");
     }
@@ -350,7 +350,7 @@ var Contracts = {
     return dependsGraph;
   },
 
-  link_dependencies(config, contract_name) {
+  link_dependencies: function(config, contract_name) {
     var self = this;
     return function(dependency_addresses) {
       var contract = config.contracts.classes[contract_name];
@@ -371,7 +371,7 @@ var Contracts = {
     }
   },
 
-  deploy(config, compile, done_deploying) {
+  deploy: function(config, compile, done_deploying) {
     var self = this;
 
     if (typeof compile == "function") {
@@ -473,7 +473,7 @@ var Contracts = {
     });
   },
 
-  after_deploy(config, done) {
+  after_deploy: function(config, done) {
     async.eachSeries(config.app.resolved.after_deploy, function(file, iterator_callback) {
       if (config.argv.quietDeploy == null) {
         console.log("Running post deploy script " + file + "...");
@@ -482,7 +482,7 @@ var Contracts = {
     }, done);
   },
 
-  write_contracts(config, description, callback) {
+  write_contracts: function(config, description, callback) {
     var destination = config.contracts.build_directory;
 
     description = description || "contracts";

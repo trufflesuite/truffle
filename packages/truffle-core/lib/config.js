@@ -13,7 +13,7 @@ var Pudding = require("ether-pudding");
 var PuddingLoader = require("ether-pudding/loader");
 
 var Config = {
-  gather(truffle_dir, working_dir, argv, desired_environment) {
+  gather: function(truffle_dir, working_dir, argv, desired_environment) {
     var config = {};
     config = _.merge(config, {
       argv: argv,
