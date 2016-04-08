@@ -9,7 +9,7 @@ var PuddingLoader = require("ether-pudding/loader");
 var _ = require("lodash");
 
 var Exec = {
-  file(config, file, done) {
+  file: function(config, file, done) {
     var self = this;
 
     if (path.isAbsolute(file) == false) {

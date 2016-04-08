@@ -1,7 +1,7 @@
 var fs = require("fs");
 
 var File = {
-  duplicate(path, destination, callback) {
+  duplicate: function(path, destination, callback) {
     fs.readFile(path, {encoding: "utf8"}, function(err, data) {
       if (err != null) {
         callback(err);
@@ -11,7 +11,7 @@ var File = {
       fs.writeFile(destination, data, {encoding: "utf8"}, callback);
     });
   },
-  process(path, processfn, callback) {
+  process: function(path, processfn, callback) {
     fs.readFile(path, {encoding: "utf8"}, function(err, data) {
       if (err != null) {
         callback(err);
@@ -22,7 +22,7 @@ var File = {
       fs.writeFile(path, result, {encoding: "utf8"}, callback);
     });
   },
-  replace(path, find, replace, callback) {
+  replace: function(path, find, replace, callback) {
     File.process(path, function(data) {
       if (typeof find == "string") {
         find = new RegExp(find, "g");
