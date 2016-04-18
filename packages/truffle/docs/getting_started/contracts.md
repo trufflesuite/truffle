@@ -34,28 +34,28 @@ In order to appreciate the usefulness of a contract abstraction, we first need a
 import "ConvertLib.sol";
 
 contract MetaCoin {
-  mapping (address => uint) balances;
+	event Transfer(address indexed _from, address indexed _to, uint256 _value);
 
-  function MetaCoin() {
-  	balances[tx.origin] = 10000;
-  }
+	mapping (address => uint) balances;
 
-  function sendCoin(address receiver, uint amount) returns(bool sufficient) {
-  	if (balances[msg.sender] < amount) return false;
-  	balances[msg.sender] -= amount;
-  	balances[receiver] += amount;
-  	return true;
-  }
+	function MetaCoin() {
+		balances[tx.origin] = 10000;
+	}
 
-  function getBalanceInEth(address addr) returns(uint){
-  	return ConvertLib.convert(getBalance(addr),2);
-  }
-
-  function getBalance(address addr) returns(uint) {
-  	return balances[addr];
-  }
-}
-```
+	function sendCoin(address receiver, uint amount) returns(bool sufficient) {
+		if (balances[msg.sender] < amount) return false;
+		balances[msg.sender] -= amount;
+		balances[receiver] += amount;
+		Transfer(msg.sender, receiver, amount);
+		return true;
+	}
+	function getBalanceInEth(address addr) returns(uint){
+		return ConvertLib.convert(getBalance(addr),2);
+	}
+	function getBalance(address addr) returns(uint) {
+		return balances[addr];
+	}
+}```
 
 This contract has three methods aside from the constructor (`sendCoin`, `getBalanceInEth`, and `getBalance`). All three methods can be executed as either a transaction or a call.
 
@@ -134,6 +134,21 @@ What's interesting here:
 
 **Warning:** We convert the return value to a number because in this example the numbers are small. However, if you try to convert a BigNumber that's larger than the largest integer supported by Javascript, you'll likely run into errors or unexpected behavior.
 
+
+##### Catching events
+There is a mechanism to detect successful transfers, using events.
+
+
+```javascript
+var events = meta.Transfer({fromBlock: web3.eth.blockNumber, toBlock: 'latest'});
+events.watch(function(error, result) {
+  // This will catch all Transfer events, regardless of how the originated.
+  // If we only care about specific events, check result.args._from and result.args._to.
+  if (error == null) {
+    console.log(result.args);
+  }
+}
+```
 
 ### Method: deployed()
 
