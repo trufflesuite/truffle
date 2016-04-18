@@ -21,7 +21,8 @@ contract MetaCoin {
 	function getBalanceInEth(address addr) returns(uint){
 		return ConvertLib.convert(getBalance(addr),2);
 	}
-  	function getBalance(address addr) returns(uint) {
-    	return balances[addr];
-  	}
+	function getBalance(address addr) returns(uint) {
+		return balances[addr];
+	}
+	event Approval(address indexed _owner, address indexed _spender, uint256 _value);
 }
