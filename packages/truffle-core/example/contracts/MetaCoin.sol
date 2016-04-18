@@ -6,6 +6,8 @@ import "ConvertLib.sol";
 // token, see: https://github.com/ConsenSys/Tokens. Cheers!
 
 contract MetaCoin {
+	event Transfer(address indexed _from, address indexed _to, uint256 _value);
+
 	mapping (address => uint) balances;
 
 	function MetaCoin() {
@@ -16,6 +18,7 @@ contract MetaCoin {
 		if (balances[msg.sender] < amount) return false;
 		balances[msg.sender] -= amount;
 		balances[receiver] += amount;
+		Transfer(msg.sender, receiver, amount);
 		return true;
 	}
 	function getBalanceInEth(address addr) returns(uint){
@@ -24,5 +27,4 @@ contract MetaCoin {
 	function getBalance(address addr) returns(uint) {
 		return balances[addr];
 	}
-	event Approval(address indexed _owner, address indexed _spender, uint256 _value);
 }
