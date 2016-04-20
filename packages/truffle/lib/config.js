@@ -11,6 +11,7 @@ var Exec = require("./exec");
 var ConfigurationError = require('./errors/configurationerror');
 var Pudding = require("ether-pudding");
 var PuddingLoader = require("ether-pudding/loader");
+var requireNoCache = require("./require-nocache");
 
 var Config = {
   gather: function(truffle_dir, working_dir, argv, desired_environment) {
@@ -94,12 +95,6 @@ var Config = {
       process.exit();
     }
 
-    config.requireNoCache = function(filePath) {
-      //console.log("Requring w/o cache: " + path.resolve(filePath));
-    	delete require.cache[path.resolve(filePath)];
-    	return require(filePath);
-    };
-
     desired_environment = argv.e || argv.environment || process.env.NODE_ENV || desired_environment;
 
     if (desired_environment) {
@@ -140,7 +135,7 @@ var Config = {
     // Load the app config.
     // For now, support both new and old config files.
     if (fs.existsSync(config.app.configfile)) {
-      _.merge(config.app.resolved, config.requireNoCache(config.app.configfile));
+      _.merge(config.app.resolved, requireNoCache(config.app.configfile));
     } else if (fs.existsSync(config.app.oldconfigfile)) {
       config.app.resolved = loadconf(config.app.oldconfigfile, config.app.resolved);
     }
@@ -152,7 +147,7 @@ var Config = {
 
     // Load environment config
     if (fs.existsSync(config.environments.current.filename)) {
-      _.merge(config.app.resolved, config.requireNoCache(config.environments.current.filename));
+      _.merge(config.app.resolved, requireNoCache(config.environments.current.filename));
     } else if (fs.existsSync(config.environments.current.oldfilename)) {
       config.app.resolved = loadconf(config.environments.current.oldfilename, config.app.resolved);
     }
