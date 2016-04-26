@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-require("babel-register");
+require("babel-register")
+require("babel-polyfill")
 
 var web3 = require("web3");
 var path = require("path");
