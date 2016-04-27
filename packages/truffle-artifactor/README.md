@@ -57,10 +57,6 @@ var contracts = {
 Pudding.save(contracts, destination);
 ```
 
-```
-npm install ether-pudding
-```
-
 ### Using `.sol.js` Files
 
 Once a `.sol.js` has been created, using it is easy. These abstractions use Web3 under the hood, and so will need a provider set just like Web3: 
