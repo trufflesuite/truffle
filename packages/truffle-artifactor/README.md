@@ -1,156 +1,79 @@
-**UPGRADE WARNING:** When upgrading to `ether-pudding` v2.x from v1.x, make sure to upgrade any saved `.sol.js` files, especially those in production. [More details here.](https://github.com/ConsenSys/ether-pudding/wiki/Upgrading-from-1.x-to-2.x)
+> _“It's not improbable that a man may receive more solid satisfaction from pudding while he is alive than from praise after he is dead”_
 
------------------------------
+-- Chinese Proverb 
 
-# The Proof is in the Pudding
+### Ether Pudding
 
-Ether Pudding (or just “Pudding”) is an extension of [web3’s](https://github.com/ethereum/web3.js/tree/master) contract abstraction that makes life as a Dapp developer a whole lot easier. With Pudding, you can cleanly write distributed Ethereum applications with less hassle and more reliability, as your app's changes to the blockchain are synchronized so you can easily manage control flow.
+Ether Pudding (or just “Pudding”) is a packager and build artifact manager for Ethereum and Javascript. It turns ABIs, binaries, deployed addresses, etc. into Javascript files you can include in your project with simply a `require`. 
 
-Pudding is intended to be used both within Node and within a browser. Although it’s very little code, it packs a whole lot of punch.  
+### Features
 
-### Reasons to Use Pudding (short list)
-* Transactions can be synchronized with the network, so your app/tests won’t receive thier callbacks until the transactions have been processed -- a big win. (See [this example](https://github.com/ConsenSys/ether-pudding/wiki/When-not-to-use-synchronized-transactions,-and-how-to-do-it) for when not to used network-synchronized transactions.)
-* Contract functions are “promisified” using bluebird. This makes sequential calls and transactions easier to write.
-* Transaction defaults (like a default “from” address) are DRY. You can specify defaults for an individual instance of a contract, for all instances derived from a contract class, or across all Pudding contracts. This makes your code DRY, too.
-* With all of the above, developing on Ethereum gets a whole lot easier.    
+* Managing contract ABIs, binaries and deployed addresses, so you don't have to.
+* Packaging up build artifacts into `.sol.js` files, which can then be included in your project with a simple `require`.
+* Including multiple versions of the same contract in a single package, automatically detecting which artifacts to use based on the network version (more on this below). 
+
+See the following API discussion for more features.
+
+### API Discussion
+
+We can't go on without noting that Pudding was originally created to be an easier-to-use contract abstraction for Web3. However, Web3 [plans to include a lot of Pudding's features](https://github.com/ethereum/EIPs/issues/68) (like promises) and so Pudding has pivoted to focus on package management. Pudding's original abstraction API still exists, but will be replaced with Web3's once the related EIP has been merged and published.
+
+Some of the features Pudding provides over the current abstraction:
+
+* Synchronized transactions, so your app/tests won’t receive thier callbacks until the transactions have been processed.
+* Promises. No more callback hell.
+* Default values for transactions, like `from` address or `gas`.
 
 ### Install
 
-**Node**
+```
+$ npm install ether-pudding
+```
+
+### Usage
+
+Pudding consists of two parts: The code generator that generates your `.sol.js` files, and then the `.sol.js` files themselves.
+
+#### Generator
+
+Generate `.sol.js` files given a contract name and contract data, structured as an object. This will save a `.sol.js` file into the destination directory for each contract specified. 
+
+```
+var Pudding = require("ether-pudding");
+var destination = "/path/to/destination/directory";
+
+var contracts = {
+  "MyContract": {
+    abi: ...,              // Array; required.
+    binary: "...",         // String; optional.
+    unlinked_binary: "..." // String; optional. Defaults to binary.
+    address: "..."         // String; optional. 
+  },
+  "OtherContract": {
+    ...
+  }
+};
+
+Pudding.save(contracts, destination);
+```
 
 ```
 npm install ether-pudding
 ```
 
-**Browser**
+### Using `.sol.js` Files
+
+Once a `.sol.js` has been created, using it is easy. These abstractions use Web3 under the hood, and so will need a provider set just like Web3: 
 
 ```
-<script type="text/javascript" src="web3.js"></script>
-<script type="text/javascript" src="bluebird.js"></script>
-<script type="text/javascript" src="./build/ether-pudding.min.js"></script>
-```
+var provider = new Web3.providers.HttpProvider("http://localhost:8545");
 
-### Using Pudding: For Beginners
+var MyContract = require("./path/to/MyContract.sol.js");
+MyContract.setProvider(provider);
 
-Using Pudding in your app is very similar to using web3’s contract abstraction. So similar that you'll need the same information to get started:
-
-1. Your compiled contract's [ABI](https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI).
-2. Your compiled contract's binary.
-
-`solc` -- the Solidity compiler from [cpp-ethereum](https://github.com/ethereum/cpp-ethereum) -- can provide you with this information.
-
-Once you have those, you can whisk that together to make a Pudding class:
-
-```javascript
-var Web3 = require("web3");
-var web3 = new Web3();
-var Pudding = require("ether-pudding");
-Pudding.setWeb3(web3);
-
-// Set the provider, as you would normally. 
-web3.setProvider(new Web3.Providers.HttpProvider("http://localhost:8545"));
-
-var MyContract = Pudding.whisk({
-  abi: abi, 
-  binary: binary,
-  contract_name: "MyContract", // optional
-  address: "0xabcd...", // optional, needed for MyContract.deployed()
-});
 ```
 
 See [Interacting With Your Contracts](https://github.com/ConsenSys/ether-pudding#interacting-with-your-contracts) below for details on how to use the newly created `MyContract` object.
-
-### Using Pudding: Advanced 
-
-Often, having to manage your contract's ABIs and binaries is an arduous task, and passing around JSON doesn't fit well into most build environments. This is why Pudding ships with a Node-based generator and loader to make your life much easier.
-
-#### Using Pudding Contracts
-
-Files produced by the generator are called "Pudding contracts", and come packaged within a `.sol.js` file. All `.sol.js` files have an extra step in initialization before they can be used:
-
-```
-var Pudding = require("ether-pudding");
-var MyContract = require("./js/MyContract.sol.js");
-MyContract.load(Pudding);
-```
-
-You **must** call the `.load()` method on all Pudding contracts `require`'d into your project. This `.load()` method exists to ensure a single instance of Pudding is used throughout your Pudding contracts. `.load()` changes the contract object in place; once loaded, you can interact with the class like normal.
-
-#### Pudding Generator
-
-You can use Pudding's generator to save `.sol.js` files. Make sure you have a JSON object containing your contracts names, ABIs and binaries, and that `destination` is the directory you'd like them saved into.
-
-```
-var PuddingGenerator = require("ether-pudding/generator");
-var destination = "/path/to/destination/directory";
-
-var contracts = {
-  "MyContract": {
-    abi: ...,
-    binary: "...",
-    address: "..." // deployed address; optional
-  },
-  ...
-};
-
-PuddingGenerator.save(contracts, destination);
-```
-
-##### Alternative: `generate`
-
-If you'd rather generate the the Pudding contract source code without saving a file, you can do that per-contract using the `generate` method:
-
-```
-var PuddingGenerator = require("ether-pudding/generator");
-var source = PuddingGenerator.generate("MyContract", {
-  abi: abi,
-  binary: binary,
-  address: "0xabcd...", // optional
-});
-```
-
-Note that the `generate()` function needs to be called per-contract, whereas the `save()` method can be passed data for multiple contracts at once.
-
-#### Pudding Loader
-
-In conjunction with the generator, the Pudding Loader can be used to load multiple Pudding contracts into your project at once.
-
-Loading all `.sol.js` classes from a source directory:
-
-```
-var source = "/path/to/source/directory";
-var Pudding = require("ether-pudding");
-var PuddingLoader = require("ether-pudding/loader");
-Pudding.setWeb3(web3);
-PuddingLoader.load(source_directory, Pudding, global, function(error, names) {
-  // names represents all classes loaded to the
-  // (in this case) global scope. These contracts can
-  // now be used immediately. i.e.,
-  // 
-  // console.log(names[0]); // => "MyContract"
-  // MyContract.someFunction().then(...);
-});
-
-``` 
-
-You can also get the source code for all Pudding classes in a directory as a single string:
-
-```
-var source = "/path/to/source/directory";
-var Pudding = require("ether-pudding");
-var PuddingLoader = require("ether-pudding/loader");
-Pudding.setWeb3(web3);
-PuddingLoader.packageSource(source_directory, function(error, all_contracts) {
-  // all_contracts is a single string containing the source
-  // code of all contracts, which you can then include in your
-  // build process.
-  //
-  // Note: all_contracts doesn't fully bootstrap your Pudding classes
-  // within the browser. See next section.
-});
-```
-
-Note that using `packageSource()` isn't necessary if you have a build process that can include the generated classes via different means.
 
 ### Interacting With Your Contracts
 
