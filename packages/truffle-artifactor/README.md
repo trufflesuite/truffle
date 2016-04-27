@@ -138,20 +138,6 @@ MetaCoin.new().then(function(coin) {
 * [Setting global contract-level and instance-level defaults](https://github.com/ConsenSys/ether-pudding/wiki/Setting-global,-contract-level-and-instance-level-defaults)
 * [When not to use synchronized transactions, and how to do it](https://github.com/ConsenSys/ether-pudding/wiki/When-not-to-use-synchronized-transactions,-and-how-to-do-it)
 
-### Building
-
-First install webpack:
-
-```
-npm install -g webpack
-```
-
-Then build: 
-
-```
-$ wepback
-```
-
 ### Running Tests
 
 ```

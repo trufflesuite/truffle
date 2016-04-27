@@ -16,12 +16,10 @@
   "devDependencies": {
     "chai": "^3.4.1",
     "ethereumjs-testrpc": "^0.1.1",
-    "json-loader": "^0.5.4",
     "mocha": "^2.3.4",
     "solc": "^0.1.6",
     "temp": "^0.8.3",
-    "web3": "^0.15.3",
-    "webpack": "^1.12.11"
+    "web3": "^0.15.3"
   },
   "dependencies": {
     "node-dir": "^0.1.11"
