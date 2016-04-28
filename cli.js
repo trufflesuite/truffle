@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-require("babel-register")
+require("babel-register")({
+    "presets": ["es2015", "stage-2"]
+})
 require("babel-polyfill")
 
 var web3 = require("web3");
