@@ -332,7 +332,7 @@ var Pudding =
 	              return;
 	            }
 
-	            if (tx_info.blockHash != null) {
+	            if (tx_info.blockHash != null && tx_info.blockHash != 0x0) {
 	              clearInterval(interval);
 	              accept(tx);
 	            }
@@ -374,7 +374,7 @@ var Pudding =
 
 	module.exports = {
 		"name": "ether-pudding",
-		"version": "2.0.7",
+		"version": "2.0.8",
 		"description": "Pudding - a (more) delightful Ethereum contract abstraction",
 		"author": "Tim Coulter",
 		"main": "./index.js",

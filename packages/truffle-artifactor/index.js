@@ -285,7 +285,7 @@ Pudding.synchronizeFunction = function(fn) {
               return;
             }
 
-            if (tx_info.blockHash != null) {
+            if (tx_info.blockHash != null && tx_info.blockHash != 0x0) {
               clearInterval(interval);
               accept(tx);
             }
