@@ -245,17 +245,63 @@ var Web3 = require("web3");
     }
   };
 
-  Contract.abi             = Contract.prototype.abi             = {{ABI}};
-  Contract.binary          = Contract.prototype.binary          = "{{BINARY}}";
-  Contract.unlinked_binary = Contract.prototype.unlinked_binary = "{{UNLINKED_BINARY}}";
-  Contract.address         = Contract.prototype.address         = "{{ADDRESS}}";
-  Contract.generated_with  = Contract.prototype.generated_with  = "{{PUDDING_VERSION}}";
+  Contract.all_networks = {{ALL_NETWORKS}};
+
+  Contract.checkNetwork = function(callback) {
+    if (Contract.current_network_id != null) {
+      return callback();
+    }
+
+    Contract.web3.version.network(function(err, result) {
+      if (err) return callback(err);
+
+      var network_id = result.toString();
+
+      // If we have the main network,
+      if (network_id == "1") {
+        var possible_ids = ["1", "live", "default"];
+
+        for (var i = 0; i < possible_ids.length; i++) {
+          var id = possible_ids[i];
+          if (Contract.all_networks[id] != null) {
+            network_id = id;
+            break;
+          }
+        }
+      }
+
+      if (Contract.all_networks[network_id] == null) {
+        return callback(new Error(Contract.name + " error: Can't find artifacts for network id '" + network_id + "'"));
+      }
+
+      Contract.setNetwork(network_id);
+      callback();
+    })
+  };
+
+  Contract.setNetwork = function(network_id) {
+    var network = Contract.all_networks[network_id];
+
+    Contract.abi             = Contract.prototype.abi             = network.abi;
+    Contract.binary          = Contract.prototype.binary          = network.binary;
+    Contract.unlinked_binary = Contract.prototype.unlinked_binary = network.unlinked_binary;
+    Contract.address         = Contract.prototype.address         = network.address;
+
+    if (Contract.unlinked_binary == "") {
+      Contract.unlinked_binary = Contract.binary;
+    }
+
+    Contract.current_network_id = network_id;
+  };
+
   Contract.contract_name   = Contract.prototype.contract_name   = "{{NAME}}";
+  Contract.generated_with  = Contract.prototype.generated_with  = "{{PUDDING_VERSION}}";
   Contract.class_defaults  = Contract.prototype.defaults || {};
 
-  if (Contract.unlinked_binary == "") {
-    Contract.unlinked_binary = Contract.binary;
-  }
+  // Set the network iniitally to make default data available and re-use code.
+  // Then remove the saved network id so the network will be auto-detected on first use.
+  Contract.setNetwork("default");
+  Contract.current_network_id = null;
 
   if (typeof module != "undefined" && typeof module.exports != "undefined") {
     module.exports = Contract;

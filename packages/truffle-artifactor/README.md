@@ -43,13 +43,18 @@ var Pudding = require("ether-pudding");
 var destination = "/path/to/destination/directory";
 
 var contracts = {
-  "MyContract": {
-    abi: ...,              // Array; required.
-    binary: "...",         // String; optional.
-    unlinked_binary: "..." // String; optional. Defaults to binary.
-    address: "..."         // String; optional. 
+  "default": {
+    "MyContract": {
+	   abi: ...,              // Array; required.
+	   binary: "...",         // String; optional.
+	   unlinked_binary: "..." // String; optional. Defaults to binary.
+	   address: "..."         // String; optional. 
+	 },
+	 "OtherContract": {
+	   ...
+	 }
   },
-  "OtherContract": {
+  "morden": {
     ...
   }
 };
@@ -57,7 +62,7 @@ var contracts = {
 Pudding.save(contracts, destination);
 ```
 
-### Using `.sol.js` Files
+#### Using `.sol.js` Files
 
 Once a `.sol.js` has been created, using it is easy. These abstractions use Web3 under the hood, and so will need a provider set just like Web3: 
 
@@ -69,6 +74,8 @@ MyContract.setProvider(provider);
 
 ```
 
+Just like Web3, the contract abstraction will need a reference to your Web3 provider. You'll receive errors if you try to make a trasation without a Web3 provider set.
+
 See [Interacting With Your Contracts](https://github.com/ConsenSys/ether-pudding#interacting-with-your-contracts) below for details on how to use the newly created `MyContract` object.
 
 ### Interacting With Your Contracts
@@ -76,15 +83,19 @@ See [Interacting With Your Contracts](https://github.com/ConsenSys/ether-pudding
 Let's explore Pudding contract classes via MetaCoin contract described in [Dapps For Beginners](https://dappsforbeginners.wordpress.com/tutorials/your-first-dapp/):
 
 ```javascript
-var MetaCoin = Pudding.whisk(abi, binary, {gasLimit: 3141592}); 
+// Require the package
+var MetaCoin = require("./path/to/MetaCoin.sol.js");
+
+// Remember to set the Web3 provider (see above).
+MetaCoin.setProvider(provider);
 
 // In this scenario, two users will send MetaCoin back and forth, showing
 // how Pudding allows for easy control flow. 
 var account_one = "5b42bd01ff...";
 var account_two = "e1fd0d4a52...";
 
+// Note our MetaCoin contract exists at a specific address.
 var contract_address = "8e2e2cf785...";
-
 var coin = MetaCoin.at(contract_address);
 
 // Make a transaction that calls the function `sendCoin`, sending 3 MetaCoin
@@ -115,7 +126,7 @@ coin.sendCoin(account_two, 3, {from: account_one}).then(function(tx) {
 });
 ```
 
-Because you provided your contract's binary code in `Pudding.whisk()`, you can create new contracts that get added to the network really easily:
+Pudding manages your contract's binary code as well, so you can easily deploy new contracts of the same type using the abstraction:
 
 ```javascript
 MetaCoin.new().then(function(coin) {

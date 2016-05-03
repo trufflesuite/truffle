@@ -4,6 +4,10 @@ var rimraf = require("rimraf");
 var class_template = fs.readFileSync(path.join(__dirname, "./classtemplate.es6"), {encoding: "utf8"});
 var pkg = require("./package.json");
 var dir = require("node-dir");
+var _ = require("lodash");
+
+
+
 
 // TODO: This should probably be asynchronous.
 module.exports = {
