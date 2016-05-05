@@ -51,7 +51,7 @@ Generate `.sol.js` files given a contract name and contract data, structured as 
 
 **Note:** Pudding (the generator) isn't intended to be used in the browser or in a package manager like browserify or webpack, though it likely could be browserified. The resultant `.sol.js` files **_are_**, however. 
 
-```
+```javascript
 var Pudding = require("ether-pudding");
 
 var contract_data = {
@@ -71,7 +71,7 @@ Pudding.save(contract_data, "./MyContract.sol.js");
 
 Once a `.sol.js` has been created, using it is easy. These abstractions use Web3 under the hood, and so will need a provider set just like Web3: 
 
-```
+```javascript
 var provider = new Web3.providers.HttpProvider("http://localhost:8545");
 
 var MyContract = require("./MyContract.sol.js");
@@ -158,7 +158,7 @@ Save contract data as a `.sol.js` file.
 * `contract_name`: String. Optional. Name of contract class to be created.
 * `contract_data`: Object. Example:
 
-    ```
+    ```javascript
     {
       abi: ...,              // Array; required.
       binary: "...",         // String; optional.
@@ -169,7 +169,7 @@ Save contract data as a `.sol.js` file.
     
     Note: `save()` will also accept an already `require`'d contract object. i.e., 
     
-    ```
+    ```javascript
     var MyContract = require("./path/to/MyContract.sol.js");
     
     Pudding.save(MyContract, ...);
@@ -191,7 +191,7 @@ Save many contracts to the filesystem at once.
 
 * `contracts`: Object. Keys are the contract names and the values are `contract_data` objects, as in the `save()` function above:
 
-    ```
+    ```javascript
     {
       "MyContract": {
         "abi": ...,
@@ -213,7 +213,7 @@ Generate the source code that populates the `.sol.js` file, returned as a string
 * `contract_name`: String. Optional. Name of the contract to generate.
 * `networks`: Object. Contains the information about this contract for each network, keyed by the network id.
 
-    ```
+    ```javascript
     {
       "live": {
         "abi": ...,
@@ -235,7 +235,7 @@ Generate the source code that populates the `.sol.js` file, returned as a string
     
     Note that each ABI, binary and address refer to the same contract, but deployed on different networks. If no network ids are present -- i.e., a `contract_data` object was passed instead -- then `generate()` will automatically use that data for the default network. i.e., 
     
-    ```
+    ```javascript
     Pudding.generate("MyContract", {
       "abi": ...,
       "binary": ...
@@ -250,7 +250,7 @@ Like `generate()`, this function will create the source code that populates the 
 
 The contract name is only important here in the source code that gets generated, which will appear in error messages. If `contract_name` is not present it will default to "Contract".
 
-```
+```javascript
 // Couple examples:
 
 // Whisk in different networks:
