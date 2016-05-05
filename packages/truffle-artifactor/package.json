@@ -15,13 +15,13 @@
   "license": "MIT License. Copyright Consensys LLC, and authors. All rights reserved.",
   "devDependencies": {
     "chai": "^3.4.1",
-    "ethereumjs-testrpc": "^0.1.1",
     "mocha": "^2.3.4",
     "solc": "^0.1.6",
     "temp": "^0.8.3",
     "web3": "^0.15.3"
   },
   "dependencies": {
+    "ethereumjs-testrpc": "^2.0.7",
     "lodash": "^4.11.2",
     "node-dir": "^0.1.11"
   }

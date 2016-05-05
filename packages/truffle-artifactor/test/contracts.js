@@ -7,28 +7,52 @@ var solc = require("solc");
 var fs = require("fs");
 var TestRPC = require("ethereumjs-testrpc");
 var Web3 = require("web3");
-var Pudding = require("../");
 
-// Compile first
-var result = solc.compile(fs.readFileSync("./test/Example.sol", {encoding: "utf8"}), 1);
-var compiled = result.contracts["Example"];
-var abi = JSON.parse(compiled.interface);
-var binary = compiled.bytecode;
-
-// Setup
-var provider = TestRPC.provider();
-var web3 = new Web3();
-web3.setProvider(provider)
-
-var tests = function(contract_instantiator) {
+describe("Pudding + require", function() {
   var Example;
   var accounts;
+  var abi;
+  var binary;
+  var web3;
+  var provider;
 
   before(function(done) {
-    contract_instantiator(function(err, Ex) {
-      Example = Ex;
-      done(err);
+
+    // Compile first
+    var result = solc.compile(fs.readFileSync("./test/Example.sol", {encoding: "utf8"}), 1);
+
+    // Clean up after solidity. Only remove solidity's listener,
+    // which happens to be the first.
+    process.removeListener("uncaughtException", process.listeners("uncaughtException")[0]);
+
+    var compiled = result.contracts["Example"];
+    abi = JSON.parse(compiled.interface);
+    binary = compiled.bytecode;
+
+    // Setup
+    provider = TestRPC.provider();
+    web3 = new Web3();
+    web3.setProvider(provider)
+
+    var dirPath = temp.mkdirSync({
+      dir: path.resolve("./"),
+      prefix: 'tmp-test-contract-'
     });
+
+    var filepath = path.join(dirPath, "Example.sol.js");
+
+    Pudding.save({
+      abi: abi,
+      binary: binary,
+      address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01"
+    }, "Example", filepath);
+
+    var scope = {};
+
+    Example = Pudding.requireNoCache(filepath);
+    Example.setProvider(provider)
+
+    done(null);
   });
 
   before(function(done) {
@@ -122,30 +146,5 @@ var tests = function(contract_instantiator) {
     }).then(function(parrot_value) {
       assert.equal(parrot_value.valueOf(), 865, "Parrotted value should equal 865")
     }).then(done).catch(done);
-  });
-};
-
-describe("Pudding loader + require", function() {
-  tests(function(callback) {
-    var dirPath = temp.mkdirSync({
-      dir: path.resolve("./"),
-      prefix: 'tmp-test-contract-'
-    });
-
-    Pudding.save({
-      "Example": {
-        abi: abi,
-        binary: binary,
-        address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01"
-      }
-    }, dirPath, {removeExisting: true});
-
-    var scope = {};
-
-    var contract = require(path.join(dirPath, "Example.sol.js"));
-
-    contract.setProvider(provider)
-
-    callback(null, contract);
   });
 });

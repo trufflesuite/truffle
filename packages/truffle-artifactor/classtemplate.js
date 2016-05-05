@@ -1,8 +1,7 @@
 var Web3 = require("web3");
 
 (function() {
-  var web3 = new Web3();
-  var BigNumber = web3.toBigNumber(0).constructor;
+  var BigNumber = (new Web3()).toBigNumber(0).constructor;
 
   var Utils = {
     is_object: function(val) {
@@ -83,7 +82,7 @@ var Web3 = require("web3");
 
             var make_attempt = function() {
               //console.log "Interval check //{attempts}..."
-              web3.eth.getTransaction(tx, function(e, tx_info) {
+              C.web3.eth.getTransaction(tx, function(e, tx_info) {
                 // If there's an error ignore it.
                 if (e != null) {
                   return;
@@ -114,58 +113,93 @@ var Web3 = require("web3");
     }
   };
 
-  // Accepts a contract object created with web3.eth.contract.
-  function Contract(contract) {
-    this.contract = contract;
+  function instantiate(instance, contract) {
+    instance.contract = contract;
+    var constructor = instance.constructor;
 
     // Provision our functions.
-    for (var i = 0; i < this.abi.length; i++) {
-      var item = this.abi[i];
+    for (var i = 0; i < instance.abi.length; i++) {
+      var item = instance.abi[i];
       if (item.type == "function") {
         if (item.constant == true) {
-          this[item.name] = Utils.promisifyFunction(contract[item.name], Contract);
+          instance[item.name] = Utils.promisifyFunction(contract[item.name], constructor);
         } else {
-          this[item.name] = Utils.synchronizeFunction(contract[item.name], Contract);
+          instance[item.name] = Utils.synchronizeFunction(contract[item.name], constructor);
         }
 
-        this[item.name].call = Utils.promisifyFunction(contract[item.name].call, Contract);
-        this[item.name].sendTransaction = Utils.promisifyFunction(contract[item.name].sendTransaction, Contract);
-        this[item.name].request = contract[item.name].request;
-        this[item.name].estimateGas = Utils.promisifyFunction(contract[item.name].estimateGas, Contract);
+        instance[item.name].call = Utils.promisifyFunction(contract[item.name].call, constructor);
+        instance[item.name].sendTransaction = Utils.promisifyFunction(contract[item.name].sendTransaction, constructor);
+        instance[item.name].request = contract[item.name].request;
+        instance[item.name].estimateGas = Utils.promisifyFunction(contract[item.name].estimateGas, constructor);
       }
 
       if (item.type == "event") {
-        this[item.name] = contract[item.name];
+        instance[item.name] = contract[item.name];
       }
     }
 
-    this.allEvents = contract.allEvents;
-    this.address = contract.address;
+    instance.allEvents = contract.allEvents;
+    instance.address = contract.address;
   };
 
-  Contract.web3 = web3;
-  Contract.provider = null;
+  // Use inheritance to create a clone of this contract,
+  // and copy over contract's static functions.
+  function mutate(fn, network_id) {
+    var temp = function Clone() { return fn.apply(this, arguments); };
+
+    Object.keys(fn).forEach(function(key) {
+      temp[key] = fn[key];
+    });
+
+    temp.prototype = Object.create(fn.prototype);
+    temp.setNetwork(network_id);
+    return temp;
+  };
+
+  function bootstrap(fn) {
+    fn.web3 = new Web3();
+    fn.class_defaults  = fn.prototype.defaults || {};
+
+    // Set the network iniitally to make default data available and re-use code.
+    // Then remove the saved network id so the network will be auto-detected on first use.
+    fn.setNetwork("default");
+    fn.current_network_id = null;
+  };
+
+  // Accepts a contract object created with web3.eth.contract.
+  // Optionally, if called without `new`,
+  function Contract() {
+    if (this instanceof Contract) {
+      instantiate(this, arguments[0]);
+    } else {
+      var C = mutate(Contract, arguments[0]);
+      bootstrap(C);
+      return C;
+    }
+  };
+
+  Contract.currentProvider = null;
 
   Contract.setProvider = function(provider) {
-    Contract.web3.setProvider(provider);
-    Contract.provider = provider;
+    this.web3.setProvider(provider);
+    this.currentProvider = provider;
   };
 
   Contract.new = function() {
-    if (Contract.provider == null) {
+    if (this.currentProvider == null) {
       throw new Error("{{NAME}} error: Please call setProvider() first before calling new().");
     }
 
     var args = Array.prototype.slice.call(arguments);
 
-    if (!Contract.binary) {
+    if (!this.binary) {
       throw new Error("{{NAME}} error: contract binary not set. Can't deploy new instance.");
     }
 
     var self = this;
 
     return new Promise(function(accept, reject) {
-      var contract_class = Contract.web3.eth.contract(self.prototype.abi);
+      var contract_class = self.web3.eth.contract(self.abi);
       var tx_params = {};
       var last_arg = args[args.length - 1];
 
@@ -174,11 +208,13 @@ var Web3 = require("web3");
         tx_params = args.pop();
       }
 
-      tx_params = Utils.merge(Contract.class_defaults, tx_params);
+      tx_params = Utils.merge(self.class_defaults, tx_params);
 
       if (tx_params.data == null) {
         tx_params.data = self.binary;
       }
+
+
 
       // web3 0.9.0 and above calls new twice this callback twice.
       // Why, I have no idea...
@@ -200,35 +236,36 @@ var Web3 = require("web3");
   };
 
   Contract.at = function(address) {
-    var contract_class = Contract.web3.eth.contract(Contract.abi);
+    var contract_class = this.web3.eth.contract(this.abi);
     var contract = contract_class.at(address);
 
     return new this(contract);
   };
 
   Contract.deployed = function() {
-    if (!Contract.address) {
+    if (!this.address) {
       throw new Error("Contract address not set - deployed() relies on the contract class having a static 'address' value; please set that before using deployed().");
     }
 
-    return Contract.at(this.prototype.address);
+    return this.at(this.address);
   };
 
   Contract.defaults = function(class_defaults) {
-    if (Contract.class_defaults == null) {
-      Contract.class_defaults = {};
+    if (this.class_defaults == null) {
+      this.class_defaults = {};
     }
 
     if (class_defaults == null) {
       class_defaults = {};
     }
 
+    var self = this;
     Object.keys(class_defaults).forEach(function(key) {
       var value = class_defaults[key];
-      Contract.class_defaults[key] = value;
+      self.class_defaults[key] = value;
     });
 
-    return Contract.class_defaults;
+    return this.class_defaults;
   };
 
   Contract.extend = function() {
@@ -240,7 +277,7 @@ var Web3 = require("web3");
       for (var j = 0; j < keys.length; j++) {
         var key = keys[j];
         var value = object[key];
-        Contract.prototype[key] = value;
+        this.prototype[key] = value;
       }
     }
   };
@@ -248,11 +285,13 @@ var Web3 = require("web3");
   Contract.all_networks = {{ALL_NETWORKS}};
 
   Contract.checkNetwork = function(callback) {
-    if (Contract.current_network_id != null) {
+    var self = this;
+
+    if (this.current_network_id != null) {
       return callback();
     }
 
-    Contract.web3.version.network(function(err, result) {
+    this.web3.version.network(function(err, result) {
       if (err) return callback(err);
 
       var network_id = result.toString();
@@ -270,38 +309,34 @@ var Web3 = require("web3");
         }
       }
 
-      if (Contract.all_networks[network_id] == null) {
-        return callback(new Error(Contract.name + " error: Can't find artifacts for network id '" + network_id + "'"));
+      if (self.all_networks[network_id] == null) {
+        return callback(new Error(self.name + " error: Can't find artifacts for network id '" + network_id + "'"));
       }
 
-      Contract.setNetwork(network_id);
+      self.setNetwork(network_id);
       callback();
     })
   };
 
   Contract.setNetwork = function(network_id) {
-    var network = Contract.all_networks[network_id];
+    var network = this.all_networks[network_id];
 
-    Contract.abi             = Contract.prototype.abi             = network.abi;
-    Contract.binary          = Contract.prototype.binary          = network.binary;
-    Contract.unlinked_binary = Contract.prototype.unlinked_binary = network.unlinked_binary;
-    Contract.address         = Contract.prototype.address         = network.address;
+    this.abi             = this.prototype.abi             = network.abi;
+    this.binary          = this.prototype.binary          = network.binary;
+    this.unlinked_binary = this.prototype.unlinked_binary = network.unlinked_binary;
+    this.address         = this.prototype.address         = network.address;
 
-    if (Contract.unlinked_binary == "") {
-      Contract.unlinked_binary = Contract.binary;
+    if (this.unlinked_binary == "") {
+      this.unlinked_binary = this.binary;
     }
 
-    Contract.current_network_id = network_id;
+    this.current_network_id = network_id;
   };
 
   Contract.contract_name   = Contract.prototype.contract_name   = "{{NAME}}";
   Contract.generated_with  = Contract.prototype.generated_with  = "{{PUDDING_VERSION}}";
-  Contract.class_defaults  = Contract.prototype.defaults || {};
 
-  // Set the network iniitally to make default data available and re-use code.
-  // Then remove the saved network id so the network will be auto-detected on first use.
-  Contract.setNetwork("default");
-  Contract.current_network_id = null;
+  bootstrap(Contract);
 
   if (typeof module != "undefined" && typeof module.exports != "undefined") {
     module.exports = Contract;
