@@ -6,18 +6,21 @@
 
 Ether Pudding (or just “Pudding”) is a packager and build artifact manager for Ethereum and Javascript. It turns ABIs, binaries, deployed addresses, etc. into Javascript files you can include in your project with simply a `require`. Example:
 
-```
-var Pudding = require("ether-pudding");
+Save a .sol.js file with our Contract data:
 
-// Save a .sol.js file with our Contract data.
+```javascript
+var Pudding = require("ether-pudding");
 var contract_data = {
   abi: [{"constant":true,"inputs":[],"name":"value","outputs":[{"name":"","type":"uint256"}],"type":"function"},{"constant":false,"inputs":[],"name":"doStuff","outputs":[],"type":"function"},{"inputs":[],"type":"constructor"}],
   binary: "0x60606040525b5b607b8060126000396000f360606040526000357c0100000000000000000000000000000000000000000000000000000000900480633fa4f245146041578063874f33a114606257603f565b005b604c6004805050606f565b6040518082815260200191505060405180910390f35b606d60048050506078565b005b60006000505481565b5b56",
   address: "0x8e462f3d99ec220404656dee8edf67c6038a68e0"
 };
 Pudding.save(contract_data, "./MyContract.sol.js");
+```
 
-// Later, require that file and use it immediately:
+Later, require that file and use it immediately:
+
+```javascript
 var MyContract = require("./MyContract.sol.js");
 MyContract.setProvider(someWeb3Provider);
 MyContract.deployed().doStuff().then(function(tx) {
