@@ -23,7 +23,7 @@ MyContract.deployed().doStuff().then(function(tx) {
 * Packaging up build artifacts into `.sol.js` files, which can then be included in your project with a simple `require`.
 * Including multiple versions of the same contract in a single package, automatically detecting which artifacts to use based on the network version (more on this below). 
 
-See the following API discussion for more features.
+See the following discussion for more features.
 
 ### The State of Web3: A Discussion
 
