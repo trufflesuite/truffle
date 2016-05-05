@@ -92,15 +92,15 @@ describe("Different networks:", function() {
 
     var filepath = path.join(dirPath, "Example.sol.js")
 
-    Pudding.save({
+    Pudding.save("Example", {
       abi: abi,
       binary: binary
-    }, "Example", filepath, {network_id: network_one_id});
+    }, filepath, {network_id: network_one_id});
 
-    Pudding.save({
+    Pudding.save("Example", {
       abi: abi,
       binary: binary
-    }, "Example", filepath, {network_id: network_two_id});
+    }, filepath, {network_id: network_two_id});
 
     ExampleOne = Pudding.requireNoCache(filepath);
     ExampleTwo = ExampleOne(network_two_id);
