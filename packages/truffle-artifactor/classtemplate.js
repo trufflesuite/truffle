@@ -144,7 +144,7 @@ var Web3 = require("web3");
 
   // Use inheritance to create a clone of this contract,
   // and copy over contract's static functions.
-  function mutate(fn, network_id) {
+  function mutate(fn) {
     var temp = function Clone() { return fn.apply(this, arguments); };
 
     Object.keys(fn).forEach(function(key) {
@@ -152,7 +152,6 @@ var Web3 = require("web3");
     });
 
     temp.prototype = Object.create(fn.prototype);
-    temp.setNetwork(network_id);
     return temp;
   };
 
@@ -164,16 +163,19 @@ var Web3 = require("web3");
     // Then remove the saved network id so the network will be auto-detected on first use.
     fn.setNetwork("default");
     fn.current_network_id = null;
+    return fn;
   };
 
   // Accepts a contract object created with web3.eth.contract.
-  // Optionally, if called without `new`,
+  // Optionally, if called without `new`, accepts a network_id and will
+  // create a new version of the contract abstraction with that network_id set.
   function Contract() {
     if (this instanceof Contract) {
       instantiate(this, arguments[0]);
     } else {
-      var C = mutate(Contract, arguments[0]);
-      bootstrap(C);
+      var C = bootstrap(mutate(Contract));
+      var network_id = arguments.length > 0 ? arguments[0] : "default";
+      C.setNetwork(network_id);
       return C;
     }
   };
