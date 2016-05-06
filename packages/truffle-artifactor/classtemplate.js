@@ -217,8 +217,6 @@ var Web3 = require("web3");
         tx_params.data = self.binary;
       }
 
-
-
       // web3 0.9.0 and above calls new twice this callback twice.
       // Why, I have no idea...
       var intermediary = function(err, web3_instance) {

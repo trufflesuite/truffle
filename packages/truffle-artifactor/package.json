@@ -12,7 +12,7 @@
     "type": "git",
     "url": "https://github.com/consensys/ether-pudding.git"
   },
-  "license": "MIT License. Copyright Consensys LLC, and authors. All rights reserved.",
+  "license": "MIT",
   "devDependencies": {
     "chai": "^3.4.1",
     "mocha": "^2.3.4",
