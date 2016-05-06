@@ -82,15 +82,15 @@ var Web3 = require("web3");
 
             var make_attempt = function() {
               //console.log "Interval check //{attempts}..."
-              C.web3.eth.getTransaction(tx, function(e, tx_info) {
+              C.web3.eth.getTransactionReceipt(tx, function(e, receipt) {
                 // If there's an error ignore it.
                 if (e != null) {
                   return;
                 }
 
-                if (tx_info.blockHash != null) {
+                if (receipt != null) {
                   clearInterval(interval);
-                  accept(tx);
+                  accept(tx, receipt);
                 }
 
                 if (attempts >= max_attempts) {
