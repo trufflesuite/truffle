@@ -16,7 +16,7 @@
     "colors": "^1.1.2",
     "cpr": "^0.4.3",
     "deasync": "^0.1.3",
-    "ether-pudding": "2.0.6",
+    "ether-pudding": "^2.0.6",
     "finalhandler": "^0.4.0",
     "graphlib": "^2.0.0",
     "jsmin": "^1.0.1",
