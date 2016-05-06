@@ -152,6 +152,7 @@ var Web3 = require("web3");
     });
 
     temp.prototype = Object.create(fn.prototype);
+    bootstrap(temp);
     return temp;
   };
 
@@ -173,7 +174,7 @@ var Web3 = require("web3");
     if (this instanceof Contract) {
       instantiate(this, arguments[0]);
     } else {
-      var C = bootstrap(mutate(Contract));
+      var C = mutate(Contract);
       var network_id = arguments.length > 0 ? arguments[0] : "default";
       C.setNetwork(network_id);
       return C;
