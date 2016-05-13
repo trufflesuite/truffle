@@ -178,7 +178,13 @@ registerTask('create:test', "Create a basic test", function(done) {
 
 registerTask('compile', "Compile contracts", function(done) {
   var config = Truffle.config.gather(truffle_dir, working_dir, argv, "development");
-  Truffle.contracts.compile(config, done);
+  Truffle.contracts.compile({
+    all: config.argv.allContracts === true,
+    source_directory: config.contracts.directory,
+    build_directory: config.contracts.build_directory,
+    quiet: config.argv.quiet === true,
+    strict: config.argv.strict === true
+  }, done);
 });
 
 registerTask('deploy', "Deploy contracts to the network, compiling if needed", function(done) {
@@ -226,6 +232,20 @@ registerTask('dist', "Create distributable version of app (minified)", function(
   });
 });
 
+registerTask('migrate', "Run migrations", function(done) {
+  var config = Truffle.config.gather(truffle_dir, working_dir, argv, "development");
+
+  console.log("Using environment " + config.environment + ".");
+
+
+
+  Truffle.migrate.runAll({
+    migrations_directory: config.migrations.directory,
+    contracts_directory: config.contracts.build_directory,
+    provider: config.web3.currentProvider
+  }, done);
+});
+
 registerTask('exec', "Execute a JS file within truffle environment. Script *must* call process.exit() when finished.", function(done) {
   var config = Truffle.config.gather(truffle_dir, working_dir, argv, "development");
 
@@ -241,7 +261,15 @@ registerTask('exec', "Execute a JS file within truffle environment. Script *must
     return;
   }
 
-  Truffle.exec.file(config, file, done);
+  if (path.isAbsolute(file) == false) {
+    file = path.join(config.working_dir, file);
+  }
+
+  Truffle.exec.file({
+    file: file,
+    web3: config.web3,
+    contracts: config.contracts.built_files
+  }, done);
 });
 
 // Supported options:

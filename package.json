@@ -27,6 +27,7 @@
     "rimraf": "^2.4.3",
     "serve-static": "^1.10.0",
     "solc": "^0.3.1-1",
+    "solidity-parser": "^0.0.5",
     "spawn-args": "^0.1.0",
     "truffle-default-builder": "0.0.9",
     "uglify-js": "^2.6.1",
