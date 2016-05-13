@@ -20,7 +20,7 @@ module.exports = {
 
     destinations.forEach(function(destination) {
       logger.log("Linking " + library.contract_name + " to " + destination.contract_name);
-      destination.binary = destination.unlinked_binary.replace(regex, library.address);
+      destination.binary = destination.unlinked_binary.replace(regex, library.address.replace("0x", ""));
     });
   },
 
