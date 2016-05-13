@@ -1,11 +1,14 @@
 module.exports = {
-  init: require("./lib/init"),
-  create: require("./lib/create"),
-  config: require("./lib/config"),
-  contracts: require("./lib/contracts"),
   build: require("./lib/build"),
-  test: require("./lib/test"),
-  exec: require("./lib/exec"),
+  create: require("./lib/create"),
+  compiler: require("./lib/compiler"),
+  config: require("./lib/config"),
   console: require("./lib/repl"),
-  serve: require("./lib/serve")
+  contracts: require("./lib/contracts"),
+  exec: require("./lib/exec"),
+  init: require("./lib/init"),
+  migrate: require("./lib/migrate"),
+  profile: require("./lib/profiler"),
+  serve: require("./lib/serve"),
+  test: require("./lib/test")
 };
