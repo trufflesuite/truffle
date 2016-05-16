@@ -16,6 +16,7 @@ var argv = require('yargs').argv;
 
 var truffle_dir = process.env.TRUFFLE_NPM_LOCATION || argv.n || argv.npm_directory || __dirname;
 var working_dir = process.env.TRUFFLE_WORKING_DIRECTORY || argv.w || argv.working_directory || process.cwd();
+var environment = argv.e || argv.environment || process.env.NODE_ENV || "default";
 
 if (working_dir[working_dir.length - 1] != "/") {
   working_dir += "/";
@@ -62,7 +63,6 @@ var runTask = function(name) {
 
 registerTask('watch', "Watch filesystem for changes and rebuild the project automatically", function(done) {
   var needs_rebuild = true;
-  var needs_redeploy = false;
 
   chokidar.watch(["app/**/*", "environments/*/contracts/**/*", "contracts/**/*", "truffle.json", "truffle.js"], {
     ignored: /[\/\\]\./, // Ignore files prefixed with "."
@@ -74,24 +74,9 @@ registerTask('watch', "Watch filesystem for changes and rebuild the project auto
     console.log(colors.cyan(">> File " + display_path + " changed."));
 
     needs_rebuild = true;
-
-    if (display_path.indexOf("contracts/") == 0) {
-      needs_redeploy = true;
-    } else {
-      needs_rebuild = true;
-    }
   });
 
   var check_rebuild = function() {
-    if (needs_redeploy == true) {
-      needs_redeploy = false;
-      needs_rebuild = false;
-      console.log("Redeploying...");
-      if (runTask("deploy") != 0) {
-        printFailure();
-      }
-    }
-
     if (needs_rebuild == true) {
       needs_rebuild = false;
       console.log("Rebuilding...");
@@ -140,12 +125,12 @@ registerTask('version', "Show version number and exit", function(done) {
 });
 
 registerTask('init', "Initialize new Ethereum project, including example contracts and tests", function(done) {
-  var config = Truffle.config.gather(truffle_dir, working_dir, argv);
+  var config = Truffle.config.detect();
   Truffle.init.all(config, done);
 });
 
 registerTask('create:contract', "Create a basic contract", function(done) {
-  var config = Truffle.config.gather(truffle_dir, working_dir, argv);
+  var config = Truffle.config.detect();
 
   var name = argv.name;
 
@@ -161,7 +146,7 @@ registerTask('create:contract', "Create a basic contract", function(done) {
 });
 
 registerTask('create:test', "Create a basic test", function(done) {
-  var config = Truffle.config.gather(truffle_dir, working_dir, argv);
+  var config = Truffle.config.detect();
 
   var name = argv.name;
 
@@ -177,7 +162,7 @@ registerTask('create:test', "Create a basic test", function(done) {
 });
 
 registerTask('compile', "Compile contracts", function(done) {
-  var config = Truffle.config.gather(truffle_dir, working_dir, argv, "development");
+  var config = Truffle.config.detect();
   Truffle.contracts.compile({
     all: config.argv.allContracts === true,
     source_directory: config.contracts.directory,
@@ -187,32 +172,8 @@ registerTask('compile', "Compile contracts", function(done) {
   }, done);
 });
 
-registerTask('deploy', "Deploy contracts to the network, compiling if needed", function(done) {
-  var config = Truffle.config.gather(truffle_dir, working_dir, argv, "development");
-
-  console.log("Using environment " + config.environment + ".");
-
-  var compile = true;
-  var link = true;
-
-  if (argv.compile === false) {
-    compile = false;
-  }
-
-  // Compile and deploy.
-  Truffle.contracts.deploy(config, compile, function(err) {
-    if (err != null) {
-      done(err);
-    } else {
-      // console.log("Rebuilding app with new contracts...");
-      // runTask("build");
-      done();
-    }
-  });
-});
-
 registerTask('build', "Build development version of app", function(done) {
-  var config = Truffle.config.gather(truffle_dir, working_dir, argv, "development");
+  var config = Truffle.config.detect();
   Truffle.build.build(config, function(err) {
     done(err);
     if (err == null) {
@@ -222,7 +183,7 @@ registerTask('build', "Build development version of app", function(done) {
 });
 
 registerTask('dist', "Create distributable version of app (minified)", function(done) {
-  var config = Truffle.config.gather(truffle_dir, working_dir, argv, "production");
+  var config = Truffle.config.detect();
   console.log("Using environment " + config.environment + ".");
   Truffle.build.dist(config, function(err) {
     done(err);
@@ -233,21 +194,29 @@ registerTask('dist', "Create distributable version of app (minified)", function(
 });
 
 registerTask('migrate', "Run migrations", function(done) {
-  var config = Truffle.config.gather(truffle_dir, working_dir, argv, "development");
+  var config = Truffle.config.detect();
 
-  console.log("Using environment " + config.environment + ".");
+  //console.log("Using network " + config.network + ".");
 
+  Truffle.contracts.compile({
+    all: argv.all === true || argv.allContracts === true,
+    source_directory: config.contracts_directory,
+    build_directory: config.contracts_build_directory,
+    quiet: argv.quiet === true,
+    strict: argv.strict === true
+  }, function(err) {
+    if (err) return done(rr);
 
-
-  Truffle.migrate.runAll({
-    migrations_directory: config.migrations.directory,
-    contracts_directory: config.contracts.build_directory,
-    provider: config.web3.currentProvider
-  }, done);
+    Truffle.migrate.runAll({
+      migrations_directory: config.migrations_directory,
+      contracts_directory: config.contracts_build_directory,
+      provider: config.getProvider()
+    }, done);
+  });
 });
 
 registerTask('exec', "Execute a JS file within truffle environment. Script *must* call process.exit() when finished.", function(done) {
-  var config = Truffle.config.gather(truffle_dir, working_dir, argv, "development");
+  var config = Truffle.config.detect();
 
   var file = argv.file;
 
@@ -262,7 +231,7 @@ registerTask('exec', "Execute a JS file within truffle environment. Script *must
   }
 
   if (path.isAbsolute(file) == false) {
-    file = path.join(config.working_dir, file);
+    file = path.join(config.working_directory, file);
   }
 
   Truffle.exec.file({
@@ -276,12 +245,12 @@ registerTask('exec', "Execute a JS file within truffle environment. Script *must
 // --no-color: Disable color
 // More to come.
 registerTask('test', "Run tests", function(done) {
-  var config = Truffle.config.gather(truffle_dir, working_dir, argv, "test");
+  var config = Truffle.config.detect();
 
   console.log("Using environment " + config.environment + ".");
 
   // Ensure we're quiet about deploys during tests.
-  config.argv.quietDeploy = true;
+  config.argv.quiet = true;
 
   var file = argv.file;
 
@@ -297,50 +266,17 @@ registerTask('test', "Run tests", function(done) {
 });
 
 registerTask('console', "Run a console with deployed contracts instantiated and available (REPL)", function(done) {
-  var config = Truffle.config.gather(truffle_dir, working_dir, argv, "development");
+  var config = Truffle.config.detect();
   Truffle.console.run(config, done);
 });
 
 registerTask('serve', "Serve app on localhost and rebuild changes as needed", function(done) {
-  var config = Truffle.config.gather(truffle_dir, working_dir, argv, "development");
+  var config = Truffle.config.detect();
   console.log("Using environment " + config.environment + ".");
   Truffle.serve.start(config, argv.port || argv.p || "8080", function() {
     runTask("watch");
   });
 });
-
-
-
-// registerTask('watch:tests', "Watch filesystem for changes and rerun tests automatically", function(done) {
-//
-//   gaze(["app/**/*", "config/**/*", "contracts/**/*", "test/**/*"], {cwd: working_dir, interval: 1000, debounceDelay: 500}, function() {
-//     // On changed/added/deleted
-//     this.on('all', function(event, filePath) {
-//       if (filePath.match(/\/config\/.*?\/.*?\.sol\.js$/)) {
-//         // ignore changes to /config/*/*.sol.js since these changes every time
-//         // tests are run (when contracts are compiled)
-//         return;
-//       }
-//       process.stdout.write("\u001b[2J\u001b[0;0H"); // clear screen
-//       var display_path = "./" + filePath.replace(working_dir, "");
-//       console.log(colors.cyan(">> File " + display_path + " changed."));
-//       run_tests();
-//     });
-//   });
-//
-//   var run_tests = function() {
-//     console.log("Running tests...");
-//
-//     process.chdir(working_dir);
-//     var config = Truffle.config.gather(truffle_dir, working_dir, argv, "test");
-//     config.argv.quietDeploy = true; // Ensure we're quiet about deploys during tests
-//
-//     Test.run(config, function() { console.log("> test run complete; watching for changes..."); });
-//   };
-//   run_tests(); // run once immediately
-//
-// });
-
 
 // Default to listing available commands.
 var current_task = argv._[0];
@@ -353,6 +289,22 @@ if (tasks[current_task] == null) {
   console.log(colors.red("Unknown command: " + current_task));
   process.exit(1);
 }
+
+
+    // // Check to see if we're working on a dapp meant for 0.2.x or older
+    // if (fs.existsSync(path.join(working_dir, "config", "app.json"))) {
+    //   console.log("Your dapp is meant for an older version of Truffle. Don't worry, there are two solutions!")
+    //   console.log("");
+    //   console.log("1) Upgrade you're dapp using the followng instructions (it's easy):");
+    //   console.log("   https://github.com/ConsenSys/truffle/wiki/Migrating-from-v0.2.x-to-v0.3.0");
+    //   console.log("");
+    //   console.log("   ( OR )")
+    //   console.log("");
+    //   console.log("2) Downgrade to Truffle 0.2.x");
+    //   console.log("");
+    //   console.log("Cheers! And file an issue if you run into trouble! https://github.com/ConsenSys/truffle/issues")
+    //   process.exit();
+    // }
 
 // Something is keeping the process open. I'm not sure what.
 // Let's explicitly kill it until I can figure it out.
