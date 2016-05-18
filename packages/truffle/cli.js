@@ -205,12 +205,13 @@ registerTask('migrate', "Run migrations", function(done) {
     quiet: argv.quiet === true,
     strict: argv.strict === true
   }, function(err) {
-    if (err) return done(rr);
+    if (err) return done(err);
 
-    Truffle.migrate.runAll({
+    Truffle.migrate.run({
       migrations_directory: config.migrations_directory,
       contracts_directory: config.contracts_build_directory,
-      provider: config.getProvider()
+      provider: config.getProvider(),
+      reset: argv.reset || false
     }, done);
   });
 });
