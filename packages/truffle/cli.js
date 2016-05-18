@@ -125,8 +125,8 @@ registerTask('version', "Show version number and exit", function(done) {
 });
 
 registerTask('init', "Initialize new Ethereum project, including example contracts and tests", function(done) {
-  var config = Truffle.config.detect();
-  Truffle.init.all(config, done);
+  var config = Truffle.config.default();
+  Truffle.init(config.working_directory, done);
 });
 
 registerTask('create:contract', "Create a basic contract", function(done) {
