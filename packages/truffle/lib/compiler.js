@@ -30,8 +30,7 @@ module.exports = {
     Profiler.updated(options, function(err, updated) {
       if (err) return callback(err);
 
-      if (updated.length == 0 && config.quiet != true) {
-        options.logger.log("No contracts updated; skipping compilation.");
+      if (updated.length == 0 && options.quiet != true) {
         return callback();
       }
 
