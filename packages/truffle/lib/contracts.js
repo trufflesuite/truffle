@@ -413,7 +413,7 @@ var Contracts = {
           var contract_class = config.contracts.classes[contract_name];
 
           if (contract_class == null) {
-            c(new DeployError("Could not find contract '" + contract_name + "' for deployment. Check truffle.json."));
+            c(new DeployError("Could not find contract '" + contract_name + "' for deployment. Check truffle.js."));
             return;
           }
 
