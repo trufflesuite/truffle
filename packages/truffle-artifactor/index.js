@@ -1,6 +1,5 @@
 var fs = require("fs");
 var path = require("path");
-var rimraf = require("rimraf");
 var class_template = fs.readFileSync(path.join(__dirname, "./classtemplate.js"), {encoding: "utf8"});
 var pkg = require("./package.json");
 var dir = require("node-dir");
