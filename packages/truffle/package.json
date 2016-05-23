@@ -30,6 +30,7 @@
     "solc": "^0.3.1-1",
     "solidity-parser": "^0.0.5",
     "spawn-args": "^0.1.0",
+    "temp": "^0.8.3",
     "truffle-default-builder": "0.0.9",
     "uglify-js": "^2.6.1",
     "web3": "^0.15.2",
