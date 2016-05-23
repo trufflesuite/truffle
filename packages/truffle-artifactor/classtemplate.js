@@ -1,11 +1,35 @@
 var Web3 = require("web3");
 
 (function() {
+  // Planned for future features, logging, etc.
+  function Provider(provider) {
+    this.provider = provider;
+  }
+
+  Provider.prototype.send = function() {
+    this.provider.send.apply(this.provider, arguments);
+  };
+
+  Provider.prototype.sendAsync = function() {
+    this.provider.sendAsync.apply(this.provider, arguments);
+  };
+
   var BigNumber = (new Web3()).toBigNumber(0).constructor;
 
   var Utils = {
     is_object: function(val) {
-      return typeof val == "object" && !(val instanceof Array);
+      return typeof val == "object" && !Array.isArray(val);
+    },
+    is_big_number: function(val) {
+      if (typeof val != "object") return false;
+
+      // Instanceof won't work because we have multiple versions of Web3.
+      try {
+        new BigNumber(val);
+        return true;
+      } catch (e) {
+        return false;
+      }
     },
     merge: function() {
       var merged = {};
@@ -33,7 +57,7 @@ var Web3 = require("web3");
         var last_arg = args[args.length - 1];
 
         // It's only tx_params if it's an object and not a BigNumber.
-        if (Utils.is_object(last_arg) && last_arg instanceof BigNumber == false) {
+        if (Utils.is_object(last_arg) && !Utils.is_big_number(last_arg)) {
           tx_params = args.pop();
         }
 
@@ -60,7 +84,7 @@ var Web3 = require("web3");
         var last_arg = args[args.length - 1];
 
         // It's only tx_params if it's an object and not a BigNumber.
-        if (Utils.is_object(last_arg) && last_arg instanceof BigNumber == false) {
+        if (Utils.is_object(last_arg) && !Utils.is_big_number(last_arg)) {
           tx_params = args.pop();
         }
 
@@ -69,16 +93,13 @@ var Web3 = require("web3");
         return new Promise(function(accept, reject) {
 
           var callback = function(error, tx) {
-            var interval = null;
-            var max_attempts = 240;
-            var attempts = 0;
-
             if (error != null) {
               reject(error);
               return;
             }
 
-            var interval;
+            var timeout = C.synchronization_timeout || 240000;
+            var start = new Date().getTime();
 
             var make_attempt = function() {
               //console.log "Interval check //{attempts}..."
@@ -89,20 +110,19 @@ var Web3 = require("web3");
                 }
 
                 if (receipt != null) {
-                  clearInterval(interval);
-                  accept(tx, receipt);
+                  return accept(tx, receipt);
                 }
 
-                if (attempts >= max_attempts) {
-                  clearInterval(interval);
-                  reject(new Error("Transaction " + tx + " wasn't processed in " + attempts + " attempts!"));
+                if (timeout > 0 && new Date().getTime() - start > timeout) {
+                  return reject(new Error("Transaction " + tx + " wasn't processed in " + (timeout / 1000) + " seconds!"));
                 }
 
                 attempts += 1;
+
+                setTimeout(make_attempt, 1000);
               });
             };
 
-            interval = setInterval(make_attempt, 1000);
             make_attempt();
           };
 
@@ -184,7 +204,8 @@ var Web3 = require("web3");
   Contract.currentProvider = null;
 
   Contract.setProvider = function(provider) {
-    this.web3.setProvider(provider);
+    var wrapped = new Provider(provider);
+    this.web3.setProvider(wrapped);
     this.currentProvider = provider;
   };
 
@@ -199,6 +220,25 @@ var Web3 = require("web3");
       throw new Error("{{NAME}} error: contract binary not set. Can't deploy new instance.");
     }
 
+    var regex = /__[^_]+_+/g;
+    var unlinked_libraries = this.binary.match(regex);
+
+    if (unlinked_libraries != null) {
+      unlinked_libraries = unlinked_libraries.map(function(name) {
+        // Remove underscores
+        return name.replace(/_/g, "");
+      }).sort().filter(function(name, index, arr) {
+        // Remove duplicates
+        if (index + 1 >= arr.length) {
+          return true;
+        }
+
+        return name != arr[index + 1];
+      }).join(", ");
+
+      throw new Error("{{NAME}} contains unresolved libraries. You must deploy and link the following libraries before you can deploy a new version of {{NAME}}: " + unlinked_libraries);
+    }
+
     var self = this;
 
     return new Promise(function(accept, reject) {
@@ -207,7 +247,7 @@ var Web3 = require("web3");
       var last_arg = args[args.length - 1];
 
       // It's only tx_params if it's an object and not a BigNumber.
-      if (Utils.is_object(last_arg) && last_arg instanceof BigNumber == false) {
+      if (Utils.is_object(last_arg) && !Utils.is_big_number(last_arg)) {
         tx_params = args.pop();
       }
 
@@ -237,6 +277,10 @@ var Web3 = require("web3");
   };
 
   Contract.at = function(address) {
+    if (address == null || typeof address != "string" || address.length != 42) {
+      throw new Error("Invalid address passed to {{NAME}}.at(): " + address);
+    }
+
     var contract_class = this.web3.eth.contract(this.abi);
     var contract = contract_class.at(address);
 
@@ -245,7 +289,7 @@ var Web3 = require("web3");
 
   Contract.deployed = function() {
     if (!this.address) {
-      throw new Error("Contract address not set - deployed() relies on the contract class having a static 'address' value; please set that before using deployed().");
+      throw new Error("Cannot find deployed address: {{NAME}} not deployed or address not set.");
     }
 
     return this.at(this.address);
@@ -327,8 +371,8 @@ var Web3 = require("web3");
     this.unlinked_binary = this.prototype.unlinked_binary = network.unlinked_binary;
     this.address         = this.prototype.address         = network.address;
 
-    if (this.unlinked_binary == "") {
-      this.unlinked_binary = this.binary;
+    if (this.unlinked_binary == null || this.unlinked_binary == "") {
+      this.unlinked_binary = this.prototype.unlinked_binary = this.binary;
     }
 
     this.current_network_id = network_id;

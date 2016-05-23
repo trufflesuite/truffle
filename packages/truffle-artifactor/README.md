@@ -61,10 +61,10 @@ var contract_data = {
 	address: "..."         // String; optional. 
 };
 
-Pudding.save(contract_data, "./MyContract.sol.js");
-
-// The file ./MyContract.sol.js now exists, which you can 
-// import into your project like any other Javascript file.
+Pudding.save(contract_data, "./MyContract.sol.js").then(function() {
+  // The file ./MyContract.sol.js now exists, which you can 
+  // import into your project like any other Javascript file.
+});
 ```
 
 #### Using `.sol.js` Files
@@ -153,7 +153,7 @@ MetaCoin.new().then(function(coin) {
 
 #### `Pudding.save([contract_name,] contract_data, filename, options)`
 
-Save contract data as a `.sol.js` file.
+Save contract data as a `.sol.js` file. Returns a Promise.
 
 * `contract_name`: String. Optional. Name of contract class to be created.
 * `contract_data`: Object. Example:
@@ -172,7 +172,7 @@ Save contract data as a `.sol.js` file.
     ```javascript
     var MyContract = require("./path/to/MyContract.sol.js");
     
-    Pudding.save(MyContract, ...);
+    Pudding.save(MyContract, ...).then(...);
     ```
     
 * `filename`: Path to save contract file.
@@ -187,7 +187,7 @@ The contract name is only important in the source code that gets generated, whic
 
 #### `Pudding.saveAll(contracts, directory, options)`
 
-Save many contracts to the filesystem at once. 
+Save many contracts to the filesystem at once. Returns a Promise.
 
 * `contracts`: Object. Keys are the contract names and the values are `contract_data` objects, as in the `save()` function above:
 
@@ -208,7 +208,7 @@ Save many contracts to the filesystem at once.
 
 #### `Pudding.generate([contract_name,] networks)`
 
-Generate the source code that populates the `.sol.js` file, returned as a string.
+Generate the source code that populates the `.sol.js` file. Returns a String.
 
 * `contract_name`: String. Optional. Name of the contract to generate.
 * `networks`: Object. Contains the information about this contract for each network, keyed by the network id.

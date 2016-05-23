@@ -5,6 +5,7 @@ var temp = require("temp").track();
 var path = require("path");
 var solc = require("solc");
 var fs = require("fs");
+var requireNoCache = require("./require-nocache");
 var TestRPC = require("ethereumjs-testrpc");
 var Web3 = require("web3");
 
@@ -95,20 +96,18 @@ describe("Different networks:", function() {
     Pudding.save("Example", {
       abi: abi,
       binary: binary
-    }, filepath, {network_id: network_one_id});
+    }, filepath, {network_id: network_one_id}).then(function() {
+      return Pudding.save("Example", {
+        abi: abi,
+        binary: binary
+      }, filepath, {network_id: network_two_id});
+    }).then(function() {
+      ExampleOne = requireNoCache(filepath);
+      ExampleTwo = ExampleOne(network_two_id);
 
-    Pudding.save("Example", {
-      abi: abi,
-      binary: binary
-    }, filepath, {network_id: network_two_id});
-
-    ExampleOne = Pudding.requireNoCache(filepath);
-    ExampleTwo = ExampleOne(network_two_id);
-
-    ExampleOne.setProvider(network_one);
-    ExampleTwo.setProvider(network_two);
-
-    done();
+      ExampleOne.setProvider(network_one);
+      ExampleTwo.setProvider(network_two);
+    }).then(done).catch(done);
   });
 
   before("Get/set first network accounts", function(done) {

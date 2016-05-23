@@ -5,6 +5,7 @@ var temp = require("temp").track();
 var path = require("path");
 var solc = require("solc");
 var fs = require("fs");
+var requireNoCache = require("./require-nocache");
 var TestRPC = require("ethereumjs-testrpc");
 var Web3 = require("web3");
 
@@ -45,14 +46,10 @@ describe("Pudding + require", function() {
       abi: abi,
       binary: binary,
       address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01"
-    }, filepath);
-
-    var scope = {};
-
-    Example = Pudding.requireNoCache(filepath);
-    Example.setProvider(provider)
-
-    done(null);
+    }, filepath).then(function() {
+      Example = requireNoCache(filepath);
+      Example.setProvider(provider)
+    }).then(done).catch(done);
   });
 
   before(function(done) {
@@ -98,7 +95,7 @@ describe("Pudding + require", function() {
     assert.isUndefined(Example.my_function, "Function should not have been applied to the class");
     assert.isNotNull(Example.prototype.my_function, "Function should have been applied to the _extended attribute");
 
-    var example = Example.at(Example.deployed_address);
+    var example = Example.deployed();
     assert.isNotNull(example.my_function, "Function should have been applied to the instance");
     example.my_function(example);
   });

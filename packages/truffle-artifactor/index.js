@@ -4,6 +4,9 @@ var rimraf = require("rimraf");
 var class_template = fs.readFileSync(path.join(__dirname, "./classtemplate.js"), {encoding: "utf8"});
 var pkg = require("./package.json");
 var dir = require("node-dir");
+var async = require("async");
+var Module = require('module');
+var vm = require('vm');
 var _ = require("lodash");
 
 // TODO: This should probably be asynchronous.
@@ -18,41 +21,78 @@ module.exports = {
 
     options = options || {};
 
-    var network_id = options.network_id || "default";
-    var existing_networks = {};
+    this.normalizeContractData(contract_data);
 
-    if (options.overwrite != true && fs.existsSync(filename)) {
-      var Contract = this.requireNoCache(filename);
-      existing_networks = Contract.all_networks;
-    }
+    var self = this;
 
-    if (existing_networks[network_id] == null) {
-      existing_networks[network_id] = {};
-    }
+    return new Promise(function(accept, reject) {
+      fs.readFile(filename, {encoding: "utf8"}, function(err, source) {
+        var existing_networks = {};
 
-    _.merge(existing_networks[network_id], contract_data);
+        // If no error during reading, file exists.
+        if (options.overwrite != true && err == null) {
+          var Contract = self._requireFromSource(source, filename);
 
-    var network_ids = Object.keys(existing_networks);
-    if (network_ids.length == 1 && network_ids[0] != "default") {
-      existing_networks["default"] = existing_networks[network_ids[0]];
-    }
+          // Note: The || statement ensures we support old .sol.js files.
+          existing_networks = Contract.all_networks || existing_networks;
+        }
 
-    var final_source = this.generate(contract_name, existing_networks);
+        var network_id = options.network_id || "default";
 
-    fs.writeFileSync(filename, final_source, {encoding: "utf8"});
+        if (existing_networks[network_id] == null) {
+          existing_networks[network_id] = {};
+        }
+
+        // merge only specific keys
+        ["abi", "binary", "unlinked_binary", "address"].forEach(function(key) {
+          existing_networks[network_id][key] = contract_data[key] || existing_networks[network_id][key];
+        });
+
+        var network_ids = Object.keys(existing_networks);
+        if (network_ids.length == 1 && network_ids[0] != "default") {
+          existing_networks["default"] = existing_networks[network_ids[0]];
+        }
+
+        var final_source = self.generate(contract_name, existing_networks);
+
+        fs.writeFile(filename, final_source, "utf8", function(err) {
+          if (err) return reject(err);
+          accept();
+        });
+      });
+    });
   },
 
   saveAll: function(contracts, destination, options) {
-    if (!fs.existsSync(destination)) {
-      throw new Error("Desination " + destination + " doesn't exist!");
+    var self = this;
+
+    //console.log(contracts);
+
+    if (Array.isArray(contracts)) {
+      var arr = contracts;
+      contracts = {};
+      arr.forEach(function(contract) {
+        contracts[contract.contract_name] = contract;
+      });
     }
 
-    for (var contract_name of Object.keys(contracts)) {
-      var contract_data = contracts[contract_name];
-      var filename = path.join(destination, contract_name + ".sol.js");
+    return new Promise(function(accept, reject) {
+      fs.stat(destination, function(err, stat) {
+        if (err) {
+          return reject(new Error("Desination " + destination + " doesn't exist!"));
+        }
 
-      this.save(contract_data, contract_name, filename, options);
-    }
+        async.each(Object.keys(contracts), function(contract_name, done) {
+          var contract_data = contracts[contract_name];
+          var filename = path.join(destination, contract_name + ".sol.js");
+
+          self.save(contract_name, contract_data, filename, options).then(done).catch(done);
+        }, function(err) {
+          if (err) return reject(err);
+          accept();
+        });
+      });
+    });
   },
 
   generate: function(contract_name, networks) {
@@ -60,7 +100,6 @@ module.exports = {
       networks = contract_name;
       contract_name = "Contract";
     }
-
 
     if (this.isSingleLevelObject(networks)) {
       networks = {
@@ -79,11 +118,7 @@ module.exports = {
 
   whisk: function(contract_name, networks) {
     var source = this.generate(contract_name, networks);
-
-    var Module = module.constructor;
-    var m = new Module();
-    m._compile(source, contract_name + ".sol.js");
-    return m.exports;
+    return this._requireFromSource(source, contract_name + ".sol.js");
   },
 
   isSingleLevelObject: function(obj) {
@@ -136,8 +171,105 @@ module.exports = {
     });
   },
 
-  requireNoCache: function(filePath) {
-    delete require.cache[path.resolve(filePath)];
-    return require(filePath);
+  // options.provider
+  // options.defaults
+  requireFile: function(file, options, callback) {
+    var self = this;
+
+    if (typeof options == "function") {
+      callback = options;
+      options = {};
+    }
+
+    options = options || {};
+
+    fs.readFile(file, {encoding: "utf8"}, function(err, body) {
+      if (err) return callback(err);
+
+      var contract;
+      try {
+        contract = self._requireFromSource(body, file);
+      } catch (e) {
+        return callback(e);
+      }
+
+      if (options.provider != null) {
+        contract.setProvider(options.provider);
+      }
+
+      if (options.defaults != null) {
+        contract.defaults(options.defaults);
+      }
+
+      callback(null, contract);
+    });
+  },
+
+  // options.source_directory: directory of .sol.js files.
+  // options.provider: Optional. Will set the provider for each contract required.
+  // options.defaults: Optional. Set defaults for each contract required.
+  requireAll: function(options, callback) {
+    var self = this;
+
+    var getFiles = function(files_or_directory, cb) {
+      if (Array.isArray(files_or_directory)) {
+        return cb(files_or_directory);
+      }
+
+      dir.files(files_or_directory, function(err, files) {
+        if (err) return cb(err);
+        files = files.filter(function(file) {
+          return path.basename(file).indexOf(".sol.js") > 0 && path.basename(file)[0] != ".";
+        });
+        cb(null, files);
+      });
+    };
+
+    getFiles(options.source_directory, function(err, files) {
+      async.map(files, function(file, finished) {
+        self.requireFile(file, options, finished);
+      }, callback);
+    });
+  },
+
+  _requireFromSource: function(source, filename) {
+    // Modified from here: https://gist.github.com/anatoliychakkaev/1599423
+    // Allows us to require asynchronously while allowing specific dependencies.
+    var m = new Module(filename);
+
+    // Provide all the globals listed here: https://nodejs.org/api/globals.html
+    var context = {
+      Buffer: Buffer,
+      __dirname: path.dirname(filename),
+      __filename: filename,
+      clearImmediate: clearImmediate,
+      clearInterval: clearInterval,
+      clearTimeout: clearTimeout,
+      console: console,
+      exports: exports,
+      global: global,
+      module: m,
+      process: process,
+      require: require,
+      setImmediate: setImmediate,
+      setInterval: setInterval,
+      setTimeout: setTimeout,
+    };
+
+    var script = vm.createScript(source, filename);
+    script.runInNewContext(context);
+
+    return m.exports;
+  },
+
+  // Allow input directly from solc.
+  normalizeContractData: function(contract_data) {
+    if (contract_data.interface != null) {
+      contract_data.abi = JSON.parse(contract_data.interface);
+    }
+
+    if (contract_data.bytecode != null) {
+      contract_data.binary = contract_data.bytecode
+    }
   }
 };
