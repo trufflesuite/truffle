@@ -1,6 +1,7 @@
 var fs = require("fs");
 var dir = require("node-dir");
 var path = require("path");
+var Contracts = require("./contracts");
 var Pudding = require("ether-pudding");
 var Deployer = require("./deployer");
 var Profiler = require("./profiler");
@@ -14,100 +15,77 @@ function Migration(file) {
   this.number = parseInt(path.basename(file));
 };
 
-Migration.prototype.run = function(options, callback) {
+Migration.prototype.run = function(options, contracts, callback) {
   var self = this;
   var logger = options.logger || console;
+
+  if (options.quiet) {
+    logger = {
+      log: function() {}
+    }
+  };
+
   var web3 = new Web3();
   web3.setProvider(options.provider);
 
   logger.log("Running migration: " + path.relative(options.migrations_directory, this.file));
 
-  Pudding.requireAll({
-    source_directory: options.contracts_directory,
-    provider: options.provider || (options.web3 != null ? options.web3.currentProvider : null)
-  }, function(err, contracts) {
-    if (err) return callback(err);
+  // Initial context.
+  var context = {
+    web3: web3
+  };
 
-    web3.eth.getAccounts(function(err, accounts) {
-      if (err) return callback(err);
+  // Add contracts to context and prepare contracts.
+  contracts.forEach(function(contract) {
+    context[contract.contract_name] = contract;
 
-      // Initial context.
-      var context = {
-        web3: web3
-      };
+    // During migrations, we could be on a network that takes a long time to accept
+    // transactions (i.e., contract deployment close to block size). Because successful
+    // migration is more important than wait time in those cases, we'll synchronize "forever".
+    contract.synchronization_timeout = 0;
+  });
 
-      // Add contracts to context and prepare contracts.
-      contracts.forEach(function(contract) {
-        context[contract.contract_name] = contract;
-
-        // Set defaults based on configuration.
-        contract.defaults({
-          from: options.from || accounts[0],
-          gas: options.gas,
-          gasPrice: options.gasPrice
-        });
-
-        // During migrations, we could be on a network that takes a long time to accept
-        // transactions (i.e., contract deployment close to block size). Because successful
-        // migration is more important than wait time in those cases, we'll synchronize "forever".
-        contract.synchronization_timeout = 0;
-
-        if (options.network_id) {
-          contract.setNetwork(network_id);
-        }
-
-        // If this is the initial migration, assume no contracts
-        // have been deployed previously.
-        if (options.reset == true) {
-          contract.address = null;
-        }
-      });
-
-      if (options.reset == true) {
-        options.reset = false;
+  var deployer = new Deployer({
+    logger: {
+      log: function(msg) {
+        logger.log("  " + msg);
       }
+    },
+    contracts: contracts
+  });
 
-      var deployer = new Deployer({
-        logger: {
-          log: function(msg) {
-            logger.log("  " + msg);
-          }
-        },
-        contracts: contracts
-      });
-
-      var finish = function(err) {
-        if (err) return callback(err);
-        deployer.start().then(function() {
-          logger.log("Saving successful migration to network...");
-          var Migrations = context["Migrations"];
-          if (Migrations && Migrations.address) {
-            return Migrations.deployed().setCompleted(self.number);
-          }
-        }).then(function() {
-          logger.log("Saving artifacts...");
-          return Pudding.saveAll(contracts, options.contracts_directory, options.network_id);
-        }).then(function() {
-          callback();
-        }).catch(function(e) {
-          logger.log("Error encountered, bailing. Network state unknown. Review successful transactions manually.");
-          callback(e);
-        });
-      };
-
-      Require.file({
-        file: self.file,
-        context: context,
-        args: [deployer]
-      }, function(err, fn) {
-        if (fn.length <= 1) {
-          fn(deployer);
-          finish();
-        } else {
-          fn(deployer, finish);
-        }
-      });
+  var finish = function(err) {
+    if (err) return callback(err);
+    deployer.start().then(function() {
+      if (options.save === false) return;
+      logger.log("Saving successful migration to network...");
+      var Migrations = context["Migrations"];
+      if (Migrations && Migrations.address) {
+        return Migrations.deployed().setCompleted(self.number);
+      }
+    }).then(function() {
+      if (options.save === false) return;
+      logger.log("Saving artifacts...");
+      return Pudding.saveAll(contracts, options.build_directory, options.network_id);
+    }).then(function() {
+      callback();
+    }).catch(function(e) {
+      logger.log("Error encountered, bailing. Network state unknown. Review successful transactions manually.");
+      callback(e);
     });
+  };
+
+  Require.file({
+    file: self.file,
+    context: context,
+    args: [deployer]
+  }, function(err, fn) {
+    if (fn.length <= 1) {
+      fn(deployer);
+      finish();
+    } else {
+      fn(deployer, finish);
+    }
   });
 };
 
@@ -178,16 +156,20 @@ var Migrate = {
   },
 
   runMigrations: function(migrations, options, callback) {
-    async.eachSeries(migrations, function(migration, finished) {
-      migration.run(options, function(err) {
-        if (err) return finished(err);
-        finished();
-      });
-    }, callback);
+    Contracts.provision(options, function(err, contracts) {
+      if (err) return callback(err);
+
+      async.eachSeries(migrations, function(migration, finished) {
+        migration.run(options, contracts, function(err) {
+          if (err) return finished(err);
+          finished();
+        });
+      }, callback);
+    });
   },
 
   lastCompletedMigration: function(options, callback) {
-    var migrations_contract = path.resolve(path.join(options.contracts_directory, "Migrations.sol.js"));
+    var migrations_contract = path.resolve(path.join(options.build_directory, "Migrations.sol.js"));
 
     Pudding.requireFile(migrations_contract, function(err, Migrations) {
       if (err) return callback(new Error("Could not find built Migrations contract."));
