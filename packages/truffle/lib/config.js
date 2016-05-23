@@ -8,18 +8,20 @@ var findUp = require("find-up");
 
 var DEFAULT_CONFIG_FILENAME = "truffle.js";
 
-function Config(truffle_directory, working_directory) {
+function Config(truffle_directory, working_directory, network) {
   var self = this;
 
   this._values = {
     truffle_directory: truffle_directory || path.resolve(path.join(__dirname, "../")),
-    working_directory: working_directory || process.cwd()
+    working_directory: working_directory || process.cwd(),
+    network: network || "default"
   };
 
   var props = {
-    // First two already set.
+    // First three already set.
     truffle_directory: function() {},
     working_directory: function() {},
+    network: function() {},
 
     build_directory: function() {
       return path.join(self.working_directory, "build");
@@ -38,9 +40,6 @@ function Config(truffle_directory, working_directory) {
     },
     test_file_extension_regexp: function() {
       return /.*\.(js|es|es6|jsx)$/
-    },
-    network: function() {
-      return "default"
     },
     networks: function() {
       return {
@@ -68,7 +67,7 @@ function Config(truffle_directory, working_directory) {
       return {
         host: "localhost",
         port: "8545",
-        gas: 3141592,
+        gas: 4712388,
         gasPrice: 100000000000, // 100 Shannon,
         from: null
       }
@@ -93,16 +92,16 @@ Config.prototype.addProp = function(key, default_getter) {
   });
 };
 
-Config.prototype.getProvider = function(network_id) {
-  if (network_id == null) {
-    network_id = "default";
-  }
+Config.prototype.getProvider = function(options) {
+  options = options || {};
+
+  var network_id = options.network_id || this.network;
 
   if (this.networks[network_id] == null) {
     throw new ConfigurationError("Cannot find network '" + network_id + "'");
   }
 
-  return Provider.create(_.merge({}, this.rpc, this.networks[network_id]));
+  return Provider.create(_.merge(options, this.rpc, this.networks[network_id]));
 };
 
 // Helper function for expecting paths to exist.
@@ -144,7 +143,7 @@ Config.default = function() {
   return new Config();
 };
 
-Config.detect = function(filename) {
+Config.detect = function(network, filename) {
   if (filename == null) {
     filename = DEFAULT_CONFIG_FILENAME;
   }
@@ -155,17 +154,23 @@ Config.detect = function(filename) {
     throw new ConfigurationError("Could not find suitable configuration file.");
   }
 
-  return this.load(file);
+  return this.load(file, network);
 };
 
-Config.load = function(file) {
+Config.load = function(file, network) {
   var config = new Config();
 
   config.working_directory = path.dirname(path.resolve(file));
 
   var static_config = requireNoCache(file);
 
-  return _.merge(config, static_config);
+  config = _.merge(config, static_config);
+
+  if (network) {
+    config.network = network;
+  }
+
+  return config;
 };
 
 module.exports = Config;
