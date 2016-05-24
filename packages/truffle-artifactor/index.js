@@ -205,29 +205,35 @@ module.exports = {
   },
 
   // options.source_directory: directory of .sol.js files.
+  // options.files: Specific files to require. Use instead of source_directory
   // options.provider: Optional. Will set the provider for each contract required.
   // options.defaults: Optional. Set defaults for each contract required.
   requireAll: function(options, callback) {
     var self = this;
 
-    var getFiles = function(files_or_directory, cb) {
-      if (Array.isArray(files_or_directory)) {
-        return cb(files_or_directory);
-      }
-
-      dir.files(files_or_directory, function(err, files) {
-        if (err) return cb(err);
-        files = files.filter(function(file) {
-          return path.basename(file).indexOf(".sol.js") > 0 && path.basename(file)[0] != ".";
-        });
-        cb(null, files);
-      });
-    };
-
-    getFiles(options.source_directory, function(err, files) {
+    this.contractFiles(options.source_directory || options.files, function(err, files) {
       async.map(files, function(file, finished) {
         self.requireFile(file, options, finished);
       }, callback);
+    });
+  },
+
+  contractFiles: function(files_or_directory, extension, cb) {
+    if (typeof extension == "function") {
+      cb = extension;
+      extension = ".sol.js";
+    }
+
+    if (Array.isArray(files_or_directory)) {
+      return cb(files_or_directory);
+    }
+
+    dir.files(files_or_directory, function(err, files) {
+      if (err) return cb(err);
+      files = files.filter(function(file) {
+        return path.basename(file).indexOf(extension) > 0 && path.basename(file)[0] != ".";
+      });
+      cb(null, files);
     });
   },
 

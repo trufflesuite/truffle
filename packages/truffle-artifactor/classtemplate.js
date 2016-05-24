@@ -102,12 +102,8 @@ var Web3 = require("web3");
             var start = new Date().getTime();
 
             var make_attempt = function() {
-              //console.log "Interval check //{attempts}..."
-              C.web3.eth.getTransactionReceipt(tx, function(e, receipt) {
-                // If there's an error ignore it.
-                if (e != null) {
-                  return;
-                }
+              C.web3.eth.getTransactionReceipt(tx, function(err, receipt) {
+                if (err) return reject(err);
 
                 if (receipt != null) {
                   return accept(tx, receipt);
@@ -271,7 +267,6 @@ var Web3 = require("web3");
       };
 
       args.push(tx_params, intermediary);
-
       contract_class.new.apply(contract_class, args);
     });
   };
