@@ -1,10 +1,10 @@
 var async = require("async");
 var Promise = require("bluebird");
 var mkdirp = Promise.promisify(require("mkdirp"));
-var rimraf = Promise.promisify(require("rimraf"));
+var del = require("del");
 var fs = require("fs");
 var DefaultBuilder = require("truffle-default-builder");
-var PuddingLoader = require("ether-pudding/loader");
+var Contracts = require("./contracts");
 var BuildError = require("./errors/builderror");
 var child_process = require("child_process");
 var spawnargs = require("spawn-args");
@@ -27,7 +27,7 @@ CommandBuilder.prototype.build = function(options, callback) {
       WORKING_DIRECTORY: options.working_directory,
       NODE_ENV: options.environment,
       BUILD_DESTINATION_DIRECTORY: options.destination_directory,
-      BUILD_CONTRACTS_DIRECTORY: options.contracts_directory,
+      BUILD_CONTRACTS_DIRECTORY: options.contracts_build_directory,
       WEB3_PROVIDER_LOCATION: "http://" + options.rpc.host + ":" + options.rpc.port
     })
   });
@@ -50,41 +50,22 @@ CommandBuilder.prototype.build = function(options, callback) {
 };
 
 var Build = {
-  clean: function(destination, callback) {
+  clean: function(options, callback) {
+
+    var destination = options.build_directory;
+    var contracts_build_directory = options.contracts_build_directory;
+
     // Clean first.
-    rimraf(destination + '/*').then(function() {
+    del([destination + '/*', "!" + contracts_build_directory]).then(function() {
       return mkdirp(destination);
     }).then(function() {
       callback();
     }).catch(callback);
   },
 
-  get_contract_data: function(config, callback) {
-    if (config.app.resolved.include_contracts === false) {
-      return callback(null, []);
-    }
-
-    var warning = "Warning: No compiled contracts found. App will be built without compiled contracts.";
-
-    if (fs.existsSync(config.contracts.build_directory) == false) {
-      console.log(warning);
-      callback(null, []);
-    } else {
-      PuddingLoader.contract_data(config.contracts.build_directory, function(err, contracts) {
-        if (err) return callback(err);
-
-        if (contracts.length == 0) {
-          console.log(warning);
-        }
-
-        callback(null, contracts);
-      });
-    }
-  },
-
   // Note: key is a legacy parameter that will eventually be removed.
   // It's specific to the default builder and we should phase it out.
-  build: function(config, key, callback) {
+  build: function(options, key, callback) {
     var self = this;
 
     if (typeof key == "function") {
@@ -92,12 +73,13 @@ var Build = {
       key = "build";
     }
 
-    var builder = config.app.resolved.build;
+    var logger = options.logger || console;
+    var builder = options.builder;
 
     // No builder specified. Ignore the build then.
     if (typeof builder == "undefined") {
-      if (config.argv.quietDeploy == null) {
-        console.log("No build configuration specified. Not building.");
+      if (options.quiet != true) {
+        logger.log("No build configuration specified. Not building.");
       }
       return callback();
     }
@@ -109,7 +91,7 @@ var Build = {
       // a proper build function, then assume it's configuration
       // for the default builder.
       if (builder.hasOwnProperty("build") == false || typeof builder.build !== "function") {
-        builder = new DefaultBuilder(config.app.resolved.build, key, config.app.resolved.processors);
+        builder = new DefaultBuilder(builder, key, options.processors);
       }
     } else {
       // If they've only provided a build function, use that.
@@ -124,22 +106,23 @@ var Build = {
       clean = builder.clean;
     }
 
-    clean(config.build.directory, function(err) {
+    clean(options, function(err) {
       if (err) return callback(err);
 
-      self.get_contract_data(config, function(err, contracts) {
+      Contracts.provision(options, function(err, contracts) {
         if (err) return callback(err);
 
-        var options = {
-          working_directory: config.working_dir,
+        var resolved_options = {
+          working_directory: options.working_directory,
           contracts: contracts,
-          contracts_directory: config.contracts.build_directory,
-          rpc: config.app.resolved.rpc,
-          environment: config.environment,
-          destination_directory: config.build.directory,
+          contracts_directory: options.contracts_build_directory,
+          destination_directory: options.build_directory,
+          rpc: options.rpc,
+          provider: options.provider,
+          network: options.network
         };
 
-        builder.build(options, function(err) {
+        builder.build(resolved_options, function(err) {
           if (!err) return callback();
 
           if (typeof err == "string") {

@@ -95,13 +95,20 @@ Config.prototype.addProp = function(key, default_getter) {
 Config.prototype.getProvider = function(options) {
   options = options || {};
 
+  var rpc_options = this.getRPCConfig(options);
+  return Provider.create(rpc_options);
+};
+
+Config.prototype.getRPCConfig = function(options) {
+  options = options || {};
+
   var network_id = options.network_id || this.network;
 
   if (this.networks[network_id] == null) {
     throw new ConfigurationError("Cannot find network '" + network_id + "'");
   }
 
-  return Provider.create(_.merge(options, this.rpc, this.networks[network_id]));
+  return _.merge(options, this.rpc, this.networks[network_id])
 };
 
 // Helper function for expecting paths to exist.

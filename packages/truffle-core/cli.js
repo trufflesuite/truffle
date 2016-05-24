@@ -176,7 +176,7 @@ registerTask('compile', "Compile contracts", function(done) {
   Truffle.contracts.compile({
     all: argv.all === true,
     source_directory: config.contracts_directory,
-    build_directory: config.contracts_build_directory,
+    contracts_build_directory: config.contracts_build_directory,
     quiet: argv.quiet === true,
     strict: argv.strict === true
   }, done);
@@ -184,7 +184,17 @@ registerTask('compile', "Compile contracts", function(done) {
 
 registerTask('build', "Build development version of app", function(done) {
   var config = Truffle.config.detect(environment);
-  Truffle.build.build(config, function(err) {
+  Truffle.build.build({
+    builder: config.build,
+    build_directory: config.build_directory,
+    working_directory: config.working_directory,
+    contracts_build_directory: config.contracts_build_directory,
+    processors: config.processors, // legacy option for default builder
+    provider: config.getProvider({
+      verbose: argv.verboseRpc
+    }),
+    rpc: config.getRPCConfig()
+  }, function(err) {
     done(err);
     if (err == null) {
       printSuccess();
@@ -206,9 +216,9 @@ registerTask('migrate', "Run migrations", function(done) {
   var config = Truffle.config.detect(environment);
 
   Truffle.contracts.compile({
-    all: argv.all === true || argv.allContracts === true,
+    all: argv.compileAll === true,
     source_directory: config.contracts_directory,
-    build_directory: config.contracts_build_directory,
+    contracts_build_directory: config.contracts_build_directory,
     quiet: argv.quiet === true,
     strict: argv.strict === true
   }, function(err) {
@@ -216,7 +226,7 @@ registerTask('migrate', "Run migrations", function(done) {
 
     Truffle.migrate.run({
       migrations_directory: config.migrations_directory,
-      build_directory: config.contracts_build_directory,
+      contracts_build_directory: config.contracts_build_directory,
       provider: config.getProvider({
         verbose: argv.verboseRpc
       }),
@@ -299,7 +309,7 @@ registerTask('test', "Run tests", function(done) {
       Truffle.test.run({
         compileAll: argv.compileAll,
         contracts_directory: config.contracts_directory,
-        build_directory: temporaryDirectory,
+        contracts_build_directory: temporaryDirectory,
         migrations_directory: config.migrations_directory,
         test_files: files,
         provider: config.getProvider({
@@ -317,7 +327,9 @@ registerTask('console', "Run a console with deployed contracts instantiated and 
 
 registerTask('serve', "Serve app on localhost and rebuild changes as needed", function(done) {
   var config = Truffle.config.detect(environment);
-  Truffle.serve.start(config, argv.port || argv.p || "8080", function() {
+  Truffle.serve.start({
+    build_directory: config.build_directory
+  }, argv.p || argv.port || "8080", function() {
     runTask("watch");
   });
 });

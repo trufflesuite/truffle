@@ -17,7 +17,7 @@ var Contracts = {
     web3.setProvider(options.provider);
 
     Pudding.requireAll({
-      source_directory: options.build_directory,
+      source_directory: options.contracts_build_directory,
       provider: options.provider
     }, function(err, contracts) {
       if (err) return callback(err);
@@ -50,7 +50,7 @@ var Contracts = {
   },
 
   // source_directory: String. Directory where .sol files can be found.
-  // build_directory: String. Directory where .sol.js files can be found and written to.
+  // contracts_build_directory: String. Directory where .sol.js files can be found and written to.
   // all: Boolean. Compile all sources found. Defaults to true. If false, will compare sources against built files
   //      in the build directory to see what needs to be compiled.
   // network_id: network id to link saved contract artifacts.
@@ -85,17 +85,17 @@ var Contracts = {
   },
 
   write_contracts: function(contracts, options, callback) {
-    mkdirp(options.build_directory, function(err, result) {
+    mkdirp(options.contracts_build_directory, function(err, result) {
       if (err != null) {
         callback(err);
         return;
       }
 
       if (options.quiet != true && options.quietWrite != true) {
-        console.log("Writing artifacts to ." + path.sep + path.relative(process.cwd(), options.build_directory));
+        console.log("Writing artifacts to ." + path.sep + path.relative(process.cwd(), options.contracts_build_directory));
       }
 
-      Pudding.saveAll(contracts, options.build_directory, options).then(callback).catch(callback);
+      Pudding.saveAll(contracts, options.contracts_build_directory, options).then(callback).catch(callback);
     });
   }
 }
