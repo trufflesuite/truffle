@@ -49,7 +49,7 @@ Pudding consists of two parts: The code generator that generates your `.sol.js` 
 
 Generate `.sol.js` files given a contract name and contract data, structured as an object. This will save a `.sol.js` file into the destination directory for each contract specified. 
 
-**Note:** Pudding (the generator) isn't intended to be used in the browser or in a package manager like browserify or webpack, though it likely could be browserified. The resultant `.sol.js` files **_are_**, however. 
+**Note:** Pudding (the generator) isn't intended to be used in the browser or in a package manager like browserify or webpack. The resultant `.sol.js` files **_are_** well suited for the browser, however. 
 
 ```javascript
 var Pudding = require("ether-pudding");
