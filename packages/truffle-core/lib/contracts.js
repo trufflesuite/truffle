@@ -61,6 +61,7 @@ var Contracts = {
 
     function finished(err, contracts) {
       if (err) return callback(err);
+
       if (contracts != null && Object.keys(contracts).length > 0) {
         self.write_contracts(contracts, options, callback);
       } else {
