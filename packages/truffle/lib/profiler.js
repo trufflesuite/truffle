@@ -25,7 +25,7 @@ module.exports = {
 
   updated: function(options, callback) {
     var source_directory = options.source_directory;
-    var build_directory = options.build_directory;
+    var build_directory = options.contracts_build_directory;
 
     this.all_contracts(source_directory, function(err, files) {
       var expected_build_files = files.map(function(file) {
