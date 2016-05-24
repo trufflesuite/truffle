@@ -322,7 +322,19 @@ registerTask('test', "Run tests", function(done) {
 
 registerTask('console', "Run a console with deployed contracts instantiated and available (REPL)", function(done) {
   var config = Truffle.config.detect(environment);
-  Truffle.console.run(config, done);
+  Truffle.console.run({
+    working_directory: config.working_directory,
+    contracts_directory: config.contracts_directory,
+    contracts_build_directory: config.contracts_build_directory,
+    migrations_directory: config.migrations_directory,
+    provider: config.getProvider({
+      verbose: argv.verboseRpc
+    }),
+    builder: config.build,
+    build_directory: config.build_directory,
+    processors: config.processors, // legacy option for default builder
+    rpc: config.getRPCConfig()
+  }, done);
 });
 
 registerTask('serve', "Serve app on localhost and rebuild changes as needed", function(done) {
