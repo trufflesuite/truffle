@@ -1,7 +1,7 @@
 {
   "name": "ether-pudding",
-  "version": "2.0.9",
-  "description": "Pudding - a (more) delightful Ethereum contract abstraction",
+  "version": "3.0.0",
+  "description": "Pudding - Contract packager for Ethereum and Javascript",
   "author": "Tim Coulter",
   "main": "./index.js",
   "private": false,
@@ -12,19 +12,18 @@
     "type": "git",
     "url": "https://github.com/consensys/ether-pudding.git"
   },
-  "license": "MIT License. Copyright Consensys LLC, and authors. All rights reserved.",
+  "license": "MIT",
   "devDependencies": {
     "chai": "^3.4.1",
-    "ethereumjs-testrpc": "^0.1.1",
-    "json-loader": "^0.5.4",
     "mocha": "^2.3.4",
     "solc": "^0.1.6",
-    "temp": "^0.8.3",
-    "web3": "^0.15.1",
-    "webpack": "^1.12.11"
+    "temp": "^0.8.3"
   },
   "dependencies": {
-    "bluebird": "^3.1.5",
-    "node-dir": "^0.1.11"
+    "async": "^1.5.2",
+    "ethereumjs-testrpc": "^2.0.7",
+    "lodash": "^4.11.2",
+    "node-dir": "^0.1.11",
+    "web3": "^0.15.3"
   }
 }

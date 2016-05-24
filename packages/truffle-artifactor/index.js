@@ -1,315 +1,280 @@
-var Promise = require("bluebird");
+var fs = require("fs");
+var path = require("path");
+var class_template = fs.readFileSync(path.join(__dirname, "./classtemplate.js"), {encoding: "utf8"});
 var pkg = require("./package.json");
+var dir = require("node-dir");
+var async = require("async");
+var Module = require('module');
+var vm = require('vm');
+var _ = require("lodash");
 
-function Pudding(contract) {
-  if (!this.abi) {
-    throw new Error("Contract ABI not set. Please inherit Pudding and set static .abi variable with contract abi.");
-  }
+// TODO: This should probably be asynchronous.
+module.exports = {
+  save: function(contract_name, contract_data, filename, options) {
+    if (typeof contract_name == "object") {
+      options = filename;
+      filename = contract_data;
+      contract_data = contract_name;
+      contract_name = "Contract";
+    }
 
-  this.contract = contract;
-  this.address = contract.address;
+    options = options || {};
 
-  for (var i = 0; i < this.abi.length; i++) {
-    var fn = this.abi[i];
-    if (fn.type == "function") {
-      if (fn.constant == true) {
-        this[fn.name] = this.constructor.promisifyFunction(this.contract[fn.name]);
-      } else {
-        this[fn.name] = this.constructor.synchronizeFunction(this.contract[fn.name]);
+    this.normalizeContractData(contract_data);
+
+    var self = this;
+
+    return new Promise(function(accept, reject) {
+      fs.readFile(filename, {encoding: "utf8"}, function(err, source) {
+        var existing_networks = {};
+
+        // If no error during reading, file exists.
+        if (options.overwrite != true && err == null) {
+          var Contract = self._requireFromSource(source, filename);
+
+          // Note: The || statement ensures we support old .sol.js files.
+          existing_networks = Contract.all_networks || existing_networks;
+        }
+
+        var network_id = options.network_id || "default";
+
+        if (existing_networks[network_id] == null) {
+          existing_networks[network_id] = {};
+        }
+
+        // merge only specific keys
+        ["abi", "binary", "unlinked_binary", "address"].forEach(function(key) {
+          existing_networks[network_id][key] = contract_data[key] || existing_networks[network_id][key];
+        });
+
+        var network_ids = Object.keys(existing_networks);
+        if (network_ids.length == 1 && network_ids[0] != "default") {
+          existing_networks["default"] = existing_networks[network_ids[0]];
+        }
+
+        var final_source = self.generate(contract_name, existing_networks);
+
+        fs.writeFile(filename, final_source, "utf8", function(err) {
+          if (err) return reject(err);
+          accept();
+        });
+      });
+    });
+  },
+
+  saveAll: function(contracts, destination, options) {
+    var self = this;
+
+    //console.log(contracts);
+
+    if (Array.isArray(contracts)) {
+      var arr = contracts;
+      contracts = {};
+      arr.forEach(function(contract) {
+        contracts[contract.contract_name] = contract;
+      });
+    }
+
+    return new Promise(function(accept, reject) {
+      fs.stat(destination, function(err, stat) {
+        if (err) {
+          return reject(new Error("Desination " + destination + " doesn't exist!"));
+        }
+
+        async.each(Object.keys(contracts), function(contract_name, done) {
+          var contract_data = contracts[contract_name];
+          var filename = path.join(destination, contract_name + ".sol.js");
+
+          self.save(contract_name, contract_data, filename, options).then(done).catch(done);
+        }, function(err) {
+          if (err) return reject(err);
+          accept();
+        });
+      });
+    });
+  },
+
+  generate: function(contract_name, networks) {
+    if (typeof contract_name == "object") {
+      networks = contract_name;
+      contract_name = "Contract";
+    }
+
+    if (this.isSingleLevelObject(networks)) {
+      networks = {
+        "default": networks
+      };
+    }
+
+    var classfile = class_template;
+
+    classfile = classfile.replace(/\{\{ALL_NETWORKS\}\}/g, JSON.stringify(networks));
+    classfile = classfile.replace(/\{\{NAME\}\}/g, contract_name);
+    classfile = classfile.replace(/\{\{PUDDING_VERSION\}\}/g, pkg.version);
+
+    return classfile;
+  },
+
+  whisk: function(contract_name, networks) {
+    var source = this.generate(contract_name, networks);
+    return this._requireFromSource(source, contract_name + ".sol.js");
+  },
+
+  isSingleLevelObject: function(obj) {
+    var keys = Object.keys(obj);
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      var val = obj[key];
+
+      if (typeof val == "object" && !Array.isArray(val)) {
+        return false;
       }
+    }
+    return true;
+  },
 
-      this[fn.name].call = this.constructor.promisifyFunction(this.contract[fn.name].call);
-      this[fn.name].sendTransaction = this.constructor.promisifyFunction(this.contract[fn.name].sendTransaction);
-      this[fn.name].request = this.contract[fn.name].request;
-      this[fn.name].estimateGas = this.constructor.promisifyFunction(this.contract[fn.name].estimateGas);
+  // Will upgrade all .sol.js files in place.
+  // Used for a past version bump. May not be useful any longer.
+  upgrade: function(source_directory, callback) {
+    var self = this;
+    var Pudding = require(".");
+
+    if (!fs.existsSync(source_directory)) {
+      callback(new Error("Source directory " + source_directory + " doesn't exist!"));
     }
 
-    if (fn.type == "event") {
-      this[fn.name] = this.contract[fn.name];
-    }
-  }
-
-  this.allEvents = this.contract.allEvents;
-};
-
-Pudding.new = function() {
-  var args = Array.prototype.slice.call(arguments);
-  var web3 = Pudding.getWeb3();
-
-  if (!this.prototype.binary) {
-    throw new Error("Contract binary not set. Please override Pudding and set .binary before calling new()");
-  }
-
-  var self = this;
-
-  return new Promise(function(accept, reject) {
-    var contract_class = web3.eth.contract(self.prototype.abi);
-    var tx_params = {};
-    var last_arg = args[args.length - 1];
-
-    // It's only tx_params if it's an object and not a BigNumber.
-    if (Pudding.is_object(last_arg) && last_arg instanceof Pudding.BigNumber == false) {
-      tx_params = args.pop();
-    }
-
-    tx_params = Pudding.merge(Pudding.class_defaults, self.prototype.class_defaults, tx_params);
-
-    if (tx_params.data == null) {
-      tx_params.data = self.prototype.binary;
-    }
-
-    // web3 0.9.0 and above calls new twice this callback twice.
-    // Why, I have no idea...
-    var intermediary = function(err, web3_instance) {
+    dir.files(source_directory, function(err, files) {
       if (err != null) {
-        reject(err);
+        callback(err);
         return;
       }
 
-      if (err == null && web3_instance != null && web3_instance.address != null) {
-        accept(new self(web3_instance));
-      }
-    };
+      var found = [];
 
-    args.push(tx_params, intermediary);
+      for (var file of files) {
+        if (path.basename(file).indexOf(".sol.js") > 0) {
+          var cls = require(file);
+          cls = cls.load(Pudding);
 
-    contract_class.new.apply(contract_class, args);
-  });
-};
-
-Pudding.at = function(address) {
-  var web3 = Pudding.getWeb3();
-  var contract_class = web3.eth.contract(this.prototype.abi);
-  var contract = contract_class.at(address);
-
-  return new this(contract);
-};
-
-Pudding.deployed = function() {
-  if (!this.prototype.address) {
-    throw new Error("Contract address not set - deployed() relies on the contract class having a static 'address' value; please set that before using deployed().");
-  }
-
-  return this.at(this.prototype.address);
-};
-
-Pudding.extend = function() {
-  var args = Array.prototype.slice.call(arguments);
-
-  for (var i = 0; i < arguments.length; i++) {
-    var object = arguments[i];
-    var keys = Object.keys(object);
-    for (var j = 0; j < keys.length; j++) {
-      var key = keys[j];
-      var value = object[key];
-      this.prototype[key] = value;
-    }
-  }
-};
-
-Pudding.whisk = function(data, constructor) {
-  if (this.web3 == null) {
-    throw new Error("Please call Pudding.setWeb3() before calling Pudding.whisk().");
-  }
-
-  var Contract = constructor;
-
-  if (constructor == null) {
-    Contract = function(contract) {
-      Pudding.apply(this, arguments);
-    };
-  }
-
-  Contract.prototype = Object.create(Pudding.prototype);
-
-  Contract.abi = Contract.prototype.abi = data.abi;
-  Contract.binary = Contract.prototype.binary = data.binary;
-  Contract.unlinked_binary = Contract.prototype.unlinked_binary = data.unlinked_binary || data.binary;
-  Contract.prototype.class_defaults = data.defaults || {};
-  Contract.address = Contract.prototype.address = data.address;
-  Contract.deployed_address = Contract.prototype.deployed_address = data.address; // deprecated
-  Contract.generated_with = Contract.prototype.generated_with = data.generated_with;
-  Contract.contract_name = Contract.prototype.contract_name = data.contract_name;
-
-  // Post-whisked loads just return the contract.
-  Contract.load = function() {
-    return Contract;
-  };
-
-  Contract.new = Pudding.new.bind(Contract);
-  Contract.at = Pudding.at.bind(Contract);
-  Contract.deployed = Pudding.deployed.bind(Contract);
-  Contract.extend = Pudding.extend.bind(Contract);
-
-  return Contract;
-}
-
-Pudding.load = function(factories, scope) {
-  if (scope == null) {
-    scope = {};
-  }
-
-  if (!(factories instanceof Array)) {
-    factories = [factories];
-  }
-
-  var names = [];
-
-  for (var i = 0; i < factories.length; i++) {
-    var factory = factories[i];
-    var result = factory.load(this);
-    names.push(result.contract_name);
-    scope[result.contract_name] = result;
-  }
-
-  return names;
-};
-
-Pudding.defaults = function(class_defaults) {
-  if (this.class_defaults == null) {
-    this.class_defaults = {};
-  }
-
-  if (class_defaults == null) {
-    class_defaults = {};
-  }
-
-  var keys = Object.keys(class_defaults);
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i];
-    var value = class_defaults[key];
-    this.class_defaults[key] = value;
-  }
-  return this.class_defaults;
-}
-
-Pudding.setWeb3 = function(web3) {
-  this.web3 = web3;
-
-  if (this.web3.toBigNumber == null) {
-    throw new Error("Pudding.setWeb3() must be passed an instance of Web3 and not Web3 itself.");
-  }
-
-  this.BigNumber = this.web3.toBigNumber(0).constructor;
-};
-
-Pudding.getWeb3 = function() {
-  return this.web3 || Pudding.web3; // Note: Pudding often times === this;
-}
-
-Pudding.is_object = function(val) {
-  return typeof val == "object" && !(val instanceof Array);
-};
-
-Pudding.merge = function() {
-  var merged = {};
-  var args = Array.prototype.slice.call(arguments);
-
-  for (var i = 0; i < args.length; i++) {
-    var object = args[i];
-    var keys = Object.keys(object);
-    for (var j = 0; j < keys.length; j++) {
-      var key = keys[j];
-      var value = object[key];
-      merged[key] = value;
-    }
-  }
-
-  return merged;
-};
-
-Pudding.promisifyFunction = function(fn) {
-  var self = this;
-  return function() {
-    var instance = this;
-
-    var args = Array.prototype.slice.call(arguments);
-    var tx_params = {};
-    var last_arg = args[args.length - 1];
-
-    // It's only tx_params if it's an object and not a BigNumber.
-    if (Pudding.is_object(last_arg) && last_arg instanceof Pudding.BigNumber == false) {
-      tx_params = args.pop();
-    }
-
-    tx_params = Pudding.merge(Pudding.class_defaults, self.class_defaults, tx_params);
-
-    return new Promise(function(accept, reject) {
-      var callback = function(error, result) {
-        if (error != null) {
-          reject(error);
-        } else {
-          accept(result);
-        }
-      };
-      args.push(tx_params, callback);
-      fn.apply(instance.contract, args);
-    });
-  };
-};
-
-Pudding.synchronizeFunction = function(fn) {
-  var self = this;
-  var web3 = Pudding.getWeb3();
-  return function() {
-    var args = Array.prototype.slice.call(arguments);
-    var tx_params = {};
-    var last_arg = args[args.length - 1];
-
-    // It's only tx_params if it's an object and not a BigNumber.
-    if (Pudding.is_object(last_arg) && last_arg instanceof Pudding.BigNumber == false) {
-      tx_params = args.pop();
-    }
-
-    tx_params = Pudding.merge(Pudding.class_defaults, self.class_defaults, tx_params);
-
-    return new Promise(function(accept, reject) {
-
-      var callback = function(error, tx) {
-        var interval = null;
-        var max_attempts = 240;
-        var attempts = 0;
-
-        if (error != null) {
-          reject(error);
-          return;
-        }
-
-        var interval;
-
-        var make_attempt = function() {
-          //console.log "Interval check //{attempts}..."
-          web3.eth.getTransaction(tx, function(e, tx_info) {
-            // If there's an error ignore it.
-            if (e != null) {
-              return;
-            }
-
-            if (tx_info.blockHash != null && tx_info.blockHash != 0x0) {
-              clearInterval(interval);
-              accept(tx);
-            }
-
-            if (attempts >= max_attempts) {
-              clearInterval(interval);
-              reject(new Error("Transaction " + tx + " wasn't processed in " + attempts + " attempts!"));
-            }
-
-            attempts += 1;
+          var source = self.generate(cls.contract_name, {
+            abi: cls.abi,
+            binary: cls.binary,
+            address: cls.address
           });
-        };
 
-        interval = setInterval(make_attempt, 1000);
-        make_attempt();
-      };
+          fs.writeFileSync(file, source, {encoding: "utf8"});
+        }
+      }
 
-      args.push(tx_params, callback);
-      fn.apply(self, args);
+      callback(null, found);
     });
-  };
+  },
+
+  // options.provider
+  // options.defaults
+  requireFile: function(file, options, callback) {
+    var self = this;
+
+    if (typeof options == "function") {
+      callback = options;
+      options = {};
+    }
+
+    options = options || {};
+
+    fs.readFile(file, {encoding: "utf8"}, function(err, body) {
+      if (err) return callback(err);
+
+      var contract;
+      try {
+        contract = self._requireFromSource(body, file);
+      } catch (e) {
+        return callback(e);
+      }
+
+      if (options.provider != null) {
+        contract.setProvider(options.provider);
+      }
+
+      if (options.defaults != null) {
+        contract.defaults(options.defaults);
+      }
+
+      callback(null, contract);
+    });
+  },
+
+  // options.source_directory: directory of .sol.js files.
+  // options.files: Specific files to require. Use instead of source_directory
+  // options.provider: Optional. Will set the provider for each contract required.
+  // options.defaults: Optional. Set defaults for each contract required.
+  requireAll: function(options, callback) {
+    var self = this;
+
+    this.contractFiles(options.source_directory || options.files, function(err, files) {
+      async.map(files, function(file, finished) {
+        self.requireFile(file, options, finished);
+      }, callback);
+    });
+  },
+
+  contractFiles: function(files_or_directory, extension, cb) {
+    if (typeof extension == "function") {
+      cb = extension;
+      extension = ".sol.js";
+    }
+
+    if (Array.isArray(files_or_directory)) {
+      return cb(files_or_directory);
+    }
+
+    dir.files(files_or_directory, function(err, files) {
+      if (err) return cb(err);
+      files = files.filter(function(file) {
+        return path.basename(file).indexOf(extension) > 0 && path.basename(file)[0] != ".";
+      });
+      cb(null, files);
+    });
+  },
+
+  _requireFromSource: function(source, filename) {
+    // Modified from here: https://gist.github.com/anatoliychakkaev/1599423
+    // Allows us to require asynchronously while allowing specific dependencies.
+    var m = new Module(filename);
+
+    // Provide all the globals listed here: https://nodejs.org/api/globals.html
+    var context = {
+      Buffer: Buffer,
+      __dirname: path.dirname(filename),
+      __filename: filename,
+      clearImmediate: clearImmediate,
+      clearInterval: clearInterval,
+      clearTimeout: clearTimeout,
+      console: console,
+      exports: exports,
+      global: global,
+      module: m,
+      process: process,
+      require: require,
+      setImmediate: setImmediate,
+      setInterval: setInterval,
+      setTimeout: setTimeout,
+    };
+
+    var script = vm.createScript(source, filename);
+    script.runInNewContext(context);
+
+    return m.exports;
+  },
+
+  // Allow input directly from solc.
+  normalizeContractData: function(contract_data) {
+    if (contract_data.interface != null) {
+      contract_data.abi = JSON.parse(contract_data.interface);
+    }
+
+    if (contract_data.bytecode != null) {
+      contract_data.binary = contract_data.bytecode
+    }
+  }
 };
-
-Pudding.class_defaults = {};
-Pudding.version = pkg.version;
-
-module.exports = Pudding;
