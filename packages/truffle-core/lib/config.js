@@ -14,14 +14,16 @@ function Config(truffle_directory, working_directory, network) {
   this._values = {
     truffle_directory: truffle_directory || path.resolve(path.join(__dirname, "../")),
     working_directory: working_directory || process.cwd(),
-    network: network || "default"
+    network: network || "default",
+    verboseRpc: false
   };
 
   var props = {
-    // First three already set.
+    // These are already set.
     truffle_directory: function() {},
     working_directory: function() {},
     network: function() {},
+    verboseRpc: function() {},
 
     build_directory: function() {
       return path.join(self.working_directory, "build");
@@ -43,9 +45,25 @@ function Config(truffle_directory, working_directory, network) {
     },
     networks: function() {
       return {
-        "default": {},
+        // "default": {},
         "test": {}
       }
+    },
+    network_id: function() {
+      if (!self.network || !self.networks[self.network] || !self.networks[self.network].network_id) {
+        return "default";
+      }
+
+      return self.networks[self.network].network_id;
+    },
+    network_config: function() {
+      var conf = self.networks[self.network];
+
+      if (conf == null && self.network == "default") {
+        return {};
+      }
+
+      return conf;
     },
     example_project_directory: function() {
       return path.join(self.truffle_directory, "example");
@@ -71,6 +89,11 @@ function Config(truffle_directory, working_directory, network) {
         gasPrice: 100000000000, // 100 Shannon,
         from: null
       }
+    },
+    provider: function() {
+      var options = self.getRPCConfig();
+      options.verboseRpc = self.verboseRpc;
+      return Provider.create(options);
     }
   };
 
@@ -92,23 +115,12 @@ Config.prototype.addProp = function(key, default_getter) {
   });
 };
 
-Config.prototype.getProvider = function(options) {
-  options = options || {};
-
-  var rpc_options = this.getRPCConfig(options);
-  return Provider.create(rpc_options);
-};
-
-Config.prototype.getRPCConfig = function(options) {
-  options = options || {};
-
-  var network_id = options.network_id || this.network;
-
-  if (this.networks[network_id] == null) {
+Config.prototype.getRPCConfig = function() {
+  if (this.network_config == null) {
     throw new ConfigurationError("Cannot find network '" + network_id + "'");
   }
 
-  return _.merge(options, this.rpc, this.networks[network_id])
+  return _.merge(this.rpc, this.network_config)
 };
 
 // Helper function for expecting paths to exist.
@@ -150,7 +162,7 @@ Config.default = function() {
   return new Config();
 };
 
-Config.detect = function(network, filename) {
+Config.detect = function(network, argv, filename) {
   if (filename == null) {
     filename = DEFAULT_CONFIG_FILENAME;
   }
@@ -161,17 +173,17 @@ Config.detect = function(network, filename) {
     throw new ConfigurationError("Could not find suitable configuration file.");
   }
 
-  return this.load(file, network);
+  return this.load(file, network, argv);
 };
 
-Config.load = function(file, network) {
+Config.load = function(file, network, argv) {
   var config = new Config();
 
   config.working_directory = path.dirname(path.resolve(file));
 
   var static_config = requireNoCache(file);
 
-  config = _.merge(config, static_config);
+  config = _.merge(config, static_config, argv);
 
   if (network) {
     config.network = network;

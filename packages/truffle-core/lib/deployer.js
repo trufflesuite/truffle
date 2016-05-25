@@ -1,6 +1,8 @@
 var EventEmitter = require("events").EventEmitter;
 var inherits = require("util").inherits;
 var Linker = require("./linker");
+var Require = require("./require");
+var path = require("path");
 
 var Actions = {
   deploy: function(contract, args, logger) {
@@ -42,7 +44,9 @@ function Deployer(options) {
   this.known_contracts = {};
   (options.contracts || []).forEach(function(contract) {
     self.known_contracts[contract.contract_name] = contract;
-  })
+  });
+  this.provider = options.provider;
+  this.basePath = options.basePath || process.cwd();
   this.started = false;
 };
 
@@ -141,6 +145,33 @@ Deployer.prototype.new = function() {
     return contract.new.apply(contract, args)
   });
   return this.chain;
+};
+
+Deployer.prototype.exec = function(file) {
+  this.checkStarted();
+
+  var self = this;
+
+  if (path.isAbsolute(file) == false) {
+    file = path.resolve(path.join(this.basePath, file));
+  }
+
+  this.chain = this.chain.then(function() {
+    self.logger.log("Running " + file + "...");
+    // Evaluate any arguments if they're promises
+    return new Promise(function(accept, reject) {
+      Require.exec({
+        file: file,
+        contracts: Object.keys(self.known_contracts).map(function(key) {
+          return self.known_contracts[key];
+        }),
+        provider: self.provider
+      }, function(err) {
+        if (err) return reject(err);
+        accept();
+      });
+    });
+  });
 };
 
 Deployer.prototype.then = function(fn) {
