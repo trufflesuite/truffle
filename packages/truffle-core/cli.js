@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 require("babel-register");
 
-var web3 = require("web3");
+var Web3 = require("web3");
 var path = require("path");
 var fs = require("fs");
 var chokidar = require('chokidar');
@@ -202,16 +202,6 @@ registerTask('build', "Build development version of app", function(done) {
   });
 });
 
-registerTask('dist', "Create distributable version of app (minified)", function(done) {
-  var config = Truffle.config.detect(environment);
-  Truffle.build.dist(config, function(err) {
-    done(err);
-    if (err == null) {
-      printSuccess();
-    }
-  });
-});
-
 registerTask('migrate', "Run migrations", function(done) {
   var config = Truffle.config.detect(environment);
 
@@ -254,11 +244,36 @@ registerTask('exec', "Execute a JS file within truffle environment. Script *must
     file = path.join(config.working_directory, file);
   }
 
-  Truffle.exec.file({
-    file: file,
-    web3: config.web3,
-    contracts: config.contracts.built_files
-  }, done);
+  var provider = config.getProvider({
+    verbose: argv.verboseRpc
+  });
+
+  Truffle.contracts.provision({
+    contracts_build_directory: config.contracts_build_directory,
+    provider: provider,
+  }, function(err, contracts) {
+    if (err) return done(err);
+
+    var web3 = new Web3();
+    web3.setProvider(provider);
+
+    var context = {
+      web3: web3
+    };
+
+    contracts.forEach(function(contract) {
+      context[contract.contract_name] = contract;
+    });
+
+    Truffle.require({
+      file: file,
+      context: context
+    }, function(err, fn) {
+      if (err) return done(err);
+      fn(done);
+    });
+  });
+
 });
 
 // Supported options:
