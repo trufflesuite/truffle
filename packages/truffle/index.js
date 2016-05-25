@@ -5,7 +5,7 @@ module.exports = {
   config: require("./lib/config"),
   console: require("./lib/repl"),
   contracts: require("./lib/contracts"),
-  exec: require("./lib/exec"),
+  require: require("./lib/require"),
   init: require("./lib/init"),
   migrate: require("./lib/migrate"),
   profile: require("./lib/profiler"),
