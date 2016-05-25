@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 require("babel-register");
 
-var Web3 = require("web3");
 var path = require("path");
 var fs = require("fs");
 var chokidar = require('chokidar');
@@ -137,7 +136,7 @@ registerTask('init', "Initialize new Ethereum project, including example contrac
 });
 
 registerTask('create:contract', "Create a basic contract", function(done) {
-  var config = Truffle.config.detect(environment);
+  var config = Truffle.config.detect(environment, argv);
 
   var name = argv.name;
 
@@ -156,7 +155,7 @@ registerTask('create:test', "Create a basic test", function(done) {
   // Force the test environment.
   environment = "test";
   printNetwork();
-  var config = Truffle.config.detect(environment);
+  var config = Truffle.config.detect(environment, argv);
 
   var name = argv.name;
 
@@ -172,27 +171,29 @@ registerTask('create:test', "Create a basic test", function(done) {
 });
 
 registerTask('compile', "Compile contracts", function(done) {
-  var config = Truffle.config.detect(environment);
+  var config = Truffle.config.detect(environment, argv);
   Truffle.contracts.compile({
     all: argv.all === true,
     source_directory: config.contracts_directory,
     contracts_build_directory: config.contracts_build_directory,
     quiet: argv.quiet === true,
-    strict: argv.strict === true
+    strict: argv.strict === true,
+    network: config.network,
+    network_id: config.network_id
   }, done);
 });
 
 registerTask('build', "Build development version of app", function(done) {
-  var config = Truffle.config.detect(environment);
+  var config = Truffle.config.detect(environment, argv);
   Truffle.build.build({
     builder: config.build,
     build_directory: config.build_directory,
     working_directory: config.working_directory,
     contracts_build_directory: config.contracts_build_directory,
     processors: config.processors, // legacy option for default builder
-    provider: config.getProvider({
-      verbose: argv.verboseRpc
-    }),
+    network: config.network,
+    network_id: config.network_id,
+    provider: config.provider,
     rpc: config.getRPCConfig()
   }, function(err) {
     done(err);
@@ -203,30 +204,32 @@ registerTask('build', "Build development version of app", function(done) {
 });
 
 registerTask('migrate', "Run migrations", function(done) {
-  var config = Truffle.config.detect(environment);
+  var config = Truffle.config.detect(environment, argv);
 
   Truffle.contracts.compile({
     all: argv.compileAll === true,
     source_directory: config.contracts_directory,
     contracts_build_directory: config.contracts_build_directory,
+    network: config.network,
     quiet: argv.quiet === true,
-    strict: argv.strict === true
+    strict: argv.strict === true,
+    network: config.network,
+    network_id: config.network_id
   }, function(err) {
     if (err) return done(err);
 
     Truffle.migrate.run({
       migrations_directory: config.migrations_directory,
       contracts_build_directory: config.contracts_build_directory,
-      provider: config.getProvider({
-        verbose: argv.verboseRpc
-      }),
+      provider: config.provider,
+      network: config.network,
       reset: argv.reset || false
     }, done);
   });
 });
 
 registerTask('exec', "Execute a JS file within truffle environment. Script *must* call process.exit() when finished.", function(done) {
-  var config = Truffle.config.detect(environment);
+  var config = Truffle.config.detect(environment, argv);
 
   var file = argv.file;
 
@@ -244,36 +247,11 @@ registerTask('exec', "Execute a JS file within truffle environment. Script *must
     file = path.join(config.working_directory, file);
   }
 
-  var provider = config.getProvider({
-    verbose: argv.verboseRpc
-  });
-
-  Truffle.contracts.provision({
+  Truffle.require.exec({
+    file: file,
     contracts_build_directory: config.contracts_build_directory,
-    provider: provider,
-  }, function(err, contracts) {
-    if (err) return done(err);
-
-    var web3 = new Web3();
-    web3.setProvider(provider);
-
-    var context = {
-      web3: web3
-    };
-
-    contracts.forEach(function(contract) {
-      context[contract.contract_name] = contract;
-    });
-
-    Truffle.require({
-      file: file,
-      context: context
-    }, function(err, fn) {
-      if (err) return done(err);
-      fn(done);
-    });
+    provider: config.provider
   });
-
 });
 
 // Supported options:
@@ -281,7 +259,7 @@ registerTask('exec', "Execute a JS file within truffle environment. Script *must
 // More to come.
 registerTask('test', "Run tests", function(done) {
   environment = "test";
-  var config = Truffle.config.detect(environment);
+  var config = Truffle.config.detect(environment, argv);
 
   var files = [];
 
@@ -327,24 +305,24 @@ registerTask('test', "Run tests", function(done) {
         contracts_build_directory: temporaryDirectory,
         migrations_directory: config.migrations_directory,
         test_files: files,
-        provider: config.getProvider({
-          verbose: argv.verboseRpc
-        }),
+        network: "test",
+        network_id: "default",
+        provider: config.provider
       }, cleanup);
     });
   });
 });
 
 registerTask('console', "Run a console with deployed contracts instantiated and available (REPL)", function(done) {
-  var config = Truffle.config.detect(environment);
+  var config = Truffle.config.detect(environment, argv);
   Truffle.console.run({
     working_directory: config.working_directory,
     contracts_directory: config.contracts_directory,
     contracts_build_directory: config.contracts_build_directory,
     migrations_directory: config.migrations_directory,
-    provider: config.getProvider({
-      verbose: argv.verboseRpc
-    }),
+    network: config.network,
+    network_id: config.network_id,
+    provider: config.provider,
     builder: config.build,
     build_directory: config.build_directory,
     processors: config.processors, // legacy option for default builder
@@ -353,11 +331,85 @@ registerTask('console', "Run a console with deployed contracts instantiated and 
 });
 
 registerTask('serve', "Serve app on localhost and rebuild changes as needed", function(done) {
-  var config = Truffle.config.detect(environment);
+  var config = Truffle.config.detect(environment, argv);
   Truffle.serve.start({
     build_directory: config.build_directory
   }, argv.p || argv.port || "8080", function() {
     runTask("watch");
+  });
+});
+
+registerTask('networks', "Show addresses for deployed contracts on each network", function(done) {
+  var config = Truffle.config.detect(environment, argv);
+  Truffle.contracts.provision({
+    contracts_build_directory: config.contracts_build_directory,
+    provider: config.provider,
+    network: config.network,
+    network_id: config.network_id
+  }, function(err, contracts) {
+    if (err) return done(err);
+
+    var ids_to_names = {};
+    var networks = {};
+
+    Object.keys(config.networks).forEach(function(network_name) {
+      var network = config.networks[network_name];
+
+      // Ignore the test network that's configured by default.
+      if (network_name == "test" && network.network_id == null) {
+        return;
+      }
+
+      var network_id = network.network_id || "default";
+      ids_to_names[network_id] = network_name;
+      networks[network_name] = [];
+    });
+
+    contracts.forEach(function(contract) {
+      Object.keys(contract.all_networks).forEach(function(network_id) {
+        var network_name = ids_to_names[network_id] || network_id;
+
+        if (networks[network_name] == null) {
+          networks[network_name] = [];
+        }
+
+        networks[network_name].push(contract);
+      });
+    });
+
+    Object.keys(networks).sort().forEach(function(network_name) {
+
+      console.log("")
+
+      networks[network_name] = networks[network_name].sort(function(a, b) {
+        a = a.contract_name;
+        b = b.contract_name;
+        if (a > b) return 1;
+        if (a < b) return -1;
+        return 0;
+      });
+
+      var output = networks[network_name].map(function(contract) {
+        if (contract.address == null) {
+          return null;
+        }
+
+        return contract.contract_name + ": " + contract.address;
+      }).filter(function(line) {
+        return line != null;
+      });
+
+      if (output.length == 0) {
+        output = ["No contracts deployed."];
+      }
+
+      console.log("Network: " + network_name);
+      console.log("  " + output.join("\n  "))
+    });
+
+    console.log("");
+
+    done();
   });
 });
 

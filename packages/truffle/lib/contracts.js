@@ -35,7 +35,7 @@ var Contracts = {
           });
 
           if (options.network_id) {
-            contract.setNetwork(network_id);
+            contract.setNetwork(options.network_id);
           }
 
           // If all addresses should be reset.
@@ -74,15 +74,6 @@ var Contracts = {
     } else {
       Compiler.compile_all(options, finished);
     }
-  },
-
-  after_deploy: function(config, done) {
-    async.eachSeries(config.app.resolved.after_deploy, function(file, iterator_callback) {
-      if (config.argv.quietDeploy == null) {
-        console.log("Running post deploy script " + file + "...");
-      }
-      Exec.file(config, file, iterator_callback);
-    }, done);
   },
 
   write_contracts: function(contracts, options, callback) {
