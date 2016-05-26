@@ -1,7 +1,25 @@
 var copy = require("./copy");
 var path = require("path");
+var temp = require("temp").track();
+var Config = require("./config");
 
-module.exports = function(destination, callback) {
+var Init = function(destination, callback) {
   var example_directory = path.resolve(path.join(__dirname, "..", "example"));
   copy(example_directory, destination, callback);
 }
+
+Init.sandbox = function(callback) {
+  var self = this;
+  temp.mkdir("truffle-sandbox-", function(err, dirPath) {
+    if (err) return callback(err);
+
+    Init(dirPath, function(err) {
+      if (err) return callback(err);
+
+      var config = Config.load(path.join(dirPath, "truffle.js"));
+      callback(null, config);
+    });
+  });
+};
+
+module.exports = Init;

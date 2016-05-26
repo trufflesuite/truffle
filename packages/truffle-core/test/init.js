@@ -1,5 +1,5 @@
 var assert = require("chai").assert;
-var Config = require("../lib/config");
+var Init = require("../lib/init");
 var fs = require("fs");
 var path = require('path');
 
@@ -8,8 +8,7 @@ describe('init', function() {
 
   before("Create a sandbox", function(done) {
     this.timeout(5000);
-    // Note: Config.sandbox() calls Init.
-    Config.sandbox(function(err, result) {
+    Init.sandbox(function(err, result) {
       if (err) return done(err);
       config = result;
       done();
