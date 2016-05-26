@@ -12,18 +12,18 @@ var Profiler = require("./profiler");
 var CompileError = require("./errors/compileerror");
 
 module.exports = {
-  // source_directory: String. Directory where .sol files can be found.
+  // contracts_directory: String. Directory where .sol files can be found.
   // quiet: Boolean. Suppress output. Defaults to false.
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
   compile_all: function(options, callback) {
     var self = this;
-    Profiler.all_contracts(options.source_directory, function(err, files) {
+    Profiler.all_contracts(options.contracts_directory, function(err, files) {
       options.files = files;
       self.compile_with_dependencies(options, callback);
     });
   },
 
-  // source_directory: String. Directory where .sol files can be found.
+  // contracts_directory: String. Directory where .sol files can be found.
   // build_directory: String. Optional. Directory where .sol.js files can be found. Only required if `all` is false.
   // all: Boolean. Compile all sources found. Defaults to true. If false, will compare sources against built files
   //      in the build directory to see what needs to be compiled.
@@ -50,7 +50,7 @@ module.exports = {
   //   includes: {
   //     "Foo.sol": "contract Foo {}" // Example
   //   },
-  //   source_directory: "..." // or process.cwd()
+  //   contracts_directory: "..." // or process.cwd()
   //   strict: false,
   //   quiet: false
   //   logger: console
@@ -59,14 +59,14 @@ module.exports = {
     var files = options.files || [];
     var includes = options.includes || {};
     var logger = options.logger || console;
-    var source_directory = options.source_directory || process.cwd();
+    var contracts_directory = options.contracts_directory || process.cwd();
 
     var sources = {};
 
     async.each(files, function(file, finished) {
       fs.readFile(file, "utf8", function(err, body) {
         if (err) return finished(err);
-        sources[path.relative(source_directory, file)] = body;
+        sources[path.relative(contracts_directory, file)] = body;
         finished();
       });
     }, function() {
@@ -124,7 +124,7 @@ module.exports = {
     options.files = options.files || [];
     options.includes = options.includes || {};
     options.logger = options.logger || console;
-    options.source_directory = options.source_directory || process.cwd();
+    options.contracts_directory = options.contracts_directory || process.cwd();
 
     var self = this;
     Profiler.required_files(options.files, function(err, files) {
@@ -132,7 +132,7 @@ module.exports = {
 
       files.sort().forEach(function(file) {
         if (options.quiet != true) {
-          var relative = path.relative(options.source_directory, file)
+          var relative = path.relative(options.contracts_directory, file)
           options.logger.log("Compiling " + relative + "...");
         }
       });

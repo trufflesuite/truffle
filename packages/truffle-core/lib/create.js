@@ -2,14 +2,22 @@ var util = require("./util");
 var file = require("./file");
 var path = require("path");
 
-var Create = {
-  contract: function(config, name, callback) {
-    if (!config.expect(config.contracts.directory, "contracts directory", callback)) {
-      return;
-    }
+var templates = {
+  test: {
+    filename: path.join(__dirname, "../", "templates", "example.js"),
+    variable: "example"
+  },
+  contract: {
+    filename: path.join(__dirname, "../", "templates", "Example.sol"),
+    name: "Example",
+    variable: "example"
+  }
+};
 
-    var from = config.templates.contract.filename;
-    var to = path.join(config.contracts.directory, name + ".sol");
+var Create = {
+  contract: function(directory, name, callback) {
+    var from = templates.contract.filename;
+    var to = path.join(directory, name + ".sol");
 
     file.duplicate(from, to, function(err) {
       if (err != null) {
@@ -17,17 +25,13 @@ var Create = {
         return;
       }
 
-      file.replace(to, config.templates.contract.name, name, callback);
+      file.replace(to, templates.contract.name, name, callback);
     });
   },
-  test: function(config, name, callback) {
-    if (!config.expect(config.tests.directory, "tests directory", callback)) {
-      return;
-    }
-
+  test: function(directory, name, callback) {
     var underscored = util.toUnderscoreFromCamel(name);
-    var from = config.templates.test.filename;
-    var to = path.join(config.tests.directory, underscored + ".js");
+    var from = templates.test.filename;
+    var to = path.join(directory, underscored + ".js");
 
     file.duplicate(from, to, function(err) {
       if (err != null) {
@@ -35,8 +39,8 @@ var Create = {
         return;
       }
 
-      file.replace(to, config.templates.contract.name, name, function() {
-        file.replace(to, config.templates.contract.variable, underscored, callback);
+      file.replace(to, templates.contract.name, name, function() {
+        file.replace(to, templates.contract.variable, underscored, callback);
       });
     });
   }

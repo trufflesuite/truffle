@@ -49,7 +49,7 @@ var Contracts = {
     });
   },
 
-  // source_directory: String. Directory where .sol files can be found.
+  // contracts_directory: String. Directory where .sol files can be found.
   // contracts_build_directory: String. Directory where .sol.js files can be found and written to.
   // all: Boolean. Compile all sources found. Defaults to true. If false, will compare sources against built files
   //      in the build directory to see what needs to be compiled.
@@ -65,7 +65,7 @@ var Contracts = {
       if (contracts != null && Object.keys(contracts).length > 0) {
         self.write_contracts(contracts, options, callback);
       } else {
-        callback();
+        callback(null, []);
       }
     };
 
@@ -87,7 +87,9 @@ var Contracts = {
         console.log("Writing artifacts to ." + path.sep + path.relative(process.cwd(), options.contracts_build_directory));
       }
 
-      Pudding.saveAll(contracts, options.contracts_build_directory, options).then(callback).catch(callback);
+      Pudding.saveAll(contracts, options.contracts_build_directory, options).then(function() {
+        callback(null, contracts);
+      }).catch(callback);
     });
   }
 }

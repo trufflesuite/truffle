@@ -5,6 +5,8 @@ var Provider = require("./provider");
 var ConfigurationError = require('./errors/configurationerror');
 var requireNoCache = require("./require-nocache");
 var findUp = require("find-up");
+var temp = require("temp").track();
+var Init = require("./init");
 
 var DEFAULT_CONFIG_FILENAME = "truffle.js";
 
@@ -68,19 +70,6 @@ function Config(truffle_directory, working_directory, network) {
     example_project_directory: function() {
       return path.join(self.truffle_directory, "example");
     },
-    templates: function() {
-      return {
-        test: {
-          filename: path.join(self.truffle_directory, "templates", "example.js"),
-          variable: "example"
-        },
-        contract: {
-          filename: path.join(self.truffle_directory, "templates", "Example.sol"),
-          name: "Example",
-          variable: "example"
-        }
-      };
-    },
     rpc: function() {
       return {
         host: "localhost",
@@ -121,6 +110,10 @@ Config.prototype.getRPCConfig = function() {
   }
 
   return _.merge(this.rpc, this.network_config)
+};
+
+Config.prototype.with = function(obj) {
+  return _.extend({}, this, obj);
 };
 
 // Helper function for expecting paths to exist.
@@ -190,6 +183,20 @@ Config.load = function(file, network, argv) {
   }
 
   return config;
+};
+
+Config.sandbox = function(callback) {
+  var self = this;
+  temp.mkdir("truffle-sandbox-", function(err, dirPath) {
+    if (err) return callback(err);
+
+    Init(dirPath, function(err) {
+      if (err) return callback(err);
+
+      var config = self.load(path.join(dirPath, "truffle.js"));
+      callback(null, config);
+    });
+  });
 };
 
 module.exports = Config;

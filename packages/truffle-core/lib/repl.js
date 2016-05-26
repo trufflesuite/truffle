@@ -79,7 +79,7 @@ TruffleInterpreter.prototype.compile = function(all, callback) {
 
   Contracts.compile({
     all: !!all,
-    source_directory: options.contracts_directory,
+    contracts_directory: options.contracts_directory,
     contracts_build_directory: options.contracts_build_directory,
     network: options.network,
     network_id: options.network_id
