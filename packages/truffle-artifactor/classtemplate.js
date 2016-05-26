@@ -365,6 +365,7 @@ var Web3 = require("web3");
     this.binary          = this.prototype.binary          = network.binary;
     this.unlinked_binary = this.prototype.unlinked_binary = network.unlinked_binary;
     this.address         = this.prototype.address         = network.address;
+    this.updated_at      = this.prototype.updated_at      = network.updated_at;
 
     if (this.unlinked_binary == null || this.unlinked_binary == "") {
       this.unlinked_binary = this.prototype.unlinked_binary = this.binary;

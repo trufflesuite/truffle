@@ -47,6 +47,8 @@ module.exports = {
           existing_networks[network_id][key] = contract_data[key] || existing_networks[network_id][key];
         });
 
+        existing_networks[network_id].updated_at = new Date().getTime();
+
         var network_ids = Object.keys(existing_networks);
         if (network_ids.length == 1 && network_ids[0] != "default") {
           existing_networks["default"] = existing_networks[network_ids[0]];
