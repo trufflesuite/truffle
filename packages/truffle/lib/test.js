@@ -234,7 +234,7 @@ var Test = {
     // Compile if needed. This will
     Contracts.compile({
       all: options.compileAll === true,
-      source_directory: options.contracts_directory,
+      contracts_directory: options.contracts_directory,
       contracts_build_directory: options.contracts_build_directory,
       network: options.network,
       network_id: options.network_id,

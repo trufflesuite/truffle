@@ -4,6 +4,7 @@ var dir = require("node-dir");
 var path = require("path");
 var async = require("async");
 var fs = require("fs");
+var Pudding = require("ether-pudding");
 var SolidityParser = require("solidity-parser");
 var Graph = require("graphlib").Graph;
 var isAcyclic = require("graphlib/lib/alg").isAcyclic;
@@ -24,38 +25,40 @@ module.exports = {
   },
 
   updated: function(options, callback) {
-    var source_directory = options.source_directory;
+    var contracts_directory = options.contracts_directory;
     var build_directory = options.contracts_build_directory;
 
-    this.all_contracts(source_directory, function(err, files) {
+    this.all_contracts(contracts_directory, function(err, files) {
       var expected_build_files = files.map(function(file) {
-        return path.join(build_directory, path.dirname(path.relative(source_directory, file)), path.basename(file) + ".js");
+        return path.join(build_directory, path.dirname(path.relative(contracts_directory, file)), path.basename(file) + ".js");
       });
 
       async.map(files, fs.stat, function(err, file_stats) {
         if (err) return callback(err);
 
-        async.map(expected_build_files, function(expected_file, finished) {
-          fs.stat(expected_file, function(err, stat) {
-            // Ignore errors when built files don't exist.
-            finished(null, stat);
+        async.map(expected_build_files, function(build_file, finished) {
+          Pudding.requireFile(build_file, options, function(err, contract) {
+            // Ignore errors, i.e., if the file doesn't exist.
+            finished(null, contract);
           });
-        }, function(err, built_file_stats) {
+        }, function(err, contracts) {
           if (err) return callback(err);
 
           var updated = [];
 
-          for (var i = 0; i < built_file_stats.length; i++) {
+          for (var i = 0; i < contracts.length; i++) {
             var file_stat = file_stats[i];
-            var built_file_stat = built_file_stats[i];
+            var contract = contracts[i];
 
-            if (built_file_stat == null) {
+            if (contract == null) {
               updated.push(files[i]);
               continue;
             }
 
             var modified_time = (file_stat.mtime || file_stat.ctime).getTime();
-            var built_time = (built_file_stat.mtime || built_file_stat.ctime).getTime();
+
+            // Note that the network is already set for is in Pudding.requireFile().
+            var built_time = contract.updated_at || 0;
 
             if (modified_time > built_time) {
               updated.push(files[i]);

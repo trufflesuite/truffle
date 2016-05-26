@@ -147,7 +147,7 @@ registerTask('create:contract', "Create a basic contract", function(done) {
   if (name == null) {
     throw new ConfigurationError("Please specify a name. Example: truffle create:contract MyContract");
   } else {
-    Truffle.create.contract(config, name, done);
+    Truffle.create.contract(config.contracts_directory, name, done);
   }
 });
 
@@ -166,7 +166,7 @@ registerTask('create:test', "Create a basic test", function(done) {
   if (name == null) {
     throw new ConfigurationError("Please specify a name. Example: truffle create:test MyTest");
   } else {
-    Truffle.create.test(config, name, done);
+    Truffle.create.test(config.test_directory, name, done);
   }
 });
 
@@ -174,7 +174,7 @@ registerTask('compile', "Compile contracts", function(done) {
   var config = Truffle.config.detect(environment, argv);
   Truffle.contracts.compile({
     all: argv.all === true,
-    source_directory: config.contracts_directory,
+    contracts_directory: config.contracts_directory,
     contracts_build_directory: config.contracts_build_directory,
     quiet: argv.quiet === true,
     strict: argv.strict === true,
@@ -208,7 +208,7 @@ registerTask('migrate', "Run migrations", function(done) {
 
   Truffle.contracts.compile({
     all: argv.compileAll === true,
-    source_directory: config.contracts_directory,
+    contracts_directory: config.contracts_directory,
     contracts_build_directory: config.contracts_build_directory,
     network: config.network,
     quiet: argv.quiet === true,
@@ -294,11 +294,7 @@ registerTask('test', "Run tests", function(done) {
       });
     };
 
-    // Copy all the built files over to a temporary directory, because we
-    // don't want to save any tests artifacts.
-    copy(config.contracts_build_directory, temporaryDirectory, function(err) {
-      if (err) return done(err);
-
+    function run() {
       Truffle.test.run({
         compileAll: argv.compileAll,
         contracts_directory: config.contracts_directory,
@@ -309,6 +305,18 @@ registerTask('test', "Run tests", function(done) {
         network_id: "default",
         provider: config.provider
       }, cleanup);
+    };
+
+    // Copy all the built files over to a temporary directory, because we
+    // don't want to save any tests artifacts. Only do this if the build directory
+    // exists.
+    fs.stat(config.contracts_build_directory, function(err, stat) {
+      if (err) return run();
+
+      copy(config.contracts_build_directory, temporaryDirectory, function(err) {
+        if (err) return done(err);
+        run();
+      });
     });
   });
 });
