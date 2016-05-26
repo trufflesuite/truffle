@@ -349,62 +349,17 @@ registerTask('serve', "Serve app on localhost and rebuild changes as needed", fu
 
 registerTask('networks', "Show addresses for deployed contracts on each network", function(done) {
   var config = Truffle.config.detect(environment, argv);
-  Truffle.contracts.provision({
-    contracts_build_directory: config.contracts_build_directory,
-    provider: config.provider,
-    network: config.network,
-    network_id: config.network_id
-  }, function(err, contracts) {
-    if (err) return done(err);
 
-    var ids_to_names = {};
-    var networks = {};
-
-    Object.keys(config.networks).forEach(function(network_name) {
-      var network = config.networks[network_name];
-
-      // Ignore the test network that's configured by default.
-      if (network_name == "test" && network.network_id == null) {
-        return;
-      }
-
-      var network_id = network.network_id || "default";
-      ids_to_names[network_id] = network_name;
-      networks[network_name] = [];
-    });
-
-    contracts.forEach(function(contract) {
-      Object.keys(contract.all_networks).forEach(function(network_id) {
-        var network_name = ids_to_names[network_id] || network_id;
-
-        if (networks[network_name] == null) {
-          networks[network_name] = [];
-        }
-
-        networks[network_name].push(contract);
-      });
-    });
+  Truffle.profile.deployed_networks(config, function(err, networks) {
+    if (err) return callback(err);
 
     Object.keys(networks).sort().forEach(function(network_name) {
 
       console.log("")
 
-      networks[network_name] = networks[network_name].sort(function(a, b) {
-        a = a.contract_name;
-        b = b.contract_name;
-        if (a > b) return 1;
-        if (a < b) return -1;
-        return 0;
-      });
-
-      var output = networks[network_name].map(function(contract) {
-        if (contract.address == null) {
-          return null;
-        }
-
-        return contract.contract_name + ": " + contract.address;
-      }).filter(function(line) {
-        return line != null;
+      var output = Object.keys(networks[network_name]).sort().map(function(contract_name) {
+        var address = networks[network_name][contract_name];
+        return contract_name + ": " + address;
       });
 
       if (output.length == 0) {
