@@ -5,8 +5,6 @@ var Provider = require("./provider");
 var ConfigurationError = require('./errors/configurationerror');
 var requireNoCache = require("./require-nocache");
 var findUp = require("find-up");
-var temp = require("temp").track();
-var Init = require("./init");
 
 var DEFAULT_CONFIG_FILENAME = "truffle.js";
 
@@ -183,20 +181,6 @@ Config.load = function(file, network, argv) {
   }
 
   return config;
-};
-
-Config.sandbox = function(callback) {
-  var self = this;
-  temp.mkdir("truffle-sandbox-", function(err, dirPath) {
-    if (err) return callback(err);
-
-    Init(dirPath, function(err) {
-      if (err) return callback(err);
-
-      var config = self.load(path.join(dirPath, "truffle.js"));
-      callback(null, config);
-    });
-  });
 };
 
 module.exports = Config;
