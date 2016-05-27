@@ -44,7 +44,7 @@ Command.prototype.run = function(command, options, callback) {
   // We don't need this.
   delete argv["$0"];
 
-  options = _.extend(options, argv);
+  options = _.extend(_.clone(options), argv);
 
   task(options, function(err) {
     callback(err);

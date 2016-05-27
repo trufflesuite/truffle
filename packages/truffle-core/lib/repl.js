@@ -51,6 +51,7 @@ TruffleInterpreter.prototype.start = function() {
 
 TruffleInterpreter.prototype.provision = function(callback) {
   var self = this;
+
   Contracts.provision(this.options, function(err, contracts) {
     if (err) return callback(err);
 
@@ -72,8 +73,15 @@ TruffleInterpreter.prototype.resetContracts = function() {
 }
 
 TruffleInterpreter.prototype.interpret = function(cmd, context, filename, callback) {
+  var self = this;
+
   if (this.command.getTask(cmd.trim()) != null) {
-    return this.command.run(cmd.trim(), this.options, callback);
+    return this.command.run(cmd.trim(), this.options, function(err) {
+      if (err) return callback(err);
+
+      // Reprovision after each command is it may change contracts.
+      self.provision(callback);
+    });
   }
 
   var result;
