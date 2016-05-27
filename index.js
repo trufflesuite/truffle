@@ -1,3 +1,5 @@
+var pkg = require("./package.json");
+
 module.exports = {
   build: require("./lib/build"),
   create: require("./lib/create"),
@@ -10,5 +12,6 @@ module.exports = {
   migrate: require("./lib/migrate"),
   profile: require("./lib/profiler"),
   serve: require("./lib/serve"),
-  test: require("./lib/test")
+  test: require("./lib/test"),
+  version: pkg.version
 };
