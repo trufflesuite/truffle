@@ -99,9 +99,11 @@ module.exports = {
             networks[network_name] = {};
           }
 
-          if (contract.address == null) return;
+          var address = contract.all_networks[network_id].address;
 
-          networks[network_name][contract.contract_name] = contract.address;
+          if (address == null) return;
+
+          networks[network_name][contract.contract_name] = address;
         });
       });
 

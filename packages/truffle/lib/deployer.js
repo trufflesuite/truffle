@@ -2,6 +2,7 @@ var EventEmitter = require("events").EventEmitter;
 var inherits = require("util").inherits;
 var Linker = require("./linker");
 var Require = require("./require");
+var expect = require("./expect");
 var path = require("path");
 
 var Actions = {
@@ -33,6 +34,13 @@ function Deployer(options) {
   Deployer.super_.call(this);
   var self = this;
   options = options || {};
+
+  expect.options(options, [
+    "provider",
+    "network",
+    "network_id"
+  ]);
+
   this.chain = new Promise(function(accept, reject) {
     self._accept = accept;
     self._reject = reject;
@@ -45,6 +53,8 @@ function Deployer(options) {
   (options.contracts || []).forEach(function(contract) {
     self.known_contracts[contract.contract_name] = contract;
   });
+  this.network = options.network;
+  this.network_id = options.network_id;
   this.provider = options.provider;
   this.basePath = options.basePath || process.cwd();
   this.started = false;
@@ -165,6 +175,8 @@ Deployer.prototype.exec = function(file) {
         contracts: Object.keys(self.known_contracts).map(function(key) {
           return self.known_contracts[key];
         }),
+        network: self.network,
+        network_id: self.network_id,
         provider: self.provider
       }, function(err) {
         if (err) return reject(err);
