@@ -114,6 +114,10 @@ Config.prototype.with = function(obj) {
   return _.extend({}, this, obj);
 };
 
+Config.prototype.merge = function(obj) {
+  return _.extend(this, obj);
+};
+
 // Helper function for expecting paths to exist.
 Config.expect = function(expected_path, description, extra, callback) {
   if (typeof description == "function") {
@@ -153,7 +157,7 @@ Config.default = function() {
   return new Config();
 };
 
-Config.detect = function(network, argv, filename) {
+Config.detect = function(options, filename) {
   if (filename == null) {
     filename = DEFAULT_CONFIG_FILENAME;
   }
@@ -164,21 +168,17 @@ Config.detect = function(network, argv, filename) {
     throw new ConfigurationError("Could not find suitable configuration file.");
   }
 
-  return this.load(file, network, argv);
+  return this.load(file, options);
 };
 
-Config.load = function(file, network, argv) {
+Config.load = function(file, options) {
   var config = new Config();
 
   config.working_directory = path.dirname(path.resolve(file));
 
   var static_config = requireNoCache(file);
 
-  config = _.merge(config, static_config, argv);
-
-  if (network) {
-    config.network = network;
-  }
+  config = _.merge(config, static_config, options);
 
   return config;
 };

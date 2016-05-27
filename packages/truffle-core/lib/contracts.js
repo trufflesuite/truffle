@@ -3,13 +3,11 @@ var fs = require("fs");
 var mkdirp = require("mkdirp");
 var path = require("path");
 var Compiler = require("./compiler");
-var Require = require("./require");
 var Pudding = require("ether-pudding");
 var Web3 = require("web3");
+var expect = require("./expect");
 
 var Contracts = {
-  account: null,
-
   provision: function(options, callback) {
     var self = this;
     var logger = options.logger || console;
@@ -59,6 +57,13 @@ var Contracts = {
   compile: function(options, callback) {
     var self = this;
 
+    expect.options(options, [
+      "contracts_directory",
+      "contracts_build_directory",
+      "network",
+      "network_id"
+    ]);
+
     function finished(err, contracts) {
       if (err) return callback(err);
 
@@ -69,10 +74,10 @@ var Contracts = {
       }
     };
 
-    if (options.all == false) {
-      Compiler.compile_necessary(options, finished);
-    } else {
+    if (options.all === true || options.compileAll === true) {
       Compiler.compile_all(options, finished);
+    } else {
+      Compiler.compile_necessary(options, finished);
     }
   },
 

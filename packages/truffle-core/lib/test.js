@@ -10,6 +10,7 @@ var Pudding = require("ether-pudding");
 var Promise = require("bluebird");
 var ExtendableError = require("./errors/extendableerror");
 var SolidityCoder = require("web3/lib/solidity/coder.js");
+var expect = require("./expect");
 
 chai.use(require("./assertions"));
 
@@ -231,6 +232,16 @@ TestRunner.prototype.rpc = function(method, arg, cb) {
 
 var Test = {
   run: function(options, callback) {
+    expect.options(options, [
+      "contracts_directory",
+      "contracts_build_directory",
+      "migrations_directory",
+      "test_files",
+      "network",
+      "network_id",
+      "provider"
+    ]);
+
     // Compile if needed. This will
     Contracts.compile({
       all: options.compileAll === true,

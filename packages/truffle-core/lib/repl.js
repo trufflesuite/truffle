@@ -1,14 +1,16 @@
 var repl = require("repl");
+var Command = require("./command");
 var Contracts = require("./contracts");
-var Migrate = require("./migrate");
-var Build = require("./build");
 var Web3 = require("web3");
 var vm = require("vm");
+var expect = require("./expect");
+var _ = require("lodash");
 
-function TruffleInterpreter(options) {
+function TruffleInterpreter(tasks, options) {
   this.options = options;
   this.contracts = [];
   this.r = null;
+  this.command = new Command(tasks);
 };
 
 TruffleInterpreter.prototype.start = function() {
@@ -69,70 +71,9 @@ TruffleInterpreter.prototype.resetContracts = function() {
   }
 }
 
-TruffleInterpreter.prototype.compile = function(all, callback) {
-  var options = this.options;
-
-  if (typeof all == "function") {
-    callback = all;
-    all = false;
-  }
-
-  Contracts.compile({
-    all: !!all,
-    contracts_directory: options.contracts_directory,
-    contracts_build_directory: options.contracts_build_directory,
-    network: options.network,
-    network_id: options.network_id
-  }, callback);
-};
-
-TruffleInterpreter.prototype.migrate = function(reset, callback) {
-  var options = this.options;
-
-  if (typeof reset == "function") {
-    callback = reset;
-    reset = false;
-  }
-
-  this.compile(false, function(err) {
-    if (err) return callback(err);
-
-    Migrate.run({
-      migrations_directory: options.migrations_directory,
-      contracts_build_directory: options.contracts_build_directory,
-      network: options.network,
-      network_id: options.network_id,
-      provider: options.provider,
-      reset: !!reset
-    }, function(err) {
-      console.log("");
-      callback(err);
-    });
-  });
-};
-
-TruffleInterpreter.prototype.build = function(callback) {
-  var options = this.options;
-
-  Build.build({
-    builder: options.builder,
-    build_directory: options.build_directory,
-    working_directory: options.working_directory,
-    contracts_build_directory: options.contracts_build_directory,
-    processors: options.processors, // legacy option for default builder
-    provider: options.provider,
-    rpc: options.rpc
-  }, callback);
-};
-
 TruffleInterpreter.prototype.interpret = function(cmd, context, filename, callback) {
-  switch (cmd.trim()) {
-    case "compile":
-      return this.compile(callback);
-    case "migrate":
-      return this.migrate(callback);
-    case "build":
-      return this.build(callback);
+  if (this.command.getTask(cmd.trim()) != null) {
+    return this.command.run(cmd.trim(), this.options, callback);
   }
 
   var result;
@@ -149,10 +90,23 @@ TruffleInterpreter.prototype.interpret = function(cmd, context, filename, callba
 var Repl = {
   TruffleInterpreter: TruffleInterpreter,
 
-  run: function(options) {
+  run: function(tasks, options) {
     var self = this;
 
-    var interpreter = new TruffleInterpreter(options);
+    expect.options(options, [
+      "working_directory",
+      "contracts_directory",
+      "contracts_build_directory",
+      "migrations_directory",
+      "network",
+      "network_id",
+      "provider",
+      "builder",
+      "build_directory",
+      "rpc"
+    ]);
+
+    var interpreter = new TruffleInterpreter(tasks, options);
     interpreter.start();
   }
 }
