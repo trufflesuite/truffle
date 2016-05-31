@@ -42,6 +42,10 @@ module.exports = {
           existing_networks[network_id] = {};
         }
 
+        if (contract_data.binary != null && contract_data.unlinked_binary == null) {
+          contract_data.unlinked_binary = contract_data.binary;
+        }
+
         // merge only specific keys
         ["abi", "binary", "unlinked_binary", "address"].forEach(function(key) {
           existing_networks[network_id][key] = contract_data[key] || existing_networks[network_id][key];
@@ -110,7 +114,7 @@ module.exports = {
 
     var classfile = class_template;
 
-    classfile = classfile.replace(/\{\{ALL_NETWORKS\}\}/g, JSON.stringify(networks));
+    classfile = classfile.replace(/\{\{ALL_NETWORKS\}\}/g, JSON.stringify(networks, null, 2));
     classfile = classfile.replace(/\{\{NAME\}\}/g, contract_name);
     classfile = classfile.replace(/\{\{PUDDING_VERSION\}\}/g, pkg.version);
 
