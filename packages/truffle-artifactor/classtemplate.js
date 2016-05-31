@@ -179,7 +179,7 @@ var Web3 = require("web3");
     // Set the network iniitally to make default data available and re-use code.
     // Then remove the saved network id so the network will be auto-detected on first use.
     fn.setNetwork("default");
-    fn.current_network_id = null;
+    fn.network_id = null;
     return fn;
   };
 
@@ -327,7 +327,7 @@ var Web3 = require("web3");
   Contract.checkNetwork = function(callback) {
     var self = this;
 
-    if (this.current_network_id != null) {
+    if (this.network_id != null) {
       return callback();
     }
 
@@ -359,7 +359,7 @@ var Web3 = require("web3");
   };
 
   Contract.setNetwork = function(network_id) {
-    var network = this.all_networks[network_id];
+    var network = this.all_networks[network_id] || {};
 
     this.abi             = this.prototype.abi             = network.abi;
     this.binary          = this.prototype.binary          = network.binary;
@@ -371,7 +371,11 @@ var Web3 = require("web3");
       this.unlinked_binary = this.prototype.unlinked_binary = this.binary;
     }
 
-    this.current_network_id = network_id;
+    this.network_id = network_id;
+  };
+
+  Contract.networks = function() {
+    return Object.keys(this.all_networks);
   };
 
   Contract.contract_name   = Contract.prototype.contract_name   = "{{NAME}}";

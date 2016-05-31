@@ -202,6 +202,10 @@ module.exports = {
         contract.defaults(options.defaults);
       }
 
+      if (options.network_id != null) {
+        contract.setNetwork(options.network_id);
+      }
+
       callback(null, contract);
     });
   },
@@ -210,7 +214,14 @@ module.exports = {
   // options.files: Specific files to require. Use instead of source_directory
   // options.provider: Optional. Will set the provider for each contract required.
   // options.defaults: Optional. Set defaults for each contract required.
+  // options.network_id: Optiona. Set the network_id after require.
   requireAll: function(options, callback) {
+    if (typeof options == "string") {
+      options = {
+        source_directory: options
+      };
+    }
+
     var self = this;
 
     this.contractFiles(options.source_directory || options.files, function(err, files) {
