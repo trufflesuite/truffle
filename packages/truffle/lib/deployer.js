@@ -115,9 +115,7 @@ var Actions = {
   }
 };
 
-
 function Deployer(options) {
-  Deployer.super_.call(this);
   var self = this;
   options = options || {};
 
