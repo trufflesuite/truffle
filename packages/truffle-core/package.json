@@ -17,7 +17,7 @@
     "cpr": "^0.4.3",
     "deasync": "^0.1.3",
     "del": "^2.2.0",
-    "ether-pudding": "^3.0.1",
+    "ether-pudding": "^3.0.3",
     "finalhandler": "^0.4.0",
     "find-up": "^1.1.2",
     "graphlib": "^2.0.0",
@@ -31,7 +31,7 @@
     "solidity-parser": "^0.0.8",
     "spawn-args": "^0.1.0",
     "temp": "^0.8.3",
-    "truffle-default-builder": "^1.0.0",
+    "truffle-default-builder": "^1.0.1",
     "uglify-js": "^2.6.1",
     "web3": "^0.15.2",
     "yargs": "^3.27.0"
