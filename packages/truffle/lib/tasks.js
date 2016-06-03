@@ -222,9 +222,10 @@ createTask('console', "Run a console with deployed contracts instantiated and av
 });
 
 createTask('serve', "Serve app on localhost and rebuild changes as needed", function(options, done) {
+  var self = this;
   var config = Truffle.config.detect(options);
   Truffle.serve.start(config, function() {
-    runTask("watch");
+    Tasks.watch(options, done);
   });
 });
 

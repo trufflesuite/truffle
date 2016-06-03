@@ -1,34 +1,120 @@
-var EventEmitter = require("events").EventEmitter;
-var inherits = require("util").inherits;
 var Linker = require("./linker");
 var Require = require("./require");
 var expect = require("./expect");
 var path = require("path");
+var DeferredChain = require("./deferredchain");
 
 var Actions = {
-  deploy: function(contract, args, logger) {
-    return new Promise(function(accept, reject) {
+  deployAndLink: function(contract, args, deployer) {
+    var self = this;
+    return function() {
+      // Autolink the contract at deploy time.
+      Linker.autolink(contract, deployer.known_contracts, deployer.logger);
+
+      return self.deploy(contract, args, deployer)();
+    }
+  },
+
+  deployAndLinkMany: function(arr, deployer) {
+    return function() {
+      // Perform all autolinking before deployment.
+      arr.forEach(function(args) {
+        var contract;
+
+        if (Array.isArray(args)) {
+          contract = args[0];
+        } else {
+          contract = args;
+        }
+
+        // Autolink the contract at deploy time.
+        Linker.autolink(contract, deployer.known_contracts, deployer.logger);
+      });
+
+      var deployments = arr.map(function(args) {
+        var contract;
+
+        if (Array.isArray(args)) {
+          contract = args.shift();
+        } else {
+          contract = args;
+          args = [];
+        }
+
+        return Actions.deploy(contract, args, deployer)();
+      });
+
+      return Promise.all(deployments);
+    };
+  },
+
+  deploy: function(contract, args, deployer) {
+    return function() {
       var prefix = "Deploying ";
       if (contract.address != null) {
         prefix = "Replacing ";
       }
 
-      logger.log(prefix + contract.contract_name + "...");
+      deployer.logger.log(prefix + contract.contract_name + "...");
 
       // Evaluate any arguments if they're promises
-      Promise.all(args).then(function(new_args) {
+      return Promise.all(args).then(function(new_args) {
         return contract.new.apply(contract, new_args);
       }).then(function(instance) {
-        logger.log(contract.contract_name + ": " + instance.address);
+        deployer.logger.log(contract.contract_name + ": " + instance.address);
         contract.address = instance.address;
-        accept();
-      }).catch(reject);
-    });
+      });
+    };
+  },
+
+  autolink: function(contract, deployer) {
+    return function() {
+      Linker.autolink(contract, deployer.known_contracts, deployer.logger);
+    };
+  },
+
+  link: function(library, destinations, deployer) {
+    return function() {
+      Linker.link(library, destinations, deployer.logger);
+    };
+  },
+
+  new: function(contract, args, deployer) {
+    return function() {
+      self.logger.log("Creating new instance of " + contract.contract_name);
+      // Evaluate any arguments if they're promises
+      return Promise.all(args).then(function(new_args) {
+        return contract.new.apply(contract, args)
+      });
+    };
+  },
+
+  exec: function(file, deployer) {
+    return function() {
+      if (path.isAbsolute(file) == false) {
+        file = path.resolve(path.join(deployer.basePath, file));
+      }
+
+      deployer.logger.log("Running " + file + "...");
+      // Evaluate any arguments if they're promises
+      return new Promise(function(accept, reject) {
+        Require.exec({
+          file: file,
+          contracts: Object.keys(deployer.known_contracts).map(function(key) {
+            return deployer.known_contracts[key];
+          }),
+          network: deployer.network,
+          network_id: deployer.network_id,
+          provider: deployer.provider
+        }, function(err) {
+          if (err) return reject(err);
+          accept();
+        });
+      });
+    };
   }
 };
 
-
-inherits(Deployer, EventEmitter);
 
 function Deployer(options) {
   Deployer.super_.call(this);
@@ -41,10 +127,7 @@ function Deployer(options) {
     "network_id"
   ]);
 
-  this.chain = new Promise(function(accept, reject) {
-    self._accept = accept;
-    self._reject = reject;
-  });
+  this.chain = new DeferredChain();
   this.logger = options.logger || console;
   if (options.quiet) {
     this.logger = {log: function() {}};
@@ -57,24 +140,17 @@ function Deployer(options) {
   this.network_id = options.network_id;
   this.provider = options.provider;
   this.basePath = options.basePath || process.cwd();
-  this.started = false;
 };
 
 // Note: In all code below we overwrite this.chain every time .then() is used
 // in order to ensure proper error processing.
 
 Deployer.prototype.start = function() {
-  var self = this;
-  return new Promise(function(accept, reject) {
-    self.chain = self.chain.then(accept).catch(reject);
-    self.started = true;
-    self._accept();
-  });
+  return this.chain.start();
 };
 
 Deployer.prototype.autolink = function(contract) {
   var self = this;
-  this.checkStarted();
 
   // autolink all contracts available.
   if (contract == null) {
@@ -84,28 +160,14 @@ Deployer.prototype.autolink = function(contract) {
     return;
   }
 
-  var self = this;
-  var regex = /__[^_]+_+/g;
-
-  this.chain = this.chain.then(function() {
-    Linker.autolink(contract, self.known_contracts, self.logger);
-  });
+  this.queueOrExec(Actions.autolink(contract, self));
 };
 
 Deployer.prototype.link = function(library, destinations) {
-  this.checkStarted();
-
-  var self = this;
-
-  this.chain = this.chain.then(function() {
-    Linker.link(library, destinations, self.logger);
-  });
+  return this.queueOrExec(Actions.link(library, destinations, this));
 };
 
 Deployer.prototype.deploy = function() {
-  this.checkStarted();
-
-  var self = this;
   var args = Array.prototype.slice.call(arguments);
   var contract = args.shift();
 
@@ -113,94 +175,43 @@ Deployer.prototype.deploy = function() {
     return this.deployMany(contract);
   }
 
-  this.chain = this.chain.then(function() {
-    return Actions.deploy(contract, args, self.logger);
-  });
-
-  return this.chain;
+  return this.queueOrExec(Actions.deployAndLink(contract, args, this));
 };
 
 Deployer.prototype.deployMany = function(arr) {
-  var self = this;
-  this.chain = this.chain.then(function() {
-    var deployments = arr.map(function(args) {
-      var contract;
-
-      if (Array.isArray(args)) {
-        contract = args.shift();
-      } else {
-        contract = args;
-        args = [];
-      }
-
-      return Actions.deploy(contract, args, self.logger);
-    });
-    return Promise.all(deployments);
-  });
-
-  return this.chain;
+  return this.queueOrExec(Actions.deployAndLinkMany(arr, this));
 };
 
 Deployer.prototype.new = function() {
-  this.checkStarted();
-
-  var self = this;
   var args = Array.prototype.slice.call(arguments);
   var contract = args.shift();
-  this.chain = this.chain.then(function() {
-    self.logger.log("Creating new instance of " + contract.contract_name);
-    // Evaluate any arguments if they're promises
-    return Promise.all(args);
-  }).then(function(new_args) {
-    return contract.new.apply(contract, args)
-  });
-  return this.chain;
+
+  return this.queueOrExec(Actions.new(contract, args, this));
 };
 
 Deployer.prototype.exec = function(file) {
-  this.checkStarted();
-
-  var self = this;
-
-  if (path.isAbsolute(file) == false) {
-    file = path.resolve(path.join(this.basePath, file));
-  }
-
-  this.chain = this.chain.then(function() {
-    self.logger.log("Running " + file + "...");
-    // Evaluate any arguments if they're promises
-    return new Promise(function(accept, reject) {
-      Require.exec({
-        file: file,
-        contracts: Object.keys(self.known_contracts).map(function(key) {
-          return self.known_contracts[key];
-        }),
-        network: self.network,
-        network_id: self.network_id,
-        provider: self.provider
-      }, function(err) {
-        if (err) return reject(err);
-        accept();
-      });
-    });
-  });
+  return this.queueOrExec(Actions.exec(file, this));
 };
 
 Deployer.prototype.then = function(fn) {
-  this.checkStarted();
-
   var self = this;
-  this.chain = this.chain.then(function() {
+
+  return this.queueOrExec(function() {
     self.logger.log("Running step...");
     return fn();
   });
-  return this.chain;
-}
+};
 
-Deployer.prototype.checkStarted = function() {
-  if (this.started == true) {
-    throw new Error("Can't add new deployment steps once the deploy has started");
+Deployer.prototype.queueOrExec = function(fn) {
+  var self = this;
+
+  if (this.chain.started == true) {
+    return new Promise(function(accept, reject) {
+      accept();
+    }).then(fn);
+  } else {
+    return this.chain.then(fn);
   }
-}
+};
 
 module.exports = Deployer;
