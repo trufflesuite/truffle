@@ -45,7 +45,8 @@
     "truffle-exec": "./exec.js"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "docs": "mkdocs serve"
   },
   "repository": {
     "type": "git",
