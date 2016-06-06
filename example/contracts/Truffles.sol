@@ -12,7 +12,20 @@ contract Truffles {
     string public symbol;
     uint8 public decimals;
 
-    function Truffles(
+    /*function Truffles(
+        uint256 _initialAmount,
+        string _tokenName,
+        uint8 _decimalUnits,
+        string _tokenSymbol
+        ) {
+        balances[msg.sender] = _initialAmount;
+        totalSupply = _initialAmount;
+        name = _tokenName;
+        decimals = _decimalUnits;
+        symbol = _tokenSymbol;
+    }*/
+
+    function initiateToken {
         uint256 _initialAmount,
         string _tokenName,
         uint8 _decimalUnits,
