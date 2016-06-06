@@ -20,30 +20,9 @@ command.run(process.argv.slice(2), function(err) {
         console.log(err.stack || err.toString());
       }
     }
+    process.exit(1);
   }
 });
-
-//var environment = argv.e || argv.environment || process.env.NODE_ENV || "default";
-//
-// if (working_dir[working_dir.length - 1] != "/") {
-//   working_dir += "/";
-// }
-//
-// var printNetwork = function() {
-//   console.log("Using network " + environment + ".");
-// };
-//
-// var printSuccess = function() {
-//   console.log(colors.green("Completed without errors on " + new Date().toString()));
-// };
-//
-// var printFailure = function() {
-//   console.log(colors.red("Completed with errors on " + new Date().toString()));
-// };
-//
-//
-
-
 
 
     // // Check to see if we're working on a dapp meant for 0.2.x or older
