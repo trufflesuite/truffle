@@ -4,7 +4,7 @@ This Token Contract implements a stripped down version of the standard token fun
 
 import "ConvertLib.sol";
 
-contract Truffles {
+contract TruffleToken {
 
     mapping (address => uint256) balances;
     uint256 public totalSupply;
@@ -12,30 +12,20 @@ contract Truffles {
     string public symbol;
     uint8 public decimals;
 
-    /*function Truffles(
-        uint256 _initialAmount,
-        string _tokenName,
-        uint8 _decimalUnits,
-        string _tokenSymbol
-        ) {
-        balances[msg.sender] = _initialAmount;
-        totalSupply = _initialAmount;
-        name = _tokenName;
-        decimals = _decimalUnits;
-        symbol = _tokenSymbol;
-    }*/
+    function TruffleToken() {}
 
-    function initiateToken {
+    function initiateToken(
         uint256 _initialAmount,
         string _tokenName,
         uint8 _decimalUnits,
         string _tokenSymbol
-        ) {
-        balances[msg.sender] = _initialAmount;
-        totalSupply = _initialAmount;
-        name = _tokenName;
-        decimals = _decimalUnits;
-        symbol = _tokenSymbol;
+        ) returns (bool success) {
+            balances[msg.sender] = _initialAmount;
+            totalSupply = _initialAmount;
+            name = _tokenName;
+            decimals = _decimalUnits;
+            symbol = _tokenSymbol;
+            return true;
     }
 
     function transfer(address _to, uint256 _value) returns (bool success) {

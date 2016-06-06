@@ -9,6 +9,10 @@ module.exports = {
     ],
     "images/": "images/"
   },
+  deploy: [
+    "TruffleToken",
+    "ConvertLib"
+  ],
   rpc: {
     host: "localhost",
     port: 8545
