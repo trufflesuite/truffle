@@ -4,24 +4,20 @@ Often you may want to run external scripts that interact with your contracts. Tr
 
 # Command
 
-Truffle provides two ways of executing external scripts. One is through the `truffle` command, as shown:
+To run an external script, perform the following:
 
 ```
 $ truffle exec <path/to/file.js>
 ```
 
-This can be burdensome in rare cases, however, and so Truffle provides a standalone executable for running external scripts:
+# File Structure
 
+In order for external scripts to be run correctly, Truffle expects them to export a function that takes a single parameter as a callback:
+
+```javascript
+module.exports = function(callback) {
+  // perform actions
+}
 ```
-$ truffle-exec <path/to/file.js>
-```
 
-Both commands are equivalent and function the same.
-
-# Caveat
-
-Although your scripts are run like normal Javascript files with a few objects made available on the global scope (like your contracts), there is one large caveat:
-
-* Due to implementation details, if you want your script to end you **must** call `process.exit()`. Your script **will not end** unless `process.exit()` is called.
-
-You can call `process.exit()` with a non-zero exit code to tell Truffle that your script ran unsuccessfully. This is important to the [after_deploy](/advanced/configuration/#after_deploy) configuration option, for instance, as you don't want the script runner to continue if it encounters an error.
+You can do anything you'd like within this script, so long as the callback is called when the script finishes. The callback accepts an error as its first and only parameter. If an error is provided, execution will halt and the process will return a non-zero exit code.
