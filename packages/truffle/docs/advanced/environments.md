@@ -23,7 +23,7 @@ In this case, Truffle will deploy new versions of your deployable contracts to t
 
 # Environment Configuration
 
-You can override the default project configuration within each of your environments by editing the environment's `config.json` file. This is a JSON file instead of a Javascript file, contrary to `truffle.js`. Future versions of Truffle will convert these files to Javascript files so they can act more like your global project configuration. For now, however, you must specify these overrides via JSON. Consider this example:
+You can override the default project configuration within each of your environments by editing the environment's `config.js` file. This is a Javascript file that overrides the global project configuration specified in `truffle.js`. Consider this example:
 
 **truffle.js**
 ```javascript
@@ -35,12 +35,12 @@ module.exports = {
 }
 ```
 
-**./environments/production/config.json**
+**./environments/production/config.js**
 ```javascript
-{
-  "rpc": {
-    "host": "192.168.1.144" // domain of ethereum client pointing to live network
-    "port": 8673            // custom port
+module.exports = {
+  rpc: {
+    host: "192.168.1.144", // domain of ethereum client pointing to live network
+    port: 8673             // custom port
   }
 }
 ```
@@ -49,7 +49,7 @@ In this example, when running `truffle deploy` Truffle will deploy to an Ethereu
 
 # Build Artifacts
 
-Except for the `config.json` file located in each environment, every other file within your environment's directory is a build artifact. These artifacts are organized in two ways:
+Except for the `config.js` file located in each environment, every other file within your environment's directory is a build artifact. These artifacts are organized in two ways:
 
 * `build`: Directory of built frontend. When using the [default builder](/getting_started/build), `truffle build` will automatically place build artifacts here.
 * `contracts`: Directory containing compiled contract output. These files have the extension ".sol.js", and are created by [Ether Pudding](https://github.com/ConsenSys/ether-pudding) to be easily integrated into any build process.
