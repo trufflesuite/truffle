@@ -6,7 +6,7 @@ $ truffle [command] [options]
 
 # Available Commands
 
-##### build           
+##### build
 
 Build a development version of the app; creates the `./environments/<name>/build` directory.
 
@@ -28,7 +28,7 @@ Run a console with your contract objects instantiated and ready to use (REPL).
 $ truffle console
 ```
 
-Once the console starts you can then use your contracts via the command line like you would in your code.
+Once the console starts, you can then use your contracts via the command line like you would in your code.
 
 Optional parameters:
 
@@ -79,7 +79,7 @@ Optional parameters:
 
 Deploying contracts will save [Pudding](https://github.com/ConsenSys/ether-pudding) class files within your environment's `contracts` directory that correspond to each of your contracts. These class files can be used in Truffle's build process or your own build process to interact with the Ethereum network.
 
-##### dist (deprecated)      
+##### dist (deprecated)
 
 Build a distributable version of the app; creates the `./environments/<name>/dist` directory.
 
@@ -143,14 +143,6 @@ List all available commands and exit. Synonymous with `--help`.
 
 ```none
 $ truffle list
-```
-
-##### resolve
-
-Resolve all dependencies within solidity files and print the result.
-
-```none
-$ truffle resolve ./path/to/contract/file.sol
 ```
 
 ##### serve
