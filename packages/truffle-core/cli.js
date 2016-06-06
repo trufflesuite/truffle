@@ -1,8 +1,6 @@
 #!/usr/bin/env node
-require("babel-register")({
-    "presets": ["es2015", "stage-2"]
-})
-require("babel-polyfill")
+require("babel-register");
+require("babel-polyfill");
 
 var Command = require("./lib/command");
 var Tasks = require("./lib/tasks");
