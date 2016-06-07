@@ -1,3 +1,5 @@
+var fs = require('fs');
+
 module.exports = {
   build: {
     "index.html": "index.html",
@@ -9,10 +11,7 @@ module.exports = {
     ],
     "images/": "images/"
   },
-  deploy: [
-    "MetaCoin",
-    "ConvertLib"
-  ],
+  deploy: fs.readdirSync('contracts').map(function(c) { return c.replace(/\.sol$/i, '') }),
   rpc: {
     host: "localhost",
     port: 8545
