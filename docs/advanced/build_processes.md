@@ -21,7 +21,7 @@ module.exports = {
 }
 ```
 
-Note that you're given ample environment variables with which to integrate with Truffle, detailed above.
+Note that you're given example environment variables with which to integrate with Truffle, detailed above.
 
 ### Providing a Custom Function
 
