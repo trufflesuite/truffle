@@ -1,13 +1,13 @@
 # Default Builder
 
-Truffle comes standard with a default build system which is meant to be easy to use. It's not suitable for every project however, and you may choose to use other build systems to package your frontend. See the [advanced build processes](/advanced/build_processes) section for more details.
+Truffle comes standard with a default build system which is meant to be easy to use. It's not suitable for every project, and you may choose to use other build systems to package your application. See the [advanced build processes](/advanced/build_processes) section for more details. Note that the default builder is targeted towards web applications, but it can be easily swapped out for another build process that works better for command line tools and libraries.
 
 # Features
 
 The default builder comes with a few standard niceties meant to get you started quickly:
 
 * Automatic bootstrapping of your application within the browser, importing your compiled contract artifacts, deployed contract information and Ethereum client configuration automatically.
-* Inclusion of recommended dependencies, including [bluebird](http://bluebirdjs.com/docs/getting-started.html) Promises, [web3](https://github.com/ethereum/web3.js/tree/master), and [Ether Pudding](https://github.com/ConsenSys/ether-pudding).
+* Inclusion of recommended dependencies, including [web3](https://github.com/ethereum/web3.js/tree/master) and [Ether Pudding](https://github.com/ConsenSys/ether-pudding).
 * Support for ES6 and JSX built-in.
 * SASS support for manageable CSS.
 * And UglifyJS support for creating minified versions of your Javascript assets.
@@ -31,7 +31,7 @@ It's corresponding configuration within your [project configuration](/advanced/c
 ```javascript
 {
   "build": {
-    // Copy ./app/index.html (right hand side) to ./environments/build/index.html (left hand side).
+    // Copy ./app/index.html (right hand side) to ./build/index.html (left hand side).
     "index.html": "index.html",
 
     // Process all files in the array, concatenating them together
@@ -68,7 +68,7 @@ $ truffle build
 
 # Build Artifacts
 
-Your build artifacts are saved within your environment. The default environment is `development`. See the [environments](/advanced/environments) section for more details.
+Your build artifacts are saved within the `./build` directory, along side compiled deployed contract artifacts in `./build/contracts`.
 
 # Considerations
 

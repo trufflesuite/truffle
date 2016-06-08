@@ -31,3 +31,7 @@ Filename matching is case-sensitive, meaning if your filename isn't capitalized,
 # Dependencies
 
 You can declare contract dependencies using Solidity's [import](http://solidity.readthedocs.org/en/latest/layout-of-source-files.html#importing-other-source-files) command. Truffle will compile contracts in the correct order and link libraries automatically when necessary.
+
+# Artifacts
+
+Artifacts of your compilation will be place in the `./build/contracts` directory, relative to your project. This directory will be created if it does not exist. These artifacts are integral to the inner workings of Truffle, and they play and important part to the successful deployment of your application. You should not edit these files by hand as they'll be overwritten by contract compilation and deployment.

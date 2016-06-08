@@ -12,9 +12,8 @@ module.exports = {
   //
   // The following environment variables will be set when running the command:
   // WORKING_DIRECTORY: root location of the project
-  // NODE_ENV: current environment
   // BUILD_DESTINATION_DIRECTORY: expected destination of built assets (important for `truffle serve`)
-  // BUILD_CONTRACTS_DIRECTORY: root location of this environment's .sol.js files  
+  // BUILD_CONTRACTS_DIRECTORY: root location of your build contract files (.sol.js)  
   // WEB3_PROVIDER_LOCATION: rpc configuration as a string, as a URL needed for web3's http provider.
   //
   build: "webpack"
@@ -36,7 +35,6 @@ module.exports = {
      // contracts: metadata about your contract files, code, etc.
      // contracts_directory: root directory of .sol files
      // rpc: rpc configuration defined in the configuration
-     // environment: current environment
      // destination_directory: directory where truffle expects the built assets (important for `truffle serve`)
   }
 }
@@ -59,12 +57,15 @@ module.exports = {
 
 Because you're using a custom build process, Truffle no longer knows how to bootstrap your frontend. You'll need to do this yourself. Here's a list of things your build process and/or application will need to do:
 
-* Include the [Web3](https://github.com/ethereum/web3.js), [Ether Pudding](https://github.com/ConsenSys/ether-pudding) and [bluebird](http://bluebirdjs.com/docs/getting-started.html) Promise dependencies. These are required for the Ether Pudding-based contract abstraction used throughout Truffle.
-* `require` or `import` the built `sol.js` files within your environment's `contracts` directory. More information about these build artifacts can be found in the [environments](/advanced/environments) section.
-* Call `.load()` on each of your contract abstraction objects, as defined in the [Ether Pudding documentation](https://github.com/ConsenSys/ether-pudding#using-pudding-contracts). This is only required to be done once per application, and is important to make sure each of your contract abstractions reference the same version of Ether Pudding.
-* Initialize Web3 and set the provider to point at the Ethereum client listed in your environment's configuration.
+* Include the [Web3](https://github.com/ethereum/web3.js) library.
+* Initialize a web3 instance and set a provider that points to your desired ethereum client. It's important to detect if the `web3` object already exists, as it might already be available if someone is viewing your application via a wallet-browser like Metamask or Mist. If the `web3` object already exists, you should use that instead of initializing your own. See [this example](https://github.com/ethereum/mist/releases/tag/0.3.6) for more details.
+* `require` or `import` the built `sol.js` files from the `./build/contracts` directory. For each `.sol.js` file, set the provider using the `MyContract.setProvider()` method. This should the same provider your `web3` instance is using. Using `web3.currentProvider` is recommended:
 
-Note that Truffle's default builder automatically bootstraps your application and detects whether or not its running inside a wallet like Mist. We recommend you detect this as well and provide the same functionality. See [this example](https://github.com/ethereum/mist/releases/tag/0.3.6).
+```javascript
+var MyContract = require("./build/contracts/MyContract.sol.js");
+MyContract.setProvider(web3.currentProvider);
+```
+
 
 # Using Webpack
 

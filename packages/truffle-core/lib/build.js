@@ -26,7 +26,6 @@ CommandBuilder.prototype.build = function(options, callback) {
     cwd: options.working_directory,
     env: _.merge(process.env, {
       WORKING_DIRECTORY: options.working_directory,
-      NODE_ENV: options.environment,
       BUILD_DESTINATION_DIRECTORY: options.destination_directory,
       BUILD_CONTRACTS_DIRECTORY: options.contracts_build_directory,
       WEB3_PROVIDER_LOCATION: "http://" + options.rpc.host + ":" + options.rpc.port
@@ -66,7 +65,7 @@ var Build = {
 
   // Note: key is a legacy parameter that will eventually be removed.
   // It's specific to the default builder and we should phase it out.
-  build: function(options, key, callback) {
+  build: function(options, callback) {
     var self = this;
 
     expect.options(options, [
@@ -80,9 +79,10 @@ var Build = {
       "rpc"
     ]);
 
-    if (typeof key == "function") {
-      callback = key;
-      key = "build";
+    var key = "build";
+
+    if (options.dist) {
+      key = "dist";
     }
 
     var logger = options.logger || console;
