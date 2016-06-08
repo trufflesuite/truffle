@@ -7,6 +7,7 @@ function DeferredChain() {
 
   this.await = new Promise(function() {
     self._done = arguments[0];
+    self._error = arguments[1];
   });
   this.started = false;
 };
@@ -17,6 +18,9 @@ DeferredChain.prototype.then = function(fn) {
     var args = Array.prototype.slice.call(arguments);
 
     return fn.apply(null, args);
+  });
+  this.chain = this.chain.catch(function(e) {
+    self._error(e);
   });
 
   return this;
