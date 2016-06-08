@@ -11,8 +11,8 @@ pages:
   - Choosing an Ethereum client: 'getting_started/client.md'
   - Creating a project: 'getting_started/project.md'
   - Compiling contracts: 'getting_started/compile.md'
-  - Deploying to the network: 'getting_started/migrations.md'
-  - Building your frontend: 'getting_started/build.md'
+  - Running migrations: 'getting_started/migrations.md'
+  - Building your application: 'getting_started/build.md'
   - Testing your contracts: 'getting_started/testing.md'
   - Interacting with your contracts: 'getting_started/contracts.md'
   - Using the console: 'getting_started/console.md'
@@ -21,6 +21,6 @@ pages:
   - Contact the developers: 'getting_started/contact.md'
 - Advanced:
   - Configuration: 'advanced/configuration.md'
-  - Environments: 'advanced/environments.md'
+  - Networks & App Deployment: 'advanced/networks.md'
   - Build Processes: 'advanced/build_processes.md'
   - Command Reference: 'advanced/commands.md'
