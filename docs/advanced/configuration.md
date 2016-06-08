@@ -16,10 +16,6 @@ module.exports = {
     ],
     "images/": "images/"
   },
-  deploy: [
-    "MetaCoin",
-    "ConvertLib"
-  ],
   rpc: {
     host: "localhost",
     port: 8545
@@ -27,7 +23,7 @@ module.exports = {
 };
 ```
 
-The default configuration ships with three options specified: `build`, `deploy`, and `rpc`. These options as well as non-default options are detailed below.
+The default configuration ships with two options specified: `build` and `rpc`. These options as well as non-default options are detailed below.
 
 # Options
 
@@ -50,30 +46,46 @@ build: {
 }
 ```
 
-### deploy
+### networks
 
-An array of contracts that you want deployed when `truffle deploy` is run. This topic is discussed in detail in the [deploying to the network](/getting_started/deploy) section.
+Specifies which networks are available for deployment during migrations. When compiling and running migrations on a specific network, contract artifacts will be saved and recorded for later use. When your contract abstractions detect that you're Ethereum client is connected to a specific network, they'll use the contract artifacts associated that network to simplify app deployment. Networks are identified through Ethereum's `net_version` RPC call.
 
-**Example:**
+The `networks` object, shown below, is keyed by a network name and contains a corresponding object that defines the parameters of the network. The `networks` option is not required, but if specified, each network it defines must specify a corresponding `network_id`. If you'd like a specific network configuration to be associated with every network that *doesn't* match any other network in the list, use a `network_id` of "default". However, there should only be one default network. Traditionally, the default network is used during development, where contract artifacts don't matter long-term and the network id continuously changes, for instance, if the TestRPC is restarted.
 
-```javascript
-deploy: [
-  "MetaCoin",
-  "ConvertLib"
-]
+The network name is used for user interface purposes, such as when running your migrations on a specific network:
+
+```bash
+$ truffle migrate --network live
 ```
 
-### after_deploy
-
-An array of scripts meant to be run after a successful deploy. These scripts are run in order, and executed using the `truffle exec` functionality described in the [external scripts](/getting_started/scripts) section. These scripts have access to the contracts defined within your current environment, and can be used to write custom deployment steps as if you were writing tests or your frontend. Each path is relative to the root directory of your project.
+You can optionally specify rpc information for each network. Examples below.  
 
 **Example:**
 
 ```javascript
-after_deploy: [
-  "./register_contracts.js",
-  "./demo_data.js"
-]
+networks: {
+  "live": {
+    network_id: 1, // Ethereum public network
+    // optional config values
+    // host - defaults to "localhost"
+    // port - defaults to 8545
+    // gas
+    // gasPrice
+    // from - default address to use for any transaction Truffle makes during migrations
+  },
+  "morden": {
+    network_id: 2,       // Official Ethereum test network
+    host: "178.25.19.88" // Random IP for example purposes (do not use)
+    port: 80             
+  },
+  "staging": {
+    network_id: 1337 // custom private network
+    // use default rpc settings
+  },
+  "development": {
+    network_id: "default"
+  }
+}
 ```
 
 ### rpc
@@ -84,7 +96,7 @@ Details about how to connect to your ethereum client. The `host` and `port` keys
 * `port`: Port number where your Etheruem client accepts requests. Default is `8545`.
 * `gas`: Gas limit used for deploys. Default is `3141592`.  
 * `gasPrice`: Gas price used for deploys. Default is `100000000000` (100 Shannon).
-* `from`: From address used in deploys. If not specified, defaults to the first available account provided by your Ethereum client.
+* `from`: From address used during migrations. If not specified, defaults to the first available account provided by your Ethereum client.
 
 **Example:**
 
@@ -106,7 +118,3 @@ mocha: {
   useColors: true
 }
 ```
-
-# Considerations
-
-You can override any of the settings specified in `truffle.js` for each of your environments. See more details in the [environments](/advanced/environments) section.

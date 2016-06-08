@@ -1,10 +1,4 @@
-# Client Configuration
-
-Before deploying contracts to the network, ensure your Ethereum client is running and receiving requests on `http://localhost:8545`. This is the default location Truffle expects your client to handle requests, though you can change this within your [project configuration](/advanced/configuration). If you're using the [EthereumJS TestRPC](https://github.com/ethereumjs/testrpc), you're all set as it defaults to that hostname and port number.
-
-# Migrations
-
-Contract deployment within Truffle is performed through Migrations. Migrations are scripts that stage your deployment, and they're written under the assumption that your deployment needs will change over time. As your project evolves, new migration scripts are created. A history of previously run migrations is recorded on-chain through special `Migrations` contract, detailed below.
+Migrations are Javascript files that help you deploy contracts to the Ethereum network. These files are responsible for staging your deployment tasks, and they're written under the assumption that your deployment needs will change over time. As your project evolves, you'll create new migration scripts to further this evolution on the blockchain. A history of previously run migrations is recorded on-chain through a special `Migrations` contract, detailed below.
 
 # Command
 
@@ -14,13 +8,13 @@ To run your migrations, run the following:
 $ truffle migrate
 ```
 
-This will run all migrations located within your project's `migrations` directory. If your migrations were previously run successfully, `truffle migrate` still start execution from the last migration that was ran, running only newly created migrations. If no new migrations exists, `truffle migrate` won't perform any action at all.
+This will run all migrations located within your project's `migrations` directory. If your migrations were previously run successfully, `truffle migrate` will start execution from the last migration that was ran, running only newly created migrations. If no new migrations exists, `truffle migrate` won't perform any action at all. You can use the `--reset` option to run all your migrations from the beginning.
 
 # Migration Files
 
 A simple migration file looks like this:
 
-Filename: 3_example_migration.js
+Filename: 4_example_migration.js
 
 ```javascript
 module.exports = function(deployer) {
@@ -79,14 +73,14 @@ module.exports = function(deployer) {
 }
 ```
 
-From here, you could create new migrations with increasing numbered prefixes to deploy other contracts and perform further deployment steps.
+From here, you can create new migrations with increasing numbered prefixes to deploy other contracts and perform further deployment steps.
 
 # Deployer
 
 Your migration files will use the deployer to stage deployment tasks. As such, you can write deployment tasks synchronously and they'll be executed in the correct order:
 
 ```javascript
-// Deploy A before B
+// Stage deploying A before B
 deployer.deploy(A);
 deployer.deploy(B);
 ```
@@ -100,13 +94,11 @@ deployer.deploy(A).then(function() {
 });
 ```
 
-It is possible to write your deployment as a single promise chain if you find that to be more clear.
-
-The deployer API is discussed at the bottom of this page.
+It is possible to write your deployment as a single promise chain if you find that syntax to be more clear. The deployer API is discussed at the bottom of this page.
 
 # Network Considerations
 
-It is possible to run deployment steps conditionally based on the network being deployed to. This is an advanced feature, so see the Networks section first before continuing.
+It is possible to run deployment steps conditionally based on the network being deployed to. This is an advanced feature, so see the [Networks](/advanced/networks) section first before continuing.
 
 To conditionally stage deployment steps, write your migrations so that they accept a second parameter, called `network`. Example:
 
@@ -129,7 +121,7 @@ Deploy a specific contract, specified by the contract object, with optional cons
 
 You can optionally pass an array of contracts, or an array of arrays, to speed up deployment of multiple contracts.
 
-Note that `deploy` will automatically link any required libraries to the contracts that are being deployed, if addresses for those libraries are available. You *must* deploy your libraries first before deploying a contract that depends on one of those libraries.
+Note that `deploy` will automatically link any required libraries to the contracts that are being deployed, if the addresses for those libraries are available. You *must* deploy your libraries first before deploying a contract that depends on one of those libraries.
 
 Examples:
 
@@ -179,6 +171,15 @@ deployer.deploy([LibB, LibC]);
 deployer.autolink(A);
 ```
 
+Alternatively, you can call `autolink()` without a first parameter. This will link all libraries available to the contracts that depend on them. Ensure your libraries are deployed first before calling this function.
+
+Example:
+
+```javascript
+// Link *all* libraries to all available contracts
+deployer.autolink();
+```
+
 ##### deployer.then(function() {...})
 
 Just like a promise, run an arbitrary deployment step.
@@ -195,12 +196,6 @@ deployer.then(function() {
   return b.setA(instance.address);
 });
 ```
-
-##### deployer.new(contract, args...)
-
-Exactly like `deploy()` except that this function does not save the contract address. This is purely syntactic sugar, but will be recorded as a deployment step in the logs. _Might be removed._
-
-An alternative is to use `Contract.new()` within a then block. See example above.
 
 ##### deployer.exec(pathToFile)
 

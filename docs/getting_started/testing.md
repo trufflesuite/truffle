@@ -37,7 +37,7 @@ Note that the string `'MetaCoin'` passed to the `contract()` function is for dis
 
 # Contracts
 
-Truffle provides a contract abstraction for you that makes interacting with your contracts easy. You can see this abstraction at work within the `var meta = MetaCoin.deployed()` line of code. Truffle ensures that interacting with contracts within your tests is the same as interacting with contracts within your frontend, and you can read more about [that interaction](/getting_started/contracts) in the next section.
+Truffle provides a contract abstraction for you that makes interacting with your contracts easy. You can see this abstraction at work within the `var meta = MetaCoin.deployed()` line of code. Truffle ensures that interacting with contracts within your tests is the same as interacting with contracts within your frontend and within your migrations, and you can read more about [that interaction](/getting_started/contracts) in the next section.
 
 # Command
 
@@ -52,8 +52,6 @@ Alternatively, you can specify a path to a specific file you want to run, e.g.,
 ```none
 $ truffle test ./path/to/test/file.js
 ```
-
-By default, tests are run within the `test` environment. See the [environments](/advanced/environments) section for more details.
 
 # Considerations
 

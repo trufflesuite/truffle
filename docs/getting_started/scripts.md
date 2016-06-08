@@ -1,6 +1,6 @@
 # Background
 
-Often you may want to run external scripts that interact with your contracts. Truffle provides an easy way to do this, bootstrapping your contracts based on your environment and connecting to your Ethereum client automatically per your [project configuration](/advanced/configuration).
+Often you may want to run external scripts that interact with your contracts. Truffle provides an easy way to do this, bootstrapping your contracts based on your desired network and connecting to your Ethereum client automatically per your [project configuration](/advanced/configuration).
 
 # Command
 
