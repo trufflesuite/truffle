@@ -5,6 +5,7 @@ var Web3 = require("web3");
 var vm = require("vm");
 var expect = require("./expect");
 var _ = require("lodash");
+var ExtendableError = require("./errors/extendableerror");
 
 function TruffleInterpreter(tasks, options) {
   this.options = options;
@@ -77,7 +78,16 @@ TruffleInterpreter.prototype.interpret = function(cmd, context, filename, callba
 
   if (this.command.getTask(cmd.trim()) != null) {
     return this.command.run(cmd.trim(), this.options, function(err) {
-      if (err) return callback(err);
+      if (err) {
+        // Perform error handling ourselves.
+        if (err instanceof ExtendableError) {
+          console.log(err.message);
+        } else {
+          // Bubble up all other unexpected errors.
+          console.log(err.stack || err.toString());
+        }
+        return callback();
+      }
 
       // Reprovision after each command is it may change contracts.
       self.provision(callback);
