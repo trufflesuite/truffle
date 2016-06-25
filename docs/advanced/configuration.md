@@ -33,7 +33,7 @@ The default configuration ships with three options specified: `build`, `deploy`,
 
 ### build
 
-Build configuration of your frontend. By default this configuration invokes the default builder, described in the [Build](/getting_started/build) section, but you can use custom build processes as well. See the [advanced build processes](/advanced/build_processes) section for details.
+Build configuration of your frontend. By default this configuration invokes the default builder, described in the [Build](../getting_started/build.md) section, but you can use custom build processes as well. See the [advanced build processes](build_processes.md) section for details.
 
 **Example:**
 
@@ -52,7 +52,7 @@ build: {
 
 ### deploy
 
-An array of contracts that you want deployed when `truffle deploy` is run. This topic is discussed in detail in the [deploying to the network](/getting_started/deploy) section.
+An array of contracts that you want deployed when `truffle deploy` is run. This topic is discussed in detail in the [deploying to the network](../getting_started/deploy.md) section.
 
 **Example:**
 
@@ -65,7 +65,7 @@ deploy: [
 
 ### after_deploy
 
-An array of scripts meant to be run after a successful deploy. These scripts are run in order, and executed using the `truffle exec` functionality described in the [external scripts](/getting_started/scripts) section. These scripts have access to the contracts defined within your current environment, and can be used to write custom deployment steps as if you were writing tests or your frontend. Each path is relative to the root directory of your project.
+An array of scripts meant to be run after a successful deploy. These scripts are run in order, and executed using the `truffle exec` functionality described in the [external scripts](../getting_started/scripts.md) section. These scripts have access to the contracts defined within your current environment, and can be used to write custom deployment steps as if you were writing tests or your frontend. Each path is relative to the root directory of your project.
 
 **Example:**
 
@@ -109,4 +109,4 @@ mocha: {
 
 # Considerations
 
-You can override any of the settings specified in `truffle.js` for each of your environments. See more details in the [environments](/advanced/environments) section.
+You can override any of the settings specified in `truffle.js` for each of your environments. See more details in the [environments](environments.md) section.
