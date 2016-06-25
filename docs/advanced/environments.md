@@ -19,7 +19,7 @@ Most Truffle commands will behave differently based on the environment specified
 $ truffle deploy -e production
 ```
 
-In this case, Truffle will deploy new versions of your deployable contracts to the Ethereum client specified in the production environment. Note that if you don't override the default configuration options for the environment chosen -- details below -- then Truffle will use the options specified in your [project configuration](/advanced/configuration).
+In this case, Truffle will deploy new versions of your deployable contracts to the Ethereum client specified in the production environment. Note that if you don't override the default configuration options for the environment chosen -- details below -- then Truffle will use the options specified in your [project configuration](configuration.md).
 
 # Environment Configuration
 
@@ -51,10 +51,10 @@ In this example, when running `truffle deploy` Truffle will deploy to an Ethereu
 
 Except for the `config.js` file located in each environment, every other file within your environment's directory is a build artifact. These artifacts are organized in two ways:
 
-* `build`: Directory of built frontend. When using the [default builder](/getting_started/build), `truffle build` will automatically place build artifacts here.
+* `build`: Directory of built frontend. When using the [default builder](../getting_started/build.md), `truffle build` will automatically place build artifacts here.
 * `contracts`: Directory containing compiled contract output. These files have the extension ".sol.js", and are created by [Ether Pudding](https://github.com/ConsenSys/ether-pudding) to be easily integrated into any build process.
 
-If using Truffle's [default builder](/getting_started/build), you will not have to interact with these build artifacts directly. However, if you choose to use a custom build process, you'll need to use these artifacts in order to correctly bootstrap your application. See the [advanced build processes](/advanced/build_processes) section for more details.
+If using Truffle's [default builder](../getting_started/build.md), you will not have to interact with these build artifacts directly. However, if you choose to use a custom build process, you'll need to use these artifacts in order to correctly bootstrap your application. See the [advanced build processes](build_processes.md) section for more details.
 
 
 # Renaming Environments
