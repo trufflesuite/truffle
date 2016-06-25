@@ -1,6 +1,6 @@
 # Default Builder
 
-Truffle comes standard with a default build system which is meant to be easy to use. It's not suitable for every project however, and you may choose to use other build systems to package your frontend. See the [advanced build processes](/advanced/build_processes) section for more details.
+Truffle comes standard with a default build system which is meant to be easy to use. It's not suitable for every project however, and you may choose to use other build systems to package your frontend. See the [advanced build processes](../advanced/build_processes.md) section for more details.
 
 # Features
 
@@ -26,7 +26,7 @@ app/
 - index.html
 ```
 
-It's corresponding configuration within your [project configuration](/advanced/configuration) looks very similar:
+It's corresponding configuration within your [project configuration](../advanced/configuration.md) looks very similar:
 
 ```javascript
 {
@@ -68,7 +68,7 @@ $ truffle build
 
 # Build Artifacts
 
-Your build artifacts are saved within your environment. The default environment is `development`. See the [environments](/advanced/environments) section for more details.
+Your build artifacts are saved within your environment. The default environment is `development`. See the [environments](../advanced/environments.md) section for more details.
 
 # Considerations
 
@@ -78,4 +78,4 @@ The default builder is easy to use for most projects, and allows you to quickly 
 * It's a custom build system, and doesn't easily integrate with other popular build systems.
 * It is extensible, but again, using custom methods and APIs.
 
-The default builder will likely be deprecated and replaced in future versions of Truffle, but it remains the default to continue to support dapps previously built on top of it. Truffle provides many ways for you to switch to a different build process, however, and you can find many examples in the [advanced build processes](/advanced/build_processes) section.
+The default builder will likely be deprecated and replaced in future versions of Truffle, but it remains the default to continue to support dapps previously built on top of it. Truffle provides many ways for you to switch to a different build process, however, and you can find many examples in the [advanced build processes](../advanced/build_processes.md) section.
