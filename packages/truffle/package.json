@@ -29,7 +29,7 @@
     "node-dir": "^0.1.10",
     "serve-static": "^1.10.0",
     "solc": "^0.3.4",
-    "solidity-parser": "^0.0.8",
+    "solidity-parser": "^0.0.9",
     "spawn-args": "^0.1.0",
     "temp": "^0.8.3",
     "truffle-default-builder": "^1.0.1",
