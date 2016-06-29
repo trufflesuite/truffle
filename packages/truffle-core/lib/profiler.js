@@ -9,6 +9,7 @@ var SolidityParser = require("solidity-parser");
 var Graph = require("graphlib").Graph;
 var isAcyclic = require("graphlib/lib/alg").isAcyclic;
 var postOrder = require("graphlib/lib/alg").postorder;
+var CompileError = require("./errors/compileerror");
 
 module.exports = {
   all_contracts: function(directory, callback) {
@@ -111,9 +112,20 @@ module.exports = {
     });
   },
 
-  imports: function(file, callback) {
+  imports: function(file, from, callback) {
+    if (typeof from == "function") {
+      callback = from;
+      from = null;
+    }
+
     fs.readFile(file, "utf8", function(err, body) {
-      if (err) callback(err);
+      if (err) {
+        var msg = "Cannot find import " + path.basename(file);
+        if (from) {
+          msg += " from " + path.basename(from);
+        }
+        return callback(new CompileError(msg));
+      }
 
       //console.log("Parsing " + path.basename(file) + "...");
 
@@ -194,9 +206,11 @@ module.exports = {
   dependency_graph: function(files, callback) {
     var self = this;
 
-    // Ensure full paths.
+    // Ensure full paths. Return array of file and
+    // the file responsible for adding it. Initial files
+    // have no second paramter.
     files = files.map(function(file) {
-      return path.resolve(file);
+      return [path.resolve(file), null];
     });
 
     // Iterate through all the contracts looking for libraries and building a dependency graph
@@ -204,11 +218,11 @@ module.exports = {
 
     var imports_cache = {};
 
-    function getImports(file, callback) {
+    function getImports(file, from, callback) {
       if (imports_cache[file] != null) {
         callback(null, imports_cache[file]);
       } else {
-        self.imports(file, function(err, imports) {
+        self.imports(file, from, function(err, imports) {
           if (err) return callback(err);
           imports_cache[file] = imports;
           callback(null, imports);
@@ -219,17 +233,24 @@ module.exports = {
     async.whilst(function() {
       return files.length > 0;
     }, function(finished) {
-      var file = files.shift();
+      var current = files.shift();
+      var file = current[0];
+      var imported_from = current[1];
 
       // Add the contract to the depend graph.
       dependsGraph.setNode(file);
 
-      getImports(file, function(err, imports) {
+      getImports(file, imported_from, function(err, imports) {
         if (err) return callback(err);
+
+        imports = imports.map(function(i) {
+          return [i, file];
+        });
 
         Array.prototype.push.apply(files, imports);
 
-        imports.forEach(function(import_path) {
+        imports.forEach(function(arr) {
+          var import_path = arr[0];
           if (!dependsGraph.hasEdge(file, import_path)) {
             dependsGraph.setEdge(file, import_path);
           }
