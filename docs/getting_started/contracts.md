@@ -17,7 +17,7 @@ Transactions fundamentally change the state of the network. A transaction can be
 
 ### Calls
 
-Calls, on the other hand, are very different. Calls can be used to execute code on the network, though no data will be permanently changed. Calls are free to run, and they're defining characteristic is that they read data. When you execute a contract function via a call you will receive the return value immediately. In summary, calls:
+Calls, on the other hand, are very different. Calls can be used to execute code on the network, though no data will be permanently changed. Calls are free to run, and their defining characteristic is that they read data. When you execute a contract function via a call you will receive the return value immediately. In summary, calls:
 
 * Are free (do not cost gas)
 * Do not change the state of the network
@@ -47,8 +47,8 @@ contract MetaCoin {
   	return true;
   }
 
-  function getBalanceInEth(address addr) returns(uint){
-  	return ConvertLib.convert(getBalance(addr),2);
+  function getBalanceInEth(address addr) returns(uint) {
+  	return ConvertLib.convert(getBalance(addr), 2);
   }
 
   function getBalance(address addr) returns(uint) {
@@ -98,7 +98,7 @@ meta.sendCoin(account_two, 10, {from: account_one}).then(function(tx_id) {
   // this callback.
   alert("Transaction successful!")
 }).catch(function(e) {
-  // There was an error! Handle it.  
+  // There was an error! Handle it.
 })
 ```
 
@@ -123,7 +123,7 @@ meta.getBalance.call(account_one, {from: account_one}).then(function(balance) {
   // Let's print the return value.
   console.log(balance.toNumber());
 }).catch(function(e) {
-  // There was an error! Handle it.  
+  // There was an error! Handle it.
 })
 ```
 
@@ -165,7 +165,7 @@ MetaCoin.new().then(function(instance) {
   // If this callback is called, the deployment was successful.
   console.log(instance.address);
 }).catch(function(e) {
-  // There was an error! Handle it.  
+  // There was an error! Handle it.
 });
 ```
 

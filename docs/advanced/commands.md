@@ -6,7 +6,7 @@ $ truffle [command] [options]
 
 # Available Commands
 
-##### build           
+##### build
 
 Build a development version of the app; creates the `./build` directory.
 
@@ -28,7 +28,7 @@ Run a console with your contract objects instantiated and ready to use.
 $ truffle console
 ```
 
-Once the console starts you can then use your contracts via the command line like you would in your code. Additionally, all truffle commands listed here are available within the console.
+Once the console starts, you can then use your contracts via the command line like you would in your code. Additionally, all truffle commands listed here are available within the console.
 
 Optional parameters:
 
