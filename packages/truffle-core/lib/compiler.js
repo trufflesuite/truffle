@@ -69,7 +69,9 @@ module.exports = {
         sources[path.relative(contracts_directory, file)] = body;
         finished();
       });
-    }, function() {
+    }, function(err) {
+      if (err) return callback(err);
+
       Object.keys(includes).forEach(function(key) {
         sources[key] = includes[key];
       });
