@@ -113,8 +113,6 @@ var Web3 = require("web3");
                   return reject(new Error("Transaction " + tx + " wasn't processed in " + (timeout / 1000) + " seconds!"));
                 }
 
-                attempts += 1;
-
                 setTimeout(make_attempt, 1000);
               });
             };
