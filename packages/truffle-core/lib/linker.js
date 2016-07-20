@@ -8,19 +8,20 @@ module.exports = {
       destinations = [destinations];
     }
 
-    var regex = new RegExp("__" + library.contract_name + "_*", "g");
-
     if (library.contract_name == null) {
       throw new Error("Cannot link a library with no name.");
     }
 
     if (library.address == null) {
-      throw new Error("Cannot link library: " + library.contract_name + " has no address.");
+      throw new Error("Cannot link library: " + library.contract_name + " has no address. Has it been deployed?");
     }
 
     destinations.forEach(function(destination) {
+      // Don't link if result will have no effect.
+      if (destination.links[library.contract_name] == library.address) return;
+
       logger.log("Linking " + library.contract_name + " to " + destination.contract_name);
-      destination.binary = destination.unlinked_binary.replace(regex, library.address.replace("0x", ""));
+      destination.link(library.contract_name, library.address);
     });
   },
 
