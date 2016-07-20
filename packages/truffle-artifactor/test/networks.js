@@ -41,6 +41,8 @@ describe("Different networks:", function() {
   var ExampleTwo;
 
   before("Compile", function(done) {
+    this.timeout(10000);
+
     // Compile first
     var result = solc.compile(fs.readFileSync("./test/Example.sol", {encoding: "utf8"}), 1);
 
