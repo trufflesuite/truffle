@@ -42,15 +42,15 @@ module.exports = {
           existing_networks[network_id] = {};
         }
 
-        if (contract_data.binary != null && contract_data.unlinked_binary == null) {
-          contract_data.unlinked_binary = contract_data.binary;
-        }
-
         // merge only specific keys
-        ["abi", "binary", "unlinked_binary", "address"].forEach(function(key) {
+        ["abi", "unlinked_binary", "address", "links"].forEach(function(key) {
           existing_networks[network_id][key] = contract_data[key] || existing_networks[network_id][key];
         });
 
+        // Remove legacy key
+        delete existing_networks[network_id].binary;
+
+        // Update timestamp
         existing_networks[network_id].updated_at = new Date().getTime();
 
         var network_ids = Object.keys(existing_networks);
@@ -164,7 +164,7 @@ module.exports = {
 
           var source = self.generate(cls.contract_name, {
             abi: cls.abi,
-            binary: cls.binary,
+            unlinked_binary: cls.binary,
             address: cls.address
           });
 
@@ -291,7 +291,11 @@ module.exports = {
     }
 
     if (contract_data.bytecode != null) {
-      contract_data.binary = contract_data.bytecode
+      contract_data.unlinked_binary = contract_data.bytecode
+    }
+
+    if (contract_data.binary != null && contract_data.unlinked_binary == null) {
+      contract_data.unlinked_binary = contract_data.binary;
     }
   }
 };
