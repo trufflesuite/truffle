@@ -53,6 +53,11 @@ module.exports = {
         // Update timestamp
         existing_networks[network_id].updated_at = new Date().getTime();
 
+        // Ensure unlinked binary starts with a 0x
+        if (existing_networks[network_id].unlinked_binary && existing_networks[network_id].unlinked_binary.indexOf("0x") < 0) {
+          existing_networks[network_id].unlinked_binary = "0x" + existing_networks[network_id].unlinked_binary;
+        }
+
         var network_ids = Object.keys(existing_networks);
         if (network_ids.length == 1 && network_ids[0] != "default") {
           existing_networks["default"] = existing_networks[network_ids[0]];
