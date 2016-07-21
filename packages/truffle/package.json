@@ -1,7 +1,7 @@
 {
   "name": "truffle",
   "namespace": "consensys",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Truffle - Simple development framework for Ethereum",
   "dependencies": {
     "async": "^1.4.2",
@@ -18,7 +18,7 @@
     "cpr": "^0.4.3",
     "deasync": "^0.1.3",
     "del": "^2.2.0",
-    "ether-pudding": "^3.1.0",
+    "ether-pudding": "^3.1.2",
     "finalhandler": "^0.4.0",
     "find-up": "^1.1.2",
     "graphlib": "^2.0.0",
