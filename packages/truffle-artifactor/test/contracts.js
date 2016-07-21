@@ -70,6 +70,12 @@ describe("Pudding + require", function() {
     done();
   });
 
+  it("should set the transaction hash of contract instantiation", function() {
+    return Example.new().then(function(example) {
+      assert(example.transactionHash, "transactionHash should be non-empty");
+    });
+  });
+
   it("should get and set values via methods and get values via .call", function(done) {
     var example;
     Example.new().then(function(instance) {

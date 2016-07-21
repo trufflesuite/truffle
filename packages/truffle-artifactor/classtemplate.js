@@ -154,6 +154,7 @@ var Web3 = require("web3");
 
     instance.allEvents = contract.allEvents;
     instance.address = contract.address;
+    instance.transactionHash = contract.transactionHash;
   };
 
   // Use inheritance to create a clone of this contract,
