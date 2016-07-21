@@ -1,6 +1,6 @@
 > _“It's not improbable that a man may receive more solid satisfaction from pudding while he is alive than from praise after he is dead”_
 
--- Chinese Proverb 
+-- Chinese Proverb
 
 ### Ether Pudding
 
@@ -15,13 +15,14 @@ MyContract.deployed().doStuff().then(function(tx) {
 });
 ```
 
-👏 
+👏
 
 ### Features
 
-* Managing contract ABIs, binaries and deployed addresses, so you don't have to.
-* Packaging up build artifacts into `.sol.js` files, which can then be included in your project with a simple `require`.
-* Including multiple versions of the same contract in a single package, automatically detecting which artifacts to use based on the network version (more on this below). 
+* Manages contract ABIs, binaries and deployed addresses, so you don't have to.
+* Packages up build artifacts into `.sol.js` files, which can then be included in your project with a simple `require`.
+* Includes multiple versions of the same contract in a single package, automatically detecting which artifacts to use based on the network version (more on this below).
+* Manages library addresses for linked libraries.
 
 See the following discussion for more features.
 
@@ -47,29 +48,34 @@ Pudding consists of two parts: The code generator that generates your `.sol.js` 
 
 #### Generator
 
-Generate `.sol.js` files given a contract name and contract data, structured as an object. This will save a `.sol.js` file into the destination directory for each contract specified. 
+Generate `.sol.js` files given a contract name and contract data, structured as an object. This will save a `.sol.js` file into the destination directory for each contract specified.
 
-**Note:** Pudding (the generator) isn't intended to be used in the browser or in a package manager like browserify or webpack. The resultant `.sol.js` files **_are_** well suited for the browser, however. 
+**Note:** Pudding (the generator) isn't intended to be used in the browser or in a package manager like browserify or webpack. The resultant `.sol.js` files **_are_** well suited for the browser, however.
 
 ```javascript
 var Pudding = require("ether-pudding");
 
 var contract_data = {
 	abi: ...,              // Array; required.
-	binary: "...",         // String; optional.
-	unlinked_binary: "..." // String; optional. Defaults to binary.
-	address: "..."         // String; optional. 
+	unlinked_binary: "..." // String; optional.
+	address: "..."         // String; optional.
 };
 
 Pudding.save(contract_data, "./MyContract.sol.js").then(function() {
-  // The file ./MyContract.sol.js now exists, which you can 
+  // The file ./MyContract.sol.js now exists, which you can
   // import into your project like any other Javascript file.
 });
 ```
 
+Note that in the example above, there are three important pieces of data:
+
+* `abi`: The ABI of your contract, provided by the solidity compiler.
+* `unlinked_binary`: The compiled binary code of your contract. Ensure that if your contract relies on libraries to be linked, you pass in the *unlinked* version here.
+* `address`: An address this contract is deployed to, if it's a singleton.
+
 #### Using `.sol.js` Files
 
-Once a `.sol.js` has been created, using it is easy. These abstractions use Web3 under the hood, and so will need a provider set just like Web3: 
+Once a `.sol.js` file has been created, using it is easy. These abstractions use Web3 under the hood, and so will need a provider set just like Web3:
 
 ```javascript
 var provider = new Web3.providers.HttpProvider("http://localhost:8545");
@@ -78,7 +84,7 @@ var MyContract = require("./MyContract.sol.js");
 MyContract.setProvider(provider);
 ```
 
-Just like Web3, the contract abstraction will need a reference to your Web3 provider. You'll receive errors if you try to make a trasation without a Web3 provider set.
+You'll receive errors if you try to make a transaction without a Web3 provider set.
 
 See [Interacting With Your Contracts](https://github.com/ConsenSys/ether-pudding#interacting-with-your-contracts) below for details on how to use the newly created `MyContract` object.
 
@@ -94,7 +100,7 @@ var MetaCoin = require("./path/to/MetaCoin.sol.js");
 MetaCoin.setProvider(provider);
 
 // In this scenario, two users will send MetaCoin back and forth, showing
-// how Pudding allows for easy control flow. 
+// how Pudding allows for easy control flow.
 var account_one = "5b42bd01ff...";
 var account_two = "e1fd0d4a52...";
 
@@ -105,16 +111,16 @@ var coin = MetaCoin.at(contract_address);
 // Make a transaction that calls the function `sendCoin`, sending 3 MetaCoin
 // to the account listed as account_two.
 coin.sendCoin(account_two, 3, {from: account_one}).then(function(tx) {
-  // This code block will not be executed until Pudding has verified 
+  // This code block will not be executed until Pudding has verified
   // the transaction has been processed and it is included in a mined block.
   // Pudding will error if the transaction hasn't been processed in 120 seconds.
-  
+
   // Since we're using promises, we can return a promise for a call that will
   // check account two's balance.
   return coin.balances.call(account_two);
 }).then(function(balance_of_account_two) {
   alert("Balance of account two is " + balance_of_account_two + "!"); // => 3
-  
+
   // But maybe too much was sent. Let's send some back.
   // Like before, will create a transaction that returns a promise, where
   // the callback won't be executed until the transaction has been processed.
@@ -161,26 +167,25 @@ Save contract data as a `.sol.js` file. Returns a Promise.
     ```javascript
     {
       abi: ...,              // Array; required.
-      binary: "...",         // String; optional.
-      unlinked_binary: "..." // String; optional. Defaults to binary.
-      address: "..."         // String; optional. 
+      unlinked_binary: "..." // String; optional.
+      address: "..."         // String; optional.
     }
     ```
-    
-    Note: `save()` will also accept an already `require`'d contract object. i.e., 
-    
+
+    Note: `save()` will also accept an already `require`'d contract object. i.e.,
+
     ```javascript
     var MyContract = require("./path/to/MyContract.sol.js");
-    
+
     Pudding.save(MyContract, ...).then(...);
     ```
-    
+
 * `filename`: Path to save contract file.
 * `options`: Object. See below.
 
 The `options` object takes two paramters:
 
-* `options.overwrite`: Boolean. Overwrite the existing contract file if it exists. If true, will ignore previously-saved contract data in the existing file. If false, will create a new contract file and merge in the contract data passed to `save()`. 
+* `options.overwrite`: Boolean. Overwrite the existing contract file if it exists. If true, will ignore previously-saved contract data in the existing file. If false, will create a new contract file and merge in the contract data passed to `save()`.
 * `options.network_id`: String. Will save the contract data passed to `save()` under the specified network id. If no network id is specified, will use network `"default"`. See discussion a about network id's below.
 
 The contract name is only important in the source code that gets generated, which will appear in error messages. If `contract_name` is not present it will default to "Contract".
@@ -195,7 +200,7 @@ Save many contracts to the filesystem at once. Returns a Promise.
     {
       "MyContract": {
         "abi": ...,
-        "binary": ...
+        "unlinked_binary": ...
       }
       "AnotherContract": {
         // ...
@@ -204,7 +209,7 @@ Save many contracts to the filesystem at once. Returns a Promise.
     ```
 
 * `directory`: String. Destination directory. Files will be saved via `<contract_name>.sol.js` within that directory.
-* `options`: Object. Same options listed in `save()` above. 
+* `options`: Object. Same options listed in `save()` above.
 
 #### `Pudding.generate([contract_name,] networks)`
 
@@ -217,31 +222,31 @@ Generate the source code that populates the `.sol.js` file. Returns a String.
     {
       "live": {
         "abi": ...,
-        "binary": ...,
+        "unlinked_binary": ...,
         "address": ...
       },
       "morden": {
         "abi": ...,
-        "binary": ...,
+        "unlinked_binary": ...,
         "address": ...
       },
       "1337": {
         "abi": ...,
-        "binary": ...,
+        "unlinked_binary": ...,
         "address": ...
-      } 
+      }
     }
     ```
-    
-    Note that each ABI, binary and address refer to the same contract, but deployed on different networks. If no network ids are present -- i.e., a `contract_data` object was passed instead -- then `generate()` will automatically use that data for the default network. i.e., 
-    
+
+    Note that each ABI, unlinked_binary and address refer to the same contract, but deployed on different networks. If no network ids are present -- i.e., a `contract_data` object was passed instead -- then `generate()` will automatically use that data for the default network. i.e.,
+
     ```javascript
     Pudding.generate("MyContract", {
       "abi": ...,
-      "binary": ...
+      "unlinked_binary": ...
     });
     ```
-    
+
 The contract name is only important here in the source code that gets generated, which will appear in error messages. If `contract_name` is not present it will default to "Contract".
 
 #### `Pudding.whisk([contract_name,] networks)`
@@ -257,9 +262,9 @@ The contract name is only important here in the source code that gets generated,
 var MyContract = Pudding.whisk("MyContract", {
   "live": {
     "abi": ...
-    "binary": ...
+    "unlinked_binary": ...
     "address": ...
-  }, 
+  },
   "morden": {
     // ...
   }
@@ -268,7 +273,7 @@ var MyContract = Pudding.whisk("MyContract", {
 // Or whisk in a single network using the default contract name:
 var MyContract = Pudding.whisk({
   "abi": ...,
-  "binary": ...,
+  "unlinked_binary": ...,
   "address": ...
 });
 
