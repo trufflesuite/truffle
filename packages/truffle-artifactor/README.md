@@ -32,7 +32,7 @@ We can't go on without noting that Pudding was originally created to be an easie
 
 Some of the features Pudding provides over the current abstraction:
 
-* Synchronized transactions, so your app/tests won’t receive thier callbacks until the transactions have been processed.
+* Synchronized transactions, so your app/tests won’t receive their callbacks until the transactions have been processed.
 * Promises. No more callback hell.
 * Default values for transactions, like `from` address or `gas`.
 
@@ -141,7 +141,7 @@ Pudding manages your contract's binary code as well, so you can easily deploy ne
 ```javascript
 MetaCoin.new().then(function(coin) {
   // From here, the example becomes just like the above.
-  // Note that coin.address is the addres of the newly created contract.
+  // Note that coin.address is the address of the newly created contract.
   return coin.sendCoin(...);
 )}.catch(function(err) {
   console.log("Error creating contract!");
@@ -183,7 +183,7 @@ Save contract data as a `.sol.js` file. Returns a Promise.
 * `filename`: Path to save contract file.
 * `options`: Object. See below.
 
-The `options` object takes two paramters:
+The `options` object takes two parameters:
 
 * `options.overwrite`: Boolean. Overwrite the existing contract file if it exists. If true, will ignore previously-saved contract data in the existing file. If false, will create a new contract file and merge in the contract data passed to `save()`.
 * `options.network_id`: String. Will save the contract data passed to `save()` under the specified network id. If no network id is specified, will use network `"default"`. See discussion a about network id's below.
