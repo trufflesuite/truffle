@@ -94,7 +94,7 @@ Details about how to connect to your ethereum client. The `host` and `port` keys
 
 * `host`: Hostname pointing to the network location of your Ethereum client (usually "localhost" for development).
 * `port`: Port number where your Etheruem client accepts requests. Default is `8545`.
-* `gas`: Gas limit used for deploys. Default is `3141592`.  
+* `gas`: Gas limit used for deploys. Default is `4712388`.  
 * `gasPrice`: Gas price used for deploys. Default is `100000000000` (100 Shannon).
 * `from`: From address used during migrations. If not specified, defaults to the first available account provided by your Ethereum client.
 
