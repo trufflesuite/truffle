@@ -26,9 +26,15 @@ $ npm install -g truffle
 
 Please see the [Official Truffle Documentation](http://truffle.readthedocs.org/en/latest/) for guides, tips, and examples.
 
-### Contributors
+### Contributing
 
-[@tcoulter](https://github.com/tcoulter) - original author
+There are many ways to contribute!
+
+1. Write issues in the [issues tracker](https://github.com/ConsenSys/truffle/issues). Please include as much information as possible!
+1. Take a look at [our Waffle](https://waffle.io/ConsenSys/truffle) for prioritization. Note that this includes issues for Truffle and relate tools.
+1. Contact us in our [gitter chat](https://gitter.im/consensys/truffle)!
+
+A project by Consensys and [@tcoulter](https://github.com/tcoulter), and many contributers.
 
 ### License
 
