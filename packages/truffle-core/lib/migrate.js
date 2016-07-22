@@ -28,8 +28,6 @@ Migration.prototype.run = function(options, contracts, callback) {
     }
   };
 
-  console.log(options);
-
   var web3 = new Web3();
   web3.setProvider(options.provider);
 
