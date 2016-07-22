@@ -36,24 +36,25 @@ import "ConvertLib.sol";
 contract MetaCoin {
   mapping (address => uint) balances;
 
-  function MetaCoin() {
-  	balances[tx.origin] = 10000;
-  }
+	event Transfer(address indexed _from, address indexed _to, uint256 _value);
 
-  function sendCoin(address receiver, uint amount) returns(bool sufficient) {
-  	if (balances[msg.sender] < amount) return false;
-  	balances[msg.sender] -= amount;
-  	balances[receiver] += amount;
-  	return true;
-  }
+	function MetaCoin() {
+		balances[tx.origin] = 10000;
+	}
 
-  function getBalanceInEth(address addr) returns(uint) {
-  	return ConvertLib.convert(getBalance(addr), 2);
-  }
-
-  function getBalance(address addr) returns(uint) {
-  	return balances[addr];
-  }
+	function sendCoin(address receiver, uint amount) returns(bool sufficient) {
+		if (balances[msg.sender] < amount) return false;
+		balances[msg.sender] -= amount;
+		balances[receiver] += amount;
+		Transfer(msg.sender, receiver, amount);
+		return true;
+	}
+	function getBalanceInEth(address addr) returns(uint){
+		return ConvertLib.convert(getBalance(addr),2);
+	}
+	function getBalance(address addr) returns(uint) {
+		return balances[addr];
+	}
 }
 ```
 
@@ -134,6 +135,21 @@ What's interesting here:
 
 **Warning:** We convert the return value to a number because in this example the numbers are small. However, if you try to convert a BigNumber that's larger than the largest integer supported by Javascript, you'll likely run into errors or unexpected behavior.
 
+
+##### Catching Events
+
+Your contracts can fire events that you can catch to gain more insight into what your contracts are doing. The event API is the same as Web3; along with the example below, see the [Web3 documentation](https://github.com/ethereum/wiki/wiki/JavaScript-API#contract-events) for more information.
+
+```javascript
+var meta = MetaCoin.deployed();
+var transfers = meta.Transfer({fromBlock: "latest"});
+transfers.watch(function(error, result) {
+  // This will catch all Transfer events, regardless of how they originated.
+  if (error == null) {
+    console.log(result.args);
+  }
+}
+```
 
 ### Method: deployed()
 
