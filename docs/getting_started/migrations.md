@@ -70,7 +70,7 @@ Filename: migrations/1_initial_migration.js
 module.exports = function(deployer) {
   // Deploy the Migrations contract as our only task
   deployer.deploy(Migrations);
-}
+};
 ```
 
 From here, you can create new migrations with increasing numbered prefixes to deploy other contracts and perform further deployment steps.
