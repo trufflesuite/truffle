@@ -20,7 +20,7 @@ Filename: 4_example_migration.js
 module.exports = function(deployer) {
   // deployment steps
   deployer.deploy(MyContract);
-}
+};
 ```
 
 Note that the filename is prefixed with a number and is suffixed by a description. The numbered prefix is required in order to record whether the migration ran successfully. The suffix is purely for human readability and comprehension.
