@@ -326,7 +326,7 @@ var Test = {
 
         mocha.run(function(failures) {
           console.warn = warn;
-          callback(null, failures);
+          callback(failures);
         });
       });
     });
