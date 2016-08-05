@@ -48,7 +48,7 @@ build: {
 
 ### networks
 
-Specifies which networks are available for deployment during migrations. When compiling and running migrations on a specific network, contract artifacts will be saved and recorded for later use. When your contract abstractions detect that you're Ethereum client is connected to a specific network, they'll use the contract artifacts associated that network to simplify app deployment. Networks are identified through Ethereum's `net_version` RPC call.
+Specifies which networks are available for deployment during migrations. When compiling and running migrations on a specific network, contract artifacts will be saved and recorded for later use. When your contract abstractions detect that your Ethereum client is connected to a specific network, they'll use the contract artifacts associated that network to simplify app deployment. Networks are identified through Ethereum's `net_version` RPC call.
 
 The `networks` object, shown below, is keyed by a network name and contains a corresponding object that defines the parameters of the network. The `networks` option is not required, but if specified, each network it defines must specify a corresponding `network_id`. If you'd like a specific network configuration to be associated with every network that *doesn't* match any other network in the list, use a `network_id` of "default". However, there should only be one default network. Traditionally, the default network is used during development, where contract artifacts don't matter long-term and the network id continuously changes, for instance, if the TestRPC is restarted.
 
