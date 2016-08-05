@@ -25,7 +25,7 @@ contract('MetaCoin', function(accounts) {
     // Get a reference to the deployed MetaCoin contract, as a JS object.
     var meta = MetaCoin.deployed();
 
-    // Get the MetaCoin balance of the first account, and assert that it's 10000.
+    // Get the MetaCoin balance of the first account and assert that it's 10000.
     return meta.getBalance.call(accounts[0]).then(function(balance) {
       assert.equal(balance.valueOf(), 10000, "10000 wasn't in the first account");
     });
