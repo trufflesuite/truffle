@@ -31,7 +31,8 @@ module.exports = {
 
     this.all_contracts(contracts_directory, function(err, files) {
       var expected_build_files = files.map(function(file) {
-        return path.join(build_directory, path.dirname(path.relative(contracts_directory, file)), path.basename(file) + ".js");
+        //return path.join(build_directory, path.dirname(path.relative(contracts_directory, file)), path.basename(file) + ".js");
+        return path.join(build_directory, path.basename(file) + ".js");
       });
 
       async.map(files, fs.stat, function(err, file_stats) {
