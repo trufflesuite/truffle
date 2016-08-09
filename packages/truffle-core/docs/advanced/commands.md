@@ -78,6 +78,7 @@ Optional parameters:
 
 * `--reset`: Run all migrations from the beginning, instead of running from the last completed migration.
 * `--network name`: Specify the network to use, saving artifacts specific to that network.
+* `--to number`: Migrate from the current migration to the migration specified in `to`.
 * `--compile-all`: Compile all contracts instead of intelligently choosing.
 * `--verbose-rpc`: Log communication between Truffle and the RPC.
 
