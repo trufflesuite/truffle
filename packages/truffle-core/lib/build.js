@@ -121,27 +121,32 @@ var Build = {
     clean(options, function(err) {
       if (err) return callback(err);
 
-      Contracts.provision(options, function(err, contracts) {
+      // If necessary. This prevents errors due to the .sol.js files not existing.
+      Contracts.compile(options, function(err) {
         if (err) return callback(err);
 
-        var resolved_options = {
-          working_directory: options.working_directory,
-          contracts: contracts,
-          contracts_build_directory: options.contracts_build_directory,
-          destination_directory: options.build_directory,
-          rpc: options.rpc,
-          provider: options.provider,
-          network: options.network
-        };
+        Contracts.provision(options, false, function(err, contracts) {
+          if (err) return callback(err);
 
-        builder.build(resolved_options, function(err) {
-          if (!err) return callback();
+          var resolved_options = {
+            working_directory: options.working_directory,
+            contracts: contracts,
+            contracts_build_directory: options.contracts_build_directory,
+            destination_directory: options.build_directory,
+            rpc: options.rpc,
+            provider: options.provider,
+            network: options.network
+          };
 
-          if (typeof err == "string") {
-            err = new BuildError(err);
-          }
+          builder.build(resolved_options, function(err) {
+            if (!err) return callback();
 
-          callback(err);
+            if (typeof err == "string") {
+              err = new BuildError(err);
+            }
+
+            callback(err);
+          });
         });
       });
     });
