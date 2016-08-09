@@ -75,7 +75,7 @@ Your build artifacts are saved within the `./build` directory, along side compil
 The default builder is easy to use for most projects, and allows you to quickly get started. However, it has some drawbacks:
 
 * It doesn't currently support `import`, `require`, etc., provided to you by tools like Browserify, Webpack, and CommonJS, making dependency management harder than it should be.
-* It's a custom build system, and doesn't easily integrate with other popular build systems.
+* It's a custom build system and doesn't easily integrate with other popular build systems.
 * It is extensible, but again, using custom methods and APIs.
 
 The default builder will likely be deprecated and replaced in future versions of Truffle, but it remains the default to continue to support dapps previously built on top of it. Truffle provides many ways for you to switch to a different build process, however, and you can find many examples in the [advanced build processes](/advanced/build_processes) section.
