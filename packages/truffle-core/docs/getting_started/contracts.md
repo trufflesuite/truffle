@@ -1,6 +1,6 @@
 # Background
 
-The standard method of interacting with the Ethereum network is through the [Web3](https://github.com/ethereum/web3.js) library, created by the Ethereum foundation. Although this library is very useful, it's current contract abstraction makes interacting with contracts difficult, especially for those new to Ethereum development. To smooth the learning curve, Truffle uses the [Ether Pudding](https://github.com/ConsenSys/ether-pudding) library, built on top of Web3, which aims to make interacting with contracts much easier.
+The standard method of interacting with the Ethereum network is through the [Web3](https://github.com/ethereum/web3.js) library, created by the Ethereum foundation. Although this library is very useful, its current contract abstraction makes interacting with contracts difficult, especially for those new to Ethereum development. To smooth the learning curve, Truffle uses the [Ether Pudding](https://github.com/ConsenSys/ether-pudding) library, built on top of Web3, which aims to make interacting with contracts much easier.
 
 # Reading & Writing Data
 
