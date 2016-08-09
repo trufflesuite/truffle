@@ -164,6 +164,7 @@ var Migrate = {
 
   runFrom: function(number, options, callback) {
     var self = this;
+
     this.assemble(options, function(err, migrations) {
       if (err) return callback(err);
 
@@ -175,17 +176,18 @@ var Migrate = {
         migrations.shift();
       }
 
+      if (options.to) {
+        migrations = migrations.filter(function(migration) {
+          return migration.number <= options.to;
+        });
+      }
+
       self.runMigrations(migrations, options, callback);
     });
   },
 
   runAll: function(options, callback) {
-    var self = this;
-    this.assemble(options, function(err, migrations) {
-      if (err) return callback(err);
-
-      self.runMigrations(migrations, options, callback);
-    });
+    this.runFrom(0, options, callback);
   },
 
   runMigrations: function(migrations, options, callback) {
