@@ -327,7 +327,10 @@ var Test = {
 
         mocha.run(function(failures) {
           console.warn = warn;
-          callback(null, failures);
+          if (failures) {
+            return callback(new ExtendableError(failures.toString() + " test(s) failed"));
+          }
+          callback();
         });
       });
     });
