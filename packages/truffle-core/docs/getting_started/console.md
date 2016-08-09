@@ -28,3 +28,9 @@ The console provides all the features available in the Truffle command line tool
 * All of your compiled contracts are available and ready for use, as if you were developing tests or your frontend, or writing a migration.
 * After each command (such as `migrate --reset`) your contracts are reprovisioned so you can start using the newly assigned addresses and binaries immediately.
 * The `web3` library is made available and is set to connect to your Ethereum client.
+* All commands that return a promise will automatically be resolved, and the result printed, removing the need to use `.then()` for simple commands. e.g.,
+
+```
+truffle(default)> MyContract.deployed().getValue.call(); //
+5
+```
