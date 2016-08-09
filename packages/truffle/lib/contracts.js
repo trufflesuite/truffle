@@ -8,11 +8,33 @@ var Web3 = require("web3");
 var expect = require("./expect");
 
 var Contracts = {
-  provision: function(options, callback) {
+
+  // fetch_accounts is a bug fix for the build process, to stop the build
+  // from making a request to an RPC client. In the future it should eventually
+  // be removed, and the build process shouldn't even run into a sitution where it
+  // needs to fetch anything.
+  provision: function(options, fetch_accounts, callback) {
     var self = this;
     var logger = options.logger || console;
     var web3 = new Web3();
     web3.setProvider(options.provider);
+
+    if (typeof fetch_accounts == "function") {
+      callback = fetch_accounts;
+      fetch_accounts = true;
+    }
+
+    if (fetch_accounts !== false) {
+      fetch_accounts = true;
+    }
+
+    function getAccounts(cb) {
+      if (!fetch_accounts) {
+        return cb();
+      }
+
+      web3.eth.getAccounts(cb);
+    };
 
     Pudding.requireAll({
       source_directory: options.contracts_build_directory,
@@ -20,17 +42,23 @@ var Contracts = {
     }, function(err, contracts) {
       if (err) return callback(err);
 
-      web3.eth.getAccounts(function(err, accounts) {
+      getAccounts(function(err, accounts) {
         if (err) return callback(err);
 
         // Add contracts to context and prepare contracts.
         contracts.forEach(function(contract) {
-          // Set defaults based on configuration.
-          contract.defaults({
-            from: options.from || accounts[0],
+          var defaults = {
+            from: options.from,
             gas: options.gas,
             gasPrice: options.gasPrice
-          });
+          };
+
+          if (accounts && accounts[0] && !defaults.from) {
+            defaults.from = accounts[0];
+          }
+
+          // Set defaults based on configuration.
+          contract.defaults(defaults);
 
           if (options.network_id) {
             contract.setNetwork(options.network_id);
