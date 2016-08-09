@@ -15,6 +15,9 @@ command.run(process.argv.slice(2), function(err) {
     } else {
       if (err instanceof ExtendableError) {
         console.log(err.message);
+      } else if (typeof err == "number") {
+        // If a number is returned, exit with that number.
+        process.exit(err);
       } else {
         // Bubble up all other unexpected errors.
         console.log(err.stack || err.toString());
