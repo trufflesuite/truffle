@@ -94,6 +94,7 @@ TestRunner.prototype.deploy = function(callback) {
     network: this.options.network,
     network_id: this.options.network_id,
     provider: this.options.provider,
+    rpc: this.options.rpc,
     reset: true,
     quiet: true
   }, callback);
