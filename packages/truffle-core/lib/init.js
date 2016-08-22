@@ -12,6 +12,11 @@ Init.sandbox = function(extended_config, callback) {
   var self = this;
   extended_config = extended_config || {}
 
+  if (typeof extended_config == "function") {
+    callback = extended_config;
+    extended_config = {};
+  }
+
   temp.mkdir("truffle-sandbox-", function(err, dirPath) {
     if (err) return callback(err);
 
