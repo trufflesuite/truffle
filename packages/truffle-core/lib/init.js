@@ -8,15 +8,17 @@ var Init = function(destination, callback) {
   copy(example_directory, destination, callback);
 }
 
-Init.sandbox = function(callback) {
+Init.sandbox = function(extended_config, callback) {
   var self = this;
+  extended_config = extended_config || {}
+
   temp.mkdir("truffle-sandbox-", function(err, dirPath) {
     if (err) return callback(err);
 
     Init(dirPath, function(err) {
       if (err) return callback(err);
 
-      var config = Config.load(path.join(dirPath, "truffle.js"));
+      var config = Config.load(path.join(dirPath, "truffle.js"), extended_config);
       callback(null, config);
     });
   });
