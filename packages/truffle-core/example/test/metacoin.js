@@ -6,20 +6,18 @@ contract('MetaCoin', function(accounts) {
       assert.equal(balance.valueOf(), 10000, "10000 wasn't in the first account");
     });
   });
-  it("should call a function that depends on a linked library  ", function(){
+  it("should call a function that depends on a linked library", function() {
     var meta = MetaCoin.deployed();
     var metaCoinBalance;
     var metaCoinEthBalance;
 
-    return meta.getBalance.call(accounts[0]).then(function(outCoinBalance){
+    return meta.getBalance.call(accounts[0]).then(function(outCoinBalance) {
       metaCoinBalance = outCoinBalance.toNumber();
       return meta.getBalanceInEth.call(accounts[0]);
-    }).then(function(outCoinBalanceEth){
+    }).then(function(outCoinBalanceEth) {
       metaCoinEthBalance = outCoinBalanceEth.toNumber();
-
-    }).then(function(){
-      assert.equal(metaCoinEthBalance,2*metaCoinBalance,"Library function returned unexpeced function, linkage may be broken");
-
+    }).then(function() {
+      assert.equal(metaCoinEthBalance, 2 * metaCoinBalance, "Library function returned unexpeced function, linkage may be broken");
     });
   });
   it("should send coin correctly", function() {
