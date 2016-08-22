@@ -57,7 +57,7 @@ TestRunner.prototype.initialize = function(callback) {
           if (item.type == "event") {
             var signature = item.name + "(" + item.inputs.map(function(param) {return param.type;}).join(",") + ")";
 
-            self.known_events["0x" + web3.sha3(signature)] = {
+            self.known_events[web3.sha3(signature)] = {
               signature: signature,
               abi_entry: item
             };
