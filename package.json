@@ -31,7 +31,7 @@
     "solidity-parser": "^0.0.9",
     "spawn-args": "^0.1.0",
     "temp": "^0.8.3",
-    "truffle-default-builder": "^1.0.1",
+    "truffle-default-builder": "^1.0.2",
     "uglify-js": "^2.6.1",
     "web3": "^0.16.0",
     "yargs": "^3.27.0"
