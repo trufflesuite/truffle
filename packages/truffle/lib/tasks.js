@@ -94,6 +94,18 @@ createTask('create:test', "Create a basic test", function(options, done) {
   }
 });
 
+createTask('create:migration', "Create a new migration marked with the current timestamp", function(options, done) {
+  var config = Truffle.config.detect(options);
+
+  var name = options.name;
+
+  if (name == null && options._.length > 0) {
+    name = options._[0];
+  }
+
+  Truffle.create.migration(config.migrations_directory, name, done);
+});
+
 createTask('compile', "Compile contracts", function(options, done) {
   var config = Truffle.config.detect(options);
   Truffle.contracts.compile(config, done);

@@ -3,6 +3,7 @@ var path = require("path");
 var fs = require("fs");
 var Init = require("../lib/init");
 var Create = require("../lib/create");
+var dir = require("node-dir");
 
 describe('create', function() {
   var config;
@@ -43,6 +44,31 @@ describe('create', function() {
       assert.notEqual(file_data, "", "File's data is blank");
 
       done();
+    });
+  }); // it
+
+  it('creates a new migration', function(done) {
+    Create.migration(config.migrations_directory, "MyNewMigration", function(err) {
+      if (err) return done(err);
+
+      dir.files(config.migrations_directory, function(err, files) {
+        var found = false;
+        files.forEach(function(file) {
+          if (file.indexOf("my_new_migration") > 0) {
+            var file_data = fs.readFileSync(file, {encoding: "utf8"});
+            assert.isNotNull(file_data, "File's data is null");
+            assert.notEqual(file_data, "", "File's data is blank");
+
+            found = true;
+
+            done();
+          }
+        });
+
+        if (found == false) {
+          assert.fail("Could not find a file that matched expected name");
+        }
+      });
     });
   }); // it
 
