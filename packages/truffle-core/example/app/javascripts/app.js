@@ -1,6 +1,5 @@
 var accounts;
 var account;
-var balance;
 
 function setStatus(message) {
   var status = document.getElementById("status");
