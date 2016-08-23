@@ -46,9 +46,11 @@ Command.prototype.run = function(command, options, callback) {
 
   options = _.extend(_.clone(options), argv);
 
-  task(options, function(err) {
+  try {
+    task(options, callback);
+  } catch (err) {
     callback(err);
-  });
+  }
 };
 
 module.exports = Command;
