@@ -7,6 +7,7 @@ var requireNoCache = require("./require-nocache");
 var findUp = require("find-up");
 
 var DEFAULT_CONFIG_FILENAME = "truffle.js";
+var BACKUP_CONFIG_FILENAME = "truffle-config.js"; // For Windows + Command Prompt
 
 function Config(truffle_directory, working_directory, network) {
   var self = this;
@@ -160,14 +161,22 @@ Config.default = function() {
 };
 
 Config.detect = function(options, filename) {
+  // Only attempt to detect the backup if a specific file wasn't asked for.
+  var checkBackup = false;
+
   if (filename == null) {
     filename = DEFAULT_CONFIG_FILENAME;
+    checkBackup = true;
   }
 
   var file = findUp.sync(filename);
 
   if (file == null) {
-    throw new ConfigurationError("Could not find suitable configuration file.");
+    if (checkBackup == true) {
+      return this.detect(options, BACKUP_CONFIG_FILENAME);
+    } else {
+      throw new ConfigurationError("Could not find suitable configuration file.");
+    }
   }
 
   return this.load(file, options);
