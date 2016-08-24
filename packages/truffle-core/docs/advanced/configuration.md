@@ -1,6 +1,10 @@
 # Location
 
-Your configuration file is called `truffle.js`, and is located at the root of your project directory. This file is a Javascript file and can execute any code necessary to create your configuration. It must export an object representing your project configuration like the example below.
+Your configuration file is called `truffle.js` and is located at the root of your project directory. This file is a Javascript file and can execute any code necessary to create your configuration. It must export an object representing your project configuration like the example below.
+
+### Resolving Naming Conflicts on Windows
+
+When using the Command Prompt on Windows, the default configuration file name can cause a conflict with the `truffle` executable. If this is the case, we recommend using Windows PowerShell or [Git BASH](https://git-for-windows.github.io/) as these shells do not have this conflict. Alternatively, you can rename the configuration file to `truffle-config.js` to avoid this conflict.
 
 # Example
 
