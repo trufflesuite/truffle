@@ -7,7 +7,6 @@ var Web3 = require("web3");
 var Contracts = require("./contracts");
 var Migrate = require('./migrate');
 var Pudding = require("ether-pudding");
-var Promise = require("bluebird");
 var ExtendableError = require("./errors/extendableerror");
 var SolidityCoder = require("web3/lib/solidity/coder.js");
 var expect = require("./expect");
@@ -319,10 +318,8 @@ var Test = {
           mocha.addFile(file);
         });
 
-        // If errors aren't caught in Promises, make sure they're thrown
-        // and don't keep the process open.
-        Promise.onPossiblyUnhandledRejection(function(e, promise) {
-          throw e;
+        process.on('unhandledRejection', function(reason, p) {
+          throw reason;
         });
 
         mocha.run(function(failures) {
