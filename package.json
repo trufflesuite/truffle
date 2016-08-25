@@ -30,7 +30,6 @@
     "spawn-args": "^0.1.0",
     "temp": "^0.8.3",
     "truffle-default-builder": "^1.0.3",
-    "uglify-js": "^2.6.1",
     "web3": "^0.16.0",
     "yargs": "^3.27.0"
   },
