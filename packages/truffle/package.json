@@ -10,7 +10,6 @@
     "babel-preset-es2015": "^6.3.13",
     "babel-preset-stage-2": "^6.3.13",
     "babel-register": "^6.7.2",
-    "bignumber.js": "^2.0.8",
     "chai": "^3.3.0",
     "chokidar": "^1.4.2",
     "colors": "^1.1.2",
