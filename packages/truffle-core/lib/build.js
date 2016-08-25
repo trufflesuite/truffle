@@ -1,6 +1,5 @@
 var async = require("async");
-var Promise = require("bluebird");
-var mkdirp = Promise.promisify(require("mkdirp"));
+var mkdirp = require("mkdirp");
 var del = require("del");
 var fs = require("fs");
 var DefaultBuilder = require("truffle-default-builder");
@@ -57,10 +56,8 @@ var Build = {
 
     // Clean first.
     del([destination + '/*', "!" + contracts_build_directory]).then(function() {
-      return mkdirp(destination);
-    }).then(function() {
-      callback();
-    }).catch(callback);
+      mkdirp(destination, callback);
+    });
   },
 
   // Note: key is a legacy parameter that will eventually be removed.
