@@ -112,6 +112,8 @@ var Contracts = {
   },
 
   write_contracts: function(contracts, options, callback) {
+    var logger = options.logger || console;
+
     mkdirp(options.contracts_build_directory, function(err, result) {
       if (err != null) {
         callback(err);
@@ -119,7 +121,7 @@ var Contracts = {
       }
 
       if (options.quiet != true && options.quietWrite != true) {
-        console.log("Writing artifacts to ." + path.sep + path.relative(process.cwd(), options.contracts_build_directory));
+        logger.log("Writing artifacts to ." + path.sep + path.relative(process.cwd(), options.contracts_build_directory));
       }
 
       Pudding.saveAll(contracts, options.contracts_build_directory, options).then(function() {
