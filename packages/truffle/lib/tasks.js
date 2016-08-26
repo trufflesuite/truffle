@@ -115,8 +115,7 @@ createTask('build', "Build development version of app", function(options, done) 
   var config = Truffle.config.detect(options);
   Truffle.build.build(config.with({
     builder: config.build,
-    processors: config.processors, // legacy option for default builder
-    rpc: config.getRPCConfig()
+    processors: config.processors // legacy option for default builder
   }), done);
 });
 
@@ -125,9 +124,7 @@ createTask('migrate', "Run migrations", function(options, done) {
 
   Truffle.contracts.compile(config, function(err) {
     if (err) return done(err);
-    Truffle.migrate.run(config.with({
-      rpc: config.getRPCConfig()
-    }), done);
+    Truffle.migrate.run(config, done);
   });
 });
 
@@ -198,8 +195,7 @@ createTask('test', "Run tests", function(options, done) {
       function run() {
         Truffle.test.run(config.with({
           test_files: files,
-          contracts_build_directory: temporaryDirectory,
-          rpc: config.getRPCConfig()
+          contracts_build_directory: temporaryDirectory
         }), cleanup);
       };
 
