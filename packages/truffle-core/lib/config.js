@@ -17,8 +17,19 @@ function Config(truffle_directory, working_directory, network) {
     working_directory: working_directory || process.cwd(),
     network: network || "default",
     verboseRpc: false,
-    build: {}
+    build: {},
+    rpc: {
+      host: "localhost",
+      port: "8545",
+      gas: 4712388,
+      gasPrice: 100000000000, // 100 Shannon,
+      from: null
+    }
   };
+
+  // RPC is a special configuration value. You can set it,
+  // but that'll set the defaults. The values you get from it
+  // will be the merged rpc results with the defaults.
 
   var props = {
     // These are already set.
@@ -71,17 +82,20 @@ function Config(truffle_directory, working_directory, network) {
     example_project_directory: function() {
       return path.join(self.truffle_directory, "example");
     },
-    rpc: function() {
-      return {
-        host: "localhost",
-        port: "8545",
-        gas: 4712388,
-        gasPrice: 100000000000, // 100 Shannon,
-        from: null
+    rpc: {
+      // This one is special. You'll always get the normalized
+      // rpc values overridden by the network's values, even if you
+      // set it. This might be an anti-pattern, however, but this is
+      // less confusing than what was there previously.
+      get: function() {
+        return _.merge(this._values.rpc, this.network_config || {});
+      },
+      set: function(val) {
+        this._values.rpc = val;
       }
     },
     provider: function() {
-      var options = self.getRPCConfig();
+      var options = self.rpc;
       options.verboseRpc = self.verboseRpc;
       return Provider.create(options);
     }
@@ -92,25 +106,17 @@ function Config(truffle_directory, working_directory, network) {
   });
 };
 
-Config.prototype.addProp = function(key, default_getter) {
+Config.prototype.addProp = function(key, obj) {
   Object.defineProperty(this, key, {
-    get: function() {
-      return this._values[key] || default_getter();
+    get: obj.get || function() {
+      return this._values[key] || obj();
     },
-    set: function(val) {
+    set: obj.set || function(val) {
       this._values[key] = val;
     },
     configurable: true,
     enumerable: true
   });
-};
-
-Config.prototype.getRPCConfig = function() {
-  if (this.network_config == null) {
-    throw new ConfigurationError("Cannot find network '" + network_id + "'");
-  }
-
-  return _.merge(this.rpc, this.network_config)
 };
 
 Config.prototype.with = function(obj) {

@@ -47,17 +47,13 @@ var Contracts = {
 
         // Add contracts to context and prepare contracts.
         contracts.forEach(function(contract) {
+          var defaults = {};
 
-          // Unfortunately this is a bug fix as well.
-          // The only values that matter should be options.rpc.<value>,
-          // however, for some reason, from, gas and gasPrice were
-          // automatically merged in with the options object.
-          // TODO: remove need for options.from, options.gas, and options.gasPrice
-          var defaults = {
-            from: options.from || options.rpc.from,
-            gas: options.gas || options.rpc.gas,
-            gasPrice: options.gasPrice || options.rpc.gasPrice
-          };
+          if (options.rpc) {
+            defaults.from = options.rpc.from;
+            defaults.gas = options.rpc.gas;
+            defaults.gasPrice = options.rpc.gasPrice;
+          }
 
           if (accounts && accounts[0] && !defaults.from) {
             defaults.from = accounts[0];
