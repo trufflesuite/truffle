@@ -23,8 +23,8 @@ describe("Pudding", function() {
 
       assert.equal(JSON.stringify(A.abi), wash(result.contracts["A"].interface));
       assert.equal(JSON.stringify(B.abi), wash(result.contracts["B"].interface));
-      assert.equal(A.binary, result.contracts["A"].bytecode);
-      assert.equal(B.binary, result.contracts["B"].bytecode);
+      assert.equal(A.binary, "0x" + result.contracts["A"].bytecode);
+      assert.equal(B.binary, "0x" + result.contracts["B"].bytecode);
     }).then(done).catch(done);
   });
 
