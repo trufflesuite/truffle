@@ -151,4 +151,24 @@ describe("Pudding + require", function() {
       assert.equal(parrot_value.valueOf(), 865, "Parrotted value should equal 865")
     }).then(done).catch(done);
   });
+
+  it("should return transaction hash, logs and receipt when using synchronised transactions", function(done) {
+    var example = null;
+    Example.new().then(function(instance) {
+      example = instance;
+      return example.triggerEvent();
+    }).then(function(result) {
+      assert.isDefined(result.tx, "transaction hash wasn't returned");
+      assert.isDefined(result.logs, "synchronized transaction didn't return any logs");
+      assert.isDefined(result.receipt, "synchronized transaction didn't return a receipt");
+      assert.isOk(result.tx.length > 42, "Unexpected transaction hash"); // There has to be a better way to do this.
+      assert.equal(result.tx, result.receipt.transactionHash, "Transaction had different hash than receipt");
+      assert.equal(result.logs.length, 1, "logs array expected to be 1");
+
+      var log = result.logs[0];
+
+      assert.equal("ExampleEvent", log.event);
+      assert.equal(accounts[0], log.args._from);
+    }).then(done).catch(done);
+  });
 });

@@ -1,4 +1,5 @@
 var Web3 = require("web3");
+var SolidityEvent = require("web3/lib/web3/event.js");
 
 (function() {
   // Planned for future features, logging, etc.
@@ -76,7 +77,7 @@ var Web3 = require("web3");
         });
       };
     },
-    synchronizeFunction: function(fn, C) {
+    synchronizeFunction: function(fn, instance, C) {
       var self = this;
       return function() {
         var args = Array.prototype.slice.call(arguments);
@@ -92,6 +93,13 @@ var Web3 = require("web3");
 
         return new Promise(function(accept, reject) {
 
+          var decodeLogs = function(logs) {
+            return logs.map(function(log) {
+              var logType = instance.known_events[log.topics[0]];
+              return logType.decoder.decode(log);
+            });
+          };
+
           var callback = function(error, tx) {
             if (error != null) {
               reject(error);
@@ -106,7 +114,11 @@ var Web3 = require("web3");
                 if (err) return reject(err);
 
                 if (receipt != null) {
-                  return accept(tx, receipt);
+                  return accept({
+                    tx: tx,
+                    receipt: receipt,
+                    logs: decodeLogs(receipt.logs)
+                  });
                 }
 
                 if (timeout > 0 && new Date().getTime() - start > timeout) {
@@ -131,6 +143,8 @@ var Web3 = require("web3");
     instance.contract = contract;
     var constructor = instance.constructor;
 
+    instance.known_events = {};
+
     // Provision our functions.
     for (var i = 0; i < instance.abi.length; i++) {
       var item = instance.abi[i];
@@ -138,7 +152,7 @@ var Web3 = require("web3");
         if (item.constant == true) {
           instance[item.name] = Utils.promisifyFunction(contract[item.name], constructor);
         } else {
-          instance[item.name] = Utils.synchronizeFunction(contract[item.name], constructor);
+          instance[item.name] = Utils.synchronizeFunction(contract[item.name], instance, constructor);
         }
 
         instance[item.name].call = Utils.promisifyFunction(contract[item.name].call, constructor);
@@ -149,6 +163,14 @@ var Web3 = require("web3");
 
       if (item.type == "event") {
         instance[item.name] = contract[item.name];
+
+        var signature = item.name + "(" + item.inputs.map(function(param) {return param.type;}).join(",") + ")";
+
+        instance.known_events["0x" + constructor.web3.sha3(signature)] = {
+          signature: signature,
+          abi_entry: item,
+          decoder: new SolidityEvent(null, item, contract.address)
+        };
       }
     }
 
