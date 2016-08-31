@@ -55,7 +55,7 @@ function Config(truffle_directory, working_directory, network) {
       return path.join(self.working_directory, "test");
     },
     test_file_extension_regexp: function() {
-      return /.*\.(js|es|es6|jsx)$/
+      return /.*\.(js|es|es6|jsx|sol)$/
     },
     networks: function() {
       return {
