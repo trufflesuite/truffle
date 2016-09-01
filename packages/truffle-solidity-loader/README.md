@@ -2,6 +2,10 @@
 
 A Webpack loader that will parse and provision Solidity files to Javascript using Truffle for compilation, and utilising Truffle's migrations. This allows you to develop your contracts with Hot Reloading support, and have your migrations automatically re-run on change.
 
+Each time you change a Solidity contract, Webpack will detect the change, recompile the Solidity files, and re-run your Truffle migrations. The updated Solidity contract will be Hot updated in teh browser if enabled.
+
+When you run a production build, the contracts will be bundled into your main bundle for easy deployment.
+
 A project by ConsenSys and @johnmcdowall.
 
 ## Installation
@@ -12,16 +16,33 @@ Add the appropriate config to your `loaders` section of your Webpack config:
 
 ```javascript
 {
-  test: /\.sol/, loader: 'truffle-solidity?web3_rpc_uri='+process.env.WEB3_RPC_LOCATION+'&migrations_directory='+path.resolve(__dirname, '../migrations' )
+  test: /\.sol/,
+  loader: 'truffle-solidity'
+}
+```
+
+### `truffle.js` integration
+
+The loader will detect a `truffle.js` (or `truffle-config.js` for Windows users) config file in your project and use that for configuration.
+
+Importantly, you will need to specify the location of your `migrations` directory in the `truffle.js` file like so:
+
+`"migrations_directory": "./migrations"`
+
+You can also override the Truffle config using a loader querystring as outlined below:
+
+```javascript
+{
+  test: /\.sol/,
+  loader: 'truffle-solidity?migrations_directory='+path.resolve(__dirname, '../migrations' )
 }
 ```
 
 ### Loader Query string config
 
-  - `web3_rpc_uri`: The URI of the Web3 RPC endpoint with which to provision your contracts (Required)
-  - `migrations_directory`: The path to a directory containing your Truffle migrations (Required)
-  - `network`: A network name to use (optional: defaults to `default`)
-  - `network_id`: A network id to use (optional: defaults to `default`)
+  - `migrations_directory`: The path to a directory containing your Truffle migrations
+  - `network`: A network name to use
+  - `network_id`: A network id to use
 
 ## Contributing
 
