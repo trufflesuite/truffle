@@ -6,6 +6,8 @@ Each time you change a Solidity contract, Webpack will detect the change, recomp
 
 When you run a production build, the contracts will be bundled into your main bundle for easy deployment.
 
+You can see this plugin in operation in the [Truffle+Webpack Demo App](https://github.com/ConsenSys/truffle-webpack-demo)
+
 A project by ConsenSys and @johnmcdowall.
 
 ## Installation
