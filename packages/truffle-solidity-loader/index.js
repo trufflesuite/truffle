@@ -5,28 +5,14 @@ var Pudding                 = require('ether-pudding')
 var Web3                    = require('web3')
 var temp                    = require('temp')
 
+/* Internal Module Dependencies */
+var Logger                  = require('./lib/logger_decorator')
+var BuildOptionNormalizer   = require('./lib/build_option_normalizer')
+
 /* Native Node Imports */
 var path                    = require('path')
 var fs                      = require('fs')
 
-// Convert a Query String into an object of key value pairs.
-function parseQueryString(query) {
-    var queryString = {};
-
-    query.replace(
-      new RegExp("([^?=&]+)(=([^&]*))?", "g"),
-      function($0, $1, $2, $3) { queryString[$1] = $3; }
-    );
-
-    return queryString;
-}
-
-// Custom Logger
-var Logger = {
-  log: function(msg) {
-    console.log("[TRUFFLE SOLIDITY] " + msg)
-  }
-}
 
 module.exports = function (source) {
   this.cacheable && this.cacheable()
@@ -39,24 +25,7 @@ module.exports = function (source) {
 
   var buildOpts    = {}
   buildOpts.logger = Logger
-
-  if (typeof this.query !== "undefined") {
-    buildOpts = parseQueryString(this.query)
-  }
-
-  if(!buildOpts.network) {
-    buildOpts.network = "default"
-    Logger.log("Setting network to 'default' for compilation and contract provisioning")
-  }
-
-  if(!buildOpts.network_id) {
-    buildOpts.network_id = "default"
-    Logger.log("Setting network_id to 'default' for compilation and contract provisioning")
-  }
-
-  if(!buildOpts.migrations_directory) {
-    throw new Error("You must specify the location of the Truffle migrations directory in the loader query string. (migrations_directory)")
-  }
+  buildOpts        = BuildOptionNormalizer.normalize(buildOpts, this.query)
 
   temp.mkdir('webpack-truffle', function(err, dirPath){
     if(!err) {
