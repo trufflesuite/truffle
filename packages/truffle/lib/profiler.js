@@ -26,12 +26,21 @@ module.exports = {
   },
 
   updated: function(options, callback) {
+    var self = this;
+
     var contracts_directory = options.contracts_directory;
     var build_directory = options.contracts_build_directory;
 
-    this.all_contracts(contracts_directory, function(err, files) {
+    function getFiles(done) {
+      if (options.files) {
+        done(null, options.files);
+      } else {
+        self.all_contracts(contracts_directory, done);
+      }
+    }
+
+    getFiles(function(err, files) {
       var expected_build_files = files.map(function(file) {
-        //return path.join(build_directory, path.dirname(path.relative(contracts_directory, file)), path.basename(file) + ".js");
         return path.join(build_directory, path.basename(file) + ".js");
       });
 
@@ -113,7 +122,27 @@ module.exports = {
     });
   },
 
-  imports: function(file, from, callback) {
+  imports_from_source: function(body, filename, includes) {
+    var imports = SolidityParser.parse(body, "imports");
+
+    var dirname = path.dirname(filename);
+
+    imports = imports.map(function(i) {
+      // Leave includes alone.
+      if (includes[i]) return i;
+
+      // If there are absolute paths, leave those alone.
+      if (path.isAbsolute(i)) return i;
+
+      return path.resolve(path.join(dirname, i));
+    });
+
+    return imports;
+  },
+
+  imports: function(file, from, includes, callback) {
+    var self = this;
+
     if (typeof from == "function") {
       callback = from;
       from = null;
@@ -121,35 +150,34 @@ module.exports = {
 
     fs.readFile(file, "utf8", function(err, body) {
       if (err) {
-        var msg = "Cannot find import " + path.basename(file);
-        if (from) {
-          msg += " from " + path.basename(from);
+        // If this file wasn't found, check if it's an include.
+        // If not, throw an error.
+        if (includes[file]) {
+          body = includes[file];
+        } else {
+          var msg = "Cannot find import " + path.basename(file);
+          if (from) {
+            msg += " from " + path.basename(from);
+          }
+          msg += ". If it's a relative path, ensure it starts with `./` or `../`."
+          return callback(new CompileError(msg));
         }
-        msg += ". If it's a relative path, ensure it starts with `./` or `../`."
-        return callback(new CompileError(msg));
       }
 
       //console.log("Parsing " + path.basename(file) + "...");
-
-      var imports = SolidityParser.parse(body, "imports");
-
-      var dirname = path.dirname(file);
-
-      imports = imports.map(function(i) {
-        return path.resolve(path.join(dirname, i));
-      });
+      var imports = self.imports_from_source(body, file, includes);
 
       callback(null, imports);
     });
   },
 
-  required_files: function(files, callback) {
+  required_files: function(files, includes, callback) {
     // Ensure full paths.
     files = files.map(function(file) {
       return path.resolve(file);
     });
 
-    this.dependency_graph(files, function(err, dependsGraph) {
+    this.dependency_graph(files, includes, function(err, dependsGraph) {
       if (err) return callback(err);
 
       function is_updated(contract_name) {
@@ -202,11 +230,16 @@ module.exports = {
 
       files.forEach(walk_from);
 
-      callback(null, Object.keys(required));
+      // Since includes aren't files themselves, filter them out.
+      var result = Object.keys(required).filter(function(file) {
+        return includes[file] == null;
+      });
+
+      callback(null, result);
     });
   },
 
-  dependency_graph: function(files, callback) {
+  dependency_graph: function(files, includes, callback) {
     var self = this;
 
     // Ensure full paths. Return array of file and
@@ -225,7 +258,7 @@ module.exports = {
       if (imports_cache[file] != null) {
         callback(null, imports_cache[file]);
       } else {
-        self.imports(file, from, function(err, imports) {
+        self.imports(file, from, includes, function(err, imports) {
           if (err) return callback(err);
           imports_cache[file] = imports;
           callback(null, imports);
@@ -278,4 +311,70 @@ module.exports = {
       callback(null, dependsGraph)
     });
   },
+
+  ordered_abi: function(file, contract, callback) {
+    fs.readFile(file, {encoding: "utf8"}, function(err, body) {
+      if (err) return callback(err);
+
+      var ordered_function_names = [];
+      var ordered_functions = [];
+
+      var abi = contract.abi;
+      var ast = SolidityParser.parse(body);
+      var contract_definition;
+
+      for (var i = 0; i < ast.body.length; i++) {
+        var definition = ast.body[i];
+
+        if (definition.type != "ContractStatement") continue;
+
+        if (definition.name == contract.contract_name) {
+          contract_definition = definition;
+          break;
+        }
+      }
+
+      if (!contract_definition) return callback(null, contract.abi);
+
+      contract_definition.body.forEach(function(statement) {
+        if (statement.type == "FunctionDeclaration") {
+          ordered_function_names.push(statement.name);
+        }
+      });
+
+      // Put function names in a hash with their order, lowest first, for speed.
+      var functions_to_remove = ordered_function_names.reduce(function(obj, value, index) {
+        obj[value] = index;
+        return obj;
+      }, {});
+
+      // Filter out functions from the abi
+      var function_definitions = abi.filter(function(item) {
+        return functions_to_remove[item.name] != null;
+      });
+
+      // Sort removed function defintions
+      function_definitions = function_definitions.sort(function(item_a, item_b) {
+        var a = functions_to_remove[item_a.name];
+        var b = functions_to_remove[item_b.name];
+
+        if (a > b) return 1;
+        if (a < b) return -1;
+        return 0;
+      });
+
+      // Create a new ABI, placing ordered functions at the end.
+      var newABI = [];
+      abi.forEach(function(item) {
+        if (functions_to_remove[item.name] != null) return;
+        newABI.push(item);
+      });
+
+      // Now pop the ordered functions definitions on to the end of the abi..
+      Array.prototype.push.apply(newABI, function_definitions);
+
+      callback(null, newABI);
+    })
+
+  }
 };
