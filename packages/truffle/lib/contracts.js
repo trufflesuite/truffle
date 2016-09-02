@@ -88,10 +88,14 @@ var Contracts = {
     var self = this;
 
     expect.options(options, [
-      "contracts_directory",
       "contracts_build_directory",
       "network",
       "network_id"
+    ]);
+
+    expect.one(options, [
+      "contracts_directory",
+      "files"
     ]);
 
     function finished(err, contracts) {
@@ -129,6 +133,6 @@ var Contracts = {
       }).catch(callback);
     });
   }
-}
+};
 
 module.exports = Contracts;
