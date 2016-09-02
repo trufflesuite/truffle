@@ -10,6 +10,7 @@ var fs = require("fs");
 var async = require("async");
 var Profiler = require("./profiler");
 var CompileError = require("./errors/compileerror");
+var Config = require("./config");
 
 module.exports = {
   // contracts_directory: String. Directory where .sol files can be found.
@@ -66,7 +67,7 @@ module.exports = {
     async.each(files, function(file, finished) {
       fs.readFile(file, "utf8", function(err, body) {
         if (err) return finished(err);
-        sources[path.relative(contracts_directory, file)] = body;
+        sources[file] = body;
         finished();
       });
     }, function(err) {
@@ -129,7 +130,7 @@ module.exports = {
     options.contracts_directory = options.contracts_directory || process.cwd();
 
     var self = this;
-    Profiler.required_files(options.files, function(err, files) {
+    Profiler.required_files(options.files, options.includes, function(err, files) {
       if (err) return callback(err);
 
       files.sort().forEach(function(file) {
@@ -143,5 +144,23 @@ module.exports = {
 
       self.compile(options, callback);
     });
+  },
+
+  compile_includes_with_dependencies: function(options, callback) {
+    var config = Config.default().merge(options);
+    var includes = config.includes;
+    var files = [];
+
+    Object.keys(includes).forEach(function(key) {
+      var body = includes[key];
+      var file = path.resolve(path.join(config.contracts_directory, key));
+      var imports = Profiler.imports_from_source(body, file, {});
+
+      Array.prototype.push.apply(files, imports);
+    });
+
+    this.compile_with_dependencies(config.with({
+      files: files
+    }), callback)
   }
 };
