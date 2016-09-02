@@ -131,10 +131,9 @@ TestRunner.prototype.compileNewAbstractInterface = function(callback) {
   Profiler.all_contracts(this.config.contracts_directory, function(err, files) {
     if (err) return callback(err);
 
-    var addressesLibrarySource = Deployed.makeSolidityDeployedAddressesLibrary(files, self.contracts);
+    var addressesLibrarySource = Deployed.makeSolidityDeployedAddressesLibrary(files, self.project_contracts);
 
     Compiler.compile_includes_with_dependencies(self.config.with({
-      contracts_directory: self.config.test_directory,
       includes: {
         "truffle/DeployedAddresses.sol": addressesLibrarySource
       }
