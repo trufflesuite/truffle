@@ -28,7 +28,7 @@
 
         function testAdd() {
             var adder = new ModAdder();
-            adder.addMod(50, 66, 30).assertEqual(26, "addition returned the wrong sum");
+            adder.addMod(50, 66, 30).equal(26, "addition returned the wrong sum");
         }
     }
     (end)
@@ -41,7 +41,7 @@
 
         function testAdd() {
             var adder = new ModAdder();
-            adder.addMod(50, 66, 30).assertEqual(26, "addition returned the wrong sum");
+            adder.addMod(50, 66, 30).equal(26, "addition returned the wrong sum");
         }
     }
     (end)
@@ -75,10 +75,28 @@ library Assert {
     */
     event TestEvent(bool indexed result, string message);
 
+    // ************************************** general **************************************
+
+    /*
+        Function: fail()
+
+        Mark the test as failed.
+
+        Params:
+            message (string) - A message associated with the failure.
+
+        Returns:
+            result (bool) - false.
+    */
+    function fail(string message) constant returns (bool result) {
+        _report(false, message);
+        return false;
+    }
+
     // ************************************** strings **************************************
 
     /*
-        Function: assertEqual(string)
+        Function: equal(string)
 
         Assert that two strings are equal.
 
@@ -92,7 +110,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertEqual(string A, string B, string message) constant returns (bool result) {
+    function equal(string A, string B, string message) constant returns (bool result) {
         result = _stringsEqual(A, B);
         if (result)
             _report(result, message);
@@ -101,7 +119,7 @@ library Assert {
     }
 
     /*
-        Function: assertNotEqual(string)
+        Function: notEqual(string)
 
         Assert that two strings are not equal.
 
@@ -115,7 +133,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertNotEqual(string A, string B, string message) constant returns (bool result) {
+    function notEqual(string A, string B, string message) constant returns (bool result) {
         result = !_stringsEqual(A, B);
         if (result)
             _report(result, message);
@@ -124,7 +142,7 @@ library Assert {
     }
 
     /*
-        Function: assertEmpty(string)
+        Function: isEmpty(string)
 
         Assert that a string is empty.
 
@@ -137,7 +155,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertEmpty(string str, string message) constant returns (bool result) {
+    function isEmpty(string str, string message) constant returns (bool result) {
         result = _stringsEqual(str, STRING_NULL);
         if (result)
             _report(result, message);
@@ -146,7 +164,7 @@ library Assert {
     }
 
     /*
-        Function: assertNotEmpty(string)
+        Function: isNotEmpty(string)
 
         Assert that a string is not empty.
 
@@ -159,7 +177,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertNotEmpty(string str, string message) constant returns (bool result) {
+    function isNotEmpty(string str, string message) constant returns (bool result) {
         result = !_stringsEqual(str, STRING_NULL);
         if (result)
             _report(result, message);
@@ -170,7 +188,7 @@ library Assert {
     // ************************************** bytes32 **************************************
 
     /*
-        Function: assertEqual(bytes32)
+        Function: equal(bytes32)
 
         Assert that two 'bytes32' are equal.
 
@@ -184,13 +202,13 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertEqual(bytes32 A, bytes32 B, string message) constant returns (bool result) {
+    function equal(bytes32 A, bytes32 B, string message) constant returns (bool result) {
         result = (A == B);
         _report(result, message);
     }
 
     /*
-        Function: assertNotEqual(bytes32)
+        Function: notEqual(bytes32)
 
         Assert that two 'bytes32' are not equal.
 
@@ -204,13 +222,13 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertNotEqual(bytes32 A, bytes32 B, string message) constant returns (bool result) {
+    function notEqual(bytes32 A, bytes32 B, string message) constant returns (bool result) {
         result = (A != B);
         _report(result, message);
     }
 
     /*
-        Function: assertZero(bytes32)
+        Function: isZero(bytes32)
 
         Assert that a 'bytes32' is zero.
 
@@ -223,13 +241,13 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertZero(bytes32 bts, string message) constant returns (bool result) {
+    function isZero(bytes32 bts, string message) constant returns (bool result) {
         result = (bts == BYTES32_NULL);
         _report(result, message);
     }
 
     /*
-        Function: assertNotZero(bytes32)
+        Function: isNotZero(bytes32)
 
         Assert that a 'bytes32' is not zero.
 
@@ -242,7 +260,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertNotZero(bytes32 bts, string message) constant returns (bool result) {
+    function isNotZero(bytes32 bts, string message) constant returns (bool result) {
         result = (bts != BYTES32_NULL);
         _report(result, message);
     }
@@ -250,7 +268,7 @@ library Assert {
     // ************************************** address **************************************
 
     /*
-        Function: assertEqual(address)
+        Function: equal(address)
 
         Assert that two addresses are equal.
 
@@ -264,12 +282,12 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertEqual(address A, address B, string message) constant returns (bool result) {
+    function equal(address A, address B, string message) constant returns (bool result) {
         result = (A == B);
         _report(result, message);
     }
     /*
-        Function: assertNotEqual(address)
+        Function: notEqual(address)
 
         Assert that two addresses are not equal.
 
@@ -283,13 +301,13 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertNotEqual(address A, address B, string message) constant returns (bool result) {
+    function notEqual(address A, address B, string message) constant returns (bool result) {
         result = (A != B);
          _report(result, message);
     }
 
     /*
-        Function: assertZero(address)
+        Function: isZero(address)
 
         Assert that an address is zero.
 
@@ -302,13 +320,13 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertZero(address addr, string message) constant returns (bool result) {
+    function isZero(address addr, string message) constant returns (bool result) {
         result = (addr == ADDRESS_NULL);
         _report(result, message);
     }
 
     /*
-        Function: assertNotZero(address)
+        Function: isNotZero(address)
 
         Assert that an address is not zero.
 
@@ -321,7 +339,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertNotZero(address addr, string message) constant returns (bool result) {
+    function isNotZero(address addr, string message) constant returns (bool result) {
         result = (addr != ADDRESS_NULL);
         _report(result, message);
     }
@@ -329,7 +347,7 @@ library Assert {
     // ************************************** bool **************************************
 
     /*
-        Function: assertTrue
+        Function: isTrue
 
         Assert that a boolean is 'true'.
 
@@ -342,32 +360,13 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertTrue(bool b, string message) constant returns (bool result) {
+    function isTrue(bool b, string message) constant returns (bool result) {
         result = b;
         _report(result, message);
     }
 
     /*
-        Function: assert
-
-        Shorthand for 'assertTrue'
-
-        : b == true
-
-        Params:
-            b (bool) - The boolean.
-            message (string) - A message that is sent if the assertion fails.
-
-        Returns:
-            result (bool) - The result.
-    */
-    function assert(bool b, string message) constant returns (bool result) {
-        result = b;
-        _report(result, message);
-    }
-
-    /*
-        Function: assertFalse
+        Function: isFalse
 
         Assert that a boolean is 'false'.
 
@@ -380,13 +379,13 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertFalse(bool b, string message) constant returns (bool result) {
+    function isFalse(bool b, string message) constant returns (bool result) {
         result = !b;
         _report(result, message);
     }
 
     /*
-        Function: assertEqual(bool)
+        Function: equal(bool)
 
         Assert that two booleans are equal.
 
@@ -400,7 +399,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertEqual(bool A, bool B, string message) constant returns (bool result) {
+    function equal(bool A, bool B, string message) constant returns (bool result) {
         result = (A == B);
         if (result)
             _report(result, message);
@@ -409,7 +408,7 @@ library Assert {
     }
 
     /*
-        Function: assertNotEqual(bool)
+        Function: notEqual(bool)
 
         Assert that two booleans are not equal.
 
@@ -423,7 +422,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertNotEqual(bool A, bool B, string message) constant returns (bool result) {
+    function notEqual(bool A, bool B, string message) constant returns (bool result) {
         result = (A != B);
         if (result)
             _report(result, message);
@@ -434,7 +433,7 @@ library Assert {
     // ************************************** uint **************************************
 
     /*
-        Function: assertEqual(uint)
+        Function: equal(uint)
 
         Assert that two (256 bit) unsigned integers are equal.
 
@@ -448,7 +447,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertEqual(uint A, uint B, string message) constant returns (bool result) {
+    function equal(uint A, uint B, string message) constant returns (bool result) {
         result = (A == B);
         if (result)
             _report(result, message);
@@ -457,7 +456,7 @@ library Assert {
     }
 
     /*
-        Function: assertNotEqual(uint)
+        Function: notEqual(uint)
 
         Assert that two (256 bit) unsigned integers are not equal.
 
@@ -471,7 +470,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertNotEqual(uint A, uint B, string message) constant returns (bool result) {
+    function notEqual(uint A, uint B, string message) constant returns (bool result) {
         result = (A != B);
         if (result)
             _report(result, message);
@@ -480,7 +479,7 @@ library Assert {
     }
 
     /*
-        Function: assertGT(uint)
+        Function: isAbove(uint)
 
         Assert that the uint 'A' is greater than the uint 'B'.
 
@@ -494,7 +493,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertGT(uint A, uint B, string message) constant returns (bool result) {
+    function isAbove(uint A, uint B, string message) constant returns (bool result) {
         result = (A > B);
         if (result)
             _report(result, message);
@@ -503,7 +502,7 @@ library Assert {
     }
 
     /*
-        Function: assertGTOE(uint)
+        Function: isAtLeast(uint)
 
         Assert that the uint 'A' is greater than or equal to the uint 'B'.
 
@@ -517,7 +516,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertGTOE(uint A, uint B, string message) constant returns (bool result) {
+    function isAtLeast(uint A, uint B, string message) constant returns (bool result) {
         result = (A >= B);
         if (result)
             _report(result, message);
@@ -526,7 +525,7 @@ library Assert {
     }
 
     /*
-        Function: assertLT(uint)
+        Function: isBelow(uint)
 
         Assert that the uint 'A' is lesser than the uint 'B'.
 
@@ -540,7 +539,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertLT(uint A, uint B, string message) constant returns (bool result) {
+    function isBelow(uint A, uint B, string message) constant returns (bool result) {
         result = (A < B);
         if (result)
             _report(result, message);
@@ -549,7 +548,7 @@ library Assert {
     }
 
     /*
-        Function: assertLTOE(uint)
+        Function: isAtMost(uint)
 
         Assert that the uint 'A' is lesser than or equal to the uint 'B'.
 
@@ -563,7 +562,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertLTOE(uint A, uint B, string message) constant returns (bool result) {
+    function isAtMost(uint A, uint B, string message) constant returns (bool result) {
         result = (A <= B);
         if (result)
             _report(result, message);
@@ -572,7 +571,7 @@ library Assert {
     }
 
     /*
-        Function: assertZero(uint)
+        Function: isZero(uint)
 
         Assert that a (256 bit) unsigned integer is 0.
 
@@ -585,7 +584,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertZero(uint number, string message) constant returns (bool result) {
+    function isZero(uint number, string message) constant returns (bool result) {
         result = (number == 0);
         if (result)
             _report(result, message);
@@ -594,7 +593,7 @@ library Assert {
     }
 
     /*
-        Function: assertNotZero(uint)
+        Function: isNotZero(uint)
 
         Assert that a (256 bit) unsigned integer is not 0.
 
@@ -607,7 +606,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertNotZero(uint number, string message) constant returns (bool result) {
+    function isNotZero(uint number, string message) constant returns (bool result) {
         result = (number != 0);
         if (result)
             _report(result, message);
@@ -618,7 +617,7 @@ library Assert {
     // ************************************** int **************************************
 
     /*
-        Function: assertEqual(int)
+        Function: equal(int)
 
         Assert that two (256 bit) signed integers are equal.
 
@@ -632,7 +631,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertEqual(int A, int B, string message) constant returns (bool result) {
+    function equal(int A, int B, string message) constant returns (bool result) {
         result = (A == B);
         if (result)
             _report(result, message);
@@ -641,7 +640,7 @@ library Assert {
     }
 
     /*
-        Function: assertNotEqual(int)
+        Function: notEqual(int)
 
         Assert that two (256 bit) signed integers are not equal.
 
@@ -655,7 +654,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertNotEqual(int A, int B, string message) constant returns (bool result) {
+    function notEqual(int A, int B, string message) constant returns (bool result) {
         result = (A != B);
         if (result)
             _report(result, message);
@@ -664,7 +663,7 @@ library Assert {
     }
 
     /*
-        Function: assertGT(int)
+        Function: isAbove(int)
 
         Assert that the int 'A' is greater than the int 'B'.
 
@@ -678,7 +677,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertGT(int A, int B, string message) constant returns (bool result) {
+    function isAbove(int A, int B, string message) constant returns (bool result) {
         result = (A > B);
         if (result)
             _report(result, message);
@@ -687,7 +686,7 @@ library Assert {
     }
 
     /*
-        Function: assertGTOE(int)
+        Function: isAtLeast(int)
 
         Assert that the int 'A' is greater than or equal to the int 'B'.
 
@@ -701,7 +700,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertGTOE(int A, int B, string message) constant returns (bool result) {
+    function isAtLeast(int A, int B, string message) constant returns (bool result) {
         result = (A >= B);
         if (result)
             _report(result, message);
@@ -710,7 +709,7 @@ library Assert {
     }
 
     /*
-        Function: assertLT(int)
+        Function: isBelow(int)
 
         Assert that the int 'A' is lesser than the int 'B'.
 
@@ -724,7 +723,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertLT(int A, int B, string message) constant returns (bool result) {
+    function isBelow(int A, int B, string message) constant returns (bool result) {
         result = (A < B);
         if (result)
             _report(result, message);
@@ -733,7 +732,7 @@ library Assert {
     }
 
     /*
-        Function: assertLTOE(int)
+        Function: isAtMost(int)
 
         Assert that the int 'A' is lesser than or equal to the int 'B'.
 
@@ -747,7 +746,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertLTOE(int A, int B, string message) constant returns (bool result) {
+    function isAtMost(int A, int B, string message) constant returns (bool result) {
         result = (A <= B);
         if (result)
             _report(result, message);
@@ -756,7 +755,7 @@ library Assert {
     }
 
     /*
-        Function: assertZero(int)
+        Function: isZero(int)
 
         Assert that a (256 bit) signed integer is 0.
 
@@ -769,7 +768,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertZero(int number, string message) constant returns (bool result) {
+    function isZero(int number, string message) constant returns (bool result) {
         result = (number == 0);
         if (result)
             _report(result, message);
@@ -778,7 +777,7 @@ library Assert {
     }
 
     /*
-        Function: assertNotZero(int)
+        Function: isNotZero(int)
 
         Assert that a (256 bit) signed integer is not 0.
 
@@ -791,7 +790,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertNotZero(int number, string message) constant returns (bool result) {
+    function isNotZero(int number, string message) constant returns (bool result) {
         result = (number != 0);
         if (result)
             _report(result, message);
@@ -802,7 +801,7 @@ library Assert {
     // ************************************** uint[] **************************************
 
     /*
-        Function: assertEqual(uint[])
+        Function: equal(uint[])
 
         Assert that two 'uint[ ]' are equal.
 
@@ -820,7 +819,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertEqual(uint[] arrA, uint[] arrB, string message) constant returns (bool result) {
+    function equal(uint[] arrA, uint[] arrB, string message) constant returns (bool result) {
         result = arrA.length == arrB.length;
         if (result) {
             for (uint i = 0; i < arrA.length; i++) {
@@ -834,7 +833,7 @@ library Assert {
     }
 
     /*
-        Function: assertNotEqual(uint[])
+        Function: notEqual(uint[])
 
         Assert that two 'uint[]' are not equal.
 
@@ -852,7 +851,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertNotEqual(uint[] arrA, uint[] arrB, string message) constant returns (bool result) {
+    function notEqual(uint[] arrA, uint[] arrB, string message) constant returns (bool result) {
         var r = arrA.length == arrB.length;
         if (r) {
             for (uint i = 0; i < arrA.length; i++) {
@@ -866,7 +865,7 @@ library Assert {
     }
 
     /*
-        Function: assertLengthEqual(uint[])
+        Function: lengthEqual(uint[])
 
         Assert that the length of a 'uint[]' is equal to a given value.
 
@@ -880,7 +879,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertLengthEqual(uint[] arr, uint length, string message) constant returns (bool result) {
+    function lengthEqual(uint[] arr, uint length, string message) constant returns (bool result) {
         uint arrLength = arr.length;
         if (arrLength == length)
             _report(result, "");
@@ -889,7 +888,7 @@ library Assert {
     }
 
     /*
-        Function: assertLengthNotEqual(uint[])
+        Function: lengthNotEqual(uint[])
 
         Assert that the length of a 'uint[]' is not equal to a given value.
 
@@ -903,7 +902,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertLengthNotEqual(uint[] arr, uint length, string message) constant returns (bool result) {
+    function lengthNotEqual(uint[] arr, uint length, string message) constant returns (bool result) {
         uint arrLength = arr.length;
         if (arrLength != arr.length)
             _report(result, "");
@@ -914,7 +913,7 @@ library Assert {
     // ************************************** int[] **************************************
 
     /*
-        Function: assertEqual(int[])
+        Function: equal(int[])
 
         Assert that two 'int[]' are equal.
 
@@ -932,7 +931,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertEqual(int[] arrA, int[] arrB, string message) constant returns (bool result) {
+    function equal(int[] arrA, int[] arrB, string message) constant returns (bool result) {
         result = arrA.length == arrB.length;
         if (result) {
             for (uint i = 0; i < arrA.length; i++) {
@@ -946,7 +945,7 @@ library Assert {
     }
 
     /*
-        Function: assertNotEqual(int[])
+        Function: notEqual(int[])
 
         Assert that two 'int[]' are not equal.
 
@@ -964,7 +963,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertNotEqual(int[] arrA, int[] arrB, string message) constant returns (bool result) {
+    function notEqual(int[] arrA, int[] arrB, string message) constant returns (bool result) {
         var r = arrA.length == arrB.length;
         if (r) {
             for (uint i = 0; i < arrA.length; i++) {
@@ -978,7 +977,7 @@ library Assert {
     }
 
     /*
-        Function: assertLengthEqual(int[])
+        Function: lengthEqual(int[])
 
         Assert that the length of an 'int[]' is equal to a given value.
 
@@ -992,7 +991,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertLengthEqual(int[] arr, uint length, string message) constant returns (bool result) {
+    function lengthEqual(int[] arr, uint length, string message) constant returns (bool result) {
         uint arrLength = arr.length;
         if (arrLength == length)
             _report(result, "");
@@ -1001,7 +1000,7 @@ library Assert {
     }
 
     /*
-        Function: assertLengthNotEqual(int[])
+        Function: lengthNotEqual(int[])
 
         Assert that the length of an 'int[]' is not equal to a given value.
 
@@ -1015,7 +1014,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertLengthNotEqual(int[] arr, uint length, string message) constant returns (bool result) {
+    function lengthNotEqual(int[] arr, uint length, string message) constant returns (bool result) {
         uint arrLength = arr.length;
         if (arrLength != arr.length)
             _report(result, "");
@@ -1026,7 +1025,7 @@ library Assert {
     // ************************************** address[] **************************************
 
     /*
-        Function: assertEqual(address[])
+        Function: equal(address[])
 
         Assert that two 'address[]' are equal.
 
@@ -1044,7 +1043,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertEqual(address[] arrA, address[] arrB, string message) constant returns (bool result) {
+    function equal(address[] arrA, address[] arrB, string message) constant returns (bool result) {
         result = arrA.length == arrB.length;
         if (result) {
             for (uint i = 0; i < arrA.length; i++) {
@@ -1058,7 +1057,7 @@ library Assert {
     }
 
     /*
-        Function: assertNotEqual(address[])
+        Function: notEqual(address[])
 
         Assert that two 'address[]' are not equal.
 
@@ -1076,7 +1075,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertNotEqual(address[] arrA, address[] arrB, string message) constant returns (bool result) {
+    function notEqual(address[] arrA, address[] arrB, string message) constant returns (bool result) {
         var r = arrA.length == arrB.length;
         if (r) {
             for (uint i = 0; i < arrA.length; i++) {
@@ -1090,7 +1089,7 @@ library Assert {
     }
 
     /*
-        Function: assertLengthEqual(address[])
+        Function: lengthEqual(address[])
 
         Assert that the length of an 'address[]' is equal to a given value.
 
@@ -1104,7 +1103,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertLengthEqual(address[] arr, uint length, string message) constant returns (bool result) {
+    function lengthEqual(address[] arr, uint length, string message) constant returns (bool result) {
         uint arrLength = arr.length;
         if (arrLength == length)
             _report(result, "");
@@ -1113,7 +1112,7 @@ library Assert {
     }
 
     /*
-        Function: assertLengthNotEqual(address[])
+        Function: lengthNotEqual(address[])
 
         Assert that the length of an 'address[]' is not equal to a given value.
 
@@ -1127,7 +1126,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertLengthNotEqual(address[] arr, uint length, string message) constant returns (bool result) {
+    function lengthNotEqual(address[] arr, uint length, string message) constant returns (bool result) {
         uint arrLength = arr.length;
         if (arrLength != arr.length)
             _report(result, "");
@@ -1138,7 +1137,7 @@ library Assert {
     // ************************************** bytes32[] **************************************
 
     /*
-        Function: assertEqual(bytes32[])
+        Function: equal(bytes32[])
 
         Assert that two 'bytes32[]' are equal.
 
@@ -1156,7 +1155,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertEqual(bytes32[] arrA, bytes32[] arrB, string message) constant returns (bool result) {
+    function equal(bytes32[] arrA, bytes32[] arrB, string message) constant returns (bool result) {
         result = arrA.length == arrB.length;
         if (result) {
             for (uint i = 0; i < arrA.length; i++) {
@@ -1170,7 +1169,7 @@ library Assert {
     }
 
     /*
-        Function: assertNotEqual(bytes32[])
+        Function: notEqual(bytes32[])
 
         Assert that two 'bytes32[]' are not equal.
 
@@ -1188,7 +1187,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertNotEqual(bytes32[] arrA, bytes32[] arrB, string message) constant returns (bool result) {
+    function notEqual(bytes32[] arrA, bytes32[] arrB, string message) constant returns (bool result) {
         var r = arrA.length == arrB.length;
         if (r) {
             for (uint i = 0; i < arrA.length; i++) {
@@ -1202,7 +1201,7 @@ library Assert {
     }
 
     /*
-        Function: assertLengthEqual(bytes32[])
+        Function: lengthEqual(bytes32[])
 
         Assert that the length of an 'bytes32[]' is equal to a given value.
 
@@ -1216,7 +1215,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertLengthEqual(bytes32[] arr, uint length, string message) constant returns (bool result) {
+    function lengthEqual(bytes32[] arr, uint length, string message) constant returns (bool result) {
         uint arrLength = arr.length;
         if (arrLength == length)
             _report(result, "");
@@ -1225,7 +1224,7 @@ library Assert {
     }
 
     /*
-        Function: assertLengthNotEqual(bytes32[])
+        Function: lengthNotEqual(bytes32[])
 
         Assert that the length of an 'bytes32[]' is not equal to a given value.
 
@@ -1239,7 +1238,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertLengthNotEqual(bytes32[] arr, uint length, string message) constant returns (bool result) {
+    function lengthNotEqual(bytes32[] arr, uint length, string message) constant returns (bool result) {
         uint arrLength = arr.length;
         if (arrLength != arr.length)
             _report(result, "");
@@ -1250,7 +1249,7 @@ library Assert {
     // ************************************** balances **************************************
 
     /*
-        Function: assertBalanceEqual
+        Function: balanceEqual
 
         Assert that the balance of an account 'A' is equal to a given number 'b'.
 
@@ -1264,13 +1263,13 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertBalanceEqual(address A, uint b, string message) constant returns (bool result) {
+    function balanceEqual(address A, uint b, string message) constant returns (bool result) {
         result = (A.balance == b);
         _report(result, message);
     }
 
     /*
-        Function: assertBalanceNotEqual
+        Function: balanceNotEqual
 
         Assert that the balance of an account 'A' is not equal to a given number 'b'.
 
@@ -1284,13 +1283,13 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertBalanceNotEqual(address A, uint b, string message) constant returns (bool result) {
+    function balanceNotEqual(address A, uint b, string message) constant returns (bool result) {
         result = (A.balance != b);
         _report(result, message);
     }
 
     /*
-        Function: assertBalanceZero
+        Function: balanceIsZero
 
         Assert that the balance of an account 'A' is zero.
 
@@ -1303,13 +1302,13 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertBalanceZero(address A, string message) constant returns (bool result) {
+    function balanceIsZero(address A, string message) constant returns (bool result) {
         result = (A.balance == 0);
         _report(result, message);
     }
 
     /*
-        Function: assertBalanceNotZero
+        Function: balanceIsNotZero
 
         Assert that the balance of an account 'A' is not zero.
 
@@ -1322,7 +1321,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertBalanceNotZero(address A, string message) constant returns (bool result) {
+    function balanceIsNotZero(address A, string message) constant returns (bool result) {
         result = (A.balance != 0);
         _report(result, message);
     }
@@ -1330,7 +1329,7 @@ library Assert {
     /******************************** errors ********************************/
 
     /*
-        Function: assertErrorsEqual(uint16)
+        Function: errorsEqual(uint16)
 
         Assert that two error codes (uint16) are equal.
 
@@ -1344,7 +1343,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertErrorsEqual(uint16 errorCode1, uint16 errorCode2, string message) constant returns (bool result) {
+    function errorsEqual(uint16 errorCode1, uint16 errorCode2, string message) constant returns (bool result) {
         result = (errorCode1 == errorCode2);
         if (result)
             _report(result, message);
@@ -1353,7 +1352,7 @@ library Assert {
     }
 
     /*
-        Function: assertErrorsNotEqual(uint16)
+        Function: errorsNotEqual(uint16)
 
         Assert that two error codes (uint16) are not equal.
 
@@ -1367,7 +1366,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertErrorsNotEqual(uint16 errorCode1, uint16 errorCode2, string message) constant returns (bool result) {
+    function errorsNotEqual(uint16 errorCode1, uint16 errorCode2, string message) constant returns (bool result) {
         result = (errorCode1 != errorCode2);
         if (result)
             _report(result, message);
@@ -1376,7 +1375,7 @@ library Assert {
     }
 
     /*
-        Function: assertError
+        Function: error
 
         Assert that the code (uint16) is not the null error.
 
@@ -1389,7 +1388,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertError(uint16 errorCode, string message) constant returns (bool result) {
+    function error(uint16 errorCode, string message) constant returns (bool result) {
         result = (errorCode != 0);
         if (result)
             _report(result, message);
@@ -1398,7 +1397,7 @@ library Assert {
     }
 
     /*
-        Function: assertError
+        Function: noError
 
         Assert that the code (uint16) is the null error.
 
@@ -1411,7 +1410,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function assertNoError(uint16 errorCode, string message) constant returns (bool result) {
+    function noError(uint16 errorCode, string message) constant returns (bool result) {
         result = (errorCode == 0);
         if (result)
             _report(result, message);
