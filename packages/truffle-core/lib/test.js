@@ -2,241 +2,21 @@ var Mocha = require("mocha");
 var Suite = require("mocha/lib/suite.js");
 var TestCase = require("mocha/lib/test.js");
 var chai = require("chai");
-var dir = require("node-dir");
 var path = require("path");
 var fs = require("fs");
 var Web3 = require("web3");
 var Config = require("./config");
 var Contracts = require("./contracts");
-var Compiler = require("./compiler");
-var Migrate = require('./migrate');
 var Profiler = require("./profiler");
-var Deployer = require("./deployer");
-var Pudding = require("ether-pudding");
-var ExtendableError = require("./errors/extendableerror");
-var SolidityCoder = require("web3/lib/solidity/coder.js");
+var TestRunner = require('./testing/testrunner');
+var Deployed = require('./testing/deployed');
 var expect = require("./expect");
 var async = require("async");
-var temp = require("temp").track();
 
 chai.use(require("./assertions"));
 
 var BEFORE_TIMEOUT = 120000;
 var TEST_TIMEOUT = 300000;
-
-function TestRunner(options) {
-  this.options = options;
-  this.logger = options.logger || console;
-  this.provider = options.provider;
-  this.can_shapshot = false;
-  this.initial_snapshot = null;
-  this.known_events = {};
-  this.web3 = new Web3();
-  this.web3.setProvider(options.provider);
-  this.contracts = [];
-
-  // For each test
-  this.currentTestStartBlock = null;
-};
-
-TestRunner.prototype.initialize = function(callback) {
-  var self = this;
-
-  var afterStateReset = function(err) {
-    if (err) return callback(err);
-
-    Contracts.provision(self.options, function(err, contracts) {
-      if (err) return callback(err);
-
-      self.contracts = contracts;
-      self.known_events = {};
-
-      // Go through all abis and record events we know about.
-      self.contracts.forEach(function(contract) {
-        // make the contract globally available
-        global[contract.contract_name] = contract;
-
-        var abi = contract.abi;
-
-        for (var j = 0; j < abi.length; j++) {
-          var item = abi[j];
-
-          if (item.type == "event") {
-            var signature = item.name + "(" + item.inputs.map(function(param) {return param.type;}).join(",") + ")";
-
-            self.known_events[web3.sha3(signature)] = {
-              signature: signature,
-              abi_entry: item
-            };
-          }
-        }
-      });
-
-      callback();
-    });
-  };
-
-  if (self.initial_snapshot == null) {
-    // Make the initial deployment (full migration).
-    self.deploy(function(err) {
-      if (err) return callback(err);
-
-      self.snapshot(function(err, initial_snapshot) {
-        if (err == null) {
-          self.can_snapshot = true;
-          self.initial_snapshot = initial_snapshot;
-        }
-        afterStateReset();
-      });
-    });
-  } else {
-    self.resetState(afterStateReset);
-  }
-};
-
-TestRunner.prototype.deploy = function(callback) {
-  Migrate.run({
-    migrations_directory: this.options.migrations_directory,
-    contracts_build_directory: this.options.contracts_build_directory,
-    network: this.options.network,
-    network_id: this.options.network_id,
-    provider: this.options.provider,
-    rpc: this.options.rpc,
-    reset: true,
-    quiet: true
-  }, callback);
-};
-
-TestRunner.prototype.resetState = function(callback) {
-  var self = this;
-  if (this.can_snapshot) {
-    this.revert(this.initial_snapshot, function(err) {
-      if (err) return callback(err);
-      self.snapshot(function(err, snapshot) {
-        if (err) return callback(err);
-        self.initial_snapshot = snapshot;
-        callback();
-      });
-    });
-  } else {
-    this.deploy(callback);
-  }
-};
-
-TestRunner.prototype.startTest = function(mocha, callback) {
-  var self = this;
-  this.web3.eth.getBlockNumber(function(err, result) {
-    if (err) return callback(err);
-
-    result = web3.toBigNumber(result);
-
-    // Add one in base 10
-    self.currentTestStartBlock = result.plus(1, 10);
-
-    callback();
-  });
-};
-
-TestRunner.prototype.endTest = function(mocha, callback) {
-  var self = this;
-
-  if (mocha.currentTest.state != "failed") {
-    return callback();
-  }
-
-  var logs = [];
-
-  // There's no API for eth_getLogs?
-  this.rpc("eth_getLogs", [{
-    fromBlock: "0x" + this.currentTestStartBlock.toString(16)
-  }], function(err, result) {
-    if (err) return callback(err);
-
-    var logs = result.result;
-
-    if (logs.length == 0) {
-      self.logger.log("    > No events were emitted");
-      return callback();
-    }
-
-    self.logger.log("\n    Events emitted during test:");
-    self.logger.log(  "    ---------------------------");
-    self.logger.log("");
-
-    logs.forEach(function(log) {
-      var event = self.known_events[log.topics[0]];
-
-      if (event == null) {
-        return;
-      }
-
-      var types = event.abi_entry.inputs.map(function(input) {
-        return input.indexed == true ? null : input.type;
-      }).filter(function(type) {
-        return type != null;
-      });
-      var values = SolidityCoder.decodeParams(types, log.data.replace("0x", ""));
-      var index = 0;
-
-      var line = "    " + event.abi_entry.name + "(";
-      line += event.abi_entry.inputs.map(function(input) {
-        var value;
-        if (input.indexed == true) {
-          value = "<indexed>";
-        } else {
-          value = values[index];
-          index += 1;
-        }
-
-        return input.name + ": " + value.toString();
-      }).join(", ");
-      line += ")";
-      self.logger.log(line);
-    });
-    self.logger.log(  "\n    ---------------------------");
-    callback();
-  });
-};
-
-TestRunner.prototype.snapshot = function(callback) {
-  this.rpc("evm_snapshot", function(err, result) {
-    if (err) return callback(err);
-    callback(null, result.result);
-  });
-},
-
-TestRunner.prototype.revert = function(snapshot_id, callback) {
-  this.rpc("evm_revert", [snapshot_id], callback);
-}
-
-TestRunner.prototype.rpc = function(method, arg, cb) {
-  var req = {
-    jsonrpc: "2.0",
-    method: method,
-    id: new Date().getTime()
-  };
-  if (arguments.length == 3) {
-    req.params = arg;
-  } else {
-    cb = arg;
-  }
-
-  var intermediary = function(err, result) {
-    if (err != null) {
-      cb(err);
-      return;
-    }
-
-    if (result.error != null) {
-      cb(new Error("RPC Error: " + (result.error.message || result.error)));
-      return;
-    }
-
-    cb(null, result);
-  };
-
-  this.provider.sendAsync(req, intermediary);
-};
 
 var Test = {
   run: function(options, callback) {
@@ -258,7 +38,6 @@ var Test = {
     web3.setProvider(options.provider);
 
     var accounts = [];
-    var runner = new TestRunner(options);
 
     // Override console.warn() because web3 outputs gross errors to it.
     // e.g., https://github.com/ethereum/web3.js/blob/master/lib/web3/allevents.js#L61
@@ -291,47 +70,41 @@ var Test = {
       mocha.addFile(file);
     });
 
-    // Temporary directory for solidity .sol.js files.
-    var solidityTempDirectory;
     var testContracts = [];
+    var runner;
 
     async.series([
-      // Compile users contracts first.
-      Contracts.compile.bind(Contracts, {
-        all: options.compileAll === true,
-        contracts_directory: options.contracts_directory,
-        contracts_build_directory: options.contracts_build_directory,
-        network: options.network,
-        network_id: options.network_id,
-        quiet: false,
-        quietWrite: true,
-        strict: options.strict
-      }),
-      // Make directory for solidity .sol.js files
+      // Get all contracts in the contracts directory as well as the
+      // test directory, and compile them together. Note this will only
+      // compile what's necessary.
       function(c) {
-        temp.mkdir('solidity-test-', function(err, d) {
-          if (err) return c(err);
-          solidityTempDirectory = d;
-          c();
-        });
-      },
-      // Compile all solidity tests.
-      function(c) {
-        Compiler.compile({
-          files: sol_tests
-        }, function(err, contracts) {
+        async.parallel({
+          assertSource: fs.readFile.bind(fs, path.resolve(path.join(__dirname, "testing", "Assert.sol")), "utf8"),
+          contract_files: Profiler.all_contracts.bind(Profiler, options.contracts_directory),
+          test_files: Profiler.all_contracts.bind(Profiler, options.test_directory)
+        }, function(err, result) {
           if (err) return c(err);
 
-          Contracts.write_contracts(contracts, {
-            contracts_build_directory: solidityTempDirectory
-          }, c);
+          // Create initial libraries for compilation. Note we don't pass in contracts here
+          // because we don't have any addresses at this moment.
+          var deployedAddressesSource = Deployed.makeSolidityDeployedAddressesLibrary(result.contract_files);
+
+          // Compile project contracts and test contracts
+          Contracts.compile(config.with({
+            all: options.compileAll === true,
+            files: result.contract_files.concat(result.test_files),
+            quiet: false,
+            quietWrite: true,
+            includes: {
+              "truffle/Assert.sol": result.assertSource,
+              "truffle/DeployedAddresses.sol": deployedAddressesSource
+            }
+          }), c);
         })
       },
       // Provision test contracts
       function(c) {
-        Contracts.provision(config.with({
-          contracts_build_directory: solidityTempDirectory
-        }), function(err, contracts) {
+        Contracts.provision(config, function(err, contracts) {
           if (err) return c(err);
 
           // Filter out non-test contracts
@@ -339,27 +112,34 @@ var Test = {
             return contract.contract_name.indexOf("Test") == 0;
           });
 
-          c();
-        });
-      },
-      // Deploy test contracts
-      function(c) {
-        var deployer = new Deployer(config.with({
-          contracts: testContracts
-        }));
+          // Create the TestRunner now that we've provisioned the initial contracts
+          runner = new TestRunner(config.with({
+            contracts: contracts
+          }));
 
-        deployer.deploy(testContracts);
-        deployer.start().then(function() {
-          // Somehow this won't continue if I just pass c to .then()...
           c();
-        }).catch(c);
-      },
-      // Convert contracts to their deployed versions
-      function(c) {
-        testContracts = testContracts.map(function(contract) {
-          return contract.deployed();
         });
-        c();
+      },
+      // Reorder the abis of solidity tests so that their functions
+      // are in the same order as they exist in the code.
+      function(c) {
+        var file_hash = {};
+
+        sol_tests.forEach(function(file) {
+          var contract_name = path.basename(file, ".sol");
+          file_hash[contract_name] = file;
+        });
+
+        async.each(testContracts, function(contract, finished) {
+          var file = file_hash[contract.contract_name];
+
+          Profiler.ordered_abi(file, contract, function(err, ordered) {
+            if (err) return finished(err);
+
+            contract.abi = ordered;
+            finished();
+          });
+        }, c);
       },
       // Load up solidity tests contracts and create suites for each one
       function(c) {
@@ -369,16 +149,21 @@ var Test = {
 
           // Set up our runner's needs first.
           suite.beforeAll("prepare suite", function(done) {
-            runner.initialize(done);
+            runner.initializeSolidityTest(contract, done);
           });
 
           suite.beforeEach("before test", function(done) {
             runner.startTest(this, done);
           });
 
-          suite.afterEach("after test", function(done) {
-            runner.endTest(this, done);
-          });
+          // Function that checks transaction logs to see if a test failed.
+          function processResult(result) {
+            result.logs.forEach(function(log) {
+              if (log.event == "TestEvent" && log.args.result == false) {
+                throw new Error(log.args.message);
+              }
+            })
+          };
 
           // Add functions from test file.
           contract.abi.forEach(function(item) {
@@ -386,20 +171,26 @@ var Test = {
 
             ["beforeAll", "beforeEach", "afterAll", "afterEach"].forEach(function(fn_type) {
               if (item.name.indexOf(fn_type) == 0) {
-                suite[fn_type](item.name, function() {
-                  return contract[item.name]();
+                suite[fn_type](item.name, function(done) {
+                  var deployed = contract.deployed();
+                  return deployed[item.name]().then(processResult).then(done).catch(done);
                 });
               }
             });
 
             if (item.name.indexOf("test") == 0) {
-              var test = new TestCase(item.name, function() {
-                return contract[item.name]();
+              var test = new TestCase(item.name, function(done) {
+                var deployed = contract.deployed();
+                return deployed[item.name]().then(processResult).then(done).catch(done);
               });
 
               test.timeout(TEST_TIMEOUT);
               suite.addTest(test);
             }
+          });
+
+          suite.afterEach("after test", function(done) {
+            runner.endTest(this, done);
           });
 
           mocha.suite.addSuite(suite);
@@ -415,7 +206,7 @@ var Test = {
           c();
         });
       },
-      // Set globals and helpers.
+      // Set globals and helpers for Javascript tests.
       function(c) {
         global.web3 = web3;
         global.assert = chai.assert;
@@ -448,21 +239,11 @@ var Test = {
 
         c();
       },
-      // run tests.
+      // Run tests.
       function(c) {
         process.on('unhandledRejection', function(reason, p) {
           throw reason;
         });
-
-        var newSuite = new Suite("Fake Suite");
-
-        var testCase = new TestCase("some test", function() {
-          assert(5 == 5);
-        });
-
-        newSuite.addTest(testCase);
-
-        mocha.suite.addSuite(newSuite);
 
         mocha.run(function(failures) {
           console.warn = warn;
