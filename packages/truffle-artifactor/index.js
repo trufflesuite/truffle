@@ -6,11 +6,15 @@ var dir = require("node-dir");
 var async = require("async");
 var Module = require('module');
 var vm = require('vm');
+var Web3 = require("web3")
 var _ = require("lodash");
 
 // TODO: This should probably be asynchronous.
 module.exports = {
   save: function(contract_name, contract_data, filename, options) {
+    var self = this;
+    var web3 = new Web3();
+
     if (typeof contract_name == "object") {
       options = filename;
       filename = contract_data;
@@ -21,8 +25,6 @@ module.exports = {
     options = options || {};
 
     this.normalizeContractData(contract_data);
-
-    var self = this;
 
     return new Promise(function(accept, reject) {
       fs.readFile(filename, {encoding: "utf8"}, function(err, source) {
@@ -42,27 +44,42 @@ module.exports = {
           existing_networks[network_id] = {};
         }
 
+        var network = existing_networks[network_id];
+
         // merge only specific keys
         ["abi", "unlinked_binary", "address", "links"].forEach(function(key) {
-          existing_networks[network_id][key] = contract_data[key] || existing_networks[network_id][key];
+          network[key] = contract_data[key] || network[key];
+        });
+
+        // merge events with any that previously existed
+        network.events = _.merge({}, network.events, contract_data.events);
+
+        // Now overwrite any events with the most recent data from the ABI.
+        network.abi.forEach(function(item) {
+          if (item.type != "event") return;
+
+          var signature = item.name + "(" + item.inputs.map(function(param) {return param.type;}).join(",") + ")";
+          network.events["0x" + web3.sha3(signature)] = item;
         });
 
         // Remove legacy key
-        delete existing_networks[network_id].binary;
+        delete network.binary;
 
         // Update timestamp
-        existing_networks[network_id].updated_at = new Date().getTime();
+        network.updated_at = new Date().getTime();
 
         // Ensure unlinked binary starts with a 0x
-        if (existing_networks[network_id].unlinked_binary && existing_networks[network_id].unlinked_binary.indexOf("0x") < 0) {
-          existing_networks[network_id].unlinked_binary = "0x" + existing_networks[network_id].unlinked_binary;
+        if (network.unlinked_binary && network.unlinked_binary.indexOf("0x") < 0) {
+          network.unlinked_binary = "0x" + network.unlinked_binary;
         }
 
+        // Set the default network if the default doesn't exist.
         var network_ids = Object.keys(existing_networks);
         if (network_ids.length == 1 && network_ids[0] != "default") {
           existing_networks["default"] = existing_networks[network_ids[0]];
         }
 
+        // Generate the source and write it out.
         var final_source = self.generate(contract_name, existing_networks);
 
         fs.writeFile(filename, final_source, "utf8", function(err) {

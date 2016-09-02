@@ -95,8 +95,16 @@ var SolidityEvent = require("web3/lib/web3/event.js");
 
           var decodeLogs = function(logs) {
             return logs.map(function(log) {
-              var logType = instance.known_events[log.topics[0]];
-              return logType.decoder.decode(log);
+              var logABI = C.events[log.topics[0]];
+
+              if (logABI == null) {
+                return null;
+              }
+
+              var decoder = new SolidityEvent(null, logABI, instance.address);
+              return decoder.decode(log);
+            }).filter(function(log) {
+              return log != null;
             });
           };
 
@@ -114,11 +122,16 @@ var SolidityEvent = require("web3/lib/web3/event.js");
                 if (err) return reject(err);
 
                 if (receipt != null) {
-                  return accept({
-                    tx: tx,
-                    receipt: receipt,
-                    logs: decodeLogs(receipt.logs)
-                  });
+                  // If they've opted into next gen, return more information.
+                  if (C.next_gen == true) {
+                    return accept({
+                      tx: tx,
+                      receipt: receipt,
+                      logs: decodeLogs(receipt.logs)
+                    });
+                  } else {
+                    return accept(tx);
+                  }
                 }
 
                 if (timeout > 0 && new Date().getTime() - start > timeout) {
@@ -143,8 +156,6 @@ var SolidityEvent = require("web3/lib/web3/event.js");
     instance.contract = contract;
     var constructor = instance.constructor;
 
-    instance.known_events = {};
-
     // Provision our functions.
     for (var i = 0; i < instance.abi.length; i++) {
       var item = instance.abi[i];
@@ -163,14 +174,6 @@ var SolidityEvent = require("web3/lib/web3/event.js");
 
       if (item.type == "event") {
         instance[item.name] = contract[item.name];
-
-        var signature = item.name + "(" + item.inputs.map(function(param) {return param.type;}).join(",") + ")";
-
-        instance.known_events["0x" + constructor.web3.sha3(signature)] = {
-          signature: signature,
-          abi_entry: item,
-          decoder: new SolidityEvent(null, item, contract.address)
-        };
       }
     }
 
@@ -387,6 +390,7 @@ var SolidityEvent = require("web3/lib/web3/event.js");
     this.address         = this.prototype.address         = network.address;
     this.updated_at      = this.prototype.updated_at      = network.updated_at;
     this.links           = this.prototype.links           = network.links || {};
+    this.events          = this.prototype.events          = network.events || {};
 
     this.network_id = network_id;
   };
@@ -396,10 +400,28 @@ var SolidityEvent = require("web3/lib/web3/event.js");
   };
 
   Contract.link = function(name, address) {
+    if (typeof name == "function") {
+      var contract = name;
+
+      if (contract.address == null) {
+        throw new Error("Cannot link contract without an address.");
+      }
+
+      Contract.link(contract.contract_name, contract.address);
+
+      // Merge events so this contract knows about library's events
+      Object.keys(contract.events).forEach(function(topic) {
+        Contract.events[topic] = contract.events[topic];
+      });
+
+      return;
+    }
+
     if (typeof name == "object") {
-      Object.keys(name).forEach(function(n) {
-        var a = name[n];
-        Contract.link(n, a);
+      var obj = name;
+      Object.keys(obj).forEach(function(name) {
+        var a = obj[name];
+        Contract.link(name, a);
       });
       return;
     }
@@ -409,6 +431,9 @@ var SolidityEvent = require("web3/lib/web3/event.js");
 
   Contract.contract_name   = Contract.prototype.contract_name   = "{{NAME}}";
   Contract.generated_with  = Contract.prototype.generated_with  = "{{PUDDING_VERSION}}";
+
+  // Allow people to opt-in to breaking changes now.
+  Contract.next_gen = false;
 
   var properties = {
     binary: function() {

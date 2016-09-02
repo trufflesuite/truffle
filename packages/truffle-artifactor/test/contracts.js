@@ -50,6 +50,9 @@ describe("Pudding + require", function() {
     }, filepath).then(function() {
       Example = requireNoCache(filepath);
       Example.setProvider(provider)
+
+      // Opt into next_gen
+      Example.next_gen = true;
     }).then(done).catch(done);
   });
 

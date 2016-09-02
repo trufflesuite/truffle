@@ -46,10 +46,6 @@ describe("Different networks:", function() {
     // Compile first
     var result = solc.compile(fs.readFileSync("./test/Example.sol", {encoding: "utf8"}), 1);
 
-    // Clean up after solidity. Only remove solidity's listener,
-    // which happens to be the first.
-    process.removeListener("uncaughtException", process.listeners("uncaughtException")[0]);
-
     var compiled = result.contracts["Example"];
     abi = JSON.parse(compiled.interface);
     binary = compiled.bytecode;
