@@ -21,7 +21,7 @@ module.exports = {
       if (destination.links[library.contract_name] == library.address) return;
 
       logger.log("Linking " + library.contract_name + " to " + destination.contract_name);
-      destination.link(library.contract_name, library.address);
+      destination.link(library);
     });
   },
 
