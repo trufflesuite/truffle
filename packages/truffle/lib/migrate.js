@@ -191,7 +191,15 @@ var Migrate = {
   },
 
   runMigrations: function(migrations, options, callback) {
-    Contracts.provision(options, function(err, contracts) {
+    function getContracts(done) {
+      if (options.contracts) {
+        return done(null, options.contracts);
+      } else {
+        return Contracts.provision(options, done);
+      }
+    };
+
+    getContracts(function(err, contracts) {
       if (err) return callback(err);
 
       if (options.reset == true) {
