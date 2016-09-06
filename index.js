@@ -12,6 +12,7 @@ module.exports = {
   migrate: require("./lib/migrate"),
   profile: require("./lib/profiler"),
   serve: require("./lib/serve"),
+  sources: require("./lib/sources"),
   test: require("./lib/test"),
   version: pkg.version
 };
