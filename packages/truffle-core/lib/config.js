@@ -5,6 +5,8 @@ var Provider = require("./provider");
 var ConfigurationError = require('./errors/configurationerror');
 var requireNoCache = require("./require-nocache");
 var findUp = require("find-up");
+var NPMSource = require('./sources/npm');
+var FilesystemSource = require("./sources/fs");
 
 var DEFAULT_CONFIG_FILENAME = "truffle.js";
 var BACKUP_CONFIG_FILENAME = "truffle-config.js"; // For Windows + Command Prompt
@@ -24,7 +26,11 @@ function Config(truffle_directory, working_directory, network) {
       gas: 4712388,
       gasPrice: 100000000000, // 100 Shannon,
       from: null
-    }
+    },
+    sources: [
+      new NPMSource(this),
+      new FilesystemSource(this)
+    ]
   };
 
   // RPC is a special configuration value. You can set it,
@@ -38,6 +44,7 @@ function Config(truffle_directory, working_directory, network) {
     network: function() {},
     verboseRpc: function() {},
     build: function() {},
+    sources: function() {},
 
     build_directory: function() {
       return path.join(self.working_directory, "build");
