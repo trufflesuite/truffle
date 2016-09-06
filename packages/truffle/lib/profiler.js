@@ -10,6 +10,9 @@ var Graph = require("graphlib").Graph;
 var isAcyclic = require("graphlib/lib/alg").isAcyclic;
 var postOrder = require("graphlib/lib/alg").postorder;
 var CompileError = require("./errors/compileerror");
+var Config = require("./config");
+var Sources = require("./sources");
+var expect = require("./expect");
 
 module.exports = {
   all_contracts: function(directory, callback) {
@@ -122,86 +125,38 @@ module.exports = {
     });
   },
 
-  imports_from_source: function(body, filename, includes) {
-    var imports = SolidityParser.parse(body, "imports");
+  required_sources: function(options, callback) {
+    var config = Config.default().merge(options);
 
-    var dirname = path.dirname(filename);
+    expect.options(config, [
+      "paths",
+      "base_path",
+      "sources"
+    ]);
 
-    imports = imports.map(function(i) {
-      // Leave includes alone.
-      if (includes[i]) return i;
+    var paths = this.convert_to_absolute_paths(config.paths, config.base_path);
 
-      // If there are absolute paths, leave those alone.
-      if (path.isAbsolute(i)) return i;
-
-      return path.resolve(path.join(dirname, i));
-    });
-
-    return imports;
-  },
-
-  imports: function(file, from, includes, callback) {
-    var self = this;
-
-    if (typeof from == "function") {
-      callback = from;
-      from = null;
-    }
-
-    fs.readFile(file, "utf8", function(err, body) {
-      if (err) {
-        // If this file wasn't found, check if it's an include.
-        // If not, throw an error.
-        if (includes[file]) {
-          body = includes[file];
-        } else {
-          var msg = "Cannot find import " + path.basename(file);
-          if (from) {
-            msg += " from " + path.basename(from);
-          }
-          msg += ". If it's a relative path, ensure it starts with `./` or `../`."
-          return callback(new CompileError(msg));
-        }
-      }
-
-      //console.log("Parsing " + path.basename(file) + "...");
-      var imports = self.imports_from_source(body, file, includes);
-
-      callback(null, imports);
-    });
-  },
-
-  required_files: function(files, includes, callback) {
-    // Ensure full paths.
-    files = files.map(function(file) {
-      return path.resolve(file);
-    });
-
-    this.dependency_graph(files, includes, function(err, dependsGraph) {
+    this.dependency_graph(paths, config.sources, function(err, dependsGraph) {
       if (err) return callback(err);
-
-      function is_updated(contract_name) {
-        return updated[contract_name] === true;
-      }
 
       var required = {};
 
-      function include(file) {
+      function include(import_path) {
         //console.log("Including: " + file)
 
-        required[file] = true;
+        required[import_path] = dependsGraph.node(import_path);
       }
 
-      function walk_down(file) {
-        if (required[file] === true) {
+      function walk_down(import_path) {
+        if (required[import_path] === true) {
           return;
         }
 
-        include(file);
+        include(import_path);
 
-        var dependencies = dependsGraph.successors(file);
+        var dependencies = dependsGraph.successors(import_path);
 
-        // console.log("At: " + file);
+        // console.log("At: " + import_path);
         // console.log("   Dependencies: ", dependencies);
 
         if (dependencies.length > 0) {
@@ -209,15 +164,15 @@ module.exports = {
         }
       }
 
-      function walk_from(file) {
-        var ancestors = dependsGraph.predecessors(file);
-        var dependencies = dependsGraph.successors(file);
+      function walk_from(import_path) {
+        var ancestors = dependsGraph.predecessors(import_path);
+        var dependencies = dependsGraph.successors(import_path);
 
-        // console.log("At: " + file);
+        // console.log("At: " + import_path);
         // console.log("   Ancestors: ", ancestors);
         // console.log("   Dependencies: ", dependencies);
 
-        include(file);
+        include(import_path);
 
         if (ancestors.length > 0) {
           ancestors.forEach(walk_from);
@@ -228,76 +183,88 @@ module.exports = {
         }
       }
 
-      files.forEach(walk_from);
+      paths.forEach(walk_from);
 
-      // Since includes aren't files themselves, filter them out.
-      var result = Object.keys(required).filter(function(file) {
-        return includes[file] == null;
-      });
-
-      callback(null, result);
+      callback(null, required);
     });
   },
 
-  dependency_graph: function(files, includes, callback) {
+  convert_to_absolute_paths: function(paths, base) {
     var self = this;
+    return paths.map(function(p) {
+      // If it's anabsolute paths, leave it alone.
+      if (path.isAbsolute(p)) return p;
 
-    // Ensure full paths. Return array of file and
-    // the file responsible for adding it. Initial files
-    // have no second paramter.
-    files = files.map(function(file) {
-      return [path.resolve(file), null];
+      // If it's not explicitly relative, then leave it alone (i.e., it's a module).
+      if (!self.isExplicitlyRelative(p)) return p;
+
+      // Path must be explicitly releative, therefore make it absolute.
+      return path.resolve(path.join(base, p));
     });
+  },
+
+  isExplicitlyRelative: function(import_path) {
+    return import_path.indexOf(".") == 0;
+  },
+
+  dependency_graph: function(paths, sources, callback) {
+    var self = this;
 
     // Iterate through all the contracts looking for libraries and building a dependency graph
     var dependsGraph = new Graph();
 
     var imports_cache = {};
 
-    function getImports(file, from, callback) {
-      if (imports_cache[file] != null) {
-        callback(null, imports_cache[file]);
-      } else {
-        self.imports(file, from, includes, function(err, imports) {
-          if (err) return callback(err);
-          imports_cache[file] = imports;
-          callback(null, imports);
-        });
-      }
-    };
+    // For the purposes of determining correct error messages.
+    // The second array item denotes which path imported the current path.
+    // In the case of the paths passed in, there was none.
+    paths = paths.map(function(p) {
+      return [p, null];
+    });
 
     async.whilst(function() {
-      return files.length > 0;
+      return paths.length > 0;
     }, function(finished) {
-      var current = files.shift();
-      var file = current[0];
+      var current = paths.shift();
+      var import_path = current[0];
       var imported_from = current[1];
 
-      if (dependsGraph.hasNode(file) && imports_cache[file] != null) {
+      if (dependsGraph.hasNode(import_path) && imports_cache[import_path] != null) {
         return finished();
       }
 
-      // Add the contract to the depend graph.
-      dependsGraph.setNode(file);
-
-      getImports(file, imported_from, function(err, imports) {
+      Sources.find(import_path, sources, imported_from, function(err, body, source) {
         if (err) return callback(err);
 
-        imports = imports.map(function(i) {
-          return [i, file];
-        });
+        // Add the contract to the depends graph.
+        dependsGraph.setNode(import_path, body);
 
-        Array.prototype.push.apply(files, imports);
+        var imports = SolidityParser.parse(body, "imports");
 
-        imports.forEach(function(arr) {
-          var import_path = arr[0];
-          if (!dependsGraph.hasEdge(file, import_path)) {
-            dependsGraph.setEdge(file, import_path);
+        // Convert explicitly relative dependencies of modules
+        // back into module paths. We also use this loop to update
+        // the graph edges.
+        imports = imports.map(function(dependency_path) {
+          // Convert explicitly relative paths
+          if (self.isExplicitlyRelative(dependency_path)) {
+            dependency_path = source.resolve_dependency_path(import_path, dependency_path);
           }
+
+          // Update graph edges
+          if (!dependsGraph.hasEdge(import_path, dependency_path)) {
+            dependsGraph.setEdge(import_path, dependency_path);
+          }
+
+          // Return an array that denotes a new import and the path it was imported from.
+          return [dependency_path, import_path];
         });
+
+        imports_cache[import_path] = imports;
+
+        Array.prototype.push.apply(paths, imports);
 
         finished();
-      })
+      });
     },
     function() {
       // Check for cycles in the graph, the dependency graph needs to be a tree otherwise there's an error

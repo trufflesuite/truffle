@@ -3,6 +3,7 @@ var fs = require("fs");
 var mkdirp = require("mkdirp");
 var path = require("path");
 var Compiler = require("./compiler");
+var Config = require("./config");
 var Pudding = require("ether-pudding");
 var Web3 = require("web3");
 var expect = require("./expect");
@@ -98,20 +99,23 @@ var Contracts = {
       "files"
     ]);
 
+    // Use a config object to ensure we get the default sources.
+    var config = Config.default().merge(options);
+
     function finished(err, contracts) {
       if (err) return callback(err);
 
       if (contracts != null && Object.keys(contracts).length > 0) {
-        self.write_contracts(contracts, options, callback);
+        self.write_contracts(contracts, config, callback);
       } else {
         callback(null, []);
       }
     };
 
-    if (options.all === true || options.compileAll === true) {
-      Compiler.compile_all(options, finished);
+    if (config.all === true || config.compileAll === true) {
+      Compiler.compile_all(config, finished);
     } else {
-      Compiler.compile_necessary(options, finished);
+      Compiler.compile_necessary(config, finished);
     }
   },
 

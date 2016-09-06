@@ -9,6 +9,7 @@ var Config = require("./config");
 var Contracts = require("./contracts");
 var Profiler = require("./profiler");
 var TestRunner = require('./testing/testrunner');
+var TestSource = require("./testing/testsource");
 var Deployed = require('./testing/deployed');
 var expect = require("./expect");
 var async = require("async");
@@ -79,26 +80,20 @@ var Test = {
       // compile what's necessary.
       function(c) {
         async.parallel({
-          assertSource: fs.readFile.bind(fs, path.resolve(path.join(__dirname, "testing", "Assert.sol")), "utf8"),
           contract_files: Profiler.all_contracts.bind(Profiler, options.contracts_directory),
           test_files: Profiler.all_contracts.bind(Profiler, options.test_directory)
         }, function(err, result) {
           if (err) return c(err);
 
-          // Create initial libraries for compilation. Note we don't pass in contracts here
-          // because we don't have any addresses at this moment.
-          var deployedAddressesSource = Deployed.makeSolidityDeployedAddressesLibrary(result.contract_files);
+          var sources = [new TestSource(result.contract_files)].concat(config.sources);
 
           // Compile project contracts and test contracts
           Contracts.compile(config.with({
             all: options.compileAll === true,
             files: result.contract_files.concat(result.test_files),
+            sources: sources,
             quiet: false,
-            quietWrite: true,
-            includes: {
-              "truffle/Assert.sol": result.assertSource,
-              "truffle/DeployedAddresses.sol": deployedAddressesSource
-            }
+            quietWrite: true
           }), c);
         })
       },

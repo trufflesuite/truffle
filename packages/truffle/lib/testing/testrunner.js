@@ -6,6 +6,7 @@ var Config = require("../config");
 var Deployer = require("../deployer");
 var Profiler = require('../profiler');
 var Deployed = require("./deployed");
+var TestSource = require("./testsource");
 var async = require("async");
 
 
@@ -131,12 +132,14 @@ TestRunner.prototype.compileNewAbstractInterface = function(callback) {
   Profiler.all_contracts(this.config.contracts_directory, function(err, files) {
     if (err) return callback(err);
 
-    var addressesLibrarySource = Deployed.makeSolidityDeployedAddressesLibrary(files, self.project_contracts);
+    var sources = [new TestSource(files, self.project_contracts)].concat(self.config.sources);
 
-    Compiler.compile_includes_with_dependencies(self.config.with({
-      includes: {
-        "truffle/DeployedAddresses.sol": addressesLibrarySource
-      }
+    Compiler.compile_with_dependencies(self.config.with({
+      paths: [
+        "truffle/DeployedAddresses.sol"
+      ],
+      sources: sources,
+      quiet: true
     }), function(err, contracts) {
       if (err) return callback(err);
 
