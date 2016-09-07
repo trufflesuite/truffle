@@ -18,7 +18,6 @@
     "finalhandler": "^0.4.0",
     "find-up": "^1.1.2",
     "graphlib": "^2.0.0",
-    "jsmin": "^1.0.1",
     "lodash": "^4.5.1",
     "mkdirp": "^0.5.1",
     "mocha": "^2.3.3",
