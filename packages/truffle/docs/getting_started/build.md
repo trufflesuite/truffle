@@ -79,3 +79,13 @@ The default builder is easy to use for most projects, and allows you to quickly 
 * It is extensible, but again, using custom methods and APIs.
 
 The default builder will likely be deprecated and replaced in future versions of Truffle, but it remains the default to continue to support dapps previously built on top of it. Truffle provides many ways for you to switch to a different build process, however, and you can find many examples in the [advanced build processes](/advanced/build_processes) section.
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-83874933-1', 'auto');
+  ga('send', 'pageview');
+</script>

@@ -16,3 +16,13 @@ Truffle also requires that you have a running Ethereum client which supports the
 If you're a Windows user, we recommend installing and using Truffle via Windows PowerShell or [Git BASH](https://git-for-windows.github.io/). These two shells provide features far beyond the standard Command Prompt, and will make your life on the command line much easier.
 
 If you must use the Command Prompt, please see [this discussion](/advanced/configuration/#resolving-naming-conflicts-on-windows) about configuring Truffle.
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-83874933-1', 'auto');
+  ga('send', 'pageview');
+</script>
