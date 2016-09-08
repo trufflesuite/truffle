@@ -11,6 +11,7 @@ pages:
   - Choosing an Ethereum client: 'getting_started/client.md'
   - Creating a project: 'getting_started/project.md'
   - Compiling contracts: 'getting_started/compile.md'
+  - Package Management: 'getting_started/packages.md'
   - Running migrations: 'getting_started/migrations.md'
   - Building your application: 'getting_started/build.md'
   - Testing your contracts: 'getting_started/testing.md'
