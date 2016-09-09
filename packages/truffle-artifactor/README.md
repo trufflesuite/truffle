@@ -9,9 +9,13 @@ Ether Pudding (or just “Pudding”) is a packager and build artifact manager f
 
 ```javascript
 var MyContract = require("./MyContract.sol.js");
-MyContract.setProvider(someWeb3Provider);
-MyContract.deployed().doStuff().then(function(tx) {
+MyContract.setProvider(myWeb3Provider);
+MyContract.deployed().then(function(instance) {
+	return instance.doStuff();
+}).then(function(result) {
   // We just talked to the ethereum network!
+	// And we get the transaction hash, logs (events) and receipt.
+	console.log(result.tx, result.logs, result.receipt);
 });
 ```
 
@@ -23,18 +27,20 @@ MyContract.deployed().doStuff().then(function(tx) {
 * Packages up build artifacts into `.sol.js` files, which can then be included in your project with a simple `require`.
 * Includes multiple versions of the same contract in a single package, automatically detecting which artifacts to use based on the network version (more on this below).
 * Manages library addresses for linked libraries.
+* Manages events, making them available on a per-transaction basis (no more `event.watch()`!)
 
 See the following discussion for more features.
 
 ### The State of Web3: A Discussion
 
-We can't go on without noting that Pudding was originally created to be an easier-to-use contract abstraction for Web3. However, Web3 [plans to include a lot of Pudding's features](https://github.com/ethereum/EIPs/issues/68) (like promises) and so Pudding has pivoted to focus on package management. Pudding's original abstraction API still exists, but will be replaced with Web3's once the related EIP has been merged and published.
+We can't go on without noting that Pudding was originally created to be an easier-to-use contract abstraction for Web3. However, Web3 [plans to include a lot of Pudding's features](https://github.com/ethereum/EIPs/issues/68) (like promises) and so Pudding has pivoted to focus on package management. Pudding's original abstraction API still exists, but may undergo changes once the related EIP has been merged and published.
 
 Some of the features Pudding provides over the current abstraction:
 
 * Synchronized transactions, so your app/tests won’t receive their callbacks until the transactions have been processed.
 * Promises. No more callback hell.
 * Default values for transactions, like `from` address or `gas`.
+* Returning logs, transaction receipt and transaction hash of every synchronized transaction
 
 ### Install
 

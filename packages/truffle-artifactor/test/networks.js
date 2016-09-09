@@ -35,6 +35,10 @@ function getAndSetAccounts(contract, done) {
 describe("Different networks:", function() {
   var binary;
   var abi;
+  var temp_dir;
+  var built_file_path;
+  var network_one;
+  var network_two;
   var network_one_id;
   var network_two_id;
   var ExampleOne;
@@ -84,23 +88,23 @@ describe("Different networks:", function() {
   });
 
   before("Set up contracts", function(done) {
-    var dirPath = temp.mkdirSync({
+    temp_dir = temp.mkdirSync({
       dir: path.resolve("./"),
       prefix: 'tmp-test-contract-'
     });
 
-    var filepath = path.join(dirPath, "Example.sol.js")
+    built_file_path = path.join(temp_dir, "Example.sol.js")
 
     Pudding.save("Example", {
       abi: abi,
       binary: binary
-    }, filepath, {network_id: network_one_id}).then(function() {
+    }, built_file_path, {network_id: network_one_id, default_network: network_one_id}).then(function() {
       return Pudding.save("Example", {
         abi: abi,
         binary: binary
-      }, filepath, {network_id: network_two_id});
-    }).then(function() {
-      ExampleOne = requireNoCache(filepath);
+      }, built_file_path, {network_id: network_two_id});
+    }).then(function(err) {
+      ExampleOne = requireNoCache(built_file_path);
       ExampleTwo = ExampleOne(network_two_id);
 
       ExampleOne.setProvider(network_one);
@@ -127,6 +131,11 @@ describe("Different networks:", function() {
       return ExampleTwo.new();
     }).then(function(example) {
       ExampleTwo.address = example.address;
+    }).then(function() {
+      // Save the addresses.
+      return Pudding.save("Example", ExampleOne, built_file_path, {network_id: network_one_id});
+    }).then(function() {
+      return Pudding.save("Example", ExampleTwo, built_file_path, {network_id: network_two_id});
     }).then(done).catch(done);
   });
 
@@ -144,4 +153,120 @@ describe("Different networks:", function() {
       });
     })
   })
+
+  it("defaults to the default network set", function() {
+    var Example = requireNoCache(built_file_path);
+    assert.equal(Example.network_id, network_one_id);
+  });
+
+  it("has a fallback network of '*' if no network id set", function(done) {
+    var filepath = path.join(temp_dir, "AnotherExample.sol.js")
+
+    Pudding.save("AnotherExample", {
+      abi: abi,
+      binary: binary
+    }, filepath).then(function() {
+      var AnotherExample = requireNoCache(filepath);
+
+      assert.equal(AnotherExample.default_network, "*");
+      assert.equal(Object.keys(AnotherExample.all_networks).length, 1);
+    }).then(done).catch(done);
+  });
+
+  it("overwrites the default network if a new default network is specified", function(done) {
+    var filepath = path.join(temp_dir, "AnotherExample.sol.js")
+
+    var network_id = "1337";
+
+    // NOTE: We are saving over the file already there!!!!
+    Pudding.save("AnotherExample", {
+      abi: abi,
+      binary: binary
+    }, filepath, {network_id: network_id, default_network: network_id}).then(function() {
+      var AnotherExample = requireNoCache(filepath);
+
+      assert.equal(AnotherExample.default_network, network_id);
+      assert.equal(Object.keys(AnotherExample.all_networks).length, 2);
+    }).then(done).catch(done);
+  });
+
+  it("does not overwrite the default network if default is unspecifed and is not fallback", function(done) {
+    var filepath = path.join(temp_dir, "AnotherExample.sol.js")
+
+    var network_id = "1337";
+    var address = "0x1234567890123456789012345678901234567890";
+
+    // NOTE: We are saving over the file already there!!!! AGAIN
+    Pudding.save("AnotherExample", {
+      abi: abi,
+      binary: binary,
+      address: address
+    }, filepath).then(function() {
+      var AnotherExample = requireNoCache(filepath);
+
+      assert.equal(AnotherExample.default_network, network_id);
+      assert.equal(Object.keys(AnotherExample.all_networks).length, 2);
+      // Ensure we wrote to the correct network
+      assert.equal(AnotherExample.all_networks["*"].address, address);
+      assert.isUndefined(AnotherExample.all_networks[network_id].address);
+    }).then(done).catch(done);
+  });
+
+  it("auto-detects deployed() network when using deployed() as a thennable", function(done) {
+    // For this test, we're using ExampleOne set up in the before() blocks. Note that
+    // it has two networks, and the default network is the first one. We'll set the
+    // provider to the second network, use the thennable version for deployed(), and
+    // ensure the address that gets used is the one for the second network.
+    var Example = requireNoCache(built_file_path);
+    Example.setProvider(network_two);
+
+    // Ensure first network is the default network (precondition).
+    assert.equal(Example.default_network, network_one_id);
+    assert.isNotNull(Example.all_networks[network_one_id].address);
+    assert.isNotNull(Example.all_networks[network_two_id].address);
+    assert.equal(Example.address, Example.all_networks[network_one_id].address);
+
+    // Thennable checker. Since this is a custom then function, let's ensure things
+    // get executed in the right order.
+    var execution_count = 0;
+
+    Example.deployed().then(function(instance) {
+      assert.equal(instance.address, Example.all_networks[network_two_id].address);
+
+      // Now up the execution count and move on to the next then statement
+      // ensuring the chain remains intact.
+      execution_count = 1;
+      return execution_count;
+    }).then(function(count) {
+      assert.equal(execution_count, 1);
+      assert.equal(count, 1);
+    }).then(done).catch(done);
+  });
+
+  it("deployed() used as a thennable funnels errors correctly", function(done) {
+    var Example = requireNoCache(built_file_path);
+
+    // No provider is set. Using deployed().then() should send errors down the promise chain.
+    Example.deployed().then(function() {
+      assert.fail("This function should never be run because there should have been an error.");
+    }).catch(function(err) {
+      if (err.message.indexOf("Provider not set or invalid") < 0) return done(new Error("Unexpected error received: " + err.message));
+      done();
+    });
+  });
+
+  it("deployed() used as a thennable will error if contract hasn't been deployed to the network detected", function(done) {
+    var network_three = TestRPC.provider();
+
+    var Example = requireNoCache(built_file_path);
+    Example.setProvider(network_three);
+
+    Example.deployed().then(function() {
+      assert.fail("This function should never be run because there should have been an error.");
+    }).catch(function(err) {
+      if (err.message.indexOf("Example has not been deployed to detected network: ") < 0) return done(new Error("Unexpected error received: " + err.message));
+      done();
+    });
+  });
+
 });

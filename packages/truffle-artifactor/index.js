@@ -29,16 +29,23 @@ module.exports = {
     return new Promise(function(accept, reject) {
       fs.readFile(filename, {encoding: "utf8"}, function(err, source) {
         var existing_networks = {};
+        var default_network = options.default_network || "*"; // Use fallback network if default not specified.
 
         // If no error during reading, file exists.
         if (options.overwrite != true && err == null) {
           var Contract = self._requireFromSource(source, filename);
 
+          // If the default is the fallback but a default is specified in the file
+          // then use the default network in the file.
+          if (default_network == "*" && Contract.default_network && Contract.default_network != "*") {
+            default_network = Contract.default_network;
+          }
+
           // Note: The || statement ensures we support old .sol.js files.
           existing_networks = Contract.all_networks || existing_networks;
         }
 
-        var network_id = options.network_id || "default";
+        var network_id = options.network_id || "*";
 
         if (existing_networks[network_id] == null) {
           existing_networks[network_id] = {};
@@ -73,14 +80,8 @@ module.exports = {
           network.unlinked_binary = "0x" + network.unlinked_binary;
         }
 
-        // Set the default network if the default doesn't exist.
-        var network_ids = Object.keys(existing_networks);
-        if (network_ids.length == 1 && network_ids[0] != "default") {
-          existing_networks["default"] = existing_networks[network_ids[0]];
-        }
-
         // Generate the source and write it out.
-        var final_source = self.generate(contract_name, existing_networks);
+        var final_source = self.generate(contract_name, existing_networks, default_network);
 
         fs.writeFile(filename, final_source, "utf8", function(err) {
           if (err) return reject(err);
@@ -92,8 +93,6 @@ module.exports = {
 
   saveAll: function(contracts, destination, options) {
     var self = this;
-
-    //console.log(contracts);
 
     if (Array.isArray(contracts)) {
       var arr = contracts;
@@ -122,7 +121,7 @@ module.exports = {
     });
   },
 
-  generate: function(contract_name, networks) {
+  generate: function(contract_name, networks, default_network) {
     if (typeof contract_name == "object") {
       networks = contract_name;
       contract_name = "Contract";
@@ -130,15 +129,18 @@ module.exports = {
 
     if (this.isSingleLevelObject(networks)) {
       networks = {
-        "default": networks
+        "*": networks
       };
     }
+
+    default_network = default_network || "*";
 
     var classfile = class_template;
 
     classfile = classfile.replace(/\{\{ALL_NETWORKS\}\}/g, JSON.stringify(networks, null, 2));
     classfile = classfile.replace(/\{\{NAME\}\}/g, contract_name);
     classfile = classfile.replace(/\{\{PUDDING_VERSION\}\}/g, pkg.version);
+    classfile = classfile.replace(/\{\{DEFAULT_NETWORK\}\}/g, default_network);
 
     return classfile;
   },

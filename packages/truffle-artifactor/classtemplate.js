@@ -122,16 +122,11 @@ var SolidityEvent = require("web3/lib/web3/event.js");
                 if (err) return reject(err);
 
                 if (receipt != null) {
-                  // If they've opted into next gen, return more information.
-                  if (C.next_gen == true) {
-                    return accept({
-                      tx: tx,
-                      receipt: receipt,
-                      logs: decodeLogs(receipt.logs)
-                    });
-                  } else {
-                    return accept(tx);
-                  }
+                  return accept({
+                    tx: tx,
+                    receipt: receipt,
+                    logs: decodeLogs(receipt.logs)
+                  });
                 }
 
                 if (timeout > 0 && new Date().getTime() - start > timeout) {
@@ -202,8 +197,10 @@ var SolidityEvent = require("web3/lib/web3/event.js");
 
     // Set the network iniitally to make default data available and re-use code.
     // Then remove the saved network id so the network will be auto-detected on first use.
-    fn.setNetwork("default");
-    fn.network_id = null;
+    fn.setNetwork(fn.default_network || "*");
+    if (fn.network_id == "*") {
+      fn.network_id = null;
+    }
     return fn;
   };
 
@@ -215,7 +212,7 @@ var SolidityEvent = require("web3/lib/web3/event.js");
       instantiate(this, arguments[0]);
     } else {
       var C = mutate(Contract);
-      var network_id = arguments.length > 0 ? arguments[0] : "default";
+      var network_id = arguments.length > 0 ? arguments[0] : "*";
       C.setNetwork(network_id);
       return C;
     }
@@ -307,11 +304,32 @@ var SolidityEvent = require("web3/lib/web3/event.js");
   };
 
   Contract.deployed = function() {
+    var self = this;
+
     if (!this.address) {
       throw new Error("Cannot find deployed address: {{NAME}} not deployed or address not set.");
     }
 
-    return this.at(this.address);
+    var contract = this.at(this.address);
+
+    // Add thennable to allow people opt into new recommended usage.
+    contract.then = function(fn) {
+      return new Promise(function(accept, reject) {
+        self.detectNetwork(function(err, network) {
+          if (err) return reject(err);
+
+          try {
+            self.setNetwork(network, true);
+          } catch (e) {
+            return reject(e);
+          }
+
+          accept(self.at(self.address));
+        });
+      }).then(fn);
+    };
+
+    return contract;
   };
 
   Contract.defaults = function(class_defaults) {
@@ -348,6 +366,13 @@ var SolidityEvent = require("web3/lib/web3/event.js");
 
   Contract.all_networks = {{ALL_NETWORKS}};
 
+  Contract.detectNetwork = function(callback) {
+    this.web3.version.getNetwork(function(err, result) {
+      if (err) return callback(err);
+      callback(null, result.toString());
+    });
+  };
+
   Contract.checkNetwork = function(callback) {
     var self = this;
 
@@ -355,35 +380,23 @@ var SolidityEvent = require("web3/lib/web3/event.js");
       return callback();
     }
 
-    this.web3.version.network(function(err, result) {
+    this.detectNetwork(function(err, network) {
       if (err) return callback(err);
-
-      var network_id = result.toString();
-
-      // If we have the main network,
-      if (network_id == "1") {
-        var possible_ids = ["1", "live", "default"];
-
-        for (var i = 0; i < possible_ids.length; i++) {
-          var id = possible_ids[i];
-          if (Contract.all_networks[id] != null) {
-            network_id = id;
-            break;
-          }
-        }
-      }
-
-      if (self.all_networks[network_id] == null) {
-        return callback(new Error(self.name + " error: Can't find artifacts for network id '" + network_id + "'"));
-      }
-
-      self.setNetwork(network_id);
+      self.setNetwork(network, true);
       callback();
-    })
+    });
   };
 
-  Contract.setNetwork = function(network_id) {
-    var network = this.all_networks[network_id] || {};
+  Contract.setNetwork = function(network_id, auto_detected) {
+    var network = this.all_networks[network_id];
+
+    if (network == null) {
+      if (auto_detected === true) {
+        throw new Error(this.contract_name + " has not been deployed to detected network: " + network_id);
+      } else {
+        throw new Error(this.contract_name + " error: Can't find artifacts for network id '" + network_id + "'");
+      }
+    }
 
     this.abi             = this.prototype.abi             = network.abi;
     this.unlinked_binary = this.prototype.unlinked_binary = network.unlinked_binary;
@@ -431,9 +444,7 @@ var SolidityEvent = require("web3/lib/web3/event.js");
 
   Contract.contract_name   = Contract.prototype.contract_name   = "{{NAME}}";
   Contract.generated_with  = Contract.prototype.generated_with  = "{{PUDDING_VERSION}}";
-
-  // Allow people to opt-in to breaking changes now.
-  Contract.next_gen = false;
+  Contract.default_network = Contract.prototype.default_network = "{{DEFAULT_NETWORK}}";
 
   var properties = {
     binary: function() {
