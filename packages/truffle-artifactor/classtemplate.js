@@ -147,9 +147,17 @@ var SolidityEvent = require("web3/lib/web3/event.js");
     }
   };
 
+  // contract can be an address or web3 contract instance.
   function instantiate(instance, contract) {
-    instance.contract = contract;
     var constructor = instance.constructor;
+
+    if (typeof contract == "string") {
+      var address = contract;
+      var contract_class = constructor.web3.eth.contract(instance.abi);
+      contract = contract_class.at(address);
+    }
+
+    instance.contract = contract;
 
     // Provision our functions.
     for (var i = 0; i < instance.abi.length; i++) {
@@ -227,6 +235,8 @@ var SolidityEvent = require("web3/lib/web3/event.js");
   };
 
   Contract.new = function() {
+    var self = this;
+
     if (this.currentProvider == null) {
       throw new Error("{{NAME}} error: Please call setProvider() first before calling new().");
     }
@@ -237,70 +247,101 @@ var SolidityEvent = require("web3/lib/web3/event.js");
       throw new Error("{{NAME}} error: contract binary not set. Can't deploy new instance.");
     }
 
-    var regex = /__[^_]+_+/g;
-    var unlinked_libraries = this.binary.match(regex);
+    return (new Promise(function(accept, reject) {
+      self.detectNetwork(function(err, network_id) {
+        if (err) return reject(err);
+        self.setNetwork(network_id);
+        accept();
+      });
+    })).then(function() {
+      // After the network is set, check to make sure everything's ship shape.
+      var regex = /__[^_]+_+/g;
+      var unlinked_libraries = self.binary.match(regex);
 
-    if (unlinked_libraries != null) {
-      unlinked_libraries = unlinked_libraries.map(function(name) {
-        // Remove underscores
-        return name.replace(/_/g, "");
-      }).sort().filter(function(name, index, arr) {
-        // Remove duplicates
-        if (index + 1 >= arr.length) {
-          return true;
-        }
+      if (unlinked_libraries != null) {
+        unlinked_libraries = unlinked_libraries.map(function(name) {
+          // Remove underscores
+          return name.replace(/_/g, "");
+        }).sort().filter(function(name, index, arr) {
+          // Remove duplicates
+          if (index + 1 >= arr.length) {
+            return true;
+          }
 
-        return name != arr[index + 1];
-      }).join(", ");
+          return name != arr[index + 1];
+        }).join(", ");
 
-      throw new Error("{{NAME}} contains unresolved libraries. You must deploy and link the following libraries before you can deploy a new version of {{NAME}}: " + unlinked_libraries);
-    }
-
-    var self = this;
-
-    return new Promise(function(accept, reject) {
-      var contract_class = self.web3.eth.contract(self.abi);
-      var tx_params = {};
-      var last_arg = args[args.length - 1];
-
-      // It's only tx_params if it's an object and not a BigNumber.
-      if (Utils.is_object(last_arg) && !Utils.is_big_number(last_arg)) {
-        tx_params = args.pop();
+        throw new Error("{{NAME}} contains unresolved libraries. You must deploy and link the following libraries before you can deploy a new version of {{NAME}}: " + unlinked_libraries);
       }
+    }).then(function() {
+      return new Promise(function(accept, reject) {
+        var contract_class = self.web3.eth.contract(self.abi);
+        var tx_params = {};
+        var last_arg = args[args.length - 1];
 
-      tx_params = Utils.merge(self.class_defaults, tx_params);
-
-      if (tx_params.data == null) {
-        tx_params.data = self.binary;
-      }
-
-      // web3 0.9.0 and above calls new twice this callback twice.
-      // Why, I have no idea...
-      var intermediary = function(err, web3_instance) {
-        if (err != null) {
-          reject(err);
-          return;
+        // It's only tx_params if it's an object and not a BigNumber.
+        if (Utils.is_object(last_arg) && !Utils.is_big_number(last_arg)) {
+          tx_params = args.pop();
         }
 
-        if (err == null && web3_instance != null && web3_instance.address != null) {
-          accept(new self(web3_instance));
-        }
-      };
+        tx_params = Utils.merge(self.class_defaults, tx_params);
 
-      args.push(tx_params, intermediary);
-      contract_class.new.apply(contract_class, args);
+        if (tx_params.data == null) {
+          tx_params.data = self.binary;
+        }
+
+        // web3 0.9.0 and above calls new this callback twice.
+        // Why, I have no idea...
+        var intermediary = function(err, web3_instance) {
+          if (err != null) {
+            reject(err);
+            return;
+          }
+
+          if (err == null && web3_instance != null && web3_instance.address != null) {
+            accept(new self(web3_instance));
+          }
+        };
+
+        args.push(tx_params, intermediary);
+        contract_class.new.apply(contract_class, args);
+      });
     });
   };
 
   Contract.at = function(address) {
+    var self = this;
+
     if (address == null || typeof address != "string" || address.length != 42) {
       throw new Error("Invalid address passed to {{NAME}}.at(): " + address);
     }
 
-    var contract_class = this.web3.eth.contract(this.abi);
-    var contract = contract_class.at(address);
+    var contract = new this(address);
 
-    return new this(contract);
+    // Add thennable to allow people opt into new recommended usage.
+    contract.then = function(fn) {
+      return new Promise(function(accept, reject) {
+        self.detectNetwork(function(err, network_id) {
+          if (err) return reject(err);
+          self.setNetwork(network_id);
+          accept(new self(address));
+        });
+      }).then(function(instance) {
+        return new Promise(function(accept, reject) {
+          self.web3.eth.getCode(address, function(err, code) {
+            if (err) return reject(err);
+
+            if (!code || new BigNumber(code).eq(0)) {
+              return reject(new Error("Cannot create instance of " + self.contract_name + "; no code at address " + address));
+            }
+
+            accept(instance);
+          });
+        });
+      }).then(fn);
+    };
+
+    return contract;
   };
 
   Contract.deployed = function() {
@@ -315,16 +356,16 @@ var SolidityEvent = require("web3/lib/web3/event.js");
     // Add thennable to allow people opt into new recommended usage.
     contract.then = function(fn) {
       return new Promise(function(accept, reject) {
-        self.detectNetwork(function(err, network) {
+        self.detectNetwork(function(err, network_id) {
           if (err) return reject(err);
 
-          try {
-            self.setNetwork(network, true);
-          } catch (e) {
-            return reject(e);
+          if (!self.isDeployedToNetwork(network_id)) {
+            return reject(new Error(self.contract_name + " has not been deployed to detected network: " + network_id));
           }
 
-          accept(self.at(self.address));
+          self.setNetwork(network_id);
+
+          accept(new self(self.address));
         });
       }).then(fn);
     };
@@ -366,44 +407,33 @@ var SolidityEvent = require("web3/lib/web3/event.js");
 
   Contract.all_networks = {{ALL_NETWORKS}};
 
+  Contract.hasNetwork = function(network_id) {
+    return this.all_networks[network_id] != null;
+  };
+
+  Contract.isDeployedToNetwork = function(network_id) {
+    return this.all_networks[network_id] != null && this.all_networks[network_id].address != null;
+  };
+
   Contract.detectNetwork = function(callback) {
+    var self = this;
     this.web3.version.getNetwork(function(err, result) {
       if (err) return callback(err);
-      callback(null, result.toString());
+
+      var network_id = result.toString();
+      callback(null, network_id);
     });
   };
 
-  Contract.checkNetwork = function(callback) {
-    var self = this;
-
-    if (this.network_id != null) {
-      return callback();
-    }
-
-    this.detectNetwork(function(err, network) {
-      if (err) return callback(err);
-      self.setNetwork(network, true);
-      callback();
-    });
-  };
-
-  Contract.setNetwork = function(network_id, auto_detected) {
-    var network = this.all_networks[network_id];
-
-    if (network == null) {
-      if (auto_detected === true) {
-        throw new Error(this.contract_name + " has not been deployed to detected network: " + network_id);
-      } else {
-        throw new Error(this.contract_name + " error: Can't find artifacts for network id '" + network_id + "'");
-      }
-    }
+  Contract.setNetwork = function(network_id) {
+    var network = this.all_networks[network_id] || {};
 
     this.abi             = this.prototype.abi             = network.abi;
     this.unlinked_binary = this.prototype.unlinked_binary = network.unlinked_binary;
     this.address         = this.prototype.address         = network.address;
-    this.updated_at      = this.prototype.updated_at      = network.updated_at;
-    this.links           = this.prototype.links           = network.links || {};
-    this.events          = this.prototype.events          = network.events || {};
+    this.updated_at      = this.prototype.updated_at      = network.updated_at      || new Date(-8640000000000000); // earliest date
+    this.links           = this.prototype.links           = network.links           || {};
+    this.events          = this.prototype.events          = network.events          || {};
 
     this.network_id = network_id;
   };
@@ -442,9 +472,10 @@ var SolidityEvent = require("web3/lib/web3/event.js");
     Contract.links[name] = address;
   };
 
-  Contract.contract_name   = Contract.prototype.contract_name   = "{{NAME}}";
-  Contract.generated_with  = Contract.prototype.generated_with  = "{{PUDDING_VERSION}}";
-  Contract.default_network = Contract.prototype.default_network = "{{DEFAULT_NETWORK}}";
+  Contract.contract_name    = Contract.prototype.contract_name    = "{{NAME}}";
+  Contract.generated_with   = Contract.prototype.generated_with   = "{{PUDDING_VERSION}}";
+  Contract.default_network  = Contract.prototype.default_network  = "{{DEFAULT_NETWORK}}";
+  Contract.network_detected = Contract.prototype.network_detected = false;
 
   var properties = {
     binary: function() {

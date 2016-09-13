@@ -55,20 +55,8 @@ describe("Different networks:", function() {
     binary = compiled.bytecode;
 
     // Setup
-    network_one = TestRPC.provider({
-      // logger: {
-      //   log: function(msg) {
-      //     console.log("Network 1: " + msg)
-      //   }
-      // }
-    });
-    network_two = TestRPC.provider({
-      // logger: {
-      //   log: function(msg) {
-      //     console.log("Network 2: " + msg)
-      //   }
-      // }
-    });
+    network_one = TestRPC.provider();
+    network_two = TestRPC.provider();
 
     done();
   }),
@@ -212,7 +200,7 @@ describe("Different networks:", function() {
     }).then(done).catch(done);
   });
 
-  it("auto-detects deployed() network when using deployed() as a thennable", function(done) {
+  it("auto-detects network when using deployed() as a thennable", function(done) {
     // For this test, we're using ExampleOne set up in the before() blocks. Note that
     // it has two networks, and the default network is the first one. We'll set the
     // provider to the second network, use the thennable version for deployed(), and
@@ -269,4 +257,72 @@ describe("Different networks:", function() {
     });
   });
 
+  it("auto-detects network when using at() as a thennable", function(done) {
+    // For this test, we're using ExampleOne set up in the before() blocks. Note that
+    // it has two networks, and the default network is the first one. We'll set the
+    // provider to the second network, use the thennable version for at(), and
+    // ensure the abi that gets used is the one for the second network.
+    var Example = requireNoCache(built_file_path);
+    Example.setProvider(network_two);
+
+    // Ensure first network is the default network (precondition).
+    assert.equal(Example.default_network, network_one_id);
+    assert.isNotNull(Example.all_networks[network_one_id].address);
+    assert.isNotNull(Example.all_networks[network_two_id].address);
+    assert.equal(Example.address, Example.all_networks[network_one_id].address);
+
+    // Thennable checker. Since this is a custom then function, let's ensure things
+    // get executed in the right order.
+    var execution_count = 0;
+    var exampleTwoAddress = Example.all_networks[network_two_id].address;
+    var exampleTwoABI = Example.all_networks[network_two_id].abi;
+
+    Example.at(exampleTwoAddress).then(function(instance) {
+      assert.equal(instance.address, exampleTwoAddress);
+      assert.equal(instance.abi, exampleTwoABI);
+
+      // Now up the execution count and move on to the next then statement
+      // ensuring the chain remains intact.
+      execution_count = 1;
+      return execution_count;
+    }).then(function(count) {
+      assert.equal(execution_count, 1);
+      assert.equal(count, 1);
+    }).then(done).catch(done);
+  });
+
+  it("at() used as a thennable funnels errors correctly", function(done) {
+    var Example = requireNoCache(built_file_path);
+    Example.setProvider(network_one);
+
+    // This address should have no code there. .at().then() should error before
+    // letting you execute anything else.
+    Example.at("0x1234567890123456789012345678901234567890").then(function() {
+      assert.fail("This function should never be run because there should have been an error.");
+    }).catch(function(err) {
+      if (err.message.indexOf("Cannot create instance of Example; no code at address 0x1234567890123456789012345678901234567890") < 0) return done(new Error("Unexpected error received: " + err.message));
+      done();
+    });
+  });
+
+  it("new() detects the network before deploying", function(done) {
+    // For this test, we're using ExampleOne set up in the before() blocks. Note that
+    // it has two networks, and the default network is the first one. We'll set the
+    // provider to the second network, use the thennable version for at(), and
+    // ensure the abi that gets used is the one for the second network.
+    var Example = requireNoCache(built_file_path);
+    Example.setProvider(network_two);
+
+    // Ensure first network is the default network (precondition).
+    assert.equal(Example.default_network, network_one_id);
+    assert.isNotNull(Example.all_networks[network_one_id].address);
+    assert.isNotNull(Example.all_networks[network_two_id].address);
+    assert.equal(Example.address, Example.all_networks[network_one_id].address);
+
+    var exampleTwoABI = Example.all_networks[network_two_id].abi;
+
+    Example.new({from: ExampleTwo.defaults().from}).then(function(instance) {
+      assert.equal(instance.abi, exampleTwoABI);
+    }).then(done).catch(done);
+  });
 });
