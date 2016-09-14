@@ -136,7 +136,7 @@ MetaCoin.at(contract_address).then(function(instance) {
   // Make a transaction that calls the function `sendCoin`, sending 3 MetaCoin
   // to the account listed as account_two.
   return coin.sendCoin(account_two, 3, {from: account_one});
-}).then(function(tx) {
+}).then(function(result) {
   // This code block will not be executed until Pudding has verified
   // the transaction has been processed and it is included in a mined block.
   // Pudding will error if the transaction hasn't been processed in 120 seconds.
@@ -151,7 +151,7 @@ MetaCoin.at(contract_address).then(function(instance) {
   // Like before, will create a transaction that returns a promise, where
   // the callback won't be executed until the transaction has been processed.
   return coin.sendCoin(account_one, 1.5, {from: account_two});
-}).then(function(tx) {
+}).then(function(result) {
   // Again, get the balance of account two
   return coin.balances.call(account_two)
 }).then(function(balance_of_account_two) {
@@ -174,12 +174,6 @@ MetaCoin.new().then(function(coin) {
   console.log(err.stack);
 )};
 ```
-
-#### More Examples
-
-* [Extending Pudding contract classes](https://github.com/ConsenSys/ether-pudding/wiki/Extending-Pudding-Classes)
-* [Setting global contract-level and instance-level defaults](https://github.com/ConsenSys/ether-pudding/wiki/Setting-global,-contract-level-and-instance-level-defaults)
-* [When not to use synchronized transactions, and how to do it](https://github.com/ConsenSys/ether-pudding/wiki/When-not-to-use-synchronized-transactions,-and-how-to-do-it)
 
 ### Contract Abstraction API
 
@@ -242,7 +236,74 @@ MyContract.defaults({
 })
 ```
 
-Setting a default `from` address is useful when you have a contract abstraction you intend to represent one user (i.e., one address).  
+Setting a default `from` address is useful when you have a contract abstraction you intend to represent one user (i.e., one address).
+
+### Contract Abstraction Instance API
+
+Each contract abstraction is different, though each abstraction's behavior has many similarites. Let's explore those similarities using the following contract:
+
+```javascript
+contract MyContract {
+  uint public value;
+  event ValueSet(uint val);
+  function setValue(uint val) {
+    value = val;
+    ValueSet(value);
+  }
+  function getValue() constant returns (uint) {
+    return value;
+  }
+}
+```
+
+#### Instance Functions & Behavior
+
+* From Javascript's point of view, this contract has three functions: `setValue`, `getValue` and `value`. This is because `value` is public and automatically creates a getter function for it.
+* When we call `setValue()`, this creates a transaction. From Javascript:
+ 
+  ```javascript
+  instance.setValue(5).then(function(result) {
+    // result object contains import information about the transaction
+  });
+  ```
+  
+* We can call `setValue()` without creating a transaction by explicitly using `.call`:
+
+  ```javascript
+  instance.setValue.call(5).then(...);
+  ```
+  
+  This isn't very useful in this case, since `setValue()` sets things, and the value we pass won't be saved since we're not creating a transaction.
+  
+* However, we can *get* the value using `getValue()`, using `.call()`. Calls are always free and don't cost any Ether, so they're good for calling functions that read data off the blockchain:
+
+  ```javascript
+  instance.getValue.call().then(function(val) {
+    // val reprsents the `value` storage object in the solidity contract
+    // since the contract returns that value.
+  });
+  ```
+
+* Even more helpful, however is we *don't even need* to use `.call` when a function is marked as `constant`, because Pudding will automatically know that that function can only be interacted with via a call:
+
+  ```javascript
+  instance.getValue().then(function(val) {
+    // val reprsents the `value` storage object in the solidity contract
+    // since the contract returns that value.
+  });
+  ```
+  
+* When you make a transaction, you're given a `result` object that gives you a wealth of information about the transaction. You're given the transaction has (`result.tx`), the decoded events (also known as logs; `result.logs`), and a transaction receipt (`result.receipt`). In the below example, you'll recieve the `ValueSet()` event because you triggered the event using the `setValue()` function:
+
+  ```javascript
+  instance.setValue(5).then(function(result) {
+    // result.tx => transaction hash, string
+    // result.logs => array of trigger events (1 item in this case)
+    // result.receipt => receipt object
+  });
+  ```
+ 
+
 
 ### Pudding API
 
