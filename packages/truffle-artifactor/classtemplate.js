@@ -229,6 +229,10 @@ var SolidityEvent = require("web3/lib/web3/event.js");
   Contract.currentProvider = null;
 
   Contract.setProvider = function(provider) {
+    if (!provider) {
+      throw new Error("Invalid provider passed to setProvider(); provider is " + provider);
+    }
+
     var wrapped = new Provider(provider);
     this.web3.setProvider(wrapped);
     this.currentProvider = provider;
@@ -250,7 +254,12 @@ var SolidityEvent = require("web3/lib/web3/event.js");
     return (new Promise(function(accept, reject) {
       self.detectNetwork(function(err, network_id) {
         if (err) return reject(err);
-        self.setNetwork(network_id);
+
+        // Only set the network if we have that network available.
+        if (self.hasNetwork(network_id)) {
+          self.setNetwork(network_id);
+        }
+
         accept();
       });
     })).then(function() {
@@ -323,7 +332,12 @@ var SolidityEvent = require("web3/lib/web3/event.js");
       return new Promise(function(accept, reject) {
         self.detectNetwork(function(err, network_id) {
           if (err) return reject(err);
-          self.setNetwork(network_id);
+
+          // If we don't have the network, leave values alone.
+          if (self.hasNetwork(network_id)) {
+            self.setNetwork(network_id);
+          }
+
           accept(new self(address));
         });
       }).then(function(instance) {

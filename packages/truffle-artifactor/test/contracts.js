@@ -50,9 +50,6 @@ describe("Pudding + require", function() {
     }, filepath).then(function() {
       Example = requireNoCache(filepath);
       Example.setProvider(provider)
-
-      // Opt into next_gen
-      Example.next_gen = true;
     }).then(done).catch(done);
   });
 
@@ -174,4 +171,14 @@ describe("Pudding + require", function() {
       assert.equal(accounts[0], log.args._from);
     }).then(done).catch(done);
   });
+
+  it("errors when setting an invalid provider", function(done) {
+    try {
+      Example.setProvider(null);
+      assert.fail("setProvider() should have thrown an error");
+    } catch (e) {
+      // Do nothing with the error.
+    }
+    done();
+  })
 });
