@@ -52,11 +52,11 @@ $ npm install ether-pudding
 
 Pudding consists of two parts: The code generator that generates your `.sol.js` files, and then the `.sol.js` files themselves.
 
-#### Generator
+#### Code Generator (Pudding)
 
 Generate `.sol.js` files given a contract name and contract data, structured as an object. This will save a `.sol.js` file into the destination directory for each contract specified.
 
-**Note:** Pudding (the generator) isn't intended to be used in the browser or in a package manager like browserify or webpack. The resultant `.sol.js` files **_are_** well suited for the browser, however.
+**Note:** Pudding isn't intended to be used in the browser or in a package manager like browserify or webpack. The resultant `.sol.js` files **_are_** well suited for the browser, however.
 
 ```javascript
 var Pudding = require("ether-pudding");
@@ -79,9 +79,9 @@ Note that in the example above, there are three important pieces of data:
 * `unlinked_binary`: The compiled binary code of your contract. Ensure that if your contract relies on libraries to be linked, you pass in the *unlinked* version here.
 * `address`: An address this contract is deployed to, if it's a singleton.
 
-#### Using `.sol.js` Files
+#### Contract Abstraction (`.sol.js` files)
 
-Once a `.sol.js` file has been created, using it is easy. These abstractions use Web3 under the hood, and so will need a provider set just like Web3:
+Once a `.sol.js` file has been created, using it is easy. First require the generated `.sol.js` file and then set its Web3 provider:
 
 ```javascript
 var provider = new Web3.providers.HttpProvider("http://localhost:8545");
@@ -90,13 +90,29 @@ var MyContract = require("./MyContract.sol.js");
 MyContract.setProvider(provider);
 ```
 
-You'll receive errors if you try to make a transaction without a Web3 provider set.
+Once you've imported your `.sol.js` file, you have access to the following functions:
 
-See [Interacting With Your Contracts](https://github.com/ConsenSys/ether-pudding#interacting-with-your-contracts) below for details on how to use the newly created `MyContract` object.
+* `at()`: Create an abstraction for your contract that exists at a specific address.
+* `deployed()`: Create an abstraction for your contract that's been saved within the `.sol.js` file itself, perhaps by [Truffle](http://github.com/Consensys/truffle) or another development environment.
+* `new()`: Deploy a new version of this contract, getting an abstraction that represents the newly deployed instance.
 
-#### Interacting With Your Contracts
+The above functions create an "instance" of the abstraction which is tied to a specific address on the Ethereum network, and each instance has a 1-to-1 mapping from Javascript functions to contract functions. For instance, if your contract had a function defined  `someFunction(uint value) {}` (solidity), then you could execute that function on the network like so:
 
-Let's explore Pudding contract classes via MetaCoin contract described in [Dapps For Beginners](https://dappsforbeginners.wordpress.com/tutorials/your-first-dapp/):
+  ```javascript
+  var deployed;
+  MyContract.deployed().then(function(instance) {
+    var deployed = instance;
+    return instance.someFunction(5);
+  }).then(function(result) {
+    // Do something with the result or continue with more transactions.
+  });
+  ```  
+  
+The abstraction itself -- i.e., `MyContract` in the example above -- has many other useful functions as well. See the Contract Abstraction API below for more information.
+
+#### Full Example
+
+Let's use Pudding with an example contract from [Dapps For Beginners](https://dappsforbeginners.wordpress.com/tutorials/your-first-dapp/):
 
 ```javascript
 // Require the package
@@ -112,11 +128,15 @@ var account_two = "e1fd0d4a52...";
 
 // Note our MetaCoin contract exists at a specific address.
 var contract_address = "8e2e2cf785...";
-var coin = MetaCoin.at(contract_address);
+var coin;
 
-// Make a transaction that calls the function `sendCoin`, sending 3 MetaCoin
-// to the account listed as account_two.
-coin.sendCoin(account_two, 3, {from: account_one}).then(function(tx) {
+MetaCoin.at(contract_address).then(function(instance) {
+  coin = instance;
+  
+  // Make a transaction that calls the function `sendCoin`, sending 3 MetaCoin
+  // to the account listed as account_two.
+  return coin.sendCoin(account_two, 3, {from: account_one});
+}).then(function(tx) {
   // This code block will not be executed until Pudding has verified
   // the transaction has been processed and it is included in a mined block.
   // Pudding will error if the transaction hasn't been processed in 120 seconds.
@@ -160,6 +180,69 @@ MetaCoin.new().then(function(coin) {
 * [Extending Pudding contract classes](https://github.com/ConsenSys/ether-pudding/wiki/Extending-Pudding-Classes)
 * [Setting global contract-level and instance-level defaults](https://github.com/ConsenSys/ether-pudding/wiki/Setting-global,-contract-level-and-instance-level-defaults)
 * [When not to use synchronized transactions, and how to do it](https://github.com/ConsenSys/ether-pudding/wiki/When-not-to-use-synchronized-transactions,-and-how-to-do-it)
+
+### Contract Abstraction API
+
+Each contract abstraction -- `MyContract` in the examples above -- have the following useful functions:
+
+#### `MyContract.new([arg1, arg2, ...], [tx params])`
+
+This function take whatever contructor parameters your contract requires and deploys a new instance of the contract to the network. There's an optional last argument which you can use to pass transaction parameters including the transaction from address, gas limit and gas price. This function returns a Promise that resolves into a new instance of the contract abstraction at the newly deployed address.
+
+#### `MyContract.at(address)`
+
+This function creates a new instance of the contract abstraction representing the contract at the passed in address. Returns a "thenable" object (not yet an actual Promise for backward compatibility). Resolves to a contract abstraction instance after ensuring code exists at the specified address.
+
+#### `MyContract.deployed()`
+
+Creates an instance of the contract abstraction representing the contract at its deployed address. The deployed address is a special value given to Pudding (see below) that, when set, saves the address internally so that the deployed address can be inferred from the given Ethereum network being used. This allows you to write code referring to a specific deployed contract without having to manage those addresses yourself. Like `at()`, `deployed()` is thenable, and will resolve to a contract abstraction instance representing the deployed contract after ensuring that code exists at that location and that that address exists on the network being used.
+
+#### `MyContract.link(instance)` 
+
+Link a library represented by a contract abstraction instance to MyContract. The library must first be deployed and have its deployed address set. The name and deployed address will be inferred from the contract abstraction instance. When this form of `MyContract.link()` is used, MyContract will consume all of the linked library's events and will be able to report that those events occurred during the result of a transaction.
+
+Libraries can be linked multiple times and will overwrite their previous linkage.
+
+Note: This method has two other forms, but this form is recommended.
+
+#### `MyContract.link(name, address)`
+
+Link a library with a specific name and address to MyContract. The library's events will not be consumed using this form.
+
+#### `MyContract.link(object)` 
+
+Link multiple libraries denoted by an Object to MyContract. The keys must be strings representing the library names and the values must be strings representing the addresses. Like above, libraries' events will not be consumed using this form. 
+
+#### `MyContract.networks()`
+
+View a list of network ids this contract abstraction has been set up to represent.
+
+#### `MyContract.setProvider(provider)`
+
+Sets the web3 provider this contract abstraction will use to make transactions.
+
+#### `MyContract.setNetwork(network_id)`
+
+Sets the network that MyContract is currently representing. 
+
+#### `MyContract.hasNetwork(network_id)`
+
+Returns a boolean denoting whether or not this contract abstraction is set up to represent a specific network.
+
+#### `MyContract.defaults([new_defaults])`
+
+Get's and optionally sets transaction defaults for all instances created from this abstraction. If called without any parameters it will simply return an Object representing current defaults. If an Object is passed, this will set new defaults. Example default transaction values that can be set are:
+
+```
+MyContract.defaults({
+  from: ...,
+  gas: ...,
+  gasPrice: ...,
+  value: ...
+})
+```
+
+Setting a default `from` address is useful when you have a contract abstraction you intend to represent one user (i.e., one address).  
 
 ### Pudding API
 
