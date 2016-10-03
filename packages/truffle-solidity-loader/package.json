@@ -13,9 +13,10 @@
     "find-up": "^1.1.2",
     "ether-pudding": "^3.1.2",
     "findup": "^0.1.5",
-    "temp": "^0.8.3",
     "truffle": "^2.0.8",
     "web3": "^0.17.0-alpha",
-    "lodash.merge": "^4.6.0"
+    "temp": "^0.8.3",
+    "lodash.merge": "^4.6.0",
+    "find-up": "^1.1.2"
   }
 }

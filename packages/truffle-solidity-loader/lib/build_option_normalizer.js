@@ -3,13 +3,14 @@ var Logger                  = require('./logger_decorator')
 
 var QueryStringParser       = require('./query_string_parser')
 var TruffleConfigLocator    = require('./truffle_config_locator')
+var TruffleConfig           = require('truffle/lib/config.js');
 
 var BuildOptionNormalizer = {
   normalize: function(buildOpts, query) {
     var truffleConfig = TruffleConfigLocator.find()
 
     if(truffleConfig) {
-      var config = require(truffleConfig)
+      var config = TruffleConfig.load(truffleConfig)
       merge(buildOpts, config)
     }
 
