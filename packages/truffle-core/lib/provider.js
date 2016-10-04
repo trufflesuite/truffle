@@ -32,7 +32,14 @@ module.exports = {
   },
 
   create: function(options) {
-    var provider = new Web3.providers.HttpProvider("http://" + options.host + ":" + options.port);
+    var provider;
+
+    if (options.provider) {
+      provider = options.provider;
+    } else {
+      provider = new Web3.providers.HttpProvider("http://" + options.host + ":" + options.port);
+    }
+
     return this.wrap(provider, options);
   },
 
