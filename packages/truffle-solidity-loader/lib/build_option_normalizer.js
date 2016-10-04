@@ -11,7 +11,7 @@ var BuildOptionNormalizer = {
 
     if(truffleConfig) {
       var config = TruffleConfig.load(truffleConfig)
-      merge(buildOpts, config)
+      config = merge(buildOpts, config)
     }
 
     if (query !== "undefined") {
