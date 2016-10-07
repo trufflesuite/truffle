@@ -48,6 +48,20 @@ var SolidityEvent = require("web3/lib/web3/event.js");
 
       return merged;
     },
+    decodeLogs: function(C, instance, logs) {
+      return logs.map(function(log) {
+        var logABI = C.events[log.topics[0]];
+
+        if (logABI == null) {
+          return null;
+        }
+
+        var decoder = new SolidityEvent(null, logABI, instance.address);
+        return decoder.decode(log);
+      }).filter(function(log) {
+        return log != null;
+      });
+    },
     promisifyFunction: function(fn, C) {
       var self = this;
       return function() {
@@ -64,16 +78,18 @@ var SolidityEvent = require("web3/lib/web3/event.js");
 
         tx_params = Utils.merge(C.class_defaults, tx_params);
 
-        return new Promise(function(accept, reject) {
-          var callback = function(error, result) {
-            if (error != null) {
-              reject(error);
-            } else {
-              accept(result);
-            }
-          };
-          args.push(tx_params, callback);
-          fn.apply(instance.contract, args);
+        return C.detectNetwork().then(function(network_id) {
+          return new Promise(function(accept, reject) {
+            var callback = function(error, result) {
+              if (error != null) {
+                reject(error);
+              } else {
+                accept(result);
+              }
+            };
+            args.push(tx_params, callback);
+            fn.apply(instance.contract, args);
+          });
         });
       };
     },
@@ -91,57 +107,43 @@ var SolidityEvent = require("web3/lib/web3/event.js");
 
         tx_params = Utils.merge(C.class_defaults, tx_params);
 
-        return new Promise(function(accept, reject) {
-
-          var decodeLogs = function(logs) {
-            return logs.map(function(log) {
-              var logABI = C.events[log.topics[0]];
-
-              if (logABI == null) {
-                return null;
+        return C.detectNetwork().then(function(network_id) {
+          return new Promise(function(accept, reject) {
+            var callback = function(error, tx) {
+              if (error != null) {
+                reject(error);
+                return;
               }
 
-              var decoder = new SolidityEvent(null, logABI, instance.address);
-              return decoder.decode(log);
-            }).filter(function(log) {
-              return log != null;
-            });
-          };
+              var timeout = C.synchronization_timeout || 240000;
+              var start = new Date().getTime();
 
-          var callback = function(error, tx) {
-            if (error != null) {
-              reject(error);
-              return;
-            }
+              var make_attempt = function() {
+                C.web3.eth.getTransactionReceipt(tx, function(err, receipt) {
+                  if (err) return reject(err);
 
-            var timeout = C.synchronization_timeout || 240000;
-            var start = new Date().getTime();
+                  if (receipt != null) {
+                    return accept({
+                      tx: tx,
+                      receipt: receipt,
+                      logs: Utils.decodeLogs(C, instance, receipt.logs)
+                    });
+                  }
 
-            var make_attempt = function() {
-              C.web3.eth.getTransactionReceipt(tx, function(err, receipt) {
-                if (err) return reject(err);
+                  if (timeout > 0 && new Date().getTime() - start > timeout) {
+                    return reject(new Error("Transaction " + tx + " wasn't processed in " + (timeout / 1000) + " seconds!"));
+                  }
 
-                if (receipt != null) {
-                  return accept({
-                    tx: tx,
-                    receipt: receipt,
-                    logs: decodeLogs(receipt.logs)
-                  });
-                }
+                  setTimeout(make_attempt, 1000);
+                });
+              };
 
-                if (timeout > 0 && new Date().getTime() - start > timeout) {
-                  return reject(new Error("Transaction " + tx + " wasn't processed in " + (timeout / 1000) + " seconds!"));
-                }
-
-                setTimeout(make_attempt, 1000);
-              });
+              make_attempt();
             };
 
-            make_attempt();
-          };
-
-          args.push(tx_params, callback);
-          fn.apply(self, args);
+            args.push(tx_params, callback);
+            fn.apply(self, args);
+          });
         });
       };
     }
@@ -150,6 +152,7 @@ var SolidityEvent = require("web3/lib/web3/event.js");
   // contract can be an address or web3 contract instance.
   function instantiate(instance, contract) {
     var constructor = instance.constructor;
+    instance.abi = constructor.abi;
 
     if (typeof contract == "string") {
       var address = contract;
@@ -188,13 +191,15 @@ var SolidityEvent = require("web3/lib/web3/event.js");
   // Use inheritance to create a clone of this contract,
   // and copy over contract's static functions.
   function mutate(fn) {
-    var temp = function Clone() { return fn.apply(this, arguments); };
+    var temp = function Clone() { this.constructor = temp; return fn.apply(this, arguments); };
 
     Object.keys(fn).forEach(function(key) {
       temp[key] = fn[key];
     });
 
     temp.prototype = Object.create(fn.prototype);
+    temp._property_values = {};
+
     bootstrap(temp);
     return temp;
   };
@@ -203,12 +208,11 @@ var SolidityEvent = require("web3/lib/web3/event.js");
     fn.web3 = new Web3();
     fn.class_defaults  = fn.prototype.defaults || {};
 
-    // Set the network iniitally to make default data available and re-use code.
-    // Then remove the saved network id so the network will be auto-detected on first use.
-    fn.setNetwork(fn.default_network || "*");
-    if (fn.network_id == "*") {
-      fn.network_id = null;
-    }
+    // Add our properties.
+    Object.keys(fn._properties).forEach(function(key) {
+      fn._addProp(key, fn._properties[key]);
+    });
+
     return fn;
   };
 
@@ -220,7 +224,7 @@ var SolidityEvent = require("web3/lib/web3/event.js");
       instantiate(this, arguments[0]);
     } else {
       var C = mutate(Contract);
-      var network_id = arguments.length > 0 ? arguments[0] : "*";
+      var network_id = arguments.length > 0 ? arguments[0] : null;
       C.setNetwork(network_id);
       return C;
     }
@@ -251,18 +255,7 @@ var SolidityEvent = require("web3/lib/web3/event.js");
       throw new Error("{{NAME}} error: contract binary not set. Can't deploy new instance.");
     }
 
-    return (new Promise(function(accept, reject) {
-      self.detectNetwork(function(err, network_id) {
-        if (err) return reject(err);
-
-        // Only set the network if we have that network available.
-        if (self.hasNetwork(network_id)) {
-          self.setNetwork(network_id);
-        }
-
-        accept();
-      });
-    })).then(function() {
+    return self.detectNetwork().then(function(network_id) {
       // After the network is set, check to make sure everything's ship shape.
       var regex = /__[^_]+_+/g;
       var unlinked_libraries = self.binary.match(regex);
@@ -329,18 +322,9 @@ var SolidityEvent = require("web3/lib/web3/event.js");
 
     // Add thennable to allow people opt into new recommended usage.
     contract.then = function(fn) {
-      return new Promise(function(accept, reject) {
-        self.detectNetwork(function(err, network_id) {
-          if (err) return reject(err);
+      return self.detectNetwork().then(function(network_id) {
+        var instance = new self(address);
 
-          // If we don't have the network, leave values alone.
-          if (self.hasNetwork(network_id)) {
-            self.setNetwork(network_id);
-          }
-
-          accept(new self(address));
-        });
-      }).then(function(instance) {
         return new Promise(function(accept, reject) {
           self.web3.eth.getCode(address, function(err, code) {
             if (err) return reject(err);
@@ -360,27 +344,15 @@ var SolidityEvent = require("web3/lib/web3/event.js");
 
   Contract.deployed = function() {
     var self = this;
-
-    if (!this.address) {
-      throw new Error("Cannot find deployed address: {{NAME}} not deployed or address not set.");
-    }
-
     var contract = this.at(this.address);
 
-    // Add thennable to allow people opt into new recommended usage.
+    // Add thennable to allow people to opt into new recommended usage.
     contract.then = function(fn) {
-      return new Promise(function(accept, reject) {
-        self.detectNetwork(function(err, network_id) {
-          if (err) return reject(err);
-
-          if (!self.isDeployedToNetwork(network_id)) {
-            return reject(new Error(self.contract_name + " has not been deployed to detected network: " + network_id));
-          }
-
-          self.setNetwork(network_id);
-
-          accept(new self(self.address));
-        });
+      return self.detectNetwork().then(function(network_id) {
+        if (!self.isDeployedToNetwork(network_id)) {
+          throw new Error(self.contract_name + " has not been deployed to detected network: " + network_id);
+        }
+        return new self(self.address);
       }).then(fn);
     };
 
@@ -429,27 +401,32 @@ var SolidityEvent = require("web3/lib/web3/event.js");
     return this.all_networks[network_id] != null && this.all_networks[network_id].address != null;
   };
 
-  Contract.detectNetwork = function(callback) {
+  Contract.detectNetwork = function() {
     var self = this;
-    this.web3.version.getNetwork(function(err, result) {
-      if (err) return callback(err);
 
-      var network_id = result.toString();
-      callback(null, network_id);
+    return new Promise(function(accept, reject) {
+      if (this.network_id != null) {
+        return accept(this.network_id);
+      }
+
+      self.web3.version.getNetwork(function(err, result) {
+        if (err) return reject(err);
+
+        var network_id = result.toString();
+
+        // Only set the network if we have that network available.
+        if (self.hasNetwork(network_id)) {
+          self.setNetwork(network_id);
+        }
+
+        accept(network_id);
+      });
     });
   };
 
   Contract.setNetwork = function(network_id) {
-    var network = this.all_networks[network_id] || {};
-
-    this.abi             = this.prototype.abi             = network.abi;
-    this.unlinked_binary = this.prototype.unlinked_binary = network.unlinked_binary;
-    this.address         = this.prototype.address         = network.address;
-    this.updated_at      = this.prototype.updated_at      = network.updated_at      || new Date(-8640000000000000); // earliest date
-    this.links           = this.prototype.links           = network.links           || {};
-    this.events          = this.prototype.events          = network.events          || {};
-
-    this.network_id = network_id;
+    if (!network_id) return;
+    this.network_id = network_id + "";
   };
 
   Contract.networks = function() {
@@ -457,6 +434,8 @@ var SolidityEvent = require("web3/lib/web3/event.js");
   };
 
   Contract.link = function(name, address) {
+    var self = this;
+
     if (typeof name == "function") {
       var contract = name;
 
@@ -464,11 +443,11 @@ var SolidityEvent = require("web3/lib/web3/event.js");
         throw new Error("Cannot link contract without an address.");
       }
 
-      Contract.link(contract.contract_name, contract.address);
+      this.link(contract.contract_name, contract.address);
 
       // Merge events so this contract knows about library's events
       Object.keys(contract.events).forEach(function(topic) {
-        Contract.events[topic] = contract.events[topic];
+        self.network.events[topic] = contract.events[topic];
       });
 
       return;
@@ -478,45 +457,95 @@ var SolidityEvent = require("web3/lib/web3/event.js");
       var obj = name;
       Object.keys(obj).forEach(function(name) {
         var a = obj[name];
-        Contract.link(name, a);
+        self.link(name, a);
       });
       return;
     }
 
-    Contract.links[name] = address;
+    this.network.links[name] = address;
   };
 
-  Contract.contract_name    = Contract.prototype.contract_name    = "{{NAME}}";
-  Contract.generated_with   = Contract.prototype.generated_with   = "{{PUDDING_VERSION}}";
-  Contract.default_network  = Contract.prototype.default_network  = "{{DEFAULT_NETWORK}}";
-  Contract.network_detected = Contract.prototype.network_detected = false;
+  Contract._property_values = {};
+  Contract._addProp = function(key, fn) {
+    var self = this;
 
-  var properties = {
+    var writable = {
+      "address": true
+    };
+
+    var getter = function() {
+      return self._property_values[key] || fn.call(self);
+    }
+    var setter = function(val) {
+      if (writable[key] !== true) {
+        throw new Error(key + " property is immutable");
+      }
+
+      self._property_values[key] = val;
+    };
+
+    var definition = {};
+    definition.enumerable = false;
+    definition.configurable = false;
+    definition.get = getter;
+    definition.set = setter;
+
+    Object.defineProperty(this, key, definition);
+  };
+
+  // Getter functions are scoped to Contract object.
+  Contract._properties = {
+    contract_name: function() {
+      return "{{NAME}}";
+    },
+    abi: function() {
+      return {{ABI}};
+    },
+    network: function() {
+      var network_id = this.network_id != null ? this.network_id : this.default_network;
+      return this.all_networks[network_id] || {};
+    },
+    address: function() {
+      var address = this.network.address;
+
+      if (address == null) {
+        throw new Error("Cannot find deployed address: {{NAME}} not deployed or address not set.");
+      }
+
+      return address;
+    },
+    links: function() {
+      return this.network.links || {};
+    },
+    events: function() {
+      return this.network.events || {};
+    },
     binary: function() {
-      var binary = Contract.unlinked_binary;
+      var self = this;
+      var binary = this.unlinked_binary;
 
-      Object.keys(Contract.links).forEach(function(library_name) {
-        var library_address = Contract.links[library_name];
+      Object.keys(this.links).forEach(function(library_name) {
+        var library_address = self.links[library_name];
         var regex = new RegExp("__" + library_name + "_*", "g");
 
         binary = binary.replace(regex, library_address.replace("0x", ""));
       });
 
       return binary;
+    },
+    unlinked_binary: function() {
+      return "{{UNLINKED_BINARY}}";
+    },
+    generated_with: function() {
+      return "{{PUDDING_VERSION}}";
+    },
+    default_network: function() {
+      return "{{DEFAULT_NETWORK}}";
+    },
+    updated_at: function() {
+      return "{{UPDATED_AT}}";
     }
   };
-
-  Object.keys(properties).forEach(function(key) {
-    var getter = properties[key];
-
-    var definition = {};
-    definition.enumerable = true;
-    definition.configurable = false;
-    definition.get = getter;
-
-    Object.defineProperty(Contract, key, definition);
-    Object.defineProperty(Contract.prototype, key, definition);
-  });
 
   bootstrap(Contract);
 
@@ -525,6 +554,6 @@ var SolidityEvent = require("web3/lib/web3/event.js");
   } else {
     // There will only be one version of this contract in the browser,
     // and we can use that.
-    window.{{NAME}} = Contract;
+    window["{{NAME}}"] = Contract;
   }
 })();

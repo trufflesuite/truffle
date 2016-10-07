@@ -43,10 +43,11 @@ describe("Pudding + require", function() {
 
     var filepath = path.join(dirPath, "Example.sol.js");
 
-    Pudding.save("Example", {
+    Pudding.save({
+      name: "Example",
       abi: abi,
       binary: binary,
-      address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01"
+      address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01",
     }, filepath).then(function() {
       Example = requireNoCache(filepath);
       Example.setProvider(provider)
@@ -71,14 +72,14 @@ describe("Pudding + require", function() {
   });
 
   it("should set the transaction hash of contract instantiation", function() {
-    return Example.new().then(function(example) {
+    return Example.new({gas: 3141592}).then(function(example) {
       assert(example.transactionHash, "transactionHash should be non-empty");
     });
   });
 
   it("should get and set values via methods and get values via .call", function(done) {
     var example;
-    Example.new().then(function(instance) {
+    Example.new({gas: 3141592}).then(function(instance) {
       example = instance;
       return example.value.call();
     }).then(function(value) {
@@ -115,7 +116,7 @@ describe("Pudding + require", function() {
       }
     });
 
-    Example.new().then(function(example) {
+    Example.new({gas: 3141592}).then(function(example) {
       assert.isNotNull(example.my_function, "Function should have been applied to the instance");
       example.my_function(example);
     }).catch(done);
@@ -123,7 +124,7 @@ describe("Pudding + require", function() {
 
   it("shouldn't synchronize constant functions", function(done) {
     var example;
-    Example.new(5).then(function(instance) {
+    Example.new(5, {gas: 3141592}).then(function(instance) {
       example = instance;
       return example.getValue();
     }).then(function(value) {
@@ -134,13 +135,13 @@ describe("Pudding + require", function() {
   it("should allow BigNumbers as input parameters, and not confuse them as transaction objects", function(done) {
     // BigNumber passed on new()
     var example = null;
-    Example.new(web3.toBigNumber(30)).then(function(instance) {
+    Example.new(web3.toBigNumber(30), {gas: 3141592}).then(function(instance) {
       example = instance;
       return example.value.call();
     }).then(function(value) {
       assert.equal(value.valueOf(), 30, "Starting value should be 30");
       // BigNumber passed in a transaction.
-      return example.setValue(web3.toBigNumber(25));
+      return example.setValue(web3.toBigNumber(25), {gas: 3141592});
     }).then(function(tx) {
       return example.value.call();
     }).then(function(value) {
@@ -154,7 +155,7 @@ describe("Pudding + require", function() {
 
   it("should return transaction hash, logs and receipt when using synchronised transactions", function(done) {
     var example = null;
-    Example.new().then(function(instance) {
+    Example.new({gas: 3141592}).then(function(instance) {
       example = instance;
       return example.triggerEvent();
     }).then(function(result) {

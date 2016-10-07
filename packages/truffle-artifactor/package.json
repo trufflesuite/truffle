@@ -15,13 +15,13 @@
   "license": "MIT",
   "devDependencies": {
     "chai": "^3.4.1",
+    "ethereumjs-testrpc": "^3.0.0",
     "mocha": "^2.3.4",
     "solc": "^0.3.6",
     "temp": "^0.8.3"
   },
   "dependencies": {
     "async": "^1.5.2",
-    "ethereumjs-testrpc": "^2.0.7",
     "lodash": "^4.11.2",
     "node-dir": "^0.1.11",
     "solc": "^0.3.6",

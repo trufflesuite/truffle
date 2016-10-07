@@ -55,25 +55,13 @@ describe("Different networks:", function() {
     binary = compiled.bytecode;
 
     // Setup
-    network_one = TestRPC.provider();
-    network_two = TestRPC.provider();
+    network_one_id = 1000;
+    network_two_id = 1001;
+    network_one = TestRPC.provider({network_id: network_one_id, seed: network_one_id});
+    network_two = TestRPC.provider({network_id: network_two_id, seed: network_two_id});
 
     done();
   }),
-
-  before("Get first network id", function(done) {
-    getNetworkId(network_one, function(err, network_id) {
-      network_one_id = network_id;
-      done(err);
-    });
-  });
-
-  before("Get second network id", function(done) {
-    getNetworkId(network_two, function(err, network_id) {
-      network_two_id = network_id;
-      done(err);
-    });
-  });
 
   before("Set up contracts", function(done) {
     temp_dir = temp.mkdirSync({
@@ -83,17 +71,22 @@ describe("Different networks:", function() {
 
     built_file_path = path.join(temp_dir, "Example.sol.js")
 
-    Pudding.save("Example", {
+    Pudding.save({
+      contract_name: "Example",
       abi: abi,
-      binary: binary
-    }, built_file_path, {network_id: network_one_id, default_network: network_one_id}).then(function() {
-      return Pudding.save("Example", {
+      binary: binary,
+      network_id: network_one_id,
+      default_network: network_one_id
+    }, built_file_path).then(function() {
+      return Pudding.save({
+        contract_name: "Example",
         abi: abi,
-        binary: binary
-      }, built_file_path, {network_id: network_two_id});
+        binary: binary,
+        network_id: network_two_id
+      }, built_file_path);
     }).then(function(err) {
       ExampleOne = requireNoCache(built_file_path);
-      ExampleTwo = ExampleOne(network_two_id);
+      ExampleTwo = ExampleOne(network_two_id); // Mutate
 
       ExampleOne.setProvider(network_one);
       ExampleTwo.setProvider(network_two);
@@ -114,16 +107,16 @@ describe("Different networks:", function() {
   });
 
   it("can deploy to different networks", function(done) {
-    ExampleOne.new().then(function(example) {
+    ExampleOne.new({gas: 3141592}).then(function(example) {
       ExampleOne.address = example.address;
-      return ExampleTwo.new();
+      return ExampleTwo.new({gas: 3141592});
     }).then(function(example) {
       ExampleTwo.address = example.address;
     }).then(function() {
       // Save the addresses.
-      return Pudding.save("Example", ExampleOne, built_file_path, {network_id: network_one_id});
+      return Pudding.save(ExampleOne, built_file_path, {contract_name: "Example", network_id: network_one_id});
     }).then(function() {
-      return Pudding.save("Example", ExampleTwo, built_file_path, {network_id: network_two_id});
+      return Pudding.save(ExampleTwo, built_file_path, {contract_name: "Example", network_id: network_two_id});
     }).then(done).catch(done);
   });
 
@@ -144,13 +137,19 @@ describe("Different networks:", function() {
 
   it("defaults to the default network set", function() {
     var Example = requireNoCache(built_file_path);
-    assert.equal(Example.network_id, network_one_id);
+
+    // Network id should be null, meaning it's undected and not set explicitly.
+    assert.equal(Example.network_id, null);
+
+    // Network returned, however, should be the default.
+    assert.deepEqual(Example.network, Example.all_networks[network_one_id]);
   });
 
   it("has a fallback network of '*' if no network id set", function(done) {
     var filepath = path.join(temp_dir, "AnotherExample.sol.js")
 
-    Pudding.save("AnotherExample", {
+    Pudding.save({
+      contract_name: "AnotherExample",
       abi: abi,
       binary: binary
     }, filepath).then(function() {
@@ -167,10 +166,13 @@ describe("Different networks:", function() {
     var network_id = "1337";
 
     // NOTE: We are saving over the file already there!!!!
-    Pudding.save("AnotherExample", {
+    Pudding.save({
+      contract_name: "AnotherExample",
       abi: abi,
-      binary: binary
-    }, filepath, {network_id: network_id, default_network: network_id}).then(function() {
+      binary: binary,
+      network_id: network_id,
+      default_network: network_id
+    }, filepath).then(function() {
       var AnotherExample = requireNoCache(filepath);
 
       assert.equal(AnotherExample.default_network, network_id);
@@ -185,7 +187,8 @@ describe("Different networks:", function() {
     var address = "0x1234567890123456789012345678901234567890";
 
     // NOTE: We are saving over the file already there!!!! AGAIN
-    Pudding.save("AnotherExample", {
+    Pudding.save({
+      contract_name: "AnotherExample",
       abi: abi,
       binary: binary,
       address: address
@@ -275,11 +278,10 @@ describe("Different networks:", function() {
     // get executed in the right order.
     var execution_count = 0;
     var exampleTwoAddress = Example.all_networks[network_two_id].address;
-    var exampleTwoABI = Example.all_networks[network_two_id].abi;
 
     Example.at(exampleTwoAddress).then(function(instance) {
       assert.equal(instance.address, exampleTwoAddress);
-      assert.equal(instance.abi, exampleTwoABI);
+      assert.deepEqual(instance.abi, Example.abi);
 
       // Now up the execution count and move on to the next then statement
       // ensuring the chain remains intact.
@@ -319,10 +321,62 @@ describe("Different networks:", function() {
     assert.isNotNull(Example.all_networks[network_two_id].address);
     assert.equal(Example.address, Example.all_networks[network_one_id].address);
 
-    var exampleTwoABI = Example.all_networks[network_two_id].abi;
-
-    Example.new({from: ExampleTwo.defaults().from}).then(function(instance) {
-      assert.equal(instance.abi, exampleTwoABI);
+    Example.new({from: ExampleTwo.defaults().from, gas: 3141592}).then(function(instance) {
+      assert.deepEqual(instance.abi, Example.abi);
     }).then(done).catch(done);
+  });
+
+  it("detects the network before sending a transaction", function() {
+    // Here, we're going to use two of the same contract abstraction to test
+    // network detection. The first is going to deploy a new contract, thus
+    // detecting the network in the process of new(); we're then going to
+    // pass that address to the second and have it make a transaction.
+    // During that transaction it should detect the network since it
+    // hasn't been detected already.
+    var ExampleSetup = requireNoCache(built_file_path);
+    var ExampleDetect = ExampleSetup();
+    ExampleSetup.setProvider(network_two);
+    ExampleDetect.setProvider(network_two);
+
+    // Steal the from address from our other tests.
+    var from = ExampleTwo.defaults().from;
+    var example;
+
+    return ExampleSetup.new({from: from, gas: 3141592}).then(function(instance) {
+      example = ExampleDetect.at(instance.address);
+
+      assert.equal(ExampleDetect.network_id, null);
+
+      return example.setValue(47, {from: from, gas: 3141592});
+    }).then(function() {
+      assert.equal(ExampleDetect.network_id, network_two_id);
+    });
+  });
+
+  it("detects the network when making a call", function() {
+    // Here, we're going to use two of the same contract abstraction to test
+    // network detection. The first is going to deploy a new contract, thus
+    // detecting the network in the process of new(); we're then going to
+    // pass that address to the second and have it make a transaction.
+    // During that transaction it should detect the network since it
+    // hasn't been detected already.
+    var ExampleSetup = requireNoCache(built_file_path);
+    var ExampleDetect = ExampleSetup();
+    ExampleSetup.setProvider(network_two);
+    ExampleDetect.setProvider(network_two);
+    
+    // Steal the from address from our other tests.
+    var from = ExampleTwo.defaults().from;
+    var example;
+
+    return ExampleSetup.new({from: from, gas: 3141592}).then(function(instance) {
+      example = ExampleDetect.at(instance.address);
+
+      assert.equal(ExampleDetect.network_id, null);
+
+      return example.getValue({from: from, gas: 3141592});
+    }).then(function() {
+      assert.equal(ExampleDetect.network_id, network_two_id);
+    });
   });
 });

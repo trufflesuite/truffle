@@ -9,27 +9,32 @@ var vm = require('vm');
 var Web3 = require("web3")
 var _ = require("lodash");
 
-// TODO: This should probably be asynchronous.
 module.exports = {
-  save: function(contract_name, contract_data, filename, options) {
+  // {
+  //   contract_name: "...",
+  //   abi: [...],                 (optional if already set)
+  //   unlinked_binary: "0x...",   (optional if already set)
+  //   address: "0x..." or null,
+  //   links: {...},
+  //   events: {...},
+  //   network_id: ...,            (defaults to "*")
+  // }
+
+  save: function(options, filename, extra_options) {
     var self = this;
     var web3 = new Web3();
 
-    if (typeof contract_name == "object") {
-      options = filename;
-      filename = contract_data;
-      contract_data = contract_name;
-      contract_name = "Contract";
+    if (filename == null) {
+      throw new Error("You must specify a file name.");
     }
 
-    options = options || {};
-
-    this.normalizeContractData(contract_data);
+    options = this.normalizeOptions(options, extra_options);
 
     return new Promise(function(accept, reject) {
       fs.readFile(filename, {encoding: "utf8"}, function(err, source) {
         var existing_networks = {};
-        var default_network = options.default_network || "*"; // Use fallback network if default not specified.
+        options.default_network = (options.default_network || "*") + ""; // Use fallback network if default not specified.
+        options.network_id = (options.network_id || "*") + ""; // Assume fallback network if network not specified.
 
         // If no error during reading, file exists.
         if (options.overwrite != true && err == null) {
@@ -37,42 +42,38 @@ module.exports = {
 
           // If the default is the fallback but a default is specified in the file
           // then use the default network in the file.
-          if (default_network == "*" && Contract.default_network && Contract.default_network != "*") {
-            default_network = Contract.default_network;
+          if (options.default_network == "*" && Contract.default_network) {
+            options.default_network = Contract.default_network;
           }
 
-          // Note: The || statement ensures we support old .sol.js files.
-          existing_networks = Contract.all_networks || existing_networks;
+          options.abi = options.abi || Contract.abi;
+          options.unlinked_binary = options.unlinked_binary || Contract.unlinked_binary;
+
+          existing_networks = Contract.all_networks;
         }
 
-        var network_id = options.network_id || "*";
-
-        if (existing_networks[network_id] == null) {
-          existing_networks[network_id] = {};
+        if (existing_networks[options.network_id] == null) {
+          existing_networks[options.network_id] = {};
         }
 
-        var network = existing_networks[network_id];
+        var network = existing_networks[options.network_id];
 
-        // merge only specific keys
-        ["abi", "unlinked_binary", "address", "links"].forEach(function(key) {
-          network[key] = contract_data[key] || network[key];
-        });
+        // Override specific keys
+        network.address = options.address;
+        network.links = options.links;
 
         // merge events with any that previously existed
-        network.events = _.merge({}, network.events, contract_data.events);
+        network.events = _.merge({}, network.events, options.events);
 
         // Now overwrite any events with the most recent data from the ABI.
-        network.abi.forEach(function(item) {
+        options.abi.forEach(function(item) {
           if (item.type != "event") return;
 
           var signature = item.name + "(" + item.inputs.map(function(param) {return param.type;}).join(",") + ")";
           network.events["0x" + web3.sha3(signature)] = item;
         });
 
-        // Remove legacy key
-        delete network.binary;
-
-        // Update timestamp
+        // Update timestamp (legacy value)
         network.updated_at = new Date().getTime();
 
         // Ensure unlinked binary starts with a 0x
@@ -81,7 +82,7 @@ module.exports = {
         }
 
         // Generate the source and write it out.
-        var final_source = self.generate(contract_name, existing_networks, default_network);
+        var final_source = self.generate(options, existing_networks);
 
         fs.writeFile(filename, final_source, "utf8", function(err) {
           if (err) return reject(err);
@@ -93,6 +94,7 @@ module.exports = {
 
   saveAll: function(contracts, destination, options) {
     var self = this;
+    options = options || {};
 
     if (Array.isArray(contracts)) {
       var arr = contracts;
@@ -112,7 +114,12 @@ module.exports = {
           var contract_data = contracts[contract_name];
           var filename = path.join(destination, contract_name + ".sol.js");
 
-          self.save(contract_name, contract_data, filename, options).then(done).catch(done);
+          // Add the contract name to our extra options, without editing
+          // the options object on its own.
+          options = _.extend({}, options, {contract_name: contract_name});
+
+          // Finally save the contract.
+          self.save(contract_data, filename, options).then(done).catch(done);
         }, function(err) {
           if (err) return reject(err);
           accept();
@@ -121,10 +128,14 @@ module.exports = {
     });
   },
 
-  generate: function(contract_name, networks, default_network) {
-    if (typeof contract_name == "object") {
-      networks = contract_name;
-      contract_name = "Contract";
+  generate: function(options, networks) {
+    if (options.contract_name == null) {
+      options.contract_name = "Contract";
+    }
+
+    // Ensure unlinked_binary is prefixed properly
+    if (options.unlinked_binary && options.unlinked_binary.indexOf("0x") != 0) {
+      options.unlinked_binary = "0x" + options.unlinked_binary;
     }
 
     if (this.isSingleLevelObject(networks)) {
@@ -133,20 +144,27 @@ module.exports = {
       };
     }
 
-    default_network = default_network || "*";
+    // Ensure all networks have a `links` object.
+    Object.keys(networks).forEach(function(network_id) {
+      var network = networks[network_id];
+      network.links = network.links || {};
+    });
 
     var classfile = class_template;
 
     classfile = classfile.replace(/\{\{ALL_NETWORKS\}\}/g, JSON.stringify(networks, null, 2));
-    classfile = classfile.replace(/\{\{NAME\}\}/g, contract_name);
+    classfile = classfile.replace(/\{\{NAME\}\}/g, options.contract_name);
+    classfile = classfile.replace(/\{\{ABI\}\}/g, JSON.stringify(options.abi, null, 2));
+    classfile = classfile.replace(/\{\{UNLINKED_BINARY\}\}/g, options.unlinked_binary);
+    classfile = classfile.replace(/\{\{DEFAULT_NETWORK\}\}/g, options.default_network);
     classfile = classfile.replace(/\{\{PUDDING_VERSION\}\}/g, pkg.version);
-    classfile = classfile.replace(/\{\{DEFAULT_NETWORK\}\}/g, default_network);
+    classfile = classfile.replace(/\{\{UPDATED_AT\}\}/g, new Date().getTime());
 
     return classfile;
   },
 
-  whisk: function(contract_name, networks) {
-    var source = this.generate(contract_name, networks);
+  whisk: function(contract_name, abi, unlinked_binary, networks) {
+    var source = this.generate(contract_name, abi, unlinked_binary, networks);
     return this._requireFromSource(source, contract_name + ".sol.js");
   },
 
@@ -242,7 +260,7 @@ module.exports = {
   // options.files: Specific files to require. Use instead of source_directory
   // options.provider: Optional. Will set the provider for each contract required.
   // options.defaults: Optional. Set defaults for each contract required.
-  // options.network_id: Optiona. Set the network_id after require.
+  // options.network_id: Optional. Set the network_id after require.
   requireAll: function(options, callback) {
     if (typeof options == "string") {
       options = {
@@ -308,18 +326,55 @@ module.exports = {
     return m.exports;
   },
 
-  // Allow input directly from solc.
-  normalizeContractData: function(contract_data) {
-    if (contract_data.interface != null) {
-      contract_data.abi = JSON.parse(contract_data.interface);
+  // Options passed to Pudding can be many things.
+  // This normalizes them into one object.
+  normalizeOptions: function(options, extra_options) {
+    extra_options = extra_options || {};
+    var normalized = {};
+    var expected_keys = [
+      "contract_name",
+      "abi",
+      "binary",
+      "unlinked_binary",
+      "address",
+      "links",
+      "events",
+      "network_id",
+      "default_network"
+    ];
+
+    // FYI: options can be three things:
+    // - normal object
+    // - contract object
+    // - solc output
+
+    // Merge options/contract object first, then extra_options
+    expected_keys.forEach(function(key) {
+      if (options[key] != undefined) {
+        normalized[key] = options[key];
+      }
+
+      if (extra_options[key] != undefined) {
+        normalized[key] = extra_options[key];
+      }
+    });
+
+    // Now look for solc specific items.
+    if (options.interface != null) {
+      normalized.abi = JSON.parse(options.interface);
     }
 
-    if (contract_data.bytecode != null) {
-      contract_data.unlinked_binary = contract_data.bytecode
+    if (options.bytecode != null) {
+      normalized.unlinked_binary = options.bytecode
     }
 
-    if (contract_data.binary != null && contract_data.unlinked_binary == null) {
-      contract_data.unlinked_binary = contract_data.binary;
+    // Assume any binary passed is the unlinked binary
+    if (normalized.unlinked_binary == null && normalized.binary) {
+      normalized.unlinked_binary = normalized.binary;
     }
+
+    delete normalized.binary;
+
+    return normalized;
   }
 };
