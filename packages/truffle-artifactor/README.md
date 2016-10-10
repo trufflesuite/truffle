@@ -315,12 +315,12 @@ Save contract data as a `.sol.js` file. Returns a Promise.
 
     ```javascript
     {
-			contract_name: "MyContract",  // String; optional. Defaults to "Contract"
+      contract_name: "MyContract",  // String; optional. Defaults to "Contract"
       abi: ...,                     // Array; required.  Application binary interface.
       unlinked_binary: "...",       // String; optional. Binary without resolve library links.
       address: "...",               // String; optional. Deployed address of contract.
-			network_id: "...",            // String; optional. ID of network being saved within abstraction.
-			default_network: "..."        // String; optional. ID of default network this abstraction should use.
+      network_id: "...",            // String; optional. ID of network being saved within abstraction.
+      default_network: "..."        // String; optional. ID of default network this abstraction should use.
     }
     ```
 
