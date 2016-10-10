@@ -107,7 +107,7 @@ The above functions create an "instance" of the abstraction which is tied to a s
     // Do something with the result or continue with more transactions.
   });
   ```  
-  
+
 The abstraction itself -- i.e., `MyContract` in the example above -- has many other useful functions as well. See the Contract Abstraction API below for more information.
 
 #### Full Example
@@ -132,7 +132,7 @@ var coin;
 
 MetaCoin.at(contract_address).then(function(instance) {
   coin = instance;
-  
+
   // Make a transaction that calls the function `sendCoin`, sending 3 MetaCoin
   // to the account listed as account_two.
   return coin.sendCoin(account_two, 3, {from: account_one});
@@ -191,7 +191,7 @@ This function creates a new instance of the contract abstraction representing th
 
 Creates an instance of the contract abstraction representing the contract at its deployed address. The deployed address is a special value given to Pudding (see below) that, when set, saves the address internally so that the deployed address can be inferred from the given Ethereum network being used. This allows you to write code referring to a specific deployed contract without having to manage those addresses yourself. Like `at()`, `deployed()` is thenable, and will resolve to a contract abstraction instance representing the deployed contract after ensuring that code exists at that location and that that address exists on the network being used.
 
-#### `MyContract.link(instance)` 
+#### `MyContract.link(instance)`
 
 Link a library represented by a contract abstraction instance to MyContract. The library must first be deployed and have its deployed address set. The name and deployed address will be inferred from the contract abstraction instance. When this form of `MyContract.link()` is used, MyContract will consume all of the linked library's events and will be able to report that those events occurred during the result of a transaction.
 
@@ -203,9 +203,9 @@ Note: This method has two other forms, but this form is recommended.
 
 Link a library with a specific name and address to MyContract. The library's events will not be consumed using this form.
 
-#### `MyContract.link(object)` 
+#### `MyContract.link(object)`
 
-Link multiple libraries denoted by an Object to MyContract. The keys must be strings representing the library names and the values must be strings representing the addresses. Like above, libraries' events will not be consumed using this form. 
+Link multiple libraries denoted by an Object to MyContract. The keys must be strings representing the library names and the values must be strings representing the addresses. Like above, libraries' events will not be consumed using this form.
 
 #### `MyContract.networks()`
 
@@ -217,7 +217,7 @@ Sets the web3 provider this contract abstraction will use to make transactions.
 
 #### `MyContract.setNetwork(network_id)`
 
-Sets the network that MyContract is currently representing. 
+Sets the network that MyContract is currently representing.
 
 #### `MyContract.hasNetwork(network_id)`
 
@@ -260,21 +260,21 @@ contract MyContract {
 
 * From Javascript's point of view, this contract has three functions: `setValue`, `getValue` and `value`. This is because `value` is public and automatically creates a getter function for it.
 * When we call `setValue()`, this creates a transaction. From Javascript:
- 
+
   ```javascript
   instance.setValue(5).then(function(result) {
     // result object contains import information about the transaction
   });
   ```
-  
+
 * We can call `setValue()` without creating a transaction by explicitly using `.call`:
 
   ```javascript
   instance.setValue.call(5).then(...);
   ```
-  
+
   This isn't very useful in this case, since `setValue()` sets things, and the value we pass won't be saved since we're not creating a transaction.
-  
+
 * However, we can *get* the value using `getValue()`, using `.call()`. Calls are always free and don't cost any Ether, so they're good for calling functions that read data off the blockchain:
 
   ```javascript
@@ -292,7 +292,7 @@ contract MyContract {
     // since the contract returns that value.
   });
   ```
-  
+
 * When you make a transaction, you're given a `result` object that gives you a wealth of information about the transaction. You're given the transaction has (`result.tx`), the decoded events (also known as logs; `result.logs`), and a transaction receipt (`result.receipt`). In the below example, you'll recieve the `ValueSet()` event because you triggered the event using the `setValue()` function:
 
   ```javascript
@@ -302,23 +302,25 @@ contract MyContract {
     // result.receipt => receipt object
   });
   ```
- 
+
 
 
 ### Pudding API
 
-#### `Pudding.save([contract_name,] contract_data, filename, options)`
+#### `Pudding.save(options, filename[, extra_options])`
 
 Save contract data as a `.sol.js` file. Returns a Promise.
 
-* `contract_name`: String. Optional. Name of contract class to be created.
-* `contract_data`: Object. Example:
+* `options`: Object. Data that represents this contract:
 
     ```javascript
     {
-      abi: ...,              // Array; required.
-      unlinked_binary: "..." // String; optional.
-      address: "..."         // String; optional.
+			contract_name: "MyContract",  // String; optional. Defaults to "Contract"
+      abi: ...,                     // Array; required.  Application binary interface.
+      unlinked_binary: "...",       // String; optional. Binary without resolve library links.
+      address: "...",               // String; optional. Deployed address of contract.
+			network_id: "...",            // String; optional. ID of network being saved within abstraction.
+			default_network: "..."        // String; optional. ID of default network this abstraction should use.
     }
     ```
 
@@ -330,15 +332,10 @@ Save contract data as a `.sol.js` file. Returns a Promise.
     Pudding.save(MyContract, ...).then(...);
     ```
 
+		In this case, you can use the `extra_options` parameter to specify options that aren't managed by the contract abstraction itself.
+
 * `filename`: Path to save contract file.
-* `options`: Object. See below.
-
-The `options` object takes two parameters:
-
-* `options.overwrite`: Boolean. Overwrite the existing contract file if it exists. If true, will ignore previously-saved contract data in the existing file. If false, will create a new contract file and merge in the contract data passed to `save()`.
-* `options.network_id`: String. Will save the contract data passed to `save()` under the specified network id. If no network id is specified, will use network `"default"`. See discussion a about network id's below.
-
-The contract name is only important in the source code that gets generated, which will appear in error messages. If `contract_name` is not present it will default to "Contract".
+* `extra_options`: Object. Used if you need to specify other options within a separate object, for instance, when a contract abstraction is passed instead of an `options` object.
 
 #### `Pudding.saveAll(contracts, directory, options)`
 
@@ -361,79 +358,39 @@ Save many contracts to the filesystem at once. Returns a Promise.
 * `directory`: String. Destination directory. Files will be saved via `<contract_name>.sol.js` within that directory.
 * `options`: Object. Same options listed in `save()` above.
 
-#### `Pudding.generate([contract_name,] networks)`
+#### `Pudding.generate(options, networks)`
 
 Generate the source code that populates the `.sol.js` file. Returns a String.
 
-* `contract_name`: String. Optional. Name of the contract to generate.
+* `options`: Object. Subset of options listed in the `save()` function above. Expects:
+
+    ```javascript
+		{
+			abi: ...,
+			unlinked_binary: ...
+		}
+		```
+
+
 * `networks`: Object. Contains the information about this contract for each network, keyed by the network id.
 
     ```javascript
     {
-      "live": {
-        "abi": ...,
-        "unlinked_binary": ...,
+      "1": {        // live network
         "address": ...
       },
-      "morden": {
-        "abi": ...,
-        "unlinked_binary": ...,
+      "2": {        // morden network
         "address": ...
       },
-      "1337": {
-        "abi": ...,
-        "unlinked_binary": ...,
+      "1337": {     // private network
         "address": ...
       }
     }
     ```
 
-    Note that each ABI, unlinked_binary and address refer to the same contract, but deployed on different networks. If no network ids are present -- i.e., a `contract_data` object was passed instead -- then `generate()` will automatically use that data for the default network. i.e.,
-
-    ```javascript
-    Pudding.generate("MyContract", {
-      "abi": ...,
-      "unlinked_binary": ...
-    });
-    ```
-
-The contract name is only important here in the source code that gets generated, which will appear in error messages. If `contract_name` is not present it will default to "Contract".
-
-#### `Pudding.whisk([contract_name,] networks)`
+#### `Pudding.whisk(options, networks)`
 
 Like `generate()`, this function will create the source code that populates the `.sol.js` file, but instead of returning it as a string it will import it and return an object ready for use. Parameters are the same as `generate()`.
-
-The contract name is only important here in the source code that gets generated, which will appear in error messages. If `contract_name` is not present it will default to "Contract".
-
-```javascript
-// Couple examples:
-
-// Whisk in different networks:
-var MyContract = Pudding.whisk("MyContract", {
-  "live": {
-    "abi": ...
-    "unlinked_binary": ...
-    "address": ...
-  },
-  "morden": {
-    // ...
-  }
-});
-
-// Or whisk in a single network using the default contract name:
-var MyContract = Pudding.whisk({
-  "abi": ...,
-  "unlinked_binary": ...,
-  "address": ...
-});
-
-// Then, use the class immediately:
-MyContract.setProvider(someWeb3Provider);
-MyContract.defaults({
-  from: "0xabcd..."
-});
-MyContract.new().then(...);
-```
 
 ### Running Tests
 
