@@ -181,5 +181,32 @@ describe("Pudding + require", function() {
       // Do nothing with the error.
     }
     done();
-  })
+  });
+
+  it("whisks properly with no network", function() {
+    var NewExample = Pudding.whisk({
+      abi: abi,
+      unlinked_binary: binary
+    }, {
+      address: "0x1234567890123456789012345678901234567890"
+    });
+
+    assert.deepEqual(NewExample.abi, abi);
+    assert.equal(NewExample.deployed().address, "0x1234567890123456789012345678901234567890");
+  });
+
+  it("whisks properly with a specified network", function() {
+    var NewExample = Pudding.whisk({
+      abi: abi,
+      unlinked_binary: binary,
+      default_network: "1"
+    }, {
+      "1": {
+        address: "0x1234567890123456789012345678901234567890"
+      }
+    });
+
+    assert.deepEqual(NewExample.abi, abi);
+    assert.equal(NewExample.deployed().address, "0x1234567890123456789012345678901234567890");
+  });
 });

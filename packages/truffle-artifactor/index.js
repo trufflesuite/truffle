@@ -156,16 +156,25 @@ module.exports = {
     classfile = classfile.replace(/\{\{NAME\}\}/g, options.contract_name);
     classfile = classfile.replace(/\{\{ABI\}\}/g, JSON.stringify(options.abi, null, 2));
     classfile = classfile.replace(/\{\{UNLINKED_BINARY\}\}/g, options.unlinked_binary);
-    classfile = classfile.replace(/\{\{DEFAULT_NETWORK\}\}/g, options.default_network);
+    classfile = classfile.replace(/\{\{DEFAULT_NETWORK\}\}/g, options.default_network || "*");
     classfile = classfile.replace(/\{\{PUDDING_VERSION\}\}/g, pkg.version);
     classfile = classfile.replace(/\{\{UPDATED_AT\}\}/g, new Date().getTime());
 
     return classfile;
   },
 
-  whisk: function(contract_name, abi, unlinked_binary, networks) {
-    var source = this.generate(contract_name, abi, unlinked_binary, networks);
-    return this._requireFromSource(source, contract_name + ".sol.js");
+  whisk: function(options, networks) {
+    if (!options.contract_name) {
+      options.contract_name = "Contract";
+    }
+
+    if (!networks) {
+      networks = {};
+      networks.address = options.address;
+    }
+
+    var source = this.generate(options, networks);
+    return this._requireFromSource(source, options.contract_name + ".sol.js");
   },
 
   isSingleLevelObject: function(obj) {
