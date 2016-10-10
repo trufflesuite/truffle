@@ -332,7 +332,7 @@ Save contract data as a `.sol.js` file. Returns a Promise.
     Pudding.save(MyContract, ...).then(...);
     ```
 
-		In this case, you can use the `extra_options` parameter to specify options that aren't managed by the contract abstraction itself.
+	In this case, you can use the `extra_options` parameter to specify options that aren't managed by the contract abstraction itself.
 
 * `filename`: Path to save contract file.
 * `extra_options`: Object. Used if you need to specify other options within a separate object, for instance, when a contract abstraction is passed instead of an `options` object.
@@ -365,11 +365,12 @@ Generate the source code that populates the `.sol.js` file. Returns a String.
 * `options`: Object. Subset of options listed in the `save()` function above. Expects:
 
     ```javascript
-		{
+	{
       abi: ...,
       unlinked_binary: ...
-		}
-		```
+	}
+	```
+	
 * `networks`: Object. Contains the information about this contract for each network, keyed by the network id.
 
     ```javascript
