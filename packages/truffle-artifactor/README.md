@@ -366,12 +366,10 @@ Generate the source code that populates the `.sol.js` file. Returns a String.
 
     ```javascript
 		{
-			abi: ...,
-			unlinked_binary: ...
+      abi: ...,
+      unlinked_binary: ...
 		}
 		```
-
-
 * `networks`: Object. Contains the information about this contract for each network, keyed by the network id.
 
     ```javascript
