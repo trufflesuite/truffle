@@ -57,7 +57,6 @@ module.exports = function (source) {
 
   imports.forEach(function (solidityImport) {
     var dependencyPath = path.resolve(contractPath, solidityImport)
-    Logger.log('adding ' + dependencyPath + ' as dependency of ' + contractFileName)
     this.addDependency(dependencyPath)
 
     if (compiledContractExists(compiledContractPath)) {
