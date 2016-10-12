@@ -9,9 +9,9 @@ var Contracts = require("../lib/contracts.js");
 
 describe('lookups from external sources', function() {
   var config;
-  var moduleSource = "import './ModuleDependency.sol'; contract Module {}";
-  var moduleDependencySource = "contract ModuleDependency {}";
-  var parentContractSource = "import 'fake_source/contracts/Module.sol'; contract Parent {}";
+  var moduleSource = "pragma solidity ^0.4.2; import './ModuleDependency.sol'; contract Module {}";
+  var moduleDependencySource = "pragma solidity ^0.4.2; contract ModuleDependency {}";
+  var parentContractSource = "pragma solidity ^0.4.2; import 'fake_source/contracts/Module.sol'; contract Parent {}";
 
   before("Create a sandbox", function(done) {
     this.timeout(5000);
