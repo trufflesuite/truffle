@@ -7,15 +7,12 @@ var TruffleConfigLocator = {
     var file
 
     if(isWin) {
-      Logger.log("Searching for truffle-config.js")
       file = findUp.sync('truffle-config.js')
     } else {
-      Logger.log('Searching for truffle.js')
       file = findUp.sync('truffle.js')
     }
 
     if(file) {
-      Logger.log("Found Truffle config at: " + file)
       return file
     }
 
