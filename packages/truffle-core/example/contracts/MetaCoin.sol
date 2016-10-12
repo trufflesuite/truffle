@@ -1,3 +1,5 @@
+pragma solidity ^0.4.2;
+
 import "./ConvertLib.sol";
 
 // This is just a simple example of a coin-like contract.
