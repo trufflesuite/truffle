@@ -82,11 +82,9 @@ module.exports = function (source) {
     Logger.log(`Writing temporary contract build artifacts to ${buildPath}`)
     isCompilingContracts = true
 
-    var compilerOpts = {}
+    var compilerOpts = buildOpts
     compilerOpts.contracts_directory = contractPath
     compilerOpts.contracts_build_directory = buildPath
-    compilerOpts.network = buildOpts.network
-    compilerOpts.network_id = buildOpts.network_id
     compilerOpts.logger = Logger
     compilerOpts.all = false
 
@@ -104,12 +102,10 @@ module.exports = function (source) {
       Logger.log('COMPILATION FINISHED')
       Logger.log('RUNNING MIGRATIONS')
 
-      var migrationOpts = {}
+      var migrationOpts = compilerOpts
       migrationOpts.migrations_directory = buildOpts.migrations_directory
       migrationOpts.contracts_build_directory = buildPath
       migrationOpts.provider = provisionOpts.provider
-      migrationOpts.network = compilerOpts.network
-      migrationOpts.network_id = compilerOpts.network_id
       migrationOpts.logger = Logger
 
       // Once all of the contracts have been compiled, we know we can immediately
