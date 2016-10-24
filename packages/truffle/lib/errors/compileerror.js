@@ -12,7 +12,7 @@ function CompileError(message, file) {
   }
 
   // Note we trim() because solc likes to add extra whitespace.
-  message = "Error compiling" + file + ":\n\n" + message.trim() + "\n" + colors.red("Compiliation failed. See above.");
+  message = "Error compiling" + file + ":\n\n" + message.trim() + "\n" + colors.red("Compilation failed. See above.");
   CompileError.super_.call(this, message);
 };
 
