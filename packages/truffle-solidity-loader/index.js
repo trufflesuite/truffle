@@ -107,6 +107,7 @@ module.exports = function (source) {
       migrationOpts.contracts_build_directory = buildPath
       migrationOpts.provider = provisionOpts.provider
       migrationOpts.logger = Logger
+      migrationOpts.reset = true                                 // Force the migrations to re-run
 
       // Once all of the contracts have been compiled, we know we can immediately
       // try to run the migrations safely.
@@ -115,7 +116,7 @@ module.exports = function (source) {
           Logger.error(err)
           return compilationFinished(err, null)
         }
-
+        console.log('here', result)
         // Finally return the contract source we were originally asked for.
         returnContractAsSource(compiledContractPath, compilationFinished)
       })
