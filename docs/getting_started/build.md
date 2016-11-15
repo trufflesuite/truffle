@@ -6,7 +6,7 @@
 </style>
 <section class="DocumentationWarning">
   <strong>These documents are out of date</strong>
-  <p>Please visit the <a href="http://truffleframework.com/docs/getting_started/build">page on the new documentation site for up to date information.</p>
+  <p>Please visit the <a href="http://truffleframework.com/docs/getting_started/build">page on the new documentation site</a> for up to date information.</p>
 </section>
 
 # Default Builder
