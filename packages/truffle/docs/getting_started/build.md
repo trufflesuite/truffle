@@ -1,3 +1,14 @@
+<style>
+  .DocumentationWarning {
+    padding: 1rem;
+    background: white;
+  }
+</style>
+<section class="DocumentationWarning">
+  <strong>These documents are out of date</strong>
+  <p>Please visit the <a href="http://truffleframework.com/docs/getting_started/build">page on the new documentation site for up to date information.</p>
+</section>
+
 # Default Builder
 
 Truffle comes standard with a default build system which is meant to be easy to use. It's not suitable for every project, and you may choose to use other build systems to package your application. See the [advanced build processes](/advanced/build_processes) section for more details. Note that the default builder is targeted towards web applications, but it can be easily swapped out for another build process that works better for command line tools and libraries.
