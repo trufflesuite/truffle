@@ -1,3 +1,19 @@
+<style>
+  .DocumentationWarning {
+    text-align: center;
+    padding: 1rem;
+    background:rgb(255, 101, 52);
+  }
+
+  .DocumentationWarning a {
+    color: white;
+  }
+</style>
+<section class="DocumentationWarning">
+  <h1>These documents are out of date</h1>
+  <p>Please visit the <a href="http://truffleframework.com/docs/getting_started/workflow">page on the new documentation site</a> for up to date information.</p>
+</section>
+
 # Commands
 
 We've recommended the [EthereumJS TestRPC](https://github.com/ethereumjs/testrpc) a number of times to get you quick feedback during development. However, Truffle comes with two commands that can make development even faster.

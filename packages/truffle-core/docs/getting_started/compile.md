@@ -1,3 +1,19 @@
+<style>
+  .DocumentationWarning {
+    text-align: center;
+    padding: 1rem;
+    background:rgb(255, 101, 52);
+  }
+
+  .DocumentationWarning a {
+    color: white;
+  }
+</style>
+<section class="DocumentationWarning">
+  <h1>These documents are out of date</h1>
+  <p>Please visit the <a href="http://truffleframework.com/docs/getting_started/compile">page on the new documentation site</a> for up to date information.</p>
+</section>
+
 # Location
 
 All of your contracts are located in the `./contracts` directory. By default you're given an example Solidity [contract](http://solidity.readthedocs.org/en/latest/contracts.html) file and an example Solidity [library](http://solidity.readthedocs.org/en/latest/contracts.html#libraries) file, both with filenames ending in `.sol`. Although a Solidity library is different than a contract, for documentation purposes we're going to lump these into the same word, "contracts".
