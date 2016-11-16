@@ -1,3 +1,19 @@
+<style>
+  .DocumentationWarning {
+    text-align: center;
+    padding: 1rem;
+    background:rgb(255, 101, 52);
+  }
+
+  .DocumentationWarning a {
+    color: white;
+  }
+</style>
+<section class="DocumentationWarning">
+  <h1>These documents are out of date</h1>
+  <p>Please visit the <a href="http://truffleframework.com/docs/getting_started/testing">page on the new documentation site</a> for up to date information.</p>
+</section>
+
 # Framework
 
 Truffle uses the [Mocha](https://mochajs.org/) testing framework for automated testing and [Chai](http://chaijs.com/) for assertions. We think these two libraries together make automated testing a breeze, and so we've built on top of them to provide you a way to write simple and manageable automated tests for your contracts.

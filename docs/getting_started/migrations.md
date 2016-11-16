@@ -1,3 +1,19 @@
+<style>
+  .DocumentationWarning {
+    text-align: center;
+    padding: 1rem;
+    background:rgb(255, 101, 52);
+  }
+
+  .DocumentationWarning a {
+    color: white;
+  }
+</style>
+<section class="DocumentationWarning">
+  <h1>These documents are out of date</h1>
+  <p>Please visit the <a href="http://truffleframework.com/docs/getting_started/migrations">page on the new documentation site</a> for up to date information.</p>
+</section>
+
 Migrations are Javascript files that help you deploy contracts to the Ethereum network. These files are responsible for staging your deployment tasks, and they're written under the assumption that your deployment needs will change over time. As your project evolves, you'll create new migration scripts to further this evolution on the blockchain. A history of previously run migrations is recorded on-chain through a special `Migrations` contract, detailed below.
 
 # Command

@@ -1,3 +1,19 @@
+<style>
+  .DocumentationWarning {
+    text-align: center;
+    padding: 1rem;
+    background:rgb(255, 101, 52);
+  }
+
+  .DocumentationWarning a {
+    color: white;
+  }
+</style>
+<section class="DocumentationWarning">
+  <h1>These documents are out of date</h1>
+  <p>Please visit the <a href="http://truffleframework.com/docs/advanced/build_processes">page on the new documentation site</a> for up to date information.</p>
+</section>
+
 # Custom Build Processes
 
 Throughout Truffle's history, it's clear that the [default builder](/getting_started/build) is not for everybody. It has some obvious caveats and is less mature than other build systems. With that in mind, Truffle provides you three ways to override the build system in order to get the most out of Truffle while also using your build process of choice.
@@ -13,7 +29,7 @@ module.exports = {
   // The following environment variables will be set when running the command:
   // WORKING_DIRECTORY: root location of the project
   // BUILD_DESTINATION_DIRECTORY: expected destination of built assets (important for `truffle serve`)
-  // BUILD_CONTRACTS_DIRECTORY: root location of your build contract files (.sol.js)  
+  // BUILD_CONTRACTS_DIRECTORY: root location of your build contract files (.sol.js)
   // WEB3_PROVIDER_LOCATION: rpc configuration as a string, as a URL needed for web3's http provider.
   //
   build: "webpack"
