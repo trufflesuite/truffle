@@ -1,3 +1,19 @@
+<style>
+  .DocumentationWarning {
+    text-align: center;
+    padding: 1rem;
+    background:rgb(255, 101, 52);
+  }
+
+  .DocumentationWarning a {
+    color: white;
+  }
+</style>
+<section class="DocumentationWarning">
+  <h1>These documents are out of date</h1>
+  <p>Please visit the <a href="http://truffleframework.com/docs/advanced/configuration">page on the new documentation site</a> for up to date information.</p>
+</section>
+
 # Location
 
 Your configuration file is called `truffle.js` and is located at the root of your project directory. This file is a Javascript file and can execute any code necessary to create your configuration. It must export an object representing your project configuration like the example below.
@@ -62,7 +78,7 @@ The network name is used for user interface purposes, such as when running your 
 $ truffle migrate --network live
 ```
 
-You can optionally specify rpc information for each network. Examples below.  
+You can optionally specify rpc information for each network. Examples below.
 
 **Example:**
 
@@ -80,7 +96,7 @@ networks: {
   "morden": {
     network_id: 2,        // Official Ethereum test network
     host: "178.25.19.88", // Random IP for example purposes (do not use)
-    port: 80             
+    port: 80
   },
   "staging": {
     network_id: 1337 // custom private network
@@ -98,7 +114,7 @@ Details about how to connect to your ethereum client. The `host` and `port` keys
 
 * `host`: Hostname pointing to the network location of your Ethereum client (usually "localhost" for development).
 * `port`: Port number where your Etheruem client accepts requests. Default is `8545`.
-* `gas`: Gas limit used for deploys. Default is `4712388`.  
+* `gas`: Gas limit used for deploys. Default is `4712388`.
 * `gasPrice`: Gas price used for deploys. Default is `100000000000` (100 Shannon).
 * `from`: From address used during migrations. If not specified, defaults to the first available account provided by your Ethereum client.
 
