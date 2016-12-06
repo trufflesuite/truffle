@@ -42,15 +42,16 @@ describe("Pudding + require", function() {
     });
 
     var filepath = path.join(dirPath, "Example.sol.js");
+    var binary_filepath = path.join(dirPath, "bin", "Example.json");
 
     Pudding.save({
       name: "Example",
       abi: abi,
       binary: binary,
       address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01",
-    }, filepath).then(function() {
+    }, filepath, binary_filepath).then(function() {
       Example = requireNoCache(filepath);
-      Example.setProvider(provider)
+      Example.setProvider(provider);
     }).then(done).catch(done);
   });
 
@@ -186,8 +187,7 @@ describe("Pudding + require", function() {
   it("whisks properly with no network", function() {
     var NewExample = Pudding.whisk({
       abi: abi,
-      unlinked_binary: binary
-    }, {
+      unlinked_binary: binary,
       address: "0x1234567890123456789012345678901234567890"
     });
 

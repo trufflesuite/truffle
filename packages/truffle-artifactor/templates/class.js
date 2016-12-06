@@ -1,5 +1,6 @@
 var Web3 = require("web3");
 var SolidityEvent = require("web3/lib/web3/event.js");
+var BINARIES = {{BINARIES}};
 
 (function() {
   // Planned for future features, logging, etc.
@@ -246,13 +247,13 @@ var SolidityEvent = require("web3/lib/web3/event.js");
     var self = this;
 
     if (this.currentProvider == null) {
-      throw new Error("{{NAME}} error: Please call setProvider() first before calling new().");
+      throw new Error(this.binaries.contract_name + " error: Please call setProvider() first before calling new().");
     }
 
     var args = Array.prototype.slice.call(arguments);
 
     if (!this.unlinked_binary) {
-      throw new Error("{{NAME}} error: contract binary not set. Can't deploy new instance.");
+      throw new Error(this.binaries.contract_name + " error: contract binary not set. Can't deploy new instance.");
     }
 
     return self.detectNetwork().then(function(network_id) {
@@ -273,7 +274,7 @@ var SolidityEvent = require("web3/lib/web3/event.js");
           return name != arr[index + 1];
         }).join(", ");
 
-        throw new Error("{{NAME}} contains unresolved libraries. You must deploy and link the following libraries before you can deploy a new version of {{NAME}}: " + unlinked_libraries);
+        throw new Error(self.binaries.contract_name + " contains unresolved libraries. You must deploy and link the following libraries before you can deploy a new version of " + self.binaries.contract_name + ": " + unlinked_libraries);
       }
     }).then(function() {
       return new Promise(function(accept, reject) {
@@ -315,7 +316,7 @@ var SolidityEvent = require("web3/lib/web3/event.js");
     var self = this;
 
     if (address == null || typeof address != "string" || address.length != 42) {
-      throw new Error("Invalid address passed to {{NAME}}.at(): " + address);
+      throw new Error("Invalid address passed to " + this.binaries.contract_name + ".at(): " + address);
     }
 
     var contract = new this(address);
@@ -391,14 +392,12 @@ var SolidityEvent = require("web3/lib/web3/event.js");
     }
   };
 
-  Contract.all_networks = {{ALL_NETWORKS}};
-
   Contract.hasNetwork = function(network_id) {
-    return this.all_networks[network_id] != null;
+    return this.binaries.networks[network_id] != null;
   };
 
   Contract.isDeployedToNetwork = function(network_id) {
-    return this.all_networks[network_id] != null && this.all_networks[network_id].address != null;
+    return this.binaries.networks[network_id] != null && this.binaries.networks[network_id].address != null;
   };
 
   Contract.detectNetwork = function() {
@@ -430,7 +429,7 @@ var SolidityEvent = require("web3/lib/web3/event.js");
   };
 
   Contract.networks = function() {
-    return Object.keys(this.all_networks);
+    return Object.keys(this.binaries.networks);
   };
 
   Contract.link = function(name, address) {
@@ -496,20 +495,27 @@ var SolidityEvent = require("web3/lib/web3/event.js");
   // Getter functions are scoped to Contract object.
   Contract._properties = {
     contract_name: function() {
-      return "{{NAME}}";
+      return this.binaries.contract_name;
     },
     abi: function() {
-      return {{ABI}};
+      return this.binaries.abi;
+    },
+    binaries: function() {
+      return BINARIES;
     },
     network: function() {
       var network_id = this.network_id != null ? this.network_id : this.default_network;
-      return this.all_networks[network_id] || {};
+      return this.binaries.networks[network_id] || {};
+    },
+    // Legacy option (deprecated)
+    all_networks: function() {
+      return this.binaries.networks;
     },
     address: function() {
       var address = this.network.address;
 
       if (address == null) {
-        throw new Error("Cannot find deployed address: {{NAME}} not deployed or address not set.");
+        throw new Error("Cannot find deployed address: " + this.contract_name + " not deployed or address not set.");
       }
 
       return address;
@@ -534,16 +540,19 @@ var SolidityEvent = require("web3/lib/web3/event.js");
       return binary;
     },
     unlinked_binary: function() {
-      return "{{UNLINKED_BINARY}}";
+      return this.binaries.unlinked_binary;
+    },
+    binary_version: function() {
+      return this.binaries.generated_with;
     },
     generated_with: function() {
       return "{{PUDDING_VERSION}}";
     },
     default_network: function() {
-      return "{{DEFAULT_NETWORK}}";
+      return this.binaries.default_network;
     },
     updated_at: function() {
-      return "{{UPDATED_AT}}";
+      return this.binaries.updated_at;
     }
   };
 
@@ -554,6 +563,6 @@ var SolidityEvent = require("web3/lib/web3/event.js");
   } else {
     // There will only be one version of this contract in the browser,
     // and we can use that.
-    window["{{NAME}}"] = Contract;
+    window[BINARIES.contract_name] = Contract;
   }
 })();

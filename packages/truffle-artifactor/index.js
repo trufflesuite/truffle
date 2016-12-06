@@ -1,6 +1,6 @@
-var fs = require("fs");
+var fs = require("fs-extra");
 var path = require("path");
-var class_template = fs.readFileSync(path.join(__dirname, "./classtemplate.js"), {encoding: "utf8"});
+var class_template = fs.readFileSync(path.join(__dirname, "templates", "class.js"), {encoding: "utf8"});
 var pkg = require("./package.json");
 var dir = require("node-dir");
 var async = require("async");
@@ -20,71 +20,52 @@ module.exports = {
   //   network_id: ...,            (defaults to "*")
   // }
 
-  save: function(options, filename, extra_options) {
+  save: function(options, filename, binary_filename, extra_options) {
     var self = this;
-    var web3 = new Web3();
 
-    if (filename == null) {
-      throw new Error("You must specify a file name.");
+    if (typeof binary_filename == "object") {
+      extra_options = binary_filename;
+      binary_filename = null;
     }
 
-    options = this.normalizeOptions(options, extra_options);
-
     return new Promise(function(accept, reject) {
+      if (filename == null) {
+        throw new Error("You must specify a file name.");
+      }
+
+      options = self.normalizeOptions(options, extra_options);
+
       fs.readFile(filename, {encoding: "utf8"}, function(err, source) {
-        var existing_networks = {};
-        options.default_network = (options.default_network || "*") + ""; // Use fallback network if default not specified.
-        options.network_id = (options.network_id || "*") + ""; // Assume fallback network if network not specified.
+        // No need to handle the error. If the file doesn't exist then we'll start afresh
+        // with a new binary (see generateBinary()).
+        var existing_binary;
 
-        // If no error during reading, file exists.
-        if (options.overwrite != true && err == null) {
+        if (!err) {
           var Contract = self._requireFromSource(source, filename);
+          existing_binary = Contract.binaries;
+        }
 
-          // If the default is the fallback but a default is specified in the file
-          // then use the default network in the file.
-          if (options.default_network == "*" && Contract.default_network) {
-            options.default_network = Contract.default_network;
+        var has_binary_filename = !!binary_filename;
+
+        var final_binary = self.generateBinary(options, existing_binary);
+        var final_source;
+
+        if (has_binary_filename) {
+          final_source = self.generateAbstraction(binary_filename);
+        } else {
+          final_source = self.generateAbstraction(final_binary);
+        }
+
+        async.parallel([
+          fs.outputFile.bind(fs, filename, final_source, "utf8"),
+          function(c) {
+            if (has_binary_filename) {
+              fs.outputFile(binary_filename, JSON.stringify(final_binary, null, 2), "utf8", c);
+            } else {
+              c();
+            }
           }
-
-          options.abi = options.abi || Contract.abi;
-          options.unlinked_binary = options.unlinked_binary || Contract.unlinked_binary;
-
-          existing_networks = Contract.all_networks;
-        }
-
-        if (existing_networks[options.network_id] == null) {
-          existing_networks[options.network_id] = {};
-        }
-
-        var network = existing_networks[options.network_id];
-
-        // Override specific keys
-        network.address = options.address;
-        network.links = options.links;
-
-        // merge events with any that previously existed
-        network.events = _.merge({}, network.events, options.events);
-
-        // Now overwrite any events with the most recent data from the ABI.
-        options.abi.forEach(function(item) {
-          if (item.type != "event") return;
-
-          var signature = item.name + "(" + item.inputs.map(function(param) {return param.type;}).join(",") + ")";
-          network.events["0x" + web3.sha3(signature)] = item;
-        });
-
-        // Update timestamp (legacy value)
-        network.updated_at = new Date().getTime();
-
-        // Ensure unlinked binary starts with a 0x
-        if (network.unlinked_binary && network.unlinked_binary.indexOf("0x") < 0) {
-          network.unlinked_binary = "0x" + network.unlinked_binary;
-        }
-
-        // Generate the source and write it out.
-        var final_source = self.generate(options, existing_networks);
-
-        fs.writeFile(filename, final_source, "utf8", function(err) {
+        ], function(err) {
           if (err) return reject(err);
           accept();
         });
@@ -92,9 +73,10 @@ module.exports = {
     });
   },
 
-  saveAll: function(contracts, destination, options) {
+  saveAll: function(contracts, destination, options, binary_destination) {
     var self = this;
     options = options || {};
+    binary_destination = binary_destination || path.join(destination, "bin");
 
     if (Array.isArray(contracts)) {
       var arr = contracts;
@@ -113,13 +95,14 @@ module.exports = {
         async.each(Object.keys(contracts), function(contract_name, done) {
           var contract_data = contracts[contract_name];
           var filename = path.join(destination, contract_name + ".sol.js");
+          var binary_filename = path.join(binary_destination, contract_name + ".json");
 
           // Add the contract name to our extra options, without editing
           // the options object on its own.
           options = _.extend({}, options, {contract_name: contract_name});
 
           // Finally save the contract.
-          self.save(contract_data, filename, options).then(done).catch(done);
+          self.save(contract_data, filename, binary_filename, options).then(done).catch(done);
         }, function(err) {
           if (err) return reject(err);
           accept();
@@ -128,66 +111,89 @@ module.exports = {
     });
   },
 
-  generate: function(options, networks) {
-    if (options.contract_name == null) {
-      options.contract_name = "Contract";
+  generateBinary: function(options, existing_binary) {
+    var web3 = new Web3();
+
+    existing_binary = existing_binary || {};
+
+    if (options.overwrite == true) {
+      existing_binary = {};
     }
 
-    // Ensure unlinked_binary is prefixed properly
-    if (options.unlinked_binary && options.unlinked_binary.indexOf("0x") != 0) {
-      options.unlinked_binary = "0x" + options.unlinked_binary;
+    existing_binary.contract_name = options.contract_name || existing_binary.contract_name || "Contract";
+    existing_binary.default_network = options.default_network || existing_binary.default_network || "*";
+
+    options.network_id = (options.network_id || "*") + ""; // Assume fallback network if network not specified.
+
+    existing_binary.abi = options.abi || existing_binary.abi;
+    existing_binary.unlinked_binary = options.unlinked_binary || existing_binary.unlinked_binary;
+
+    // Ensure unlinked binary starts with a 0x
+    if (existing_binary.unlinked_binary && existing_binary.unlinked_binary.indexOf("0x") < 0) {
+      existing_binary.unlinked_binary = "0x" + existing_binary.unlinked_binary;
     }
 
-    if (this.isSingleLevelObject(networks)) {
-      networks = {
-        "*": networks
-      };
-    }
+    // Make sure we have a network for the binary we're saving.
+    existing_binary.networks = existing_binary.networks || {};
+    existing_binary.networks[options.network_id] = existing_binary.networks[options.network_id] || {};
+
+    var updated_at = new Date().getTime();
+
+    var network = existing_binary.networks[options.network_id];
+
+    // Override specific keys
+    network.address = options.address;
+    network.links = options.links;
+
+    // merge events with any that previously existed
+    network.events = _.merge({}, network.events, options.events);
+
+    // Now overwrite any events with the most recent data from the ABI.
+    existing_binary.abi.forEach(function(item) {
+      if (item.type != "event") return;
+
+      var signature = item.name + "(" + item.inputs.map(function(param) {return param.type;}).join(",") + ")";
+      network.events["0x" + web3.sha3(signature)] = item;
+    });
+
+    network.updated_at = updated_at;
 
     // Ensure all networks have a `links` object.
-    Object.keys(networks).forEach(function(network_id) {
-      var network = networks[network_id];
+    Object.keys(existing_binary.networks).forEach(function(network_id) {
+      var network = existing_binary.networks[network_id];
       network.links = network.links || {};
     });
 
-    var classfile = class_template;
+    existing_binary.generated_with = pkg.version;
+    existing_binary.updated_at = updated_at;
 
-    classfile = classfile.replace(/\{\{ALL_NETWORKS\}\}/g, JSON.stringify(networks, null, 2));
-    classfile = classfile.replace(/\{\{NAME\}\}/g, options.contract_name);
-    classfile = classfile.replace(/\{\{ABI\}\}/g, JSON.stringify(options.abi, null, 2));
-    classfile = classfile.replace(/\{\{UNLINKED_BINARY\}\}/g, options.unlinked_binary);
-    classfile = classfile.replace(/\{\{DEFAULT_NETWORK\}\}/g, options.default_network || "*");
+    return existing_binary;
+  },
+
+  generateAbstraction: function(binary_location) {
+    var binaries;
+
+    if (typeof binary_location == "object") {
+      binaries = JSON.stringify(binary_location, null, 2);
+    } else {
+      binaries = "require(\"" + binary_location + "\");";
+    }
+
+    var classfile = class_template;
+    classfile = classfile.replace(/\{\{BINARIES\}\}/g, binaries);
     classfile = classfile.replace(/\{\{PUDDING_VERSION\}\}/g, pkg.version);
-    classfile = classfile.replace(/\{\{UPDATED_AT\}\}/g, new Date().getTime());
 
     return classfile;
   },
 
   whisk: function(options, networks) {
-    if (!options.contract_name) {
-      options.contract_name = "Contract";
-    }
+    var existing_binary = {
+      networks: networks
+    };
 
-    if (!networks) {
-      networks = {};
-      networks.address = options.address;
-    }
-
-    var source = this.generate(options, networks);
+    var binary = this.generateBinary(options, existing_binary);
+    var source = this.generateAbstraction(binary);
     return this._requireFromSource(source, options.contract_name + ".sol.js");
-  },
-
-  isSingleLevelObject: function(obj) {
-    var keys = Object.keys(obj);
-    for (var i = 0; i < keys.length; i++) {
-      var key = keys[i];
-      var val = obj[key];
-
-      if (typeof val == "object" && !Array.isArray(val)) {
-        return false;
-      }
-    }
-    return true;
   },
 
   // Will upgrade all .sol.js files in place.

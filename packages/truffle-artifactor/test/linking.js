@@ -21,6 +21,8 @@ describe("Library linking", function() {
       prefix: 'tmp-test-libraries-'
     });
 
+    // Deliberately only use the file path (and no binary path)
+    // to test that case.
     var filepath = path.join(dirPath, "LibraryExample.sol.js");
 
     // ABI doesn't actually matter here.

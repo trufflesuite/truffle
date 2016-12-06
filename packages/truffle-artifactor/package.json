@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "async": "^1.5.2",
+    "fs-extra": "^1.0.0",
     "lodash": "^4.11.2",
     "node-dir": "^0.1.11",
     "web3": "^0.15.3"

@@ -11,11 +11,11 @@ Ether Pudding (or just “Pudding”) is a packager and build artifact manager f
 var MyContract = require("./MyContract.sol.js");
 MyContract.setProvider(myWeb3Provider);
 MyContract.deployed().then(function(instance) {
-	return instance.doStuff();
+  return instance.doStuff();
 }).then(function(result) {
   // We just talked to the ethereum network!
-	// And we get the transaction hash, logs (events) and receipt.
-	console.log(result.tx, result.logs, result.receipt);
+  // And we get the transaction hash, logs (events) and receipt.
+  console.log(result.tx, result.logs, result.receipt);
 });
 ```
 
@@ -62,9 +62,9 @@ Generate `.sol.js` files given a contract name and contract data, structured as 
 var Pudding = require("ether-pudding");
 
 var contract_data = {
-	abi: ...,              // Array; required.
-	unlinked_binary: "..." // String; optional.
-	address: "..."         // String; optional.
+  abi: ...,              // Array; required.
+  unlinked_binary: "..." // String; optional.
+  address: "..."         // String; optional.
 };
 
 Pudding.save(contract_data, "./MyContract.sol.js").then(function() {
@@ -332,7 +332,7 @@ Save contract data as a `.sol.js` file. Returns a Promise.
     Pudding.save(MyContract, ...).then(...);
     ```
 
-	In this case, you can use the `extra_options` parameter to specify options that aren't managed by the contract abstraction itself.
+  In this case, you can use the `extra_options` parameter to specify options that aren't managed by the contract abstraction itself.
 
 * `filename`: Path to save contract file.
 * `extra_options`: Object. Used if you need to specify other options within a separate object, for instance, when a contract abstraction is passed instead of an `options` object.
@@ -365,12 +365,12 @@ Generate the source code that populates the `.sol.js` file. Returns a String.
 * `options`: Object. Subset of options listed in the `save()` function above. Expects:
 
     ```javascript
-	{
+  {
       abi: ...,
       unlinked_binary: ...
-	}
-	```
-	
+  }
+  ``` 
+
 * `networks`: Object. Contains the information about this contract for each network, keyed by the network id.
 
     ```javascript
