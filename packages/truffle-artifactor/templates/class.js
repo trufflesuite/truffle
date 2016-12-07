@@ -552,7 +552,7 @@ var BINARIES = {{BINARIES}};
       return this.binaries.default_network;
     },
     updated_at: function() {
-      return this.binaries.updated_at;
+      return this.network.updated_at;
     }
   };
 
