@@ -396,6 +396,10 @@ var BINARIES = {{BINARIES}};
     return this.binaries.networks[network_id] != null;
   };
 
+  Contract.isDeployed = function() {
+    return !!this.network.address;
+  };
+
   Contract.isDeployedToNetwork = function(network_id) {
     return this.binaries.networks[network_id] != null && this.binaries.networks[network_id].address != null;
   };

@@ -41,8 +41,12 @@ module.exports = {
         var existing_binary;
 
         if (!err) {
-          var Contract = self._requireFromSource(source, filename);
-          existing_binary = Contract.binaries;
+          try {
+            var Contract = self._requireFromSource(source, filename);
+            existing_binary = Contract.binaries;
+          } catch (e) {
+            // If requiring fails there's nothing we can do with it.
+          }
         }
 
         var has_binary_filename = !!binary_filename;
@@ -365,12 +369,28 @@ module.exports = {
 
     // Merge options/contract object first, then extra_options
     expected_keys.forEach(function(key) {
-      if (options[key] != undefined) {
-        normalized[key] = options[key];
+      var value;
+
+      try {
+        // Will throw an error if key == address and address doesn't exist.
+        value = options[key];
+
+        if (value != undefined) {
+          normalized[key] = value;
+        }
+      } catch (e) {
+        // Do nothing.
       }
 
-      if (extra_options[key] != undefined) {
-        normalized[key] = extra_options[key];
+      try {
+        // Will throw an error if key == address and address doesn't exist.
+        value = extra_options[key];
+
+        if (value != undefined) {
+          normalized[key] = value;
+        }
+      } catch (e) {
+        // Do nothing.
       }
     });
 
