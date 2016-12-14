@@ -1,7 +1,7 @@
 {
   "name": "truffle",
   "namespace": "consensys",
-  "version": "3.0.0-3",
+  "version": "3.0.0-4",
   "description": "Truffle - Simple development framework for Ethereum",
   "dependencies": {
     "async": "^1.4.2",
@@ -23,7 +23,7 @@
     "mocha": "^2.3.3",
     "node-dir": "^0.1.10",
     "serve-static": "^1.10.0",
-    "solc": "^0.4.4",
+    "solc": "^0.4.6",
     "solidity-parser": "^0.1.1",
     "spawn-args": "^0.1.0",
     "temp": "^0.8.3",
