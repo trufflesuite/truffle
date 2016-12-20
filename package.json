@@ -14,6 +14,7 @@
     "colors": "^1.1.2",
     "cpr": "^0.4.3",
     "del": "^2.2.0",
+    "eth-debug-lines": "^0.1.0",
     "ether-pudding": "^3.2.0",
     "finalhandler": "^0.4.0",
     "find-up": "^1.1.2",

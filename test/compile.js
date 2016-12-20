@@ -28,12 +28,28 @@ describe("compile", function() {
     }
   });
 
+  // TODO: Whichever of the next two `it` blocks goes second, fails. Why?
   it('compiles all initial contracts', function(done) {
     this.timeout(10000);
 
     Contracts.compile(config.with({
       all: false,
       quiet: true
+    }), function(err, contracts) {
+      if (err) return done(err);
+
+      assert.equal(Object.keys(contracts).length, 3, "Didn't compile the expected number of contracts");
+      done();
+    });
+  });
+
+  it('compiles all contracts with DebugLines', function(done) {
+    this.timeout(10000);
+
+    Contracts.compile(config.with({
+      all: false,
+      quiet: true,
+      debugLines: true
     }), function(err, contracts) {
       if (err) return done(err);
 
