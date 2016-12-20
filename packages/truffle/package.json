@@ -1,7 +1,7 @@
 {
   "name": "truffle",
   "namespace": "consensys",
-  "version": "3.0.0-5",
+  "version": "3.0.0-6",
   "description": "Truffle - Simple development framework for Ethereum",
   "dependencies": {
     "async": "^1.4.2",
