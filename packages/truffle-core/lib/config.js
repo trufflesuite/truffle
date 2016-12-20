@@ -147,7 +147,7 @@ Config.detect = function(options, filename) {
     checkBackup = true;
   }
 
-  var file = findUp.sync(filename);
+  var file = findUp.sync(filename, {cwd: options.working_directory || options.workingDirectory});
 
   if (file == null) {
     if (checkBackup == true) {
