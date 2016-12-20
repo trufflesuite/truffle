@@ -67,10 +67,19 @@ module.exports = {
       options.logger = console;
     }
 
+    // Ensure sources have operating system independent paths
+    // i.e., convert backslashes to forward slashes; things like C: are left intact.
+    var operatingSystemIndependentSources = {};
+
+    Object.keys(sources).forEach(function(source) {
+      var replacement = source.replace(/\\/g, "/");
+      operatingSystemIndependentSources[replacement] = sources[source];
+    });
+
     // Add the listener back in, just in case I need it.
     process.on("uncaughtException", solc_listener);
 
-    var result = solc.compile({sources: sources}, 1);
+    var result = solc.compile({sources: operatingSystemIndependentSources}, 1);
 
     // Alright, now remove it.
     process.removeListener("uncaughtException", solc_listener);
