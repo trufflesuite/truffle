@@ -19,7 +19,7 @@ function Config(truffle_directory, working_directory, network) {
     working_directory: working_directory || process.cwd(),
     network: network || "default",
     verboseRpc: false,
-    build: {},
+    build: null,
     rpc: {
       host: "localhost",
       port: "8545",

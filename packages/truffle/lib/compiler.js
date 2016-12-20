@@ -145,7 +145,7 @@ module.exports = {
         Object.keys(result).sort().forEach(function(import_path) {
           var display_path = import_path;
           if (path.isAbsolute(import_path)) {
-            display_path = "./" + path.relative(config.working_directory, import_path);
+            display_path = "." + path.sep + path.relative(config.working_directory, import_path);
           }
           config.logger.log("Compiling " + display_path + "...");
         });
