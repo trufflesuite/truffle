@@ -26,7 +26,7 @@ $ npm install -g truffle
 
 ### Documentation
 
-Please see the [Official Truffle Documentation](http://truffle.readthedocs.org/en/latest/) for guides, tips, and examples.
+Please see the [Official Truffle Documentation](http://truffleframework.com/docs/) for guides, tips, and examples.
 
 ### Contributing
 
