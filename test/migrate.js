@@ -22,7 +22,7 @@ describe("migrate", function() {
   before("edit config", function() {
     config.networks = {
       "default": {
-        "network_id": "default"
+        "network_id": "*"
       },
       "secondary": {
         "network_id": "12345"
