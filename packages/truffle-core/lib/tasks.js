@@ -323,5 +323,38 @@ createTask('watch', "Watch filesystem for changes and rebuild the project automa
   check_rebuild();
 });
 
+createTask('publish', "Publish a package to the Ethereum package registry", function(options, done) {
+  var config = Truffle.config.detect(options);
+  Truffle.package.publish(config, done);
+});
+
+createTask('digest', "Show information about the current package", function(options, done) {
+  var config = Truffle.config.detect(options);
+  Truffle.package.digest(config, function(err, results) {
+    if (err) return done(err);
+    options.logger.log(results);
+    done();
+  });
+});
+
+
+createTask('install', "Install a package from the Ethereum package registry", function(options, done) {
+  var config = Truffle.config.detect(options);
+
+  // if (options._.length == 0) {
+  //   done(new Error("Please specify a package to install"));
+  // }
+  //
+  // var package_name = options._[0];
+  // var version_range = "*";
+  //
+  // if (package_name.indexOf("@") >= 0) {
+  //   var split = package_name.split("@");
+  //   package_name = split[0];
+  //   version_range = split[1];
+  // }
+
+  Truffle.package.install(config, done);
+});
 
 module.exports = Tasks;

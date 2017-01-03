@@ -31,6 +31,10 @@ module.exports = {
   updated: function(options, callback) {
     var self = this;
 
+    expect.options(options, [
+      "network_id"
+    ]);
+
     var contracts_directory = options.contracts_directory;
     var build_directory = options.contracts_build_directory;
 
@@ -100,7 +104,7 @@ module.exports = {
           return;
         }
 
-        var network_id = network.network_id || "default";
+        var network_id = network.network_id || "*";
         ids_to_names[network_id] = network_name;
         networks[network_name] = {};
       });

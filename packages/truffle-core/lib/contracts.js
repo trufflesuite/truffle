@@ -78,6 +78,18 @@ var Contracts = {
     });
   },
 
+  // provision_external_sources: function(options, callback) {
+  //   expect.options(options, [
+  //     "sources"
+  //   ]);
+  //
+  //   var promises = options.sources.map(function(source) {
+  //     return source.provision_contracts();
+  //   });
+  //
+  //   Promise.all())
+  // },
+
   // contracts_directory: String. Directory where .sol files can be found.
   // contracts_build_directory: String. Directory where .sol.js files can be found and written to.
   // all: Boolean. Compile all sources found. Defaults to true. If false, will compare sources against built files
