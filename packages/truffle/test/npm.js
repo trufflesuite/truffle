@@ -7,7 +7,7 @@ var async = require("async");
 var Sources = require("../lib/sources.js");
 var Contracts = require("../lib/contracts.js");
 
-describe('lookups from external sources', function() {
+describe('NPM integration', function() {
   var config;
   var moduleSource = "pragma solidity ^0.4.2; import './ModuleDependency.sol'; contract Module {}";
   var moduleDependencySource = "pragma solidity ^0.4.2; contract ModuleDependency {}";

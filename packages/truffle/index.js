@@ -10,6 +10,7 @@ module.exports = {
   require: require("./lib/require"),
   init: require("./lib/init"),
   migrate: require("./lib/migrate"),
+  package: require("./lib/package"),
   profile: require("./lib/profiler"),
   serve: require("./lib/serve"),
   sources: require("./lib/sources"),
