@@ -1,7 +1,4 @@
 #!/usr/bin/env node
-require("babel-register");
-require("babel-polyfill");
-
 var Command = require("./lib/command");
 var Tasks = require("./lib/tasks");
 var TaskError = require("./lib/errors/taskerror");

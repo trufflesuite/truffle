@@ -13,7 +13,7 @@ var Deployed = {
     }, {});
 
     var source = "";
-    source += "pragma solidity ^0.4.2; \n\n library DeployedAddresses {" + "\n";
+    source += "pragma solidity ^0.4.6; \n\n library DeployedAddresses {" + "\n";
 
     contract_files.forEach(function(file) {
       var name = path.basename(file, ".sol");
