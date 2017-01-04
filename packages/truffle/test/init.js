@@ -16,7 +16,6 @@ describe('init', function() {
   });
 
   it('copies example configuration', function(done) {
-    assert.isTrue(fs.existsSync(path.join(config.working_directory, "app")), "app directory not created successfully");
     assert.isTrue(fs.existsSync(path.join(config.working_directory, "contracts")), "contracts directory not created successfully");
     assert.isTrue(fs.existsSync(path.join(config.working_directory, "test")), "tests directory not created successfully");
 

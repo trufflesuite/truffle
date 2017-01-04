@@ -2,7 +2,6 @@ var async = require("async");
 var mkdirp = require("mkdirp");
 var del = require("del");
 var fs = require("fs");
-var DefaultBuilder = require("truffle-default-builder");
 var Contracts = require("./contracts");
 var BuildError = require("./errors/builderror");
 var child_process = require("child_process");
@@ -66,7 +65,6 @@ var Build = {
     var self = this;
 
     expect.options(options, [
-      "builder",
       "build_directory",
       "working_directory",
       "contracts_build_directory",
@@ -88,7 +86,7 @@ var Build = {
     // No builder specified. Ignore the build then.
     if (typeof builder == "undefined") {
       if (options.quiet != true) {
-        logger.log("No build configuration specified. Not building.");
+        return callback(new BuildError("No build configuration specified. Can't build."));
       }
       return callback();
     }
@@ -96,12 +94,7 @@ var Build = {
     if (typeof builder == "string") {
       builder = new CommandBuilder(builder);
     } else if (typeof builder !== "function") {
-      // If the builder's an object and it doesn't have
-      // a proper build function, then assume it's configuration
-      // for the default builder.
-      if (builder.hasOwnProperty("build") == false || typeof builder.build !== "function") {
-        builder = new DefaultBuilder(builder, key, options.processors);
-      }
+      return callback(new BuildError("Build configuration can no longer be specified as an object. Please see our documentation for an updated list of supported build configurations."));
     } else {
       // If they've only provided a build function, use that.
       builder = {
