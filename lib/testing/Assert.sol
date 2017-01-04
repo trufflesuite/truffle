@@ -1,7 +1,7 @@
 // This file taken from here: https://raw.githubusercontent.com/smartcontractproduction/sol-unit/master/contracts/src/Assertions.sol
 // It was renamed to Assert.sol by Tim Coulter.
 
-pragma solidity ^0.4.2;
+pragma solidity ^0.4.6;
 
 /*
     File: Assertions.slb
@@ -1328,98 +1328,6 @@ library Assert {
         _report(result, message);
     }
 
-    /******************************** errors ********************************/
-
-    /*
-        Function: errorsEqual(uint16)
-
-        Assert that two error codes (uint16) are equal.
-
-        : errorCode1 == errorCode2
-
-        Params:
-            errorCode1 (uint16) - the first error code.
-            errorCode2 (uint16) - the second error code.
-            message (string) - A message to display if the assertion does not hold.
-
-        Returns:
-            result (bool) - The result.
-    */
-    function errorsEqual(uint16 errorCode1, uint16 errorCode2, string message) constant returns (bool result) {
-        result = (errorCode1 == errorCode2);
-        if (result)
-            _report(result, message);
-        else
-            _report(result, _appendTagged(_tag(uint(errorCode1), "Tested"), _tag(uint(errorCode2), "Against"), message));
-    }
-
-    /*
-        Function: errorsNotEqual(uint16)
-
-        Assert that two error codes (uint16) are not equal.
-
-        : errorCode1 != errorCode2
-
-        Params:
-            errorCode1 (uint16) - the first error code.
-            errorCode2 (uint16) - the second error code.
-            message (string) - A message to display if the assertion does not hold.
-
-        Returns:
-            result (bool) - The result.
-    */
-    function errorsNotEqual(uint16 errorCode1, uint16 errorCode2, string message) constant returns (bool result) {
-        result = (errorCode1 != errorCode2);
-        if (result)
-            _report(result, message);
-        else
-            _report(result, _appendTagged(_tag(uint(errorCode1), "Tested"), _tag(uint(errorCode2), "Against"), message));
-    }
-
-    /*
-        Function: error
-
-        Assert that the code (uint16) is not the null error.
-
-        : errorCode != 0
-
-        Params:
-            errorCode (uint16) - the error code.
-            message (string) - A message to display if the assertion does not hold.
-
-        Returns:
-            result (bool) - The result.
-    */
-    function error(uint16 errorCode, string message) constant returns (bool result) {
-        result = (errorCode != 0);
-        if (result)
-            _report(result, message);
-        else
-            _report(result, _appendTagged(_tag(uint(errorCode), "Tested"), message));
-    }
-
-    /*
-        Function: noError
-
-        Assert that the code (uint16) is the null error.
-
-        : errorCode == 0
-
-        Params:
-            errorCode (uint16) - the error code.
-            message (string) - A message to display if the assertion does not hold.
-
-        Returns:
-            result (bool) - The result.
-    */
-    function noError(uint16 errorCode, string message) constant returns (bool result) {
-        result = (errorCode == 0);
-        if (result)
-            _report(result, message);
-        else
-            _report(result, _appendTagged(_tag(uint(errorCode), "Tested"), message));
-    }
-
     /******************************** internal ********************************/
 
         /*
@@ -1436,41 +1344,6 @@ library Assert {
             TestEvent(true, "");
         else
             TestEvent(false, message);
-    }
-
-    /*
-        Function: _compareStrings
-
-        Does a byte-by-byte lexicographical comparison of two strings.
-        Taken from the StringUtils contract in the Ethereum Dapp-bin
-        (https://github.com/ethereum/dapp-bin/blob/master/library/stringUtils.sol).
-
-        Params:
-            a (string) - The first string.
-            b (string) - The second string.
-
-        Returns:
-             result (int) - a negative number if 'a' is smaller, zero if they are equal,
-                and a positive number if 'b' is smaller.
-    */
-    function _compareStrings(string a, string b) returns (int result) {
-        bytes memory ba = bytes(a);
-        bytes memory bb = bytes(b);
-        uint minLength = ba.length;
-        if (bb.length < minLength)
-            minLength = bb.length;
-        //@todo unroll the loop into increments of 32 and do full 32 byte comparisons
-        for (uint i = 0; i < minLength; i ++)
-            if (ba[i] < bb[i])
-                return -1;
-            else if (ba[i] > bb[i])
-                return 1;
-        if (ba.length < bb.length)
-            return -1;
-        else if (ba.length > bb.length)
-            return 1;
-        else
-            return 0;
     }
 
     /*
@@ -1497,21 +1370,6 @@ library Assert {
                 return false;
         }
         return true;
-    }
-
-    /*
-        Function: _stringEmpty
-
-        Checks if a string is empty
-
-        Params:
-            str (string) - The string.
-
-        Returns:
-             result (bool) - 'true' if the string is empty, otherwise 'false'.
-    */
-    function _stringEmpty(string str) internal returns (bool result) {
-        return bytes(str).length == 0;
     }
 
     /*
