@@ -7,6 +7,7 @@ var Config = require("./config");
 var Pudding = require("ether-pudding");
 var Web3 = require("web3");
 var expect = require("./expect");
+var _ = require("lodash");
 
 var Contracts = {
 
@@ -37,11 +38,20 @@ var Contracts = {
       web3.eth.getAccounts(cb);
     };
 
-    Pudding.requireAll({
-      source_directory: options.contracts_build_directory,
-      provider: options.provider
-    }, function(err, contracts) {
+    var provisioners = options.sources.map(function(source) {
+      return source.provision_contracts.bind(source);
+    });
+
+    async.parallel(provisioners, function(err, contract_lists) {
       if (err) return callback(err);
+
+      // Merge lists, backwards first as first source takes precedence
+      var master = _.extend.apply(_, contract_lists.reverse());
+
+      // Turn list into an array
+      var contracts = Object.keys(master).map(function(key) {
+        return master[key];
+      });
 
       getAccounts(function(err, accounts) {
         if (err) return callback(err);

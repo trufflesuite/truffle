@@ -2,6 +2,8 @@ var path = require("path");
 var fs = require("fs");
 var dir = require("node-dir");
 var async = require("async");
+var EthPM = require("ethpm");
+var Pudding = require("ether-pudding");
 
 function EPM(config) {
   this.config = config;
@@ -43,8 +45,27 @@ EPM.prototype.resolve_dependency_path = function(import_path, dependency_path) {
   return path.join(dirname, dependency_path);
 };
 
-EPM.prototype.all_contracts = function() {
+EPM.prototype.provision_contracts = function(callback) {
+  // Create a new config; host and registry don't matter here.
+  var pkg = new EthPM(this.config.working_directory);
 
+  // TODO: Warn when overwriting a contract type/deployment from another dependency.
+  pkg.installed_artifacts().then(function(artifacts) {
+    var list = {};
+
+    Object.keys(artifacts).forEach(function(package_name) {
+      var contract_types = artifacts[package_name].contract_types;
+
+      // TODO: Type names have special syntax when there are conflicts. Handle that syntax.
+      Object.keys(contract_types).forEach(function(type_name) {
+        var contract_type = contract_types[type_name];
+        contract_type.contract_name = type_name;
+        list[type_name] = Pudding.whisk(contract_type);
+      });
+    });
+
+    callback(null, list);
+  }).catch(callback);
 };
 
 module.exports = EPM;

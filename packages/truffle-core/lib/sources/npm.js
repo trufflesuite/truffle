@@ -26,4 +26,9 @@ NPM.prototype.resolve_dependency_path = function(import_path, dependency_path) {
   return path.join(dirname, dependency_path);
 };
 
+NPM.prototype.provision_contracts = function(callback) {
+  // TODO: Fill this out!
+  callback(null, {});
+};
+
 module.exports = NPM;
