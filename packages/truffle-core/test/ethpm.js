@@ -7,9 +7,10 @@ var async = require("async");
 var Sources = require("../lib/sources.js");
 var Contracts = require("../lib/contracts.js");
 var Package = require("../lib/package.js");
+var Blockchain = require("../lib/blockchain");
 var EthPM = require("ethpm");
 var GithubExamples = require("ethpm/lib/indexes/github-examples");
-
+var TestRPC = require("ethereumjs-testrpc");
 
 describe('EthPM integration', function() {
   var config;
@@ -17,17 +18,34 @@ describe('EthPM integration', function() {
   var registry;
   var ipfs_api;
   var ipfs_daemon;
+  var provider;
+  var blockchain_uri;
 
-  function assertFile(file_path, callback) {
-    var stat = fs.statSync(file_path);
-
-    assert.isTrue(stat.isFile(), "File '" + file_path + "' should exist");
+  function assertFile(file_path) {
+    try {
+      var stat = fs.statSync(file_path);
+    } catch (e) {
+      throw new Error("File '" + file_path + "' should exist");
+    }
+    assert.isTrue(stat.isFile(), "File '" + file_path + "' should exist as a file");
   }
+
+  beforeEach("Create a TestRPC provider and get a blockchain uri", function(done) {
+    provider = TestRPC.provider();
+
+    Blockchain.asURI(provider, function(err, uri) {
+      if (err) return done(err);
+      blockchain_uri = uri;
+      done();
+    });
+  });
 
   // Super slow doing these in a beforeEach, but it ensures nothing conflicts.
   beforeEach("Create a sandbox", function(done) {
     this.timeout(10000);
-    Init.sandbox(function(err, result) {
+    Init.sandbox({
+      provider: provider
+    }, function(err, result) {
       if (err) return done(err);
       config = result;
       done();
@@ -37,7 +55,9 @@ describe('EthPM integration', function() {
   beforeEach("Create a fake EthPM host and memory registry", function(done) {
     this.timeout(30000); // I've had varrying runtimes with this block, likely due to networking.
 
-    GithubExamples.initialize(function(err, results) {
+    GithubExamples.initialize({
+      blockchain: blockchain_uri
+    }, function(err, results) {
       if (err) return done(err);
 
       host = results.host;
@@ -162,6 +182,19 @@ describe('EthPM integration', function() {
         var expected_contract_name = "SafeMathLib";
         assert.notEqual(contracts.length, 0);
         assert.equal(contracts[0].contract_name, expected_contract_name, "Could not find provisioned contract with name '" + expected_contract_name + "'");
+
+        var expected_lockfile_path = path.join(config.working_directory, "installed_contracts", "safe-math-lib", "lock.json")
+
+        var lockfile = fs.readFileSync(expected_lockfile_path, "utf8");
+        lockfile = JSON.parse(lockfile);
+
+        // Make sure the blockchain was inserted correctly (really a function of GithubExamples).
+        assert.ok(lockfile.deployments, "No deployments when a deployment was expected");
+        assert.ok(lockfile.deployments[blockchain_uri], "No deployments to the expected blockchain");
+        assert.ok(lockfile.deployments[blockchain_uri][expected_contract_name], expected_contract_name + " does nto appear in deployed contracts for expected blockchain");
+
+        // Finally assert the address.
+        assert.equal(contracts[0].address, lockfile.deployments[blockchain_uri][expected_contract_name].address, "Address in contract doesn't match address in lockfile");
 
         done();
       });

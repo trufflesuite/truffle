@@ -4,6 +4,7 @@ var dir = require("node-dir");
 var async = require("async");
 var EthPM = require("ethpm");
 var Pudding = require("ether-pudding");
+var Blockchain = require("../blockchain");
 
 function EPM(config) {
   this.config = config;
@@ -46,25 +47,65 @@ EPM.prototype.resolve_dependency_path = function(import_path, dependency_path) {
 };
 
 EPM.prototype.provision_contracts = function(callback) {
+  var self = this;
+
   // Create a new config; host and registry don't matter here.
   var pkg = new EthPM(this.config.working_directory);
 
   // TODO: Warn when overwriting a contract type/deployment from another dependency.
+  // This would happen when two dependencies name the same contract type/deployment.
   pkg.installed_artifacts().then(function(artifacts) {
     var list = {};
 
-    Object.keys(artifacts).forEach(function(package_name) {
-      var contract_types = artifacts[package_name].contract_types;
+    var package_names = Object.keys(artifacts);
+
+    // First do contract types.
+    package_names.forEach(function(package_name) {
+      var contract_types = artifacts[package_name].contract_types || {};
 
       // TODO: Type names have special syntax when there are conflicts. Handle that syntax.
       Object.keys(contract_types).forEach(function(type_name) {
         var contract_type = contract_types[type_name];
         contract_type.contract_name = type_name;
-        list[type_name] = Pudding.whisk(contract_type);
+        list[type_name] = contract_type;
       });
     });
 
-    callback(null, list);
+    // Now do deployments, which requires finding the correct blockchain in each deployment.
+    async.eachSeries(package_names, function(package_name, finished) {
+      var blockchains = artifacts[package_name].deployments || {};
+
+      async.filter(Object.keys(blockchains), function(blockchain, done) {
+        Blockchain.matches(blockchain, self.config.provider, function(err, truthy) {
+          done(!err && truthy);
+        });
+      }, function(filtered) {
+        // TODO: handle references to contract types of external packages.
+        filtered.forEach(function(blockchain) {
+          var deployments = blockchains[blockchain];
+          Object.keys(deployments).forEach(function(deployment_name) {
+            var deployment = deployments[deployment_name];
+
+            // If we can find the right type, then set the address.
+            if (list[deployment.contract_type]) {
+              list[deployment.contract_type].address = deployment.address;
+            }
+          });
+        })
+
+        finished();
+      });
+    }, function(err) {
+      if (err) return callback(err);
+
+      // Done with all packages. Now whisk all contracts in the list.
+      Object.keys(list).forEach(function(type_name) {
+        var contract_type = list[type_name];
+        list[type_name] = Pudding.whisk(contract_type);
+      });
+
+      callback(null, list);
+    })
   }).catch(callback);
 };
 

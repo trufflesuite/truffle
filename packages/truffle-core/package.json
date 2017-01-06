@@ -53,6 +53,7 @@
     }
   ],
   "devDependencies": {
+    "ethereumjs-testrpc": "^3.0.3",
     "ipfsd-ctl": "^0.18.0"
   }
 }
