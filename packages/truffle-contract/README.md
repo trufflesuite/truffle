@@ -158,7 +158,7 @@ Returns a boolean denoting whether or not this contract abstraction is set up to
 
 Get's and optionally sets transaction defaults for all instances created from this abstraction. If called without any parameters it will simply return an Object representing current defaults. If an Object is passed, this will set new defaults. Example default transaction values that can be set are:
 
-```
+```javascript
 MyContract.defaults({
   from: ...,
   gas: ...,
@@ -167,7 +167,15 @@ MyContract.defaults({
 })
 ```
 
-Setting a default `from` address is useful when you have a contract abstraction you intend to represent one user (i.e., one address).
+Setting a default `from` address, for instance, is useful when you have a contract abstraction you intend to represent one user (i.e., one address).
+
+#### `MyContract.clone(network_id)`
+
+Clone a contract abstraction to get another object that manages the same contract artifacts, but using a different `network_id`. This is useful if you'd like to manage the same contract but on a different network. When using this function, don't forget to set the correct provider afterward.
+
+```javascript
+var MyOtherContract = MyContract.clone(1337);
+```
 
 ### Contract Instance API
 
