@@ -15,7 +15,7 @@ $ npm install truffle-contract
 * Default values for transactions, like `from` address or `gas`.
 * Returning logs, transaction receipt and transaction hash of every synchronized transaction.
 
-#### Usage
+### Usage
 
 First, set up a new web3 provider instance and initialize your contract, then `require("truffle-contract")`. The input to the `contract` function is a JSON blob defined by [truffle-schema](https://github.com/trufflesuite/truffle-schema). This JSON blob is structured in a way that can be passed to all truffle-related projects.
 
@@ -50,7 +50,7 @@ Each instance is tied to a specific address on the Ethereum network, and each in
   });
   ```  
 
-#### Full Example
+### Full Example
 
 Let's use `truffle-contract` with an example contract from [Dapps For Beginners](https://dappsforbeginners.wordpress.com/tutorials/your-first-dapp/). In this case, the abstraction has been saved to a `.sol.js` file by [truffle-artifactor](https://github.com/trufflesuite/truffle-artifactor):
 
