@@ -1,9 +1,7 @@
 # truffle-contract-schema
 JSON schema for contract artifacts
 
-See [truffle-artifactor](https://github.com/trufflesuite/truffle-artifactor) for documentation.
-
-### schema
+# Schema
 
 The schema, which includes a JSON schema validator, needs to be created and fleshed out with strict documentation. However, in light of that effort, a loose schema is defined below:
 
@@ -29,7 +27,7 @@ The schema, which includes a JSON schema validator, needs to be created and fles
 * `links`: `object`, optional: A set of key/value pairs that link contract names that exist within the `unlinked_binary` to their specified addresses on the network specified by network_id.
 * `events`: `object`, optional: Log topic/event abi pairs that represent logs that can be thrown. This object may describe logs and events that exist outside of the current contract so that this object will be able to parse those events correctly.
 * `default_network`: `string` or `number`: The default network to be used when this object is instantiated via [truffle-contract](https://github.com/trufflesuite/truffle-contract).
-* `networks: `object`, optional: key/value pairs of network ids and their associated network objects. Each network object may contain the `address`, `links` and `events` objects described above, containing data that's specific to addresses on a list of networks. 
+* `networks: `object`, optional: key/value pairs of network ids and their associated network objects. Each network object may contain the `address`, `links` and `events` objects described above, containing data that's specific to addresses on each network.
 
 
 # Testing
