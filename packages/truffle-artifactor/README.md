@@ -28,11 +28,7 @@ MyContract.deployed().then(function(instance) {
 * Manages library addresses for linked libraries.
 * Manages events, making them available on a per-transaction basis (no more `event.watch()`!)
 
-### truffle-contract
-
-The artifactor uses [truffle-contract](https://github.com/trufflesuite/truffle-contract), which provides features above and beyond
-
-Some of the features `truffle-contract` provides over the current abstraction:
+The artifactor uses [truffle-contract](https://github.com/trufflesuite/truffle-contract), which provides features above and beyond `web3`:
 
 * Synchronized transactions for better control flow: transactions won't be considered finished until you're guaranteed they've been mined.
 * Promises. No more callback hell. Works well with `ES6` and `async/await`.
