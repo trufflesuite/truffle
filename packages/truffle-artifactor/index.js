@@ -1,4 +1,4 @@
-var Schema = require("truffle-schema");
+var Schema = require("truffle-contract-schema");
 var fs = require("fs-extra");
 var path = require("path");
 var class_template = fs.readFileSync(path.join(__dirname, "templates", "class.js"), {encoding: "utf8"});

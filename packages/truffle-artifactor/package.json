@@ -1,6 +1,6 @@
 {
   "name": "truffle-artifactor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A contract packager for Ethereum and Javascript",
   "author": "Tim Coulter",
   "main": "./index.js",
@@ -25,8 +25,8 @@
     "fs-extra": "^1.0.0",
     "lodash": "^4.11.2",
     "node-dir": "^0.1.11",
-    "truffle-contract": "^1.0.0",
-    "truffle-schema": "0.0.1",
+    "truffle-contract": "^1.0.1",
+    "truffle-contract-schema": "0.0.2",
     "web3": "^0.15.3"
   }
 }
