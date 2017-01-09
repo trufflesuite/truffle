@@ -1,6 +1,5 @@
-// Override Pudding
 var assert = require("chai").assert;
-var Pudding = require("../");
+var artifactor = require("../");
 var temp = require("temp").track();
 var path = require("path");
 var solc = require("solc");
@@ -71,14 +70,14 @@ describe("Different networks:", function() {
 
     built_file_path = path.join(temp_dir, "Example.sol.js")
 
-    Pudding.save({
+    artifactor.save({
       contract_name: "Example",
       abi: abi,
       binary: binary,
       network_id: network_one_id,
       default_network: network_one_id
     }, built_file_path).then(function() {
-      return Pudding.save({
+      return artifactor.save({
         contract_name: "Example",
         abi: abi,
         binary: binary,
@@ -86,7 +85,10 @@ describe("Different networks:", function() {
       }, built_file_path);
     }).then(function(err) {
       ExampleOne = requireNoCache(built_file_path);
-      ExampleTwo = ExampleOne(network_two_id); // Mutate
+      ExampleTwo = ExampleOne.clone(network_two_id); // Mutate
+
+      ExampleOne.__marker = "one";
+      ExampleTwo.__marker = "two";
 
       ExampleOne.setProvider(network_one);
       ExampleTwo.setProvider(network_two);
@@ -114,9 +116,9 @@ describe("Different networks:", function() {
       ExampleTwo.address = example.address;
     }).then(function() {
       // Save the addresses.
-      return Pudding.save(ExampleOne, built_file_path, {contract_name: "Example", network_id: network_one_id});
+      return artifactor.save(ExampleOne, built_file_path, {contract_name: "Example", network_id: network_one_id});
     }).then(function() {
-      return Pudding.save(ExampleTwo, built_file_path, {contract_name: "Example", network_id: network_two_id});
+      return artifactor.save(ExampleTwo, built_file_path, {contract_name: "Example", network_id: network_two_id});
     }).then(done).catch(done);
   });
 
@@ -148,7 +150,7 @@ describe("Different networks:", function() {
   it("has a fallback network of '*' if no network id set", function(done) {
     var filepath = path.join(temp_dir, "AnotherExample.sol.js")
 
-    Pudding.save({
+    artifactor.save({
       contract_name: "AnotherExample",
       abi: abi,
       binary: binary
@@ -166,7 +168,7 @@ describe("Different networks:", function() {
     var network_id = "1337";
 
     // NOTE: We are saving over the file already there!!!!
-    Pudding.save({
+    artifactor.save({
       contract_name: "AnotherExample",
       abi: abi,
       binary: binary,
@@ -187,7 +189,7 @@ describe("Different networks:", function() {
     var address = "0x1234567890123456789012345678901234567890";
 
     // NOTE: We are saving over the file already there!!!! AGAIN
-    Pudding.save({
+    artifactor.save({
       contract_name: "AnotherExample",
       abi: abi,
       binary: binary,
@@ -327,6 +329,8 @@ describe("Different networks:", function() {
   });
 
   it("detects the network before sending a transaction", function() {
+    debugger;
+
     // Here, we're going to use two of the same contract abstraction to test
     // network detection. The first is going to deploy a new contract, thus
     // detecting the network in the process of new(); we're then going to
@@ -334,9 +338,12 @@ describe("Different networks:", function() {
     // During that transaction it should detect the network since it
     // hasn't been detected already.
     var ExampleSetup = requireNoCache(built_file_path);
-    var ExampleDetect = ExampleSetup();
+    var ExampleDetect = ExampleSetup.clone();
     ExampleSetup.setProvider(network_two);
     ExampleDetect.setProvider(network_two);
+
+    ExampleDetect.__marker = 12;
+    ExampleSetup.__marker = "dummy";
 
     // Steal the from address from our other tests.
     var from = ExampleTwo.defaults().from;
@@ -354,6 +361,8 @@ describe("Different networks:", function() {
   });
 
   it("detects the network when making a call", function() {
+    debugger;
+
     // Here, we're going to use two of the same contract abstraction to test
     // network detection. The first is going to deploy a new contract, thus
     // detecting the network in the process of new(); we're then going to
@@ -361,7 +370,7 @@ describe("Different networks:", function() {
     // During that transaction it should detect the network since it
     // hasn't been detected already.
     var ExampleSetup = requireNoCache(built_file_path);
-    var ExampleDetect = ExampleSetup();
+    var ExampleDetect = ExampleSetup.clone();
     ExampleSetup.setProvider(network_two);
     ExampleDetect.setProvider(network_two);
 

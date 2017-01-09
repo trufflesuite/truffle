@@ -1,3 +1,4 @@
+var Schema = require("truffle-schema");
 var fs = require("fs-extra");
 var path = require("path");
 var class_template = fs.readFileSync(path.join(__dirname, "templates", "class.js"), {encoding: "utf8"});
@@ -33,7 +34,7 @@ module.exports = {
         throw new Error("You must specify a file name.");
       }
 
-      options = self.normalizeOptions(options, extra_options);
+      options = Schema.normalizeOptions(options, extra_options);
 
       fs.readFile(filename, {encoding: "utf8"}, function(err, source) {
         // No need to handle the error. If the file doesn't exist then we'll start afresh
@@ -51,7 +52,7 @@ module.exports = {
 
         var has_binary_filename = !!binary_filename;
 
-        var final_binary = self.generateBinary(options, existing_binary);
+        var final_binary = Schema.generateBinary(options, existing_binary);
         var final_source;
 
         if (has_binary_filename) {
@@ -115,65 +116,6 @@ module.exports = {
     });
   },
 
-  generateBinary: function(options, existing_binary) {
-    var web3 = new Web3();
-
-    existing_binary = existing_binary || {};
-
-    if (options.overwrite == true) {
-      existing_binary = {};
-    }
-
-    existing_binary.contract_name = options.contract_name || existing_binary.contract_name || "Contract";
-    existing_binary.default_network = options.default_network || existing_binary.default_network || "*";
-
-    options.network_id = (options.network_id || "*") + ""; // Assume fallback network if network not specified.
-
-    existing_binary.abi = options.abi || existing_binary.abi;
-    existing_binary.unlinked_binary = options.unlinked_binary || existing_binary.unlinked_binary;
-
-    // Ensure unlinked binary starts with a 0x
-    if (existing_binary.unlinked_binary && existing_binary.unlinked_binary.indexOf("0x") < 0) {
-      existing_binary.unlinked_binary = "0x" + existing_binary.unlinked_binary;
-    }
-
-    // Make sure we have a network for the binary we're saving.
-    existing_binary.networks = existing_binary.networks || {};
-    existing_binary.networks[options.network_id] = existing_binary.networks[options.network_id] || {};
-
-    var updated_at = new Date().getTime();
-
-    var network = existing_binary.networks[options.network_id];
-
-    // Override specific keys
-    network.address = options.address;
-    network.links = options.links;
-
-    // merge events with any that previously existed
-    network.events = _.merge({}, network.events, options.events);
-
-    // Now overwrite any events with the most recent data from the ABI.
-    existing_binary.abi.forEach(function(item) {
-      if (item.type != "event") return;
-
-      var signature = item.name + "(" + item.inputs.map(function(param) {return param.type;}).join(",") + ")";
-      network.events["0x" + web3.sha3(signature)] = item;
-    });
-
-    network.updated_at = updated_at;
-
-    // Ensure all networks have a `links` object.
-    Object.keys(existing_binary.networks).forEach(function(network_id) {
-      var network = existing_binary.networks[network_id];
-      network.links = network.links || {};
-    });
-
-    existing_binary.generated_with = pkg.version;
-    existing_binary.updated_at = updated_at;
-
-    return existing_binary;
-  },
-
   generateAbstraction: function(binary_location) {
     var binaries;
 
@@ -185,21 +127,8 @@ module.exports = {
 
     var classfile = class_template;
     classfile = classfile.replace(/\{\{BINARIES\}\}/g, binaries);
-    classfile = classfile.replace(/\{\{PUDDING_VERSION\}\}/g, pkg.version);
 
     return classfile;
-  },
-
-  whisk: function(options, networks) {
-    options = this.normalizeOptions(options);
-
-    var existing_binary = {
-      networks: networks
-    };
-
-    var binary = this.generateBinary(options, existing_binary);
-    var source = this.generateAbstraction(binary);
-    return this._requireFromSource(source, options.contract_name + ".sol.js");
   },
 
   // Will upgrade all .sol.js files in place.
@@ -345,73 +274,5 @@ module.exports = {
     script.runInNewContext(context);
 
     return m.exports;
-  },
-
-  // Options passed to Pudding can be many things.
-  // This normalizes them into one object.
-  normalizeOptions: function(options, extra_options) {
-    extra_options = extra_options || {};
-    var normalized = {};
-    var expected_keys = [
-      "contract_name",
-      "abi",
-      "binary",
-      "unlinked_binary",
-      "address",
-      "links",
-      "events",
-      "network_id",
-      "default_network"
-    ];
-
-    // FYI: options can be three things:
-    // - normal object
-    // - contract object
-    // - solc output
-
-    // Merge options/contract object first, then extra_options
-    expected_keys.forEach(function(key) {
-      var value;
-
-      try {
-        // Will throw an error if key == address and address doesn't exist.
-        value = options[key];
-
-        if (value != undefined) {
-          normalized[key] = value;
-        }
-      } catch (e) {
-        // Do nothing.
-      }
-
-      try {
-        // Will throw an error if key == address and address doesn't exist.
-        value = extra_options[key];
-
-        if (value != undefined) {
-          normalized[key] = value;
-        }
-      } catch (e) {
-        // Do nothing.
-      }
-    });
-
-    // Now look for solc specific items.
-    if (options.interface != null) {
-      normalized.abi = JSON.parse(options.interface);
-    }
-
-    if (options.bytecode != null) {
-      normalized.unlinked_binary = options.bytecode
-    }
-
-    // Assume any binary passed is the unlinked binary
-    if (normalized.unlinked_binary == null && normalized.binary) {
-      normalized.unlinked_binary = normalized.binary;
-    }
-
-    delete normalized.binary;
-
-    return normalized;
   }
 };

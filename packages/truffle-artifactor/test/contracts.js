@@ -1,6 +1,7 @@
-// Override Pudding
+// Override artifactor
 var assert = require("chai").assert;
-var Pudding = require("../");
+var artifactor = require("../");
+var contract = require("truffle-contract");
 var temp = require("temp").track();
 var path = require("path");
 var solc = require("solc");
@@ -9,7 +10,7 @@ var requireNoCache = require("./require-nocache");
 var TestRPC = require("ethereumjs-testrpc");
 var Web3 = require("web3");
 
-describe("Pudding + require", function() {
+describe("artifactor + require", function() {
   var Example;
   var accounts;
   var abi;
@@ -44,7 +45,7 @@ describe("Pudding + require", function() {
     var filepath = path.join(dirPath, "Example.sol.js");
     var binary_filepath = path.join(dirPath, "bin", "Example.json");
 
-    Pudding.save({
+    artifactor.save({
       name: "Example",
       abi: abi,
       binary: binary,
@@ -184,8 +185,9 @@ describe("Pudding + require", function() {
     done();
   });
 
-  it("whisks properly with no network", function() {
-    var NewExample = Pudding.whisk({
+  // TODO: Move this test to truffle-contract
+  it("abstraction generates properly with no network, inlined address", function() {
+    var NewExample = contract({
       abi: abi,
       unlinked_binary: binary,
       address: "0x1234567890123456789012345678901234567890"
@@ -195,14 +197,16 @@ describe("Pudding + require", function() {
     assert.equal(NewExample.deployed().address, "0x1234567890123456789012345678901234567890");
   });
 
-  it("whisks properly with a specified network", function() {
-    var NewExample = Pudding.whisk({
+  // TODO: Move this test to truffle-contract
+  it("abstraction generates properly with a specified network", function() {
+    var NewExample = contract({
       abi: abi,
       unlinked_binary: binary,
-      default_network: "1"
-    }, {
-      "1": {
-        address: "0x1234567890123456789012345678901234567890"
+      default_network: "1",
+      networks: {
+        "1": {
+          address: "0x1234567890123456789012345678901234567890"
+        }
       }
     });
 
