@@ -1,4 +1,4 @@
-var Schema = require("truffle-schema");
+var Schema = require("truffle-contract-schema");
 var Contract = require("./contract.js");
 
 module.exports = function(options) {

@@ -17,7 +17,7 @@ $ npm install truffle-contract
 
 ### Usage
 
-First, set up a new web3 provider instance and initialize your contract, then `require("truffle-contract")`. The input to the `contract` function is a JSON blob defined by [truffle-schema](https://github.com/trufflesuite/truffle-schema). This JSON blob is structured in a way that can be passed to all truffle-related projects.
+First, set up a new web3 provider instance and initialize your contract, then `require("truffle-contract")`. The input to the `contract` function is a JSON blob defined by [truffle-contract-schema](https://github.com/trufflesuite/truffle-contract-schema). This JSON blob is structured in a way that can be passed to all truffle-related projects.
 
 ```javascript
 var provider = new Web3.providers.HttpProvider("http://localhost:8545");
