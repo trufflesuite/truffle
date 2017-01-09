@@ -191,6 +191,8 @@ module.exports = {
   },
 
   whisk: function(options, networks) {
+    options = this.normalizeOptions(options);
+
     var existing_binary = {
       networks: networks
     };
