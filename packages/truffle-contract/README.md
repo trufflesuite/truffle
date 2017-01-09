@@ -5,7 +5,7 @@ Better contract abstraction for Ethereum.
 ### Install
 
 ```
-$ npm install truffle-artifactor
+$ npm install truffle-contract
 ```
 
 ### Features
