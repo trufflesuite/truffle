@@ -1,0 +1,29 @@
+{
+  "name": "truffle-contract",
+  "version": "1.0.0",
+  "description": "A better contract abstraction for Ethereum (formerly EtherPudding)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trufflesuite/truffle-contract.git"
+  },
+  "keywords": [
+    "ethereum",
+    "truffle",
+    "contract",
+    "abstraction"
+  ],
+  "author": "Tim Coulter <tim.coulter@consensys.net>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle-contract/issues"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle-contract#readme",
+  "dependencies": {
+    "truffle-schema": "0.0.1",
+    "web3": "^0.16.0"
+  }
+}
