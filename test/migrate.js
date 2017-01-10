@@ -5,6 +5,7 @@ var Contracts = require("../lib/contracts");
 var Profiler = require("../lib/profiler");
 var path = require("path");
 var fs = require("fs");
+var TestRPC = require("ethereumjs-testrpc");
 
 describe("migrate", function() {
   var config;
@@ -26,7 +27,8 @@ describe("migrate", function() {
       "secondary": {
         "network_id": "12345"
       }
-    }
+    };
+    config.provider = TestRPC.provider();
   });
 
   it('profiles a new project as not having any contracts deployed', function(done) {

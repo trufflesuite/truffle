@@ -26,6 +26,10 @@
     "temp": "^0.8.3",
     "truffle-artifactor": "^1.0.2",
     "truffle-contract": "^1.0.2",
+    "truffle-deployer": "0.0.1",
+    "truffle-expect": "0.0.3",
+    "truffle-provisioner": "0.0.1",
+    "truffle-require": "0.0.1",
     "web3": "^0.16.0",
     "yargs": "^3.27.0"
   },
