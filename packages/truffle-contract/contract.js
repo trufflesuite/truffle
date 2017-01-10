@@ -1,7 +1,7 @@
 var Web3 = require("web3");
 var SolidityEvent = require("web3/lib/web3/event.js");
 
-(function() {
+var contract = (function(module) {
   // Planned for future features, logging, etc.
   function Provider(provider) {
     this.provider = provider;
@@ -570,4 +570,6 @@ var SolidityEvent = require("web3/lib/web3/event.js");
   bootstrap(Contract);
 
   module.exports = Contract;
-})();
+
+  return Contract;
+})(module || {});
