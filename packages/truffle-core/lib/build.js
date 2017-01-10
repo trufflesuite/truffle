@@ -7,7 +7,8 @@ var BuildError = require("./errors/builderror");
 var child_process = require("child_process");
 var spawnargs = require("spawn-args");
 var _ = require("lodash");
-var expect = require("./expect");
+var expect = require("truffle-expect");
+var provision = require("truffle-provisioner");
 
 function CommandBuilder(command) {
   this.command = command;
@@ -115,7 +116,7 @@ var Build = {
       Contracts.compile(options, function(err) {
         if (err) return callback(err);
 
-        Contracts.provision(options, false, function(err, contracts) {
+        provision(options, false, function(err, contracts) {
           if (err) return callback(err);
 
           var resolved_options = {

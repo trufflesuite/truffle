@@ -3,6 +3,7 @@ var path = require("path");
 var fs = require("fs");
 var Init = require("../lib/init");
 var Contracts = require("../lib/contracts");
+var TestRPC = require("ethereumjs-testrpc");
 
 describe('config', function() {
   var config;
@@ -20,6 +21,7 @@ describe('config', function() {
     }, function(err, result) {
       if (err) return done(err);
       config = result;
+      config.provider = TestRPC.provider();
       done();
     });
   });
