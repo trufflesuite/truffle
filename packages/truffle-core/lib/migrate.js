@@ -2,7 +2,7 @@ var fs = require("fs");
 var dir = require("node-dir");
 var path = require("path");
 var Contracts = require("./contracts");
-var Pudding = require("ether-pudding");
+var artifactor = require("truffle-artifactor");
 var Deployer = require("./deployer");
 var Profiler = require("./profiler");
 var Provider = require("./provider");
@@ -71,7 +71,7 @@ Migration.prototype.run = function(options, contracts, callback) {
     }).then(function() {
       if (options.save === false) return;
       logger.log("Saving artifacts...");
-      return Pudding.saveAll(contracts, options.contracts_build_directory, options);
+      return artifactor.saveAll(contracts, options.contracts_build_directory, options);
     }).then(function() {
       callback();
     }).catch(function(e) {
@@ -203,7 +203,7 @@ var Migrate = {
   lastCompletedMigration: function(options, callback) {
     var migrations_contract = path.resolve(path.join(options.contracts_build_directory, "Migrations.sol.js"));
 
-    Pudding.requireFile(migrations_contract, options, function(err, Migrations) {
+    artifactor.requireFile(migrations_contract, options, function(err, Migrations) {
       if (err) return callback(new Error("Could not find built Migrations contract."));
 
       if (Migrations.isDeployed() == false) {
