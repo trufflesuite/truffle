@@ -122,7 +122,9 @@ module.exports = {
     if (typeof binary_location == "object") {
       binaries = JSON.stringify(binary_location, null, 2);
     } else {
-      binaries = "require(\"" + binary_location + "\");";
+      // TODO: Let's up the / doesn't kill Windows.
+      // We can't use path.sep here as it adds an extra dependency.
+      binaries = "require(__dirname + \"/" + binary_location + "\");";
     }
 
     // TODO: remove sync.
