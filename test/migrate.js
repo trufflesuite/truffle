@@ -3,7 +3,6 @@ var Init = require("../lib/init");
 var Migrate = require("../lib/migrate");
 var Contracts = require("../lib/contracts");
 var Profiler = require("../lib/profiler");
-var Pudding = require("ether-pudding");
 var path = require("path");
 var fs = require("fs");
 

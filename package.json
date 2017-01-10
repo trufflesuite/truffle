@@ -10,7 +10,6 @@
     "colors": "^1.1.2",
     "cpr": "^0.4.3",
     "del": "^2.2.0",
-    "ether-pudding": "beta",
     "ethpm": "0.0.1",
     "ethpm-registry": "0.0.1",
     "finalhandler": "^0.4.0",
@@ -25,6 +24,8 @@
     "solidity-parser": "^0.1.1",
     "spawn-args": "^0.1.0",
     "temp": "^0.8.3",
+    "truffle-artifactor": "^1.0.2",
+    "truffle-contract": "^1.0.2",
     "web3": "^0.16.0",
     "yargs": "^3.27.0"
   },
