@@ -4,6 +4,7 @@ var fs = require("fs");
 var Init = require("../lib/init");
 var Contracts = require("../lib/contracts");
 var TestRPC = require("ethereumjs-testrpc");
+var provision = require("truffle-provisioner");
 
 describe('config', function() {
   var config;
@@ -32,7 +33,7 @@ describe('config', function() {
   });
 
   it('Provisioning contracts should set proper RPC values', function(done) {
-    Contracts.provision(config, function(err, contracts) {
+    provision(config, function(err, contracts) {
       if (err) return done(err);
 
       var Contract = contracts[0];
