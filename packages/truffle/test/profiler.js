@@ -1,6 +1,8 @@
 var assert = require("chai").assert;
 var Init = require("../lib/init");
-var Profiler = require("../lib/profiler");
+var Profiler = require("truffle-compile/profiler.js");
+
+// TOOD: Move this to truffle-compile!
 
 describe('profiler', function() {
   var config;

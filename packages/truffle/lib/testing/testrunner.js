@@ -1,14 +1,13 @@
 var Web3 = require("web3");
 var Migrate = require("../migrate");
-var Compiler = require("../compiler");
 var Config = require("../config");
-var Deployer = require("../deployer");
-var Profiler = require('../profiler');
+var Deployer = require("truffle-deployer");
 var Deployed = require("./deployed");
 var TestSource = require("./testsource");
 var async = require("async");
 var provision = require("truffle-provisioner");
-
+var find_contracts = require("truffle-contract-sources");
+var compile = require("truffle-compile");
 
 function TestRunner(options) {
   this.config = Config.default().merge(options);
@@ -129,12 +128,12 @@ TestRunner.prototype.initializeSolidityTest = function(contract, callback) {
 TestRunner.prototype.compileNewAbstractInterface = function(callback) {
   var self = this;
 
-  Profiler.all_contracts(this.config.contracts_directory, function(err, files) {
+  find_contracts(this.config.contracts_directory, function(err, files) {
     if (err) return callback(err);
 
     var sources = [new TestSource(files, self.project_contracts)].concat(self.config.sources);
 
-    Compiler.compile_with_dependencies(self.config.with({
+    compile.with_dependencies(self.config.with({
       paths: [
         "truffle/DeployedAddresses.sol"
       ],

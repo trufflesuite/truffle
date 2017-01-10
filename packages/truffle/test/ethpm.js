@@ -4,10 +4,10 @@ var fs = require("fs");
 var path = require('path');
 var mkdirp = require("mkdirp");
 var async = require("async");
-var Sources = require("../lib/sources.js");
 var Contracts = require("../lib/contracts.js");
 var Package = require("../lib/package.js");
 var Blockchain = require("../lib/blockchain");
+var provision = require("truffle-provisioner");
 var EthPM = require("ethpm");
 var GithubExamples = require("ethpm/lib/indexes/github-examples");
 var TestRPC = require("ethereumjs-testrpc");
@@ -137,7 +137,7 @@ describe('EthPM integration', function() {
         assert.isNotNull(contracts["owned"]);
         assert.isNotNull(contracts["transferable"]);
 
-        Contracts.provision(config, false, function(err, contracts) {
+        provision(config, false, function(err, contracts) {
           if (err) return done(err);
 
           var found = [false, false];
@@ -176,7 +176,7 @@ describe('EthPM integration', function() {
     }), function(err) {
       if (err) return done(err);
 
-      Contracts.provision(config, false, function(err, contracts) {
+      provision(config, false, function(err, contracts) {
         if (err) return done(err);
 
         var expected_contract_name = "SafeMathLib";
@@ -200,42 +200,4 @@ describe('EthPM integration', function() {
       });
     });
   });
-
-  // it('successfully finds the correct source via Sources lookup', function(done) {
-  //   Sources.find("fake_source/contracts/Module.sol", config.sources, function(err, body) {
-  //     if (err) return done(err);
-  //
-  //     assert.equal(body, moduleSource);
-  //     done();
-  //   });
-  // });
-
-  // it("errors when module does not exist from any source", function(done) {
-  //   Sources.find("some_source/contracts/SourceDoesNotExist.sol", config.sources, function(err, body) {
-  //     if (!err) {
-  //       return assert.fail("Source lookup should have errored but didn't");
-  //     }
-  //
-  //     assert.equal(err.message, "Could not find some_source/contracts/SourceDoesNotExist.sol from any sources");
-  //     done();
-  //   });
-  // });
-  //
-  // it("contract compiliation successfully picks up modules and their dependencies", function(done) {
-  //   this.timeout(10000);
-  //
-  //   Contracts.compile(config.with({
-  //     quiet: true
-  //   }), function(err, contracts) {
-  //     if (err) return done(err);
-  //
-  //     var contractNames = Object.keys(contracts);
-  //
-  //     assert.include(contractNames, "Parent");
-  //     assert.include(contractNames, "Module");
-  //     assert.include(contractNames, "ModuleDependency");
-  //
-  //     done();
-  //   })
-  // });
 });

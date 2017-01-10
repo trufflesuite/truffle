@@ -4,7 +4,6 @@ var path = require("path");
 var artifactor = require("truffle-artifactor");
 var provision = require("truffle-provisioner");
 var Require = require("truffle-require");
-var Profiler = require("./profiler");
 var Provider = require("./provider");
 var async = require("async");
 var Web3 = require("web3");

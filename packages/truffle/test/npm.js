@@ -4,7 +4,7 @@ var fs = require("fs");
 var path = require('path');
 var mkdirp = require("mkdirp");
 var async = require("async");
-var Sources = require("../lib/sources.js");
+var Resolver = require("truffle-resolver");
 var Contracts = require("../lib/contracts.js");
 
 describe('NPM integration', function() {
@@ -34,7 +34,7 @@ describe('NPM integration', function() {
   });
 
   it('successfully finds the correct source via Sources lookup', function(done) {
-    Sources.find("fake_source/contracts/Module.sol", config.sources, function(err, body) {
+    Resolver.resolve("fake_source/contracts/Module.sol", config.sources, function(err, body) {
       if (err) return done(err);
 
       assert.equal(body, moduleSource);
@@ -43,7 +43,7 @@ describe('NPM integration', function() {
   });
 
   it("errors when module does not exist from any source", function(done) {
-    Sources.find("some_source/contracts/SourceDoesNotExist.sol", config.sources, function(err, body) {
+    Resolver.resolve("some_source/contracts/SourceDoesNotExist.sol", config.sources, function(err, body) {
       if (!err) {
         return assert.fail("Source lookup should have errored but didn't");
       }
