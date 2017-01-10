@@ -1,2 +1,2 @@
 # truffle-compiler
-Compiler helper and artifact manger
+Compiler helper and artifact manager
