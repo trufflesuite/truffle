@@ -150,9 +150,6 @@ var Test = {
       // Load up solidity tests contracts and create suites for each one
       function(c) {
         testContracts.forEach(function(contract) {
-          // Ensure this contract is using next generation ether-pudding.
-          contract.next_gen = true;
-
           var suite = new Suite(contract.contract_name);
           suite.timeout(BEFORE_TIMEOUT);
 

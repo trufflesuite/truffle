@@ -1,7 +1,7 @@
 var assert = require("chai").assert;
 var Init = require("../lib/init");
 var Contracts = require("../lib/contracts");
-var Pudding = require("ether-pudding");
+var artifactor = require("truffle-artifactor");
 var path = require("path");
 var fs = require("fs");
 
@@ -79,8 +79,9 @@ describe("compile", function() {
   it('contracts should only have one network', function(done) {
     var file = path.resolve(path.join(config.contracts_build_directory, "MetaCoin.sol.js"));
 
-    Pudding.requireFile(file, function(err, contract) {
+    artifactor.requireFile(file, function(err, contract) {
       if (err) return done(err);
+
       assert.equal(contract.networks().length, 1, "Expected the contract to only be managing one network");
       done();
     });
@@ -102,10 +103,10 @@ describe("compile", function() {
     });
   });
 
-  it('contracts should new have two networks', function(done) {
+  it('contracts should now have two networks', function(done) {
     var file = path.resolve(path.join(config.contracts_build_directory, "MetaCoin.sol.js"));
 
-    Pudding.requireFile(file, function(err, contract) {
+    artifactor.requireFile(file, function(err, contract) {
       if (err) return done(err);
       assert.equal(contract.networks().length, 2, "Expected the contract to be managing two networks");
       done();

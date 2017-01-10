@@ -3,7 +3,7 @@ var fs = require("fs");
 var dir = require("node-dir");
 var async = require("async");
 var EthPM = require("ethpm");
-var Pudding = require("ether-pudding");
+var contract = require("truffle-contract");
 var Blockchain = require("../blockchain");
 
 function EPM(config) {
@@ -101,7 +101,7 @@ EPM.prototype.provision_contracts = function(callback) {
       // Done with all packages. Now whisk all contracts in the list.
       Object.keys(list).forEach(function(type_name) {
         var contract_type = list[type_name];
-        list[type_name] = Pudding.whisk(contract_type);
+        list[type_name] = contract(contract_type);
       });
 
       callback(null, list);

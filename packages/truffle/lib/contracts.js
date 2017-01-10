@@ -4,7 +4,7 @@ var mkdirp = require("mkdirp");
 var path = require("path");
 var Compiler = require("./compiler");
 var Config = require("./config");
-var Pudding = require("ether-pudding");
+var artifactor = require("truffle-artifactor");
 var Web3 = require("web3");
 var expect = require("./expect");
 var _ = require("lodash");
@@ -154,7 +154,11 @@ var Contracts = {
         logger.log("Writing artifacts to ." + path.sep + path.relative(options.working_directory, options.contracts_build_directory));
       }
 
-      Pudding.saveAll(contracts, options.contracts_build_directory, options).then(function() {
+      var extra_opts = {
+        network_id: options.network_id
+      };
+
+      artifactor.saveAll(contracts, options.contracts_build_directory, extra_opts).then(function() {
         callback(null, contracts);
       }).catch(callback);
     });
