@@ -1,0 +1,35 @@
+{
+  "name": "truffle-deployer",
+  "version": "0.0.1",
+  "description": "Light deployment module for easily deploying Ethereum contracts",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trufflesuite/truffle-deployer.git"
+  },
+  "keywords": [
+    "ethereum",
+    "truffle",
+    "solidity",
+    "deployment",
+    "contracts"
+  ],
+  "author": "Tim Coulter <tim.coulter@consensys.net>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle-deployer/issues"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle-deployer#readme",
+  "dependencies": {
+    "truffle-expect": "^0.0.3"
+  },
+  "devDependencies": {
+    "ethereumjs-testrpc": "^3.0.3",
+    "mocha": "^3.2.0",
+    "truffle-contract": "^1.0.2",
+    "web3": "^0.18.0"
+  }
+}
