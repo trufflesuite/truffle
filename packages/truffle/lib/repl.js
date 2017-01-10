@@ -1,9 +1,9 @@
 var repl = require("repl");
 var Command = require("./command");
-var Contracts = require("./contracts");
+var provision = require("truffle-provisioner");
 var Web3 = require("web3");
 var vm = require("vm");
-var expect = require("./expect");
+var expect = require("truffle-expect");
 var _ = require("lodash");
 var ExtendableError = require("./errors/extendableerror");
 
@@ -53,7 +53,7 @@ TruffleInterpreter.prototype.start = function() {
 TruffleInterpreter.prototype.provision = function(callback) {
   var self = this;
 
-  Contracts.provision(this.options, function(err, contracts) {
+  provision(this.options, function(err, contracts) {
     if (err) return callback(err);
 
     self.contracts = contracts;

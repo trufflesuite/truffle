@@ -1,13 +1,13 @@
 var Web3 = require("web3");
 var Migrate = require("../migrate");
 var Compiler = require("../compiler");
-var Contracts = require("../contracts");
 var Config = require("../config");
 var Deployer = require("../deployer");
 var Profiler = require('../profiler');
 var Deployed = require("./deployed");
 var TestSource = require("./testsource");
 var async = require("async");
+var provision = require("truffle-provisioner");
 
 
 function TestRunner(options) {
@@ -32,7 +32,7 @@ TestRunner.prototype.initialize = function(callback) {
   var afterStateReset = function(err) {
     if (err) return callback(err);
 
-    Contracts.provision(self.config, function(err, contracts) {
+    provision(self.config, function(err, contracts) {
       if (err) return callback(err);
 
       self.setContracts(contracts);
