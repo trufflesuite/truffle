@@ -1,6 +1,10 @@
 var Web3 = require("web3");
 var expect = require("truffle-expect");
 
+// TODO: Look into removing these dependencies.
+var parallel = require("async/parallel");
+var _ = require("lodash");
+
 // fetch_accounts is a bug fix for the build process, to stop the build
 // from making a request to an RPC client. In the future it should eventually
 // be removed, and the build process shouldn't even run into a sitution where it
@@ -38,7 +42,7 @@ var provision = function(options, fetch_accounts, callback) {
     return source.provision_contracts.bind(source);
   });
 
-  async.parallel(provisioners, function(err, contract_lists) {
+  parallel(provisioners, function(err, contract_lists) {
     if (err) return callback(err);
 
     // Merge lists, backwards first as first source takes precedence
