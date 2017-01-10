@@ -2,20 +2,14 @@ var async = require("async");
 var fs = require("fs");
 var mkdirp = require("mkdirp");
 var path = require("path");
-var Compiler = require("./compiler");
 var Config = require("./config");
 var artifactor = require("truffle-artifactor");
-var provision = require("truffle-provisioner");
+var compile = require("truffle-compile");
 var Web3 = require("web3");
 var expect = require("truffle-expect");
 var _ = require("lodash");
 
 var Contracts = {
-
-  provision: function(options, fetch_accounts, callback) {
-    // TODO: Call truffle-provisioner
-    provision(options, fetch_accounts, callback);
-  },
 
   // contracts_directory: String. Directory where .sol files can be found.
   // contracts_build_directory: String. Directory where .sol.js files can be found and written to.
@@ -52,9 +46,9 @@ var Contracts = {
     };
 
     if (config.all === true || config.compileAll === true) {
-      Compiler.compile_all(config, finished);
+      compile.all(config, finished);
     } else {
-      Compiler.compile_necessary(config, finished);
+      compile.necessary(config, finished);
     }
   },
 

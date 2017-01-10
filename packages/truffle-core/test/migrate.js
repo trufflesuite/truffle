@@ -2,7 +2,7 @@ var assert = require("chai").assert;
 var Init = require("../lib/init");
 var Migrate = require("../lib/migrate");
 var Contracts = require("../lib/contracts");
-var Profiler = require("../lib/profiler");
+var Networks = require("../lib/networks");
 var path = require("path");
 var fs = require("fs");
 var TestRPC = require("ethereumjs-testrpc");
@@ -32,7 +32,7 @@ describe("migrate", function() {
   });
 
   it('profiles a new project as not having any contracts deployed', function(done) {
-    Profiler.deployed_networks(config, function(err, networks) {
+    Networks.deployed(config, function(err, networks) {
       if (err) return done(err);
 
       assert.equal(Object.keys(networks).length, 2, "Should have results for two networks from profiler");
@@ -56,7 +56,7 @@ describe("migrate", function() {
       }), function(err, contracts) {
         if (err) return done(err);
 
-        Profiler.deployed_networks(config, function(err, networks) {
+        Networks.deployed(config, function(err, networks) {
           if (err) return done(err);
 
           assert.equal(Object.keys(networks).length, 2, "Should have results for two networks from profiler");
@@ -78,7 +78,7 @@ describe("migrate", function() {
 
     var currentAddresses = {};
 
-    Profiler.deployed_networks(config, function(err, networks) {
+    Networks.deployed(config, function(err, networks) {
       if (err) return done(err);
 
       ["MetaCoin", "ConvertLib", "Migrations"].forEach(function(contract_name) {
@@ -95,7 +95,7 @@ describe("migrate", function() {
         }), function(err, contracts) {
           if (err) return done(err);
 
-          Profiler.deployed_networks(config, function(err, networks) {
+          Networks.deployed(config, function(err, networks) {
             if (err) return done(err);
 
             assert.equal(Object.keys(networks).length, 2, "Should have results for two networks from profiler");
