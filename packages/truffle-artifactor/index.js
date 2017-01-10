@@ -1,7 +1,6 @@
 var Schema = require("truffle-contract-schema");
 var fs = require("fs-extra");
 var path = require("path");
-var class_template = fs.readFileSync(path.join(__dirname, "templates", "class.js"), {encoding: "utf8"});
 var pkg = require("./package.json");
 var dir = require("node-dir");
 var async = require("async");
@@ -56,7 +55,8 @@ module.exports = {
         var final_source;
 
         if (has_binary_filename) {
-          final_source = self.generateAbstraction(binary_filename);
+          var relative = "." + path.sep + path.relative(path.dirname(filename), binary_filename);
+          final_source = self.generateAbstraction(relative);
         } else {
           final_source = self.generateAbstraction(final_binary);
         }
@@ -125,7 +125,12 @@ module.exports = {
       binaries = "require(\"" + binary_location + "\");";
     }
 
+    // TODO: remove sync.
+    var class_template = fs.readFileSync(path.join(__dirname, "templates", "class.js"), {encoding: "utf8"});
+    var abstraction_source = fs.readFileSync(require.resolve("truffle-contract/contract.js"), {encoding: "utf8"});
+
     var classfile = class_template;
+    classfile = classfile.replace(/\{\{ABSTRACTION\}\}/g, abstraction_source);
     classfile = classfile.replace(/\{\{BINARIES\}\}/g, binaries);
 
     return classfile;

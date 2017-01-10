@@ -1,4 +1,5 @@
-var contract = require("truffle-contract");
+{{ABSTRACTION}}
+
 var BINARIES = {{BINARIES}};
 
-module.exports = contract(BINARIES);
+module.exports = contract.clone(BINARIES);
