@@ -43,7 +43,7 @@ module.exports = {
         if (!err) {
           try {
             var Contract = self._requireFromSource(source, filename);
-            existing_binary = Contract.binaries;
+            existing_binary = Contract.toJSON();
           } catch (e) {
             // If requiring fails there's nothing we can do with it.
           }

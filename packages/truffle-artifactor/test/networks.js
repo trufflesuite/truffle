@@ -144,7 +144,7 @@ describe("Different networks:", function() {
     assert.equal(Example.network_id, null);
 
     // Network returned, however, should be the default.
-    assert.deepEqual(Example.network, Example.binaries.networks[network_one_id]);
+    assert.deepEqual(Example.network, Example.toJSON().networks[network_one_id]);
   });
 
   it("has a fallback network of '*' if no network id set", function(done) {
@@ -158,7 +158,7 @@ describe("Different networks:", function() {
       var AnotherExample = requireNoCache(filepath);
 
       assert.equal(AnotherExample.default_network, "*");
-      assert.equal(Object.keys(AnotherExample.binaries.networks).length, 1);
+      assert.equal(Object.keys(AnotherExample.toJSON().networks).length, 1);
     }).then(done).catch(done);
   });
 
@@ -178,7 +178,7 @@ describe("Different networks:", function() {
       var AnotherExample = requireNoCache(filepath);
 
       assert.equal(AnotherExample.default_network, network_id);
-      assert.equal(Object.keys(AnotherExample.binaries.networks).length, 2);
+      assert.equal(Object.keys(AnotherExample.toJSON().networks).length, 2);
     }).then(done).catch(done);
   });
 
@@ -198,10 +198,10 @@ describe("Different networks:", function() {
       var AnotherExample = requireNoCache(filepath);
 
       assert.equal(AnotherExample.default_network, network_id);
-      assert.equal(Object.keys(AnotherExample.binaries.networks).length, 2);
+      assert.equal(Object.keys(AnotherExample.toJSON().networks).length, 2);
       // Ensure we wrote to the correct network
-      assert.equal(AnotherExample.binaries.networks["*"].address, address);
-      assert.isUndefined(AnotherExample.binaries.networks[network_id].address);
+      assert.equal(AnotherExample.toJSON().networks["*"].address, address);
+      assert.isUndefined(AnotherExample.toJSON().networks[network_id].address);
     }).then(done).catch(done);
   });
 
@@ -215,16 +215,16 @@ describe("Different networks:", function() {
 
     // Ensure first network is the default network (precondition).
     assert.equal(Example.default_network, network_one_id);
-    assert.isNotNull(Example.binaries.networks[network_one_id].address);
-    assert.isNotNull(Example.binaries.networks[network_two_id].address);
-    assert.equal(Example.address, Example.binaries.networks[network_one_id].address);
+    assert.isNotNull(Example.toJSON().networks[network_one_id].address);
+    assert.isNotNull(Example.toJSON().networks[network_two_id].address);
+    assert.equal(Example.address, Example.toJSON().networks[network_one_id].address);
 
     // Thennable checker. Since this is a custom then function, let's ensure things
     // get executed in the right order.
     var execution_count = 0;
 
     Example.deployed().then(function(instance) {
-      assert.equal(instance.address, Example.binaries.networks[network_two_id].address);
+      assert.equal(instance.address, Example.toJSON().networks[network_two_id].address);
 
       // Now up the execution count and move on to the next then statement
       // ensuring the chain remains intact.
@@ -272,14 +272,14 @@ describe("Different networks:", function() {
 
     // Ensure first network is the default network (precondition).
     assert.equal(Example.default_network, network_one_id);
-    assert.isNotNull(Example.binaries.networks[network_one_id].address);
-    assert.isNotNull(Example.binaries.networks[network_two_id].address);
-    assert.equal(Example.address, Example.binaries.networks[network_one_id].address);
+    assert.isNotNull(Example.toJSON().networks[network_one_id].address);
+    assert.isNotNull(Example.toJSON().networks[network_two_id].address);
+    assert.equal(Example.address, Example.toJSON().networks[network_one_id].address);
 
     // Thennable checker. Since this is a custom then function, let's ensure things
     // get executed in the right order.
     var execution_count = 0;
-    var exampleTwoAddress = Example.binaries.networks[network_two_id].address;
+    var exampleTwoAddress = Example.toJSON().networks[network_two_id].address;
 
     Example.at(exampleTwoAddress).then(function(instance) {
       assert.equal(instance.address, exampleTwoAddress);
@@ -319,9 +319,9 @@ describe("Different networks:", function() {
 
     // Ensure first network is the default network (precondition).
     assert.equal(Example.default_network, network_one_id);
-    assert.isNotNull(Example.binaries.networks[network_one_id].address);
-    assert.isNotNull(Example.binaries.networks[network_two_id].address);
-    assert.equal(Example.address, Example.binaries.networks[network_one_id].address);
+    assert.isNotNull(Example.toJSON().networks[network_one_id].address);
+    assert.isNotNull(Example.toJSON().networks[network_two_id].address);
+    assert.equal(Example.address, Example.toJSON().networks[network_one_id].address);
 
     Example.new({from: ExampleTwo.defaults().from, gas: 3141592}).then(function(instance) {
       assert.deepEqual(instance.abi, Example.abi);
