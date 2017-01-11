@@ -225,7 +225,7 @@ var contract = (function(module) {
       var args = Array.prototype.slice.call(arguments);
 
       if (!this.unlinked_binary) {
-        throw new Error(this._binaries.contract_name + " error: contract binary not set. Can't deploy new instance.");
+        throw new Error(this._json.contract_name + " error: contract binary not set. Can't deploy new instance.");
       }
 
       return self.detectNetwork().then(function(network_id) {
@@ -246,7 +246,7 @@ var contract = (function(module) {
             return name != arr[index + 1];
           }).join(", ");
 
-          throw new Error(self.contract_name + " contains unresolved libraries. You must deploy and link the following libraries before you can deploy a new version of " + self.binaries.contract_name + ": " + unlinked_libraries);
+          throw new Error(self.contract_name + " contains unresolved libraries. You must deploy and link the following libraries before you can deploy a new version of " + self._json.contract_name + ": " + unlinked_libraries);
         }
       }).then(function() {
         return new Promise(function(accept, reject) {
@@ -288,7 +288,7 @@ var contract = (function(module) {
       var self = this;
 
       if (address == null || typeof address != "string" || address.length != 42) {
-        throw new Error("Invalid address passed to " + this.binaries.contract_name + ".at(): " + address);
+        throw new Error("Invalid address passed to " + this._json.contract_name + ".at(): " + address);
       }
 
       var contract = new this(address);
@@ -365,7 +365,7 @@ var contract = (function(module) {
     },
 
     hasNetwork: function(network_id) {
-      return this.binaries.networks[network_id + ""] != null;
+      return this._json.networks[network_id + ""] != null;
     },
 
     isDeployed: function() {
@@ -373,7 +373,7 @@ var contract = (function(module) {
     },
 
     isDeployedToNetwork: function(network_id) {
-      return this.binaries.networks[network_id] != null && this.binaries.networks[network_id].address != null;
+      return this._json.networks[network_id] != null && this._json.networks[network_id].address != null;
     },
 
     detectNetwork: function() {
@@ -405,7 +405,13 @@ var contract = (function(module) {
     },
 
     networks: function() {
-      return Object.keys(this.binaries.networks);
+      return Object.keys(this._json.networks);
+    },
+
+    // Overrides the deployed address to null.
+    // You must call this explicitly so you don't inadvertently do this otherwise.
+    resetAddress: function() {
+      delete this.network.address;
     },
 
     link: function(name, address) {
@@ -414,7 +420,7 @@ var contract = (function(module) {
       if (typeof name == "function") {
         var contract = name;
 
-        if (contract.address == null) {
+        if (contract.isDeployed() == false) {
           throw new Error("Cannot link contract without an address.");
         }
 
@@ -447,11 +453,11 @@ var contract = (function(module) {
         return Contract.apply(this, arguments);
       };
 
-      var binaries = options;
+      var json = options;
       var network_id;
 
       if (typeof options != "object") {
-        binaries = self._binaries;
+        json = self._json;
         network_id = options;
       }
 
@@ -461,7 +467,7 @@ var contract = (function(module) {
       temp._properties = this._properties;
 
       temp._property_values = {};
-      temp._binaries = binaries || {};
+      temp._json = json || {};
 
       bootstrap(temp);
 
@@ -478,19 +484,21 @@ var contract = (function(module) {
     addProp: function(key, fn) {
       var self = this;
 
-      var writable = {
-        "address": true
-      };
-
       var getter = function() {
+        if (fn.get != null) {
+          return fn.get.call(self);
+        }
+
         return self._property_values[key] || fn.call(self);
       }
       var setter = function(val) {
-        if (writable[key] !== true) {
-          throw new Error(key + " property is immutable");
+        if (fn.set != null) {
+          fn.set.call(self, val);
+          return;
         }
 
-        self._property_values[key] = val;
+        // If there's not a setter, then the property is immutable.
+        throw new Error(key + " property is immutable");
       };
 
       var definition = {};
@@ -500,36 +508,60 @@ var contract = (function(module) {
       definition.set = setter;
 
       Object.defineProperty(this, key, definition);
+    },
+
+    toJSON: function() {
+      return this._json;
     }
   };
 
   // Getter functions are scoped to Contract object.
   Contract._properties = {
     contract_name: function() {
-      return this.binaries.contract_name;
+      return this._json.contract_name;
     },
-    abi: function() {
-      return this.binaries.abi;
-    },
-    binaries: function() {
-      return this._binaries;
+    abi: {
+      get: function() {
+        return this._json.abi;
+      },
+      set: function(val) {
+        return this._json.abi = val;
+      }
     },
     network: function() {
       var network_id = this.network_id != null ? this.network_id : this.default_network;
-      return this.binaries.networks[network_id] || {};
+
+      // TODO: this might be bad; setting a value on a get.
+      if (this._json.networks[network_id] == null) {
+        this._json.networks[network_id] = {
+          events: {},
+          links: {}
+        };
+      }
+
+      return this._json.networks[network_id];
     },
     // Legacy option (deprecated)
     all_networks: function() {
-      return this.binaries.networks;
+      return this._json.networks;
     },
-    address: function() {
-      var address = this.network.address;
+    address: {
+      get: function() {
+        var address = this.network.address;
 
-      if (address == null) {
-        throw new Error("Cannot find deployed address: " + this.contract_name + " not deployed or address not set.");
+        if (address == null) {
+          throw new Error("Cannot find deployed address: " + this.contract_name + " not deployed or address not set.");
+        }
+
+        return address;
+      },
+      set: function(val) {
+        if (val == null) {
+          throw new Error("Cannot set deployed address; malformed value: " + val);
+        }
+
+        this.network.address = val;
       }
-
-      return address;
     },
     links: function() {
       return this.network.links || {};
@@ -550,17 +582,20 @@ var contract = (function(module) {
 
       return binary;
     },
-    unlinked_binary: function() {
-      return this.binaries.unlinked_binary;
-    },
-    binary_version: function() {
-      return this.binaries.generated_with;
+    unlinked_binary: {
+      get: function() {
+        return this._json.unlinked_binary;
+      },
+      set: function(val) {
+        // TODO: Ensure 0x prefix.
+        this._json.unlinked_binary = val;
+      }
     },
     schema_version: function() {
-      return this.binaries.schema_version;
+      return this._json.schema_version;
     },
     default_network: function() {
-      return this.binaries.default_network;
+      return this._json.default_network;
     },
     updated_at: function() {
       return this.network.updated_at;
