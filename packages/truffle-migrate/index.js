@@ -185,8 +185,8 @@ var Migrate = {
 
       if (options.reset == true) {
         contracts.forEach(function(contract) {
-          contract.address = null;
-        })
+          contract.resetAddress();
+        });
       }
 
       async.eachSeries(migrations, function(migration, finished) {
