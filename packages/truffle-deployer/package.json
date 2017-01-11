@@ -1,6 +1,6 @@
 {
   "name": "truffle-deployer",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Light deployment module for easily deploying Ethereum contracts",
   "main": "index.js",
   "scripts": {
@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle-deployer#readme",
   "dependencies": {
+    "truffle-contract": "^1.0.3",
     "truffle-expect": "^0.0.3"
   },
   "devDependencies": {
