@@ -31,6 +31,8 @@
     "truffle-deployer": "0.0.1",
     "truffle-error": "0.0.1",
     "truffle-expect": "0.0.3",
+    "truffle-migrate": "0.0.1",
+    "truffle-provider": "0.0.1",
     "truffle-provisioner": "0.0.1",
     "truffle-require": "0.0.1",
     "truffle-resolver": "0.0.1",

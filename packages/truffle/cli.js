@@ -2,7 +2,7 @@
 var Command = require("./lib/command");
 var Tasks = require("./lib/tasks");
 var TaskError = require("./lib/errors/taskerror");
-var ExtendableError = require("./lib/errors/extendableerror");
+var TruffleError = require("truffle-error");
 
 var command = new Command(Tasks);
 command.run(process.argv.slice(2), function(err) {
@@ -10,7 +10,7 @@ command.run(process.argv.slice(2), function(err) {
     if (err instanceof TaskError) {
       command.run("list", function() {});
     } else {
-      if (err instanceof ExtendableError) {
+      if (err instanceof TruffleError) {
         console.log(err.message);
       } else if (typeof err == "number") {
         // If a number is returned, exit with that number.
