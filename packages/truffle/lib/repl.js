@@ -5,7 +5,7 @@ var Web3 = require("web3");
 var vm = require("vm");
 var expect = require("truffle-expect");
 var _ = require("lodash");
-var ExtendableError = require("./errors/extendableerror");
+var TruffleError = require("truffle-error");
 
 function TruffleInterpreter(tasks, options) {
   this.options = options;
@@ -80,7 +80,7 @@ TruffleInterpreter.prototype.interpret = function(cmd, context, filename, callba
     return this.command.run(cmd.trim(), this.options, function(err) {
       if (err) {
         // Perform error handling ourselves.
-        if (err instanceof ExtendableError) {
+        if (err instanceof TruffleError) {
           console.log(err.message);
         } else {
           // Bubble up all other unexpected errors.
