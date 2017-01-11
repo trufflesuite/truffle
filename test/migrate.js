@@ -1,6 +1,6 @@
 var assert = require("chai").assert;
 var Init = require("../lib/init");
-var Migrate = require("../lib/migrate");
+var Migrate = require("truffle-migrate");
 var Contracts = require("../lib/contracts");
 var Networks = require("../lib/networks");
 var path = require("path");
