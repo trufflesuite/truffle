@@ -1,0 +1,38 @@
+{
+  "name": "truffle-migrate",
+  "version": "0.0.1",
+  "description": "On-chain migrations management",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trufflesuite/truffle-migrate.git"
+  },
+  "keywords": [
+    "ethereum",
+    "truffle",
+    "migrations",
+    "deployment"
+  ],
+  "author": "Tim Coulter <tim.coulter@consensys.net>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle-migrate/issues"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle-migrate#readme",
+  "dependencies": {
+    "async": "^2.1.4",
+    "node-dir": "^0.1.16",
+    "truffle-artifactor": "^1.0.2",
+    "truffle-deployer": "0.0.1",
+    "truffle-expect": "0.0.3",
+    "truffle-provisioner": "0.0.1",
+    "truffle-require": "0.0.1",
+    "web3": "^0.18.0"
+  },
+  "devDependencies": {
+    "mocha": "^3.2.0"
+  }
+}
