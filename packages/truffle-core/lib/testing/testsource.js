@@ -24,4 +24,9 @@ TestSource.prototype.resolve_dependency_path = function(importh_path, dependency
   return dependency_path;
 }
 
+// The FS source will do it for us.
+TestSource.prototype.provision_contracts = function(callback) {
+  callback(null, {});
+}
+
 module.exports = TestSource;
