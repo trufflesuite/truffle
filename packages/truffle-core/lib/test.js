@@ -144,7 +144,7 @@ var Test = {
           SolidityUtils.ordered_abi(file, contract.abi, contract.contract_name, function(err, ordered) {
             if (err) return finished(err);
 
-            contract._ordered_abi = ordered;
+            contract.abi = ordered;
             finished();
           });
         }, c);
@@ -174,7 +174,7 @@ var Test = {
           };
 
           // Add functions from test file.
-          contract._ordered_abi.forEach(function(item) {
+          contract.abi.forEach(function(item) {
             if (item.type != "function") return;
 
             ["beforeAll", "beforeEach", "afterAll", "afterEach"].forEach(function(fn_type) {
