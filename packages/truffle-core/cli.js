@@ -1,14 +1,21 @@
 #!/usr/bin/env node
 var Command = require("./lib/command");
-var Tasks = require("./lib/tasks");
 var TaskError = require("./lib/errors/taskerror");
 var TruffleError = require("truffle-error");
+var pkg = require("./package.json");
+var OS = require("os");
 
-var command = new Command(Tasks);
-command.run(process.argv.slice(2), function(err) {
+var command = new Command(require("./lib/commands"));
+
+command.run(process.argv.slice(2), {logger: console}, function(err) {
   if (err) {
     if (err instanceof TaskError) {
-      command.run("list", function() {});
+      command.args
+        .usage("Truffle v" + pkg.version + " - a development framework for Ethereum"
+        + OS.EOL + OS.EOL
+        + 'Usage: truffle <command> [options]')
+        .epilog("See more at http://truffleframework.com/docs")
+        .showHelp();
     } else {
       if (err instanceof TruffleError) {
         console.log(err.message);

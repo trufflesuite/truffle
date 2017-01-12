@@ -8,6 +8,10 @@ var cpr_options = {
   confirm: true
 };
 
+// This module will copy a file or directory, and by default
+// won't override individual files. If a file exists, it will
+// simply move onto the next file.
+
 module.exports = function(from, to, extra_options, callback) {
   if (typeof extra_options == "function") {
     callback = extra_options;
