@@ -85,7 +85,7 @@ var compile = function(sources, options, callback) {
     }
   }
 
-  callback(null, result.contracts);
+  callback(null, result.contracts, Object.keys(operatingSystemIndependentSources));
 };
 
 
@@ -128,16 +128,16 @@ compile.with_dependencies = function(options, callback) {
 
   expect.options(options, [
     "paths",
-    "sources",
     "working_directory",
-    "contracts_directory"
+    "contracts_directory",
+    "resolver"
   ]);
 
   var self = this;
   Profiler.required_sources(options.with({
     paths: options.paths,
     base_path: options.contracts_directory,
-    sources: options.sources
+    resolver: options.resolver
   }), function(err, result) {
     if (err) return callback(err);
 

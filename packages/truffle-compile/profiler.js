@@ -11,7 +11,6 @@ var isAcyclic = require("graphlib/lib/alg").isAcyclic;
 var CompileError = require("./compileerror");
 var expect = require("truffle-expect");
 var find_contracts = require("truffle-contract-sources");
-var resolver = require("truffle-resolver");
 
 module.exports = {
   updated: function(options, callback) {
@@ -79,12 +78,12 @@ module.exports = {
     expect.options(options, [
       "paths",
       "base_path",
-      "sources"
+      "resolver"
     ]);
 
     var paths = this.convert_to_absolute_paths(options.paths, options.base_path);
 
-    this.dependency_graph(paths, options.sources, function(err, dependsGraph) {
+    this.dependency_graph(paths, options.resolver, function(err, dependsGraph) {
       if (err) return callback(err);
 
       var required = {};
@@ -155,7 +154,7 @@ module.exports = {
     return import_path.indexOf(".") == 0;
   },
 
-  dependency_graph: function(paths, sources, callback) {
+  dependency_graph: function(paths, resolver, callback) {
     var self = this;
 
     // Iterate through all the contracts looking for libraries and building a dependency graph
@@ -181,7 +180,7 @@ module.exports = {
         return finished();
       }
 
-      resolver.resolve(import_path, sources, imported_from, function(err, body, source) {
+      resolver.resolve(import_path, imported_from, function(err, body, source) {
         if (err) return callback(err);
 
         // Add the contract to the depends graph.
