@@ -2,7 +2,8 @@ var fs = require("fs");
 var dir = require("node-dir");
 var path = require("path");
 var artifactor = require("truffle-artifactor");
-var provision = require("truffle-provisioner");
+var Resolver = require("truffle-resolver");
+var ResolverIntercept = require("./resolverintercept");
 var Require = require("truffle-require");
 var async = require("async");
 var Web3 = require("web3");
@@ -14,7 +15,7 @@ function Migration(file) {
   this.number = parseInt(path.basename(file));
 };
 
-Migration.prototype.run = function(options, contracts, callback) {
+Migration.prototype.run = function(options, callback) {
   var self = this;
   var logger = options.logger || console;
 
@@ -29,20 +30,12 @@ Migration.prototype.run = function(options, contracts, callback) {
 
   logger.log("Running migration: " + path.relative(options.migrations_directory, this.file));
 
+  var resolver = new ResolverIntercept(options.resolver);
+
   // Initial context.
   var context = {
     web3: web3
   };
-
-  // Add contracts to context and prepare contracts.
-  contracts.forEach(function(contract) {
-    context[contract.contract_name] = contract;
-
-    // During migrations, we could be on a network that takes a long time to accept
-    // transactions (i.e., contract deployment close to block size). Because successful
-    // migration is more important than wait time in those cases, we'll synchronize "forever".
-    contract.synchronization_timeout = 0;
-  });
 
   var deployer = new Deployer({
     logger: {
@@ -50,7 +43,6 @@ Migration.prototype.run = function(options, contracts, callback) {
         logger.log("  " + msg);
       }
     },
-    contracts: contracts,
     network: options.network,
     network_id: options.network_id,
     provider: options.provider,
@@ -62,14 +54,16 @@ Migration.prototype.run = function(options, contracts, callback) {
     deployer.start().then(function() {
       if (options.save === false) return;
       logger.log("Saving successful migration to network...");
-      var Migrations = context["Migrations"];
+
+      var Migrations = resolver.require("./Migrations.sol");
+
       if (Migrations && Migrations.address) {
         return Migrations.deployed().setCompleted(self.number);
       }
     }).then(function() {
       if (options.save === false) return;
       logger.log("Saving artifacts...");
-      return artifactor.saveAll(contracts, options.contracts_build_directory, options);
+      return artifactor.saveAll(resolver.contracts(), options.contracts_build_directory, options);
     }).then(function() {
       callback();
     }).catch(function(e) {
@@ -81,7 +75,8 @@ Migration.prototype.run = function(options, contracts, callback) {
   Require.file({
     file: self.file,
     context: context,
-    args: [deployer]
+    resolver: resolver,
+    args: [deployer],
   }, function(err, fn) {
     if (!fn || !fn.length || fn.length == 0) {
       return callback(new Error("Migration " + self.file + " invalid or does not take any parameters"));
@@ -124,12 +119,18 @@ var Migrate = {
     var self = this;
 
     expect.options(options, [
+      "working_directory",
       "migrations_directory",
       "contracts_build_directory",
       "provider",
       "network",
-      "network_id"
+      "network_id",
+      "from" // address doing deployment
     ]);
+
+    if (!options.resolver) {
+      options.resolver = new Resolver(options);
+    }
 
     if (options.reset == true) {
       return this.runAll(options, callback);
@@ -172,50 +173,32 @@ var Migrate = {
   },
 
   runMigrations: function(migrations, options, callback) {
-    function getContracts(done) {
-      if (options.contracts) {
-        return done(null, options.contracts);
-      } else {
-        return provision(options, done);
-      }
-    };
-
-    getContracts(function(err, contracts) {
-      if (err) return callback(err);
-
-      if (options.reset == true) {
-        contracts.forEach(function(contract) {
-          contract.resetAddress();
-        });
-      }
-
-      async.eachSeries(migrations, function(migration, finished) {
-        migration.run(options, contracts, function(err) {
-          if (err) return finished(err);
-          finished();
-        });
-      }, callback);
-    });
+    async.eachSeries(migrations, function(migration, finished) {
+      migration.run(options, function(err) {
+        if (err) return finished(err);
+        finished();
+      });
+    }, callback);
   },
 
   lastCompletedMigration: function(options, callback) {
-    var migrations_contract = path.resolve(path.join(options.contracts_build_directory, "Migrations.sol.js"));
+    var Migrations;
 
-    artifactor.requireFile(migrations_contract, options, function(err, Migrations) {
-      if (err) return callback(new Error("Could not find built Migrations contract."));
+    try {
+      Migrations = options.resolver.require("./Migrations.sol");
+    } catch (e) {
+      return callback(new Error("Could not find built Migrations contract: " + e.message));
+    }
 
-      if (Migrations.isDeployed() == false) {
-        return callback(null, 0);
-      }
+    if (Migrations.isDeployed() == false) {
+      return callback(null, 0);
+    }
 
-      Migrations.setProvider(options.provider);
+    var migrations = Migrations.deployed();
 
-      var migrations = Migrations.deployed();
-
-      migrations.last_completed_migration.call().then(function(completed_migration) {
-        callback(null, completed_migration.toNumber());
-      }).catch(callback);
-    });
+    migrations.last_completed_migration.call().then(function(completed_migration) {
+      callback(null, completed_migration.toNumber());
+    }).catch(callback);
   }
 };
 
