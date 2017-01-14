@@ -20,57 +20,37 @@ module.exports = {
   //   network_id: ...,            (defaults to "*")
   // }
 
-  save: function(options, filename, binary_filename, extra_options) {
+  save: function(options, filename, extra_options) {
     var self = this;
-
-    if (typeof binary_filename == "object") {
-      extra_options = binary_filename;
-      binary_filename = null;
-    }
 
     return new Promise(function(accept, reject) {
       if (filename == null) {
         throw new Error("You must specify a file name.");
       }
 
-      options = Schema.normalizeOptions(options, extra_options);
+      options =  Schema.normalizeOptions(options, extra_options);
 
-      fs.readFile(filename, {encoding: "utf8"}, function(err, source) {
+      fs.readFile(filename, {encoding: "utf8"}, function(err, json) {
         // No need to handle the error. If the file doesn't exist then we'll start afresh
         // with a new binary (see generateBinary()).
         var existing_binary;
 
         if (!err) {
           try {
-            var Contract = self._requireFromSource(source, filename);
-            existing_binary = Contract.toJSON();
+            existing_binary = JSON.parse(json);
           } catch (e) {
-            // If requiring fails there's nothing we can do with it.
+            // Do nothing
           }
         }
 
-        var has_binary_filename = !!binary_filename;
-
-        var final_binary = Schema.generateBinary(options, existing_binary);
-        var final_source;
-
-        if (has_binary_filename) {
-          var relative = "." + path.sep + path.relative(path.dirname(filename), binary_filename);
-          final_source = self.generateAbstraction(relative);
-        } else {
-          final_source = self.generateAbstraction(final_binary);
+        var final_binary;
+        try {
+          final_binary = Schema.generateBinary(options, existing_binary);
+        } catch (e) {
+          return reject(e);
         }
 
-        async.parallel([
-          fs.outputFile.bind(fs, filename, final_source, "utf8"),
-          function(c) {
-            if (has_binary_filename) {
-              fs.outputFile(binary_filename, JSON.stringify(final_binary, null, 2), "utf8", c);
-            } else {
-              c();
-            }
-          }
-        ], function(err) {
+        fs.outputFile(filename, JSON.stringify(final_binary, null, 2), "utf8", function(err) {
           if (err) return reject(err);
           accept();
         });
@@ -78,10 +58,9 @@ module.exports = {
     });
   },
 
-  saveAll: function(contracts, destination, options, binary_destination) {
+  saveAll: function(contracts, destination, options) {
     var self = this;
     options = options || {};
-    binary_destination = binary_destination || path.join(destination, "bin");
 
     if (Array.isArray(contracts)) {
       var arr = contracts;
@@ -99,79 +78,19 @@ module.exports = {
 
         async.each(Object.keys(contracts), function(contract_name, done) {
           var contract_data = contracts[contract_name];
-          var filename = path.join(destination, contract_name + ".sol.js");
-          var binary_filename = path.join(binary_destination, contract_name + ".json");
+          var filename = path.join(destination, contract_name + ".json");
 
           // Add the contract name to our extra options, without editing
           // the options object on its own.
           options = _.extend({}, options, {contract_name: contract_name});
 
           // Finally save the contract.
-          self.save(contract_data, filename, binary_filename, options).then(done).catch(done);
+          self.save(contract_data, filename, options).then(done).catch(done);
         }, function(err) {
           if (err) return reject(err);
           accept();
         });
       });
-    });
-  },
-
-  generateAbstraction: function(binary_location) {
-    var binaries;
-
-    if (typeof binary_location == "object") {
-      binaries = JSON.stringify(binary_location, null, 2);
-    } else {
-      // TODO: Let's up the / doesn't kill Windows.
-      // We can't use path.sep here as it adds an extra dependency.
-      binaries = "require(__dirname + \"/" + binary_location + "\");";
-    }
-
-    // TODO: remove sync.
-    var class_template = fs.readFileSync(path.join(__dirname, "templates", "class.js"), {encoding: "utf8"});
-    var abstraction_source = fs.readFileSync(require.resolve("truffle-contract/contract.js"), {encoding: "utf8"});
-
-    var classfile = class_template;
-    classfile = classfile.replace(/\{\{ABSTRACTION\}\}/g, abstraction_source);
-    classfile = classfile.replace(/\{\{BINARIES\}\}/g, binaries);
-
-    return classfile;
-  },
-
-  // Will upgrade all .sol.js files in place.
-  // Used for a past version bump. May not be useful any longer.
-  upgrade: function(source_directory, callback) {
-    var self = this;
-    var Pudding = require(".");
-
-    if (!fs.existsSync(source_directory)) {
-      callback(new Error("Source directory " + source_directory + " doesn't exist!"));
-    }
-
-    dir.files(source_directory, function(err, files) {
-      if (err != null) {
-        callback(err);
-        return;
-      }
-
-      var found = [];
-
-      for (var file of files) {
-        if (path.basename(file).indexOf(".sol.js") > 0) {
-          var cls = require(file);
-          cls = cls.load(Pudding);
-
-          var source = self.generate(cls.contract_name, {
-            abi: cls.abi,
-            unlinked_binary: cls.binary,
-            address: cls.address
-          });
-
-          fs.writeFileSync(file, source, {encoding: "utf8"});
-        }
-      }
-
-      callback(null, found);
     });
   },
 

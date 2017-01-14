@@ -1,9 +1,10 @@
-// Override Pudding
+// Override artifactor
 var assert = require("chai").assert;
-var Pudding = require("../");
+var artifactor = require("../");
 var temp = require("temp").track();
 var path = require("path");
-var requireNoCache = require("./require-nocache");
+var requireNoCache = require("require-nocache")(module);
+var contract = require("truffle-contract");
 var Web3 = require("web3");
 var TestRPC = require("ethereumjs-testrpc");
 var fs = require("fs");
@@ -14,6 +15,18 @@ process.removeListener("uncaughtException", process.listeners("uncaughtException
 
 describe("Library linking", function() {
   var LibraryExample;
+  var provider = TestRPC.provider();
+  var network_id;
+  var web3 = new Web3();
+  web3.setProvider(provider)
+
+  before(function(done) {
+    web3.version.getNetwork(function(err, id) {
+      if (err) return done(err);
+      network_id = id;
+      done();
+    });
+  });
 
   before(function(done) {
     var dirPath = temp.mkdirSync({
@@ -23,15 +36,18 @@ describe("Library linking", function() {
 
     // Deliberately only use the file path (and no binary path)
     // to test that case.
-    var filepath = path.join(dirPath, "LibraryExample.sol.js");
+    var filepath = path.join(dirPath, "LibraryExample.json");
 
     // ABI doesn't actually matter here.
-    Pudding.save({
+    artifactor.save({
       name: "LibraryExample",
       abi: [],
-      binary: "606060405260ea8060106000396000f3606060405260e060020a600035046335b09a6e8114601a575b005b601860e160020a631ad84d3702606090815273__A_____________________________________906335b09a6e906064906020906004818660325a03f415600257506040805160e160020a631ad84d37028152905173__B_____________________________________9350600482810192602092919082900301818660325a03f415600257506040805160e160020a631ad84d37028152905173821735ac2129bdfb20b560de2718783caf61ad1c9350600482810192602092919082900301818660325a03f41560025750505056"
+      binary: "606060405260ea8060106000396000f3606060405260e060020a600035046335b09a6e8114601a575b005b601860e160020a631ad84d3702606090815273__A_____________________________________906335b09a6e906064906020906004818660325a03f415600257506040805160e160020a631ad84d37028152905173__B_____________________________________9350600482810192602092919082900301818660325a03f415600257506040805160e160020a631ad84d37028152905173821735ac2129bdfb20b560de2718783caf61ad1c9350600482810192602092919082900301818660325a03f41560025750505056",
+      network_id: network_id,
+      default_network: network_id
     }, filepath).then(function() {
-      LibraryExample = requireNoCache(filepath);
+      var json = requireNoCache(filepath);
+      LibraryExample = contract(json);
     }).then(done).catch(done);
   });
 
@@ -74,7 +90,17 @@ describe("Library linking with contract objects", function() {
   var exampleConsumer;
   var accounts;
   var web3;
-  var provider;
+  var provider = TestRPC.provider();
+  var web3 = new Web3();
+  web3.setProvider(provider)
+
+  before(function(done) {
+    web3.version.getNetwork(function(err, id) {
+      if (err) return done(err);
+      network_id = id;
+      done();
+    });
+  });
 
   before(function(done) {
     this.timeout(10000);
@@ -87,35 +113,33 @@ describe("Library linking with contract objects", function() {
     // Compile first
     var result = solc.compile({sources: sources}, 1);
 
-    // Setup
-    provider = TestRPC.provider();
-    web3 = new Web3();
-    web3.setProvider(provider)
-
     var dirPath = temp.mkdirSync({
       dir: path.resolve("./"),
       prefix: 'tmp-test-contract-linking-'
     });
 
-    Pudding.saveAll({
+    artifactor.saveAll({
       ExampleLibrary: {
         binary: result.contracts["ExampleLibrary"].bytecode,
-        abi: JSON.parse(result.contracts["ExampleLibrary"].interface)
+        abi: JSON.parse(result.contracts["ExampleLibrary"].interface),
+        network_id: network_id,
+        default_network: network_id
       },
       ExampleLibraryConsumer: {
         binary: result.contracts["ExampleLibraryConsumer"].bytecode,
-        abi: JSON.parse(result.contracts["ExampleLibraryConsumer"].interface)
+        abi: JSON.parse(result.contracts["ExampleLibraryConsumer"].interface),
+        network_id: network_id,
+        default_network: network_id
       }
     }, dirPath).then(function() {
-      ExampleLibrary = requireNoCache(path.join(dirPath, "ExampleLibrary.sol.js"));
+
+      var json = requireNoCache(path.join(dirPath, "ExampleLibrary.json"));
+      ExampleLibrary = contract(json);
       ExampleLibrary.setProvider(provider);
 
-      ExampleLibraryConsumer = requireNoCache(path.join(dirPath, "ExampleLibraryConsumer.sol.js"));
+      json = requireNoCache(path.join(dirPath, "ExampleLibraryConsumer.json"));
+      ExampleLibraryConsumer = contract(json);
       ExampleLibraryConsumer.setProvider(provider);
-
-      // Opt into next_gen
-      ExampleLibrary.next_gen = true;
-      ExampleLibraryConsumer.next_gen = true;
     }).then(done).catch(done);
   });
 

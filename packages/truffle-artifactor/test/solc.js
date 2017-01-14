@@ -2,20 +2,28 @@ var assert = require("chai").assert;
 var temp = require("temp").track();
 var solc = require("solc");
 var path = require("path");
-var Pudding = require("../");
+var artifactor = require("../");
+var contract = require("truffle-contract");
 
-describe("Pudding", function() {
+describe("solc", function() {
   it("Will save files using input directly from solc", function(done) {
+    this.timeout(5000);
     var result = solc.compile("contract A { function doStuff() {} } \n\n contract B { function somethingElse() {} }", 1);
 
     var dirPath = temp.mkdirSync({
       dir: path.resolve("./"),
-      prefix: 'tmp-pudding-solc-'
+      prefix: 'tmp-artifactor-solc-'
     });
 
-    Pudding.saveAll(result.contracts, dirPath).then(function() {
-      var A = require(path.join(dirPath, "A.sol.js"));
-      var B = require(path.join(dirPath, "B.sol.js"));
+    // Add the network id since it's required
+    Object.keys(result.contracts).forEach(function(key) {
+      result.contracts[key].network_id = "1337";
+      result.contracts[key].default_network = "1337";
+    });
+
+    artifactor.saveAll(result.contracts, dirPath).then(function() {
+      var A = contract(require(path.join(dirPath, "A.json")));
+      var B = contract(require(path.join(dirPath, "B.json")));
 
       var wash = function(interface) {
         return JSON.stringify(JSON.parse(interface));
@@ -23,6 +31,7 @@ describe("Pudding", function() {
 
       assert.equal(JSON.stringify(A.abi), wash(result.contracts["A"].interface));
       assert.equal(JSON.stringify(B.abi), wash(result.contracts["B"].interface));
+
       assert.equal(A.binary, "0x" + result.contracts["A"].bytecode);
       assert.equal(B.binary, "0x" + result.contracts["B"].bytecode);
     }).then(done).catch(done);

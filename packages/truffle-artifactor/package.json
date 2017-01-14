@@ -17,6 +17,7 @@
     "chai": "^3.4.1",
     "ethereumjs-testrpc": "^3.0.0",
     "mocha": "^2.3.4",
+    "require-nocache": "^1.0.0",
     "solc": "^0.4.2",
     "temp": "^0.8.3"
   },

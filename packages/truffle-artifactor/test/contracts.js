@@ -6,7 +6,7 @@ var temp = require("temp").track();
 var path = require("path");
 var solc = require("solc");
 var fs = require("fs");
-var requireNoCache = require("./require-nocache");
+var requireNoCache = require("require-nocache")(module);
 var TestRPC = require("ethereumjs-testrpc");
 var Web3 = require("web3");
 
@@ -15,8 +15,18 @@ describe("artifactor + require", function() {
   var accounts;
   var abi;
   var binary;
-  var web3;
-  var provider;
+  var network_id;
+  var provider = TestRPC.provider();
+  var web3 = new Web3();
+  web3.setProvider(provider)
+
+  before(function(done) {
+    web3.version.getNetwork(function(err, id) {
+      if (err) return done(err);
+      network_id = id;
+      done();
+    });
+  });
 
   before(function(done) {
     this.timeout(10000);
@@ -33,25 +43,23 @@ describe("artifactor + require", function() {
     binary = compiled.bytecode;
 
     // Setup
-    provider = TestRPC.provider();
-    web3 = new Web3();
-    web3.setProvider(provider)
-
     var dirPath = temp.mkdirSync({
       dir: path.resolve("./"),
       prefix: 'tmp-test-contract-'
     });
 
-    var filepath = path.join(dirPath, "Example.sol.js");
-    var binary_filepath = path.join(dirPath, "bin", "Example.json");
+    var filepath = path.join(dirPath, "Example.json");
 
     artifactor.save({
       name: "Example",
       abi: abi,
       binary: binary,
       address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01",
-    }, filepath, binary_filepath).then(function() {
-      Example = requireNoCache(filepath);
+      network_id: network_id
+    }, filepath).then(function() {
+      var json = requireNoCache(filepath);
+
+      Example = contract(json);
       Example.setProvider(provider);
     }).then(done).catch(done);
   });
@@ -186,18 +194,6 @@ describe("artifactor + require", function() {
   });
 
   // TODO: Move this test to truffle-contract
-  it("abstraction generates properly with no network, inlined address", function() {
-    var NewExample = contract({
-      abi: abi,
-      unlinked_binary: binary,
-      address: "0x1234567890123456789012345678901234567890"
-    });
-
-    assert.deepEqual(NewExample.abi, abi);
-    assert.equal(NewExample.deployed().address, "0x1234567890123456789012345678901234567890");
-  });
-
-  // TODO: Move this test to truffle-contract
   it("abstraction generates properly with a specified network", function() {
     var NewExample = contract({
       abi: abi,
@@ -212,5 +208,32 @@ describe("artifactor + require", function() {
 
     assert.deepEqual(NewExample.abi, abi);
     assert.equal(NewExample.deployed().address, "0x1234567890123456789012345678901234567890");
+  });
+
+  it("creates a network object when an address is set if no network specified", function(done) {
+    var NewExample = contract({
+      abi: abi,
+      unlinked_binary: binary
+    });
+
+    NewExample.setProvider(provider);
+    NewExample.defaults({
+      from: accounts[0]
+    });
+
+    assert.equal(NewExample.network_id, null);
+
+    NewExample.new({gas: 3141592}).then(function(instance) {
+      assert.equal(NewExample.network_id, network_id);
+
+      // .new caused a detect, which set the network value
+      assert.deepEqual(NewExample.toJSON().networks[network_id], {events: {}, links: {}});
+
+      NewExample.address = instance.address;
+
+      assert.equal(NewExample.toJSON().networks[network_id].address, instance.address);
+
+      done();
+    }).catch(done);
   });
 });

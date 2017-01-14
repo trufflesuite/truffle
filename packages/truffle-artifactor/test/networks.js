@@ -4,8 +4,10 @@ var temp = require("temp").track();
 var path = require("path");
 var solc = require("solc");
 var fs = require("fs");
-var requireNoCache = require("./require-nocache");
+var requireNoCache = require("require-nocache")(module);
 var TestRPC = require("ethereumjs-testrpc");
+var BlockchainUtils = require("truffle-blockchain-utils");
+var contract = require("truffle-contract");
 var Web3 = require("web3");
 
 function getNetworkId(provider, callback) {
@@ -68,7 +70,7 @@ describe("Different networks:", function() {
       prefix: 'tmp-test-contract-'
     });
 
-    built_file_path = path.join(temp_dir, "Example.sol.js")
+    built_file_path = path.join(temp_dir, "Example.json")
 
     artifactor.save({
       contract_name: "Example",
@@ -84,7 +86,8 @@ describe("Different networks:", function() {
         network_id: network_two_id
       }, built_file_path);
     }).then(function(err) {
-      ExampleOne = requireNoCache(built_file_path);
+      var json = requireNoCache(built_file_path);
+      ExampleOne = contract(json);
       ExampleTwo = ExampleOne.clone(network_two_id); // Mutate
 
       ExampleOne.__marker = "one";
@@ -138,7 +141,8 @@ describe("Different networks:", function() {
   })
 
   it("defaults to the default network set", function() {
-    var Example = requireNoCache(built_file_path);
+    var json = requireNoCache(built_file_path);
+    var Example = contract(json);
 
     // Network id should be null, meaning it's undected and not set explicitly.
     assert.equal(Example.network_id, null);
@@ -147,43 +151,51 @@ describe("Different networks:", function() {
     assert.deepEqual(Example.network, Example.toJSON().networks[network_one_id]);
   });
 
-  it("has a fallback network of '*' if no network id set", function(done) {
-    var filepath = path.join(temp_dir, "AnotherExample.sol.js")
+  it("has no network if none set", function(done) {
+    var filepath = path.join(temp_dir, "AnotherExample.json")
 
     artifactor.save({
       contract_name: "AnotherExample",
       abi: abi,
       binary: binary
     }, filepath).then(function() {
-      var AnotherExample = requireNoCache(filepath);
+      var json = requireNoCache(filepath);
+      var AnotherExample = contract(json);
 
-      assert.equal(AnotherExample.default_network, "*");
-      assert.equal(Object.keys(AnotherExample.toJSON().networks).length, 1);
+      assert.equal(AnotherExample.default_network, null);
+      assert.equal(Object.keys(AnotherExample.toJSON().networks).length, 0);
     }).then(done).catch(done);
   });
 
   it("overwrites the default network if a new default network is specified", function(done) {
-    var filepath = path.join(temp_dir, "AnotherExample.sol.js")
-
-    var network_id = "1337";
+    var filepath = path.join(temp_dir, "AnotherExample.json")
 
     // NOTE: We are saving over the file already there!!!!
     artifactor.save({
       contract_name: "AnotherExample",
       abi: abi,
       binary: binary,
-      network_id: network_id,
-      default_network: network_id
+      network_id: "1010",
+      default_network: "1010"
     }, filepath).then(function() {
-      var AnotherExample = requireNoCache(filepath);
+      return artifactor.save({
+        contract_name: "AnotherExample",
+        abi: abi,
+        binary: binary,
+        network_id: "1337",
+        default_network: "1337"
+      }, filepath);
+    }).then(function() {
+      var json = requireNoCache(filepath);
+      var AnotherExample = contract(json);
 
-      assert.equal(AnotherExample.default_network, network_id);
+      assert.equal(AnotherExample.default_network, "1337");
       assert.equal(Object.keys(AnotherExample.toJSON().networks).length, 2);
     }).then(done).catch(done);
   });
 
-  it("does not overwrite the default network if default is unspecifed and is not fallback", function(done) {
-    var filepath = path.join(temp_dir, "AnotherExample.sol.js")
+  it("errors if address is specified but a network id is not", function(done) {
+    var filepath = path.join(temp_dir, "AnotherExample.json")
 
     var network_id = "1337";
     var address = "0x1234567890123456789012345678901234567890";
@@ -195,13 +207,35 @@ describe("Different networks:", function() {
       binary: binary,
       address: address
     }, filepath).then(function() {
-      var AnotherExample = requireNoCache(filepath);
+      done(new Error("Should have received an error."))
+    }).catch(function(e) {
+      done(); // Got the error we were looking for
+    });
+  });
 
-      assert.equal(AnotherExample.default_network, network_id);
-      assert.equal(Object.keys(AnotherExample.toJSON().networks).length, 2);
+  it("does not overwrite the default network if default is unspecifed", function(done) {
+    var filepath = path.join(temp_dir, "AnotherExample.json")
+
+    var default_network_from_last_test = "1337";
+    var network_id = "1414";
+    var address = "0x1234567890123456789012345678901234567890";
+
+    // NOTE: We are saving over the file already there!!!! AGAIN
+    artifactor.save({
+      contract_name: "AnotherExample",
+      abi: abi,
+      binary: binary,
+      address: address,
+      network_id: network_id
+    }, filepath).then(function() {
+      var json = requireNoCache(filepath);
+      var AnotherExample = contract(json);
+
+      assert.equal(AnotherExample.default_network, default_network_from_last_test);
+      assert.equal(Object.keys(AnotherExample.toJSON().networks).length, 3); // Last three tests have used this file
       // Ensure we wrote to the correct network
-      assert.equal(AnotherExample.toJSON().networks["*"].address, address);
-      assert.isUndefined(AnotherExample.toJSON().networks[network_id].address);
+      assert.equal(AnotherExample.toJSON().networks[network_id].address, address);
+      assert.isUndefined(AnotherExample.toJSON().networks[default_network_from_last_test].address);
     }).then(done).catch(done);
   });
 
@@ -210,7 +244,8 @@ describe("Different networks:", function() {
     // it has two networks, and the default network is the first one. We'll set the
     // provider to the second network, use the thennable version for deployed(), and
     // ensure the address that gets used is the one for the second network.
-    var Example = requireNoCache(built_file_path);
+    var json = requireNoCache(built_file_path);
+    var Example = contract(json);
     Example.setProvider(network_two);
 
     // Ensure first network is the default network (precondition).
@@ -237,7 +272,8 @@ describe("Different networks:", function() {
   });
 
   it("deployed() used as a thennable funnels errors correctly", function(done) {
-    var Example = requireNoCache(built_file_path);
+    var json = requireNoCache(built_file_path);
+    var Example = contract(json);
 
     // No provider is set. Using deployed().then() should send errors down the promise chain.
     Example.deployed().then(function() {
@@ -251,13 +287,14 @@ describe("Different networks:", function() {
   it("deployed() used as a thennable will error if contract hasn't been deployed to the network detected", function(done) {
     var network_three = TestRPC.provider();
 
-    var Example = requireNoCache(built_file_path);
+    var json = requireNoCache(built_file_path);
+    var Example = contract(json);
     Example.setProvider(network_three);
 
     Example.deployed().then(function() {
       assert.fail("This function should never be run because there should have been an error.");
     }).catch(function(err) {
-      if (err.message.indexOf("Example has not been deployed to detected network: ") < 0) return done(new Error("Unexpected error received: " + err.message));
+      if (err.message.indexOf("Example has not been deployed to detected network") < 0) return done(new Error("Unexpected error received: " + err.message));
       done();
     });
   });
@@ -267,7 +304,8 @@ describe("Different networks:", function() {
     // it has two networks, and the default network is the first one. We'll set the
     // provider to the second network, use the thennable version for at(), and
     // ensure the abi that gets used is the one for the second network.
-    var Example = requireNoCache(built_file_path);
+    var json = requireNoCache(built_file_path);
+    var Example = contract(json);
     Example.setProvider(network_two);
 
     // Ensure first network is the default network (precondition).
@@ -296,7 +334,8 @@ describe("Different networks:", function() {
   });
 
   it("at() used as a thennable funnels errors correctly", function(done) {
-    var Example = requireNoCache(built_file_path);
+    var json = requireNoCache(built_file_path);
+    var Example = contract(json);
     Example.setProvider(network_one);
 
     // This address should have no code there. .at().then() should error before
@@ -314,7 +353,8 @@ describe("Different networks:", function() {
     // it has two networks, and the default network is the first one. We'll set the
     // provider to the second network, use the thennable version for at(), and
     // ensure the abi that gets used is the one for the second network.
-    var Example = requireNoCache(built_file_path);
+    var json = requireNoCache(built_file_path);
+    var Example = contract(json);
     Example.setProvider(network_two);
 
     // Ensure first network is the default network (precondition).
@@ -329,15 +369,14 @@ describe("Different networks:", function() {
   });
 
   it("detects the network before sending a transaction", function() {
-    debugger;
-
     // Here, we're going to use two of the same contract abstraction to test
     // network detection. The first is going to deploy a new contract, thus
     // detecting the network in the process of new(); we're then going to
     // pass that address to the second and have it make a transaction.
     // During that transaction it should detect the network since it
     // hasn't been detected already.
-    var ExampleSetup = requireNoCache(built_file_path);
+    var json = requireNoCache(built_file_path);
+    var ExampleSetup = contract(json);
     var ExampleDetect = ExampleSetup.clone();
     ExampleSetup.setProvider(network_two);
     ExampleDetect.setProvider(network_two);
@@ -361,15 +400,14 @@ describe("Different networks:", function() {
   });
 
   it("detects the network when making a call", function() {
-    debugger;
-
     // Here, we're going to use two of the same contract abstraction to test
     // network detection. The first is going to deploy a new contract, thus
     // detecting the network in the process of new(); we're then going to
     // pass that address to the second and have it make a transaction.
     // During that transaction it should detect the network since it
     // hasn't been detected already.
-    var ExampleSetup = requireNoCache(built_file_path);
+    var json = requireNoCache(built_file_path);
+    var ExampleSetup = contract(json);
     var ExampleDetect = ExampleSetup.clone();
     ExampleSetup.setProvider(network_two);
     ExampleDetect.setProvider(network_two);
@@ -387,5 +425,40 @@ describe("Different networks:", function() {
     }).then(function() {
       assert.equal(ExampleDetect.network_id, network_two_id);
     });
+  });
+
+  it("detects the network when a blockchain uri is specified", function(done) {
+    var filepath = path.join(temp_dir, "NetworkExample.json");
+
+    BlockchainUtils.asURI(network_two, function(err, uri) {
+      if (err) return done(err);
+
+      var NetworkExample;
+
+      artifactor.save({
+        contract_name: "NetworkExample",
+        abi: abi,
+        unlinked_binary: binary,
+        network_id: uri,
+        address: "0x1234567890123456789012345678901234567890" // fake
+      }, filepath).then(function() {
+        if (err) return done(err);
+
+        var json = requireNoCache(filepath);
+
+        NetworkExample = contract(json);
+        NetworkExample.setProvider(network_two);
+
+        NetworkExample.defaults({
+          from: ExampleTwo.defaults().from // Borrow the address from this one.
+        });
+
+        return NetworkExample.new({gas: 3141592});
+      }).then(function(instance) {
+        assert.equal(NetworkExample.network_id, uri);
+        done();
+      }).catch(done);
+    });
+
   });
 });
