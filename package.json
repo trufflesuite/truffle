@@ -37,7 +37,7 @@
     "truffle-require": "0.0.1",
     "truffle-resolver": "0.0.1",
     "truffle-solidity-utils": "0.0.1",
-    "web3": "^0.16.0",
+    "web3": "0.18.0",
     "yargs": "^6.6.0"
   },
   "bin": {
