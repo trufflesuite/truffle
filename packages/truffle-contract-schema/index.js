@@ -83,9 +83,7 @@ var TruffleSchema = {
     }
 
     existing_binary.contract_name = options.contract_name || existing_binary.contract_name || "Contract";
-    existing_binary.default_network = options.default_network || existing_binary.default_network || "*";
-
-    options.network_id = (options.network_id || "*") + ""; // Assume fallback network if network not specified.
+    existing_binary.default_network = options.default_network || existing_binary.default_network;
 
     existing_binary.abi = options.abi || existing_binary.abi;
     existing_binary.unlinked_binary = options.unlinked_binary || existing_binary.unlinked_binary;
@@ -102,33 +100,39 @@ var TruffleSchema = {
       existing_binary.networks[network_id] = options.networks[network_id];
     });
 
-    // If we have a flat object with a network id, ensure the network exists.
-    existing_binary.networks[options.network_id] = existing_binary.networks[options.network_id] || {};
-
     var updated_at = new Date().getTime();
 
-    var network = existing_binary.networks[options.network_id];
+    if (options.network_id) {
+      // Ensure an object exists for this network.
+      existing_binary.networks[options.network_id] = existing_binary.networks[options.network_id] || {};
 
-    // Override specific keys
-    network.address = options.address || network.address;
-    network.links = options.links;
+      var network = existing_binary.networks[options.network_id];
 
-    // merge events with any that previously existed
-    network.events = network.events || {};
-    options.events = options.events || {};
-    Object.keys(options.events).forEach(function(event_id) {
-      options.events[event_id] = options.events[event_id];
-    });
+      // Override specific keys
+      network.address = options.address || network.address;
+      network.links = options.links;
 
-    // Now overwrite any events with the most recent data from the ABI.
-    existing_binary.abi.forEach(function(item) {
-      if (item.type != "event") return;
+      // merge events with any that previously existed
+      network.events = network.events || {};
+      options.events = options.events || {};
+      Object.keys(options.events).forEach(function(event_id) {
+        options.events[event_id] = options.events[event_id];
+      });
 
-      var signature = item.name + "(" + item.inputs.map(function(param) {return param.type;}).join(",") + ")";
-      network.events["0x" + sha3(signature, {outputLength: 256})] = item;
-    });
+      // Now overwrite any events with the most recent data from the ABI.
+      existing_binary.abi.forEach(function(item) {
+        if (item.type != "event") return;
 
-    network.updated_at = updated_at;
+        var signature = item.name + "(" + item.inputs.map(function(param) {return param.type;}).join(",") + ")";
+        network.events["0x" + sha3(signature, {outputLength: 256})] = item;
+      });
+
+      network.updated_at = updated_at;
+    } else {
+      if (options.address) {
+        throw new Error("Cannot set address without network id");
+      }
+    }
 
     // Ensure all networks have a `links` object.
     Object.keys(existing_binary.networks).forEach(function(network_id) {
