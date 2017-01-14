@@ -5,13 +5,13 @@ var chai = require("chai");
 var path = require("path");
 var fs = require("fs");
 var Web3 = require("web3");
-var Config = require("./config");
+var Config = require("truffle-config");
 var Contracts = require("./contracts");
+var Resolver = require("truffle-resolver");
 var TestRunner = require('./testing/testrunner');
+var TestResolver = require("./testing/testresolver");
 var TestSource = require("./testing/testsource");
-var Deployed = require('./testing/deployed');
 var expect = require("truffle-expect");
-var provision = require("truffle-provisioner");
 var find_contracts = require("truffle-contract-sources");
 var SolidityUtils = require("truffle-solidity-utils");
 var async = require("async");
@@ -30,10 +30,10 @@ var Test = {
       "test_files",
       "network",
       "network_id",
-      "provider"
+      "provider",
     ]);
 
-    var config = Config.default().merge(options);
+    var config = Config.default().with(options);
 
     // `accounts` will be populated before each contract() invocation
     // and passed to it so tests don't have to call it themselves.
@@ -84,10 +84,34 @@ var Test = {
       mocha.addFile(file);
     });
 
+    var dependency_paths = [];
     var testContracts = [];
+    var testFiles = [];
     var runner;
 
+    var test_resolver;
+
     async.series([
+      // Get accounts available
+      function(c) {
+        web3.eth.getAccounts(function(err, accs) {
+          if (err) return c(err);
+          accounts = accs;
+
+          if (!config.from) {
+            config.from = accounts[0];
+          }
+
+          if (!config.resolver) {
+            config.resolver = new Resolver(config);
+          }
+
+          var test_source = new TestSource(config);
+          test_resolver = new TestResolver(config.resolver, test_source);
+
+          c();
+        });
+      },
       // Get all contracts in the contracts directory as well as the
       // test directory, and compile them together. Note this will only
       // compile what's necessary.
@@ -98,35 +122,36 @@ var Test = {
         }, function(err, result) {
           if (err) return c(err);
 
-          var sources = [new TestSource(result.contract_files)].concat(config.sources);
+          testFiles = result.test_files || [];
 
           // Compile project contracts and test contracts
           Contracts.compile(config.with({
             all: options.compileAll === true,
             files: result.contract_files.concat(result.test_files),
-            sources: sources,
+            resolver: test_resolver,
             quiet: false,
             quietWrite: true
-          }), c);
+          }), function(err, abstractions, dependency_paths) {
+            if (err) return c(err);
+
+            // Now that we have all possible dependencies for our solidity
+            // tests, set up the test runner.
+            runner = new TestRunner(config.with({
+              dependency_paths: dependency_paths
+            }));
+
+            c();
+          });
         })
       },
-      // Provision test contracts
+      // Require test contracts
       function(c) {
-        provision(config, function(err, contracts) {
-          if (err) return c(err);
-
-          // Filter out non-test contracts
-          testContracts = contracts.filter(function(contract) {
-            return contract.contract_name.indexOf("Test") == 0;
-          });
-
-          // Create the TestRunner now that we've provisioned the initial contracts
-          runner = new TestRunner(config.with({
-            contracts: contracts
-          }));
-
-          c();
+        testContracts = testFiles.map(function(test_file_path) {
+          var built_name = "./" + path.basename(test_file_path);
+          return test_resolver.require(built_name, config.contracts_build_directory);
         });
+
+        c();
       },
       // Reorder the abis of solidity tests so that their functions
       // are in the same order as they exist in the code.
@@ -206,18 +231,15 @@ var Test = {
 
         c();
       },
-      // Get accounts available
-      function(c) {
-        web3.eth.getAccounts(function(err, accs) {
-          if (err) return c(err);
-          accounts = accs;
-          c();
-        });
-      },
       // Set globals and helpers for Javascript tests.
       function(c) {
         global.web3 = web3;
         global.assert = chai.assert;
+        global.artifacts = {
+          require: function(import_path) {
+            return runner.config.resolver.require(import_path);
+          }
+        }
 
         global.contract = function(name, tests) {
           if (typeof opts == "function") {
@@ -231,6 +253,7 @@ var Test = {
             before("prepare suite", function(done) {
               this.timeout(BEFORE_TIMEOUT);
               runner.initialize(done);
+
             });
 
             beforeEach("before test", function(done) {
@@ -241,7 +264,7 @@ var Test = {
               runner.endTest(this, done);
             });
 
-            tests(accounts);
+            tests(accounts, config.resolver);
           });
         };
 

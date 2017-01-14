@@ -2,12 +2,13 @@ var async = require("async");
 var fs = require("fs");
 var mkdirp = require("mkdirp");
 var path = require("path");
-var Config = require("./config");
+var Config = require("truffle-config");
 var artifactor = require("truffle-artifactor");
 var compile = require("truffle-compile");
 var Web3 = require("web3");
 var expect = require("truffle-expect");
 var _ = require("lodash");
+var Resolver = require("truffle-resolver");
 
 var Contracts = {
 
@@ -35,13 +36,19 @@ var Contracts = {
     // Use a config object to ensure we get the default sources.
     var config = Config.default().merge(options);
 
-    function finished(err, contracts) {
+    if (!config.resolver) {
+      config.resolver = new Resolver(config);
+    }
+
+    function finished(err, contracts, paths) {
       if (err) return callback(err);
 
       if (contracts != null && Object.keys(contracts).length > 0) {
-        self.write_contracts(contracts, config, callback);
+        self.write_contracts(contracts, config, function(err, abstractions) {
+          callback(err, abstractions, paths);
+        });
       } else {
-        callback(null, []);
+        callback(null, [], paths);
       }
     };
 

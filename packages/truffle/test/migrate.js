@@ -6,6 +6,7 @@ var Networks = require("../lib/networks");
 var path = require("path");
 var fs = require("fs");
 var TestRPC = require("ethereumjs-testrpc");
+var Resolver = require("truffle-resolver");
 
 describe("migrate", function() {
   var config;
@@ -15,6 +16,7 @@ describe("migrate", function() {
     Init.sandbox(function(err, result) {
       if (err) return done(err);
       config = result;
+      config.addResolvers(Resolver.defaults());
       done();
     });
   });

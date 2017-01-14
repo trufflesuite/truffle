@@ -6,11 +6,12 @@ var mkdirp = require("mkdirp");
 var async = require("async");
 var Contracts = require("../lib/contracts.js");
 var Package = require("../lib/package.js");
-var Blockchain = require("../lib/blockchain");
+var Blockchain = require("truffle-blockchain-utils");
 var provision = require("truffle-provisioner");
 var EthPM = require("ethpm");
 var GithubExamples = require("ethpm/lib/indexes/github-examples");
 var TestRPC = require("ethereumjs-testrpc");
+var Resolver = require("truffle-resolver");
 
 describe('EthPM integration', function() {
   var config;
@@ -48,6 +49,7 @@ describe('EthPM integration', function() {
     }, function(err, result) {
       if (err) return done(err);
       config = result;
+      config.addResolvers(Resolver.defaults());
       done();
     });
   });

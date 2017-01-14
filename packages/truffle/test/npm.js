@@ -18,6 +18,7 @@ describe('NPM integration', function() {
     Init.sandbox(function(err, result) {
       if (err) return done(err);
       config = result;
+      config.addResolvers(Resolver.defaults());
 
       fs.writeFile(path.join(config.contracts_directory, "Parent.sol"), parentContractSource, {encoding: "utf8"}, done());
     });

@@ -90,7 +90,6 @@ var Package = {
       callback(null, results);
     });
   }
-
 };
 
 module.exports = Package;

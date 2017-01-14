@@ -4,6 +4,7 @@ var fs = require("fs");
 var Init = require("../lib/init");
 var Create = require("../lib/create");
 var dir = require("node-dir");
+var Resolver = require("truffle-resolver");
 
 describe('create', function() {
   var config;
@@ -13,6 +14,7 @@ describe('create', function() {
     Init.sandbox(function(err, result) {
       if (err) return done(err);
       config = result;
+      config.addResolvers(Resolver.defaults());
       done();
     });
   });
@@ -23,6 +25,8 @@ describe('create', function() {
 
       var expected_file = path.join(config.contracts_directory, "MyNewContract.sol");
       assert.isTrue(fs.existsSync(expected_file), `Contract to be created doesns't exist, ${expected_file}`);
+
+      console.log(expected_file);
 
       var file_data = fs.readFileSync(expected_file, {encoding: "utf8"});
       assert.isNotNull(file_data, "File's data is null");
