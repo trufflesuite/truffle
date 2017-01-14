@@ -1,25 +1,37 @@
 var Web3 = require("web3");
-var Config = require("../config");
+var Config = require("truffle-config");
 var Migrate = require("truffle-migrate");
 var Deployer = require("truffle-deployer");
 var Deployed = require("./deployed");
+var TestResolver = require("./testresolver");
 var TestSource = require("./testsource");
-var async = require("async");
+var series = require("async").series;
 var provision = require("truffle-provisioner");
 var find_contracts = require("truffle-contract-sources");
+var artifactor = require("truffle-artifactor");
+var expect = require("truffle-expect");
 var compile = require("truffle-compile");
 
 function TestRunner(options) {
+  options = options || {};
   this.config = Config.default().merge(options);
+
+  expect.options(options, [
+    "resolver",
+    "provider",
+    "dependency_paths" // paths of all .sol dependencies (found through compilation)
+  ]);
+
   this.logger = options.logger || console;
+  this.initial_resolver = options.resolver;
   this.provider = options.provider;
+  this.dependency_paths = options.dependency_paths;
+
   this.can_shapshot = false;
   this.initial_snapshot = null;
   this.known_events = {};
   this.web3 = new Web3();
   this.web3.setProvider(options.provider);
-
-  this.setContracts(options.contracts);
 
   // For each test
   this.currentTestStartBlock = null;
@@ -28,39 +40,39 @@ function TestRunner(options) {
 TestRunner.prototype.initialize = function(callback) {
   var self = this;
 
+  var test_source = new TestSource(self.config);
+  this.config.resolver = new TestResolver(self.initial_resolver, test_source);
+
   var afterStateReset = function(err) {
     if (err) return callback(err);
 
-    provision(self.config, function(err, contracts) {
-      if (err) return callback(err);
+    callback();
 
-      self.setContracts(contracts);
+    //self.known_events = {};
 
-      self.known_events = {};
+    // Go through all abis and record events we know about.
+    // self.project_contracts.forEach(function(contract) {
+    //   // make the contract globally available
+    //   global[contract.contract_name] = contract;
+    //
+    //   var abi = contract.abi;
+    //
+    //   for (var j = 0; j < abi.length; j++) {
+    //     var item = abi[j];
+    //
+    //     if (item.type == "event") {
+    //       var signature = item.name + "(" + item.inputs.map(function(param) {return param.type;}).join(",") + ")";
+    //
+    //       self.known_events[web3.sha3(signature)] = {
+    //         signature: signature,
+    //         abi_entry: item
+    //       };
+    //     }
+    //   }
+    //
+    //   callback();
+    // });
 
-      // Go through all abis and record events we know about.
-      self.project_contracts.forEach(function(contract) {
-        // make the contract globally available
-        global[contract.contract_name] = contract;
-
-        var abi = contract.abi;
-
-        for (var j = 0; j < abi.length; j++) {
-          var item = abi[j];
-
-          if (item.type == "event") {
-            var signature = item.name + "(" + item.inputs.map(function(param) {return param.type;}).join(",") + ")";
-
-            self.known_events[web3.sha3(signature)] = {
-              signature: signature,
-              abi_entry: item
-            };
-          }
-        }
-      });
-
-      callback();
-    });
   };
 
   if (self.initial_snapshot == null) {
@@ -81,48 +93,41 @@ TestRunner.prototype.initialize = function(callback) {
   }
 };
 
-TestRunner.prototype.setContracts = function(contracts) {
-  var self = this;
-
-  self.contracts = contracts;
-  self.project_contracts = [];
-  self.test_contracts = [];
-  self.test_dependencies = [];
-
-  contracts.forEach(function(contract) {
-    if (contract.contract_name.indexOf("Test") == 0) {
-      self.test_contracts.push(contract);
-    } else if (["DeployedAddresses", "Assert"].indexOf(contract.contract_name) >= 0) {
-      self.test_dependencies.push(contract);
-    } else {
-      self.project_contracts.push(contract);
-    }
-  });
-};
-
-
 TestRunner.prototype.initializeSolidityTest = function(contract, callback) {
   var self = this;
 
-  async.series([
+  series([
     this.initialize.bind(this),
     this.compileNewAbstractInterface.bind(this),
-    function(c) {
-      var deployer = new Deployer(self.config.with({
-        contracts: self.contracts,
-        logger: {
-          log: function() {}
-        }
-      }));
+  ], function(err) {
+    if (err) return callback(err);
 
-      deployer.deploy(self.test_dependencies);
-      deployer.deploy(contract);
-      deployer.start().then(function() {
-        // Somehow this won't continue if I just pass c to .then()...
-        c();
-      }).catch(c);
-    }
-  ], callback)
+    var deployer = new Deployer(self.config.with({
+      logger: { log: function() {} }
+    }));
+
+    var Assert = self.config.resolver.require("truffle/Assert.sol");
+    var DeployedAddresses = self.config.resolver.require("truffle/DeployedAddresses.sol");
+
+    deployer.deploy([
+      Assert,
+      DeployedAddresses
+    ]).then(function() {
+      self.dependency_paths.forEach(function(dependency_path) {
+        var dependency = self.config.resolver.require(dependency_path);
+
+        if (dependency.isDeployed()) {
+          deployer.link(dependency, contract);
+        }
+      });
+    });
+
+    deployer.deploy(contract);
+
+    deployer.start().then(function() {
+      callback();
+    }).catch(callback);
+  });
 };
 
 TestRunner.prototype.compileNewAbstractInterface = function(callback) {
@@ -131,42 +136,32 @@ TestRunner.prototype.compileNewAbstractInterface = function(callback) {
   find_contracts(this.config.contracts_directory, function(err, files) {
     if (err) return callback(err);
 
-    var sources = [new TestSource(files, self.project_contracts)].concat(self.config.sources);
-
     compile.with_dependencies(self.config.with({
       paths: [
         "truffle/DeployedAddresses.sol"
       ],
-      sources: sources,
       quiet: true
     }), function(err, contracts) {
       if (err) return callback(err);
 
-      for (var i = 0; i < self.contracts.length; i++) {
-        var needle = self.contracts[i];
-        if (needle.contract_name == "DeployedAddresses") {
-          needle.unlinked_binary = "0x" + contracts["DeployedAddresses"].bytecode;
-          break;
-        }
-      }
+      // Set network values.
+      Object.keys(contracts).forEach(function(name) {
+        contracts[name].network_id = self.config.network_id;
+        contracts[name].default_network = self.config.default_network;
+      });
 
-      callback();
+      artifactor.saveAll(contracts, self.config.contracts_build_directory).then(function() {
+        callback();
+      }).catch(callback);
     });
   });
 };
 
 TestRunner.prototype.deploy = function(callback) {
-  Migrate.run({
-    migrations_directory: this.config.migrations_directory,
-    contracts_build_directory: this.config.contracts_build_directory,
-    contracts: this.project_contracts, // Use project contracts to prevent linker from trying to link everything
-    network: this.config.network,
-    network_id: this.config.network_id,
-    provider: this.config.provider,
-    rpc: this.config.rpc,
+  Migrate.run(this.config.with({
     reset: true,
     quiet: true
-  }, callback);
+  }), callback);
 };
 
 TestRunner.prototype.resetState = function(callback) {

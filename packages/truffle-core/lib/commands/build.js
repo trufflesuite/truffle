@@ -1,4 +1,4 @@
-var Config = require("../config");
+var Config = require("truffle-config");
 var Build = require("../build");
 
 var command = {

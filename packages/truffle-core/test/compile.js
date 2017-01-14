@@ -2,6 +2,7 @@ var assert = require("chai").assert;
 var Init = require("../lib/init");
 var Contracts = require("../lib/contracts");
 var artifactor = require("truffle-artifactor");
+var Resolver = require("truffle-resolver");
 var path = require("path");
 var fs = require("fs");
 
@@ -13,6 +14,7 @@ describe("compile", function() {
     Init.sandbox(function(err, result) {
       if (err) return done(err);
       config = result;
+      config.addResolvers(Resolver.defaults());
       done();
     });
   });
@@ -30,6 +32,8 @@ describe("compile", function() {
 
   it('compiles all initial contracts', function(done) {
     this.timeout(10000);
+
+    console.log(config.working_directory);
 
     Contracts.compile(config.with({
       all: false,

@@ -1,16 +1,60 @@
 var Deployed = require("./deployed");
 var path = require("path");
 var fs = require("fs");
+var contract = require("truffle-contract");
 
-function TestSource(project_files, project_contracts) {
-  this.project_files = project_files;
-  this.project_contracts = project_contracts || [];
+function TestSource(config) {
+  this.config = config;
 };
 
-TestSource.prototype.find = function(import_path, callback) {
+TestSource.prototype.require = function(import_path) {
+  return null; // FSSource will get it.
+};
+
+TestSource.prototype.resolve = function(import_path, callback) {
+  var self = this;
+
   if (import_path == "truffle/DeployedAddresses.sol") {
-    var addressSource = Deployed.makeSolidityDeployedAddressesLibrary(this.project_files, this.project_contracts);
-    return callback(null, addressSource);
+    return fs.readdir(this.config.contracts_build_directory, function(err, files) {
+      if (err) return callback(err);
+
+      var promises = files.map(function(file) {
+        return new Promise(function(accept, reject) {
+          fs.readFile(path.join(self.config.contracts_build_directory, file), "utf8", function(err, body) {
+            if (err) return reject(err);
+            accept(body);
+          });
+        });
+      });
+
+      Promise.all(promises).then(function(files_data) {
+        var addresses = files_data.map(function(data) {
+          return JSON.parse(data);
+        }).map(function(json) {
+          return contract(json);
+        }).map(function(c) {
+          c.setNetwork(self.config.network_id);
+          if (c.isDeployed()) {
+            return c.address;
+          }
+          return null;
+        });
+
+        var mapping = {};
+
+        addresses.forEach(function(address, i) {
+          var contract_name = path.basename(files[i], ".json");
+
+          if (contract_name == "Assert" || contract_name == "DeployedAddresses") return;
+
+          mapping[contract_name] = address;
+        });
+
+        var addressSource = Deployed.makeSolidityDeployedAddressesLibrary(mapping);
+
+        callback(null, addressSource);
+      }).catch(callback);
+    });
   }
 
   if (import_path == "truffle/Assert.sol") {
@@ -20,13 +64,8 @@ TestSource.prototype.find = function(import_path, callback) {
   return callback();
 };
 
-TestSource.prototype.resolve_dependency_path = function(importh_path, dependency_path) {
+TestSource.prototype.resolve_dependency_path = function(import_path, dependency_path) {
   return dependency_path;
-}
-
-// The FS source will do it for us.
-TestSource.prototype.provision_contracts = function(callback) {
-  callback(null, {});
 }
 
 module.exports = TestSource;

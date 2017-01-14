@@ -1,5 +1,5 @@
 var Serve = require("../serve");
-var Config = require("../config");
+var Config = require("truffle-config");
 var watch = require("./watch");
 
 var command = {

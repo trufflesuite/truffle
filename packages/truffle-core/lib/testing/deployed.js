@@ -1,21 +1,11 @@
-var path = require("path");
-
 var Deployed = {
 
-  makeSolidityDeployedAddressesLibrary: function(contract_files, contracts) {
-    contracts = contracts || [];
-
-    var addresses = contracts.reduce(function(obj, contract) {
-      obj[contract.contract_name] = contract.address;
-      return obj;
-    }, {});
-
+  makeSolidityDeployedAddressesLibrary: function(mapping) {
     var source = "";
     source += "pragma solidity ^0.4.6; \n\n library DeployedAddresses {" + "\n";
 
-    contract_files.forEach(function(file) {
-      var name = path.basename(file, ".sol");
-      var address = addresses[name];
+    Object.keys(mapping).forEach(function(name) {
+      var address = mapping[name];
 
       var body = "throw;";
 

@@ -1,4 +1,4 @@
-var Config = require("../config");
+var Config = require("truffle-config");
 var ConfigurationError = require("../errors/ConfigurationError");
 var create = require("../create");
 

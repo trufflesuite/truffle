@@ -5,6 +5,7 @@ var Init = require("../lib/init");
 var Contracts = require("../lib/contracts");
 var TestRPC = require("ethereumjs-testrpc");
 var provision = require("truffle-provisioner");
+var Resolver = require("truffle-resolver");
 
 describe('config', function() {
   var config;
@@ -23,6 +24,7 @@ describe('config', function() {
       if (err) return done(err);
       config = result;
       config.provider = TestRPC.provider();
+      config.addResolvers(Resolver.defaults());
       done();
     });
   });

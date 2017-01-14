@@ -1,6 +1,7 @@
 var assert = require("chai").assert;
 var Init = require("../lib/init");
 var Profiler = require("truffle-compile/profiler.js");
+var Resolver = require("truffle-resolver");
 
 // TOOD: Move this to truffle-compile!
 
@@ -12,6 +13,7 @@ describe('profiler', function() {
     Init.sandbox(function(err, result) {
       if (err) return done(err);
       config = result;
+      config.addResolvers(Resolver.defaults());
       done();
     });
   });
