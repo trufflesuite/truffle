@@ -4,6 +4,7 @@ var Module = require('module');
 var vm = require('vm');
 var expect = require("truffle-expect");
 var provision = require("truffle-provisioner");
+var Config = require("truffle-config");
 var Web3 = require("web3");
 
 // options.file: path to file to execute. Must be a module that exports a function.
@@ -15,6 +16,13 @@ var Require = {
   file: function(options, done) {
     var self = this;
     var file = options.file;
+
+    expect.options(options, [
+      "file",
+      "resolver"
+    ]);
+
+    options = Config.default().with(options);
 
     fs.readFile(options.file, {encoding: "utf8"}, function(err, source) {
       if (err) return done(err);
@@ -60,6 +68,7 @@ var Require = {
             }
           }
         },
+        artifacts: options.resolver,
         setImmediate: setImmediate,
         setInterval: setInterval,
         setTimeout: setTimeout,
@@ -89,40 +98,24 @@ var Require = {
     expect.options(options, [
       "contracts_build_directory",
       "file",
+      "resolver",
       "provider",
       "network",
       "network_id"
     ]);
 
-    var provisionIfNeeded = function(callback) {
-      if (options.contracts != null) {
-        callback(null, options.contracts);
-      } else {
-        provision(options, callback);
-      }
-    };
+    var web3 = new Web3();
+    web3.setProvider(options.provider);
 
-    provisionIfNeeded(function(err, contracts) {
-      if (err) return done(err);
-
-      var web3 = new Web3();
-      web3.setProvider(options.provider);
-
-      var context = {
+    self.file({
+      file: options.file,
+      context: {
         web3: web3
-      };
-
-      contracts.forEach(function(contract) {
-        context[contract.contract_name] = contract;
-      });
-
-      self.file({
-        file: options.file,
-        context: context
-      }, function(err, fn) {
-        if (err) return done(err);
-        fn(done);
-      });
+      },
+      resolver: options.resolver
+    }, function(err, fn) {
+      if (err) return done(err);
+      fn(done);
     });
   }
 };
