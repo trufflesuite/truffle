@@ -22,10 +22,5 @@
     "url": "https://github.com/trufflesuite/truffle-provisioner/issues"
   },
   "homepage": "https://github.com/trufflesuite/truffle-provisioner#readme",
-  "dependencies": {
-    "async": "^2.1.4",
-    "lodash": "^4.17.4",
-    "truffle-expect": "0.0.3",
-    "web3": "^0.18.0"
-  }
+  "dependencies": {}
 }
