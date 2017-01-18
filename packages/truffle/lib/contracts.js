@@ -3,12 +3,12 @@ var fs = require("fs");
 var mkdirp = require("mkdirp");
 var path = require("path");
 var Config = require("truffle-config");
-var artifactor = require("truffle-artifactor");
 var compile = require("truffle-compile");
 var Web3 = require("web3");
 var expect = require("truffle-expect");
 var _ = require("lodash");
 var Resolver = require("truffle-resolver");
+var Artifactor = require("truffle-artifactor");
 
 var Contracts = {
 
@@ -38,6 +38,10 @@ var Contracts = {
 
     if (!config.resolver) {
       config.resolver = new Resolver(config);
+    }
+
+    if (!config.artifactor) {
+      config.artifactor = new Artifactor(config.contracts_build_directory);
     }
 
     function finished(err, contracts, paths) {
@@ -76,7 +80,7 @@ var Contracts = {
         network_id: options.network_id
       };
 
-      artifactor.saveAll(contracts, options.contracts_build_directory, extra_opts).then(function() {
+      options.artifactor.saveAll(contracts, extra_opts).then(function() {
         callback(null, contracts);
       }).catch(callback);
     });

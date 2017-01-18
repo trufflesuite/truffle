@@ -1,31 +1,24 @@
 var Web3 = require("web3");
 var Config = require("truffle-config");
 var Migrate = require("truffle-migrate");
-var Deployer = require("truffle-deployer");
-var Deployed = require("./deployed");
 var TestResolver = require("./testresolver");
 var TestSource = require("./testsource");
-var series = require("async").series;
-var provision = require("truffle-provisioner");
-var find_contracts = require("truffle-contract-sources");
-var artifactor = require("truffle-artifactor");
 var expect = require("truffle-expect");
-var compile = require("truffle-compile");
 
 function TestRunner(options) {
   options = options || {};
-  this.config = Config.default().merge(options);
 
   expect.options(options, [
     "resolver",
     "provider",
-    "dependency_paths" // paths of all .sol dependencies (found through compilation)
+    "contracts_build_directory"
   ]);
+
+  this.config = Config.default().merge(options);
 
   this.logger = options.logger || console;
   this.initial_resolver = options.resolver;
   this.provider = options.provider;
-  this.dependency_paths = options.dependency_paths;
 
   this.can_shapshot = false;
   this.initial_snapshot = null;
@@ -35,13 +28,16 @@ function TestRunner(options) {
 
   // For each test
   this.currentTestStartBlock = null;
+
+  this.BEFORE_TIMEOUT = 120000;
+  this.TEST_TIMEOUT = 300000;
 };
 
 TestRunner.prototype.initialize = function(callback) {
   var self = this;
 
   var test_source = new TestSource(self.config);
-  this.config.resolver = new TestResolver(self.initial_resolver, test_source);
+  this.config.resolver = new TestResolver(self.initial_resolver, test_source, self.config.contracts_build_directory);
 
   var afterStateReset = function(err) {
     if (err) return callback(err);
@@ -76,91 +72,28 @@ TestRunner.prototype.initialize = function(callback) {
   };
 
   if (self.initial_snapshot == null) {
-    // Make the initial deployment (full migration).
-    self.deploy(function(err) {
-      if (err) return callback(err);
+    // // Make the initial deployment (full migration).
+    // self.deploy(function(err) {
+    //   if (err) return callback(err);
 
-      self.snapshot(function(err, initial_snapshot) {
-        if (err == null) {
-          self.can_snapshot = true;
-          self.initial_snapshot = initial_snapshot;
-        }
-        afterStateReset();
-      });
+    self.snapshot(function(err, initial_snapshot) {
+      if (err == null) {
+        self.can_snapshot = true;
+        self.initial_snapshot = initial_snapshot;
+      }
+      afterStateReset();
     });
+    //});
   } else {
     self.resetState(afterStateReset);
   }
 };
 
-TestRunner.prototype.initializeSolidityTest = function(contract, callback) {
-  var self = this;
-
-  series([
-    this.initialize.bind(this),
-    this.compileNewAbstractInterface.bind(this),
-  ], function(err) {
-    if (err) return callback(err);
-
-    var deployer = new Deployer(self.config.with({
-      logger: { log: function() {} }
-    }));
-
-    var Assert = self.config.resolver.require("truffle/Assert.sol");
-    var DeployedAddresses = self.config.resolver.require("truffle/DeployedAddresses.sol");
-
-    deployer.deploy([
-      Assert,
-      DeployedAddresses
-    ]).then(function() {
-      self.dependency_paths.forEach(function(dependency_path) {
-        var dependency = self.config.resolver.require(dependency_path);
-
-        if (dependency.isDeployed()) {
-          deployer.link(dependency, contract);
-        }
-      });
-    });
-
-    deployer.deploy(contract);
-
-    deployer.start().then(function() {
-      callback();
-    }).catch(callback);
-  });
-};
-
-TestRunner.prototype.compileNewAbstractInterface = function(callback) {
-  var self = this;
-
-  find_contracts(this.config.contracts_directory, function(err, files) {
-    if (err) return callback(err);
-
-    compile.with_dependencies(self.config.with({
-      paths: [
-        "truffle/DeployedAddresses.sol"
-      ],
-      quiet: true
-    }), function(err, contracts) {
-      if (err) return callback(err);
-
-      // Set network values.
-      Object.keys(contracts).forEach(function(name) {
-        contracts[name].network_id = self.config.network_id;
-        contracts[name].default_network = self.config.default_network;
-      });
-
-      artifactor.saveAll(contracts, self.config.contracts_build_directory).then(function() {
-        callback();
-      }).catch(callback);
-    });
-  });
-};
-
 TestRunner.prototype.deploy = function(callback) {
+  console.log(this.config.contracts_build_directory)
   Migrate.run(this.config.with({
     reset: true,
-    quiet: true
+    //quiet: true
   }), callback);
 };
 
