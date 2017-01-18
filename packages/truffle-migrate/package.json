@@ -1,6 +1,6 @@
 {
   "name": "truffle-migrate",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "On-chain migrations management",
   "main": "index.js",
   "scripts": {
