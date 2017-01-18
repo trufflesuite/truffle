@@ -1,5 +1,5 @@
 var assert = require("chai").assert;
-var artifactor = require("../");
+var Artifactor = require("../");
 var temp = require("temp").track();
 var path = require("path");
 var solc = require("solc");
@@ -70,6 +70,8 @@ describe("Different networks:", function() {
       prefix: 'tmp-test-contract-'
     });
 
+    artifactor = new Artifactor(temp_dir);
+
     built_file_path = path.join(temp_dir, "Example.json")
 
     artifactor.save({
@@ -78,13 +80,13 @@ describe("Different networks:", function() {
       binary: binary,
       network_id: network_one_id,
       default_network: network_one_id
-    }, built_file_path).then(function() {
+    }).then(function() {
       return artifactor.save({
         contract_name: "Example",
         abi: abi,
         binary: binary,
         network_id: network_two_id
-      }, built_file_path);
+      });
     }).then(function(err) {
       var json = requireNoCache(built_file_path);
       ExampleOne = contract(json);

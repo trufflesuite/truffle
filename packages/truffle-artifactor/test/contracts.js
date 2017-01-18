@@ -1,6 +1,6 @@
 // Override artifactor
 var assert = require("chai").assert;
-var artifactor = require("../");
+var Artifactor = require("../");
 var contract = require("truffle-contract");
 var temp = require("temp").track();
 var path = require("path");
@@ -16,6 +16,7 @@ describe("artifactor + require", function() {
   var abi;
   var binary;
   var network_id;
+  var artifactor;
   var provider = TestRPC.provider();
   var web3 = new Web3();
   web3.setProvider(provider)
@@ -48,16 +49,18 @@ describe("artifactor + require", function() {
       prefix: 'tmp-test-contract-'
     });
 
-    var filepath = path.join(dirPath, "Example.json");
+    var expected_filepath = path.join(dirPath, "Example.json");
+
+    artifactor = new Artifactor(dirPath);
 
     artifactor.save({
-      name: "Example",
+      contract_name: "Example",
       abi: abi,
       binary: binary,
       address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01",
       network_id: network_id
-    }, filepath).then(function() {
-      var json = requireNoCache(filepath);
+    }).then(function() {
+      var json = requireNoCache(expected_filepath);
 
       Example = contract(json);
       Example.setProvider(provider);

@@ -2,7 +2,7 @@ var assert = require("chai").assert;
 var temp = require("temp").track();
 var solc = require("solc");
 var path = require("path");
-var artifactor = require("../");
+var Artifactor = require("../");
 var contract = require("truffle-contract");
 
 describe("solc", function() {
@@ -14,6 +14,8 @@ describe("solc", function() {
       dir: path.resolve("./"),
       prefix: 'tmp-artifactor-solc-'
     });
+
+    var artifactor = new Artifactor(dirPath);
 
     // Add the network id since it's required
     Object.keys(result.contracts).forEach(function(key) {

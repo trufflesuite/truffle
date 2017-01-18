@@ -1,6 +1,6 @@
 // Override artifactor
 var assert = require("chai").assert;
-var artifactor = require("../");
+var Artifactor = require("../");
 var temp = require("temp").track();
 var path = require("path");
 var requireNoCache = require("require-nocache")(module);
@@ -34,19 +34,21 @@ describe("Library linking", function() {
       prefix: 'tmp-test-libraries-'
     });
 
+    var artifactor = new Artifactor(dirPath);
+
     // Deliberately only use the file path (and no binary path)
     // to test that case.
-    var filepath = path.join(dirPath, "LibraryExample.json");
+    var expected_filepath = path.join(dirPath, "LibraryExample.json");
 
     // ABI doesn't actually matter here.
     artifactor.save({
-      name: "LibraryExample",
+      contract_name: "LibraryExample",
       abi: [],
       binary: "606060405260ea8060106000396000f3606060405260e060020a600035046335b09a6e8114601a575b005b601860e160020a631ad84d3702606090815273__A_____________________________________906335b09a6e906064906020906004818660325a03f415600257506040805160e160020a631ad84d37028152905173__B_____________________________________9350600482810192602092919082900301818660325a03f415600257506040805160e160020a631ad84d37028152905173821735ac2129bdfb20b560de2718783caf61ad1c9350600482810192602092919082900301818660325a03f41560025750505056",
       network_id: network_id,
       default_network: network_id
-    }, filepath).then(function() {
-      var json = requireNoCache(filepath);
+    }).then(function() {
+      var json = requireNoCache(expected_filepath);
       LibraryExample = contract(json);
     }).then(done).catch(done);
   });
@@ -117,6 +119,8 @@ describe("Library linking with contract objects", function() {
       dir: path.resolve("./"),
       prefix: 'tmp-test-contract-linking-'
     });
+
+    var artifactor = new Artifactor(dirPath);
 
     artifactor.saveAll({
       ExampleLibrary: {
