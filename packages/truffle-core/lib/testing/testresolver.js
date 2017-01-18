@@ -1,18 +1,20 @@
-function TestResolver(resolver, source) {
+function TestResolver(resolver, source, search_path) {
   this.resolver = resolver;
   this.source = source;
+  this.search_path = search_path;
 
   this.seen = [];
   this.require_cache = {};
+  this.cache_on = true;
 }
 
-TestResolver.prototype.require = function(import_path, search_path) {
-  if (this.require_cache[import_path]) {
+TestResolver.prototype.require = function(import_path) {
+  if (this.cache_on && this.require_cache[import_path]) {
     return this.require_cache[import_path];
   }
 
   // Remember: This throws if not found.
-  var result = this.resolver.require(import_path, search_path);
+  var result = this.resolver.require(import_path, this.search_path);
 
   this.require_cache[import_path] = result;
 

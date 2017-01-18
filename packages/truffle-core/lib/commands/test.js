@@ -1,6 +1,8 @@
 var dir = require("node-dir");
 var temp = require("temp");
 var Config = require("truffle-config");
+var Resolver = require("truffle-resolver");
+var Artifactor = require("truffle-artifactor");
 var Test = require("../test");
 var fs = require("fs");
 var copy = require("../copy");
@@ -11,7 +13,11 @@ var command = {
   builder: {},
   run: function (options, done) {
     var config = Config.detect(options);
-    config.network = "test";
+    //config.network = "test";
+
+    if (!config.resolver) {
+      config.resolver = new Resolver(config);
+    }
 
     var files = [];
 
@@ -47,6 +53,10 @@ var command = {
         };
 
         function run() {
+          if (!config.artifactor) {
+            config.artifactor = new Artifactor(temporaryDirectory);
+          }
+
           Test.run(config.with({
             test_files: files,
             contracts_build_directory: temporaryDirectory

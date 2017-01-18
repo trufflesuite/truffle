@@ -1,5 +1,7 @@
 var Config = require("truffle-config");
 var Contracts = require("../contracts");
+var Resolver = require("truffle-resolver");
+var Artifactor = require("truffle-artifactor");
 var Migrate = require("truffle-migrate");
 var Web3 = require("web3");
 
@@ -19,6 +21,14 @@ var command = {
   },
   run: function (options, done) {
     var config = Config.detect(options);
+
+    if (!config.resolver) {
+      config.resolver = new Resolver(config);
+    }
+
+    if (!config.artifactor) {
+      config.artifactor = new Artifactor(config.contracts_build_directory)
+    }
 
     Contracts.compile(config, function(err) {
       if (err) return done(err);
