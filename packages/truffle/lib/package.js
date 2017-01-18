@@ -1,5 +1,4 @@
 var expect = require("truffle-expect");
-var provision = require("truffle-provisioner");
 var EthPM = require("ethpm");
 var EthPMRegistry = require("ethpm-registry");
 var Web3 = require("web3");
@@ -77,18 +76,19 @@ var Package = {
   },
 
   digest: function(options, callback) {
-    async.parallel({
-      contracts: provision.bind(provision, options, false),
-      files: dir.files.bind(dir, options.contracts_directory)
-    }, function(err, results) {
-      if (err) return callback(err);
-
-      results.contracts = results.contracts.map(function(contract) {
-        return contract.contract_name;
-      });
-
-      callback(null, results);
-    });
+    // async.parallel({
+    //   contracts: provision.bind(provision, options, false),
+    //   files: dir.files.bind(dir, options.contracts_directory)
+    // }, function(err, results) {
+    //   if (err) return callback(err);
+    //
+    //   results.contracts = results.contracts.map(function(contract) {
+    //     return contract.contract_name;
+    //   });
+    //
+    //   callback(null, results);
+    // });
+    callback(new Error("Not yet implemented"));
   }
 };
 
