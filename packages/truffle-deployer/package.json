@@ -1,6 +1,6 @@
 {
   "name": "truffle-deployer",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Light deployment module for easily deploying Ethereum contracts",
   "main": "index.js",
   "scripts": {
