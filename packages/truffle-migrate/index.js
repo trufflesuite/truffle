@@ -1,8 +1,6 @@
 var fs = require("fs");
 var dir = require("node-dir");
 var path = require("path");
-var artifactor = require("truffle-artifactor");
-var Resolver = require("truffle-resolver");
 var ResolverIntercept = require("./resolverintercept");
 var Require = require("truffle-require");
 var async = require("async");
@@ -57,13 +55,13 @@ Migration.prototype.run = function(options, callback) {
 
       var Migrations = resolver.require("./Migrations.sol");
 
-      if (Migrations && Migrations.address) {
+      if (Migrations && Migrations.isDeployed()) {
         return Migrations.deployed().setCompleted(self.number);
       }
     }).then(function() {
       if (options.save === false) return;
       logger.log("Saving artifacts...");
-      return artifactor.saveAll(resolver.contracts(), options.contracts_build_directory, options);
+      return options.artifactor.saveAll(resolver.contracts(), options);
     }).then(function() {
       callback();
     }).catch(function(e) {
@@ -123,14 +121,12 @@ var Migrate = {
       "migrations_directory",
       "contracts_build_directory",
       "provider",
+      "artifactor",
+      "resolver",
       "network",
       "network_id",
       "from" // address doing deployment
     ]);
-
-    if (!options.resolver) {
-      options.resolver = new Resolver(options);
-    }
 
     if (options.reset == true) {
       return this.runAll(options, callback);
