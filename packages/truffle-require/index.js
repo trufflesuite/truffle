@@ -3,7 +3,6 @@ var path = require("path");
 var Module = require('module');
 var vm = require('vm');
 var expect = require("truffle-expect");
-var provision = require("truffle-provisioner");
 var Config = require("truffle-config");
 var Web3 = require("web3");
 
