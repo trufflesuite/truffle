@@ -4,7 +4,6 @@
 var path = require("path");
 var async = require("async");
 var fs = require("fs");
-var artifactor = require("truffle-artifactor");
 var SolidityParser = require("solidity-parser");
 var Graph = require("graphlib").Graph;
 var isAcyclic = require("graphlib/lib/alg").isAcyclic;
@@ -17,7 +16,7 @@ module.exports = {
     var self = this;
 
     expect.options(options, [
-      "network_id"
+      "resolver"
     ]);
 
     var contracts_directory = options.contracts_directory;
@@ -33,43 +32,44 @@ module.exports = {
 
     getFiles(function(err, files) {
       var expected_build_files = files.map(function(file) {
-        return path.join(build_directory, path.basename(file) + ".js");
+        return path.join(build_directory, path.basename(file) + ".json");
       });
 
       async.map(files, fs.stat, function(err, file_stats) {
         if (err) return callback(err);
 
-        async.map(expected_build_files, function(build_file, finished) {
-          artifactor.requireFile(build_file, options, function(err, contract) {
-            // Ignore errors, i.e., if the file doesn't exist.
-            finished(null, contract);
-          });
-        }, function(err, contracts) {
-          if (err) return callback(err);
+        var contracts = expected_build_files.map(function(expected_build_file) {
+          var resolved = null;
+          try {
+            resolved = options.resolver.require(expected_build_file);
+          } catch (e) {
+            // do nothing;
+          }
+          return resolved;
+        });
 
-          var updated = [];
+        var updated = [];
 
-          for (var i = 0; i < contracts.length; i++) {
-            var file_stat = file_stats[i];
-            var contract = contracts[i];
+        for (var i = 0; i < contracts.length; i++) {
+          var file_stat = file_stats[i];
+          var contract = contracts[i];
 
-            if (contract == null) {
-              updated.push(files[i]);
-              continue;
-            }
-
-            var modified_time = (file_stat.mtime || file_stat.ctime).getTime();
-
-            // Note that the network is already set for is in artifactor.requireFile().
-            var built_time = contract.updated_at || 0;
-
-            if (modified_time > built_time) {
-              updated.push(files[i]);
-            }
+          if (contract == null) {
+            updated.push(files[i]);
+            continue;
           }
 
-          callback(null, updated);
-        });
+          var modified_time = (file_stat.mtime || file_stat.ctime).getTime();
+
+          // Note that the network is already set for is in artifactor.requireFile().
+          var built_time = contract.updated_at || 0;
+
+          if (modified_time > built_time) {
+            updated.push(files[i]);
+          }
+        }
+
+        callback(null, updated);
       });
     });
   },

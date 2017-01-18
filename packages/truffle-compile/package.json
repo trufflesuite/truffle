@@ -11,9 +11,9 @@
     "solidity-parser": "^0.2.0",
     "truffle-artifactor": "^1.0.2",
     "truffle-contract-sources": "^0.0.1",
-    "truffle-error": "0.0.1",
+    "truffle-error": "0.0.2",
     "truffle-expect": "0.0.3",
-    "truffle-resolver": "0.0.1"
+    "truffle-resolver": "0.0.2"
   },
   "devDependencies": {},
   "scripts": {
