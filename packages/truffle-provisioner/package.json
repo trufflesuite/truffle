@@ -1,6 +1,6 @@
 {
   "name": "truffle-provisioner",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Provision contract objects for use from multiple sources",
   "main": "index.js",
   "scripts": {
