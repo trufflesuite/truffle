@@ -25,7 +25,8 @@ function Config(truffle_directory, working_directory, network) {
       gasPrice: 100000000000, // 100 Shannon,
       from: null
     },
-    resolver: null
+    resolver: null,
+    artifactor: null
   };
 
   // RPC is a special configuration value. You can set it,
@@ -40,6 +41,7 @@ function Config(truffle_directory, working_directory, network) {
     verboseRpc: function() {},
     build: function() {},
     resolver: function() {},
+    artifactor: function() {},
 
     build_directory: function() {
       return path.join(self.working_directory, "build");
@@ -60,9 +62,7 @@ function Config(truffle_directory, working_directory, network) {
       return /.*\.(js|es|es6|jsx|sol)$/
     },
     networks: function() {
-      return {
-        "test": {}
-      }
+      return {};
     },
     network_id: function() {
       if (!self.network || !self.networks[self.network] || !self.networks[self.network].network_id) {
