@@ -29,7 +29,6 @@ EPM.prototype.require = function(import_path, search_path) {
   // We haven't compiled our own version. Assemble from data in the lockfile.
   var separator = import_path.indexOf("/")
   var package_name = import_path.substring(0, separator);
-  console.log("package_name", package_name);
 
   var install_directory = path.join(this.working_directory, "installed_contracts");
   var lockfile = path.join(install_directory, package_name, "lock.json");
