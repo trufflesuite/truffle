@@ -36,10 +36,14 @@ var Test = {
 
     var config = Config.default().merge(options);
 
+    config.test_files = config.test_files.map(function(test_file) {
+      return path.resolve(test_file);
+    });
+
     // `accounts` will be populated before each contract() invocation
     // and passed to it so tests don't have to call it themselves.
     var web3 = new Web3();
-    web3.setProvider(options.provider);
+    web3.setProvider(config.provider);
 
     // Override console.warn() because web3 outputs gross errors to it.
     // e.g., https://github.com/ethereum/web3.js/blob/master/lib/web3/allevents.js#L61
@@ -55,11 +59,11 @@ var Test = {
 
     var mocha = this.createMocha(config);
 
-    var js_tests = options.test_files.filter(function(file) {
+    var js_tests = config.test_files.filter(function(file) {
       return path.extname(file) != ".sol";
     });
 
-    var sol_tests = options.test_files.filter(function(file) {
+    var sol_tests = config.test_files.filter(function(file) {
       return path.extname(file) == ".sol";
     });
 
@@ -122,7 +126,7 @@ var Test = {
   },
 
   createMocha: function(config) {
-    // Allow people to specify options.mocha in their config.
+    // Allow people to specify config.mocha in their config.
     var mochaConfig = config.mocha || {};
 
     // If the command line overrides color usage, use that.
@@ -221,15 +225,15 @@ var Test = {
     });
   },
 
-  setJSTestGlobals: function(web3, accounts, artifacts_resolver, runner) {
+  setJSTestGlobals: function(web3, accounts, test_resolver, runner) {
     return new Promise(function(accept, reject) {
       global.web3 = web3;
       global.assert = chai.assert;
       global.artifacts = {
         require: function(import_path) {
-          return artifacts_resolver.require(import_path);
+          return test_resolver.require(import_path);
         }
-      }
+      };
 
       global.contract = function(name, tests) {
         // TODO: What is this / where did it come from? Do we need it?
