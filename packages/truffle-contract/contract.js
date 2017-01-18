@@ -568,15 +568,20 @@ var contract = (function(module) {
 
   // Getter functions are scoped to Contract object.
   Contract._properties = {
-    contract_name: function() {
-      return this._json.contract_name;
+    contract_name: {
+      get: function() {
+        return this._json.contract_name;
+      },
+      set: function(val) {
+        this._json.contract_name = val;
+      }
     },
     abi: {
       get: function() {
         return this._json.abi;
       },
       set: function(val) {
-        return this._json.abi = val;
+        this._json.abi = val;
       }
     },
     network: function() {

@@ -1,4 +1,4 @@
-{ 
+{
   "name": "truffle-contract",
   "version": "1.0.3",
   "description": "A better contract abstraction for Ethereum (formerly EtherPudding)",
@@ -23,7 +23,8 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle-contract#readme",
   "dependencies": {
-    "truffle-contract-schema": "0.0.2",
+    "truffle-blockchain-utils": "0.0.1",
+    "truffle-contract-schema": "0.0.3",
     "web3": "^0.16.0"
   }
 }
