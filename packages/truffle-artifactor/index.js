@@ -1,12 +1,7 @@
 var Schema = require("truffle-contract-schema");
 var fs = require("fs-extra");
 var path = require("path");
-var pkg = require("./package.json");
-var dir = require("node-dir");
 var async = require("async");
-var Module = require('module');
-var vm = require('vm');
-var Web3 = require("web3")
 var _ = require("lodash");
 
 function Artifactor(contracts_build_directory) {
