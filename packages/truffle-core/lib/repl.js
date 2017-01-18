@@ -1,11 +1,14 @@
 var repl = require("repl");
 var Command = require("./command");
 var provision = require("truffle-provisioner");
+var contract = require("truffle-contract");
 var Web3 = require("web3");
 var vm = require("vm");
 var expect = require("truffle-expect");
 var _ = require("lodash");
 var TruffleError = require("truffle-error");
+var fs = require("fs");
+var path = require("path");
 
 function TruffleInterpreter(tasks, options) {
   this.options = options;
@@ -53,13 +56,36 @@ TruffleInterpreter.prototype.start = function() {
 TruffleInterpreter.prototype.provision = function(callback) {
   var self = this;
 
-  provision(this.options, function(err, contracts) {
+  fs.readDir(this.options.contracts_build_directory, function(err, files) {
     if (err) return callback(err);
 
-    self.contracts = contracts;
-    self.resetContracts();
+    var promises = [];
 
-    callback();
+    files.forEach(function(file) {
+      promises.push(new Promise(function(accept, reject) {
+        fs.readFile(path.join(contracts.options.contracts_build_directory, file), "utf8", function(err, body) {
+          if (err) return reject(err);
+          try {
+            body = JSON.parse(body);
+          } catch (e) {
+            return reject(new Error("Cannot parse " + file + ": " + e.message));
+          }
+
+          accept(body);
+        })
+      }))
+    });
+
+    Promise.all(promises).then(function(json_blobs) {
+      var abstractions = json_blobs.map(function(json) {
+        return contract(json);
+      });
+
+      self.contracts = contracts;
+      self.resetContracts();
+
+      callback();
+    }).catch(callback);
   });
 };
 
@@ -67,8 +93,8 @@ TruffleInterpreter.prototype.resetContracts = function() {
   var self = this;
 
   if (this.r != null) {
-    this.contracts.forEach(function(contract) {
-      self.r.context[contract.contract_name] = contract;
+    this.contracts.forEach(function(abstraction) {
+      self.r.context[contract.contract_name] = abstraction;
     });
   }
 }
@@ -121,6 +147,7 @@ var Repl = {
       "network",
       "network_id",
       "provider",
+      "resolver",
       "build_directory",
       "rpc"
     ]);

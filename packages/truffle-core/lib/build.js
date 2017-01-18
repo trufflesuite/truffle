@@ -8,7 +8,7 @@ var child_process = require("child_process");
 var spawnargs = require("spawn-args");
 var _ = require("lodash");
 var expect = require("truffle-expect");
-var provision = require("truffle-provisioner");
+var contract = require("truffle-contract");
 
 function CommandBuilder(command) {
   this.command = command;
@@ -72,6 +72,7 @@ var Build = {
       "network",
       "network_id",
       "provider",
+      "resolver",
       "rpc"
     ]);
 
@@ -116,28 +117,23 @@ var Build = {
       Contracts.compile(options, function(err) {
         if (err) return callback(err);
 
-        provision(options, false, function(err, contracts) {
-          if (err) return callback(err);
+        var resolved_options = {
+          working_directory: options.working_directory,
+          contracts_build_directory: options.contracts_build_directory,
+          destination_directory: options.build_directory,
+          rpc: options.rpc,
+          provider: options.provider,
+          network: options.network
+        };
 
-          var resolved_options = {
-            working_directory: options.working_directory,
-            contracts: contracts,
-            contracts_build_directory: options.contracts_build_directory,
-            destination_directory: options.build_directory,
-            rpc: options.rpc,
-            provider: options.provider,
-            network: options.network
-          };
+        builder.build(resolved_options, function(err) {
+          if (!err) return callback();
 
-          builder.build(resolved_options, function(err) {
-            if (!err) return callback();
+          if (typeof err == "string") {
+            err = new BuildError(err);
+          }
 
-            if (typeof err == "string") {
-              err = new BuildError(err);
-            }
-
-            callback(err);
-          });
+          callback(err);
         });
       });
     });
