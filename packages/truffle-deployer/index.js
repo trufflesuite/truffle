@@ -1,10 +1,7 @@
 var expect = require("truffle-expect");
 var DeferredChain = require("./src/deferredchain");
-
 var deploy = require("./src/actions/deploy");
-var deployAndLink = require("./src/actions/deployandlink");
-var deployAndLinkMany = require("./src/actions/deployandlinkmany");
-var autolink = require("./src/actions/autolink");
+var deployMany = require("./src/actions/deploymany");
 var link = require("./src/actions/link");
 var create = require("./src/actions/new");
 
@@ -37,20 +34,6 @@ Deployer.prototype.start = function() {
   return this.chain.start();
 };
 
-Deployer.prototype.autolink = function(contract) {
-  var self = this;
-
-  // autolink all contracts available.
-  if (contract == null) {
-    Object.keys(this.known_contracts).forEach(function(contract_name) {
-      self.autolink(self.known_contracts[contract_name]);
-    });
-    return;
-  }
-
-  this.queueOrExec(autolink(contract, self));
-};
-
 Deployer.prototype.link = function(library, destinations) {
   return this.queueOrExec(link(library, destinations, this));
 };
@@ -60,9 +43,9 @@ Deployer.prototype.deploy = function() {
   var contract = args.shift();
 
   if (Array.isArray(contract)) {
-    return this.queueOrExec(deployAndLinkMany(contract, this));
+    return this.queueOrExec(deployMany(contract, this));
   } else {
-    return this.queueOrExec(deployAndLink(contract, args, this));
+    return this.queueOrExec(deploy(contract, args, this));
   }
 };
 
