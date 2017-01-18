@@ -24,11 +24,9 @@
   "homepage": "https://github.com/trufflesuite/truffle-resolver#readme",
   "dependencies": {
     "async": "^2.1.4",
-    "es5-async-await": "^1.0.0",
-    "ethpm": "0.0.3",
-    "truffle-artifactor": "^1.0.3",
-    "truffle-contract": "^1.0.3",
-    "truffle-expect": "0.0.3"
+    "truffle-contract": "^1.0.4",
+    "truffle-expect": "0.0.3",
+    "truffle-provisioner": "^0.1.0"
   },
   "devDependencies": {
     "mocha": "^3.2.0"

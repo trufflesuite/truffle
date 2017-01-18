@@ -4,6 +4,7 @@ var FSSource = require("./fs");
 var whilst = require("async/whilst");
 var contract = require("truffle-contract");
 var expect = require("truffle-expect");
+var provision = require("truffle-provisioner");
 
 function Resolver(options) {
   expect.options(options, [
@@ -18,53 +19,22 @@ function Resolver(options) {
     new NPMSource(options.working_directory),
     new FSSource(options.working_directory, options.contracts_build_directory)
   ];
-
-  //this.cache = {};
 };
 
 // This function might be doing too much. If so, too bad (for now).
 Resolver.prototype.require = function(import_path, search_path) {
   var self = this;
 
-  // if (this.cache[import_path]) {
-  //   return this.cache[import_path];
-  // }
-
   for (var i = 0; i < this.sources.length; i++) {
     var source = this.sources[i];
     var result = source.require(import_path, search_path);
     if (result) {
       var abstraction = contract(result);
-      abstraction = this.provision(abstraction);
-
-      //self.cache[import_path] = abstraction;
-
+      provision(abstraction, self.options);
       return abstraction;
     }
   }
   throw new Error("Could not find artifacts for " + import_path + " from any sources");
-};
-
-Resolver.prototype.provision = function(abstraction) {
-  var self = this;
-
-  if (self.options.provider) {
-    abstraction.setProvider(self.options.provider);
-  }
-
-  if (self.options.network_id) {
-    abstraction.setNetwork(self.options.network_id);
-  }
-
-  ["from", "gas", "gasPrice"].forEach(function(key) {
-    if (self.options[key]) {
-      var obj = {};
-      obj[key] = self.options[key];
-      abstraction.defaults(obj);
-    }
-  });
-
-  return abstraction;
 };
 
 Resolver.prototype.resolve = function(import_path, imported_from, callback) {

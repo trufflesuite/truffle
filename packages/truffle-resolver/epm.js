@@ -3,9 +3,7 @@ var fs = require("fs");
 var filter = require("async/filter");
 var detectSeries = require("async/detectSeries");
 var eachSeries = require("async/eachSeries")
-var EthPM = require("ethpm");
 var contract = require("truffle-contract");
-var Blockchain = require("truffle-blockchain-utils");
 var FSSource = require("./fs.js");
 
 function EPM(working_directory, contracts_build_directory) {
