@@ -9,11 +9,11 @@ var OS = require("os");
 
 var command = new Command(require("./lib/commands"));
 
-var config = Config.default().merge({
+var options = {
   logger: console
-});
+};
 
-command.run(process.argv.slice(2), config, function(err) {
+command.run(process.argv.slice(2), options, function(err) {
   if (err) {
     if (err instanceof TaskError) {
       command.args
