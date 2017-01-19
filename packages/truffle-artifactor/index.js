@@ -74,12 +74,8 @@ Artifactor.prototype.saveAll = function(contracts, options) {
 
         var filename = path.join(destination, contract_name + ".json");
 
-        // Add the contract name to our extra options, without editing
-        // the options object on its own.
-        options = _.extend({}, options, {contract_name: contract_name});
-
         // Finally save the contract.
-        self.save(contract_data, options).then(done).catch(done);
+        self.save(contract_data).then(done).catch(done);
       }, function(err) {
         if (err) return reject(err);
         accept();
