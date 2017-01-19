@@ -7,30 +7,52 @@ var path = require("path");
 var fs = require("fs");
 var TestRPC = require("ethereumjs-testrpc");
 var Resolver = require("truffle-resolver");
+var Artifactor = require("truffle-artifactor");
+var Web3 = require("web3");
 
 describe("migrate", function() {
   var config;
+  var accounts;
+  var provider = TestRPC.provider();
+  var network_id;
+  var web3 = new Web3(provider);
 
   before("Create a sandbox", function(done) {
     this.timeout(5000);
     Init.sandbox(function(err, result) {
       if (err) return done(err);
       config = result;
-      config.addResolvers(Resolver.defaults());
+      config.resolver = new Resolver(config);
+      config.artifactor = new Artifactor(config.contracts_build_directory);
+      config.provider = provider;
       done();
     });
   });
 
-  before("edit config", function() {
-    config.networks = {
-      "default": {
-        "network_id": "*"
-      },
-      "secondary": {
-        "network_id": "12345"
-      }
-    };
-    config.provider = TestRPC.provider();
+  before("Get accounts and network id", function(done) {
+    web3.eth.getAccounts(function(err, accs) {
+      if (err) return done(err);
+      accounts = accs;
+
+      web3.version.getNetwork(function(err, id) {
+        if (err) return done(err);
+
+        network_id = id;
+
+        config.from = accounts[0];
+        config.networks = {
+          "default": {
+            "network_id": "1",
+          },
+          "secondary": {
+            "network_id": "12345"
+          }
+        };
+        config.network = "default";
+
+        done();
+      });
+    });
   });
 
   it('profiles a new project as not having any contracts deployed', function(done) {
@@ -47,15 +69,16 @@ describe("migrate", function() {
   it('links libraries in initial project, and runs all migrations', function(done) {
     this.timeout(10000);
 
-    Contracts.compile(config.with({
+    Contracts.compile(config.without("networks").with({
       all: false,
       quiet: true
-    }), function(err) {
+    }), function(err, contracts) {
       if (err) return done(err);
 
-      Migrate.run(config.with({
-        quiet: true
-      }), function(err, contracts) {
+      Migrate.run(config.without("networks").with({
+        quiet: true,
+        network_id: 1
+      }), function(err) {
         if (err) return done(err);
 
         Networks.deployed(config, function(err, networks) {

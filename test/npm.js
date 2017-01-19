@@ -5,6 +5,7 @@ var path = require('path');
 var mkdirp = require("mkdirp");
 var async = require("async");
 var Resolver = require("truffle-resolver");
+var Artifactor = require("truffle-artifactor");
 var Contracts = require("../lib/contracts.js");
 
 describe('NPM integration', function() {
@@ -18,7 +19,8 @@ describe('NPM integration', function() {
     Init.sandbox(function(err, result) {
       if (err) return done(err);
       config = result;
-      config.addResolvers(Resolver.defaults());
+      config.resolver = new Resolver(config);
+      config.artifactor = new Artifactor(config.contracts_build_directory);
 
       fs.writeFile(path.join(config.contracts_directory, "Parent.sol"), parentContractSource, {encoding: "utf8"}, done());
     });

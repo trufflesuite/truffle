@@ -7,11 +7,11 @@ var async = require("async");
 var Contracts = require("../lib/contracts.js");
 var Package = require("../lib/package.js");
 var Blockchain = require("truffle-blockchain-utils");
-var provision = require("truffle-provisioner");
 var EthPM = require("ethpm");
 var GithubExamples = require("ethpm/lib/indexes/github-examples");
 var TestRPC = require("ethereumjs-testrpc");
 var Resolver = require("truffle-resolver");
+var Artifactor = require("truffle-artifactor");
 
 describe('EthPM integration', function() {
   var config;
@@ -49,7 +49,9 @@ describe('EthPM integration', function() {
     }, function(err, result) {
       if (err) return done(err);
       config = result;
-      config.addResolvers(Resolver.defaults());
+      config.resolver = new Resolver(config);
+      config.artifactor = new Artifactor(config.contracts_build_directory);
+      config.network_id = blockchain_uri;
       done();
     });
   });
@@ -85,7 +87,7 @@ describe('EthPM integration', function() {
   });
 
   it("successfully installs single dependency from EthPM", function(done) {
-    this.timeout(10000); // Giving ample time for requests to time out.
+    this.timeout(20000); // Giving ample time for requests to time out.
 
     Package.install(config.with({
       ethpm: {
@@ -106,7 +108,7 @@ describe('EthPM integration', function() {
   });
 
   it("successfully installs and provisions a package with dependencies from EthPM", function(done) {
-    this.timeout(10000); // Giving ample time for requests to time out.
+    this.timeout(15000); // Giving ample time for requests to time out.
 
     Package.install(config.with({
       ethpm: {
@@ -139,22 +141,20 @@ describe('EthPM integration', function() {
         assert.isNotNull(contracts["owned"]);
         assert.isNotNull(contracts["transferable"]);
 
-        provision(config, false, function(err, contracts) {
-          if (err) return done(err);
-
+        fs.readdir(config.contracts_build_directory, function(err, files) {
           var found = [false, false];
           var search = ["owned", "transferable"];
 
           search.forEach(function(contract_name, index) {
-            contracts.forEach(function(contract) {
-              if (contract.contract_name == contract_name) {
+            files.forEach(function(file) {
+              if (path.basename(file, ".json") == contract_name) {
                 found[index] = true;
               }
             });
           });
 
           found.forEach(function(isFound, index) {
-            assert(isFound, "Could not find provisioned contract with name '" + search[index] + "'");
+            assert(isFound, "Could not find built binary with name '" + search[index] + "'");
           });
 
           done();
@@ -167,7 +167,7 @@ describe('EthPM integration', function() {
   // treats the package as if it had no sources; to do so, we simply don't compile its code.
   // In addition, this package contains deployments. We need to make sure these deployments are available.
   it("successfully installs and provisions a deployed package with network artifacts from EthPM, without compiling", function(done) {
-    this.timeout(10000); // Giving ample time for requests to time out.
+    this.timeout(15000); // Giving ample time for requests to time out.
 
     Package.install(config.with({
       ethpm: {
@@ -178,28 +178,38 @@ describe('EthPM integration', function() {
     }), function(err) {
       if (err) return done(err);
 
-      provision(config, false, function(err, contracts) {
-        if (err) return done(err);
+      // Make sure we can resolve it.
+      var expected_contract_name = "SafeMathLib";
+      var SafeMathLib = config.resolver.require("safe-math-lib/contracts/SafeMathLib.sol");
+      assert.equal(SafeMathLib.contract_name, expected_contract_name, "Could not find provisioned contract with name '" + expected_contract_name + "'");
 
-        var expected_contract_name = "SafeMathLib";
-        assert.notEqual(contracts.length, 0);
-        assert.equal(contracts[0].contract_name, expected_contract_name, "Could not find provisioned contract with name '" + expected_contract_name + "'");
+      // Ensure we didn't resolve a local path.
+      var found = false;
+      try {
+        fs.statSync(path.join(config.contracts_build_directory, "SafeMathLib.json"));
+        found = true;
+      } catch (e) {
+        // Should have gotten here because statSync should have errored.
+      }
 
-        var expected_lockfile_path = path.join(config.working_directory, "installed_contracts", "safe-math-lib", "lock.json")
+      if (found) {
+        assert.fail("Expected SafeMathLib.json not to exist");
+      }
 
-        var lockfile = fs.readFileSync(expected_lockfile_path, "utf8");
-        lockfile = JSON.parse(lockfile);
+      var expected_lockfile_path = path.join(config.working_directory, "installed_contracts", "safe-math-lib", "lock.json")
 
-        // Make sure the blockchain was inserted correctly (really a function of GithubExamples).
-        assert.ok(lockfile.deployments, "No deployments when a deployment was expected");
-        assert.ok(lockfile.deployments[blockchain_uri], "No deployments to the expected blockchain");
-        assert.ok(lockfile.deployments[blockchain_uri][expected_contract_name], expected_contract_name + " does nto appear in deployed contracts for expected blockchain");
+      var lockfile = fs.readFileSync(expected_lockfile_path, "utf8");
+      lockfile = JSON.parse(lockfile);
 
-        // Finally assert the address.
-        assert.equal(contracts[0].address, lockfile.deployments[blockchain_uri][expected_contract_name].address, "Address in contract doesn't match address in lockfile");
+      // Make sure the blockchain was inserted correctly (really a function of GithubExamples).
+      assert.ok(lockfile.deployments, "No deployments when a deployment was expected");
+      assert.ok(lockfile.deployments[blockchain_uri], "No deployments to the expected blockchain");
+      assert.ok(lockfile.deployments[blockchain_uri][expected_contract_name], expected_contract_name + " does nto appear in deployed contracts for expected blockchain");
 
-        done();
-      });
+      // Finally assert the address.
+      assert.equal(SafeMathLib.address, lockfile.deployments[blockchain_uri][expected_contract_name].address, "Address in contract doesn't match address in lockfile");
+
+      done();
     });
   });
 });
