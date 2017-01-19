@@ -12,26 +12,24 @@ var BACKUP_CONFIG_FILENAME = "truffle-config.js"; // For Windows + Command Promp
 function Config(truffle_directory, working_directory, network) {
   var self = this;
 
+  var default_tx_values = {
+    gas: 4712388,
+    gasPrice: 100000000000, // 100 Shannon,
+    from: null
+  };
+
   this._values = {
     truffle_directory: truffle_directory || path.resolve(path.join(__dirname, "../")),
     working_directory: working_directory || process.cwd(),
-    network: network || "*",
+    network: network,
     verboseRpc: false,
+    gas: null,
+    gasPrice: null,
+    from: null,
     build: null,
-    rpc: {
-      host: "localhost",
-      port: "8545",
-      gas: 4712388,
-      gasPrice: 100000000000, // 100 Shannon,
-      from: null
-    },
     resolver: null,
     artifactor: null
   };
-
-  // RPC is a special configuration value. You can set it,
-  // but that'll set the defaults. The values you get from it
-  // will be the merged rpc results with the defaults.
 
   var props = {
     // These are already set.
@@ -61,51 +59,55 @@ function Config(truffle_directory, working_directory, network) {
     test_file_extension_regexp: function() {
       return /.*\.(js|es|es6|jsx|sol)$/
     },
+    example_project_directory: function() {
+      return path.join(self.truffle_directory, "example");
+    },
     networks: function() {
       return {};
     },
     network_id: function() {
+      if (self.network == null) {
+        throw new Error("Network not set. Cannot determine network to use.");
+      }
+
       if (!self.network || !self.networks[self.network] || !self.networks[self.network].network_id) {
-        return "*";
+        return null;
       }
 
       return self.networks[self.network].network_id;
     },
     network_config: function() {
+      if (self.network == null) {
+        throw new Error("Network not set. Cannot determine network to use.");
+      }
+
       var conf = self.networks[self.network];
 
-      if (conf == null && self.network == "*") {
-        return {};
+      if (conf == null) {
+        config = {};
       }
+
+      var current_values = {};
+
+      if (self._values.gas) current_values.gas = self._values.gas;
+      if (self._values.gasPrice) current_values.gasPrice = self._values.gasPrice;
+      if (self._values.from) current_values.from = self._values.from;
+
+      conf = _.extend({}, default_tx_values, conf, current_values);
 
       return conf;
     },
-    example_project_directory: function() {
-      return path.join(self.truffle_directory, "example");
-    },
-    rpc: {
-      // This one is special. You'll always get the normalized
-      // rpc values overridden by the network's values, even if you
-      // set it. This might be an anti-pattern, however, but this is
-      // less confusing than what was there previously.
-      get: function() {
-        return _.extend(this._values.rpc, this.network_config || {});
-      },
-      set: function(val) {
-        this._values.rpc = _.extend(this._values.rpc, val);
-      }
-    },
     from: function() {
-      return self.rpc.from;
+      return self.network_config.from;
     },
     gas: function() {
-      return self.rpc.gas;
+      return self.network_config.gas;
     },
     gasPrice: function() {
-      return self.rpc.gasPrice
+      return self.network_config.gasPrice;
     },
     provider: function() {
-      var options = self.rpc;
+      var options = self.network_config;
       options.verboseRpc = self.verboseRpc;
       return Provider.create(options);
     }
@@ -132,6 +134,20 @@ Config.prototype.addProp = function(key, obj) {
 Config.prototype.with = function(obj) {
   return _.extend({}, this, obj);
 };
+
+Config.prototype.without = function(arr) {
+  var options = this.with({});
+
+  if (!Array.isArray(arr)) {
+    arr = [arr];
+  }
+
+  arr.forEach(function(key) {
+    delete options[key];
+  });
+
+  return _.extend(Config.default(), options);
+}
 
 Config.prototype.merge = function(obj) {
   return _.extend(this, obj);
