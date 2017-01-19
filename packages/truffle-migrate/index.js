@@ -51,17 +51,17 @@ Migration.prototype.run = function(options, callback) {
     if (err) return callback(err);
     deployer.start().then(function() {
       if (options.save === false) return;
-      logger.log("Saving successful migration to network...");
 
       var Migrations = resolver.require("./Migrations.sol");
 
       if (Migrations && Migrations.isDeployed()) {
+        logger.log("Saving successful migration to network...");
         return Migrations.deployed().setCompleted(self.number);
       }
     }).then(function() {
       if (options.save === false) return;
       logger.log("Saving artifacts...");
-      return options.artifactor.saveAll(resolver.contracts(), options);
+      return options.artifactor.saveAll(resolver.contracts());
     }).then(function() {
       callback();
     }).catch(function(e) {

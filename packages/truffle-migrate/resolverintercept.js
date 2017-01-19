@@ -1,14 +1,19 @@
 function ResolverIntercept(resolver) {
   this.resolver = resolver;
-  this.seen = [];
+  this.cache = {};
 };
 
 ResolverIntercept.prototype.require = function(import_path) {
+  // TODO: Using the import path for relative files may result in multiple
+  // paths for the same file. This could return different objects since it won't be a cache hit.
+  if (this.cache[import_path]) {
+    return this.cache[import_path];
+  }
+
   // Note, will error if nothing is found.
   var resolved = this.resolver.require(import_path);
 
-  // Use object reference to key the hash, to ensure uniqueness and no duplicates.
-  this.seen.push(resolved);
+  this.cache[import_path] = resolved;
 
   // During migrations, we could be on a network that takes a long time to accept
   // transactions (i.e., contract deployment close to block size). Because successful
@@ -19,7 +24,10 @@ ResolverIntercept.prototype.require = function(import_path) {
 };
 
 ResolverIntercept.prototype.contracts = function() {
-  return this.seen;
+  var self = this;
+  return Object.keys(this.cache).map(function(key) {
+    return self.cache[key];
+  });
 };
 
 module.exports = ResolverIntercept;
