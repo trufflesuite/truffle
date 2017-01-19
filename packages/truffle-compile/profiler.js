@@ -31,19 +31,15 @@ module.exports = {
     }
 
     getFiles(function(err, files) {
-      var expected_build_files = files.map(function(file) {
-        return path.join(build_directory, path.basename(file) + ".json");
-      });
-
       async.map(files, fs.stat, function(err, file_stats) {
         if (err) return callback(err);
 
-        var contracts = expected_build_files.map(function(expected_build_file) {
+        var contracts = files.map(function(expected_source_file) {
           var resolved = null;
           try {
-            resolved = options.resolver.require(expected_build_file);
+            resolved = options.resolver.require(expected_source_file);
           } catch (e) {
-            // do nothing;
+            // do nothing; warning, this could squelch real errors
           }
           return resolved;
         });
