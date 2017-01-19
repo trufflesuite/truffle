@@ -6,6 +6,7 @@ var Contracts = require("../lib/contracts");
 var TestRPC = require("ethereumjs-testrpc");
 var provision = require("truffle-provisioner");
 var Resolver = require("truffle-resolver");
+var Artifactor = require("truffle-artifactor");
 
 describe('config', function() {
   var config;
@@ -18,13 +19,23 @@ describe('config', function() {
   before("Create a sandbox with extra config values", function(done) {
     this.timeout(5000);
     Init.sandbox({
-      rpc: customRPCConfig,
       quiet: true
     }, function(err, result) {
       if (err) return done(err);
       config = result;
       config.provider = TestRPC.provider();
-      config.addResolvers(Resolver.defaults());
+      config.resolver = new Resolver(config);
+      config.artifactor = new Artifactor(config.contracts_build_directory);
+      config.network = "development";
+      config.networks = {
+        development: {
+          network_id: "1",
+          gas: customRPCConfig.gas,
+          gasPrice: customRPCConfig.gasPrice,
+          from: "0x1234567890123456789012345678901234567890"
+        }
+      };
+
       done();
     });
   });
@@ -34,15 +45,12 @@ describe('config', function() {
     Contracts.compile(config, done);
   });
 
-  it('Provisioning contracts should set proper RPC values', function(done) {
-    provision(config, function(err, contracts) {
-      if (err) return done(err);
+  it('Provisioning contracts should set proper RPC values', function() {
+    var contract = config.resolver.require("MetaCoin.sol");
 
-      var Contract = contracts[0];
+    provision(contract, config);
 
-      assert.deepEqual(Contract.defaults(), customRPCConfig);
-      done();
-    });
+    assert.deepEqual(contract.defaults(), customRPCConfig);
   });
 
 });

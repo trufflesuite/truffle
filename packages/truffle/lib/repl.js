@@ -29,7 +29,7 @@ TruffleInterpreter.prototype.start = function() {
 
     var prefix = "truffle(default)> ";
 
-    if (options.network != null && options.network != "*") {
+    if (options.network != null) {
       prefix = "truffle(" + options.network + ")> ";
     }
 
