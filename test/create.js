@@ -28,8 +28,6 @@ describe('create', function() {
       var expected_file = path.join(config.contracts_directory, "MyNewContract.sol");
       assert.isTrue(fs.existsSync(expected_file), `Contract to be created doesns't exist, ${expected_file}`);
 
-      console.log(expected_file);
-
       var file_data = fs.readFileSync(expected_file, {encoding: "utf8"});
       assert.isNotNull(file_data, "File's data is null");
       assert.notEqual(file_data, "", "File's data is blank");
