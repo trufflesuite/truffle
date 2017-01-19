@@ -455,10 +455,6 @@ var contract = (function(module) {
       this.network_id = network_id + "";
     },
 
-    networks: function() {
-      return Object.keys(this._json.networks);
-    },
-
     // Overrides the deployed address to null.
     // You must call this explicitly so you don't inadvertently do this otherwise.
     resetAddress: function() {
@@ -601,8 +597,7 @@ var contract = (function(module) {
 
       return this._json.networks[network_id];
     },
-    // Legacy option (deprecated)
-    all_networks: function() {
+    networks: function() {
       return this._json.networks;
     },
     address: {
@@ -658,7 +653,7 @@ var contract = (function(module) {
       return this._json.default_network;
     },
     updated_at: function() {
-      return this.network.updated_at;
+      return this.network.updated_at || this._json.updated_at;
     }
   };
 
