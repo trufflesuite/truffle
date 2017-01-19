@@ -14,7 +14,6 @@ describe("migrate", function() {
   var config;
   var accounts;
   var provider = TestRPC.provider();
-  var network_id;
   var web3 = new Web3(provider);
 
   before("Create a sandbox", function(done) {
@@ -34,24 +33,18 @@ describe("migrate", function() {
       if (err) return done(err);
       accounts = accs;
 
-      web3.version.getNetwork(function(err, id) {
-        if (err) return done(err);
+      config.from = accounts[0];
+      config.networks = {
+        "default": {
+          "network_id": "1",
+        },
+        "secondary": {
+          "network_id": "12345"
+        }
+      };
+      config.network = "default";
 
-        network_id = id;
-
-        config.from = accounts[0];
-        config.networks = {
-          "default": {
-            "network_id": "1",
-          },
-          "secondary": {
-            "network_id": "12345"
-          }
-        };
-        config.network = "default";
-
-        done();
-      });
+      done();
     });
   });
 
