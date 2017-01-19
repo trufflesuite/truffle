@@ -17,20 +17,22 @@ var templates = {
   }
 };
 
-var processFile = function(path, processfn, callback) {
-  fs.readFile(path, {encoding: "utf8"}, function(err, data) {
+var processFile = function(file_path, processfn, callback) {
+  var stat = fs.statSync(file_path);
+
+  fs.readFile(file_path, {encoding: "utf8"}, function(err, data) {
     if (err != null) {
       callback(err);
       return;
     }
 
     var result = processfn(data);
-    fs.writeFile(path, result, {encoding: "utf8"}, callback);
+    fs.writeFile(file_path, result, {encoding: "utf8"}, callback);
   });
 };
 
-var replaceContents = function(path, find, replacement, callback) {
-  processFile(path, function(data) {
+var replaceContents = function(file_path, find, replacement, callback) {
+  processFile(file_path, function(data) {
     if (typeof find == "string") {
       find = new RegExp(find, "g");
     }
@@ -55,22 +57,24 @@ var Create = {
     var from = templates.contract.filename;
     var to = path.join(directory, name + ".sol");
 
-    copy(from, to, {clobber: false}, function(err) {
+    copy.file(from, to, function(err) {
       if (err) return callback(err);
 
       replaceContents(to, templates.contract.name, name, callback);
     });
   },
+
   test: function(directory, name, callback) {
     var underscored = toUnderscoreFromCamel(name);
     underscored = underscored.replace(/\./g, "_");
     var from = templates.test.filename;
     var to = path.join(directory, underscored + ".js");
 
-    copy(from, to, {clobber: false}, function(err) {
+    copy.file(from, to, function(err) {
       if (err) return callback(err);
 
-      replaceContents(to, templates.contract.name, name, function() {
+      replaceContents(to, templates.contract.name, name, function(err) {
+        if (err) return callback(err);
         replaceContents(to, templates.contract.variable, underscored, callback);
       });
     });
