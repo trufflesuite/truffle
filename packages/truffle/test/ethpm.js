@@ -51,7 +51,12 @@ describe('EthPM integration', function() {
       config = result;
       config.resolver = new Resolver(config);
       config.artifactor = new Artifactor(config.contracts_build_directory);
-      config.network_id = blockchain_uri;
+      config.networks = {
+        development: {
+          network_id: blockchain_uri
+        }
+      };
+      config.network = "development";
       done();
     });
   });

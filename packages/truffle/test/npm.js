@@ -21,6 +21,12 @@ describe('NPM integration', function() {
       config = result;
       config.resolver = new Resolver(config);
       config.artifactor = new Artifactor(config.contracts_build_directory);
+      config.networks = {
+        development: {
+          network_id: 1
+        }
+      };
+      config.network = "development";
 
       fs.writeFile(path.join(config.contracts_directory, "Parent.sol"), parentContractSource, {encoding: "utf8"}, done());
     });
@@ -37,7 +43,7 @@ describe('NPM integration', function() {
   });
 
   it('successfully finds the correct source via Sources lookup', function(done) {
-    Resolver.resolve("fake_source/contracts/Module.sol", config.sources, function(err, body) {
+    config.resolver.resolve("fake_source/contracts/Module.sol", config.sources, function(err, body) {
       if (err) return done(err);
 
       assert.equal(body, moduleSource);
@@ -46,7 +52,7 @@ describe('NPM integration', function() {
   });
 
   it("errors when module does not exist from any source", function(done) {
-    Resolver.resolve("some_source/contracts/SourceDoesNotExist.sol", config.sources, function(err, body) {
+    config.resolver.resolve("some_source/contracts/SourceDoesNotExist.sol", config.sources, function(err, body) {
       if (!err) {
         return assert.fail("Source lookup should have errored but didn't");
       }
