@@ -58,7 +58,17 @@ Command.prototype.run = function(command, options, callback) {
   // We don't need this.
   delete argv["$0"];
 
-  options = _.extend(_.clone(options), argv);
+  // Some options might throw if options is a Config object. If so, let's ignore those options.
+  var clone = {};
+  Object.keys(options).forEach(function(key) {
+    try {
+      clone[key] = options[key];
+    } catch (e) {
+      // Do nothing with values that throw.
+    }
+  });
+
+  options = _.extend(clone, argv);
 
   try {
     result.command.run(options, callback);
