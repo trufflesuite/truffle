@@ -14,7 +14,7 @@
     "truffle-expect": "0.0.3"
   },
   "devDependencies": {
-    "truffle-resolver": "0.0.2"
+    "truffle-resolver": "0.0.3"
   },
   "scripts": {
     "test": "mocha"
