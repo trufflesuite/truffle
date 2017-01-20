@@ -195,6 +195,32 @@ var Migrate = {
     migrations.last_completed_migration.call().then(function(completed_migration) {
       callback(null, completed_migration.toNumber());
     }).catch(callback);
+  },
+
+  needsMigrating: function(options, callback) {
+    var self = this;
+
+    if (options.reset == true) {
+      return callback(null, true);
+    }
+
+    this.lastCompletedMigration(options, function(err, number) {
+      if (err) return callback(err);
+
+      self.assemble(options, function(err, migrations) {
+        if (err) return callback(err);
+
+        while (migrations.length > 0) {
+          if (migrations[0].number >= number) {
+            break;
+          }
+
+          migrations.shift();
+        }
+
+        callback(null, migrations.length > 1);
+      });
+    });
   }
 };
 
