@@ -40,6 +40,7 @@ module.exports = {
             resolved = options.resolver.require(expected_source_file);
           } catch (e) {
             // do nothing; warning, this could squelch real errors
+            if (e.message.indexOf("Could not find artifacts for") != 0) throw e;
           }
           return resolved;
         });
@@ -57,7 +58,6 @@ module.exports = {
 
           var modified_time = (file_stat.mtime || file_stat.ctime).getTime();
 
-          // Note that the network is already set for is in artifactor.requireFile().
           var built_time = contract.updated_at || 0;
 
           if (modified_time > built_time) {
