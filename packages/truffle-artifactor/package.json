@@ -27,7 +27,7 @@
     "async": "^1.5.2",
     "fs-extra": "^1.0.0",
     "lodash": "^4.11.2",
-    "truffle-contract": "^1.0.4",
-    "truffle-contract-schema": "0.0.3"
+    "truffle-contract": "^1.0.5",
+    "truffle-contract-schema": "0.0.4"
   }
 }
