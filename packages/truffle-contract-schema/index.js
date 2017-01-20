@@ -24,7 +24,8 @@ var TruffleSchema = {
       "links",
       "events",
       "network_id",
-      "default_network"
+      "default_network",
+      "updated_at"
     ];
 
     // Merge options/contract object first, then extra_options
@@ -75,7 +76,9 @@ var TruffleSchema = {
 
   // Generate a proper binary from normalized options, and optionally
   // merge it with an existing binary.
-  generateBinary: function(options, existing_binary) {
+  generateBinary: function(options, existing_binary, extra_options) {
+    extra_options = extra_options || {};
+
     existing_binary = existing_binary || {};
 
     if (options.overwrite == true) {
@@ -127,7 +130,9 @@ var TruffleSchema = {
         network.events["0x" + sha3(signature, {outputLength: 256})] = item;
       });
 
-      network.updated_at = updated_at;
+      if (extra_options.dirty !== false) {
+        network.updated_at = updated_at;
+      }
     } else {
       if (options.address) {
         throw new Error("Cannot set address without network id");
@@ -141,7 +146,12 @@ var TruffleSchema = {
     });
 
     existing_binary.schema_version = schema_version;
-    existing_binary.updated_at = updated_at;
+
+    if (extra_options.dirty !== false) {
+      existing_binary.updated_at = updated_at;
+    } else {
+      existing_binary.updated_at = options.updated_at || existing_binary.updated_at || updated_at;
+    }
 
     return existing_binary;
   }
