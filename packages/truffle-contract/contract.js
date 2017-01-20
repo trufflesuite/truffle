@@ -653,7 +653,11 @@ var contract = (function(module) {
       return this._json.default_network;
     },
     updated_at: function() {
-      return this.network.updated_at || this._json.updated_at;
+      try {
+        return this.network.updated_at || this._json.updated_at;
+      } catch (e) {
+        return this._json.updated_at;
+      }
     }
   };
 

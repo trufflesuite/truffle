@@ -24,7 +24,7 @@
   "homepage": "https://github.com/trufflesuite/truffle-contract#readme",
   "dependencies": {
     "truffle-blockchain-utils": "0.0.1",
-    "truffle-contract-schema": "0.0.3",
+    "truffle-contract-schema": "0.0.4",
     "web3": "^0.16.0"
   }
 }
