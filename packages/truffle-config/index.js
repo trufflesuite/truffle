@@ -3,7 +3,7 @@ var _ = require("lodash");
 var path = require("path");
 var Provider = require("truffle-provider");
 var TruffleError = require("truffle-error");
-var requireNoCache = require("require-nocache");
+var requireNoCache = require("require-nocache")(module);
 var findUp = require("find-up");
 
 var DEFAULT_CONFIG_FILENAME = "truffle.js";
@@ -22,6 +22,7 @@ function Config(truffle_directory, working_directory, network) {
     truffle_directory: truffle_directory || path.resolve(path.join(__dirname, "../")),
     working_directory: working_directory || process.cwd(),
     network: network,
+    networks: {},
     verboseRpc: false,
     gas: null,
     gasPrice: null,
@@ -36,6 +37,7 @@ function Config(truffle_directory, working_directory, network) {
     truffle_directory: function() {},
     working_directory: function() {},
     network: function() {},
+    networks: function() {},
     verboseRpc: function() {},
     build: function() {},
     resolver: function() {},
@@ -62,51 +64,72 @@ function Config(truffle_directory, working_directory, network) {
     example_project_directory: function() {
       return path.join(self.truffle_directory, "example");
     },
-    networks: function() {
-      return {};
-    },
-    network_id: function() {
-      if (self.network == null) {
-        throw new Error("Network not set. Cannot determine network to use.");
+    network_id: {
+      get: function() {
+        try {
+          return self.network_config.network_id;
+        } catch (e) {
+          return null;
+        }
+      },
+      set: function(val) {
+        throw new Error("Do not set config.network_id. Instead, set config.networks and then config.network.");
       }
+    },
+    network_config: {
+      get: function() {
+        var network = self.network;
 
-      if (!self.network || !self.networks[self.network] || !self.networks[self.network].network_id) {
+        if (network == null) {
+          throw new Error("Network not set. Cannot determine network to use.");
+        }
+
+        var conf = self.networks[network];
+
+        if (conf == null) {
+          config = {};
+        }
+
+        var current_values = {};
+
+        if (self._values.gas) current_values.gas = self._values.gas;
+        if (self._values.gasPrice) current_values.gasPrice = self._values.gasPrice;
+        if (self._values.from) current_values.from = self._values.from;
+
+        conf = _.extend({}, default_tx_values, conf, current_values);
+
+        return conf;
+      },
+      set: function(val) {
+        throw new Error("Do not set config.network_config. Instead, set config.networks and then config.network.");
+      }
+    },
+    from: function() {
+      try {
+        return self.network_config.from;
+      } catch (e) {
+        return default_tx_values.from;
+      }
+    },
+    gas: function() {
+      try {
+        return self.network_config.gas;
+      } catch (e) {
+        return default_tx_values.gas;
+      }
+    },
+    gasPrice: function() {
+      try {
+        return self.network_config.gasPrice;
+      } catch (e) {
+        return default_tx_values.gasPrice;
+      }
+    },
+    provider: function() {
+      if (!self.network) {
         return null;
       }
 
-      return self.networks[self.network].network_id;
-    },
-    network_config: function() {
-      if (self.network == null) {
-        throw new Error("Network not set. Cannot determine network to use.");
-      }
-
-      var conf = self.networks[self.network];
-
-      if (conf == null) {
-        config = {};
-      }
-
-      var current_values = {};
-
-      if (self._values.gas) current_values.gas = self._values.gas;
-      if (self._values.gasPrice) current_values.gasPrice = self._values.gasPrice;
-      if (self._values.from) current_values.from = self._values.from;
-
-      conf = _.extend({}, default_tx_values, conf, current_values);
-
-      return conf;
-    },
-    from: function() {
-      return self.network_config.from;
-    },
-    gas: function() {
-      return self.network_config.gas;
-    },
-    gasPrice: function() {
-      return self.network_config.gasPrice;
-    },
-    provider: function() {
       var options = self.network_config;
       options.verboseRpc = self.verboseRpc;
       return Provider.create(options);
@@ -131,26 +154,39 @@ Config.prototype.addProp = function(key, obj) {
   });
 };
 
-Config.prototype.with = function(obj) {
-  return _.extend({}, this, obj);
-};
-
-Config.prototype.without = function(arr) {
-  var options = this.with({});
-
-  if (!Array.isArray(arr)) {
-    arr = [arr];
-  }
-
-  arr.forEach(function(key) {
-    delete options[key];
+Config.prototype.normalize = function(obj) {
+  var clone = {};
+  Object.keys(obj).forEach(function(key) {
+    try {
+      clone[key] = obj[key];
+    } catch (e) {
+      // Do nothing with values that throw.
+    }
   });
-
-  return _.extend(Config.default(), options);
+  return clone;
 }
 
+Config.prototype.with = function(obj) {
+  var normalized = this.normalize(obj);
+  var current = this.normalize(this);
+
+  return _.extend({}, current, normalized);
+};
+
 Config.prototype.merge = function(obj) {
-  return _.extend(this, obj);
+  var self = this;
+  var clone = this.normalize(obj);
+
+  // Only set keys for values that don't throw.
+  Object.keys(obj).forEach(function(key) {
+    try {
+      self[key] = clone[key];
+    } catch (e) {
+      // Do nothing.
+    }
+  });
+
+  return this;
 };
 
 Config.default = function() {
@@ -186,7 +222,10 @@ Config.load = function(file, options) {
 
   var static_config = requireNoCache(file);
 
-  return _.extend(config, static_config, options);
+  config.merge(static_config);
+  config.merge(options);
+
+  return config;
 };
 
 module.exports = Config;
