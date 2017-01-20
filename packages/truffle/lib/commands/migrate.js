@@ -45,6 +45,7 @@ var command = {
             config.logger.log("Using network '" + config.network + "'." + OS.EOL);
             Migrate.run(config, done);
           } else {
+            config.logger.log("Network up to date.")
             done();
           }
         });

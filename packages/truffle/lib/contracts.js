@@ -9,6 +9,7 @@ var expect = require("truffle-expect");
 var _ = require("lodash");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
+var OS = require("os");
 
 var Contracts = {
 
@@ -71,7 +72,7 @@ var Contracts = {
       }
 
       if (options.quiet != true && options.quietWrite != true) {
-        logger.log("Writing artifacts to ." + path.sep + path.relative(options.working_directory, options.contracts_build_directory));
+        logger.log("Writing artifacts to ." + path.sep + path.relative(options.working_directory, options.contracts_build_directory) + OS.EOL);
       }
 
       var extra_opts = {
