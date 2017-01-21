@@ -1,3 +1,4 @@
+var OS = require("os");
 var dir = require("node-dir");
 var temp = require("temp");
 var Config = require("truffle-config");
@@ -6,6 +7,7 @@ var Artifactor = require("truffle-artifactor");
 var Test = require("../test");
 var fs = require("fs");
 var copy = require("../copy");
+var Environment = require("../environment");
 
 var command = {
   command: 'test',
@@ -71,7 +73,14 @@ var command = {
 
           copy(config.contracts_build_directory, temporaryDirectory, function(err) {
             if (err) return done(err);
-            run();
+
+            Environment.detect(config, function(err) {
+              if (err) return done(err);
+
+              config.logger.log("Using network '" + config.network + "'." + OS.EOL);
+
+              run();
+            });
           });
         });
       });
