@@ -5,7 +5,6 @@ var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
 var Migrate = require("truffle-migrate");
 var Environment = require("../environment");
-var Web3 = require("web3");
 
 var command = {
   command: 'migrate',
@@ -38,11 +37,12 @@ var command = {
       Environment.detect(config, function(err) {
         if (err) return done(err);
 
+        config.logger.log("Using network '" + config.network + "'." + OS.EOL);
+
         Migrate.needsMigrating(config, function(err, needsMigrating) {
           if (err) return done(err);
 
           if (needsMigrating) {
-            config.logger.log("Using network '" + config.network + "'." + OS.EOL);
             Migrate.run(config, done);
           } else {
             config.logger.log("Network up to date.")
