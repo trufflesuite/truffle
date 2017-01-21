@@ -13,6 +13,7 @@ var Profiler = require("./profiler");
 var CompileError = require("./compileerror");
 var expect = require("truffle-expect");
 var find_contracts = require("truffle-contract-sources");
+var Config = require("truffle-config");
 
 // Most basic of the compile commands. Takes a hash of sources, where
 // the keys are file or module paths and the values are the bodies of
@@ -133,8 +134,10 @@ compile.with_dependencies = function(options, callback) {
     "resolver"
   ]);
 
+  var config = Config.default().merge(options);
+
   var self = this;
-  Profiler.required_sources(options.with({
+  Profiler.required_sources(config.with({
     paths: options.paths,
     base_path: options.contracts_directory,
     resolver: options.resolver
