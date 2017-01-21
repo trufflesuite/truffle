@@ -25,7 +25,7 @@
     "spawn-args": "^0.1.0",
     "temp": "^0.8.3",
     "truffle-artifactor": "^2.0.1",
-    "truffle-compile": "^0.0.3",
+    "truffle-compile": "^0.0.4",
     "truffle-config": "^0.0.3",
     "truffle-contract": "^1.0.5",
     "truffle-contract-sources": "^0.0.1",
