@@ -1,5 +1,6 @@
 var Config = require("truffle-config");
 var Console = require("../repl");
+var Environment = require("../environment");
 
 var command = {
   command: 'console',
@@ -20,10 +21,14 @@ var command = {
       console_commands[name] = commands[name];
     });
 
-    Console.run(console_commands, config.with({
-      builder: config.build,
-      processors: config.processors, // legacy option for default builder
-    }), done);
+    Environment.detect(config, function(err) {
+      if (err) return done(err);
+
+      Console.run(console_commands, config.with({
+        builder: config.build,
+        processors: config.processors, // legacy option for default builder
+      }), done);
+    });
   }
 }
 
