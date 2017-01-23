@@ -26,8 +26,7 @@ CommandBuilder.prototype.build = function(options, callback) {
     env: _.merge(process.env, {
       WORKING_DIRECTORY: options.working_directory,
       BUILD_DESTINATION_DIRECTORY: options.destination_directory,
-      BUILD_CONTRACTS_DIRECTORY: options.contracts_build_directory,
-      WEB3_PROVIDER_LOCATION: "http://" + options.rpc.host + ":" + options.rpc.port
+      BUILD_CONTRACTS_DIRECTORY: options.contracts_build_directory
     })
   });
 
@@ -68,12 +67,7 @@ var Build = {
     expect.options(options, [
       "build_directory",
       "working_directory",
-      "contracts_build_directory",
-      "network",
-      "network_id",
-      "provider",
-      "resolver",
-      "rpc"
+      "contracts_build_directory"
     ]);
 
     var key = "build";
@@ -117,16 +111,7 @@ var Build = {
       Contracts.compile(options, function(err) {
         if (err) return callback(err);
 
-        var resolved_options = {
-          working_directory: options.working_directory,
-          contracts_build_directory: options.contracts_build_directory,
-          destination_directory: options.build_directory,
-          rpc: options.rpc,
-          provider: options.provider,
-          network: options.network
-        };
-
-        builder.build(resolved_options, function(err) {
+        builder.build(options, function(err) {
           if (!err) return callback();
 
           if (typeof err == "string") {
