@@ -4,7 +4,7 @@ var Require = require("truffle-require");
 
 var command = {
   command: 'exec',
-  description: 'Execute a JS module within Truffle environment',
+  description: 'Execute a JS module within this Truffle environment',
   builder: {
     file: {
       type: "string"

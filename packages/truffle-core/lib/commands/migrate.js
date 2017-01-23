@@ -8,7 +8,7 @@ var Environment = require("../environment");
 
 var command = {
   command: 'migrate',
-  description: 'Run migrations',
+  description: 'Run migrations to deploy contracts',
   builder: {
     reset: {
       type: "boolean",

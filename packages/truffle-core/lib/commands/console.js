@@ -4,7 +4,7 @@ var Environment = require("../environment");
 
 var command = {
   command: 'console',
-  description: 'Run a console with contract abstractions available (REPL)',
+  description: 'Run a console with contract abstractions and commands available',
   builder: {},
   run: function (options, done) {
     var config = Config.detect(options);
