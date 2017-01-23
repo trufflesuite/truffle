@@ -3,7 +3,7 @@ var Package = require("../package");
 
 var command = {
   command: 'digest',
-  description: 'Install a package from the Ethereum package registry',
+  description: 'Show publishable information about the current project',
   builder: {},
   run: function (options, done) {
     var config = Config.detect(options);
