@@ -1,6 +1,7 @@
 var http = require('http');
 var finalhandler = require('finalhandler');
 var serveStatic = require('serve-static');
+var path = require("path");
 
 var Serve = {
   start: function(options, done) {
@@ -14,7 +15,10 @@ var Serve = {
     var port = options.port || options.p || 8080;
 
     server.listen(port);
-    console.log("Serving app on port " + port + "...");
+
+    var display_directory = "." + path.sep + path.relative(options.working_directory, options.build_directory);
+
+    options.logger.log("Serving static assets in " + display_directory + " on port " + port + "...");
     done();
   }
 };
