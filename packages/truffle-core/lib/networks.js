@@ -125,14 +125,14 @@ var Networks = {
           output = ["No contracts deployed."];
         }
 
-        var message = "Network: " + network_name;
+        var message = "Network: ";
 
         var is_id = config.networks[network_name] == null;
 
         if (is_id) {
-          message += " (could not determine network name)";
+          message += "UNKNOWN (id: " + network_name + ")";
         } else {
-          message += " (id: " + config.networks[network_name].network_id + ")";
+          message += network_name + " (id: " + config.networks[network_name].network_id + ")";
         }
 
         config.logger.log(message);
