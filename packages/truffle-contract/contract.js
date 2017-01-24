@@ -9,7 +9,7 @@ var contract = (function(module) {
   }
 
   Provider.prototype.send = function() {
-    this.provider.send.apply(this.provider, arguments);
+    return this.provider.send.apply(this.provider, arguments);
   };
 
   Provider.prototype.sendAsync = function() {
