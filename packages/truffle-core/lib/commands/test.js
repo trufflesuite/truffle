@@ -55,9 +55,9 @@ var command = {
         };
 
         function run() {
-          if (!config.artifactor) {
-            config.artifactor = new Artifactor(temporaryDirectory);
-          }
+          // Set a new artifactor; don't rely on the one created by Environments.
+          // TODO: Make the test artifactor configurable.
+          config.artifactor = new Artifactor(temporaryDirectory);
 
           Test.run(config.with({
             test_files: files,
