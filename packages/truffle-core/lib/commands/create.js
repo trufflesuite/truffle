@@ -1,5 +1,5 @@
 var Config = require("truffle-config");
-var ConfigurationError = require("../errors/ConfigurationError");
+var ConfigurationError = require("../errors/configurationerror");
 var create = require("../create");
 
 var command = {
