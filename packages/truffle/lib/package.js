@@ -4,50 +4,69 @@ var EthPMRegistry = require("ethpm-registry");
 var Web3 = require("web3");
 var async = require("async");
 var dir = require("node-dir");
+var path = require("path");
+var fs = require('fs');
 
 var Package = {
   install: function(options, callback) {
     expect.options(options, [
+      "working_directory",
       "ethpm"
     ]);
 
     expect.options(options.ethpm, [
       "registry",
-      "host"
+      "ipfs_host",
+      "install_provider_uri"
     ]);
 
-    var provider = options.provider;
+    // ipfs_port and ipfs_protocol are optinal.
+
+    var provider = new Web3.providers.HttpProvider(options.ethpm.install_provider_uri);
     var web3 = new Web3(provider);
     var host = options.ethpm.host;
 
     if ((host instanceof EthPM.hosts.IPFS) == false) {
-      host = new EthPM.hosts.IPFS(options.ethpm.host.host, options.ethpm.host.port);
+      host = new EthPM.hosts.IPFS(options.ethpm.ipfs_host, options.ethpm.ipfs_port, options.ethpm.ipfs_protocol);
     }
 
-    web3.eth.getAccounts(function(err, accs) {
-      if (err) return callback(err);
+    var fakeAddress = "0x1234567890123456789012345678901234567890";
 
-      var registry = options.ethpm.registry;
+    var registry = options.ethpm.registry;
 
-      if (typeof registry == "string") {
-        registry = EthPMRegistry.use(options.ethpm.registry, accs[0], provider);
-      }
+    if (typeof registry == "string") {
+      registry = EthPMRegistry.use(options.ethpm.registry, fakeAddress, provider);
+    }
 
-      var pkg = new EthPM(options.working_directory, host, registry);
+    var pkg = new EthPM(options.working_directory, host, registry);
 
-      var package_name = options.package_name;
+    if (options.packages) {
+      var chain = Promise.resolve();
 
-      if (package_name) {
+      options.packages.forEach(function(package_name) {
         // TODO: Support versions
-        pkg.installDependency(package_name, "*").then(function() {
+        chain.then(function() {
+          return pkg.installDependency(package_name, "*");
+        }).catch(callback);
+      });
+
+      chain.then(function() {
+        callback();
+      })
+    } else {
+      fs.access(path.join(options.working_directory, "epm.json"), fs.constants.R_OK, function(err) {
+        var manifest;
+
+        // If the epm.json file doesn't exist, use the config as the manifest.
+        if (err) {
+          manifest = options;
+        }
+
+        pkg.install(manifest).then(function() {
           callback();
         }).catch(callback);
-      } else {
-        pkg.install().then(function() {
-          callback();
-        }).catch(callback);
-      }
-    });
+      });
+    }
   },
 
   publish: function(options, callback) {

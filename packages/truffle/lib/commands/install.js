@@ -6,6 +6,10 @@ var command = {
   description: 'Install a package from the Ethereum Package Registry',
   builder: {},
   run: function (options, done) {
+    if (options._ && options._.length > 0) {
+      options.packages = options._;
+    }
+
     var config = Config.detect(options);
     Package.install(config, done);
   }
