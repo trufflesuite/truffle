@@ -41,17 +41,17 @@ var SolidityTest = {
 
       ["beforeAll", "beforeEach", "afterAll", "afterEach"].forEach(function(fn_type) {
         if (item.name.indexOf(fn_type) == 0) {
-          suite[fn_type](item.name, function(done) {
+          suite[fn_type](item.name, function() {
             var deployed = contract.deployed();
-            return deployed[item.name]().then(processResult).then(done).catch(done);
+            return deployed[item.name]().then(processResult);
           });
         }
       });
 
       if (item.name.indexOf("test") == 0) {
-        var test = new TestCase(item.name, function(done) {
+        var test = new TestCase(item.name, function() {
           var deployed = contract.deployed();
-          return deployed[item.name]().then(processResult).then(done).catch(done);
+          return deployed[item.name]().then(processResult);
         });
 
         test.timeout(runner.TEST_TIMEOUT);
