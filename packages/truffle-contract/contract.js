@@ -622,7 +622,35 @@ var contract = (function(module) {
       return this.network.links || {};
     },
     events: function() {
-      return this.network.events || {};
+      // helper web3; not used for provider
+      var web3 = new Web3();
+
+      var events = this.network.events || {};
+
+      // Merge abi events with whatever's returned.
+      var abi = this.abi;
+
+      abi.forEach(function(item) {
+        if (item.type != "event") return;
+
+        var signature = item.name + "(";
+
+        item.inputs.forEach(function(input, index) {
+          signature += input.type;
+
+          if (index < item.inputs.length - 1) {
+            signature += ",";
+          }
+        });
+
+        signature += ")";
+
+        var topic = web3.sha3(signature);
+
+        events[topic] = item;
+      });
+
+      return events;
     },
     binary: function() {
       var self = this;
