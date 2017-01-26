@@ -29,7 +29,13 @@ function Config(truffle_directory, working_directory, network) {
     from: null,
     build: null,
     resolver: null,
-    artifactor: null
+    artifactor: null,
+    ethpm: {
+      ipfs_host: "ipfs.infura.io",
+      ipfs_protocol: "https",
+      registry: "0xbab799ff7d9e13a50696a8bebb7a1b77ae519586",
+      install_provider_uri: "https://ropsten.infura.io/truffle"
+    }
   };
 
   var props = {
@@ -42,6 +48,7 @@ function Config(truffle_directory, working_directory, network) {
     build: function() {},
     resolver: function() {},
     artifactor: function() {},
+    ethpm: function() {},
 
     build_directory: function() {
       return path.join(self.working_directory, "build");
