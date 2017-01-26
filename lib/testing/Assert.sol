@@ -260,7 +260,7 @@ library Assert {
         if (result)
             _report(result, message);
         else
-            _report(result, _appendTagged(_tag(_utoa(uint(bts), 16), "Tested"));
+            _report(result, _appendTagged(_tag(_utoa(uint(bts), 16), "Tested"), message));
     }
 
     /*
@@ -282,7 +282,7 @@ library Assert {
         if (result)
             _report(result, message);
         else
-            _report(result, _appendTagged(_tag(_utoa(uint(bts), 16), "Tested"));
+            _report(result, _appendTagged(_tag(_utoa(uint(bts), 16), "Tested"), message));
     }
 
     // ************************************** address **************************************
@@ -334,7 +334,7 @@ library Assert {
             _report(result, 
                 _appendTagged(
                     _tag(_utoa(uint(A), 16), "Tested"), 
-                    _tag(_utoa(uint(B), 16), "Against"), message));    }
+                    _tag(_utoa(uint(B), 16), "Against"), message));    
     }
 
     /*
@@ -356,7 +356,7 @@ library Assert {
         if (result)
             _report(result, message);
         else
-            _report(result, _appendTagged(_tag(_utoa(uint(addr), 16), "Tested"));
+            _report(result, _appendTagged(_tag(_utoa(uint(addr), 16), "Tested"), message));
     }
 
     /*
@@ -378,7 +378,7 @@ library Assert {
         if (result)
             _report(result, message);
         else
-            _report(result, _appendTagged(_tag(_utoa(uint(addr), 16), "Tested"));
+            _report(result, _appendTagged(_tag(_utoa(uint(addr), 16), "Tested"), message));
     }
 
     // ************************************** bool **************************************
