@@ -46,7 +46,7 @@ module.exports = {
       network_id: "*" // Match any network id
     },
     ropsten: {
-      provider: new HDWalletProvider(mnemonic, "https://ropsten.infura.io/truffle"),
+      provider: new HDWalletProvider(mnemonic, "https://ropsten.infura.io/"),
       network_id: 3
     }
   }
