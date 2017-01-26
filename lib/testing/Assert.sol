@@ -206,7 +206,13 @@ library Assert {
     */
     function equal(bytes32 A, bytes32 B, string message) constant returns (bool result) {
         result = (A == B);
-        _report(result, message);
+        if (result)
+            _report(result, message);
+        else
+            _report(result, 
+                _appendTagged(
+                    _tag(_utoa(uint(A), 16), "Tested"), 
+                    _tag(_utoa(uint(B), 16), "Against"), message));
     }
 
     /*
@@ -226,7 +232,13 @@ library Assert {
     */
     function notEqual(bytes32 A, bytes32 B, string message) constant returns (bool result) {
         result = (A != B);
-        _report(result, message);
+        if (result)
+            _report(result, message);
+        else
+            _report(result, 
+                _appendTagged(
+                    _tag(_utoa(uint(A), 16), "Tested"), 
+                    _tag(_utoa(uint(B), 16), "Against"), message));
     }
 
     /*
@@ -245,7 +257,10 @@ library Assert {
     */
     function isZero(bytes32 bts, string message) constant returns (bool result) {
         result = (bts == BYTES32_NULL);
-        _report(result, message);
+        if (result)
+            _report(result, message);
+        else
+            _report(result, _appendTagged(_tag(_utoa(uint(bts), 16), "Tested"));
     }
 
     /*
@@ -264,7 +279,10 @@ library Assert {
     */
     function isNotZero(bytes32 bts, string message) constant returns (bool result) {
         result = (bts != BYTES32_NULL);
-        _report(result, message);
+        if (result)
+            _report(result, message);
+        else
+            _report(result, _appendTagged(_tag(_utoa(uint(bts), 16), "Tested"));
     }
 
     // ************************************** address **************************************
@@ -286,8 +304,13 @@ library Assert {
     */
     function equal(address A, address B, string message) constant returns (bool result) {
         result = (A == B);
-        _report(result, message);
-    }
+        if (result)
+            _report(result, message);
+        else
+            _report(result, 
+                _appendTagged(
+                    _tag(_utoa(uint(A), 16), "Tested"), 
+                    _tag(_utoa(uint(B), 16), "Against"), message));    }
     /*
         Function: notEqual(address)
 
@@ -305,7 +328,13 @@ library Assert {
     */
     function notEqual(address A, address B, string message) constant returns (bool result) {
         result = (A != B);
-         _report(result, message);
+        if (result)
+            _report(result, message);
+        else
+            _report(result, 
+                _appendTagged(
+                    _tag(_utoa(uint(A), 16), "Tested"), 
+                    _tag(_utoa(uint(B), 16), "Against"), message));    }
     }
 
     /*
@@ -324,7 +353,10 @@ library Assert {
     */
     function isZero(address addr, string message) constant returns (bool result) {
         result = (addr == ADDRESS_NULL);
-        _report(result, message);
+        if (result)
+            _report(result, message);
+        else
+            _report(result, _appendTagged(_tag(_utoa(uint(addr), 16), "Tested"));
     }
 
     /*
@@ -343,7 +375,10 @@ library Assert {
     */
     function isNotZero(address addr, string message) constant returns (bool result) {
         result = (addr != ADDRESS_NULL);
-        _report(result, message);
+        if (result)
+            _report(result, message);
+        else
+            _report(result, _appendTagged(_tag(_utoa(uint(addr), 16), "Tested"));
     }
 
     // ************************************** bool **************************************
