@@ -56,7 +56,9 @@ Migration.prototype.run = function(options, callback) {
 
       if (Migrations && Migrations.isDeployed()) {
         logger.log("Saving successful migration to network...");
-        return Migrations.deployed().setCompleted(self.number);
+        return Migrations.deployed().then(function(migrations) {
+          return migrations.setCompleted(self.number);
+        });
       }
     }).then(function() {
       if (options.save === false) return;
@@ -192,7 +194,9 @@ var Migrate = {
 
     var migrations = Migrations.deployed();
 
-    migrations.last_completed_migration.call().then(function(completed_migration) {
+    Migrations.deployed().then(function(migrations) {
+      return migrations.last_completed_migration.call();
+    }).then(function(completed_migration) {
       callback(null, completed_migration.toNumber());
     }).catch(callback);
   },
