@@ -13,7 +13,7 @@ var contract = (function(module) {
   };
 
   Provider.prototype.sendAsync = function() {
-    this.provider.sendAsync.apply(this.provider, arguments);
+    return this.provider.sendAsync.apply(this.provider, arguments);
   };
 
   var BigNumber = (new Web3()).toBigNumber(0).constructor;
@@ -339,10 +339,10 @@ var contract = (function(module) {
 
     deployed: function() {
       var self = this;
-      var contract = this.at(this.address);
+      var val = {}; //this.at(this.address);
 
       // Add thennable to allow people to opt into new recommended usage.
-      contract.then = function(fn) {
+      val.then = function(fn) {
         return self.detectNetwork().then(function() {
           // We don't have a network config for the one we found
           if (self._json.networks[self.network_id] == null) {
@@ -358,7 +358,7 @@ var contract = (function(module) {
         }).then(fn);
       };
 
-      return contract;
+      return val;
     },
 
     defaults: function(class_defaults) {
@@ -379,25 +379,19 @@ var contract = (function(module) {
       return this.class_defaults;
     },
 
-    extend: function() {
-      var args = Array.prototype.slice.call(arguments);
-
-      for (var i = 0; i < arguments.length; i++) {
-        var object = arguments[i];
-        var keys = Object.keys(object);
-        for (var j = 0; j < keys.length; j++) {
-          var key = keys[j];
-          var value = object[key];
-          this.prototype[key] = value;
-        }
-      }
-    },
-
     hasNetwork: function(network_id) {
       return this._json.networks[network_id + ""] != null;
     },
 
     isDeployed: function() {
+      if (this.network_id == null) {
+        return false;
+      }
+
+      if (this._json.networks[this.network_id] == null) {
+        return false;
+      }
+
       return !!this.network.address;
     },
 
@@ -405,8 +399,12 @@ var contract = (function(module) {
       var self = this;
 
       return new Promise(function(accept, reject) {
-        if (self.network_id != null) {
-          return accept(self.network_id);
+        // Try to detect the network we have artifacts for.
+        if (self.network_id) {
+          // We have a network id and a configuration, let's go with it.
+          if (self.networks[self.network_id] != null) {
+            return accept(self.network_id);
+          }
         }
 
         self.web3.version.getNetwork(function(err, result) {
@@ -506,6 +504,7 @@ var contract = (function(module) {
       if (typeof options != "object") {
         json = self._json;
         network_id = options;
+        options = {};
       }
 
       temp.prototype = Object.create(self.prototype);
@@ -524,6 +523,12 @@ var contract = (function(module) {
       if (network_id) {
         temp.setNetwork(network_id);
       }
+
+      // Copy over custom options
+      Object.keys(options).forEach(function(key) {
+        if (key.indexOf("x-") != 0) return;
+        temp[key] = options[key];
+      });
 
       return temp;
     },
@@ -581,18 +586,15 @@ var contract = (function(module) {
       }
     },
     network: function() {
-      var network_id = this.network_id != null ? this.network_id : this.default_network;
+      var network_id = this.network_id;
 
       if (network_id == null) {
-        throw new Error("No network id available, cannot lookup artifact data. Either set the network manually, specify a default network, run " + this.contract_name + ".detectNetwork(), or use new(), at() or deployed() as a thenable which will detect the network automatically.");
+        throw new Error(this.contract_name + " has no network id set, cannot lookup artifact data. Either set the network manually using " + this.contract_name + ".setNetwork(), run " + this.contract_name + ".detectNetwork(), or use new(), at() or deployed() as a thenable which will detect the network automatically.");
       }
 
       // TODO: this might be bad; setting a value on a get.
       if (this._json.networks[network_id] == null) {
-        this._json.networks[network_id] = {
-          events: {},
-          links: {}
-        };
+        throw new Error(this.contract_name + " has no network configuration for its current network id (" + network_id + ").");
       }
 
       return this._json.networks[network_id];
@@ -615,10 +617,29 @@ var contract = (function(module) {
           throw new Error("Cannot set deployed address; malformed value: " + val);
         }
 
+        var network_id = this.network_id;
+
+        if (network_id == null) {
+          throw new Error(this.contract_name + " has no network id set, cannot lookup artifact data. Either set the network manually using " + this.contract_name + ".setNetwork(), run " + this.contract_name + ".detectNetwork(), or use new(), at() or deployed() as a thenable which will detect the network automatically.");
+        }
+
+        // Create a network if we don't have one.
+        if (this._json.networks[network_id] == null) {
+          this._json.networks[network_id] = {
+            events: {},
+            links: {}
+          };
+        }
+
+        // Finally, set the address.
         this.network.address = val;
       }
     },
     links: function() {
+      if (this._json.networks[this.network_id] == null) {
+        return {};
+      }
+
       return this.network.links || {};
     },
     events: function() {
@@ -676,9 +697,6 @@ var contract = (function(module) {
     },
     schema_version: function() {
       return this._json.schema_version;
-    },
-    default_network: function() {
-      return this._json.default_network;
     },
     updated_at: function() {
       try {
