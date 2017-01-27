@@ -4,7 +4,7 @@
   "description": "JSON schema for contract artifacts",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -25,5 +25,8 @@
   "homepage": "https://github.com/trufflesuite/truffle-schema#readme",
   "dependencies": {
     "crypto-js": "^3.1.9-1"
+  },
+  "devDependencies": {
+    "mocha": "^3.2.0"
   }
 }

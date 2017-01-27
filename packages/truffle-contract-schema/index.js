@@ -71,6 +71,8 @@ var TruffleSchema = {
 
     delete normalized.binary;
 
+    this.copyCustomOptions(options, normalized);
+
     return normalized;
   },
 
@@ -153,7 +155,26 @@ var TruffleSchema = {
       existing_binary.updated_at = options.updated_at || existing_binary.updated_at || updated_at;
     }
 
+    this.copyCustomOptions(options, existing_binary);
+
     return existing_binary;
+  },
+
+  copyCustomOptions: function(from, to) {
+    // Now let all x- options through.
+    Object.keys(from).forEach(function(key) {
+      if (key.indexOf("x-") != 0) return;
+
+      try {
+        value = from[key];
+
+        if (value != undefined) {
+          to[key] = value;
+        }
+      } catch (e) {
+        // Do nothing.
+      }
+    });
   }
 };
 
