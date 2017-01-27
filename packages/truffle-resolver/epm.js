@@ -20,12 +20,6 @@ EPM.prototype.require = function(import_path, search_path) {
   var contract_filename = path.basename(import_path);
   var contract_name = path.basename(import_path, ".sol");
 
-  var fs_source = new FSSource(this.working_directory, search_path || this.contracts_build_directory)
-
-  var result = fs_source.require("./" + contract_filename);
-
-  if (result != null) return result;
-
   // We haven't compiled our own version. Assemble from data in the lockfile.
   var separator = import_path.indexOf("/")
   var package_name = import_path.substring(0, separator);
