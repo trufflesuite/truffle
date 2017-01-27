@@ -220,5 +220,45 @@ module.exports = {
       }
       callback(null, dependsGraph)
     });
+  },
+
+  // Parse all source files in the directory and output the names of contracts they definedContracts
+  defined_contracts: function(directory, callback) {
+    find_contracts(directory, function(err, files) {
+      if (err) return callback(err);
+
+      var promises = files.map(function(file) {
+        return new Promise(function(accept, reject) {
+          fs.readFile(file, "utf8", function(err, body) {
+            if (err) return reject(err);
+
+            var ast;
+
+            try {
+              ast = SolidityParser.parse(body);
+            } catch (e) {
+              e.message = "Error parsing " + file + ": " + e.message;
+              return reject(e);
+            }
+
+            accept(ast);
+          });
+        });
+      });
+
+      Promise.all(promises).then(function(asts) {
+        var contract_names = asts.map(function(ast) {
+          return ast.body.filter(function(toplevel_item) {
+            return toplevel_item.type == "ContractStatement";
+          }).map(function(contract_statement) {
+            return contract_statement.name;
+          });
+        });
+
+        contract_names = [].concat.apply([], contract_names);
+
+        callback(null, contract_names);
+      }).catch(callback);
+    });
   }
 };
