@@ -45,11 +45,12 @@ describe("Library linking", function() {
       contract_name: "LibraryExample",
       abi: [],
       binary: "606060405260ea8060106000396000f3606060405260e060020a600035046335b09a6e8114601a575b005b601860e160020a631ad84d3702606090815273__A_____________________________________906335b09a6e906064906020906004818660325a03f415600257506040805160e160020a631ad84d37028152905173__B_____________________________________9350600482810192602092919082900301818660325a03f415600257506040805160e160020a631ad84d37028152905173821735ac2129bdfb20b560de2718783caf61ad1c9350600482810192602092919082900301818660325a03f41560025750505056",
-      network_id: network_id,
-      default_network: network_id
+      network_id: network_id
     }).then(function() {
       var json = requireNoCache(expected_filepath);
       LibraryExample = contract(json);
+
+      LibraryExample.setNetwork(network_id);
     }).then(done).catch(done);
   });
 
@@ -126,14 +127,12 @@ describe("Library linking with contract objects", function() {
       ExampleLibrary: {
         binary: result.contracts["ExampleLibrary"].bytecode,
         abi: JSON.parse(result.contracts["ExampleLibrary"].interface),
-        network_id: network_id,
-        default_network: network_id
+        network_id: network_id
       },
       ExampleLibraryConsumer: {
         binary: result.contracts["ExampleLibraryConsumer"].bytecode,
         abi: JSON.parse(result.contracts["ExampleLibraryConsumer"].interface),
-        network_id: network_id,
-        default_network: network_id
+        network_id: network_id
       }
     }, dirPath).then(function() {
 
@@ -158,6 +157,9 @@ describe("Library linking with contract objects", function() {
       ExampleLibraryConsumer.defaults({
         from: accounts[0]
       });
+
+      ExampleLibrary.setNetwork(network_id);
+      ExampleLibraryConsumer.setNetwork(network_id);
 
       done(err);
     });

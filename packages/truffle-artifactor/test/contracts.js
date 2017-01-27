@@ -1,4 +1,3 @@
-// Override artifactor
 var assert = require("chai").assert;
 var Artifactor = require("../");
 var contract = require("truffle-contract");
@@ -105,36 +104,6 @@ describe("artifactor + require", function() {
     }).then(done).catch(done);
   });
 
-  it("should add extended functions when created with at()", function(done) {
-    Example.extend({
-      my_function: function(instance) {
-        assert.equal(instance, this, "Function has incorrect scope!");
-        done();
-      }
-    });
-
-    assert.isUndefined(Example.my_function, "Function should not have been applied to the class");
-    assert.isNotNull(Example.prototype.my_function, "Function should have been applied to the _extended attribute");
-
-    var example = Example.deployed();
-    assert.isNotNull(example.my_function, "Function should have been applied to the instance");
-    example.my_function(example);
-  });
-
-  it("should add extended functions when created with new()", function(done) {
-    Example.extend({
-      my_function: function(instance) {
-        assert.equal(instance, this, "Function has incorrect scope!");
-        done();
-      }
-    });
-
-    Example.new({gas: 3141592}).then(function(example) {
-      assert.isNotNull(example.my_function, "Function should have been applied to the instance");
-      example.my_function(example);
-    }).catch(done);
-  });
-
   it("shouldn't synchronize constant functions", function(done) {
     var example;
     Example.new(5, {gas: 3141592}).then(function(instance) {
@@ -196,23 +165,6 @@ describe("artifactor + require", function() {
     done();
   });
 
-  // TODO: Move this test to truffle-contract
-  it("abstraction generates properly with a specified network", function() {
-    var NewExample = contract({
-      abi: abi,
-      unlinked_binary: binary,
-      default_network: "1",
-      networks: {
-        "1": {
-          address: "0x1234567890123456789012345678901234567890"
-        }
-      }
-    });
-
-    assert.deepEqual(NewExample.abi, abi);
-    assert.equal(NewExample.deployed().address, "0x1234567890123456789012345678901234567890");
-  });
-
   it("creates a network object when an address is set if no network specified", function(done) {
     var NewExample = contract({
       abi: abi,
@@ -227,10 +179,10 @@ describe("artifactor + require", function() {
     assert.equal(NewExample.network_id, null);
 
     NewExample.new({gas: 3141592}).then(function(instance) {
+      // We have a network id in this case, with new(), since it was detected,
+      // but no further configuration.
       assert.equal(NewExample.network_id, network_id);
-
-      // .new caused a detect, which set the network value
-      assert.deepEqual(NewExample.toJSON().networks[network_id], {events: {}, links: {}});
+      assert.equal(NewExample.toJSON().networks[network_id], null);
 
       NewExample.address = instance.address;
 

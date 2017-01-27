@@ -20,12 +20,14 @@ describe("solc", function() {
     // Add the network id since it's required
     Object.keys(result.contracts).forEach(function(key) {
       result.contracts[key].network_id = "1337";
-      result.contracts[key].default_network = "1337";
     });
 
     artifactor.saveAll(result.contracts, dirPath).then(function() {
       var A = contract(require(path.join(dirPath, "A.json")));
       var B = contract(require(path.join(dirPath, "B.json")));
+
+      A.setNetwork("1337");
+      B.setNetwork("1337");
 
       var wash = function(interface) {
         return JSON.stringify(JSON.parse(interface));

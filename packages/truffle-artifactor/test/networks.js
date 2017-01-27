@@ -9,6 +9,7 @@ var TestRPC = require("ethereumjs-testrpc");
 var BlockchainUtils = require("truffle-blockchain-utils");
 var contract = require("truffle-contract");
 var Web3 = require("web3");
+var async = require("async");
 
 function getNetworkId(provider, callback) {
   var web3 = new Web3();
@@ -78,8 +79,7 @@ describe("Different networks:", function() {
       contract_name: "Example",
       abi: abi,
       binary: binary,
-      network_id: network_one_id,
-      default_network: network_one_id
+      network_id: network_one_id
     }).then(function() {
       return artifactor.save({
         contract_name: "Example",
@@ -108,12 +108,8 @@ describe("Different networks:", function() {
     getAndSetAccounts(ExampleTwo, done);
   });
 
-  after(function(done) {
-    temp.cleanupSync();
-    done();
-  });
-
-  it("can deploy to different networks", function(done) {
+  // Most tests rely on this. It was a test; now it's a before step.
+  before("can deploy to different networks", function(done) {
     ExampleOne.new({gas: 3141592}).then(function(example) {
       ExampleOne.address = example.address;
       return ExampleTwo.new({gas: 3141592});
@@ -125,6 +121,11 @@ describe("Different networks:", function() {
     }).then(function() {
       return artifactor.save(ExampleTwo, built_file_path, {contract_name: "Example", network_id: network_two_id});
     }).then(done).catch(done);
+  });
+
+  after(function(done) {
+    temp.cleanupSync();
+    done();
   });
 
   it("does not deploy to the same network (eth_getCode)", function(done) {
@@ -142,17 +143,6 @@ describe("Different networks:", function() {
     })
   })
 
-  it("defaults to the default network set", function() {
-    var json = requireNoCache(built_file_path);
-    var Example = contract(json);
-
-    // Network id should be null, meaning it's undected and not set explicitly.
-    assert.equal(Example.network_id, null);
-
-    // Network returned, however, should be the default.
-    assert.deepEqual(Example.network, Example.toJSON().networks[network_one_id]);
-  });
-
   it("has no network if none set", function(done) {
     var filepath = path.join(temp_dir, "AnotherExample.json")
 
@@ -164,35 +154,7 @@ describe("Different networks:", function() {
       var json = requireNoCache(filepath);
       var AnotherExample = contract(json);
 
-      assert.equal(AnotherExample.default_network, null);
       assert.equal(Object.keys(AnotherExample.toJSON().networks).length, 0);
-    }).then(done).catch(done);
-  });
-
-  it("overwrites the default network if a new default network is specified", function(done) {
-    var filepath = path.join(temp_dir, "AnotherExample.json")
-
-    // NOTE: We are saving over the file already there!!!!
-    artifactor.save({
-      contract_name: "AnotherExample",
-      abi: abi,
-      binary: binary,
-      network_id: "1010",
-      default_network: "1010"
-    }, filepath).then(function() {
-      return artifactor.save({
-        contract_name: "AnotherExample",
-        abi: abi,
-        binary: binary,
-        network_id: "1337",
-        default_network: "1337"
-      }, filepath);
-    }).then(function() {
-      var json = requireNoCache(filepath);
-      var AnotherExample = contract(json);
-
-      assert.equal(AnotherExample.default_network, "1337");
-      assert.equal(Object.keys(AnotherExample.toJSON().networks).length, 2);
     }).then(done).catch(done);
   });
 
@@ -215,32 +177,6 @@ describe("Different networks:", function() {
     });
   });
 
-  it("does not overwrite the default network if default is unspecifed", function(done) {
-    var filepath = path.join(temp_dir, "AnotherExample.json")
-
-    var default_network_from_last_test = "1337";
-    var network_id = "1414";
-    var address = "0x1234567890123456789012345678901234567890";
-
-    // NOTE: We are saving over the file already there!!!! AGAIN
-    artifactor.save({
-      contract_name: "AnotherExample",
-      abi: abi,
-      binary: binary,
-      address: address,
-      network_id: network_id
-    }, filepath).then(function() {
-      var json = requireNoCache(filepath);
-      var AnotherExample = contract(json);
-
-      assert.equal(AnotherExample.default_network, default_network_from_last_test);
-      assert.equal(Object.keys(AnotherExample.toJSON().networks).length, 3); // Last three tests have used this file
-      // Ensure we wrote to the correct network
-      assert.equal(AnotherExample.toJSON().networks[network_id].address, address);
-      assert.isUndefined(AnotherExample.toJSON().networks[default_network_from_last_test].address);
-    }).then(done).catch(done);
-  });
-
   it("auto-detects network when using deployed() as a thennable", function(done) {
     // For this test, we're using ExampleOne set up in the before() blocks. Note that
     // it has two networks, and the default network is the first one. We'll set the
@@ -250,11 +186,10 @@ describe("Different networks:", function() {
     var Example = contract(json);
     Example.setProvider(network_two);
 
-    // Ensure first network is the default network (precondition).
-    assert.equal(Example.default_network, network_one_id);
+    // Ensure preconditions
     assert.isNotNull(Example.toJSON().networks[network_one_id].address);
     assert.isNotNull(Example.toJSON().networks[network_two_id].address);
-    assert.equal(Example.address, Example.toJSON().networks[network_one_id].address);
+    assert.equal(Example.network_id, null);
 
     // Thennable checker. Since this is a custom then function, let's ensure things
     // get executed in the right order.
@@ -310,11 +245,10 @@ describe("Different networks:", function() {
     var Example = contract(json);
     Example.setProvider(network_two);
 
-    // Ensure first network is the default network (precondition).
-    assert.equal(Example.default_network, network_one_id);
+    // Ensure preconditions
     assert.isNotNull(Example.toJSON().networks[network_one_id].address);
     assert.isNotNull(Example.toJSON().networks[network_two_id].address);
-    assert.equal(Example.address, Example.toJSON().networks[network_one_id].address);
+    assert.equal(Example.network_id, null);
 
     // Thennable checker. Since this is a custom then function, let's ensure things
     // get executed in the right order.
@@ -359,11 +293,10 @@ describe("Different networks:", function() {
     var Example = contract(json);
     Example.setProvider(network_two);
 
-    // Ensure first network is the default network (precondition).
-    assert.equal(Example.default_network, network_one_id);
+    // Ensure preconditions
     assert.isNotNull(Example.toJSON().networks[network_one_id].address);
     assert.isNotNull(Example.toJSON().networks[network_two_id].address);
-    assert.equal(Example.address, Example.toJSON().networks[network_one_id].address);
+    assert.equal(Example.network_id, null);
 
     Example.new({from: ExampleTwo.defaults().from, gas: 3141592}).then(function(instance) {
       assert.deepEqual(instance.abi, Example.abi);
@@ -461,6 +394,112 @@ describe("Different networks:", function() {
         done();
       }).catch(done);
     });
-
   });
+
+  it("resolve networks artifacts when two matching but unequal blockchain uris are passed in", function(done) {
+    var filepath = path.join(temp_dir, "NetworkExampleTwo.json");
+
+    BlockchainUtils.asURI(network_two, function(err, uri) {
+      if (err) return done(err);
+
+      var NetworkExample;
+
+      var address = "0x1234567890123456789012345678901234567890" // fake
+
+      artifactor.save({
+        contract_name: "NetworkExampleTwo",
+        abi: abi,
+        unlinked_binary: binary,
+        network_id: uri,
+        address: address
+      }, filepath).then(function() {
+        if (err) return done(err);
+
+        var json = requireNoCache(filepath);
+
+        NetworkExample = contract(json);
+        NetworkExample.setProvider(network_two);
+
+        NetworkExample.defaults({
+          from: ExampleTwo.defaults().from // Borrow the address from this one.
+        });
+
+        // This is what makes this test different than others. We're going to set
+        // the network id to a number, but we're still going to expect it to resolve
+        // to the correct set of artifacts identified by the blockchain uri, even
+        // when the network id has been explicitly set.
+        NetworkExample.setNetwork(network_two_id);
+
+        NetworkExample.deployed().then(function(instance) {
+          assert.equal(NetworkExample.network_id, uri);
+          assert.equal(instance.address, address);
+          done();
+        }).catch(done);
+      })
+    });
+  });
+
+  // TODO: Rewrite this as a promise chain
+  it("resolve network artifacts when two equal but different network identifiers are passed in", function(done) {
+    var filepath = path.join(temp_dir, "NetworkExampleThree.json");
+
+    BlockchainUtils.asURI(network_two, function(err, uri) {
+      if (err) return done(err);
+
+      var NetworkExample;
+
+      var address = "0x1234567890123456789012345678901234567890" // fake
+
+      artifactor.save({
+        contract_name: "NetworkExampleThree",
+        abi: abi,
+        unlinked_binary: binary,
+        network_id: uri,
+        address: address
+      }, filepath).then(function() {
+        if (err) return done(err);
+
+        // Now send two transactions that, when finished, will ensure
+        // we've mined two more blocks. We'll use ExampleTwo for this
+        // that's hooked up to the same network.
+        async.times(2, function(n, finished) {
+          ExampleTwo.new({gas: 3141592}).then(function() {
+            finished();
+          }).catch(finished);
+        }, function(err) {
+          if (err) return done(err);
+
+          // Now get the blockchain URI again
+          BlockchainUtils.asURI(network_two, function(err, new_uri) {
+            if (err) return done(err);
+
+            assert.notEqual(new_uri, uri);
+
+            // Now do the same test as above, but use uri's instead.
+            var json = requireNoCache(filepath);
+
+            NetworkExample = contract(json);
+            NetworkExample.setProvider(network_two);
+
+            NetworkExample.defaults({
+              from: ExampleTwo.defaults().from // Borrow the address from this one.
+            });
+
+            // We're setting the id to a URI that matches the same network as an already set URI
+            // (but the URIs aren't equal).
+            // We should get the address that's been saved as the URIs should match.
+            NetworkExample.setNetwork(new_uri);
+
+            NetworkExample.deployed().then(function(instance) {
+              assert.equal(NetworkExample.network_id, uri);
+              assert.equal(instance.address, address);
+              done();
+            }).catch(done);
+          });
+        });
+      });
+    });
+  });
+
+
 });
