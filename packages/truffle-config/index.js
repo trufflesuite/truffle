@@ -80,7 +80,7 @@ function Config(truffle_directory, working_directory, network) {
         }
       },
       set: function(val) {
-        throw new Error("Do not set config.network_id. Instead, set config.networks and then config.network.");
+        throw new Error("Do not set config.network_id. Instead, set config.networks and then config.networks[<network name>].network_id");
       }
     },
     network_config: {
@@ -97,49 +97,63 @@ function Config(truffle_directory, working_directory, network) {
           config = {};
         }
 
-        var current_values = {};
-
-        if (self._values.gas) current_values.gas = self._values.gas;
-        if (self._values.gasPrice) current_values.gasPrice = self._values.gasPrice;
-        if (self._values.from) current_values.from = self._values.from;
-
-        conf = _.extend({}, default_tx_values, conf, current_values);
+        conf = _.extend({}, default_tx_values, conf);
 
         return conf;
       },
       set: function(val) {
-        throw new Error("Do not set config.network_config. Instead, set config.networks and then config.network.");
+        throw new Error("Don't set config.network_config. Instead, set config.networks with the desired values.");
       }
     },
-    from: function() {
-      try {
-        return self.network_config.from;
-      } catch (e) {
-        return default_tx_values.from;
+    from: {
+      get: function() {
+        try {
+          return self.network_config.from;
+        } catch (e) {
+          return default_tx_values.from;
+        }
+      },
+      set: function(val) {
+        throw new Error("Don't set config.from directly. Instead, set config.networks and then config.networks[<network name>].from")
       }
     },
-    gas: function() {
-      try {
-        return self.network_config.gas;
-      } catch (e) {
-        return default_tx_values.gas;
+    gas: {
+      get: function() {
+        try {
+          return self.network_config.gas;
+        } catch (e) {
+          return default_tx_values.gas;
+        }
+      },
+      set: function(val) {
+        throw new Error("Don't set config.gas directly. Instead, set config.networks and then config.networks[<network name>].gas")
       }
     },
-    gasPrice: function() {
-      try {
-        return self.network_config.gasPrice;
-      } catch (e) {
-        return default_tx_values.gasPrice;
+    gasPrice: {
+      get: function() {
+        try {
+          return self.network_config.gasPrice;
+        } catch (e) {
+          return default_tx_values.gasPrice;
+        }
+      },
+      set: function(val) {
+        throw new Error("Don't set config.gasPrice directly. Instead, set config.networks and then config.networks[<network name>].gasPrice")
       }
     },
-    provider: function() {
-      if (!self.network) {
-        return null;
-      }
+    provider: {
+      get: function() {
+        if (!self.network) {
+          return null;
+        }
 
-      var options = self.network_config;
-      options.verboseRpc = self.verboseRpc;
-      return Provider.create(options);
+        var options = self.network_config;
+        options.verboseRpc = self.verboseRpc;
+        return Provider.create(options);
+      },
+      set: function(val) {
+        throw new Error("Don't set config.provider directly. Instead, set config.networks and then set config.networks[<network name>].provider")
+      }
     }
   };
 
