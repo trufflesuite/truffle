@@ -4,7 +4,7 @@ module.exports = {
   build: require("./lib/build"),
   create: require("./lib/create"),
   compiler: require("truffle-compile"),
-  config: require("./lib/config"),
+  config: require("truffle-config"),
   console: require("./lib/repl"),
   contracts: require("./lib/contracts"),
   require: require("truffle-require"),
