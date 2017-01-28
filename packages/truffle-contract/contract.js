@@ -488,6 +488,13 @@ var contract = (function(module) {
         return;
       }
 
+      if (this._json.networks[this.network_id] == null) {
+        this._json.networks[this.network_id] = {
+          events: {},
+          links: {}
+        };
+      }
+
       this.network.links[name] = address;
     },
 
