@@ -30,7 +30,7 @@
   "devDependencies": {
     "ethereumjs-testrpc": "^3.0.3",
     "mocha": "^3.2.0",
-    "truffle-contract": "^1.0.2",
+    "truffle-contract": "^1.1.1",
     "web3": "^0.18.0"
   }
 }
