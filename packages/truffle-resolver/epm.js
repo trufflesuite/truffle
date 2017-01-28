@@ -27,7 +27,12 @@ EPM.prototype.require = function(import_path, search_path) {
   var install_directory = path.join(this.working_directory, "installed_contracts");
   var lockfile = path.join(install_directory, package_name, "lock.json");
 
-  lockfile = fs.readFileSync(lockfile, "utf8");
+  try {
+    lockfile = fs.readFileSync(lockfile, "utf8");
+  } catch (e) {
+    return null;
+  }
+
   lockfile = JSON.parse(lockfile);
 
   var json = {
