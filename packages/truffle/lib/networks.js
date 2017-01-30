@@ -1,6 +1,10 @@
 var fs = require("fs");
 var path = require("path");
 var OS = require("os");
+var BlockchainUtils = require("truffle-blockchain-utils");
+var Provider = require("truffle-provider");
+var async = require("async");
+var Web3 = require('web3');
 
 var Networks = {
   deployed: function(options, callback) {
@@ -199,6 +203,69 @@ var Networks = {
       Promise.all(promises).then(function() {
         callback();
       }).catch(callback);
+    });
+  },
+
+  // Try to connect to every named network except for "test" and "development"
+  asURIs: function(options, networks, callback) {
+    if (typeof networks == "function") {
+      callback = networks;
+      networks = Object.keys(options.networks);
+    }
+
+    var result = {
+      uris: {},
+      failed: []
+    };
+
+    async.each(networks, function(network_name, finished) {
+      var provider = Provider.create(options.networks[network_name]);
+      BlockchainUtils.asURI(provider, function(err, uri) {
+        if (err) {
+          result.failed.push(network_name);
+        } else {
+          result.uris[network_name] = uri;
+        }
+        finished();
+      });
+    }, function(err) {
+      if (err) return callback(err);
+      callback(null, result);
+    });
+  },
+
+  matchesNetwork: function(network_id, network_options, callback) {
+    var provider = Provider.create(network_options);
+
+    var first = network_id + "";
+    var second = network_options.network_id + "";
+
+    if (first == second) {
+      return callback(null, true);
+    }
+
+    var isFirstANumber = isNaN(parseInt(network_id)) === false;
+    var isSecondANumber = isNaN(parseInt(network_options.network_id)) === false;
+
+    // If both network ids are numbers, then they don't match, and we should quit.
+    if (isFirstANumber && isSecondANumber) {
+      return callback(null, false);
+    }
+
+    var web3 = new Web3(provider);
+    web3.version.getNetwork(function(err, current_network_id) {
+      if (err) return callback(err);
+
+      if (first == current_network_id) {
+        return callback(null, true);
+      }
+
+      if (isFirstANumber == false) {
+        BlockchainUtils.matches(first, provider, callback);
+      } else {
+        // Nothing else to compare.
+        return callback(null, false);
+      }
     });
   }
 };
