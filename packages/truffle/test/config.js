@@ -23,7 +23,6 @@ describe('config', function() {
     }, function(err, result) {
       if (err) return done(err);
       config = result;
-      config.provider = TestRPC.provider();
       config.resolver = new Resolver(config);
       config.artifactor = new Artifactor(config.contracts_build_directory);
       config.network = "development";
@@ -32,7 +31,8 @@ describe('config', function() {
           network_id: "1",
           gas: customRPCConfig.gas,
           gasPrice: customRPCConfig.gasPrice,
-          from: "0x1234567890123456789012345678901234567890"
+          from: "0x1234567890123456789012345678901234567890",
+          provider: TestRPC.provider()
         }
       };
 

@@ -13,8 +13,9 @@ var Web3 = require("web3");
 describe("migrate", function() {
   var config;
   var accounts;
-  var provider = TestRPC.provider();
-  var web3 = new Web3(provider);
+  var network_id_one;
+  var network_id_two;
+  var from_addresses = [];
 
   before("Create a sandbox", function(done) {
     this.timeout(5000);
@@ -23,28 +24,37 @@ describe("migrate", function() {
       config = result;
       config.resolver = new Resolver(config);
       config.artifactor = new Artifactor(config.contracts_build_directory);
-      config.provider = provider;
+      config.networks = {};
       done();
     });
   });
 
-  before("Get accounts and network id", function(done) {
+  function createProviderAndSetNetworkConfig(network, callback) {
+    var provider = TestRPC.provider({seed: network});
+    var web3 = new Web3(provider);
     web3.eth.getAccounts(function(err, accs) {
-      if (err) return done(err);
-      accounts = accs;
+      if (err) return callback(err);
 
-      config.from = accounts[0];
-      config.networks = {
-        "primary": {
-          "network_id": "1",
-        },
-        "secondary": {
-          "network_id": "12345"
-        }
-      };
+      web3.version.getNetwork(function(err, network_id) {
+        if (err) return callback(err);
 
-      done();
+        config.networks[network] = {
+          provider: provider,
+          network_id: network_id + "",
+          from: accs[0]
+        };
+
+        callback();
+      });
     });
+  };
+
+  before("Get accounts and network id of network one", function(done) {
+    createProviderAndSetNetworkConfig("primary", done);
+  });
+
+  before("Get accounts and network id of network one", function(done) {
+    createProviderAndSetNetworkConfig("secondary", done);
   });
 
   it('profiles a new project as not having any contracts deployed', function(done) {
@@ -103,11 +113,11 @@ describe("migrate", function() {
         currentAddresses[contract_name] = networks["primary"][contract_name];
       });
 
-      Contracts.compile(config.with({
-        all: false,
-        quiet: true
-      }), function(err) {
-        if (err) return done(err);
+      // Contracts.compile(config.with({
+      //   all: false,
+      //   quiet: true
+      // }), function(err) {
+      //   if (err) return done(err);
 
         Migrate.run(config.with({
           quiet: true
@@ -134,7 +144,7 @@ describe("migrate", function() {
             done();
           });
         });
-      });
+      // });
 
     });
   });
