@@ -18,6 +18,10 @@ var command = {
       describe: "recompile all contracts",
       type: "boolean",
       default: false
+    },
+    f: {
+      describe: "Specify a migration number to run from",
+      type: "number"
     }
   },
   run: function (options, done) {
@@ -31,16 +35,20 @@ var command = {
 
         config.logger.log("Using network '" + config.network + "'." + OS.EOL);
 
-        Migrate.needsMigrating(config, function(err, needsMigrating) {
-          if (err) return done(err);
+        if (options.f) {
+          Migrate.runFrom(options.f, config, done);
+        } else {
+          Migrate.needsMigrating(config, function(err, needsMigrating) {
+            if (err) return done(err);
 
-          if (needsMigrating) {
-            Migrate.run(config, done);
-          } else {
-            config.logger.log("Network up to date.")
-            done();
-          }
-        });
+            if (needsMigrating) {
+              Migrate.run(config, done);
+            } else {
+              config.logger.log("Network up to date.")
+              done();
+            }
+          });
+        }
       });
     });
   }
