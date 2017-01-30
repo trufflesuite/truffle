@@ -653,7 +653,13 @@ var contract = (function(module) {
       // helper web3; not used for provider
       var web3 = new Web3();
 
-      var events = this.network.events || {};
+      var events;
+
+      if (this._json.networks[this.network_id] == null) {
+        events = {};
+      } else {
+        events = this.network.events || {};
+      }
 
       // Merge abi events with whatever's returned.
       var abi = this.abi;
