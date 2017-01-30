@@ -63,7 +63,7 @@ var Environment = {
 
       web3.eth.getAccounts(function(err, accounts) {
         if (err) return done(err);
-        config.from = accounts[0];
+        config.networks[config.network].from = accounts[0];
         done();
       });
     }
