@@ -78,28 +78,33 @@ describe('EthPM integration', function() {
     });
   });
 
-  afterEach("stop ipfs server", function(done) {
-    this.timeout(10000);
-
-    var called = false;
-    // The callback gets called more than once...
-    ipfs_daemon.killProcess(function() {
-      if (called == false) {
-        called = true;
-        done();
-      }
-    });
-  });
+  // afterEach("stop ipfs server", function(done) {
+  //   this.timeout(10000);
+  //
+  //   var called = false;
+  //   // The callback gets called more than once...
+  //   try {
+  //     ipfs_daemon.stopDaemon(function() {
+  //       if (called == false) {
+  //         called = true;
+  //         done();
+  //       }
+  //     });
+  //   } catch (e) {
+  //     // do nothing
+  //   }
+  // });
 
   it("successfully installs single dependency from EthPM", function(done) {
     this.timeout(20000); // Giving ample time for requests to time out.
 
     Package.install(config.with({
       ethpm: {
-        host: host,
-        registry: registry
+        ipfs_host: host,
+        registry: registry,
+        provider: provider
       },
-      package_name: "owned"
+      packages: ["owned"]
     }), function(err) {
       if (err) return done(err);
 
@@ -117,10 +122,11 @@ describe('EthPM integration', function() {
 
     Package.install(config.with({
       ethpm: {
-        host: host,
-        registry: registry
+        ipfs_host: host,
+        registry: registry,
+        provider: provider
       },
-      package_name: "transferable"
+      packages: ["transferable"]
     }), function(err) {
       if (err) return done(err);
 
@@ -176,10 +182,11 @@ describe('EthPM integration', function() {
 
     Package.install(config.with({
       ethpm: {
-        host: host,
-        registry: registry
+        ipfs_host: host,
+        registry: registry,
+        provider: provider
       },
-      package_name: "safe-math-lib"
+      packages: ["safe-math-lib"]
     }), function(err) {
       if (err) return done(err);
 
