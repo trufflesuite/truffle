@@ -1,6 +1,6 @@
 contract Example {
   uint public value;
-  event ExampleEvent(address indexed _from);
+  event ExampleEvent(address indexed _from, uint num);
 
   function Example(uint val) {
     if (val == 0x0) {
@@ -23,6 +23,6 @@ contract Example {
   }
 
   function triggerEvent() {
-    ExampleEvent(msg.sender);
+    ExampleEvent(msg.sender, 8);
   }
 }
