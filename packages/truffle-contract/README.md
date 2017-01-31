@@ -61,6 +61,12 @@ In your `head` element, include Web3 and then include truffle-contract:
 
 Alternatively, you can use the non-minified versions for easier debugging.
 
+With this usage, `truffle-contract` will be available via the `TruffleContract` object:
+
+```
+var MyContract = TruffleContract(...);
+```
+
 ### Full Example
 
 Let's use `truffle-contract` with an example contract from [Dapps For Beginners](https://dappsforbeginners.wordpress.com/tutorials/your-first-dapp/). In this case, the abstraction has been saved to a `.sol.js` file by [truffle-artifactor](https://github.com/trufflesuite/truffle-artifactor):
