@@ -1,4 +1,4 @@
-var SolidityEvent = require("web3/lib/web3/event.js");
+var ethJSABI = require("ethjs-abi");
 var BlockchainUtils = require("truffle-blockchain-utils");
 var Web3 = require("web3");
 
@@ -48,8 +48,53 @@ var contract = (function(module) {
           return null;
         }
 
-        var decoder = new SolidityEvent(null, logABI, instance.address);
-        return decoder.decode(log);
+        // This function has been adapted from web3's SolidityEvent.decode() method,
+        // and built to work with ethjs-abi.
+
+        var copy = Utils.merge({}, log);
+
+        function partialABI(fullABI, indexed) {
+          var inputs = fullABI.inputs.filter(function (i) {
+            return i.indexed === indexed;
+          });
+
+          var partial = {
+            inputs: inputs,
+            name: fullABI.name,
+            type: fullABI.type,
+            anonymous: fullABI
+          };
+
+          return partial;
+        }
+
+        var argTopics = logABI.anonymous ? copy.topics : copy.topics.slice(1);
+        var indexedData = "0x" + argTopics.map(function (topics) { return topics.slice(2); }).join("");
+        var indexedParams = ethJSABI.decodeEvent(partialABI(logABI, true), indexedData);
+
+        var notIndexedData = copy.data;
+        var notIndexedParams = ethJSABI.decodeEvent(partialABI(logABI, false), notIndexedData);
+
+        copy.event = logABI.name;
+
+        copy.args = logABI.inputs.reduce(function (acc, current) {
+          acc[current.name] = indexedParams[current.name] || notIndexedParams[current.name];
+          return acc;
+        }, {});
+
+        Object.keys(copy.args).forEach(function(key) {
+          var val = copy.args[key];
+
+          // We have BN. Convert it to BigNumber
+          if (val.constructor.isBN) {
+            copy.args[key] = C.web3.toBigNumber("0x" + val.toString(16));
+          }
+        });
+
+        delete copy.data;
+        delete copy.topics;
+
+        return copy;
       }).filter(function(log) {
         return log != null;
       });
