@@ -67,7 +67,8 @@ var Build = {
     expect.options(options, [
       "build_directory",
       "working_directory",
-      "contracts_build_directory"
+      "contracts_build_directory",
+      "networks"
     ]);
 
     var key = "build";
@@ -77,7 +78,10 @@ var Build = {
     }
 
     var logger = options.logger || console;
-    var builder = options.builder;
+    var builder = options.build;
+
+    // Duplicate build directory for legacy purposes
+    options.destination_directory = options.build_directory;
 
     // No builder specified. Ignore the build then.
     if (typeof builder == "undefined") {
@@ -90,7 +94,9 @@ var Build = {
     if (typeof builder == "string") {
       builder = new CommandBuilder(builder);
     } else if (typeof builder !== "function") {
-      return callback(new BuildError("Build configuration can no longer be specified as an object. Please see our documentation for an updated list of supported build configurations."));
+      if (builder.build == null) {
+        return callback(new BuildError("Build configuration can no longer be specified as an object. Please see our documentation for an updated list of supported build configurations."));
+      }
     } else {
       // If they've only provided a build function, use that.
       builder = {
@@ -126,7 +132,9 @@ var Build = {
 
   // Deprecated: Specific to default builder.
   dist: function(config, callback) {
-    this.build(config, "dist", callback);
+    this.build(config.with({
+      key: "dist"
+    }), callback);
   }
 }
 
