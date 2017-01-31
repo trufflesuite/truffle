@@ -1,8 +1,15 @@
-var Web3 = require("web3");
 var SolidityEvent = require("web3/lib/web3/event.js");
 var BlockchainUtils = require("truffle-blockchain-utils");
+var Web3 = require("web3");
+
+// For browserified version. If browserify gave us an empty version,
+// look for the one provided by the user.
+if (typeof Web3 == "object" && Object.keys(Web3).length == 0) {
+  Web3 = global.Web3;
+}
 
 var contract = (function(module) {
+
   // Planned for future features, logging, etc.
   function Provider(provider) {
     this.provider = provider;

@@ -57,3 +57,7 @@ contract.fromSolJS = function(soljs_abstraction, ignore_default_network) {
 };
 
 module.exports = contract;
+
+if (typeof window !== "undefined") {
+  window.TruffleContract = contract;
+}

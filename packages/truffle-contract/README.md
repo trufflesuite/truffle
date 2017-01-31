@@ -48,7 +48,18 @@ Each instance is tied to a specific address on the Ethereum network, and each in
   }).then(function(result) {
     // Do something with the result or continue with more transactions.
   });
-  ```  
+  ```
+
+### Browser Usage
+
+In your `head` element, include Web3 and then include truffle-contract:
+
+```
+<script type="text/javascript" src="./path/to/web3.min.js"></script>
+<script type="text/javascript" src="./dist/truffle-contract.min.js"></script>
+```
+
+Alternatively, you can use the non-minified versions for easier debugging.
 
 ### Full Example
 

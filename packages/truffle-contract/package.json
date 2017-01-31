@@ -4,7 +4,8 @@
   "description": "A better contract abstraction for Ethereum (formerly EtherPudding)",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "prepublish": "browserify ./index.js -i web3 -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js"
   },
   "repository": {
     "type": "git",
@@ -28,7 +29,10 @@
     "web3": "^0.16.0"
   },
   "devDependencies": {
+    "browserify": "^14.0.0",
     "lodash": "^4.17.4",
-    "mocha": "^3.2.0"
+    "mocha": "^3.2.0",
+    "uglify": "^0.1.5",
+    "uglify-js": "^2.7.5"
   }
 }
