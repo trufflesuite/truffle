@@ -1,6 +1,6 @@
 # truffle-contract
 
-Better contract abstraction for Ethereum.
+Better Ethereum contract abstraction, for Node and the browser.
 
 ### Install
 
