@@ -8,7 +8,11 @@ var cpr_options = {
   confirm: true
 };
 
-module.exports = function(from, to, extra_options, callback) {
+// This module will copy a file or directory, and by default
+// won't override individual files. If a file exists, it will
+// simply move onto the next file.
+
+var copy = function(from, to, extra_options, callback) {
   if (typeof extra_options == "function") {
     callback = extra_options;
     extra_options = {};
@@ -33,3 +37,26 @@ module.exports = function(from, to, extra_options, callback) {
     callback(err, new_files);
   });
 }
+
+copy.file = function(from, to, callback) {
+  var readStream = fs.createReadStream(from, "utf8");
+  var writeStream = fs.createWriteStream(to, "utf8");
+
+  readStream.on("error", function(err) {
+    callback(err);
+    callback = function() {};
+  });
+
+  writeStream.on("error", function(err) {
+    callback(err);
+    callback = function() {};
+  });
+
+  writeStream.on("finish", function() {
+    callback();
+  });
+
+  readStream.pipe(writeStream);
+};
+
+module.exports = copy;

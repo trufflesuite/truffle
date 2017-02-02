@@ -1,22 +1,39 @@
 var TaskError = require("./errors/taskerror");
 var yargs = require("yargs");
 var _ = require("lodash");
+var yargs = require("yargs");
 
-function Command(tasks) {
-  this.tasks = tasks;
+function Command(commands) {
+  this.commands = commands;
+
+  var args = yargs.reset();
+
+  Object.keys(this.commands).forEach(function(command) {
+    args = args.command(commands[command]);
+  });
+
+  this.args = args;
 };
 
-Command.prototype.getTask = function(command) {
-  var argv = yargs.parse(command);
+Command.prototype.getCommand = function(str) {
+  var argv = this.args.parse(str);
 
   if (argv._.length == 0) {
     return null;
   }
 
-  var task_name = argv._[0];
-  var task = this.tasks[task_name];
+  var name = argv._[0];
+  var command = this.commands[name];
 
-  return task;
+  if (command == null) {
+    return null;
+  }
+
+  return {
+    name: name,
+    argv: argv,
+    command: command
+  };
 };
 
 Command.prototype.run = function(command, options, callback) {
@@ -25,17 +42,14 @@ Command.prototype.run = function(command, options, callback) {
     options = {};
   }
 
-  var task = this.getTask(command);
+  var result = this.getCommand(command);
 
-  if (task == null) {
-    if (Array.isArray(command)) {
-      command = command.join(" ")
-    }
-
-    return callback(new TaskError("Cannot find task for command: " + command));
+  if (result == null) {
+    return callback(new TaskError("Cannot find command: " + command));
   }
 
-  var argv = yargs.parse(command);
+  var argv = result.argv;
+
   // Remove the task name itself.
   if (argv._) {
     argv._.shift();
@@ -44,10 +58,20 @@ Command.prototype.run = function(command, options, callback) {
   // We don't need this.
   delete argv["$0"];
 
-  options = _.extend(_.clone(options), argv);
+  // Some options might throw if options is a Config object. If so, let's ignore those options.
+  var clone = {};
+  Object.keys(options).forEach(function(key) {
+    try {
+      clone[key] = options[key];
+    } catch (e) {
+      // Do nothing with values that throw.
+    }
+  });
+
+  options = _.extend(clone, argv);
 
   try {
-    task(options, callback);
+    result.command.run(options, callback);
   } catch (err) {
     callback(err);
   }

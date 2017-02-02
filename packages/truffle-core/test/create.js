@@ -4,6 +4,8 @@ var fs = require("fs");
 var Init = require("../lib/init");
 var Create = require("../lib/create");
 var dir = require("node-dir");
+var Resolver = require("truffle-resolver");
+var Artifactor = require("truffle-artifactor");
 
 describe('create', function() {
   var config;
@@ -13,6 +15,8 @@ describe('create', function() {
     Init.sandbox(function(err, result) {
       if (err) return done(err);
       config = result;
+      config.resolver = new Resolver(config);
+      config.artifactor = new Artifactor(config.contracts_build_directory);
       done();
     });
   });

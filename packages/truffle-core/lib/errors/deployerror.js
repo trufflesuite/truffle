@@ -1,8 +1,8 @@
 var colors = require("colors");
-var ExtendableError = require("./extendableerror");
+var TruffleError = require("truffle-error");
 var inherits = require("util").inherits;
 
-inherits(DeployError, ExtendableError);
+inherits(DeployError, TruffleError);
 
 function DeployError(message, contract_name) {
   message = "Error deploying " + contract_name + ":\n\n" + message + "\n\n" + colors.red("Deploy failed. See above.");
