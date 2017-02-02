@@ -1,7 +1,8 @@
 var assert = require("chai").assert;
 var Init = require("../lib/init");
 var Contracts = require("../lib/contracts");
-var Pudding = require("ether-pudding");
+var Artifactor = require("truffle-artifactor");
+var Resolver = require("truffle-resolver");
 var path = require("path");
 var fs = require("fs");
 
@@ -13,19 +14,19 @@ describe("compile", function() {
     Init.sandbox(function(err, result) {
       if (err) return done(err);
       config = result;
+      config.resolver = new Resolver(config);
+      config.artifactor = new Artifactor(config.contracts_build_directory);
+      config.networks = {
+        "default": {
+          "network_id": "1"
+        },
+        "secondary": {
+          "network_id": "12345"
+        }
+      };
+      config.network = "default";
       done();
     });
-  });
-
-  before("edit config", function() {
-    config.networks = {
-      "default": {
-        "network_id": "default"
-      },
-      "secondary": {
-        "network_id": "12345"
-      }
-    }
   });
 
   it('compiles all initial contracts', function(done) {
@@ -76,39 +77,33 @@ describe("compile", function() {
     });
   });
 
-  it('contracts should only have one network', function(done) {
-    var file = path.resolve(path.join(config.contracts_build_directory, "MetaCoin.sol.js"));
-
-    Pudding.requireFile(file, function(err, contract) {
-      if (err) return done(err);
-      assert.equal(contract.networks().length, 1, "Expected the contract to only be managing one network");
-      done();
-    });
+  it("compiling shouldn't create any network artifacts", function() {
+    var contract = config.resolver.require("MetaCoin.sol");
+    assert.equal(Object.keys(contract.networks).length, 0, "Expected the contract to be managing zero networks");
   });
 
-  it('compiles all contracts after multiple changes after a change in network', function(done) {
-    this.timeout(10000);
+  // TODO: Kept this as a comment because I'm confused if it applies.
+  // Since the binary and abi are updated with every compile, and they're not within
+  // the networks object anymore, it may not matter when that specific network changed.
 
-    config.network = "secondary";
-
-    Contracts.compile(config.with({
-      all: false,
-      quiet: true
-    }), function(err, contracts) {
-      if (err) return done(err);
-
-      assert.equal(Object.keys(contracts).length, 3, "Expected all contracts to be compiled on a second network");
-      done();
-    });
-  });
-
-  it('contracts should new have two networks', function(done) {
-    var file = path.resolve(path.join(config.contracts_build_directory, "MetaCoin.sol.js"));
-
-    Pudding.requireFile(file, function(err, contract) {
-      if (err) return done(err);
-      assert.equal(contract.networks().length, 2, "Expected the contract to be managing two networks");
-      done();
-    });
-  });
+  // it('compiles all contracts after multiple changes after a change in network', function(done) {
+  //   this.timeout(10000);
+  //
+  //   config.network = "secondary";
+  //
+  //   Contracts.compile(config.with({
+  //     all: false,
+  //     quiet: true
+  //   }), function(err, contracts) {
+  //     if (err) return done(err);
+  //
+  //     assert.equal(Object.keys(contracts).length, 3, "Expected all contracts to be compiled on a second network");
+  //     done();
+  //   });
+  // });
+  //
+  // it('contracts should now have two networks', function() {
+  //   var contract = config.resolver.require("MetaCoin.sol");
+  //   assert.equal(contract.networks().length, 2, "Expected the contract to be managing two networks");
+  // });
 });
