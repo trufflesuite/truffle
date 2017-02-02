@@ -1,7 +1,7 @@
-var ExtendableError = require("./extendableerror");
+var TruffleError = require("truffle-error");
 var inherits = require("util").inherits;
 
-inherits(ConfigurationError, ExtendableError);
+inherits(ConfigurationError, TruffleError);
 
 function ConfigurationError(message) {
     ConfigurationError.super_.call(this, message);

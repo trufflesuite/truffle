@@ -1,15 +1,17 @@
 var repl = require("repl");
 var Command = require("./command");
-var Contracts = require("./contracts");
+var provision = require("truffle-provisioner");
+var contract = require("truffle-contract");
 var Web3 = require("web3");
 var vm = require("vm");
-var expect = require("./expect");
+var expect = require("truffle-expect");
 var _ = require("lodash");
-var ExtendableError = require("./errors/extendableerror");
+var TruffleError = require("truffle-error");
+var fs = require("fs");
+var path = require("path");
 
 function TruffleInterpreter(tasks, options) {
   this.options = options;
-  this.contracts = [];
   this.r = null;
   this.command = new Command(tasks);
 };
@@ -21,14 +23,13 @@ TruffleInterpreter.prototype.start = function() {
   var web3 = new Web3();
   web3.setProvider(options.provider);
 
-  this.provision(function(err) {
-    if (err) return done(err);
-
-    var prefix = "truffle(default)> ";
-
-    if (options.network != null && options.network != "default") {
-      prefix = "truffle(" + options.network + ")> ";
+  this.provision(function(err, abstractions) {
+    if (err) {
+      options.logger.log("Enexpected error: Cannot provision contracts while instantiating the console.");
+      options.logger.log(err.stack || err.message || err);
     }
+
+    var prefix = "truffle(" + options.network + ")> ";
 
     try {
       self.r = repl.start({
@@ -40,7 +41,7 @@ TruffleInterpreter.prototype.start = function() {
         process.exit(1);
       });
 
-      self.resetContracts();
+      self.resetContractsInConsoleContext(abstractions);
       self.r.context.web3 = web3;
 
     } catch(e) {
@@ -53,22 +54,46 @@ TruffleInterpreter.prototype.start = function() {
 TruffleInterpreter.prototype.provision = function(callback) {
   var self = this;
 
-  Contracts.provision(this.options, function(err, contracts) {
+  fs.readdir(this.options.contracts_build_directory, function(err, files) {
     if (err) return callback(err);
 
-    self.contracts = contracts;
-    self.resetContracts();
+    var promises = [];
 
-    callback();
+    files.forEach(function(file) {
+      promises.push(new Promise(function(accept, reject) {
+        fs.readFile(path.join(self.options.contracts_build_directory, file), "utf8", function(err, body) {
+          if (err) return reject(err);
+          try {
+            body = JSON.parse(body);
+          } catch (e) {
+            return reject(new Error("Cannot parse " + file + ": " + e.message));
+          }
+
+          accept(body);
+        })
+      }))
+    });
+
+    Promise.all(promises).then(function(json_blobs) {
+      var abstractions = json_blobs.map(function(json) {
+        var abstraction = contract(json);
+        provision(abstraction, self.options);
+        return abstraction;
+      });
+
+      self.resetContractsInConsoleContext(abstractions);
+
+      callback(null, abstractions);
+    }).catch(callback);
   });
 };
 
-TruffleInterpreter.prototype.resetContracts = function() {
+TruffleInterpreter.prototype.resetContractsInConsoleContext = function(abstractions) {
   var self = this;
 
   if (this.r != null) {
-    this.contracts.forEach(function(contract) {
-      self.r.context[contract.contract_name] = contract;
+    abstractions.forEach(function(abstraction) {
+      self.r.context[abstraction.contract_name] = abstraction;
     });
   }
 }
@@ -76,11 +101,11 @@ TruffleInterpreter.prototype.resetContracts = function() {
 TruffleInterpreter.prototype.interpret = function(cmd, context, filename, callback) {
   var self = this;
 
-  if (this.command.getTask(cmd.trim()) != null) {
+  if (this.command.getCommand(cmd.trim()) != null) {
     return this.command.run(cmd.trim(), this.options, function(err) {
       if (err) {
         // Perform error handling ourselves.
-        if (err instanceof ExtendableError) {
+        if (err instanceof TruffleError) {
           console.log(err.message);
         } else {
           // Bubble up all other unexpected errors.
@@ -90,7 +115,11 @@ TruffleInterpreter.prototype.interpret = function(cmd, context, filename, callba
       }
 
       // Reprovision after each command is it may change contracts.
-      self.provision(callback);
+      self.provision(function(err, abstractions) {
+        // Don't pass abstractions to the callback if they're there or else
+        // they'll get printed in the repl.
+        callback(err);
+      });
     });
   }
 
@@ -121,9 +150,8 @@ var Repl = {
       "network",
       "network_id",
       "provider",
-      "builder",
-      "build_directory",
-      "rpc"
+      "resolver",
+      "build_directory"
     ]);
 
     var interpreter = new TruffleInterpreter(tasks, options);
