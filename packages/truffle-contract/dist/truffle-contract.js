@@ -64,7 +64,7 @@ var contract = (function(module) {
             inputs: inputs,
             name: fullABI.name,
             type: fullABI.type,
-            anonymous: fullABI
+            anonymous: fullABI.anonymous
           };
 
           return partial;
@@ -80,7 +80,13 @@ var contract = (function(module) {
         copy.event = logABI.name;
 
         copy.args = logABI.inputs.reduce(function (acc, current) {
-          acc[current.name] = indexedParams[current.name] || notIndexedParams[current.name];
+          var val = indexedParams[current.name];
+
+          if (val === undefined) {
+            val = notIndexedParams[current.name];
+          }
+
+          acc[current.name] = val;
           return acc;
         }, {});
 
@@ -832,6 +838,7 @@ contract.fromSolJS = function(soljs_abstraction, ignore_default_network) {
   latest_network = soljs_abstraction.all_networks[latest_network] || {};
 
   var json = {
+    contract_name: soljs_abstraction.contract_name,
     unlinked_binary: latest_network.unlinked_binary,
     abi: latest_network.abi,
     networks: networks,

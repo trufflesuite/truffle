@@ -62,7 +62,7 @@ var contract = (function(module) {
             inputs: inputs,
             name: fullABI.name,
             type: fullABI.type,
-            anonymous: fullABI
+            anonymous: fullABI.anonymous
           };
 
           return partial;
@@ -78,7 +78,13 @@ var contract = (function(module) {
         copy.event = logABI.name;
 
         copy.args = logABI.inputs.reduce(function (acc, current) {
-          acc[current.name] = indexedParams[current.name] || notIndexedParams[current.name];
+          var val = indexedParams[current.name];
+
+          if (val === undefined) {
+            val = notIndexedParams[current.name];
+          }
+
+          acc[current.name] = val;
           return acc;
         }, {});
 
