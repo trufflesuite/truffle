@@ -177,12 +177,19 @@ module.exports = {
       }
 
       resolver.resolve(import_path, imported_from, function(err, body, source) {
-        if (err) return callback(err);
+        if (err) return finished(err);
 
         // Add the contract to the depends graph.
         dependsGraph.setNode(import_path, body);
 
-        var imports = SolidityParser.parse(body, "imports");
+        var imports;
+
+        try {
+          imports = SolidityParser.parse(body, "imports");
+        } catch (e) {
+          e.message = "Error parsing " + import_path + ": " + e.message;
+          return finished(e);
+        }
 
         // Convert explicitly relative dependencies of modules
         // back into module paths. We also use this loop to update
