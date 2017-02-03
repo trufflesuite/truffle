@@ -17,7 +17,7 @@ var command = {
       example_name = options._[0];
     }
 
-    Init.fromGithub(example_name, config.working_directory, function(err, project_config) {
+    Init.fromGithub(config, example_name, config.working_directory, function(err, project_config) {
       if (err) return done(err);
 
       var docs_url = project_config.docs_url || "https://github.com/trufflesuite/truffle-init-" + example_name;
@@ -53,6 +53,10 @@ var command = {
 
         config.logger.log("  " + key + ": " + spacing + project_config.commands[key]);
       });
+
+      if (project_config.epilogue) {
+        console.log(OS.EOL + project_config.epilogue.replace("\n", OS.EOL));
+      }
 
       config.logger.log("");
     });
