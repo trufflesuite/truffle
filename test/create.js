@@ -1,7 +1,7 @@
 var assert = require("chai").assert;
 var path = require("path");
 var fs = require("fs");
-var Init = require("../lib/init");
+var Init = require("truffle-init");
 var Create = require("../lib/create");
 var dir = require("node-dir");
 var Resolver = require("truffle-resolver");
@@ -11,7 +11,7 @@ describe('create', function() {
   var config;
 
   before("Create a sandbox", function(done) {
-    this.timeout(5000);
+    this.timeout(10000);
     Init.sandbox(function(err, result) {
       if (err) return done(err);
       config = result;
