@@ -110,7 +110,7 @@ describe('EthPM integration', function() {
 
       var expected_install_directory = path.resolve(path.join(config.working_directory, "installed_contracts", "owned"));
 
-      assertFile(path.join(expected_install_directory, "epm.json"));
+      assertFile(path.join(expected_install_directory, "ethpm.json"));
       assertFile(path.join(expected_install_directory, "contracts", "owned.sol"));
 
       done();
@@ -132,9 +132,9 @@ describe('EthPM integration', function() {
 
       var expected_install_directory = path.resolve(path.join(config.working_directory, "installed_contracts"));
 
-      assertFile(path.join(expected_install_directory, "transferable", "epm.json"));
+      assertFile(path.join(expected_install_directory, "transferable", "ethpm.json"));
       assertFile(path.join(expected_install_directory, "transferable", "contracts", "transferable.sol"));
-      assertFile(path.join(expected_install_directory, "owned", "epm.json"));
+      assertFile(path.join(expected_install_directory, "owned", "ethpm.json"));
       assertFile(path.join(expected_install_directory, "owned", "contracts", "owned.sol"));
 
       // Write a contract that uses transferable, so it will be compiled.
