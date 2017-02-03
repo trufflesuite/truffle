@@ -1,5 +1,5 @@
 var assert = require("chai").assert;
-var Init = require("../lib/init");
+var Init = require("truffle-init");
 var fs = require("fs");
 var path = require('path');
 var mkdirp = require("mkdirp");
