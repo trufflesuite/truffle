@@ -17,9 +17,7 @@ var command = {
       example_name = options._[0];
     }
 
-    Init.fromGithub(config, example_name, config.working_directory, function(err, project_config) {
-      if (err) return done(err);
-
+    Init.fromGithub(config, example_name, config.working_directory).then(function(project_config) {
       var docs_url = project_config.docs_url || "https://github.com/trufflesuite/truffle-init-" + example_name;
 
       config.logger.log("Project initialized." +
@@ -59,7 +57,7 @@ var command = {
       }
 
       config.logger.log("");
-    });
+    }).catch(done);
   }
 }
 
