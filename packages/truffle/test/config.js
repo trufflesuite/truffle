@@ -1,7 +1,7 @@
 var assert = require("chai").assert;
 var path = require("path");
 var fs = require("fs");
-var Init = require("../lib/init");
+var Init = require("truffle-init");
 var Contracts = require("../lib/contracts");
 var TestRPC = require("ethereumjs-testrpc");
 var provision = require("truffle-provisioner");
@@ -17,7 +17,7 @@ describe('config', function() {
   };
 
   before("Create a sandbox with extra config values", function(done) {
-    this.timeout(5000);
+    this.timeout(10000);
     Init.sandbox({
       quiet: true
     }, function(err, result) {

@@ -1,5 +1,5 @@
 var assert = require("chai").assert;
-var Init = require("../lib/init");
+var Init = require("truffle-init");
 var fs = require("fs");
 var path = require('path');
 var mkdirp = require("mkdirp");
@@ -15,7 +15,7 @@ describe('NPM integration', function() {
   var parentContractSource = "pragma solidity ^0.4.2; import 'fake_source/contracts/Module.sol'; contract Parent {}";
 
   before("Create a sandbox", function(done) {
-    this.timeout(5000);
+    this.timeout(10000);
     Init.sandbox(function(err, result) {
       if (err) return done(err);
       config = result;

@@ -1,5 +1,5 @@
 var assert = require("chai").assert;
-var Init = require("../lib/init");
+var Init = require("truffle-init");
 var Profiler = require("truffle-compile/profiler.js");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
@@ -10,7 +10,7 @@ describe('profiler', function() {
   var config;
 
   before("Create a sandbox", function(done) {
-    this.timeout(5000);
+    this.timeout(10000);
     Init.sandbox(function(err, result) {
       if (err) return done(err);
       config = result;
