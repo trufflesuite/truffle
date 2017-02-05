@@ -25,7 +25,7 @@ TruffleInterpreter.prototype.start = function() {
 
   this.provision(function(err, abstractions) {
     if (err) {
-      options.logger.log("Enexpected error: Cannot provision contracts while instantiating the console.");
+      options.logger.log("Unexpected error: Cannot provision contracts while instantiating the console.");
       options.logger.log(err.stack || err.message || err);
     }
 
