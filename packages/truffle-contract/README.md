@@ -214,67 +214,79 @@ contract MyContract {
 
 #### Instance Functions & Behavior
 
-* From Javascript's point of view, this contract has three functions: `setValue`, `getValue` and `value`. This is because `value` is public and automatically creates a getter function for it.
-* When we call `setValue()`, this creates a transaction. From Javascript:
+From Javascript's point of view, this contract has three functions: `setValue`, `getValue` and `value`. This is because `value` is public and automatically creates a getter function for it.
 
-  ```javascript
-  instance.setValue(5).then(function(result) {
-    // result object contains import information about the transaction
-  });
-  ```
+##### Making a transaction via a contract function
 
-* We can call `setValue()` without creating a transaction by explicitly using `.call`:
+When we call `setValue()`, this creates a transaction. From Javascript:
 
-  ```javascript
-  instance.setValue.call(5).then(...);
-  ```
+```javascript
+instance.setValue(5).then(function(result) {
+  // result object contains import information about the transaction
+});
+```
 
-  This isn't very useful in this case, since `setValue()` sets things, and the value we pass won't be saved since we're not creating a transaction.
+##### Explicitly making a call instead of a transaction
 
-* However, we can *get* the value using `getValue()`, using `.call()`. Calls are always free and don't cost any Ether, so they're good for calling functions that read data off the blockchain:
+We can call `setValue()` without creating a transaction by explicitly using `.call`:
 
-  ```javascript
-  instance.getValue.call().then(function(val) {
-    // val reprsents the `value` storage object in the solidity contract
-    // since the contract returns that value.
-  });
-  ```
+```javascript
+instance.setValue.call(5).then(...);
+```
 
-* Even more helpful, however is we *don't even need* to use `.call` when a function is marked as `constant`, because `truffle-contract` will automatically know that that function can only be interacted with via a call:
+This isn't very useful in this case, since `setValue()` sets things, and the value we pass won't be saved since we're not creating a transaction.
 
-  ```javascript
-  instance.getValue().then(function(val) {
-    // val reprsents the `value` storage object in the solidity contract
-    // since the contract returns that value.
-  });
-  ```
+##### Calling getters
 
-* When you make a transaction, you're given a `result` object that gives you a wealth of information about the transaction. You're given the transaction has (`result.tx`), the decoded events (also known as logs; `result.logs`), and a transaction receipt (`result.receipt`). In the below example, you'll recieve the `ValueSet()` event because you triggered the event using the `setValue()` function:
+However, we can *get* the value using `getValue()`, using `.call()`. Calls are always free and don't cost any Ether, so they're good for calling functions that read data off the blockchain:
 
-  ```javascript
-  instance.setValue(5).then(function(result) {
-    // result.tx => transaction hash, string
-    // result.logs => array of trigger events (1 item in this case)
-    // result.receipt => receipt object
-  });
-  ```
-* You can trigger the fallback function by sending a transaction to this function:
+```javascript
+instance.getValue.call().then(function(val) {
+  // val reprsents the `value` storage object in the solidity contract
+  // since the contract returns that value.
+});
+```
 
-  ```javascript
-  instance.sendTransaction({...}).then(function(result) {
-    // Same result object as above.
-  });
-  ```
+Even more helpful, however is we *don't even need* to use `.call` when a function is marked as `constant`, because `truffle-contract` will automatically know that that function can only be interacted with via a call:
 
-  This is promisified like all available contract instance functions, and has the same API as `web3.eth.sendTransaction` without the callback. The `to` value will be automatically filled in for you.
+```javascript
+instance.getValue().then(function(val) {
+  // val reprsents the `value` storage object in the solidity contract
+  // since the contract returns that value.
+});
+```
 
-  If you only want to send Ether to the contract a shorthand is available:
+##### Processing transaction results
 
-  ```javascript
-  instance.send(web3.toWei(1, "ether")).then(function(result) {
-    // Same result object as above.
-  });
-  ```
+When you make a transaction, you're given a `result` object that gives you a wealth of information about the transaction. You're given the transaction has (`result.tx`), the decoded events (also known as logs; `result.logs`), and a transaction receipt (`result.receipt`). In the below example, you'll recieve the `ValueSet()` event because you triggered the event using the `setValue()` function:
+
+```javascript
+instance.setValue(5).then(function(result) {
+  // result.tx => transaction hash, string
+  // result.logs => array of trigger events (1 item in this case)
+  // result.receipt => receipt object
+});
+```
+
+##### Sending Ether / Triggering the fallback function
+
+You can trigger the fallback function by sending a transaction to this function:
+
+```javascript
+instance.sendTransaction({...}).then(function(result) {
+  // Same result object as above.
+});
+```
+
+This is promisified like all available contract instance functions, and has the same API as `web3.eth.sendTransaction` without the callback. The `to` value will be automatically filled in for you.
+
+If you only want to send Ether to the contract a shorthand is available:
+
+```javascript
+instance.send(web3.toWei(1, "ether")).then(function(result) {
+  // Same result object as above.
+});
+```
 
 # Testing
 
