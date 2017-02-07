@@ -258,6 +258,23 @@ contract MyContract {
     // result.receipt => receipt object
   });
   ```
+* You can trigger the fallback function by sending a transaction to this function:
+
+  ```javascript
+  instance.sendTransaction({...}).then(function(result) {
+    // Same result object as above.
+  });
+  ```
+
+  This is promisified like all available contract instance functions, and has the same API as `web3.eth.sendTransaction` without the callback. The `to` value will be automatically filled in for you.
+
+  If you only want to send Ether to the contract a shorthand is available:
+
+  ```javascript
+  instance.send(web3.toWei(1, "ether")).then(function(result) {
+    // Same result object as above.
+  });
+  ```
 
 # Testing
 

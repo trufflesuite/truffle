@@ -247,6 +247,7 @@ var contract = (function(module) {
   // Optionally, if called without `new`, accepts a network_id and will
   // create a new version of the contract abstraction with that network_id set.
   function Contract(contract) {
+    var self = this;
     var constructor = this.constructor;
     this.abi = constructor.abi;
 
@@ -278,6 +279,21 @@ var contract = (function(module) {
         this[item.name] = contract[item.name];
       }
     }
+
+    this.sendTransaction = Utils.synchronizeFunction(function(tx_params, callback) {
+      if (typeof tx_params == "function") {
+        callback = tx_params;
+        tx_params = {};
+      }
+
+      tx_params.to = self.address;
+
+      constructor.web3.eth.sendTransaction.apply(constructor.web3.eth, [tx_params, callback]);
+    }, this, constructor);
+
+    this.send = function(value) {
+      return self.sendTransaction({value: value});
+    };
 
     this.allEvents = contract.allEvents;
     this.address = contract.address;
