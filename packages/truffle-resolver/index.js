@@ -56,8 +56,10 @@ Resolver.prototype.resolve = function(import_path, imported_from, callback) {
     current_source = self.sources[current_index];
 
     current_source.resolve(import_path, function(err, potential_source) {
-      body = potential_source;
-      next();
+      if (!err) {
+        body = potential_source;
+      }
+      next(err);
     });
   }, function(err) {
     if (err) return callback(err);
