@@ -1,11 +1,18 @@
+var pkg = require("./package.json");
+
 module.exports = {
-  init: require("./lib/init"),
-  create: require("./lib/create"),
-  config: require("./lib/config"),
-  contracts: require("./lib/contracts"),
   build: require("./lib/build"),
-  test: require("./lib/test"),
-  exec: require("./lib/exec"),
+  create: require("./lib/create"),
+  compiler: require("truffle-compile"),
+  config: require("./lib/config"),
   console: require("./lib/repl"),
-  serve: require("./lib/serve")
+  contracts: require("./lib/contracts"),
+  require: require("truffle-require"),
+  init: require("./lib/init"),
+  migrate: require("truffle-migrate"),
+  package: require("./lib/package"),
+  serve: require("./lib/serve"),
+  sources: require("truffle-contract-sources"),
+  test: require("./lib/test"),
+  version: pkg.version
 };

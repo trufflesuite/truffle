@@ -1,6 +1,22 @@
+<style>
+  .DocumentationWarning {
+    text-align: center;
+    padding: 1rem;
+    background:rgb(255, 101, 52);
+  }
+
+  .DocumentationWarning a {
+    color: white;
+  }
+</style>
+<section class="DocumentationWarning">
+  <h1>These documents are out of date</h1>
+  <p>Please visit the <a href="http://truffleframework.com/docs/getting_started/contracts">page on the new documentation site</a> for up to date information.</p>
+</section>
+
 # Background
 
-The standard method of interacting with the Ethereum network is through the [Web3](https://github.com/ethereum/web3.js) library, created by the Ethereum foundation. Although this library is very useful, it's current contract abstraction makes interacting with contracts difficult, especially for those new to Ethereum development. To smooth the learning curve, Truffle uses the [Ether Pudding](https://github.com/ConsenSys/ether-pudding) library, built on top of Web3, which aims to make interacting with contracts much easier.
+The standard method of interacting with the Ethereum network is through the [Web3](https://github.com/ethereum/web3.js) library, created by the Ethereum foundation. Although this library is very useful, its current contract abstraction makes interacting with contracts difficult, especially for those new to Ethereum development. To smooth the learning curve, Truffle uses the [Ether Pudding](https://github.com/ConsenSys/ether-pudding) library, built on top of Web3, which aims to make interacting with contracts much easier.
 
 # Reading & Writing Data
 
@@ -17,7 +33,7 @@ Transactions fundamentally change the state of the network. A transaction can be
 
 ### Calls
 
-Calls, on the other hand, are very different. Calls can be used to execute code on the network, though no data will be permanently changed. Calls are free to run, and they're defining characteristic is that they read data. When you execute a contract function via a call you will receive the return value immediately. In summary, calls:
+Calls, on the other hand, are very different. Calls can be used to execute code on the network, though no data will be permanently changed. Calls are free to run, and their defining characteristic is that they read data. When you execute a contract function via a call you will receive the return value immediately. In summary, calls:
 
 * Are free (do not cost gas)
 * Do not change the state of the network
@@ -36,24 +52,25 @@ import "ConvertLib.sol";
 contract MetaCoin {
   mapping (address => uint) balances;
 
-  function MetaCoin() {
-  	balances[tx.origin] = 10000;
-  }
+	event Transfer(address indexed _from, address indexed _to, uint256 _value);
 
-  function sendCoin(address receiver, uint amount) returns(bool sufficient) {
-  	if (balances[msg.sender] < amount) return false;
-  	balances[msg.sender] -= amount;
-  	balances[receiver] += amount;
-  	return true;
-  }
+	function MetaCoin() {
+		balances[tx.origin] = 10000;
+	}
 
-  function getBalanceInEth(address addr) returns(uint){
-  	return ConvertLib.convert(getBalance(addr),2);
-  }
-
-  function getBalance(address addr) returns(uint) {
-  	return balances[addr];
-  }
+	function sendCoin(address receiver, uint amount) returns(bool sufficient) {
+		if (balances[msg.sender] < amount) return false;
+		balances[msg.sender] -= amount;
+		balances[receiver] += amount;
+		Transfer(msg.sender, receiver, amount);
+		return true;
+	}
+	function getBalanceInEth(address addr) returns(uint){
+		return ConvertLib.convert(getBalance(addr),2);
+	}
+	function getBalance(address addr) returns(uint) {
+		return balances[addr];
+	}
 }
 ```
 
@@ -98,7 +115,7 @@ meta.sendCoin(account_two, 10, {from: account_one}).then(function(tx_id) {
   // this callback.
   alert("Transaction successful!")
 }).catch(function(e) {
-  // There was an error! Handle it.  
+  // There was an error! Handle it.
 })
 ```
 
@@ -123,7 +140,7 @@ meta.getBalance.call(account_one, {from: account_one}).then(function(balance) {
   // Let's print the return value.
   console.log(balance.toNumber());
 }).catch(function(e) {
-  // There was an error! Handle it.  
+  // There was an error! Handle it.
 })
 ```
 
@@ -135,6 +152,21 @@ What's interesting here:
 **Warning:** We convert the return value to a number because in this example the numbers are small. However, if you try to convert a BigNumber that's larger than the largest integer supported by Javascript, you'll likely run into errors or unexpected behavior.
 
 
+##### Catching Events
+
+Your contracts can fire events that you can catch to gain more insight into what your contracts are doing. The event API is the same as Web3; along with the example below, see the [Web3 documentation](https://github.com/ethereum/wiki/wiki/JavaScript-API#contract-events) for more information.
+
+```javascript
+var meta = MetaCoin.deployed();
+var transfers = meta.Transfer({fromBlock: "latest"});
+transfers.watch(function(error, result) {
+  // This will catch all Transfer events, regardless of how they originated.
+  if (error == null) {
+    console.log(result.args);
+  }
+}
+```
+
 ### Method: deployed()
 
 Each contract abstraction has a method called `deployed()`, which you saw used above. Calling this function on the main contract object will give you an instance of the abstraction that represents the contract previously deployed to the network.
@@ -143,7 +175,7 @@ Each contract abstraction has a method called `deployed()`, which you saw used a
 var meta = MetaCoin.deployed();
 ```
 
-**Warning:** This will only work successfully for contracts that have been deployed using `truffle deploy` and are set to be deployed within your [project configuration](/advanced/configuration). This function will throw an error if your contract does not meet this criteria.
+**Warning:** This will only work successfully for contracts that have been deployed using `truffle migrate` and are set to be deployed within your [project configuration](/advanced/configuration). This function will throw an error if your contract does not meet this criteria.
 
 ### Method: at()
 
@@ -165,8 +197,18 @@ MetaCoin.new().then(function(instance) {
   // If this callback is called, the deployment was successful.
   console.log(instance.address);
 }).catch(function(e) {
-  // There was an error! Handle it.  
+  // There was an error! Handle it.
 });
 ```
 
 Note that this *is* a transaction and will change the state of the network.
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-83874933-1', 'auto');
+  ga('send', 'pageview');
+</script>
