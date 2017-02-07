@@ -11,6 +11,10 @@ FS.prototype.require = function(import_path, search_path) {
 
   search_path = search_path || this.contracts_build_directory;
 
+  // For Windows: Allow import paths to be either path separator ('\' or '/')
+  // by converting all '/' to the default (path.sep);
+  import_path = import_path.replace(/\//g, path.sep);
+
   // If we have an absoulte path, only check the file if it's a child of the working_directory.
   if (path.isAbsolute(import_path)) {
     if (import_path.indexOf(this.working_directory) != 0) {
