@@ -212,11 +212,9 @@ contract MyContract {
 }
 ```
 
-#### Instance Functions & Behavior
-
 From Javascript's point of view, this contract has three functions: `setValue`, `getValue` and `value`. This is because `value` is public and automatically creates a getter function for it.
 
-##### Making a transaction via a contract function
+#### Making a transaction via a contract function
 
 When we call `setValue()`, this creates a transaction. From Javascript:
 
@@ -226,7 +224,7 @@ instance.setValue(5).then(function(result) {
 });
 ```
 
-##### Explicitly making a call instead of a transaction
+#### Explicitly making a call instead of a transaction
 
 We can call `setValue()` without creating a transaction by explicitly using `.call`:
 
@@ -236,7 +234,7 @@ instance.setValue.call(5).then(...);
 
 This isn't very useful in this case, since `setValue()` sets things, and the value we pass won't be saved since we're not creating a transaction.
 
-##### Calling getters
+#### Calling getters
 
 However, we can *get* the value using `getValue()`, using `.call()`. Calls are always free and don't cost any Ether, so they're good for calling functions that read data off the blockchain:
 
@@ -256,7 +254,7 @@ instance.getValue().then(function(val) {
 });
 ```
 
-##### Processing transaction results
+#### Processing transaction results
 
 When you make a transaction, you're given a `result` object that gives you a wealth of information about the transaction. You're given the transaction has (`result.tx`), the decoded events (also known as logs; `result.logs`), and a transaction receipt (`result.receipt`). In the below example, you'll recieve the `ValueSet()` event because you triggered the event using the `setValue()` function:
 
@@ -268,7 +266,7 @@ instance.setValue(5).then(function(result) {
 });
 ```
 
-##### Sending Ether / Triggering the fallback function
+#### Sending Ether / Triggering the fallback function
 
 You can trigger the fallback function by sending a transaction to this function:
 
