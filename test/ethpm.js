@@ -44,16 +44,15 @@ describe('EthPM integration', function() {
   // Super slow doing these in a beforeEach, but it ensures nothing conflicts.
   beforeEach("Create a sandbox", function(done) {
     this.timeout(10000);
-    Init.sandbox({
-      provider: provider
-    }, function(err, result) {
+    Init.sandbox(function(err, result) {
       if (err) return done(err);
       config = result;
       config.resolver = new Resolver(config);
       config.artifactor = new Artifactor(config.contracts_build_directory);
       config.networks = {
         development: {
-          network_id: blockchain_uri
+          network_id: blockchain_uri,
+          provider: provider
         }
       };
       config.network = "development";
