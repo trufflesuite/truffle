@@ -70,8 +70,8 @@ TestSource.prototype.resolve = function(import_path, callback) {
             mapping[name] = address;
           });
 
-          var addressSource = Deployed.makeSolidityDeployedAddressesLibrary(mapping);
-
+          return Deployed.makeSolidityDeployedAddressesLibrary(mapping);
+        }).then(function(addressSource) {
           callback(null, addressSource);
         }).catch(callback);
       });

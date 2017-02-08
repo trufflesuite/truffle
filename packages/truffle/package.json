@@ -24,7 +24,7 @@
     "truffle-artifactor": "^2.1.2",
     "truffle-compile": "^1.0.0",
     "truffle-config": "^0.0.7",
-    "truffle-contract": "^1.1.8",
+    "truffle-contract": "^1.1.9",
     "truffle-contract-sources": "^0.0.1",
     "truffle-deployer": "^0.1.2",
     "truffle-error": "^0.0.2",
@@ -34,7 +34,7 @@
     "truffle-provider": "^0.0.1",
     "truffle-provisioner": "^0.1.0",
     "truffle-require": "^0.0.3",
-    "truffle-resolver": "^1.0.0",
+    "truffle-resolver": "^1.0.1",
     "truffle-solidity-utils": "^0.0.1",
     "web3": "0.18.0",
     "yargs": "^6.6.0"
@@ -66,6 +66,7 @@
   "devDependencies": {
     "ethereumjs-testrpc": "^3.0.3",
     "ipfsd-ctl": "^0.18.2",
+    "stream-buffers": "^3.0.1",
     "truffle-blockchain-utils": "0.0.1"
   }
 }
