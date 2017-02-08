@@ -18,9 +18,7 @@ describe('config', function() {
 
   before("Create a sandbox with extra config values", function(done) {
     this.timeout(10000);
-    Init.sandbox({
-      quiet: true
-    }, function(err, result) {
+    Init.sandbox(function(err, result) {
       if (err) return done(err);
       config = result;
       config.resolver = new Resolver(config);
@@ -42,7 +40,9 @@ describe('config', function() {
 
   before("Compile contracts", function(done) {
     this.timeout(5000);
-    Contracts.compile(config, done);
+    Contracts.compile(config.with({
+      quiet: true
+    }), done);
   });
 
   it('Provisioning contracts should set proper RPC values', function() {
