@@ -1,7 +1,3 @@
-var Config = require("truffle-config");
-var ConfigurationError = require("../errors/configurationerror");
-var create = require("../create");
-
 var command = {
   command: 'create',
   description: 'Helper to create new contracts, migrations and tests',
@@ -12,6 +8,10 @@ var command = {
     }
   },
   run: function (options, done) {
+    var Config = require("truffle-config");
+    var ConfigurationError = require("../errors/configurationerror");
+    var create = require("../create");
+
     var config = Config.detect(options);
 
     var type = config.type;

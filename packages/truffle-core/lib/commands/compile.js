@@ -1,6 +1,3 @@
-var Config = require("truffle-config");
-var Contracts = require("../contracts");
-
 var command = {
   command: 'compile',
   description: 'Compile contract source files',
@@ -11,6 +8,9 @@ var command = {
     }
   },
   run: function (options, done) {
+    var Config = require("truffle-config");
+    var Contracts = require("../contracts");
+
     var config = Config.detect(options);
     Contracts.compile(config, done);
   }
