@@ -1,15 +1,15 @@
-var Build = require("../build");
-var Config = require("truffle-config");
-var chokidar = require("chokidar");
-var path = require("path");
-var colors = require("colors");
-var Contracts = require("../contracts");
-
 var command = {
   command: 'watch',
   description: 'Watch filesystem for changes and rebuild the project automatically',
   builder: {},
   run: function (options, done) {
+    var Build = require("../build");
+    var Config = require("truffle-config");
+    var chokidar = require("chokidar");
+    var path = require("path");
+    var colors = require("colors");
+    var Contracts = require("../contracts");
+
     var config = Config.detect(options);
 
     var printSuccess = function() {

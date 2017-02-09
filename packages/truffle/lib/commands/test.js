@@ -1,19 +1,21 @@
-var OS = require("os");
-var dir = require("node-dir");
-var temp = require("temp");
-var Config = require("truffle-config");
-var Resolver = require("truffle-resolver");
-var Artifactor = require("truffle-artifactor");
-var Test = require("../test");
-var fs = require("fs");
-var copy = require("../copy");
-var Environment = require("../environment");
-
 var command = {
   command: 'test',
   description: 'Run Mocha and Solidity tests',
   builder: {},
   run: function (options, done) {
+    var OS = require("os");
+    var dir = require("node-dir");
+    var temp = require("temp");
+    var Config = require("truffle-config");
+    var Resolver = require("truffle-resolver");
+    var Artifactor = require("truffle-artifactor");
+    var Test = require("../test");
+    var fs = require("fs");
+    var path = require("path");
+    var mkdirp = require("mkdirp");
+    var copy = require("../copy");
+    var Environment = require("../environment");
+
     var config = Config.detect(options);
     //config.network = "test";
 
