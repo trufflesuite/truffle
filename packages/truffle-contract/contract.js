@@ -413,26 +413,19 @@ var contract = (function(module) {
 
     deployed: function() {
       var self = this;
-      var val = {}; //this.at(this.address);
+      return self.detectNetwork().then(function() {
+        // We don't have a network config for the one we found
+        if (self._json.networks[self.network_id] == null) {
+          throw new Error(self.contract_name + " has not been deployed to detected network (network/artifact mismatch)");
+        }
 
-      // Add thennable to allow people to opt into new recommended usage.
-      val.then = function(fn) {
-        return self.detectNetwork().then(function() {
-          // We don't have a network config for the one we found
-          if (self._json.networks[self.network_id] == null) {
-            throw new Error(self.contract_name + " has not been deployed to detected network (network/artifact mismatch)");
-          }
+        // If we found the network but it's not deployed
+        if (!self.isDeployed()) {
+          throw new Error(self.contract_name + " has not been deployed to detected network (" + self.network_id + ")");
+        }
 
-          // If we found the network but it's not deployed
-          if (!self.isDeployed()) {
-            throw new Error(self.contract_name + " has not been deployed to detected network (" + self.network_id + ")");
-          }
-
-          return new self(self.address);
-        }).then(fn);
-      };
-
-      return val;
+        return new self(self.address);
+      });
     },
 
     defaults: function(class_defaults) {
