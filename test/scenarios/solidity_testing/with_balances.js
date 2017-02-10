@@ -14,6 +14,7 @@ describe("Solidity Tests with balances", function() {
   var commander = new Commander(commands);
 
   before("set up sandbox", function(done) {
+    this.timeout(5000);
     Init.sandbox("bare", function(err, conf) {
       if (err) return done(err);
       config = conf;
