@@ -4,13 +4,15 @@ var Deployer = require("truffle-deployer");
 var find_contracts = require("truffle-contract-sources");
 var compile = require("truffle-compile");
 var artifactor = require("truffle-artifactor");
+var contract = require("truffle-contract");
 var series = require("async").series;
+var path = require("path");
 
 var SolidityTest = {
-  define: function(contract, dependency_paths, runner, mocha) {
+  define: function(abstraction, dependency_paths, runner, mocha) {
     var self = this;
 
-    var suite = new Suite(contract.contract_name);
+    var suite = new Suite(abstraction.contract_name, {});
     suite.timeout(runner.BEFORE_TIMEOUT);
 
     // Set up our runner's needs first.
@@ -18,7 +20,7 @@ var SolidityTest = {
       series([
         runner.initialize.bind(runner),
         self.compileNewAbstractInterface.bind(this, runner),
-        self.deployTestDependencies.bind(this, contract, dependency_paths, runner)
+        self.deployTestDependencies.bind(this, abstraction, dependency_paths, runner)
       ], done);
     });
 
@@ -36,13 +38,13 @@ var SolidityTest = {
     };
 
     // Add functions from test file.
-    contract.abi.forEach(function(item) {
+    abstraction.abi.forEach(function(item) {
       if (item.type != "function") return;
 
       ["beforeAll", "beforeEach", "afterAll", "afterEach"].forEach(function(fn_type) {
         if (item.name.indexOf(fn_type) == 0) {
           suite[fn_type](item.name, function() {
-            return contract.deployed().then(function(deployed) {
+            return abstraction.deployed().then(function(deployed) {
               return deployed[item.name]();
             }).then(processResult);
           });
@@ -51,7 +53,7 @@ var SolidityTest = {
 
       if (item.name.indexOf("test") == 0) {
         var test = new TestCase(item.name, function() {
-          return contract.deployed().then(function(deployed) {
+          return abstraction.deployed().then(function(deployed) {
             return deployed[item.name]();
           }).then(processResult);
         });
@@ -76,7 +78,8 @@ var SolidityTest = {
 
       compile.with_dependencies(runner.config.with({
         paths: [
-          "truffle/DeployedAddresses.sol"
+          "truffle/DeployedAddresses.sol",
+          path.join(__dirname, "SafeSend.sol")
         ],
         quiet: true
       }), function(err, contracts) {
@@ -95,13 +98,14 @@ var SolidityTest = {
     });
   },
 
-  deployTestDependencies: function(contract, dependency_paths, runner, callback) {
+  deployTestDependencies: function(abstraction, dependency_paths, runner, callback) {
     var deployer = new Deployer(runner.config.with({
       logger: { log: function() {} }
     }));
 
     var Assert = runner.config.resolver.require("truffle/Assert.sol");
     var DeployedAddresses = runner.config.resolver.require("truffle/DeployedAddresses.sol");
+    var SafeSend = runner.config.resolver.require("SafeSend.sol");
 
     deployer.deploy([
       Assert,
@@ -111,12 +115,28 @@ var SolidityTest = {
         var dependency = runner.config.resolver.require(dependency_path);
 
         if (dependency.isDeployed()) {
-          deployer.link(dependency, contract);
+          deployer.link(dependency, abstraction);
         }
       });
     });
 
-    deployer.deploy(contract);
+    var deployed;
+    deployer.deploy(abstraction).then(function() {
+      return abstraction.deployed();
+    }).then(function(instance) {
+      deployed = instance;
+      if (deployed.initialBalance) {
+        return deployed.initialBalance.call();
+      } else {
+        return 0;
+      }
+    }).then(function(balance) {
+      if (balance != 0) {
+        return deployer.deploy(SafeSend, deployed.address, {
+          value: balance
+        });
+      }
+    });
 
     deployer.start().then(function() {
       callback();

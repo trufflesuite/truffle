@@ -1,5 +1,5 @@
 var Mocha = require("mocha");
-var Suite = require("mocha/lib/suite.js");
+var Reporter = require("./testing/reporter");
 var chai = require("chai");
 var path = require("path");
 var fs = require("fs");
@@ -18,6 +18,8 @@ var Migrate = require("truffle-migrate");
 var Profiler = require("truffle-compile/profiler.js");
 var async = require("async");
 
+var oldDescribe;
+
 chai.use(require("./assertions"));
 
 var Test = {
@@ -34,6 +36,9 @@ var Test = {
       "provider",
     ]);
 
+
+
+
     var config = Config.default().merge(options);
 
     config.test_files = config.test_files.map(function(test_file) {
@@ -48,12 +53,14 @@ var Test = {
     // Override console.warn() because web3 outputs gross errors to it.
     // e.g., https://github.com/ethereum/web3.js/blob/master/lib/web3/allevents.js#L61
     // Output looks like this during tests: https://gist.github.com/tcoulter/1988349d1ec65ce6b958
-    var warn = console.warn;
-    console.warn = function(message) {
+    var warn = config.logger.warn;
+    config.logger.warn = function(message) {
       if (message == "cannot find event for log") {
         return;
       } else {
-        warn.apply(console, arguments);
+        if (warn) {
+          warn.apply(console, arguments);
+        }
       }
     };
 
@@ -119,7 +126,8 @@ var Test = {
       });
 
       mocha.run(function(failures) {
-        console.warn = warn;
+        config.logger.warn = warn;
+
         callback(failures);
       });
     }).catch(callback);
@@ -138,6 +146,8 @@ var Test = {
     if (mochaConfig.useColors == null) {
       mochaConfig.useColors = true;
     }
+
+    mochaConfig.reporter = Reporter(config.logger);
 
     var mocha = new Mocha(mochaConfig);
 
@@ -242,7 +252,7 @@ var Test = {
           name = "";
         }
 
-        describe("Contract: " + name, function() {
+        Mocha.describe("Contract: " + name, function() {
           this.timeout(runner.TEST_TIMEOUT);
 
           before("prepare suite", function(done) {
