@@ -6,8 +6,9 @@ var copy = require("../../../lib/copy");
 var fs = require("fs");
 var path = require("path");
 var assert = require("assert");
+var TestRPC = require("ethereumjs-testrpc");
 
-describe("Scenario: Solidity Tests with balances", function() {
+describe("Solidity Tests with balances", function() {
   var logger = new MemoryLogger();
   var config;
   var commander = new Commander(commands);
@@ -17,6 +18,7 @@ describe("Scenario: Solidity Tests with balances", function() {
       if (err) return done(err);
       config = conf;
       config.logger = logger;
+      config.networks.development.provider = TestRPC.provider();
       // config.mocha = {
       //   useColors: false
       // };
@@ -37,8 +39,6 @@ describe("Scenario: Solidity Tests with balances", function() {
     this.timeout(20000);
 
     commander.run("test", config, function(err) {
-      console.log(logger.contents());
-
       if (err != 0) {
         if (typeof err == "number") {
           err = new Error("Unknown exit code: " + err);
@@ -46,7 +46,7 @@ describe("Scenario: Solidity Tests with balances", function() {
         return done(err);
       }
 
-      console.log(logger.contents());
+      assert(logger.contents().indexOf("1 passing") >= 0);
 
       done();
     });

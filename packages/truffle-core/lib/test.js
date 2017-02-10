@@ -18,8 +18,6 @@ var Migrate = require("truffle-migrate");
 var Profiler = require("truffle-compile/profiler.js");
 var async = require("async");
 
-var iface = require("./testing/interface");
-
 var oldDescribe;
 
 chai.use(require("./assertions"));
@@ -149,10 +147,7 @@ var Test = {
       mochaConfig.useColors = true;
     }
 
-    //Mocha.interfaces["truffle"] = iface;
-
     mochaConfig.reporter = Reporter(config.logger);
-    //mochaConfig.ui = "truffle";
 
     var mocha = new Mocha(mochaConfig);
 
