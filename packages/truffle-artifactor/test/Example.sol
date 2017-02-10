@@ -1,5 +1,6 @@
 contract Example {
   uint public value;
+  bool public fallbackTriggered;
   event ExampleEvent(address indexed _from, uint num);
 
   function Example(uint val) {
@@ -8,6 +9,8 @@ contract Example {
     } else {
       value = val;
     }
+
+    fallbackTriggered = false;
   }
 
   function setValue(uint val) {
@@ -24,5 +27,9 @@ contract Example {
 
   function triggerEvent() {
     ExampleEvent(msg.sender, 8);
+  }
+
+  function() payable {
+    fallbackTriggered = true;
   }
 }

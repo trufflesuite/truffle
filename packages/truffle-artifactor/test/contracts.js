@@ -156,6 +156,48 @@ describe("artifactor + require", function() {
     }).then(done).catch(done);
   });
 
+  it("should trigger the fallback function when calling sendTransaction()", function() {
+    var example = null;
+    return Example.new({gas: 3141592}).then(function(instance) {
+      example = instance;
+      return example.fallbackTriggered();
+    }).then(function(triggered) {
+      assert(triggered == false, "Fallback should not have been triggered yet");
+      return example.sendTransaction({
+        value: web3.toWei(1, "ether")
+      });
+    }).then(function(results) {
+      return new Promise(function(accept, reject) {
+        return web3.eth.getBalance(example.address, function(err, balance) {
+          if (err) return reject(err);
+          accept(balance);
+        });
+      });
+    }).then(function(balance) {
+      assert(balance == web3.toWei(1, "ether"));
+    });
+  });
+
+  it("should trigger the fallback function when calling send() (shorthand notation)", function() {
+    var example = null;
+    return Example.new({gas: 3141592}).then(function(instance) {
+      example = instance;
+      return example.fallbackTriggered();
+    }).then(function(triggered) {
+      assert(triggered == false, "Fallback should not have been triggered yet");
+      return example.send(web3.toWei(1, "ether"));
+    }).then(function(results) {
+      return new Promise(function(accept, reject) {
+        return web3.eth.getBalance(example.address, function(err, balance) {
+          if (err) return reject(err);
+          accept(balance);
+        });
+      });
+    }).then(function(balance) {
+      assert(balance == web3.toWei(1, "ether"));
+    });
+  });
+
   it("errors when setting an invalid provider", function(done) {
     try {
       Example.setProvider(null);
