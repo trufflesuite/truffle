@@ -1,12 +1,12 @@
-var Config = require("truffle-config");
-var Init = require("truffle-init");
-var OS = require("os");
-
 var command = {
   command: 'init',
   description: 'Initialize new Ethereum project with example contracts and tests',
   builder: {},
   run: function (options, done) {
+    var Config = require("truffle-config");
+    var Init = require("truffle-init");
+    var OS = require("os");
+
     var config = Config.default().with({
       logger: console
     });
