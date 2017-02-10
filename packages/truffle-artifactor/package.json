@@ -1,6 +1,6 @@
 {
   "name": "truffle-artifactor",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "A contract packager for Ethereum and Javascript",
   "author": "Tim Coulter",
   "main": "./index.js",
