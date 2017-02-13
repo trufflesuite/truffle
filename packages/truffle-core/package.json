@@ -29,7 +29,7 @@
     "truffle-deployer": "^0.1.2",
     "truffle-error": "^0.0.2",
     "truffle-expect": "^0.0.3",
-    "truffle-init": "^1.0.4",
+    "truffle-init": "^1.0.5",
     "truffle-migrate": "^0.0.5",
     "truffle-provider": "^0.0.1",
     "truffle-provisioner": "^0.1.0",
