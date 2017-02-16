@@ -24,14 +24,21 @@ NPM.prototype.require = function(import_path, search_path) {
   }
 };
 
-NPM.prototype.resolve = function(import_path, callback) {
+NPM.prototype.resolve = function(import_path, imported_from, callback) {
   var expected_path = path.join(this.working_directory, "node_modules", import_path);
 
   fs.readFile(expected_path, {encoding: "utf8"}, function(err, body) {
+    var resolved_path;
+    if (body) {
+      resolved_path = expected_path;
+    }
+
     // If there's an error, that means we can't read the source even if
     // it exists. Treat it as if it doesn't by ignoring any errors.
     // Perhaps we can do something better here in the future.
-    return callback(null, body);
+
+    // Note: resolved_path is the import path because these imports are special.
+    return callback(null, body, import_path);
   })
 };
 

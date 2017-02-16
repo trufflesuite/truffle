@@ -71,13 +71,14 @@ EPM.prototype.require = function(import_path, search_path) {
   return json;
 }
 
-EPM.prototype.resolve = function(import_path, callback) {
+EPM.prototype.resolve = function(import_path, imported_from, callback) {
   var separator = import_path.indexOf("/")
   var package_name = import_path.substring(0, separator);
   var internal_path = import_path.substring(separator + 1);
   var install_directory = path.join(this.working_directory, "installed_contracts");
 
-  var file_contents = undefined;
+  var resolved_contents = undefined;
+  var resolved_path = undefined;
 
   detectSeries([
     path.join(install_directory, import_path),
@@ -86,14 +87,18 @@ EPM.prototype.resolve = function(import_path, callback) {
     fs.readFile(file_path, {encoding: "utf8"}, function(err, body) {
       if (err) return finished(null, false);
 
-      file_contents = body;
+      resolved_contents = body;
+      resolved_path = file_path;
+
       finished(null, true);
     });
   }, function(err, existing_path) {
     // If there's an error, that means we can't read the source even if
     // it exists. Treat it as if it doesn't by ignoring any errors.
     // Perhaps we can do something better here in the future.
-    return callback(null, file_contents);
+
+    // Note: resolved_path is the import path, because these imports are special.
+    return callback(null, resolved_contents, import_path);
   });
 },
 
