@@ -176,16 +176,20 @@ module.exports = {
         return finished();
       }
 
-      resolver.resolve(import_path, imported_from, function(err, body, source) {
+      resolver.resolve(import_path, imported_from, function(err, resolved_body, resolved_path, source) {
         if (err) return finished(err);
 
+        if (dependsGraph.hasNode(resolved_path) && imports_cache[resolved_path] != null) {
+          return finished();
+        }
+
         // Add the contract to the depends graph.
-        dependsGraph.setNode(import_path, body);
+        dependsGraph.setNode(resolved_path, resolved_body);
 
         var imports;
 
         try {
-          imports = SolidityParser.parse(body, "imports");
+          imports = SolidityParser.parse(resolved_body, "imports");
         } catch (e) {
           e.message = "Error parsing " + import_path + ": " + e.message;
           return finished(e);
@@ -216,7 +220,9 @@ module.exports = {
         finished();
       });
     },
-    function() {
+    function(err) {
+      if (err) return callback(err);
+
       // Check for cycles in the graph, the dependency graph needs to be a tree otherwise there's an error
       if (!isAcyclic(dependsGraph)) {
         var errorMessage = "Found cyclic dependencies. Adjust your import statements to remove cycles.\n\n";
