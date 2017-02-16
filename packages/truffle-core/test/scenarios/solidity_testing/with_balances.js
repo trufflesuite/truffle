@@ -7,6 +7,7 @@ var fs = require("fs");
 var path = require("path");
 var assert = require("assert");
 var TestRPC = require("ethereumjs-testrpc");
+var Reporter = require("../reporter");
 
 describe("Solidity Tests with balances", function() {
   var logger = new MemoryLogger();
@@ -20,9 +21,9 @@ describe("Solidity Tests with balances", function() {
       config = conf;
       config.logger = logger;
       config.networks.development.provider = TestRPC.provider();
-      // config.mocha = {
-      //   useColors: false
-      // };
+      config.mocha = {
+        reporter: new Reporter(logger)
+      }
       done();
     });
   });

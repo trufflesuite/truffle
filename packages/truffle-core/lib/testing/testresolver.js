@@ -23,9 +23,9 @@ TestResolver.prototype.require = function(import_path) {
 
 TestResolver.prototype.resolve = function(import_path, imported_from, callback) {
   var self = this;
-  this.source.resolve(import_path, function(err, result) {
+  this.source.resolve(import_path, function(err, result, resolved_path) {
     if (err) return callback(err);
-    if (result) return callback(null, result);
+    if (result) return callback(null, result, resolved_path);
 
     self.resolver.resolve(import_path, imported_from, callback);
   });

@@ -1,5 +1,4 @@
 var Mocha = require("mocha");
-var Reporter = require("./testing/reporter");
 var chai = require("chai");
 var path = require("path");
 var fs = require("fs");
@@ -146,8 +145,6 @@ var Test = {
     if (mochaConfig.useColors == null) {
       mochaConfig.useColors = true;
     }
-
-    mochaConfig.reporter = Reporter(config.logger);
 
     var mocha = new Mocha(mochaConfig);
 

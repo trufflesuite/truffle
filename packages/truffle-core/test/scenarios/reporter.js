@@ -11,8 +11,11 @@
 
 var ms = require('mocha/lib/ms.js');
 var Base = require('mocha/lib/reporters/base.js');
-var inherits = require('mocha/lib/utils').inherits;
+var utils = require('mocha/lib/utils')
+var inherits = utils.inherits;
 var color = Base.color;
+var diff = require('diff');
+
 
 /**
  * Expose `Spec`.
@@ -128,10 +131,123 @@ exports = module.exports = function(logger) {
   // so that we can change console with a configurable logger.
   // https://github.com/mochajs/mocha/blob/master/lib/reporters/base.js
   var objToString = Object.prototype.toString;
-  
+
   function sameType (a, b) {
     return objToString.call(a) === objToString.call(b);
   }
+
+  /**
+   * Return a character diff for `err`.
+   *
+   * @api private
+   * @param {Error} err
+   * @param {string} type
+   * @param {boolean} escape
+   * @return {string}
+   */
+  function errorDiff (err, type, escape) {
+    var actual = escape ? escapeInvisibles(err.actual) : err.actual;
+    var expected = escape ? escapeInvisibles(err.expected) : err.expected;
+    return diff['diff' + type](actual, expected).map(function (str) {
+      if (str.added) {
+        return colorLines('diff added', str.value);
+      }
+      if (str.removed) {
+        return colorLines('diff removed', str.value);
+      }
+      return str.value;
+    }).join('');
+  }
+
+  /**
+   * Returns an inline diff between 2 strings with coloured ANSI output
+   *
+   * @api private
+   * @param {Error} err with actual/expected
+   * @param {boolean} escape
+   * @return {string} Diff
+   */
+  function inlineDiff (err, escape) {
+    var msg = errorDiff(err, 'WordsWithSpace', escape);
+
+    // linenos
+    var lines = msg.split('\n');
+    if (lines.length > 4) {
+      var width = String(lines.length).length;
+      msg = lines.map(function (str, i) {
+        return pad(++i, width) + ' |' + ' ' + str;
+      }).join('\n');
+    }
+
+    // legend
+    msg = '\n' +
+      color('diff removed', 'actual') +
+      ' ' +
+      color('diff added', 'expected') +
+      '\n\n' +
+      msg +
+      '\n';
+
+    // indent
+    msg = msg.replace(/^/gm, '      ');
+    return msg;
+  }
+
+
+  /**
+   * Color lines for `str`, using the color `name`.
+   *
+   * @api private
+   * @param {string} name
+   * @param {string} str
+   * @return {string}
+   */
+  function colorLines (name, str) {
+    return str.split('\n').map(function (str) {
+      return color(name, str);
+    }).join('\n');
+  }
+
+  /**
+   * Returns a unified diff between two strings.
+   *
+   * @api private
+   * @param {Error} err with actual/expected
+   * @param {boolean} escape
+   * @return {string} The diff.
+   */
+  function unifiedDiff (err, escape) {
+    var indent = '      ';
+    function cleanUp (line) {
+      if (escape) {
+        line = escapeInvisibles(line);
+      }
+      if (line[0] === '+') {
+        return indent + colorLines('diff added', line);
+      }
+      if (line[0] === '-') {
+        return indent + colorLines('diff removed', line);
+      }
+      if (line.match(/@@/)) {
+        return null;
+      }
+      if (line.match(/\\ No newline/)) {
+        return null;
+      }
+      return indent + line;
+    }
+    function notBlank (line) {
+      return typeof line !== 'undefined' && line !== null;
+    }
+    var msg = diff.createPatch('string', err.actual, err.expected);
+    var lines = msg.split('\n').splice(4);
+    return '\n      ' +
+      colorLines('diff added', '+ expected') + ' ' +
+      colorLines('diff removed', '- actual') +
+      '\n\n' +
+      lines.map(cleanUp).filter(notBlank).join('\n');
+  }
+
 
   Spec.prototype.list = function(failures) {
     logger.log();
@@ -196,8 +312,6 @@ exports = module.exports = function(logger) {
       logger.log(fmt, (i + 1), test.fullTitle(), msg, stack);
     });
   };
-
-
 
   return Spec;
 };
