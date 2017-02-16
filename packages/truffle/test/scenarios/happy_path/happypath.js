@@ -6,21 +6,22 @@ var fs = require("fs");
 var path = require("path");
 var assert = require("assert");
 var TestRPC = require("ethereumjs-testrpc");
+var Reporter = require("../reporter");
 
 describe("Happy path (truffle init)", function() {
   var config;
   var logger = new MemoryLogger();
 
   before("set up sandbox", function(done) {
-    this.timeout(5000);
+    this.timeout(10000);
     Init.sandbox("default", function(err, conf) {
       if (err) return done(err);
       config = conf;
       config.logger = logger;
       config.networks.development.provider = TestRPC.provider();
-      // config.mocha = {
-      //   useColors: false
-      // };
+      config.mocha = {
+        reporter: new Reporter(logger)
+      }
       done();
     });
   });
@@ -41,10 +42,6 @@ describe("Happy path (truffle init)", function() {
 
   it("will migrate", function(done) {
     this.timeout(20000);
-
-    process.on("unhandledRejection", function(e) {
-      console.log(e);
-    })
 
     CommandRunner.run("migrate", config, function(err) {
       if (err) return done(err);

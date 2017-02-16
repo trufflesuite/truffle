@@ -72,14 +72,16 @@ TestSource.prototype.resolve = function(import_path, callback) {
 
           return Deployed.makeSolidityDeployedAddressesLibrary(mapping);
         }).then(function(addressSource) {
-          callback(null, addressSource);
+          callback(null, addressSource, import_path);
         }).catch(callback);
       });
     });
   }
 
   if (import_path == "truffle/Assert.sol") {
-    return fs.readFile(path.resolve(path.join(__dirname, "Assert.sol")), {encoding: "utf8"}, callback);
+    return fs.readFile(path.resolve(path.join(__dirname, "Assert.sol")), {encoding: "utf8"}, function(err, body) {
+      callback(err, body, import_path);
+    });
   }
 
   return callback();
