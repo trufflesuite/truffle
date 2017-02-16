@@ -1,6 +1,6 @@
 {
   "name": "truffle-solidity-utils",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Utilities for Solidity contracts",
   "main": "index.js",
   "scripts": {
@@ -23,6 +23,6 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle-solidity-utils#readme",
   "dependencies": {
-    "solidity-parser": "^0.2.0"
+    "solidity-parser": "^0.3.0"
   }
 }
