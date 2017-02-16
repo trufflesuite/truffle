@@ -1,6 +1,6 @@
 {
   "name": "truffle-resolver",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Resolve contract dependencies given multiple configurable dependency sources",
   "main": "index.js",
   "scripts": {
