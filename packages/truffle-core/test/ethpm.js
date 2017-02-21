@@ -43,7 +43,7 @@ describe('EthPM integration', function() {
 
   // Super slow doing these in a beforeEach, but it ensures nothing conflicts.
   beforeEach("Create a sandbox", function(done) {
-    this.timeout(10000);
+    this.timeout(20000);
     Init.sandbox(function(err, result) {
       if (err) return done(err);
       config = result;
