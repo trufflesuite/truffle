@@ -25,7 +25,7 @@ TruffleInterpreter.prototype.start = function() {
 
   this.provision(function(err, abstractions) {
     if (err) {
-      options.logger.log("Enexpected error: Cannot provision contracts while instantiating the console.");
+      options.logger.log("Unexpected error: Cannot provision contracts while instantiating the console.");
       options.logger.log(err.stack || err.message || err);
     }
 
@@ -114,7 +114,7 @@ TruffleInterpreter.prototype.interpret = function(cmd, context, filename, callba
         return callback();
       }
 
-      // Reprovision after each command is it may change contracts.
+      // Reprovision after each command as it may change contracts.
       self.provision(function(err, abstractions) {
         // Don't pass abstractions to the callback if they're there or else
         // they'll get printed in the repl.
