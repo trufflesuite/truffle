@@ -55,9 +55,15 @@ TruffleInterpreter.prototype.provision = function(callback) {
   var self = this;
 
   fs.readdir(this.options.contracts_build_directory, function(err, files) {
-    if (err) return callback(err);
+    if (err) {
+      // Error reading the build directory? Must mean it doesn't exist or we don't have access to it.
+      // Couldn't provision the contracts if we wanted. It's possible we're hiding very rare FS
+      // errors, but that's better than showing the user error messages that will be "build folder
+      // doesn't exist" 99.9% of the time.
+    }
 
     var promises = [];
+    files = files || [];
 
     files.forEach(function(file) {
       promises.push(new Promise(function(accept, reject) {
@@ -90,6 +96,8 @@ TruffleInterpreter.prototype.provision = function(callback) {
 
 TruffleInterpreter.prototype.resetContractsInConsoleContext = function(abstractions) {
   var self = this;
+
+  abstractions = abstractions || []
 
   if (this.r != null) {
     abstractions.forEach(function(abstraction) {
