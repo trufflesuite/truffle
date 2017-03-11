@@ -4,6 +4,12 @@ var Migrate = require("truffle-migrate");
 var TestResolver = require("./testresolver");
 var TestSource = require("./testsource");
 var expect = require("truffle-expect");
+var contract = require("truffle-contract");
+var SolidityCoder = require("web3/lib/solidity/coder.js");
+var path = require("path");
+var _ = require("lodash");
+var Promise = require("bluebird");
+var fs = Promise.promisifyAll(require("fs"));
 
 function TestRunner(options) {
   options = options || {};
@@ -42,7 +48,32 @@ TestRunner.prototype.initialize = function(callback) {
   var afterStateReset = function(err) {
     if (err) return callback(err);
 
-    callback();
+    fs.readdirAsync(self.config.contracts_build_directory).then(function (files) {
+      return _.filter(files, function(file) {
+        return path.extname(file) === ".json"
+      });
+    })
+    .then(function(files) {
+      return files.map(function(file){
+        return fs.readFileAsync(path.join(self.config.contracts_build_directory, file), "utf8");
+      })
+    }).then(_.flatten)
+    .then(Promise.all)
+    .then(function(files){
+      var contracts = files.map(JSON.parse).map(contract);
+      var abis = _.flatMap(contracts, "abi");
+
+      abis.map(function(abi) {
+        if (abi.type == "event") {
+          var signature = abi.name + "(" + _.map(abi.inputs, "type").join(",") + ")";
+          self.known_events[web3.sha3(signature)] = {
+            signature: signature,
+            abi_entry: abi
+          };
+        }
+      });
+      callback();
+    })
 
     //self.known_events = {};
 
