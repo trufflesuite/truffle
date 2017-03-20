@@ -97,7 +97,13 @@ var Migrate = {
     dir.files(options.migrations_directory, function(err, files) {
       if (err) return callback(err);
 
-      var migrations = files.map(function(file) {
+      options.allowed_extensions = options.allowed_extensions || /^\.(js|es6?)$/;
+
+      var migrations = files.filter(function(file) {
+        return isNaN(parseInt(path.basename(file))) == false;
+      }).filter(function(file) {
+        return path.extname(file).match(options.allowed_extensions) != null;
+      }).map(function(file) {
         return new Migration(file, options.network);
       });
 
