@@ -113,39 +113,55 @@ describe("migrate", function() {
         currentAddresses[contract_name] = networks["primary"][contract_name];
       });
 
-      // Contracts.compile(config.with({
-      //   all: false,
-      //   quiet: true
-      // }), function(err) {
-      //   if (err) return done(err);
+      Migrate.run(config.with({
+        quiet: true
+      }), function(err, contracts) {
+        if (err) return done(err);
 
-        Migrate.run(config.with({
-          quiet: true
-        }), function(err, contracts) {
+        Networks.deployed(config, function(err, networks) {
           if (err) return done(err);
 
-          Networks.deployed(config, function(err, networks) {
-            if (err) return done(err);
+          assert.equal(Object.keys(networks).length, 2, "Should have results for two networks from profiler");
+          assert.equal(Object.keys(networks["primary"]).length, 3, "Primary network should have three contracts deployed");
+          assert.equal(networks["primary"]["MetaCoin"], currentAddresses["MetaCoin"], "MetaCoin contract updated on primary network");
+          assert.equal(networks["primary"]["ConvertLib"], currentAddresses["ConvertLib"], "ConvertLib library updated on primary network");
+          assert.equal(networks["primary"]["Migrations"], currentAddresses["Migrations"], "Migrations contract updated on primary network");
+          assert.equal(Object.keys(networks["secondary"]).length, 3, "Secondary network should have three contracts deployed");
+          assert.isNotNull(networks["secondary"]["MetaCoin"], "MetaCoin contract should have an address on secondary network");
+          assert.isNotNull(networks["secondary"]["ConvertLib"], "ConvertLib library should have an address on secondary network");
+          assert.isNotNull(networks["secondary"]["Migrations"], "Migrations contract should have an address on secondary network");
 
-            assert.equal(Object.keys(networks).length, 2, "Should have results for two networks from profiler");
-            assert.equal(Object.keys(networks["primary"]).length, 3, "Primary network should have three contracts deployed");
-            assert.equal(networks["primary"]["MetaCoin"], currentAddresses["MetaCoin"], "MetaCoin contract updated on primary network");
-            assert.equal(networks["primary"]["ConvertLib"], currentAddresses["ConvertLib"], "ConvertLib library updated on primary network");
-            assert.equal(networks["primary"]["Migrations"], currentAddresses["Migrations"], "Migrations contract updated on primary network");
-            assert.equal(Object.keys(networks["secondary"]).length, 3, "Secondary network should have three contracts deployed");
-            assert.isNotNull(networks["secondary"]["MetaCoin"], "MetaCoin contract should have an address on secondary network");
-            assert.isNotNull(networks["secondary"]["ConvertLib"], "ConvertLib library should have an address on secondary network");
-            assert.isNotNull(networks["secondary"]["Migrations"], "Migrations contract should have an address on secondary network");
-
-            Object.keys(networks["primary"]).forEach(function(contract_name) {
-              assert.notEqual(networks["secondary"][contract_name], networks["primary"][contract_name], "Contract " + contract_name + " has the same address on both networks")
-            });
-
-            done();
+          Object.keys(networks["primary"]).forEach(function(contract_name) {
+            assert.notEqual(networks["secondary"][contract_name], networks["primary"][contract_name], "Contract " + contract_name + " has the same address on both networks")
           });
-        });
-      // });
 
+          done();
+        });
+      });
+    });
+  });
+
+  it("should ignore files that don't start with a number", function(done) {
+    fs.writeFileSync(path.join(config.migrations_directory, "~2_deploy_contracts.js"), "module.exports = function() {};", "utf8");
+
+    Migrate.assemble(config, function(err, migrations) {
+      if (err) return done(err);
+
+      assert.equal(migrations.length, 2, "~2_deploy_contracts.js should have been ignored!");
+
+      done();
+    });
+  });
+
+  it("should ignore non-js extensions", function(done) {
+    fs.writeFileSync(path.join(config.migrations_directory, "2_deploy_contracts.js~"), "module.exports = function() {};", "utf8");
+
+    Migrate.assemble(config, function(err, migrations) {
+      if (err) return done(err);
+
+      assert.equal(migrations.length, 2, "2_deploy_contracts.js~ should have been ignored!");
+
+      done();
     });
   });
 });
