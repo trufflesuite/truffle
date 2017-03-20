@@ -9,6 +9,7 @@ var command = {
     var path = require("path");
     var colors = require("colors");
     var Contracts = require("../contracts");
+    var TruffleError = require("truffle-error");
 
     var config = Config.detect(options);
 
@@ -16,8 +17,13 @@ var command = {
       config.logger.log(colors.green("Completed without errors on " + new Date().toString()));
     };
 
-    var printFailure = function() {
-      config.logger.log(colors.red("Completed with errors on " + new Date().toString()));
+    var printFailure = function(err) {
+      if (err instanceof TruffleError) {
+        console.log(err.message);
+      } else {
+        // Bubble up all other unexpected errors.
+        console.log(err.stack || err.toString());
+      }
     };
 
     var working = false;
@@ -63,8 +69,7 @@ var command = {
 
           Build.build(config, function(err) {
             if (err) {
-              console.log(err);
-              printFailure();
+              printFailure(err);
             } else {
               printSuccess();
             }
@@ -77,8 +82,7 @@ var command = {
 
         Contracts.compile(config, function(err) {
           if (err) {
-            console.log(err);
-            printFailure();
+            printFailure(err);
           }
           working = false;
         });
