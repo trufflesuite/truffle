@@ -35,9 +35,6 @@ var Test = {
       "provider",
     ]);
 
-
-
-
     var config = Config.default().merge(options);
 
     config.test_files = config.test_files.map(function(test_file) {
@@ -76,6 +73,11 @@ var Test = {
     // Add Javascript tests because there's nothing we need to do with them.
     // Solidity tests will be handled later.
     js_tests.forEach(function(file) {
+      // There's an idiosyncracy in Mocha where the same file can't be run twice
+      // unless we delete the `require` cache.
+      // https://github.com/mochajs/mocha/issues/995
+      delete require.cache[file];
+
       mocha.addFile(file);
     });
 
