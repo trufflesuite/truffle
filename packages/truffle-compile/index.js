@@ -1,4 +1,5 @@
 var Profiler = require("./profiler");
+var OS = require("os");
 var solc = require("solc");
 
 // Clean up after solc.
@@ -53,24 +54,25 @@ var compile = function(sources, options, callback) {
   process.removeListener("uncaughtException", solc_listener);
 
   var errors = result.errors || [];
-  var warnings = result.errors || [];
+  var warnings = [];
 
-  if (options.strict == true) {
-    errors = errors.filter(function(error) {
-      return error.indexOf("Warning:") < 0;
-    });
-    warnings = warnings.filter(function(error) {
+  if (options.strict !== true) {
+    warnings = errors.filter(function(error) {
       return error.indexOf("Warning:") >= 0;
     });
 
-    if (options.quiet != null) {
-      warnings.forEach(function(warning) {
-        logger.log(warning);
-      });
+    errors = errors.filter(function(error) {
+      return error.indexOf("Warning:") < 0;
+    });
+
+    if (options.quiet !== true && warnings.length > 0) {
+      options.logger.log(OS.EOL + "Compilation warnings encountered:" + OS.EOL);
+      options.logger.log(warnings.join());
     }
   }
 
   if (errors.length > 0) {
+    options.logger.log("");
     return callback(new CompileError(result.errors.join()));
   }
 
