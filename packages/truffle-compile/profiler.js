@@ -84,6 +84,10 @@ module.exports = {
 
       var required = {};
 
+      function hasBeenTraversed(import_path) {
+        return required[import_path] != null;
+      }
+
       function include(import_path) {
         //console.log("Including: " + file)
 
@@ -91,7 +95,7 @@ module.exports = {
       }
 
       function walk_down(import_path) {
-        if (required[import_path] === true) {
+        if (hasBeenTraversed(import_path)) {
           return;
         }
 
@@ -108,6 +112,10 @@ module.exports = {
       }
 
       function walk_from(import_path) {
+        if (hasBeenTraversed(import_path)) {
+          return;
+        }
+
         var ancestors = dependsGraph.predecessors(import_path);
         var dependencies = dependsGraph.successors(import_path);
 
@@ -222,15 +230,6 @@ module.exports = {
     },
     function(err) {
       if (err) return callback(err);
-
-      // Check for cycles in the graph, the dependency graph needs to be a tree otherwise there's an error
-      if (!isAcyclic(dependsGraph)) {
-        var errorMessage = "Found cyclic dependencies. Adjust your import statements to remove cycles.\n\n";
-        dependsGraph.edges().forEach(function(o){
-          errorMessage += o.v + " -- depends on --> " + o.w + "\n";
-        });
-        return callback(new CompileError(errorMessage));
-      }
       callback(null, dependsGraph)
     });
   },
