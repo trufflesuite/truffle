@@ -8,8 +8,8 @@ var contract = require("truffle-contract");
 var SolidityCoder = require("web3/lib/solidity/coder.js");
 var path = require("path");
 var _ = require("lodash");
-var Promise = require("bluebird");
-var fs = Promise.promisifyAll(require("fs"));
+var async = require("async");
+var fs = require("fs");
 
 function TestRunner(options) {
   options = options || {};
@@ -48,58 +48,33 @@ TestRunner.prototype.initialize = function(callback) {
   var afterStateReset = function(err) {
     if (err) return callback(err);
 
-    fs.readdirAsync(self.config.contracts_build_directory).then(function (files) {
-      return _.filter(files, function(file) {
+    fs.readdir(self.config.contracts_build_directory, function(err, files) {
+      if (err) return callback(err);
+
+      files = _.filter(files, function(file) {
         return path.extname(file) === ".json"
       });
-    })
-    .then(function(files) {
-      return files.map(function(file){
-        return fs.readFileAsync(path.join(self.config.contracts_build_directory, file), "utf8");
-      })
-    }).then(_.flatten)
-    .then(Promise.all)
-    .then(function(files){
-      var contracts = files.map(JSON.parse).map(contract);
-      var abis = _.flatMap(contracts, "abi");
 
-      abis.map(function(abi) {
-        if (abi.type == "event") {
-          var signature = abi.name + "(" + _.map(abi.inputs, "type").join(",") + ")";
-          self.known_events[web3.sha3(signature)] = {
-            signature: signature,
-            abi_entry: abi
-          };
-        }
+      async.map(files, function(file, finished) {
+        fs.readFile(path.join(self.config.contracts_build_directory, file), "utf8", finished);
+      }, function(err, data) {
+        if (err) return callback(err);
+
+        var contracts = data.map(JSON.parse).map(contract);
+        var abis = _.flatMap(contracts, "abi");
+
+        abis.map(function(abi) {
+          if (abi.type == "event") {
+            var signature = abi.name + "(" + _.map(abi.inputs, "type").join(",") + ")";
+            self.known_events[web3.sha3(signature)] = {
+              signature: signature,
+              abi_entry: abi
+            };
+          }
+        });
+        callback();
       });
-      callback();
-    })
-
-    //self.known_events = {};
-
-    // Go through all abis and record events we know about.
-    // self.project_contracts.forEach(function(contract) {
-    //   // make the contract globally available
-    //   global[contract.contract_name] = contract;
-    //
-    //   var abi = contract.abi;
-    //
-    //   for (var j = 0; j < abi.length; j++) {
-    //     var item = abi[j];
-    //
-    //     if (item.type == "event") {
-    //       var signature = item.name + "(" + item.inputs.map(function(param) {return param.type;}).join(",") + ")";
-    //
-    //       self.known_events[web3.sha3(signature)] = {
-    //         signature: signature,
-    //         abi_entry: item
-    //       };
-    //     }
-    //   }
-    //
-    //   callback();
-    // });
-
+    });
   };
 
   if (self.initial_snapshot == null) {
