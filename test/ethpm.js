@@ -12,6 +12,7 @@ var GithubExamples = require("ethpm/lib/indexes/github-examples");
 var TestRPC = require("ethereumjs-testrpc");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
+var Web3 = require("web3");
 
 describe('EthPM integration', function() {
   var config;
@@ -46,16 +47,24 @@ describe('EthPM integration', function() {
     this.timeout(20000);
     Init.sandbox(function(err, result) {
       if (err) return done(err);
-      config = result;
-      config.resolver = new Resolver(config);
-      config.artifactor = new Artifactor(config.contracts_build_directory);
-      config.networks = {
-        development: {
-          network_id: blockchain_uri,
-          provider: provider
-        }
-      };
-      config.network = "development";
+
+      var web3 = new Web3(provider);
+      web3.eth.getAccounts(function(err, accs) {
+        if (err) return done(err);
+
+        config = result;
+        config.resolver = new Resolver(config);
+        config.artifactor = new Artifactor(config.contracts_build_directory);
+        config.networks = {
+          ropsten: {
+            network_id: blockchain_uri,
+            provider: provider,
+            from: accs[0]
+          }
+        };
+        config.network = "ropsten";
+
+      });
       done();
     });
   });
