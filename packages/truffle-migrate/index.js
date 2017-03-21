@@ -65,28 +65,29 @@ Migration.prototype.run = function(options, callback) {
       logger.log("Saving artifacts...");
       return options.artifactor.saveAll(resolver.contracts());
     }).then(function() {
-      callback();
+      // Use process.nextTicK() to prevent errors thrown in the callback from triggering the below catch()
+      process.nextTick(callback);
     }).catch(function(e) {
       logger.log("Error encountered, bailing. Network state unknown. Review successful transactions manually.");
       callback(e);
     });
   };
 
-  Require.file({
-    file: self.file,
-    context: context,
-    resolver: resolver,
-    args: [deployer],
-  }, function(err, fn) {
-    if (!fn || !fn.length || fn.length == 0) {
-      return callback(new Error("Migration " + self.file + " invalid or does not take any parameters"));
-    }
-    if (fn.length == 1 || fn.length == 2) {
-      fn(deployer, options.network);
+  web3.eth.getAccounts(function(err, accounts) {
+    if (err) return callback(err);
+
+    Require.file({
+      file: self.file,
+      context: context,
+      resolver: resolver,
+      args: [deployer],
+    }, function(err, fn) {
+      if (!fn || !fn.length || fn.length == 0) {
+        return callback(new Error("Migration " + self.file + " invalid or does not take any parameters"));
+      }
+      fn(deployer, options.network, accounts);
       finish();
-    } else if (fn.length == 3) {
-      fn(deployer, options.network, finish);
-    }
+    });
   });
 };
 
