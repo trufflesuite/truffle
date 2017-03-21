@@ -55,16 +55,20 @@ var Require = {
           if (pkgPath[0] == ".") {
             return require(path.join(path.dirname(file), pkgPath));
           } else {
-            // Not absolute, not relative, must be a locally installed modules.
+            // Not absolute, not relative, must be a globally or locally installed module.
+
+            // Try local first.
             // Here we have to require from the node_modules directory directly.
+
             var moduleDir = path.join(path.dirname(file), "node_modules");
             try {
               return require(path.join(moduleDir, pkgPath));
             } catch (e) {
-              // Shave off path we added so the error message looks like normal.
-              e.message = e.message.replace(moduleDir + "/", "");
-              throw e;
+
             }
+
+            // Try global, and let the error throw.
+            return require(pkgPath);
           }
         },
         artifacts: options.resolver,
