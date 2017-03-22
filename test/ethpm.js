@@ -15,6 +15,7 @@ var Artifactor = require("truffle-artifactor");
 var MemoryLogger = require("./scenarios/memorylogger.js");
 var Migrate = require("truffle-migrate");
 var Web3 = require("web3");
+var pkginfo = require("../package.json");
 
 describe('EthPM integration', function() {
   var config;
@@ -269,10 +270,22 @@ describe('EthPM integration', function() {
           assert.property(registry.packages, 'test-package');
           assert.property(registry.packages['test-package'], '0.0.1');
 
-          done();
+          var lockfileAddress = registry.packages['test-package']['0.0.1'];
+
+          // inspect resulting lockfile from host
+          host.get(lockfileAddress).then(function(contents) {
+            var lockfile = JSON.parse(contents);
+
+            assert.equal(lockfile.package_name, "test-package");
+
+            // check for x-via to include Truffle
+            var expectedVia = pkginfo.name + " v" + pkginfo.version;
+            assert.equal(lockfile['x-via'], expectedVia);
+
+            done();
+          }).catch(done);
         });
       });
     });
   });
-
 });
