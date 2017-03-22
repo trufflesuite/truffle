@@ -134,6 +134,10 @@ var SolidityTest = {
       if (balance != 0) {
         return deployer.deploy(SafeSend, deployed.address, {
           value: balance
+        }).then(function() {
+          return SafeSend.deployed();
+        }).then(function(safesend) {
+          return safesend.deliver();
         });
       }
     });
