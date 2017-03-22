@@ -1,6 +1,6 @@
 {
   "name": "truffle-deployer",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "description": "Light deployment module for easily deploying Ethereum contracts",
   "main": "index.js",
   "scripts": {
@@ -30,7 +30,7 @@
   "devDependencies": {
     "ethereumjs-testrpc": "^3.0.3",
     "mocha": "^3.2.0",
-    "truffle-contract": "^1.1.1",
+    "truffle-contract": "^2.0.0",
     "web3": "^0.18.0"
   }
 }
