@@ -12,6 +12,8 @@ var GithubExamples = require("ethpm/lib/indexes/github-examples");
 var TestRPC = require("ethereumjs-testrpc");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
+var MemoryLogger = require("./scenarios/memorylogger.js");
+var Migrate = require("truffle-migrate");
 var Web3 = require("web3");
 
 describe('EthPM integration', function() {
@@ -232,4 +234,45 @@ describe('EthPM integration', function() {
       done();
     });
   });
+
+  it("successfully publishes a package to EthPM", function(done) {
+    this.timeout(20000);
+
+    var logger = new MemoryLogger();
+    var options = config.with({
+      ethpm: {
+        ipfs_host: host,
+        registry: registry,
+        provider: provider
+      },
+      logger: logger,
+
+      // manifest-required options
+      package_name: "test-package",
+      version: "0.0.1"
+    });
+
+    Contracts.compile(config.with({
+      all: false,
+      quiet: true
+    }), function(err, contracts) {
+      if (err) return done(err);
+
+      Migrate.run(config.with({
+        quiet: true
+      }), function(err) {
+        if (err) return done(err);
+
+        Package.publish(options, function(err) {
+          if (err) return done(err);
+
+          assert.property(registry.packages, 'test-package');
+          assert.property(registry.packages['test-package'], '0.0.1');
+
+          done();
+        });
+      });
+    });
+  });
+
 });
