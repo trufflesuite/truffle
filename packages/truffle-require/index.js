@@ -61,19 +61,17 @@ var Require = {
             // Here we have to require from the node_modules directory directly.
 
             var moduleDir = path.dirname(file);
-            while (moduleDir.length > 1) {
+            while (true) {
               try {
                 return require(path.join(moduleDir, 'node_modules', pkgPath));
               } catch (e) {
 
               }
+              var oldModuleDir = moduleDir;
               moduleDir = path.join(moduleDir, '..');
-            }
-
-            try {
-              return require(path.join(moduleDir, 'node_modules', pkgPath));
-            } catch (e) {
-
+              if (moduleDir === oldModuleDir) {
+                break;
+              }
             }
 
             // Try global, and let the error throw.
