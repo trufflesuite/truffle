@@ -2,8 +2,7 @@ var Schema = require("truffle-contract-schema");
 var Contract = require("./contract.js");
 
 var contract = function(options) {
-  options = Schema.normalizeOptions(options);
-  var binary = Schema.generateBinary(options, {}, {dirty: false});
+  var binary = Schema.generateObject(options, {}, {dirty: false});
 
   // Note we don't use `new` here at all. This will cause the class to
   // "mutate" instead of instantiate an instance.

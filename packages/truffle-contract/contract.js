@@ -240,6 +240,16 @@ var contract = (function(module) {
       });
 
       return fn;
+    },
+    linkBytecode: function(bytecode, links) {
+      Object.keys(links).forEach(function(library_name) {
+        var library_address = links[library_name];
+        var regex = new RegExp("__" + library_name + "_*", "g");
+
+        bytecode = bytecode.replace(regex, library_address.replace("0x", ""));
+      });
+
+      return bytecode;
     }
   };
 
@@ -320,7 +330,7 @@ var contract = (function(module) {
 
       var args = Array.prototype.slice.call(arguments);
 
-      if (!this.unlinked_binary) {
+      if (!this.bytecode) {
         throw new Error(this._json.contract_name + " error: contract binary not set. Can't deploy new instance.");
       }
 
@@ -565,29 +575,36 @@ var contract = (function(module) {
       this.network.links[name] = address;
     },
 
-    clone: function(options) {
+    // Note, this function can be called with two input types:
+    // 1. Object with a bunch of data; this data will be merged with the json data of contract being cloned.
+    // 2. network id; this will clone the contract and set a specific network id upon cloning.
+    clone: function(json) {
       var self = this;
+
+      json = json || {};
+
       var temp = function TruffleContract() {
         this.constructor = temp;
         return Contract.apply(this, arguments);
       };
 
-      var json = options;
+      temp.prototype = Object.create(self.prototype);
+
       var network_id;
 
-      if (typeof options != "object") {
+      // If we have a network id passed
+      if (typeof json != "object") {
+        network_id = json;
         json = self._json;
-        network_id = options;
-        options = {};
       }
 
-      temp.prototype = Object.create(self.prototype);
+      json = Utils.merge({}, self._json || {}, json);
 
       temp._static_methods = this._static_methods;
       temp._properties = this._properties;
 
       temp._property_values = {};
-      temp._json = json || {};
+      temp._json = json;
 
       Utils.bootstrap(temp);
 
@@ -598,10 +615,10 @@ var contract = (function(module) {
         temp.setNetwork(network_id);
       }
 
-      // Copy over custom options
-      Object.keys(options).forEach(function(key) {
+      // Copy over custom key/values to the contract class
+      Object.keys(json).forEach(function(key) {
         if (key.indexOf("x-") != 0) return;
-        temp[key] = options[key];
+        temp[key] = json[key];
       });
 
       return temp;
@@ -671,7 +688,18 @@ var contract = (function(module) {
         throw new Error(this.contract_name + " has no network configuration for its current network id (" + network_id + ").");
       }
 
-      return this._json.networks[network_id];
+      var returnVal = this._json.networks[network_id];
+
+      // Normalize output
+      if (returnVal.links == null) {
+        returnVal.links = {};
+      }
+
+      if (returnVal.events == null) {
+        returnVal.events = {};
+      }
+
+      return returnVal;
     },
     networks: function() {
       return this._json.networks;
@@ -754,25 +782,59 @@ var contract = (function(module) {
       return events;
     },
     binary: function() {
-      var self = this;
-      var binary = this.unlinked_binary;
-
-      Object.keys(this.links).forEach(function(library_name) {
-        var library_address = self.links[library_name];
-        var regex = new RegExp("__" + library_name + "_*", "g");
-
-        binary = binary.replace(regex, library_address.replace("0x", ""));
-      });
-
-      return binary;
+      return Utils.linkBytecode(this.bytecode, this.links);
     },
+    runtimeBinary: function() {
+      return Utils.linkBytecode(this.runtimeBytecode, this.links);
+    },
+    // deprecated; use bytecode
     unlinked_binary: {
       get: function() {
-        return this._json.unlinked_binary;
+        return this.bytecode;
       },
       set: function(val) {
-        // TODO: Ensure 0x prefix.
-        this._json.unlinked_binary = val;
+        this.bytecode = val;
+      }
+    },
+    // alias for unlinked_binary; unlinked_binary will eventually be deprecated
+    bytecode: {
+      get: function() {
+        return this._json.bytecode;
+      },
+      set: function(val) {
+        this._json.bytecode = val;
+      }
+    },
+    runtimeBytecode: {
+      get: function() {
+        return this._json.runtimeBytecode;
+      },
+      set: function(val) {
+        this._json.runtimeBytecode = val;
+      }
+    },
+    srcmap: {
+      get: function() {
+        return this._json.srcmap;
+      },
+      set: function(val) {
+        this._json.srcmap = val;
+      }
+    },
+    srcmapRuntime: {
+      get: function() {
+        return this._json.srcmapRuntime;
+      },
+      set: function(val) {
+        this._json.srcmapRuntime = val;
+      }
+    },
+    ast: {
+      get: function() {
+        return this._json.ast;
+      },
+      set: function(val) {
+        this._json.ast = val;
       }
     },
     schema_version: function() {
