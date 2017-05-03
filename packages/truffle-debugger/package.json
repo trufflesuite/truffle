@@ -1,0 +1,26 @@
+{
+  "name": "truffle-debugger",
+  "version": "1.0.0",
+  "description": "Core functionality for debugging Solidity files built with Truffle",
+  "main": "debugger.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ethereum",
+    "truffle",
+    "debugger",
+    "solidity"
+  ],
+  "author": "Tim Coulter <tim.coulter@consenseys.net>",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^1.5.2",
+    "node-dir": "^0.1.16",
+    "truffle-code-utils": "^1.0.0",
+    "truffle-contract": "^2.0.0",
+    "truffle-expect": "0.0.3",
+    "truffle-solidity-utils": "^1.0.0",
+    "web3": "^0.18.4"
+  }
+}
