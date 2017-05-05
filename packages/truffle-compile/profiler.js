@@ -234,9 +234,18 @@ module.exports = {
     });
   },
 
-  // Parse all source files in the directory and output the names of contracts they definedContracts
+  // Parse all source files in the directory and output the names of contracts and their source paths
+  // directory can either be a directory or array of files.
   defined_contracts: function(directory, callback) {
-    find_contracts(directory, function(err, files) {
+    function getFiles(callback) {
+      if (Array.isArray(directory)) {
+        callback(null, directory);
+      } else {
+        find_contracts(directory, callback);
+      }
+    }
+
+    getFiles(function(err, files) {
       if (err) return callback(err);
 
       var promises = files.map(function(file) {
@@ -255,21 +264,33 @@ module.exports = {
 
             accept(ast);
           });
-        });
-      });
-
-      Promise.all(promises).then(function(asts) {
-        var contract_names = asts.map(function(ast) {
-          return ast.body.filter(function(toplevel_item) {
-            return toplevel_item.type == "ContractStatement";
+        }).then(function(ast) {
+          var contract_names = ast.body.filter(function(toplevel_item) {
+            return toplevel_item.type == "ContractStatement" || toplevel_item.type == "LibraryStatement";
           }).map(function(contract_statement) {
             return contract_statement.name;
           });
+
+          var returnVal = {};
+
+          contract_names.forEach(function(contract_name) {
+            returnVal[contract_name] = file;
+          });
+
+          return returnVal;
+        });
+      });
+
+      Promise.all(promises).then(function(objects) {
+        var contract_source_paths = {};
+
+        objects.forEach(function(object) {
+          Object.keys(object).forEach(function(contract_name) {
+            contract_source_paths[contract_name] = object[contract_name];
+          });
         });
 
-        contract_names = [].concat.apply([], contract_names);
-
-        callback(null, contract_names);
+        callback(null, contract_source_paths);
       }).catch(callback);
     });
   }

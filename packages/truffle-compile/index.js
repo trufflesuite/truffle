@@ -36,6 +36,10 @@ var compile = function(sources, options, callback) {
     options.logger = console;
   }
 
+  expect.options(options, [
+    "contracts_directory"
+  ]);
+
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
   var operatingSystemIndependentSources = {};
@@ -48,35 +52,135 @@ var compile = function(sources, options, callback) {
   // Add the listener back in, just in case I need it.
   process.on("uncaughtException", solc_listener);
 
-  var result = solc.compile({sources: operatingSystemIndependentSources}, 1);
+
+  var solcStandardInput = {
+    language: "Solidity",
+    sources: {},
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 0 // See https://github.com/ethereum/solidity/issues/2245
+      },
+      outputSelection: {
+        "*": {
+          "*": [
+            "abi",
+            "ast",
+            "evm.bytecode.object",
+            "evm.bytecode.sourceMap",
+            "evm.deployedBytecode.object",
+            "evm.deployedBytecode.sourceMap"
+          ]
+        },
+      }
+    }
+  };
+
+  // Nothing to compile? Bail.
+  if (Object.keys(sources).length == 0) {
+    return callback(null, [], []);
+  }
+
+  Object.keys(sources).forEach(function(file_path) {
+    solcStandardInput.sources[file_path] = {
+      content: sources[file_path]
+    }
+  });
+
+  var result = solc.compileStandard(JSON.stringify(solcStandardInput));
 
   // Alright, now remove it.
   process.removeListener("uncaughtException", solc_listener);
 
-  var errors = result.errors || [];
+  var standardOutput = JSON.parse(result);
+
+  var errors = standardOutput.errors || [];
   var warnings = [];
 
   if (options.strict !== true) {
     warnings = errors.filter(function(error) {
-      return error.indexOf("Warning:") >= 0;
+      return error.severity == "warning";
     });
 
     errors = errors.filter(function(error) {
-      return error.indexOf("Warning:") < 0;
+      return error.severity != "warning";
     });
 
     if (options.quiet !== true && warnings.length > 0) {
       options.logger.log(OS.EOL + "Compilation warnings encountered:" + OS.EOL);
-      options.logger.log(warnings.join());
+      options.logger.log(warnings.map(function(warning) {
+        return warning.formattedMessage;
+      }).join());
     }
   }
 
   if (errors.length > 0) {
     options.logger.log("");
-    return callback(new CompileError(result.errors.join()));
+    return callback(new CompileError(standardOutput.errors.map(function(error) {
+      return error.formattedMessage;
+    }).join()));
   }
 
-  callback(null, result.contracts, Object.keys(operatingSystemIndependentSources));
+  var contracts = standardOutput.contracts;
+
+  var returnVal = {};
+
+  // This block has comments in it as it's being prepared for solc > 0.4.10
+  Object.keys(contracts).forEach(function(source_path) {
+    var files_contracts = contracts[source_path];
+
+    Object.keys(files_contracts).forEach(function(contract_name) {
+      var contract = files_contracts[contract_name];
+
+      var contract_definition = {
+        contract_name: contract_name,
+        sourcePath: source_path,
+        source: operatingSystemIndependentSources[source_path],
+        sourceMap: contract.evm.bytecode.sourceMap,
+        runtimeSourceMap: contract.evm.deployedBytecode.sourceMap,
+        ast: standardOutput.sources[source_path].legacyAST,
+        abi: contract.abi,
+        bytecode: "0x" + contract.evm.bytecode.object,
+        unlinked_binary: "0x" + contract.evm.bytecode.object // deprecated
+      }
+
+      // Go through the link references and replace them with older-style
+      // identifiers. We'll do this until we're ready to making a breaking
+      // change to this code.
+      Object.keys(contract.evm.bytecode.linkReferences).forEach(function(file_name) {
+        var fileLinks = contract.evm.bytecode.linkReferences[file_name];
+
+        Object.keys(fileLinks).forEach(function(library_name) {
+          var linkReferences = fileLinks[library_name] || [];
+
+          contract_definition.bytecode = replaceLinkReferences(contract_definition.bytecode, linkReferences, library_name);
+          contract_definition.unlinked_binary = replaceLinkReferences(contract_definition.unlinked_binary, linkReferences, library_name);
+        });
+      });
+
+      returnVal[contract_name] = contract_definition;
+    });
+  });
+
+  // TODO: Is the third parameter needed?
+  callback(null, returnVal, Object.keys(operatingSystemIndependentSources));
+};
+
+function replaceLinkReferences(bytecode, linkReferences, libraryName) {
+  var linkId = "__" + libraryName;
+
+  while (linkId.length < 40) {
+    linkId += "_";
+  }
+
+  linkReferences.forEach(function(ref) {
+    // ref.start is a byte offset. Convert it to character offset.
+    var start = (ref.start * 2) + 2;
+
+    bytecode = bytecode.substring(0, start) + linkId + bytecode.substring(start + 40);
+  });
+
+  return bytecode;
 };
 
 
@@ -105,7 +209,7 @@ compile.necessary = function(options, callback) {
     if (err) return callback(err);
 
     if (updated.length == 0 && options.quiet != true) {
-      return callback();
+      return callback(null, [], {});
     }
 
     options.paths = updated;
