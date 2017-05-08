@@ -64,7 +64,6 @@ library Assert {
     uint8 constant A = uint8(byte('a'));
 
     byte constant MINUS = byte('-');
-    byte constant SPACE = byte(' ');
 
     /*
         Event: TestEvent
@@ -853,7 +852,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(uint[] arrA, uint[] arrB, string message) constant returns (bool result) {
+    function notEqual(uint[] arrA, uint[] arrB, string message) constant returns (bool) {
         var r = arrA.length == arrB.length;
         if (r) {
             for (uint i = 0; i < arrA.length; i++) {
@@ -965,7 +964,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(int[] arrA, int[] arrB, string message) constant returns (bool result) {
+    function notEqual(int[] arrA, int[] arrB, string message) constant returns (bool) {
         var r = arrA.length == arrB.length;
         if (r) {
             for (uint i = 0; i < arrA.length; i++) {
@@ -1077,7 +1076,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(address[] arrA, address[] arrB, string message) constant returns (bool result) {
+    function notEqual(address[] arrA, address[] arrB, string message) constant returns (bool) {
         var r = arrA.length == arrB.length;
         if (r) {
             for (uint i = 0; i < arrA.length; i++) {
@@ -1189,7 +1188,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(bytes32[] arrA, bytes32[] arrB, string message) constant returns (bool result) {
+    function notEqual(bytes32[] arrA, bytes32[] arrB, string message) constant returns (bool) {
         var r = arrA.length == arrB.length;
         if (r) {
             for (uint i = 0; i < arrA.length; i++) {
