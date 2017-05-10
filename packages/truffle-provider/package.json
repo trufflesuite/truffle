@@ -25,5 +25,9 @@
   "dependencies": {
     "lodash": "^4.5.1",
     "web3": "^0.18.0"
+  },
+  "devDependencies": {
+    "ethereumjs-testrpc": "^3.0.5",
+    "mocha": "^3.3.0"
   }
 }
