@@ -25,3 +25,4 @@ pages:
   - Networks & App Deployment: 'advanced/networks.md'
   - Build Processes: 'advanced/build_processes.md'
   - Command Reference: 'advanced/commands.md'
+  - Docker: 'advanced/docker.md'
