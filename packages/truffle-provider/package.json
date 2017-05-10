@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle-provider#readme",
   "dependencies": {
+    "lodash": "^4.5.1",
     "web3": "^0.18.0"
   }
 }
