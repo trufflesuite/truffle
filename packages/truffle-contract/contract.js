@@ -738,6 +738,10 @@ var contract = (function(module) {
       }
     },
     links: function() {
+      if (!this.network_id) {
+        throw new Error(this.contract_name + " has no network id set, cannot lookup artifact data. Either set the network manually using " + this.contract_name + ".setNetwork(), run " + this.contract_name + ".detectNetwork(), or use new(), at() or deployed() as a thenable which will detect the network automatically.");
+      }
+
       if (this._json.networks[this.network_id] == null) {
         return {};
       }
@@ -807,26 +811,54 @@ var contract = (function(module) {
     },
     runtimeBytecode: {
       get: function() {
-        return this._json.runtimeBytecode;
+        var code = this._json.runtimeBytecode;
+
+        if (code.indexOf("0x") != 0) {
+          code = "0x" + code;
+        }
+
+        return code;
       },
       set: function(val) {
-        this._json.runtimeBytecode = val;
+        var code = val;
+
+        if (val.indexOf("0x") != 0) {
+          code = "0x" + code;
+        }
+
+        this._json.runtimeBytecode = code;
       }
     },
-    srcmap: {
+    sourceMap: {
       get: function() {
-        return this._json.srcmap;
+        return this._json.sourceMap;
       },
       set: function(val) {
-        this._json.srcmap = val;
+        this._json.sourceMap = val;
       }
     },
-    srcmapRuntime: {
+    runtimeSourceMap: {
       get: function() {
-        return this._json.srcmapRuntime;
+        return this._json.runtimeSourceMap;
       },
       set: function(val) {
-        this._json.srcmapRuntime = val;
+        this._json.runtimeSourceMap = val;
+      }
+    },
+    source: {
+      get: function() {
+        return this._json.source;
+      },
+      set: function(val) {
+        this._json.source = val;
+      }
+    },
+    sourcePath: {
+      get: function() {
+        return this._json.sourcePath;
+      },
+      set: function(val) {
+        this._json.sourcePath = val;
       }
     },
     ast: {

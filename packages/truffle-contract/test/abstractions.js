@@ -9,7 +9,7 @@ var requireNoCache = require("require-nocache")(module);
 var TestRPC = require("ganache-core");
 var Web3 = require("web3");
 
-describe("Abstraction", function() {
+describe("Abstractions", function() {
   var Example;
   var accounts;
   var abi;
@@ -233,43 +233,5 @@ describe("Abstraction", function() {
 
       done();
     }).catch(done);
-  });
-
-  it("doesn't error when calling .links() or .events() with no network configuration", function(done) {
-    var event_abi = {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "name": "nameHash",
-          "type": "bytes32"
-        },
-        {
-          "indexed": true,
-          "name": "releaseHash",
-          "type": "bytes32"
-        }
-      ],
-      "name": "PackageRelease",
-      "type": "event"
-    };
-
-    var MyContract = contract({
-      contract_name: "MyContract",
-      abi: [
-        event_abi
-      ],
-      binary: "0x12345678",
-      network_id: 5
-    });
-
-    var expected_event_topic = web3.sha3("PackageRelease(bytes32,bytes32)");
-
-    // We want to make sure these don't throw when a network configuration doesn't exist.
-    // While we're at it, lets make sure we still get the event we expect.
-    assert.deepEqual(MyContract.links, {});
-    assert.deepEqual(MyContract.events[expected_event_topic], event_abi);
-
-    done();
   });
 });
