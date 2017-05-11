@@ -39,10 +39,10 @@ Debugger.prototype.start = function(tx_hash, callback) {
 
   // Strategy:
   // 1. Get trace for tx
-  // 2. Get the runtime bytecode at the to address of the transaction
+  // 2. Get the deployed bytecode at the to address of the transaction
   // 3. Find contract that matches bytecode if known
   // 4. Get instruction source map
-  // 5. Convert runtime bytecode to instructions
+  // 5. Convert deployed bytecode to instructions
   // 6. Map trace to instructions, and parse source ranges
 
   var web3 = new Web3();
@@ -70,10 +70,10 @@ Debugger.prototype.start = function(tx_hash, callback) {
         return callback(new Error("This debugger does not currently support contract creation."));
       }
 
-      web3.eth.getCode(tx.to, function(err, runtimeBinary) {
+      web3.eth.getCode(tx.to, function(err, deployedBinary) {
         if (err) return callback(err);
 
-        // Go through all known contracts looking for matching runtimeBinary.
+        // Go through all known contracts looking for matching deployedBinary.
         dir.files(self.config.contracts_build_directory, function(err, files) {
           if (err) return callback(err);
 
@@ -97,7 +97,7 @@ Debugger.prototype.start = function(tx_hash, callback) {
             for (var i = 0; i < contracts.length; i++) {
               var current = contracts[i];
 
-              if (current.runtimeBinary == runtimeBinary) {
+              if (current.deployedBinary == deployedBinary) {
                 matches = current;
                 break;
               }
@@ -107,7 +107,7 @@ Debugger.prototype.start = function(tx_hash, callback) {
               return callback(new Error("Could not find compiled artifacts for the specified transaction. Ensure the transaction you're debugging is related to a contract you've deployed using the Truffle version you have currently installed."));
             }
 
-            if (!matches.runtimeSourceMap) {
+            if (!matches.deployedSourceMap) {
               return callback(new Error("Found matching contract for transaction but could not find associated source map: Unable to debug. Usually this is fixed by recompiling your contracts with the latest version of Truffle."));
             }
 
@@ -118,7 +118,7 @@ Debugger.prototype.start = function(tx_hash, callback) {
             // Alright, so if we're here, it means we have:
             //
             // 1. the contract associated with the current transaction
-            // 2. the runtime source map for the current contract associated with the transaction
+            // 2. the deployed source map for the current contract associated with the transaction
             // 3. the source associated with the current contract
             // 4. a full transaction trace
             //
@@ -129,11 +129,11 @@ Debugger.prototype.start = function(tx_hash, callback) {
 
             var lineAndColumnMapping = SolidityUtils.getCharacterOffsetToLineAndColumnMapping(matches.source);
 
-            var instructions = CodeUtils.parseCode(runtimeBinary);
+            var instructions = CodeUtils.parseCode(deployedBinary);
             var programCounterToInstructionMapping = {};
 
             instructions.forEach(function(instruction, instructionIndex) {
-              var sourceMapInstruction = SolidityUtils.getInstructionFromSourceMap(instructionIndex, matches.runtimeSourceMap);
+              var sourceMapInstruction = SolidityUtils.getInstructionFromSourceMap(instructionIndex, matches.deployedSourceMap);
 
               if (sourceMapInstruction) {
                 instruction.jump = sourceMapInstruction.jump;
