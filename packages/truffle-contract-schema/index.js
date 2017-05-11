@@ -1,6 +1,8 @@
 var sha3 = require("crypto-js/sha3");
 var schema_version = require("./package.json").version;
 
+// TODO: This whole thing should have a json schema.
+
 var TruffleSchema = {
   // Normalize options passed in to be the exact options required
   // for truffle-contract.
@@ -11,22 +13,33 @@ var TruffleSchema = {
   // - solc output
   //
   // TODO: Is extra_options still necessary?
-  normalizeOptions: function(options, extra_options) {
+  normalizeInput: function(options, extra_options) {
     extra_options = extra_options || {};
     var normalized = {};
     var expected_keys = [
       "contract_name",
       "abi",
-      "binary",
-      "unlinked_binary",
+      "bytecode",
+      "deployedBytecode",
+      "sourceMap",
+      "deployedSourceMap",
+      "linkReferences",
+      "deployedLinkReferences",
+      "source",
+      "sourcePath",
+      "ast",
       "address",
       "networks",
-      "links",
-      "events",
-      "network_id",
-      "default_network",
       "updated_at"
     ];
+
+    var deprecated_key_mappings = {
+      "unlinked_binary": "bytecode",
+      "binary": "bytecode",
+      "srcmap": "sourceMap",
+      "srcmapRuntime": "deployedSourceMap",
+      "interface": "abi"
+    };
 
     // Merge options/contract object first, then extra_options
     expected_keys.forEach(function(key) {
@@ -55,21 +68,17 @@ var TruffleSchema = {
       }
     });
 
-    // Now look for solc specific items.
-    if (options.interface != null) {
-      normalized.abi = JSON.parse(options.interface);
-    }
+    Object.keys(deprecated_key_mappings).forEach(function(deprecated_key) {
+      var mapped_key = deprecated_key_mappings[deprecated_key];
 
-    if (options.bytecode != null) {
-      normalized.unlinked_binary = options.bytecode
-    }
+      if (normalized[mapped_key] == null) {
+        normalized[mapped_key] = options[deprecated_key] || extra_options[deprecated_key];
+      }
+    });
 
-    // Assume any binary passed is the unlinked binary
-    if (normalized.unlinked_binary == null && normalized.binary) {
-      normalized.unlinked_binary = normalized.binary;
+    if (typeof normalized.abi == "string") {
+      normalized.abi = JSON.parse(normalized.abi);
     }
-
-    delete normalized.binary;
 
     this.copyCustomOptions(options, normalized);
 
@@ -78,86 +87,46 @@ var TruffleSchema = {
 
   // Generate a proper binary from normalized options, and optionally
   // merge it with an existing binary.
-  generateBinary: function(options, existing_binary, extra_options) {
+  // TODO: This function needs to be renamed. Binary is a misnomer.
+  generateObject: function(options, existing_object, extra_options) {
+    existing_object = existing_object || {};
     extra_options = extra_options || {};
 
-    existing_binary = existing_binary || {};
+    options.networks = options.networks || {};
+    existing_object.networks = existing_object.networks || {};
+
+    // Merge networks before overwriting
+    Object.keys(existing_object.networks).forEach(function(network_id) {
+      options.networks[network_id] = existing_object.networks[network_id];
+    });
+
+    var obj = this.normalizeInput(existing_object, options);
 
     if (options.overwrite == true) {
-      existing_binary = {};
+      existing_object = {};
     }
 
-    existing_binary.contract_name = options.contract_name || existing_binary.contract_name || "Contract";
-    existing_binary.default_network = options.default_network || existing_binary.default_network;
-
-    existing_binary.abi = options.abi || existing_binary.abi;
-    existing_binary.unlinked_binary = options.unlinked_binary || existing_binary.unlinked_binary;
+    obj.contract_name = obj.contract_name || "Contract";
 
     // Ensure unlinked binary starts with a 0x
-    if (existing_binary.unlinked_binary && existing_binary.unlinked_binary.indexOf("0x") < 0) {
-      existing_binary.unlinked_binary = "0x" + existing_binary.unlinked_binary;
+    // TODO: Remove this and enforce it through json schema
+    if (obj.bytecode && obj.bytecode.indexOf("0x") < 0) {
+      obj.bytecode = "0x" + obj.bytecode;
     }
-
-    // Merge existing networks with any passed in networks.
-    existing_binary.networks = existing_binary.networks || {};
-    options.networks = options.networks || {};
-    Object.keys(options.networks).forEach(function(network_id) {
-      existing_binary.networks[network_id] = options.networks[network_id];
-    });
 
     var updated_at = new Date().getTime();
 
-    if (options.network_id) {
-      // Ensure an object exists for this network.
-      existing_binary.networks[options.network_id] = existing_binary.networks[options.network_id] || {};
-
-      var network = existing_binary.networks[options.network_id];
-
-      // Override specific keys
-      network.address = options.address || network.address;
-      network.links = options.links;
-
-      // merge events with any that previously existed
-      network.events = network.events || {};
-      options.events = options.events || {};
-      Object.keys(options.events).forEach(function(event_id) {
-        options.events[event_id] = options.events[event_id];
-      });
-
-      // Now overwrite any events with the most recent data from the ABI.
-      existing_binary.abi.forEach(function(item) {
-        if (item.type != "event") return;
-
-        var signature = item.name + "(" + item.inputs.map(function(param) {return param.type;}).join(",") + ")";
-        network.events["0x" + sha3(signature, {outputLength: 256})] = item;
-      });
-
-      if (extra_options.dirty !== false) {
-        network.updated_at = updated_at;
-      }
-    } else {
-      if (options.address) {
-        throw new Error("Cannot set address without network id");
-      }
-    }
-
-    // Ensure all networks have a `links` object.
-    Object.keys(existing_binary.networks).forEach(function(network_id) {
-      var network = existing_binary.networks[network_id];
-      network.links = network.links || {};
-    });
-
-    existing_binary.schema_version = schema_version;
+    obj.schema_version = schema_version;
 
     if (extra_options.dirty !== false) {
-      existing_binary.updated_at = updated_at;
+      obj.updated_at = updated_at;
     } else {
-      existing_binary.updated_at = options.updated_at || existing_binary.updated_at || updated_at;
+      obj.updated_at = options.updated_at || existing_object.updated_at || updated_at;
     }
 
-    this.copyCustomOptions(options, existing_binary);
+    this.copyCustomOptions(options, obj);
 
-    return existing_binary;
+    return obj;
   },
 
   copyCustomOptions: function(from, to) {
