@@ -35,7 +35,7 @@ module.exports = {
   create: function(options) {
     var provider;
 
-    if (options.provider && _.isFunction(options.provider)) {
+    if (options.provider && typeof options.provider == "function") {
       provider = options.provider();
     } else if (options.provider) {
       provider = options.provider;
