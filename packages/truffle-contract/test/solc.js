@@ -13,9 +13,9 @@ describe("solc", function() {
 
     assert.deepEqual(A.abi, JSON.parse(data.interface));
     assert.equal(A.bytecode, "0x" + data.bytecode);
-    assert.equal(A.runtimeBytecode, "0x" + data.runtimeBytecode);
+    assert.equal(A.deployedBytecode, "0x" + data.runtimeBytecode);
     assert.equal(A.sourceMap, data.srcmap);
-    assert.equal(A.runtimeSourceMap, data.srcmapRuntime);
+    assert.equal(A.deployedSourceMap, data.srcmapRuntime);
 
     done();
   });
