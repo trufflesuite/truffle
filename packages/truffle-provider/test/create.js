@@ -4,23 +4,37 @@ var TestRPC = require("ethereumjs-testrpc");
 var Provider = require("../index");
 
 describe("Provider", function() {
-  var HttpProvider;
+  var server;
+  var port = 12345;
 
-  beforeEach("mock HttpProvider", function() {
-    HttpProvider = Web3.providers.HttpProvider;
-    Web3.providers.HttpProvider = TestRPC.provider;
+  before("Initialize TestRPC server", function(done) {
+    server = TestRPC.server({});
+    server.listen(port, function (err) {
+      assert.ifError(err);
+      done();
+    });
   });
 
-  afterEach("unmock HttpProvider", function() {
-    Web3.providers.HttpProvider = HttpProvider;
+  after("Shutdown TestRPC", function(done) {
+    server.close(done);
   });
 
   it("accepts host and port", function(done) {
-    var provider = Provider.create({host: "0.0.0.0", port: "8545"});
+    var provider = Provider.create({host: "0.0.0.0", port: port});
     assert(provider);
 
     Provider.test_connection(provider, function(error, coinbase) {
       assert.ifError(error);
+      done();
+    });
+  });
+
+  it("fails to connect to the wrong port", function(done) {
+    var provider = Provider.create({host: "0.0.0.0", port: "54321"});
+    assert(provider);
+
+    Provider.test_connection(provider, function(error, coinbase) {
+      assert(error);
       done();
     });
   });
