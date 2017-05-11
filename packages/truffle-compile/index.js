@@ -45,13 +45,21 @@ var compile = function(sources, options, callback) {
   var operatingSystemIndependentSources = {};
 
   Object.keys(sources).forEach(function(source) {
+    // Turn all backslashes into forward slashes
     var replacement = source.replace(/\\/g, "/");
+
+    // Turn G:/.../ into /G/.../ for Windows
+    if (replacement[0] != "/") {
+      replacement = "/" + replacement;
+    }
+    replacement = replacement.replace(":", "");
+
+    // Save the result
     operatingSystemIndependentSources[replacement] = sources[source];
   });
 
   // Add the listener back in, just in case I need it.
   process.on("uncaughtException", solc_listener);
-
 
   var solcStandardInput = {
     language: "Solidity",
@@ -81,9 +89,9 @@ var compile = function(sources, options, callback) {
     return callback(null, [], []);
   }
 
-  Object.keys(sources).forEach(function(file_path) {
+  Object.keys(operatingSystemIndependentSources).forEach(function(file_path) {
     solcStandardInput.sources[file_path] = {
-      content: sources[file_path]
+      content: operatingSystemIndependentSources[file_path]
     }
   });
 
