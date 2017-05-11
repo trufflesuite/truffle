@@ -788,8 +788,8 @@ var contract = (function(module) {
     binary: function() {
       return Utils.linkBytecode(this.bytecode, this.links);
     },
-    runtimeBinary: function() {
-      return Utils.linkBytecode(this.runtimeBytecode, this.links);
+    deployedBinary: function() {
+      return Utils.linkBytecode(this.deployedBytecode, this.links);
     },
     // deprecated; use bytecode
     unlinked_binary: {
@@ -809,9 +809,9 @@ var contract = (function(module) {
         this._json.bytecode = val;
       }
     },
-    runtimeBytecode: {
+    deployedBytecode: {
       get: function() {
-        var code = this._json.runtimeBytecode;
+        var code = this._json.deployedBytecode;
 
         if (code.indexOf("0x") != 0) {
           code = "0x" + code;
@@ -826,7 +826,7 @@ var contract = (function(module) {
           code = "0x" + code;
         }
 
-        this._json.runtimeBytecode = code;
+        this._json.deployedBytecode = code;
       }
     },
     sourceMap: {
@@ -837,12 +837,12 @@ var contract = (function(module) {
         this._json.sourceMap = val;
       }
     },
-    runtimeSourceMap: {
+    deployedSourceMap: {
       get: function() {
-        return this._json.runtimeSourceMap;
+        return this._json.deployedSourceMap;
       },
       set: function(val) {
-        this._json.runtimeSourceMap = val;
+        this._json.deployedSourceMap = val;
       }
     },
     source: {
