@@ -24,5 +24,9 @@
   "homepage": "https://github.com/trufflesuite/truffle-provider#readme",
   "dependencies": {
     "web3": "^0.18.0"
+  },
+  "devDependencies": {
+    "ethereumjs-testrpc": "^3.0.5",
+    "mocha": "^3.3.0"
   }
 }

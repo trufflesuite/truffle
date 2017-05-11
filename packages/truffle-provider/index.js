@@ -1,3 +1,4 @@
+var _ = require("lodash");
 var Web3 = require("web3");
 
 module.exports = {
@@ -34,7 +35,9 @@ module.exports = {
   create: function(options) {
     var provider;
 
-    if (options.provider) {
+    if (options.provider && typeof options.provider == "function") {
+      provider = options.provider();
+    } else if (options.provider) {
       provider = options.provider;
     } else {
       provider = new Web3.providers.HttpProvider("http://" + options.host + ":" + options.port);
