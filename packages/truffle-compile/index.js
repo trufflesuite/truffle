@@ -49,10 +49,10 @@ var compile = function(sources, options, callback) {
     var replacement = source.replace(/\\/g, "/");
 
     // Turn G:/.../ into /G/.../ for Windows
-    if (replacement[0] != "/") {
+    if (replacement.length >= 2 && replacement[1] == ":") {
       replacement = "/" + replacement;
+      replacement = replacement.replace(":", "");
     }
-    replacement = replacement.replace(":", "");
 
     // Save the result
     operatingSystemIndependentSources[replacement] = sources[source];
@@ -183,7 +183,7 @@ var compile = function(sources, options, callback) {
   });
 
   // TODO: Is the third parameter needed?
-  callback(null, returnVal, Object.keys(operatingSystemIndependentSources));
+  callback(null, returnVal, Object.keys(sources));
 };
 
 function replaceLinkReferences(bytecode, linkReferences, libraryName) {
