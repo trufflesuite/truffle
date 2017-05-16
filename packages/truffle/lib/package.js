@@ -36,7 +36,7 @@ var Package = {
     var host = options.ethpm.ipfs_host;
 
     if ((host instanceof EthPM.hosts.IPFS) == false) {
-      host = new EthPM.hosts.IPFS(options.ethpm.ipfs_host, options.ethpm.ipfs_port, options.ethpm.ipfs_protocol);
+      host = new EthPM.hosts.IPFSWithLocalReader(options.ethpm.ipfs_host, options.ethpm.ipfs_port, options.ethpm.ipfs_protocol);
     }
 
     // When installing, we use infura to make a bunch of eth_call's.
