@@ -11,7 +11,7 @@
     "cpr": "^0.4.3",
     "del": "^2.2.0",
     "diff": "1.4.0",
-    "ethpm": "0.0.10",
+    "ethpm": "0.0.13",
     "ethpm-registry": "0.0.9",
     "finalhandler": "^0.4.0",
     "fs-extra": "^2.0.0",
