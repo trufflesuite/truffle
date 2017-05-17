@@ -84,7 +84,7 @@ describe("Different networks:", function() {
     built_file_path = path.join(temp_dir, "Example.json")
 
     artifactor.save({
-      contract_name: "Example",
+      contractName: "Example",
       abi: abi,
       binary: binary
     }).then(function(err) {
@@ -115,9 +115,9 @@ describe("Different networks:", function() {
       ExampleTwo.address = example.address;
     }).then(function() {
       // Save the addresses.
-      return artifactor.save(ExampleOne, built_file_path, {contract_name: "Example", network_id: network_one_id});
+      return artifactor.save(ExampleOne, built_file_path, {contractName: "Example", network_id: network_one_id});
     }).then(function() {
-      return artifactor.save(ExampleTwo, built_file_path, {contract_name: "Example", network_id: network_two_id});
+      return artifactor.save(ExampleTwo, built_file_path, {contractName: "Example", network_id: network_two_id});
     }).then(function() {
       done();
     }).catch(done);
@@ -147,7 +147,7 @@ describe("Different networks:", function() {
     var filepath = path.join(temp_dir, "AnotherExample.json")
 
     artifactor.save({
-      contract_name: "AnotherExample",
+      contractName: "AnotherExample",
       abi: abi,
       binary: binary
     }, filepath).then(function() {
@@ -348,7 +348,7 @@ describe("Different networks:", function() {
       if (err) return done(err);
 
       var json = {
-        contract_name: "NetworkExample",
+        contractName: "NetworkExample",
         abi: abi,
         bytecode: binary,
         networks: {}
@@ -379,7 +379,7 @@ describe("Different networks:", function() {
       if (err) return done(err);
 
       var json = {
-        contract_name: "NetworkExampleTwo",
+        contractName: "NetworkExampleTwo",
         abi: abi,
         bytecode: binary,
         networks: {}
@@ -417,7 +417,7 @@ describe("Different networks:", function() {
       if (err) return done(err);
 
       var json = {
-        contract_name: "NetworkExampleThree",
+        contractName: "NetworkExampleThree",
         abi: abi,
         bytecode: binary,
         networks: {}

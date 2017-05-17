@@ -39,7 +39,7 @@ describe("Abstractions", function() {
     process.removeListener("uncaughtException", process.listeners("uncaughtException")[0]);
 
     var compiled = result.contracts["Example"];
-    abi = JSON.parse(compiled.interface);
+    abi = JSON.parse(compiled.abi);
     binary = compiled.bytecode;
 
     // Setup
@@ -53,7 +53,7 @@ describe("Abstractions", function() {
     artifactor = new Artifactor(dirPath);
 
     artifactor.save({
-      contract_name: "Example",
+      contractName: "Example",
       abi: abi,
       binary: binary,
       address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01",
