@@ -126,7 +126,7 @@ var Package = {
 
       options.logger.log("Finding publishable artifacts...");
 
-      self.publishable_artifacts(options, contract_names, function(err, artifacts) {
+      self.publishable_artifacts(options, Object.keys(contract_names), function(err, artifacts) {
         if (err) return callback(err);
 
         web3.eth.getAccounts(function(err, accs) {
