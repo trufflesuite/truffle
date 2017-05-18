@@ -14,14 +14,14 @@ Artifactor.prototype.save = function(object) {
   var self = this;
 
   return new Promise(function(accept, reject) {
-    object = Schema.normalizeInput(object);
+    object = Schema.normalize(object);
 
-    if (object.contract_name == null) {
+    if (object.contractName == null) {
       return reject(new Error("You must specify a contract name."));
     }
 
     // Build the source path from input object.
-    var output_path = object.source_path || object.contract_name;
+    var output_path = object.sourcePath || object.contractName;
 
     // Remove source directory if prefixed.
     output_path = output_path.replace(self.source_directory, "");
@@ -82,9 +82,9 @@ Artifactor.prototype.saveAll = function(objects) {
         return reject(new Error("Desination " + self.destination + " doesn't exist!"));
       }
 
-      async.each(Object.keys(objects), function(contract_name, done) {
-        var object = objects[contract_name];
-        object.contract_name = contract_name;
+      async.each(Object.keys(objects), function(contractName, done) {
+        var object = objects[contractName];
+        object.contractName = contractName;
         self.save(object).then(done).catch(done);
       }, function(err) {
         if (err) return reject(err);
