@@ -1,5 +1,6 @@
 var assert = require("chai").assert;
 var Artifactor = require("truffle-artifactor");
+var Schema = require("truffle-contract-schema");
 var temp = require("temp").track();
 var path = require("path");
 var solc = require("solc");
@@ -57,8 +58,10 @@ describe("Different networks:", function() {
     // Compile first
     var result = solc.compile(fs.readFileSync("./test/Example.sol", {encoding: "utf8"}), 1);
 
-    var compiled = result.contracts["Example"];
-    abi = JSON.parse(compiled.interface);
+    var compiled = Schema.normalize(
+      result.contracts["Example"] || result.contracts[":Example"]
+    );
+    abi = compiled.abi;
     binary = compiled.bytecode;
 
     // Setup

@@ -1,5 +1,6 @@
 var assert = require("chai").assert;
 var Artifactor = require("truffle-artifactor");
+var Schema = require("truffle-contract-schema");
 var contract = require("../");
 var temp = require("temp").track();
 var path = require("path");
@@ -38,8 +39,10 @@ describe("Abstractions", function() {
     // which happens to be the first.
     process.removeListener("uncaughtException", process.listeners("uncaughtException")[0]);
 
-    var compiled = result.contracts["Example"];
-    abi = JSON.parse(compiled.abi);
+    var compiled = Schema.normalize(
+      result.contracts["Example"] || result.contracts[":Example"]
+    );
+    abi = compiled.abi;
     binary = compiled.bytecode;
 
     // Setup

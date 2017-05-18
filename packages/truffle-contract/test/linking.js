@@ -9,6 +9,7 @@ var Web3 = require("web3");
 var TestRPC = require("ganache-core");
 var fs = require("fs");
 var solc = require("solc");
+var Schema = require("truffle-contract-schema");
 // Clean up after solidity. Only remove solidity's listener,
 // which happens to be the first.
 process.removeListener("uncaughtException", process.listeners("uncaughtException")[0] || function() {});
@@ -115,6 +116,14 @@ describe("Library linking with contract objects", function() {
 
     // Compile first
     var result = solc.compile({sources: sources}, 1);
+    var exampleLibrary = Schema.normalize(
+      result.contracts["ExampleLibrary"] ||
+        result.contracts["ExampleLibrary.sol:ExampleLibrary"]
+    );
+    var exampleLibraryConsumer = Schema.normalize(
+      result.contracts["ExampleLibraryConsumer"] ||
+        result.contracts["ExampleLibraryConsumer.sol:ExampleLibraryConsumer"]
+    );
 
     var dirPath = temp.mkdirSync({
       dir: path.resolve("./"),
@@ -125,13 +134,13 @@ describe("Library linking with contract objects", function() {
 
     artifactor.saveAll({
       ExampleLibrary: {
-        binary: result.contracts["ExampleLibrary"].bytecode,
-        abi: JSON.parse(result.contracts["ExampleLibrary"].interface),
+        binary: exampleLibrary.bytecode,
+        abi: exampleLibrary.abi,
         network_id: network_id
       },
       ExampleLibraryConsumer: {
-        binary: result.contracts["ExampleLibraryConsumer"].bytecode,
-        abi: JSON.parse(result.contracts["ExampleLibraryConsumer"].interface),
+        binary: exampleLibraryConsumer.bytecode,
+        abi: exampleLibraryConsumer.abi,
         network_id: network_id
       }
     }, dirPath).then(function() {
