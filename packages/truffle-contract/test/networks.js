@@ -1,5 +1,4 @@
 var assert = require("chai").assert;
-var Artifactor = require("truffle-artifactor");
 var Schema = require("truffle-contract-schema");
 var temp = require("temp").track();
 var path = require("path");
@@ -44,7 +43,6 @@ describe("Different networks:", function() {
   var binary;
   var abi;
   var temp_dir;
-  var built_file_path;
   var network_one;
   var network_two;
   var network_one_id;
@@ -76,29 +74,16 @@ describe("Different networks:", function() {
     done();
   }),
 
-  before("Set up contracts", function(done) {
-    temp_dir = temp.mkdirSync({
-      dir: path.resolve("./"),
-      prefix: 'tmp-test-contract-'
-    });
-
-    artifactor = new Artifactor(temp_dir);
-
-    built_file_path = path.join(temp_dir, "Example.json")
-
-    artifactor.save({
+  before("Set up contracts", function() {
+    ExampleOne = contract({
       contractName: "Example",
       abi: abi,
       binary: binary
-    }).then(function(err) {
-      var json = requireNoCache(built_file_path);
+    });
+    ExampleTwo = ExampleOne.clone();
 
-      ExampleOne = contract(json);
-      ExampleTwo = ExampleOne.clone(); //
-
-      ExampleOne.setProvider(network_one);
-      ExampleTwo.setProvider(network_two);
-    }).then(done).catch(done);
+    ExampleOne.setProvider(network_one);
+    ExampleTwo.setProvider(network_two);
   });
 
   before("Get/set first network accounts", function(done) {
@@ -116,11 +101,6 @@ describe("Different networks:", function() {
       return ExampleTwo.new({gas: 3141592});
     }).then(function(example) {
       ExampleTwo.address = example.address;
-    }).then(function() {
-      // Save the addresses.
-      return artifactor.save(ExampleOne, built_file_path, {contractName: "Example", network_id: network_one_id});
-    }).then(function() {
-      return artifactor.save(ExampleTwo, built_file_path, {contractName: "Example", network_id: network_two_id});
     }).then(function() {
       done();
     }).catch(done);
@@ -146,19 +126,14 @@ describe("Different networks:", function() {
     })
   })
 
-  it("has no network if none set", function(done) {
-    var filepath = path.join(temp_dir, "AnotherExample.json")
-
-    artifactor.save({
+  it("has no network if none set", function() {
+    AnotherExample = contract({
       contractName: "AnotherExample",
       abi: abi,
       binary: binary
-    }, filepath).then(function() {
-      var json = requireNoCache(filepath);
-      var AnotherExample = contract(json);
+    });
 
-      assert.equal(Object.keys(AnotherExample.toJSON().networks).length, 0);
-    }).then(done).catch(done);
+    assert.equal(Object.keys(AnotherExample.toJSON().networks).length, 0);
   });
 
   it("auto-detects network when using deployed() as a thennable", function(done) {
@@ -166,8 +141,7 @@ describe("Different networks:", function() {
     // it has two networks, and the default network is the first one. We'll set the
     // provider to the second network, use the thennable version for deployed(), and
     // ensure the address that gets used is the one for the second network.
-    var json = requireNoCache(built_file_path);
-    var Example = contract(json);
+    var Example = contract(ExampleOne.toJSON());
     Example.setProvider(network_two);
 
     // Ensure preconditions
@@ -193,8 +167,7 @@ describe("Different networks:", function() {
   });
 
   it("deployed() used as a thennable funnels errors correctly", function(done) {
-    var json = requireNoCache(built_file_path);
-    var Example = contract(json);
+    var Example = contract(ExampleOne.toJSON());
 
     // No provider is set. Using deployed().then() should send errors down the promise chain.
     Example.deployed().then(function() {
@@ -208,8 +181,7 @@ describe("Different networks:", function() {
   it("deployed() used as a thennable will error if contract hasn't been deployed to the network detected", function(done) {
     var network_three = TestRPC.provider();
 
-    var json = requireNoCache(built_file_path);
-    var Example = contract(json);
+    var Example = contract(ExampleOne.toJSON());
     Example.setProvider(network_three);
 
     Example.deployed().then(function() {
@@ -225,8 +197,7 @@ describe("Different networks:", function() {
     // it has two networks, and the default network is the first one. We'll set the
     // provider to the second network, use the thennable version for at(), and
     // ensure the abi that gets used is the one for the second network.
-    var json = requireNoCache(built_file_path);
-    var Example = contract(json);
+    var Example = contract(ExampleOne.toJSON());
     Example.setProvider(network_two);
 
     // Ensure preconditions
@@ -254,8 +225,7 @@ describe("Different networks:", function() {
   });
 
   it("at() used as a thennable funnels errors correctly", function(done) {
-    var json = requireNoCache(built_file_path);
-    var Example = contract(json);
+    var Example = contract(ExampleOne.toJSON());
     Example.setProvider(network_one);
 
     // This address should have no code there. .at().then() should error before
@@ -273,8 +243,7 @@ describe("Different networks:", function() {
     // it has two networks, and the default network is the first one. We'll set the
     // provider to the second network, use the thennable version for at(), and
     // ensure the abi that gets used is the one for the second network.
-    var json = requireNoCache(built_file_path);
-    var Example = contract(json);
+    var Example = contract(ExampleOne.toJSON());
     Example.setProvider(network_two);
 
     // Ensure preconditions
@@ -294,8 +263,7 @@ describe("Different networks:", function() {
     // pass that address to the second and have it make a transaction.
     // During that transaction it should detect the network since it
     // hasn't been detected already.
-    var json = requireNoCache(built_file_path);
-    var ExampleSetup = contract(json);
+    var ExampleSetup = contract(ExampleOne.toJSON());
     var ExampleDetect = ExampleSetup.clone();
     ExampleSetup.setProvider(network_two);
     ExampleDetect.setProvider(network_two);
@@ -325,8 +293,7 @@ describe("Different networks:", function() {
     // pass that address to the second and have it make a transaction.
     // During that transaction it should detect the network since it
     // hasn't been detected already.
-    var json = requireNoCache(built_file_path);
-    var ExampleSetup = contract(json);
+    var ExampleSetup = contract(ExampleOne.toJSON());
     var ExampleDetect = ExampleSetup.clone();
     ExampleSetup.setProvider(network_two);
     ExampleDetect.setProvider(network_two);
