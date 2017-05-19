@@ -235,7 +235,7 @@ describe("artifactor + require", function() {
     }).catch(done);
   });
 
-  it.skip("doesn't error when calling .links() or .events() with no network configuration", function(done) {
+  it("doesn't error when calling .links() or .events() with no network configuration", function(done) {
     var event_abi = {
       "anonymous": false,
       "inputs": [
@@ -260,8 +260,9 @@ describe("artifactor + require", function() {
         event_abi
       ],
       binary: "0x12345678",
-      network_id: 5
     });
+
+    MyContract.setNetwork(5);
 
     var expected_event_topic = web3.sha3("PackageRelease(bytes32,bytes32)");
 
