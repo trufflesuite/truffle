@@ -38,25 +38,28 @@ Artifactor.prototype.save = function(object) {
 
     fs.readFile(output_path, {encoding: "utf8"}, function(err, json) {
       // No need to handle the error. If the file doesn't exist then we'll start afresh
-      // with a new object (see generateObject()).
-      var existing_binary;
+      // with a new object.
+
+      var finalObject = object;
 
       if (!err) {
+        var existingObjDirty;
         try {
-          existing_binary = JSON.parse(json);
+          existingObjDirty = JSON.parse(json);
         } catch (e) {
-          // Do nothing
+          reject(e);
         }
+
+        // normalize existing and merge into final
+        finalObject = Schema.normalize(existingObjDirty);
+        _.merge(finalObject, object);
       }
 
-      var final_binary;
-      try {
-        final_binary = Schema.generateObject(object, existing_binary);
-      } catch (e) {
-        return reject(e);
-      }
+      // update timestamp
+      finalObject.updateAt = new Date().toISOString();
 
-      fs.outputFile(output_path, JSON.stringify(final_binary, null, 2), "utf8", function(err) {
+      // output object
+      fs.outputFile(output_path, JSON.stringify(finalObject, null, 2), "utf8", function(err) {
         if (err) return reject(err);
         accept();
       });
