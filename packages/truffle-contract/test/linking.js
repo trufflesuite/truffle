@@ -1,6 +1,5 @@
 // Override artifactor
 var assert = require("chai").assert;
-var Artifactor = require("truffle-artifactor");
 var temp = require("temp").track();
 var path = require("path");
 var requireNoCache = require("require-nocache")(module);
@@ -29,30 +28,14 @@ describe("Library linking", function() {
     });
   });
 
-  before(function(done) {
-    var dirPath = temp.mkdirSync({
-      dir: path.resolve("./"),
-      prefix: 'tmp-test-libraries-'
-    });
-
-    var artifactor = new Artifactor(dirPath);
-
-    // Deliberately only use the file path (and no binary path)
-    // to test that case.
-    var expected_filepath = path.join(dirPath, "LibraryExample.json");
-
-    // ABI doesn't actually matter here.
-    artifactor.save({
+  before(function() {
+    LibraryExample = contract({
       contractName: "LibraryExample",
       abi: [],
       binary: "606060405260ea8060106000396000f3606060405260e060020a600035046335b09a6e8114601a575b005b601860e160020a631ad84d3702606090815273__A_____________________________________906335b09a6e906064906020906004818660325a03f415600257506040805160e160020a631ad84d37028152905173__B_____________________________________9350600482810192602092919082900301818660325a03f415600257506040805160e160020a631ad84d37028152905173821735ac2129bdfb20b560de2718783caf61ad1c9350600482810192602092919082900301818660325a03f41560025750505056",
-      network_id: network_id
-    }).then(function() {
-      var json = requireNoCache(expected_filepath);
-      LibraryExample = contract(json);
+    });
 
-      LibraryExample.setNetwork(network_id);
-    }).then(done).catch(done);
+    LibraryExample.setNetwork(network_id);
   });
 
   after(function(done) {
@@ -106,7 +89,7 @@ describe("Library linking with contract objects", function() {
     });
   });
 
-  before(function(done) {
+  before(function() {
     this.timeout(10000);
 
     var sources = {
@@ -116,43 +99,29 @@ describe("Library linking with contract objects", function() {
 
     // Compile first
     var result = solc.compile({sources: sources}, 1);
-    var exampleLibrary = Schema.normalize(
-      result.contracts["ExampleLibrary"] ||
-        result.contracts["ExampleLibrary.sol:ExampleLibrary"]
-    );
-    var exampleLibraryConsumer = Schema.normalize(
-      result.contracts["ExampleLibraryConsumer"] ||
-        result.contracts["ExampleLibraryConsumer.sol:ExampleLibraryConsumer"]
-    );
 
-    var dirPath = temp.mkdirSync({
-      dir: path.resolve("./"),
-      prefix: 'tmp-test-contract-linking-'
-    });
+    var library, libraryContractName;
+    if (result.contracts["ExampleLibrary"]) {
+      libraryContractName = "ExampleLibrary";
+    } else {
+      libraryContractName = "ExampleLibrary.sol:ExampleLibrary";
+    }
+    library = result.contracts[libraryContractName];
+    library.contractName = libraryContractName;
+    ExampleLibrary = contract(library);
+    ExampleLibrary.setProvider(provider);
 
-    var artifactor = new Artifactor(dirPath);
 
-    artifactor.saveAll({
-      ExampleLibrary: {
-        binary: exampleLibrary.bytecode,
-        abi: exampleLibrary.abi,
-        network_id: network_id
-      },
-      ExampleLibraryConsumer: {
-        binary: exampleLibraryConsumer.bytecode,
-        abi: exampleLibraryConsumer.abi,
-        network_id: network_id
-      }
-    }, dirPath).then(function() {
-
-      var json = requireNoCache(path.join(dirPath, "ExampleLibrary.json"));
-      ExampleLibrary = contract(json);
-      ExampleLibrary.setProvider(provider);
-
-      json = requireNoCache(path.join(dirPath, "ExampleLibraryConsumer.json"));
-      ExampleLibraryConsumer = contract(json);
-      ExampleLibraryConsumer.setProvider(provider);
-    }).then(done).catch(done);
+    var consumer, consumerContractName;
+    if (result.contracts["ExampleLibraryConsumer"]) {
+      consumerContractName = "ExampleLibraryConsumer";
+    } else {
+      consumerContractName = "ExampleLibraryConsumer.sol:ExampleLibraryConsumer";
+    }
+    consumer = result.contracts[consumerContractName];
+    consumer.contractName = consumerContractName;
+    ExampleLibraryConsumer = contract(consumer);
+    ExampleLibraryConsumer.setProvider(provider);
   });
 
   before(function(done) {
