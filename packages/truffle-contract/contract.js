@@ -662,7 +662,7 @@ var contract = (function(module) {
   Contract._properties = {
     contractName: {
       get: function() {
-        return this._json.contractName;
+        return this._json.contractName || "Contract";
       },
       set: function(val) {
         this._json.contractName = val;
