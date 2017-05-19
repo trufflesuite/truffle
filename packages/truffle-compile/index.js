@@ -5,7 +5,10 @@ var solc = require("solc");
 // Clean up after solc.
 var listeners = process.listeners("uncaughtException");
 var solc_listener = listeners[listeners.length - 1];
-process.removeListener("uncaughtException", solc_listener);
+
+if (solc_listener) {
+  process.removeListener("uncaughtException", solc_listener);
+}
 
 var path = require("path");
 var fs = require("fs");
@@ -58,9 +61,6 @@ var compile = function(sources, options, callback) {
     operatingSystemIndependentSources[replacement] = sources[source];
   });
 
-  // Add the listener back in, just in case I need it.
-  process.on("uncaughtException", solc_listener);
-
   var solcStandardInput = {
     language: "Solidity",
     sources: {},
@@ -96,9 +96,6 @@ var compile = function(sources, options, callback) {
   });
 
   var result = solc.compileStandard(JSON.stringify(solcStandardInput));
-
-  // Alright, now remove it.
-  process.removeListener("uncaughtException", solc_listener);
 
   var standardOutput = JSON.parse(result);
 
