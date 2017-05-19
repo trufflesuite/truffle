@@ -1,150 +1,212 @@
 var sha3 = require("crypto-js/sha3");
-var schema_version = require("./package.json").version;
+var pkgVersion = require("./package.json").version;
+var Ajv = require("ajv");
+var contractSchema = require("./spec/contract.spec.json");
 
-// TODO: This whole thing should have a json schema.
 
-var TruffleSchema = {
-  // Normalize options passed in to be the exact options required
-  // for truffle-contract.
-  //
-  // options can be three things:
-  // - normal object
-  // - contract object
-  // - solc output
-  //
-  // TODO: Is extra_options still necessary?
-  normalizeInput: function(options, extra_options) {
-    extra_options = extra_options || {};
-    var normalized = {};
-    var expected_keys = [
-      "contract_name",
-      "abi",
-      "bytecode",
-      "deployedBytecode",
-      "sourceMap",
-      "deployedSourceMap",
-      "linkReferences",
-      "deployedLinkReferences",
-      "source",
-      "sourcePath",
-      "ast",
-      "address",
-      "networks",
-      "updated_at"
-    ];
-
-    var deprecated_key_mappings = {
-      "unlinked_binary": "bytecode",
-      "binary": "bytecode",
-      "srcmap": "sourceMap",
-      "srcmapRuntime": "deployedSourceMap",
-      "interface": "abi"
-    };
-
-    // Merge options/contract object first, then extra_options
-    expected_keys.forEach(function(key) {
-      var value;
-
-      try {
-        // Will throw an error if key == address and address doesn't exist.
-        value = options[key];
-
-        if (value != undefined) {
-          normalized[key] = value;
-        }
-      } catch (e) {
-        // Do nothing.
-      }
-
-      try {
-        // Will throw an error if key == address and address doesn't exist.
-        value = extra_options[key];
-
-        if (value != undefined) {
-          normalized[key] = value;
-        }
-      } catch (e) {
-        // Do nothing.
-      }
-    });
-
-    Object.keys(deprecated_key_mappings).forEach(function(deprecated_key) {
-      var mapped_key = deprecated_key_mappings[deprecated_key];
-
-      if (normalized[mapped_key] == null) {
-        normalized[mapped_key] = options[deprecated_key] || extra_options[deprecated_key];
-      }
-    });
-
-    if (typeof normalized.abi == "string") {
-      normalized.abi = JSON.parse(normalized.abi);
-    }
-
-    this.copyCustomOptions(options, normalized);
-
-    return normalized;
+/**
+ * Property definitions for Contract Objects
+ *
+ * Describes canonical output properties as sourced from some "dirty" input
+ * object. Describes normalization process to account for deprecated and/or
+ * nonstandard keys and values.
+ *
+ * Maps (key -> property) where:
+ *  - `key` is the top-level output key matching up with those in the schema
+ *  - `property` is an object with optional values:
+ *      - `sources`: list of sources (see below); default `key`
+ *      - `transform`: function(value) -> transformed value; default x -> x
+ *
+ * Each source represents a means to select a value from dirty object.
+ * Allows:
+ *  - dot-separated (`.`) string, corresponding to path to value in dirty
+ *    object
+ *  - function(dirtyObj) -> (cleanValue | undefined)
+ *
+ * The optional `transform` parameter standardizes value regardless of source,
+ * for purposes of ensuring data type and/or string schemas.
+ */
+var properties = {
+  "contractName": {
+    "sources": ["contractName", "contract_name"]
   },
-
-  // Generate a proper binary from normalized options, and optionally
-  // merge it with an existing binary.
-  // TODO: This function needs to be renamed. Binary is a misnomer.
-  generateObject: function(options, existing_object, extra_options) {
-    existing_object = existing_object || {};
-    extra_options = extra_options || {};
-
-    options.networks = options.networks || {};
-    existing_object.networks = existing_object.networks || {};
-
-    // Merge networks before overwriting
-    Object.keys(existing_object.networks).forEach(function(network_id) {
-      options.networks[network_id] = existing_object.networks[network_id];
-    });
-
-    var obj = this.normalizeInput(existing_object, options);
-
-    if (options.overwrite == true) {
-      existing_object = {};
-    }
-
-    obj.contract_name = obj.contract_name || "Contract";
-
-    // Ensure unlinked binary starts with a 0x
-    // TODO: Remove this and enforce it through json schema
-    if (obj.bytecode && obj.bytecode.indexOf("0x") < 0) {
-      obj.bytecode = "0x" + obj.bytecode;
-    }
-
-    var updated_at = new Date().getTime();
-
-    obj.schema_version = schema_version;
-
-    if (extra_options.dirty !== false) {
-      obj.updated_at = updated_at;
-    } else {
-      obj.updated_at = options.updated_at || existing_object.updated_at || updated_at;
-    }
-
-    this.copyCustomOptions(options, obj);
-
-    return obj;
-  },
-
-  copyCustomOptions: function(from, to) {
-    // Now let all x- options through.
-    Object.keys(from).forEach(function(key) {
-      if (key.indexOf("x-") != 0) return;
-
-      try {
-        value = from[key];
-
-        if (value != undefined) {
-          to[key] = value;
+  "abi": {
+    "sources": ["abi", "interface"],
+    "transform": function(value) {
+      if (typeof value === "string") {
+        try {
+          value = JSON.parse(value)
+        } catch (e) {
+          value = undefined;
         }
-      } catch (e) {
-        // Do nothing.
       }
-    });
+      return value;
+    }
+  },
+  "bytecode": {
+    "sources": [
+      "bytecode", "binary", "unlinked_binary", "evm.bytecode.object"
+    ],
+    "transform": function(value) {
+      if (value && value.indexOf("0x") != 0) {
+        value = "0x" + value;
+      }
+      return value;
+    }
+  },
+  "deployedBytecode": {
+    "sources": [
+      "deployedBytecode", "runtimeBytecode", "evm.deployedBytecode.object"
+    ],
+    "transform": function(value) {
+      if (value && value.indexOf("0x") != 0) {
+        value = "0x" + value;
+      }
+      return value;
+    }
+  },
+  "sourceMap": {
+    "sources": ["sourceMap", "srcmap", "evm.bytecode.sourceMap"]
+  },
+  "deployedSourceMap": {
+    "sources": ["deployedSourceMap", "srcmapRuntime", "evm.deployedBytecode.sourceMap"]
+  },
+  "source": {},
+  "sourcePath": {},
+  "ast": {},
+  "networks": {
+    "transform": function(value) {
+      if (value === undefined) {
+        value = {}
+      }
+      return value;
+    }
+  },
+  "schemaVersion": {
+    "sources": ["schemaVersion", "schema_version"]
+  },
+  "updatedAt": {
+    "sources": ["updatedAt", "updated_at"],
+    "transform": function(value) {
+      if (typeof value === "number") {
+        value = new Date(value).toISOString();
+      }
+      return value;
+    }
   }
 };
 
-module.exports = TruffleSchema;
+
+/**
+ * Construct a getter for a given key, possibly applying some post-retrieve
+ * transformation on the resulting value.
+ *
+ * @return {Function} Accepting dirty object and returning value || undefined
+ */
+function getter(key, transform) {
+  if (transform === undefined) {
+    transform = function(x) { return x };
+  }
+
+  return function(obj) {
+    try {
+      return transform(obj[key]);
+    } catch (e) {
+      return undefined;
+    }
+  }
+}
+
+
+/**
+ * Chains together a series of function(obj) -> value, passing resulting
+ * returned value to next function in chain.
+ *
+ * Accepts any number of functions passed as arguments
+ * @return {Function} Accepting initial object, returning end-of-chain value
+ *
+ * Assumes all intermediary values to be objects, with well-formed sequence
+ * of operations.
+ */
+function chain() {
+  var getters = Array.prototype.slice.call(arguments);
+  return function(obj) {
+    return getters.reduce(function (cur, get) {
+      return get(cur);
+    }, obj);
+  }
+}
+
+
+// Schema module
+//
+
+var TruffleContractSchema = {
+  // Return a promise to validate a contract object
+  // - Resolves as validated `contractObj`
+  // - Rejects with list of errors from schema validator
+  validate: function(contractObj) {
+    var ajv = new Ajv();
+    var validate = ajv.compile(contractSchema);
+    if (validate(contractObj)) {
+      return contractObj;
+    } else {
+      throw validate.errors;
+    }
+  },
+
+  // accepts as argument anything that can be turned into a contract object
+  // returns a contract object
+  normalize: function(objDirty) {
+    var normalized = {};
+
+    // iterate over each property
+    Object.keys(properties).forEach(function(key) {
+      var property = properties[key];
+      var value;  // normalized value || undefined
+
+      // either used the defined sources or assume the key will only ever be
+      // listed as its canonical name (itself)
+      var sources = property.sources || [key];
+
+      // iterate over sources until value is defined or end of list met
+      for (var i = 0; value === undefined && i < sources.length; i++) {
+        var source = sources[i];
+        // string refers to path to value in objDirty, split and chain
+        // getters
+        if (typeof source === "string") {
+          var traversals = source.split(".")
+            .map(function(k) { return getter(k) });
+          source = chain.apply(null, traversals);
+        }
+
+        // source should be a function that takes the objDirty and returns
+        // value or undefined
+        value = source(objDirty);
+      }
+
+      // run source-agnostic transform on value
+      // (e.g. make sure bytecode begins 0x)
+      if (property.transform) {
+        value = property.transform(value);
+      }
+
+      // add resulting (possibly undefined) to normalized obj
+      normalized[key] = value;
+    });
+
+    // Copy x- options
+    Object.keys(objDirty).forEach(function(key) {
+      if (key.indexOf("x-") === 0) {
+        normalized[key] = getter(key)(objDirty);
+      }
+    });
+
+    // update schema version
+    normalized.schemaVersion = pkgVersion;
+
+    return normalized;
+  }
+};
+
+module.exports = TruffleContractSchema;
