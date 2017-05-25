@@ -408,7 +408,7 @@ var contract = (function(module) {
             self.web3.eth.getCode(address, function(err, code) {
               if (err) return reject(err);
 
-              if (!code || new BigNumber(code).eq(0)) {
+              if (!code || code.replace("0x", "").replace(/0/g, "") === '') {
                 return reject(new Error("Cannot create instance of " + self.contractName + "; no code at address " + address));
               }
 
