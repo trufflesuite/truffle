@@ -25,6 +25,8 @@ Truffle is a development environment, testing framework and asset pipeline for E
 $ npm install -g truffle
 ```
 
+(for Windows do ```npm install -g truffle@3.2.1``` instead due to #411)
+
 ### Quick Usage
 
 For a default set of contracts and tests, run the following within an empty project directory:
