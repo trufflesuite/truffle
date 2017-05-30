@@ -3,8 +3,9 @@ var _ = require("lodash");
 var path = require("path");
 var Provider = require("truffle-provider");
 var TruffleError = require("truffle-error");
-var requireNoCache = require("require-nocache")(module);
+var Module = require('module');
 var findUp = require("find-up");
+var originalrequire = require("original-require");
 
 var DEFAULT_CONFIG_FILENAME = "truffle.js";
 var BACKUP_CONFIG_FILENAME = "truffle-config.js"; // For Windows + Command Prompt
@@ -241,7 +242,10 @@ Config.load = function(file, options) {
 
   config.working_directory = path.dirname(path.resolve(file));
 
-  var static_config = requireNoCache(file);
+  // The require-nocache module used to do this for us, but
+  // it doesn't bundle very well. So we've pulled it out ourselves.
+  delete require.cache[Module._resolveFilename(file, module)];
+  var static_config = originalrequire(file);
 
   config.merge(static_config);
   config.merge(options);
