@@ -1,12 +1,11 @@
 var TaskError = require("./errors/taskerror");
-var yargs = require("yargs");
+var yargs = require("yargs/yargs");
 var _ = require("lodash");
-var yargs = require("yargs");
 
 function Command(commands) {
   this.commands = commands;
 
-  var args = yargs.reset();
+  var args = yargs();
 
   Object.keys(this.commands).forEach(function(command) {
     args = args.command(commands[command]);
