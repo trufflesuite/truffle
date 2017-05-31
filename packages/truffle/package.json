@@ -18,7 +18,7 @@
     "lodash": "^4.5.1",
     "mkdirp": "^0.5.1",
     "mocha": "^3.2.0",
-    "node-dir": "^0.1.10",
+    "node-dir": "0.1.16",
     "serve-static": "^1.10.0",
     "spawn-args": "^0.1.0",
     "temp": "^0.8.3",
