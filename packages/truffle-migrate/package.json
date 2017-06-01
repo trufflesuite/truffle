@@ -1,6 +1,6 @@
 {
   "name": "truffle-migrate",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "On-chain migrations management",
   "main": "index.js",
   "scripts": {
@@ -25,7 +25,7 @@
   "dependencies": {
     "async": "^2.1.4",
     "node-dir": "^0.1.16",
-    "truffle-deployer": "0.1.2",
+    "truffle-deployer": "^1.0.0",
     "truffle-expect": "0.0.3",
     "truffle-require": "1.0.0",
     "web3": "^0.18.0"
