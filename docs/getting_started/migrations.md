@@ -52,6 +52,7 @@ Truffle requires you to have a Migrations contract in order to use the Migration
 Filename: contracts/Migrations.sol
 
 ```
+pragma solidity ^0.4.2;
 contract Migrations {
   address public owner;
 
@@ -59,7 +60,7 @@ contract Migrations {
   uint public last_completed_migration;
 
   modifier restricted() {
-    if (msg.sender == owner) _
+    if (msg.sender == owner) _;
   }
 
   function Migrations() {
