@@ -20,7 +20,7 @@
     "webpack": "^2.5.1"
   },
   "bin": {
-    "truffle": "./cli.bundled.js"
+    "truffle": "./build/cli.bundled.js"
   },
   "scripts": {
     "build-cli": "webpack --config ./cli.webpack.config.js"
