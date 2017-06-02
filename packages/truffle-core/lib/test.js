@@ -17,8 +17,6 @@ var Migrate = require("truffle-migrate");
 var Profiler = require("truffle-compile/profiler.js");
 var async = require("async");
 
-var oldDescribe;
-
 chai.use(require("./assertions"));
 
 var Test = {
@@ -83,7 +81,7 @@ var Test = {
 
     var dependency_paths = [];
     var testContracts = [];
-    var accounts= [];
+    var accounts = [];
     var runner;
     var test_resolver;
 
