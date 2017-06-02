@@ -9,7 +9,7 @@ var outputDir = path.join(__dirname, '..');
 var outputFilename = 'cli.bundled.js';
 
 module.exports = {
-  entry: path.join(__dirname, "..", "cli.js"),
+  entry: path.join(__dirname, "..", "node_modules", "truffle-core", "cli.js"),
   target: 'node',
   output: {
     path: outputDir,
