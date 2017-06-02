@@ -4,16 +4,16 @@ var fs = require("fs");
 
 var templates = {
   test: {
-    filename: path.join(__dirname, "../", "templates", "example.js"),
+    filename: path.join(__dirname, "templates", "example.js"),
     variable: "example"
   },
   contract: {
-    filename: path.join(__dirname, "../", "templates", "Example.sol"),
+    filename: path.join(__dirname, "templates", "Example.sol"),
     name: "Example",
     variable: "example"
   },
   migration: {
-    filename: path.join(__dirname, "../", "templates", "migration.js"),
+    filename: path.join(__dirname, "templates", "migration.js"),
   }
 };
 
