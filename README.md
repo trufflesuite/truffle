@@ -2,7 +2,6 @@
 
 [![npm](https://img.shields.io/npm/v/truffle.svg)]()
 [![npm](https://img.shields.io/npm/dm/truffle.svg)]()
-[![Build Status](https://travis-ci.org/ConsenSys/truffle.svg?branch=master)](https://travis-ci.org/ConsenSys/truffle)
 [![Join the chat at https://gitter.im/consensys/truffle](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/consensys/truffle?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 -----------------------
@@ -43,13 +42,7 @@ Please see the [Official Truffle Documentation](http://truffleframework.com/docs
 
 ### Contributing
 
-There are many ways to contribute!
-
-1. Write issues in the [issues tracker](https://github.com/ConsenSys/truffle/issues). Please include as much information as possible!
-1. Take a look at [our Waffle](https://waffle.io/ConsenSys/truffle) for prioritization. Note that this includes issues for Truffle and related tools.
-1. Contact us in our [gitter chat](https://gitter.im/consensys/truffle)!
-
-A project by Consensys and [@tcoulter](https://github.com/tcoulter), and many contributers.
+This package is a distribution package of the Truffle command line tool. Please see [truffle-core](https://github.com/trufflesuite/truffle-core) to contribute to the main core code.
 
 ### License
 
