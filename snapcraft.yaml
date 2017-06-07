@@ -1,0 +1,21 @@
+name: truffle
+version: master
+summary: A development framework for Ethereum
+description: |
+  Truffle is the most popular development framework for Ethereum with a mission
+  to make your life a whole lot easier.
+
+grade: devel
+confinement: strict
+
+apps:
+  truffle:
+    command: truffle
+    plugs: [home, network, network-bind]
+
+parts:
+  truffle:
+    source: .
+    plugin: nodejs
+    node-engine: '5.12.0'
+    build-packages: [g++, make, python]
