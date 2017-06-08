@@ -34,6 +34,8 @@ $ truffle init
 
 From there, you can run `truffle compile`, `truffle migrate` and `truffle test` to compile your contracts, deploy those contracts to the network, and run their associated unit tests.
 
+Be sure you're connected to an ethereum client before running these commands. If you're new, install [testrpc](https://github.com/ethereumjs/testrpc) to run a local blockchain RPC server. After that, simply run `testrpc` in a new tab.
+
 See [the documentation](http://truffleframework.com/docs/) for more details.
 
 ### Documentation
