@@ -5,7 +5,8 @@ var prependFile = require('prepend-file');
 var WebpackOnBuildPlugin = require('on-build-webpack');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var CleanWebpackPlugin = require('clean-webpack-plugin');
-var webpack = require('webpack')
+var webpack = require('webpack');
+var pkg = require("./package.json");
 
 var outputDir = path.join(__dirname, "build");
 var outputFilename = 'cli.bundled.js';
@@ -54,6 +55,10 @@ module.exports = {
     }
   ],
   plugins: [
+    new webpack.DefinePlugin({
+      "BUNDLE_VERSION": JSON.stringify(pkg.version)
+    }),
+
     // Put the shebang back on and make sure it's executable.
     new WebpackOnBuildPlugin(function(stats) {
       var outputFile = path.join(outputDir, outputFilename);
