@@ -7,7 +7,7 @@ inherits(ExtendableError, ExtendableBuiltin(Error));
 function ExtendableError(message) {
   ExtendableError.super_.call(this);
   this.message = message;
-  this.stack = (new Error()).stack;
+  this.stack = (new Error(message)).stack;
   this.name = this.constructor.name;
 };
 
