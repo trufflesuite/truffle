@@ -1,7 +1,7 @@
 var utils = require("./lib/utils");
 
 var Box = {
-  unbox: function(truffleConfig, url, destination) {
+  unbox: function(url, destination) {
     return Promise.resolve()
       .then(function() {
         return utils.downloadBox(url, destination)

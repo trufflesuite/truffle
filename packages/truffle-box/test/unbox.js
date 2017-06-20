@@ -7,26 +7,20 @@ var Box = require("../");
 var TRUFFLE_BOX_DEFAULT = "git@github.com:trufflesuite/truffle-init-default.git";
 
 describe("Unbox", function() {
-  var config = {
-    logger: {
-      log: function() {}
-    },
-    working_directory: path.join(__dirname, ".truffle_test_tmp")
-  };
-  var destination = config.working_directory;
+  var destination = path.join(__dirname, ".truffle_test_tmp");
 
   before("mkdir", function(done) {
-    fs.ensureDir(config.working_directory, done);
+    fs.ensureDir(destination, done);
   });
 
   before("remove tmp dir", function(done) {
-    fs.remove(config.working_directory, done);
+    fs.remove(destination, done);
   });
 
   it("unboxes truffle box from github", function() {
     this.timeout(5000);
 
-    return Box.unbox(config, TRUFFLE_BOX_DEFAULT, destination)
+    return Box.unbox(TRUFFLE_BOX_DEFAULT, destination)
       .then(function (truffleConfig) {
         assert.ok(truffleConfig);
 
