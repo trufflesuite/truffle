@@ -20,7 +20,9 @@
   },
   "dependencies": {
     "fs-extra": "^3.0.1",
-    "nodegit": "^0.18.3",
-    "npm-programmatic": "^0.0.8"
+    "github-download": "^0.5.0",
+    "npm-programmatic": "^0.0.8",
+    "tmp": "^0.0.31",
+    "vcsurl": "^0.1.1"
   }
 }
