@@ -31,6 +31,15 @@ describe("Unbox", function() {
       });
   });
 
+  it("ignores files listed in the truffle-init.json file, and removes the truffle-init.json file", function() {
+    // Assert the file is not there first.
+    assert(fs.existsSync(path.join(destination, "truffle-init.json")) == false, "truffle-init.json shouldn't be available to the user!");
+
+    // Now assert the README.md and the .gitignore file were removed.
+    assert(fs.existsSync(path.join(destination, "README.md")) == false, "README.md didn't get removed!");
+    assert(fs.existsSync(path.join(destination, ".gitignore")) == false, ".gitignore didn't get removed!");
+  });
+
   it("won't re-init if truffle.js file exists", function(done) {
     this.timeout(5000);
 
