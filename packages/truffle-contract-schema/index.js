@@ -1,7 +1,10 @@
 var sha3 = require("crypto-js/sha3");
 var pkgVersion = require("./package.json").version;
 var Ajv = require("ajv");
-var contractSchema = require("./spec/contract.spec.json");
+
+var contractObjectSchema = require("./spec/contract-object.spec.json");
+var networkObjectSchema = require("./spec/network-object.spec.json");
+var abiSchema = require("./spec/abi.spec.json");
 
 
 /**
@@ -146,18 +149,21 @@ var TruffleContractSchema = {
   // - Resolves as validated `contractObj`
   // - Rejects with list of errors from schema validator
   validate: function(contractObj) {
-    var ajv = new Ajv();
-    var validate = ajv.compile(contractSchema);
-    if (validate(contractObj)) {
+    var ajv = new Ajv({ useDefaults: true });
+    ajv.addSchema(abiSchema);
+    ajv.addSchema(networkObjectSchema);
+    ajv.addSchema(contractObjectSchema);
+    if (ajv.validate("contract-object.spec.json", contractObj)) {
       return contractObj;
     } else {
-      throw validate.errors;
+      throw ajv.errors;
     }
   },
 
   // accepts as argument anything that can be turned into a contract object
   // returns a contract object
-  normalize: function(objDirty) {
+  normalize: function(objDirty, options) {
+    options = options || {};
     var normalized = {};
 
     // iterate over each property
@@ -205,7 +211,11 @@ var TruffleContractSchema = {
     // update schema version
     normalized.schemaVersion = pkgVersion;
 
-    return normalized;
+    if (options.validate) {
+      this.validate(normalized);
+    }
+
+    return normalized
   }
 };
 

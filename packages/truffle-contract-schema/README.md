@@ -1,35 +1,202 @@
-# truffle-contract-schema
-JSON schema for contract artifacts
+# Schema Description: Truffle Contract Object
 
-# Schema
-
-The schema, which includes a JSON schema validator, needs to be created and fleshed out with strict documentation. However, in light of that effort, a loose schema is defined below:
-
-```
-{
-  "contract_name": ...,
-  "abi": ...,
-  "unlinked_binary": ...,
-  "network_id": ...,
-  "address": ...,
-  "links": ...,
-  "events": ...,
-  "default_network": ...,
-  "networks": ...
-}
-```
-
-* `contract_name`: `string`, optional: Name of the contract that will be used to identify this contract. Defaults to `Contract`.
-* `abi`: `array`, required; array returned by the Solidity compiler after compilation of a Solidity source file.
-* `unlinked_binary`: `string`, required: hexadecimal bytecode string of a Solidity contract returned by the Solidity compiler, without libraries linked.
-* `network_id`: `string` or `number`, optional: A string or number that represents the id of the network these contract artifacts apply to. If none specified, will default to `"*"`, which signifies these artifacts apply to the "wildcard network", which is useful in some circumstances.
-* `address`: `string`, optional; the default address associated with this contract on the network specified by `network_id`.
-* `links`: `object`, optional: A set of key/value pairs that link contract names that exist within the `unlinked_binary` to their specified addresses on the network specified by network_id.
-* `events`: `object`, optional: Log topic/event abi pairs that represent logs that can be thrown. This object may describe logs and events that exist outside of the current contract so that this object will be able to parse those events correctly.
-* `default_network`: `string` or `number`: The default network to be used when this object is instantiated via [truffle-contract](https://github.com/trufflesuite/truffle-contract).
-* `networks: `object`, optional: key/value pairs of network ids and their associated network objects. Each network object may contain the `address`, `links` and `events` objects described above, containing data that's specific to addresses on each network.
+| type | _object_ |
+| ---: | ---- |
+| JSON Schema | [contract-object.spec.json](spec/contract-object.spec.json) |
 
 
-# Testing
+[truffle-contract](https://github.com/trufflesuite/truffle-contract) uses a
+formally specified<sup>[1](#footnote-1)</sup> JSON object format to represent
+Ethereum Virtual Machine (EVM) smart contracts. This representation is intended
+to facilitate the use of general purpose smart contract abstractions
+(such as truffle-contract) by capturing relevant smart contract information in a
+persistent and portable manner.
 
-This package is the result of breaking up EtherPudding into multiple modules. Tests currently reside within [truffle-artifactor](https://github.com/trufflesuite/truffle-artifactor) but will soon move here.
+Objects following this schema represent individual smart contracts as defined
+by their name and interface. Each object primarily includes a JSON array
+representing the contract's ABI<sup>[2](#footnote-2)</sup>, but extends to
+include any and all information related to the contract and its lifecycle(s).
+Objects in this schema may represent pre-compiled source code, compilation
+annotations such as source mappings, references to specified deployed instances
+on multiple networks, and/or links to external contracts.
+
+A full property listing is below. Properties not marked "**required**" are not
+necessary to include in valid descriptions of contract objects, but functionally
+certain information must be present to allow the contract object representation
+to be useful (`source`/`bytecode`/etc. enable the deployment of new instances,
+`networks` listed with prior contract instance `address`es enable interaction
+with deployed contracts on-chain)
+
+
+## References
+
+<a name="footnote-1">1.</a> JSON Schema [http://json-schema.org](http://json-schema.org/)
+
+<a name="footnote-2">2.</a> Ethereum Contract JSON ABI [https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI#json](https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI#json)
+
+
+
+## Properties
+
+
+### `contractName`
+
+| type | _string_ matching pattern `^[a-zA-Z_][a-zA-Z0-9_]*$` |
+| ---: | ---- |
+| default | `"Contract"` |
+
+
+Name used to identify the contract. Semi-alphanumeric string.
+
+
+### `abi`
+
+| type | _array_ |
+| ---: | ---- |
+| JSON Schema | [abi.spec.json](spec/abi.spec.json) |
+| **required** |
+
+External programmatic description of contract's interface. The contract's ABI
+determines the means by which applications may interact with individual contract
+instances. Array of functions and events representing valid inputs and outputs
+for the instance.
+
+
+### `ast`
+
+| type | _object_ |
+| ---: | ---- |
+
+_not included in current version of this specification_
+
+Abstract Syntax Tree. A nested JSON object representation of contract source
+code, as output by compiler.
+
+
+
+### `bytecode`
+
+| type | _string_ matching pattern `^0x0$\|^0x([a-fA-F0-9]{2}\|__.{38})+$` |
+| ---: | ---- |
+| ref | [Bytecode](#contract-object--bytecode) |
+
+
+EVM instruction bytecode that runs as part of contract create transaction.
+Constructor code for new contract instance.
+Specified as a hexadecimal string, may include `__`-prefixed (double underscore)
+link references.
+
+
+
+### `deployedBytecode`
+
+| type | _string_ matching pattern `^0x0$\|^0x([a-fA-F0-9]{2}\|__.{38})+$` |
+| ---: | ---- |
+| ref | [Bytecode](#contract-object--bytecode) |
+
+
+EVM instruction bytecode associated with contract that specifies behavior for
+incoming transactions/messages. Underlying implementation of ABI.
+Specified as a hexadecimal string, may include `__`-prefixed (double underscore)
+link references.
+
+
+### `source`
+
+| type | _string_ |
+| ---: | ---- |
+
+
+Uncompiled source code for contract. Text string.
+
+
+### `sourcePath`
+
+| type | _string_ |
+| ---: | ---- |
+
+File path for uncompiled source code.
+
+
+### `sourceMap`
+
+| type | _string_ matching pattern `^[0-9;]*` |
+| ---: | ---- |
+
+
+Source mapping for `bytecode`, pairing contract creation transaction data bytes
+with origin statements in uncompiled `source`.
+
+
+### `deployedSourceMap`
+
+| type | _string_ matching pattern `^[0-9;]*` |
+| ---: | ---- |
+
+Source mapping for `deployedBytecode`, pairing contract program data bytes
+with origin statements in uncompiled `source`.
+
+
+### `schemaVersion`
+
+| type | _string_ matching pattern `[0-9]+\.[0-9]+\.[0-9]+` |
+| ---: | ---- |
+
+Version of this schema used by contract object representation.
+
+
+
+### `updatedAt`
+
+| type | _string_ |
+| ---: | ---- |
+| format | IS0-8601 Datetime |
+
+
+Time at which contract object representation was generated/most recently
+updated.
+
+
+### `networks`
+
+| type | _object_ |
+| ---: | ---- |
+
+Listing of contract instances. Object mapping network ID keys to network object
+values. Includes address information, links to other contract instances, and/or
+contract event logs.
+
+#### Properties (key matching `^[a-zA-Z0-9]+$`)
+
+| type | _object_ |
+| ---: | ---- |
+| ref | [Network Object](network-object.spec.md) |
+
+
+## Custom Properties
+
+### `^x-([a-zA-Z]+-)*[a-zA-Z]+`
+
+| type | _string or number or object or array_ |
+| ---: | ---- |
+
+Objects following this schema may include additional properties with
+`x-`-prefixed keys.
+
+
+
+## Definitions
+
+
+
+
+### <a name="contract-object--bytecode">Bytecode</a>
+
+| type | _string_ matching pattern `^0x0$\|^0x([a-fA-F0-9]{2}\|__.{38})+$` |
+| ---: | ---- |
+
+`0x`-prefixed string representing compiled EVM machine language.
+
+This string representation may indicate link references in place of
+linked instance addresses. Link references must begin with `__` and be exactly
+40 characters long (i.e., string length of an address in hexadecimal).
