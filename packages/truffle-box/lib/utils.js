@@ -1,7 +1,6 @@
 var fs = require("fs-extra");
 var path = require("path");
 var npm = require('npm-programmatic');
-
 var Git = require("nodegit");
 
 
@@ -110,4 +109,3 @@ module.exports = {
       });
   }
 }
-
