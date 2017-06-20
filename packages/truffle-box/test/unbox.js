@@ -13,7 +13,7 @@ describe("Unbox", function() {
     fs.ensureDir(destination, done);
   });
 
-  before("remove tmp dir", function(done) {
+  after("remove tmp dir", function(done) {
     fs.remove(destination, done);
   });
 
@@ -29,5 +29,34 @@ describe("Unbox", function() {
           "Unboxed project should have truffle config."
         );
       });
+  });
+
+  it("won't re-init if truffle.js file exists", function(done) {
+    this.timeout(5000);
+
+    var contracts_directory = path.join(destination, "contracts");
+
+    // Assert our precondition
+    assert(fs.existsSync(contracts_directory), "contracts directory should exist for this test to be meaningful");
+
+    fs.remove(contracts_directory, function(err) {
+      if (err) return done(err);
+
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination)
+        .then(function(boxConfig) {
+          assert(
+            fs.existsSync(contracts_directory) == false,
+            "Contracts directory got recreated when it shouldn't have"
+          );
+          done();
+        })
+        .catch(function(e) {
+          if (e.message.indexOf("A Truffle project already exists at the destination.") >= 0) {
+            done();
+          } else {
+            done(new Error("Unknown error received: " + e.stack));
+          }
+        });
+    });
   });
 });
