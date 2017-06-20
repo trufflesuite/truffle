@@ -4,7 +4,8 @@
   "description": "Truffle project boilerplate utility",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint ./index.js ./lib || true",
+    "test": "mocha"
   },
   "keywords": [
     "ethereum",
@@ -13,5 +14,13 @@
     "boilerplate"
   ],
   "author": "consensys.net",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^4.0.0"
+  },
+  "dependencies": {
+    "fs-extra": "^3.0.1",
+    "nodegit": "^0.18.3",
+    "npm-programmatic": "^0.0.8"
+  }
 }
