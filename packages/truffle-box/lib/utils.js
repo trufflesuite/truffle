@@ -7,6 +7,8 @@ var vcsurl = require('vcsurl');
 var parseURL = require('url').parse;
 var tmp = require('tmp');
 
+var config = require('./config');
+
 function checkDestination(destination) {
   return Promise.resolve().then(function() {
     var config_path = path.join(destination, "truffle.js");
@@ -79,25 +81,7 @@ function copyTempIntoDestination(tmpDir, destination) {
 }
 
 function readBoxConfig(destination) {
-  // Find the truffle-init.json file, and remove anything that should be ignored.
-  return new Promise(function(accept, reject) {
-    fs.readFile(path.join(destination, "truffle-init.json"), "utf8", function(err, body) {
-      // We can't read the file, so let's assume it doesn't exist.
-      if (err) {
-        return accept({});
-      }
-
-      try {
-        body = JSON.parse(body);
-      } catch (e) {
-        // If the file exists but we can't parse it, let's expose that error.
-        return reject(e);
-      }
-
-
-      accept(body);
-    });
-  });
+  return config.read(path.join(destination, "truffle-init.json"));
 }
 
 function cleanupUnpack(boxConfig, destination) {
