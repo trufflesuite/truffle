@@ -6,6 +6,7 @@ var https = require("https");
 var vcsurl = require('vcsurl');
 var parseURL = require('url').parse;
 var tmp = require('tmp');
+var exec = require('child_process').exec;
 
 var config = require('./config');
 
@@ -105,28 +106,13 @@ function cleanupUnpack(boxConfig, destination) {
 }
 
 function installBoxDependencies(boxConfig, destination) {
-  // Run an npm install if a package.json exists.
-  if (fs.existsSync(path.join(destination, "package.json")) == false) {
-    return;
-  }
+  var postUnpack = boxConfig.hooks['post-unpack']
 
-  var pkg = fs.readFileSync(path.join(destination, "package.json"), "utf8");
-  pkg = JSON.parse(pkg);
-
-  var packages = [];
-
-  Object.keys(pkg.dependencies || {}).forEach(function(name) {
-    var version = pkg.dependencies[name];
-    packages.push(name + "@" + version);
-  });
-
-  Object.keys(pkg.devDependencies || {}).forEach(function(name) {
-    var version = pkg.devDependencies[name];
-    packages.push(name + "@" + version);
-  });
-
-  return npm.install(packages, {
-    cwd: destination
+  return new Promise(function(accept, reject) {
+    exec(postUnpack, {cwd: destination}, function(err, stdout, stderr) {
+      if (err) return reject(err);
+      accept(stdout, stderr);
+    });
   });
 }
 

@@ -3,6 +3,8 @@ var fs = require("fs-extra");
 function setDefaults(config) {
   config = config || {};
 
+  var hooks = config.hooks || {};
+
   return {
     ignore: config.ignore || [],
     commands: config.commands || {
@@ -10,8 +12,9 @@ function setDefaults(config) {
       "migrate": "truffle migrate",
       "test": "truffle test"
     },
-    hooks: config.hooks || {
-      "post-unpack": "npm install"
+    hooks: {
+      "post-unpack": hooks["post-unpack"] ||
+        "test -e package.json && npm install || true"
     }
   };
 }
