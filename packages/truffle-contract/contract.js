@@ -660,6 +660,14 @@ var contract = (function(module) {
 
   // Getter functions are scoped to Contract object.
   Contract._properties = {
+    contract_name: {
+      get: function() {
+        return this.contractName;
+      },
+      set: function(val) {
+        this.contractName = val;
+      }
+    },
     contractName: {
       get: function() {
         return this._json.contractName || "Contract";
@@ -869,14 +877,22 @@ var contract = (function(module) {
         this._json.ast = val;
       }
     },
+    // Deprecated
     schema_version: function() {
-      return this._json.schema_version;
+      return this.schemaVersion;
     },
+    schemaVersion: function() {
+      return this._json.schemaVersion;
+    },
+    // deprecated
     updated_at: function() {
+      return this.updatedAt;
+    },
+    updatedAt: function() {
       try {
-        return this.network.updated_at || this._json.updated_at;
+        return this.network.updatedAt || this._json.updatedAt;
       } catch (e) {
-        return this._json.updated_at;
+        return this._json.updatedAt;
       }
     }
   };
