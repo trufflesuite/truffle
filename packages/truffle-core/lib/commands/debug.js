@@ -22,7 +22,7 @@ var command = {
         return done(new Error("Please specify a transaction hash as the first parameter in order to debug that transaction. i.e., truffle debug 0x1234..."));
       }
 
-      config.logger.log("The interactive debugger is a proof of concept and is only intended for use with the TestRPC.");
+      config.logger.log("The interactive debugger is a proof of concept and is only intended for use with Ganache." + OS.EOL + "Please report any issues to the Truffle dev team.");
       config.logger.log("");
 
       var tx_hash = config._[0];
@@ -32,7 +32,7 @@ var command = {
       bugger.start(tx_hash, function(err) {
         if (err) return done(err);
 
-        var help = "Commands:" + OS.EOL + "(enter) step over, (i) step into, (o) step out, (n) step next, (r) run until breakpoint, (q) quit" + OS.EOL + "(p) print instruction, (;) next instruction, (s) print stack information";
+        var help = "Commands:" + OS.EOL + "(enter) step over, (i) step into, (o) step out, (n) step next, (;) step instruction" + OS.EOL + "(p) print instruction, (s) print stack information, (h) print this help, (q) quit";
 
         config.logger.log(help);
         config.logger.log("");
