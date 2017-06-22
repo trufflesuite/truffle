@@ -15,7 +15,6 @@ describe("compile", function() {
       if (err) return done(err);
       config = result;
       config.resolver = new Resolver(config);
-      config.artifactor = new Artifactor(config.contracts_build_directory);
       config.networks = {
         "default": {
           "network_id": "1"
