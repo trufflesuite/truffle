@@ -49,7 +49,9 @@ var compile = function(sources, options, callback) {
     var replacement = source.replace(/\\/g, "/");
 
     // Turn G:/.../ into /G/.../ for Windows
-    if (replacement[0] != "/") {
+    // Make sure not to break package imports.
+    // TODO: Make this a regex instead?
+    if (replacement[0] != "/" && replacement[1] == ":") {
       replacement = "/" + replacement;
     }
     replacement = replacement.replace(":", "");
