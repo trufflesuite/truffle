@@ -78,7 +78,10 @@ describe("debugger", function() {
 
   it("debugs a transaction", function(done) {
     var bugger = new Debugger(config);
-    bugger.start(tx_to_debug, config, function(err, bugger) {
+    bugger.start(tx_to_debug, function(err, bugger) {
+
+      // What tests should we write for this?
+
       done(err);
     });
   });
