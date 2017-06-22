@@ -5,9 +5,8 @@ var path = require("path");
 var async = require("async");
 var _ = require("lodash");
 
-function Artifactor(destination, source_directory) {
+function Artifactor(destination) {
   this.destination = destination;
-  this.source_directory = source_directory;
 };
 
 Artifactor.prototype.save = function(object) {
@@ -20,17 +19,10 @@ Artifactor.prototype.save = function(object) {
       return reject(new Error("You must specify a contract name."));
     }
 
-    // Build the source path from input object.
-    var output_path = object.sourcePath || object.contractName;
+    var output_path = object.contractName;
 
-    // Remove source directory if prefixed.
-    output_path = output_path.replace(self.source_directory, "");
-
-    // Remove .sol extension
-    output_path = output_path.replace(".sol");
-
-    // Create new path off of contracts_build_directory.
-    output_path = path.join(self.destination.replace(self.source_directory, ""), output_path);
+    // Create new path off of destination.
+    output_path = path.join(self.destination, output_path);
     output_path = path.resolve(output_path);
 
     // Add json extension.
@@ -56,7 +48,7 @@ Artifactor.prototype.save = function(object) {
       }
 
       // update timestamp
-      finalObject.updateAt = new Date().toISOString();
+      finalObject.updatedAt = new Date().toISOString();
 
       // output object
       fs.outputFile(output_path, JSON.stringify(finalObject, null, 2), "utf8", function(err) {
@@ -84,16 +76,18 @@ Artifactor.prototype.saveAll = function(objects) {
       if (err) {
         return reject(new Error("Desination " + self.destination + " doesn't exist!"));
       }
-
-      async.each(Object.keys(objects), function(contractName, done) {
-        var object = objects[contractName];
-        object.contractName = contractName;
-        self.save(object).then(done).catch(done);
-      }, function(err) {
-        if (err) return reject(err);
-        accept();
-      });
+      accept();
     });
+  }).then(function() {
+    var promises = [];
+
+    Object.keys(objects).forEach(function(contractName) {
+      var object = objects[contractName];
+      object.contractName = contractName;
+      promises.push(self.save(object));
+    });
+
+    return Promise.all(promises);
   });
 };
 
