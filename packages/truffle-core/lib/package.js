@@ -36,7 +36,7 @@ var Package = {
     var host = options.ethpm.ipfs_host;
 
     if ((host instanceof EthPM.hosts.IPFS) == false) {
-      host = new EthPM.hosts.IPFS(options.ethpm.ipfs_host, options.ethpm.ipfs_port, options.ethpm.ipfs_protocol);
+      host = new EthPM.hosts.IPFSWithLocalReader(options.ethpm.ipfs_host, options.ethpm.ipfs_port, options.ethpm.ipfs_protocol);
     }
 
     // When installing, we use infura to make a bunch of eth_call's.
@@ -126,7 +126,7 @@ var Package = {
 
       options.logger.log("Finding publishable artifacts...");
 
-      self.publishable_artifacts(options, contract_names, function(err, artifacts) {
+      self.publishable_artifacts(options, Object.keys(contract_names), function(err, artifacts) {
         if (err) return callback(err);
 
         web3.eth.getAccounts(function(err, accs) {

@@ -1,8 +1,8 @@
 {
-  "name": "truffle",
+  "name": "truffle-core",
   "namespace": "consensys",
-  "version": "3.2.1",
-  "description": "Truffle - Simple development framework for Ethereum",
+  "version": "3.2.8",
+  "description": "Core code for Truffle command line tool",
   "dependencies": {
     "async": "^1.4.2",
     "chai": "^3.3.0",
@@ -11,20 +11,21 @@
     "cpr": "^0.4.3",
     "del": "^2.2.0",
     "diff": "1.4.0",
-    "ethpm": "0.0.10",
+    "ethpm": "0.0.14",
     "ethpm-registry": "0.0.9",
     "finalhandler": "^0.4.0",
     "fs-extra": "^2.0.0",
     "lodash": "^4.5.1",
     "mkdirp": "^0.5.1",
     "mocha": "^3.2.0",
-    "node-dir": "^0.1.10",
+    "node-dir": "0.1.16",
+    "original-require": "^1.0.0",
     "serve-static": "^1.10.0",
     "spawn-args": "^0.1.0",
     "temp": "^0.8.3",
     "truffle-artifactor": "~2.1.4",
-    "truffle-compile": "~1.1.2",
-    "truffle-config": "~0.0.7",
+    "truffle-compile": "~2.0.3",
+    "truffle-config": "~1.0.0",
     "truffle-contract": "~2.0.0",
     "truffle-contract-sources": "~0.0.1",
     "truffle-deployer": "~1.0.0",
@@ -45,8 +46,7 @@
     "truffle-exec": "./exec.js"
   },
   "scripts": {
-    "test": "mocha",
-    "docs": "mkdocs serve"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
