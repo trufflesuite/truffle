@@ -65,7 +65,6 @@
     }
   ],
   "devDependencies": {
-    "ethereumjs-testrpc": "^3.0.3",
     "ipfsd-ctl": "^0.18.2",
     "stream-buffers": "^3.0.1",
     "truffle-blockchain-utils": "0.0.1"

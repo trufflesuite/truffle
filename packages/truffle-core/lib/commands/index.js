@@ -5,6 +5,7 @@ module.exports = {
   deploy: require("./deploy"),
   build: require("./build"),
   test: require("./test"),
+  debug: require("./debug"),
   console: require("./console"),
   create: require("./create"),
   install: require("./install"),
@@ -14,5 +15,5 @@ module.exports = {
   watch: require("./watch"),
   serve: require("./serve"),
   exec: require("./exec"),
-  version: require("./version"),
+  version: require("./version")
 };
