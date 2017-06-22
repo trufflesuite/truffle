@@ -325,13 +325,13 @@ var contract = (function(module) {
       var self = this;
 
       if (this.currentProvider == null) {
-        throw new Error(this.contract_name + " error: Please call setProvider() first before calling new().");
+        throw new Error(this.contractName + " error: Please call setProvider() first before calling new().");
       }
 
       var args = Array.prototype.slice.call(arguments);
 
       if (!this.bytecode) {
-        throw new Error(this._json.contract_name + " error: contract binary not set. Can't deploy new instance.");
+        throw new Error(this._json.contractName + " error: contract binary not set. Can't deploy new instance.");
       }
 
       return self.detectNetwork().then(function(network_id) {
@@ -352,7 +352,7 @@ var contract = (function(module) {
             return name != arr[index + 1];
           }).join(", ");
 
-          throw new Error(self.contract_name + " contains unresolved libraries. You must deploy and link the following libraries before you can deploy a new version of " + self._json.contract_name + ": " + unlinked_libraries);
+          throw new Error(self.contractName + " contains unresolved libraries. You must deploy and link the following libraries before you can deploy a new version of " + self._json.contractName + ": " + unlinked_libraries);
         }
       }).then(function() {
         return new Promise(function(accept, reject) {
@@ -394,7 +394,7 @@ var contract = (function(module) {
       var self = this;
 
       if (address == null || typeof address != "string" || address.length != 42) {
-        throw new Error("Invalid address passed to " + this._json.contract_name + ".at(): " + address);
+        throw new Error("Invalid address passed to " + this._json.contractName + ".at(): " + address);
       }
 
       var contract = new this(address);
@@ -409,7 +409,7 @@ var contract = (function(module) {
               if (err) return reject(err);
 
               if (!code || code.replace("0x", "").replace(/0/g, "") === '') {
-                return reject(new Error("Cannot create instance of " + self.contract_name + "; no code at address " + address));
+                return reject(new Error("Cannot create instance of " + self.contractName + "; no code at address " + address));
               }
 
               accept(instance);
@@ -426,12 +426,12 @@ var contract = (function(module) {
       return self.detectNetwork().then(function() {
         // We don't have a network config for the one we found
         if (self._json.networks[self.network_id] == null) {
-          throw new Error(self.contract_name + " has not been deployed to detected network (network/artifact mismatch)");
+          throw new Error(self.contractName + " has not been deployed to detected network (network/artifact mismatch)");
         }
 
         // If we found the network but it's not deployed
         if (!self.isDeployed()) {
-          throw new Error(self.contract_name + " has not been deployed to detected network (" + self.network_id + ")");
+          throw new Error(self.contractName + " has not been deployed to detected network (" + self.network_id + ")");
         }
 
         return new self(self.address);
@@ -546,7 +546,7 @@ var contract = (function(module) {
           throw new Error("Cannot link contract without an address.");
         }
 
-        this.link(contract.contract_name, contract.address);
+        this.link(contract.contractName, contract.address);
 
         // Merge events so this contract knows about library's events
         Object.keys(contract.events).forEach(function(topic) {
@@ -662,10 +662,18 @@ var contract = (function(module) {
   Contract._properties = {
     contract_name: {
       get: function() {
-        return this._json.contract_name;
+        return this.contractName;
       },
       set: function(val) {
-        this._json.contract_name = val;
+        this.contractName = val;
+      }
+    },
+    contractName: {
+      get: function() {
+        return this._json.contractName || "Contract";
+      },
+      set: function(val) {
+        this._json.contractName = val;
       }
     },
     abi: {
@@ -680,12 +688,12 @@ var contract = (function(module) {
       var network_id = this.network_id;
 
       if (network_id == null) {
-        throw new Error(this.contract_name + " has no network id set, cannot lookup artifact data. Either set the network manually using " + this.contract_name + ".setNetwork(), run " + this.contract_name + ".detectNetwork(), or use new(), at() or deployed() as a thenable which will detect the network automatically.");
+        throw new Error(this.contractName + " has no network id set, cannot lookup artifact data. Either set the network manually using " + this.contractName + ".setNetwork(), run " + this.contractName + ".detectNetwork(), or use new(), at() or deployed() as a thenable which will detect the network automatically.");
       }
 
       // TODO: this might be bad; setting a value on a get.
       if (this._json.networks[network_id] == null) {
-        throw new Error(this.contract_name + " has no network configuration for its current network id (" + network_id + ").");
+        throw new Error(this.contractName + " has no network configuration for its current network id (" + network_id + ").");
       }
 
       var returnVal = this._json.networks[network_id];
@@ -709,7 +717,7 @@ var contract = (function(module) {
         var address = this.network.address;
 
         if (address == null) {
-          throw new Error("Cannot find deployed address: " + this.contract_name + " not deployed or address not set.");
+          throw new Error("Cannot find deployed address: " + this.contractName + " not deployed or address not set.");
         }
 
         return address;
@@ -722,7 +730,7 @@ var contract = (function(module) {
         var network_id = this.network_id;
 
         if (network_id == null) {
-          throw new Error(this.contract_name + " has no network id set, cannot lookup artifact data. Either set the network manually using " + this.contract_name + ".setNetwork(), run " + this.contract_name + ".detectNetwork(), or use new(), at() or deployed() as a thenable which will detect the network automatically.");
+          throw new Error(this.contractName + " has no network id set, cannot lookup artifact data. Either set the network manually using " + this.contractName + ".setNetwork(), run " + this.contractName + ".detectNetwork(), or use new(), at() or deployed() as a thenable which will detect the network automatically.");
         }
 
         // Create a network if we don't have one.
@@ -739,7 +747,7 @@ var contract = (function(module) {
     },
     links: function() {
       if (!this.network_id) {
-        throw new Error(this.contract_name + " has no network id set, cannot lookup artifact data. Either set the network manually using " + this.contract_name + ".setNetwork(), run " + this.contract_name + ".detectNetwork(), or use new(), at() or deployed() as a thenable which will detect the network automatically.");
+        throw new Error(this.contractName + " has no network id set, cannot lookup artifact data. Either set the network manually using " + this.contractName + ".setNetwork(), run " + this.contractName + ".detectNetwork(), or use new(), at() or deployed() as a thenable which will detect the network automatically.");
       }
 
       if (this._json.networks[this.network_id] == null) {
@@ -869,14 +877,22 @@ var contract = (function(module) {
         this._json.ast = val;
       }
     },
+    // Deprecated
     schema_version: function() {
-      return this._json.schema_version;
+      return this.schemaVersion;
     },
+    schemaVersion: function() {
+      return this._json.schemaVersion;
+    },
+    // deprecated
     updated_at: function() {
+      return this.updatedAt;
+    },
+    updatedAt: function() {
       try {
-        return this.network.updated_at || this._json.updated_at;
+        return this.network.updatedAt || this._json.updatedAt;
       } catch (e) {
-        return this._json.updated_at;
+        return this._json.updatedAt;
       }
     }
   };

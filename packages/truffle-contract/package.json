@@ -39,7 +39,6 @@
     "require-nocache": "^1.0.0",
     "solc": "^0.4.8",
     "temp": "^0.8.3",
-    "truffle-artifactor": "^2.1.4",
     "uglify": "^0.1.5",
     "uglify-js": "^2.7.5"
   }

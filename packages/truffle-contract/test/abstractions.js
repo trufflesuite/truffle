@@ -1,5 +1,5 @@
 var assert = require("chai").assert;
-var Artifactor = require("truffle-artifactor");
+var Schema = require("truffle-contract-schema");
 var contract = require("../");
 var temp = require("temp").track();
 var path = require("path");
@@ -15,7 +15,6 @@ describe("Abstractions", function() {
   var abi;
   var binary;
   var network_id;
-  var artifactor;
   var provider = TestRPC.provider();
   var web3 = new Web3();
   web3.setProvider(provider)
@@ -28,7 +27,7 @@ describe("Abstractions", function() {
     });
   });
 
-  before(function(done) {
+  before(function() {
     this.timeout(10000);
 
     // Compile first
@@ -38,32 +37,21 @@ describe("Abstractions", function() {
     // which happens to be the first.
     process.removeListener("uncaughtException", process.listeners("uncaughtException")[0]);
 
-    var compiled = result.contracts["Example"];
-    abi = JSON.parse(compiled.interface);
-    binary = compiled.bytecode;
+    var contractObj, contractName;
+    if (result.contracts["Example"]) {
+      contractName = "Example";
+    } else {
+      contractName = ":Example";
+    }
 
-    // Setup
-    var dirPath = temp.mkdirSync({
-      dir: path.resolve("./"),
-      prefix: 'tmp-test-contract-'
-    });
+    contractObj = result.contracts[contractName];
+    contractObj.contractName = contractName;
+    Example = contract(contractObj);
+    Example.setProvider(provider);
 
-    var expected_filepath = path.join(dirPath, "Example.json");
-
-    artifactor = new Artifactor(dirPath);
-
-    artifactor.save({
-      contract_name: "Example",
-      abi: abi,
-      binary: binary,
-      address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01",
-      network_id: network_id
-    }).then(function() {
-      var json = requireNoCache(expected_filepath);
-
-      Example = contract(json);
-      Example.setProvider(provider);
-    }).then(done).catch(done);
+    // save abi and binary for later
+    abi = Example.abi;
+    binary = Example.bytecode;
   });
 
   before(function(done) {
