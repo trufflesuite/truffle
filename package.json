@@ -12,7 +12,7 @@
     "del": "^2.2.0",
     "diff": "1.4.0",
     "ethpm": "0.0.13",
-    "ethpm-registry": "0.0.9",
+    "ethpm-registry": "~0.0.10",
     "finalhandler": "^0.4.0",
     "fs-extra": "^2.0.0",
     "lodash": "^4.5.1",
@@ -24,7 +24,7 @@
     "temp": "^0.8.3",
     "truffle-artifactor": "~2.1.4",
     "truffle-compile": "~2.0.0",
-    "truffle-config": "~0.0.7",
+    "truffle-config": "~1.0.0",
     "truffle-contract": "~2.0.0",
     "truffle-contract-sources": "~0.0.1",
     "truffle-deployer": "~1.0.0",
@@ -37,7 +37,7 @@
     "truffle-require": "~1.0.0",
     "truffle-resolver": "~3.0.0",
     "truffle-solidity-utils": "~1.0.0",
-    "web3": "^0.18.0",
+    "web3": "^0.19.1",
     "yargs": "^6.6.0"
   },
   "bin": {
@@ -68,6 +68,6 @@
     "ethereumjs-testrpc": "^3.0.3",
     "ipfsd-ctl": "^0.18.2",
     "stream-buffers": "^3.0.1",
-    "truffle-blockchain-utils": "0.0.1"
+    "truffle-blockchain-utils": "~0.0.1"
   }
 }
