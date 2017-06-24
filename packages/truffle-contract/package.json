@@ -25,7 +25,7 @@
   "homepage": "https://github.com/trufflesuite/truffle-contract#readme",
   "dependencies": {
     "ethjs-abi": "0.1.8",
-    "truffle-blockchain-utils": "0.0.2",
+    "truffle-blockchain-utils": "~0.0.1",
     "truffle-contract-schema": "0.0.5",
     "web3": "^0.19.1"
   },
