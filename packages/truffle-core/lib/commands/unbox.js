@@ -8,7 +8,7 @@ function normalizeURL(url) {
   url = url || "https://github.com/trufflesuite/truffle-init-default";
 
   // full URL already
-  if (url.indexOf("://") != -1) {
+  if (url.indexOf("://") != -1 || url.indexOf("git@") != -1) {
     return url;
   }
 
