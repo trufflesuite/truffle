@@ -2,7 +2,7 @@
   "name": "truffle-box",
   "version": "1.0.0",
   "description": "Truffle project boilerplate utility",
-  "main": "index.js",
+  "main": "box.js",
   "scripts": {
     "lint": "eslint ./index.js ./lib || true",
     "test": "mocha"
