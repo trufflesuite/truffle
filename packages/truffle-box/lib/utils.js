@@ -1,6 +1,5 @@
 var fs = require("fs-extra");
 var path = require("path");
-var npm = require('npm-programmatic');
 var ghdownload = require('github-download');
 var https = require("https");
 var vcsurl = require('vcsurl');
@@ -27,9 +26,9 @@ function verifyURL(url) {
   return new Promise(function(accept, reject) {
 
     var configURL = parseURL(
-      vcsurl(url).
-        replace("github.com", "raw.githubusercontent.com").
-        replace(/#.*/, "") +
+      vcsurl(url)
+        .replace("github.com", "raw.githubusercontent.com")
+        .replace(/#.*/, "") +
         "/master/truffle.js"
     );
 
