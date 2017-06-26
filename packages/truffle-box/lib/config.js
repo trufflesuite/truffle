@@ -13,8 +13,6 @@ function setDefaults(config) {
       "test": "truffle test"
     },
     hooks: {
-      "post-unpack": hooks["post-unpack"] ||
-        "test -e package.json && npm install || true"
     }
   };
 }
