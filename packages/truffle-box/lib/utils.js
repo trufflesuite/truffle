@@ -27,7 +27,9 @@ function verifyURL(url) {
   return new Promise(function(accept, reject) {
 
     var configURL = parseURL(
-      vcsurl(url).replace("github.com", "raw.githubusercontent.com") +
+      vcsurl(url).
+        replace("github.com", "raw.githubusercontent.com").
+        replace(/#.*/, "") +
         "/master/truffle.js"
     );
 
