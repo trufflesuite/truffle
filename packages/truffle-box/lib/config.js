@@ -13,6 +13,7 @@ function setDefaults(config) {
       "test": "truffle test"
     },
     hooks: {
+      "post-unpack": hooks["post-unpack"] || ""
     }
   };
 }
