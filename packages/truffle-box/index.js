@@ -15,10 +15,10 @@ var Box = {
         return utils.unpackBox(destination);
       })
       .then(function(boxConfig) {
-        if (boxConfig.epilogue) {
-          options.logger.log(project_config.epilogue.replace("\n", OS.EOL));
-        }
-
+        options.logger.log("Installing box dependencies");
+        return utils.setupBox(boxConfig, destination)
+      })
+      .then(function(boxConfig) {
         return boxConfig;
       });
   }

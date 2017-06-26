@@ -158,7 +158,14 @@ module.exports = {
         return cleanupUnpack(boxConfig, destination);
       })
       .then(function() {
-        return installBoxDependencies(boxConfig, destination);
+        return boxConfig;
+      });
+  },
+
+  setupBox: function(boxConfig, destination) {
+    return Promise.resolve()
+      .then(function() {
+        return installBoxDependencies(boxConfig, destination)
       })
       .then(function() {
         return boxConfig;
