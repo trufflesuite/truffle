@@ -13,15 +13,15 @@
     "project",
     "boilerplate"
   ],
-  "author": "consensys.net",
+  "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
   "license": "MIT",
   "devDependencies": {
-    "eslint": "^4.0.0"
+    "eslint": "^4.0.0",
+    "mocha": "^3.4.2"
   },
   "dependencies": {
     "fs-extra": "^3.0.1",
     "github-download": "^0.5.0",
-    "npm-programmatic": "^0.0.8",
     "tmp": "^0.0.31",
     "vcsurl": "^0.1.1"
   }
