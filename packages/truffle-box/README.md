@@ -9,8 +9,11 @@ Provides behavior for unboxing a new project from a predefined Truffle Box.
 Box Configuration
 -----------------
 
-Truffle Boxes are configured via JSON files containing an object with the
-following properties:
+Truffle Boxes are configured via an optional `truffle-box.json` file in the
+box repo's root directory.
+
+This box configuration file specifies an object containing the following
+properties:
 
 - `ignore`
 
