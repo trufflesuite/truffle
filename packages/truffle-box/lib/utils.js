@@ -82,13 +82,23 @@ function copyTempIntoDestination(tmpDir, destination) {
 }
 
 function readBoxConfig(destination) {
-  return config.read(path.join(destination, "truffle-init.json"));
+  var possibleConfigs = [
+    path.join(destination, "truffle-box.json"),
+    path.join(destination, "truffle-init.json")
+  ];
+
+  var configPath = possibleConfigs.reduce(function(path, alt) {
+    return path || fs.existsSync(alt) && alt;
+  }, undefined);
+
+  return config.read(configPath);
 }
 
 function cleanupUnpack(boxConfig, destination) {
   var needingRemoval = boxConfig.ignore || [];
 
   // remove box config file
+  needingRemoval.push("truffle-box.json");
   needingRemoval.push("truffle-init.json");
 
   var promises = needingRemoval.map(function(file_path) {
