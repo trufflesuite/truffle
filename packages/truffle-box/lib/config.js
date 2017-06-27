@@ -28,5 +28,6 @@ function read(path) {
 }
 
 module.exports = {
-  read: read
+  read: read,
+  setDefaults: setDefaults
 }

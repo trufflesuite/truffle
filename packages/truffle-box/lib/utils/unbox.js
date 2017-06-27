@@ -7,7 +7,7 @@ var parseURL = require('url').parse;
 var tmp = require('tmp');
 var exec = require('child_process').exec;
 
-var config = require('./config');
+var config = require('../config');
 
 function checkDestination(destination) {
   return Promise.resolve().then(function() {
@@ -128,58 +128,12 @@ function installBoxDependencies(boxConfig, destination) {
 }
 
 module.exports = {
-  downloadBox: function(url, destination) {
-    var tmpDir;
-    var tmpCleanup;
-
-    return Promise.resolve()
-      .then(function() {
-        return checkDestination(destination);
-      })
-      .then(function() {
-        return verifyURL(url);
-      })
-      .then(function() {
-        return setupTempDirectory();
-      }).then(function(dir, func) {
-        // save tmpDir result
-        tmpDir = dir;
-        tmpCleanup = func;
-      })
-      .then(function() {
-        return fetchRepository(url, tmpDir);
-      })
-      .then(function() {
-        return copyTempIntoDestination(tmpDir, destination);
-      })
-      .then(tmpCleanup);
-  },
-
-  unpackBox: function(destination) {
-    var boxConfig;
-
-    return Promise.resolve()
-      .then(function() {
-        return readBoxConfig(destination)
-      })
-      .then(function(cfg) {
-        boxConfig = cfg;
-      })
-      .then(function() {
-        return cleanupUnpack(boxConfig, destination);
-      })
-      .then(function() {
-        return boxConfig;
-      });
-  },
-
-  setupBox: function(boxConfig, destination) {
-    return Promise.resolve()
-      .then(function() {
-        return installBoxDependencies(boxConfig, destination)
-      })
-      .then(function() {
-        return boxConfig;
-      });
-  }
+  checkDestination: checkDestination,
+  verifyURL: verifyURL,
+  setupTempDirectory: setupTempDirectory,
+  fetchRepository: fetchRepository,
+  copyTempIntoDestination: copyTempIntoDestination,
+  readBoxConfig: readBoxConfig,
+  cleanupUnpack: cleanupUnpack,
+  installBoxDependencies: installBoxDependencies
 }
