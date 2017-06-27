@@ -7,15 +7,15 @@ var Box = {
 
     return Promise.resolve()
       .then(function() {
-        options.logger.log("Downloading Box");
+        options.logger.log("Downloading...");
         return utils.downloadBox(url, destination)
       })
       .then(function() {
-        options.logger.log("Unpacking Box");
+        options.logger.log("Unpacking...");
         return utils.unpackBox(destination);
       })
       .then(function(boxConfig) {
-        options.logger.log("Installing box dependencies");
+        options.logger.log("Setting up...");
         return utils.setupBox(boxConfig, destination)
       })
       .then(function(boxConfig) {
