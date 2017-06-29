@@ -46,7 +46,7 @@ function formatCommands(commands) {
 
 var command = {
   command: 'unbox',
-  description: 'Initialize new project from a Truffle Box',
+  description: 'Unbox Truffle project',
   builder: {},
   run: function(options, done) {
     var Config = require("truffle-config");
@@ -61,7 +61,7 @@ var command = {
 
     Box.unbox(url, config.working_directory, {logger: config.logger})
       .then(function(boxConfig) {
-        config.logger.log("Project initialized." + OS.EOL);
+        config.logger.log("Unbox successful. Sweet!" + OS.EOL);
 
         var commandMessages = formatCommands(boxConfig.commands);
         if (commandMessages.length > 0) {
