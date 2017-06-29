@@ -17,8 +17,7 @@ var Require = {
     var file = options.file;
 
     expect.options(options, [
-      "file",
-      "resolver"
+      "file"
     ]);
 
     options = Config.default().with(options);
