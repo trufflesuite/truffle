@@ -1,4 +1,8 @@
 var utils = require("./lib/utils");
+var tmp = require("tmp");
+var path = require("path");
+
+var Config = require("truffle-config");
 
 var Box = {
   unbox: function(url, destination, options) {
@@ -21,6 +25,27 @@ var Box = {
       .then(function(boxConfig) {
         return boxConfig;
       });
+  },
+
+  sandbox: function(name, callback) {
+    var self = this;
+    if (typeof name === "function") {
+      callback = name;
+      name = "default";
+    }
+
+    tmp.dir(function(err, dir, cleanupCallback) {
+      if (err) {
+        return callback(err);
+      }
+
+      self.unbox("https://github.com/trufflesuite/truffle-init-" + name, dir)
+        .then(function() {
+          var config = Config.load(path.join(dir, "truffle.js"), {});
+          callback(null, config);
+        })
+        .catch(callback);
+    });
   }
 };
 

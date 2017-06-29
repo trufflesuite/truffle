@@ -17,7 +17,8 @@
   "license": "MIT",
   "devDependencies": {
     "eslint": "^4.0.0",
-    "mocha": "^3.4.2"
+    "mocha": "^3.4.2",
+    "truffle-config": "^1.0.0"
   },
   "dependencies": {
     "fs-extra": "^3.0.1",
