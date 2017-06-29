@@ -1,4 +1,4 @@
-var Init = require("truffle-init");
+var Box = require("truffle-box");
 var MemoryLogger = require("../memorylogger");
 var Commander = require("../../../lib/command");
 var commands = require("../../../lib/commands");
@@ -16,7 +16,7 @@ describe("Solidity Tests with balances", function() {
 
   before("set up sandbox", function(done) {
     this.timeout(5000);
-    Init.sandbox("bare", function(err, conf) {
+    Box.sandbox("bare", function(err, conf) {
       if (err) return done(err);
       config = conf;
       config.logger = logger;
