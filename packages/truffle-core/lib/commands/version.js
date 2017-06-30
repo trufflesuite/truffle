@@ -13,7 +13,7 @@ var command = {
       bundle_version = BUNDLE_VERSION;
     }
 
-    options.logger.log("Truffle v" + pkg.version + ", bundle version: " + bundle_version);
+    options.logger.log("Truffle v" + bundle_version + " (core: " + pkg.version + ")");
     options.logger.log("Solidity v" + solcpkg.version + " (solc-js)");
 
     done();
