@@ -77,10 +77,10 @@ var command = {
         if (boxConfig.epilogue) {
           config.logger.log(boxConfig.epilogue.replace("\n", OS.EOL));
         }
+
+        done();
       })
-      .catch(function(err) {
-        config.logger.log(err);
-      });
+      .catch(done);
   }
 }
 
