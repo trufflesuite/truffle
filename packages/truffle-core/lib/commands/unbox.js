@@ -17,6 +17,9 @@ function normalizeURL(url) {
   }
 
   if (url.indexOf("/") == -1) { // repo name only
+    if (url.indexOf("-box") == -1) {
+      url = url + "-box";
+    }
     return "https://github.com/truffle-box/" + url;
   }
 
@@ -74,6 +77,9 @@ var command = {
         if (boxConfig.epilogue) {
           config.logger.log(boxConfig.epilogue.replace("\n", OS.EOL));
         }
+      })
+      .catch(function(err) {
+        config.logger.log(err);
       });
   }
 }
