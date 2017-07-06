@@ -3,18 +3,18 @@ var command = {
   description: 'Show version number and exit',
   builder: {},
   run: function (options, done) {
-    var pkg = require("../../package.json");
-    var solcpkg = require("solc/package.json");
+    var version = require("../version");
 
-    var bundle_version = "N/A";
+    var bundle_version;
 
-    // NOTE: Webpack will replace BUNDLE_VERSION with a string.
-    if (typeof BUNDLE_VERSION != "undefined") {
-      bundle_version = BUNDLE_VERSION;
+    if (version.bundle) {
+      bundle_version = "v" + version.bundle;
+    } else {
+      bundle_version = "(unbundled)";
     }
 
-    options.logger.log("Truffle v" + bundle_version + " (core: " + pkg.version + ")");
-    options.logger.log("Solidity v" + solcpkg.version + " (solc-js)");
+    options.logger.log("Truffle " + bundle_version + " (core: " + version.core + ")");
+    options.logger.log("Solidity v" + version.solc + " (solc-js)");
 
     done();
   }
