@@ -118,6 +118,7 @@ describe('EthPM integration', function() {
 
   it("successfully installs and provisions a package with dependencies from EthPM", function(done) {
     this.timeout(15000); // Giving ample time for requests to time out.
+    this.retries(2);
 
     Package.install(config.with({
       ethpm: {
