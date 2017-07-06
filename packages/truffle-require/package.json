@@ -26,6 +26,7 @@
     "mocha": "^3.4.2"
   },
   "dependencies": {
+    "original-require": "^1.0.1",
     "truffle-config": "0.0.6",
     "truffle-expect": "0.0.3",
     "web3": "^0.18.0"
