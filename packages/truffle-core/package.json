@@ -36,7 +36,7 @@
     "truffle-migrate": "~1.1.1",
     "truffle-provider": "~0.0.1",
     "truffle-provisioner": "~0.1.0",
-    "truffle-require": "~1.0.0",
+    "truffle-require": "~1.0.2",
     "truffle-resolver": "~3.0.0",
     "truffle-solidity-utils": "~1.0.0",
     "web3": "^0.18.0",
