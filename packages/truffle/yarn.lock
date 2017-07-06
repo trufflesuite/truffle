@@ -3700,6 +3700,14 @@ fs-extra@^2.0.0:
     graceful-fs "^4.1.2"
     jsonfile "^2.1.0"
 
+fs-extra@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-3.0.1.tgz#3794f378c58b342ea7dbbb23095109c4b3b62291"
+  dependencies:
+    graceful-fs "^4.1.2"
+    jsonfile "^3.0.0"
+    universalify "^0.1.0"
+
 fs-readdir-recursive@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/fs-readdir-recursive/-/fs-readdir-recursive-1.0.0.tgz#8cd1745c8b4f8a29c8caec392476921ba195f560"
@@ -5553,6 +5561,12 @@ jsonbird@^2.0.0:
 jsonfile@^2.1.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/jsonfile/-/jsonfile-2.4.0.tgz#3736a2b428b87bbda0cc83b53fa3d633a35c2ae8"
+  optionalDependencies:
+    graceful-fs "^4.1.6"
+
+jsonfile@^3.0.0:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/jsonfile/-/jsonfile-3.0.1.tgz#a5ecc6f65f53f662c4415c7675a0331d0992ec66"
   optionalDependencies:
     graceful-fs "^4.1.6"
 
@@ -9557,7 +9571,7 @@ tiny-lr@^1.0.3:
     object-assign "^4.1.0"
     qs "^6.4.0"
 
-tmp@0.0.31, tmp@0.0.x:
+tmp@0.0.31, tmp@0.0.x, tmp@^0.0.31:
   version "0.0.31"
   resolved "https://registry.yarnpkg.com/tmp/-/tmp-0.0.31.tgz#8f38ab9438e17315e5dbd8b3657e8bfb277ae4a7"
   dependencies:
@@ -9657,6 +9671,15 @@ truffle-blockchain-utils@0.0.1:
   dependencies:
     web3 "^0.18.0"
 
+truffle-box@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/truffle-box/-/truffle-box-1.0.0.tgz#ae383c2d051e2b52944e30ab69a189c6f43fd230"
+  dependencies:
+    fs-extra "^3.0.1"
+    github-download "^0.5.0"
+    tmp "^0.0.31"
+    vcsurl "^0.1.1"
+
 truffle-compile@~2.0.3:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/truffle-compile/-/truffle-compile-2.0.3.tgz#a62d95898611f14f778de992d4dd5cea643a5df7"
@@ -9731,9 +9754,9 @@ truffle-contract@^2.0.0, truffle-contract@~2.0.0:
     truffle-contract-schema "0.0.5"
     web3 "^0.18.0"
 
-truffle-core@^3.3.1:
-  version "3.3.1"
-  resolved "https://registry.yarnpkg.com/truffle-core/-/truffle-core-3.3.1.tgz#46b09275da84a1b18f0f77f6c9da4cea831db8f7"
+truffle-core@^3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/truffle-core/-/truffle-core-3.4.0.tgz#3fd1b9f1ddb80e99ef9c1a1e88e5bca7b750be08"
   dependencies:
     async "^1.4.2"
     chai "^3.3.0"
@@ -9755,6 +9778,7 @@ truffle-core@^3.3.1:
     spawn-args "^0.1.0"
     temp "^0.8.3"
     truffle-artifactor "~2.1.4"
+    truffle-box "^1.0.0"
     truffle-compile "~2.0.3"
     truffle-config "~1.0.0"
     truffle-contract "~2.0.0"
@@ -10062,6 +10086,10 @@ unist-util-visit@^1.0.0, unist-util-visit@^1.0.1, unist-util-visit@^1.1.0:
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/unist-util-visit/-/unist-util-visit-1.1.3.tgz#ec268e731b9d277a79a5b5aa0643990e405d600b"
 
+universalify@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/universalify/-/universalify-0.1.0.tgz#9eb1c4651debcc670cc94f1a75762332bb967778"
+
 unpipe@1.0.0, unpipe@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/unpipe/-/unpipe-1.0.0.tgz#b2bf4ee8514aae6165b4817829d21b2ef49904ec"
@@ -10184,7 +10212,7 @@ varint@^5.0.0, varint@~5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/varint/-/varint-5.0.0.tgz#d826b89f7490732fabc0c0ed693ed475dcb29ebf"
 
-vcsurl@~0.1.0:
+vcsurl@^0.1.1, vcsurl@~0.1.0:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/vcsurl/-/vcsurl-0.1.1.tgz#5e00a109e7381b55b5d45b892533c8ec35c9320c"
 
