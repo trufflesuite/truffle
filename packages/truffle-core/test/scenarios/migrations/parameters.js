@@ -1,4 +1,4 @@
-var Init = require("truffle-init");
+var Box = require("truffle-box");
 var MemoryLogger = require("../memorylogger");
 var CommandRunner = require("../commandrunner");
 var contract = require("truffle-contract");
@@ -16,7 +16,7 @@ describe("Migration Parameters", function() {
 
   before("set up sandbox", function(done) {
     this.timeout(10000);
-    Init.sandbox("default", function(err, conf) {
+    Box.sandbox("default", function(err, conf) {
       if (err) return done(err);
       config = conf;
       config.logger = logger;

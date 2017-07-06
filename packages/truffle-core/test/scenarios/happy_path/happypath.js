@@ -1,4 +1,4 @@
-var Init = require("truffle-init");
+var Box = require("truffle-box");
 var MemoryLogger = require("../memorylogger");
 var CommandRunner = require("../commandrunner");
 var contract = require("truffle-contract");
@@ -8,13 +8,13 @@ var assert = require("assert");
 var TestRPC = require("ethereumjs-testrpc");
 var Reporter = require("../reporter");
 
-describe("Happy path (truffle init)", function() {
+describe("Happy path (truffle unbox)", function() {
   var config;
   var logger = new MemoryLogger();
 
   before("set up sandbox", function(done) {
     this.timeout(10000);
-    Init.sandbox("default", function(err, conf) {
+    Box.sandbox("default", function(err, conf) {
       if (err) return done(err);
       config = conf;
       config.logger = logger;
