@@ -9754,9 +9754,9 @@ truffle-contract@^2.0.0, truffle-contract@~2.0.0:
     truffle-contract-schema "0.0.5"
     web3 "^0.18.0"
 
-truffle-core@^3.4.0:
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/truffle-core/-/truffle-core-3.4.0.tgz#3fd1b9f1ddb80e99ef9c1a1e88e5bca7b750be08"
+truffle-core@^3.4.1:
+  version "3.4.1"
+  resolved "https://registry.yarnpkg.com/truffle-core/-/truffle-core-3.4.1.tgz#d3099b10be4c53435ee6d12683907d4b723a65ad"
   dependencies:
     async "^1.4.2"
     chai "^3.3.0"
@@ -9790,7 +9790,7 @@ truffle-core@^3.4.0:
     truffle-migrate "~1.1.1"
     truffle-provider "~0.0.1"
     truffle-provisioner "~0.1.0"
-    truffle-require "~1.0.0"
+    truffle-require "~1.0.2"
     truffle-resolver "~3.0.0"
     truffle-solidity-utils "~1.0.0"
     web3 "^0.18.0"
@@ -9847,10 +9847,19 @@ truffle-provisioner@^0.1.0, truffle-provisioner@~0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/truffle-provisioner/-/truffle-provisioner-0.1.0.tgz#029e5249c1015300738535e04fded931a53c4f62"
 
-truffle-require@^1.0.0, truffle-require@~1.0.0:
+truffle-require@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/truffle-require/-/truffle-require-1.0.1.tgz#2ba7a1b736575a7daf715e2dce5374fb94edac97"
   dependencies:
+    truffle-config "0.0.6"
+    truffle-expect "0.0.3"
+    web3 "^0.18.0"
+
+truffle-require@~1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/truffle-require/-/truffle-require-1.0.2.tgz#44468370942f954bd6fe2dc914c18270331bd4ff"
+  dependencies:
+    original-require "^1.0.1"
     truffle-config "0.0.6"
     truffle-expect "0.0.3"
     web3 "^0.18.0"
