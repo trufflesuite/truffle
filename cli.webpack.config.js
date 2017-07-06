@@ -26,8 +26,7 @@ module.exports = {
   module: {
     rules: [
       { test: /\.js$/, use: "shebang-loader" }
-    ],
-    noParse: [/truffle-require/]
+    ]
   },
   externals: [
     // If you look at webpack's docs, `externals` doesn't need to be a function.
