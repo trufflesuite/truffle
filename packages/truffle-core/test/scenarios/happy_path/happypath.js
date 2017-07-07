@@ -5,20 +5,28 @@ var contract = require("truffle-contract");
 var fs = require("fs");
 var path = require("path");
 var assert = require("assert");
-var TestRPC = require("ethereumjs-testrpc");
+var Server = require("../server");
 var Reporter = require("../reporter");
 
 describe("Happy path (truffle unbox)", function() {
   var config;
   var logger = new MemoryLogger();
 
+  before("set up the server", function(done) {
+    Server.start(done);
+  });
+
+  after("stop server", function(done) {
+    Server.stop(done);
+  });
+
   before("set up sandbox", function(done) {
     this.timeout(10000);
     Box.sandbox("default", function(err, conf) {
       if (err) return done(err);
       config = conf;
+      config.network = "development";
       config.logger = logger;
-      config.networks.development.provider = TestRPC.provider();
       config.mocha = {
         reporter: new Reporter(logger)
       }
@@ -53,7 +61,7 @@ describe("Happy path (truffle unbox)", function() {
       var promises = [];
 
       [MetaCoin, ConvertLib, Migrations].forEach(function(abstraction) {
-        abstraction.setProvider(config.networks.development.provider);
+        abstraction.setProvider(config.provider);
 
         promises.push(abstraction.deployed().then(function(instance) {
           assert.notEqual(instance.address, null, instance.contract_name + " didn't have an address!")
