@@ -120,6 +120,10 @@ function installBoxDependencies(boxConfig, destination) {
   var postUnpack = boxConfig.hooks['post-unpack']
 
   return new Promise(function(accept, reject) {
+    if (postUnpack.length === 0) {
+      return accept();
+    }
+
     exec(postUnpack, {cwd: destination}, function(err, stdout, stderr) {
       if (err) return reject(err);
       accept(stdout, stderr);
