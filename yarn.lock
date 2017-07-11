@@ -2403,7 +2403,7 @@ debounce@^1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/debounce/-/debounce-1.0.2.tgz#503cc674d8d7f737099664fb75ddbd36b9626dc6"
 
-debug@2, debug@^2.1.0, debug@^2.1.1, debug@^2.2.0, debug@^2.6.0, debug@^2.6.1, debug@^2.6.3, debug@^2.6.8, debug@~2.6.7:
+debug@2, debug@^2.1.0, debug@^2.1.1, debug@^2.6.0, debug@^2.6.1, debug@^2.6.3, debug@^2.6.8, debug@~2.6.7:
   version "2.6.8"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.8.tgz#e731531ca2ede27d188222427da17821d68ff4fc"
   dependencies:
@@ -2421,7 +2421,7 @@ debug@2.3.3:
   dependencies:
     ms "0.7.2"
 
-debug@2.6.0:
+debug@2.6.0, debug@^2.2.0:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.0.tgz#bc596bcabe7617f11d9fa15361eded5608b8499b"
   dependencies:
@@ -8631,7 +8631,7 @@ right-align@^0.1.1:
   dependencies:
     align-text "^0.1.1"
 
-rimraf@2, rimraf@^2.4.3, rimraf@^2.5.1, rimraf@^2.6.0, rimraf@^2.6.1:
+rimraf@2, rimraf@^2.4.3, rimraf@^2.5.1, rimraf@^2.5.4, rimraf@^2.6.0, rimraf@^2.6.1:
   version "2.6.1"
   resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-2.6.1.tgz#c2338ec643df7a1b7fe5c54fa86f57428a55f33d"
   dependencies:
@@ -8643,7 +8643,7 @@ rimraf@2.4.3:
   dependencies:
     glob "^5.0.14"
 
-rimraf@^2.2.8, rimraf@^2.5.4, rimraf@~2.5.1:
+rimraf@^2.2.8, rimraf@~2.5.1:
   version "2.5.4"
   resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-2.5.4.tgz#96800093cbf1a0c86bd95b4625467535c29dfa04"
   dependencies:
@@ -9667,9 +9667,9 @@ truffle-blockchain-utils@0.0.1:
   dependencies:
     web3 "^0.18.0"
 
-truffle-box@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/truffle-box/-/truffle-box-1.0.0.tgz#ae383c2d051e2b52944e30ab69a189c6f43fd230"
+truffle-box@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/truffle-box/-/truffle-box-1.0.1.tgz#df672fac705d0a38d0d03bfa88c08e7402d605c6"
   dependencies:
     fs-extra "^3.0.1"
     github-download "^0.5.0"
@@ -9750,9 +9750,9 @@ truffle-contract@^2.0.0, truffle-contract@~2.0.0:
     truffle-contract-schema "0.0.5"
     web3 "^0.18.0"
 
-truffle-core@^3.4.1:
-  version "3.4.1"
-  resolved "https://registry.yarnpkg.com/truffle-core/-/truffle-core-3.4.1.tgz#d3099b10be4c53435ee6d12683907d4b723a65ad"
+truffle-core@^3.4.4:
+  version "3.4.4"
+  resolved "https://registry.yarnpkg.com/truffle-core/-/truffle-core-3.4.4.tgz#d983a4fb734d72868353007e62d9d0cb807869aa"
   dependencies:
     async "^1.4.2"
     chai "^3.3.0"
@@ -9774,7 +9774,7 @@ truffle-core@^3.4.1:
     spawn-args "^0.1.0"
     temp "^0.8.3"
     truffle-artifactor "~2.1.4"
-    truffle-box "^1.0.0"
+    truffle-box "^1.0.1"
     truffle-compile "~2.0.3"
     truffle-config "~1.0.0"
     truffle-contract "~2.0.0"
