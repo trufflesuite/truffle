@@ -52,10 +52,10 @@ function verifyURL(url) {
 
 function setupTempDirectory() {
   return new Promise(function(accept, reject) {
-    tmp.dir(function(err, path, cleanupCallback) {
+    tmp.dir({unsafeCleanup: true}, function(err, dir, cleanupCallback) {
       if (err) return reject(err);
 
-      accept(path, cleanupCallback);
+      accept(path.join(dir, "box"), cleanupCallback);
     });
   });
 }
