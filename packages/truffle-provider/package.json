@@ -1,6 +1,6 @@
 {
   "name": "truffle-provider",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "description": "Beefed up provider module for Truffle",
   "main": "index.js",
   "scripts": {
@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle-provider#readme",
   "dependencies": {
-    "web3": "^0.19.1"
+    "web3": "^0.18.0"
   },
   "devDependencies": {
     "ethereumjs-testrpc": "^3.0.5",
