@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "original-require": "^1.0.1",
-    "truffle-config": "^1.0.0",
+    "truffle-config": "0.0.6",
     "truffle-expect": "0.0.3",
     "web3": "^0.19.1"
   }
