@@ -1,6 +1,6 @@
 {
   "name": "truffle-blockchain-utils",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Utilities for identifying and managing blockchains",
   "main": "index.js",
   "scripts": {
@@ -22,6 +22,6 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle-blockchain-utils#readme",
   "dependencies": {
-    "web3": "^0.18.0"
+    "web3": "^0.19.1"
   }
 }
