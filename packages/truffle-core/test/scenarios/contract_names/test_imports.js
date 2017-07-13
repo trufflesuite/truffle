@@ -6,19 +6,28 @@ var fs = require("fs-extra");
 var path = require("path");
 var assert = require("assert");
 var TestRPC = require("ethereumjs-testrpc");
+var Server = require("../server");
 var Reporter = require("../reporter");
 
 describe("Contract names", function() {
   var config;
   var logger = new MemoryLogger();
 
+  before("set up the server", function(done) {
+    Server.start(done);
+  });
+
+  after("stop server", function(done) {
+    Server.stop(done);
+  });
+
   before("set up sandbox", function(done) {
     this.timeout(10000);
     Box.sandbox("bare", function(err, conf) {
       if (err) return done(err);
       config = conf;
+      config.network = "development";
       config.logger = logger;
-      config.networks.development.provider = TestRPC.provider();
       config.mocha = {
         reporter: new Reporter(logger)
       }
@@ -53,7 +62,7 @@ describe("Contract names", function() {
       if (err) return done(err);
 
       var Contract = contract(require(path.join(config.contracts_build_directory, "Contract.json")));
-      Contract.setProvider(config.networks.development.provider);
+      Contract.setProvider(config.provider);
 
       var deployed;
       Contract.deployed().then(function(instance) {
@@ -85,7 +94,7 @@ describe("Contract names", function() {
         if (err) return done(err);
 
         var RelativeImport = contract(require(path.join(config.contracts_build_directory, "RelativeImport.json")));
-        RelativeImport.setProvider(config.networks.development.provider);
+        RelativeImport.setProvider(config.provider);
 
         var deployed;
         RelativeImport.deployed().then(function(instance) {
@@ -118,7 +127,7 @@ describe("Contract names", function() {
   //       if (err) return done(err);
   //
   //       var FloatingImport = contract(require(path.join(config.contracts_build_directory, "FloatingImport.json")));
-  //       FloatingImport.setProvider(config.networks.development.provider);
+  //       FloatingImport.setProvider(config.provider);
   //
   //       var deployed;
   //       FloatingImport.deployed().then(function(instance) {
