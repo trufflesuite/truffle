@@ -6,6 +6,7 @@ var vcsurl = require('vcsurl');
 var parseURL = require('url').parse;
 var tmp = require('tmp');
 var exec = require('child_process').exec;
+var cwd = require('process').cwd();
 
 var config = require('../config');
 
@@ -52,7 +53,7 @@ function verifyURL(url) {
 
 function setupTempDirectory() {
   return new Promise(function(accept, reject) {
-    tmp.dir({unsafeCleanup: true}, function(err, dir, cleanupCallback) {
+    tmp.dir({dir: cwd, unsafeCleanup: true}, function(err, dir, cleanupCallback) {
       if (err) return reject(err);
 
       accept(path.join(dir, "box"), cleanupCallback);
