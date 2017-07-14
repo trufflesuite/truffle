@@ -32,7 +32,7 @@
   "scripts": {
     "build": "npm run build-cli",
     "build-cli": "webpack --config ./cli.webpack.config.js",
-    "test": "mocha"
+    "test": "npm run build-cli && mocha"
   },
   "repository": {
     "type": "git",
