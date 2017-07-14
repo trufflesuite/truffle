@@ -41,12 +41,7 @@ describe("Solidity Tests with balances", function() {
     this.timeout(20000);
 
     commander.run("test", config, function(err) {
-      if (err != 0) {
-        if (typeof err == "number") {
-          err = new Error("Unknown exit code: " + err);
-        }
-        return done(err);
-      }
+      if (err) return done(err);
 
       assert(logger.contents().indexOf("1 passing") >= 0);
 

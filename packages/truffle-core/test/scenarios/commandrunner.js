@@ -1,18 +1,36 @@
-var Commander = require("../../lib/command");
-var commands = require("../../lib/commands");
-var commander = new Commander(commands);
+var spawn = require('child_process').spawn;
+var yargs = require("yargs/yargs");
+var path = require("path");
 
 module.exports = {
   run: function(command, config, callback) {
-    commander.run(command, config, function(err) {
-      if (err != 0) {
-        if (typeof err == "number") {
-          err = new Error("Unknown exit code: " + err);
-        }
+    var args = yargs();
+    var argv = args.parse(command);
+
+    var child = spawn(path.join(__dirname, "../", "../", "cli.js"), argv._, {
+      cwd: config.working_directory,
+    });
+
+    child.stdout.on('data', function(data) {
+      data = data.toString().replace(/\n$/, '');
+      config.logger.log(data);
+    });
+    child.stderr.on('data', function(data) {
+      data = data.toString().replace(/\n$/, '');
+      config.logger.log(data);
+    });
+    child.on('close', function(code) {
+      // If the command didn't exit properly, show the output and throw.
+      if (code !== 0) {
+        var err = new Error("Unknown exit code: " + code);
         return callback(err);
       }
 
       callback();
     });
+
+    if (child.error) {
+      return callback(child.error);
+    }
   }
 };
