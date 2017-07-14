@@ -1,4 +1,3 @@
-var _ = require("lodash");
 var Web3 = require("web3");
 
 module.exports = {
