@@ -1,0 +1,9 @@
+var fs = require("fs");
+var path = require("path");
+module.exports = function(deployer, network, accounts) {
+  // Write the network and accounts output out to a file so we can test it.
+  fs.writeFileSync(path.join(__dirname, "output.json"), JSON.stringify({
+    network: network,
+    accounts: accounts
+  }), "utf8");
+};
