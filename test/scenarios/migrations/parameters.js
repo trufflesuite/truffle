@@ -49,7 +49,7 @@ describe("Migration Parameters", function() {
     });
   });
 
-  it("will migrate and out save the correct output data", function(done) {
+  it("will migrate and save the correct output data", function(done) {
     this.timeout(20000);
 
     var expected_file = path.join(config.migrations_directory, "output.json");
