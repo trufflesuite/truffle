@@ -4,11 +4,20 @@ var CommandRunner = require("../commandrunner");
 var fs = require("fs-extra");
 var path = require("path");
 var assert = require("assert");
+var Server = require("../server");
 var Reporter = require("../reporter");
 
 describe("Solidity Tests with balances", function() {
   var logger = new MemoryLogger();
   var config;
+
+  before("set up the server", function(done) {
+    Server.start(done);
+  });
+
+  after("stop server", function(done) {
+    Server.stop(done);
+  });
 
   before("set up sandbox", function(done) {
     this.timeout(5000);
@@ -24,10 +33,11 @@ describe("Solidity Tests with balances", function() {
     });
   });
 
-  before("copy over test contract", function(done) {
+  before("copy over test contract", function() {
     var from = path.join(__dirname, "TestWithBalance.sol");
-    var to = config.test_directory;
-    fs.copySync(from, to);
+    return fs.ensureDir(config.test_directory).then(function() {
+      return fs.copy(from, config.test_directory + "/TestWithBalance.sol");
+    });
   });
 
   // For this scenario, see the TestWithBalance.sol file for the actual test case.
