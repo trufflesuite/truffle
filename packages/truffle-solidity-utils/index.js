@@ -27,6 +27,7 @@ var SolidityUtils = {
       }
 
       if (!contract_definition) return callback(null, abi);
+      if (!contract_definition.body) return callback(null, abi);
 
       contract_definition.body.forEach(function(statement) {
         if (statement.type == "FunctionDeclaration") {
