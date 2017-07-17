@@ -178,12 +178,68 @@ var Migrate = {
   },
 
   runMigrations: function(migrations, options, callback) {
+
+    // Perform a shallow clone of the options object
+    // so that we can override the provider option without
+    // changing the original options object passed in.
+    var clone = {};
+
+    Object.keys(options).forEach(function(key) {
+      clone[key] = options[key];
+    });
+
+    clone.provider = this.wrapProvider(options.provider, options.logger);
+    clone.resolver = this.wrapResolver(options.resolver, clone.provider);
+
     async.eachSeries(migrations, function(migration, finished) {
-      migration.run(options, function(err) {
+      migration.run(clone, function(err) {
         if (err) return finished(err);
         finished();
       });
     }, callback);
+  },
+
+  wrapProvider: function(provider, logger) {
+    var printTransaction = function(tx_hash) {
+      //logger.log("  Transaction: " + tx_hash);
+      logger.log("  ... " + tx_hash);
+    };
+
+    return {
+      send: function(payload) {
+        var result = provider.send(payload);
+
+        if (payload.method == "eth_sendTransaction") {
+          printTransaction(result.result);
+        }
+
+        return result;
+      },
+      sendAsync: function(payload, callback) {
+        provider.sendAsync(payload, function(err, result) {
+          if (err) return callback(err);
+
+          if (payload.method == "eth_sendTransaction") {
+            printTransaction(result.result);
+          }
+
+          callback(err, result);
+        });
+      }
+    };
+  },
+
+  wrapResolver: function(resolver, provider) {
+    return {
+      require: function(import_path, search_path) {
+        var abstraction = resolver.require(import_path, search_path);
+
+        abstraction.setProvider(provider);
+
+        return abstraction;
+      },
+      resolve: resolver.resolve
+    }
   },
 
   lastCompletedMigration: function(options, callback) {
