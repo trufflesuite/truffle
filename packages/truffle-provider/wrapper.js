@@ -1,5 +1,4 @@
 var ProviderError = require('./error');
-var TruffleError = require('truffle-error');
 
 module.exports = {
   /*
