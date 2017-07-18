@@ -15,13 +15,7 @@ function Migration(file) {
 
 Migration.prototype.run = function(options, callback) {
   var self = this;
-  var logger = options.logger || console;
-
-  if (options.quiet) {
-    logger = {
-      log: function() {}
-    }
-  };
+  var logger = options.logger;
 
   var web3 = new Web3();
   web3.setProvider(options.provider);
@@ -179,6 +173,13 @@ var Migrate = {
   },
 
   runMigrations: function(migrations, options, callback) {
+    var logger = options.logger;
+
+    if (options.quiet) {
+      logger = {
+        log: function() {}
+      }
+    };
 
     // Perform a shallow clone of the options object
     // so that we can override the provider option without
@@ -189,7 +190,9 @@ var Migrate = {
       clone[key] = options[key];
     });
 
-    clone.provider = this.wrapProvider(options.provider, options.logger);
+    clone.logger = logger;
+
+    clone.provider = this.wrapProvider(options.provider, clone.logger);
     clone.resolver = this.wrapResolver(options.resolver, clone.provider);
 
     async.eachSeries(migrations, function(migration, finished) {
@@ -202,7 +205,6 @@ var Migrate = {
 
   wrapProvider: function(provider, logger) {
     var printTransaction = function(tx_hash) {
-      //logger.log("  Transaction: " + tx_hash);
       logger.log("  ... " + tx_hash);
     };
 
