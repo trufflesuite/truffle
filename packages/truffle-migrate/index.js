@@ -173,14 +173,6 @@ var Migrate = {
   },
 
   runMigrations: function(migrations, options, callback) {
-    var logger = options.logger;
-
-    if (options.quiet) {
-      logger = {
-        log: function() {}
-      }
-    };
-
     // Perform a shallow clone of the options object
     // so that we can override the provider option without
     // changing the original options object passed in.
@@ -190,7 +182,11 @@ var Migrate = {
       clone[key] = options[key];
     });
 
-    clone.logger = logger;
+    if (options.quiet) {
+      clone.logger = {
+        log: function() {}
+      }
+    };
 
     clone.provider = this.wrapProvider(options.provider, clone.logger);
     clone.resolver = this.wrapResolver(options.resolver, clone.provider);
