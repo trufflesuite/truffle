@@ -36,6 +36,9 @@ function Config(truffle_directory, working_directory, network) {
       ipfs_protocol: "https",
       registry: "0x8011df4830b4f696cd81393997e5371b93338878",
       install_provider_uri: "https://ropsten.infura.io/truffle"
+    },
+    logger: {
+      log: function() {},
     }
   };
 
@@ -50,6 +53,7 @@ function Config(truffle_directory, working_directory, network) {
     resolver: function() {},
     artifactor: function() {},
     ethpm: function() {},
+    logger: function() {},
 
     build_directory: function() {
       return path.join(self.working_directory, "build");
