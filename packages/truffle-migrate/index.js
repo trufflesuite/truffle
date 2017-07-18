@@ -134,7 +134,8 @@ var Migrate = {
       "resolver",
       "network",
       "network_id",
-      "from" // address doing deployment
+      "logger",
+      "from", // address doing deployment
     ]);
 
     if (options.reset == true) {
