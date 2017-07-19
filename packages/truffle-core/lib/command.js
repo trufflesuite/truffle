@@ -57,7 +57,7 @@ Command.prototype.getCommand = function(str) {
   var command = this.commands[chosenCommand];
 
   return {
-    name: input,
+    name: chosenCommand,
     argv: argv,
     command: command
   };
