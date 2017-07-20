@@ -25,10 +25,10 @@
   "dependencies": {
     "async": "^2.1.4",
     "node-dir": "^0.1.16",
-    "truffle-deployer": "^1.0.0",
+    "truffle-deployer": "^1.0.1",
     "truffle-expect": "^0.0.3",
-    "truffle-require": "^1.0.0",
-    "web3": "^0.18.0"
+    "truffle-require": "^1.0.3",
+    "web3": "^0.19.1"
   },
   "devDependencies": {
     "mocha": "^3.2.0"
