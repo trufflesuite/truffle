@@ -23,23 +23,23 @@
     "serve-static": "^1.10.0",
     "spawn-args": "^0.1.0",
     "temp": "^0.8.3",
-    "truffle-artifactor": "~2.1.4",
+    "truffle-artifactor": "^2.1.5",
     "truffle-box": "^1.0.2",
-    "truffle-compile": "~2.0.3",
-    "truffle-config": "~1.0.0",
-    "truffle-contract": "~2.0.0",
-    "truffle-contract-sources": "~0.0.1",
-    "truffle-deployer": "~1.0.0",
-    "truffle-error": "~0.0.2",
-    "truffle-expect": "~0.0.3",
-    "truffle-init": "~1.0.5",
-    "truffle-migrate": "~1.1.1",
-    "truffle-provider": "~0.0.1",
-    "truffle-provisioner": "~0.1.0",
-    "truffle-require": "~1.0.2",
-    "truffle-resolver": "~3.0.0",
-    "truffle-solidity-utils": "~1.0.0",
-    "web3": "^0.18.0",
+    "truffle-compile": "^2.0.4",
+    "truffle-config": "^1.0.1",
+    "truffle-contract": "^2.0.3",
+    "truffle-contract-sources": "^0.0.1",
+    "truffle-deployer": "^1.0.2",
+    "truffle-error": "^0.0.2",
+    "truffle-expect": "^0.0.3",
+    "truffle-init": "^1.0.7",
+    "truffle-migrate": "^1.1.5",
+    "truffle-provider": "^0.0.3",
+    "truffle-provisioner": "^0.1.0",
+    "truffle-require": "^1.0.4",
+    "truffle-resolver": "^3.0.0",
+    "truffle-solidity-utils": "^1.0.1",
+    "web3": "^0.20.1",
     "yargs": "^6.6.0"
   },
   "bin": {
@@ -68,6 +68,6 @@
   "devDependencies": {
     "ethereumjs-testrpc": "^3.0.3",
     "ipfsd-ctl": "^0.21.0",
-    "truffle-blockchain-utils": "0.0.1"
+    "truffle-blockchain-utils": "^0.0.3"
   }
 }
