@@ -21,15 +21,43 @@ Command.prototype.getCommand = function(str) {
     return null;
   }
 
-  var name = argv._[0];
-  var command = this.commands[name];
+  var input = argv._[0];
+  var chosenCommand = null;
 
-  if (command == null) {
+  // If the command wasn't specified directly, go through a process
+  // for inferring the command.
+  if (this.commands[input]) {
+    chosenCommand = input;
+  } else {
+    var currentLength = 1;
+    var availableCommandNames = Object.keys(this.commands);
+
+    // Loop through each letter of the input until we find a command
+    // that uniquely matches.
+    while (currentLength <= input.length) {
+      // Gather all possible commands that match with the current length
+      var possibleCommands = availableCommandNames.filter(function(possibleCommand) {
+        return possibleCommand.substring(0, currentLength) == input.substring(0, currentLength);
+      });
+
+      // Did we find only one command that matches? If so, use that one.
+      if (possibleCommands.length == 1) {
+        chosenCommand = possibleCommands[0];
+        break;
+      }
+
+      currentLength += 1;
+    }
+  }
+
+  if (chosenCommand == null) {
     return null;
   }
 
+  var command = this.commands[chosenCommand];
+
   return {
-    name: name,
+    name: chosenCommand,
     argv: argv,
     command: command
   };
