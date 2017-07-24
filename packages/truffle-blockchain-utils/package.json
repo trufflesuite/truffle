@@ -22,6 +22,6 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle-blockchain-utils#readme",
   "dependencies": {
-    "web3": "^0.19.1"
+    "web3": "^0.20.1"
   }
 }
