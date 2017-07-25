@@ -759,7 +759,7 @@ var contract = (function(module) {
 
       Object.keys(this.links).forEach(function(library_name) {
         var library_address = self.links[library_name];
-        var regex = new RegExp("__" + library_name + "_*", "g");
+        var regex = new RegExp("__" + library_name + "_+", "g");
 
         binary = binary.replace(regex, library_address.replace("0x", ""));
       });
