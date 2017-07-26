@@ -66,10 +66,6 @@ var compile = function(sources, options, callback) {
     language: "Solidity",
     sources: {},
     settings: {
-      optimizer: {
-        enabled: true,
-        runs: 0 // See https://github.com/ethereum/solidity/issues/2245
-      },
       outputSelection: {
         "*": {
           "*": [
