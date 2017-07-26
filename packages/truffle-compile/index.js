@@ -40,7 +40,8 @@ var compile = function(sources, options, callback) {
   }
 
   expect.options(options, [
-    "contracts_directory"
+    "contracts_directory",
+    "solc"
   ]);
 
   // Ensure sources have operating system independent paths
@@ -83,6 +84,9 @@ var compile = function(sources, options, callback) {
       }
     }
   };
+
+  // merge solc settings specified in truffle config
+  Object.assign(solcStandardInput.settings, options.solc);
 
   // Nothing to compile? Bail.
   if (Object.keys(sources).length == 0) {
