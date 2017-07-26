@@ -66,6 +66,7 @@ var compile = function(sources, options, callback) {
     language: "Solidity",
     sources: {},
     settings: {
+      optimizer: options.solc.optimizer,
       outputSelection: {
         "*": {
           "*": [
@@ -80,9 +81,6 @@ var compile = function(sources, options, callback) {
       }
     }
   };
-
-  // merge solc settings specified in truffle config
-  Object.assign(solcStandardInput.settings, options.solc);
 
   // Nothing to compile? Bail.
   if (Object.keys(sources).length == 0) {
