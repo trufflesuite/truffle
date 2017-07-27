@@ -52,7 +52,9 @@ var compile = function(sources, options, callback) {
     var replacement = source.replace(/\\/g, "/");
 
     // Turn G:/.../ into /G/.../ for Windows
-    if (replacement.length >= 2 && replacement[1] == ":") {
+    // Make sure not to break package imports.
+    // TODO: Make this a regex instead?
+    if (replacement[0] != "/" && replacement[1] == ":") {
       replacement = "/" + replacement;
       replacement = replacement.replace(":", "");
     }
@@ -142,11 +144,11 @@ var compile = function(sources, options, callback) {
         sourcePath: source_path,
         source: operatingSystemIndependentSources[source_path],
         sourceMap: contract.evm.bytecode.sourceMap,
-        runtimeSourceMap: contract.evm.deployedBytecode.sourceMap,
+        deployedSourceMap: contract.evm.deployedBytecode.sourceMap,
         ast: standardOutput.sources[source_path].legacyAST,
         abi: contract.abi,
         bytecode: "0x" + contract.evm.bytecode.object,
-        runtimeBytecode: "0x" + contract.evm.deployedBytecode.object,
+        deployedBytecode: "0x" + contract.evm.deployedBytecode.object,
         unlinked_binary: "0x" + contract.evm.bytecode.object // deprecated
       }
 
@@ -164,14 +166,14 @@ var compile = function(sources, options, callback) {
         });
       });
 
-      // Now for the runtime bytecode
+      // Now for the deployed bytecode
       Object.keys(contract.evm.deployedBytecode.linkReferences).forEach(function(file_name) {
         var fileLinks = contract.evm.deployedBytecode.linkReferences[file_name];
 
         Object.keys(fileLinks).forEach(function(library_name) {
           var linkReferences = fileLinks[library_name] || [];
 
-          contract_definition.runtimeBytecode = replaceLinkReferences(contract_definition.runtimeBytecode, linkReferences, library_name);
+          contract_definition.deployedBytecode = replaceLinkReferences(contract_definition.deployedBytecode, linkReferences, library_name);
         });
       });
 
