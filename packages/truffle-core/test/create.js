@@ -1,7 +1,7 @@
 var assert = require("chai").assert;
 var path = require("path");
 var fs = require("fs");
-var Init = require("truffle-init");
+var Box = require("truffle-box");
 var Create = require("../lib/create");
 var dir = require("node-dir");
 var Resolver = require("truffle-resolver");
@@ -12,7 +12,7 @@ describe('create', function() {
 
   before("Create a sandbox", function(done) {
     this.timeout(10000);
-    Init.sandbox(function(err, result) {
+    Box.sandbox(function(err, result) {
       if (err) return done(err);
       config = result;
       config.resolver = new Resolver(config);
@@ -56,18 +56,22 @@ describe('create', function() {
       if (err) return done(err);
 
       dir.files(config.migrations_directory, function(err, files) {
+        if (err) return done(err);
+
         var found = false;
-        files.forEach(function(file) {
-          if (file.indexOf("my_new_migration") > 0) {
+        var expected_suffix = "_my_new_migration.js";
+
+        for (var i = 0; i < files.length; i++) {
+          var file = files[i];
+
+          if (file.indexOf(expected_suffix) == file.length - expected_suffix.length) {
             var file_data = fs.readFileSync(file, {encoding: "utf8"});
             assert.isNotNull(file_data, "File's data is null");
             assert.notEqual(file_data, "", "File's data is blank");
 
-            found = true;
-
-            done();
+            return done();
           }
-        });
+        }
 
         if (found == false) {
           assert.fail("Could not find a file that matched expected name");

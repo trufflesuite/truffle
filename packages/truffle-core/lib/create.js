@@ -92,7 +92,7 @@ var Create = {
     to += ".js";
     to = path.join(directory, to);
 
-    copy(from, to, {clobber: false}, callback);
+    copy.file(from, to, callback);
   }
 }
 

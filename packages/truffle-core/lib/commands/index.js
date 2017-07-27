@@ -15,5 +15,6 @@ module.exports = {
   watch: require("./watch"),
   serve: require("./serve"),
   exec: require("./exec"),
+  unbox: require("./unbox"),
   version: require("./version")
 };

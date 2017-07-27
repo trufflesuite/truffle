@@ -12,7 +12,7 @@ var Deployed = {
     Object.keys(mapping).forEach(function(name) {
       var address = mapping[name];
 
-      var body = "throw;";
+      var body = "revert();";
 
       if (address) {
         address = self.toChecksumAddress(address);

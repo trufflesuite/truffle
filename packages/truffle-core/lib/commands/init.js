@@ -15,6 +15,10 @@ var command = {
 
     if (options._ && options._.length > 0) {
       example_name = options._[0];
+      config.logger.log(
+        "Using `truffle init` with a specific template is deprecated. " +
+          "Please use `truffle unbox` instead."
+      );
     }
 
     Init.fromGithub(config, example_name, config.working_directory).then(function(project_config) {
