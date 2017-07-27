@@ -24,6 +24,7 @@
   "homepage": "https://github.com/trufflesuite/truffle-provider#readme",
   "dependencies": {
     "truffle-error": "^0.0.2",
+    "lodash": "^4.17.4",
     "web3": "^0.20.1"
   },
   "devDependencies": {
