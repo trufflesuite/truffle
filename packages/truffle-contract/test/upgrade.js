@@ -3,7 +3,7 @@ var MetaCoin = require("./lib/MetaCoin.sol.js");
 var assert = require("assert");
 var _ = require("lodash");
 
-describe("upgrading from soljs", function() {
+describe("Upgrading from soljs", function() {
 
   it("errors if a default network is specified and not ignored", function() {
     try {
