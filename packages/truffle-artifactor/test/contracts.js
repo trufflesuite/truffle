@@ -1,6 +1,7 @@
 var assert = require("chai").assert;
 var Artifactor = require("../");
 var contract = require("truffle-contract");
+var Schema = require("truffle-contract-schema");
 var temp = require("temp").track();
 var path = require("path");
 var solc = require("solc");
@@ -38,8 +39,8 @@ describe("artifactor + require", function() {
     // which happens to be the first.
     process.removeListener("uncaughtException", process.listeners("uncaughtException")[0]);
 
-    var compiled = result.contracts["Example"];
-    abi = JSON.parse(compiled.interface);
+    var compiled = Schema.normalize(result.contracts["Example"]);
+    abi = compiled.abi;
     binary = compiled.bytecode;
 
     // Setup
@@ -53,14 +54,13 @@ describe("artifactor + require", function() {
     artifactor = new Artifactor(dirPath);
 
     artifactor.save({
-      contract_name: "Example",
+      contractName: "Example",
       abi: abi,
       binary: binary,
       address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01",
       network_id: network_id
     }).then(function() {
       var json = requireNoCache(expected_filepath);
-
       Example = contract(json);
       Example.setProvider(provider);
     }).then(done).catch(done);
@@ -255,13 +255,14 @@ describe("artifactor + require", function() {
     };
 
     var MyContract = contract({
-      contract_name: "MyContract",
+      contractName: "MyContract",
       abi: [
         event_abi
       ],
       binary: "0x12345678",
-      network_id: 5
     });
+
+    MyContract.setNetwork(5);
 
     var expected_event_topic = web3.sha3("PackageRelease(bytes32,bytes32)");
 
