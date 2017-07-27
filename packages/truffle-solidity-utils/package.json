@@ -1,6 +1,6 @@
 {
   "name": "truffle-solidity-utils",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Utilities for Solidity contracts",
   "main": "index.js",
   "scripts": {
@@ -24,5 +24,8 @@
   "homepage": "https://github.com/trufflesuite/truffle-solidity-utils#readme",
   "dependencies": {
     "solidity-parser": "^0.3.0"
+  },
+  "devDependencies": {
+    "mocha": "^3.4.2"
   }
 }
