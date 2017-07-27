@@ -2,6 +2,7 @@ var fs = require("fs");
 var path = require("path");
 var Module = require('module');
 var vm = require('vm');
+var originalrequire = require("original-require");
 var expect = require("truffle-expect");
 var Config = require("truffle-config");
 var Web3 = require("web3");
@@ -17,8 +18,7 @@ var Require = {
     var file = options.file;
 
     expect.options(options, [
-      "file",
-      "resolver"
+      "file"
     ]);
 
     options = Config.default().with(options);
@@ -48,12 +48,12 @@ var Require = {
 
           // If absolute, just require.
           if (path.isAbsolute(pkgPath)) {
-            return require(pkgPath);
+            return originalrequire(pkgPath);
           }
 
           // If relative, it's relative to the file.
           if (pkgPath[0] == ".") {
-            return require(path.join(path.dirname(file), pkgPath));
+            return originalrequire(path.join(path.dirname(file), pkgPath));
           } else {
             // Not absolute, not relative, must be a globally or locally installed module.
 
@@ -63,7 +63,7 @@ var Require = {
             var moduleDir = path.dirname(file);
             while (true) {
               try {
-                return require(path.join(moduleDir, 'node_modules', pkgPath));
+                return originalrequire(path.join(moduleDir, 'node_modules', pkgPath));
               } catch (e) {
 
               }
@@ -75,7 +75,7 @@ var Require = {
             }
 
             // Try global, and let the error throw.
-            return require(pkgPath);
+            return originalrequire(pkgPath);
           }
         },
         artifacts: options.resolver,
