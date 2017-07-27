@@ -43,11 +43,11 @@ var Contracts = {
       config.artifactor = new Artifactor(config.contracts_build_directory);
     }
 
-    function finished(err, contracts, paths) {
+    function finished(err, result, paths) {
       if (err) return callback(err);
 
-      if (contracts != null && Object.keys(contracts).length > 0) {
-        self.write_contracts(contracts, config, function(err, abstractions) {
+      if (Object.keys(result).length > 0) {
+        self.write_contracts(result, config, function(err, abstractions) {
           callback(err, abstractions, paths);
         });
       } else {
@@ -62,25 +62,27 @@ var Contracts = {
     }
   },
 
-  write_contracts: function(contracts, options, callback) {
-    var logger = options.logger || console;
+  write_contracts: function(compiler_output_or_abstractions, config, callback) {
+    // TODO: Remove default console here.
+    var logger = config.logger || console;
 
-    mkdirp(options.contracts_build_directory, function(err, result) {
+    mkdirp(config.contracts_build_directory, function(err) {
       if (err != null) {
         callback(err);
         return;
       }
 
-      if (options.quiet != true && options.quietWrite != true) {
-        logger.log("Writing artifacts to ." + path.sep + path.relative(options.working_directory, options.contracts_build_directory) + OS.EOL);
+      if (config.quiet != true && config.quietWrite != true) {
+        logger.log("Writing artifacts to ." + path.sep + path.relative(config.working_directory, config.contracts_build_directory) + OS.EOL);
       }
 
-      var extra_opts = {
-        network_id: options.network_id
-      };
+      // // TODO: Is this still needed?
+      // compiler_output_or_abstractions.forEach(function(item) {
+      //   item.network_id = config.network_id;
+      // });
 
-      options.artifactor.saveAll(contracts, extra_opts).then(function() {
-        callback(null, contracts);
+      config.artifactor.saveAll(compiler_output_or_abstractions).then(function() {
+        callback(null, compiler_output_or_abstractions);
       }).catch(callback);
     });
   }
