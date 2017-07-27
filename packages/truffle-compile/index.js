@@ -5,7 +5,10 @@ var solc = require("solc");
 // Clean up after solc.
 var listeners = process.listeners("uncaughtException");
 var solc_listener = listeners[listeners.length - 1];
-process.removeListener("uncaughtException", solc_listener);
+
+if (solc_listener) {
+  process.removeListener("uncaughtException", solc_listener);
+}
 
 var path = require("path");
 var fs = require("fs");
@@ -53,15 +56,12 @@ var compile = function(sources, options, callback) {
     // TODO: Make this a regex instead?
     if (replacement[0] != "/" && replacement[1] == ":") {
       replacement = "/" + replacement;
+      replacement = replacement.replace(":", "");
     }
-    replacement = replacement.replace(":", "");
 
     // Save the result
     operatingSystemIndependentSources[replacement] = sources[source];
   });
-
-  // Add the listener back in, just in case I need it.
-  process.on("uncaughtException", solc_listener);
 
   var solcStandardInput = {
     language: "Solidity",
@@ -98,9 +98,6 @@ var compile = function(sources, options, callback) {
   });
 
   var result = solc.compileStandard(JSON.stringify(solcStandardInput));
-
-  // Alright, now remove it.
-  process.removeListener("uncaughtException", solc_listener);
 
   var standardOutput = JSON.parse(result);
 
@@ -185,7 +182,7 @@ var compile = function(sources, options, callback) {
   });
 
   // TODO: Is the third parameter needed?
-  callback(null, returnVal, Object.keys(operatingSystemIndependentSources));
+  callback(null, returnVal, Object.keys(sources));
 };
 
 function replaceLinkReferences(bytecode, linkReferences, libraryName) {
