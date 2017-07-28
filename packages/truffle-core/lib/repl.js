@@ -109,7 +109,9 @@ TruffleInterpreter.prototype.resetContractsInConsoleContext = function(abstracti
 TruffleInterpreter.prototype.interpret = function(cmd, context, filename, callback) {
   var self = this;
 
-  if (this.command.getCommand(cmd.trim()) != null) {
+  var trimmed = cmd.trim();
+
+  if (this.command.getCommand(trimmed, this.options.noAliases) != null) {
     return this.command.run(cmd.trim(), this.options, function(err) {
       if (err) {
         // Perform error handling ourselves.
