@@ -37,8 +37,16 @@ var command = {
 
       var opcodes = CodeUtils.parseCode(bytecode);
 
-      opcodes.forEach(function(opcode) {
-        console.log(opcode.name + " " + (opcode.pushData || ""));
+      var indexLength = ((opcodes.length) + "").length;
+
+      opcodes.forEach(function(opcode, index) {
+        var strIndex = index + ":";
+
+        while (strIndex.length < indexLength + 1) {
+          strIndex += " ";
+        }
+
+        console.log(strIndex + " " + opcode.name + " " + (opcode.pushData || ""));
       });
     });
   }
