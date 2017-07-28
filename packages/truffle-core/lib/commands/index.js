@@ -6,6 +6,7 @@ module.exports = {
   build: require("./build"),
   test: require("./test"),
   debug: require("./debug"),
+  opcode: require("./opcode"),
   console: require("./console"),
   create: require("./create"),
   install: require("./install"),
