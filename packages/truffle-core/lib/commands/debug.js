@@ -118,6 +118,10 @@ var command = {
           config.logger.log(pointer);
         }
 
+        function printInstruction(instruction) {
+          config.logger.log(JSON.stringify(bugger.currentInstruction, null, 2));
+        };
+
         printState();
 
         var cli = repl.start({
@@ -151,12 +155,12 @@ var command = {
                 printState();
                 break;
               case "p":
-                config.logger.log(JSON.stringify(bugger.currentInstruction, null, 2));
+                printInstruction(bugger.currentInstruction);
                 printState();
                 break;
               case ";":
                 bugger.stepInstruction();
-                config.logger.log(JSON.stringify(bugger.currentInstruction, null, 2));
+                printInstruction(bugger.currentInstruction);
                 printState();
                 break;
               case "q":
