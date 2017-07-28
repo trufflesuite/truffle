@@ -27,6 +27,7 @@ var command = {
       Console.run(console_commands, config.with({
         builder: config.build,
         processors: config.processors, // legacy option for default builder
+        noAliases: true
       }), done);
     });
   }

@@ -14,7 +14,7 @@ function Command(commands) {
   this.args = args;
 };
 
-Command.prototype.getCommand = function(str) {
+Command.prototype.getCommand = function(str, noAliases) {
   var argv = this.args.parse(str);
 
   if (argv._.length == 0) {
@@ -28,7 +28,7 @@ Command.prototype.getCommand = function(str) {
   // for inferring the command.
   if (this.commands[input]) {
     chosenCommand = input;
-  } else {
+  } else if (noAliases !== true) {
     var currentLength = 1;
     var availableCommandNames = Object.keys(this.commands);
 
@@ -69,7 +69,7 @@ Command.prototype.run = function(command, options, callback) {
     options = {};
   }
 
-  var result = this.getCommand(command);
+  var result = this.getCommand(command, options.noAliases);
 
   if (result == null) {
     return callback(new TaskError("Cannot find command: " + command));
