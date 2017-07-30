@@ -22,17 +22,33 @@ var command = {
         return done(new Error("Please specify a transaction hash as the first parameter in order to debug that transaction. i.e., truffle debug 0x1234..."));
       }
 
-      config.logger.log("The interactive debugger is a proof of concept and is only intended for use with Ganache." + OS.EOL + "Please report any issues to the Truffle dev team.");
-      config.logger.log("");
-
       var tx_hash = config._[0];
 
       var bugger = new Debugger(config);
+      var lastCommand = "o";
+
+      var commandReference = {
+        "o": "step over",
+        "i": "step into",
+        "u": "step out",
+        "n": "step next",
+        ";": "step instruction",
+        "p": "print instruction/stack",
+        "h": "print this help",
+        "q": "quit"
+      }
+
+      function commandName(commandId) {
+        return "(" + commandId + ") " + commandReference[commandId];
+      };
 
       bugger.start(tx_hash, function(err) {
         if (err) return done(err);
 
-        var help = "Commands:" + OS.EOL + "(enter) step over, (i) step into, (o) step out, (n) step next, (;) step instruction" + OS.EOL + "(p) print instruction, (s) print stack information, (h) print this help, (q) quit";
+        var help = "Commands:"
+          + OS.EOL + "(enter) last command entered (" + commandReference[lastCommand] + ")"
+          + OS.EOL + commandName("o") + ", " + commandName("i") + ", " + commandName("u") + ", " + commandName("n") + ", " + commandName(";")
+          + OS.EOL + commandName("p") + ", " + commandName("h") + ", " + commandName("q");
 
         config.logger.log(help);
         config.logger.log("");
@@ -76,7 +92,7 @@ var command = {
             process.exit();
           }
 
-          config.logger.log("")
+          config.logger.log("");
 
           var range = bugger.currentInstruction.range;
           var source = bugger.getSource();
@@ -119,7 +135,22 @@ var command = {
         }
 
         function printInstruction(instruction) {
-          config.logger.log(JSON.stringify(bugger.currentInstruction, null, 2));
+          var instructionTrace = bugger.getTraceAtIndex(instruction.traceIndex);
+
+          var stack = instructionTrace.stack.map(function(item) {
+            return "  " + item;
+          });
+
+          if (stack.length == 0) {
+            stack.push("  No data on stack.");
+          }
+
+          config.logger.log("");
+          config.logger.log("(" + instruction.index + ") " + instruction.name + " " + (instruction.pushData || ""));
+          config.logger.log(stack.join(OS.EOL));
+
+          config.logger.log(instruction.srcmap);
+          //config.logger.log(JSON.stringify(bugger.currentInstruction, null, 2));
         };
 
         printState();
@@ -137,8 +168,12 @@ var command = {
               cmd = cmd[0];
             }
 
+            if (cmd == "") {
+              cmd = lastCommand;
+            }
+
             switch (cmd) {
-              case "":
+              case "o":
                 bugger.stepOver();
                 printState();
                 break;
@@ -146,7 +181,7 @@ var command = {
                 bugger.stepInto();
                 printState();
                 break;
-              case "o":
+              case "u":
                 bugger.stepOut();
                 printState();
                 break;
@@ -170,6 +205,10 @@ var command = {
                 config.logger.log("")
                 config.logger.log(help);
                 config.logger.log("")
+            }
+
+            if (cmd != "h" && cmd != "p") {
+              lastCommand = cmd;
             }
 
             callback();
