@@ -135,6 +135,8 @@ Debugger.prototype.start = function(tx_hash, callback) {
             instructions.forEach(function(instruction, instructionIndex) {
               var sourceMapInstruction = SolidityUtils.getInstructionFromSourceMap(instructionIndex, matches.deployedSourceMap);
 
+              instruction.index = instructionIndex;
+
               if (sourceMapInstruction) {
                 instruction.jump = sourceMapInstruction.jump;
                 instruction.start = sourceMapInstruction.start;
@@ -143,6 +145,7 @@ Debugger.prototype.start = function(tx_hash, callback) {
                   start: lineAndColumnMapping[sourceMapInstruction.start],
                   end: lineAndColumnMapping[sourceMapInstruction.start + sourceMapInstruction.length]
                 }
+                instruction.srcmap = sourceMapInstruction;
               }
 
               // Use this loop to create a mapping between program counters and instructions.
@@ -150,8 +153,12 @@ Debugger.prototype.start = function(tx_hash, callback) {
             });
 
             // Merge trace with source location mapping.
-            self.trace.forEach(function(step) {
+            self.trace.forEach(function(step, index) {
               step.instruction = programCounterToInstructionMapping[step.pc];
+
+              if (step.instruction) {
+                step.instruction.traceIndex = index;
+              }
             });
 
             self.traceIndex = 0;
@@ -352,6 +359,10 @@ Debugger.prototype.run = function() {
  */
 Debugger.prototype.getSource = function() {
   return this.matches.source;
+};
+
+Debugger.prototype.getTraceAtIndex = function(index) {
+  return this.trace[index];
 };
 
 /**
