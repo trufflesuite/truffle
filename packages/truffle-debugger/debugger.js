@@ -65,14 +65,10 @@ Debugger.prototype.start = function(tx_hash, callback) {
 
     self.trace = result.result.structLogs;
 
-    // Get the transaction itself so we can determine the type
-    // of transaction we'll be debugging.
-    web3.eth.getTransaction(tx_hash, function(err, tx) {
+    // Get the primary address associated with the transaction.
+    // This is either the to address or the contract created by the transaction.
+    self.getPrimaryAddress(web3, tx_hash, function(err, primaryAddress, isContractCreation) {
       if (err) return callback(err);
-
-      if (tx.to == null) {
-        return callback(new Error("This debugger does not currently support contract creation."));
-      }
 
       // Gather all available contract artifacts
       dir.files(self.config.contracts_build_directory, function(err, files) {
@@ -97,7 +93,7 @@ Debugger.prototype.start = function(tx_hash, callback) {
 
           // Analyze the trace and create contexts for each address.
           // Of course, start, we create a context for the initial contract called.
-          self.contexts[tx.to] = new Context(tx.to, web3);
+          self.contexts[primaryAddress] = new Context(primaryAddress, web3, isContractCreation);
 
           self.trace.forEach(function(step, index) {
             if (step.op == "CALL" || step.op == "DELEGATECALL") {
@@ -117,7 +113,7 @@ Debugger.prototype.start = function(tx_hash, callback) {
             self.traceIndex = 0;
 
             // Push our entry point onto the call stack
-            self.callstack.push(new Call(self.contexts[tx.to]));
+            self.callstack.push(new Call(self.contexts[primaryAddress]));
 
             // Get started! We pass the contexts to the callback for
             // information purposes.
@@ -125,6 +121,39 @@ Debugger.prototype.start = function(tx_hash, callback) {
           }).catch(callback);
         });
       });
+    });
+  });
+};
+
+/**
+ * getPrimaryAddress - get the primary address associated with the passed transaction.
+ *
+ * This will return the to address, if the transaction is made to an existing contract;
+ * or else it will return the address of the contract created as a result of the transaction.
+ *
+ * @param  {Object}   web3     web3 instance
+ * @param  {String}   tx_hash  Hash of the transaction
+ * @param  {Function} callback Callback function that accepts three params (err, primaryAddress, isContractCreation)
+ * @return {String}            Primary address of the transaction
+ */
+Debugger.prototype.getPrimaryAddress = function(web3, tx_hash, callback) {
+  web3.eth.getTransaction(tx_hash, function(err, tx) {
+    if (err) return callback(err);
+
+    // Maybe there's a better way to check for this.
+    // Some clients return 0x0 when transaction is a contract creation.
+    if (tx.to && tx.to != "0x0") {
+      return callback(null, tx.to, false);
+    }
+
+    web3.eth.getTransactionReceipt(tx_hash, function(err, receipt) {
+      if (err) return callback(err);
+
+      if (receipt.contractAddress) {
+        return callback(null, receipt.contractAddress, true);
+      }
+
+      return callback(new Error("Could not find contract associated with transaction. Please make sure you're debugging a transaction that executes a contract function or creates a new contract."));
     });
   });
 };

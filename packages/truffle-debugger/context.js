@@ -1,13 +1,16 @@
 var SolidityUtils = require("truffle-solidity-utils");
 var CodeUtils = require("truffle-code-utils");
 
-function Context(address, web3) {
+function Context(address, web3, isContractCreation) {
   this.address = address;
   this.web3 = web3;
+  this.isContractCreation = !!isContractCreation;
   this.deployedBinary = null;
+  this.executedBinary = null;
+  this.match = null;
   this.source = null;
   this.sourcePath = null;
-  this.match = null;
+  this.executedSourceMap = null;
   this.programCounterToInstructionMapping = {};
 };
 
@@ -48,10 +51,6 @@ Context.prototype.findMatch = function(contracts) {
     return;
   }
 
-  if (!match.deployedSourceMap) {
-    throw new Error("Found matching contract for transaction but could not find associated source map: Unable to debug. Usually this is fixed by recompiling your contracts with the latest version of Truffle.");
-  }
-
   if (!match.source) {
     throw new Error("Could not find source code for matching transaction (not included in artifacts). Usually this is fixed by recompiling your contracts with the latest version of Truffle.");
   }
@@ -59,16 +58,31 @@ Context.prototype.findMatch = function(contracts) {
   self.match = match;
   self.source = match.source;
   self.sourcePath = match.sourcePath;
-  self.deployedSourceMap = match.deployedSourceMap;
+
+  var sourceMapErrorMessage = "Found matching contract for transaction but could not find associated source map: Unable to debug. Usually this is fixed by recompiling your contracts with the latest version of Truffle.";
+
+  if (self.isContractCreation) {
+    if (!match.sourceMap) {
+      throw new Error(sourceMapErrorMessage);
+    }
+    this.executedSourceMap = match.sourceMap;
+    this.executedBinary = match.binary;
+  } else {
+    if (!match.deployedSourceMap) {
+      throw new Error(sourceMapErrorMessage);
+    }
+    this.executedSourceMap = match.deployedSourceMap;
+    this.executedBinary = match.deployedBinary;
+  }
 };
 
 Context.prototype.buildInstructionListAndSourceMap = function() {
   var self = this;
 
-  var lineAndColumnMapping = SolidityUtils.getCharacterOffsetToLineAndColumnMapping(this.match.source);
-  var sourceMap = SolidityUtils.getHumanReadableSourceMap(this.match.deployedSourceMap);
+  var lineAndColumnMapping = SolidityUtils.getCharacterOffsetToLineAndColumnMapping(this.source);
+  var sourceMap = SolidityUtils.getHumanReadableSourceMap(this.executedSourceMap);
 
-  this.instructions = CodeUtils.parseCode(this.deployedBinary);
+  this.instructions = CodeUtils.parseCode(this.executedBinary);
 
   this.instructions.forEach(function(instruction, instructionIndex) {
     var sourceMapInstruction = sourceMap[instructionIndex];
