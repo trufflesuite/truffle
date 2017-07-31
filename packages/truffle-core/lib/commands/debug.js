@@ -72,7 +72,7 @@ var command = {
         }
 
         function printLines(lineIndex, totalLines) {
-          var source = bugger.getCurrentSource();
+          var source = bugger.currentSource();
           var lines = source.split(OS.EOL)
 
           var startingLine = Math.max(lineIndex - totalLines + 1, 0);
@@ -101,7 +101,7 @@ var command = {
 
         function printFile() {
           config.logger.log("");
-          var sourcePath = bugger.getCurrentSourceLocation();
+          var sourcePath = bugger.currentSourcePath();
           config.logger.log(path.basename(sourcePath) + ":");
         }
 
@@ -109,7 +109,7 @@ var command = {
           config.logger.log("");
 
           var range = bugger.currentInstruction().range;
-          var source = bugger.getCurrentSource();
+          var source = bugger.currentSource();
           var lines = source.split(OS.EOL);
 
           var prefixLength = printLines(range.start.line, 3);
@@ -225,7 +225,7 @@ var command = {
                 process.exit(1);
               } else {
                 config.logger.log("Execution completed successfully.");
-                proces.exit();
+                process.exit();
               }
             }
 
