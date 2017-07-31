@@ -152,10 +152,10 @@ Debugger.prototype.functionDepth = function() {
 };
 
 /**
- * stepInstruction - step to the next instruction
- * @return Object Returns the current instruction stepped to.
+ * advance - advanced one instruction
+ * @return Object Returns the current instruction after incrementing one instruction.
  */
-Debugger.prototype.stepInstruction = function() {
+Debugger.prototype.advance = function() {
   var currentInstruction;
 
   if (this.isCall()) {
@@ -172,7 +172,7 @@ Debugger.prototype.stepInstruction = function() {
 
     var currentCall = this.callstack[this.callstack.length - 1];
     var currentStep = this.getStep();
-    currentCall.stepInstruction(currentStep.stack);
+    currentCall.advance(currentStep.stack);
     this.traceIndex += 1;
   }
 
@@ -203,7 +203,7 @@ Debugger.prototype.stepInstruction = function() {
  *
  * Note: It might take multiple instructions to express the same section of code.
  * "Stepping", then, is stepping to the next logical item, not stepping to the next
- * instruction. See stepInstruction() if you'd like to advance by one instruction.
+ * instruction. See advance() if you'd like to advance by one instruction.
  *
  * @return object Returns the current instruction stepped to.
  */
@@ -215,7 +215,7 @@ Debugger.prototype.step = function() {
   var startingInstruction = this.currentInstruction();
 
   while (this.currentInstruction().start == startingInstruction.start && this.currentInstruction().length == startingInstruction.length) {
-    this.stepInstruction();
+    this.advance();
 
     if (this.isStopped()) {
       break;

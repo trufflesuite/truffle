@@ -4,7 +4,7 @@ function Call(context) {
   this.functionDepth = 1;
 };
 
-Call.prototype.stepInstruction = function(stack) {
+Call.prototype.advance = function(stack) {
   var currentInstruction = this.currentInstruction();
 
   if (this.isJump()) {
