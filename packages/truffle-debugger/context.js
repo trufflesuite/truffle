@@ -83,7 +83,6 @@ Context.prototype.buildInstructionListAndSourceMap = function() {
         start: lineAndColumnMapping[sourceMapInstruction.start],
         end: lineAndColumnMapping[sourceMapInstruction.start + sourceMapInstruction.length]
       }
-      instruction.srcmap = sourceMapInstruction;
     }
 
     // Use this loop to create a mapping between program counters and instructions.
