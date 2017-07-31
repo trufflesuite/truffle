@@ -5,7 +5,6 @@ module.exports = {
   deploy: require("./deploy"),
   build: require("./build"),
   test: require("./test"),
-  debug: require("./debug"),
   console: require("./console"),
   create: require("./create"),
   install: require("./install"),
@@ -16,5 +15,5 @@ module.exports = {
   serve: require("./serve"),
   exec: require("./exec"),
   unbox: require("./unbox"),
-  version: require("./version")
+  version: require("./version"),
 };

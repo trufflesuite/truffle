@@ -29,7 +29,6 @@
     "truffle-config": "^1.0.1",
     "truffle-contract": "^2.0.3",
     "truffle-contract-sources": "^0.0.1",
-    "truffle-debugger": "~1.0.0",
     "truffle-deployer": "^1.0.2",
     "truffle-error": "^0.0.2",
     "truffle-expect": "^0.0.3",
@@ -67,8 +66,7 @@
     }
   ],
   "devDependencies": {
-    "ganache-core": "0.0.2",
-    "stream-buffers": "^3.0.1",
+    "ethereumjs-testrpc": "^3.0.3",
     "ipfsd-ctl": "^0.21.0",
     "truffle-blockchain-utils": "^0.0.3"
   }
