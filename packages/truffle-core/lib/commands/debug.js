@@ -150,7 +150,7 @@ var command = {
         }
 
         function printInstruction(instruction) {
-          var step = bugger.getStep();
+          var step = bugger.currentStep();
 
           var stack = step.stack.map(function(item, index) {
             var stackItem = "  " + item;
@@ -219,12 +219,12 @@ var command = {
             if (bugger.isStopped()) {
               config.logger.log("");
               if (bugger.isRuntimeError()) {
-                config.logger.log("Execution halted with a RUNTIME ERROR.")
+                config.logger.log("Transaction halted with a RUNTIME ERROR.")
                 config.logger.log("");
                 config.logger.log("This is likely due to an intentional halting expression, like assert(), require() or revert(). It can also be due to out-of-gas exceptions. Please inspect your transaction parameters and contract code to determine the meaning of this error.");
                 process.exit(1);
               } else {
-                config.logger.log("Execution completed successfully.");
+                config.logger.log("Transaction completed successfully.");
                 process.exit();
               }
             }
