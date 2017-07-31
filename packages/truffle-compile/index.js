@@ -40,7 +40,8 @@ var compile = function(sources, options, callback) {
   }
 
   expect.options(options, [
-    "contracts_directory"
+    "contracts_directory",
+    "solc"
   ]);
 
   // Ensure sources have operating system independent paths
@@ -67,10 +68,7 @@ var compile = function(sources, options, callback) {
     language: "Solidity",
     sources: {},
     settings: {
-      optimizer: {
-        enabled: true,
-        runs: 0 // See https://github.com/ethereum/solidity/issues/2245
-      },
+      optimizer: options.solc.optimizer,
       outputSelection: {
         "*": {
           "*": [
