@@ -13,7 +13,6 @@ function Debugger(config) {
   this.tx_hash;
   this.trace = [];
   this.traceIndex = 0;
-  this.callDepth = 0;
   this.callstack = [];
   this.contexts = {};
   this.started = false;
@@ -110,12 +109,11 @@ Debugger.prototype.start = function(tx_hash, callback) {
 
           Promise.all(promises).then(function() {
             self.traceIndex = 0;
-            self.callDepth = 0;
             self.callstack.push(new Call(self.contexts[tx.to]));
 
             self.started = true;
 
-            callback();
+            callback(null, self.contexts);
           }).catch(callback);
         });
       });
@@ -124,11 +122,33 @@ Debugger.prototype.start = function(tx_hash, callback) {
 };
 
 Debugger.prototype.currentInstruction = function() {
-  var currentCall = this.callstack[this.callstack.length - 1];
+  var currentCall = this.currentCall();
 
   if (!currentCall) return null;
 
   return currentCall.currentInstruction();
+};
+
+/**
+ * currentCall - get call on the top of the call stack
+ * @return {Call} call on the top of the call stack
+ */
+Debugger.prototype.currentCall = function() {
+  return this.callstack[this.callstack.length - 1];
+}
+
+/**
+ * functionDepth - get the depth of jumps made relative to Solidity functions
+ *
+ * Specific jumps are marked as either entering or leaving a function.
+ * functionDepth() expresses the amount of functions calls currently made.
+ *
+ * @return {[type]} [description]
+ */
+Debugger.prototype.functionDepth = function() {
+  return this.callstack.reduce(function(sum, call) {
+    return call.functionDepth;
+  }, 0);
 };
 
 /**
@@ -179,8 +199,8 @@ Debugger.prototype.stepInstruction = function() {
  * step - step to the next logical code segment
  *
  * Note: It might take multiple instructions to express the same section of code.
- * "Stepping", then, is stepping to the next logical item, not stepping
- * to the next instruction.
+ * "Stepping", then, is stepping to the next logical item, not stepping to the next
+ * instruction. See stepInstruction() if you'd like to advance by one instruction.
  *
  * @return object Returns the current instruction stepped to.
  */
@@ -191,7 +211,7 @@ Debugger.prototype.step = function() {
 
   var startingInstruction = this.currentInstruction();
 
-  while (this.currentInstruction.start == startingInstruction.start && this.currentInstruction.length == startingInstruction.length) {
+  while (this.currentInstruction().start == startingInstruction.start && this.currentInstruction().length == startingInstruction.length) {
     this.stepInstruction();
 
     if (this.isStopped()) {
@@ -222,7 +242,7 @@ Debugger.prototype.stepInto = function() {
   }
 
   var startingInstruction = this.currentInstruction();
-  var startingDepth = this.callDepth;
+  var startingDepth = this.functionDepth();
 
   // If we're directly on a jump, then just do it.
   if (this.isJump(startingInstruction)) {
@@ -239,7 +259,7 @@ Debugger.prototype.stepInto = function() {
     }
 
     // Check to see if we've made our jump. If so, get outta here.
-    if (this.callDepth > startingDepth) {
+    if (this.functionDepth() > startingDepth) {
       break;
     }
 
@@ -272,9 +292,9 @@ Debugger.prototype.stepOut = function() {
   }
 
   var startingInstruction = this.currentInstruction();
-  var startingDepth = this.callDepth;
+  var startingDepth = this.functionDepth();
 
-  while (this.callDepth >= startingDepth) {
+  while (this.functionDepth() >= startingDepth) {
     this.step();
 
     if (this.isStopped()) {
@@ -299,19 +319,26 @@ Debugger.prototype.stepOver = function() {
   }
 
   var startingInstruction = this.currentInstruction();
-  var startingDepth = this.callDepth;
+  var startingDepth = this.functionDepth();
+  var startingCallDepth = this.callstack.length;
 
   while (true) {
     var newInstruction = this.step();
+    var newCallDepth = this.callstack.length;
 
     if (this.isStopped()) {
       break;
     }
 
-    // If we encountered a new line, bail, but only do it when we're at the same callDepth
+    // If stepping over caused us to step out of a contract, quit.
+    if (newCallDepth < startingCallDepth) {
+      break;
+    }
+
+    // If we encountered a new line, bail, but only do it when we're at the same functionDepth
     // (i.e., don't step into any new function calls). However, be careful to stop stepping
     // if we step out of the function.
-    if (newInstruction.range.start.line != startingInstruction.range.start.line && this.callDepth <= startingDepth) {
+    if (newCallDepth == startingCallDepth && newInstruction.range.start.line != startingInstruction.range.start.line && this.functionDepth() <= startingDepth) {
       break;
     }
   }
@@ -334,6 +361,10 @@ Debugger.prototype.run = function() {
  */
 Debugger.prototype.getCurrentSource = function() {
   return this.callstack[this.callstack.length - 1].context.source;
+};
+
+Debugger.prototype.getCurrentSourceLocation = function() {
+  return this.callstack[this.callstack.length - 1].context.sourcePath;
 };
 
 Debugger.prototype.getTraceAtIndex = function(index) {

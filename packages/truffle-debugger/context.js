@@ -6,6 +6,7 @@ function Context(address, web3) {
   this.web3 = web3;
   this.deployedBinary = null;
   this.source = null;
+  this.sourcePath = null;
   this.match = null;
   this.programCounterToInstructionMapping = {};
 };
@@ -52,11 +53,12 @@ Context.prototype.findMatch = function(contracts) {
   }
 
   if (!match.source) {
-    throw new Error("Could not find source code for matching transaction (not include in artifacts). Usually this is fixed by recompiling your contracts with the latest version of Truffle.");
+    throw new Error("Could not find source code for matching transaction (not included in artifacts). Usually this is fixed by recompiling your contracts with the latest version of Truffle.");
   }
 
   self.match = match;
   self.source = match.source;
+  self.sourcePath = match.sourcePath;
   self.deployedSourceMap = match.deployedSourceMap;
 };
 

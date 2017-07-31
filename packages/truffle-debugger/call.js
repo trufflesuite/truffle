@@ -1,12 +1,23 @@
 function Call(context) {
   this.instructionIndex = 0;
   this.context = context;
+  this.functionDepth = 1;
 };
 
 Call.prototype.stepInstruction = function(stack) {
   var currentInstruction = this.currentInstruction();
 
   if (this.isJump()) {
+    // Use clues from the solidity source map to know whether or not
+    // we've gone into or out of a function.
+    if (currentInstruction.jump == "i") {
+      this.functionDepth += 1;
+    }
+
+    if (currentInstruction.jump == "o") {
+      this.functionDepth -= 1;
+    }
+
     this.executeJump(stack);
   } else {
     this.instructionIndex += 1;
@@ -39,6 +50,9 @@ Call.prototype.executeJump = function(stack) {
   if (programCounter) {
     var toInstruction = this.context.instructionAtProgramCounter(programCounter);
     this.instructionIndex = toInstruction.index;
+  } else {
+    // This means we didn't jump. Move onto the next instruction.
+    this.instructionIndex += 1;
   }
 };
 
