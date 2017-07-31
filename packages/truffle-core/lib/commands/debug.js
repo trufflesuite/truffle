@@ -12,6 +12,7 @@ var command = {
     var Environment = require("../environment");
     var repl = require("repl");
     var OS = require("os");
+    var path = require("path");
 
     var config = Config.detect(options);
 
@@ -33,7 +34,7 @@ var command = {
         "u": "step out",
         "n": "step next",
         ";": "step instruction",
-        "p": "print instruction/stack",
+        "p": "print instruction",
         "h": "print this help",
         "q": "quit"
       }
@@ -42,16 +43,33 @@ var command = {
         return "(" + commandId + ") " + commandReference[commandId];
       };
 
-      bugger.start(tx_hash, function(err) {
+      config.logger.log("Gathering transaction data...");
+      config.logger.log("");
+
+      bugger.start(tx_hash, function(err, contexts) {
         if (err) return done(err);
 
-        var help = "Commands:"
-          + OS.EOL + "(enter) last command entered (" + commandReference[lastCommand] + ")"
-          + OS.EOL + commandName("o") + ", " + commandName("i") + ", " + commandName("u") + ", " + commandName("n") + ", " + commandName(";")
-          + OS.EOL + commandName("p") + ", " + commandName("h") + ", " + commandName("q");
+        function printAddressesAffected() {
+          config.logger.log("Addresses affected:");
 
-        config.logger.log(help);
-        config.logger.log("");
+          var addresses = Object.keys(contexts).map(function(address) {
+            var context = contexts[address];
+            return "  " + address + " - " + path.basename(context.sourcePath);
+          });
+
+          config.logger.log(addresses.join(OS.EOL));
+        }
+
+        function printHelp() {
+          var help = "Commands:"
+            + OS.EOL + "(enter) last command entered (" + commandReference[lastCommand] + ")"
+            + OS.EOL + commandName("o") + ", " + commandName("i") + ", " + commandName("u") + ", " + commandName("n")
+            + OS.EOL + commandName(";") + ", " + commandName("p") + ", " + commandName("h") + ", " + commandName("q");
+
+          config.logger.log("")
+          config.logger.log(help);
+          config.logger.log("");
+        }
 
         function printLines(lineIndex, totalLines) {
           var source = bugger.getCurrentSource();
@@ -60,11 +78,7 @@ var command = {
           var startingLine = Math.max(lineIndex - totalLines + 1, 0);
 
           // Calculate prefix length
-          var maxLineNumberLength = 0;
-          for (var i = startingLine; i <= lineIndex; i++) {
-            var lineNumber = i + 1;
-            maxLineNumberLength = Math.max(maxLineNumberLength, (lineNumber + "").length);
-          }
+          var maxLineNumberLength = ((lineIndex + 1) + "").length;
 
           // Now print the lines
           for (var i = startingLine; i <= lineIndex; i++) {
@@ -85,12 +99,18 @@ var command = {
           return maxLineNumberLength + 2;
         }
 
+        function printFile() {
+          config.logger.log("");
+          var sourcePath = bugger.getCurrentSourceLocation();
+          config.logger.log(path.basename(sourcePath) + ":");
+        }
+
         function printState(started) {
           config.logger.log("");
 
           var range = bugger.currentInstruction().range;
           var source = bugger.getCurrentSource();
-          var lines = source.split(OS.EOL)
+          var lines = source.split(OS.EOL);
 
           var prefixLength = printLines(range.start.line, 3);
 
@@ -126,13 +146,20 @@ var command = {
           }
 
           config.logger.log(pointer);
+          config.logger.log("")
         }
 
         function printInstruction(instruction) {
           var step = bugger.getStep();
 
-          var stack = step.stack.map(function(item) {
-            return "  " + item;
+          var stack = step.stack.map(function(item, index) {
+            var stackItem = "  " + item;
+
+            if (index == step.stack.length - 1) {
+              stackItem += " (top)";
+            }
+
+            return stackItem;
           });
 
           if (stack.length == 0) {
@@ -142,9 +169,11 @@ var command = {
           config.logger.log("");
           config.logger.log("(" + bugger.traceIndex + ") " + instruction.name + " " + (instruction.pushData || ""));
           config.logger.log(stack.join(OS.EOL));
-          //config.logger.log(JSON.stringify(bugger.currentInstruction, null, 2));
         };
 
+        printAddressesAffected();
+        printHelp();
+        printFile();
         printState();
 
         var cli = repl.start({
@@ -179,7 +208,7 @@ var command = {
                 bugger.step();
                 break;
               case ";":
-                bugger.stepInstruction();
+                bugger.advance();
                 break;
               case "q":
                 process.exit();
@@ -189,8 +218,15 @@ var command = {
             // Check if execution has stopped.
             if (bugger.isStopped()) {
               config.logger.log("");
-              config.logger.log("Execution stopped.");
-              process.exit();
+              if (bugger.isRuntimeError()) {
+                config.logger.log("Execution halted with a RUNTIME ERROR.")
+                config.logger.log("");
+                config.logger.log("This is likely due to an intentional halting expression, like assert(), require() or revert(). It can also be due to out-of-gas exceptions. Please inspect your transaction parameters and contract code to determine the meaning of this error.");
+                process.exit(1);
+              } else {
+                config.logger.log("Execution completed successfully.");
+                proces.exit();
+              }
             }
 
             // Perform post printing
@@ -198,17 +234,19 @@ var command = {
             switch (cmd) {
               case ";":
               case "p":
+                printFile();
                 printInstruction(bugger.currentInstruction());
+                printState();
+                break;
               case "o":
               case "i":
               case "u":
               case "n":
+                printFile();
                 printState();
                 break;
               default:
-                config.logger.log("")
-                config.logger.log(help);
-                config.logger.log("")
+                printHelp();
             }
 
             if (cmd != "h" && cmd != "p") {
