@@ -54,7 +54,7 @@ var command = {
         config.logger.log("");
 
         function printLines(lineIndex, totalLines) {
-          var source = bugger.getSource();
+          var source = bugger.getCurrentSource();
           var lines = source.split(OS.EOL)
 
           var startingLine = Math.max(lineIndex - totalLines + 1, 0);
@@ -85,17 +85,11 @@ var command = {
           return maxLineNumberLength + 2;
         }
 
-        function printState() {
-          if (bugger.isStopped()) {
-            config.logger.log("");
-            config.logger.log("Execution stopped.");
-            process.exit();
-          }
-
+        function printState(started) {
           config.logger.log("");
 
-          var range = bugger.currentInstruction.range;
-          var source = bugger.getSource();
+          var range = bugger.currentInstruction().range;
+          var source = bugger.getCurrentSource();
           var lines = source.split(OS.EOL)
 
           var prefixLength = printLines(range.start.line, 3);
@@ -135,9 +129,9 @@ var command = {
         }
 
         function printInstruction(instruction) {
-          var instructionTrace = bugger.getTraceAtIndex(instruction.traceIndex);
+          var step = bugger.getStep();
 
-          var stack = instructionTrace.stack.map(function(item) {
+          var stack = step.stack.map(function(item) {
             return "  " + item;
           });
 
@@ -146,10 +140,8 @@ var command = {
           }
 
           config.logger.log("");
-          config.logger.log("(" + instruction.index + ") " + instruction.name + " " + (instruction.pushData || ""));
+          config.logger.log("(" + bugger.traceIndex + ") " + instruction.name + " " + (instruction.pushData || ""));
           config.logger.log(stack.join(OS.EOL));
-
-          config.logger.log(instruction.srcmap);
           //config.logger.log(JSON.stringify(bugger.currentInstruction, null, 2));
         };
 
@@ -172,34 +164,46 @@ var command = {
               cmd = lastCommand;
             }
 
+            // Perform commands that require state changes.
             switch (cmd) {
               case "o":
                 bugger.stepOver();
-                printState();
                 break;
               case "i":
                 bugger.stepInto();
-                printState();
                 break;
               case "u":
                 bugger.stepOut();
-                printState();
                 break;
               case "n":
                 bugger.step();
-                printState();
-                break;
-              case "p":
-                printInstruction(bugger.currentInstruction);
-                printState();
                 break;
               case ";":
                 bugger.stepInstruction();
-                printInstruction(bugger.currentInstruction);
-                printState();
                 break;
               case "q":
                 process.exit();
+                break;
+            }
+
+            // Check if execution has stopped.
+            if (bugger.isStopped()) {
+              config.logger.log("");
+              config.logger.log("Execution stopped.");
+              process.exit();
+            }
+
+            // Perform post printing
+            // (we want to see if execution stopped before printing state).
+            switch (cmd) {
+              case ";":
+              case "p":
+                printInstruction(bugger.currentInstruction());
+              case "o":
+              case "i":
+              case "u":
+              case "n":
+                printState();
                 break;
               default:
                 config.logger.log("")
