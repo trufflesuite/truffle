@@ -96,7 +96,7 @@ Debugger.prototype.start = function(tx_hash, callback) {
           self.contexts[tx.to] = new Context(tx.to, web3);
 
           self.trace.forEach(function(step, index) {
-            if (step.op == "CALL") {
+            if (step.op == "CALL" || step.op == "DELEGATECALL") {
               var address = self.callAddress(step);
               self.contexts[address] = new Context(address, web3);
             }
@@ -162,7 +162,7 @@ Debugger.prototype.advance = function() {
     this.executeCall();
     this.traceIndex += 1;
   } else {
-    if (this.isStop()) {
+    if (this.isSuccessfulHaltingInstruction()) {
       this.callstack.pop();
     }
 
@@ -187,11 +187,17 @@ Debugger.prototype.advance = function() {
     // won't be executed.
     if (step && step.op != currentInstruction.name) {
 
-      this.config.logger.log("Trace and instruction mismatch.");
-      this.config.logger.log(step);
-      this.config.logger.log(currentInstruction)
+      // TODO: Probably shouldn't handle this error like this.
+      this.config.logger.log("ERROR: Trace and instruction mismatch.");
+      this.config.logger.log("");
+      this.config.logger.log("trace", step);
+      this.config.logger.log("instruction", currentInstruction)
 
-      throw new Error("Fatal error: This is likely due to a bug in the debugger. Please file an issue on the Truffle issue tracker and provide as much information about your code and transaction as possible.")
+      this.config.logger.log("");
+      this.config.logger.log("This is likely due to a bug in the debugger. Please file an issue on the Truffle issue tracker and provide as much information about your code and transaction as possible.")
+      this.config.logger.log("");
+
+      throw new Error("Fatal error: See above.")
     }
   }
 
@@ -250,6 +256,10 @@ Debugger.prototype.stepInto = function() {
   // If we're directly on a jump, then just do it.
   if (this.isJump(startingInstruction)) {
     return this.step();
+  }
+
+  if (this.hasMultiLineCodeRange(startingInstruction)) {
+    return this.stepOver();
   }
 
   // So we're not directly on a jump: step until we either
@@ -362,11 +372,11 @@ Debugger.prototype.run = function() {
  * getSource - get the source file that produced the current instruction
  * @return String Full source code that produced the current instruction
  */
-Debugger.prototype.getCurrentSource = function() {
+Debugger.prototype.currentSource = function() {
   return this.callstack[this.callstack.length - 1].context.source;
 };
 
-Debugger.prototype.getCurrentSourceLocation = function() {
+Debugger.prototype.currentSourcePath = function() {
   return this.callstack[this.callstack.length - 1].context.sourcePath;
 };
 
@@ -389,14 +399,18 @@ Debugger.prototype.isCall = function(instruction) {
   if (!instruction) {
     instruction = this.currentInstruction();
   }
-  return instruction.name == "CALL";
+  return instruction.name == "CALL" || instruction.name == "DELEGATECALL";
 };
 
-Debugger.prototype.isStop = function(instruction) {
+Debugger.prototype.isSuccessfulHaltingInstruction = function(instruction) {
   if (!instruction) {
     instruction = this.currentInstruction();
   }
-  return instruction.name == "STOP";
+  return instruction.name == "STOP" || instruction.name == "RETURN";
+};
+
+Debugger.prototype.hasMultiLineCodeRange = function(instruction) {
+  return instruction.range.start.line != instruction.range.end.line;
 };
 
 Debugger.prototype.executeCall = function() {
