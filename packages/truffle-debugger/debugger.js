@@ -1,5 +1,3 @@
-var SolidityUtils = require("truffle-solidity-utils");
-var CodeUtils = require("truffle-code-utils");
 var expect = require("truffle-expect");
 var contract = require("truffle-contract");
 var Web3 = require("web3");
@@ -7,15 +5,18 @@ var dir = require("node-dir");
 var path = require("path");
 var async = require("async");
 var OS = require("os");
+var Context = require("./context");
+var Call = require("./call");
 
 function Debugger(config) {
   this.config = config;
   this.tx_hash;
   this.trace = [];
   this.traceIndex = 0;
-  this.currentInstruction = null;
   this.callDepth = 0;
-  this.matches = null;
+  this.callstack = [];
+  this.contexts = {};
+  this.started = false;
 }
 
 /**
@@ -70,107 +71,64 @@ Debugger.prototype.start = function(tx_hash, callback) {
         return callback(new Error("This debugger does not currently support contract creation."));
       }
 
-      web3.eth.getCode(tx.to, function(err, deployedBinary) {
+      // Gather all available contracts
+      dir.files(self.config.contracts_build_directory, function(err, files) {
         if (err) return callback(err);
 
-        // Go through all known contracts looking for matching deployedBinary.
-        dir.files(self.config.contracts_build_directory, function(err, files) {
+        var contracts = files.filter(function(file_path) {
+          return path.extname(file_path) == ".json";
+        }).map(function(file_path) {
+          return path.basename(file_path, ".json");
+        }).map(function(contract_name) {
+          return self.config.resolver.require(contract_name);
+        });
+
+        async.each(contracts, function(abstraction, finished) {
+          abstraction.detectNetwork().then(function() {
+            finished();
+          }).catch(finished);
+        }, function(err) {
           if (err) return callback(err);
 
-          var contracts = files.filter(function(file_path) {
-            return path.extname(file_path) == ".json";
-          }).map(function(file_path) {
-            return path.basename(file_path, ".json");
-          }).map(function(contract_name) {
-            return self.config.resolver.require(contract_name);
+          self.tx_hash = tx_hash;
+
+          // Analyze the trace and create contexts for each address
+          // Of course, we push the addres of the initial contract called.
+          self.contexts[tx.to] = new Context(tx.to, web3);
+
+          self.trace.forEach(function(step, index) {
+            if (step.op == "CALL") {
+              var address = self.callAddress(step);
+              self.contexts[address] = new Context(address, web3);
+            }
           });
 
-          async.each(contracts, function(abstraction, finished) {
-            abstraction.detectNetwork().then(function() {
-              finished();
-            }).catch(finished);
-          }, function(err) {
-            if (err) return callback(err);
+          // Have all the contexts gather up associated information necessary.
+          var promises = Object.keys(self.contexts).map(function(address) {
+            return self.contexts[address].initialize(contracts);
+          });
 
-            var matches = null;
-
-            for (var i = 0; i < contracts.length; i++) {
-              var current = contracts[i];
-
-              if (current.deployedBinary == deployedBinary) {
-                matches = current;
-                break;
-              }
-            }
-
-            if (!matches) {
-              return callback(new Error("Could not find compiled artifacts for the specified transaction. Ensure the transaction you're debugging is related to a contract you've deployed using the Truffle version you have currently installed."));
-            }
-
-            if (!matches.deployedSourceMap) {
-              return callback(new Error("Found matching contract for transaction but could not find associated source map: Unable to debug. Usually this is fixed by recompiling your contracts with the latest version of Truffle."));
-            }
-
-            if (!matches.source) {
-              return callback(new Error("Could not find source code for matching transaction (not include in artifacts). Usually this is fixed by recompiling your contracts with the latest version of Truffle."))
-            }
-
-            // Alright, so if we're here, it means we have:
-            //
-            // 1. the contract associated with the current transaction
-            // 2. the deployed source map for the current contract associated with the transaction
-            // 3. the source associated with the current contract
-            // 4. a full transaction trace
-            //
-            // Now we need to mix all this data together to match the trace with contract code.
-
-            self.matches = matches;
-            self.tx_hash = tx_hash;
-
-            var lineAndColumnMapping = SolidityUtils.getCharacterOffsetToLineAndColumnMapping(matches.source);
-
-            var instructions = CodeUtils.parseCode(deployedBinary);
-            var programCounterToInstructionMapping = {};
-
-            instructions.forEach(function(instruction, instructionIndex) {
-              var sourceMapInstruction = SolidityUtils.getInstructionFromSourceMap(instructionIndex, matches.deployedSourceMap);
-
-              instruction.index = instructionIndex;
-
-              if (sourceMapInstruction) {
-                instruction.jump = sourceMapInstruction.jump;
-                instruction.start = sourceMapInstruction.start;
-                instruction.length = sourceMapInstruction.length;
-                instruction.range = {
-                  start: lineAndColumnMapping[sourceMapInstruction.start],
-                  end: lineAndColumnMapping[sourceMapInstruction.start + sourceMapInstruction.length]
-                }
-                instruction.srcmap = sourceMapInstruction;
-              }
-
-              // Use this loop to create a mapping between program counters and instructions.
-              programCounterToInstructionMapping[instruction.pc] = instruction;
-            });
-
-            // Merge trace with source location mapping.
-            self.trace.forEach(function(step, index) {
-              step.instruction = programCounterToInstructionMapping[step.pc];
-
-              if (step.instruction) {
-                step.instruction.traceIndex = index;
-              }
-            });
-
+          Promise.all(promises).then(function() {
             self.traceIndex = 0;
             self.callDepth = 0;
-            self.currentInstruction = self.trace[self.traceIndex].instruction;
+            self.callstack.push(new Call(self.contexts[tx.to]));
+
+            self.started = true;
 
             callback();
-          });
+          }).catch(callback);
         });
       });
     });
   });
+};
+
+Debugger.prototype.currentInstruction = function() {
+  var currentCall = this.callstack[this.callstack.length - 1];
+
+  if (!currentCall) return null;
+
+  return currentCall.currentInstruction();
 };
 
 /**
@@ -178,26 +136,43 @@ Debugger.prototype.start = function(tx_hash, callback) {
  * @return Object Returns the current instruction stepped to.
  */
 Debugger.prototype.stepInstruction = function() {
-  // If this is executed, it's assumed this.currentInstruction is non-null.
-  // this.currentInstruction is the last instruction at this point.
-  if (this.currentInstruction.jump == "i") {
-    this.callDepth += 1;
-  }
+  var currentInstruction;
 
-  if (this.currentInstruction.jump == "o") {
-    this.callDepth -= 1;
-  }
-
-  // Move to the next instruction
-  this.traceIndex += 1;
-
-  if (this.traceIndex >= this.trace.length) {
-    this.currentInstruction = null;
+  if (this.isCall()) {
+    this.executeCall();
+    this.traceIndex += 1;
   } else {
-    this.currentInstruction = this.trace[this.traceIndex].instruction;
+    if (this.isStop()) {
+      this.callstack.pop();
+    }
+
+    if (this.isStopped()) {
+      return null;
+    }
+
+    var currentCall = this.callstack[this.callstack.length - 1];
+    var currentStep = this.getStep();
+    currentCall.stepInstruction(currentStep.stack);
+    this.traceIndex += 1;
   }
 
-  return this.currentInstruction;
+  currentInstruction = this.currentInstruction();
+
+  if (currentInstruction) {
+    // Determine if instruction matches traceIndex
+    var step = this.getStep();
+
+    if (step.op != currentInstruction.name) {
+
+      this.config.logger.log("Trace and instruction mismatch.");
+      this.config.logger.log(step);
+      this.config.logger.log(currentInstruction)
+
+      throw new Error("Fatal error: This is likely due to a bug in the debugger. Please file an issue on the Truffle issue tracker and provide as much information about your code and transaction as possible.")
+    }
+  }
+
+  return currentInstruction;
 }
 
 /**
@@ -214,7 +189,7 @@ Debugger.prototype.step = function() {
     return;
   }
 
-  var startingInstruction = this.currentInstruction;
+  var startingInstruction = this.currentInstruction();
 
   while (this.currentInstruction.start == startingInstruction.start && this.currentInstruction.length == startingInstruction.length) {
     this.stepInstruction();
@@ -224,7 +199,7 @@ Debugger.prototype.step = function() {
     }
   }
 
-  return this.currentInstruction;
+  return this.currentInstruction();
 };
 
 /**
@@ -246,12 +221,12 @@ Debugger.prototype.stepInto = function() {
     return;
   }
 
-  var startingInstruction = this.currentInstruction;
+  var startingInstruction = this.currentInstruction();
   var startingDepth = this.callDepth;
 
   // If we're directly on a jump, then just do it.
-  if (startingInstruction.jump == "i") {
-    return this.step();;
+  if (this.isJump(startingInstruction)) {
+    return this.step();
   }
 
   // So we're not directly on a jump: step until we either
@@ -281,7 +256,7 @@ Debugger.prototype.stepInto = function() {
     }
   }
 
-  return this.currentInstruction;
+  return this.currentInstruction();
 };
 
 /**
@@ -296,7 +271,7 @@ Debugger.prototype.stepOut = function() {
     return;
   }
 
-  var startingInstruction = this.currentInstruction;
+  var startingInstruction = this.currentInstruction();
   var startingDepth = this.callDepth;
 
   while (this.callDepth >= startingDepth) {
@@ -307,7 +282,7 @@ Debugger.prototype.stepOut = function() {
     }
   }
 
-  return this.currentInstruction;
+  return this.currentInstruction();
 };
 
 /**
@@ -323,7 +298,7 @@ Debugger.prototype.stepOver = function() {
     return;
   }
 
-  var startingInstruction = this.currentInstruction;
+  var startingInstruction = this.currentInstruction();
   var startingDepth = this.callDepth;
 
   while (true) {
@@ -341,7 +316,7 @@ Debugger.prototype.stepOver = function() {
     }
   }
 
-  return this.currentInstruction;
+  return this.currentInstruction();
 };
 
 /**
@@ -357,12 +332,58 @@ Debugger.prototype.run = function() {
  * getSource - get the source file that produced the current instruction
  * @return String Full source code that produced the current instruction
  */
-Debugger.prototype.getSource = function() {
-  return this.matches.source;
+Debugger.prototype.getCurrentSource = function() {
+  return this.callstack[this.callstack.length - 1].context.source;
 };
 
 Debugger.prototype.getTraceAtIndex = function(index) {
   return this.trace[index];
+};
+
+Debugger.prototype.getStep = function() {
+  return this.trace[this.traceIndex];
+};
+
+Debugger.prototype.isJump = function(instruction) {
+  if (!instruction) {
+    instruction = this.currentInstruction();
+  }
+  return instruction.name != "JUMPDEST" && instruction.name.indexOf("JUMP") == 0;
+};
+
+Debugger.prototype.isCall = function(instruction) {
+  if (!instruction) {
+    instruction = this.currentInstruction();
+  }
+  return instruction.name == "CALL";
+};
+
+Debugger.prototype.isStop = function(instruction) {
+  if (!instruction) {
+    instruction = this.currentInstruction();
+  }
+  return instruction.name == "STOP";
+};
+
+Debugger.prototype.executeCall = function() {
+  var step = this.trace[this.traceIndex];
+  var address = this.callAddress(step);
+  var newContext = this.contexts[address];
+  var newCall = new Call(newContext);
+  this.callstack.push(newCall);
+};
+
+Debugger.prototype.callAddress = function(step) {
+  var address = step.stack[step.stack.length - 2];
+
+  // Remove leading zeroes from address.
+  while (address.length > 40) {
+    address = address.substring(1);
+  }
+
+  address = "0x" + address;
+
+  return address;
 };
 
 /**
@@ -370,7 +391,7 @@ Debugger.prototype.getTraceAtIndex = function(index) {
  * @return Boolean true if stopped; false if still debugging
  */
 Debugger.prototype.isStopped = function() {
-  return this.currentInstruction == null;
+  return this.callstack.length == 0;
 }
 
 module.exports = Debugger;
