@@ -2,7 +2,8 @@ var Schema = require("truffle-contract-schema");
 var Contract = require("./contract.js");
 
 var contract = function(options) {
-  var binary = Schema.normalize(options || {});
+  options = Schema.normalizeOptions(options);
+  var binary = Schema.generateBinary(options, {}, {dirty: false});
 
   // Note we don't use `new` here at all. This will cause the class to
   // "mutate" instead of instantiate an instance.
@@ -46,7 +47,7 @@ contract.fromSolJS = function(soljs_abstraction, ignore_default_network) {
   latest_network = soljs_abstraction.all_networks[latest_network] || {};
 
   var json = {
-    contractName: soljs_abstraction.contractName,
+    contract_name: soljs_abstraction.contract_name,
     unlinked_binary: latest_network.unlinked_binary,
     abi: latest_network.abi,
     networks: networks,
