@@ -182,7 +182,10 @@ Debugger.prototype.stepInstruction = function() {
     // Determine if instruction matches traceIndex
     var step = this.getStep();
 
-    if (step.op != currentInstruction.name) {
+    // Note that we may not have a next step as expected.
+    // In cases of runtime errors, normal halting instructions
+    // won't be executed.
+    if (step && step.op != currentInstruction.name) {
 
       this.config.logger.log("Trace and instruction mismatch.");
       this.config.logger.log(step);
@@ -422,7 +425,11 @@ Debugger.prototype.callAddress = function(step) {
  * @return Boolean true if stopped; false if still debugging
  */
 Debugger.prototype.isStopped = function() {
-  return this.callstack.length == 0;
+  return this.traceIndex >= this.trace.length || this.callstack.length == 0;
 }
+
+Debugger.prototype.isRuntimeError = function() {
+  return this.traceIndex >= this.trace.length && this.callstack.length > 0;
+};
 
 module.exports = Debugger;
