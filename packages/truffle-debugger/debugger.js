@@ -15,16 +15,14 @@ function Debugger(config) {
   this.traceIndex = 0;
   this.callstack = [];
   this.contexts = {};
-  this.started = false;
 }
 
 /**
  * Function: debug
  *
- * Debug a specific transaction that occurred on the blockchain
+ * Debug a specific transaction that occurred on the blockchain.
  *
  * @param  {[type]}   tx_hash  [description]
- * @param  {[type]}   config   [description]
  * @param  {Function} callback [description]
  * @return [type]              [description]
  */
@@ -37,13 +35,18 @@ Debugger.prototype.start = function(tx_hash, callback) {
     "resolver"
   ]);
 
-  // Strategy:
+  // General strategy:
+  //
   // 1. Get trace for tx
-  // 2. Get the deployed bytecode at the to address of the transaction
-  // 3. Find contract that matches bytecode if known
-  // 4. Get instruction source map
-  // 5. Convert deployed bytecode to instructions
-  // 6. Map trace to instructions, and parse source ranges
+  // 2. Gather up all available contract artifacts
+  // 3. Analyze trace for affected addresses
+  // 4. Create "contexts" for each address, and pair the address up with its
+  //    associated contract artifacts (using the deployed bytecode)
+  // 5. Convert deployed bytecode to instructions within each context, and
+  //    map byecode indexes (program counters) to each instruction.
+  // 6. Start debugging by walking through the trace instruction by instruction
+  //    and manage a call stack that helps us map trace instructions to their
+  //    source maps.
 
   var web3 = new Web3();
   web3.setProvider(this.config.provider);
@@ -62,7 +65,8 @@ Debugger.prototype.start = function(tx_hash, callback) {
 
     self.trace = result.result.structLogs;
 
-    // Get the transaction itself
+    // Get the transaction itself so we can determine the type
+    // of transaction we'll be debugging.
     web3.eth.getTransaction(tx_hash, function(err, tx) {
       if (err) return callback(err);
 
@@ -70,7 +74,7 @@ Debugger.prototype.start = function(tx_hash, callback) {
         return callback(new Error("This debugger does not currently support contract creation."));
       }
 
-      // Gather all available contracts
+      // Gather all available contract artifacts
       dir.files(self.config.contracts_build_directory, function(err, files) {
         if (err) return callback(err);
 
@@ -91,8 +95,8 @@ Debugger.prototype.start = function(tx_hash, callback) {
 
           self.tx_hash = tx_hash;
 
-          // Analyze the trace and create contexts for each address
-          // Of course, we push the addres of the initial contract called.
+          // Analyze the trace and create contexts for each address.
+          // Of course, start, we create a context for the initial contract called.
           self.contexts[tx.to] = new Context(tx.to, web3);
 
           self.trace.forEach(function(step, index) {
@@ -102,17 +106,21 @@ Debugger.prototype.start = function(tx_hash, callback) {
             }
           });
 
-          // Have all the contexts gather up associated information necessary.
+          // Have each context gather the information it needs to map
+          // instructions to source code.
           var promises = Object.keys(self.contexts).map(function(address) {
             return self.contexts[address].initialize(contracts);
           });
 
           Promise.all(promises).then(function() {
+            // Start the trace at the beginning
             self.traceIndex = 0;
+
+            // Push our entry point onto the call stack
             self.callstack.push(new Call(self.contexts[tx.to]));
 
-            self.started = true;
-
+            // Get started! We pass the contexts to the callback for
+            // information purposes.
             callback(null, self.contexts);
           }).catch(callback);
         });
@@ -121,6 +129,10 @@ Debugger.prototype.start = function(tx_hash, callback) {
   });
 };
 
+/**
+ * currentInstruction - get the current instruction the debugger is evaluating
+ * @return {Object} instruction being evaluated by the debugger, null if no available instruction.
+ */
 Debugger.prototype.currentInstruction = function() {
   var currentCall = this.currentCall();
 
@@ -131,7 +143,7 @@ Debugger.prototype.currentInstruction = function() {
 
 /**
  * currentCall - get call on the top of the call stack
- * @return {Call} call on the top of the call stack
+ * @return {Call} call on the top of the call stack, or null if none available.
  */
 Debugger.prototype.currentCall = function() {
   return this.callstack[this.callstack.length - 1];
@@ -141,9 +153,9 @@ Debugger.prototype.currentCall = function() {
  * functionDepth - get the depth of jumps made relative to Solidity functions
  *
  * Specific jumps are marked as either entering or leaving a function.
- * functionDepth() expresses the amount of functions calls currently made.
+ * functionDepth() expresses the amount of function calls currently made.
  *
- * @return {[type]} [description]
+ * @return {Number} function depth
  */
 Debugger.prototype.functionDepth = function() {
   return this.callstack.reduce(function(sum, call) {
@@ -152,26 +164,30 @@ Debugger.prototype.functionDepth = function() {
 };
 
 /**
- * advance - advanced one instruction
+ * advance - advance one instruction
  * @return Object Returns the current instruction after incrementing one instruction.
  */
 Debugger.prototype.advance = function() {
   var currentInstruction;
 
+  // Handle calls before advancing
   if (this.isCall()) {
     this.executeCall();
     this.traceIndex += 1;
   } else {
+    // Check to see if this is a halting instruction.
+    // If so, pop the call stack.
     if (this.isSuccessfulHaltingInstruction()) {
       this.callstack.pop();
     }
 
+    // If the debugger is now stopped, don't continue.
     if (this.isStopped()) {
       return null;
     }
 
-    var currentCall = this.callstack[this.callstack.length - 1];
-    var currentStep = this.getStep();
+    var currentCall = this.currentCall();
+    var currentStep = this.currentStep();
     currentCall.advance(currentStep.stack);
     this.traceIndex += 1;
   }
@@ -180,24 +196,24 @@ Debugger.prototype.advance = function() {
 
   if (currentInstruction) {
     // Determine if instruction matches traceIndex
-    var step = this.getStep();
+    // If they don't match, it means there's a problem with the debugger.
+    var step = this.currentStep();
 
-    // Note that we may not have a next step as expected.
-    // In cases of runtime errors, normal halting instructions
-    // won't be executed.
+    // Note that we may have exhausted all available steps in the trace.
+    // In cases of runtime errors, normal halting instructions won't be executed
+    // and the trace will end abruptly.
     if (step && step.op != currentInstruction.name) {
 
-      // TODO: Probably shouldn't handle this error like this.
-      this.config.logger.log("ERROR: Trace and instruction mismatch.");
-      this.config.logger.log("");
-      this.config.logger.log("trace", step);
-      this.config.logger.log("instruction", currentInstruction)
+      var message = "Trace and instruction mismatch." + OS.EOL
+        + OS.EOL
+        + "trace " + JSON.stringify(step, null, 2) + OS.EOL
+        + "instruction " + JSON.stringify(currentInstruction, null, 2) + OS.EOL
+        + OS.EOL
+        + "This is likely due to a bug in the debugger. Please file an issue on the Truffle issue tracker and provide as much information about your code and transaction as possible." + OS.EOL
+        + OS.EOL
+        + "Fatal Error: See above.";
 
-      this.config.logger.log("");
-      this.config.logger.log("This is likely due to a bug in the debugger. Please file an issue on the Truffle issue tracker and provide as much information about your code and transaction as possible.")
-      this.config.logger.log("");
-
-      throw new Error("Fatal error: See above.")
+      throw new Error(message)
     }
   }
 
@@ -258,12 +274,14 @@ Debugger.prototype.stepInto = function() {
     return this.step();
   }
 
+  // If we're at an instruction that has a multiline code range (like a function definition)
+  // treat this step into like a step over as they're functionally equivalent.
   if (this.hasMultiLineCodeRange(startingInstruction)) {
     return this.stepOver();
   }
 
-  // So we're not directly on a jump: step until we either
-  // find a jump or get out of the code range.
+  // So we're not directly on a jump, and we're not multi line.
+  // Let's step until we either find a jump or get out of the current range.
   while (true) {
     var newInstruction = this.step();
 
@@ -295,7 +313,7 @@ Debugger.prototype.stepInto = function() {
 /**
  * stepOut - step out of the current function
  *
- * This will run until the debugger encounters a decrease in call depth.
+ * This will run until the debugger encounters a decrease in function depth.
  *
  * @return [type]              [description]
  */
@@ -321,8 +339,8 @@ Debugger.prototype.stepOut = function() {
 /**
  * stepOver - step over the current line
  *
- * Step over the current line. Will step to the next instruction that
- * exists on a different line of code.
+ * Step over the current line. This will step to the next instruction that
+ * exists on a different line of code within the same function depth.
  *
  * @return Object Returns the current instruction stepped to.
  */
@@ -360,15 +378,6 @@ Debugger.prototype.stepOver = function() {
 };
 
 /**
- * run - run until a breakpoint is hit or execution stops.
- *
- * @return Object Returns the current instruction stepped to.
- */
-Debugger.prototype.run = function() {
-  // TODO
-};
-
-/**
  * getSource - get the source file that produced the current instruction
  * @return String Full source code that produced the current instruction
  */
@@ -376,18 +385,27 @@ Debugger.prototype.currentSource = function() {
   return this.callstack[this.callstack.length - 1].context.source;
 };
 
+/**
+ * currentSourcePath - get the file path of the source code that produced the current instruction
+ * @return {String} File path of the source code that produced the current instruction
+ */
 Debugger.prototype.currentSourcePath = function() {
   return this.callstack[this.callstack.length - 1].context.sourcePath;
 };
 
-Debugger.prototype.getTraceAtIndex = function(index) {
-  return this.trace[index];
-};
-
-Debugger.prototype.getStep = function() {
+/**
+ * currentStep - get the current trace instruction
+ * @return {Object} trace instruction at the current state of the debugger
+ */
+Debugger.prototype.currentStep = function() {
   return this.trace[this.traceIndex];
 };
 
+/**
+ * isJump - detect whether an opcode instruction is on that can affect function depth
+ * @param  {instruction} instruction Optional instruction to evaluate
+ * @return {boolean}             whether or not instruction is a jump
+ */
 Debugger.prototype.isJump = function(instruction) {
   if (!instruction) {
     instruction = this.currentInstruction();
@@ -395,6 +413,11 @@ Debugger.prototype.isJump = function(instruction) {
   return instruction.name != "JUMPDEST" && instruction.name.indexOf("JUMP") == 0;
 };
 
+/**
+ * isCall - detect whether an opcode instruction can affect the call stack
+ * @param  {instruction} instruction Optional instruction to evaluate
+ * @return {Boolean}             whether or not instruction is a contract call
+ */
 Debugger.prototype.isCall = function(instruction) {
   if (!instruction) {
     instruction = this.currentInstruction();
@@ -402,6 +425,11 @@ Debugger.prototype.isCall = function(instruction) {
   return instruction.name == "CALL" || instruction.name == "DELEGATECALL";
 };
 
+/**
+ * isSuccessfulHaltingInstruction - detect whether an opcode instruction halts the current contract
+ * @param  {instruction} instruction Optional instruction to evaluate
+ * @return {Boolean}             whether or not instruction halts the current contract
+ */
 Debugger.prototype.isSuccessfulHaltingInstruction = function(instruction) {
   if (!instruction) {
     instruction = this.currentInstruction();
@@ -409,10 +437,18 @@ Debugger.prototype.isSuccessfulHaltingInstruction = function(instruction) {
   return instruction.name == "STOP" || instruction.name == "RETURN";
 };
 
+/**
+ * hasMultiLineCodeRange - detect whether code range is multiline
+ * @param  {instruction} instruction instruction to evaluate
+ * @return {Boolean}             wehther or not instruction has a multiline code range
+ */
 Debugger.prototype.hasMultiLineCodeRange = function(instruction) {
   return instruction.range.start.line != instruction.range.end.line;
 };
 
+/**
+ * executeCall - detect the address of a call and add to the call stack
+ */
 Debugger.prototype.executeCall = function() {
   var step = this.trace[this.traceIndex];
   var address = this.callAddress(step);
@@ -421,6 +457,11 @@ Debugger.prototype.executeCall = function() {
   this.callstack.push(newCall);
 };
 
+/**
+ * callAddress - get the address off the stack for a current call instruction
+ * @param  {trace instruction} step Trace item that represents the call
+ * @return {String}      Address of contract pointed to by this call
+ */
 Debugger.prototype.callAddress = function(step) {
   var address = step.stack[step.stack.length - 2];
 
@@ -442,6 +483,10 @@ Debugger.prototype.isStopped = function() {
   return this.traceIndex >= this.trace.length || this.callstack.length == 0;
 }
 
+/**
+ * isRuntimeError - determine whether stopped state of the debugger is due to a runtime error
+ * @return {Boolean} true if runtime error; false if normal halting instruction
+ */
 Debugger.prototype.isRuntimeError = function() {
   return this.traceIndex >= this.trace.length && this.callstack.length > 0;
 };
