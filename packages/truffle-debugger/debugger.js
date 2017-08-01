@@ -191,12 +191,14 @@ Debugger.prototype.currentCall = function() {
  *
  * Specific jumps are marked as either entering or leaving a function.
  * functionDepth() expresses the amount of function calls currently made.
+ * This includes contract calls as well, as each contract call adds 1 to the
+ * current function depth.
  *
  * @return {Number} function depth
  */
 Debugger.prototype.functionDepth = function() {
   return this.callstack.reduce(function(sum, call) {
-    return call.functionDepth;
+    return sum + call.functionDepth;
   }, 0);
 };
 
@@ -387,10 +389,14 @@ Debugger.prototype.stepOut = function() {
     return this.stepOver();
   }
 
-  while (this.functionDepth() >= startingDepth) {
-    this.step();
+  while (true) {
+    var newInstruction = this.step();
 
     if (this.isStopped()) {
+      break;
+    }
+
+    if (this.functionDepth() < startingDepth) {
       break;
     }
   }
@@ -413,25 +419,23 @@ Debugger.prototype.stepOver = function() {
 
   var startingInstruction = this.currentInstruction();
   var startingDepth = this.functionDepth();
-  var startingCallDepth = this.callstack.length;
 
   while (true) {
     var newInstruction = this.step();
-    var newCallDepth = this.callstack.length;
+    var newDepth = this.callstack.length;
 
     if (this.isStopped()) {
       break;
     }
 
-    // If stepping over caused us to step out of a contract, quit.
-    if (newCallDepth < startingCallDepth) {
+    // If stepping over caused us to step out of a contract or function, quit.
+    if (newDepth < startingDepth) {
       break;
     }
 
     // If we encountered a new line, bail, but only do it when we're at the same functionDepth
-    // (i.e., don't step into any new function calls). However, be careful to stop stepping
-    // if we step out of the function.
-    if (newCallDepth == startingCallDepth && newInstruction.range.start.line != startingInstruction.range.start.line && this.functionDepth() <= startingDepth) {
+    // (i.e., don't step into any new function calls).
+    if (newDepth == startingDepth && newInstruction.range.start.line != startingInstruction.range.start.line && this.functionDepth() <= startingDepth) {
       break;
     }
   }
