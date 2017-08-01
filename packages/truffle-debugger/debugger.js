@@ -78,10 +78,10 @@ Debugger.prototype.start = function(tx_hash, callback) {
     self.traceIndex = 0;
 
     // Push our entry point onto the call stack
-    self.pushCallForAddress(primaryAddress, isContractCreation);
+    self.pushCallForContext(self.addressContexts[primaryAddress], isContractCreation);
 
     // Get started! We pass the contexts to the callback for
-    // information purposes.
+    // informational purposes.
     callback(null, self.addressContexts);
   }).catch(callback);
 };
@@ -445,18 +445,6 @@ Debugger.prototype.hasMultiLineCodeRange = function(instruction) {
 };
 
 /**
- * pushCallForAddress - use this bump the call stack with a specific address
- *
- * The correct code context will be found based on the address input.
- *
- * @param  {String}  address
- * @param  {Boolean} isContractCreation Whether or not this is a contract creation call
- */
-Debugger.prototype.pushCallForAddress = function(address, isContractCreation) {
-  this.pushCallForContext(this.addressContexts[address], isContractCreation);
-};
-
-/**
  * pushCallForContext - given a context, bump the call stack
  * @param  {Context}  context
  * @param  {Boolean} isContractCreation Whether or not this is a contract creation call
@@ -473,7 +461,7 @@ Debugger.prototype.pushCallForContext = function(context, isContractCreation) {
 Debugger.prototype.executeCall = function() {
   var step = this.trace[this.traceIndex];
   var address = this.callAddress(step);
-  this.pushCallForAddress(address);
+  this.pushCallForContext(this.addressContexts[address]);
 };
 
 /**
@@ -498,8 +486,8 @@ Debugger.prototype.executeCreate = function(isContractCreation) {
 };
 
 /**
- * callAddress - get the address off the stack for a current call instruction
- * @param  {trace instruction} step Trace item that represents the call
+ * callAddress - get the address off the stack for a given trace step
+ * @param  {Object} step Trace item that represents the call
  * @return {String}      Address of contract pointed to by this call
  */
 Debugger.prototype.callAddress = function(step) {
@@ -512,7 +500,7 @@ Debugger.prototype.callAddress = function(step) {
 };
 
 /**
- * isStopped - determine whether the debugger is currently debugging a transaction
+ * isStopped - determine whether the debugger is not currently debugging a transaction
  * @return Boolean true if stopped; false if still debugging
  */
 Debugger.prototype.isStopped = function() {
@@ -560,11 +548,11 @@ Debugger.prototype.contextForBinary = function(deployedBinary) {
 };
 
 /**
- * findMatchingContract - matches deployed bytecode with contract abstractions
+ * findMatchingContract - matches bytecode with contract abstractions
  * @param  {String} deployedBinary Deployed binary to match
  * @return {contract}                contract abstraction representing matching contract
  */
-Debugger.prototype.findMatchingContract = function(deployedBinary) {
+Debugger.prototype.findMatchingContract = function(binary) {
   var self = this;
 
   var match = null;
@@ -575,14 +563,14 @@ Debugger.prototype.findMatchingContract = function(deployedBinary) {
     var contractBinary = contract.binary;
     var contractDeployedBinary = contract.deployedBinary;
 
-    if (deployedBinary == contractBinary || deployedBinary == contractDeployedBinary) {
+    if (binary == contractBinary || binary == contractDeployedBinary) {
       match = contract;
       break;
     }
   }
 
   if (!match) {
-    throw new Error("Could not find context for binary: " + deployedBinary);
+    throw new Error("Could not find context for binary: " + binary);
   }
 
   if (!match.source) {
