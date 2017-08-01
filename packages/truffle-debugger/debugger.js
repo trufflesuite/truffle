@@ -17,6 +17,8 @@ function Debugger(config) {
   this.addressContexts = {};
   this.codeContexts = {};
   this.contracts = [];
+  this.web3 = new Web3();
+  this.web3.setProvider(this.config.provider);
 }
 
 /**
@@ -50,120 +52,38 @@ Debugger.prototype.start = function(tx_hash, callback) {
   //    and manage a call stack that helps us map trace instructions to their
   //    source maps.
 
-  this.web3 = new Web3();
-  this.web3.setProvider(this.config.provider);
+  this.tx_hash = tx_hash;
 
-  this.config.provider.sendAsync({
-    jsonrpc: "2.0",
-    method: "debug_traceTransaction",
-    params: [tx_hash],
-    id: new Date().getTime()
-  }, function(err, result) {
-    if (err) return callback(err);
-
-    if (result.error) {
-      return callback(new Error("The debugger receieved an error while requesting the transaction trace. Ensure your Ethereum client supports transaction traces and that the transaction reqeusted exists on chain before debugging." + OS.EOL + OS.EOL + result.error.message));
-    }
-
-    self.trace = result.result.structLogs;
+  var primaryAddress = "";
+  var isContractCreation = false;
+  this.getTrace(tx_hash).then(function(trace) {
+    self.trace = trace;
 
     // Get the primary address associated with the transaction.
     // This is either the to address or the contract created by the transaction.
-    self.getPrimaryAddress(tx_hash, function(err, primaryAddress, isContractCreation) {
-      if (err) return callback(err);
+    return self.getPrimaryAddress(tx_hash);
+  }).then(function(obj) {
+    primaryAddress = obj.address;
+    isContractCreation = obj.isContractCreation;
 
-      // Gather all available contract artifacts
-      dir.files(self.config.contracts_build_directory, function(err, files) {
-        if (err) return callback(err);
+    return self.gatherAbstractions();
+  }).then(function(contracts) {
+    self.contracts = contracts;
 
-        self.contracts = files.filter(function(file_path) {
-          return path.extname(file_path) == ".json";
-        }).map(function(file_path) {
-          return path.basename(file_path, ".json");
-        }).map(function(contract_name) {
-          return self.config.resolver.require(contract_name);
-        });
+    return self.createContextsForAffectedAddresses(primaryAddress, self.trace);
+  }).then(function(addressContexts) {
+    self.addressContexts = addressContexts;
 
-        async.each(self.contracts, function(abstraction, finished) {
-          abstraction.detectNetwork().then(function() {
-            finished();
-          }).catch(finished);
-        }, function(err) {
-          if (err) return callback(err);
+    // Start the trace at the beginning
+    self.traceIndex = 0;
 
-          self.tx_hash = tx_hash;
+    // Push our entry point onto the call stack
+    self.pushCallForAddress(primaryAddress, isContractCreation);
 
-          // Analyze the trace and create contexts for each address.
-          // Of course, to start, we create a context for the initial contract called.
-          var addresses = {
-            [primaryAddress]: true // a marker to help us dedupe
-          };
-
-          self.trace.forEach(function(step, index) {
-            if (step.op == "CALL" || step.op == "DELEGATECALL") {
-              var address = self.callAddress(step)
-              addresses[address] = true;
-            }
-          });
-
-          var promises = Object.keys(addresses).map(function(address) {
-            return self.getDeployedCode(address);
-          });
-
-          Promise.all(promises).then(function(deployedBinaries) {
-            // Find contracts that match the code at each address, then create a new context
-            // for each one. This context is mapped to the address as well as the bytecode.
-            Object.keys(addresses).forEach(function(address, index) {
-              self.addressContexts[address] = self.contextForBinary(deployedBinaries[index]);
-            });
-
-            // Start the trace at the beginning
-            self.traceIndex = 0;
-
-            // Push our entry point onto the call stack
-            self.pushCallForAddress(primaryAddress, isContractCreation);
-
-            // Get started! We pass the contexts to the callback for
-            // information purposes.
-            callback(null, self.addressContexts);
-          }).catch(callback);
-        });
-      });
-    });
-  });
-};
-
-/**
- * getPrimaryAddress - get the primary address associated with the passed transaction.
- *
- * This will return the to address, if the transaction is made to an existing contract;
- * or else it will return the address of the contract created as a result of the transaction.
- *
- * @param  {String}   tx_hash  Hash of the transaction
- * @param  {Function} callback Callback function that accepts three params (err, primaryAddress, isContractCreation)
- * @return {String}            Primary address of the transaction
- */
-Debugger.prototype.getPrimaryAddress = function(tx_hash, callback) {
-  var self = this;
-  this.web3.eth.getTransaction(tx_hash, function(err, tx) {
-    if (err) return callback(err);
-
-    // Maybe there's a better way to check for this.
-    // Some clients return 0x0 when transaction is a contract creation.
-    if (tx.to && tx.to != "0x0") {
-      return callback(null, tx.to, false);
-    }
-
-    self.web3.eth.getTransactionReceipt(tx_hash, function(err, receipt) {
-      if (err) return callback(err);
-
-      if (receipt.contractAddress) {
-        return callback(null, receipt.contractAddress, true);
-      }
-
-      return callback(new Error("Could not find contract associated with transaction. Please make sure you're debugging a transaction that executes a contract function or creates a new contract."));
-    });
-  });
+    // Get started! We pass the contexts to the callback for
+    // information purposes.
+    callback(null, self.addressContexts);
+  }).catch(callback);
 };
 
 /**
@@ -675,5 +595,122 @@ Debugger.prototype.findMatchingContract = function(deployedBinary) {
 
   return match;
 };
+
+Debugger.prototype.getTrace = function(tx_hash) {
+  var self = this;
+  return new Promise(function(accept, reject) {
+    self.config.provider.sendAsync({
+      jsonrpc: "2.0",
+      method: "debug_traceTransaction",
+      params: [tx_hash],
+      id: new Date().getTime()
+    }, function(err, result) {
+      if (err) return reject(err);
+      accept(result.result.structLogs);
+    });
+  });
+};
+
+/**
+ * getPrimaryAddress - get the primary address associated with the passed transaction.
+ *
+ * This will return the to address, if the transaction is made to an existing contract;
+ * or else it will return the address of the contract created as a result of the transaction.
+ *
+ * @param  {String}   tx_hash  Hash of the transaction
+ * @param  {Function} callback Callback function that accepts three params (err, primaryAddress, isContractCreation)
+ * @return {String}            Primary address of the transaction
+ */
+Debugger.prototype.getPrimaryAddress = function(tx_hash) {
+  var self = this;
+  return new Promise(function(accept, reject) {
+    self.web3.eth.getTransaction(tx_hash, function(err, tx) {
+      if (err) return reject(err);
+
+      // Maybe there's a better way to check for this.
+      // Some clients return 0x0 when transaction is a contract creation.
+      if (tx.to && tx.to != "0x0") {
+        return accept({
+          address: tx.to,
+          isContractCreation: false
+        });
+      }
+
+      self.web3.eth.getTransactionReceipt(tx_hash, function(err, receipt) {
+        if (err) return reject(err);
+
+        if (receipt.contractAddress) {
+          return accept({
+            address: receipt.contractAddress,
+            isContractCreation: true
+          });
+        }
+
+        return reject(new Error("Could not find contract associated with transaction. Please make sure you're debugging a transaction that executes a contract function or creates a new contract."));
+      });
+    });
+  });
+};
+
+Debugger.prototype.gatherAbstractions = function() {
+  var self = this;
+  return new Promise(function(accept, reject) {
+    // Gather all available contract artifacts
+    dir.files(self.config.contracts_build_directory, function(err, files) {
+      if (err) return reject(err);
+
+      var contracts = files.filter(function(file_path) {
+        return path.extname(file_path) == ".json";
+      }).map(function(file_path) {
+        return path.basename(file_path, ".json");
+      }).map(function(contract_name) {
+        return self.config.resolver.require(contract_name);
+      });
+
+      async.each(contracts, function(abstraction, finished) {
+        abstraction.detectNetwork().then(function() {
+          finished();
+        }).catch(finished);
+      }, function(err) {
+        if (err) return reject(err);
+        accept(contracts);
+      });
+    });
+  });
+};
+
+Debugger.prototype.createContextsForAffectedAddresses = function(primaryAddress, trace) {
+  var self = this;
+
+  // Analyze the trace and create contexts for each address.
+  // Of course, to start, we create a context for the initial contract called.
+  var addresses = {
+    [primaryAddress]: true // a marker to help us dedupe
+  };
+
+  trace.forEach(function(step, index) {
+    if (step.op == "CALL" || step.op == "DELEGATECALL") {
+      var address = self.callAddress(step)
+      addresses[address] = true;
+    }
+  });
+
+  var promises = Object.keys(addresses).map(function(address) {
+    return self.getDeployedCode(address);
+  });
+
+  return Promise.all(promises).then(function(deployedBinaries) {
+    var addressContexts = {};
+
+    // Find contracts that match the code at each address, then create a new context
+    // for each one. This context is mapped to the address as well as the bytecode.
+    Object.keys(addresses).forEach(function(address, index) {
+      addressContexts[address] = self.contextForBinary(deployedBinaries[index]);
+    });
+
+    return addressContexts;
+  });
+};
+
 
 module.exports = Debugger;
