@@ -26,7 +26,7 @@ var command = {
       var tx_hash = config._[0];
 
       var bugger = new Debugger(config);
-      var lastCommand = "o";
+      var lastCommand = "n";
 
       var commandReference = {
         "o": "step over",
