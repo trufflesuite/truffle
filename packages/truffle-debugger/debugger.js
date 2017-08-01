@@ -539,7 +539,8 @@ Debugger.prototype.executeCall = function() {
 };
 
 /**
- * executeCall - detect the address of a call and add to the call stack
+ * executeCreate - get new contract code from memory and add a new call to the call stack
+ *   to debug that contract's constructor
  */
 Debugger.prototype.executeCreate = function(isContractCreation) {
   var step = this.trace[this.traceIndex];
