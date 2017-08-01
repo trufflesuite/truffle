@@ -9765,17 +9765,7 @@ trough@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/trough/-/trough-1.0.0.tgz#6bdedfe7f2aa49a6f3c432257687555957f342fd"
 
-truffle-artifactor@^2.1.2:
-  version "2.1.4"
-  resolved "https://registry.yarnpkg.com/truffle-artifactor/-/truffle-artifactor-2.1.4.tgz#320b38e102a7f9abb7f2aa9af6781b99d735bd13"
-  dependencies:
-    async "^1.5.2"
-    fs-extra "^1.0.0"
-    lodash "^4.11.2"
-    truffle-contract "^2.0.0"
-    truffle-contract-schema "0.0.5"
-
-truffle-artifactor@^2.1.5:
+truffle-artifactor@^2.1.2, truffle-artifactor@^2.1.5:
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/truffle-artifactor/-/truffle-artifactor-2.1.5.tgz#939d6cb333984b56529850e03c3ddaca49006870"
   dependencies:
@@ -9806,16 +9796,16 @@ truffle-box@^1.0.2:
     tmp "^0.0.31"
     vcsurl "^0.1.1"
 
-truffle-compile@^2.0.4:
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/truffle-compile/-/truffle-compile-2.0.4.tgz#0b132a81244f30358b687560cb6d70f62056f3e8"
+truffle-compile@^2.0.6:
+  version "2.0.6"
+  resolved "https://registry.yarnpkg.com/truffle-compile/-/truffle-compile-2.0.6.tgz#88bc6597157aa26668ddbf99da70b7e396692884"
   dependencies:
     async "^2.1.4"
     colors "^1.1.2"
     graphlib "^2.1.1"
     solc "0.4.13"
     solidity-parser "^0.3.0"
-    truffle-config "^1.0.1"
+    truffle-config "^1.0.2"
     truffle-contract-sources "^0.0.1"
     truffle-error "^0.0.2"
     truffle-expect "^0.0.3"
@@ -9823,6 +9813,16 @@ truffle-compile@^2.0.4:
 truffle-config@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/truffle-config/-/truffle-config-1.0.1.tgz#95b33dc5e984491e717cfcbafaa03db659272277"
+  dependencies:
+    find-up "^2.1.0"
+    lodash "^4.17.4"
+    original-require "^1.0.0"
+    truffle-error "^0.0.2"
+    truffle-provider "^0.0.2"
+
+truffle-config@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/truffle-config/-/truffle-config-1.0.2.tgz#442b54cf1d867e09b88201a7bd8429bcf4a22492"
   dependencies:
     find-up "^2.1.0"
     lodash "^4.17.4"
@@ -9860,9 +9860,18 @@ truffle-contract@^2.0.0, truffle-contract@^2.0.3:
     truffle-contract-schema "^0.0.5"
     web3 "^0.20.1"
 
-truffle-core@^3.4.6:
-  version "3.4.6"
-  resolved "https://registry.yarnpkg.com/truffle-core/-/truffle-core-3.4.6.tgz#e93d66b4de729cbe0862b7d16b24542916aa7d50"
+truffle-contract@^2.0.5:
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/truffle-contract/-/truffle-contract-2.0.5.tgz#3394df90ffa927d106ae3b36b33c6debf9117491"
+  dependencies:
+    ethjs-abi "0.1.8"
+    truffle-blockchain-utils "^0.0.3"
+    truffle-contract-schema "^0.0.5"
+    web3 "^0.20.1"
+
+truffle-core@^3.4.7:
+  version "3.4.7"
+  resolved "https://registry.yarnpkg.com/truffle-core/-/truffle-core-3.4.7.tgz#bd7cf5af9e7a6b41687c423e5dab74d5326b33db"
   dependencies:
     async "^1.4.2"
     chai "^3.3.0"
@@ -9885,9 +9894,9 @@ truffle-core@^3.4.6:
     temp "^0.8.3"
     truffle-artifactor "^2.1.5"
     truffle-box "^1.0.2"
-    truffle-compile "^2.0.4"
-    truffle-config "^1.0.1"
-    truffle-contract "^2.0.3"
+    truffle-compile "^2.0.6"
+    truffle-config "^1.0.2"
+    truffle-contract "^2.0.5"
     truffle-contract-sources "^0.0.1"
     truffle-deployer "^1.0.2"
     truffle-error "^0.0.2"
