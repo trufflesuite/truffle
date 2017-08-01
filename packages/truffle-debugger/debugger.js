@@ -284,7 +284,15 @@ Debugger.prototype.step = function() {
 
   var startingInstruction = this.currentInstruction();
 
-  while (this.currentInstruction().start == startingInstruction.start && this.currentInstruction().length == startingInstruction.length) {
+  while (true) {
+    var currentInstruction = this.currentInstruction();
+    //var hasMultiLineCodeRange = this.hasMultiLineCodeRange(currentInstruction);
+
+    // If we've hit a new code rage, break;
+    if (/*!hasMultiLineCodeRange && */(currentInstruction.start != startingInstruction.start || currentInstruction.length != startingInstruction.length)) {
+      break;
+    }
+
     this.advance();
 
     if (this.isStopped()) {
@@ -372,6 +380,12 @@ Debugger.prototype.stepOut = function() {
 
   var startingInstruction = this.currentInstruction();
   var startingDepth = this.functionDepth();
+
+  // If we're at an instruction that has a multiline code range (like a function definition)
+  // treat this step out like a step over as they're functionally equivalent.
+  if (this.hasMultiLineCodeRange(startingInstruction)) {
+    return this.stepOver();
+  }
 
   while (this.functionDepth() >= startingDepth) {
     this.step();
@@ -651,10 +665,8 @@ Debugger.prototype.findMatchingContract = function(deployedBinary) {
     throw new Error("Could not find source code for contract. Usually this is fixed by recompiling your contracts with the latest version of Truffle.");
   }
 
-  var sourceMapErrorMessage = "Found matching contract could not find associated source map: Unable to debug. Usually this is fixed by recompiling your contracts with the latest version of Truffle.";
-
   if (!match.sourceMap && !match.deployedSourceMap) {
-    throw new Error(sourceMapErrorMessage);
+    throw new Error("Found matching contract but could not find associated source map: Unable to debug. Usually this is fixed by recompiling your contracts with the latest version of Truffle.");
   }
 
   return match;
