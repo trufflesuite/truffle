@@ -1,6 +1,7 @@
-function Call(context) {
+function Call(context, type) {
   this.instructionIndex = 0;
   this.context = context;
+  this.type = type;
   this.functionDepth = 1;
 };
 
@@ -27,7 +28,7 @@ Call.prototype.advance = function(stack) {
 };
 
 Call.prototype.currentInstruction = function() {
-  return this.context.instructions[this.instructionIndex];
+  return this.context.instructions[this.type][this.instructionIndex];
 };
 
 Call.prototype.executeJump = function(stack) {
@@ -48,7 +49,7 @@ Call.prototype.executeJump = function(stack) {
   }
 
   if (programCounter) {
-    var toInstruction = this.context.instructionAtProgramCounter(programCounter);
+    var toInstruction = this.context.instructionAtProgramCounter(this.type, programCounter);
     this.instructionIndex = toInstruction.index;
   } else {
     // This means we didn't jump. Move onto the next instruction.
@@ -61,6 +62,10 @@ Call.prototype.isJump = function(instruction) {
     instruction = this.currentInstruction();
   }
   return instruction.name != "JUMPDEST" && instruction.name.indexOf("JUMP") == 0;
+};
+
+Call.prototype.binary = function() {
+  return this.context.binaries[this.type];
 };
 
 module.exports = Call;
