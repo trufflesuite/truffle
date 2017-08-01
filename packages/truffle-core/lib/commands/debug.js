@@ -54,7 +54,8 @@ var command = {
 
           var addresses = Object.keys(contexts).map(function(address) {
             var context = contexts[address];
-            return "  " + address + " - " + path.basename(context.sourcePath);
+            var contract = context.contract;
+            return "  " + address + " - " + contract.contractName;
           });
 
           config.logger.log(addresses.join(OS.EOL));
@@ -249,7 +250,7 @@ var command = {
                 printHelp();
             }
 
-            if (cmd != "h" && cmd != "p") {
+            if (cmd != "i" && cmd != "u" && cmd != "h" && cmd != "p") {
               lastCommand = cmd;
             }
 
