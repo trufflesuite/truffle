@@ -422,7 +422,7 @@ Debugger.prototype.stepOver = function() {
 
   while (true) {
     var newInstruction = this.step();
-    var newDepth = this.callstack.length;
+    var newDepth = this.functionDepth();
 
     if (this.isStopped()) {
       break;
@@ -435,7 +435,7 @@ Debugger.prototype.stepOver = function() {
 
     // If we encountered a new line, bail, but only do it when we're at the same functionDepth
     // (i.e., don't step into any new function calls).
-    if (newDepth == startingDepth && newInstruction.range.start.line != startingInstruction.range.start.line && this.functionDepth() <= startingDepth) {
+    if (newDepth == startingDepth && newInstruction.range.start.line != startingInstruction.range.start.line) {
       break;
     }
   }
