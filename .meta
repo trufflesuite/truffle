@@ -1,0 +1,23 @@
+{
+  "projects": {
+    "truffle-artifactor": "git@github.com:trufflesuite/truffle-artifactor.git",
+    "truffle-blockchain-utils": "git@github.com:trufflesuite/truffle-blockchain-utils.git",
+    "truffle-box": "git@github.com:trufflesuite/truffle-box.git",
+    "truffle-compile": "git@github.com:trufflesuite/truffle-compile.git",
+    "truffle-config": "git@github.com:trufflesuite/truffle-config.git",
+    "truffle-contract": "git@github.com:trufflesuite/truffle-contract.git",
+    "truffle-contract-schema": "git@github.com:trufflesuite/truffle-contract-schema.git",
+    "truffle-contract-sources": "git@github.com:trufflesuite/truffle-contract-sources.git",
+    "truffle-core": "git@github.com:trufflesuite/truffle-core.git",
+    "truffle-deployer": "git@github.com:trufflesuite/truffle-deployer.git",
+    "truffle-error": "git@github.com:trufflesuite/truffle-error.git",
+    "truffle-expect": "git@github.com:trufflesuite/truffle-expect.git",
+    "truffle-init": "git@github.com:trufflesuite/truffle-init.git",
+    "truffle-migrate": "git@github.com:trufflesuite/truffle-migrate.git",
+    "truffle-provider": "git@github.com:trufflesuite/truffle-provider.git",
+    "truffle-provisioner": "git@github.com:trufflesuite/truffle-provisioner.git",
+    "truffle-require": "git@github.com:trufflesuite/truffle-require.git",
+    "truffle-resolver": "git@github.com:trufflesuite/truffle-resolver.git",
+    "truffle-solidity-utils": "git@github.com:trufflesuite/truffle-solidity-utils.git"
+  }
+}
