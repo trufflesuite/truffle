@@ -1,6 +1,5 @@
 var Profiler = require("./profiler");
 var OS = require("os");
-var solc = require("solc");
 
 // Clean up after solc.
 var listeners = process.listeners("uncaughtException");
@@ -42,6 +41,9 @@ var compile = function(sources, options, callback) {
   expect.options(options, [
     "contracts_directory"
   ]);
+
+  // Load solc module only when compilation is actually required.
+  var solc = require("solc");
 
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
