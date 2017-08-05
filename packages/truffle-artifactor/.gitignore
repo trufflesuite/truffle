@@ -2,4 +2,3 @@ node_modules
 .DS_Store
 config/development
 config/test
-yarn.lock
