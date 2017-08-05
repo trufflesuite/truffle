@@ -28,7 +28,6 @@
     "fs-extra": "^1.0.0",
     "lodash": "^4.11.2",
     "truffle-contract": "^2.0.3",
-    "truffle-contract-schema": "^0.0.5",
-    "truffle-expect": "^0.0.3"
+    "truffle-contract-schema": "^0.0.5"
   }
 }

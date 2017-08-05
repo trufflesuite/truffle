@@ -19,7 +19,7 @@ describe("Custom options", function() {
     artifactor = new Artifactor(dirPath);
 
     artifactor.save({
-      contractName: "Example",
+      contract_name: "Example",
       abi: [],
       binary: "0xabcdef",
       address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01",
