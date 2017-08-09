@@ -8,6 +8,10 @@ var Web3 = require("web3");
 var Transaction = require('ethereumjs-tx');
 
 function HDWalletProvider(mnemonic, provider_url, address_index=0, num_addresses=1) {
+  if (!bip39.validateMnemonic(mnemonic)) {
+    throw new Error("Mnemonic invalid or undefined")
+  }
+
   this.mnemonic = mnemonic;
   this.hdwallet = hdkey.fromMasterSeed(bip39.mnemonicToSeed(mnemonic));
   this.wallet_hdpath = "m/44'/60'/0'/0/";
