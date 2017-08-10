@@ -11,6 +11,11 @@ var command = {
       type: "boolean",
       default: false
     },
+    "dry-run": {
+      describe: "Run migrations against an in-memory fork, for testing",
+      type: "boolean",
+      default: false
+    },
     f: {
       describe: "Specify a migration number to run from",
       type: "number"
@@ -18,6 +23,7 @@ var command = {
   },
   run: function (options, done) {
     var OS = require("os");
+    var Ganache = require("ganache-core");
     var Config = require("truffle-config");
     var Contracts = require("../contracts");
     var Resolver = require("truffle-resolver");
@@ -26,6 +32,17 @@ var command = {
     var Environment = require("../environment");
 
     var config = Config.detect(options);
+    if (options["dry-run"]) {
+      var upstreamNetwork = config.network || "development";
+      var upstreamConfig = config.networks[upstreamNetwork];
+      config.network = upstreamNetwork + "-fork";
+      config.networks[config.network] = {
+        network_id: upstreamConfig.network_id,
+        provider: Ganache.provider({
+          fork: "http://" + upstreamConfig.host + ":" + upstreamConfig.port
+        })
+      }
+    }
 
     Contracts.compile(config, function(err) {
       if (err) return done(err);
