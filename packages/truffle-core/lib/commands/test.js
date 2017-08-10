@@ -9,6 +9,7 @@ var command = {
     var Config = require("truffle-config");
     var Resolver = require("truffle-resolver");
     var Artifactor = require("truffle-artifactor");
+    var Ganache = require("ganache-core");
     var Test = require("../test");
     var fs = require("fs");
     var path = require("path");
@@ -17,7 +18,13 @@ var command = {
     var Environment = require("../environment");
 
     var config = Config.detect(options);
-    //config.network = "test";
+    if (!config.network) {
+      config.networks["memory"] = {
+        network_id: "*",
+        provider: Ganache.provider()
+      };
+      config.network = "memory";
+    }
 
     var files = [];
 
