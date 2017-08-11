@@ -4,7 +4,7 @@
   "version": "3.4.8",
   "description": "Truffle - Simple development framework for Ethereum",
   "dependencies": {
-    "mocha": "^3.4.2",
+    "mocha": "^3.5.0",
     "original-require": "^1.0.1",
     "solc": "0.4.13"
   },
