@@ -3,6 +3,7 @@ var TruffleError = require("truffle-error");
 var expect = require("truffle-expect");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
+var Ganache = require("ganache-core");
 
 var Environment = {
   // It's important config is a Config object and not a vanilla object
@@ -71,6 +72,37 @@ var Environment = {
     detectNetworkId(function(err) {
       if (err) return callback(err);
       detectFromAddress(callback);
+    });
+  },
+
+  // Ensure you call Environment.detect() first.
+  fork: function(config, callback) {
+    expect.options(config, [
+      "from"
+    ]);
+
+    var web3 = new Web3(config.provider);
+
+    web3.eth.getAccounts(function(err, accounts) {
+      if (err) return callback(err);
+
+      var upstreamNetwork = config.network;
+      var upstreamConfig = config.networks[upstreamNetwork];
+      var forkedNetwork = config.network + "-fork";
+
+      var forkURL = "http://" + upstreamConfig.host + ":" + upstreamConfig.port;
+
+      config.networks[forkedNetwork] = {
+        network_id: config.network_id,
+        provider: Ganache.provider({
+          fork: forkURL,
+          unlocked_accounts: accounts
+        }),
+        from: config.from
+      }
+      config.network = forkedNetwork;
+
+      callback();
     });
   }
 };
