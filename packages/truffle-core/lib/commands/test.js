@@ -18,12 +18,16 @@ var command = {
     var Environment = require("../environment");
 
     var config = Config.detect(options);
-    if (!config.network) {
-      config.networks["memory"] = {
+
+    if (!config.networks.test) {
+      config.networks.test = {
         network_id: "*",
         provider: Ganache.provider()
       };
-      config.network = "memory";
+    }
+
+    if (!config.network) {
+      config.network = "test";
     }
 
     var files = [];
