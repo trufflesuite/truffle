@@ -90,12 +90,10 @@ var Environment = {
       var upstreamConfig = config.networks[upstreamNetwork];
       var forkedNetwork = config.network + "-fork";
 
-      var forkURL = "http://" + upstreamConfig.host + ":" + upstreamConfig.port;
-
       config.networks[forkedNetwork] = {
         network_id: config.network_id,
         provider: Ganache.provider({
-          fork: forkURL,
+          fork: config.provider,
           unlocked_accounts: accounts
         }),
         from: config.from
