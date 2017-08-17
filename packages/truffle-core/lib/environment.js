@@ -102,6 +102,26 @@ var Environment = {
 
       callback();
     });
+  },
+
+  local: function(config, callback) {
+    expect.options(config, [
+      "networks"
+    ]);
+
+    var network = "local";
+    var network_id = 4447;
+
+    config.networks[network] = {
+      network_id: network_id,
+      provider: Ganache.provider({
+        network_id: network_id
+      })
+    };
+
+    config.network = network;
+
+    this.detect(config, callback);
   }
 };
 
