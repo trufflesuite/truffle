@@ -11,9 +11,16 @@ var command = {
 
     // This require a smell?
     var commands = require("./index")
+    var excluded = [
+      "console",
+      "init",
+      "watch",
+      "serve",
+      "develop"
+    ];
 
     var available_commands = Object.keys(commands).filter(function(name) {
-      return name != "console" && name != "init" && name != "watch" && name != "serve";
+      return excluded.indexOf(name) == -1;
     });
 
     var console_commands = {};
