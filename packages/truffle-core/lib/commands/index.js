@@ -8,6 +8,7 @@ module.exports = {
   debug: require("./debug"),
   opcode: require("./opcode"),
   console: require("./console"),
+  develop: require("./develop"),
   create: require("./create"),
   install: require("./install"),
   publish: require("./publish"),
