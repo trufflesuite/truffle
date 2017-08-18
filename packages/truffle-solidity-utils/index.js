@@ -100,35 +100,38 @@ var SolidityUtils = {
     return mapping;
   },
 
-  getInstructionFromSourceMap: function(instructionIndex, sourceMap) {
-    var ret = {}
-    var map = sourceMap.split(';')
-    if (instructionIndex >= map.length) {
-      return null;
-    }
-    for (var k = instructionIndex; k >= 0; k--) {
-      var current = map[k]
-      if (!current.length) {
-        continue
-      }
-      current = current.split(':')
-      if (ret.start === undefined && current[0] && current[0] !== '-1' && current[0].length) {
+  getHumanReadableSourceMap: function(sourceMap) {
+    var map = sourceMap.split(';');
+
+    var last = {};
+
+    return map.map(function(current) {
+      var ret = {
+        start: last.start,
+        length: last.length,
+        file: last.file,
+        jump: last.jump
+      };
+
+      current = current.split(':');
+
+      if (current[0] && current[0] !== '-1' && current[0].length) {
         ret.start = parseInt(current[0])
       }
-      if (ret.length === undefined && current[1] && current[1] !== '-1' && current[1].length) {
+      if (current[1] && current[1] !== '-1' && current[1].length) {
         ret.length = parseInt(current[1])
       }
-      if (ret.file === undefined && current[2] && current[2] !== '-1' && current[2].length) {
+      if (current[2] /*&& current[2] !== '-1'*/ && current[2].length) {
         ret.file = parseInt(current[2])
       }
-      if (ret.jump === undefined && current[3] && current[3].length) {
+      if (current[3] && current[3].length) {
         ret.jump = current[3]
       }
-      if (ret.start !== undefined && ret.length !== undefined && ret.file !== undefined && ret.jump !== undefined) {
-        break
-      }
-    }
-    return ret
+
+      last = ret;
+
+      return ret;
+    });
   }
 };
 
