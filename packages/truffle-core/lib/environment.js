@@ -109,7 +109,7 @@ var Environment = {
       "networks"
     ]);
 
-    var network = "local";
+    var network = "development";
     var network_id = 4447;
 
     config.networks[network] = {
