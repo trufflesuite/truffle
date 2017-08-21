@@ -105,23 +105,39 @@ var Environment = {
   },
 
   local: function(config, callback) {
+    var self = this;
+
     expect.options(config, [
       "networks"
     ]);
 
     var network = "development";
     var network_id = 4447;
+    var seed = "yum chocolate";
+    var port = 9656;
 
-    config.networks[network] = {
+    var server = Ganache.server({
       network_id: network_id,
-      provider: Ganache.provider({
-        network_id: network_id
-      })
-    };
+      port: port,
+      seed: seed
+    });
 
-    config.network = network;
+    server.listen(port, function (err) {
+      if (err) return callback(err);
 
-    this.detect(config, callback);
+      config.networks[network] = {
+        network_id: network_id,
+        provider: function() {
+          var url = "http://localhost:" + port;
+          return new Web3.providers.HttpProvider(url);
+        }
+      };
+
+      config.network = network;
+
+      self.detect(config, callback);
+    });
+
   }
 };
 
