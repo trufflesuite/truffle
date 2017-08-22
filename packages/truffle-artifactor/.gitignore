@@ -3,3 +3,4 @@ node_modules
 config/development
 config/test
 yarn.lock
+package-lock.json
