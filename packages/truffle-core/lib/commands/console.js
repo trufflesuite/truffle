@@ -6,8 +6,14 @@ var command = {
     var Config = require("truffle-config");
     var Console = require("../repl");
     var Environment = require("../environment");
+    var Develop = require("./develop");
 
     var config = Config.detect(options);
+
+    if (!config.network || config.network == "development" && !config.networks.development) {
+      Develop.run(options, done);
+      return;
+    }
 
     // This require a smell?
     var commands = require("./index")
