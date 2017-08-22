@@ -115,24 +115,23 @@ var Environment = {
     var network = "development";
     var network_id = 4447;
     var seed = "yum chocolate";
-    var host = "localhost";
+    var host = "0.0.0.0";
     var port = 9656;
+
+    var url = "http://" + host + ":" + port;
 
     var server = Ganache.server({
       network_id: network_id,
-      port: port,
       seed: seed
     });
 
-    config.logger.log("Running Ganache-Core at http://" + host + ":" + port);
-    config.logger.log();
-    server.listen(port, function (err) {
+    config.logger.log("Running Ganache-Core at " + url);
+    server.listen(port, host, function (err) {
       if (err) return callback(err);
 
       config.networks[network] = {
         network_id: network_id,
         provider: function() {
-          var url = "http://" + host + ":" + port;
           return new Web3.providers.HttpProvider(url);
         }
       };
