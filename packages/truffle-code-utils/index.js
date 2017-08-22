@@ -27,12 +27,6 @@ module.exports = {
       if (opcode.name.slice(0, 4) === 'PUSH') {
         var length = code[pc] - 0x5f
         opcode.pushData = code.slice(pc + 1, pc + length + 1)
-        // in case pushdata extends beyond code
-        if (pc + 1 + length > code.length) {
-          for (var j = opcode.pushData.length; j < length; j++) {
-            opcode.pushData.push(0)
-          }
-        }
 
         // convert pushData to hex
         opcode.pushData = "0x" + opcode.pushData.toString("hex");
