@@ -39,6 +39,7 @@ TruffleInterpreter.prototype.run = function() {
       });
 
       self.r.on("exit", function() {
+        console.log(".exit");
         self.callback();
       });
 

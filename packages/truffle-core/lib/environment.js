@@ -108,12 +108,14 @@ var Environment = {
     var self = this;
 
     expect.options(config, [
-      "networks"
+      "networks",
+      "logger"
     ]);
 
     var network = "development";
     var network_id = 4447;
     var seed = "yum chocolate";
+    var host = "localhost";
     var port = 9656;
 
     var server = Ganache.server({
@@ -122,13 +124,15 @@ var Environment = {
       seed: seed
     });
 
+    config.logger.log("Running Ganache-Core at http://" + host + ":" + port);
+    config.logger.log();
     server.listen(port, function (err) {
       if (err) return callback(err);
 
       config.networks[network] = {
         network_id: network_id,
         provider: function() {
-          var url = "http://localhost:" + port;
+          var url = "http://" + host + ":" + port;
           return new Web3.providers.HttpProvider(url);
         }
       };
@@ -137,6 +141,7 @@ var Environment = {
 
       self.detect(config, function (err) {
         callback(err, function(done) {
+          config.logger.log("Stopping Ganache-Core");
           server.close(done);
         });
       });
