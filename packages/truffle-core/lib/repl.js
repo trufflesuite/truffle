@@ -8,13 +8,25 @@ var expect = require("truffle-expect");
 var _ = require("lodash");
 var TruffleError = require("truffle-error");
 var fs = require("fs");
+var os = require("os");
 var path = require("path");
+var stream = require("stream");
+
 
 function TruffleInterpreter(tasks, options, callback) {
   this.options = options;
   this.r = null;
   this.command = new Command(tasks);
   this.callback = callback;
+
+  // wrap stdin for possible nested consoles
+  var input = new stream.PassThrough();
+  process.stdin.pipe(input);
+  var output = new stream.PassThrough();
+  output.pipe(process.stdout);
+
+  this.input = input;
+  this.output = output;
 };
 
 TruffleInterpreter.prototype.run = function() {
@@ -35,7 +47,10 @@ TruffleInterpreter.prototype.run = function() {
     try {
       self.r = repl.start({
         prompt: prefix,
-        eval: self.interpret.bind(self)
+        eval: self.interpret.bind(self),
+        terminal: true,
+        input: self.input,
+        output: self.output
       });
 
       self.r.on("exit", function() {
@@ -46,7 +61,7 @@ TruffleInterpreter.prototype.run = function() {
       self.r.context.web3 = web3;
 
     } catch(e) {
-      console.log(e.stack);
+      self.output.write(e.stack + os.EOL);
       self.callback(e);
     }
   });
@@ -109,6 +124,15 @@ TruffleInterpreter.prototype.resetContractsInConsoleContext = function(abstracti
 
 TruffleInterpreter.prototype.interpret = function(cmd, context, filename, callback) {
   var self = this;
+
+  process.stdin.unpipe(self.input);
+
+  var originalCallback = callback;
+  var repipeCallback = function(err) {
+    process.stdin.pipe(self.input);
+    return originalCallback(err);
+  }
+  callback = repipeCallback;
 
   if (this.command.getCommand(cmd.trim()) != null) {
     return this.command.run(cmd.trim(), this.options, function(err) {
