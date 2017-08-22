@@ -10,10 +10,11 @@ var TruffleError = require("truffle-error");
 var fs = require("fs");
 var path = require("path");
 
-function TruffleInterpreter(tasks, options) {
+function TruffleInterpreter(tasks, options, callback) {
   this.options = options;
   this.r = null;
   this.command = new Command(tasks);
+  this.callback = callback;
 };
 
 TruffleInterpreter.prototype.start = function() {
@@ -38,7 +39,7 @@ TruffleInterpreter.prototype.start = function() {
       });
 
       self.r.on("exit", function() {
-        process.exit(1);
+        self.callback();
       });
 
       self.resetContractsInConsoleContext(abstractions);
@@ -46,7 +47,7 @@ TruffleInterpreter.prototype.start = function() {
 
     } catch(e) {
       console.log(e.stack);
-      process.exit(1);
+      self.callback(e);
     }
   });
 };
@@ -147,7 +148,7 @@ TruffleInterpreter.prototype.interpret = function(cmd, context, filename, callba
 var Repl = {
   TruffleInterpreter: TruffleInterpreter,
 
-  run: function(tasks, options) {
+  run: function(tasks, options, callback) {
     var self = this;
 
     expect.options(options, [
@@ -162,7 +163,7 @@ var Repl = {
       "build_directory"
     ]);
 
-    var interpreter = new TruffleInterpreter(tasks, options);
+    var interpreter = new TruffleInterpreter(tasks, options, callback);
     interpreter.start();
   }
 }
