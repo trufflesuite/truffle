@@ -34,4 +34,6 @@ command.run(process.argv.slice(2), options, function(err) {
     }
     process.exit(1);
   }
+
+  process.exit(0);
 });
