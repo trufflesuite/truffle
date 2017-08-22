@@ -17,7 +17,7 @@ function TruffleInterpreter(tasks, options, callback) {
   this.callback = callback;
 };
 
-TruffleInterpreter.prototype.start = function() {
+TruffleInterpreter.prototype.run = function() {
   var self = this;
   var options = this.options;
 
@@ -164,7 +164,7 @@ var Repl = {
     ]);
 
     var interpreter = new TruffleInterpreter(tasks, options, callback);
-    interpreter.start();
+    interpreter.run();
   }
 }
 
