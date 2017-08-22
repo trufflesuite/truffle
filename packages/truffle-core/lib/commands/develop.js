@@ -33,13 +33,13 @@ var command = {
     });
 
     // use local environment instead of detecting config environment
-    Environment.local(config, function(err) {
+    Environment.local(config, function(err, cleanup) {
       if (err) return done(err);
 
       Console.run(console_commands, config.with({
         builder: config.build,
         processors: config.processors,
-      }), done);
+      }), function() { cleanup(done); });
     });
 
   }

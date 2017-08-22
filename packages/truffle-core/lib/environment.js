@@ -135,7 +135,11 @@ var Environment = {
 
       config.network = network;
 
-      self.detect(config, callback);
+      self.detect(config, function (err) {
+        callback(err, function(done) {
+          server.close(done);
+        });
+      });
     });
 
   }
