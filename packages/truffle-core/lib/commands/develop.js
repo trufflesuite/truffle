@@ -37,6 +37,7 @@ var command = {
       if (err) return done(err);
 
       config.logger.log("Truffle Develop started.");
+      config.logger.log();
       Console.run(console_commands, config.with({
         builder: config.build,
         processors: config.processors,
