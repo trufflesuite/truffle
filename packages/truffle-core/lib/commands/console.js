@@ -7,12 +7,15 @@ var command = {
     var Console = require("../repl");
     var Environment = require("../environment");
     var Develop = require("./develop");
+    var TruffleError = require("truffle-error");
 
     var config = Config.detect(options);
 
-    if (!config.network || config.network == "development" && !config.networks.development) {
-      Develop.run(options, done);
-      return;
+    if (!config.network && !config.networks.development) {
+      return done(new TruffleError(
+        "No network available. Use `truffle develop` " +
+          "or add network to truffle.js config."
+      ));
     }
 
     // This require a smell?
