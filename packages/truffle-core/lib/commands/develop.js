@@ -9,7 +9,7 @@ var command = {
   },
   run: function (options, done) {
     var Config = require("truffle-config");
-    var Console = require("../repl");
+    var Console = require("../console");
     var Environment = require("../environment");
 
     var config = Config.detect(options);
@@ -38,10 +38,9 @@ var command = {
 
       config.logger.log("Truffle Develop started.");
       config.logger.log();
-      Console.run(console_commands, config.with({
-        builder: config.build,
-        processors: config.processors,
-      }), function() { cleanup(done); });
+
+      var c = new Console(console_commands, config);
+      c.start(function() { cleanup(done); });
     });
 
   }

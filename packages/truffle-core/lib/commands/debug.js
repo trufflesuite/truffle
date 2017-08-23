@@ -10,7 +10,7 @@ var command = {
     var Config = require("truffle-config");
     var Debugger = require("truffle-debugger");
     var Environment = require("../environment");
-    var repl = require("repl");
+    var Repl = require("../repl");
     var OS = require("os");
     var path = require("path");
 
@@ -177,9 +177,17 @@ var command = {
         printFile();
         printState();
 
+        var repl;
+
+        if (options.repl) {
+          repl = options.repl;
+        } else {
+          repl = new ReplManager(config);
+        }
+
         var cli = repl.start({
           prompt: "debug(" + config.network + ":" + tx_hash.substring(0, 10) + "...)> ",
-          eval: function(cmd, context, filename, callback) {
+          interpreter: function(cmd, context, filename, callback) {
             cmd = cmd.trim();
 
             if (cmd == ".exit") {
@@ -212,8 +220,7 @@ var command = {
                 bugger.advance();
                 break;
               case "q":
-                process.exit();
-                break;
+                return repl.stop(callback);
             }
 
             // Check if execution has stopped.
@@ -223,10 +230,10 @@ var command = {
                 config.logger.log("Transaction halted with a RUNTIME ERROR.")
                 config.logger.log("");
                 config.logger.log("This is likely due to an intentional halting expression, like assert(), require() or revert(). It can also be due to out-of-gas exceptions. Please inspect your transaction parameters and contract code to determine the meaning of this error.");
-                process.exit(1);
+                return repl.stop(callback);
               } else {
                 config.logger.log("Transaction completed successfully.");
-                process.exit();
+                return repl.stop(callback);
               }
             }
 
@@ -257,6 +264,8 @@ var command = {
             callback();
           }
         });
+
+        done();
 
       });
     });
