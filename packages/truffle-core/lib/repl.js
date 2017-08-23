@@ -47,7 +47,7 @@ TruffleInterpreter.prototype.run = function(callback) {
       self.r = repl.start({
         prompt: prefix,
         eval: self.interpret.bind(self),
-        terminal: true,
+        // terminal: true,
         input: self.input,
         output: self.output
       });
@@ -124,16 +124,15 @@ TruffleInterpreter.prototype.resetContractsInConsoleContext = function(abstracti
 TruffleInterpreter.prototype.interpret = function(cmd, context, filename, callback) {
   var self = this;
 
-  process.stdin.unpipe(self.input);
-
-  var originalCallback = callback;
-  var repipeCallback = function(err) {
-    process.stdin.pipe(self.input);
-    return originalCallback(err);
-  }
-  callback = repipeCallback;
-
   if (this.command.getCommand(cmd.trim()) != null) {
+    process.stdin.unpipe(self.input);
+    // stdin -> self.input (... stuff ...) self.output -> stdout
+
+    var repipeCallback = function(err) {
+      process.stdin.pipe(self.input);
+      return callback(err);
+    }
+
     return this.command.run(cmd.trim(), this.options, function(err) {
       if (err) {
         // Perform error handling ourselves.
@@ -143,14 +142,14 @@ TruffleInterpreter.prototype.interpret = function(cmd, context, filename, callba
           // Bubble up all other unexpected errors.
           console.log(err.stack || err.toString());
         }
-        return callback();
+        return repipeCallback();
       }
 
       // Reprovision after each command as it may change contracts.
       self.provision(function(err, abstractions) {
         // Don't pass abstractions to the callback if they're there or else
         // they'll get printed in the repl.
-        callback(err);
+        repipeCallback(err);
       });
     });
   }
