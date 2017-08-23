@@ -8,163 +8,102 @@ var expect = require("truffle-expect");
 var _ = require("lodash");
 var TruffleError = require("truffle-error");
 var fs = require("fs");
+var os = require("os");
 var path = require("path");
+var async = require("async");
 
-function TruffleInterpreter(tasks, options) {
+function ReplManager(options) {
+  expect.options(options, [
+    "working_directory",
+    "contracts_directory",
+    "contracts_build_directory",
+    "migrations_directory",
+    "network",
+    "network_id",
+    "provider",
+    "resolver",
+    "build_directory"
+  ]);
+
   this.options = options;
-  this.r = null;
-  this.command = new Command(tasks);
+  this.repl = options.repl;
+
+  this.contexts = [];
 };
 
-TruffleInterpreter.prototype.start = function() {
+ReplManager.prototype.start = function(options) {
   var self = this;
-  var options = this.options;
 
-  var web3 = new Web3();
-  web3.setProvider(options.provider);
-
-  this.provision(function(err, abstractions) {
-    if (err) {
-      options.logger.log("Unexpected error: Cannot provision contracts while instantiating the console.");
-      options.logger.log(err.stack || err.message || err);
-    }
-
-    var prefix = "truffle(" + options.network + ")> ";
-
-    try {
-      self.r = repl.start({
-        prompt: prefix,
-        eval: self.interpret.bind(self)
-      });
-
-      self.r.on("exit", function() {
-        process.exit(1);
-      });
-
-      self.resetContractsInConsoleContext(abstractions);
-      self.r.context.web3 = web3;
-
-    } catch(e) {
-      console.log(e.stack);
-      process.exit(1);
-    }
+  this.contexts.push({
+    prompt: options.prompt,
+    interpreter: options.interpreter,
+    done: options.done
   });
-};
 
-TruffleInterpreter.prototype.provision = function(callback) {
-  var self = this;
+  var currentContext = this.contexts[this.contexts.length - 1];
 
-  fs.readdir(this.options.contracts_build_directory, function(err, files) {
-    if (err) {
-      // Error reading the build directory? Must mean it doesn't exist or we don't have access to it.
-      // Couldn't provision the contracts if we wanted. It's possible we're hiding very rare FS
-      // errors, but that's better than showing the user error messages that will be "build folder
-      // doesn't exist" 99.9% of the time.
-    }
-
-    var promises = [];
-    files = files || [];
-
-    files.forEach(function(file) {
-      promises.push(new Promise(function(accept, reject) {
-        fs.readFile(path.join(self.options.contracts_build_directory, file), "utf8", function(err, body) {
-          if (err) return reject(err);
-          try {
-            body = JSON.parse(body);
-          } catch (e) {
-            return reject(new Error("Cannot parse " + file + ": " + e.message));
-          }
-
-          accept(body);
-        })
-      }))
+  if (!this.repl) {
+    this.repl = repl.start({
+      prompt: currentContext.prompt,
+      eval: this.interpret.bind(this),
     });
 
-    Promise.all(promises).then(function(json_blobs) {
-      var abstractions = json_blobs.map(function(json) {
-        var abstraction = contract(json);
-        provision(abstraction, self.options);
-        return abstraction;
+    this.repl.on("exit", function() {
+      // If we exit for some reason, call done functions for good measure
+      // then ensure the process is completely killed. Once the repl exits,
+      // the process is in a bad state and can't be recovered (e.g., stdin is closed).
+      var doneFunctions = self.contexts.map(function(context) {
+        return context.done || function() {};
       });
-
-      self.resetContractsInConsoleContext(abstractions);
-
-      callback(null, abstractions);
-    }).catch(callback);
-  });
-};
-
-TruffleInterpreter.prototype.resetContractsInConsoleContext = function(abstractions) {
-  var self = this;
-
-  abstractions = abstractions || []
-
-  if (this.r != null) {
-    abstractions.forEach(function(abstraction) {
-      self.r.context[abstraction.contract_name] = abstraction;
-    });
-  }
-}
-
-TruffleInterpreter.prototype.interpret = function(cmd, context, filename, callback) {
-  var self = this;
-
-  if (this.command.getCommand(cmd.trim()) != null) {
-    return this.command.run(cmd.trim(), this.options, function(err) {
-      if (err) {
-        // Perform error handling ourselves.
-        if (err instanceof TruffleError) {
-          console.log(err.message);
-        } else {
-          // Bubble up all other unexpected errors.
-          console.log(err.stack || err.toString());
-        }
-        return callback();
-      }
-
-      // Reprovision after each command as it may change contracts.
-      self.provision(function(err, abstractions) {
-        // Don't pass abstractions to the callback if they're there or else
-        // they'll get printed in the repl.
-        callback(err);
+      async.series(doneFunctions, function(err) {
+        process.exit();
       });
     });
   }
 
-  var result;
-  try {
-    result = vm.runInContext(cmd, context, {
-      displayErrors: false
+  this.repl.setPrompt(options.prompt);
+  this.setContextVars(options.context || {});
+};
+
+ReplManager.prototype.setContextVars = function(obj) {
+  var self = this;
+  if (this.repl) {
+    Object.keys(obj).forEach(function(key) {
+      self.repl.context[key] = obj[key];
     });
-  } catch (e) {
-    return callback(e);
+  }
+};
+
+ReplManager.prototype.stop = function(callback) {
+  var oldContext = this.contexts.pop();
+
+  if (oldContext.done) {
+    oldContext.done();
   }
 
-  // Resolve all promises. This will leave non-promises alone.
-  Promise.resolve(result).then(function(res) { callback(null, res) }).catch(callback);
-}
+  var currentContext = this.contexts[this.contexts.length - 1];
 
-var Repl = {
-  TruffleInterpreter: TruffleInterpreter,
-
-  run: function(tasks, options) {
-    var self = this;
-
-    expect.options(options, [
-      "working_directory",
-      "contracts_directory",
-      "contracts_build_directory",
-      "migrations_directory",
-      "network",
-      "network_id",
-      "provider",
-      "resolver",
-      "build_directory"
-    ]);
-
-    var interpreter = new TruffleInterpreter(tasks, options);
-    interpreter.start();
+  if (currentContext) {
+    this.repl.setPrompt(currentContext.prompt);
+  } else {
+    // If there's no new context, stop the process altogether.
+    // Though this might seem like an out of place process.exit(),
+    // once the Node repl closes, the state of the process is not
+    // recoverable; e.g., stdin is closed and can't be reopened.
+    // Since we can't recover to a state before the repl was opened,
+    // we should just exit. He're, we'll exit after we've popped
+    // off the stack of all repl contexts.
+    process.exit();
   }
+
+  if (callback) {
+    callback();
+  }
+};
+
+ReplManager.prototype.interpret = function(cmd, context, filename, callback) {
+  var currentContext = this.contexts[this.contexts.length - 1];
+  currentContext.interpreter(cmd, context, filename, callback);
 }
 
-module.exports = Repl;
+module.exports = ReplManager;

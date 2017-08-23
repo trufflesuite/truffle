@@ -102,6 +102,49 @@ var Environment = {
 
       callback();
     });
+  },
+
+  local: function(config, callback) {
+    var self = this;
+
+    expect.options(config, [
+      "networks",
+      "logger"
+    ]);
+
+    var network = "develop";
+    var network_id = 4447;
+    var seed = "yum chocolate";
+    var host = "0.0.0.0";
+    var port = 9545;
+
+    var url = "http://" + host + ":" + port + "/";
+
+    var server = Ganache.server({
+      network_id: network_id,
+      seed: seed
+    });
+
+    config.logger.log("Running development blockchain at " + url + "...");
+    server.listen(port, host, function (err) {
+      if (err) return callback(err);
+
+      config.networks[network] = {
+        network_id: network_id,
+        provider: function() {
+          return new Web3.providers.HttpProvider(url);
+        }
+      };
+
+      config.network = network;
+
+      self.detect(config, function (err) {
+        callback(err, function(done) {
+          server.close(done);
+        });
+      });
+    });
+
   }
 };
 

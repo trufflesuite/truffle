@@ -10,7 +10,7 @@ var command = {
     var Config = require("truffle-config");
     var Debugger = require("truffle-debugger");
     var Environment = require("../environment");
-    var repl = require("repl");
+    var ReplManager = require("../repl");
     var OS = require("os");
     var path = require("path");
 
@@ -172,92 +172,99 @@ var command = {
           config.logger.log(stack.join(OS.EOL));
         };
 
+        function interpreter(cmd, context, filename, callback) {
+          cmd = cmd.trim();
+
+          if (cmd == ".exit") {
+            cmd = "q";
+          }
+
+          if (cmd.length > 0) {
+            cmd = cmd[0];
+          }
+
+          if (cmd == "") {
+            cmd = lastCommand;
+          }
+
+          // Perform commands that require state changes.
+          switch (cmd) {
+            case "o":
+              bugger.stepOver();
+              break;
+            case "i":
+              bugger.stepInto();
+              break;
+            case "u":
+              bugger.stepOut();
+              break;
+            case "n":
+              bugger.step();
+              break;
+            case ";":
+              bugger.advance();
+              break;
+            case "q":
+              return repl.stop(callback);
+          }
+
+          // Check if execution has stopped.
+          if (bugger.isStopped()) {
+            config.logger.log("");
+            if (bugger.isRuntimeError()) {
+              config.logger.log("Transaction halted with a RUNTIME ERROR.")
+              config.logger.log("");
+              config.logger.log("This is likely due to an intentional halting expression, like assert(), require() or revert(). It can also be due to out-of-gas exceptions. Please inspect your transaction parameters and contract code to determine the meaning of this error.");
+              return repl.stop(callback);
+            } else {
+              config.logger.log("Transaction completed successfully.");
+              return repl.stop(callback);
+            }
+          }
+
+          // Perform post printing
+          // (we want to see if execution stopped before printing state).
+          switch (cmd) {
+            case ";":
+            case "p":
+              printFile();
+              printInstruction(bugger.currentInstruction());
+              printState();
+              break;
+            case "o":
+            case "i":
+            case "u":
+            case "n":
+              printFile();
+              printState();
+              break;
+            default:
+              printHelp();
+          }
+
+          if (cmd != "i" && cmd != "u" && cmd != "h" && cmd != "p") {
+            lastCommand = cmd;
+          }
+
+          callback();
+        };
+
         printAddressesAffected();
         printHelp();
         printFile();
         printState();
 
-        var cli = repl.start({
+        var repl = options.repl || new ReplManager(config);
+
+        repl.start({
           prompt: "debug(" + config.network + ":" + tx_hash.substring(0, 10) + "...)> ",
-          eval: function(cmd, context, filename, callback) {
-            cmd = cmd.trim();
-
-            if (cmd == ".exit") {
-              cmd = "q";
-            }
-
-            if (cmd.length > 0) {
-              cmd = cmd[0];
-            }
-
-            if (cmd == "") {
-              cmd = lastCommand;
-            }
-
-            // Perform commands that require state changes.
-            switch (cmd) {
-              case "o":
-                bugger.stepOver();
-                break;
-              case "i":
-                bugger.stepInto();
-                break;
-              case "u":
-                bugger.stepOut();
-                break;
-              case "n":
-                bugger.step();
-                break;
-              case ";":
-                bugger.advance();
-                break;
-              case "q":
-                process.exit();
-                break;
-            }
-
-            // Check if execution has stopped.
-            if (bugger.isStopped()) {
-              config.logger.log("");
-              if (bugger.isRuntimeError()) {
-                config.logger.log("Transaction halted with a RUNTIME ERROR.")
-                config.logger.log("");
-                config.logger.log("This is likely due to an intentional halting expression, like assert(), require() or revert(). It can also be due to out-of-gas exceptions. Please inspect your transaction parameters and contract code to determine the meaning of this error.");
-                process.exit(1);
-              } else {
-                config.logger.log("Transaction completed successfully.");
-                process.exit();
-              }
-            }
-
-            // Perform post printing
-            // (we want to see if execution stopped before printing state).
-            switch (cmd) {
-              case ";":
-              case "p":
-                printFile();
-                printInstruction(bugger.currentInstruction());
-                printState();
-                break;
-              case "o":
-              case "i":
-              case "u":
-              case "n":
-                printFile();
-                printState();
-                break;
-              default:
-                printHelp();
-            }
-
-            if (cmd != "i" && cmd != "u" && cmd != "h" && cmd != "p") {
-              lastCommand = cmd;
-            }
-
-            callback();
-          }
+          interpreter: interpreter
         });
 
+        // Call the done function even though the repl hasn't finished.
+        // This leaves the process at the whim of the repl; the repl is
+        // responsible for closing the process when done. 
+        done();
       });
     });
   }
