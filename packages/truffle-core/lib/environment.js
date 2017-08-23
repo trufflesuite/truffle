@@ -116,16 +116,16 @@ var Environment = {
     var network_id = 4447;
     var seed = "yum chocolate";
     var host = "0.0.0.0";
-    var port = 9656;
+    var port = 9545;
 
-    var url = "http://" + host + ":" + port;
+    var url = "http://" + host + ":" + port + "/";
 
     var server = Ganache.server({
       network_id: network_id,
       seed: seed
     });
 
-    config.logger.log("Running Ganache-Core at " + url);
+    config.logger.log("Running development blockchain at " + url + "...");
     server.listen(port, host, function (err) {
       if (err) return callback(err);
 
@@ -140,7 +140,7 @@ var Environment = {
 
       self.detect(config, function (err) {
         callback(err, function(done) {
-          config.logger.log("Stopping Ganache-Core");
+          config.logger.log("Stopping development blockchain...");
           server.close(done);
         });
       });
