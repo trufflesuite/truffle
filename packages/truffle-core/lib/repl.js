@@ -13,11 +13,10 @@ var path = require("path");
 var stream = require("stream");
 
 
-function TruffleInterpreter(tasks, options, callback) {
+function TruffleInterpreter(tasks, options) {
   this.options = options;
   this.r = null;
   this.command = new Command(tasks);
-  this.callback = callback;
 
   // wrap stdin for possible nested consoles
   var input = new stream.PassThrough();
@@ -29,7 +28,7 @@ function TruffleInterpreter(tasks, options, callback) {
   this.output = output;
 };
 
-TruffleInterpreter.prototype.run = function() {
+TruffleInterpreter.prototype.run = function(callback) {
   var self = this;
   var options = this.options;
 
@@ -54,7 +53,7 @@ TruffleInterpreter.prototype.run = function() {
       });
 
       self.r.on("exit", function() {
-        self.callback();
+        callback();
       });
 
       self.resetContractsInConsoleContext(abstractions);
@@ -62,7 +61,7 @@ TruffleInterpreter.prototype.run = function() {
 
     } catch(e) {
       self.output.write(e.stack + os.EOL);
-      self.callback(e);
+      callback(e);
     }
   });
 };
@@ -187,8 +186,8 @@ var Repl = {
       "build_directory"
     ]);
 
-    var interpreter = new TruffleInterpreter(tasks, options, callback);
-    interpreter.run();
+    var interpreter = new TruffleInterpreter(tasks, options);
+    interpreter.run(callback);
   }
 }
 
