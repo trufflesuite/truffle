@@ -10,7 +10,6 @@ var TruffleError = require("truffle-error");
 var fs = require("fs");
 var os = require("os");
 var path = require("path");
-var stream = require("stream");
 var async = require("async");
 
 function ReplManager(options) {
@@ -32,14 +31,13 @@ function ReplManager(options) {
   this.contexts = [];
 };
 
-ReplManager.prototype.start = function(options, callback) {
+ReplManager.prototype.start = function(options) {
   var self = this;
 
   this.contexts.push({
     prompt: options.prompt,
     interpreter: options.interpreter,
-    context: options.context || {},
-    done: callback
+    done: options.done
   });
 
   var currentContext = this.contexts[this.contexts.length - 1];
@@ -51,21 +49,20 @@ ReplManager.prototype.start = function(options, callback) {
     });
 
     this.repl.on("exit", function() {
+      // If we exit for some reason, call done functions for good measure
+      // then ensure the process is completely killed. Once the repl exits,
+      // the process is in a bad state and can't be recovered (e.g., stdin is closed).
       var doneFunctions = self.contexts.map(function(context) {
         return context.done || function() {};
       });
       async.series(doneFunctions, function(err) {
-        // What do we do if we error here?
+        process.exit();
       });
     });
   }
 
   this.repl.setPrompt(options.prompt);
-  //this.repl.context = currentContext.context;
-};
-
-ReplManager.prototype.stop = function(callback) {
-  this.popContext(callback);
+  this.setContextVars(options.context || {});
 };
 
 ReplManager.prototype.setContextVars = function(obj) {
@@ -77,7 +74,7 @@ ReplManager.prototype.setContextVars = function(obj) {
   }
 };
 
-ReplManager.prototype.popContext = function(callback) {
+ReplManager.prototype.stop = function(callback) {
   var oldContext = this.contexts.pop();
 
   if (oldContext.done) {
@@ -88,8 +85,16 @@ ReplManager.prototype.popContext = function(callback) {
 
   if (currentContext) {
     this.repl.setPrompt(currentContext.prompt);
+  } else {
+    // If there's no new context, stop the process altogether.
+    // Though this might seem like an out of place process.exit(),
+    // once the Node repl closes, the state of the process is not
+    // recoverable; e.g., stdin is closed and can't be reopened.
+    // Since we can't recover to a state before the repl was opened,
+    // we should just exit. He're, we'll exit after we've popped
+    // off the stack of all repl contexts.
+    process.exit();
   }
-  //this.repl.context = currentContext.context;
 
   if (callback) {
     callback();

@@ -112,7 +112,7 @@ var Environment = {
       "logger"
     ]);
 
-    var network = "development";
+    var network = "develop";
     var network_id = 4447;
     var seed = "yum chocolate";
     var host = "0.0.0.0";
@@ -140,7 +140,6 @@ var Environment = {
 
       self.detect(config, function (err) {
         callback(err, function(done) {
-          config.logger.log("Stopping development blockchain...");
           server.close(done);
         });
       });

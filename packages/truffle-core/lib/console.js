@@ -51,19 +51,16 @@ Console.prototype.start = function(callback) {
       self.options.logger.log(err.stack || err.message || err);
     }
 
-    try {
-      self.repl.start({
-        prompt: "truffle(" + self.options.network + ")> ",
-        context: {
-          web3: self.web3,
-        },
-        interpreter: self.interpret.bind(self)
-      }, callback);
+    self.repl.start({
+      prompt: "truffle(" + self.options.network + ")> ",
+      context: {
+        web3: self.web3,
+      },
+      interpreter: self.interpret.bind(self),
+      done: callback
+    });
 
-      self.resetContractsInConsoleContext(abstractions);
-    } catch(e) {
-      callback(e);
-    }
+    self.resetContractsInConsoleContext(abstractions);
   });
 };
 
