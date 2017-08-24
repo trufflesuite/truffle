@@ -61,7 +61,7 @@ library Assert {
     string constant STRING_NULL = "";
 
     uint8 constant ZERO = uint8(byte('0'));
-    uint8 constant A = uint8(byte('a'));
+    uint8 constant A_CONSTANT = uint8(byte('a'));
 
     byte constant MINUS = byte('-');
 
@@ -1459,7 +1459,7 @@ library Assert {
         if (u < 10)
             return byte(u + ZERO);
         else if (u < 16)
-            return byte(u - 10 + A);
+            return byte(u - 10 + A_CONSTANT);
         else
             return 0;
     }
