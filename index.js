@@ -34,7 +34,7 @@ function HDWalletProvider(mnemonic, provider_url, address_index=0, num_addresses
     },
     signTransaction: function(txParams, cb) {
       let pkey;
-      if (tmp_wallets[txParams.from]) { pkey = tmp_wallets[address].getPrivateKey(); }
+      if (tmp_wallets[txParams.from]) { pkey = tmp_wallets[txParams.from].getPrivateKey(); }
       else { cb('Account not found'); }
       var tx = new Transaction(txParams);
       tx.sign(pkey);
