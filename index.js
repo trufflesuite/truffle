@@ -6,6 +6,7 @@ var WalletSubprovider = require('web3-provider-engine/subproviders/wallet.js');
 var HookedSubprovider = require('web3-provider-engine/subproviders/hooked-wallet.js');
 var Web3Subprovider = require("web3-provider-engine/subproviders/web3.js");
 var Web3 = require("web3");
+var Transaction = require('ethereumjs-tx');
 
 function HDWalletProvider(mnemonic, provider_url, address_index=0, num_addresses=1) {
   this.mnemonic = mnemonic;
@@ -16,17 +17,32 @@ function HDWalletProvider(mnemonic, provider_url, address_index=0, num_addresses
 
   for (let i = 0; i < num_addresses; i++){
     var wallet = this.hdwallet.derivePath(this.wallet_hdpath + i).getWallet();
-    var addr = wallet.getAddress().toString('hex');
+    var addr = '0x' + wallet.getAddress().toString('hex');
     this.addresses.push(addr);
     this.wallets[addr] = wallet;
   }
 
+  console.log('this.addresses!', this.addresses)
+  const tmp_accounts = this.addresses;
+  const tmp_wallets = this.wallets;
+
   this.engine = new ProviderEngine();
   this.engine.addProvider(new HookedSubprovider({
-    getAccounts: function(cb) { cb(null, this.addresses) },
+    getAccounts: function(cb) { cb(null, tmp_accounts) },
     getPrivateKey: function(address, cb) {
-      if (!this.wallets[address]) { return cb('Account not found'); }
-      else { cb(null, wallets[address].getPrivateKey().toString('hex')); }
+      if (!tmp_wallets[address]) { return cb('Account not found'); }
+      else { cb(null, tmp_wallets[address].getPrivateKey().toString('hex')); }
+    },
+    signTransaction: function(txParams, cb, address) {
+      let pkey = tmp_wallets[tmp_accounts[0]].getPrivateKey();
+      if (address) {
+        if (tmp_wallets[address]) { pkey = tmp_wallets[address].getPrivateKey(); }
+        else { cb('Account not found'); }
+      }
+      var tx = new Transaction(txParams);
+      tx.sign(pkey);
+      var rawTx = '0x' + tx.serialize().toString('hex');
+      cb(null, rawTx);
     }
   }));
   // this.engine.addProvider(new WalletSubprovider(this.wallets[this.addresses[0]], {}));
