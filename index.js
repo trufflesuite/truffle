@@ -20,7 +20,6 @@ function HDWalletProvider(mnemonic, provider_url, address_index=0, num_addresses
     var addr = '0x' + wallet.getAddress().toString('hex');
     this.addresses.push(addr);
     this.wallets[addr] = wallet;
-    console.log(wallet.getPrivateKey().toString('hex'))
   }
 
   const tmp_accounts = this.addresses;
@@ -34,6 +33,7 @@ function HDWalletProvider(mnemonic, provider_url, address_index=0, num_addresses
       else { cb(null, tmp_wallets[address].getPrivateKey().toString('hex')); }
     },
     signTransaction: function(txParams, cb, address) {
+      console.log('txparams', txparams)
       let pkey = tmp_wallets[tmp_accounts[0]].getPrivateKey();
       if (address) {
         if (tmp_wallets[address]) { pkey = tmp_wallets[address].getPrivateKey(); }
