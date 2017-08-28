@@ -32,13 +32,10 @@ function HDWalletProvider(mnemonic, provider_url, address_index=0, num_addresses
       if (!tmp_wallets[address]) { return cb('Account not found'); }
       else { cb(null, tmp_wallets[address].getPrivateKey().toString('hex')); }
     },
-    signTransaction: function(txParams, cb, address) {
-      console.log('txparams', txParams)
-      let pkey = tmp_wallets[tmp_accounts[0]].getPrivateKey();
-      if (address) {
-        if (tmp_wallets[address]) { pkey = tmp_wallets[address].getPrivateKey(); }
-        else { cb('Account not found'); }
-      }
+    signTransaction: function(txParams, cb) {
+      let pkey;
+      if (tmp_wallets[txParams.from]) { pkey = tmp_wallets[address].getPrivateKey(); }
+      else { cb('Account not found'); }
       var tx = new Transaction(txParams);
       tx.sign(pkey);
       var rawTx = '0x' + tx.serialize().toString('hex');
