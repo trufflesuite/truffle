@@ -20,9 +20,9 @@ function HDWalletProvider(mnemonic, provider_url, address_index=0, num_addresses
     var addr = '0x' + wallet.getAddress().toString('hex');
     this.addresses.push(addr);
     this.wallets[addr] = wallet;
+    console.log(wallet.getPrivateKey().toString('hex'))
   }
 
-  console.log('this.addresses!', this.addresses)
   const tmp_accounts = this.addresses;
   const tmp_wallets = this.wallets;
 
