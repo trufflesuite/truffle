@@ -17,7 +17,7 @@ var Environment = {
     }
 
     if (!config.artifactor) {
-      config.artifactor = new Artifactor(config.contracts_build_directory);
+      config.artifactor = new Artifactor(config.contracts_build_directory)
     }
 
     if (!config.network && config.networks["development"]) {

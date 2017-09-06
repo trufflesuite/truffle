@@ -40,7 +40,9 @@ var command = {
     Environment.detect(config, function(err) {
       if (err) return done(err);
 
-      var c = new Console(console_commands, config);
+      var c = new Console(console_commands, config.with({
+        noAliases: true
+      }));
       c.start(done);
     });
   }
