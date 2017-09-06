@@ -244,7 +244,7 @@ var contract = (function(module) {
     linkBytecode: function(bytecode, links) {
       Object.keys(links).forEach(function(library_name) {
         var library_address = links[library_name];
-        var regex = new RegExp("__" + library_name + "_*", "g");
+        var regex = new RegExp("__" + library_name + "_+", "g");
 
         bytecode = bytecode.replace(regex, library_address.replace("0x", ""));
       });
