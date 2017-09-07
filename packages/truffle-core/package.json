@@ -16,6 +16,7 @@
     "ethpm-registry": "0.0.9",
     "finalhandler": "^0.4.0",
     "fs-extra": "^2.0.0",
+    "ganache-core": "^1.1.2",
     "lodash": "^4.5.1",
     "mkdirp": "^0.5.1",
     "mocha": "^3.2.0",
