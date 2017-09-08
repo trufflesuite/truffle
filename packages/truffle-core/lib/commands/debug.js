@@ -49,6 +49,12 @@ var command = {
       bugger.start(tx_hash, function(err, contexts) {
         if (err) return done(err);
 
+        function splitLines(str) {
+          // We were splitting on OS.EOL, but it turns out on Windows,
+          // in some environments (perhaps?) line breaks are still denoted by just \n
+          return str.split(/\r?\n/g);
+        }
+
         function printAddressesAffected() {
           config.logger.log("Addresses affected:");
 
@@ -74,8 +80,8 @@ var command = {
 
         function printLines(lineIndex, totalLines) {
           var source = bugger.currentSource();
-          var lines = source.split(OS.EOL)
 
+          var lines = splitLines(source);
           var startingLine = Math.max(lineIndex - totalLines + 1, 0);
 
           // Calculate prefix length
@@ -111,7 +117,7 @@ var command = {
 
           var range = bugger.currentInstruction().range;
           var source = bugger.currentSource();
-          var lines = source.split(OS.EOL);
+          var lines = splitLines(source);
 
           var prefixLength = printLines(range.start.line, 3);
 
@@ -263,7 +269,7 @@ var command = {
 
         // Call the done function even though the repl hasn't finished.
         // This leaves the process at the whim of the repl; the repl is
-        // responsible for closing the process when done. 
+        // responsible for closing the process when done.
         done();
       });
     });
