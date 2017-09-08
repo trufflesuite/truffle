@@ -13,7 +13,7 @@ describe("Cyclic Dependencies", function() {
   var logger = new MemoryLogger();
 
   before("set up sandbox", function(done) {
-    this.timeout(10000);
+    this.timeout(20000);
     Box.sandbox("default", function(err, conf) {
       if (err) return done(err);
       config = conf;
@@ -32,7 +32,7 @@ describe("Cyclic Dependencies", function() {
   });
 
   it("will compile cyclic dependencies that Solidity is fine with (no `new`'s)", function(done) {
-    this.timeout(20000);
+    this.timeout(40000);
 
     CommandRunner.run("compile", config, function(err) {
       if (err) return done(err);

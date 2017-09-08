@@ -23,7 +23,7 @@ describe("Migration Parameters", function() {
   });
 
   before("set up sandbox", function(done) {
-    this.timeout(10000);
+    this.timeout(20000);
     Box.sandbox("default", function(err, conf) {
       if (err) return done(err);
       config = conf;
@@ -50,7 +50,7 @@ describe("Migration Parameters", function() {
   });
 
   it("will migrate and save the correct output data", function(done) {
-    this.timeout(20000);
+    this.timeout(40000);
 
     var expected_file = path.join(config.migrations_directory, "output.json");
 
