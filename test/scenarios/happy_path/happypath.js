@@ -21,7 +21,7 @@ describe("Happy path (truffle unbox)", function() {
   });
 
   before("set up sandbox", function(done) {
-    this.timeout(10000);
+    this.timeout(20000);
     Box.sandbox("default", function(err, conf) {
       if (err) return done(err);
       config = conf;
@@ -35,7 +35,7 @@ describe("Happy path (truffle unbox)", function() {
   });
 
   it("will compile", function(done) {
-    this.timeout(20000);
+    this.timeout(40000);
 
     CommandRunner.run("compile", config, function(err) {
       if (err) return done(err);
@@ -49,7 +49,7 @@ describe("Happy path (truffle unbox)", function() {
   });
 
   it("will migrate", function(done) {
-    this.timeout(20000);
+    this.timeout(40000);
 
     CommandRunner.run("migrate", config, function(err) {
       if (err) return done(err);
@@ -75,7 +75,7 @@ describe("Happy path (truffle unbox)", function() {
   });
 
   it("will run tests", function(done) {
-    this.timeout(20000);
+    this.timeout(40000);
     CommandRunner.run("test", config, function(err) {
       if (err) return done(err);
 
