@@ -5,7 +5,10 @@ var solc = require("solc");
 // Clean up after solc.
 var listeners = process.listeners("uncaughtException");
 var solc_listener = listeners[listeners.length - 1];
-process.removeListener("uncaughtException", solc_listener);
+
+if (solc_listener) {
+  process.removeListener("uncaughtException", solc_listener);
+}
 
 var path = require("path");
 var fs = require("fs");
@@ -37,7 +40,8 @@ var compile = function(sources, options, callback) {
   }
 
   expect.options(options, [
-    "contracts_directory"
+    "contracts_directory",
+    "solc"
   ]);
 
   // Ensure sources have operating system independent paths
@@ -49,28 +53,20 @@ var compile = function(sources, options, callback) {
     var replacement = source.replace(/\\/g, "/");
 
     // Turn G:/.../ into /G/.../ for Windows
-    // Make sure not to break package imports.
-    // TODO: Make this a regex instead?
-    if (replacement[0] != "/" && replacement[1] == ":") {
+    if (replacement.length >= 2 && replacement[1] == ":") {
       replacement = "/" + replacement;
+      replacement = replacement.replace(":", "");
     }
-    replacement = replacement.replace(":", "");
 
     // Save the result
     operatingSystemIndependentSources[replacement] = sources[source];
   });
 
-  // Add the listener back in, just in case I need it.
-  process.on("uncaughtException", solc_listener);
-
   var solcStandardInput = {
     language: "Solidity",
     sources: {},
     settings: {
-      optimizer: {
-        enabled: true,
-        runs: 0 // See https://github.com/ethereum/solidity/issues/2245
-      },
+      optimizer: options.solc.optimizer,
       outputSelection: {
         "*": {
           "*": [
@@ -98,9 +94,6 @@ var compile = function(sources, options, callback) {
   });
 
   var result = solc.compileStandard(JSON.stringify(solcStandardInput));
-
-  // Alright, now remove it.
-  process.removeListener("uncaughtException", solc_listener);
 
   var standardOutput = JSON.parse(result);
 
@@ -185,7 +178,7 @@ var compile = function(sources, options, callback) {
   });
 
   // TODO: Is the third parameter needed?
-  callback(null, returnVal, Object.keys(operatingSystemIndependentSources));
+  callback(null, returnVal, Object.keys(sources));
 };
 
 function replaceLinkReferences(bytecode, linkReferences, libraryName) {

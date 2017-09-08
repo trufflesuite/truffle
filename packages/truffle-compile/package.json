@@ -1,18 +1,18 @@
 {
   "name": "truffle-compile",
-  "version": "2.0.1",
+  "version": "2.0.7",
   "description": "Compiler helper and artifact manager",
   "main": "index.js",
   "dependencies": {
     "async": "^2.1.4",
     "colors": "^1.1.2",
     "graphlib": "^2.1.1",
-    "solc": "0.4.11",
+    "solc": "0.4.15",
     "solidity-parser": "^0.4.0",
-    "truffle-config": "0.0.7",
+    "truffle-config": "^1.0.2",
     "truffle-contract-sources": "^0.0.1",
-    "truffle-error": "0.0.2",
-    "truffle-expect": "0.0.3"
+    "truffle-error": "^0.0.2",
+    "truffle-expect": "^0.0.3"
   },
   "devDependencies": {
     "truffle-resolver": "2.0.0"
