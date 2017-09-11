@@ -2,6 +2,33 @@ var SolidityUtils = require("truffle-solidity-utils");
 var CodeUtils = require("truffle-code-utils");
 
 function Context(contract) {
+  if (typeof contract == "string") {
+    contract = {
+      binary: contract,
+      deployedBinary: contract,
+      source: null,
+      sourcePath: null,
+      contractName: "?"
+    }
+
+    var instructions = CodeUtils.parseCode(contract.binary);
+    var sourceMap = "";
+
+    // Let's create a source map to use since none exists. This source map
+    // maps just as many ranges as there are instructions, and ensures every
+    // instruction is marked as "jumping out". This will ensure all
+    // available debugger commands step one instruction at a time.
+    //
+    // This is kindof a hack; perhaps this should be broken out into separate
+    // context types. TODO
+    for (var i = 0; i < instructions.length; i++) {
+      sourceMap += i + ":" + i + ":1:o;";
+    }
+
+    contract.sourceMap = sourceMap;
+    contract.deployedSourceMap = sourceMap;
+  }
+
   this.contract = contract;
   this.source = null;
   this.sourcePath = null;
@@ -30,7 +57,7 @@ Context.prototype.buildInstructionListAndSourceMap = function(type, binary, sour
 
   this.binaries[type] = binary;
 
-  var lineAndColumnMapping = SolidityUtils.getCharacterOffsetToLineAndColumnMapping(this.source);
+  var lineAndColumnMapping = SolidityUtils.getCharacterOffsetToLineAndColumnMapping(this.source || "");
   var sourceMap = SolidityUtils.getHumanReadableSourceMap(sourceMap);
 
   this.instructions[type] = CodeUtils.parseCode(binary);

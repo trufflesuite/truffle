@@ -368,6 +368,12 @@ Debugger.prototype.stepOver = function() {
  * @return String Full source code that produced the current instruction
  */
 Debugger.prototype.currentSource = function() {
+  var context = this.callstack[this.callstack.length - 1].context;
+
+  if (context == null) {
+    return null;
+  }
+
   return this.callstack[this.callstack.length - 1].context.source;
 };
 
@@ -385,6 +391,21 @@ Debugger.prototype.currentSourcePath = function() {
  */
 Debugger.prototype.currentStep = function() {
   return this.trace[this.traceIndex];
+};
+
+Debugger.prototype.currentAddress = function() {
+  var cirrentContexxt = this.callstack[this.callstack.length - 1].context;
+  var addresses = Object.keys(this.addressContexts);
+
+  for (var i = 0; i < addresses.length; i++) {
+    var address = addresses[i];
+    var context = this.addressContexts[address];
+    if (cirrentContexxt == context) {
+      return address;
+    }
+  }
+
+  throw new Error("Unknown address for context!");
 };
 
 /**
@@ -541,6 +562,10 @@ Debugger.prototype.contextForBinary = function(deployedBinary) {
   if (!this.codeContexts[hash]) {
     var contract = this.findMatchingContract(deployedBinary);
 
+    if (!contract) {
+      contract = deployedBinary;
+    }
+
     this.codeContexts[hash] = new Context(contract);
   }
 
@@ -567,18 +592,6 @@ Debugger.prototype.findMatchingContract = function(binary) {
       match = contract;
       break;
     }
-  }
-
-  if (!match) {
-    throw new Error("Could not find context for binary: " + binary);
-  }
-
-  if (!match.source) {
-    throw new Error("Could not find source code for contract. Usually this is fixed by recompiling your contracts with the latest version of Truffle.");
-  }
-
-  if (!match.sourceMap && !match.deployedSourceMap) {
-    throw new Error("Found matching contract but could not find associated source map: Unable to debug. Usually this is fixed by recompiling your contracts with the latest version of Truffle.");
   }
 
   return match;
