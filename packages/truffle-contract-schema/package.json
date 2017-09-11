@@ -29,6 +29,6 @@
   },
   "devDependencies": {
     "mocha": "^3.2.0",
-    "solc": "^0.4.11"
+    "solc": "^0.4.16"
   }
 }

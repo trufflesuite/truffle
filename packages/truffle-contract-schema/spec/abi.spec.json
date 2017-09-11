@@ -31,6 +31,16 @@
       ]
     },
 
+    "StateMutability": {
+      "type": "string",
+      "enum": [
+        "pure",
+        "view",
+        "nonpayable",
+        "payable"
+      ]
+    },
+
     "NormalFunction": {
       "type": "object",
       "properties": {
@@ -48,6 +58,9 @@
           "type": "array",
           "items": { "$ref": "#/definitions/Parameter" },
           "default": []
+        },
+        "stateMutability": {
+          "$ref": "#/definitions/StateMutability"
         },
         "constant": { "type": "boolean" },
         "payable": { "type": "boolean", "default": false }
