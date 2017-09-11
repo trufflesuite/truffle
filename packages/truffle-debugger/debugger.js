@@ -501,16 +501,6 @@ Debugger.prototype.executeCreate = function(isContractCreation) {
   var creationBinary = "0x" + memory.substring(inputOffset, inputOffset + inputSize);
   var context = this.contextForBinary(creationBinary);
 
-  // // Jump ahead one step and get the address of the contract we're creating.
-  // var nextStep = this.trace[this.traceIndex + 1];
-  // var newAddress = "0x" + nextStep.stack[nextStep.stack.length - 1].substring(24);
-  //   // Remove leading zeroes from address and add "0x" prefix.
-  //
-  // // Now lets find
-  //
-  //   this.addressContexts[newAddress] = lastCall.context;
-
-
   this.pushCallForContext(context, true);
 };
 
