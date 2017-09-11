@@ -124,7 +124,7 @@ Console.prototype.resetContractsInConsoleContext = function(abstractions) {
 Console.prototype.interpret = function(cmd, context, filename, callback) {
   var self = this;
 
-  if (this.command.getCommand(cmd.trim()) != null) {
+  if (this.command.getCommand(cmd.trim(), this.options.noAliases) != null) {
     return self.command.run(cmd.trim(), this.options, function(err) {
       if (err) {
         // Perform error handling ourselves.
