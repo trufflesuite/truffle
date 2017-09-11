@@ -58,13 +58,24 @@ var command = {
         function printAddressesAffected() {
           config.logger.log("Addresses affected:");
 
+          var hasAllSource = true;
+
           var addresses = Object.keys(contexts).map(function(address) {
             var context = contexts[address];
-            var contract = context.contract;
-            return "  " + address + " - " + contract.contractName;
+
+            if (context.source == null) {
+              hasAllSource = false;
+            }
+
+            return "  " + address + " - " + context.contractName;
           });
 
           config.logger.log(addresses.join(OS.EOL));
+
+          if (!hasAllSource) {
+            config.logger.log("");
+            config.logger.log("Warning: The source code for one or more contracts could not be found.");
+          }
         }
 
         function printHelp() {
@@ -111,10 +122,24 @@ var command = {
         }
 
         function printFile() {
-          var sourcePath = bugger.currentSourcePath() || bugger.currentAddress();
+          var message = "";
+
+          var sourcePath = bugger.currentSourcePath();
+
+          if (sourcePath) {
+            message += path.basename(sourcePath);
+          } else {
+            message += "?";
+          }
+
+          var address = bugger.currentAddress();
+
+          if (address) {
+            message += " | " + address;
+          }
 
           config.logger.log("");
-          config.logger.log(path.basename(sourcePath) + ":");
+          config.logger.log(message + ":");
         }
 
         function printState() {
