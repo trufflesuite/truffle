@@ -1,42 +1,49 @@
 var SolidityUtils = require("truffle-solidity-utils");
 var CodeUtils = require("truffle-code-utils");
 
-function Context(contract) {
-  this.contract = contract;
-  this.source = null;
-  this.sourcePath = null;
-  this.instructions = {
-    create: [],
-    call: []
-  };
-  this.binaries = {
-    create: "",
-    call: ""
-  };
-  this.programCounterMapping = {
-    create: [],
-    call: []
-  };
+function Context(binary, sourceMap, source, sourcePath, contractName) {
+  if (binary == null) {
+    throw new Error("Can't create context without binary!");
+  }
 
-  this.source = contract.source;
-  this.sourcePath = contract.sourcePath;
+  this.binary = binary;
+  this.sourceMap = sourceMap;
+  this.source = source;
+  this.sourcePath = sourcePath;
+  this.contractName = contractName || "?";
+  this.programCounterMapping = [];
+  this.instructions = [];
 
-  this.buildInstructionListAndSourceMap("create", contract.binary, contract.sourceMap);
-  this.buildInstructionListAndSourceMap("call", contract.deployedBinary, contract.deployedSourceMap);
+  this.buildInstructionList()
 };
 
-Context.prototype.buildInstructionListAndSourceMap = function(type, binary, sourceMap) {
+Context.prototype.buildInstructionList = function() {
   var self = this;
 
-  this.binaries[type] = binary;
+  this.instructions = CodeUtils.parseCode(this.binary);
 
-  var lineAndColumnMapping = SolidityUtils.getCharacterOffsetToLineAndColumnMapping(this.source);
-  var sourceMap = SolidityUtils.getHumanReadableSourceMap(sourceMap);
+  var sourceMap = this.sourceMap;
 
-  this.instructions[type] = CodeUtils.parseCode(binary);
+  if (!sourceMap) {
+    var sourceMap = "";
 
-  this.instructions[type].forEach(function(instruction, instructionIndex) {
-    var sourceMapInstruction = sourceMap[instructionIndex];
+    // Let's create a source map to use since none exists. This source map
+    // maps just as many ranges as there are instructions, and ensures every
+    // instruction is marked as "jumping out". This will ensure all
+    // available debugger commands step one instruction at a time.
+    //
+    // This is kindof a hack; perhaps this should be broken out into separate
+    // context types. TODO
+    for (var i = 0; i < this.instructions.length; i++) {
+      sourceMap += i + ":" + i + ":1:o;";
+    }
+  }
+
+  var lineAndColumnMapping = SolidityUtils.getCharacterOffsetToLineAndColumnMapping(this.source || "");
+  var humanReadableSourceMap = SolidityUtils.getHumanReadableSourceMap(sourceMap);
+
+  this.instructions.forEach(function(instruction, instructionIndex) {
+    var sourceMapInstruction = humanReadableSourceMap[instructionIndex];
 
     instruction.index = instructionIndex;
 
@@ -51,12 +58,12 @@ Context.prototype.buildInstructionListAndSourceMap = function(type, binary, sour
     }
 
     // Use this loop to create a mapping between program counters and instructions.
-    self.programCounterMapping[type][instruction.pc] = instruction;
+    self.programCounterMapping[instruction.pc] = instruction;
   });
 };
 
-Context.prototype.instructionAtProgramCounter = function(type, programCounter) {
-  return this.programCounterMapping[type][programCounter];
+Context.prototype.instructionAtProgramCounter = function(programCounter) {
+  return this.programCounterMapping[programCounter];
 };
 
 module.exports = Context;
