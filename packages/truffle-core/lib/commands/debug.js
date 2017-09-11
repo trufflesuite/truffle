@@ -81,6 +81,10 @@ var command = {
         function printLines(lineIndex, totalLines) {
           var source = bugger.currentSource();
 
+          if (!source) {
+            return;
+          }
+
           var lines = splitLines(source);
           var startingLine = Math.max(lineIndex - totalLines + 1, 0);
 
@@ -107,17 +111,26 @@ var command = {
         }
 
         function printFile() {
+          var sourcePath = bugger.currentSourcePath() || bugger.currentAddress();
+
           config.logger.log("");
-          var sourcePath = bugger.currentSourcePath();
           config.logger.log(path.basename(sourcePath) + ":");
         }
 
-        function printState(started) {
-          config.logger.log("");
-
-          var range = bugger.currentInstruction().range;
+        function printState() {
           var source = bugger.currentSource();
+
+          if (!source) {
+            config.logger.log()
+            config.logger.log("1: // No source code found.");
+            config.logger.log("");
+            return;
+          }
+
           var lines = splitLines(source);
+          var range = bugger.currentInstruction().range;
+
+          config.logger.log("");
 
           var prefixLength = printLines(range.start.line, 3);
 
@@ -156,7 +169,8 @@ var command = {
           config.logger.log("")
         }
 
-        function printInstruction(instruction) {
+        function printInstruction() {
+          var instruction = bugger.currentInstruction();
           var step = bugger.currentStep();
 
           var stack = step.stack.map(function(item, index) {
@@ -234,13 +248,17 @@ var command = {
             case ";":
             case "p":
               printFile();
-              printInstruction(bugger.currentInstruction());
+              printInstruction();
               printState();
               break;
             case "o":
             case "i":
             case "u":
             case "n":
+              if (bugger.currentSource() == null) {
+                printInstruction();
+              }
+
               printFile();
               printState();
               break;
