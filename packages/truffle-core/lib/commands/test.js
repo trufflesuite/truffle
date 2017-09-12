@@ -9,7 +9,7 @@ var command = {
     var Config = require("truffle-config");
     var Resolver = require("truffle-resolver");
     var Artifactor = require("truffle-artifactor");
-    var Ganache = require("ganache-core");
+    var TestRPC = require("ethereumjs-testrpc");
     var Test = require("../test");
     var fs = require("fs");
     var path = require("path");
@@ -22,7 +22,7 @@ var command = {
     if (!config.networks.test) {
       config.networks.test = {
         network_id: "*",
-        provider: Ganache.provider()
+        provider: TestRPC.provider()
       };
     }
 
