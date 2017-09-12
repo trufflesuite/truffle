@@ -9,6 +9,7 @@ var command = {
     var Config = require("truffle-config");
     var Resolver = require("truffle-resolver");
     var Artifactor = require("truffle-artifactor");
+    var TestRPC = require("ethereumjs-testrpc");
     var Test = require("../test");
     var fs = require("fs");
     var path = require("path");
@@ -17,7 +18,17 @@ var command = {
     var Environment = require("../environment");
 
     var config = Config.detect(options);
-    //config.network = "test";
+
+    if (!config.networks.test) {
+      config.networks.test = {
+        network_id: "*",
+        provider: TestRPC.provider()
+      };
+    }
+
+    if (!config.network) {
+      config.network = "test";
+    }
 
     var files = [];
 
