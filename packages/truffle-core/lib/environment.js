@@ -3,6 +3,7 @@ var TruffleError = require("truffle-error");
 var expect = require("truffle-expect");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
+var TestRPC = require("ethereumjs-testrpc");
 
 var Environment = {
   // It's important config is a Config object and not a vanilla object
@@ -16,7 +17,7 @@ var Environment = {
     }
 
     if (!config.artifactor) {
-      config.artifactor = new Artifactor(config.contracts_build_directory);
+      config.artifactor = new Artifactor(config.contracts_build_directory)
     }
 
     if (!config.network && config.networks["development"]) {
@@ -72,6 +73,78 @@ var Environment = {
       if (err) return callback(err);
       detectFromAddress(callback);
     });
+  },
+
+  // Ensure you call Environment.detect() first.
+  fork: function(config, callback) {
+    expect.options(config, [
+      "from"
+    ]);
+
+    var web3 = new Web3(config.provider);
+
+    web3.eth.getAccounts(function(err, accounts) {
+      if (err) return callback(err);
+
+      var upstreamNetwork = config.network;
+      var upstreamConfig = config.networks[upstreamNetwork];
+      var forkedNetwork = config.network + "-fork";
+
+      config.networks[forkedNetwork] = {
+        network_id: config.network_id,
+        provider: TestRPC.provider({
+          fork: config.provider,
+          unlocked_accounts: accounts
+        }),
+        from: config.from
+      }
+      config.network = forkedNetwork;
+
+      callback();
+    });
+  },
+
+  local: function(config, callback) {
+    var self = this;
+
+    expect.options(config, [
+      "networks",
+      "logger"
+    ]);
+
+    var network = "develop";
+    var network_id = 4447;
+    var seed = "yum chocolate";
+    var host = "localhost";
+    var port = 9545;
+
+    var url = "http://" + host + ":" + port + "/";
+
+    var server = TestRPC.server({
+      network_id: network_id,
+      seed: seed
+    });
+
+    config.logger.log("Running development blockchain at " + url + "...");
+    server.listen(port, host, function (err) {
+      if (err) return callback(err);
+
+      config.networks[network] = {
+        network_id: network_id,
+        provider: function() {
+          return new Web3.providers.HttpProvider(url);
+        }
+      };
+
+      config.network = network;
+
+      self.detect(config, function (err) {
+        callback(err, function(done) {
+          server.close(done);
+        });
+      });
+    });
+
   }
 };
 

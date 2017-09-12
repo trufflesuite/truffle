@@ -1,24 +1,19 @@
 var command = {
-  command: 'console',
-  description: 'Run a console with contract abstractions and commands available',
-  builder: {},
+  command: 'develop',
+  description: 'Open a console with a local TestRPC',
+  builder: {
+    db: {
+      type: "string",
+      describe: "Path to save persistent chain data"
+    }
+  },
   run: function (options, done) {
     var Config = require("truffle-config");
     var Console = require("../console");
     var Environment = require("../environment");
-    var Develop = require("./develop");
-    var TruffleError = require("truffle-error");
 
     var config = Config.detect(options);
 
-    if (!config.network && !config.networks.development) {
-      return done(new TruffleError(
-        "No network available. Use `truffle develop` " +
-          "or add network to truffle.js config."
-      ));
-    }
-
-    // This require a smell?
     var commands = require("./index")
     var excluded = [
       "console",
@@ -37,14 +32,19 @@ var command = {
       console_commands[name] = commands[name];
     });
 
-    Environment.detect(config, function(err) {
+    // use local environment instead of detecting config environment
+    Environment.local(config, function(err, cleanup) {
       if (err) return done(err);
+
+      config.logger.log("Truffle Develop started.");
+      config.logger.log();
 
       var c = new Console(console_commands, config.with({
         noAliases: true
       }));
-      c.start(done);
+      c.start(function() { cleanup(done); });
     });
+
   }
 }
 

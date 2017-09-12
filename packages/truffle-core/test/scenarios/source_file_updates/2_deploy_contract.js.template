@@ -1,6 +1,0 @@
-var MainContract = artifacts.require("MainContract");
-
-// Note: The source of MainContract is created in the test.
-module.exports = function(deployer) {
-  deployer.deploy(MainContract);
-};

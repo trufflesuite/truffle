@@ -6,7 +6,9 @@ module.exports = {
   build: require("./build"),
   test: require("./test"),
   debug: require("./debug"),
+  opcode: require("./opcode"),
   console: require("./console"),
+  develop: require("./develop"),
   create: require("./create"),
   install: require("./install"),
   publish: require("./publish"),
@@ -16,5 +18,5 @@ module.exports = {
   serve: require("./serve"),
   exec: require("./exec"),
   unbox: require("./unbox"),
-  version: require("./version")
+  version: require("./version"),
 };

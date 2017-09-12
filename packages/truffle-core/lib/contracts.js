@@ -43,11 +43,11 @@ var Contracts = {
       config.artifactor = new Artifactor(config.contracts_build_directory);
     }
 
-    function finished(err, result, paths) {
+    function finished(err, contracts, paths) {
       if (err) return callback(err);
 
-      if (Object.keys(result).length > 0) {
-        self.write_contracts(result, config, function(err, abstractions) {
+      if (contracts != null && Object.keys(contracts).length > 0) {
+        self.write_contracts(contracts, config, function(err, abstractions) {
           callback(err, abstractions, paths);
         });
       } else {
@@ -62,27 +62,25 @@ var Contracts = {
     }
   },
 
-  write_contracts: function(compiler_output_or_abstractions, config, callback) {
-    // TODO: Remove default console here.
-    var logger = config.logger || console;
+  write_contracts: function(contracts, options, callback) {
+    var logger = options.logger || console;
 
-    mkdirp(config.contracts_build_directory, function(err) {
+    mkdirp(options.contracts_build_directory, function(err, result) {
       if (err != null) {
         callback(err);
         return;
       }
 
-      if (config.quiet != true && config.quietWrite != true) {
-        logger.log("Writing artifacts to ." + path.sep + path.relative(config.working_directory, config.contracts_build_directory) + OS.EOL);
+      if (options.quiet != true && options.quietWrite != true) {
+        logger.log("Writing artifacts to ." + path.sep + path.relative(options.working_directory, options.contracts_build_directory) + OS.EOL);
       }
 
-      // // TODO: Is this still needed?
-      // compiler_output_or_abstractions.forEach(function(item) {
-      //   item.network_id = config.network_id;
-      // });
+      var extra_opts = {
+        network_id: options.network_id
+      };
 
-      config.artifactor.saveAll(compiler_output_or_abstractions).then(function() {
-        callback(null, compiler_output_or_abstractions);
+      options.artifactor.saveAll(contracts, extra_opts).then(function() {
+        callback(null, contracts);
       }).catch(callback);
     });
   }
