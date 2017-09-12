@@ -115,7 +115,7 @@ var Environment = {
     var network = "develop";
     var network_id = 4447;
     var seed = "yum chocolate";
-    var host = "0.0.0.0";
+    var host = "localhost";
     var port = 9545;
 
     var url = "http://" + host + ":" + port + "/";
