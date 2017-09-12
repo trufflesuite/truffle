@@ -3,7 +3,7 @@ var TruffleError = require("truffle-error");
 var expect = require("truffle-expect");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
-var Ganache = require("ganache-core");
+var TestRPC = require("ethereumjs-testrpc");
 
 var Environment = {
   // It's important config is a Config object and not a vanilla object
@@ -92,7 +92,7 @@ var Environment = {
 
       config.networks[forkedNetwork] = {
         network_id: config.network_id,
-        provider: Ganache.provider({
+        provider: TestRPC.provider({
           fork: config.provider,
           unlocked_accounts: accounts
         }),
@@ -120,7 +120,7 @@ var Environment = {
 
     var url = "http://" + host + ":" + port + "/";
 
-    var server = Ganache.server({
+    var server = TestRPC.server({
       network_id: network_id,
       seed: seed
     });
