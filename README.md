@@ -1,4 +1,4 @@
-<img src="https://github.com/ConsenSys/truffle/blob/master/assets/logo.png" width="200">
+<img src="http://truffleframework.com/docs/img/logo.png" width="200">
 
 [![npm](https://img.shields.io/npm/v/truffle.svg)]()
 [![npm](https://img.shields.io/npm/dm/truffle.svg)]()
