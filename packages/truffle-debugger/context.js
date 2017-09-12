@@ -1,17 +1,30 @@
 var SolidityUtils = require("truffle-solidity-utils");
 var CodeUtils = require("truffle-code-utils");
 
-function Context(contract) {
-  if (typeof contract == "string") {
-    contract = {
-      binary: contract,
-      deployedBinary: contract,
-      source: null,
-      sourcePath: null,
-      contractName: "?"
-    }
+function Context(binary, sourceMap, source, sourcePath, contractName) {
+  if (binary == null) {
+    throw new Error("Can't create context without binary!");
+  }
 
-    var instructions = CodeUtils.parseCode(contract.binary);
+  this.binary = binary;
+  this.sourceMap = sourceMap;
+  this.source = source;
+  this.sourcePath = sourcePath;
+  this.contractName = contractName || "?";
+  this.programCounterMapping = [];
+  this.instructions = [];
+
+  this.buildInstructionList()
+};
+
+Context.prototype.buildInstructionList = function() {
+  var self = this;
+
+  this.instructions = CodeUtils.parseCode(this.binary);
+
+  var sourceMap = this.sourceMap;
+
+  if (!sourceMap) {
     var sourceMap = "";
 
     // Let's create a source map to use since none exists. This source map
@@ -21,49 +34,16 @@ function Context(contract) {
     //
     // This is kindof a hack; perhaps this should be broken out into separate
     // context types. TODO
-    for (var i = 0; i < instructions.length; i++) {
+    for (var i = 0; i < this.instructions.length; i++) {
       sourceMap += i + ":" + i + ":1:o;";
     }
-
-    contract.sourceMap = sourceMap;
-    contract.deployedSourceMap = sourceMap;
   }
 
-  this.contract = contract;
-  this.source = null;
-  this.sourcePath = null;
-  this.instructions = {
-    create: [],
-    call: []
-  };
-  this.binaries = {
-    create: "",
-    call: ""
-  };
-  this.programCounterMapping = {
-    create: [],
-    call: []
-  };
-
-  this.source = contract.source;
-  this.sourcePath = contract.sourcePath;
-
-  this.buildInstructionListAndSourceMap("create", contract.binary, contract.sourceMap);
-  this.buildInstructionListAndSourceMap("call", contract.deployedBinary, contract.deployedSourceMap);
-};
-
-Context.prototype.buildInstructionListAndSourceMap = function(type, binary, sourceMap) {
-  var self = this;
-
-  this.binaries[type] = binary;
-
   var lineAndColumnMapping = SolidityUtils.getCharacterOffsetToLineAndColumnMapping(this.source || "");
-  var sourceMap = SolidityUtils.getHumanReadableSourceMap(sourceMap);
+  var humanReadableSourceMap = SolidityUtils.getHumanReadableSourceMap(sourceMap);
 
-  this.instructions[type] = CodeUtils.parseCode(binary);
-
-  this.instructions[type].forEach(function(instruction, instructionIndex) {
-    var sourceMapInstruction = sourceMap[instructionIndex];
+  this.instructions.forEach(function(instruction, instructionIndex) {
+    var sourceMapInstruction = humanReadableSourceMap[instructionIndex];
 
     instruction.index = instructionIndex;
 
@@ -78,12 +58,12 @@ Context.prototype.buildInstructionListAndSourceMap = function(type, binary, sour
     }
 
     // Use this loop to create a mapping between program counters and instructions.
-    self.programCounterMapping[type][instruction.pc] = instruction;
+    self.programCounterMapping[instruction.pc] = instruction;
   });
 };
 
-Context.prototype.instructionAtProgramCounter = function(type, programCounter) {
-  return this.programCounterMapping[type][programCounter];
+Context.prototype.instructionAtProgramCounter = function(programCounter) {
+  return this.programCounterMapping[programCounter];
 };
 
 module.exports = Context;

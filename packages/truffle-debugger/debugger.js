@@ -153,13 +153,6 @@ Debugger.prototype.advance = function() {
     var currentStep = this.currentStep();
     currentCall.advance(currentStep.stack);
     this.traceIndex += 1;
-
-    // If the last call created a contract, let's update our addressContexts
-    if (lastCall && lastCall.type == "create") {
-      // Remove leading zeroes from address and add "0x" prefix.
-      var newAddress = "0x" + currentStep.stack[currentStep.stack.length - 1].substring(24);
-      this.addressContexts[newAddress] = lastCall.context;
-    }
   }
 
   currentInstruction = this.currentInstruction();
@@ -393,19 +386,24 @@ Debugger.prototype.currentStep = function() {
   return this.trace[this.traceIndex];
 };
 
+/**
+ * currentAddress - get the address of the current contract, if it exists. (e.g., constructors have no address).
+ * @return {String} address of current contract executing; will return null if inside a constructor
+ */
 Debugger.prototype.currentAddress = function() {
-  var cirrentContexxt = this.callstack[this.callstack.length - 1].context;
+  var currentContext = this.callstack[this.callstack.length - 1].context;
   var addresses = Object.keys(this.addressContexts);
 
   for (var i = 0; i < addresses.length; i++) {
     var address = addresses[i];
     var context = this.addressContexts[address];
-    if (cirrentContexxt == context) {
+
+    if (currentContext == context) {
       return address;
     }
   }
 
-  throw new Error("Unknown address for context!");
+  return null;
 };
 
 /**
@@ -552,24 +550,38 @@ Debugger.prototype.getDeployedCode = function(address) {
 };
 
 /**
- * contextForBinary - Given a binary, either create a new context or return an existing context
- * @param  {String} deployedBinary
+ * contextForBinary - Given a binary, either a creation or a deployed binary, create a new context or return an existing context that matches
+ * @param  {String} binary
  * @return {Context}
  */
-Debugger.prototype.contextForBinary = function(deployedBinary) {
-  var hash = this.web3.sha3(deployedBinary);
+Debugger.prototype.contextForBinary = function(binary) {
+  var context = this.codeContexts[binary];
 
-  if (!this.codeContexts[hash]) {
-    var contract = this.findMatchingContract(deployedBinary);
-
-    if (!contract) {
-      contract = deployedBinary;
-    }
-
-    this.codeContexts[hash] = new Context(contract);
+  if (context != null) {
+    return context;
   }
 
-  return this.codeContexts[hash];
+  // We didn't find a context directly. Let's see if we can find a matching contract to
+  // pull the information from.
+  var contract = this.findMatchingContract(binary);
+
+  if (contract) {
+    // Did we match on a creation binary or a deployed binary?
+    if (binary == contract.binary) {
+      context = new Context(contract.binary, contract.sourceMap, contract.source, contract.sourcePath, contract.contractName);
+    } else {
+      context = new Context(contract.deployedBinary, contract.deployedSourceMap, contract.source, contract.sourcePath, contract.contractName);
+    }
+    this.codeContexts[binary] = context;
+    return context;
+  }
+
+  // We didn't find a matching contract? This means there's no code for the contract we're
+  // trying to debug. Let's simply create a new context because no other exists.
+  context = new Context(binary);
+  this.codeContexts[binary] = context;
+
+  return context;
 };
 
 /**
