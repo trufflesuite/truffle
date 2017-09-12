@@ -39,7 +39,9 @@ var command = {
       config.logger.log("Truffle Develop started.");
       config.logger.log();
 
-      var c = new Console(console_commands, config);
+      var c = new Console(console_commands, config.with({
+        noAliases: true
+      }));
       c.start(function() { cleanup(done); });
     });
 
