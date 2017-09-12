@@ -24,13 +24,12 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle-deployer#readme",
   "dependencies": {
-    "truffle-contract": "^2.0.3",
+    "truffle-contract": "^3.0.0",
     "truffle-expect": "^0.0.3"
   },
   "devDependencies": {
     "ethereumjs-testrpc": "^3.0.3",
     "mocha": "^3.2.0",
-    "truffle-contract": "^2.0.3",
     "web3": "^0.20.1"
   }
 }
