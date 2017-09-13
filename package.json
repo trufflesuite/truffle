@@ -20,8 +20,8 @@
     "shebang-loader": "0.0.1",
     "stream-buffers": "^3.0.1",
     "truffle-box": "^1.0.2",
-    "truffle-contract": "^2.0.3",
-    "truffle-core": "^3.4.8",
+    "truffle-contract": "^3.0.0",
+    "truffle-core": "^4.0.0-beta.0",
     "web3": "^0.20.1",
     "webpack": "^2.5.1",
     "yargs": "^8.0.2"
