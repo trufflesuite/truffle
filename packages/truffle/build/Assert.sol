@@ -111,12 +111,12 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function equal(string A, string B, string message) constant returns (bool result) {
-        result = _stringsEqual(A, B);
+    function equal(string a, string b, string message) constant returns (bool result) {
+        result = _stringsEqual(a, b);
         if (result)
             _report(result, message);
         else
-            _report(result, _appendTagged(_tag(A, "Tested"), _tag(B, "Against"), message));
+            _report(result, _appendTagged(_tag(a, "Tested"), _tag(b, "Against"), message));
     }
 
     /*
@@ -134,12 +134,12 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(string A, string B, string message) constant returns (bool result) {
-        result = !_stringsEqual(A, B);
+    function notEqual(string a, string b, string message) constant returns (bool result) {
+        result = !_stringsEqual(a, b);
         if (result)
             _report(result, message);
         else
-            _report(result, _appendTagged(_tag(A, "Tested"), _tag(B, "Against"), message));
+            _report(result, _appendTagged(_tag(a, "Tested"), _tag(b, "Against"), message));
     }
 
     /*
@@ -203,8 +203,8 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function equal(bytes32 A, bytes32 B, string message) constant returns (bool result) {
-        result = (A == B);
+    function equal(bytes32 a, bytes32 b, string message) constant returns (bool result) {
+        result = (a == b);
         _report(result, message);
     }
 
@@ -223,8 +223,8 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(bytes32 A, bytes32 B, string message) constant returns (bool result) {
-        result = (A != B);
+    function notEqual(bytes32 a, bytes32 b, string message) constant returns (bool result) {
+        result = (a != b);
         _report(result, message);
     }
 
@@ -283,8 +283,8 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function equal(address A, address B, string message) constant returns (bool result) {
-        result = (A == B);
+    function equal(address a, address b, string message) constant returns (bool result) {
+        result = (a == b);
         _report(result, message);
     }
     /*
@@ -302,8 +302,8 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(address A, address B, string message) constant returns (bool result) {
-        result = (A != B);
+    function notEqual(address a, address b, string message) constant returns (bool result) {
+        result = (a != b);
          _report(result, message);
     }
 
@@ -400,12 +400,12 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function equal(bool A, bool B, string message) constant returns (bool result) {
-        result = (A == B);
+    function equal(bool a, bool b, string message) constant returns (bool result) {
+        result = (a == b);
         if (result)
             _report(result, message);
         else
-            _report(result, _appendTagged(_tag(A, "Tested"), _tag(B, "Against"), message));
+            _report(result, _appendTagged(_tag(a, "Tested"), _tag(b, "Against"), message));
     }
 
     /*
@@ -423,12 +423,12 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(bool A, bool B, string message) constant returns (bool result) {
-        result = (A != B);
+    function notEqual(bool a, bool b, string message) constant returns (bool result) {
+        result = (a != b);
         if (result)
             _report(result, message);
         else
-            _report(result, _appendTagged(_tag(A, "Tested"), _tag(B, "Against"), message));
+            _report(result, _appendTagged(_tag(a, "Tested"), _tag(b, "Against"), message));
     }
 
     // ************************************** uint **************************************
@@ -448,12 +448,12 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function equal(uint A, uint B, string message) constant returns (bool result) {
-        result = (A == B);
+    function equal(uint a, uint b, string message) constant returns (bool result) {
+        result = (a == b);
         if (result)
             _report(result, message);
         else
-            _report(result, _appendTagged(_tag(A, "Tested"), _tag(B, "Against"), message));
+            _report(result, _appendTagged(_tag(a, "Tested"), _tag(b, "Against"), message));
     }
 
     /*
@@ -471,12 +471,12 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(uint A, uint B, string message) constant returns (bool result) {
-        result = (A != B);
+    function notEqual(uint a, uint b, string message) constant returns (bool result) {
+        result = (a != b);
         if (result)
             _report(result, message);
         else
-            _report(result, _appendTagged(_tag(A, "Tested"), _tag(B, "Against"), message));
+            _report(result, _appendTagged(_tag(a, "Tested"), _tag(b, "Against"), message));
     }
 
     /*
@@ -494,12 +494,12 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isAbove(uint A, uint B, string message) constant returns (bool result) {
-        result = (A > B);
+    function isAbove(uint a, uint b, string message) constant returns (bool result) {
+        result = (a > b);
         if (result)
             _report(result, message);
         else
-            _report(result, _appendTagged(_tag(A, "Tested"), _tag(B, "Against"), message));
+            _report(result, _appendTagged(_tag(a, "Tested"), _tag(b, "Against"), message));
     }
 
     /*
@@ -517,12 +517,12 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isAtLeast(uint A, uint B, string message) constant returns (bool result) {
-        result = (A >= B);
+    function isAtLeast(uint a, uint b, string message) constant returns (bool result) {
+        result = (a >= b);
         if (result)
             _report(result, message);
         else
-            _report(result, _appendTagged(_tag(A, "Tested"), _tag(B, "Against"), message));
+            _report(result, _appendTagged(_tag(a, "Tested"), _tag(b, "Against"), message));
     }
 
     /*
@@ -540,12 +540,12 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isBelow(uint A, uint B, string message) constant returns (bool result) {
-        result = (A < B);
+    function isBelow(uint a, uint b, string message) constant returns (bool result) {
+        result = (a < b);
         if (result)
             _report(result, message);
         else
-            _report(result, _appendTagged(_tag(A, "Tested"), _tag(B, "Against"), message));
+            _report(result, _appendTagged(_tag(a, "Tested"), _tag(b, "Against"), message));
     }
 
     /*
@@ -563,12 +563,12 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isAtMost(uint A, uint B, string message) constant returns (bool result) {
-        result = (A <= B);
+    function isAtMost(uint a, uint b, string message) constant returns (bool result) {
+        result = (a <= b);
         if (result)
             _report(result, message);
         else
-            _report(result, _appendTagged(_tag(A, "Tested"), _tag(B, "Against"), message));
+            _report(result, _appendTagged(_tag(a, "Tested"), _tag(b, "Against"), message));
     }
 
     /*
@@ -632,12 +632,12 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function equal(int A, int B, string message) constant returns (bool result) {
-        result = (A == B);
+    function equal(int a, int b, string message) constant returns (bool result) {
+        result = (a == b);
         if (result)
             _report(result, message);
         else
-            _report(result, _appendTagged(_tag(A, "Tested"), _tag(B, "Against"), message));
+            _report(result, _appendTagged(_tag(a, "Tested"), _tag(b, "Against"), message));
     }
 
     /*
@@ -655,12 +655,12 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(int A, int B, string message) constant returns (bool result) {
-        result = (A != B);
+    function notEqual(int a, int b, string message) constant returns (bool result) {
+        result = (a != b);
         if (result)
             _report(result, message);
         else
-            _report(result, _appendTagged(_tag(A, "Tested"), _tag(B, "Against"), message));
+            _report(result, _appendTagged(_tag(a, "Tested"), _tag(b, "Against"), message));
     }
 
     /*
@@ -678,12 +678,12 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isAbove(int A, int B, string message) constant returns (bool result) {
-        result = (A > B);
+    function isAbove(int a, int b, string message) constant returns (bool result) {
+        result = (a > b);
         if (result)
             _report(result, message);
         else
-            _report(result, _appendTagged(_tag(A, "Tested"), _tag(B, "Against"), message));
+            _report(result, _appendTagged(_tag(a, "Tested"), _tag(b, "Against"), message));
     }
 
     /*
@@ -701,12 +701,12 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isAtLeast(int A, int B, string message) constant returns (bool result) {
-        result = (A >= B);
+    function isAtLeast(int a, int b, string message) constant returns (bool result) {
+        result = (a >= b);
         if (result)
             _report(result, message);
         else
-            _report(result, _appendTagged(_tag(A, "Tested"), _tag(B, "Against"), message));
+            _report(result, _appendTagged(_tag(a, "Tested"), _tag(b, "Against"), message));
     }
 
     /*
@@ -724,12 +724,12 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isBelow(int A, int B, string message) constant returns (bool result) {
-        result = (A < B);
+    function isBelow(int a, int b, string message) constant returns (bool result) {
+        result = (a < b);
         if (result)
             _report(result, message);
         else
-            _report(result, _appendTagged(_tag(A, "Tested"), _tag(B, "Against"), message));
+            _report(result, _appendTagged(_tag(a, "Tested"), _tag(b, "Against"), message));
     }
 
     /*
@@ -747,12 +747,12 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isAtMost(int A, int B, string message) constant returns (bool result) {
-        result = (A <= B);
+    function isAtMost(int a, int b, string message) constant returns (bool result) {
+        result = (a <= b);
         if (result)
             _report(result, message);
         else
-            _report(result, _appendTagged(_tag(A, "Tested"), _tag(B, "Against"), message));
+            _report(result, _appendTagged(_tag(a, "Tested"), _tag(b, "Against"), message));
     }
 
     /*
@@ -1264,8 +1264,8 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function balanceEqual(address A, uint b, string message) constant returns (bool result) {
-        result = (A.balance == b);
+    function balanceEqual(address a, uint b, string message) constant returns (bool result) {
+        result = (a.balance == b);
         _report(result, message);
     }
 
@@ -1284,8 +1284,8 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function balanceNotEqual(address A, uint b, string message) constant returns (bool result) {
-        result = (A.balance != b);
+    function balanceNotEqual(address a, uint b, string message) constant returns (bool result) {
+        result = (a.balance != b);
         _report(result, message);
     }
 
@@ -1303,8 +1303,8 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function balanceIsZero(address A, string message) constant returns (bool result) {
-        result = (A.balance == 0);
+    function balanceIsZero(address a, string message) constant returns (bool result) {
+        result = (a.balance == 0);
         _report(result, message);
     }
 
@@ -1322,8 +1322,8 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function balanceIsNotZero(address A, string message) constant returns (bool result) {
-        result = (A.balance != 0);
+    function balanceIsNotZero(address a, string message) constant returns (bool result) {
+        result = (a.balance != 0);
         _report(result, message);
     }
 
