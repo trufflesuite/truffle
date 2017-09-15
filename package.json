@@ -9,6 +9,7 @@
     "solc": "0.4.15"
   },
   "devDependencies": {
+    "meta-npm": "0.0.22",
     "clean-webpack-plugin": "^0.1.16",
     "copy-webpack-plugin": "^4.0.1",
     "ethereumjs-testrpc": "^4.0.1",
