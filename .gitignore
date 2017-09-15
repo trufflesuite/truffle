@@ -2,22 +2,4 @@ node_modules
 .DS_Store
 .tern-port
 
-truffle-artifactor
-truffle-blockchain-utils
-truffle-box
-truffle-compile
-truffle-config
-truffle-contract-schema
-truffle-contract-sources
-truffle-contract
-truffle-core
-truffle-deployer
-truffle-error
-truffle-expect
-truffle-init
-truffle-migrate
-truffle-provider
-truffle-provisioner
-truffle-require
-truffle-resolver
-truffle-solidity-utils
+dependencies
