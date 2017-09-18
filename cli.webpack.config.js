@@ -84,7 +84,7 @@ module.exports = {
     alias: {
       // fsevents is used by chokidar and is an optional requirement
       // It doesn't pack well, and is OS X specific, so let's get rid of it.
-      "fsevents": path.join(__dirname, "./nil.js"),
+      "fsevents": path.join(__dirname, "./noop-fsevents.js"),
       "ws": path.join(__dirname, "./nil.js"),
       "scrypt": "js-scrypt",
       "secp256k1": path.join(__dirname, "node_modules", "secp256k1", "elliptic.js")
