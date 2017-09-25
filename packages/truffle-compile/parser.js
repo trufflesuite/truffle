@@ -53,6 +53,8 @@ module.exports = {
   // This needs to be fast! It is fast (as of this writing). Keep it fast!
   parseImports: function(body) {
     var self = this;
+
+    // WARNING: Kind of a hack (an expedient one).
     
     // So we don't have to maintain a separate parser, we'll get all the imports
     // in a file by sending the file to solc and evaluating the error messages 
@@ -88,6 +90,7 @@ module.exports = {
     var output = solc.compileStandard(JSON.stringify(solcStandardInput), function() {
       // The existence of this function ensures we get a parsable error message.
       // Without this, we'll get an error message we can detect, but the key make it easier. 
+      // Note: This is not a normal callback. See docs here: https://github.com/ethereum/solc-js#from-version-021
       return {error: importErrorKey};
     });
 
