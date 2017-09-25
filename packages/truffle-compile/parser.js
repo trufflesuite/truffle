@@ -72,13 +72,13 @@ module.exports = {
     var solcStandardInput = {
       language: "Solidity",
       sources: {
-        "Contract.sol": {
+        "ParsedContract.sol": {
           content: body
         }
       },
       settings: {
         outputSelection: {
-          "Contract.sol": {
+          "ParsedContract.sol": {
             "*": [] // We don't need any output.
           }
         }
@@ -96,6 +96,7 @@ module.exports = {
     var nonImportErrors = output.errors.filter(function(solidity_error) {
       // If the import error key is not found, we must not have an import error. 
       // This means we have a *different* parsing error which we should show to the user.
+      // Note: solc can return multiple parsing errors at once.
       return solidity_error.formattedMessage.indexOf(importErrorKey) < 0;
     });
     
