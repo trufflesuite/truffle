@@ -26,7 +26,7 @@ module.exports = {
       },
       settings: {
         outputSelection: {
-          "Contract.sol": {
+          [fileName]: {
             "*": ["ast"] 
           }
         }
@@ -87,7 +87,7 @@ module.exports = {
 
     var output = solc.compileStandard(JSON.stringify(solcStandardInput), function() {
       // The existence of this function ensures we get a parsable error message.
-      // TRUFFLE_IMPORT lets us make a nice, detectable error. 
+      // Without this, we'll get an error message we can detect, but the key make it easier. 
       return {error: importErrorKey};
     });
 
@@ -95,6 +95,7 @@ module.exports = {
 
     var nonImportErrors = output.errors.filter(function(solidity_error) {
       // If the import error key is not found, we must not have an import error. 
+      // This means we have a *different* parsing error which we should show to the user.
       return solidity_error.formattedMessage.indexOf(importErrorKey) < 0;
     });
     
