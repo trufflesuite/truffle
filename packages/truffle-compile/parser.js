@@ -89,7 +89,7 @@ module.exports = {
 
     var output = solc.compileStandard(JSON.stringify(solcStandardInput), function() {
       // The existence of this function ensures we get a parsable error message.
-      // Without this, we'll get an error message we can detect, but the key make it easier. 
+      // Without this, we'll get an error message we *can* detect, but the key will make it easier. 
       // Note: This is not a normal callback. See docs here: https://github.com/ethereum/solc-js#from-version-021
       return {error: importErrorKey};
     });
