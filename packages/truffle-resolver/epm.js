@@ -72,7 +72,7 @@ EPM.prototype.require = function(import_path, search_path) {
 }
 
 EPM.prototype.resolve = function(import_path, imported_from, callback) {
-  var separator = import_path.indexOf("/")
+  var separator = import_path.indexOf("/");
   var package_name = import_path.substring(0, separator);
   var internal_path = import_path.substring(separator + 1);
   var install_directory = path.join(this.working_directory, "installed_contracts");
@@ -109,7 +109,15 @@ EPM.prototype.resolve = function(import_path, imported_from, callback) {
 // that when this path is evaluated this source is used again.
 EPM.prototype.resolve_dependency_path = function(import_path, dependency_path) {
   var dirname = path.dirname(import_path);
-  return path.join(dirname, dependency_path);
+  var resolved_dependency_path = path.join(dirname, dependency_path);
+
+  // Note: We use `path.join()` here to take care of path idiosyncrasies
+  // like joining "something/" and "./something_else.sol". However, this makes
+  // paths OS dependent, and on Windows, makes the separator "\". Solidity
+  // needs the separator to be a forward slash. Let's massage that here.
+  resolved_dependency_path = resolved_dependency_path.replace(/\\/g, "/");
+
+  return resolved_dependency_path;
 };
 
 module.exports = EPM;
