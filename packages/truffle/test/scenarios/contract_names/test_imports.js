@@ -40,7 +40,7 @@ describe("Contract names", function() {
   });
 
   it("will compile if file names do not match contract names", function(done) {
-    this.timeout(20000);
+    this.timeout(40000);
 
     CommandRunner.run("compile", config, function(err) {
       if (err) return done(err);
