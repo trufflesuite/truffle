@@ -3,3 +3,4 @@ node_modules
 .tern-port
 yarn.lock
 package-lock.json
+dependencies
