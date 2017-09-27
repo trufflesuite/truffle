@@ -5,9 +5,11 @@ var path = require("path");
 module.exports = {
   run: function(command, config, callback) {
     var args = yargs();
-    var argv = args.parse(command);
+    var argv = args.parse(command)._;
 
-    var child = spawn(path.join(__dirname, "../", "../", "build", "cli.bundled.js"), argv._, {
+    argv.unshift(path.join(__dirname, "../", "../", "build", "cli.bundled.js"))
+
+    var child = spawn("node", argv, {
       cwd: config.working_directory,
     });
 
