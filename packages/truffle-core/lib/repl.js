@@ -11,8 +11,14 @@ var fs = require("fs");
 var os = require("os");
 var path = require("path");
 var async = require("async");
+var EventEmitter = require("events");
+var inherits = require("util").inherits;
+
+inherits(ReplManager, EventEmitter);
 
 function ReplManager(options) {
+  EventEmitter.call(this);
+
   expect.options(options, [
     "working_directory",
     "contracts_directory",
@@ -62,6 +68,11 @@ ReplManager.prototype.start = function(options) {
       });
     });
   }
+
+  // Bubble the internal repl's exit event
+  this.repl.on("exit", function() {
+    self.emit("exit");
+  });
 
   this.repl.setPrompt(options.prompt);
   this.setContextVars(options.context || {});
