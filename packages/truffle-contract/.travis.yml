@@ -1,25 +1,25 @@
-language: node_js
-node_js:
-  - "6"
-  - "6.1"
+sudo: required
 
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - gcc-4.7
-      - g++-4.7
+language: generic
+
+services:
+  - docker
 
 before_install:
-  - if [ $TRAVIS_OS_NAME == "linux" ]; then
-      export CC="gcc-4.7";
-      export CXX="g++-4.7";
-      export LINK="gcc-4.7";
-      export LINKXX="g++-4.7";
-    fi
-  - nvm --version
-  - node --version
-  - npm --version
-  - gcc --version
-  - g++ --version
+  - docker pull truffle/ci
+
+env:
+  - TEST=repo
+  - TEST=upstream
+  - TEST=scenario
+
+script:
+  - >
+    docker run -it --rm --name ${TEST} \
+        -e TRAVIS_REPO_SLUG \
+        -e TRAVIS_PULL_REQUEST \
+        -e TRAVIS_PULL_REQUEST_SLUG \
+        -e TRAVIS_PULL_REQUEST_BRANCH \
+        -e TRAVIS_BRANCH \
+        -e TEST \
+      truffle/ci:latest run_tests
