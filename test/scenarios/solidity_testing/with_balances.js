@@ -44,7 +44,7 @@ describe("Solidity Tests with balances", function() {
   // It'll test that its balance equals what it expect. We'll check the log to
   // ensure everything worked out fine.
   it("will run the test and have the correct balance", function(done) {
-    this.timeout(20000);
+    this.timeout(40000);
 
     CommandRunner.run("test", config, function(err) {
       if (err) return done(err);
