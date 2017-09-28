@@ -33,18 +33,18 @@ var command = {
     });
 
     // use local environment instead of detecting config environment
-    Environment.local(config, function(err, cleanup) {
+    Environment.local(config, function(err, child_process) {
       if (err) return done(err);
-
-      config.logger.log("Truffle Develop started.");
-      config.logger.log();
 
       var c = new Console(console_commands, config.with({
         noAliases: true
       }));
-      c.start(function() { cleanup(done); });
-    });
 
+      c.start(done);
+      c.on("exit", function() {
+        child_process.kill();
+      });
+    });
   }
 }
 

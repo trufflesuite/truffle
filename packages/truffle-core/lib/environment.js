@@ -4,6 +4,8 @@ var expect = require("truffle-expect");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
 var TestRPC = require("ethereumjs-testrpc");
+var spawn = require("child_process").spawn;
+var path = require("path");
 
 var Environment = {
   // It's important config is a Config object and not a vanilla object
@@ -120,15 +122,44 @@ var Environment = {
 
     var url = "http://" + host + ":" + port + "/";
 
-    var server = TestRPC.server({
+    var options = {
+      host: host, 
+      port: port,
       network_id: network_id,
-      seed: seed
-    });
+      seed: seed, 
+      gasLimit: config.gas
+    };
 
-    config.logger.log("Running development blockchain at " + url + "...");
-    server.listen(port, host, function (err) {
-      if (err) return callback(err);
+    var chain_path;
+    
+    // The path to the dev env process depends on whether or not
+    // we're running in the bundled version. If not, use chain.js
+    // directly, otherwise let the bundle point at the bundled version.
+    if (typeof BUNDLE_CHAIN_FILENAME != "undefined") {
+      // Remember: In the bundled version, __dirname refers to the
+      // build directory where cli.bundled.js and cli.chain.js live.
+      chain_path = path.join(__dirname, BUNDLE_CHAIN_FILENAME);
+    } else {
+      chain_path = path.join(__dirname, "../", "chain.js");
+    }
+    
+    var cmd = spawn("node", [chain_path, JSON.stringify(options)]);
 
+    var callbackCalled = false;
+
+    cmd.stdout.on('data', function(data) {
+      // Print anything our chain process outputs (not much).
+      // Trim or else we'll have double new lines.
+      config.logger.log(data.toString().trim());
+
+      // Here, we use on('data') to tell us if the application
+      // has started correctly. We'll call the callback and setup
+      // the configuration once get our first output on stdout.
+      // Note: Chain errors go to stderr (see below).
+      if (callbackCalled) return;
+
+      callbackCalled = true;
+    
       config.networks[network] = {
         network_id: network_id,
         provider: function() {
@@ -137,14 +168,27 @@ var Environment = {
       };
 
       config.network = network;
-
-      self.detect(config, function (err) {
-        callback(err, function(done) {
-          server.close(done);
-        });
-      });
+      
+      self.detect(config, function(err) {
+        callback(err, cmd);
+      });            
     });
-
+    
+    cmd.stderr.on('data', function(data) {
+      // Log any chain errors.
+      config.logger.log(data.toString().trim());
+    });
+    
+    cmd.on('error', function(err) {
+      // If ther'es a bigger error, throw it.
+      throw err;
+    });
+  
+    process.on("exit", function() {
+      // If the main process (Truffle) exits for some reason, kill
+      // the child process. 
+      cmd.kill();
+    });
   }
 };
 

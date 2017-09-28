@@ -10,8 +10,16 @@ var TruffleError = require("truffle-error");
 var fs = require("fs");
 var os = require("os");
 var path = require("path");
+var EventEmitter = require("events");
+var inherits = require("util").inherits;
+
+inherits(Console, EventEmitter);
 
 function Console(tasks, options) {
+  EventEmitter.call(this);
+
+  var self = this;
+
   expect.options(options, [
     "working_directory",
     "contracts_directory",
@@ -31,6 +39,11 @@ function Console(tasks, options) {
 
   this.web3 = new Web3();
   this.web3.setProvider(options.provider);
+
+  // Bubble the ReplManager's exit event
+  this.repl.on("exit", function() {
+    self.emit("exit");
+  });
 };
 
 Console.prototype.start = function(callback) {
