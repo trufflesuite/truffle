@@ -294,6 +294,7 @@ Run this function to estimate the gas usage:
 instance.setValue.estimateGas(5).then(function(result) {
   // result => estimated gas for this transaction
 });
+```
 
 # Testing
 
