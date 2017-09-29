@@ -63,7 +63,7 @@ describe("compile", function() {
     var file_to_update = path.resolve(path.join(config.contracts_directory, "MetaCoin.sol"));
 
     // Update the modification time to simulate an edit.
-    var newTime = new Date();
+    var newTime = new Date().getTime();
     fs.utimesSync(file_to_update, newTime, newTime);
 
     Contracts.compile(config.with({
