@@ -3,6 +3,7 @@
     "dependencies/truffle-artifactor": "git@github.com:trufflesuite/truffle-artifactor.git",
     "dependencies/truffle-blockchain-utils": "git@github.com:trufflesuite/truffle-blockchain-utils.git",
     "dependencies/truffle-box": "git@github.com:trufflesuite/truffle-box.git",
+    "dependencies/truffle-code-utils": "git@github.com:trufflesuite/truffle-code-utils.git",
     "dependencies/truffle-compile": "git@github.com:trufflesuite/truffle-compile.git",
     "dependencies/truffle-config": "git@github.com:trufflesuite/truffle-config.git",
     "dependencies/truffle-contract": "git@github.com:trufflesuite/truffle-contract.git",
