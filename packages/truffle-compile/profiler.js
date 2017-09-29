@@ -4,9 +4,9 @@
 var path = require("path");
 var async = require("async");
 var fs = require("fs");
-var SolidityParser = require("solidity-parser");
 var Graph = require("graphlib").Graph;
 var isAcyclic = require("graphlib/lib/alg").isAcyclic;
+var Parser = require("./parser");
 var CompileError = require("./compileerror");
 var expect = require("truffle-expect");
 var find_contracts = require("truffle-contract-sources");
@@ -285,7 +285,7 @@ module.exports = {
         var imports;
 
         try {
-          imports = SolidityParser.parse(resolved_body, "imports");
+          imports = Parser.parseImports(resolved_body);
         } catch (e) {
           e.message = "Error parsing " + import_path + ": " + e.message;
           return finished(e);
@@ -341,24 +341,18 @@ module.exports = {
           fs.readFile(file, "utf8", function(err, body) {
             if (err) return reject(err);
 
-            var ast;
+            var output;
 
             try {
-              ast = SolidityParser.parse(body);
+              output = Parser.parse(body);
             } catch (e) {
               e.message = "Error parsing " + file + ": " + e.message;
               return reject(e);
             }
 
-            accept(ast);
+            accept(output.contracts);
           });
-        }).then(function(ast) {
-          var contract_names = ast.body.filter(function(toplevel_item) {
-            return toplevel_item.type == "ContractStatement" || toplevel_item.type == "LibraryStatement";
-          }).map(function(contract_statement) {
-            return contract_statement.name;
-          });
-
+        }).then(function(contract_names) {
           var returnVal = {};
 
           contract_names.forEach(function(contract_name) {
