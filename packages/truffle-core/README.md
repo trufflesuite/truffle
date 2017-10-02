@@ -1,8 +1,8 @@
 <img src="https://github.com/trufflesuite/truffle-core/blob/master/assets/logo.png" width="200">
 
-[![npm](https://img.shields.io/npm/v/truffle.svg)]()
-[![npm](https://img.shields.io/npm/dm/truffle.svg)]()
-[![Build Status](https://travis-ci.org/ConsenSys/truffle.svg?branch=master)](https://travis-ci.org/ConsenSys/truffle)
+[![npm](https://img.shields.io/npm/v/truffle-core.svg)]()
+[![npm](https://img.shields.io/npm/dm/truffle-core.svg)]()
+[![Build Status](https://travis-ci.org/trufflesuite/truffle-core.svg?branch=master)](https://travis-ci.org/trufflesuite/truffle-core)
 [![Join the chat at https://gitter.im/consensys/truffle](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/consensys/truffle?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 -----------------------
