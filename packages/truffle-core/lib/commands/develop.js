@@ -2,10 +2,6 @@ var command = {
   command: 'develop',
   description: 'Open a console with a local TestRPC',
   builder: {
-    db: {
-      type: "string",
-      describe: "Path to save persistent chain data"
-    }
   },
   run: function (options, done) {
     var Config = require("truffle-config");
