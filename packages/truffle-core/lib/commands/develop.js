@@ -33,7 +33,7 @@ var command = {
     });
 
     // use local environment instead of detecting config environment
-    Environment.local(config, function(err, child_process) {
+    Environment.develop(config, function(err) {
       if (err) return done(err);
 
       var c = new Console(console_commands, config.with({
@@ -42,7 +42,7 @@ var command = {
 
       c.start(done);
       c.on("exit", function() {
-        child_process.kill();
+        done();
       });
     });
   }
