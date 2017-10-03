@@ -24,10 +24,6 @@ var Develop = {
     var callbackCalled = false;
 
     cmd.stdout.on('data', function(data) {
-      // // Print anything our chain process outputs (not much).
-      // // Trim or else we'll have double new lines.
-      // config.logger.log(data.toString().trim());
-
       // Here, we use on('data') to tell us if the application
       // has started correctly. We'll call the callback and setup
       // the configuration once get our first output on stdout.
@@ -41,11 +37,6 @@ var Develop = {
           callback();
         });
       });
-    });
-
-    cmd.stderr.on('data', function(data) {
-      // Log any chain errors.
-      // config.logger.log(data.toString().trim());
     });
 
     cmd.on('error', function(err) {
