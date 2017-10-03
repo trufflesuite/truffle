@@ -42,7 +42,7 @@ var command = {
 
       c.start(done);
       c.on("exit", function() {
-        done();
+        process.exit();
       });
     });
   }
