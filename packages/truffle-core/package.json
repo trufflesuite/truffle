@@ -20,6 +20,7 @@
     "mkdirp": "^0.5.1",
     "mocha": "^3.2.0",
     "node-dir": "0.1.16",
+    "node-ipc": "^9.1.1",
     "original-require": "^1.0.0",
     "serve-static": "^1.10.0",
     "spawn-args": "^0.1.0",

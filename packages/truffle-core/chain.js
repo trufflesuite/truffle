@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+var ipc = require("node-ipc");
 var TestRPC = require("ethereumjs-testrpc");
 
 // This script takes one argument: A strinified JSON object meant
@@ -34,25 +35,32 @@ process.on('uncaughtException', function(e) {
   process.exit(1);
 })
 
-// See http://stackoverflow.com/questions/10021373/what-is-the-windows-equivalent-of-process-onsigint-in-node-js
-if (process.platform === "win32") {
-  require("readline").createInterface({
-    input: process.stdin,
-    output: process.stdout
-  })
-  .on("SIGINT", function () {
-    process.emit("SIGINT");
-  });
-}
+ipc.config.id = 'truffleDevelop';
+ipc.config.retry = 1500;
+ipc.config.silent = true;
 
-process.on("SIGINT", function () {
-  // graceful shutdown; error if neccessary
-  server.close(function(err) {
-    if (err) {
-      console.error(err.stack || err);
-      process.exit(1);
-    } else {
-      process.exit();
+var connected = 0;
+
+ipc.serve(function() {
+  ipc.server.on('connect', function() {
+    connected++;
+  });
+
+  ipc.server.on('socket.disconnected', function() {
+    connected--;
+
+    if (connected <= 0) {
+      ipc.server.stop();
+      server.close(function(err) {
+        if (err) {
+          console.error(err.stack || err);
+          process.exit(1);
+        } else {
+          process.exit();
+        }
+      });
     }
   });
 });
+
+ipc.server.start();
