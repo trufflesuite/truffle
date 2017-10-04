@@ -5,18 +5,22 @@ var TestRPC = require("ethereumjs-testrpc");
 
 // This script takes one argument: A strinified JSON object meant
 // to be parsed and then passed to TestRPC.server().
-
-if (process.argv.length <= 2) {
-  throw new Error("Fatal: No arguments passed to default environment; please contact the Truffle developers for help.");
-}
-
 var options;
-
 try {
-  options = JSON.parse(process.argv[2]);
+  if (process.argv[2]) {
+    options = JSON.parse(process.argv[2]);
+  } else {
+    options = {};
+  }
 } catch (e) {
   throw new Error("Fatal: Error parsing arguments; please contact the Truffle developers for help.");
 }
+
+options.host = options.host || "localhost";
+options.port = options.port || 9545;
+options.network_id = options.network_id || 4447;
+options.seed = options.seed || "yum chocolate";
+options.gasLimit = options.gasLimit || 0x47e7c4;
 
 var server = TestRPC.server(options);
 
