@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var ipc = require("node-ipc");
+var IPC = require("node-ipc").IPC;
 var TestRPC = require("ethereumjs-testrpc");
 
 // This script takes one argument: A strinified JSON object meant
@@ -35,7 +35,11 @@ process.on('uncaughtException', function(e) {
   process.exit(1);
 })
 
-ipc.config.id = 'truffleDevelop';
+var ipc = new IPC();
+
+var networkID = 'truffleDevelop';
+
+ipc.config.id = networkID;
 ipc.config.retry = 1500;
 ipc.config.silent = true;
 
