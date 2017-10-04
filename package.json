@@ -6,7 +6,7 @@
   "dependencies": {
     "mocha": "^3.4.2",
     "original-require": "^1.0.1",
-    "solc": "0.4.15"
+    "solc": "0.4.17"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^0.1.16",
@@ -24,7 +24,7 @@
     "truffle-box": "^1.0.2",
     "truffle-contract": "^3.0.0",
     "truffle-core": "^4.0.0-beta.0",
-    "web3": "^0.20.1",
+    "web3": "^0.20.2",
     "webpack": "^2.5.1",
     "yargs": "^8.0.2"
   },
