@@ -4,6 +4,33 @@ var IPC = require("node-ipc").IPC;
 var TestRPC = require("ethereumjs-testrpc");
 var path = require("path");
 
+function Server(networkID, ipcConfig) {
+  var self = this;
+
+  this.ipc = new IPC();
+
+  this.ipc.config.id = networkID;
+
+  // set config
+  Object.keys(ipcConfig).forEach(function(key) {
+    self.ipc.config[key] = ipcConfig[key];
+  });
+
+  // socket filename
+}
+
+Server.prototype.start = function(callback) {
+  var ipc = this.ipc;
+
+  var dirname = ipc.config.socketRoot;
+  var basename = `${ipc.config.appspace}${ipc.config.id}`;
+  var servePath = path.join(dirname, basename);
+
+  ipc.serve(servePath, function() { callback(ipc); });
+
+  ipc.server.start();
+}
+
 // This script takes one argument: A strinified JSON object meant
 // to be parsed and then passed to TestRPC.server().
 var options;
@@ -28,24 +55,16 @@ process.on('uncaughtException', function(e) {
   process.exit(1);
 })
 
-var ipc = new IPC();
+var server = new Server("truffleDevelop", {retry: 1500});
 
-var networkID = 'truffleDevelop';
+server.start(function(ipc) {
 
-ipc.config.id = networkID;
-ipc.config.retry = 1500;
+  var connected = 0;
 
-var serverPath = path.join(
-  ipc.config.socketRoot, `${ipc.config.appspace}${networkID}`
-);
-
-var connected = 0;
-
-ipc.serve(serverPath, function() {
-  var server = TestRPC.server(options);
+  var testrpc = TestRPC.server(options);
 
   var ready = new Promise(function(accept, reject) {
-    server.listen(options.port, options.hostname, function(err, state) {
+    testrpc.listen(options.port, options.hostname, function(err, state) {
       if (err) {
         reject(err);
       }
@@ -72,7 +91,7 @@ ipc.serve(serverPath, function() {
 
     if (connected <= 0) {
       ipc.server.stop();
-      server.close(function(err) {
+      testrpc.close(function(err) {
         if (err) {
           console.error(err.stack || err);
           process.exit(1);
@@ -83,5 +102,3 @@ ipc.serve(serverPath, function() {
     }
   });
 });
-
-ipc.server.start();
