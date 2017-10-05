@@ -5,10 +5,6 @@ var command = {
     log: {
       type: "boolean",
       default: false
-    },
-    console: {
-      type: "boolean",
-      default: undefined
     }
   },
   runConsole: function(config, testrpcOptions, done) {
@@ -56,10 +52,6 @@ var command = {
       log: options.log
     };
 
-    if (options.console === undefined) {
-      options.console = !options.log;
-    }
-
     var testrpcOptions = {
       host: "localhost",
       port: 9545,
@@ -77,7 +69,7 @@ var command = {
         config.logger.log();
       }
 
-      if (options.console) {
+      if (!options.log) {
         command.runConsole(config, testrpcOptions, done);
       }
     });
