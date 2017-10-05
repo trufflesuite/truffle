@@ -35,8 +35,7 @@ function verifyURL(url) {
 
     var options = {
       method: 'HEAD',
-      host: configURL.host,
-      path: configURL.path
+      uri: 'https://' + configURL.host + configURL.path
     };
     request(options, function(error, r) {
       if (r.statusCode == 404) {
