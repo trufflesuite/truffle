@@ -28,16 +28,73 @@ options.seed = options.seed || "yum chocolate";
 options.gasLimit = options.gasLimit || 0x47e7c4;
 
 
+/*
+ * Logging
+ */
+
+// constructor
+function Logger() {
+  this.messages = [];
+
+  this.nextSubscriberID = 1;
+  this.subscribers = {};
+}
+
+// subscribe to log events with provided callback
+// sends prior unsent messages, as well as new messages
+// returns `unsubscribe` cleanup function
+Logger.prototype.subscribe = function(callback) {
+  var self = this;
+
+  // flush messages
+  var messages = this.messages;
+  this.messages = [];
+  messages.forEach(function(message) {
+    callback(message);
+  });
+
+  // save subscriber
+  var subscriberID = this.nextSubscriberID++;
+  this.subscribers[subscriberID] = callback;
+
+  // return cleanup func
+  var unsubscribe = function() {
+    delete self.subscribers[subscriberID];
+  };
+
+  return unsubscribe;
+};
+
+// log a message to be sent to all active subscribers
+// buffers if there are no active subscribers (to send on first subscribe)
+Logger.prototype.log = function(message) {
+  var self = this;
+
+  var subscriberIDs = Object.keys(this.subscribers)
+  if (subscriberIDs.length == 0) {
+    this.messages.push(message);
+
+    return;
+  }
+
+  subscriberIDs.forEach(function(subscriberID) {
+    var callback = self.subscribers[subscriberID];
+
+    callback(message);
+  });
+};
+
 
 /*
- * IPC server
+ * Supervisor
  */
-function Supervisor(networkID, ipcConfig) {
+
+// constructor - accepts an object to assign to `ipc.config`
+function Supervisor(ipcConfig) {
   var self = this;
 
   // init IPC
   this.ipc = new IPC();
-  this.ipc.config.id = networkID;
   // set config
   Object.keys(ipcConfig).forEach(function(key) {
     self.ipc.config[key] = ipcConfig[key];
@@ -46,10 +103,12 @@ function Supervisor(networkID, ipcConfig) {
   this.mixins = [];
 }
 
-Supervisor.prototype.mixin = function(mixin) {
+// include mixin
+Supervisor.prototype.use = function(mixin) {
   this.mixins.push(mixin);
 };
 
+// dispatch event to all relevant mixins (ones that define `event` method)
 Supervisor.prototype.handle = function(event, args) {
   var self = this;
 
@@ -62,6 +121,7 @@ Supervisor.prototype.handle = function(event, args) {
   });
 };
 
+// start the IPC server and hook up all the mixins
 Supervisor.prototype.start = function() {
   var self = this;
 
@@ -87,6 +147,7 @@ Supervisor.prototype.start = function() {
   ipc.server.start();
 }
 
+// external interface for mixin to emit socket events
 Supervisor.prototype.emit = function(socket, message, data, options) {
   options = options || {};
   options.silent = options.silent || false;
@@ -103,10 +164,12 @@ Supervisor.prototype.emit = function(socket, message, data, options) {
   this.ipc.config.silent = currentlySilent;
 };
 
+// external interface for mixin to exit
 Supervisor.prototype.exit = function() {
   this.ipc.server.stop();
   this.handle('exit', arguments);
 }
+
 
 /*
  * Lifecycle
@@ -116,14 +179,17 @@ function LifecycleMixin() {
   var self = this;
 }
 
+// start counting active connections
 LifecycleMixin.prototype.start = function(supervisor) {
   this.connections = 0;
 };
 
+// increment
 LifecycleMixin.prototype.connect = function(supervisor) {
   this.connections++;
 };
 
+// decrement - invoke supervisor exit if no connections remain
 LifecycleMixin.prototype.disconnect = function(supervisor) {
   this.connections--;
 
@@ -136,11 +202,13 @@ LifecycleMixin.prototype.disconnect = function(supervisor) {
 /*
  * TestRPC Server
  */
+
+// constructor - accepts options for TestRPC
 function TestRPCMixin(options) {
   this.testrpc = TestRPC.server(options);
 }
 
-
+// start TestRPC and capture promise that resolves when ready
 TestRPCMixin.prototype.start = function(supervisor) {
   var self = this;
 
@@ -155,6 +223,7 @@ TestRPCMixin.prototype.start = function(supervisor) {
   });
 };
 
+// wait for TestRPC to be ready then emit signal to client socket
 TestRPCMixin.prototype.connect = function(supervisor, socket) {
   var self = this;
   this.ready.then(function() {
@@ -162,6 +231,7 @@ TestRPCMixin.prototype.connect = function(supervisor, socket) {
   });
 }
 
+// cleanup TestRPC process on exit
 TestRPCMixin.prototype.exit = function(supervisor) {
   this.testrpc.close(function(err) {
     if (err) {
@@ -175,64 +245,16 @@ TestRPCMixin.prototype.exit = function(supervisor) {
 
 
 /*
- * Logging
- */
-function Logger() {
-  this.messages = [];
-
-  this.nextSubscriberID = 1;
-  this.subscribers = {};
-}
-
-Logger.prototype.subscribe = function(callback) {
-  var self = this;
-
-  var subscriberID = this.nextSubscriberID++;
-
-  this.subscribers[subscriberID] = callback;
-  this.flush(callback);
-
-  var unsubscribe = function() {
-    delete self.subscribers[subscriberID];
-  };
-
-  return unsubscribe;
-};
-
-Logger.prototype.flush = function(callback) {
-  var messages = this.messages;
-  this.messages = [];
-  messages.forEach(function(message) {
-    callback(message);
-  });
-}
-
-Logger.prototype.log = function(message) {
-  var self = this;
-
-  var subscriberIDs = Object.keys(this.subscribers)
-  if (subscriberIDs.length == 0) {
-    this.messages.push(message);
-
-    return;
-  }
-
-  subscriberIDs.forEach(function(subscriberID) {
-    var callback = self.subscribers[subscriberID];
-
-    callback(message);
-  });
-};
-
-
-/*
  * Logging over IPC
  */
+
+// constructor - takes Logger instance and message key (e.g. `app.ipc.log`)
 function LoggerMixin(logger, message) {
   this.logger = logger;
   this.message = message;
 }
 
+// on connect, subscribe client socket to logger
 LoggerMixin.prototype.connect = function(supervisor, socket) {
   var self = this;
 
@@ -242,7 +264,6 @@ LoggerMixin.prototype.connect = function(supervisor, socket) {
 
   socket.on('close', unsubscribe);
 };
-
 
 
 /*
@@ -260,15 +281,16 @@ process.on('uncaughtException', function(e) {
 var ipcLogger = new Logger();
 var testrpcLogger = new Logger();
 
-var supervisor = new Supervisor("truffleDevelop", {
+var supervisor = new Supervisor({
+  id: "truffleDevelop",
   retry: 1500,
   logger: ipcLogger.log.bind(ipcLogger)
 });
 
 options.logger = {log: testrpcLogger.log.bind(testrpcLogger)};
 
-supervisor.mixin(new LifecycleMixin());
-supervisor.mixin(new TestRPCMixin(options));
-supervisor.mixin(new LoggerMixin(ipcLogger, 'app.ipc.log'));
-supervisor.mixin(new LoggerMixin(testrpcLogger, 'app.testrpc.log'));
+supervisor.use(new LifecycleMixin());
+supervisor.use(new TestRPCMixin(options));
+supervisor.use(new LoggerMixin(ipcLogger, 'app.ipc.log'));
+supervisor.use(new LoggerMixin(testrpcLogger, 'app.testrpc.log'));
 supervisor.start();
