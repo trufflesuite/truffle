@@ -2,17 +2,14 @@ var command = {
   command: 'develop',
   description: 'Open a console with a local TestRPC',
   builder: {
-    db: {
-      type: "string",
-      describe: "Path to save persistent chain data"
+    log: {
+      type: "boolean",
+      default: false
     }
   },
-  run: function (options, done) {
-    var Config = require("truffle-config");
+  runConsole: function(config, testrpcOptions, done) {
     var Console = require("../console");
     var Environment = require("../environment");
-
-    var config = Config.detect(options);
 
     var commands = require("./index")
     var excluded = [
@@ -32,8 +29,7 @@ var command = {
       console_commands[name] = commands[name];
     });
 
-    // use local environment instead of detecting config environment
-    Environment.local(config, function(err, child_process) {
+    Environment.develop(config, testrpcOptions, function(err) {
       if (err) return done(err);
 
       var c = new Console(console_commands, config.with({
@@ -42,8 +38,40 @@ var command = {
 
       c.start(done);
       c.on("exit", function() {
-        child_process.kill();
+        process.exit();
       });
+    });
+  },
+  run: function (options, done) {
+    var Config = require("truffle-config");
+    var Develop = require("../develop");
+
+    var config = Config.detect(options);
+
+    var ipcOptions = {
+      log: options.log
+    };
+
+    var testrpcOptions = {
+      host: "localhost",
+      port: 9545,
+      network_id: 4447,
+      seed: "yum chocolate",
+      gasLimit: config.gas
+    };
+
+    Develop.connectOrStart(ipcOptions, testrpcOptions, function(started) {
+      if (started) {
+        config.logger.log("Truffle Develop started.");
+        config.logger.log();
+      } else {
+        config.logger.log("Connected to exiting Truffle Develop session.");
+        config.logger.log();
+      }
+
+      if (!options.log) {
+        command.runConsole(config, testrpcOptions, done);
+      }
     });
   }
 }
