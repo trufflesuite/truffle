@@ -32,7 +32,7 @@ options.gasLimit = options.gasLimit || 0x47e7c4;
 /*
  * IPC server
  */
-function Supervisor(networkID, ipcConfig, testrpcOptions) {
+function Supervisor(networkID, ipcConfig) {
   var self = this;
 
   // init IPC
