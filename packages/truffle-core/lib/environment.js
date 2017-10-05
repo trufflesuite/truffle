@@ -107,45 +107,26 @@ var Environment = {
     });
   },
 
-  develop: function(config, callback) {
+  develop: function(config, testrpcOptions, callback) {
     var self = this;
 
     expect.options(config, [
       "networks",
-      "logger"
     ]);
 
     var network = "develop";
-    var network_id = 4447;
-    var seed = "yum chocolate";
-    var host = "localhost";
-    var port = 9545;
+    var url = `http://${testrpcOptions.host}:${testrpcOptions.port}/`;
 
-    var url = "http://" + host + ":" + port + "/";
-
-    var options = {
-      host: host,
-      port: port,
-      network_id: network_id,
-      seed: seed,
-      gasLimit: config.gas
+    config.networks[network] = {
+      network_id: testrpcOptions.network_id,
+      provider: function() {
+        return new Web3.providers.HttpProvider(url);
+      }
     };
 
-    Develop.connectOrStart(options, function(started) {
-      config.logger.log("Truffle Develop " + (started ? "started." : "connected."));
-      config.logger.log();
+    config.network = network;
 
-      config.networks[network] = {
-        network_id: network_id,
-        provider: function() {
-          return new Web3.providers.HttpProvider(url);
-        }
-      };
-
-      config.network = network;
-
-      Environment.detect(config, callback);
-    });
+    Environment.detect(config, callback);
   }
 };
 

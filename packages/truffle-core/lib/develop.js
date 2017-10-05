@@ -1,9 +1,11 @@
-var ipc = require('node-ipc');
+var IPC = require('node-ipc').IPC;
 var path = require('path');
 var spawn = require('child_process').spawn;
 
 var Develop = {
-  start: function(testrpcOptions, callback) {
+  start: function(options, callback) {
+    options = options || {};
+
     var chainPath;
 
     // The path to the dev env process depends on whether or not
@@ -17,55 +19,62 @@ var Develop = {
       chainPath = path.join(__dirname, "../", "chain.js");
     }
 
-    var cmd = spawn("node", [chainPath, JSON.stringify(testrpcOptions)], {
-      detached: true
+    var cmd = spawn("node", [chainPath, JSON.stringify(options)], {
+      detached: true,
+      stdio: 'ignore'
     });
 
-    var callbackCalled = false;
-
-    cmd.stdout.on('data', function(data) {
-      // Here, we use on('data') to tell us if the application
-      // has started correctly. We'll call the callback and setup
-      // the configuration once get our first output on stdout.
-      // Note: Chain errors go to stderr (see below).
-      if (callbackCalled) return;
-
-      callbackCalled = true;
-
-      ipc.connectTo('truffleDevelop', function() {
-        ipc.of.truffleDevelop.on('connect', function() {
-          callback();
-        });
-      });
-    });
-
-    cmd.on('error', function(err) {
-      // If ther'es a bigger error, throw it.
-      throw err;
-    });
+    callback();
   },
 
-  connect: function(callback) {
-    ipc.config.maxRetries = 0;
+  connect: function(options, callback) {
+    var ipc = new IPC();
+
+    if (typeof options === 'function') {
+      callback = options;
+      options = {};
+    }
+
+    options.retry = options.retry || false;
+    options.logging = options.logging || {};
+    options.logging.testrpc = options.logging.testrpc || undefined;
+    options.logging.ipc = options.logging.ipc || undefined;
+
+    if (!options.retry) {
+      ipc.config.maxRetries = 0;
+    }
+
     ipc.config.silent = true;
 
     ipc.connectTo('truffleDevelop', function() {
-      ipc.of.truffleDevelop.on('error', function(error) {
-        callback(error);
+      ipc.of.truffleDevelop.on('destroy', function() {
+        callback(new Error("IPC connection destroyed"));
       });
 
-      ipc.of.truffleDevelop.on('connect', function() {
+      ipc.of.truffleDevelop.on('app.ready', function() {
         callback();
+      });
+
+      Object.keys(options.logging).forEach(function(key) {
+        var log = options.logging[key];
+        if (log) {
+          var message = `app.${key}.log`;
+          ipc.of.truffleDevelop.on(message, log);
+        }
       });
     });
   },
 
-  connectOrStart: function(testrpcOptions, callback) {
+  connectOrStart: function(options, testrpcOptions, callback) {
     var self = this;
 
-    this.connect(function(error) {
+    options.retry = false;
+    this.connect(options, function(error) {
       if (error) {
-        self.start(testrpcOptions, function() { callback(true); });
+        self.start(testrpcOptions, function() {
+          options.retry = true;
+          self.connect(options, function() { callback(true) });
+        });
       } else {
         callback(false);
       }
