@@ -9,6 +9,7 @@
     "chokidar": "^1.4.2",
     "colors": "^1.1.2",
     "cpr": "^0.4.3",
+    "debug": "^3.1.0",
     "del": "^2.2.0",
     "diff": "1.4.0",
     "ethereumjs-testrpc": "^4.1.2",

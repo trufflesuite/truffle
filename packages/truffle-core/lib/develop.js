@@ -1,6 +1,7 @@
 var IPC = require('node-ipc').IPC;
 var path = require('path');
 var spawn = require('child_process').spawn;
+var debug = require('debug');
 
 var Develop = {
   start: function(options, callback) {
@@ -30,21 +31,35 @@ var Develop = {
   connect: function(options, callback) {
     var ipc = new IPC();
 
+    var debugServer = debug('develop:ipc:server');
+    var debugClient = debug('develop:ipc:client');
+    var debugRPC = debug('develop:testrpc');
+
     if (typeof options === 'function') {
       callback = options;
       options = {};
     }
 
     options.retry = options.retry || false;
-    options.logging = options.logging || {};
-    options.logging.testrpc = options.logging.testrpc || undefined;
-    options.logging.ipc = options.logging.ipc || undefined;
+    options.log = options.log || false;
+
+    var loggers = {};
+
+    if (debugServer.enabled) {
+      loggers.ipc = debugServer;
+    }
+
+    if (options.log) {
+      loggers.testrpc = debugRPC;
+      debugRPC.enabled = true;
+    }
 
     if (!options.retry) {
       ipc.config.maxRetries = 0;
     }
 
-    ipc.config.silent = true;
+    ipc.config.silent = !debugClient.enabled;
+    ipc.config.logger = debugClient;
 
     ipc.connectTo('truffleDevelop', function() {
       ipc.of.truffleDevelop.on('destroy', function() {
@@ -55,8 +70,8 @@ var Develop = {
         callback();
       });
 
-      Object.keys(options.logging).forEach(function(key) {
-        var log = options.logging[key];
+      Object.keys(loggers).forEach(function(key) {
+        var log = loggers[key];
         if (log) {
           var message = `app.${key}.log`;
           ipc.of.truffleDevelop.on(message, log);

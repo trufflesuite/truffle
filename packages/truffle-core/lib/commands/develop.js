@@ -6,9 +6,9 @@ var command = {
       type: "boolean",
       default: false
     },
-    "log-ipc": {
+    console: {
       type: "boolean",
-      default: false
+      default: undefined
     }
   },
   runConsole: function(config, testrpcOptions, done) {
@@ -52,18 +52,12 @@ var command = {
 
     var config = Config.detect(options);
 
-    var ipcOptions = { logging: {} };
+    var ipcOptions = {
+      log: options.log
+    };
 
-    if (options.log) {
-      ipcOptions.logging.testrpc = function(message) {
-        console.log(message);
-      }
-    }
-
-    if (options["log-ipc"]) {
-      ipcOptions.logging.ipc = function(message) {
-        console.log(message);
-      }
+    if (options.console === undefined) {
+      options.console = !options.log;
     }
 
     var testrpcOptions = {
@@ -83,7 +77,7 @@ var command = {
         config.logger.log();
       }
 
-      if (!options.log && !options['log-ipc']) {
+      if (options.console) {
         command.runConsole(config, testrpcOptions, done);
       }
     });
