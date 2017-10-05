@@ -87,8 +87,20 @@ Supervisor.prototype.start = function() {
   ipc.server.start();
 }
 
-Supervisor.prototype.emit = function(socket, message, data) {
+Supervisor.prototype.emit = function(socket, message, data, options) {
+  options = options || {};
+  options.silent = options.silent || false;
+
+  // possibly override silent
+  var currentlySilent = this.ipc.config.silent;
+  if (options.silent) {
+    this.ipc.config.silent = true;
+  }
+
   this.ipc.server.emit(socket, message, data);
+
+  // reset
+  this.ipc.config.silent = currentlySilent;
 };
 
 Supervisor.prototype.exit = function() {
