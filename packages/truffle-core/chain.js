@@ -181,6 +181,81 @@ TestRPCMixin.prototype.exit = function(supervisor) {
 
 
 /*
+ * Logging
+ */
+function Logger() {
+  this.messages = [];
+
+  this.nextSubscriberID = 1;
+  this.subscribers = {};
+}
+
+Logger.prototype.subscribe = function(callback) {
+  var self = this;
+
+  var subscriberID = this.nextSubscriberID++;
+
+  this.subscribers[subscriberID] = callback;
+  this.flush(callback);
+
+  var unsubscribe = function() {
+    self.unsubscribe(subscriberID);
+  };
+
+  return unsubscribe;
+};
+
+Logger.prototype.unsubscribe = function(subscriberID) {
+  delete this.subscribers[subscriberID];
+}
+
+Logger.prototype.flush = function(callback) {
+  var messages = this.messages;
+  this.messages = [];
+  messages.forEach(function(message) {
+    callback(message);
+  });
+}
+
+Logger.prototype.log = function(message) {
+  var self = this;
+
+  var subscriberIDs = Object.keys(this.subscribers)
+  if (subscriberIDs.length == 0) {
+    this.messages.push(message);
+
+    return;
+  }
+
+  subscriberIDs.forEach(function(subscriberID) {
+    var callback = self.subscribers[subscriberID];
+
+    callback(message);
+  });
+};
+
+
+/*
+ * Logging over IPC
+ */
+function LoggerMixin(logger, message) {
+  this.logger = logger;
+  this.message = message;
+}
+
+LoggerMixin.prototype.connect = function(supervisor, socket) {
+  var self = this;
+
+  var unsubscribe = this.logger.subscribe(function(data) {
+    supervisor.emit(socket, self.message, data, {silent: true});
+  });
+
+  socket.on('close', unsubscribe);
+};
+
+
+
+/*
  * Process event handling
  */
 process.on('uncaughtException', function(e) {
@@ -192,7 +267,18 @@ process.on('uncaughtException', function(e) {
 /*
  * Main
  */
-var supervisor = new Supervisor("truffleDevelop", {retry: 1500});
+var ipcLogger = new Logger();
+var testrpcLogger = new Logger();
+
+var supervisor = new Supervisor("truffleDevelop", {
+  retry: 1500,
+  logger: ipcLogger.log.bind(ipcLogger)
+});
+
+options.logger = {log: testrpcLogger.log.bind(testrpcLogger)};
+
 supervisor.mixin(new LifecycleMixin());
 supervisor.mixin(new TestRPCMixin(options));
+supervisor.mixin(new LoggerMixin(ipcLogger, 'app.ipc.log'));
+supervisor.mixin(new LoggerMixin(testrpcLogger, 'app.testrpc.log'));
 supervisor.start();
