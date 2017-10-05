@@ -38,7 +38,9 @@ function verifyURL(url) {
       uri: 'https://' + configURL.host + configURL.path
     };
     request(options, function(error, r) {
-      if (r.statusCode == 404) {
+      if (error) {
+        return reject(new Error("Error making request. Please check the format of the requested resource: " + options.uri));
+      } else if (r.statusCode == 404) {
         return reject(new Error("Truffle Box at URL " + url + " doesn't exist. If you believe this is an error, please contact Truffle support."));
       } else if (r.statusCode != 200) {
         return reject(new Error("Error connecting to github.com. Please check your internet connection and try again."));
