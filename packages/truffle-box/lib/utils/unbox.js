@@ -1,7 +1,7 @@
 var fs = require("fs-extra");
 var path = require("path");
 var ghdownload = require('github-download');
-var https = require("https");
+var request = require('request');
 var vcsurl = require('vcsurl');
 var parseURL = require('url').parse;
 var tmp = require('tmp');
@@ -38,7 +38,7 @@ function verifyURL(url) {
       host: configURL.host,
       path: configURL.path
     };
-    var req = https.request(options, function(r) {
+    request(options, function(error, r) {
       if (r.statusCode == 404) {
         return reject(new Error("Truffle Box at URL " + url + " doesn't exist. If you believe this is an error, please contact Truffle support."));
       } else if (r.statusCode != 200) {
@@ -46,8 +46,6 @@ function verifyURL(url) {
       }
       accept();
     });
-    req.end();
-
   });
 }
 
