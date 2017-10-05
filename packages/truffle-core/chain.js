@@ -193,15 +193,11 @@ Logger.prototype.subscribe = function(callback) {
   this.flush(callback);
 
   var unsubscribe = function() {
-    self.unsubscribe(subscriberID);
+    delete self.subscribers[subscriberID];
   };
 
   return unsubscribe;
 };
-
-Logger.prototype.unsubscribe = function(subscriberID) {
-  delete this.subscribers[subscriberID];
-}
 
 Logger.prototype.flush = function(callback) {
   var messages = this.messages;
