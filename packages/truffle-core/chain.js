@@ -50,6 +50,18 @@ Supervisor.prototype.mixin = function(mixin) {
   this.mixins.push(mixin);
 };
 
+Supervisor.prototype.handle = function(event, args) {
+  var self = this;
+
+  args = Array.prototype.slice.call(args);
+
+  this.mixins.forEach(function(mixin) {
+    if (mixin[event]) {
+      mixin[event].apply(mixin, [self].concat(args));
+    }
+  });
+};
+
 Supervisor.prototype.start = function() {
   var self = this;
 
@@ -61,26 +73,14 @@ Supervisor.prototype.start = function() {
   var servePath = path.join(dirname, basename);
 
   ipc.serve(servePath, function() {
-    self.mixins.forEach(function(mixin) {
-      if (mixin.start) {
-        mixin.start(self);
-      }
-    });
+    self.handle('start', arguments);
 
-    ipc.server.on('connect', function(socket) {
-      self.mixins.forEach(function(mixin) {
-        if (mixin.connect) {
-          mixin.connect(self, socket);
-        }
-      });
+    ipc.server.on('connect', function() {
+      self.handle('connect', arguments);
     });
 
     ipc.server.on('socket.disconnected', function() {
-      self.mixins.forEach(function(mixin) {
-        if (mixin.disconnect) {
-          mixin.disconnect(self);
-        }
-      });
+      self.handle('disconnect', arguments);
     });
   });
 
@@ -104,14 +104,8 @@ Supervisor.prototype.emit = function(socket, message, data, options) {
 };
 
 Supervisor.prototype.exit = function() {
-  var self = this;
-
   this.ipc.server.stop();
-  this.mixins.forEach(function(mixin) {
-    if (mixin.exit) {
-      mixin.exit(self);
-    }
-  });
+  this.handle('exit', arguments);
 }
 
 /*
