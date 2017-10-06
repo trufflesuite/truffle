@@ -30,6 +30,7 @@ var Develop = {
 
   connect: function(options, callback) {
     var ipc = new IPC();
+    ipc.config.appspace = "truffle.";
 
     var debugServer = debug('develop:ipc:server');
     var debugClient = debug('develop:ipc:client');
@@ -61,20 +62,20 @@ var Develop = {
     ipc.config.silent = !debugClient.enabled;
     ipc.config.logger = debugClient;
 
-    ipc.connectTo('truffleDevelop', function() {
-      ipc.of.truffleDevelop.on('destroy', function() {
+    ipc.connectTo('develop', function() {
+      ipc.of.develop.on('destroy', function() {
         callback(new Error("IPC connection destroyed"));
       });
 
-      ipc.of.truffleDevelop.on('app.ready', function() {
+      ipc.of.develop.on('truffle.ready', function() {
         callback();
       });
 
       Object.keys(loggers).forEach(function(key) {
         var log = loggers[key];
         if (log) {
-          var message = `app.${key}.log`;
-          ipc.of.truffleDevelop.on(message, log);
+          var message = `truffle.${key}.log`;
+          ipc.of.develop.on(message, log);
         }
       });
     });
