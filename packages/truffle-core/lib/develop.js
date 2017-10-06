@@ -4,7 +4,7 @@ var spawn = require('child_process').spawn;
 var debug = require('debug');
 
 var Develop = {
-  start: function(options, callback) {
+  start: function(ipcNetwork, options, callback) {
     options = options || {};
 
     var chainPath;
@@ -20,7 +20,7 @@ var Develop = {
       chainPath = path.join(__dirname, "../", "chain.js");
     }
 
-    var cmd = spawn("node", [chainPath, JSON.stringify(options)], {
+    var cmd = spawn("node", [chainPath, ipcNetwork, JSON.stringify(options)], {
       detached: true,
       stdio: 'ignore'
     });
@@ -87,9 +87,12 @@ var Develop = {
     var self = this;
 
     options.retry = false;
+
+    var ipcNetwork = options.network || "develop";
+
     this.connect(options, function(error) {
       if (error) {
-        self.start(testrpcOptions, function() {
+        self.start(ipcNetwork, testrpcOptions, function() {
           options.retry = true;
           self.connect(options, function() { callback(true) });
         });
