@@ -20,7 +20,7 @@ var Deployed = {
         body = "return " + address + ";";
       }
 
-      source += "  function " + name + "() returns (address) { " + body + " }"
+      source += "  function " + name + "() public pure returns (address) { " + body + " }"
       source += "\n";
     });
 
