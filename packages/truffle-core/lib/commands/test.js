@@ -7,23 +7,18 @@ var command = {
     var dir = require("node-dir");
     var temp = require("temp");
     var Config = require("truffle-config");
-    var Resolver = require("truffle-resolver");
     var Artifactor = require("truffle-artifactor");
-    var TestRPC = require("ethereumjs-testrpc");
+    var Develop = require("../develop");
     var Test = require("../test");
     var fs = require("fs");
-    var path = require("path");
-    var mkdirp = require("mkdirp");
     var copy = require("../copy");
     var Environment = require("../environment");
 
     var config = Config.detect(options);
 
-    if (!config.networks.test) {
-      config.networks.test = {
-        network_id: "*",
-        provider: TestRPC.provider()
-      };
+    // if "development" exists, default to using that for testing
+    if (!config.network && config.networks.development) {
+      config.network = "development";
     }
 
     if (!config.network) {
@@ -60,6 +55,7 @@ var command = {
           temp.cleanup(function(err) {
             // Ignore cleanup errors.
             done.apply(null, args);
+            process.exit(0);
           });
         };
 
@@ -74,7 +70,7 @@ var command = {
           }), cleanup);
         };
 
-        Environment.detect(config, function(err) {
+        var environmentCallback = function(err) {
           if (err) return done(err);
           // Copy all the built files over to a temporary directory, because we
           // don't want to save any tests artifacts. Only do this if the build directory
@@ -90,7 +86,23 @@ var command = {
               run();
             });
           });
-        });
+        }
+
+        if (config.networks[config.network]) {
+          Environment.detect(config, environmentCallback);
+        } else {
+          var testrpcOptions = {
+            host: "localhost",
+            port: 7545,
+            network_id: 4447,
+            seed: "yum chocolate",
+            gasLimit: config.gas
+          };
+
+          Develop.connectOrStart({}, testrpcOptions, function() {
+            Environment.develop(config, testrpcOptions, environmentCallback);
+          });
+        }
       });
     });
   }
