@@ -3,6 +3,13 @@
 var IPC = require("node-ipc").IPC;
 var TestRPC = require("ethereumjs-testrpc");
 var path = require("path");
+var debug = require("debug");
+
+/*
+ * Loggers
+ */
+var ipcDebug = debug("chain:ipc");
+
 
 /*
  * Options
@@ -297,6 +304,8 @@ var supervisor = new Supervisor({
   retry: 1500,
   logger: ipcLogger.log.bind(ipcLogger)
 });
+
+ipcLogger.subscribe(ipcDebug);
 
 options.logger = {log: testrpcLogger.log.bind(testrpcLogger)};
 
