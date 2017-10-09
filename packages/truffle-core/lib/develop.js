@@ -50,8 +50,20 @@ var Develop = {
     }
 
     if (options.log) {
-      loggers.testrpc = debugRPC;
       debugRPC.enabled = true;
+
+      loggers.testrpc = function() {
+        // HACK-y: replace `{}` that is getting logged instead of ""
+        var args = Array.prototype.slice.call(arguments);
+        if (args.length === 1 &&
+              typeof args[0] === "object" &&
+              Object.keys(args[0]).length === 0)
+        {
+          args[0] = "";
+        }
+
+        debugRPC.apply(undefined, args);
+      }
     }
 
     if (!options.retry) {
