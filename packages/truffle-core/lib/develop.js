@@ -29,6 +29,10 @@ var Develop = {
   },
 
   connect: function(options, callback) {
+    var debugServer = debug('develop:ipc:server');
+    var debugClient = debug('develop:ipc:client');
+    var debugRPC = debug('develop:testrpc');
+
     if (typeof options === 'function') {
       callback = options;
       options = {};
@@ -42,9 +46,10 @@ var Develop = {
     var ipc = new IPC();
     ipc.config.appspace = "truffle.";
 
-    var debugServer = debug('develop:ipc:server');
-    var debugClient = debug('develop:ipc:client');
-    var debugRPC = debug('develop:testrpc');
+    // set connectPath explicitly
+    var dirname = ipc.config.socketRoot;
+    var basename = `${ipc.config.appspace}${ipcNetwork}`;
+    var connectPath = path.join(dirname, basename);
 
     ipc.config.silent = !debugClient.enabled;
     ipc.config.logger = debugClient;
@@ -80,7 +85,7 @@ var Develop = {
       ipc.disconnect(ipcNetwork);
     }
 
-    ipc.connectTo(ipcNetwork, function() {
+    ipc.connectTo(ipcNetwork, connectPath, function() {
       ipc.of[ipcNetwork].on('destroy', function() {
         callback(new Error("IPC connection destroyed"));
       });
