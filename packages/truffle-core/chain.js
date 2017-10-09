@@ -10,13 +10,23 @@ var path = require("path");
 
 // This script takes one argument: A strinified JSON object meant
 // to be parsed and then passed to TestRPC.server().
+var ipcNetwork;
 var options;
+
+var args = process.argv.slice(2);
+if (args.length == 2) {
+  ipcNetwork = args[0];
+  options = args[1];
+} else if (args.length == 1) {
+  ipcNetwork = "develop";
+  options = args[0];
+} else {
+  ipcNetwork = "develop";
+  options = "{}";
+}
+
 try {
-  if (process.argv[2]) {
-    options = JSON.parse(process.argv[2]);
-  } else {
-    options = {};
-  }
+  options = JSON.parse(options);
 } catch (e) {
   throw new Error("Fatal: Error parsing arguments; please contact the Truffle developers for help.");
 }
@@ -227,7 +237,7 @@ TestRPCMixin.prototype.start = function(supervisor) {
 TestRPCMixin.prototype.connect = function(supervisor, socket) {
   var self = this;
   this.ready.then(function() {
-    supervisor.emit(socket, 'app.ready');
+    supervisor.emit(socket, 'truffle.ready');
   });
 }
 
@@ -248,7 +258,7 @@ TestRPCMixin.prototype.exit = function(supervisor) {
  * Logging over IPC
  */
 
-// constructor - takes Logger instance and message key (e.g. `app.ipc.log`)
+// constructor - takes Logger instance and message key (e.g. `truffle.ipc.log`)
 function LoggerMixin(logger, message) {
   this.logger = logger;
   this.message = message;
@@ -282,7 +292,8 @@ var ipcLogger = new Logger();
 var testrpcLogger = new Logger();
 
 var supervisor = new Supervisor({
-  id: "truffleDevelop",
+  appspace: "truffle.",
+  id: ipcNetwork,
   retry: 1500,
   logger: ipcLogger.log.bind(ipcLogger)
 });
@@ -291,6 +302,6 @@ options.logger = {log: testrpcLogger.log.bind(testrpcLogger)};
 
 supervisor.use(new LifecycleMixin());
 supervisor.use(new TestRPCMixin(options));
-supervisor.use(new LoggerMixin(ipcLogger, 'app.ipc.log'));
-supervisor.use(new LoggerMixin(testrpcLogger, 'app.testrpc.log'));
+supervisor.use(new LoggerMixin(ipcLogger, 'truffle.ipc.log'));
+supervisor.use(new LoggerMixin(testrpcLogger, 'truffle.testrpc.log'));
 supervisor.start();

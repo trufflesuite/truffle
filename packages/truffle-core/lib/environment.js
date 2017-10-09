@@ -114,7 +114,7 @@ var Environment = {
       "networks",
     ]);
 
-    var network = "develop";
+    var network = config.network || "develop";
     var url = `http://${testrpcOptions.host}:${testrpcOptions.port}/`;
 
     config.networks[network] = {

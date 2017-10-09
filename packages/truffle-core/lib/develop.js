@@ -4,7 +4,7 @@ var spawn = require('child_process').spawn;
 var debug = require('debug');
 
 var Develop = {
-  start: function(options, callback) {
+  start: function(ipcNetwork, options, callback) {
     options = options || {};
 
     var chainPath;
@@ -20,7 +20,7 @@ var Develop = {
       chainPath = path.join(__dirname, "../", "chain.js");
     }
 
-    var cmd = spawn("node", [chainPath, JSON.stringify(options)], {
+    var cmd = spawn("node", [chainPath, ipcNetwork, JSON.stringify(options)], {
       detached: true,
       stdio: 'ignore'
     });
@@ -29,12 +29,6 @@ var Develop = {
   },
 
   connect: function(options, callback) {
-    var ipc = new IPC();
-
-    var debugServer = debug('develop:ipc:server');
-    var debugClient = debug('develop:ipc:client');
-    var debugRPC = debug('develop:testrpc');
-
     if (typeof options === 'function') {
       callback = options;
       options = {};
@@ -42,6 +36,18 @@ var Develop = {
 
     options.retry = options.retry || false;
     options.log = options.log || false;
+    options.network = options.network || "develop";
+    var ipcNetwork = options.network;
+
+    var ipc = new IPC();
+    ipc.config.appspace = "truffle.";
+
+    var debugServer = debug('develop:ipc:server');
+    var debugClient = debug('develop:ipc:client');
+    var debugRPC = debug('develop:testrpc');
+
+    ipc.config.silent = !debugClient.enabled;
+    ipc.config.logger = debugClient;
 
     var loggers = {};
 
@@ -70,23 +76,24 @@ var Develop = {
       ipc.config.maxRetries = 0;
     }
 
-    ipc.config.silent = !debugClient.enabled;
-    ipc.config.logger = debugClient;
+    var disconnect = function() {
+      ipc.disconnect(ipcNetwork);
+    }
 
-    ipc.connectTo('truffleDevelop', function() {
-      ipc.of.truffleDevelop.on('destroy', function() {
+    ipc.connectTo(ipcNetwork, function() {
+      ipc.of[ipcNetwork].on('destroy', function() {
         callback(new Error("IPC connection destroyed"));
       });
 
-      ipc.of.truffleDevelop.on('app.ready', function() {
-        callback();
+      ipc.of[ipcNetwork].on('truffle.ready', function() {
+        callback(null, disconnect);
       });
 
       Object.keys(loggers).forEach(function(key) {
         var log = loggers[key];
         if (log) {
-          var message = `app.${key}.log`;
-          ipc.of.truffleDevelop.on(message, log);
+          var message = `truffle.${key}.log`;
+          ipc.of[ipcNetwork].on(message, log);
         }
       });
     });
@@ -96,14 +103,25 @@ var Develop = {
     var self = this;
 
     options.retry = false;
-    this.connect(options, function(error) {
+
+    var ipcNetwork = options.network || "develop";
+
+    var connectedAlready = false;
+
+    this.connect(options, function(error, disconnect) {
       if (error) {
-        self.start(testrpcOptions, function() {
+        self.start(ipcNetwork, testrpcOptions, function() {
           options.retry = true;
-          self.connect(options, function() { callback(true) });
+          self.connect(options, function(error, disconnect) {
+            if (connectedAlready) return;
+
+            connectedAlready = true;
+            callback(true, disconnect);
+          });
         });
       } else {
-        callback(false);
+        connectedAlready = true;
+        callback(false, disconnect);
       }
     });
   }
