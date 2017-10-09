@@ -47,6 +47,7 @@ var compile = function(sources, options, callback) {
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
   var operatingSystemIndependentSources = {};
+  var originalPathMappings = {};
 
   Object.keys(sources).forEach(function(source) {
     // Turn all backslashes into forward slashes
@@ -60,6 +61,9 @@ var compile = function(sources, options, callback) {
 
     // Save the result
     operatingSystemIndependentSources[replacement] = sources[source];
+  
+    // Map the replacement back to the original source path.
+    originalPathMappings[replacement] = source;
   });
 
   var solcStandardInput = {
@@ -137,7 +141,7 @@ var compile = function(sources, options, callback) {
 
       var contract_definition = {
         contract_name: contract_name,
-        sourcePath: source_path,
+        sourcePath: originalPathMappings[source_path], // Save original source path, not modified ones
         source: operatingSystemIndependentSources[source_path],
         sourceMap: contract.evm.bytecode.sourceMap,
         deployedSourceMap: contract.evm.deployedBytecode.sourceMap,
