@@ -1,6 +1,6 @@
 {
   "name": "truffle-compile",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Compiler helper and artifact manager",
   "main": "index.js",
   "dependencies": {
