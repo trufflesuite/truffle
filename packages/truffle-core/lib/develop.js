@@ -64,13 +64,17 @@ var Develop = {
       ipc.config.maxRetries = 0;
     }
 
+    var disconnect = function() {
+      ipc.disconnect(ipcNetwork);
+    }
+
     ipc.connectTo(ipcNetwork, function() {
       ipc.of[ipcNetwork].on('destroy', function() {
         callback(new Error("IPC connection destroyed"));
       });
 
       ipc.of[ipcNetwork].on('truffle.ready', function() {
-        callback();
+        callback(null, disconnect);
       });
 
       Object.keys(loggers).forEach(function(key) {
@@ -90,14 +94,22 @@ var Develop = {
 
     var ipcNetwork = options.network || "develop";
 
-    this.connect(options, function(error) {
+    var connectedAlready = false;
+
+    this.connect(options, function(error, disconnect) {
       if (error) {
         self.start(ipcNetwork, testrpcOptions, function() {
           options.retry = true;
-          self.connect(options, function() { callback(true) });
+          self.connect(options, function(error, disconnect) {
+            if (connectedAlready) return;
+
+            connectedAlready = true;
+            callback(true, disconnect);
+          });
         });
       } else {
-        callback(false);
+        connectedAlready = true;
+        callback(false, disconnect);
       }
     });
   }

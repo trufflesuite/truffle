@@ -25,6 +25,8 @@ var command = {
       config.network = "test";
     }
 
+    var ipcDisconnect;
+
     var files = [];
 
     if (options.file) {
@@ -55,7 +57,9 @@ var command = {
           temp.cleanup(function(err) {
             // Ignore cleanup errors.
             done.apply(null, args);
-            process.exit(0);
+            if (ipcDisconnect) {
+              ipcDisconnect();
+            }
           });
         };
 
@@ -91,6 +95,10 @@ var command = {
         if (config.networks[config.network]) {
           Environment.detect(config, environmentCallback);
         } else {
+          var ipcOptions = {
+            network: "test"
+          };
+
           var testrpcOptions = {
             host: "localhost",
             port: 7545,
@@ -99,7 +107,8 @@ var command = {
             gasLimit: config.gas
           };
 
-          Develop.connectOrStart({}, testrpcOptions, function() {
+          Develop.connectOrStart(ipcOptions, testrpcOptions, function(started, disconnect) {
+            ipcDisconnect = disconnect;
             Environment.develop(config, testrpcOptions, environmentCallback);
           });
         }
