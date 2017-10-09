@@ -61,11 +61,13 @@ var command = {
     };
 
     Develop.connectOrStart(ipcOptions, testrpcOptions, function(started) {
+      var url = `http://${testrpcOptions.host}:${testrpcOptions.port}/`;
+
       if (started) {
-        config.logger.log("Truffle Develop started.");
+        config.logger.log(`Truffle Develop started at ${url}`);
         config.logger.log();
       } else {
-        config.logger.log("Connected to exiting Truffle Develop session.");
+        config.logger.log(`Connected to exiting Truffle Develop session at ${url}`);
         config.logger.log();
       }
 
