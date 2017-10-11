@@ -1,10 +1,10 @@
 Contributing to Truffle
 =======================
 
-_Thanks for taking the time to help out and improve Truffle!_
+_Thanks for taking the time to help out and improve Truffle! :tada:_
 
 The following is a set of guidelines for Truffle contributions and may change
-over time. Feel free to suggest improvements to this document in a pull request!
+over time. :construction: Feel free to suggest improvements to this document in a pull request!
 
 Contents
 --------
@@ -35,12 +35,12 @@ in case others have run into the problem or know how to help.
 
 To report a problem or to suggest a new feature, [open a GitHub Issue](https://github.com/trufflesuite/truffle/issues/new).
 This will help the Truffle maintainers become aware of the problem and prioritize
-a fix.
+a fix. :clipboard:
 
-For code contributions, for either new features or bug fixes, see [Development](#development) below.
+For code contributions, for either new features or bug fixes, see [Development](#development).
 
 If you're looking to make a substantial change, you may want to reach out first
-to give us a heads up.
+to give us a heads up. :bulb:
 
 
 Development
@@ -100,21 +100,21 @@ in one package are used by the others:
 
 Community contributions to Truffle require that you first fork the
 repositor(y|ies) you are modifying. After your modifications, push changes to
-your fork(s) and submit a pull request upstream to `trufflesuite`'s fork.
+your fork(s) and submit a pull request upstream to `trufflesuite`'s fork(s).
 
 See GitHub documentation about [Collaborating with issues and pull requests](https://help.github.com/categories/collaborating-with-issues-and-pull-requests/)
 for more information.
 
-> **Truffle development uses a long-lived `develop` branch for new (non-hotfix)
+> **Note:** _:exclamation: Truffle development uses a long-lived `develop` branch for new (non-hotfix)
 > development. Pull Requests should be opened against `develop` in all
-> repositories. See [Branching from Develop](#branching-from-develop).**
+> repositories. See [Branching from Develop](#branching-from-develop)._
 
 #### Branching Model
 
 Truffle projects maintain two stable branches:
 
-  - `master`, for latest full releases and work targeting a patch release
-  - `develop`, for latest unstable releases and work targeting the next major
+  - **`master`**, for latest full releases and work targeting a patch release
+  - **`develop`**, for latest unstable releases and work targeting the next major
       or minor release.
 
 #### Branching From Develop
@@ -158,7 +158,7 @@ For changes spanning multiple repositories, it may help to use the same branch
 name for each.
 
 If you need to switch between branches, you can use the `meta pkgs` plugin
-([repo](https://github.com/trufflesuite/meta-pkgs)) to checkout en-masse:
+([readme](https://github.com/trufflesuite/meta-pkgs/blob/master/README.md)) to checkout en-masse:
 
     $ meta pkgs checkout truffle:develop truffle:ChocolateLover/sweet-feature --greedy
 
@@ -175,4 +175,4 @@ If anything about this process is unclear, or for helpful feedback of any kind,
 we'd love to hear from you!
 
 **Thanks again for all your support, encouragement, and effort! Truffle would not
-be possible without contributors like you.**
+be possible without contributors like you. :bow:**
