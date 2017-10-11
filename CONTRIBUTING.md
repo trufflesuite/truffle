@@ -169,10 +169,8 @@ falling back to `develop`.
 Additional Notes
 ----------------
 
-Join the chat in our [Gitter channel](https://gitter.im/ConsenSys/truffle)!
-
-If anything about this process is unclear, or for helpful feedback of any kind,
-we'd love to hear from you!
+Join the chat in our [Gitter channel](https://gitter.im/ConsenSys/truffle). If anything about this
+process is unclear, or for helpful feedback of any kind, we'd love to hear from you!
 
 **Thanks again for all your support, encouragement, and effort! Truffle would not
 be possible without contributors like you. :bow:**
