@@ -3,9 +3,8 @@ Contributing to Truffle
 
 _Thanks for taking the time to help out and improve Truffle!_
 
-The following is a set of guidelines for Truffle contributions. This document
-is intended to provide guidelines, and may change over time. Feel free to
-suggest improvements to this document in a pull request.
+The following is a set of guidelines for Truffle contributions and may change
+over time. Feel free to suggest improvements to this document in a pull request!
 
 Contents
 --------
@@ -22,6 +21,8 @@ Contents
     - [Tracking Forks Locally](#tracking-forks-locally)
     - [Working on a Branch](#working-on-a-branch)
     - [Changes Spanning Multiple Repos](#changes-spanning-multiple-repos)
+
+[Additional Notes](#additional-notes)
 
 
 How Can I Contribute?
@@ -50,7 +51,7 @@ Development
 Truffle is organized as a collection of repositories, each with their own
 NPM package.
 
-This repository ([trufflesuite/truffle](https://github.com/trufflesuite/truffle)
+This repository ([trufflesuite/truffle](https://github.com/trufflesuite/truffle))
 is a distribution package and only contains logic to build Truffle for release.
 
 The main development repository is [trufflesuite/truffle-core](https://github.com/trufflesuite/truffle-core),
@@ -97,16 +98,16 @@ in one package are used by the others:
 
 ### Forks, Branches, and Pull Requests
 
-> Truffle development uses a long-lived `develop` branch for new (non-hotfix)
-> development. Pull Requests should be opened against `develop` in all
-> repositories. See [Branching from Develop](#branching-from-develop).
-
 Community contributions to Truffle require that you first fork the
 repositor(y|ies) you are modifying. After your modifications, push changes to
 your fork(s) and submit a pull request upstream to `trufflesuite`'s fork.
 
 See GitHub documentation about [Collaborating with issues and pull requests](https://help.github.com/categories/collaborating-with-issues-and-pull-requests/)
 for more information.
+
+> **Truffle development uses a long-lived `develop` branch for new (non-hotfix)
+> development. Pull Requests should be opened against `develop` in all
+> repositories. See [Branching from Develop](#branching-from-develop).**
 
 #### Branching Model
 
@@ -136,7 +137,7 @@ If dependencies have changed, you may need to install and re-link dependencies:
 #### Tracking Forks Locally
 
 For each forked repository you are making modifications to
-(e.g. GitHub username @ChocolateLover modifying `truffle-artifactor`):
+(e.g. GitHub username **@ChocolateLover** modifying `truffle-artifactor`):
 
     $ cd dependencies/truffle-artifactor
     $ git remote add ChocolateLover git@github.com:ChocolateLover/truffle-artifactor.git
@@ -161,5 +162,17 @@ If you need to switch between branches, you can use the `meta pkgs` plugin
 
     $ meta pkgs checkout truffle:develop truffle:ChocolateLover/sweet-feature --greedy
 
-This will checkout `sweet-feature` from @ChocolateLover's fork for all projects,
+This will checkout `sweet-feature` from **@ChocolateLover**'s fork for all projects,
 falling back to `develop`.
+
+
+Additional Notes
+----------------
+
+Join the chat in our [Gitter channel](https://gitter.im/ConsenSys/truffle)!
+
+If anything about this process is unclear, or for helpful feedback of any kind,
+we'd love to hear from you!
+
+**Thanks again for all your support, encouragement, and effort! Truffle would not
+be possible without contributors like you.**
