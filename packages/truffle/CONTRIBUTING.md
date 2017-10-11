@@ -4,7 +4,7 @@ Contributing to Truffle
 _Thanks for taking the time to help out and improve Truffle! :tada:_
 
 The following is a set of guidelines for Truffle contributions and may change
-over time. :construction: Feel free to suggest improvements to this document in a pull request!
+over time. Feel free to suggest improvements to this document in a pull request!
 
 Contents
 --------
@@ -35,12 +35,12 @@ in case others have run into the problem or know how to help.
 
 To report a problem or to suggest a new feature, [open a GitHub Issue](https://github.com/trufflesuite/truffle/issues/new).
 This will help the Truffle maintainers become aware of the problem and prioritize
-a fix. :clipboard:
+a fix.
 
 For code contributions, for either new features or bug fixes, see [Development](#development).
 
 If you're looking to make a substantial change, you may want to reach out first
-to give us a heads up. :bulb:
+to give us a heads up.
 
 
 Development
@@ -105,7 +105,7 @@ your fork(s) and submit a pull request upstream to `trufflesuite`'s fork(s).
 See GitHub documentation about [Collaborating with issues and pull requests](https://help.github.com/categories/collaborating-with-issues-and-pull-requests/)
 for more information.
 
-> **Note:** _:exclamation: Truffle development uses a long-lived `develop` branch for new (non-hotfix)
+> :exclamation: **Note:** _Truffle development uses a long-lived `develop` branch for new (non-hotfix)
 > development. Pull Requests should be opened against `develop` in all
 > repositories. See [Branching from Develop](#branching-from-develop)._
 
