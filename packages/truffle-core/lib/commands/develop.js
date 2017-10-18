@@ -67,7 +67,7 @@ var command = {
         config.logger.log(`Truffle Develop started at ${url}`);
         config.logger.log();
       } else {
-        config.logger.log(`Connected to exiting Truffle Develop session at ${url}`);
+        config.logger.log(`Connected to existing Truffle Develop session at ${url}`);
         config.logger.log();
       }
 
