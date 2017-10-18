@@ -16,6 +16,7 @@ var SolidityUtils = require("truffle-solidity-utils");
 var Migrate = require("truffle-migrate");
 var Profiler = require("truffle-compile/profiler.js");
 var async = require("async");
+var originalrequire = require("original-require");
 
 chai.use(require("./assertions"));
 
@@ -74,7 +75,7 @@ var Test = {
       // There's an idiosyncracy in Mocha where the same file can't be run twice
       // unless we delete the `require` cache.
       // https://github.com/mochajs/mocha/issues/995
-      delete require.cache[file];
+      delete originalrequire.cache[file];
 
       mocha.addFile(file);
     });
