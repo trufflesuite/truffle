@@ -103,7 +103,7 @@ var command = {
             host: "localhost",
             port: 7545,
             network_id: 4447,
-            seed: "yum chocolate",
+            mnemonic: "candy maple velvet cake sugar cream honey rich smooth crumble sweet treat",
             gasLimit: config.gas
           };
 
