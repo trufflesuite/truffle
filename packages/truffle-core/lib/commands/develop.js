@@ -45,6 +45,7 @@ var command = {
   run: function (options, done) {
     var Config = require("truffle-config");
     var Develop = require("../develop");
+    var mnemonic = "candy maple velvet cake sugar cream honey rich smooth crumble sweet treat";
 
     var config = Config.detect(options);
 
@@ -56,7 +57,7 @@ var command = {
       host: "localhost",
       port: 9545,
       network_id: 4447,
-      mnemonic: "candy maple velvet cake sugar cream honey rich smooth crumble sweet treat",
+      mnemonic: mnemonic,
       gasLimit: config.gas
     };
 
@@ -65,9 +66,11 @@ var command = {
 
       if (started) {
         config.logger.log(`Truffle Develop started at ${url}`);
+        config.logger.log(`Mnemonic: ${mnemonic}`);
         config.logger.log();
       } else {
         config.logger.log(`Connected to existing Truffle Develop session at ${url}`);
+        config.logger.log(`Mnemonic: ${mnemonic}`);
         config.logger.log();
       }
 
