@@ -18,6 +18,7 @@ var CompileError = require("./compileerror");
 var expect = require("truffle-expect");
 var find_contracts = require("truffle-contract-sources");
 var Config = require("truffle-config");
+var debug = require("debug")("compile");
 
 // Most basic of the compile commands. Takes a hash of sources, where
 // the keys are file or module paths and the values are the bodies of
@@ -61,7 +62,7 @@ var compile = function(sources, options, callback) {
 
     // Save the result
     operatingSystemIndependentSources[replacement] = sources[source];
-  
+
     // Map the replacement back to the original source path.
     originalPathMappings[replacement] = source;
   });
@@ -149,7 +150,11 @@ var compile = function(sources, options, callback) {
         abi: contract.abi,
         bytecode: "0x" + contract.evm.bytecode.object,
         deployedBytecode: "0x" + contract.evm.deployedBytecode.object,
-        unlinked_binary: "0x" + contract.evm.bytecode.object // deprecated
+        unlinked_binary: "0x" + contract.evm.bytecode.object, // deprecated
+        compiler: {
+          "name": "solc",
+          "version": solc.version()
+        }
       }
 
       // Go through the link references and replace them with older-style
