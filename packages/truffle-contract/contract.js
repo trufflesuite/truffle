@@ -877,6 +877,14 @@ var contract = (function(module) {
         this._json.ast = val;
       }
     },
+    compiler: {
+      get: function() {
+        return this._json.compiler;
+      },
+      set: function(val) {
+        this._json.compiler = val;
+      }
+    },
     // Deprecated
     schema_version: function() {
       return this.schemaVersion;
