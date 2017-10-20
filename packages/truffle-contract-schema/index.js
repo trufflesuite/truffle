@@ -77,6 +77,7 @@ var properties = {
   "source": {},
   "sourcePath": {},
   "ast": {},
+  "compiler": {},
   "networks": {
     "transform": function(value) {
       if (value === undefined) {

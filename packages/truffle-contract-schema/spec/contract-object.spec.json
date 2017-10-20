@@ -48,6 +48,13 @@
     "source": { "$ref": "#/definitions/Source" },
     "sourcePath": { "$ref": "#/definitions/SourcePath" },
     "ast": { "$ref": "#/definitions/AST" },
+    "compiler": {
+      "type": "object",
+      "properties": {
+        "name": {"type": "string"},
+        "version": {"type": "string"}
+      }
+    },
     "networks": {
       "patternProperties": {
         "^[a-zA-Z0-9]+$": { "$ref": "network-object.spec.json#" }
