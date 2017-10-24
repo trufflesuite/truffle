@@ -28,7 +28,6 @@ var command = {
     var url = "https://github.com/truffle-box/bare-box.git";
     options._ = [url];
 
-    config.logger.log("Unboxing bare Truffle Box:" + OS.EOL);
     UnboxCommand.run(options, done);
   }
 }
