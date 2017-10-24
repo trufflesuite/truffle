@@ -1,14 +1,5 @@
 var Profiler = require("./profiler");
 var OS = require("os");
-var solc = require("solc");
-
-// Clean up after solc.
-var listeners = process.listeners("uncaughtException");
-var solc_listener = listeners[listeners.length - 1];
-
-if (solc_listener) {
-  process.removeListener("uncaughtException", solc_listener);
-}
 
 var path = require("path");
 var fs = require("fs");
@@ -44,6 +35,17 @@ var compile = function(sources, options, callback) {
     "contracts_directory",
     "solc"
   ]);
+
+  // Load solc module only when compilation is actually required.
+  var solc = require("solc");
+  // Clean up after solc.
+  var listeners = process.listeners("uncaughtException");
+  var solc_listener = listeners[listeners.length - 1];
+
+  if (solc_listener) {
+    process.removeListener("uncaughtException", solc_listener);
+  }
+
 
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
