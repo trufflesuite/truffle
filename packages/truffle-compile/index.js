@@ -9,6 +9,7 @@ var CompileError = require("./compileerror");
 var expect = require("truffle-expect");
 var find_contracts = require("truffle-contract-sources");
 var Config = require("truffle-config");
+var debug = require("debug")("compile");
 
 // Most basic of the compile commands. Takes a hash of sources, where
 // the keys are file or module paths and the values are the bodies of
@@ -31,7 +32,8 @@ var compile = function(sources, options, callback) {
   }
 
   expect.options(options, [
-    "contracts_directory"
+    "contracts_directory",
+    "solc"
   ]);
 
   // Load solc module only when compilation is actually required.
@@ -48,31 +50,30 @@ var compile = function(sources, options, callback) {
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
   var operatingSystemIndependentSources = {};
+  var originalPathMappings = {};
 
   Object.keys(sources).forEach(function(source) {
     // Turn all backslashes into forward slashes
     var replacement = source.replace(/\\/g, "/");
 
     // Turn G:/.../ into /G/.../ for Windows
-    // Make sure not to break package imports.
-    // TODO: Make this a regex instead?
-    if (replacement[0] != "/" && replacement[1] == ":") {
+    if (replacement.length >= 2 && replacement[1] == ":") {
       replacement = "/" + replacement;
       replacement = replacement.replace(":", "");
     }
 
     // Save the result
     operatingSystemIndependentSources[replacement] = sources[source];
+
+    // Map the replacement back to the original source path.
+    originalPathMappings[replacement] = source;
   });
 
   var solcStandardInput = {
     language: "Solidity",
     sources: {},
     settings: {
-      optimizer: {
-        enabled: true,
-        runs: 0 // See https://github.com/ethereum/solidity/issues/2245
-      },
+      optimizer: options.solc.optimizer,
       outputSelection: {
         "*": {
           "*": [
@@ -143,7 +144,7 @@ var compile = function(sources, options, callback) {
 
       var contract_definition = {
         contract_name: contract_name,
-        sourcePath: source_path,
+        sourcePath: originalPathMappings[source_path], // Save original source path, not modified ones
         source: operatingSystemIndependentSources[source_path],
         sourceMap: contract.evm.bytecode.sourceMap,
         deployedSourceMap: contract.evm.deployedBytecode.sourceMap,
@@ -151,7 +152,11 @@ var compile = function(sources, options, callback) {
         abi: contract.abi,
         bytecode: "0x" + contract.evm.bytecode.object,
         deployedBytecode: "0x" + contract.evm.deployedBytecode.object,
-        unlinked_binary: "0x" + contract.evm.bytecode.object // deprecated
+        unlinked_binary: "0x" + contract.evm.bytecode.object, // deprecated
+        compiler: {
+          "name": "solc",
+          "version": solc.version()
+        }
       }
 
       // Go through the link references and replace them with older-style
