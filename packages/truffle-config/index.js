@@ -39,7 +39,7 @@ function Config(truffle_directory, working_directory, network) {
     },
     solc: {
       optimizer: {
-        enabled: true,
+        enabled: false,
         runs: 200
       }
     },
