@@ -86,6 +86,10 @@ var command = {
 
           config.logger.log("")
           config.logger.log(help);
+
+          config.logger.log("");
+          config.logger.log("Thank you for trying out the Truffle Debugger!");
+          config.logger.log("This is a new feature and may have bugs. Please report any issues in our Gitter <https://gitter.im/ConsenSys/truffle>.");
           config.logger.log("");
         }
 
