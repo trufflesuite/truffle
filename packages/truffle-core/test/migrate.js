@@ -30,7 +30,7 @@ describe("migrate", function() {
   });
 
   function createProviderAndSetNetworkConfig(network, callback) {
-    var provider = TestRPC.provider({seed: network});
+    var provider = TestRPC.provider({seed: network, gasLimit: config.gas});
     var web3 = new Web3(provider);
     web3.eth.getAccounts(function(err, accs) {
       if (err) return callback(err);
