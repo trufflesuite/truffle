@@ -43,6 +43,11 @@ var command = {
         return "(" + commandId + ") " + commandReference[commandId];
       };
 
+      config.logger.log("")
+      config.logger.log("Note: This feature's in beta. Please discuss any issues you find in our Gitter channel!");
+      config.logger.log("https://gitter.im/ConsenSys/truffle");
+      config.logger.log("");
+
       config.logger.log("Gathering transaction data...");
       config.logger.log("");
 
@@ -87,9 +92,6 @@ var command = {
           config.logger.log("")
           config.logger.log(help);
 
-          config.logger.log("");
-          config.logger.log("Thank you for trying out the Truffle Debugger!");
-          config.logger.log("This is a new feature and may have bugs. Please report any issues in our Gitter <https://gitter.im/ConsenSys/truffle>.");
           config.logger.log("");
         }
 
