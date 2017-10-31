@@ -3,6 +3,10 @@ var TruffleError = require("truffle-error");
 var expect = require("truffle-expect");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
+var TestRPC = require("ethereumjs-testrpc");
+var spawn = require("child_process").spawn;
+var path = require("path");
+var Develop = require("./develop");
 
 var Environment = {
   // It's important config is a Config object and not a vanilla object
@@ -72,6 +76,57 @@ var Environment = {
       if (err) return callback(err);
       detectFromAddress(callback);
     });
+  },
+
+  // Ensure you call Environment.detect() first.
+  fork: function(config, callback) {
+    expect.options(config, [
+      "from"
+    ]);
+
+    var web3 = new Web3(config.provider);
+
+    web3.eth.getAccounts(function(err, accounts) {
+      if (err) return callback(err);
+
+      var upstreamNetwork = config.network;
+      var upstreamConfig = config.networks[upstreamNetwork];
+      var forkedNetwork = config.network + "-fork";
+
+      config.networks[forkedNetwork] = {
+        network_id: config.network_id,
+        provider: TestRPC.provider({
+          fork: config.provider,
+          unlocked_accounts: accounts
+        }),
+        from: config.from
+      }
+      config.network = forkedNetwork;
+
+      callback();
+    });
+  },
+
+  develop: function(config, testrpcOptions, callback) {
+    var self = this;
+
+    expect.options(config, [
+      "networks",
+    ]);
+
+    var network = config.network || "develop";
+    var url = `http://${testrpcOptions.host}:${testrpcOptions.port}/`;
+
+    config.networks[network] = {
+      network_id: testrpcOptions.network_id,
+      provider: function() {
+        return new Web3.providers.HttpProvider(url);
+      }
+    };
+
+    config.network = network;
+
+    Environment.detect(config, callback);
   }
 };
 

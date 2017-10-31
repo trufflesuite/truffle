@@ -34,4 +34,7 @@ command.run(process.argv.slice(2), options, function(err) {
     }
     process.exit(1);
   }
+
+  // Don't exit if no error; if something is keeping the process open,
+  // like `truffle console`, then let it.
 });

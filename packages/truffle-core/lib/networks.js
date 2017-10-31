@@ -64,7 +64,7 @@ var Networks = {
 
             if (address == null) return;
 
-            networks[network_name][json.contract_name] = address;
+            networks[network_name][json.contractName] = address;
           });
         });
 

@@ -7,17 +7,25 @@ var command = {
     var dir = require("node-dir");
     var temp = require("temp");
     var Config = require("truffle-config");
-    var Resolver = require("truffle-resolver");
     var Artifactor = require("truffle-artifactor");
+    var Develop = require("../develop");
     var Test = require("../test");
     var fs = require("fs");
-    var path = require("path");
-    var mkdirp = require("mkdirp");
     var copy = require("../copy");
     var Environment = require("../environment");
 
     var config = Config.detect(options);
-    //config.network = "test";
+
+    // if "development" exists, default to using that for testing
+    if (!config.network && config.networks.development) {
+      config.network = "development";
+    }
+
+    if (!config.network) {
+      config.network = "test";
+    }
+
+    var ipcDisconnect;
 
     var files = [];
 
@@ -49,6 +57,9 @@ var command = {
           temp.cleanup(function(err) {
             // Ignore cleanup errors.
             done.apply(null, args);
+            if (ipcDisconnect) {
+              ipcDisconnect();
+            }
           });
         };
 
@@ -63,7 +74,7 @@ var command = {
           }), cleanup);
         };
 
-        Environment.detect(config, function(err) {
+        var environmentCallback = function(err) {
           if (err) return done(err);
           // Copy all the built files over to a temporary directory, because we
           // don't want to save any tests artifacts. Only do this if the build directory
@@ -79,7 +90,28 @@ var command = {
               run();
             });
           });
-        });
+        }
+
+        if (config.networks[config.network]) {
+          Environment.detect(config, environmentCallback);
+        } else {
+          var ipcOptions = {
+            network: "test"
+          };
+
+          var testrpcOptions = {
+            host: "localhost",
+            port: 7545,
+            network_id: 4447,
+            mnemonic: "candy maple velvet cake sugar cream honey rich smooth crumble sweet treat",
+            gasLimit: config.gas
+          };
+
+          Develop.connectOrStart(ipcOptions, testrpcOptions, function(started, disconnect) {
+            ipcDisconnect = disconnect;
+            Environment.develop(config, testrpcOptions, environmentCallback);
+          });
+        }
       });
     });
   }

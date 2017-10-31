@@ -4,16 +4,32 @@ var command = {
   builder: {},
   run: function (options, done) {
     var Config = require("truffle-config");
-    var Console = require("../repl");
+    var Console = require("../console");
     var Environment = require("../environment");
+    var Develop = require("./develop");
+    var TruffleError = require("truffle-error");
 
     var config = Config.detect(options);
 
+    if (!config.network && !config.networks.development) {
+      return done(new TruffleError(
+        "No network available. Use `truffle develop` " +
+          "or add network to truffle.js config."
+      ));
+    }
+
     // This require a smell?
     var commands = require("./index")
+    var excluded = [
+      "console",
+      "init",
+      "watch",
+      "serve",
+      "develop"
+    ];
 
     var available_commands = Object.keys(commands).filter(function(name) {
-      return name != "console" && name != "init" && name != "watch" && name != "serve";
+      return excluded.indexOf(name) == -1;
     });
 
     var console_commands = {};
@@ -24,11 +40,10 @@ var command = {
     Environment.detect(config, function(err) {
       if (err) return done(err);
 
-      Console.run(console_commands, config.with({
-        builder: config.build,
-        processors: config.processors, // legacy option for default builder
+      var c = new Console(console_commands, config.with({
         noAliases: true
-      }), done);
+      }));
+      c.start(done);
     });
   }
 }
