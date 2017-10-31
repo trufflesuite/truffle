@@ -14,7 +14,7 @@ function Config(truffle_directory, working_directory, network) {
   var self = this;
 
   var default_tx_values = {
-    gas: 4712388,
+    gas: 6721975,
     gasPrice: 100000000000, // 100 Shannon,
     from: null
   };
@@ -39,7 +39,7 @@ function Config(truffle_directory, working_directory, network) {
     },
     solc: {
       optimizer: {
-        enabled: true,
+        enabled: false,
         runs: 200
       }
     },
