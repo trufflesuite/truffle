@@ -28,7 +28,7 @@ Call.prototype.advance = function(stack) {
 };
 
 Call.prototype.currentInstruction = function() {
-  return this.context.instructions[this.type][this.instructionIndex];
+  return this.context.instructions[this.instructionIndex];
 };
 
 Call.prototype.executeJump = function(stack) {
@@ -49,7 +49,7 @@ Call.prototype.executeJump = function(stack) {
   }
 
   if (programCounter) {
-    var toInstruction = this.context.instructionAtProgramCounter(this.type, programCounter);
+    var toInstruction = this.context.instructionAtProgramCounter(programCounter);
     this.instructionIndex = toInstruction.index;
   } else {
     // This means we didn't jump. Move onto the next instruction.
@@ -65,7 +65,7 @@ Call.prototype.isJump = function(instruction) {
 };
 
 Call.prototype.binary = function() {
-  return this.context.binaries[this.type];
+  return this.context.binary;
 };
 
 module.exports = Call;
