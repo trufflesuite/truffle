@@ -1,6 +1,6 @@
 {
   "name": "truffle-contract",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "A better contract abstraction for Ethereum (formerly EtherPudding)",
   "main": "index.js",
   "scripts": {
