@@ -18,7 +18,7 @@ describe("Cyclic Dependencies", function() {
       if (err) return done(err);
       config = conf;
       config.logger = logger;
-      config.networks.development.provider = TestRPC.provider();
+      config.networks.development.provider = TestRPC.provider({gasLimit: config.gas});
       config.mocha = {
         reporter: new Reporter(logger)
       }
