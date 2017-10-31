@@ -1,6 +1,6 @@
 {
   "name": "truffle-contract",
-  "version": "2.0.5",
+  "version": "3.0.0",
   "description": "A better contract abstraction for Ethereum (formerly EtherPudding)",
   "main": "index.js",
   "scripts": {
@@ -26,13 +26,19 @@
   "dependencies": {
     "ethjs-abi": "0.1.8",
     "truffle-blockchain-utils": "^0.0.3",
-    "truffle-contract-schema": "^0.0.5",
+    "truffle-contract-schema": "^1.0.0",
     "web3": "^0.20.1"
   },
   "devDependencies": {
+    "async": "^2.3.0",
     "browserify": "^14.0.0",
+    "chai": "^3.5.0",
+    "ganache-core": "0.0.1",
     "lodash": "^4.17.4",
     "mocha": "^3.2.0",
+    "require-nocache": "^1.0.0",
+    "solc": "^0.4.8",
+    "temp": "^0.8.3",
     "uglify": "^0.1.5",
     "uglify-js": "^2.7.5"
   }
