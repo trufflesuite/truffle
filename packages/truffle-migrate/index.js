@@ -245,7 +245,7 @@ var Migrate = {
     var Migrations;
 
     try {
-      Migrations = options.resolver.require("./Migrations.sol");
+      Migrations = options.resolver.require("Migrations");
     } catch (e) {
       return callback(new Error("Could not find built Migrations contract: " + e.message));
     }
