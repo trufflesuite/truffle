@@ -148,6 +148,9 @@ var codes = {
   0xf2: ['CALLCODE', 40, 7, 1, true],
   0xf3: ['RETURN', 0, 2, 0, false],
   0xf4: ['DELEGATECALL', 40, 6, 1, true],
+  0xf5: ['CALLBLACKBOX', 7, 1, 40],
+  0xfa: ['STATICCALL', 6, 1, 40],
+  0xfd: ['REVERT', 2, 0, 0],
 
   // '0x70', range - other
   0xff: ['SUICIDE', 0, 1, 0, false]
@@ -155,6 +158,7 @@ var codes = {
 
 module.exports = function (op, full) {
   var code = codes[op] ? codes[op] : ['INVALID', 0]
+
   var opcode = code[0]
 
   if (full) {
