@@ -2,7 +2,6 @@ var path = require("path");
 var fs = require("fs");
 var OS = require("os");
 var prependFile = require('prepend-file');
-var WebpackOnBuildPlugin = require('on-build-webpack');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var CleanWebpackPlugin = require('clean-webpack-plugin');
 var webpack = require('webpack');
@@ -12,7 +11,10 @@ var outputDir = path.join(__dirname, "build");
 var outputFilename = 'cli.bundled.js';
 
 module.exports = {
-  entry: path.join(__dirname, "node_modules", "truffle-core", "cli.js"),
+  entry: {
+    cli: path.join(__dirname, "node_modules", "truffle-core", "cli.js"), 
+    chain: path.join(__dirname, "node_modules", "truffle-core", "chain.js")
+  },
   target: 'node',
   node: {
     // For this option, see here: https://github.com/webpack/webpack/issues/1599
@@ -21,7 +23,7 @@ module.exports = {
   },
   output: {
     path: outputDir,
-    filename: outputFilename
+    filename: '[name].bundled.js'
   },
   module: {
     rules: [
@@ -56,17 +58,13 @@ module.exports = {
   ],
   plugins: [
     new webpack.DefinePlugin({
-      "BUNDLE_VERSION": JSON.stringify(pkg.version)
+      "BUNDLE_VERSION": JSON.stringify(pkg.version),
+      "BUNDLE_CHAIN_FILENAME": JSON.stringify("chain.bundled.js")
     }),
 
-    // Put the shebang back on and make sure it's executable.
-    new WebpackOnBuildPlugin(function(stats) {
-      var outputFile = path.join(outputDir, outputFilename);
-      if (fs.existsSync(outputFile)) {
-        prependFile.sync(outputFile, '#!/usr/bin/env node' + OS.EOL);
-        fs.chmodSync(outputFile, '755');
-      }
-    }),
+    // Put the shebang back on.
+    new webpack.BannerPlugin({banner: '#!/usr/bin/env node\n', raw: true}),
+    
     // `truffle test`
     new CopyWebpackPlugin([
       { from: path.join(__dirname, "node_modules", "truffle-core", "lib", "testing", "Assert.sol") },
