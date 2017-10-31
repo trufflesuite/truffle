@@ -4,9 +4,9 @@
 var path = require("path");
 var async = require("async");
 var fs = require("fs");
-var SolidityParser = require("solidity-parser");
 var Graph = require("graphlib").Graph;
 var isAcyclic = require("graphlib/lib/alg").isAcyclic;
+var Parser = require("./parser");
 var CompileError = require("./compileerror");
 var expect = require("truffle-expect");
 var find_contracts = require("truffle-contract-sources");
@@ -30,43 +30,131 @@ module.exports = {
       }
     }
 
-    getFiles(function(err, files) {
-      async.map(files, fs.stat, function(err, file_stats) {
-        if (err) return callback(err);
+    var sourceFilesArtifacts = {};
+    var sourceFilesArtifactsUpdatedTimes = {};
 
-        var contracts = files.map(function(expected_source_file) {
-          var resolved = null;
-          try {
-            resolved = options.resolver.require(expected_source_file);
-          } catch (e) {
-            // do nothing; warning, this could squelch real errors
-            if (e.message.indexOf("Could not find artifacts for") != 0) throw e;
+    var updatedFiles = [];
+
+    async.series([
+      // Get all the source files and create an object out of them.
+      function(c) {
+        getFiles(function(err, files) {
+          if (err) return c(err);
+
+          // Use an object for O(1) access.
+          files.forEach(function(sourceFile) {
+            sourceFilesArtifacts[sourceFile] = [];
+          });
+
+          c();
+        })
+      },
+      // Get all the artifact files, and read them, parsing them as JSON
+      function(c) {
+        fs.readdir(build_directory, function(err, build_files) {
+          if (err) {
+            // The build directory may not always exist.
+            if (err.message.indexOf("ENOENT: no such file or directory") >= 0) {
+              // Ignore it.
+              build_files = [];
+            } else {
+              return c(err);
+            }
           }
-          return resolved;
+
+          build_files = build_files.filter(function(build_file) {
+            return path.extname(build_file) == ".json";
+          });
+
+          async.map(build_files, function(buildFile, finished) {
+            fs.readFile(path.join(build_directory, buildFile), "utf8", function(err, body) {
+              if (err) return finished(err);
+              finished(null, body);
+            });
+          }, function(err, jsonData) {
+            if (err) return c(err);
+
+            try {
+              for (var i = 0; i < jsonData.length; i++) {
+                var data = JSON.parse(jsonData[i]);
+
+                // In case there are artifacts from other source locations.
+                if (sourceFilesArtifacts[data.sourcePath] == null) {
+                  sourceFilesArtifacts[data.sourcePath] = [];
+                }
+
+                sourceFilesArtifacts[data.sourcePath].push(data);
+              }
+            } catch (e) {
+              return c(e);
+            }
+
+            c();
+          });
+        });
+      },
+      function(c) {
+        // Get the minimum updated time for all of a source file's artifacts
+        // (note: one source file might have multiple artifacts).
+        Object.keys(sourceFilesArtifacts).forEach(function(sourceFile) {
+          var artifacts = sourceFilesArtifacts[sourceFile];
+
+          sourceFilesArtifactsUpdatedTimes[sourceFile] = artifacts.reduce(function(minimum, current) {
+            var updatedAt = new Date(current.updatedAt).getTime();
+
+            if (updatedAt < minimum) {
+              return updatedAt;
+            }
+            return minimum;
+          }, Number.MAX_SAFE_INTEGER);
+
+          // Empty array?
+          if (sourceFilesArtifactsUpdatedTimes[sourceFile] == Number.MAX_SAFE_INTEGER) {
+            sourceFilesArtifactsUpdatedTimes[sourceFile] = 0;
+          }
         });
 
-        var updated = [];
+        c();
+      },
+      // Stat all the source files, getting there updated times, and comparing them to
+      // the artifact updated times.
+      function(c) {
+        var sourceFiles = Object.keys(sourceFilesArtifacts);
 
-        for (var i = 0; i < contracts.length; i++) {
-          var file_stat = file_stats[i];
-          var contract = contracts[i];
+        async.map(sourceFiles, function(sourceFile, finished) {
+          fs.stat(sourceFile, function(err, stat) {
+            if (err) {
+              // Ignore it. This means the source file was removed
+              // but the artifact file possibly exists. Return null
+              // to signfy that we should ignore it.
+              stat = null;
+            }
+            finished(null, stat);
+          });
+        }, function(err, sourceFileStats) {
+          if (err) return callback(err);
 
-          if (contract == null) {
-            updated.push(files[i]);
-            continue;
-          }
+          sourceFiles.forEach(function(sourceFile, index) {
+            var sourceFileStat = sourceFileStats[index];
 
-          var modified_time = (file_stat.mtime || file_stat.ctime).getTime();
+            // Ignore updating artifacts if source file has been removed.
+            if (sourceFileStat == null) {
+              return;
+            }
 
-          var built_time = contract.updated_at || 0;
+            var artifactsUpdatedTime = sourceFilesArtifactsUpdatedTimes[sourceFile] || 0;
+            var sourceFileUpdatedTime = (sourceFileStat.mtime || sourceFileStat.ctime).getTime();
 
-          if (modified_time > built_time) {
-            updated.push(files[i]);
-          }
-        }
+            if (sourceFileUpdatedTime > artifactsUpdatedTime) {
+              updatedFiles.push(sourceFile);
+            }
+          });
 
-        callback(null, updated);
-      });
+          c();
+        });
+      }
+    ], function(err) {
+      callback(err, updatedFiles);
     });
   },
 
@@ -197,7 +285,7 @@ module.exports = {
         var imports;
 
         try {
-          imports = SolidityParser.parse(resolved_body, "imports");
+          imports = Parser.parseImports(resolved_body);
         } catch (e) {
           e.message = "Error parsing " + import_path + ": " + e.message;
           return finished(e);
@@ -253,24 +341,18 @@ module.exports = {
           fs.readFile(file, "utf8", function(err, body) {
             if (err) return reject(err);
 
-            var ast;
+            var output;
 
             try {
-              ast = SolidityParser.parse(body);
+              output = Parser.parse(body);
             } catch (e) {
               e.message = "Error parsing " + file + ": " + e.message;
               return reject(e);
             }
 
-            accept(ast);
+            accept(output.contracts);
           });
-        }).then(function(ast) {
-          var contract_names = ast.body.filter(function(toplevel_item) {
-            return toplevel_item.type == "ContractStatement" || toplevel_item.type == "LibraryStatement";
-          }).map(function(contract_statement) {
-            return contract_statement.name;
-          });
-
+        }).then(function(contract_names) {
           var returnVal = {};
 
           contract_names.forEach(function(contract_name) {

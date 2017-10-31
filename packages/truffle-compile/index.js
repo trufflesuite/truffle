@@ -1,14 +1,5 @@
 var Profiler = require("./profiler");
 var OS = require("os");
-var solc = require("solc");
-
-// Clean up after solc.
-var listeners = process.listeners("uncaughtException");
-var solc_listener = listeners[listeners.length - 1];
-
-if (solc_listener) {
-  process.removeListener("uncaughtException", solc_listener);
-}
 
 var path = require("path");
 var fs = require("fs");
@@ -18,6 +9,7 @@ var CompileError = require("./compileerror");
 var expect = require("truffle-expect");
 var find_contracts = require("truffle-contract-sources");
 var Config = require("truffle-config");
+var debug = require("debug")("compile");
 
 // Most basic of the compile commands. Takes a hash of sources, where
 // the keys are file or module paths and the values are the bodies of
@@ -44,9 +36,21 @@ var compile = function(sources, options, callback) {
     "solc"
   ]);
 
+  // Load solc module only when compilation is actually required.
+  var solc = require("solc");
+  // Clean up after solc.
+  var listeners = process.listeners("uncaughtException");
+  var solc_listener = listeners[listeners.length - 1];
+
+  if (solc_listener) {
+    process.removeListener("uncaughtException", solc_listener);
+  }
+
+
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
   var operatingSystemIndependentSources = {};
+  var originalPathMappings = {};
 
   Object.keys(sources).forEach(function(source) {
     // Turn all backslashes into forward slashes
@@ -60,6 +64,9 @@ var compile = function(sources, options, callback) {
 
     // Save the result
     operatingSystemIndependentSources[replacement] = sources[source];
+
+    // Map the replacement back to the original source path.
+    originalPathMappings[replacement] = source;
   });
 
   var solcStandardInput = {
@@ -137,15 +144,19 @@ var compile = function(sources, options, callback) {
 
       var contract_definition = {
         contract_name: contract_name,
-        sourcePath: source_path,
+        sourcePath: originalPathMappings[source_path], // Save original source path, not modified ones
         source: operatingSystemIndependentSources[source_path],
         sourceMap: contract.evm.bytecode.sourceMap,
-        runtimeSourceMap: contract.evm.deployedBytecode.sourceMap,
+        deployedSourceMap: contract.evm.deployedBytecode.sourceMap,
         ast: standardOutput.sources[source_path].legacyAST,
         abi: contract.abi,
         bytecode: "0x" + contract.evm.bytecode.object,
-        runtimeBytecode: "0x" + contract.evm.deployedBytecode.object,
-        unlinked_binary: "0x" + contract.evm.bytecode.object // deprecated
+        deployedBytecode: "0x" + contract.evm.deployedBytecode.object,
+        unlinked_binary: "0x" + contract.evm.bytecode.object, // deprecated
+        compiler: {
+          "name": "solc",
+          "version": solc.version()
+        }
       }
 
       // Go through the link references and replace them with older-style
@@ -162,14 +173,14 @@ var compile = function(sources, options, callback) {
         });
       });
 
-      // Now for the runtime bytecode
+      // Now for the deployed bytecode
       Object.keys(contract.evm.deployedBytecode.linkReferences).forEach(function(file_name) {
         var fileLinks = contract.evm.deployedBytecode.linkReferences[file_name];
 
         Object.keys(fileLinks).forEach(function(library_name) {
           var linkReferences = fileLinks[library_name] || [];
 
-          contract_definition.runtimeBytecode = replaceLinkReferences(contract_definition.runtimeBytecode, linkReferences, library_name);
+          contract_definition.deployedBytecode = replaceLinkReferences(contract_definition.deployedBytecode, linkReferences, library_name);
         });
       });
 
