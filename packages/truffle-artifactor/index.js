@@ -1,46 +1,57 @@
 var Schema = require("truffle-contract-schema");
+var expect = require("truffle-expect");
 var fs = require("fs-extra");
 var path = require("path");
 var async = require("async");
 var _ = require("lodash");
 
-function Artifactor(contracts_build_directory) {
-  this.contracts_build_directory = contracts_build_directory;
+function Artifactor(destination) {
+  this.destination = destination;
 };
 
-Artifactor.prototype.save = function(options, extra_options) {
+Artifactor.prototype.save = function(object) {
   var self = this;
 
   return new Promise(function(accept, reject) {
-    options = Schema.normalizeOptions(options, extra_options);
+    object = Schema.normalize(object);
 
-    if (options.contract_name == null) {
-      return reject("You must specify a contract name.");
+    if (object.contractName == null) {
+      return reject(new Error("You must specify a contract name."));
     }
 
-    var filename = path.resolve(path.join(self.contracts_build_directory, options.contract_name + ".json"));
+    var output_path = object.contractName;
 
-    fs.readFile(filename, {encoding: "utf8"}, function(err, json) {
+    // Create new path off of destination.
+    output_path = path.join(self.destination, output_path);
+    output_path = path.resolve(output_path);
+
+    // Add json extension.
+    output_path = output_path + ".json";
+
+    fs.readFile(output_path, {encoding: "utf8"}, function(err, json) {
       // No need to handle the error. If the file doesn't exist then we'll start afresh
-      // with a new binary (see generateBinary()).
-      var existing_binary;
+      // with a new object.
+
+      var finalObject = object;
 
       if (!err) {
+        var existingObjDirty;
         try {
-          existing_binary = JSON.parse(json);
+          existingObjDirty = JSON.parse(json);
         } catch (e) {
-          // Do nothing
+          reject(e);
         }
+
+        // normalize existing and merge into final
+        finalObject = Schema.normalize(existingObjDirty);
+        _.merge(finalObject, object);
       }
 
-      var final_binary;
-      try {
-        final_binary = Schema.generateBinary(options, existing_binary);
-      } catch (e) {
-        return reject(e);
-      }
+      // update timestamp
+      finalObject.updatedAt = new Date().toISOString();
 
-      fs.outputFile(filename, JSON.stringify(final_binary, null, 2), "utf8", function(err) {
+      // output object
+      fs.outputFile(output_path, JSON.stringify(finalObject, null, 2), "utf8", function(err) {
         if (err) return reject(err);
         accept();
       });
@@ -48,39 +59,35 @@ Artifactor.prototype.save = function(options, extra_options) {
   });
 };
 
-Artifactor.prototype.saveAll = function(contracts, options) {
+Artifactor.prototype.saveAll = function(objects) {
   var self = this;
-  options = options || {};
 
-  if (Array.isArray(contracts)) {
-    var arr = contracts;
-    contracts = {};
-    arr.forEach(function(contract) {
-      contracts[contract.contract_name] = contract;
-    });
+  if (Array.isArray(objects)) {
+    var array = objects;
+    objects = {};
+
+    array.forEach(function(item) {
+      objects[item.contract_name] = item;
+    })
   }
 
   return new Promise(function(accept, reject) {
-    var destination = self.contracts_build_directory;
-
-    fs.stat(destination, function(err, stat) {
+    fs.stat(self.destination, function(err, stat) {
       if (err) {
-        return reject(new Error("Desination " + destination + " doesn't exist!"));
+        return reject(new Error("Desination " + self.destination + " doesn't exist!"));
       }
-
-      async.each(Object.keys(contracts), function(contract_name, done) {
-        var contract_data = contracts[contract_name];
-        contract_data.contract_name = contract_data.contract_name || contract_name;
-
-        var filename = path.join(destination, contract_name + ".json");
-
-        // Finally save the contract.
-        self.save(contract_data).then(done).catch(done);
-      }, function(err) {
-        if (err) return reject(err);
-        accept();
-      });
+      accept();
     });
+  }).then(function() {
+    var promises = [];
+
+    Object.keys(objects).forEach(function(contractName) {
+      var object = objects[contractName];
+      object.contractName = contractName;
+      promises.push(self.save(object));
+    });
+
+    return Promise.all(promises);
   });
 };
 
