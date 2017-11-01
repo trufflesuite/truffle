@@ -1,7 +1,7 @@
 {
   "name": "truffle-core",
   "namespace": "consensys",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Core code for Truffle command line tool",
   "dependencies": {
     "async": "^1.4.2",
