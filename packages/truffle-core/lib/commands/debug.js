@@ -182,12 +182,18 @@ var command = {
           pointer += "^";
           column += 1;
 
-          var end_column = range.end.column;
+          var end_column;
 
-          if (range.end.line != range.start.line) {
+          if (range.end) {
+            end_column = range.end.column;
+
+            if (range.end.line != range.start.line) {
+              end_column = line.length - 1;
+            }
+          } else {
             end_column = line.length - 1;
           }
-
+          
           for (; column < end_column; column++) {
             pointer += "^";
           }

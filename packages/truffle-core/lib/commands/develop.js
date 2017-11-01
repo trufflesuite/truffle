@@ -51,18 +51,18 @@ var command = {
     // testrpc account info
     // HACK: accounts is hardcoded because it will not change for the mnemonic,
     // and not hardcoding it would require an HTTP request
-    var mnemonic = "candy maple velvet cake sugar cream honey rich smooth crumble sweet treat";
+    var mnemonic = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
     var accounts = [
-      '0x47adc0faa4f6eb42b499187317949ed99e77ee85',
-      '0x4ef9e4721bbf02b84d0e73822ee4e26e95076b9d',
-      '0x4a5a6460d00c4d8c2835a3067f53fb42021d5bb9',
-      '0x4222ec932c5a68b80e71f4ddebb069fa02518b8a',
-      '0x2da061c6cfa5c23828e9d8dfbe295a22e8779712',
-      '0xc1f061d629bbba139dbd07f2eb6a9252a45514c7',
-      '0xf8e160be646d2429c64d46fba8e8588b8483dbaf',
-      '0x74260eb42ffde3c442682c4fb6ceb3e801bbb79a',
-      '0x76393ad6569272385963bc9a135356456bbe3f83',
-      '0xae1708b0af10bf1fbee6b4b4220d9453f6007eeb'
+      '0x627306090abab3a6e1400e9345bc60c78a8bef57',
+      '0xf17f52151ebef6c7334fad080c5704d77216b732',
+      '0xc5fdf4076b8f3a5357c5e395ab970b5b54098fef',
+      '0x821aea9a577a9b44299b9c15c88cf3087f3b5544',
+      '0x0d1d4e623d10f9fba5db95830f7d3839406c6af2',
+      '0x2932b7a2355d6fecc4b5c0b6bd44cc31df247a2e',
+      '0x2191ef87e392377ec08e7c08eb105ef5448eced5',
+      '0x0f4f2ac550a1b4e2280d04c21cea7ebd822934b5',
+      '0x6330a553fc93768f612722bb8c2ec78ac90b3bbc',
+      '0x5aeda56215b167893e80b4fe645ba6d5bab767de'
     ];
 
     var ipcOptions = {
