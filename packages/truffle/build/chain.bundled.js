@@ -136,7 +136,7 @@ try {
 options.host = options.host || "localhost";
 options.port = options.port || 9545;
 options.network_id = options.network_id || 4447;
-options.mnemonic = options.mnemonic || "candy maple velvet cake sugar cream honey rich smooth crumble sweet treat";
+options.mnemonic = options.mnemonic || "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
 options.gasLimit = options.gasLimit || 0x47e7c4;
 
 
