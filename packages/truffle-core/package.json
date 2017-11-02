@@ -12,7 +12,7 @@
     "debug": "^3.1.0",
     "del": "^2.2.0",
     "diff": "1.4.0",
-    "ethereumjs-testrpc": "6.0.0",
+    "ethereumjs-testrpc": "6.0.1",
     "ethpm": "0.0.15",
     "ethpm-registry": "0.0.10",
     "finalhandler": "^0.4.0",
