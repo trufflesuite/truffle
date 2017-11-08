@@ -1,5 +1,6 @@
 var SolidityUtils = require("truffle-solidity-utils");
 var CodeUtils = require("truffle-code-utils");
+var debug = require("debug")("debugger:context");
 
 /**
  * Scope

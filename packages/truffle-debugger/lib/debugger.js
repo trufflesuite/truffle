@@ -7,6 +7,7 @@ var async = require("async");
 var OS = require("os");
 var Context = require("./context");
 var Call = require("./call");
+var debug = require("debug")("debugger:debugger");
 
 /**
  * Debugger class
