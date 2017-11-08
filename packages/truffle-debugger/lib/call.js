@@ -1,3 +1,6 @@
+/**
+ * @constructor
+ */
 function Call(context, type) {
   this.instructionIndex = 0;
   this.context = context;

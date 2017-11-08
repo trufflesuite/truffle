@@ -1,6 +1,10 @@
 var SolidityUtils = require("truffle-solidity-utils");
 var CodeUtils = require("truffle-code-utils");
 
+/**
+ * Scope
+ * @constructor
+ */
 function Context(binary, sourceMap, source, sourcePath, contractName) {
   if (binary == null) {
     throw new Error("Can't create context without binary!");

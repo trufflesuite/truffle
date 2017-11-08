@@ -4,6 +4,7 @@
   "description": "Core functionality for debugging Solidity files built with Truffle",
   "main": "debugger.js",
   "scripts": {
+    "docs": "jsdoc ./lib -d docs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -22,5 +23,8 @@
     "truffle-expect": "0.0.3",
     "truffle-solidity-utils": "^1.1.0",
     "web3": "^0.20.1"
+  },
+  "devDependencies": {
+    "jsdoc": "^3.5.5"
   }
 }

@@ -8,6 +8,10 @@ var OS = require("os");
 var Context = require("./context");
 var Call = require("./call");
 
+/**
+ * Debugger class
+ * @constructor
+ */
 function Debugger(config) {
   this.config = config;
   this.tx_hash;
@@ -26,11 +30,9 @@ function Debugger(config) {
  *
  * Debug a specific transaction that occurred on the blockchain.
  *
- * @param  {[type]}   tx_hash  [description]
- * @param  {Function} callback [description]
- * @return [type]              [description]
+ * @param  {string}   tx_hash  - Transaction hash
+ * @param  {Function} callback - Callback when started
  */
-
 Debugger.prototype.start = function(tx_hash, callback) {
   var self = this;
 
