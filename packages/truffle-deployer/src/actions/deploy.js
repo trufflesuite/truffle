@@ -35,6 +35,7 @@ module.exports = function(contract, args, deployer) {
 
       // Ensure the address is set on the contract.
       contract.address = instance.address;
+      return instance;
     });
   };
 };
