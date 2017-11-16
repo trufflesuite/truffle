@@ -27,7 +27,7 @@
     "web3": "^0.20.1"
   },
   "devDependencies": {
-    "ethereumjs-testrpc": "6.0.2",
+    "ethereumjs-testrpc": "6.0.3",
     "mocha": "^3.3.0"
   }
 }
