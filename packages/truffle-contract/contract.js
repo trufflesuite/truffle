@@ -745,6 +745,23 @@ var contract = (function(module) {
         this.network.address = val;
       }
     },
+    transactionHash: {
+      get: function() {
+        var transactionHash = this.network.transactionId;
+
+        if(transactionHash === null) {
+          throw new Error(`Could not find transaction ID for ${this.contractName}`);
+        }
+
+        return transactionHash;
+      },
+      set: function(val) {
+        if(val === null) {
+          throw new Error(`Could not set \`${val}\` as the transaction ID for ${this.contractName}`);
+        }
+        this.network.transactionId = val;
+      }
+    },
     links: function() {
       if (!this.network_id) {
         throw new Error(this.contractName + " has no network id set, cannot lookup artifact data. Either set the network manually using " + this.contractName + ".setNetwork(), run " + this.contractName + ".detectNetwork(), or use new(), at() or deployed() as a thenable which will detect the network automatically.");
