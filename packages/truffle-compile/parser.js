@@ -9,6 +9,9 @@ if (solc_listener) {
   process.removeListener("uncaughtException", solc_listener);
 }
 
+// Warning issued by a pre-release compiler version, ignored by this component.
+var preReleaseCompilerWarning = "This is a pre-release compiler version, please do not use it in production.";
+
 module.exports = {
   parse: function(body, fileName) {
     // Here, we want a valid AST even if imports don't exist. The way to
@@ -40,8 +43,13 @@ module.exports = {
 
     output = JSON.parse(output);
 
-    if (output.errors) {
-      throw new CompileError(output.errors[0].formattedMessage);
+    // Filter out the "pre-release compiler" warning, if present.
+    var errors = output.errors ? output.errors.filter(function(solidity_error) {
+      return solidity_error.message.indexOf(preReleaseCompilerWarning) < 0;
+    }) : [];
+
+    if (errors.length > 0) {
+      throw new CompileError(errors[0].formattedMessage);
     }
 
     return {
@@ -96,10 +104,16 @@ module.exports = {
 
     output = JSON.parse(output);
 
-    var nonImportErrors = output.errors.filter(function(solidity_error) {
+    // Filter out the "pre-release compiler" warning, if present.
+    var errors = output.errors.filter(function(solidity_error) {
+      return solidity_error.message.indexOf(preReleaseCompilerWarning) < 0;
+    });
+
+    var nonImportErrors = errors.filter(function(solidity_error) {
       // If the import error key is not found, we must not have an import error.
       // This means we have a *different* parsing error which we should show to the user.
       // Note: solc can return multiple parsing errors at once.
+      // We ignore the "pre-release compiler" warning message.
       return solidity_error.formattedMessage.indexOf(importErrorKey) < 0;
     });
 
@@ -110,7 +124,7 @@ module.exports = {
 
     // Now, all errors must be import errors.
     // Filter out our forced import, then get the import paths of the rest.
-    var imports = output.errors.filter(function(solidity_error) {
+    var imports = errors.filter(function(solidity_error) {
       return solidity_error.message.indexOf(failingImportFileName) < 0;
     }).map(function(solidity_error) {
       var matches = solidity_error.formattedMessage.match(/import[^'"]+("|')([^'"]+)("|');/);
