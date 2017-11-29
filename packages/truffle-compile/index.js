@@ -77,7 +77,7 @@ var compile = function(sources, options, callback) {
       outputSelection: {
         "*": {
           "": [
-            "ast"
+            "legacyAST"
           ],
           "*": [
             "abi",
