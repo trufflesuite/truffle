@@ -76,9 +76,11 @@ var compile = function(sources, options, callback) {
       optimizer: options.solc.optimizer,
       outputSelection: {
         "*": {
+          "": [
+            "ast"
+          ],
           "*": [
             "abi",
-            "ast",
             "evm.bytecode.object",
             "evm.bytecode.sourceMap",
             "evm.deployedBytecode.object",
