@@ -4,8 +4,8 @@
   "description": "Core functionality for debugging Solidity files built with Truffle",
   "main": "debugger.js",
   "scripts": {
-    "docs": "jsdoc ./lib -d docs",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "docs": "esdoc",
+    "test": "mocha-webpack --webpack-config webpack.config-test.js"
   },
   "keywords": [
     "ethereum",
@@ -18,14 +18,35 @@
   "dependencies": {
     "async": "^1.5.2",
     "debug": "^3.1.0",
-    "node-dir": "^0.1.16",
+    "node-dir": "^0.1.17",
+    "redux": "^3.7.2",
     "truffle-code-utils": "^1.1.0",
     "truffle-contract": "^3.0.0",
     "truffle-expect": "0.0.3",
-    "truffle-solidity-utils": "^1.1.0",
-    "web3": "^0.20.1"
+    "truffle-solidity-utils": "^1.1.0"
   },
   "devDependencies": {
-    "jsdoc": "^3.5.5"
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-runtime": "^6.26.0",
+    "esdoc": "^1.0.4",
+    "esdoc-standard-plugin": "^1.0.0",
+    "ethereumjs-testrpc": "^6.0.1",
+    "fs-extra": "^4.0.2",
+    "mocha": "^4.0.1",
+    "mocha-webpack": "^1.0.1",
+    "node-nightly": "^1.7.2",
+    "truffle-artifactor": "^3.0.0",
+    "truffle-box": "^1.0.3",
+    "truffle-core": "^4.0.1",
+    "truffle-migrate": "^2.0.0",
+    "truffle-resolver": "^4.0.1",
+    "web3": "^0.20.2",
+    "webpack": "^3.8.1",
+    "webpack-dev-server": "^2.9.4",
+    "webpack-node-externals": "^1.6.0"
   }
 }
