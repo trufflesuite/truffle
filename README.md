@@ -1,4 +1,4 @@
-<img src="https://github.com/ConsenSys/truffle/blob/master/assets/logo.png" width="200">
+<img src="http://truffleframework.com/docs/img/logo.png" width="200">
 
 [![npm](https://img.shields.io/npm/v/truffle.svg)]()
 [![npm](https://img.shields.io/npm/dm/truffle.svg)]()
@@ -24,19 +24,27 @@ Truffle is a development environment, testing framework and asset pipeline for E
 $ npm install -g truffle
 ```
 
+### Quick Usage
+
+For a default set of contracts and tests, run the following within an empty project directory:
+
+```
+$ truffle init
+```
+
+From there, you can run `truffle compile`, `truffle migrate` and `truffle test` to compile your contracts, deploy those contracts to the network, and run their associated unit tests.
+
+Be sure you're connected to an ethereum client before running these commands. If you're new, install [testrpc](https://github.com/ethereumjs/testrpc) to run a local blockchain RPC server. After that, simply run `testrpc` in a new tab.
+
+See [the documentation](http://truffleframework.com/docs/) for more details.
+
 ### Documentation
 
 Please see the [Official Truffle Documentation](http://truffleframework.com/docs/) for guides, tips, and examples.
 
 ### Contributing
 
-There are many ways to contribute!
-
-1. Write issues in the [issues tracker](https://github.com/ConsenSys/truffle/issues). Please include as much information as possible!
-1. Take a look at [our Waffle](https://waffle.io/ConsenSys/truffle) for prioritization. Note that this includes issues for Truffle and related tools.
-1. Contact us in our [gitter chat](https://gitter.im/consensys/truffle)!
-
-A project by Consensys and [@tcoulter](https://github.com/tcoulter), and many contributers.
+This package is a distribution package of the Truffle command line tool. Please see [truffle-core](https://github.com/trufflesuite/truffle-core) to contribute to the main core code.
 
 ### License
 
