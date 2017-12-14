@@ -5,7 +5,7 @@ var contract = require("truffle-contract");
 var fs = require("fs-extra");
 var path = require("path");
 var assert = require("assert");
-var TestRPC = require("ethereumjs-testrpc");
+var TestRPC = require("ganache-cli");
 var Reporter = require("../reporter");
 
 describe("Cyclic Dependencies", function() {
