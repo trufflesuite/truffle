@@ -26,6 +26,6 @@
     "lodash": "^4.17.4",
     "original-require": "^1.0.0",
     "truffle-error": "^0.0.2",
-    "truffle-provider": "^0.0.2"
+    "truffle-provider": "^0.0.4"
   }
 }
