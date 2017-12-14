@@ -15,7 +15,7 @@
   "license": "MIT",
   "devDependencies": {
     "chai": "^3.4.1",
-    "ethereumjs-testrpc": "6.0.1",
+    "ganache-cli": "6.0.3",
     "mocha": "^2.3.4",
     "require-nocache": "^1.0.0",
     "solc": "0.4.8",
