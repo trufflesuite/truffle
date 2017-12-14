@@ -1,4 +1,4 @@
-var TestRPC = require("ethereumjs-testrpc");
+var TestRPC = require("ganache-cli");
 
 var server = null;
 
