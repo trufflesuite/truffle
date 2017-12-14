@@ -96,6 +96,10 @@ in one package are used by the others:
 (For instance, if you make a change to `truffle-migrate`, it will be used by
 `truffle-core`)
 
+**Note for Windows Users**: Default permissions prevent users from making symbolic
+links. You may need to run your shell as an administrator, or change your policy
+settings. See this [Superuser StackExchange answer](https://superuser.com/questions/104845/permission-to-make-symbolic-links-in-windows-7) for more information.
+
 ### Forks, Branches, and Pull Requests
 
 Community contributions to Truffle require that you first fork the
