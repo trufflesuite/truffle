@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var IPC = require("node-ipc").IPC;
-var TestRPC = require("ethereumjs-testrpc");
+var TestRPC = require("ganache-cli");
 var path = require("path");
 var debug = require("debug");
 

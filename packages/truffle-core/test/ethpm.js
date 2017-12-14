@@ -9,7 +9,7 @@ var Package = require("../lib/package.js");
 var Blockchain = require("truffle-blockchain-utils");
 var EthPM = require("ethpm");
 var GithubExamples = require("ethpm/lib/indexes/github-examples");
-var TestRPC = require("ethereumjs-testrpc");
+var TestRPC = require("ganache-cli");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
 
