@@ -1,6 +1,6 @@
 {
   "name": "truffle-require",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Require and execute a Javascript module within a Truffle context",
   "main": "require.js",
   "scripts": {
