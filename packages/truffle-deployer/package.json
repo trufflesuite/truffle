@@ -28,7 +28,7 @@
     "truffle-expect": "^0.0.3"
   },
   "devDependencies": {
-    "ethereumjs-testrpc": "6.0.1",
+    "ganache-cli": "6.0.3",
     "mocha": "^3.2.0",
     "web3": "^0.20.1"
   }
