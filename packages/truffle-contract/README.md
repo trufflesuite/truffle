@@ -227,7 +227,7 @@ instance.setValue(5).then(function(result) {
 
 The result object that gets returned looks like this:
 
-```json
+```javascript
 {
   tx: "0x6cb0bbb6466b342ed7bc4a9816f1da8b92db1ccf197c3f91914fc2c721072ebd",
   receipt: {
