@@ -221,8 +221,40 @@ When we call `setValue()`, this creates a transaction. From Javascript:
 ```javascript
 instance.setValue(5).then(function(result) {
   // result object contains import information about the transaction
+  console.log("Value was set to", result.logs[0].args.val);
 });
 ```
+
+The result object that gets returned looks like this:
+
+```json
+{
+  tx: "0x6cb0bbb6466b342ed7bc4a9816f1da8b92db1ccf197c3f91914fc2c721072ebd",
+  receipt: {
+    // The return value from web3.eth.getTransactionReceipt(hash)
+    // See https://github.com/ethereum/wiki/wiki/JavaScript-API#web3ethgettransactionreceipt
+  },
+  logs: [
+    {
+      address: "0x13274fe19c0178208bcbee397af8167a7be27f6f",
+      args: {
+        val: BigNumber(5),
+      },
+      blockHash: "0x2f0700b5d039c6ea7cdcca4309a175f97826322beb49aca891bf6ea82ce019e6",
+      blockNumber: 40,
+      event: "ValueSet",
+      logIndex: 0,
+      transactionHash: "0x6cb0bbb6466b342ed7bc4a9816f1da8b92db1ccf197c3f91914fc2c721072ebd",
+      transactionIndex: 0,
+      type:"mined",
+    },
+  ],
+}
+```
+
+Note that if the function being executed in the transaction has a return value, you will not get that
+return value inside this result. You must instead use an event (like `ValueSet`) and look up the result
+in the `logs` array.
 
 #### Explicitly making a call instead of a transaction
 
