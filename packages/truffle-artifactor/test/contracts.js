@@ -7,7 +7,7 @@ var path = require("path");
 var solc = require("solc");
 var fs = require("fs");
 var requireNoCache = require("require-nocache")(module);
-var TestRPC = require("ethereumjs-testrpc");
+var TestRPC = require("ganache-cli");
 var Web3 = require("web3");
 
 describe("artifactor + require", function() {
