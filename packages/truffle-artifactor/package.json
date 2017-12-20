@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "async": "^1.5.2",
+    "debug": "^3.1.0",
     "fs-extra": "^1.0.0",
     "lodash": "^4.11.2",
     "truffle-contract": "^3.0.0",
