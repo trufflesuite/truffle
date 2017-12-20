@@ -4,6 +4,7 @@ var fs = require("fs-extra");
 var path = require("path");
 var async = require("async");
 var _ = require("lodash");
+var debug = require("debug")("artifactor");
 
 function Artifactor(destination) {
   this.destination = destination;
@@ -44,7 +45,14 @@ Artifactor.prototype.save = function(object) {
 
         // normalize existing and merge into final
         finalObject = Schema.normalize(existingObjDirty);
-        _.merge(finalObject, object);
+
+        // merge networks
+        var finalNetworks = {};
+        _.merge(finalNetworks, finalObject.networks, object.networks);
+
+        // update existing with new
+        _.assign(finalObject, object);
+        finalObject.networks = finalNetworks;
       }
 
       // update timestamp
