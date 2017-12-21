@@ -1,7 +1,7 @@
 {
   "name": "truffle-core",
   "namespace": "consensys",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "description": "Core code for Truffle command line tool",
   "dependencies": {
     "async": "^1.4.2",
@@ -26,9 +26,9 @@
     "serve-static": "^1.10.0",
     "spawn-args": "^0.1.0",
     "temp": "^0.8.3",
-    "truffle-artifactor": "^3.0.1",
+    "truffle-artifactor": "^3.0.2",
     "truffle-box": "^1.0.3",
-    "truffle-compile": "^3.0.3",
+    "truffle-compile": "^3.0.4",
     "truffle-config": "^1.0.4",
     "truffle-contract": "^3.0.1",
     "truffle-contract-sources": "^0.0.1",
