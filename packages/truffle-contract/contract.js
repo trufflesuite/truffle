@@ -745,15 +745,15 @@ var contract = (function(module) {
         this.network.address = val;
       }
     },
-    transactionHash: {
+    transactionId: {
       get: function() {
-        var transactionHash = this.network.transactionId;
+        var transactionId = this.network.transactionId;
 
-        if(transactionHash === null) {
+        if(transactionId === null) {
           throw new Error(`Could not find transaction ID for ${this.contractName}`);
         }
 
-        return transactionHash;
+        return transactionId;
       },
       set: function(val) {
         if(val === null) {
