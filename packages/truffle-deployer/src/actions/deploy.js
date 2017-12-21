@@ -33,9 +33,9 @@ module.exports = function(contract, args, deployer) {
         deployer.logger.log("Didn't deploy " + contract.contract_name + "; using " + instance.address);
       }
 
-      // Ensure the address and tx-hash are set on the contract.
+      // Ensure the address and tx-hash/Id are set on the contract.
       contract.address = instance.address;
-      contract.transactionHash = instance.transactionHash;
+      contract.transactionId = instance.transactionHash;
     });
   };
 };
