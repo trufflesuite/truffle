@@ -237,6 +237,7 @@ var Test = {
     return new Promise(function(accept, reject) {
       global.web3 = web3;
       global.assert = chai.assert;
+      global.expect = chai.expect;
       global.artifacts = {
         require: function(import_path) {
           return test_resolver.require(import_path);
