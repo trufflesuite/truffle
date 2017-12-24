@@ -15,7 +15,7 @@ function HDWalletProvider(mnemonic, provider_url, address_index=0, num_addresses
   this.wallets = {};
   this.addresses = [];
 
-  for (let i = 0; i < num_addresses; i++){
+  for (let i = address_index; i < address_index + num_addresses; i++){
     var wallet = this.hdwallet.derivePath(this.wallet_hdpath + i).getWallet();
     var addr = '0x' + wallet.getAddress().toString('hex');
     this.addresses.push(addr);
