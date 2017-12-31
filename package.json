@@ -30,6 +30,7 @@
   "bin": {
     "truffle": "./build/cli.bundled.js"
   },
+  "license": "MIT",
   "scripts": {
     "build": "npm run build-cli",
     "build-cli": "webpack --config ./cli.webpack.config.js",
