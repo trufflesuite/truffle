@@ -118,9 +118,9 @@
         "ConvertLib": "0xfb2844d30ba493d0b3d661811b4200f04b5ce969"
       },
       "address": "0x9b1f922a7d25d237883527c3de6b4765a6d25955",
-      "updated_at": 1492723344362
+      "updatedAt": 1492723344362
     }
   },
   "schema_version": "0.0.5",
-  "updated_at": 1492723344362
+  "updatedAt": 1492723344362
 }
