@@ -214,11 +214,11 @@ module.exports = {
 
         include(import_path);
 
-        if (ancestors.length > 0) {
+        if (ancestors && ancestors.length > 0) {
           ancestors.forEach(walk_from);
         }
 
-        if (dependencies.length > 0) {
+        if (dependencies && dependencies.length > 0) {
           dependencies.forEach(walk_down);
         }
       }
