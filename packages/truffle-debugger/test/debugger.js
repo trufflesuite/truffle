@@ -1,6 +1,6 @@
 import assert from "assert";
 
-import TestRPC from "ethereumjs-testrpc";
+import Ganache from "ganache-cli";
 import Web3 from "web3";
 
 import { prepareConfig, gatherContracts } from "./helpers";
@@ -47,7 +47,7 @@ describe("Debugger", function() {
   var web3;
 
   before("Create Provider", async function() {
-    provider = TestRPC.provider({seed: "debugger", gasLimit: 7000000});
+    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
     web3 = new Web3(provider);
   });
 
