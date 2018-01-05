@@ -12,6 +12,7 @@ export default class Session {
   /**
    * @param {function(state: State): StateView} viewer - function to view state
    * @param {State} initialState - initial state
+   * @private
    */
   constructor(view, initialState) {
     this._view = view;

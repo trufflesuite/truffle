@@ -49,6 +49,11 @@ export default class Debugger {
   }
 
 
+  /**
+   * Connects to the instantiated Debugger.
+   *
+   * @return {Session} new session instance
+   */
   connect() {
     const view = new SessionView(this._contexts, this._trace);
     return new Session(view, this.initialState);
