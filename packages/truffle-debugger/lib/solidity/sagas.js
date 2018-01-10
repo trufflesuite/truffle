@@ -5,19 +5,20 @@ import { call, put, take } from "redux-saga/effects";
 import { view } from "../effects";
 
 import { TICK } from "../controller/actions";
-import * as actions from "./actions";
+import evm from "../evm/selectors";
 
-import { nextStep } from "../selectors";
+import * as actions from "./actions";
+import solidity from "./selectors";
 
 export function* functionDepthSaga () {
   while (true) {
     yield take(TICK);
     debug("got TICK");
-    let instruction = yield view(nextStep.solidity.nextInstruction);
+    let instruction = yield view(solidity.nextStep.nextInstruction);
     debug("instruction: %o", instruction);
 
-    if (yield view(nextStep.evm.isJump)) {
-      let jumpDirection = yield view(nextStep.solidity.jumpDirection);
+    if (yield view(evm.nextStep.isJump)) {
+      let jumpDirection = yield view(solidity.nextStep.jumpDirection);
 
 
       yield put(actions.jump(jumpDirection));

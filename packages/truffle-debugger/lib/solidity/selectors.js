@@ -1,6 +1,6 @@
 import { createSelector, createStructuredSelector } from "reselect";
 
-import currentContext from "../selectors/currentContext";
+import currentContext from "../context/selectors";
 import evm from "../evm/selectors";
 
 const functionDepth = (state, props) => state.solidity.functionDepth;

@@ -5,7 +5,10 @@ import { put, call, race, take } from 'redux-saga/effects';
 import { view } from "../effects";
 
 import * as actions from "./actions";
-import { nextStep, currentState } from "../selectors";
+import { currentState } from "../selectors";
+
+import evm from "../evm/selectors";
+import solidity from "../solidity/selectors";
 
 const controlSagas = {
   [actions.STEP_NEXT]: stepNext,
@@ -59,7 +62,7 @@ export function* advance() {
  * instruction. See advance() if you'd like to advance by one instruction.
  */
 export function* stepNext () {
-  const startingRange = yield view(nextStep.solidity.sourceRange);
+  const startingRange = yield view(solidity.nextStep.sourceRange);
   var nextRange;
 
   do {
@@ -67,7 +70,7 @@ export function* stepNext () {
     yield* advance();
 
     // and check the next source range
-    nextRange = yield view(nextStep.solidity.sourceRange);
+    nextRange = yield view(solidity.nextStep.sourceRange);
 
     // if the next step's source range is still the same, keep going
   } while (
@@ -89,20 +92,20 @@ export function* stepNext () {
  * step.
  */
 export function* stepInto () {
-  if (yield view(nextStep.evm.isJump)) {
+  if (yield view(evm.nextStep.isJump)) {
     yield* stepNext();
 
     return;
   }
 
-  if (yield view(nextStep.solidity.isMultiline)) {
+  if (yield view(solidity.nextStep.isMultiline)) {
     yield* stepOver();
 
     return;
   }
 
   const startingDepth = yield view(currentState.solidity.functionDepth);
-  const startingRange = yield view(nextStep.solidity.sourceRange);
+  const startingRange = yield view(solidity.nextStep.sourceRange);
   var currentDepth;
   var nextRange;
 
@@ -110,7 +113,7 @@ export function* stepInto () {
     yield* stepNext();
 
     currentDepth = yield view(currentState.solidity.functionDepth);
-    nextRange = yield view(nextStep.solidity.sourceRange);
+    nextRange = yield view(solidity.nextStep.sourceRange);
 
   } while (
     // the function stack has not increased,
@@ -131,7 +134,7 @@ export function* stepInto () {
  * This will run until the debugger encounters a decrease in function depth.
  */
 export function* stepOut () {
-  if (yield view(nextStep.solidity.isMultiline)) {
+  if (yield view(solidity.nextStep.isMultiline)) {
     yield *stepOver();
 
     return;
@@ -156,7 +159,7 @@ export function* stepOut () {
  */
 export function* stepOver () {
   const startingDepth = yield view(currentState.solidity.functionDepth);
-  const startingRange = yield view(nextStep.solidity.sourceRange);
+  const startingRange = yield view(solidity.nextStep.sourceRange);
   var currentDepth;
   var nextRange;
 
@@ -164,7 +167,7 @@ export function* stepOver () {
     yield* stepNext();
 
     currentDepth = yield view(currentState.solidity.functionDepth);
-    nextRange = yield view(nextStep.solidity.sourceRange);
+    nextRange = yield view(solidity.nextStep.sourceRange);
 
   } while (
     // keep stepping provided:
