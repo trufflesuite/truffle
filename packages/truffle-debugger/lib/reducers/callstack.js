@@ -1,28 +1,19 @@
-import Reducer from "./reducer";
+import * as actions from "../actions/callstack";
 
-export default class CallstackReducer extends Reducer {
-  constructor(...args) {
-    super(...args);
-  }
-
-  reduce(state = [], action) {
-    const isCall = this.view.instruction.isCall(action.instruction);
-    const isCreate = this.view.instruction.isCreate(action.instruction);
-    const isHalting = this.view.instruction.isHalting(action.instruction);
-
-    if (isCall) {
-      const address = this.view.step.callAddress(action.step);
+export default function reduce(state = [], action) {
+  switch(action.type) {
+    case actions.CALL:
+      let address = action.address;
       return state + [ {address} ];
 
-    } else if (isCreate) {
+    case actions.CREATE:
       const binary = step.createBinary();
       return state + [ {binary} ];
 
-    } else if (isHalting) {
+    case actions.RETURN:
       return state.slice(0, -1); // pop
-    } else {
-      return state;
-    }
-  }
 
+    default:
+      return state;
+  };
 }

@@ -1,28 +1,27 @@
-import Reducer from "./reducer";
+// import traceIndex from './traceIndex';
+// import callstack from './callstack';
+import { combineReducers } from "redux";
 
-import TraceIndexReducer from './traceIndex';
-import CallstackReducer from './callstack';
-import FunctionDepthReducer from './functionDepth';
+import callstack from "./callstack";
+import functionDepth from './functionDepth';
+import traceIndex from "./traceIndex";
 
-export default class StateReducer extends Reducer {
-  constructor(...args) {
-    super(...args);
-  }
 
-  reduce(state = {}, action) {
-    const traceIndexReducer = new TraceIndexReducer();
-    const callstackReducer = new CallstackReducer({
-      step: this.view.step,
-      instruction: this.view.instruction
-    });
-    const functionDepthReducer = new FunctionDepthReducer({
-      instruction: this.view.instruction
-    });
+export const reduceState = combineReducers({
+  evm: combineReducers({
+    callstack: callstack,
+    traceIndex: traceIndex,
+  }),
 
-    return {
-      traceIndex: traceIndexReducer.reduce(state.traceIndex, action),
-      callstack: callstackReducer.reduce(state.callstack, action),
-      functionDepth: functionDepthReducer.reduce(state.functionDepth, action)
-    }
+  solidity: combineReducers({
+    functionDepth: functionDepth,
+  }),
+
+});
+
+export default function reduce(session, action) {
+  return {
+    props: session.props,
+    state: reduceState(session.state, action)
   }
 }

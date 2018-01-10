@@ -6,6 +6,8 @@ import Web3 from "web3";
 import { prepareConfig, gatherContracts } from "./helpers";
 import Debugger from "../lib/debugger";
 
+import { currentState } from "../lib/selectors";
+
 let debug = require("debug")("test:debugger");
 
 
@@ -73,17 +75,12 @@ describe("Debugger", function() {
     let bugger = await Debugger.forTx(txHash, {contracts, web3});
     let session = bugger.connect();
 
-    let max = 100;
+    let max = 20;
     let i = 0;
     while (session.state && i < max) {
       i++;
-      let nextAction = session.view.nextAction(session.state);
-      if (nextAction) {
-        debug("instruction: %O", session.view.nextAction(session.state).instruction);
-
-        session.stepNext();
-        debug("state: %O", session.state);
-      }
+      session.stepNext();
+      debug("steps remaining: %o", session.view(currentState.trace.stepsRemaining));
     }
   });
 

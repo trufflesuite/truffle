@@ -1,11 +1,9 @@
-import Reducer from "./reducer";
+import { TOCK } from "../actions/controller";
 
-export default class TraceIndexReducer extends Reducer {
-  constructor(...args) {
-    super(...args);
-  }
-
-  reduce(state = 0, action) {
+export default function reduce(state = 0, action) {
+  if (action.type == TOCK) {
     return state + 1;
+  } else {
+    return state;
   }
 }

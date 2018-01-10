@@ -3,7 +3,6 @@ import expect from "truffle-expect";
 
 import { ContextSet } from "./context";
 import Session from "./session";
-import SessionView from "./views/session";
 import Web3Adapter from "./web3";
 
 const debug = debugModule("debugger:debugger");
@@ -38,6 +37,7 @@ export default class Debugger {
 
     const adapter = new Web3Adapter(options.web3);
     const { trace, address, binary } = await adapter.getTransactionInfo(txHash);
+    debug("trace: %O", trace);
 
     const traceContexts = await adapter.gatherContexts(trace, address);
 
@@ -55,8 +55,7 @@ export default class Debugger {
    * @return {Session} new session instance
    */
   connect() {
-    const view = new SessionView(this._contexts, this._trace);
-    return new Session(view, this.initialState);
+    return new Session(this._contexts, this._trace, this.initialState);
   }
 
   /**
@@ -64,8 +63,10 @@ export default class Debugger {
    */
   get initialState() {
     return {
-      traceIndex: 0,
-      callstack: [this._call]
+      evm: {
+        traceIndex: 0,
+        callstack: [this._call]
+      }
     }
   }
 }

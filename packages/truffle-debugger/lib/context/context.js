@@ -56,6 +56,7 @@ export default class Context {
   }
 
   static getInstructions(binary, source, sourceMap) {
+    // raw bytecode instructions
     var instructions = CodeUtils.parseCode(binary);
 
     var sourceMap = sourceMap;

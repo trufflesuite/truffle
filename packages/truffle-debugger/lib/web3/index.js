@@ -1,7 +1,7 @@
 import debugModule from "debug";
 
 import { Context } from "../context";
-import { callAddress } from "../views/step";
+import { nextStep } from "../selectors";
 
 const debug = debugModule("debugger:web3");
 
@@ -76,7 +76,9 @@ export default class Web3Adapter {
 
     trace.forEach(function(step, index) {
       if (step.op == "CALL" || step.op == "DELEGATECALL") {
-        var address = callAddress(step)
+        let address = step.stack[step.stack.length - 2]
+        address = "0x" + address.substring(24);
+
         addresses[address] = true;
       }
     });
