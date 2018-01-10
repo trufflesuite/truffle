@@ -1,16 +1,14 @@
-// import traceIndex from './traceIndex';
-// import callstack from './callstack';
 import { combineReducers } from "redux";
 
 import callstack from "./callstack";
 import functionDepth from './functionDepth';
-import traceIndex from "./traceIndex";
+import trace from "../trace/reducers";
 
 
 export const reduceState = combineReducers({
   evm: combineReducers({
     callstack: callstack,
-    traceIndex: traceIndex,
+    traceIndex: trace,
   }),
 
   solidity: combineReducers({
