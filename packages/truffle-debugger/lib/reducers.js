@@ -1,9 +1,8 @@
 import { combineReducers } from "redux";
 
-
-import evm from "../evm/reducers";
-import solidity from '../solidity/reducers';
-import trace from "../trace/reducers";
+import evm from "./evm/reducers";
+import solidity from './solidity/reducers';
+import trace from "./trace/reducers";
 
 export const reduceState = combineReducers({
   trace,
