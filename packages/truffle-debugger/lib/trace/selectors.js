@@ -1,9 +1,9 @@
 import { createSelector, createStructuredSelector } from "reselect";
 
-const traceStep = (state, props) => props.trace[state.evm.traceIndex];
+const traceStep = (state, props) => props.trace[state.trace.index];
 
 const stepsRemaining = (state, props) =>
-  props.trace.length - state.evm.traceIndex;
+  props.trace.length - state.trace.index;
 
 let trace = createStructuredSelector({
   step: traceStep,

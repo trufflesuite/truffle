@@ -63,8 +63,10 @@ export default class Debugger {
    */
   get initialState() {
     return {
+      trace: {
+        index: 0
+      },
       evm: {
-        traceIndex: 0,
         callstack: [this._call]
       }
     }

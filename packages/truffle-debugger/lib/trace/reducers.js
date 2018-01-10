@@ -1,9 +1,17 @@
+import { combineReducers } from "redux";
+
 import { TOCK } from "../controller/actions";
 
-export default function reduce(state = 0, action) {
+export function index(state = 0, action) {
   if (action.type == TOCK) {
     return state + 1;
   } else {
     return state;
   }
 }
+
+const trace = combineReducers({
+  index
+});
+
+export default trace;
