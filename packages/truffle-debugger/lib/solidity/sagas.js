@@ -1,15 +1,15 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:sagas:functionDepth");
+const debug = debugModule("debugger:solidity:sagas");
 
-import { put, take } from "redux-saga/effects";
+import { call, put, take } from "redux-saga/effects";
 import { view } from "../effects";
 
 import { TICK } from "../controller/actions";
-import * as actions from "../actions/functionDepth";
+import * as actions from "./actions";
 
 import { nextStep } from "../selectors";
 
-export default function* watchForJumps () {
+export function* functionDepthSaga () {
   while (true) {
     yield take(TICK);
     debug("got TICK");
@@ -23,4 +23,9 @@ export default function* watchForJumps () {
       yield put(actions.jump(jumpDirection));
     }
   }
+}
+
+
+export default function* saga () {
+  yield call(functionDepthSaga);
 }

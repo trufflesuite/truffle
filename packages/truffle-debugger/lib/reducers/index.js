@@ -1,7 +1,8 @@
 import { combineReducers } from "redux";
 
 import callstack from "./callstack";
-import functionDepth from './functionDepth';
+
+import solidity from '../solidity/reducers';
 import trace from "../trace/reducers";
 
 export const reduceState = combineReducers({
@@ -11,9 +12,7 @@ export const reduceState = combineReducers({
     callstack: callstack
   }),
 
-  solidity: combineReducers({
-    functionDepth: functionDepth,
-  }),
+  solidity
 
 });
 

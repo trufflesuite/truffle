@@ -1,6 +1,8 @@
-import * as actions from "../actions/functionDepth";
+import { combineReducers } from "redux";
 
-export default function reduce(state = 1, action) {
+import * as actions from "./actions";
+
+export function functionDepth(state = 1, action) {
   if (action.type === actions.JUMP) {
     const delta = spelunk(action.jumpDirection)
     return state + delta;
@@ -9,7 +11,7 @@ export default function reduce(state = 1, action) {
   }
 }
 
-export function spelunk(jump) {
+function spelunk(jump) {
   if (jump == "i") {
     return 1;
   } else if (jump == "o") {
@@ -19,3 +21,8 @@ export function spelunk(jump) {
   }
 }
 
+const solidity = combineReducers({
+  functionDepth
+});
+
+export default solidity;
