@@ -1,17 +1,10 @@
-import { createSelector, createStructuredSelector } from "reselect";
+import { createStructuredSelector } from "reselect";
 
 import trace from "../trace/selectors";
+import solidity from "../solidity/selectors";
 
 let evm = createStructuredSelector({
 });
-
-const functionDepth = (state, props) => state.solidity.functionDepth;
-
-let solidity = createStructuredSelector({
-  functionDepth
-});
-solidity.functionDepth = functionDepth;
-
 
 let currentState = createStructuredSelector({
   trace,
