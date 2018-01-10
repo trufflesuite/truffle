@@ -10,7 +10,7 @@ import rootSaga from "./sagas";
 import reducer from "./reducers";
 import * as actions from "./controller/actions";
 
-import { currentState } from "./selectors";
+import trace from "./trace/selectors";
 
 /**
  * Debugger Session
@@ -55,7 +55,7 @@ export default class Session {
   }
 
   get finished() {
-    return this.view(currentState.trace.step) === undefined;
+    return this.view(trace.step) === undefined;
   }
 
   dispatch(action) {

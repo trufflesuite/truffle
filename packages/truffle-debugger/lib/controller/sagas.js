@@ -5,7 +5,7 @@ import { put, call, race, take } from 'redux-saga/effects';
 import { view } from "../effects";
 
 import * as actions from "./actions";
-import { currentState } from "../selectors";
+import trace from "../trace/selectors";
 
 import evm from "../evm/selectors";
 import solidity from "../solidity/selectors";
@@ -37,7 +37,7 @@ export default function* watchControls() {
  * Advance the state by one instruction
  */
 export function* advance() {
-  let remaining = yield view(currentState.trace.stepsRemaining);
+  let remaining = yield view(trace.stepsRemaining);
 
   if (remaining > 0) {
     // updates state for current step
@@ -104,7 +104,7 @@ export function* stepInto () {
     return;
   }
 
-  const startingDepth = yield view(currentState.solidity.functionDepth);
+  const startingDepth = yield view(solidity.currentState.functionDepth);
   const startingRange = yield view(solidity.nextStep.sourceRange);
   var currentDepth;
   var nextRange;
@@ -112,7 +112,7 @@ export function* stepInto () {
   do {
     yield* stepNext();
 
-    currentDepth = yield view(currentState.solidity.functionDepth);
+    currentDepth = yield view(solidity.currentState.functionDepth);
     nextRange = yield view(solidity.nextStep.sourceRange);
 
   } while (
@@ -140,13 +140,13 @@ export function* stepOut () {
     return;
   }
 
-  const startingDepth = yield view(currentState.solidity.functionDepth);
+  const startingDepth = yield view(solidity.currentState.functionDepth);
   var currentDepth;
 
   do {
     yield* stepNext();
 
-    currentDepth = yield view(currentState.solidity.functionDepth);
+    currentDepth = yield view(solidity.currentState.functionDepth);
 
   } while(currentDepth <= startingDepth);
 }
@@ -158,7 +158,7 @@ export function* stepOut () {
  * exists on a different line of code within the same function depth.
  */
 export function* stepOver () {
-  const startingDepth = yield view(currentState.solidity.functionDepth);
+  const startingDepth = yield view(solidity.currentState.functionDepth);
   const startingRange = yield view(solidity.nextStep.sourceRange);
   var currentDepth;
   var nextRange;
@@ -166,7 +166,7 @@ export function* stepOver () {
   do {
     yield* stepNext();
 
-    currentDepth = yield view(currentState.solidity.functionDepth);
+    currentDepth = yield view(solidity.currentState.functionDepth);
     nextRange = yield view(solidity.nextStep.sourceRange);
 
   } while (

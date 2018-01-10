@@ -6,7 +6,7 @@ import Web3 from "web3";
 import { prepareConfig, gatherContracts } from "./helpers";
 import Debugger from "../lib/debugger";
 
-import { currentState } from "../lib/selectors";
+import trace from "../lib/trace/selectors";
 
 let debug = require("debug")("test:debugger");
 
@@ -80,7 +80,7 @@ describe("Debugger", function() {
     while (session.state && i < max) {
       i++;
       session.stepNext();
-      debug("steps remaining: %o", session.view(currentState.trace.stepsRemaining));
+      debug("steps remaining: %o", session.view(trace.stepsRemaining));
     }
   });
 
