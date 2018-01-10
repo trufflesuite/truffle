@@ -8,7 +8,7 @@ import createCLILogger from "redux-cli-logger";
 
 import rootSaga from "./sagas";
 import reducer from "./reducers";
-import * as actions from "./actions/controller";
+import * as actions from "./controller/actions";
 
 import { currentState } from "./selectors";
 

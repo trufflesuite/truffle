@@ -1,10 +1,10 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:sagas:controller");
+const debug = debugModule("debugger:controller:sagas");
 
 import { put, call, race, take } from 'redux-saga/effects';
 import { view } from "../effects";
 
-import * as actions from '../actions/controller';
+import * as actions from "./actions";
 import { nextStep, currentState } from "../selectors";
 
 const controlSagas = {

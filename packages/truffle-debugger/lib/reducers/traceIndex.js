@@ -1,4 +1,4 @@
-import { TOCK } from "../actions/controller";
+import { TOCK } from "../controller/actions";
 
 export default function reduce(state = 0, action) {
   if (action.type == TOCK) {

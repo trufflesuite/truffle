@@ -4,7 +4,7 @@ const debug = debugModule("debugger:sagas:functionDepth");
 import { put, take } from "redux-saga/effects";
 import { view } from "../effects";
 
-import { TICK } from "../actions/controller";
+import { TICK } from "../controller/actions";
 import * as actions from "../actions/functionDepth";
 
 import { nextStep } from "../selectors";
