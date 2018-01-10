@@ -1,15 +1,15 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:sagas:callstack");
+const debug = debugModule("debugger:evm:sagas");
 
-import { put, take } from "redux-saga/effects";
+import { call, put, take } from "redux-saga/effects";
 import { view } from "../effects";
 
 import { TICK } from "../controller/actions";
-import * as actions from "../actions/callstack";
+import * as actions from "./actions";
 
 import { nextStep } from "../selectors";
 
-export default function* watchForCalls () {
+export function* callstackSaga () {
   while (true) {
     yield take(TICK);
     debug("got TICK");
@@ -31,4 +31,8 @@ export default function* watchForCalls () {
       yield put(actions.returnCall());
     }
   }
+}
+
+export default function* saga () {
+  yield call(callstackSaga);
 }

@@ -1,6 +1,8 @@
-import * as actions from "../actions/callstack";
+import { combineReducers } from "redux";
 
-export default function reduce(state = [], action) {
+import * as actions from "./actions";
+
+export function callstack(state = [], action) {
   switch(action.type) {
     case actions.CALL:
       let address = action.address;
@@ -17,3 +19,9 @@ export default function reduce(state = [], action) {
       return state;
   };
 }
+
+const evm = combineReducers({
+  callstack
+});
+
+export default evm;

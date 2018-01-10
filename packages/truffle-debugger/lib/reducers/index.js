@@ -1,19 +1,14 @@
 import { combineReducers } from "redux";
 
-import callstack from "./callstack";
 
+import evm from "../evm/reducers";
 import solidity from '../solidity/reducers';
 import trace from "../trace/reducers";
 
 export const reduceState = combineReducers({
   trace,
-
-  evm: combineReducers({
-    callstack: callstack
-  }),
-
+  evm,
   solidity
-
 });
 
 export default function reduce(session, action) {
