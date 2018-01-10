@@ -1,34 +1,34 @@
 import { createSelector, createStructuredSelector } from "reselect";
 
 import currentContext from "./currentContext";
-import { traceStep } from "./currentState";
+import currentState from "./currentState";
 
 const isJump = createSelector(
-  [traceStep],
+  [currentState.trace.step],
 
   (step) => step.op != "JUMPDEST" && step.op.indexOf("JUMP") == 0
 );
 
 const isCall = createSelector(
-  [traceStep],
+  [currentState.trace.step],
 
   (step) => step.op == "CALL" || step.op == "DELEGATECALL"
 );
 
 const isCreate = createSelector(
-  [traceStep],
+  [currentState.trace.step],
 
   (step) => step.op == "CREATE"
 );
 
 const isHalting = createSelector(
-  [traceStep],
+  [currentState.trace.step],
 
   (step) => step.op == "STOP" || step.op == "RETURN"
 );
 
 const callAddress = createSelector(
-  [isCall, traceStep],
+  [isCall, currentState.trace.step],
 
   (matches, step) => {
     if (!matches) return null;
@@ -40,7 +40,7 @@ const callAddress = createSelector(
 );
 
 const createBinary = createSelector(
-  [isCreate, traceStep],
+  [isCreate, currentState.trace.step],
 
   (matches, step) => {
     if (!matches) return null;
@@ -73,7 +73,7 @@ evm.callAddress = callAddress;
 evm.createBinary = createBinary;
 
 const programCounter = createSelector(
-  [traceStep],
+  [currentState.trace.step],
   (step) => step.pc
 );
 
