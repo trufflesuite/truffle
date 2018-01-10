@@ -2,9 +2,14 @@ import { createStructuredSelector } from "reselect";
 
 const functionDepth = (state, props) => state.solidity.functionDepth;
 
-let solidity = createStructuredSelector({
+let currentState = createStructuredSelector({
   functionDepth
 });
-solidity.functionDepth = functionDepth;
+currentState.functionDepth = functionDepth;
+
+let solidity = createStructuredSelector({
+  currentState
+});
+solidity.currentState = currentState;
 
 export default solidity;
