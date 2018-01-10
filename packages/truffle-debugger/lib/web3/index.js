@@ -1,7 +1,6 @@
 import debugModule from "debug";
 
 import { Context } from "../context";
-import { nextStep } from "../selectors";
 
 const debug = debugModule("debugger:web3");
 
