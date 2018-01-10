@@ -1,76 +1,9 @@
 import { createSelector, createStructuredSelector } from "reselect";
 
+import evm from "../evm/selectors";
+
 import currentContext from "./currentContext";
 import currentState from "./currentState";
-
-const isJump = createSelector(
-  [currentState.trace.step],
-
-  (step) => step.op != "JUMPDEST" && step.op.indexOf("JUMP") == 0
-);
-
-const isCall = createSelector(
-  [currentState.trace.step],
-
-  (step) => step.op == "CALL" || step.op == "DELEGATECALL"
-);
-
-const isCreate = createSelector(
-  [currentState.trace.step],
-
-  (step) => step.op == "CREATE"
-);
-
-const isHalting = createSelector(
-  [currentState.trace.step],
-
-  (step) => step.op == "STOP" || step.op == "RETURN"
-);
-
-const callAddress = createSelector(
-  [isCall, currentState.trace.step],
-
-  (matches, step) => {
-    if (!matches) return null;
-
-    let address = step.stack[step.stack.length - 2]
-    address = "0x" + address.substring(24);
-    return address;
-  }
-);
-
-const createBinary = createSelector(
-  [isCreate, currentState.trace.step],
-
-  (matches, step) => {
-    if (!matches) return null;
-
-    const memory = step.memory.join("");
-
-    // Get the code that's going to be created from memory.
-    // Note we multiply by 2 because these offsets are in bytes.
-    const inputOffset = parseInt(step.stack[step.stack.length - 2], 16) * 2;
-    const inputSize = parseInt(step.stack[step.stack.length - 3], 16) * 2;
-
-    return "0x" + memory.substring(inputOffset, inputOffset + inputSize);
-  }
-);
-
-let evm = createStructuredSelector({
-  isJump,
-  isCall,
-  isCreate,
-  isHalting,
-
-  callAddress,
-  createBinary
-});
-evm.isJump = isJump;
-evm.isCall = isCall;
-evm.isCreate = isCreate;
-evm.isHalting = isHalting;
-evm.callAddress = callAddress;
-evm.createBinary = createBinary;
 
 const programCounter = createSelector(
   [currentState.trace.step],
@@ -120,11 +53,10 @@ solidity.isMultiline = isMultiline;
 solidity.jumpDirection = jumpDirection;
 
 let nextStep = createStructuredSelector({
-  evm: evm,
+  evm: evm.nextStep,
   solidity: solidity
 });
-
-nextStep.evm = evm;
+nextStep.evm = evm.nextStep;
 nextStep.solidity = solidity;
 
 export default nextStep;
