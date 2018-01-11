@@ -49,7 +49,7 @@ function formatCommands(commands) {
 
 var command = {
   command: 'unbox',
-  description: 'Downloads a Truffle Box, a pre-built Truffle project',
+  description: 'Download a Truffle Box, a pre-built Truffle project',
   builder: {},
   run: function(options, done) {
     var Config = require("truffle-config");
