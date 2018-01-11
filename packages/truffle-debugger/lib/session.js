@@ -72,6 +72,10 @@ export default class Session {
     this.dispatch(actions.interrupt());
   }
 
+  advance() {
+    this.dispatch(actions.advance());
+  }
+
   stepNext() {
     this.dispatch(actions.stepNext());
   }

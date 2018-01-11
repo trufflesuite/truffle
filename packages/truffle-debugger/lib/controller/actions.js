@@ -6,6 +6,11 @@ export function beginStep(type) {
   };
 }
 
+export const ADVANCE = "ADVANCE";
+export function advance() {
+  return {type: ADVANCE};
+}
+
 export const STEP_NEXT = "STEP_NEXT";
 export function stepNext() {
   return {type: STEP_NEXT};

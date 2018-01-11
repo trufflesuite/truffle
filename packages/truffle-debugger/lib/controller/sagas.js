@@ -12,6 +12,7 @@ import evm from "../evm/selectors";
 import solidity from "../solidity/selectors";
 
 const controlSagas = {
+  [actions.ADVANCE]: advance,
   [actions.STEP_NEXT]: stepNext,
   [actions.STEP_OVER]: stepOver,
   [actions.STEP_INTO]: stepInto,
