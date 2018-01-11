@@ -5,11 +5,11 @@ const traceStep = (state, props) => props.trace[state.trace.index];
 const stepsRemaining = (state, props) =>
   props.trace.length - state.trace.index;
 
-let trace = createStructuredSelector({
+let selector = createStructuredSelector({
   step: traceStep,
   stepsRemaining: stepsRemaining
 });
-trace.step = traceStep;
-trace.stepsRemaining = stepsRemaining;
+selector.step = traceStep;
+selector.stepsRemaining = stepsRemaining;
 
-export default trace;
+export default selector;

@@ -82,9 +82,9 @@ nextStep.isHalting = isHalting;
 nextStep.callAddress = callAddress;
 nextStep.createBinary = createBinary;
 
-let evm = createStructuredSelector({
+let selector = createStructuredSelector({
   nextStep
 });
-evm.nextStep = nextStep;
+selector.nextStep = nextStep;
 
-export default evm;
+export default selector;

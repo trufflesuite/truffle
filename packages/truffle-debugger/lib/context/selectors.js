@@ -8,7 +8,7 @@ export const contextSet = (state, props) => props.contexts
 export const currentCall = (state, props) =>
   state.evm.callstack[state.evm.callstack.length - 1];
 
-const currentContext = createSelector(
+const selector = createSelector(
   [currentCall, contextSet],
 
   ({address, binary}, contexts) => {
@@ -20,4 +20,4 @@ const currentContext = createSelector(
   }
 )
 
-export default currentContext;
+export default selector;

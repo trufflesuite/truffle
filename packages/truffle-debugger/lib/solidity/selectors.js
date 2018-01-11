@@ -53,11 +53,11 @@ nextStep.sourceRange = sourceRange;
 nextStep.isMultiline = isMultiline;
 nextStep.jumpDirection = jumpDirection;
 
-let solidity = createStructuredSelector({
+let selector = createStructuredSelector({
   currentState,
   nextStep
 });
-solidity.currentState = currentState;
-solidity.nextStep = nextStep;
+selector.currentState = currentState;
+selector.nextStep = nextStep;
 
-export default solidity;
+export default selector;
