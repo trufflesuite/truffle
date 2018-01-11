@@ -12,7 +12,6 @@ var TestSource = require("./testing/testsource");
 var SolidityTest = require("./testing/soliditytest");
 var expect = require("truffle-expect");
 var find_contracts = require("truffle-contract-sources");
-var SolidityUtils = require("truffle-solidity-utils");
 var Migrate = require("truffle-migrate");
 var Profiler = require("truffle-compile/profiler.js");
 var async = require("async");
@@ -114,8 +113,6 @@ var Test = {
 
       return self.performInitialDeploy(config, test_resolver);
     }).then(function() {
-      return self.orderTestContractFunctions(sol_tests, testContracts);
-    }).then(function() {
       return self.defineSolidityTests(mocha, testContracts, dependency_paths, runner);
     }).then(function() {
       return self.setJSTestGlobals(web3, accounts, test_resolver, runner);
@@ -192,31 +189,6 @@ var Test = {
         resolver: resolver,
         quiet: true
       }), function(err) {
-        if (err) return reject(err);
-        accept();
-      });
-    });
-  },
-
-  orderTestContractFunctions: function(test_files, contracts) {
-    return new Promise(function(accept, reject) {
-      var file_hash = {};
-
-      test_files.forEach(function(file) {
-        var contract_name = path.basename(file, ".sol");
-        file_hash[contract_name] = file;
-      });
-
-      async.each(contracts, function(contract, finished) {
-        var file = file_hash[contract.contract_name];
-
-        SolidityUtils.ordered_abi(file, contract.abi, contract.contract_name, function(err, ordered) {
-          if (err) return finished(err);
-
-          contract.abi = ordered;
-          finished();
-        });
-      }, function(err) {
         if (err) return reject(err);
         accept();
       });
