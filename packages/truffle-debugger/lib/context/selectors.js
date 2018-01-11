@@ -3,9 +3,9 @@ const debug = debugModule("debugger:selectors:currentContext");
 
 import { createSelector, createStructuredSelector } from "reselect";
 
-export const contextSet = (state, props) => props.contexts
+const contextSet = (state, props) => props.contexts
 
-export const currentCall = (state, props) =>
+const currentCall = (state, props) =>
   state.evm.callstack[state.evm.callstack.length - 1];
 
 const selector = createSelector(
