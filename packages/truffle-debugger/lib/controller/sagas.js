@@ -38,7 +38,7 @@ export default function* watchControls() {
 /**
  * Advance the state by one instruction
  */
-export function* advance() {
+function* advance() {
   // send action to advance trace
   yield put(traceActions.next());
 
@@ -53,7 +53,7 @@ export function* advance() {
  * "Stepping", then, is stepping to the next logical item, not stepping to the next
  * instruction. See advance() if you'd like to advance by one instruction.
  */
-export function* stepNext () {
+function* stepNext () {
   const startingRange = yield view(solidity.nextStep.sourceRange);
   var nextRange;
 
@@ -83,7 +83,7 @@ export function* stepNext () {
  * that exists outside of the range, then stepInto will only execute until that
  * step.
  */
-export function* stepInto () {
+function* stepInto () {
   if (yield view(evm.nextStep.isJump)) {
     yield* stepNext();
 
@@ -125,7 +125,7 @@ export function* stepInto () {
  *
  * This will run until the debugger encounters a decrease in function depth.
  */
-export function* stepOut () {
+function* stepOut () {
   if (yield view(solidity.nextStep.isMultiline)) {
     yield *stepOver();
 
@@ -149,7 +149,7 @@ export function* stepOut () {
  * Step over the current line. This will step to the next instruction that
  * exists on a different line of code within the same function depth.
  */
-export function* stepOver () {
+function* stepOver () {
   const startingDepth = yield view(solidity.currentState.functionDepth);
   const startingRange = yield view(solidity.nextStep.sourceRange);
   var currentDepth;
