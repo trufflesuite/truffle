@@ -1,6 +1,6 @@
 import { combineReducers } from "redux";
 
-import { TOCK } from "../controller/actions";
+import { TOCK } from "./actions";
 
 export function index(state = 0, action) {
   if (action.type == TOCK) {

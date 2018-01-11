@@ -5,8 +5,9 @@ import { put, call, race, take } from 'redux-saga/effects';
 import { view } from "../effects";
 
 import * as actions from "./actions";
-import trace from "../trace/selectors";
+import * as traceActions from "../trace/actions";
 
+import trace from "../trace/selectors";
 import evm from "../evm/selectors";
 import solidity from "../solidity/selectors";
 
@@ -37,21 +38,11 @@ export default function* watchControls() {
  * Advance the state by one instruction
  */
 export function* advance() {
-  let remaining = yield view(trace.stepsRemaining);
+  // send action to advance trace
+  yield put(traceActions.next());
 
-  if (remaining > 0) {
-    // updates state for current step
-    yield put(actions.tick());
-
-    // updates step to next step in trace
-    yield put(actions.tock());
-
-    remaining--; // local update, just for convenience
-  }
-
-  if (remaining == 0) {
-    yield put(actions.endTrace());
-  }
+  // wait for trace to advance
+  yield take(traceActions.WENT_NEXT);
 }
 
 /**

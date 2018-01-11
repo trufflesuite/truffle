@@ -1,18 +1,3 @@
-export const TICK = "TICK";
-export function tick() {
-  return {type: TICK};
-}
-
-export const TOCK = "TOCK";
-export function tock() {
-  return {type: TOCK};
-}
-
-export const END_OF_TRACE = "EOT";
-export function endTrace() {
-  return {type: END_OF_TRACE};
-}
-
 export const BEGIN_STEP = "BEGIN_STEP";
 export function beginStep(type) {
   return {

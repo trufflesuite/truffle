@@ -68,6 +68,10 @@ export default class Session {
     this._store.dispatch(action);
   }
 
+  interrupt() {
+    this.dispatch(actions.interrupt());
+  }
+
   stepNext() {
     this.dispatch(actions.stepNext());
   }

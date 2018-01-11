@@ -4,7 +4,7 @@ const debug = debugModule("debugger:evm:sagas");
 import { call, put, take } from "redux-saga/effects";
 import { view } from "../effects";
 
-import { TICK } from "../controller/actions";
+import { TICK } from "../trace/actions";
 import * as actions from "./actions";
 
 import evm from "./selectors";
