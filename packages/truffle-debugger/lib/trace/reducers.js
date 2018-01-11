@@ -10,8 +10,8 @@ export function index(state = 0, action) {
   }
 }
 
-const trace = combineReducers({
+const reducer = combineReducers({
   index
 });
 
-export default trace;
+export default reducer;

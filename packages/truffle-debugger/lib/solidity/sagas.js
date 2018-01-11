@@ -10,7 +10,7 @@ import evm from "../evm/selectors";
 import * as actions from "./actions";
 import solidity from "./selectors";
 
-export function* functionDepthSaga () {
+function* functionDepthSaga () {
   while (true) {
     yield take(TICK);
     debug("got TICK");

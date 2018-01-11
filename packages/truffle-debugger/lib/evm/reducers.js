@@ -20,8 +20,8 @@ export function callstack(state = [], action) {
   };
 }
 
-const evm = combineReducers({
+const reducer = combineReducers({
   callstack
 });
 
-export default evm;
+export default reducer;

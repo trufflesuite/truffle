@@ -21,8 +21,8 @@ function spelunk(jump) {
   }
 }
 
-const solidity = combineReducers({
+const reducer = combineReducers({
   functionDepth
 });
 
-export default solidity;
+export default reducer;
