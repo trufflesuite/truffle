@@ -1,6 +1,6 @@
 var command = {
   command: 'develop',
-  description: 'Open a console with a local TestRPC',
+  description: 'Open a console with a local development blockchain',
   builder: {
     log: {
       type: "boolean",
