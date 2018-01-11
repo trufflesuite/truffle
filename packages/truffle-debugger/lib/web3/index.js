@@ -1,12 +1,14 @@
 import debugModule from "debug";
 
+import Web3 from "web3";
+
 import { Context } from "../context";
 
 const debug = debugModule("debugger:web3");
 
 export default class Web3Adapter {
-  constructor(web3) {
-    this.web3 = web3;
+  constructor(provider) {
+    this.web3 = new Web3(provider);
   }
 
   /**

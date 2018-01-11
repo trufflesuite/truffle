@@ -24,18 +24,18 @@ export default class Debugger {
    * Instantiates a Debugger for a given transaction hash.
    *
    * @param {String} txHash - transaction hash with leading "0x"
-   * @param {{contracts: Array<Contract>, web3: Web3}} options -
+   * @param {{contracts: Array<Contract>, provider: Web3Provider}} options -
    * @return {Debugger} instance
    */
   static async forTx(txHash, options = {}) {
     expect.options(options, [
       "contracts",
-      "web3"
+      "provider"
     ]);
 
     let contexts = ContextSet.forContracts(...options.contracts);
 
-    const adapter = new Web3Adapter(options.web3);
+    const adapter = new Web3Adapter(options.provider);
     const { trace, address, binary } = await adapter.getTransactionInfo(txHash);
     debug("trace: %O", trace);
 

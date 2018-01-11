@@ -46,7 +46,7 @@ describe("Debugger", function() {
   it("debugs SimpleStorage", async function() {
     this.timeout(30000);
 
-    let {abstractions, artifacts} = await prepareConfig(provider, {
+    let {abstractions, artifacts} = await prepareContracts(provider, {
       "SimpleStorage.sol": __SIMPLE_STORAGE__SOL
     });
 
@@ -57,10 +57,13 @@ describe("Debugger", function() {
 
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {contracts: artifacts, web3});
+    let bugger = await Debugger.forTx(txHash, {
+      contracts: artifacts,
+      provider: provider
+    });
     let session = bugger.connect();
 
-    let max = 1;
+    let max = 100;
     let i = 0;
     while (session.state && i < max) {
       i++;
