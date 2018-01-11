@@ -1,6 +1,6 @@
 var command = {
   command: 'test',
-  description: 'Run Mocha and Solidity tests',
+  description: 'Run JavaScript and Solidity tests',
   builder: {},
   run: function (options, done) {
     var OS = require("os");
