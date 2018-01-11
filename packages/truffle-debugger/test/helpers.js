@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("test:helpers");
+
 import path from "path";
 import fs from "fs-extra";
 import dir from "node-dir";
@@ -11,7 +14,7 @@ import Resolver from "truffle-resolver";
 import expect from "truffle-expect";
 import { Contract } from "../lib/types";
 
-export async function prepareConfig(provider, contracts = {}, migrations = {}) {
+export async function prepareContracts(provider, sources = {}, migrations) {
   let config = await createSandbox();
 
   let accounts = await getAccounts(provider);
@@ -23,11 +26,29 @@ export async function prepareConfig(provider, contracts = {}, migrations = {}) {
   }
   config.network = "debugger";
 
-  await addContracts(config, contracts, migrations);
-  await compile(config);
+  await addContracts(config, sources);
+  let compiledContracts = await compile(config);
+  let contractNames = Object.keys(compiledContracts);
+
+  if (!migrations) {
+    migrations = await defaultMigrations(contractNames);
+  }
+
+  await addMigrations(config, migrations);
   await migrate(config);
 
-  return config;
+  let artifacts = await gatherArtifacts(config);
+
+  let abstractions = {};
+  contractNames.forEach( (name) => {
+    abstractions[name] = config.resolver.require(name);
+  });
+
+  return {
+    abstractions,
+    artifacts,
+    config
+  };
 }
 
 export function getAccounts(provider) {
@@ -59,15 +80,20 @@ export async function createSandbox() {
   return config;
 }
 
-export async function addContracts(config, contracts = {}, migrations = {}) {
+export async function addContracts(config, sources = {}) {
   let promises = [];
-  for (let filename of Object.keys(contracts)) {
-    let source = contracts[filename];
+  for (let filename of Object.keys(sources)) {
+    let source = sources[filename];
     promises.push(
       fs.outputFile(path.join(config.contracts_directory, filename), source)
     );
   }
 
+  return await Promise.all(promises);
+}
+
+export async function addMigrations(config, migrations = {}) {
+  let promises = [];
   for (let filename of Object.keys(migrations)) {
     let source = migrations[filename];
     promises.push(
@@ -76,6 +102,28 @@ export async function addContracts(config, contracts = {}, migrations = {}) {
   }
 
   return await Promise.all(promises);
+}
+
+export async function defaultMigrations(contractNames) {
+  contractNames = contractNames.filter((name) => name != "Migrations");
+
+  let migrations = {};
+
+  contractNames.forEach( (contractName, i) => {
+    let index = i + 2;  // start at 2 cause Migrations migration
+    let filename = `${index}_migrate_${contractName}.js`;
+    let source = `
+      var ${contractName} = artifacts.require("${contractName}");
+
+      module.exports = function(deployer) {
+        deployer.deploy(${contractName});
+      };
+    `;
+
+    migrations[filename] = source
+  });
+
+  return migrations;
 }
 
 export async function compile(config) {
@@ -101,7 +149,7 @@ export async function migrate(config) {
   });
 }
 
-export async function gatherContracts(config) {
+export async function gatherArtifacts(config) {
   expect.options(config, [
     "resolver"
   ]);
@@ -139,5 +187,4 @@ export async function gatherContracts(config) {
       });
     });
   });
-
 }

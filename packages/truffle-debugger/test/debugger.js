@@ -3,7 +3,7 @@ import assert from "assert";
 import Ganache from "ganache-cli";
 import Web3 from "web3";
 
-import { prepareConfig, gatherContracts } from "./helpers";
+import { prepareContracts } from "./helpers";
 import Debugger from "../lib/debugger";
 
 import trace from "../lib/trace/selectors";
@@ -34,17 +34,7 @@ contract SimpleStorage {
 }
 `;
 
-const __1_MIGRATE_SIMPLE_STORAGE___JS = `
-var SimpleStorage = artifacts.require("./SimpleStorage.sol");
-
-module.exports = function(deployer) {
-  deployer.deploy(SimpleStorage);
-};
-`;
-
-
 describe("Debugger", function() {
-  var config;
   var provider;
   var web3;
 
@@ -56,26 +46,21 @@ describe("Debugger", function() {
   it("debugs SimpleStorage", async function() {
     this.timeout(30000);
 
-    let config = await prepareConfig(provider, {
+    let {abstractions, artifacts} = await prepareConfig(provider, {
       "SimpleStorage.sol": __SIMPLE_STORAGE__SOL
-    }, {
-      "1_migrate_simple_storage.js": __1_MIGRATE_SIMPLE_STORAGE___JS
     });
 
-    let contracts = await gatherContracts(config);
-    debug("contracts: %O", contracts);
+    debug("contracts: %O", artifacts);
 
-    let SimpleStorage = config.resolver.require("SimpleStorage");
-
-    let storage = await SimpleStorage.deployed();
+    let storage = await abstractions.SimpleStorage.deployed();
     let receipt = await storage.set(10);
 
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {contracts, web3});
+    let bugger = await Debugger.forTx(txHash, {contracts: artifacts, web3});
     let session = bugger.connect();
 
-    let max = 20;
+    let max = 1;
     let i = 0;
     while (session.state && i < max) {
       i++;
