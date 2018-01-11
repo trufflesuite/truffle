@@ -19,7 +19,7 @@ const controlSagas = {
   [actions.STEP_OUT]: stepOut
 };
 
-export default function* watchControls() {
+export default function* saga() {
   while (true) {
     debug("waiting for control action");
     let action = yield take(Object.keys(controlSagas));

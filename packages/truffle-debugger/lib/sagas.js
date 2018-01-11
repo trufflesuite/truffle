@@ -8,14 +8,14 @@ import traceSaga from "./trace/sagas";
 
 import { END_OF_TRACE } from "./trace/actions";
 
-export function* sessionSaga() {
+function* sessionSaga() {
   yield fork(controllerSaga);
   yield fork(traceSaga);
   yield fork(evmSaga);
   yield fork(soliditySaga);
 }
 
-export default function *rootSaga () {
+export default function *saga () {
   yield race({
     session: call(sessionSaga),
 
