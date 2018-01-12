@@ -126,6 +126,51 @@ describe("Contexts", function () {
       affectedAddresses, inner.address,
       "InnerContract should be an affected address"
     );
+  });
 
+  it("returns view of missing contracts", async function () {
+    let outer = await abstractions.OuterContract.deployed();
+    let inner = await abstractions.InnerContract.deployed();
+
+    // run outer contract method
+    let result = await outer.run();
+    debug("receipt: %O", result.receipt);
+
+    assert.equal(2, result.receipt.logs.length, "There should be two logs");
+
+    let txHash = result.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      contracts: artifacts
+        .filter((artifact) => artifact.contractName != "InnerContract")
+    });
+
+    let session = bugger.connect();
+
+    let affectedInstances = session.view(context.affectedInstances);
+    debug("affectedInstances: %o", affectedInstances);
+
+    let affectedAddresses = Object.keys(affectedInstances);
+
+    // check for affected addresses while at it
+    assert.equal(2, affectedAddresses.length);
+
+    assert.include(
+      affectedAddresses, outer.address,
+      "OuterContract should be an affected address"
+    );
+
+    assert.include(
+      affectedAddresses, inner.address,
+      "InnerContract should be an affected address"
+    );
+
+
+    let missingSources = session.view(context.missingSources);
+    debug("missingSources: %o", missingSources);
+
+    assert.equal(1, missingSources.length);
+    assert.equal(inner.address, missingSources[0]);
   });
 });

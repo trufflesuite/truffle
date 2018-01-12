@@ -26,11 +26,21 @@ const affectedInstances = createSelector(
   (contexts) => contexts.addressedContracts()
 );
 
+const missingSources = createSelector(
+  [affectedInstances],
+
+  (instances) => Object.entries(instances)
+    .filter(([address, instance]) => !instance.source)
+    .map(([address, instance]) => address)
+);
+
 let selector = createStructuredSelector({
   current: currentContext,
-  affectedInstances: affectedInstances
+  affectedInstances: affectedInstances,
+  missingSources: missingSources
 });
 selector.current = currentContext;
 selector.affectedInstances = affectedInstances;
+selector.missingSources = missingSources;
 
 export default selector;
