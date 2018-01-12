@@ -8,7 +8,7 @@ const contextSet = (state, props) => props.contexts
 const currentCall = (state, props) =>
   state.evm.callstack[state.evm.callstack.length - 1];
 
-const selector = createSelector(
+const currentContext = createSelector(
   [currentCall, contextSet],
 
   ({address, binary}, contexts) => {
@@ -19,5 +19,18 @@ const selector = createSelector(
     }
   }
 )
+
+const affectedAddresses = createSelector(
+  [contextSet],
+
+  (contexts) => contexts.addressedContracts()
+);
+
+let selector = createStructuredSelector({
+  current: currentContext,
+  affectedAddresses: affectedAddresses
+});
+selector.current = currentContext;
+selector.affectedAddresses = affectedAddresses;
 
 export default selector;

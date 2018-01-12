@@ -87,7 +87,6 @@ describe("Solidity Debugging", function() {
     artifacts = prepared.artifacts;
   });
 
-
   describe("Function Depth", function() {
     it("remains at 1 in absence of inner function calls", async function() {
       const maxExpected = 1;

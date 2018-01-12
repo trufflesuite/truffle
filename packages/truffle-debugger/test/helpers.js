@@ -38,6 +38,7 @@ export async function prepareContracts(provider, sources = {}, migrations) {
   await migrate(config);
 
   let artifacts = await gatherArtifacts(config);
+  debug("artifacts: %o", artifacts.map((a) => a.contractName));
 
   let abstractions = {};
   contractNames.forEach( (name) => {
@@ -159,6 +160,7 @@ export async function gatherArtifacts(config) {
     dir.files(config.contracts_build_directory, (err, files) => {
       if (err) return reject(err);
 
+      debug("files: %O", files);
       var contracts = files.filter((file_path) => {
         return path.extname(file_path) == ".json";
       }).map((file_path) => {
