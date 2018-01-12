@@ -140,6 +140,7 @@ describe("Contexts", function () {
 
     let txHash = result.tx;
 
+    // omit the artifact for InnerContract
     let bugger = await Debugger.forTx(txHash, {
       provider,
       contracts: artifacts
@@ -166,7 +167,7 @@ describe("Contexts", function () {
       "InnerContract should be an affected address"
     );
 
-
+    // ensure missing sources is correct
     let missingSources = session.view(context.missingSources);
     debug("missingSources: %o", missingSources);
 
