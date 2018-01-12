@@ -20,7 +20,7 @@ const currentContext = createSelector(
   }
 )
 
-const affectedAddresses = createSelector(
+const affectedInstances = createSelector(
   [contextSet],
 
   (contexts) => contexts.addressedContracts()
@@ -28,9 +28,9 @@ const affectedAddresses = createSelector(
 
 let selector = createStructuredSelector({
   current: currentContext,
-  affectedAddresses: affectedAddresses
+  affectedInstances: affectedInstances
 });
 selector.current = currentContext;
-selector.affectedAddresses = affectedAddresses;
+selector.affectedInstances = affectedInstances;
 
 export default selector;

@@ -110,16 +110,20 @@ describe("Contexts", function () {
 
     let session = bugger.connect();
 
-    let affectedAddresses = session.view(context.affectedAddresses);
-    debug("affectedAddresses: %o", affectedAddresses);
+    let affectedInstances = session.view(context.affectedInstances);
+    debug("affectedInstances: %o", affectedInstances);
+
+    let affectedAddresses = Object.keys(affectedInstances);
+
+    assert.equal(2, affectedAddresses.length);
 
     assert.include(
-      Object.keys(affectedAddresses), outer.address,
+      affectedAddresses, outer.address,
       "OuterContract should be an affected address"
     );
 
     assert.include(
-      Object.keys(affectedAddresses), inner.address,
+      affectedAddresses, inner.address,
       "InnerContract should be an affected address"
     );
 
