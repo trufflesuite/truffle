@@ -1,10 +1,11 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:session");
+const reduxDebug = debugModule("debugger:redux");
 
 import { createStore, applyMiddleware } from "redux";
 
 import createSagaMiddleware from "redux-saga";
-import createCLILogger from "redux-cli-logger";
+import createLogger from "redux-cli-logger";
 
 import rootSaga from "./sagas";
 import reducer from "./reducers";
@@ -23,7 +24,9 @@ export default class Session {
    */
   constructor(contexts, trace, initialState) {
     const sagaMiddleware = createSagaMiddleware();
-    const logger = createCLILogger({
+
+    const loggerMiddleware = createLogger({
+      log: reduxDebug,
       stateTransformer: (session) => session.state
     });
 
@@ -36,8 +39,8 @@ export default class Session {
       },
 
       applyMiddleware(
-        logger,
-        sagaMiddleware
+        sagaMiddleware,
+        loggerMiddleware
       )
     );
 
@@ -62,33 +65,35 @@ export default class Session {
     if (this.finished) {
       debug("finished: intercepting action %o", action);
 
-      return;
+      return false;
     }
 
     this._store.dispatch(action);
+
+    return true;
   }
 
   interrupt() {
-    this.dispatch(actions.interrupt());
+    return this.dispatch(actions.interrupt());
   }
 
   advance() {
-    this.dispatch(actions.advance());
+    return this.dispatch(actions.advance());
   }
 
   stepNext() {
-    this.dispatch(actions.stepNext());
+    return this.dispatch(actions.stepNext());
   }
 
   stepOver() {
-    this.dispatch(actions.stepOver());
+    return this.dispatch(actions.stepOver());
   }
 
   stepInto() {
-    this.dispatch(actions.stepInto());
+    return this.dispatch(actions.stepInto());
   }
 
   stepOut() {
-    this.dispatch(actions.stepOut());
+    return this.dispatch(actions.stepOut());
   }
 }

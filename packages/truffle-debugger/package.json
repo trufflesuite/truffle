@@ -20,7 +20,7 @@
     "debug": "^3.1.0",
     "node-dir": "^0.1.17",
     "redux": "^3.7.2",
-    "redux-cli-logger": "^2.0.0",
+    "redux-cli-logger": "git://github.com/gnidan/redux-cli-logger.git",
     "redux-saga": "^0.16.0",
     "reselect": "^3.0.1",
     "truffle-code-utils": "^1.1.0",
