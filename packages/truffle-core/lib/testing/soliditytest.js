@@ -7,6 +7,7 @@ var artifactor = require("truffle-artifactor");
 var contract = require("truffle-contract");
 var series = require("async").series;
 var path = require("path");
+var SolidityCoder = require("web3/lib/solidity/coder.js");
 
 var SolidityTest = {
   define: function(abstraction, dependency_paths, runner, mocha) {
@@ -28,8 +29,33 @@ var SolidityTest = {
       runner.startTest(this, done);
     });
 
+    // Function that decodes raw logs from unlinked third party assertion
+    // libraries and returns usable TestEvent logs
+    function decodeTestEvents(result) {
+      if (result.logs.length) return result.logs;
+
+      var logs = [];
+      var signature = web3.sha3('TestEvent(bool,string)');
+
+      result.receipt.logs.forEach(function(log) {
+        if (log.topics.length === 2 && log.topics[0] === signature){
+          var decoded = {
+            event: 'TestEvent',
+            args: {
+              result: SolidityCoder.decodeParams(['bool'], log.topics[1].replace("0x", ""))[0],
+              message: SolidityCoder.decodeParams(['string'], log.data.replace("0x", ""))[0]
+            }
+          };
+          logs.push(decoded);
+        }
+      });
+      return logs;
+    };
+
     // Function that checks transaction logs to see if a test failed.
     function processResult(result) {
+      result.logs = decodeTestEvents(result);
+
       result.logs.forEach(function(log) {
         if (log.event == "TestEvent" && log.args.result == false) {
           throw new Error(log.args.message);
