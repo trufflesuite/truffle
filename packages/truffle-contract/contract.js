@@ -365,6 +365,15 @@ var contract = (function(module) {
             tx_params = args.pop();
           }
 
+          // Validate constructor args
+          var constructor = self.abi.filter(function(item){
+            return item.type === 'constructor';
+          });
+
+          if (constructor.length && constructor[0].inputs.length !== args.length){
+            throw new Error(self.contractName + " contract constructor expected " + constructor[0].inputs.length + " arguments, received " + args.length);
+          }
+
           tx_params = Utils.merge(self.class_defaults, tx_params);
 
           if (tx_params.data == null) {
