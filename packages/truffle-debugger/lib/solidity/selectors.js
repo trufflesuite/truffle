@@ -1,6 +1,6 @@
 import { createSelector, createStructuredSelector } from "reselect";
 
-import currentContext from "../context/selectors";
+import context from "../context/selectors";
 import evm from "../evm/selectors";
 
 const functionDepth = (state, props) => state.solidity.functionDepth;
@@ -11,7 +11,7 @@ let currentState = createStructuredSelector({
 currentState.functionDepth = functionDepth;
 
 const nextInstruction = createSelector(
-  [currentContext, evm.nextStep.programCounter],
+  [context.current, evm.nextStep.programCounter],
 
   (context, pc) => context.instructionAtProgramCounter(pc)
 );
