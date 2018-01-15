@@ -158,7 +158,7 @@ var contract = (function(module) {
                 return;
               }
 
-              var timeout = C.synchronization_timeout || 240000;
+              var timeout = (C.synchronization_timeout === 0) ? 0 : 240000;
               var start = new Date().getTime();
 
               var make_attempt = function() {
