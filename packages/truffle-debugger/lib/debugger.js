@@ -5,6 +5,11 @@ import { ContextSet } from "./context";
 import Session from "./session";
 import Web3Adapter from "./web3";
 
+import traceSelector from "./trace/selectors";
+import evmSelector from "./evm/selectors";
+import soliditySelector from "./solidity/selectors";
+import contextSelector from "./context/selectors";
+
 const debug = debugModule("debugger:debugger");
 
 export default class Debugger {
@@ -70,5 +75,14 @@ export default class Debugger {
         callstack: [this._call]
       }
     }
+  }
+
+  static get selectors() {
+    return {
+      trace: traceSelector,
+      evm: evmSelector,
+      solidity: soliditySelector,
+      context: contextSelector
+    };
   }
 }

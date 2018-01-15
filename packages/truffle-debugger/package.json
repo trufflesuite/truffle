@@ -2,9 +2,10 @@
   "name": "truffle-debugger",
   "version": "1.1.0",
   "description": "Core functionality for debugging Solidity files built with Truffle",
-  "main": "debugger.js",
+  "main": "dist/debugger.js",
   "scripts": {
     "docs": "esdoc",
+    "build": "webpack",
     "test": "mocha-webpack --webpack-config webpack.config-test.js"
   },
   "keywords": [

@@ -1,8 +1,4 @@
-var Debugger = require("./lib/debugger");
-
-if ( typeof window !== "undefined" ) {
-  window.Debugger = Debugger;
-}
+var Debugger = require("./lib/debugger").default;
 
 module.exports = Debugger;
 
