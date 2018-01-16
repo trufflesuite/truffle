@@ -158,7 +158,13 @@ var contract = (function(module) {
                 return;
               }
 
-              var timeout = C.synchronization_timeout || 240000;
+              var timeout;
+              if (C.synchronization_timeout === 0 || C.synchronization_timeout !== undefined) {
+                timeout = C.synchronization_timeout;
+              } else {
+                timeout = 240000;
+              }
+
               var start = new Date().getTime();
 
               var make_attempt = function() {
