@@ -3,7 +3,7 @@ var expect = require("truffle-expect");
 var dir = require("node-dir");
 var path = require("path");
 var async = require("async");
-
+var Debugger = require("truffle-debugger");
 
 var commandReference = {
   "o": "step over",
@@ -17,6 +17,15 @@ var commandReference = {
 };
 
 var Debug = {
+  // callback is function(err, Debugger, contexts)
+  start: function(config, txHash, callback) {
+    var bugger = new Debugger(config);
+
+    bugger.start(txHash, function(err, contexts) {
+      callback(err, bugger, contexts);
+    });
+  },
+
   gatherArtifacts: function(config) {
     return new Promise((accept, reject) => {
       // Gather all available contract artifacts

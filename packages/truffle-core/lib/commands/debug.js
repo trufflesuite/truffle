@@ -8,7 +8,7 @@ var command = {
   },
   run: function (options, done) {
     var Config = require("truffle-config");
-    var Debugger = require("truffle-debugger");
+    var Debug = require("../debug");
     var Environment = require("../environment");
     var ReplManager = require("../repl");
     var OS = require("os");
@@ -25,33 +25,11 @@ var command = {
 
       var tx_hash = config._[0];
 
-      var bugger = new Debugger(config);
       var lastCommand = "n";
 
-      var commandReference = {
-        "o": "step over",
-        "i": "step into",
-        "u": "step out",
-        "n": "step next",
-        ";": "step instruction",
-        "p": "print instruction",
-        "h": "print this help",
-        "q": "quit"
-      }
+      config.logger.log(Debug.formatStartMessage());
 
-      function commandName(commandId) {
-        return "(" + commandId + ") " + commandReference[commandId];
-      };
-
-      config.logger.log("")
-      config.logger.log("Note: This feature's in beta. Please discuss any issues you find in our Gitter channel!");
-      config.logger.log("https://gitter.im/ConsenSys/truffle");
-      config.logger.log("");
-
-      config.logger.log("Gathering transaction data...");
-      config.logger.log("");
-
-      bugger.start(tx_hash, function(err, contexts) {
+      Debug.start(config, tx_hash, function(err, bugger, contexts) {
         if (err) return done(err);
 
         function splitLines(str) {
@@ -62,69 +40,12 @@ var command = {
 
         function printAddressesAffected() {
           config.logger.log("Addresses affected:");
-
-          var hasAllSource = true;
-
-          var addresses = Object.keys(contexts).map(function(address) {
-            var context = contexts[address];
-
-            if (context.source == null) {
-              hasAllSource = false;
-            }
-
-            return "  " + address + " - " + context.contractName;
-          });
-
-          config.logger.log(addresses.join(OS.EOL));
-
-          if (!hasAllSource) {
-            config.logger.log("");
-            config.logger.log("Warning: The source code for one or more contracts could not be found.");
-          }
+          config.logger.log(Debug.formatAffectedInstances(contexts));
         }
 
         function printHelp() {
-          var help = "Commands:"
-            + OS.EOL + "(enter) last command entered (" + commandReference[lastCommand] + ")"
-            + OS.EOL + commandName("o") + ", " + commandName("i") + ", " + commandName("u") + ", " + commandName("n")
-            + OS.EOL + commandName(";") + ", " + commandName("p") + ", " + commandName("h") + ", " + commandName("q");
-
-          config.logger.log("")
-          config.logger.log(help);
-
           config.logger.log("");
-        }
-
-        function printLines(lineIndex, totalLines) {
-          var source = bugger.currentSource();
-
-          if (!source) {
-            return;
-          }
-
-          var lines = splitLines(source);
-          var startingLine = Math.max(lineIndex - totalLines + 1, 0);
-
-          // Calculate prefix length
-          var maxLineNumberLength = ((lineIndex + 1) + "").length;
-
-          // Now print the lines
-          for (var i = startingLine; i <= lineIndex; i++) {
-            var lineNumber = i + 1;
-            var line = lineNumber;
-
-            while (line.length < maxLineNumberLength) {
-              line = " " + line;
-            }
-
-            line += ": ";
-            line += lines[i].replace(/\t/g, "  ")
-
-            config.logger.log(line);
-          }
-
-          // Include colon and extra space.
-          return maxLineNumberLength + 2;
+          config.logger.log(Debug.formatHelp());
         }
 
         function printFile() {
@@ -163,70 +84,24 @@ var command = {
 
           config.logger.log("");
 
-          var prefixLength = printLines(range.start.line, 3);
+          config.logger.log(
+            Debug.formatRangeLines(lines, range, {before: 2, after: 0})
+          );
 
-          var line = lines[range.start.line];
-
-          var pointer = "";
-
-          var column = 0;
-
-          for (; column < range.start.column; column++) {
-            if (line[column] == "\t") {
-              pointer += "  ";
-            } else {
-              pointer += " ";
-            }
-          }
-
-          pointer += "^";
-          column += 1;
-
-          var end_column;
-
-          if (range.end) {
-            end_column = range.end.column;
-
-            if (range.end.line != range.start.line) {
-              end_column = line.length - 1;
-            }
-          } else {
-            end_column = line.length - 1;
-          }
-          
-          for (; column < end_column; column++) {
-            pointer += "^";
-          }
-
-          for (var i = 0; i < prefixLength; i++) {
-            pointer = " " + pointer;
-          }
-
-          config.logger.log(pointer);
-          config.logger.log("")
+          config.logger.log("");
         }
 
         function printInstruction() {
           var instruction = bugger.currentInstruction();
           var step = bugger.currentStep();
 
-          var stack = step.stack.map(function(item, index) {
-            var stackItem = "  " + item;
-
-            if (index == step.stack.length - 1) {
-              stackItem += " (top)";
-            }
-
-            return stackItem;
-          });
-
-          if (stack.length == 0) {
-            stack.push("  No data on stack.");
-          }
+          var stack = Debug.formatStack(step.stack);
 
           config.logger.log("");
-          config.logger.log("(" + bugger.traceIndex + ") " + instruction.name + " " + (instruction.pushData || ""));
-          config.logger.log(stack.join(OS.EOL));
+          config.logger.log(
+            Debug.formatInstruction(bugger.traceIndex, instruction)
+          );
+          config.logger.log(stack);
         };
 
         function interpreter(cmd, context, filename, callback) {
