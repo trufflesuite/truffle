@@ -84,14 +84,14 @@ describe("artifactor + require", function() {
   });
 
   it("should set the transaction hash of contract instantiation", function() {
-    return Example.new({gas: 3141592}).then(function(example) {
+    return Example.new(1, {gas: 3141592}).then(function(example) {
       assert(example.transactionHash, "transactionHash should be non-empty");
     });
   });
 
   it("should get and set values via methods and get values via .call", function(done) {
     var example;
-    Example.new({gas: 3141592}).then(function(instance) {
+    Example.new(1, {gas: 3141592}).then(function(instance) {
       example = instance;
       return example.value.call();
     }).then(function(value) {
@@ -137,7 +137,7 @@ describe("artifactor + require", function() {
 
   it("should return transaction hash, logs and receipt when using synchronised transactions", function(done) {
     var example = null;
-    Example.new({gas: 3141592}).then(function(instance) {
+    Example.new(1, {gas: 3141592}).then(function(instance) {
       example = instance;
       return example.triggerEvent();
     }).then(function(result) {
@@ -158,7 +158,7 @@ describe("artifactor + require", function() {
 
   it("should trigger the fallback function when calling sendTransaction()", function() {
     var example = null;
-    return Example.new({gas: 3141592}).then(function(instance) {
+    return Example.new(1, {gas: 3141592}).then(function(instance) {
       example = instance;
       return example.fallbackTriggered();
     }).then(function(triggered) {
@@ -180,7 +180,7 @@ describe("artifactor + require", function() {
 
   it("should trigger the fallback function when calling send() (shorthand notation)", function() {
     var example = null;
-    return Example.new({gas: 3141592}).then(function(instance) {
+    return Example.new(1, {gas: 3141592}).then(function(instance) {
       example = instance;
       return example.fallbackTriggered();
     }).then(function(triggered) {
@@ -221,7 +221,7 @@ describe("artifactor + require", function() {
 
     assert.equal(NewExample.network_id, null);
 
-    NewExample.new({gas: 3141592}).then(function(instance) {
+    NewExample.new(1, {gas: 3141592}).then(function(instance) {
       // We have a network id in this case, with new(), since it was detected,
       // but no further configuration.
       assert.equal(NewExample.network_id, network_id);
