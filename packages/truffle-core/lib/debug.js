@@ -268,11 +268,13 @@ var Debug = {
   },
 
   formatStack: function (stack) {
-    formatted = stack.map(function (item, index) {
+    var formatted = stack.map(function (item, index) {
       item = "  " + item;
       if (index == stack.length - 1) {
         item += " (top)";
       }
+
+      return item;
     });
 
     if (stack.length == 0) {
