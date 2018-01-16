@@ -261,7 +261,7 @@ var Debug = {
 
   formatInstruction: function (traceIndex, instruction) {
     return (
-      "(" + traceIndex + ")" +
+      "(" + traceIndex + ") " +
         instruction.name + " " +
         (instruction.pushData || "")
     );
