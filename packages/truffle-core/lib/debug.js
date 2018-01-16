@@ -152,7 +152,7 @@ var Debug = {
 
     var output = "";
     for (var i = 0; i < line.length; i++) {
-      var pointedAt = (i >= startCol && i <= endCol);
+      var pointedAt = (i >= startCol && i < endCol);
       var isTab = (line[i] == "\t");
 
       var additional;
@@ -218,7 +218,9 @@ var Debug = {
 
     var rangeLines = source
       .filter(function (line, index) {
-        return index >= range.start.line && index <= range.end.line;
+        // TODO map function as written is trying to be fancy, but turns out
+        // the approach looks like garbage. clean this up
+        return index == range.start.line /*>= range.start.line && index <= range.end.line;*/
       })
       .map(function (line, index) {
         var number = range.start.line + index + 1; // zero-index
@@ -231,13 +233,7 @@ var Debug = {
           pointerStart = range.start.column;
         } else {
           // otherwise pointer starts at first non-whitespace
-          pointerStart = line.search(/[\w]/);
-
-          // HACK warning: the line might be all whitespace. in which case be
-          // lazy and just point to the whole line
-          if (pointerStart == -1) {
-            pointerStart = 0;
-          }
+          pointerStart = 0;
         }
 
         if (number - 1 == range.end.line) {
@@ -247,7 +243,7 @@ var Debug = {
         } else {
           // middle line for range - pointer fills line
           // TODO omit trailing whitespace (and/or line comments)
-          pointerEnd = line.length - 1;
+          pointerEnd = line.length;
         }
 
         return [
