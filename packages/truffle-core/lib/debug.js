@@ -181,7 +181,7 @@ var Debug = {
     return prefix + output;
   },
 
-  formatRangeLines: function(source, range, context) {
+  formatRangeLines: function(source, range, contextBefore) {
     var outputLines = [];
 
     // range is {
@@ -190,82 +190,44 @@ var Debug = {
     // }
     //
 
-    if (!context) {
-      context = {
-        before: 2,
-        after: 2
-      };
+    if (contextBefore == undefined) {
+      contextBefore = 2;
     };
 
     var startBeforeIndex = Math.max(
-      range.start.line - context.before, 0
+      range.start.line - contextBefore, 0
     );
 
-    var endAfterIndex = Math.min(
-      range.end.line + context.after, source.length - 1
-    );
-
-    var prefixLength = ((endAfterIndex + 1) + "").length;
+    var prefixLength = ((range.start.line + 1) + "").length;
 
     var beforeLines = source
       .filter(function (line, index) {
         return index >= startBeforeIndex && index < range.start.line
       })
       .map(function (line, index) {
-        var number = startBeforeIndex + index + 1;  // zero-index
+        var number = startBeforeIndex + index + 1;  // 1 to account for 0-index
         return Debug.formatLineNumberPrefix(line, number, prefixLength)
       });
 
-    var afterLines = source
-      .filter(function (line, index) {
-        return index <= endAfterIndex && index > range.end.line
-      })
-      .map(function (line, index) {
-        var number = range.end.line + index + 1;
-        return Debug.formatLineNumberPrefix(line, number, prefixLength)
-      });
+    var line = source[range.start.line];
+    var number = range.start.line + 1; // zero-index
 
-    var rangeLines = source
-      .filter(function (line, index) {
-        // TODO map function as written is trying to be fancy, but turns out
-        // the approach looks like garbage. clean this up
-        return index == range.start.line /*>= range.start.line && index <= range.end.line;*/
-      })
-      .map(function (line, index) {
-        var number = range.start.line + index + 1; // zero-index
+    var pointerStart = range.start.column;
+    var pointerEnd;
 
-        var pointerStart;
-        var pointerEnd;
+    if (range.start.line == range.end.line) {
+      // start and end are same line: pointer ends at column
+      pointerEnd = range.end.column;
+    } else {
+      pointerEnd = line.length;
+    }
 
-        if (number - 1 == range.start.line) {
-          // starting line for range: pointer starts at column
-          pointerStart = range.start.column;
-        } else {
-          // otherwise pointer starts at first non-whitespace
-          pointerStart = 0;
-        }
+    var allLines = beforeLines.concat([
+      Debug.formatLineNumberPrefix(line, number, prefixLength),
+      Debug.formatLinePointer(line, pointerStart, pointerEnd, prefixLength)
+    ]);
 
-        if (number - 1 == range.end.line) {
-          // ending line for range: pointer ends at column
-          pointerEnd = range.end.column;
-
-        } else {
-          // middle line for range - pointer fills line
-          // TODO omit trailing whitespace (and/or line comments)
-          pointerEnd = line.length;
-        }
-
-        return [
-          Debug.formatLineNumberPrefix(line, number, prefixLength),
-          Debug.formatLinePointer(line, pointerStart, pointerEnd, prefixLength)
-        ];
-      })
-      .reduce(function (lines, pair) {
-        // pair is prefixed line and pointer
-        return lines.concat(pair);
-      }, []);
-
-    return beforeLines.concat(rangeLines).concat(afterLines).join(OS.EOL);
+    return allLines.join(OS.EOL);
   },
 
   formatInstruction: function (traceIndex, instruction) {
