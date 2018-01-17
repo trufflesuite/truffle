@@ -3,18 +3,13 @@ const debug = debugModule("debugger:selectors:currentContext");
 
 import { createSelector, createStructuredSelector } from "reselect";
 
+import evm from "../evm/selectors";
+
+
 const contextSet = (state, props) => props.contexts
 
-const callstack = (state, props) => state.evm.callstack;
-
-const currentCall = createSelector(
-  [callstack],
-
-  (stack) => stack.length ? stack[stack.length - 1] : {}
-)
-
 const currentContext = createSelector(
-  [currentCall, contextSet],
+  [evm.current.call, contextSet],
 
   ({address, binary}, contexts) => {
     if (address) {
@@ -40,12 +35,10 @@ const missingSources = createSelector(
 );
 
 let selector = createStructuredSelector({
-  callstack: callstack,
   current: currentContext,
   affectedInstances: affectedInstances,
   missingSources: missingSources
 });
-selector.callstack = callstack;
 selector.current = currentContext;
 selector.affectedInstances = affectedInstances;
 selector.missingSources = missingSources;

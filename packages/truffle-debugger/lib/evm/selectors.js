@@ -2,12 +2,27 @@ import { createSelector, createStructuredSelector } from "reselect";
 
 import trace from "../trace/selectors";
 
+const callstack = (state, props) => state.evm.callstack;
+
+const currentCall = createSelector(
+  [callstack],
+
+  (stack) => stack.length ? stack[stack.length - 1] : {}
+)
+
+let currentState = createStructuredSelector({
+  call: currentCall,
+  stack: callstack
+});
+currentState.call = currentCall;
+currentState.stack = callstack;
+
+
 const programCounter = createSelector(
   [trace.step],
 
   (step) => step.pc
 );
-
 
 const isJump = createSelector(
   [trace.step],
@@ -83,8 +98,10 @@ nextStep.callAddress = callAddress;
 nextStep.createBinary = createBinary;
 
 let selector = createStructuredSelector({
+  current: currentState,
   nextStep
 });
+selector.current = currentState;
 selector.nextStep = nextStep;
 
 export default selector;
