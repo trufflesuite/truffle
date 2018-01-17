@@ -5,8 +5,13 @@ import { createSelector, createStructuredSelector } from "reselect";
 
 const contextSet = (state, props) => props.contexts
 
-const currentCall = (state, props) =>
-  state.evm.callstack[state.evm.callstack.length - 1];
+const callstack = (state, props) => state.evm.callstack;
+
+const currentCall = createSelector(
+  [callstack],
+
+  (stack) => stack.length ? stack[stack.length - 1] : {}
+)
 
 const currentContext = createSelector(
   [currentCall, contextSet],
@@ -35,10 +40,12 @@ const missingSources = createSelector(
 );
 
 let selector = createStructuredSelector({
+  callstack: callstack,
   current: currentContext,
   affectedInstances: affectedInstances,
   missingSources: missingSources
 });
+selector.callstack = callstack;
 selector.current = currentContext;
 selector.affectedInstances = affectedInstances;
 selector.missingSources = missingSources;

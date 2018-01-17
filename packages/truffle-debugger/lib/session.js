@@ -12,6 +12,7 @@ import reducer from "./reducers";
 import * as actions from "./controller/actions";
 
 import trace from "./trace/selectors";
+import context from "./context/selectors";
 
 /**
  * Debugger Session
@@ -59,6 +60,10 @@ export default class Session {
 
   get finished() {
     return this.view(trace.step) === undefined;
+  }
+
+  get failed() {
+    return this.finished && this.view(context.callstack).length
   }
 
   dispatch(action) {
