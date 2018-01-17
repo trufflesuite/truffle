@@ -3,16 +3,15 @@ const debug = debugModule("test:helpers");
 
 import path from "path";
 import fs from "fs-extra";
-import dir from "node-dir";
 import async from "async";
 import Contracts from "truffle-core/lib/contracts";
+import Debug from "truffle-core/lib/debug";
 import Artifactor from "truffle-artifactor";
 import Web3 from "web3";
 import Migrate from "truffle-migrate";
 import Box from "truffle-box";
 import Resolver from "truffle-resolver";
 import expect from "truffle-expect";
-import { Contract } from "../lib/types";
 
 export async function prepareContracts(provider, sources = {}, migrations) {
   let config = await createSandbox();
@@ -151,42 +150,5 @@ export async function migrate(config) {
 }
 
 export async function gatherArtifacts(config) {
-  expect.options(config, [
-    "resolver"
-  ]);
-
-  return new Promise((accept, reject) => {
-    // Gather all available contract artifacts
-    dir.files(config.contracts_build_directory, (err, files) => {
-      if (err) return reject(err);
-
-      debug("files: %O", files);
-      var contracts = files.filter((file_path) => {
-        return path.extname(file_path) == ".json";
-      }).map((file_path) => {
-        return path.basename(file_path, ".json");
-      }).map((contract_name) => {
-        return config.resolver.require(contract_name);
-      });
-
-      async.each(contracts, (abstraction, finished) => {
-        abstraction.detectNetwork().then(() => {
-          finished();
-        }).catch(finished);
-      }, (err) => {
-        if (err) return reject(err);
-        accept(contracts.map( (contract) => {
-          return new Contract({
-            contractName: contract.contractName,
-            source: contract.source,
-            sourceMap: contract.sourceMap,
-            sourcePath: contract.sourcePath,
-            binary: contract.binary,
-            deployedBinary: contract.deployedBinary,
-            deployedSourceMap: contract.deployedSourceMap
-          });
-        }));
-      });
-    });
-  });
+  return Debug.gatherArtifacts(config);
 }
