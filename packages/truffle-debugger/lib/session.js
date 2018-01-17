@@ -12,7 +12,7 @@ import reducer from "./reducers";
 import * as actions from "./controller/actions";
 
 import trace from "./trace/selectors";
-import context from "./context/selectors";
+import evm from "./evm/selectors";
 
 /**
  * Debugger Session
@@ -63,7 +63,7 @@ export default class Session {
   }
 
   get failed() {
-    return this.finished && this.view(context.callstack).length
+    return this.finished && this.view(evm.current.callstack).length
   }
 
   dispatch(action) {

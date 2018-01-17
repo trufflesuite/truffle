@@ -12,10 +12,10 @@ const currentCall = createSelector(
 
 let currentState = createStructuredSelector({
   call: currentCall,
-  stack: callstack
+  callstack: callstack
 });
 currentState.call = currentCall;
-currentState.stack = callstack;
+currentState.callstack = callstack;
 
 
 const programCounter = createSelector(
