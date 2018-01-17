@@ -17,19 +17,19 @@ export function* next() {
     yield put(actions.tick());
     debug("put TICK");
 
+    remaining--; // local update, just for convenience
+  }
+
+  if (remaining) {
     debug("putting TOCK");
     // updates step to next step in trace
     yield put(actions.tock());
     debug("put TOCK");
 
-    remaining--; // local update, just for convenience
-  }
+  } else {
 
-  if (remaining == 0) {
     yield put(actions.endTrace());
   }
-
-  yield put(actions.wentNext());
 }
 
 export default function* saga() {

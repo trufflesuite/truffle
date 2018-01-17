@@ -3,12 +3,6 @@ export function next() {
   return {type: NEXT};
 }
 
-export const WENT_NEXT = "WENT_NEXT";
-export function wentNext() {
-  return {type: WENT_NEXT};
-}
-
-
 export const TICK = "TICK";
 export function tick() {
   return {type: TICK};

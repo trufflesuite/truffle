@@ -1,9 +1,9 @@
 import { combineReducers } from "redux";
 
-import { TOCK } from "./actions";
+import { TOCK, END_OF_TRACE } from "./actions";
 
 export function index(state = 0, action) {
-  if (action.type == TOCK) {
+  if (action.type == TOCK || action.type == END_OF_TRACE) {
     return state + 1;
   } else {
     return state;

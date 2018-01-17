@@ -43,7 +43,7 @@ function* advance() {
   yield put(traceActions.next());
 
   // wait for trace to advance
-  yield take(traceActions.WENT_NEXT);
+  yield take(traceActions.TOCK);
 }
 
 /**
