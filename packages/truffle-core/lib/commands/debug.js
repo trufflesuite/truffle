@@ -7,12 +7,20 @@ var command = {
     }
   },
   run: function (options, done) {
+    var OS = require("os");
+    var path = require("path");
+    var debug = require("debug")("lib:commands:debug");
+
     var Config = require("truffle-config");
     var Debug = require("../debug");
     var Environment = require("../environment");
     var ReplManager = require("../repl");
-    var OS = require("os");
-    var path = require("path");
+    var selectors = require("truffle-debugger").selectors;
+
+    // Debugger Session properties
+    var context = selectors.context;
+    var trace = selectors.trace;
+    var solidity = selectors.solidity;
 
     var config = Config.detect(options);
 
@@ -20,16 +28,19 @@ var command = {
       if (err) return done(err);
 
       if (config._.length == 0) {
-        return done(new Error("Please specify a transaction hash as the first parameter in order to debug that transaction. i.e., truffle debug 0x1234..."));
+        return callback(new Error(
+          "Please specify a transaction hash as the first parameter in order to " +
+          "debug that transaction. i.e., truffle debug 0x1234..."
+        ));
       }
 
-      var tx_hash = config._[0];
+      var txHash = config._[0];
 
       var lastCommand = "n";
 
       config.logger.log(Debug.formatStartMessage());
 
-      Debug.start(config, tx_hash, function(err, bugger, contexts) {
+      Debug.start(config, txHash, function (err, session) {
         if (err) return done(err);
 
         function splitLines(str) {
@@ -39,8 +50,10 @@ var command = {
         }
 
         function printAddressesAffected() {
+          var affectedInstances = session.view(context.affectedInstances);
+
           config.logger.log("Addresses affected:");
-          config.logger.log(Debug.formatAffectedInstances(contexts));
+          config.logger.log(Debug.formatAffectedInstances(affectedInstances));
         }
 
         function printHelp() {
@@ -51,7 +64,8 @@ var command = {
         function printFile() {
           var message = "";
 
-          var sourcePath = bugger.currentSourcePath();
+          debug("file: %o", session.view(context.current));
+          var sourcePath = session.view(context.current).sourcePath;
 
           if (sourcePath) {
             message += path.basename(sourcePath);
@@ -59,8 +73,7 @@ var command = {
             message += "?";
           }
 
-          var address = bugger.currentAddress();
-
+          var address = session.view(context.current).address;
           if (address) {
             message += " | " + address;
           }
@@ -70,7 +83,10 @@ var command = {
         }
 
         function printState() {
-          var source = bugger.currentSource();
+          var source = session.view(context.current).source;
+          var range = session.view(solidity.nextStep.sourceRange);
+          debug("source: %o", source);
+          debug("range: %o", range);
 
           if (!source) {
             config.logger.log()
@@ -80,31 +96,27 @@ var command = {
           }
 
           var lines = splitLines(source);
-          var range = bugger.currentInstruction().range;
 
           config.logger.log("");
 
           config.logger.log(
-            Debug.formatRangeLines(lines, range, {before: 2, after: 0})
+            Debug.formatRangeLines(lines, range.lines)
           );
 
           config.logger.log("");
         }
 
         function printInstruction() {
-          var instruction = bugger.currentInstruction();
-          var step = bugger.currentStep();
-
-          var stack = Debug.formatStack(step.stack);
+          var instruction = session.view(solidity.nextStep.nextInstruction);
+          var step = session.view(trace.step);
+          var traceIndex = session.view(trace.index);
 
           config.logger.log("");
-          config.logger.log(
-            Debug.formatInstruction(bugger.traceIndex, instruction)
-          );
-          config.logger.log(stack);
+          config.logger.log(Debug.formatInstruction(traceIndex, instruction));
+          config.logger.log(Debug.formatStack(step.stack));
         };
 
-        function interpreter(cmd, context, filename, callback) {
+        function interpreter(cmd, replContext, filename, callback) {
           cmd = cmd.trim();
 
           if (cmd == ".exit") {
@@ -122,36 +134,35 @@ var command = {
           // Perform commands that require state changes.
           switch (cmd) {
             case "o":
-              bugger.stepOver();
+              session.stepOver();
               break;
             case "i":
-              bugger.stepInto();
+              session.stepInto();
               break;
             case "u":
-              bugger.stepOut();
+              session.stepOut();
               break;
             case "n":
-              bugger.step();
+              session.stepNext();
               break;
             case ";":
-              bugger.advance();
+              session.advance();
               break;
             case "q":
               return repl.stop(callback);
           }
 
           // Check if execution has stopped.
-          if (bugger.isStopped()) {
+          if (session.finished) {
             config.logger.log("");
-            if (bugger.isRuntimeError()) {
+            if (session.failed) {
               config.logger.log("Transaction halted with a RUNTIME ERROR.")
               config.logger.log("");
               config.logger.log("This is likely due to an intentional halting expression, like assert(), require() or revert(). It can also be due to out-of-gas exceptions. Please inspect your transaction parameters and contract code to determine the meaning of this error.");
-              return repl.stop(callback);
             } else {
               config.logger.log("Transaction completed successfully.");
-              return repl.stop(callback);
             }
+            return repl.stop(callback);
           }
 
           // Perform post printing
@@ -167,7 +178,7 @@ var command = {
             case "i":
             case "u":
             case "n":
-              if (bugger.currentSource() == null) {
+              if(!session.view(context.current).source) {
                 printInstruction();
               }
 
@@ -193,7 +204,7 @@ var command = {
         var repl = options.repl || new ReplManager(config);
 
         repl.start({
-          prompt: "debug(" + config.network + ":" + tx_hash.substring(0, 10) + "...)> ",
+          prompt: "debug(" + config.network + ":" + txHash.substring(0, 10) + "...)> ",
           interpreter: interpreter
         });
 

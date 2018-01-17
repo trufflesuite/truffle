@@ -4,6 +4,7 @@ var dir = require("node-dir");
 var path = require("path");
 var async = require("async");
 var Debugger = require("truffle-debugger");
+var debug = require("debug")("lib:debug");
 
 var commandReference = {
   "o": "step over",
@@ -17,13 +18,32 @@ var commandReference = {
 };
 
 var Debug = {
-  // callback is function(err, Debugger, contexts)
+  // callback :: function(err, Session)
   start: function(config, txHash, callback) {
-    var bugger = new Debugger(config);
+    expect.options(config, [
+      "provider",
+      "resolver"
+    ]);
 
-    bugger.start(txHash, function(err, contexts) {
-      callback(err, bugger, contexts);
-    });
+    var session;
+
+    Debug.gatherArtifacts(config)
+      .then(function(contracts) {
+        return Debugger.forTx(txHash, {
+          provider: config.provider,
+          contracts: contracts
+        });
+      })
+      .then(function (bugger) {
+        return bugger.connect();
+      })
+      .then(function (instance) {
+        session = instance;
+      })
+      .catch(callback)
+      .then(function() {
+        callback(null, session);
+      });
   },
 
   gatherArtifacts: function(config) {
