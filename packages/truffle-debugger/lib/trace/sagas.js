@@ -10,6 +10,8 @@ import trace from "./selectors";
 export function* next() {
   let remaining = yield view(trace.stepsRemaining);
   debug("remaining: %o", remaining);
+  let steps = yield view(trace.steps);
+  debug("total steps: %o", steps.length);
 
   if (remaining > 0) {
     debug("putting TICK");

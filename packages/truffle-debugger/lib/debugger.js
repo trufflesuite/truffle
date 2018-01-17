@@ -10,7 +10,7 @@ import evmSelector from "./evm/selectors";
 import soliditySelector from "./solidity/selectors";
 import contextSelector from "./context/selectors";
 
-const debug = debugModule("debugger:debugger");
+const debug = debugModule("debugger");
 
 export default class Debugger {
   /**
@@ -42,7 +42,7 @@ export default class Debugger {
 
     const adapter = new Web3Adapter(options.provider);
     const { trace, address, binary } = await adapter.getTransactionInfo(txHash);
-    debug("trace: %O", trace);
+    debug("address: %O", address);
 
     const traceContexts = await adapter.gatherContexts(trace, address);
 
