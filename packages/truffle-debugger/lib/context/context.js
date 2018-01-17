@@ -29,7 +29,7 @@ export default class Context {
     this.sourceMap = options.sourceMap;
     this.source = options.source;
     this.sourcePath = options.sourcePath;
-    this.contractName = options.contractName || "?";
+    this.contractName = options.contractName;
 
     this.instructions = Context.getInstructions(this.binary, this.source, this.sourceMap);
 
