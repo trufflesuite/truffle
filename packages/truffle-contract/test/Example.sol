@@ -4,12 +4,7 @@ contract Example {
   event ExampleEvent(address indexed _from, uint num);
 
   function Example(uint val) {
-    if (val == 0x0) {
-      value = 1;
-    } else {
-      value = val;
-    }
-
+    value = val;
     fallbackTriggered = false;
   }
 

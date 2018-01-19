@@ -96,9 +96,9 @@ describe("Different networks:", function() {
 
   // Most tests rely on this. It was a test; now it's a before step.
   before("can deploy to different networks", function(done) {
-    ExampleOne.new({gas: 3141592}).then(function(example) {
+    ExampleOne.new(1, {gas: 3141592}).then(function(example) {
       ExampleOne.address = example.address;
-      return ExampleTwo.new({gas: 3141592});
+      return ExampleTwo.new(1, {gas: 3141592});
     }).then(function(example) {
       ExampleTwo.address = example.address;
     }).then(function() {
@@ -251,7 +251,7 @@ describe("Different networks:", function() {
     assert.isNotNull(Example.toJSON().networks[network_two_id].address);
     assert.equal(Example.network_id, null);
 
-    Example.new({from: ExampleTwo.defaults().from, gas: 3141592}).then(function(instance) {
+    Example.new(1, {from: ExampleTwo.defaults().from, gas: 3141592}).then(function(instance) {
       assert.deepEqual(instance.abi, Example.abi);
     }).then(done).catch(done);
   });
@@ -275,7 +275,7 @@ describe("Different networks:", function() {
     var from = ExampleTwo.defaults().from;
     var example;
 
-    return ExampleSetup.new({from: from, gas: 3141592}).then(function(instance) {
+    return ExampleSetup.new(1, {from: from, gas: 3141592}).then(function(instance) {
       example = ExampleDetect.at(instance.address);
 
       assert.equal(ExampleDetect.network_id, null);
@@ -302,7 +302,7 @@ describe("Different networks:", function() {
     var from = ExampleTwo.defaults().from;
     var example;
 
-    return ExampleSetup.new({from: from, gas: 3141592}).then(function(instance) {
+    return ExampleSetup.new(1, {from: from, gas: 3141592}).then(function(instance) {
       example = ExampleDetect.at(instance.address);
 
       assert.equal(ExampleDetect.network_id, null);
@@ -403,7 +403,7 @@ describe("Different networks:", function() {
       // we've mined two more blocks. We'll use ExampleTwo for this
       // that's hooked up to the same network.
       times(2, function(n, finished) {
-        ExampleTwo.new({gas: 3141592}).then(function() {
+        ExampleTwo.new(1, {gas: 3141592}).then(function() {
           finished();
         }).catch(finished);
       }, function(err) {
