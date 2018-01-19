@@ -22,10 +22,6 @@
     "url": "https://github.com/trufflesuite/truffle-solidity-utils/issues"
   },
   "homepage": "https://github.com/trufflesuite/truffle-solidity-utils#readme",
-  "dependencies": {
-    "solidity-parser": "^0.3.0"
-  },
-  "devDependencies": {
-    "mocha": "^3.4.2"
-  }
+  "dependencies": {},
+  "devDependencies": {}
 }
