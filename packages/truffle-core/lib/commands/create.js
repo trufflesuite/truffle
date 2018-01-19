@@ -31,7 +31,7 @@ var command = {
     }
 
     if (name == null) {
-      return done(new ConfigurationError("Please specify the type of item to create. Example: truffle create contract MyContract"));
+      return done(new ConfigurationError("Please specify the name of item to create. Example: truffle create contract MyContract"));
     }
 
     var fn = create[type];
