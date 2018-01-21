@@ -23,13 +23,13 @@ export default class ContextSet {
       contexts.push(new Context(contract.binary, {
         sourceMap: contract.sourceMap,
         source: contract.source,
-        sourePath: contract.sourcePath,
+        sourcePath: contract.sourcePath,
         contractName: contract.contractName
       }));
       contexts.push(new Context(contract.deployedBinary, {
         sourceMap: contract.deployedSourceMap,
         source: contract.source,
-        sourePath: contract.sourcePath,
+        sourcePath: contract.sourcePath,
         contractName: contract.contractName
       }));
     }
