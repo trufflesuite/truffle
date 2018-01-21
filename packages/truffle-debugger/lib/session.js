@@ -3,7 +3,7 @@ const debug = debugModule("debugger:session");
 const reduxDebug = debugModule("debugger:redux");
 
 import { createStore, applyMiddleware } from "redux";
-
+import { composeWithDevTools } from "remote-redux-devtools";
 import createSagaMiddleware from "redux-saga";
 import createLogger from "redux-cli-logger";
 
@@ -24,6 +24,11 @@ export default class Session {
    * @private
    */
   constructor(contexts, trace, initialState) {
+    const composeEnhancers = composeWithDevTools({
+      realtime: true,
+      port: 1117
+    });
+
     const sagaMiddleware = createSagaMiddleware();
 
     const loggerMiddleware = createLogger({
@@ -39,9 +44,11 @@ export default class Session {
         state: initialState
       },
 
-      applyMiddleware(
-        sagaMiddleware,
-        loggerMiddleware
+      composeEnhancers(
+        applyMiddleware(
+          sagaMiddleware,
+          loggerMiddleware
+        )
       )
     );
 

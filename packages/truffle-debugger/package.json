@@ -6,6 +6,7 @@
   "scripts": {
     "docs": "esdoc",
     "build": "webpack",
+    "remotedev": "remotedev --hostname=127.0.0.1 --port=1117",
     "test": "mocha-webpack --webpack-config webpack.config-test.js"
   },
   "keywords": [
@@ -23,6 +24,7 @@
     "redux": "^3.7.2",
     "redux-cli-logger": "^2.0.1",
     "redux-saga": "^0.16.0",
+    "remote-redux-devtools": "^0.5.12",
     "reselect": "^3.0.1",
     "truffle-code-utils": "^1.1.0",
     "truffle-contract": "^3.0.0",
@@ -43,6 +45,7 @@
     "mocha": "^4.0.1",
     "mocha-webpack": "^1.0.1",
     "node-nightly": "^1.7.2",
+    "remotedev-server": "^0.2.4",
     "truffle-artifactor": "^3.0.0",
     "truffle-box": "^1.0.3",
     "truffle-core": "^4.0.1",
