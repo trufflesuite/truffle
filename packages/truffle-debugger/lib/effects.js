@@ -3,8 +3,6 @@ const debug = debugModule("debugger:effects");
 
 import { select } from "redux-saga/effects";
 
-import { createSelector, createStructuredSelector } from "reselect";
-
 export function view(selector) {
   return select(({ state, props }) => {
 

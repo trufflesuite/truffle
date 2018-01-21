@@ -1,4 +1,5 @@
-import { createSelector, createStructuredSelector } from "reselect";
+import { createSelector } from "reselect";
+import { createNestedSelector } from "../selectors";
 
 import trace from "../trace/selectors";
 
@@ -10,12 +11,10 @@ const currentCall = createSelector(
   (stack) => stack.length ? stack[stack.length - 1] : {}
 )
 
-let currentState = createStructuredSelector({
+let currentState = createNestedSelector({
   call: currentCall,
   callstack: callstack
 });
-currentState.call = currentCall;
-currentState.callstack = callstack;
 
 
 const programCounter = createSelector(
@@ -78,7 +77,7 @@ const createBinary = createSelector(
 );
 
 
-let nextStep = createStructuredSelector({
+let nextStep = createNestedSelector({
   programCounter,
 
   isJump,
@@ -89,19 +88,10 @@ let nextStep = createStructuredSelector({
   callAddress,
   createBinary
 });
-nextStep.programCounter = programCounter;
-nextStep.isJump = isJump;
-nextStep.isCall = isCall;
-nextStep.isCreate = isCreate;
-nextStep.isHalting = isHalting;
-nextStep.callAddress = callAddress;
-nextStep.createBinary = createBinary;
 
-let selector = createStructuredSelector({
+let selector = createNestedSelector({
   current: currentState,
   nextStep
 });
-selector.current = currentState;
-selector.nextStep = nextStep;
 
 export default selector;
