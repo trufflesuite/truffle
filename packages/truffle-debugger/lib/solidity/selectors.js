@@ -1,14 +1,14 @@
-import { createSelector, createStructuredSelector } from "reselect";
+import { createSelector } from "reselect";
+import { createNestedSelector } from "../selectors";
 
 import context from "../context/selectors";
 import evm from "../evm/selectors";
 
 const functionDepth = (state, props) => state.solidity.functionDepth;
 
-let currentState = createStructuredSelector({
+let currentState = createNestedSelector({
   functionDepth
 });
-currentState.functionDepth = functionDepth;
 
 const nextInstruction = createSelector(
   [context.current, evm.nextStep.programCounter],
@@ -41,23 +41,16 @@ const jumpDirection = createSelector(
   (instruction) => instruction.jump
 );
 
-let nextStep = createStructuredSelector({
+let nextStep = createNestedSelector({
   nextInstruction: nextInstruction,
   sourceRange: sourceRange,
   isMultiline: isMultiline,
   jumpDirection: jumpDirection,
 });
 
-nextStep.nextInstruction = nextInstruction;
-nextStep.sourceRange = sourceRange;
-nextStep.isMultiline = isMultiline;
-nextStep.jumpDirection = jumpDirection;
-
-let selector = createStructuredSelector({
+let selector = createNestedSelector({
   currentState,
   nextStep
 });
-selector.currentState = currentState;
-selector.nextStep = nextStep;
 
 export default selector;

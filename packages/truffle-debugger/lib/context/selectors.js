@@ -1,7 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:selectors:currentContext");
 
-import { createSelector, createStructuredSelector } from "reselect";
+import { createSelector } from "reselect";
+import { createNestedSelector } from "../selectors";
 
 import evm from "../evm/selectors";
 
@@ -34,13 +35,10 @@ const missingSources = createSelector(
     .map(([address, instance]) => address)
 );
 
-let selector = createStructuredSelector({
+let selector = createNestedSelector({
   current: currentContext,
   affectedInstances: affectedInstances,
   missingSources: missingSources
 });
-selector.current = currentContext;
-selector.affectedInstances = affectedInstances;
-selector.missingSources = missingSources;
 
 export default selector;
