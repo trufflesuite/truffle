@@ -92,7 +92,6 @@ export default class ContextSet {
    * If Context already exists in set, merges Context data with existing
    */
   addContext(context) {
-    var self = this;
     var index;
 
     if (this.indexForBinary[context.binary] != undefined) {

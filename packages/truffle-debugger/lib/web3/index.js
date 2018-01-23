@@ -22,12 +22,10 @@ export default class Web3Adapter {
    * @return {Object}            Primary address of the transaction
    */
   async getTransactionInfo(txHash) {
-    var self = this;
-
     let trace = await this.getTrace(txHash);
 
-    return new Promise(function(accept, reject) {
-      self.web3.eth.getTransaction(txHash, function(err, tx) {
+    return new Promise((accept, reject) => {
+      this.web3.eth.getTransaction(txHash, (err, tx) => {
         if (err) return reject(err);
 
         // Maybe there's a better way to check for this.
@@ -39,7 +37,7 @@ export default class Web3Adapter {
           });
         }
 
-        self.web3.eth.getTransactionReceipt(txHash, function(err, receipt) {
+        this.web3.eth.getTransactionReceipt(txHash, (err, receipt) => {
           if (err) return reject(err);
 
           if (receipt.contractAddress) {
@@ -56,14 +54,13 @@ export default class Web3Adapter {
   };
 
   async getTrace(txHash) {
-    var self = this;
-    return new Promise(function(accept, reject) {
-      self.web3.currentProvider.sendAsync({
+    return new Promise( (accept, reject) => {
+      this.web3.currentProvider.sendAsync({
         jsonrpc: "2.0",
         method: "debug_traceTransaction",
         params: [txHash],
         id: new Date().getTime()
-      }, function(err, result) {
+      }, (err, result) => {
         if (err) return reject(err);
         accept(result.result.structLogs);
       });
@@ -71,7 +68,6 @@ export default class Web3Adapter {
   };
 
   async gatherContexts(trace, primaryAddress) {
-    var self = this;
     // Analyze the trace and create contexts for each address.
     var addresses = {};
 
@@ -90,8 +86,8 @@ export default class Web3Adapter {
 
     debug("addresses: %O", addresses);
 
-    var promises = Object.keys(addresses).map(async function(address) {
-      let deployedBinary = await self.getDeployedCode(address);
+    var promises = Object.keys(addresses).map(async (address) => {
+      let deployedBinary = await this.getDeployedCode(address);
       return new Context(deployedBinary, {address})
     });
 
@@ -104,10 +100,8 @@ export default class Web3Adapter {
    * @return {String}         deployedBinary
    */
   async getDeployedCode(address) {
-    var self = this;
-
-    return new Promise(function(accept, reject) {
-      self.web3.eth.getCode(address, function(err, deployedBinary) {
+    return new Promise((accept, reject) => {
+      this.web3.eth.getCode(address, (err, deployedBinary) => {
         if (err) return reject(err);
         accept(deployedBinary);
       });
