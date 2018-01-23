@@ -14,7 +14,7 @@ module.exports = {
         plugins: ['transform-object-rest-spread', 'transform-runtime'],
       },
       include: [
-        path.resolve(__dirname, './lib')
+        path.resolve(__dirname, "..", 'lib')
       ],
     }],
   },
@@ -27,7 +27,7 @@ module.exports = {
     umdNamedDefine: true,
 
     filename: "debugger.js",
-    path: path.join(__dirname, "dist"),
+    path: path.join(__dirname, "..", "dist"),
     devtoolModuleFilenameTemplate: '[absolute-resource-path]',
     devtoolFallbackModuleFilenameTemplate: '[absolute-resource-path]?[hash]'
   },

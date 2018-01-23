@@ -51,13 +51,16 @@ let OuterContract = artifacts.require("OuterContract");
 let InnerContract = artifacts.require("InnerContract");
 
 module.exports = function(deployer) {
-  return deployer.then(async function() {
-    await deployer.deploy(InnerContract);
-
-    let inner = await InnerContract.deployed();
-
-    await deployer.deploy(OuterContract, inner.address);
-  });
+  return deployer
+    .then(function() {
+      return deployer.deploy(InnerContract);
+    })
+    .then(function() {
+      return InnerContract.deployed();
+    })
+    .then(function(inner) {
+      return deployer.deploy(OuterContract, inner.address);
+    });
 };
 `;
 
