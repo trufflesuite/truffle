@@ -1,15 +1,10 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:session");
-const reduxDebug = debugModule("debugger:redux");
-
-import { createStore, applyMiddleware } from "redux";
-import { composeWithDevTools } from "remote-redux-devtools";
-import createSagaMiddleware from "redux-saga";
-import createLogger from "redux-cli-logger";
 
 import rootSaga from "./sagas";
 import reducer from "./reducers";
 import * as actions from "./controller/actions";
+import configureStore from "./store";
 
 import trace from "./trace/selectors";
 import evm from "./evm/selectors";
@@ -24,35 +19,12 @@ export default class Session {
    * @private
    */
   constructor(contexts, trace, initialState) {
-    const composeEnhancers = composeWithDevTools({
-      realtime: true,
-      port: 1117
-    });
+    let wrappedState = {
+      props: { contexts, trace },
+      state: initialState
+    };
 
-    const sagaMiddleware = createSagaMiddleware();
-
-    const loggerMiddleware = createLogger({
-      log: reduxDebug,
-      stateTransformer: (session) => session.state
-    });
-
-    this._store = createStore(
-      reducer,
-
-      {
-        props: { contexts, trace },
-        state: initialState
-      },
-
-      composeEnhancers(
-        applyMiddleware(
-          sagaMiddleware,
-          loggerMiddleware
-        )
-      )
-    );
-
-    sagaMiddleware.run(rootSaga);
+    this._store = configureStore(reducer, rootSaga, wrappedState);
   }
 
   get state() {

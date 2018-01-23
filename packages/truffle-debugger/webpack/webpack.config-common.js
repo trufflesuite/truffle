@@ -8,7 +8,7 @@ module.exports = {
   module: {
     rules: [{
       test: /\.js$/,
-      loader: 'babel-loader',
+      loader: "babel-loader",
       query: {
         presets: ['babel-preset-env'],
         plugins: ['transform-object-rest-spread', 'transform-runtime'],
@@ -20,6 +20,7 @@ module.exports = {
   },
 
   target: 'node',
+
   output: {
     library: "Debugger",
     libraryTarget: "umd",
@@ -31,12 +32,6 @@ module.exports = {
     devtoolFallbackModuleFilenameTemplate: '[absolute-resource-path]?[hash]'
   },
 
-  plugins: [
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify('development')
-    })
-  ],
-
   externals: [nodeExternals()], // in order to ignore all modules in node_modules folder
-  devtool: "inline-cheap-module-source-map"
+  devtool: "inline-cheap-module-source-map",
 }
