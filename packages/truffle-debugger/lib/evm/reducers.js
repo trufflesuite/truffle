@@ -6,11 +6,11 @@ export function callstack(state = [], action) {
   switch(action.type) {
     case actions.CALL:
       let address = action.address;
-      return state + [ {address} ];
+      return state.concat([ {address} ]);
 
     case actions.CREATE:
       const binary = step.createBinary();
-      return state + [ {binary} ];
+      return state.concat([ {binary} ]);
 
     case actions.RETURN:
       return state.slice(0, -1); // pop
