@@ -27,6 +27,7 @@ function TestRunner(options) {
   this.provider = options.provider;
 
   this.can_shapshot = false;
+  this.first_snapshot = false;
   this.initial_snapshot = null;
   this.known_events = {};
   this.web3 = new Web3();
@@ -77,7 +78,7 @@ TestRunner.prototype.initialize = function(callback) {
     });
   };
 
-  if (self.initial_snapshot == null) {
+  if (self.first_snapshot) {
     // // Make the initial deployment (full migration).
     // self.deploy(function(err) {
     //   if (err) return callback(err);
@@ -87,6 +88,9 @@ TestRunner.prototype.initialize = function(callback) {
         self.can_snapshot = true;
         self.initial_snapshot = initial_snapshot;
       }
+
+      self.first_snapshot = false
+
       afterStateReset();
     });
     //});
@@ -98,7 +102,7 @@ TestRunner.prototype.initialize = function(callback) {
 TestRunner.prototype.deploy = function(callback) {
   Migrate.run(this.config.with({
     reset: true,
-    //quiet: true
+    quiet: true
   }), callback);
 };
 
