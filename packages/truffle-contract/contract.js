@@ -171,12 +171,20 @@ var contract = (function(module) {
                 C.web3.eth.getTransactionReceipt(tx, function(err, receipt) {
                   if (err) return reject(err);
 
+                  // Reject on transaction failures, accept otherwise
                   if (receipt != null) {
-                    return accept({
-                      tx: tx,
-                      receipt: receipt,
-                      logs: Utils.decodeLogs(C, instance, receipt.logs)
-                    });
+                    if (receipt.status === "0x00"){
+                      return reject({
+                        tx: tx,
+                        receipt: receipt
+                      })
+                    } else {
+                      return accept({
+                        tx: tx,
+                        receipt: receipt,
+                        logs: Utils.decodeLogs(C, instance, receipt.logs)
+                      });
+                    }
                   }
 
                   if (timeout > 0 && new Date().getTime() - start > timeout) {

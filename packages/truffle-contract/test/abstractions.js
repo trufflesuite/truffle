@@ -9,13 +9,17 @@ var requireNoCache = require("require-nocache")(module);
 var TestRPC = require("ganache-core");
 var Web3 = require("web3");
 
+var log = {
+  log: function(){}
+};
+
 describe("Abstractions", function() {
   var Example;
   var accounts;
   var abi;
   var binary;
   var network_id;
-  var provider = TestRPC.provider();
+  var provider = TestRPC.provider({logger: log});
   var web3 = new Web3();
   web3.setProvider(provider)
 
@@ -203,6 +207,59 @@ describe("Abstractions", function() {
       assert(error.message.search("constructor") >= 0, "new() should have thrown");
     });
   });
+
+
+  it("errors with a message when ganache appends an error to the response", function(done){
+    var example = Example.clone();
+    var web3 = new Web3();
+    var provider = TestRPC.provider({
+      vmErrorsOnRPCResponse: true,
+      logger: log
+    });
+    web3.setProvider(provider)
+    example.setProvider(provider);
+    web3.eth.getAccounts(function(err, accs) {
+      example.defaults({
+        from: accs[0]
+      });
+
+      example.new(1, {gas: 3141592}).then(function(instance) {
+        return instance.triggerError()
+      }).then(function(){
+        assert.fail();
+      }).catch(function(e){
+        assert(e.message.includes('revert'))
+        done();
+      });
+    });
+  });
+
+  it("errors with a txHash/receipt when ganache does NOT append error to response", function(done){
+    var example = Example.clone();
+    var web3 = new Web3();
+    var provider = TestRPC.provider({
+      vmErrorsOnRPCResponse: false,
+      logger: log
+    });
+    web3.setProvider(provider);
+
+    example.setProvider(provider);
+    web3.eth.getAccounts(function(err, accs) {
+      example.defaults({
+        from: accs[0]
+      });
+
+      example.new(1, {gas: 3141592}).then(function(instance) {
+        return instance.triggerError()
+      }).then(function(){
+        assert.fail();
+      }).catch(function(e){
+        assert(e.receipt.status === '0x00')
+        done();
+      });
+    });
+  });
+
 
   it("creates a network object when an address is set if no network specified", function(done) {
     var NewExample = contract({

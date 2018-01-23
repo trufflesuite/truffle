@@ -24,6 +24,10 @@ contract Example {
     ExampleEvent(msg.sender, 8);
   }
 
+  function triggerError() {
+    require(false);
+  }
+
   function() payable {
     fallbackTriggered = true;
   }

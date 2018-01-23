@@ -13,9 +13,13 @@ var Schema = require("truffle-contract-schema");
 // which happens to be the first.
 process.removeListener("uncaughtException", process.listeners("uncaughtException")[0] || function() {});
 
+var log = {
+  log: function(){}
+};
+
 describe("Library linking", function() {
   var LibraryExample;
-  var provider = TestRPC.provider();
+  var provider = TestRPC.provider({logger:log});
   var network_id;
   var web3 = new Web3();
   web3.setProvider(provider)
@@ -77,7 +81,7 @@ describe("Library linking with contract objects", function() {
   var exampleConsumer;
   var accounts;
   var web3;
-  var provider = TestRPC.provider();
+  var provider = TestRPC.provider({logger: log});
   var web3 = new Web3();
   web3.setProvider(provider)
 
