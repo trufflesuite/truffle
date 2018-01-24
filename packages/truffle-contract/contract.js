@@ -172,8 +172,9 @@ var contract = (function(module) {
                   if (err) return reject(err);
 
                   // Reject on transaction failures, accept otherwise
+                  // Handles "0x00" or hex 0
                   if (receipt != null) {
-                    if (receipt.status === "0x00"){
+                    if (parseInt(receipt.status, 16) == 0){
                       return reject({
                         tx: tx,
                         receipt: receipt

@@ -254,7 +254,7 @@ describe("Abstractions", function() {
       }).then(function(){
         assert.fail();
       }).catch(function(e){
-        assert(e.receipt.status === '0x00')
+        assert(parseInt(e.receipt.status, 16) == 0)
         done();
       });
     });
