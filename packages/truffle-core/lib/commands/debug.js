@@ -8,7 +8,8 @@ var command = {
   },
   run: function (options, done) {
     var Config = require("truffle-config");
-    var Debug = require("../debug");
+    var Debugger = require("truffle-debugger");
+    var DebugUtils = require("truffle-debug-utils");
     var Environment = require("../environment");
     var ReplManager = require("../repl");
     var OS = require("os");
@@ -27,9 +28,11 @@ var command = {
 
       var lastCommand = "n";
 
-      config.logger.log(Debug.formatStartMessage());
+      config.logger.log(DebugUtils.formatStartMessage());
 
-      Debug.start(config, tx_hash, function(err, bugger, contexts) {
+      var bugger = new Debugger(config);
+
+      bugger.start(tx_hash, function(err, contexts) {
         if (err) return done(err);
 
         function splitLines(str) {
@@ -40,12 +43,12 @@ var command = {
 
         function printAddressesAffected() {
           config.logger.log("Addresses affected:");
-          config.logger.log(Debug.formatAffectedInstances(contexts));
+          config.logger.log(DebugUtils.formatAffectedInstances(contexts));
         }
 
         function printHelp() {
           config.logger.log("");
-          config.logger.log(Debug.formatHelp());
+          config.logger.log(DebugUtils.formatHelp());
         }
 
         function printFile() {
@@ -85,7 +88,7 @@ var command = {
           config.logger.log("");
 
           config.logger.log(
-            Debug.formatRangeLines(lines, range, {before: 2, after: 0})
+            DebugUtils.formatRangeLines(lines, range, {before: 2, after: 0})
           );
 
           config.logger.log("");
@@ -95,11 +98,11 @@ var command = {
           var instruction = bugger.currentInstruction();
           var step = bugger.currentStep();
 
-          var stack = Debug.formatStack(step.stack);
+          var stack = DebugUtils.formatStack(step.stack);
 
           config.logger.log("");
           config.logger.log(
-            Debug.formatInstruction(bugger.traceIndex, instruction)
+            DebugUtils.formatInstruction(bugger.traceIndex, instruction)
           );
           config.logger.log(stack);
         };
