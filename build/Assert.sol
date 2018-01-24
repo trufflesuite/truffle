@@ -852,17 +852,18 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(uint[] arrA, uint[] arrB, string message) public returns (bool) {
-        var r = arrA.length == arrB.length;
-        if (r) {
+    function notEqual(uint[] arrA, uint[] arrB, string message) public returns (bool result) {
+        result = arrA.length == arrB.length;
+        if (result) {
             for (uint i = 0; i < arrA.length; i++) {
-                if (arrA[i] == arrB[i]) {
-                    r = true;
+                if (arrA[i] != arrB[i]) {
+                    result = false;
                     break;
                 }
             }
         }
-        _report(!r, message);
+        result = !result;
+        _report(result, message);
     }
 
     /*
@@ -1016,17 +1017,18 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(int[] arrA, int[] arrB, string message) public returns (bool) {
-        var r = arrA.length == arrB.length;
-        if (r) {
+    function notEqual(int[] arrA, int[] arrB, string message) public returns (bool result) {
+        result = arrA.length == arrB.length;
+        if (result) {
             for (uint i = 0; i < arrA.length; i++) {
-                if (arrA[i] == arrB[i]) {
-                    r = true;
+                if (arrA[i] != arrB[i]) {
+                    result = false;
                     break;
                 }
             }
         }
-        _report(!r, message);
+        result = !result;
+        _report(result, message);
     }
 
     /*
@@ -1180,17 +1182,18 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(address[] arrA, address[] arrB, string message) public returns (bool) {
-        var r = arrA.length == arrB.length;
-        if (r) {
+    function notEqual(address[] arrA, address[] arrB, string message) public returns (bool result) {
+        result = arrA.length == arrB.length;
+        if (result) {
             for (uint i = 0; i < arrA.length; i++) {
-                if (arrA[i] == arrB[i]) {
-                    r = true;
+                if (arrA[i] != arrB[i]) {
+                    result = false;
                     break;
                 }
             }
         }
-        _report(!r, message);
+        result = !result;
+        _report(result, message);
     }
 
     /*
@@ -1344,17 +1347,18 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(bytes32[] arrA, bytes32[] arrB, string message) public returns (bool) {
-        var r = arrA.length == arrB.length;
-        if (r) {
+    function notEqual(bytes32[] arrA, bytes32[] arrB, string message) public returns (bool result) {
+        result = arrA.length == arrB.length;
+        if (result) {
             for (uint i = 0; i < arrA.length; i++) {
-                if (arrA[i] == arrB[i]) {
-                    r = true;
+                if (arrA[i] != arrB[i]) {
+                    result = false;
                     break;
                 }
             }
         }
-        _report(!r, message);
+        result = !result;
+        _report(result, message);
     }
 
     /*
