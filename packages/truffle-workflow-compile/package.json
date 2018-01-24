@@ -1,0 +1,19 @@
+{
+  "name": "truffle-workflow-compile",
+  "version": "1.0.0",
+  "description": "Core workflow behavior for `truffle compile` command",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trufflesuite/truffle-debug-utils.git"
+  },
+  "author": "Truffle Suite <inquiry@trufflesuite.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle-workflow-compile/issues"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle-workflow-compile#readme"
+}
