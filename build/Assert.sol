@@ -911,6 +911,58 @@ library Assert {
             _report(result, _appendTagged(_tag(arrLength, "Tested"), _tag(length, "Against"), message));
     }
 
+    /*
+        Function: contains(uint[])
+
+        Assert that the specified value exists in the 'uint[ ]'.
+
+        : arr contains value
+
+        Params:
+            arr (uint[]) - The array to search in.
+            value (uint[]) - The value to search for.
+            message (string) - A message that is sent if the assertion fails.
+
+        Returns:
+            result (bool) - The result.
+    */
+    function contains(uint[] arr, uint value, string message) public returns (bool result) {
+        result = false;
+        for (uint i = 0; i < arr.length; i++) {
+            if (arr[i] == value) {
+                result = true;
+                break;
+            }
+        }
+        _report(result, message);
+    }
+
+    /*
+        Function: doesNotContain(uint[])
+
+        Assert that the specified value does not exist in the 'uint[ ]'.
+
+        : arr does not contain value
+
+        Params:
+            arr (uint[]) - The array to search in.
+            value (uint[]) - The value to search for.
+            message (string) - A message that is sent if the assertion fails.
+
+        Returns:
+            result (bool) - The result.
+    */
+    function doesNotContain(uint[] arr, uint value, string message) public returns (bool result) {
+        result = true;
+        for (uint i = 0; i < arr.length; i++) {
+            if (arr[i] == value) {
+                result = false;
+                break;
+            }
+        }
+        _report(result, message);
+    }
+
     // ************************************** int[] **************************************
 
     /*
@@ -1021,6 +1073,58 @@ library Assert {
             _report(result, "");
         else
             _report(result, _appendTagged(_tag(arrLength, "Tested"), _tag(length, "Against"), message));
+    }
+
+    /*
+        Function: contains(int[])
+
+        Assert that the specified value exists in the 'int[ ]'.
+
+        : arr contains value
+
+        Params:
+            arr (int[]) - The array to search in.
+            value (int[]) - The value to search for.
+            message (string) - A message that is sent if the assertion fails.
+
+        Returns:
+            result (bool) - The result.
+    */
+    function contains(int[] arr, int value, string message) public returns (bool result) {
+        result = false;
+        for (uint i = 0; i < arr.length; i++) {
+            if (arr[i] == value) {
+                result = true;
+                break;
+            }
+        }
+        _report(result, message);
+    }
+
+    /*
+        Function: doesNotContain(int[])
+
+        Assert that the specified value does not exist in the 'int[ ]'.
+
+        : arr does not contain value
+
+        Params:
+            arr (int[]) - The array to search in.
+            value (int[]) - The value to search for.
+            message (string) - A message that is sent if the assertion fails.
+
+        Returns:
+            result (bool) - The result.
+    */
+    function doesNotContain(int[] arr, int value, string message) public returns (bool result) {
+        result = true;
+        for (uint i = 0; i < arr.length; i++) {
+            if (arr[i] == value) {
+                result = false;
+                break;
+            }
+        }
+        _report(result, message);
     }
 
     // ************************************** address[] **************************************
@@ -1135,6 +1239,58 @@ library Assert {
             _report(result, _appendTagged(_tag(arrLength, "Tested"), _tag(length, "Against"), message));
     }
 
+    /*
+        Function: contains(address[])
+
+        Assert that the specified value exists in the 'address[ ]'.
+
+        : arr contains value
+
+        Params:
+            arr (address[]) - The array to search in.
+            value (address[]) - The value to search for.
+            message (string) - A message that is sent if the assertion fails.
+
+        Returns:
+            result (bool) - The result.
+    */
+    function contains(address[] arr, address value, string message) public returns (bool result) {
+        result = false;
+        for (uint i = 0; i < arr.length; i++) {
+            if (arr[i] == value) {
+                result = true;
+                break;
+            }
+        }
+        _report(result, message);
+    }
+
+    /*
+        Function: doesNotContain(address[])
+
+        Assert that the specified value does not exist in the 'address[ ]'.
+
+        : arr does not contain value
+
+        Params:
+            arr (address[]) - The array to search in.
+            value (address[]) - The value to search for.
+            message (string) - A message that is sent if the assertion fails.
+
+        Returns:
+            result (bool) - The result.
+    */
+    function doesNotContain(address[] arr, address value, string message) public returns (bool result) {
+        result = true;
+        for (uint i = 0; i < arr.length; i++) {
+            if (arr[i] == value) {
+                result = false;
+                break;
+            }
+        }
+        _report(result, message);
+    }
+
     // ************************************** bytes32[] **************************************
 
     /*
@@ -1245,6 +1401,58 @@ library Assert {
             _report(result, "");
         else
             _report(result, _appendTagged(_tag(arrLength, "Tested"), _tag(length, "Against"), message));
+    }
+
+    /*
+        Function: contains(bytes32[])
+
+        Assert that the specified value exists in the 'bytes32[ ]'.
+
+        : arr contains value
+
+        Params:
+            arr (bytes32[]) - The array to search in.
+            value (bytes32[]) - The value to search for.
+            message (string) - A message that is sent if the assertion fails.
+
+        Returns:
+            result (bool) - The result.
+    */
+    function contains(bytes32[] arr, bytes32 value, string message) public returns (bool result) {
+        result = false;
+        for (uint i = 0; i < arr.length; i++) {
+            if (arr[i] == value) {
+                result = true;
+                break;
+            }
+        }
+        _report(result, message);
+    }
+
+    /*
+        Function: doesNotContain(bytes32[])
+
+        Assert that the specified value does not exist in the 'bytes32[ ]'.
+
+        : arr does not contain value
+
+        Params:
+            arr (bytes32[]) - The array to search in.
+            value (bytes32[]) - The value to search for.
+            message (string) - A message that is sent if the assertion fails.
+
+        Returns:
+            result (bool) - The result.
+    */
+    function doesNotContain(bytes32[] arr, bytes32 value, string message) public returns (bool result) {
+        result = true;
+        for (uint i = 0; i < arr.length; i++) {
+            if (arr[i] == value) {
+                result = false;
+                break;
+            }
+        }
+        _report(result, message);
     }
 
     // ************************************** balances **************************************
