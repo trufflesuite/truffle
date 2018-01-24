@@ -6,12 +6,7 @@ var path = require("path");
 var solc = require("solc");
 var fs = require("fs");
 var requireNoCache = require("require-nocache")(module);
-var TestRPC = require("ganache-core");
-var Web3 = require("web3");
-
-var log = {
-  log: function(){}
-};
+var util = require('./util');
 
 describe("Abstractions", function() {
   var Example;
@@ -19,19 +14,9 @@ describe("Abstractions", function() {
   var abi;
   var binary;
   var network_id;
-  var provider = TestRPC.provider({logger: log});
-  var web3 = new Web3();
-  web3.setProvider(provider)
+  var web3;
 
   before(function(done) {
-    web3.version.getNetwork(function(err, id) {
-      if (err) return done(err);
-      network_id = id;
-      done();
-    });
-  });
-
-  before(function() {
     this.timeout(10000);
 
     // Compile first
@@ -51,23 +36,16 @@ describe("Abstractions", function() {
     contractObj = result.contracts[contractName];
     contractObj.contractName = contractName;
     Example = contract(contractObj);
-    Example.setProvider(provider);
 
     // save abi and binary for later
     abi = Example.abi;
     binary = Example.bytecode;
-  });
 
-  before(function(done) {
-    web3.eth.getAccounts(function(err, accs) {
-      accounts = accs;
-
-      Example.defaults({
-        from: accounts[0]
-      });
-
-      done(err);
-    });
+    util.setUpProvider(Example).then(function(result){
+      web3 = result.web3;
+      accounts = result.accounts;
+      done();
+    }).catch(done);
   });
 
   after(function(done) {
@@ -211,18 +189,11 @@ describe("Abstractions", function() {
 
   it("errors with a message when ganache appends an error to the response", function(done){
     var example = Example.clone();
-    var web3 = new Web3();
-    var provider = TestRPC.provider({
+    var options = {
       vmErrorsOnRPCResponse: true,
-      logger: log
-    });
-    web3.setProvider(provider)
-    example.setProvider(provider);
-    web3.eth.getAccounts(function(err, accs) {
-      example.defaults({
-        from: accs[0]
-      });
+    };
 
+    util.setUpProvider(example, options).then(function(){
       example.new(1, {gas: 3141592}).then(function(instance) {
         return instance.triggerError()
       }).then(function(){
@@ -231,24 +202,16 @@ describe("Abstractions", function() {
         assert(e.message.includes('revert'))
         done();
       });
-    });
+    }).catch(done);
   });
 
   it("errors with a txHash/receipt when ganache does NOT append error to response", function(done){
     var example = Example.clone();
-    var web3 = new Web3();
-    var provider = TestRPC.provider({
+    var options = {
       vmErrorsOnRPCResponse: false,
-      logger: log
-    });
-    web3.setProvider(provider);
+    };
 
-    example.setProvider(provider);
-    web3.eth.getAccounts(function(err, accs) {
-      example.defaults({
-        from: accs[0]
-      });
-
+    util.setUpProvider(example, options).then(function(){
       example.new(1, {gas: 3141592}).then(function(instance) {
         return instance.triggerError()
       }).then(function(){
@@ -257,7 +220,7 @@ describe("Abstractions", function() {
         assert(parseInt(e.receipt.status, 16) == 0)
         done();
       });
-    });
+    }).catch(done)
   });
 
 
@@ -267,24 +230,27 @@ describe("Abstractions", function() {
       unlinked_binary: binary
     });
 
-    NewExample.setProvider(provider);
-    NewExample.defaults({
-      from: accounts[0]
-    });
+    util.setUpProvider(NewExample).then(function(result){
+      result.web3.version.getNetwork(function(err, id) {
+        if (err) return done(err);
+        network_id = id;
 
-    assert.equal(NewExample.network_id, null);
+        assert.equal(NewExample.network_id, null);
 
-    NewExample.new(1, {gas: 3141592}).then(function(instance) {
-      // We have a network id in this case, with new(), since it was detected,
-      // but no further configuration.
-      assert.equal(NewExample.network_id, network_id);
-      assert.equal(NewExample.toJSON().networks[network_id], null);
+        NewExample.new(1, {gas: 3141592}).then(function(instance) {
+          // We have a network id in this case, with new(), since it was detected,
+          // but no further configuration.
+          assert.equal(NewExample.network_id, network_id);
+          assert.equal(NewExample.toJSON().networks[network_id], null);
 
-      NewExample.address = instance.address;
+          NewExample.address = instance.address;
 
-      assert.equal(NewExample.toJSON().networks[network_id].address, instance.address);
+          assert.equal(NewExample.toJSON().networks[network_id].address, instance.address);
 
-      done();
+          done();
+
+        }).catch(done);
+      })
     }).catch(done);
   });
 });
