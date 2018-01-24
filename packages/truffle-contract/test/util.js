@@ -1,8 +1,9 @@
+var debug = require("debug")("ganache-core");
 var ganache = require("ganache-core");
 var Web3 = require("web3");
 
 var log = {
-  log: function(){}
+  log: debug
 }
 
 var util = {

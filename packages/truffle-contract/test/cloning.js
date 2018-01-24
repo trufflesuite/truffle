@@ -9,13 +9,14 @@ process.removeListener("uncaughtException", process.listeners("uncaughtException
 
 var fs = require("fs");
 var requireNoCache = require("require-nocache")(module);
+var debug = require("debug")("ganache-core");
 var TestRPC = require("ganache-core");
 var contract = require("../");
 var async = require("async");
 var Schema = require("truffle-contract-schema");
 
 var log = {
-  log: function(){}
+  log: debug
 };
 
 describe("Cloning", function() {

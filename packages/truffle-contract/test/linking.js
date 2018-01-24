@@ -5,6 +5,7 @@ var path = require("path");
 var requireNoCache = require("require-nocache")(module);
 var contract = require("../");
 var Web3 = require("web3");
+var debug = require("debug")("ganache-core");
 var TestRPC = require("ganache-core");
 var fs = require("fs");
 var solc = require("solc");
@@ -14,7 +15,7 @@ var Schema = require("truffle-contract-schema");
 process.removeListener("uncaughtException", process.listeners("uncaughtException")[0] || function() {});
 
 var log = {
-  log: function(){}
+  log: debug
 };
 
 describe("Library linking", function() {

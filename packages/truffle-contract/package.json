@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
+    "debug": "DEBUG=ganache-core mocha",
     "compile": "browserify ./index.js -i web3 -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js"
   },
   "repository": {
@@ -33,6 +34,7 @@
     "async": "^2.3.0",
     "browserify": "^14.0.0",
     "chai": "^3.5.0",
+    "debug": "^3.1.0",
     "ganache-core": "2.1.0-beta.0",
     "lodash": "^4.17.4",
     "mocha": "^3.2.0",

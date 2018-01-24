@@ -10,6 +10,7 @@ process.removeListener("uncaughtException", process.listeners("uncaughtException
 
 var fs = require("fs");
 var requireNoCache = require("require-nocache")(module);
+var debug = require("debug")("ganache-core");
 var TestRPC = require("ganache-core");
 var BlockchainUtils = require("truffle-blockchain-utils");
 var contract = require("../");
@@ -17,7 +18,7 @@ var Web3 = require("web3");
 var times = require("async/times");
 
 var log = {
-  log: function(){}
+  log: debug
 }
 
 function getNetworkId(provider, callback) {
