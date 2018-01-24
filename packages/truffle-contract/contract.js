@@ -1,6 +1,7 @@
 var ethJSABI = require("ethjs-abi");
 var BlockchainUtils = require("truffle-blockchain-utils");
 var Web3 = require("web3");
+var StatusError = require("./statuserror.js")
 
 // For browserified version. If browserify gave us an empty version,
 // look for the one provided by the user.
@@ -175,10 +176,8 @@ var contract = (function(module) {
                   // Handles "0x00" or hex 0
                   if (receipt != null) {
                     if (parseInt(receipt.status, 16) == 0){
-                      return reject({
-                        tx: tx,
-                        receipt: receipt
-                      })
+                      var statusError = new StatusError(tx_params, tx, receipt);
+                      return reject(statusError);
                     } else {
                       return accept({
                         tx: tx,

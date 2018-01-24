@@ -186,8 +186,7 @@ describe("Abstractions", function() {
     });
   });
 
-
-  it("errors with a message when ganache appends an error to the response", function(done){
+  it("errors with a revert message when ganache appends an error to the response", function(done){
     var example = Example.clone();
     var options = {
       vmErrorsOnRPCResponse: true,
@@ -195,7 +194,7 @@ describe("Abstractions", function() {
 
     util.setUpProvider(example, options).then(function(){
       example.new(1, {gas: 3141592}).then(function(instance) {
-        return instance.triggerError()
+        return instance.triggerRequireError()
       }).then(function(){
         assert.fail();
       }).catch(function(e){
@@ -205,7 +204,7 @@ describe("Abstractions", function() {
     }).catch(done);
   });
 
-  it("errors with a txHash/receipt when ganache does NOT append error to response", function(done){
+  it("errors with receipt and revert message (ganache err flag false)", function(done){
     var example = Example.clone();
     var options = {
       vmErrorsOnRPCResponse: false,
@@ -213,16 +212,75 @@ describe("Abstractions", function() {
 
     util.setUpProvider(example, options).then(function(){
       example.new(1, {gas: 3141592}).then(function(instance) {
-        return instance.triggerError()
+        return instance.triggerRequireError()
       }).then(function(){
         assert.fail();
       }).catch(function(e){
+        assert(e.message.includes('revert'));
         assert(parseInt(e.receipt.status, 16) == 0)
         done();
       });
     }).catch(done)
   });
 
+  it("errors with receipt & assert message when gas specified (ganache err flag false)", function(done){
+    var example = Example.clone();
+    var options = {
+      vmErrorsOnRPCResponse: false,
+    };
+
+    util.setUpProvider(example, options).then(function(result){
+      var gas = result.web3.toBigNumber(200000);
+
+      example.new(1, {gas: 3141592}).then(function(instance) {
+        return instance.triggerAssertError({gas: gas});
+      }).then(function(){
+        assert.fail();
+      }).catch(function(e){
+        assert(e.message.includes('invalid opcode'));
+        assert(parseInt(e.receipt.status, 16) == 0)
+        done();
+      });
+    }).catch(done)
+  });
+
+  it("errors with receipt & assert message when gas not specified (ganache err flag false)", function(done){
+    var example = Example.clone();
+    var options = {
+      vmErrorsOnRPCResponse: false,
+    };
+
+    util.setUpProvider(example, options).then(function(result){
+      example.new(1, {gas: 3141592}).then(function(instance) {
+        return instance.triggerAssertError();
+      }).then(function(){
+        assert.fail();
+      }).catch(function(e){
+        assert(e.message.includes('invalid opcode'));
+        assert(parseInt(e.receipt.status, 16) == 0)
+        done();
+      });
+    }).catch(done)
+  });
+
+  it("errors with receipt & assert message on internal OOG (ganache err flag false)", function(done){
+    var example = Example.clone();
+    var options = {
+      vmErrorsOnRPCResponse: false,
+    };
+
+    util.setUpProvider(example, options).then(function(result){
+      example.new(1, {gas: 3141592}).then(function(instance) {
+        return instance.runsOutOfGas();
+      }).then(function(){
+        assert.fail();
+      }).catch(function(e){
+        assert(e.message.includes('invalid opcode'));
+        assert(parseInt(e.receipt.status, 16) == 0)
+        done();
+      });
+    }).catch(done)
+  });
 
   it("creates a network object when an address is set if no network specified", function(done) {
     var NewExample = contract({

@@ -1,5 +1,6 @@
 contract Example {
   uint public value;
+  uint public counter;
   bool public fallbackTriggered;
   event ExampleEvent(address indexed _from, uint num);
 
@@ -24,8 +25,22 @@ contract Example {
     ExampleEvent(msg.sender, 8);
   }
 
-  function triggerError() {
+  function triggerRequireError() {
     require(false);
+  }
+
+  function triggerAssertError() {
+    assert(false);
+  }
+
+  function runsOutOfGas() {
+    consumesGas();
+  }
+
+  function consumesGas() {
+    for(uint i = 0; i < 10000; i++){
+      counter = i;
+    }
   }
 
   function() payable {
