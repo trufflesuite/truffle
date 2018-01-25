@@ -12,7 +12,8 @@ var command = {
     var debug = require("debug")("lib:commands:debug");
 
     var Config = require("truffle-config");
-    var Debug = require("../debug");
+    var Debugger = require("truffle-debugger");
+    var DebugUtils = require("truffle-debug-utils");
     var Environment = require("../environment");
     var ReplManager = require("../repl");
     var selectors = require("truffle-debugger").selectors;
@@ -38,9 +39,21 @@ var command = {
 
       var lastCommand = "n";
 
-      config.logger.log(Debug.formatStartMessage());
+      config.logger.log(DebugUtils.formatStartMessage());
 
-      Debug.start(config, txHash, function (err, session) {
+      var sessionPromise = DebugUtils.gatherArtifacts(config)
+        .then(function(contracts) {
+          return Debugger.forTx(txHash, {
+            provider: config.provider,
+            contracts: contracts
+          });
+        })
+        .then(function (bugger) {
+          return bugger.connect();
+        })
+        .catch(done);
+
+      sessionPromise.then(function (session) {
         if (err) return done(err);
 
         function splitLines(str) {
@@ -53,12 +66,12 @@ var command = {
           var affectedInstances = session.view(context.affectedInstances);
 
           config.logger.log("Addresses affected:");
-          config.logger.log(Debug.formatAffectedInstances(affectedInstances));
+          config.logger.log(DebugUtils.formatAffectedInstances(affectedInstances));
         }
 
         function printHelp() {
           config.logger.log("");
-          config.logger.log(Debug.formatHelp());
+          config.logger.log(DebugUtils.formatHelp());
         }
 
         function printFile() {
@@ -100,7 +113,7 @@ var command = {
           config.logger.log("");
 
           config.logger.log(
-            Debug.formatRangeLines(lines, range.lines)
+            DebugUtils.formatRangeLines(lines, range.lines)
           );
 
           config.logger.log("");
@@ -112,8 +125,10 @@ var command = {
           var traceIndex = session.view(trace.index);
 
           config.logger.log("");
-          config.logger.log(Debug.formatInstruction(traceIndex, instruction));
-          config.logger.log(Debug.formatStack(step.stack));
+          config.logger.log(
+            DebugUtils.formatInstruction(traceIndex, instruction)
+          );
+          config.logger.log(DebugUtils.formatStack(step.stack));
         };
 
         function interpreter(cmd, replContext, filename, callback) {

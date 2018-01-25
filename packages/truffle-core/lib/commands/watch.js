@@ -8,7 +8,7 @@ var command = {
     var chokidar = require("chokidar");
     var path = require("path");
     var colors = require("colors");
-    var Contracts = require("../contracts");
+    var Contracts = require("truffle-workflow-compile");
     var TruffleError = require("truffle-error");
 
     var config = Config.detect(options);

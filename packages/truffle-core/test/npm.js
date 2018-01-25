@@ -6,7 +6,7 @@ var mkdirp = require("mkdirp");
 var async = require("async");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
-var Contracts = require("../lib/contracts.js");
+var Contracts = require("truffle-workflow-compile");
 
 describe('NPM integration', function() {
   var config;

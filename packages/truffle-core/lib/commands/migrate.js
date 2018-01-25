@@ -24,7 +24,7 @@ var command = {
   run: function (options, done) {
     var OS = require("os");
     var Config = require("truffle-config");
-    var Contracts = require("../contracts");
+    var Contracts = require("truffle-workflow-compile");
     var Resolver = require("truffle-resolver");
     var Artifactor = require("truffle-artifactor");
     var Migrate = require("truffle-migrate");

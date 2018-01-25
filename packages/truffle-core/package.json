@@ -32,6 +32,7 @@
     "truffle-config": "^1.0.4",
     "truffle-contract": "^3.0.1",
     "truffle-contract-sources": "^0.0.1",
+    "truffle-debug-utils": "^1.0.0",
     "truffle-debugger": "^1.1.0",
     "truffle-deployer": "^2.0.1",
     "truffle-error": "^0.0.2",
@@ -43,6 +44,7 @@
     "truffle-require": "^1.0.5",
     "truffle-resolver": "^4.0.1",
     "truffle-solidity-utils": "^1.1.0",
+    "truffle-workflow-compile": "^1.0.0",
     "web3": "^0.20.1",
     "yargs": "^6.6.0"
   },
