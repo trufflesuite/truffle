@@ -76,9 +76,11 @@ var compile = function(sources, options, callback) {
       optimizer: options.solc.optimizer,
       outputSelection: {
         "*": {
+          "": [
+            "legacyAST"
+          ],
           "*": [
             "abi",
-            "ast",
             "evm.bytecode.object",
             "evm.bytecode.sourceMap",
             "evm.deployedBytecode.object",
@@ -159,6 +161,10 @@ var compile = function(sources, options, callback) {
         }
       }
 
+      // Reorder ABI so functions are listed in the order they appear
+      // in the source file. Solidity tests need to execute in their expected sequence.
+      contract_definition.abi = orderABI(contract_definition);
+
       // Go through the link references and replace them with older-style
       // identifiers. We'll do this until we're ready to making a breaking
       // change to this code.
@@ -208,6 +214,63 @@ function replaceLinkReferences(bytecode, linkReferences, libraryName) {
 
   return bytecode;
 };
+
+function orderABI(contract){
+  var contract_definition;
+  var ordered_function_names = [];
+  var ordered_functions = [];
+
+  for (var i = 0; i < contract.ast.children.length; i++) {
+    var definition = contract.ast.children[i];
+
+    if (definition.name != "ContractDefinition") continue;
+
+    contract_definition = definition;
+    break;
+  }
+
+  if (!contract_definition) return contract.abi;
+  if (!contract_definition.children) return contract.abi;
+
+  contract_definition.children.forEach(function(child) {
+    if (child.name == "FunctionDefinition") {
+      ordered_function_names.push(child.attributes.name);
+    }
+  });
+
+  // Put function names in a hash with their order, lowest first, for speed.
+  var functions_to_remove = ordered_function_names.reduce(function(obj, value, index) {
+    obj[value] = index;
+    return obj;
+  }, {});
+
+  // Filter out functions from the abi
+  var function_definitions = contract.abi.filter(function(item) {
+    return functions_to_remove[item.name] != null;
+  });
+
+  // Sort removed function defintions
+  function_definitions = function_definitions.sort(function(item_a, item_b) {
+    var a = functions_to_remove[item_a.name];
+    var b = functions_to_remove[item_b.name];
+
+    if (a > b) return 1;
+    if (a < b) return -1;
+    return 0;
+  });
+
+  // Create a new ABI, placing ordered functions at the end.
+  var newABI = [];
+  contract.abi.forEach(function(item) {
+    if (functions_to_remove[item.name] != null) return;
+    newABI.push(item);
+  });
+
+  // Now pop the ordered functions definitions on to the end of the abi..
+  Array.prototype.push.apply(newABI, function_definitions);
+
+  return newABI;
+}
 
 
 // contracts_directory: String. Directory where .sol files can be found.
