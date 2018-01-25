@@ -10,8 +10,7 @@
     "truffle-compile": "^3.0.4",
     "truffle-config": "^1.0.4",
     "truffle-expect": "^0.0.3",
-    "truffle-resolver": "^4.0.1",
-    "web3": "^0.20.1"
+    "truffle-resolver": "^4.0.1"
   },
   "main": "index.js",
   "scripts": {

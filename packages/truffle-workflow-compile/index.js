@@ -4,7 +4,6 @@ var mkdirp = require("mkdirp");
 var path = require("path");
 var Config = require("truffle-config");
 var compile = require("truffle-compile");
-var Web3 = require("web3");
 var expect = require("truffle-expect");
 var _ = require("lodash");
 var Resolver = require("truffle-resolver");
