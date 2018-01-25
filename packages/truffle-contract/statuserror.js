@@ -1,9 +1,10 @@
 var TruffleError = require("truffle-error");
 var inherits = require("util").inherits;
-var defaultGas = 90000;
 var web3 = require("web3");
 
 inherits(StatusError, TruffleError);
+
+var defaultGas = 90000;
 
 function StatusError(args, tx, receipt) {
   var message;
