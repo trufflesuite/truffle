@@ -26,8 +26,8 @@ function TestRunner(options) {
   this.initial_resolver = options.resolver;
   this.provider = options.provider;
 
-  this.can_shapshot = false;
-  this.first_snapshot = false;
+  this.can_snapshot = false;
+  this.first_snapshot = true;
   this.initial_snapshot = null;
   this.known_events = {};
   this.web3 = new Web3();
@@ -89,7 +89,7 @@ TestRunner.prototype.initialize = function(callback) {
         self.initial_snapshot = initial_snapshot;
       }
 
-      self.first_snapshot = false
+      self.first_snapshot = false;
 
       afterStateReset();
     });
