@@ -1,6 +1,6 @@
 var assert = require("chai").assert;
 var Box = require("truffle-box");
-var Contracts = require("../lib/contracts");
+var Contracts = require("truffle-workflow-compile");
 var Artifactor = require("truffle-artifactor");
 var Resolver = require("truffle-resolver");
 var path = require("path");

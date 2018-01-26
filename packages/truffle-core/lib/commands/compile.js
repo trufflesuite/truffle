@@ -9,7 +9,7 @@ var command = {
   },
   run: function (options, done) {
     var Config = require("truffle-config");
-    var Contracts = require("../contracts");
+    var Contracts = require("truffle-workflow-compile");
 
     var config = Config.detect(options);
     Contracts.compile(config, done);
