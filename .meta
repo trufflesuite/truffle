@@ -10,6 +10,7 @@
     "dependencies/truffle-contract-schema": "git@github.com:trufflesuite/truffle-contract-schema.git",
     "dependencies/truffle-contract-sources": "git@github.com:trufflesuite/truffle-contract-sources.git",
     "dependencies/truffle-core": "git@github.com:trufflesuite/truffle-core.git",
+    "dependencies/truffle-debug-utils": "git@github.com:trufflesuite/truffle-debug-utils.git",
     "dependencies/truffle-debugger": "git@github.com:trufflesuite/truffle-debugger.git",
     "dependencies/truffle-deployer": "git@github.com:trufflesuite/truffle-deployer.git",
     "dependencies/truffle-error": "git@github.com:trufflesuite/truffle-error.git",
@@ -20,6 +21,7 @@
     "dependencies/truffle-provisioner": "git@github.com:trufflesuite/truffle-provisioner.git",
     "dependencies/truffle-require": "git@github.com:trufflesuite/truffle-require.git",
     "dependencies/truffle-resolver": "git@github.com:trufflesuite/truffle-resolver.git",
-    "dependencies/truffle-solidity-utils": "git@github.com:trufflesuite/truffle-solidity-utils.git"
+    "dependencies/truffle-solidity-utils": "git@github.com:trufflesuite/truffle-solidity-utils.git",
+    "dependencies/truffle-workflow-compile": "git@github.com:trufflesuite/truffle-workflow-compile.git"
   }
 }
