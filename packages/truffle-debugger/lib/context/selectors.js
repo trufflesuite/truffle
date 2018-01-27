@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:selectors:currentContext");
+const debug = debugModule("debugger:context:selectors");
 
 import { createSelector } from "reselect";
 import { createNestedSelector } from "../selectors";

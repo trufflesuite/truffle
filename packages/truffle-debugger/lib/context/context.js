@@ -3,7 +3,7 @@ import debugModule from "debug";
 import SolidityUtils from "truffle-solidity-utils";
 import CodeUtils from "truffle-code-utils";
 
-const debug = debugModule("debugger:context");
+const debug = debugModule("debugger:context:context");
 
 /**
  * Scope
