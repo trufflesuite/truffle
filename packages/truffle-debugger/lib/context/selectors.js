@@ -6,20 +6,38 @@ import { createNestedSelector } from "../selectors";
 
 import evm from "../evm/selectors";
 
+const contexts = (state, props) => state.contexts
 
-const contextSet = (state, props) => props.contexts
+const forAddress = createSelector(
+  [contexts],
+
+  (contexts) => (
+    (address) => contexts.list[ contexts.indexForAddress[address] ]
+  )
+);
+
+const forBinary = createSelector(
+  [contexts],
+
+  (contexts) => (
+    (binary) => contexts.list[ contexts.indexForBinary[binary] ]
+  )
+);
+
 
 const currentContext = createSelector(
-  [evm.current.call, contextSet],
+  [evm.current.call, forAddress, forBinary],
 
-  ({address, binary}, contexts) => {
+  ({address, binary}, contextForAddress, contextForBinary) => {
     if (address) {
-      return contexts.contextForAddress(address);
+      return contextForAddress(address);
     } else {
-      return contexts.contextForBinary(binary);
+      return contextForBinary(binary);
     }
   }
 )
+
+const contextSet = (state, props) => props.contexts
 
 const affectedInstances = createSelector(
   [contextSet],
@@ -36,6 +54,8 @@ const missingSources = createSelector(
 );
 
 let selector = createNestedSelector({
+  forAddress,
+  forBinary,
   current: currentContext,
   affectedInstances: affectedInstances,
   missingSources: missingSources
