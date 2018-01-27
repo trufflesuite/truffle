@@ -1,17 +1,26 @@
 import { combineReducers } from "redux";
 
-import { TOCK, END_OF_TRACE } from "./actions";
+import * as actions from "./actions";
 
 export function index(state = 0, action) {
-  if (action.type == TOCK || action.type == END_OF_TRACE) {
+  if (action.type == actions.TOCK || action.type == actions.END_OF_TRACE) {
     return state + 1;
   } else {
     return state;
   }
 }
 
+export function steps(state = null, action) {
+  if (action.type == actions.SAVE_STEPS) {
+    return action.steps;
+  } else {
+    return state;
+  }
+}
+
 const reducer = combineReducers({
-  index
+  index,
+  steps
 });
 
 export default reducer;

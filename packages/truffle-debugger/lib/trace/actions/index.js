@@ -1,3 +1,11 @@
+export const SAVE_STEPS = "SAVE_STEPS";
+export function saveSteps(steps) {
+  return {
+    type: SAVE_STEPS,
+    steps
+  };
+}
+
 export const NEXT = "NEXT";
 export function next() {
   return {type: NEXT};
