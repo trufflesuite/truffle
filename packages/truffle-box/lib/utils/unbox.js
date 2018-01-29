@@ -39,7 +39,10 @@ function verifyURL(url) {
     };
     request(options, function(error, r) {
       if (error) {
-        return reject(new Error("Error making request. Please check the format of the requested resource: " + options.uri));
+        return reject(new Error(
+          "Error making request to " + options.uri + ". Got error: " + error.message +
+          ". Please check the format of the requested resource."
+        ));
       } else if (r.statusCode == 404) {
         return reject(new Error("Truffle Box at URL " + url + " doesn't exist. If you believe this is an error, please contact Truffle support."));
       } else if (r.statusCode != 200) {
