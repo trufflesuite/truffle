@@ -70,7 +70,9 @@ var contract = (function(module) {
     // context object between `handleHash` and `handleReceipt`.
     handleError: function(context, error){
       context.promiEvent.eventEmitter.emit('error', error);
-      context.promiEvent.reject(error);
+      if (!context.allowError){
+        context.promiEvent.reject(error);
+      }
     },
 
     handleHash: function(context, hash){
@@ -86,8 +88,13 @@ var contract = (function(module) {
 
     handleReceipt: function(context, receipt){
       var logs;
-      clearInterval(context.interval);
+      context.receipt = receipt;
       context.promiEvent.eventEmitter.emit('receipt', receipt)
+
+      if (context.onlyEmitReceipt)
+        return;
+
+      clearInterval(context.interval);
 
       if (parseInt(receipt.status) == 0){
         var error = new StatusError(context.tx_params, context.transactionHash, receipt);
@@ -171,8 +178,6 @@ var contract = (function(module) {
 
         var context = {
           contract: C,
-          transactionHash: null,
-          interval: null,
           promiEvent: new Web3PromiEvent(),
           tx_params: tx_params
         }
@@ -219,8 +224,6 @@ var contract = (function(module) {
 
         var context = {
           contract: C,
-          transactionHash: null,
-          interval: null,
           promiEvent: new Web3PromiEvent(),
           tx_params: tx_params
         }
@@ -290,6 +293,9 @@ var contract = (function(module) {
         fn.addProp(key, fn._properties[key]);
       });
 
+      // estimateGas as sub-property of new
+      fn['new'].estimateGas = fn._static_methods.estimateDeployment.bind(fn);
+
       return fn;
     },
     linkBytecode: function(bytecode, links) {
@@ -343,6 +349,7 @@ var contract = (function(module) {
       }
     }
 
+    //this._static_methods.new.estimateGas = Utils.executeAsDeploymentEstimate(self);
     this.sendTransaction = Utils.executeSendTransaction(constructor, this);
 
     this.send = function(value) {
@@ -378,10 +385,13 @@ var contract = (function(module) {
 
       var args = Array.prototype.slice.call(arguments);
 
-      // We return this at the bottom of new() and invoke its
-      // resolve() / reject() methods within the Promise chain that
-      // unfolds below.
-      var promiEvent = new Web3PromiEvent();
+      // Args and Promievent for the event management cascade
+      var context = {
+        promiEvent: new Web3PromiEvent(),
+        allowError: true,
+        doNotResolve: true,
+        onlyEmitReceipt: true
+      }
 
       self.detectNetwork().then(function(network_id) {
         // After the network is set, check to make sure everything's ship shape.
@@ -421,48 +431,62 @@ var contract = (function(module) {
 
         delete tx_params['data'];
 
-        var events = {
-          transactionHash: null,
-          receipt: null,
-          shouldContinue: true,
-        };
-
         var contract_class = new self.web3.eth.Contract(self.abi, tx_params);
 
         contract_class
           .deploy(options)
           .send()
-          .on('error', function(error){
-            promiEvent.eventEmitter.emit('error', error)
-          })
-          .on('transactionHash', function(hash){
-            events.transactionHash = hash;
-            promiEvent.eventEmitter.emit('transactionHash', hash)
-          })
-          .on('receipt', function(receipt){
-            events.receipt = receipt;
-            promiEvent.eventEmitter.emit('receipt', receipt)
-          })
-          .on('confirmation', function(number, receipt){
-            promiEvent.eventEmitter.emit('confirmation', number, receipt)
-          })
-          .then(function(instance){
-            if (parseInt(events.receipt.status) == 0){
-              var error = new StatusError(tx_params, events.transactionHash, events.receipt);
-              promiEvent.reject(error)
-            }
-            instance.transactionHash = events.transactionHash;
-            promiEvent.resolve(new self(instance));
-          })
-          .catch(promiEvent.reject);
-      }).catch(promiEvent.reject);
+          .on('error', Utils.handleError.bind(this, context))
+          .on('transactionHash', Utils.handleHash.bind(this, context))
+          .on('receipt', Utils.handleReceipt.bind(this, context))
+          .on('confirmation', Utils.handleConfirmation.bind(this, context))
 
-      return promiEvent.eventEmitter;
+          .then(function(instance){
+            clearInterval(context.interval);
+
+            if (parseInt(context.receipt.status) == 0){
+              var error = new StatusError(tx_params, context.transactionHash, context.receipt);
+              context.promiEvent.reject(error)
+            }
+
+            instance.transactionHash = context.transactionHash;
+            context.promiEvent.resolve(new self(instance));
+          })
+          .catch(context.promiEvent.reject)
+      }).catch(context.promiEvent.reject);
+
+      return context.promiEvent.eventEmitter;
 
       /* Note: this is the way `contract_class` was being
          instantiated originally. Is the `apply` still important?
          ---> contract_class.new.apply(contract_class, args);
        */
+    },
+
+    estimateDeployment : function(){
+      var self = this;
+      var args = Array.prototype.slice.call(arguments);
+      var tx_params = {};
+      var last_arg = args[args.length - 1];
+
+      // It's only tx_params if it's an object and not a BigNumber.
+      if (Utils.is_object(last_arg) && !Utils.is_big_number(last_arg)) {
+        tx_params = args.pop();
+      }
+
+      return self.detectNetwork().then(function() {
+        tx_params = Utils.merge(self.class_defaults, tx_params);
+
+        var options = {
+          data: tx_params.data || self.binary,
+          arguments: args
+        };
+
+        delete tx_params['data'];
+
+        var contract_class = new self.web3.eth.Contract(self.abi, tx_params);
+        return contract_class.deploy(options).estimateGas(tx_params)
+      });
     },
 
     at: function(address) {

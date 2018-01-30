@@ -33,6 +33,7 @@
   },
   "devDependencies": {
     "async": "^2.3.0",
+    "bignumber.js": "^6.0.0",
     "browserify": "^14.0.0",
     "chai": "^3.5.0",
     "debug": "^3.1.0",
