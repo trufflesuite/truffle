@@ -9,7 +9,7 @@ import CodeUtils from "truffle-code-utils";
 import context from "../context/selectors";
 import evm from "../evm/selectors";
 
-const functionDepth = (state, props) => state.solidity.functionDepth;
+const functionDepth = (state) => state.solidity.functionDepth;
 
 let currentState = createNestedSelector({
   functionDepth

@@ -12,9 +12,4 @@ const reduceState = combineReducers({
   trace,
 });
 
-export default function reduce(session, action) {
-  return {
-    props: session.props,
-    state: reduceState(session.state, action)
-  }
-}
+export default reduceState;

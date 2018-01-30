@@ -1,17 +1,16 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:context:sagas");
 
-import { takeLatest, put } from "redux-saga/effects";
-import { view } from "../effects";
+import { takeLatest, put, select } from "redux-saga/effects";
 
 import * as actions from "./actions";
 import context from "./selectors";
 
 function *addOrMerge(newContext) {
   debug("inside addOrMerge %o", newContext.binary);
-  let binaryIndexes = yield view(context.indexBy.binary);
+  let binaryIndexes = yield select(context.indexBy.binary);
 
-  let all = yield view(context.list);
+  let all = yield select(context.list);
   debug("all: %o", all);
 
   let index = binaryIndexes[newContext.binary];

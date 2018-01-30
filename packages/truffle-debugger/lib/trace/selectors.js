@@ -1,14 +1,14 @@
 import { createSelector } from "reselect";
 import { createNestedSelector } from "../selectors";
 
-const traceStep = (state, props) => state.trace.steps[state.trace.index];
+const traceStep = (state) => state.trace.steps[state.trace.index];
 
-const stepsRemaining = (state, props) =>
+const stepsRemaining = (state) =>
   state.trace.steps.length - state.trace.index;
 
-const steps = (state, props) => [...state.trace.steps];
+const steps = (state) => [...state.trace.steps];
 
-const index = (state, props) => state.trace.index;
+const index = (state) => state.trace.index;
 
 let selector = createNestedSelector({
   index,

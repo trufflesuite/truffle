@@ -3,7 +3,7 @@ import { createNestedSelector } from "../selectors";
 
 import trace from "../trace/selectors";
 
-const callstack = (state, props) => state.evm.callstack;
+const callstack = (state) => state.evm.callstack;
 
 const currentCall = createSelector(
   [callstack],

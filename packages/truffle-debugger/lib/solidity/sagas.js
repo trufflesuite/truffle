@@ -1,8 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:solidity:sagas");
 
-import { call, put, take } from "redux-saga/effects";
-import { view } from "../effects";
+import { call, put, take, select } from "redux-saga/effects";
 
 import { TICK } from "../trace/actions";
 import evm from "../evm/selectors";
@@ -14,11 +13,11 @@ function* functionDepthSaga () {
   while (true) {
     yield take(TICK);
     debug("got TICK");
-    let instruction = yield view(solidity.nextStep.nextInstruction);
+    let instruction = yield select(solidity.nextStep.nextInstruction);
     debug("instruction: %o", instruction);
 
-    if (yield view(evm.nextStep.isJump)) {
-      let jumpDirection = yield view(solidity.nextStep.jumpDirection);
+    if (yield select(evm.nextStep.isJump)) {
+      let jumpDirection = yield select(solidity.nextStep.jumpDirection);
 
 
       yield put(actions.jump(jumpDirection));

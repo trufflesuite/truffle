@@ -21,12 +21,7 @@ export default class Session {
    * @private
    */
   constructor(contracts, trace, traceContexts, initialState) {
-    let wrappedState = {
-      props: { },
-      state: initialState
-    };
-
-    this._store = configureStore(reducer, rootSaga, wrappedState);
+    this._store = configureStore(reducer, rootSaga, initialState);
 
     // TODO remove awkward manual dispatch here, replace with `init` saga maybe
     this._store.dispatch(saveSteps(trace));
@@ -39,9 +34,7 @@ export default class Session {
   }
 
   view(selector) {
-    let { state, props } = this.state;
-
-    return selector(state, props);
+    return selector(this.state);
   }
 
   get finished() {

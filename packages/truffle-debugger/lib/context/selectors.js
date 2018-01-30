@@ -6,7 +6,7 @@ import { createNestedSelector } from "../selectors";
 
 import evm from "../evm/selectors";
 
-const contexts = (state, props) => {
+const contexts = (state) => {
   const defaultView = {
     list: [],
     indexForAddress: {},

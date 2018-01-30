@@ -1,16 +1,15 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:trace:sagas");
 
-import { call, fork, take, takeLatest, put } from "redux-saga/effects";
-import { view } from "../effects";
+import { takeLatest, put, select } from "redux-saga/effects";
 
 import * as actions from "./actions";
 import trace from "./selectors";
 
 export function* next() {
-  let remaining = yield view(trace.stepsRemaining);
+  let remaining = yield select(trace.stepsRemaining);
   debug("remaining: %o", remaining);
-  let steps = yield view(trace.steps);
+  let steps = yield select(trace.steps);
   debug("total steps: %o", steps.length);
 
   if (remaining > 0) {
