@@ -1,7 +1,8 @@
 var ethJSABI = require("ethjs-abi");
 var BlockchainUtils = require("truffle-blockchain-utils");
 var Web3 = require("web3");
-var StatusError = require("./statuserror.js")
+var StatusError = require("./statuserror.js");
+var Web3PromiEvent = require('web3-core-promievent');
 
 // For browserified version. If browserify gave us an empty version,
 // look for the one provided by the user.
@@ -24,7 +25,8 @@ var contract = (function(module) {
     return this.provider.sendAsync.apply(this.provider, arguments);
   };
 
-  var BigNumber = (new Web3()).toBigNumber(0).constructor;
+  // Helper web3
+  var _web3 = new Web3();
 
   var Utils = {
     is_object: function(val) {
@@ -33,84 +35,111 @@ var contract = (function(module) {
     is_big_number: function(val) {
       if (typeof val != "object") return false;
 
-      // Instanceof won't work because we have multiple versions of Web3.
-      try {
-        new BigNumber(val);
-        return true;
-      } catch (e) {
-        return false;
+      return _web3.utils.isBN(val) || _web3.utils.isBigNumber(val);
+    },
+
+    // Error after some number of ms if receipt never arrives
+    synchronize: function(start, context){
+      var sync = context.contract.synchronization_timeout;
+      var timeout;
+
+      ( sync === 0 || sync !== undefined)
+        ? timeout = sync
+        : timeout = 240000;
+
+      if (timeout > 0 && new Date().getTime() - start > timeout) {
+        var err = new Error("Transaction " + tx + " wasn't processed in " + (timeout / 1000) + " seconds!")
+        context.promievent.reject(err);
       }
     },
-    decodeLogs: function(C, instance, logs) {
-      return logs.map(function(log) {
-        var logABI = C.events[log.topics[0]];
 
-        if (logABI == null) {
-          return null;
-        }
+    // Web3 1.0 does its own event decoding, so just translating
+    // a couple keys for backward compatibility.
+    convertEventsToLogs: function(events){
+      var logs = [];
+      Object.keys(events).forEach(function(key){
+        events[key].args = events[key].returnValues;
+        logs.push(events[key]);
+      })
+      return logs;
+    },
 
-        // This function has been adapted from web3's SolidityEvent.decode() method,
-        // and built to work with ethjs-abi.
+    // Emitter handlers for `send` / `sendTransaction` / `new`:
+    // This is the order they're executed in. For `.send` you can have
+    // either EventEmitter OR Promise, not both. So we track state in the
+    // context object between `handleHash` and `handleReceipt`.
+    handleError: function(context, error){
+      context.promiEvent.eventEmitter.emit('error', error);
+      context.promiEvent.reject(error);
+    },
 
-        var copy = Utils.merge({}, log);
+    handleHash: function(context, hash){
+      var start = new Date().getTime();
+      context.transactionHash = hash;
+      context.promiEvent.eventEmitter.emit('transactionHash', hash);
+      context.interval = setInterval(function(){synchronize(start, context)}, 1000);
+    },
 
-        function partialABI(fullABI, indexed) {
-          var inputs = fullABI.inputs.filter(function (i) {
-            return i.indexed === indexed;
-          });
+    handleConfirmation: function(context, number, receipt){
+      context.promiEvent.eventEmitter.emit('confirmation', number, receipt)
+    },
 
-          var partial = {
-            inputs: inputs,
-            name: fullABI.name,
-            type: fullABI.type,
-            anonymous: fullABI.anonymous
-          };
+    handleReceipt: function(context, receipt){
+      var logs;
+      clearInterval(context.interval);
+      context.promiEvent.eventEmitter.emit('receipt', receipt)
 
-          return partial;
-        }
+      if (parseInt(receipt.status) == 0){
+        var error = new StatusError(context.tx_params, context.transactionHash, receipt);
+        context.promiEvent.reject(error)
+      }
 
-        var argTopics = logABI.anonymous ? copy.topics : copy.topics.slice(1);
-        var indexedData = "0x" + argTopics.map(function (topics) { return topics.slice(2); }).join("");
-        var indexedParams = ethJSABI.decodeEvent(partialABI(logABI, true), indexedData);
+      (receipt.events)
+        ? logs = Utils.convertEventsToLogs(receipt.events)
+        : log = [];
 
-        var notIndexedData = copy.data;
-        var notIndexedParams = ethJSABI.decodeEvent(partialABI(logABI, false), notIndexedData);
-
-        copy.event = logABI.name;
-
-        copy.args = logABI.inputs.reduce(function (acc, current) {
-          var val = indexedParams[current.name];
-
-          if (val === undefined) {
-            val = notIndexedParams[current.name];
-          }
-
-          acc[current.name] = val;
-          return acc;
-        }, {});
-
-        Object.keys(copy.args).forEach(function(key) {
-          var val = copy.args[key];
-
-          // We have BN. Convert it to BigNumber
-          if (val.constructor.isBN) {
-            copy.args[key] = C.web3.toBigNumber("0x" + val.toString(16));
-          }
-        });
-
-        delete copy.data;
-        delete copy.topics;
-
-        return copy;
-      }).filter(function(log) {
-        return log != null;
+      context.promiEvent.resolve({
+        tx: context.transactionHash,
+        receipt: receipt,
+        logs: logs
       });
     },
-    promisifyFunction: function(fn, C) {
-      var self = this;
-      return function() {
-        var instance = this;
 
+    // Execution wrappers
+    executeAsCall: function(fn, C, inputs) {
+      return function() {
+        var args = Array.prototype.slice.call(arguments);
+        var tx_params = {};
+        var last_arg = args[args.length - 1];
+        var defaultBlock;
+
+        // It's only tx_params if it's an object and not a BigNumber.
+        // It's only defaultBlock if there's an extra non-object input that's not tx_params.
+        var hasTxParams = Utils.is_object(last_arg) && !Utils.is_big_number(last_arg);
+        var hasDefaultBlock = !hasTxParams && args.length > inputs.length;
+        var hasDefaultBlockWithParams = hasTxParams && args.length - 1 > inputs.length;
+
+        // Detect and extract defaultBlock parameter
+        if (hasDefaultBlock || hasDefaultBlockWithParams) {
+            defaultBlock = args.pop();
+        }
+        // Get tx params
+        if (hasTxParams) {
+          tx_params = args.pop();
+        }
+
+        tx_params = Utils.merge(C.class_defaults, tx_params);
+
+        return C.detectNetwork().then(function() {
+          return (defaultBlock !== undefined)
+            ? fn(...args).call(tx_params, defaultBlock)
+            : fn(...args).call(tx_params);
+        });
+      };
+    },
+
+    executeAsEstimate : function(fn, C){
+      return function() {
         var args = Array.prototype.slice.call(arguments);
         var tx_params = {};
         var last_arg = args[args.length - 1];
@@ -123,89 +152,95 @@ var contract = (function(module) {
         tx_params = Utils.merge(C.class_defaults, tx_params);
 
         return C.detectNetwork().then(function() {
-          return new Promise(function(accept, reject) {
-            var callback = function(error, result) {
-              if (error != null) {
-                reject(error);
-              } else {
-                accept(result);
-              }
-            };
-            args.push(tx_params, callback);
-            fn.apply(instance.contract, args);
-          });
+            return fn(...args).estimateGas(tx_params);
         });
       };
     },
-    synchronizeFunction: function(fn, instance, C) {
-      var self = this;
+
+    executeAsSend: function(fn, instance, C) {
       return function() {
-        var args = Array.prototype.slice.call(arguments);
         var tx_params = {};
+        var args = Array.prototype.slice.call(arguments);
         var last_arg = args[args.length - 1];
 
         // It's only tx_params if it's an object and not a BigNumber.
         if (Utils.is_object(last_arg) && !Utils.is_big_number(last_arg)) {
           tx_params = args.pop();
         }
-
         tx_params = Utils.merge(C.class_defaults, tx_params);
 
-        return C.detectNetwork().then(function() {
-          return new Promise(function(accept, reject) {
-            var callback = function(error, tx) {
-              if (error != null) {
-                reject(error);
-                return;
-              }
+        var context = {
+          contract: C,
+          transactionHash: null,
+          interval: null,
+          promiEvent: new Web3PromiEvent(),
+          tx_params: tx_params
+        }
 
-              var timeout;
-              if (C.synchronization_timeout === 0 || C.synchronization_timeout !== undefined) {
-                timeout = C.synchronization_timeout;
-              } else {
-                timeout = 240000;
-              }
+        // .then never resolves here if there are emitters attached, so
+        // we're just resolving our own PromiEvent in the receipt handler.
+        C.detectNetwork().then(function() {
+          fn(...args).send(tx_params)
+            .on('error', Utils.handleError.bind(this, context))
+            .on('transactionHash', Utils.handleHash.bind(this, context))
+            .on('confirmation', Utils.handleConfirmation.bind(this, context))
+            .on('receipt', Utils.handleReceipt.bind(this, context));
 
-              var start = new Date().getTime();
+        }).catch(context.promiEvent.reject);
 
-              var make_attempt = function() {
-                C.web3.eth.getTransactionReceipt(tx, function(err, receipt) {
-                  if (err && !err.toString().includes('unknown transaction')){
-                    return reject(err);
-                  }
-
-                  // Reject on transaction failures, accept otherwise
-                  // Handles "0x00" or hex 0
-                  if (receipt != null) {
-                    if (parseInt(receipt.status, 16) == 0){
-                      var statusError = new StatusError(tx_params, tx, receipt);
-                      return reject(statusError);
-                    } else {
-                      return accept({
-                        tx: tx,
-                        receipt: receipt,
-                        logs: Utils.decodeLogs(C, instance, receipt.logs)
-                      });
-                    }
-                  }
-
-                  if (timeout > 0 && new Date().getTime() - start > timeout) {
-                    return reject(new Error("Transaction " + tx + " wasn't processed in " + (timeout / 1000) + " seconds!"));
-                  }
-
-                  setTimeout(make_attempt, 1000);
-                });
-              };
-
-              make_attempt();
-            };
-
-            args.push(tx_params, callback);
-            fn.apply(self, args);
-          });
-        });
+        return context.promiEvent.eventEmitter;
       };
     },
+
+    executeSendTransaction : function(C, _self) {
+      var self = _self;
+      return function(){
+        var tx_params;
+        var callback;
+        var args = Array.prototype.slice.call(arguments);
+
+        if (args.length){
+          tx_params = args[0];
+        }
+
+        if (typeof tx_params == "function") {
+          callback = tx_params;
+          tx_params = {};
+        }
+
+        tx_params = Utils.merge(C.class_defaults, tx_params);
+        tx_params.to = self.address;
+
+        if (callback !== undefined){
+          return C.detectNetwork.then(function(){
+            C.web3.eth.sendTransaction.apply(C.web3.eth, [tx_params, callback]);
+          })
+        }
+
+        var context = {
+          contract: C,
+          transactionHash: null,
+          interval: null,
+          promiEvent: new Web3PromiEvent(),
+          tx_params: tx_params
+        }
+
+        // .then never resolves here if there are emitters attached, so
+        // we're just resolving our own PromiEvent in the receipt handler.
+        C.detectNetwork().then(function() {
+
+          C.web3.eth.sendTransaction(tx_params)
+            .on('error', Utils.handleError.bind(this, context))
+            .on('transactionHash', Utils.handleHash.bind(this, context))
+            .on('confirmation', Utils.handleConfirmation.bind(this, context))
+            .on('receipt', Utils.handleReceipt.bind(this, context));
+
+        }).catch(context.promiEvent.reject);
+
+        return context.promiEvent.eventEmitter;
+      }
+    },
+
     merge: function() {
       var merged = {};
       var args = Array.prototype.slice.call(arguments);
@@ -275,12 +310,14 @@ var contract = (function(module) {
   function Contract(contract) {
     var self = this;
     var constructor = this.constructor;
+
     this.abi = constructor.abi;
 
+    // at:
     if (typeof contract == "string") {
-      var address = contract;
-      var contract_class = constructor.web3.eth.contract(this.abi);
-      contract = contract_class.at(address);
+      var contract_class = new constructor.web3.eth.Contract(this.abi);
+      contract_class.options.address = contract;
+      contract = contract_class;
     }
 
     this.contract = contract;
@@ -290,15 +327,15 @@ var contract = (function(module) {
       var item = this.abi[i];
       if (item.type == "function") {
         if (item.constant == true) {
-          this[item.name] = Utils.promisifyFunction(contract[item.name], constructor);
+          this[item.name] = Utils.executeAsCall(contract.methods[item.name], constructor, item.inputs);
         } else {
-          this[item.name] = Utils.synchronizeFunction(contract[item.name], this, constructor);
+          this[item.name] = Utils.executeAsSend(contract.methods[item.name], this, constructor);
         }
 
-        this[item.name].call = Utils.promisifyFunction(contract[item.name].call, constructor);
-        this[item.name].sendTransaction = Utils.promisifyFunction(contract[item.name].sendTransaction, constructor);
-        this[item.name].request = contract[item.name].request;
-        this[item.name].estimateGas = Utils.promisifyFunction(contract[item.name].estimateGas, constructor);
+        this[item.name].call = Utils.executeAsCall(contract.methods[item.name], constructor, item.inputs);
+        this[item.name].sendTransaction = Utils.executeAsSend(contract.methods[item.name], constructor);
+        this[item.name].request = contract.methods[item.name].request;
+        this[item.name].estimateGas = Utils.executeAsEstimate(contract.methods[item.name], constructor);
       }
 
       if (item.type == "event") {
@@ -306,23 +343,14 @@ var contract = (function(module) {
       }
     }
 
-    this.sendTransaction = Utils.synchronizeFunction(function(tx_params, callback) {
-      if (typeof tx_params == "function") {
-        callback = tx_params;
-        tx_params = {};
-      }
-
-      tx_params.to = self.address;
-
-      constructor.web3.eth.sendTransaction.apply(constructor.web3.eth, [tx_params, callback]);
-    }, this, constructor);
+    this.sendTransaction = Utils.executeSendTransaction(constructor, this);
 
     this.send = function(value) {
       return self.sendTransaction({value: value});
     };
 
     this.allEvents = contract.allEvents;
-    this.address = contract.address;
+    this.address = contract.options.address;
     this.transactionHash = contract.transactionHash;
   };
 
@@ -344,13 +372,18 @@ var contract = (function(module) {
         throw new Error(this.contractName + " error: Please call setProvider() first before calling new().");
       }
 
-      var args = Array.prototype.slice.call(arguments);
-
       if (!this.bytecode) {
         throw new Error(this._json.contractName + " error: contract binary not set. Can't deploy new instance.");
       }
 
-      return self.detectNetwork().then(function(network_id) {
+      var args = Array.prototype.slice.call(arguments);
+
+      // We return this at the bottom of new() and invoke its
+      // resolve() / reject() methods within the Promise chain that
+      // unfolds below.
+      var promiEvent = new Web3PromiEvent();
+
+      self.detectNetwork().then(function(network_id) {
         // After the network is set, check to make sure everything's ship shape.
         var regex = /__[^_]+_+/g;
         var unlinked_libraries = self.binary.match(regex);
@@ -371,79 +404,89 @@ var contract = (function(module) {
           throw new Error(self.contractName + " contains unresolved libraries. You must deploy and link the following libraries before you can deploy a new version of " + self._json.contractName + ": " + unlinked_libraries);
         }
       }).then(function() {
-        return new Promise(function(accept, reject) {
-          var contract_class = self.web3.eth.contract(self.abi);
-          var tx_params = {};
-          var last_arg = args[args.length - 1];
+        var tx_params = {};
+        var last_arg = args[args.length - 1];
 
-          // It's only tx_params if it's an object and not a BigNumber.
-          if (Utils.is_object(last_arg) && !Utils.is_big_number(last_arg)) {
-            tx_params = args.pop();
-          }
+        // It's only tx_params if it's an object and not a BigNumber.
+        if (Utils.is_object(last_arg) && !Utils.is_big_number(last_arg)) {
+          tx_params = args.pop();
+        }
 
-          // Validate constructor args
-          var constructor = self.abi.filter(function(item){
-            return item.type === 'constructor';
-          });
+        tx_params = Utils.merge(self.class_defaults, tx_params);
 
-          if (constructor.length && constructor[0].inputs.length !== args.length){
-            throw new Error(self.contractName + " contract constructor expected " + constructor[0].inputs.length + " arguments, received " + args.length);
-          }
+        var options = {
+          data: tx_params.data || self.binary,
+          arguments: args
+        };
 
-          tx_params = Utils.merge(self.class_defaults, tx_params);
+        delete tx_params['data'];
 
-          if (tx_params.data == null) {
-            tx_params.data = self.binary;
-          }
+        var events = {
+          transactionHash: null,
+          receipt: null,
+          shouldContinue: true,
+        };
 
-          // web3 0.9.0 and above calls new this callback twice.
-          // Why, I have no idea...
-          var intermediary = function(err, web3_instance) {
-            if (err != null) {
-              reject(err);
-              return;
+        var contract_class = new self.web3.eth.Contract(self.abi, tx_params);
+
+        contract_class
+          .deploy(options)
+          .send()
+          .on('error', function(error){
+            promiEvent.eventEmitter.emit('error', error)
+          })
+          .on('transactionHash', function(hash){
+            events.transactionHash = hash;
+            promiEvent.eventEmitter.emit('transactionHash', hash)
+          })
+          .on('receipt', function(receipt){
+            events.receipt = receipt;
+            promiEvent.eventEmitter.emit('receipt', receipt)
+          })
+          .on('confirmation', function(number, receipt){
+            promiEvent.eventEmitter.emit('confirmation', number, receipt)
+          })
+          .then(function(instance){
+            if (parseInt(events.receipt.status) == 0){
+              var error = new StatusError(tx_params, events.transactionHash, events.receipt);
+              promiEvent.reject(error)
             }
+            instance.transactionHash = events.transactionHash;
+            promiEvent.resolve(new self(instance));
+          })
+          .catch(promiEvent.reject);
+      }).catch(promiEvent.reject);
 
-            if (err == null && web3_instance != null && web3_instance.address != null) {
-              accept(new self(web3_instance));
-            }
-          };
+      return promiEvent.eventEmitter;
 
-          args.push(tx_params, intermediary);
-          contract_class.new.apply(contract_class, args);
-        });
-      });
+      /* Note: this is the way `contract_class` was being
+         instantiated originally. Is the `apply` still important?
+         ---> contract_class.new.apply(contract_class, args);
+       */
     },
 
     at: function(address) {
       var self = this;
 
-      if (address == null || typeof address != "string" || address.length != 42) {
-        throw new Error("Invalid address passed to " + this._json.contractName + ".at(): " + address);
-      }
+      return new Promise(function(accept, reject){
+        if (address == null || typeof address != "string" || address.length != 42) {
+          reject(Error("Invalid address passed to " + this._json.contractName + ".at(): " + address));
+        }
 
-      var contract = new this(address);
-
-      // Add thennable to allow people opt into new recommended usage.
-      contract.then = function(fn) {
         return self.detectNetwork().then(function(network_id) {
           var instance = new self(address);
 
-          return new Promise(function(accept, reject) {
-            self.web3.eth.getCode(address, function(err, code) {
-              if (err) return reject(err);
+          return self.web3.eth.getCode(address).then(function(code){
+            var empty = code.replace("0x", "").replace(/0/g, "") === '';
 
-              if (!code || code.replace("0x", "").replace(/0/g, "") === '') {
-                return reject(new Error("Cannot create instance of " + self.contractName + "; no code at address " + address));
-              }
+            if (!code || empty) {
+              reject(new Error("Cannot create instance of " + self.contractName + "; no code at address " + address));
+            }
 
-              accept(instance);
-            });
+            accept(instance);
           });
-        }).then(fn);
-      };
-
-      return contract;
+        });
+      })
     },
 
     deployed: function() {
@@ -509,15 +552,12 @@ var contract = (function(module) {
           }
         }
 
-        self.web3.version.getNetwork(function(err, result) {
-          if (err) return reject(err);
-
-          var network_id = result.toString();
-
+        self.web3.eth.net.getId().then(function(network_id){
           // If we found the network via a number, let's use that.
           if (self.hasNetwork(network_id)) {
+
             self.setNetwork(network_id);
-            return accept();
+            accept(network_id);
           }
 
           // Otherwise, go through all the networks that are listed as
@@ -531,21 +571,23 @@ var contract = (function(module) {
           });
 
           Utils.parallel(matches, function(err, results) {
-            if (err) return reject(err);
+            if (err) reject(err);
 
             for (var i = 0; i < results.length; i++) {
               if (results[i]) {
+                console.log('parallel' + network_id);
                 self.setNetwork(uris[i]);
-                return accept();
+                accept(network_id);
               }
             }
 
             // We found nothing. Set the network id to whatever the provider states.
             self.setNetwork(network_id);
-
-            accept();
+            accept(network_id);
           });
 
+        }).catch(function(err){
+          reject(err);
         });
       });
     },
@@ -953,7 +995,6 @@ var contract = (function(module) {
   };
 
   Utils.bootstrap(Contract);
-
   module.exports = Contract;
 
   return Contract;

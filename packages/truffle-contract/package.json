@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "debug": "DEBUG=ganache-core mocha",
+    "test:debug": "$(npm bin)/mocha --inspect-brk",
     "compile": "browserify ./index.js -i web3 -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js"
   },
   "repository": {
