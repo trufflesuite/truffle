@@ -2,8 +2,6 @@ import debugModule from "debug";
 
 import Web3 from "web3";
 
-import { Context } from "../context";
-
 const debug = debugModule("debugger:web3");
 
 export default class Web3Adapter {
@@ -87,8 +85,8 @@ export default class Web3Adapter {
     debug("addresses: %O", addresses);
 
     var promises = Object.keys(addresses).map(async (address) => {
-      let deployedBinary = await this.getDeployedCode(address);
-      return new Context(deployedBinary, {address})
+      let binary = await this.getDeployedCode(address);
+      return {binary, addresses: [address]}
     });
 
     return await Promise.all(promises);

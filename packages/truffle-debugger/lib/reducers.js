@@ -1,13 +1,15 @@
 import { combineReducers } from "redux";
 
+import context from "./context/reducers";
 import evm from "./evm/reducers";
 import solidity from './solidity/reducers';
 import trace from "./trace/reducers";
 
 const reduceState = combineReducers({
-  trace,
+  context,
   evm,
-  solidity
+  solidity,
+  trace,
 });
 
 export default function reduce(session, action) {

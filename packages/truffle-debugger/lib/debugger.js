@@ -1,7 +1,6 @@
 import debugModule from 'debug';
 import expect from "truffle-expect";
 
-import { ContextSet } from "./context";
 import Session from "./session";
 import Web3Adapter from "./web3";
 
@@ -14,14 +13,16 @@ const debug = debugModule("debugger");
 
 export default class Debugger {
   /**
-   * @param {ContextSet} contexts - reference information for debugger
+   * @param {Array<Contract>} contracts - contract definitions
    * @param {Array<TraceStep>} trace - trace information
+   * @param {Array<Context>} traceContexts - address and binary for contexts addressed in trace
    * @param {Object} call - initial call (specifies `address` or `binary`)
    * @private
    */
-  constructor(contexts, trace, call) {
-    this._contexts = contexts;
+  constructor(contracts, trace, traceContexts, call) {
+    this._contracts = contracts;
     this._trace = trace;
+    this._traceContexts = traceContexts;
     this._call = call;
   }
 
@@ -38,19 +39,15 @@ export default class Debugger {
       "provider"
     ]);
 
-    let contexts = ContextSet.forContracts(...options.contracts);
-
     const adapter = new Web3Adapter(options.provider);
     const { trace, address, binary } = await adapter.getTransactionInfo(txHash);
     debug("address: %O", address);
 
     const traceContexts = await adapter.gatherContexts(trace, address);
 
-    contexts.add(...traceContexts);
-
     const call = { address, binary };
 
-    return new this(contexts, trace, call);
+    return new this(options.contracts, trace, traceContexts, call);
   }
 
 
@@ -60,7 +57,9 @@ export default class Debugger {
    * @return {Session} new session instance
    */
   connect() {
-    return new Session(this._contexts, this._trace, this.initialState);
+    return new Session(
+      this._contracts, this._trace, this._traceContexts, this.initialState
+    );
   }
 
   /**

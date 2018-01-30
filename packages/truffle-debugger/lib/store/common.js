@@ -15,7 +15,20 @@ export default function configureStore (reducer, saga, initialState, composeEnha
 
   const loggerMiddleware = createLogger({
     log: reduxDebug,
-    stateTransformer: (session) => session.state
+    stateTransformer: (session) => ({
+      ...session.state,
+
+      context: {
+        list: ["..."],
+        indexForAddress: {"...": "..."},
+        indexForBinary: {"...": "..."},
+      },
+
+      trace: {
+        ...session.state.trace,
+        steps: ["..."]
+      }
+    })
   });
 
   let store = createStore(

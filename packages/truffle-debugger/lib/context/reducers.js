@@ -1,10 +1,13 @@
+import debugModule from "debug";
+const debug = debugModule("debugger:context:reducers");
+
 import assert from "assert";
 
 import { combineReducers } from "redux";
 
 import * as actions from "./actions";
 
-function merge(context, others...) {
+function merge(context, ...others) {
   let {
     binary,
     addresses,
@@ -36,14 +39,14 @@ function merge(context, others...) {
 export function list(state = [], action) {
   switch (action.type) {
 
-    actions.ADD_CONTEXT:
+    case actions.ADD_CONTEXT:
       return [
         ...state,
         action.context
       ];
 
-    actions.MERGE_CONTEXT:
-      let current = state[i];
+    case actions.MERGE_CONTEXT:
+      let current = state[action.index];
 
       return [
         ...state.slice(0, action.index),
@@ -59,15 +62,17 @@ export function list(state = [], action) {
 export function indexForBinary(state = {}, action) {
   switch (action.type) {
 
-    actions.ADD_CONTEXT:
+    case actions.ADD_CONTEXT:
       let index = Object.keys(state).length; // new context, new index
+      let binary = action.context.binary;
+      debug("binary: %o", binary);
 
       // (just because this is the sort of thing to come back to bite us)
-      assert(state[context.binary] == undefined);
+      assert(state[binary] == undefined);
 
       return {
         ...state,
-        [context.binary]: index
+        [binary]: index
       }
 
     default:
@@ -78,8 +83,9 @@ export function indexForBinary(state = {}, action) {
 export function indexForAddress(state = {_next: 0}, action) {
   switch (action.type) {
 
-    actions.ADD_CONTEXT:
+    case actions.ADD_CONTEXT:
       let index = state._next;
+      debug("adding context to address index: %o", action);
 
       return {
         ...state,
@@ -87,17 +93,24 @@ export function indexForAddress(state = {_next: 0}, action) {
         // track the # of contexts because this is a separate reducer
         _next: state._next + 1,
 
-        ...action.context.addresses.map(
-          (address) => ({ [address]: index })
+        ...Object.assign({},
+          ...action.context.addresses.map(
+            (address) => ({ [address]: index })
+          )
         )
       };
 
-    actions.MERGE_CONTEXT:
+    case actions.MERGE_CONTEXT:
+      debug("merging context into address index: %o", action);
+      debug("action.context.addresses: %o", action.context.addresses);
+
       return {
         ...state,
 
-        ...action.context.addresses.map(
-          (address) => ({ [address]: action.index })
+        ...Object.assign({},
+          ...action.context.addresses.map(
+            (address) => ({ [address]: action.index })
+          )
         )
       };
 

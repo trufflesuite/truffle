@@ -5,6 +5,7 @@ import rootSaga from "./sagas";
 import reducer from "./reducers";
 import * as actions from "./controller/actions";
 import { saveSteps } from "./trace/actions";
+import { recordContracts, recordTraceContexts } from "./context/actions";
 import configureStore from "./store";
 
 import trace from "./trace/selectors";
@@ -19,9 +20,9 @@ export default class Session {
    * @param {State} initialState - initial state
    * @private
    */
-  constructor(contexts, trace, initialState) {
+  constructor(contracts, trace, traceContexts, initialState) {
     let wrappedState = {
-      props: { contexts },
+      props: { },
       state: initialState
     };
 
@@ -29,6 +30,8 @@ export default class Session {
 
     // TODO remove awkward manual dispatch here, replace with `init` saga maybe
     this._store.dispatch(saveSteps(trace));
+    this._store.dispatch(recordContracts(...contracts));
+    this._store.dispatch(recordTraceContexts(...traceContexts));
   }
 
   get state() {
