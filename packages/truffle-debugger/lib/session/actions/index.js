@@ -13,4 +13,3 @@ export function recordTraceContexts(...contexts) {
     contexts
   }
 }
-

@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:trace:sagas");
 
-import { takeLatest, put, select } from "redux-saga/effects";
+import { take, takeLatest, put, select } from "redux-saga/effects";
 
 import * as actions from "./actions";
 import trace from "./selectors";
@@ -34,5 +34,8 @@ export function* next() {
 }
 
 export default function* saga() {
+  // wait for trace to be defined
+  yield take(actions.SAVE_STEPS);
+
   yield takeLatest(actions.NEXT, next);
 }
