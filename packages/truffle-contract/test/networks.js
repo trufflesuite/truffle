@@ -21,27 +21,22 @@ var log = {
   log: debug
 }
 
-function getNetworkId(provider, callback) {
-  var web3 = new Web3();
-  web3.setProvider(provider);
-
-  web3.version.getNetwork(function(err, result) {
-    if (err) return callback(err);
-
-    callback(null, result);
-  })
+function getNetworkId(provider) {
+  return new Promise(function(accept, reject){
+    var web3 = new Web3();
+    web3.setProvider(provider);
+    return web3.eth.getId();
+  });
 }
 
 function getAndSetAccounts(contract, done) {
-  contract.web3.eth.getAccounts(function(err, accs) {
-    if (err) return done(err);
-
+  contract.web3.eth.getAccounts().then(function(accs){
     contract.defaults({
       from: accs[0]
     });
 
-    done(err);
-  });
+    done();
+  }).catch(done);
 };
 
 describe("Different networks:", function() {
@@ -80,11 +75,14 @@ describe("Different networks:", function() {
   }),
 
   before("Set up contracts", function() {
+    console.log('setting up contracts');
     ExampleOne = contract({
       contractName: "Example",
       abi: abi,
       binary: binary
     });
+
+    console.log('cloning');
     ExampleTwo = ExampleOne.clone();
 
     ExampleOne.setProvider(network_one);
@@ -101,7 +99,9 @@ describe("Different networks:", function() {
 
   // Most tests rely on this. It was a test; now it's a before step.
   before("can deploy to different networks", function(done) {
+    console.log('deploying')
     ExampleOne.new(1, {gas: 3141592}).then(function(example) {
+      console.log('newed one')
       ExampleOne.address = example.address;
       return ExampleTwo.new(1, {gas: 3141592});
     }).then(function(example) {
@@ -439,9 +439,6 @@ describe("Different networks:", function() {
           }).catch(done);
         });
       });
-
     });
   });
-
-
 });

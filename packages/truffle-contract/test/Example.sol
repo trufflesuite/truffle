@@ -3,8 +3,11 @@ contract Example {
   uint public counter;
   bool public fallbackTriggered;
   event ExampleEvent(address indexed _from, uint num);
+  event ExampleEventII(address indexed _from, uint num);
 
   function Example(uint val) {
+    require(val <= 1000);
+
     value = val;
     fallbackTriggered = false;
   }
