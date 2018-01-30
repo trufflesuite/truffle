@@ -3,13 +3,14 @@ const debug = debugModule("debugger:session");
 
 import rootSaga from "./sagas";
 import reducer from "./reducers";
-import * as actions from "./controller/actions";
-import { saveSteps } from "./trace/actions";
-import { recordContracts, recordTraceContexts } from "./context/actions";
-import configureStore from "./store";
+import { recordContracts, recordTraceContexts } from "./actions";
 
-import trace from "./trace/selectors";
-import evm from "./evm/selectors";
+import * as actions from "../controller/actions";
+import { saveSteps } from "../trace/actions";
+import configureStore from "../store";
+
+import trace from "../trace/selectors";
+import evm from "../evm/selectors";
 
 /**
  * Debugger Session
@@ -27,6 +28,9 @@ export default class Session {
     this._store.dispatch(saveSteps(trace));
     this._store.dispatch(recordContracts(...contracts));
     this._store.dispatch(recordTraceContexts(...traceContexts));
+  }
+
+  ready() {
   }
 
   get state() {

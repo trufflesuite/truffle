@@ -1,27 +1,54 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:context:sagas");
+const debug = debugModule("debugger:session:sagas");
 
-import { takeLatest, put, select } from "redux-saga/effects";
+import { takeLatest, call, fork, race, take, put, select } from 'redux-saga/effects';
+
+import controllerSaga from "../controller/sagas";
+import soliditySaga from "../solidity/sagas";
+import evmSaga from "../evm/sagas";
+import traceSaga from "../trace/sagas";
+
+import { END_OF_TRACE } from "../trace/actions";
+import * as contextActions from "../context/actions";
+import context from "../context/selectors";
 
 import * as actions from "./actions";
-import context from "./selectors";
+
+export default function *saga () {
+  yield *initSaga();
+
+  yield race({
+    session: call(sessionSaga),
+
+    cancel: take(END_OF_TRACE)
+  });
+}
+
+function* initSaga() {
+  yield takeLatest(actions.RECORD_CONTRACTS, forContracts);
+  yield takeLatest(actions.RECORD_TRACE_CONTEXTS, forTraceContexts);
+}
+
+function* sessionSaga() {
+  yield fork(traceSaga);
+  yield fork(controllerSaga);
+  yield fork(evmSaga);
+  yield fork(soliditySaga);
+}
 
 function *addOrMerge(newContext) {
   debug("inside addOrMerge %o", newContext.binary);
   let binaryIndexes = yield select(context.indexBy.binary);
 
-  let all = yield select(context.list);
-  debug("all: %o", all);
-
   let index = binaryIndexes[newContext.binary];
   debug("index: %o", index);
   if (index !== undefined) {
     // existing context, merge
-    yield put(actions.mergeContext(index, newContext))
+    yield put(contextActions.mergeContext(index, newContext))
 
   } else {
     // new
-    yield put(actions.addContext(newContext));
+    yield put(contextActions.addContext(newContext));
   }
 }
 
@@ -52,9 +79,4 @@ export function* forTraceContexts({ contexts }) {
   for (let traceContext of contexts) {
     yield addOrMerge(traceContext);
   }
-}
-
-export default function* saga() {
-  yield takeLatest(actions.RECORD_CONTRACTS, forContracts);
-  yield takeLatest(actions.RECORD_TRACE_CONTEXTS, forTraceContexts);
 }
