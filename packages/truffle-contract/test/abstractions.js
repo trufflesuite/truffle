@@ -1,5 +1,6 @@
 var assert = require("chai").assert;
 var Schema = require("truffle-contract-schema");
+var BigNumber = require("bignumber.js");
 var contract = require("../");
 var temp = require("temp").track();
 var path = require("path");
@@ -7,6 +8,7 @@ var solc = require("solc");
 var fs = require("fs");
 var requireNoCache = require("require-nocache")(module);
 var util = require('./util');
+
 
 describe.only("Abstractions", function() {
   var Example;
@@ -41,7 +43,11 @@ describe.only("Abstractions", function() {
     abi = Example.abi;
     binary = Example.bytecode;
 
-    util.setUpProvider(Example).then(function(result){
+    var options = {
+      vmErrorsOnRPCResponse: false,
+    };
+
+    util.setUpProvider(Example, options).then(function(result){
       web3 = result.web3;
       accounts = result.accounts;
       done();
@@ -83,11 +89,24 @@ describe.only("Abstractions", function() {
       })
     });
 
-    it.skip("should estimate cost of deployment", function(done){
-
+    it('should estimate gas cost of deployment', function(){
+      return Example.new.estimateGas(5).then(function(estimate) {
+        assert.isNumber(estimate, 'Estimate should be a number');
+        assert.isAbove(estimate, 0, 'Estimate should be non-zero');
+      });
     });
 
-    it("should reject on OOG", function(done){
+    it.skip("should reject on OOG", function(done){
+      Example.new(1, {gas: 10}).then(function() {
+        assert.fail();
+      }).catch(function(error){
+        console.log(error)
+        assert(error.message.includes('base fee exceeds gas limit'), 'Error should be OOG');
+        done();
+      })
+    });
+
+    it.skip("should emit OOG errors", function(done){
       Example.new(1, {gas: 10}).on('error', function(error){
         assert(error.message.includes('base fee exceeds gas limit'), 'Error should be OOG');
         done();
@@ -96,30 +115,14 @@ describe.only("Abstractions", function() {
       })
     });
 
-    it("should emit OOG errors", function(done){
-      Example.new(1, {gas: 10}).on('error', function(error){
-        assert(error.message.includes('base fee exceeds gas limit'), 'Error should be OOG');
-        done();
+    it("should error if constructor reverts", function(done){
+      Example.new(10000, {gas: 3141592}).then(function(instance) {
+        assert.fail();
       }).catch(function(e){
-        // ignore
-      })
-    });
-
-    // Clone needs to be implemented
-    it.skip("should error if constructor reverts", function(done){
-      var example = Example.clone();
-      var options = {
-        vmErrorsOnRPCResponse: false,
-      };
-      util.setUpProvider(example, options).then(function(){
-        example.new(10000, {gas: 3141592}).then(function(instance) {
-          assert.fail();
-        }).catch(function(e){
-          assert(e.message.includes('revert'), 'Error should be revert');
-          assert(parseInt(e.receipt.status, 16) == 0)
-          done();
-        });
-      })
+        assert(e.message.includes('revert'), 'Error should be revert');
+        assert(parseInt(e.receipt.status, 16) == 0)
+        done();
+      });
     });
 
     it("should reject with web3 validation errors (constructor params)", function(done){
@@ -221,22 +224,43 @@ describe.only("Abstractions", function() {
       }).then(done).catch(done);
     });
 
-    it.skip("should allow BigNumbers as input parameters, and not confuse them as transaction objects", function(done) {
+    it("should allow BigNumbers as input parameters, and not confuse them as transaction objects", function(done) {
       // BigNumber passed on new()
       var example = null;
-      Example.new(web3.toBigNumber(30), {gas: 3141592}).then(function(instance) {
+      Example.new( new BigNumber(30), {gas: 3141592}).then(function(instance) {
         example = instance;
         return example.value.call();
       }).then(function(value) {
         assert.equal(value.valueOf(), 30, "Starting value should be 30");
         // BigNumber passed in a transaction.
-        return example.setValue(web3.toBigNumber(25), {gas: 3141592});
+        return example.setValue( new BigNumber(25), {gas: 3141592});
       }).then(function(tx) {
         return example.value.call();
       }).then(function(value) {
         assert.equal(value.valueOf(), 25, "Ending value should be twenty-five");
         // BigNumber passed in a call.
-        return example.parrot.call(web3.toBigNumber(865));
+        return example.parrot.call( new BigNumber(865));
+      }).then(function(parrot_value) {
+        assert.equal(parrot_value.valueOf(), 865, "Parrotted value should equal 865")
+      }).then(done).catch(done);
+    });
+
+    it("should allow BN's as input parameters, and not confuse them as transaction objects", function(done) {
+      // BigNumber passed on new()
+      var example = null;
+      Example.new( new web3.utils.BN(30), {gas: 3141592}).then(function(instance) {
+        example = instance;
+        return example.value.call();
+      }).then(function(value) {
+        assert.equal(value.valueOf(), 30, "Starting value should be 30");
+        // BigNumber passed in a transaction.
+        return example.setValue( new web3.utils.BN(25), {gas: 3141592});
+      }).then(function(tx) {
+        return example.value.call();
+      }).then(function(value) {
+        assert.equal(value.valueOf(), 25, "Ending value should be twenty-five");
+        // BigNumber passed in a call.
+        return example.parrot.call( new web3.utils.BN(865));
       }).then(function(parrot_value) {
         assert.equal(parrot_value.valueOf(), 865, "Parrotted value should equal 865")
       }).then(done).catch(done);
