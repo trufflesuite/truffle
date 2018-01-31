@@ -53,7 +53,19 @@ var contract = (function(module) {
       }
     },
 
-    // Web3 1.0 does its own event decoding, so just translating
+    getTxParams: function(args, C){
+      var tx_params =  {};
+      var last_arg = args[args.length - 1];
+
+      // It's only tx_params if it's an object and not a BigNumber.
+      if (Utils.is_object(last_arg) && !Utils.is_big_number(last_arg)) {
+        tx_params = args.pop();
+      }
+      tx_params = Utils.merge(C.class_defaults, tx_params);
+      return tx_params;
+    },
+
+    // Web3 1.0 does its own event decoding: just translating
     // a couple keys for backward compatibility.
     convertEventsToLogs: function(events){
       var logs = [];
@@ -65,7 +77,7 @@ var contract = (function(module) {
     },
 
     // Emitter handlers for `send` / `sendTransaction` / `new`:
-    // This is the order they're executed in. For `.send` you can have
+    // This is the order they're executed in. Web3's `.send` permits
     // either EventEmitter OR Promise, not both. So we track state in the
     // context object between `handleHash` and `handleReceipt`.
     handleError: function(context, error){
@@ -73,13 +85,18 @@ var contract = (function(module) {
       if (!context.allowError){
         context.promiEvent.reject(error);
       }
+
+      // Should we kill the setInterval here too?
     },
 
+    // Collect hash for contract.new (we attach it to the contract there)
+    // Start polling and collect interval so we can kill poll in `handleReceipt`
+    // and `contract.new.then`
     handleHash: function(context, hash){
       var start = new Date().getTime();
       context.transactionHash = hash;
       context.promiEvent.eventEmitter.emit('transactionHash', hash);
-      context.interval = setInterval(function(){synchronize(start, context)}, 1000);
+      context.interval = setInterval(function(){Utils.synchronize(start, context)}, 1000);
     },
 
     handleConfirmation: function(context, number, receipt){
@@ -97,7 +114,7 @@ var contract = (function(module) {
       clearInterval(context.interval);
 
       if (parseInt(receipt.status) == 0){
-        var error = new StatusError(context.tx_params, context.transactionHash, receipt);
+        var error = new StatusError(context.tx_params, receipt.transactionHash, receipt);
         context.promiEvent.reject(error)
       }
 
@@ -106,7 +123,7 @@ var contract = (function(module) {
         : log = [];
 
       context.promiEvent.resolve({
-        tx: context.transactionHash,
+        tx: receipt.transactionHash,
         receipt: receipt,
         logs: logs
       });
@@ -137,6 +154,7 @@ var contract = (function(module) {
 
         tx_params = Utils.merge(C.class_defaults, tx_params);
 
+        // Overcomplicated
         return C.detectNetwork().then(function() {
           return (defaultBlock !== undefined)
             ? fn(...args).call(tx_params, defaultBlock)
@@ -148,15 +166,7 @@ var contract = (function(module) {
     executeAsEstimate : function(fn, C){
       return function() {
         var args = Array.prototype.slice.call(arguments);
-        var tx_params = {};
-        var last_arg = args[args.length - 1];
-
-        // It's only tx_params if it's an object and not a BigNumber.
-        if (Utils.is_object(last_arg) && !Utils.is_big_number(last_arg)) {
-          tx_params = args.pop();
-        }
-
-        tx_params = Utils.merge(C.class_defaults, tx_params);
+        var tx_params = Utils.getTxParams(args, C);
 
         return C.detectNetwork().then(function() {
             return fn(...args).estimateGas(tx_params);
@@ -166,15 +176,8 @@ var contract = (function(module) {
 
     executeAsSend: function(fn, instance, C) {
       return function() {
-        var tx_params = {};
         var args = Array.prototype.slice.call(arguments);
-        var last_arg = args[args.length - 1];
-
-        // It's only tx_params if it's an object and not a BigNumber.
-        if (Utils.is_object(last_arg) && !Utils.is_big_number(last_arg)) {
-          tx_params = args.pop();
-        }
-        tx_params = Utils.merge(C.class_defaults, tx_params);
+        var tx_params = Utils.getTxParams(args, C);
 
         var context = {
           contract: C,
@@ -182,7 +185,7 @@ var contract = (function(module) {
           tx_params: tx_params
         }
 
-        // .then never resolves here if there are emitters attached, so
+        // .then never resolves here if emitters are attached, so
         // we're just resolving our own PromiEvent in the receipt handler.
         C.detectNetwork().then(function() {
           fn(...args).send(tx_params)
@@ -199,15 +202,7 @@ var contract = (function(module) {
 
     executeSendTransaction : function(C, _self) {
       var self = _self;
-      return function(){
-        var tx_params;
-        var callback;
-        var args = Array.prototype.slice.call(arguments);
-
-        if (args.length){
-          tx_params = args[0];
-        }
-
+      return function(tx_params, callback){
         if (typeof tx_params == "function") {
           callback = tx_params;
           tx_params = {};
@@ -217,7 +212,7 @@ var contract = (function(module) {
         tx_params.to = self.address;
 
         if (callback !== undefined){
-          return C.detectNetwork.then(function(){
+          return C.detectNetwork().then(function(){
             C.web3.eth.sendTransaction.apply(C.web3.eth, [tx_params, callback]);
           })
         }
@@ -228,7 +223,7 @@ var contract = (function(module) {
           tx_params: tx_params
         }
 
-        // .then never resolves here if there are emitters attached, so
+        // .then never resolves here if emitters are attached, so
         // we're just resolving our own PromiEvent in the receipt handler.
         C.detectNetwork().then(function() {
 
@@ -414,15 +409,7 @@ var contract = (function(module) {
           throw new Error(self.contractName + " contains unresolved libraries. You must deploy and link the following libraries before you can deploy a new version of " + self._json.contractName + ": " + unlinked_libraries);
         }
       }).then(function() {
-        var tx_params = {};
-        var last_arg = args[args.length - 1];
-
-        // It's only tx_params if it's an object and not a BigNumber.
-        if (Utils.is_object(last_arg) && !Utils.is_big_number(last_arg)) {
-          tx_params = args.pop();
-        }
-
-        tx_params = Utils.merge(self.class_defaults, tx_params);
+        var tx_params = Utils.getTxParams(args, self);
 
         var options = {
           data: tx_params.data || self.binary,
@@ -456,26 +443,14 @@ var contract = (function(module) {
       }).catch(context.promiEvent.reject);
 
       return context.promiEvent.eventEmitter;
-
-      /* Note: this is the way `contract_class` was being
-         instantiated originally. Is the `apply` still important?
-         ---> contract_class.new.apply(contract_class, args);
-       */
     },
 
     estimateDeployment : function(){
       var self = this;
       var args = Array.prototype.slice.call(arguments);
-      var tx_params = {};
-      var last_arg = args[args.length - 1];
-
-      // It's only tx_params if it's an object and not a BigNumber.
-      if (Utils.is_object(last_arg) && !Utils.is_big_number(last_arg)) {
-        tx_params = args.pop();
-      }
 
       return self.detectNetwork().then(function() {
-        tx_params = Utils.merge(self.class_defaults, tx_params);
+        var tx_params = Utils.getTxParams(args, self);
 
         var options = {
           data: tx_params.data || self.binary,
