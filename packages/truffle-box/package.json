@@ -1,6 +1,6 @@
 {
   "name": "truffle-box",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Truffle project boilerplate utility",
   "main": "box.js",
   "scripts": {
