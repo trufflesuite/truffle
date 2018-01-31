@@ -17,12 +17,12 @@ describe("Parser", function() {
 
     // Note that this test is important because certain parts of the solidity
     // output cuts off path prefixes like "./" and "../../../". If we get the
-    // imports list incorrectly, we'll have collisions. 
-    var expected = [ 
+    // imports list incorrectly, we'll have collisions.
+    var expected = [
       './Dependency.sol',
       './path/to/AnotherDep.sol',
       '../../../path/to/AnotherDep.sol',
-      'ethpmpackage/Contract.sol' 
+      'ethpmpackage/Contract.sol'
     ];
 
     assert.deepEqual(imports, expected)
