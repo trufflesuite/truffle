@@ -25,7 +25,7 @@ function getNetworkId(provider) {
   return new Promise(function(accept, reject){
     var web3 = new Web3();
     web3.setProvider(provider);
-    return web3.eth.getId();
+    return web3.eth.net.getId();
   });
 }
 
@@ -75,14 +75,12 @@ describe("Different networks:", function() {
   }),
 
   before("Set up contracts", function() {
-    console.log('setting up contracts');
     ExampleOne = contract({
       contractName: "Example",
       abi: abi,
       binary: binary
     });
 
-    console.log('cloning');
     ExampleTwo = ExampleOne.clone();
 
     ExampleOne.setProvider(network_one);
@@ -99,7 +97,6 @@ describe("Different networks:", function() {
 
   // Most tests rely on this. It was a test; now it's a before step.
   before("can deploy to different networks", function(done) {
-    console.log('deploying')
     ExampleOne.new(1, {gas: 3141592}).then(function(example) {
       console.log('newed one')
       ExampleOne.address = example.address;
