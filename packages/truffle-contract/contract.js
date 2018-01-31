@@ -53,6 +53,7 @@ var contract = (function(module) {
       }
     },
 
+    // Extracts optional tx params from a list of fn arguments
     getTxParams: function(args, C){
       var tx_params =  {};
       var last_arg = args[args.length - 1];
@@ -82,11 +83,12 @@ var contract = (function(module) {
     // context object between `handleHash` and `handleReceipt`.
     handleError: function(context, error){
       context.promiEvent.eventEmitter.emit('error', error);
+      clearInterval(context.interval);
+
+      // Everywhere but `new`
       if (!context.allowError){
         context.promiEvent.reject(error);
       }
-
-      // Should we kill the setInterval here too?
     },
 
     // Collect hash for contract.new (we attach it to the contract there)
@@ -130,6 +132,7 @@ var contract = (function(module) {
     },
 
     // Execution wrappers
+    //
     executeAsCall: function(fn, C, inputs) {
       return function() {
         var args = Array.prototype.slice.call(arguments);
@@ -320,8 +323,9 @@ var contract = (function(module) {
       contract_class.options.address = contract;
       contract = contract_class;
     }
-
+    // Set provider with this.web3.currentProvider? for At?
     this.contract = contract;
+    this.contract.setProvider(constructor.web3.currentProvider);
 
     // Provision our functions.
     for (var i = 0; i < this.abi.length; i++) {
@@ -344,7 +348,6 @@ var contract = (function(module) {
       }
     }
 
-    //this._static_methods.new.estimateGas = Utils.executeAsDeploymentEstimate(self);
     this.sendTransaction = Utils.executeSendTransaction(constructor, this);
 
     this.send = function(value) {
@@ -866,7 +869,7 @@ var contract = (function(module) {
 
         signature += ")";
 
-        var topic = web3.sha3(signature);
+        var topic = web3.utils.keccak256(signature);
 
         events[topic] = item;
       });

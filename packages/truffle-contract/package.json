@@ -29,7 +29,7 @@
     "truffle-blockchain-utils": "^0.0.5",
     "truffle-contract-schema": "^2.0.1",
     "truffle-error": "^0.0.3",
-    "web3": "^1.0.0-beta.18"
+    "web3": "^1.0.0-beta.27"
   },
   "devDependencies": {
     "async": "2.6.1",

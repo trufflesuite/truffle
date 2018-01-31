@@ -10,7 +10,7 @@ var requireNoCache = require("require-nocache")(module);
 var util = require('./util');
 
 
-describe.only("Abstractions", function() {
+describe("Abstractions", function() {
   var Example;
   var accounts;
   var abi;
@@ -494,7 +494,7 @@ describe.only("Abstractions", function() {
       }).then(function(triggered) {
         assert(triggered == false, "Fallback should not have been triggered yet");
         return example.sendTransaction({
-          value: web3.utils.toWei(1, "ether")
+          value: web3.utils.toWei("1", "ether")
         });
       }).then(function(results) {
         return new Promise(function(accept, reject) {
@@ -504,7 +504,7 @@ describe.only("Abstractions", function() {
           });
         });
       }).then(function(balance) {
-        assert(balance == web3.utils.toWei(1, "ether"), "Balance should be 1 ether");
+        assert(balance == web3.utils.toWei("1", "ether"), "Balance should be 1 ether");
       })
     });
 
@@ -513,7 +513,7 @@ describe.only("Abstractions", function() {
       var callback = function(results){
         web3.eth.getBalance(example.address, function(err, balance) {
           if (err) done(err);
-          assert(balance == web3.utils.toWei(1, "ether"));
+          assert(balance == web3.utils.toWei("1", "ether"));
           done();
         });
       }
@@ -524,7 +524,7 @@ describe.only("Abstractions", function() {
       }).then(function(triggered) {
         assert(triggered == false, "Fallback should not have been triggered yet");
         return example.sendTransaction({
-          value: web3.utils.toWei(1, "ether")
+          value: web3.utils.toWei("1", "ether")
         }, callback);
       })
     });
@@ -536,7 +536,7 @@ describe.only("Abstractions", function() {
         return example.fallbackTriggered();
       }).then(function(triggered) {
         assert(triggered == false, "Fallback should not have been triggered yet");
-        return example.send(web3.utils.toWei(1, "ether"));
+        return example.send(web3.utils.toWei("1", "ether"));
       }).then(function(results) {
         return new Promise(function(accept, reject) {
           return web3.eth.getBalance(example.address, function(err, balance) {
@@ -545,7 +545,7 @@ describe.only("Abstractions", function() {
           });
         });
       }).then(function(balance) {
-        assert(balance == web3.utils.toWei(1, "ether"));
+        assert(balance == web3.utils.toWei("1", "ether"));
       });
     });
   })

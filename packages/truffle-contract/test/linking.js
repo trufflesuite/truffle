@@ -25,11 +25,9 @@ describe("Library linking", function() {
   var web3 = new Web3();
   web3.setProvider(provider)
 
-  before(function(done) {
-    web3.version.getNetwork(function(err, id) {
-      if (err) return done(err);
+  before(function() {
+    return web3.eth.net.getId().then(function(id){
       network_id = id;
-      done();
     });
   });
 
@@ -86,11 +84,9 @@ describe("Library linking with contract objects", function() {
   var web3 = new Web3();
   web3.setProvider(provider)
 
-  before(function(done) {
-    web3.version.getNetwork(function(err, id) {
-      if (err) return done(err);
+  before(function() {
+    return web3.eth.net.getId().then(function(id){
       network_id = id;
-      done();
     });
   });
 
