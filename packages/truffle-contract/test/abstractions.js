@@ -6,8 +6,7 @@ var path = require("path");
 var solc = require("solc");
 var fs = require("fs");
 var requireNoCache = require("require-nocache")(module);
-var TestRPC = require("ganache-core");
-var Web3 = require("web3");
+var util = require('./util');
 
 describe("Abstractions", function() {
   var Example;
@@ -15,19 +14,9 @@ describe("Abstractions", function() {
   var abi;
   var binary;
   var network_id;
-  var provider = TestRPC.provider();
-  var web3 = new Web3();
-  web3.setProvider(provider)
+  var web3;
 
   before(function(done) {
-    web3.version.getNetwork(function(err, id) {
-      if (err) return done(err);
-      network_id = id;
-      done();
-    });
-  });
-
-  before(function() {
     this.timeout(10000);
 
     // Compile first
@@ -47,23 +36,16 @@ describe("Abstractions", function() {
     contractObj = result.contracts[contractName];
     contractObj.contractName = contractName;
     Example = contract(contractObj);
-    Example.setProvider(provider);
 
     // save abi and binary for later
     abi = Example.abi;
     binary = Example.bytecode;
-  });
 
-  before(function(done) {
-    web3.eth.getAccounts(function(err, accs) {
-      accounts = accs;
-
-      Example.defaults({
-        from: accounts[0]
-      });
-
-      done(err);
-    });
+    util.setUpProvider(Example).then(function(result){
+      web3 = result.web3;
+      accounts = result.accounts;
+      done();
+    }).catch(done);
   });
 
   after(function(done) {
@@ -204,30 +186,129 @@ describe("Abstractions", function() {
     });
   });
 
+  it("errors with a revert message when ganache appends an error to the response", function(done){
+    var example = Example.clone();
+    var options = {
+      vmErrorsOnRPCResponse: true,
+    };
+
+    util.setUpProvider(example, options).then(function(){
+      example.new(1, {gas: 3141592}).then(function(instance) {
+        return instance.triggerRequireError()
+      }).then(function(){
+        assert.fail();
+      }).catch(function(e){
+        assert(e.message.includes('revert'))
+        done();
+      });
+    }).catch(done);
+  });
+
+  it("errors with receipt and revert message (ganache err flag false)", function(done){
+    var example = Example.clone();
+    var options = {
+      vmErrorsOnRPCResponse: false,
+    };
+
+    util.setUpProvider(example, options).then(function(){
+      example.new(1, {gas: 3141592}).then(function(instance) {
+        return instance.triggerRequireError()
+      }).then(function(){
+        assert.fail();
+      }).catch(function(e){
+        assert(e.message.includes('revert'));
+        assert(parseInt(e.receipt.status, 16) == 0)
+        done();
+      });
+    }).catch(done)
+  });
+
+  it("errors with receipt & assert message when gas specified (ganache err flag false)", function(done){
+    var example = Example.clone();
+    var options = {
+      vmErrorsOnRPCResponse: false,
+    };
+
+    util.setUpProvider(example, options).then(function(result){
+      var gas = result.web3.toBigNumber(200000);
+
+      example.new(1, {gas: 3141592}).then(function(instance) {
+        return instance.triggerAssertError({gas: gas});
+      }).then(function(){
+        assert.fail();
+      }).catch(function(e){
+        assert(e.message.includes('invalid opcode'));
+        assert(parseInt(e.receipt.status, 16) == 0)
+        done();
+      });
+    }).catch(done)
+  });
+
+  it("errors with receipt & assert message when gas not specified (ganache err flag false)", function(done){
+    var example = Example.clone();
+    var options = {
+      vmErrorsOnRPCResponse: false,
+    };
+
+    util.setUpProvider(example, options).then(function(result){
+      example.new(1, {gas: 3141592}).then(function(instance) {
+        return instance.triggerAssertError();
+      }).then(function(){
+        assert.fail();
+      }).catch(function(e){
+        assert(e.message.includes('invalid opcode'));
+        assert(parseInt(e.receipt.status, 16) == 0)
+        done();
+      });
+    }).catch(done)
+  });
+
+  it("errors with receipt & assert message on internal OOG (ganache err flag false)", function(done){
+    var example = Example.clone();
+    var options = {
+      vmErrorsOnRPCResponse: false,
+    };
+
+    util.setUpProvider(example, options).then(function(result){
+      example.new(1, {gas: 3141592}).then(function(instance) {
+        return instance.runsOutOfGas();
+      }).then(function(){
+        assert.fail();
+      }).catch(function(e){
+        assert(e.message.includes('invalid opcode'));
+        assert(parseInt(e.receipt.status, 16) == 0)
+        done();
+      });
+    }).catch(done)
+  });
+
   it("creates a network object when an address is set if no network specified", function(done) {
     var NewExample = contract({
       abi: abi,
       unlinked_binary: binary
     });
 
-    NewExample.setProvider(provider);
-    NewExample.defaults({
-      from: accounts[0]
-    });
+    util.setUpProvider(NewExample).then(function(result){
+      result.web3.version.getNetwork(function(err, id) {
+        if (err) return done(err);
+        network_id = id;
 
-    assert.equal(NewExample.network_id, null);
+        assert.equal(NewExample.network_id, null);
 
-    NewExample.new(1, {gas: 3141592}).then(function(instance) {
-      // We have a network id in this case, with new(), since it was detected,
-      // but no further configuration.
-      assert.equal(NewExample.network_id, network_id);
-      assert.equal(NewExample.toJSON().networks[network_id], null);
+        NewExample.new(1, {gas: 3141592}).then(function(instance) {
+          // We have a network id in this case, with new(), since it was detected,
+          // but no further configuration.
+          assert.equal(NewExample.network_id, network_id);
+          assert.equal(NewExample.toJSON().networks[network_id], null);
 
-      NewExample.address = instance.address;
+          NewExample.address = instance.address;
 
-      assert.equal(NewExample.toJSON().networks[network_id].address, instance.address);
+          assert.equal(NewExample.toJSON().networks[network_id].address, instance.address);
 
-      done();
+          done();
+
+        }).catch(done);
+      })
     }).catch(done);
   });
 });

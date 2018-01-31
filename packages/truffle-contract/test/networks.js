@@ -10,11 +10,16 @@ process.removeListener("uncaughtException", process.listeners("uncaughtException
 
 var fs = require("fs");
 var requireNoCache = require("require-nocache")(module);
+var debug = require("debug")("ganache-core");
 var TestRPC = require("ganache-core");
 var BlockchainUtils = require("truffle-blockchain-utils");
 var contract = require("../");
 var Web3 = require("web3");
 var times = require("async/times");
+
+var log = {
+  log: debug
+}
 
 function getNetworkId(provider, callback) {
   var web3 = new Web3();
@@ -65,8 +70,8 @@ describe("Different networks:", function() {
     // Setup
     network_one_id = 1000;
     network_two_id = 1001;
-    network_one = TestRPC.provider({network_id: network_one_id, seed: network_one_id});
-    network_two = TestRPC.provider({network_id: network_two_id, seed: network_two_id});
+    network_one = TestRPC.provider({network_id: network_one_id, seed: network_one_id, logger: log});
+    network_two = TestRPC.provider({network_id: network_two_id, seed: network_two_id, logger: log});
 
     network_one.__marker = "one";
     network_two.__marker = "two";

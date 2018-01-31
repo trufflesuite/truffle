@@ -5,6 +5,7 @@ var path = require("path");
 var requireNoCache = require("require-nocache")(module);
 var contract = require("../");
 var Web3 = require("web3");
+var debug = require("debug")("ganache-core");
 var TestRPC = require("ganache-core");
 var fs = require("fs");
 var solc = require("solc");
@@ -13,9 +14,13 @@ var Schema = require("truffle-contract-schema");
 // which happens to be the first.
 process.removeListener("uncaughtException", process.listeners("uncaughtException")[0] || function() {});
 
+var log = {
+  log: debug
+};
+
 describe("Library linking", function() {
   var LibraryExample;
-  var provider = TestRPC.provider();
+  var provider = TestRPC.provider({logger:log});
   var network_id;
   var web3 = new Web3();
   web3.setProvider(provider)
@@ -77,7 +82,7 @@ describe("Library linking with contract objects", function() {
   var exampleConsumer;
   var accounts;
   var web3;
-  var provider = TestRPC.provider();
+  var provider = TestRPC.provider({logger: log});
   var web3 = new Web3();
   web3.setProvider(provider)
 
