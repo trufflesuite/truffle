@@ -66,6 +66,13 @@ describe.only("Abstractions", function() {
       });
     });
 
+    it('should estimate gas cost of deployment', function(){
+      return Example.new.estimateGas(5).then(function(estimate) {
+        assert.isNumber(estimate, 'Estimate should be a number');
+        assert.isAbove(estimate, 0, 'Estimate should be non-zero');
+      });
+    });
+
     it("should emit the transactionHash before resolving the instance", function(done){
       var hash;
       Example.new(1, {gas: 3141592}).on('transactionHash', function(_hash){
@@ -88,14 +95,9 @@ describe.only("Abstractions", function() {
           .then(function(){ return example.setValue(15) });
       })
     });
+  });
 
-    it('should estimate gas cost of deployment', function(){
-      return Example.new.estimateGas(5).then(function(estimate) {
-        assert.isNumber(estimate, 'Estimate should be a number');
-        assert.isAbove(estimate, 0, 'Estimate should be non-zero');
-      });
-    });
-
+  describe('new (error cases)', function(){
     it.skip("should reject on OOG", function(done){
       Example.new(1, {gas: 10}).then(function() {
         assert.fail();
@@ -265,6 +267,43 @@ describe.only("Abstractions", function() {
         assert.equal(parrot_value.valueOf(), 865, "Parrotted value should equal 865")
       }).then(done).catch(done);
     });
+
+    it("should emit a transaction hash", function(done){
+      Example.new(5, {gas: 3141592}).then(function(instance) {
+        instance.setValue(25).on('transactionHash', function(hash){
+          assert.isString(hash, 'Transaction hash should be a string');
+          assert.isOk(hash.length > 42, "Unexpected transaction hash");
+          done();
+        });
+      })
+    });
+
+    it("should emit a receipt", function(done){
+      Example.new(5, {gas: 3141592}).then(function(instance) {
+        instance.setValue(25).on('receipt', function(receipt){
+          assert.isObject(receipt, 'receipt should be an object');
+          assert.isDefined(receipt.transactionHash, "receipt should have transaction hash");
+          done();
+        });
+      })
+    });
+
+    // Only firing once...how is this done @ web3 / default block?
+    it.skip("should fire the confirmations event handler repeatedly", function(done){
+      var counter = 0;
+      var example = null;
+      Example.new(5, {gas: 3141592}).then(function(instance) {
+        example = instance;
+        return example.setValue(25).on('confirmation', function(number, receipt){
+            assert.equal(parseInt(receipt.status), 1, 'should have a receipt');
+            number === 3 && done();
+          });
+        }).then(function(){
+          example.setValue(5)
+            .then(function(){ return example.setValue(10) })
+            .then(function(){ return example.setValue(15) });
+        })
+    });
   });
 
   describe('methods: (error cases)', function(){
@@ -304,6 +343,28 @@ describe.only("Abstractions", function() {
       })
     });
 
+    it.skip("should reject on OOG", function(done){
+      Example.new(1, {gas: 3141592}).then(function(instance) {
+        return instance.setValue(10, {gas: 10});
+      }).catch(function(error){
+        console.log(error)
+        assert(error.message.includes('base fee exceeds gas limit'), 'Error should be OOG');
+        done();
+      })
+    });
+
+    it.skip("should emit OOG errors", function(done){
+      Example.new(1, {gas: 3141592}).then(function(instance) {
+        instance
+          .setValue(10, {gas: 10})
+          .on('error', function(error){
+            console.log(error);
+            assert(error.message.includes('base fee exceeds gas limit'), 'Error should be OOG');
+            done();
+          })
+      });
+    });
+
     it("errors with a revert message when ganache appends an error to the response", function(done){
       var example = Example.clone();
       var options = {
@@ -322,7 +383,7 @@ describe.only("Abstractions", function() {
       }).catch(done);
     });
 
-    it("errors with receipt and revert message (ganache err flag false)", function(done){
+    it("errors with receipt and revert message", function(done){
       var example = Example.clone();
       var options = {
         vmErrorsOnRPCResponse: false,
@@ -341,7 +402,7 @@ describe.only("Abstractions", function() {
       }).catch(done)
     });
 
-    it("errors with receipt & assert message when gas specified (ganache err flag false)", function(done){
+    it("errors with receipt & assert message when gas specified", function(done){
       var example = Example.clone();
       var options = {
         vmErrorsOnRPCResponse: false,
@@ -362,7 +423,7 @@ describe.only("Abstractions", function() {
       }).catch(done)
     });
 
-    it("errors with receipt & assert message when gas not specified (ganache err flag false)", function(done){
+    it("errors with receipt & assert message when gas not specified", function(done){
       var example = Example.clone();
       var options = {
         vmErrorsOnRPCResponse: false,
@@ -381,7 +442,7 @@ describe.only("Abstractions", function() {
       }).catch(done)
     });
 
-    it("errors with receipt & assert message on internal OOG (ganache err flag false)", function(done){
+    it("errors with receipt & assert message on internal OOG", function(done){
       var example = Example.clone();
       var options = {
         vmErrorsOnRPCResponse: false,
@@ -447,8 +508,25 @@ describe.only("Abstractions", function() {
       })
     });
 
-    it.skip("should trigger the fallback function when using a callback in sendTransaction()", function(){
+    it("should trigger the fallback function when using a callback in sendTransaction()", function(done){
+      var example = null;
+      var callback = function(results){
+        web3.eth.getBalance(example.address, function(err, balance) {
+          if (err) done(err);
+          assert(balance == web3.utils.toWei(1, "ether"));
+          done();
+        });
+      }
 
+      Example.new(1, {gas: 3141592}).then(function(instance) {
+        example = instance;
+        return example.fallbackTriggered();
+      }).then(function(triggered) {
+        assert(triggered == false, "Fallback should not have been triggered yet");
+        return example.sendTransaction({
+          value: web3.utils.toWei(1, "ether")
+        }, callback);
+      })
     });
 
     it("should trigger the fallback function when calling send() (shorthand notation)", function() {
