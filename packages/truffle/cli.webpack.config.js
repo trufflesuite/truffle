@@ -12,7 +12,7 @@ var outputFilename = 'cli.bundled.js';
 
 module.exports = {
   entry: {
-    cli: path.join(__dirname, "node_modules", "truffle-core", "cli.js"), 
+    cli: path.join(__dirname, "node_modules", "truffle-core", "cli.js"),
     chain: path.join(__dirname, "node_modules", "truffle-core", "chain.js")
   },
   target: 'node',
@@ -25,6 +25,7 @@ module.exports = {
     path: outputDir,
     filename: '[name].bundled.js'
   },
+  devtool: 'source-map',
   module: {
     rules: [
       { test: /\.js$/, use: "shebang-loader" }
@@ -64,7 +65,7 @@ module.exports = {
 
     // Put the shebang back on.
     new webpack.BannerPlugin({banner: '#!/usr/bin/env node\n', raw: true}),
-    
+
     // `truffle test`
     new CopyWebpackPlugin([
       { from: path.join(__dirname, "node_modules", "truffle-core", "lib", "testing", "Assert.sol") },
