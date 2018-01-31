@@ -38,6 +38,98 @@ var contract = (function(module) {
       return _web3.utils.isBN(val) || _web3.utils.isBigNumber(val);
     },
 
+    decodeLogs: function(C, events) {
+      var logs = Utils.toTruffleLog(events);
+
+      return logs.map(function(log) {
+        // toTruffleLog may have already mapped
+        // web3's decoding successfully. Only decoding
+        // Library events here
+        if (log.args) return log;
+
+        var logABI = C.events[log.topics[0]];
+
+        if (logABI == null) {
+          return null;
+        }
+
+        // This function has been adapted from web3's SolidityEvent.decode() method,
+        // and built to work with ethjs-abi.
+
+        var copy = Utils.merge({}, log);
+
+        function partialABI(fullABI, indexed) {
+          var inputs = fullABI.inputs.filter(function (i) {
+            return i.indexed === indexed;
+          });
+
+          var partial = {
+            inputs: inputs,
+            name: fullABI.name,
+            type: fullABI.type,
+            anonymous: fullABI.anonymous
+          };
+
+          return partial;
+        }
+
+        var argTopics = logABI.anonymous ? copy.topics : copy.topics.slice(1);
+        var indexedData = "0x" + argTopics.map(function (topics) { return topics.slice(2); }).join("");
+        var indexedParams = ethJSABI.decodeEvent(partialABI(logABI, true), indexedData);
+
+        var notIndexedData = copy.data;
+        var notIndexedParams = ethJSABI.decodeEvent(partialABI(logABI, false), notIndexedData);
+
+        copy.event = logABI.name;
+
+        copy.args = logABI.inputs.reduce(function (acc, current) {
+          var val = indexedParams[current.name];
+
+          if (val === undefined) {
+            val = notIndexedParams[current.name];
+          }
+
+          acc[current.name] = val;
+          return acc;
+        }, {});
+
+        Object.keys(copy.args).forEach(function(key) {
+          var val = copy.args[key];
+
+          // We have BN. Convert it to BigNumber
+          //if (val.constructor.isBN) {
+          //  copy.args[key] = C.web3.toBigNumber("0x" + val.toString(16));
+          //}
+        });
+
+        delete copy.data;
+        delete copy.topics;
+
+        return copy;
+      }).filter(function(log) {
+        return log != null;
+      });
+    },
+
+    toTruffleLog: function(events){
+      var logs = [];
+      Object.keys(events).forEach(function(key){
+        var log = events[key];
+        var hasReturnValues = Object.keys(log.returnValues).length > 0;
+
+        // Use web3's decoding unless we have something
+        // to add - e.g. Library events.
+        if(hasReturnValues){
+          log.args = log.returnValues;
+        } else {
+          log.data = log.raw.data;
+          log.topics = log.raw.topics;
+        }
+        logs.push(events[key]);
+      })
+      return logs;
+    },
+
     // Error after some number of ms if receipt never arrives
     synchronize: function(start, context){
       var sync = context.contract.synchronization_timeout;
@@ -64,17 +156,6 @@ var contract = (function(module) {
       }
       tx_params = Utils.merge(C.class_defaults, tx_params);
       return tx_params;
-    },
-
-    // Web3 1.0 does its own event decoding: just translating
-    // a couple keys for backward compatibility.
-    convertEventsToLogs: function(events){
-      var logs = [];
-      Object.keys(events).forEach(function(key){
-        events[key].args = events[key].returnValues;
-        logs.push(events[key]);
-      })
-      return logs;
     },
 
     // Emitter handlers for `send` / `sendTransaction` / `new`:
@@ -121,7 +202,7 @@ var contract = (function(module) {
       }
 
       (receipt.events)
-        ? logs = Utils.convertEventsToLogs(receipt.events)
+        ? logs = Utils.decodeLogs(context.contract, receipt.events)
         : log = [];
 
       context.promiEvent.resolve({
@@ -577,7 +658,6 @@ var contract = (function(module) {
 
             for (var i = 0; i < results.length; i++) {
               if (results[i]) {
-                console.log('parallel' + network_id);
                 self.setNetwork(uris[i]);
                 accept(network_id);
               }

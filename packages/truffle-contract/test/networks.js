@@ -98,7 +98,6 @@ describe("Different networks:", function() {
   // Most tests rely on this. It was a test; now it's a before step.
   before("can deploy to different networks", function(done) {
     ExampleOne.new(1, {gas: 3141592}).then(function(example) {
-      console.log('newed one')
       ExampleOne.address = example.address;
       return ExampleTwo.new(1, {gas: 3141592});
     }).then(function(example) {
@@ -278,10 +277,9 @@ describe("Different networks:", function() {
     var example;
 
     return ExampleSetup.new(1, {from: from, gas: 3141592}).then(function(instance) {
-      example = ExampleDetect.at(instance.address);
-
       assert.equal(ExampleDetect.network_id, null);
-
+      return ExampleDetect.at(instance.address);
+    }).then(function(example){
       return example.setValue(47, {from: from, gas: 3141592});
     }).then(function() {
       assert.equal(ExampleDetect.network_id, network_two_id);
@@ -305,10 +303,9 @@ describe("Different networks:", function() {
     var example;
 
     return ExampleSetup.new(1, {from: from, gas: 3141592}).then(function(instance) {
-      example = ExampleDetect.at(instance.address);
-
       assert.equal(ExampleDetect.network_id, null);
-
+      return ExampleDetect.at(instance.address);
+    }).then(function(example){
       return example.getValue({from: from, gas: 3141592});
     }).then(function() {
       assert.equal(ExampleDetect.network_id, network_two_id);
