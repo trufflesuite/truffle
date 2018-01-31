@@ -2,6 +2,7 @@ contract Example {
   uint public value;
   uint public counter;
   bool public fallbackTriggered;
+  event EmptyEvent();
   event ExampleEvent(address indexed _from, uint num);
   event ExampleEventII(address indexed _from, uint num);
 
