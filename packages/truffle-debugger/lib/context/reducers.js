@@ -11,6 +11,7 @@ function merge(context, ...others) {
   let {
     binary,
     addresses,
+    ast,
     sourceMap,
     source,
     sourcePath,
@@ -20,6 +21,7 @@ function merge(context, ...others) {
   for (let other of others) {
     addresses = new Set([...addresses, ...other.addresses]);
 
+    ast = ast || other.ast;
     sourceMap = sourceMap || other.sourceMap;
     source = source || other.source;
     sourcePath = sourcePath || other.sourcePath;
@@ -29,6 +31,7 @@ function merge(context, ...others) {
   return {
     binary,
     addresses,
+    ast,
     sourceMap,
     source,
     sourcePath,

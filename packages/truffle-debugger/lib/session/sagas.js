@@ -58,6 +58,7 @@ export function* forContracts({ contracts }) {
     yield addOrMerge({
       binary: contract.binary,
       addresses: [],
+      ast: contract.ast,
       sourceMap: contract.sourceMap,
       source: contract.source,
       sourcePath: contract.sourcePath,
@@ -67,6 +68,7 @@ export function* forContracts({ contracts }) {
     yield addOrMerge({
       binary: contract.deployedBinary,
       addresses: [],
+      ast: contract.ast,
       sourceMap: contract.deployedSourceMap,
       source: contract.source,
       sourcePath: contract.sourcePath,

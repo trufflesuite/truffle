@@ -11,6 +11,8 @@ import configureStore from "../store";
 
 import trace from "../trace/selectors";
 import evm from "../evm/selectors";
+import ast from "../ast/selectors";
+import solidity from "../ast/selectors";
 
 /**
  * Debugger Session

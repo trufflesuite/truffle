@@ -19,6 +19,7 @@
   "license": "MIT",
   "dependencies": {
     "debug": "^3.1.0",
+    "json-pointer": "^0.6.0",
     "redux": "^3.7.2",
     "redux-cli-logger": "^2.0.1",
     "redux-saga": "^0.16.0",

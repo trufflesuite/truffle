@@ -9,6 +9,7 @@ import * as traceActions from "../trace/actions";
 import trace from "../trace/selectors";
 import evm from "../evm/selectors";
 import solidity from "../solidity/selectors";
+import ast from "../ast/selectors";
 
 const controlSagas = {
   [actions.ADVANCE]: advance,
