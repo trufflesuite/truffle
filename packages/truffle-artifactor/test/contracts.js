@@ -151,7 +151,7 @@ describe("artifactor + require", function() {
       var log = result.logs[0];
 
       assert.equal("ExampleEvent", log.event);
-      assert.equal(accounts[0], log.args._from);
+      assert.equal(accounts[0], log.args._from.toLowerCase());
       assert.equal(8, log.args.num); // 8 is a magic number inside Example.sol
     }).then(done).catch(done);
   });
