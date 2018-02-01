@@ -186,21 +186,22 @@ var contract = (function(module) {
       context.promiEvent.eventEmitter.emit('confirmation', number, receipt)
     },
 
+    // Keeping a distinction between `receipt emitter` and Truffle resolving
+    // a more processed object
     handleReceipt: function(context, receipt){
-      var logs;
       context.receipt = receipt;
-      context.promiEvent.eventEmitter.emit('receipt', receipt)
+      context.promiEvent.eventEmitter.emit('receipt', receipt);
+      clearInterval(context.interval);
 
       if (context.onlyEmitReceipt)
         return;
-
-      clearInterval(context.interval);
 
       if (parseInt(receipt.status) == 0){
         var error = new StatusError(context.tx_params, receipt.transactionHash, receipt);
         context.promiEvent.reject(error)
       }
 
+      var logs;
       (receipt.events)
         ? logs = Utils.decodeLogs(context.contract, receipt.events)
         : log = [];
@@ -513,8 +514,6 @@ var contract = (function(module) {
           .on('confirmation', Utils.handleConfirmation.bind(this, context))
 
           .then(function(instance){
-            clearInterval(context.interval);
-
             if (parseInt(context.receipt.status) == 0){
               var error = new StatusError(tx_params, context.transactionHash, context.receipt);
               context.promiEvent.reject(error)
@@ -640,7 +639,7 @@ var contract = (function(module) {
           if (self.hasNetwork(network_id)) {
 
             self.setNetwork(network_id);
-            accept(network_id);
+            return accept(network_id);
           }
 
           // Otherwise, go through all the networks that are listed as
@@ -654,22 +653,22 @@ var contract = (function(module) {
           });
 
           Utils.parallel(matches, function(err, results) {
-            if (err) reject(err);
+            if (err) return reject(err);
 
             for (var i = 0; i < results.length; i++) {
               if (results[i]) {
                 self.setNetwork(uris[i]);
-                accept(network_id);
+                return accept(network_id);
               }
             }
 
             // We found nothing. Set the network id to whatever the provider states.
             self.setNetwork(network_id);
-            accept(network_id);
+            return accept(network_id);
           });
 
         }).catch(function(err){
-          reject(err);
+          return reject(err);
         });
       });
     },
