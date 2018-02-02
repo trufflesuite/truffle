@@ -85,15 +85,25 @@ describe("Abstractions", function() {
 
     // Only firing once...how is this done @ web3 / default block?
     it.skip("should fire the confirmations event handler repeatedly", function(done){
-      var counter = 0;
-      Example.new(1, {gas: 3141592}).on('confirmation', function(number, receipt){
-        assert.equal(parseInt(receipt.status), 1, 'should have a receipt');
-        number === 3 && done();
-      }).then(function(example){
-        example.setValue(5)
+      function keepTransacting(address){
+        Example.at(address).then(function(example){
+          return example.setValue(5)
           .then(function(){ return example.setValue(10) })
           .then(function(){ return example.setValue(15) });
-      })
+        });
+      };
+
+      Example.new(1, {gas: 3141592})
+        .on('confirmation', function(number, receipt){
+          console.log('confirmation');
+          assert.equal(parseInt(receipt.status), 1, 'should have a receipt');
+          if(number === 3){
+            done();
+          }
+        })
+        .on('receipt', function(receipt){
+          keepTransacting(receipt.contractAddress)
+        })
     });
   });
 
@@ -290,19 +300,24 @@ describe("Abstractions", function() {
 
     // Only firing once...how is this done @ web3 / default block?
     it.skip("should fire the confirmations event handler repeatedly", function(done){
-      var counter = 0;
-      var example = null;
-      Example.new(5, {gas: 3141592}).then(function(instance) {
-        example = instance;
-        return example.setValue(25).on('confirmation', function(number, receipt){
-            assert.equal(parseInt(receipt.status), 1, 'should have a receipt');
-            number === 3 && done();
-          });
-        }).then(function(){
-          example.setValue(5)
-            .then(function(){ return example.setValue(10) })
-            .then(function(){ return example.setValue(15) });
-        })
+      function keepTransacting(example){
+        return example.setValue(5)
+          .then(function(){ return example.setValue(5)})
+          .then(function(){ return example.setValue(5)})
+      };
+
+      Example.new(5, {gas: 3141592}).then(function(example) {
+        example.setValue(25)
+          .on('confirmation', function(number, receipt){
+              assert.equal(parseInt(receipt.status), 1, 'should have a receipt');
+              if(number === 3){
+                done();
+              }
+          })
+          .on('receipt', function(receipt){
+            keepTransacting(example);
+          })
+        });
     });
   });
 
@@ -460,6 +475,56 @@ describe("Abstractions", function() {
         });
       }).catch(done)
     });
+  });
+
+  describe("events", function(){
+    it.skip('should expose events through the emitter interface', function(done){
+      Example.new(1, {gas: 3141592}).then(function(example) {
+
+        var event = example.ExampleEvent()
+
+        event.on('data', function(data){
+          assert.equal("ExampleEvent", data.event);
+          assert.equal(accounts[0], data.args._from);
+          assert.equal(8, data.args.num); // 8 is a magic number inside Example.sol
+          done();
+        });
+
+        example.triggerEvent();
+      })
+    });
+
+    it.skip('should be possible to listen for events via callback', function(done){
+      Example.new(1, {gas: 3141592}).then(function(example) {
+
+        example.ExampleEvent(function(event){
+          assert.equal("ExampleEvent", log.event);
+          assert.equal(accounts[0], log.args._from);
+          assert.equal(8, log.args.num); // 8 is a magic number inside Example.sol
+          done();
+        })
+
+        return example.triggerEvent();
+      })
+    });
+
+    it.skip('event emitter should fire multiple times', function(done){
+      Example.new(1, {gas: 3141592}).then(function(example) {
+        var counter = 0;
+        var event = example.ExampleEvent({fromBlock: 0})
+
+        event.on('data', function(data){
+          counter++;
+        });
+
+        example.triggerEvent()
+          .then(function(){ return example.triggerEvent() })
+          .then(function(){ return example.triggerEvent() })
+          .then(function(){
+            assert(counter === 3, 'emitter should have fired 3x')
+          });
+      })
+    })
   });
 
   describe("at / new(<address>)", function(){
