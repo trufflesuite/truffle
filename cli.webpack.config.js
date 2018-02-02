@@ -78,6 +78,9 @@ module.exports = {
     ]),
 
     new CleanWebpackPlugin(["build"]),
+
+    // Make web3 1.0 packable
+    new webpack.IgnorePlugin(/^electron$/),
   ],
   resolve: {
     alias: {
