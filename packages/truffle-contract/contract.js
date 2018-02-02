@@ -38,7 +38,7 @@ var contract = (function(module) {
       return _web3.utils.isBN(val) || _web3.utils.isBigNumber(val);
     },
 
-    decodeLogs: function(C, events) {
+    decodeLogs: function(C, events, isSingle) {
       var logs = Utils.toTruffleLog(events);
 
       return logs.map(function(log) {
@@ -113,6 +113,7 @@ var contract = (function(module) {
 
     toTruffleLog: function(events){
       var logs = [];
+
       Object.keys(events).forEach(function(key){
         var log = events[key];
         var hasReturnValues = Object.keys(log.returnValues).length > 0;
@@ -324,6 +325,48 @@ var contract = (function(module) {
       }
     },
 
+    executeEvent: function(fn, C){
+      return function(params, callback){
+        var promiEvent = new Web3PromiEvent();
+
+        if (typeof params == "function") {
+          callback = params;
+          params = {};
+        }
+
+        if (callback !== undefined){
+          return C.detectNetwork().then(function(){
+            C.web3.eth.sendTransaction.apply(C.web3.eth, [params, callback]);
+          })
+        }
+
+        // Translate logs and re-emit
+        C.detectNetwork().then(function() {
+          var event = fn(params);
+
+          event.on('data', function(data){
+            var event = Utils.decodeLogs(C, data)[0];
+            promiEvent.eventEmitter.emit('data', event);
+          })
+
+          event.on('changed', function(data){
+            var event = Utils.decodeLogs(C, data)[0]
+            promiEvent.eventEmitter.emit('changed', event);
+          })
+
+          event.on('error', function(error){
+            promiEvent.eventEmitter.emit('error', error);
+          })
+
+        // Emit the error if detect network fails
+        }).catch(function(error){
+          promiEvent.eventEmitter.emit('error', error);
+        });
+
+        return promiEvent.eventEmitter;
+      };
+    },
+
     merge: function() {
       var merged = {};
       var args = Array.prototype.slice.call(arguments);
@@ -426,7 +469,7 @@ var contract = (function(module) {
       }
 
       if (item.type == "event") {
-        this[item.name] = contract[item.name];
+        this[item.name] = Utils.executeEvent(contract.events[item.name], constructor, contract);
       }
     }
 
@@ -447,8 +490,12 @@ var contract = (function(module) {
         throw new Error("Invalid provider passed to setProvider(); provider is " + provider);
       }
 
+      /* TURNED THIS OFF - it breaks event listening
       var wrapped = new Provider(provider);
-      this.web3.setProvider(wrapped);
+      this.web3.setProvider(wrapped)
+      **/
+
+      this.web3.setProvider(provider);
       this.currentProvider = provider;
     },
 

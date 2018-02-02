@@ -23,7 +23,6 @@ var util = {
 
       web3.eth.getAccounts(function(err, accs) {
         if (err) reject(err);
-
         instance.defaults({
           from: accs[0]
         });
