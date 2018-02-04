@@ -88,8 +88,8 @@ describe("Abstractions", function() {
       function keepTransacting(address){
         Example.at(address).then(function(example){
           return example.setValue(5)
-          .then(function(){ return example.setValue(10) })
-          .then(function(){ return example.setValue(15) });
+          .then(function(){ console.log('firing'); return example.setValue(10) })
+          .then(function(){ console.log('firing'); return example.setValue(15) });
         });
       };
 
@@ -302,17 +302,18 @@ describe("Abstractions", function() {
     it.skip("should fire the confirmations event handler repeatedly", function(done){
       function keepTransacting(example){
         return example.setValue(5)
-          .then(function(){ return example.setValue(5)})
-          .then(function(){ return example.setValue(5)})
+          .then(function(){ console.log('firing'); return example.setValue(5)})
+          .then(function(){ console.log('firing'); return example.setValue(5)})
       };
 
       Example.new(5, {gas: 3141592}).then(function(example) {
         example.setValue(25)
           .on('confirmation', function(number, receipt){
-              assert.equal(parseInt(receipt.status), 1, 'should have a receipt');
-              if(number === 3){
-                done();
-              }
+            console.log('confirming');
+            assert.equal(parseInt(receipt.status), 1, 'should have a receipt');
+            if(number === 3){
+              done();
+            }
           })
           .on('receipt', function(receipt){
             keepTransacting(example);
@@ -478,9 +479,8 @@ describe("Abstractions", function() {
   });
 
   describe("events", function(){
-    it.skip('should expose events through the emitter interface', function(done){
+    it('should expose the "on" handler / format event correctly', function(done){
       Example.new(1, {gas: 3141592}).then(function(example) {
-
         var event = example.ExampleEvent()
 
         event.on('data', function(data){
@@ -494,26 +494,41 @@ describe("Abstractions", function() {
       })
     });
 
-    it.skip('should be possible to listen for events via callback', function(done){
+    it('should expose the "once" handler', function(done){
       Example.new(1, {gas: 3141592}).then(function(example) {
+        var event = example.ExampleEvent()
 
-        example.ExampleEvent(function(event){
-          assert.equal("ExampleEvent", log.event);
-          assert.equal(accounts[0], log.args._from);
-          assert.equal(8, log.args.num); // 8 is a magic number inside Example.sol
+        event.once('data', function(data){
+          assert.equal("ExampleEvent", data.event);
+          assert.equal(accounts[0], data.args._from);
+          assert.equal(8, data.args.num); // 8 is a magic number inside Example.sol
           done();
-        })
+        });
 
+        example.triggerEvent();
+      })
+    })
+
+    it('should be possible to listen for events with a callback', function(done){
+      var callback = function(err, event){
+        assert.equal("ExampleEvent", event.event);
+        assert.equal(accounts[0], event.args._from);
+        assert.equal(8, event.args.num); // 8 is a magic number inside Example.sol
+        done();
+      }
+
+      Example.new(1, {gas: 3141592}).then(function(example) {
+        example.ExampleEvent(callback);
         return example.triggerEvent();
       })
     });
 
-    it.skip('event emitter should fire multiple times', function(done){
+
+    it('should fire repeatedly', function(done){
       Example.new(1, {gas: 3141592}).then(function(example) {
         var counter = 0;
-        var event = example.ExampleEvent({fromBlock: 0})
 
-        event.on('data', function(data){
+        example.ExampleEvent().on('data', function(data){
           counter++;
         });
 
@@ -522,9 +537,10 @@ describe("Abstractions", function() {
           .then(function(){ return example.triggerEvent() })
           .then(function(){
             assert(counter === 3, 'emitter should have fired 3x')
+            done();
           });
       })
-    })
+    });
   });
 
   describe("at / new(<address>)", function(){
