@@ -207,7 +207,9 @@ var DebugUtils = {
     var pointerStart = range.start.column;
     var pointerEnd;
 
-    if (range.start.line == range.end.line) {
+    // range.end is undefined in some cases
+    // null/undefined check to avoid exceptions
+    if (range.end && range.start.line == range.end.line) {
       // start and end are same line: pointer ends at column
       pointerEnd = range.end.column;
     } else {
