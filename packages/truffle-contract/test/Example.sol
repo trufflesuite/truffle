@@ -47,6 +47,17 @@ contract Example {
     }
   }
 
+  function returnsTuple () view returns (uint256 hello, uint8 goodbye){
+    return (5, 5);
+  }
+
+  function returnsStaticArray () view returns (uint[2]){
+    uint[2] arr;
+    arr[0] = 5;
+    arr[1] = 5;
+    return arr;
+  }
+
   function() payable {
     fallbackTriggered = true;
   }

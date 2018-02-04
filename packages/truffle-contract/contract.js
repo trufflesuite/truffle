@@ -13,7 +13,7 @@ if (typeof Web3 == "object" && Object.keys(Web3).length == 0) {
 var contract = (function(module) {
 
   // Planned for future features, logging, etc.
-  function Provider(provider) {
+  /*function Provider(provider) {
     this.provider = provider;
   }
 
@@ -23,7 +23,7 @@ var contract = (function(module) {
 
   Provider.prototype.sendAsync = function() {
     return this.provider.sendAsync.apply(this.provider, arguments);
-  };
+  };*/
 
   // Helper web3
   var _web3 = new Web3();
@@ -39,7 +39,7 @@ var contract = (function(module) {
     },
 
     decodeLogs: function(C, events, isSingle) {
-      var logs = Utils.toTruffleLog(events);
+      var logs = Utils.toTruffleLog(events, isSingle);
 
       return logs.map(function(log) {
         // toTruffleLog may have already mapped
@@ -111,8 +111,16 @@ var contract = (function(module) {
       });
     },
 
-    toTruffleLog: function(events){
+    toTruffleLog: function(events, isSingle){
       var logs = [];
+
+      // Transform singletons (from event listeners) to the kind of
+      // object we find on the receipt
+      if (isSingle){
+        var temp = {};
+        temp[events.event] = events;
+        events = temp;
+      }
 
       Object.keys(events).forEach(function(key){
         var log = events[key];
@@ -133,6 +141,9 @@ var contract = (function(module) {
 
     // Error after some number of ms if receipt never arrives
     synchronize: function(start, context){
+      // Don't synchronize `new`
+      if(!context.contract) return;
+
       var sync = context.contract.synchronization_timeout;
       var timeout;
 
@@ -264,31 +275,33 @@ var contract = (function(module) {
       return function() {
         var args = Array.prototype.slice.call(arguments);
         var tx_params = Utils.getTxParams(args, C);
+        var promiEvent = new Web3PromiEvent();
 
         var context = {
           contract: C,
-          promiEvent: new Web3PromiEvent(),
+          promiEvent: promiEvent,
           tx_params: tx_params
         }
 
         // .then never resolves here if emitters are attached, so
         // we're just resolving our own PromiEvent in the receipt handler.
         C.detectNetwork().then(function() {
-          fn(...args).send(tx_params)
-            .on('error', Utils.handleError.bind(this, context))
-            .on('transactionHash', Utils.handleHash.bind(this, context))
-            .on('confirmation', Utils.handleConfirmation.bind(this, context))
-            .on('receipt', Utils.handleReceipt.bind(this, context));
+          var listener = fn(...args).send(tx_params)
+          listener.on('error', Utils.handleError.bind(listener, context))
+          listener.on('transactionHash', Utils.handleHash.bind(listener, context))
+          listener.on('confirmation', Utils.handleConfirmation.bind(listener, context))
+          listener.on('receipt', Utils.handleReceipt.bind(listener, context));
+        }).catch(promiEvent.reject);
 
-        }).catch(context.promiEvent.reject);
-
-        return context.promiEvent.eventEmitter;
+        return promiEvent.eventEmitter;
       };
     },
 
     executeSendTransaction : function(C, _self) {
       var self = _self;
       return function(tx_params, callback){
+        var promiEvent = new Web3PromiEvent();
+
         if (typeof tx_params == "function") {
           callback = tx_params;
           tx_params = {};
@@ -305,7 +318,7 @@ var contract = (function(module) {
 
         var context = {
           contract: C,
-          promiEvent: new Web3PromiEvent(),
+          promiEvent: promiEvent,
           tx_params: tx_params
         }
 
@@ -319,9 +332,9 @@ var contract = (function(module) {
             .on('confirmation', Utils.handleConfirmation.bind(this, context))
             .on('receipt', Utils.handleReceipt.bind(this, context));
 
-        }).catch(context.promiEvent.reject);
+        }).catch(promiEvent.reject);
 
-        return context.promiEvent.eventEmitter;
+        return promiEvent.eventEmitter;
       }
     },
 
@@ -334,31 +347,39 @@ var contract = (function(module) {
           params = {};
         }
 
+        // Translate logs and run callback
         if (callback !== undefined){
+          var intermediary = function(err, data){
+            if (err) callback(err, data);
+
+            var event = Utils.decodeLogs(C, data, true)[0];
+            callback(err, event);
+          }
+
           return C.detectNetwork().then(function(){
-            C.web3.eth.sendTransaction.apply(C.web3.eth, [params, callback]);
+           fn.apply(C.events, [params, intermediary]);
           })
         }
 
         // Translate logs and re-emit
         C.detectNetwork().then(function() {
-          var event = fn(params);
+          var listener = fn(params)
 
-          event.on('data', function(data){
-            var event = Utils.decodeLogs(C, data)[0];
+          listener.on('data', function(data){
+            var event = Utils.decodeLogs(C, data, true)[0];
             promiEvent.eventEmitter.emit('data', event);
           })
 
-          event.on('changed', function(data){
-            var event = Utils.decodeLogs(C, data)[0]
+          listener.on('changed', function(data){
+            var event = Utils.decodeLogs(C, data, true)[0]
             promiEvent.eventEmitter.emit('changed', event);
           })
 
-          event.on('error', function(error){
+          listener.on('error', function(error){
             promiEvent.eventEmitter.emit('error', error);
           })
 
-        // Emit the error if detect network fails
+        // Emit the error if detect network fails -- actually what should we do here?
         }).catch(function(error){
           promiEvent.eventEmitter.emit('error', error);
         });
@@ -516,7 +537,6 @@ var contract = (function(module) {
       var context = {
         promiEvent: new Web3PromiEvent(),
         allowError: true,
-        doNotResolve: true,
         onlyEmitReceipt: true
       }
 
