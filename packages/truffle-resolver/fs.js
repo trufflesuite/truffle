@@ -33,8 +33,6 @@ FS.prototype.require = function(import_path, search_path) {
 };
 
 FS.prototype.getContractName = function(sourcePath, searchPath) {
-  var self = this;
-
   searchPath = searchPath || this.contracts_build_directory;
 
   var filenames = fs.readdirSync(searchPath);
@@ -53,7 +51,6 @@ FS.prototype.getContractName = function(sourcePath, searchPath) {
   // fallback
   return path.basename(sourcePath, ".sol");
 }
-
 
 FS.prototype.resolve = function(import_path, imported_from, callback) {
   imported_from = imported_from || "";
