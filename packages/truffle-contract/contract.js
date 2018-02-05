@@ -307,7 +307,7 @@ var contract = (function(module) {
 
     this.allEvents = contract.allEvents;
     this.address = contract.address;
-    this.transactionHash = contract.transactionHash;
+    this.transactionId = contract.transactionHash;
   };
 
   Contract._static_methods = {
