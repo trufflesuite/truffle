@@ -8,13 +8,13 @@ function FS(working_directory, contracts_build_directory) {
 }
 
 FS.prototype.require = function(import_path, search_path) {
-  var contract_name = path.basename(import_path, ".sol");
-
   search_path = search_path || this.contracts_build_directory;
 
   // For Windows: Allow import paths to be either path separator ('\' or '/')
   // by converting all '/' to the default (path.sep);
   import_path = import_path.replace(/\//g, path.sep);
+
+  var contract_name = this.getContractName(import_path, search_path);
 
   // If we have an absoulte path, only check the file if it's a child of the working_directory.
   if (path.isAbsolute(import_path)) {
@@ -31,6 +31,29 @@ FS.prototype.require = function(import_path, search_path) {
     return null;
   }
 };
+
+FS.prototype.getContractName = function(sourcePath, searchPath) {
+  var self = this;
+
+  searchPath = searchPath || this.contracts_build_directory;
+
+  var filenames = fs.readdirSync(searchPath);
+  for(var i = 0; i < filenames.length; i++) {
+    var filename = filenames[i];
+
+    var artifact = JSON.parse(
+      fs.readFileSync(path.resolve(searchPath, filename))
+    );
+
+    if (artifact.sourcePath == sourcePath) {
+      return artifact.contractName;
+    }
+  };
+
+  // fallback
+  return path.basename(sourcePath, ".sol");
+}
+
 
 FS.prototype.resolve = function(import_path, imported_from, callback) {
   imported_from = imported_from || "";
