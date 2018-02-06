@@ -15,8 +15,8 @@ var Utils = {
 
   decodeLogs: function(C, events, isSingle) {
     var logs = Utils.toTruffleLog(events, isSingle);
+
     return logs.map(function(log) {
-      try{
       var logABI = C.events[log.topics[0]];
 
       if (logABI == null) {
@@ -33,9 +33,6 @@ var Utils = {
       delete copy.topics;
 
       return copy;
-    } catch(error){
-      console.log(error)
-    }
     }).filter(function(log) {
       return log != null;
     });
@@ -122,6 +119,35 @@ var Utils = {
     }
     tx_params = Utils.merge(C.class_defaults, tx_params);
     return tx_params;
+  },
+
+  // Verifies that a contracts libraries have been linked correctly.
+  // Throws on error
+  checkLibraries: function(){
+    var regex = /__[^_]+_+/g;
+    var unlinked_libraries = this.binary.match(regex);
+
+    if (unlinked_libraries != null) {
+      unlinked_libraries = unlinked_libraries.map(function(name) {
+        // Remove underscores
+        return name.replace(/_/g, "");
+      }).sort().filter(function(name, index, arr) {
+        // Remove duplicates
+        if (index + 1 >= arr.length) {
+          return true;
+        }
+
+        return name != arr[index + 1];
+      }).join(", ");
+
+      var error = this.contractName +
+                  " contains unresolved libraries. You must deploy and link" +
+                  " the following libraries before you can deploy a new version of " +
+                  this._json.contractName + ": " + unlinked_libraries;
+
+
+      throw new Error(error);
+    }
   },
 };
 
