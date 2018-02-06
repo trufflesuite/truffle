@@ -4,7 +4,7 @@
   "description": "A better contract abstraction for Ethereum (formerly EtherPudding)",
   "main": "index.js",
   "scripts": {
-    "test": "mocha",
+    "test": "mocha --no-warnings",
     "test:debug": "$(npm bin)/mocha --inspect-brk",
     "test:trace": "$(npm bin)/mocha --trace-warnings",
     "compile": "browserify ./index.js -i web3 -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js"

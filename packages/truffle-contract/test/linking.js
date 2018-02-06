@@ -166,6 +166,8 @@ describe("Library linking with contract objects", function() {
       assert.equal(result.logs.length, 1);
       var log = result.logs[0];
       assert.equal(log.event, "LibraryEvent");
+      assert.equal(accounts[0], log.args._from);
+      assert.equal(8, log.args.num); // 8 is a magic number inside ExampleLibrary.sol
     }).then(done).catch(done);
 
   });

@@ -23,6 +23,10 @@ contract Example {
     return value;
   }
 
+  function getValue(uint multiplier) constant returns(uint){
+    return value * multiplier;
+  }
+
   function parrot(uint val) returns(uint) {
     return val;
   }
