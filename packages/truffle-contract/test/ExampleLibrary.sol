@@ -1,7 +1,7 @@
 library ExampleLibrary {
-  event LibraryEvent();
+  event LibraryEvent(address indexed _from, uint num);
 
   function triggerLibraryEvent() {
-    LibraryEvent();
+    LibraryEvent(msg.sender, 8);
   }
 }

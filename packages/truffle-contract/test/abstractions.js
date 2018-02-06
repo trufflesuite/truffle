@@ -175,6 +175,34 @@ describe("Abstractions", function() {
       }).then(done).catch(done);
     });
 
+    it.skip("should execute overloaded solidity fn calls", function(done) {
+      var example;
+      Example.new(5, {gas: 3141592}).then(function(instance) {
+        example = instance;
+        return example.methods['getValue()']();
+      }).then(function(value) {
+        assert.equal(parseInt(value), 5, "Value should have been retrieved");
+        return example.methods['getValue(uint)'](5);
+      }).then(function(value) {
+        assert.equal(parseInt(value), 25, "Multiplied should have been retrieved");
+      }).then(done).catch(done);
+    })
+
+    it.skip("should execute overloaded solidity fn sends", function(done) {
+      var example;
+      Example.new(5, {gas: 3141592}).then(function(instance) {
+        example = instance;
+        return example.getValue();
+      }).then(function(value) {
+        assert.equal(parseInt(value), 5, "Value should have been retrieved");
+        return example.getValue(5);
+      }).then(function(value) {
+        assert.equal(parseInt(value), 25, "Multiplied should have been retrieved");
+      }).then(done).catch(done);
+    });
+
+
+
     it.skip("should honor the defaultBlock parameter when called", function(done){
       var example;
       var initialBlock;
@@ -337,7 +365,7 @@ describe("Abstractions", function() {
       var example;
       Example.new(5, {gas: 3141592}).then(function(instance) {
         example = instance;
-        return example.getValue('apples', 5); // NB: one arg would be interpreted as defaultBlock
+        return example.getValue('apples', 'oranges', 'pineapples'); // NB: call always takes +1 param: defaultBlock
       }).then(function(value) {
         assert.fail();
       }).catch(function(error){

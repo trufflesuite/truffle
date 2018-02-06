@@ -1,8 +1,12 @@
 var ethJSABI = require("ethjs-abi");
 var BlockchainUtils = require("truffle-blockchain-utils");
 var Web3 = require("web3");
-var StatusError = require("./statuserror.js");
 var Web3PromiEvent = require('web3-core-promievent');
+var StatusError = require("./statuserror");
+var Utils = require("./utils");
+var execute = require("./execute");
+var handle = require("./handlers");
+
 
 // For browserified version. If browserify gave us an empty version,
 // look for the one provided by the user.
@@ -11,7 +15,6 @@ if (typeof Web3 == "object" && Object.keys(Web3).length == 0) {
 }
 
 var contract = (function(module) {
-
   // Planned for future features, logging, etc.
   /*function Provider(provider) {
     this.provider = provider;
@@ -455,6 +458,9 @@ var contract = (function(module) {
   };
 
   // Accepts a contract object created with web3.eth.contract.
+=======
+  // Accepts a contract object created with web3.eth.Contract.
+>>>>>>> f248320... Restructure files:lib/contract.js
   // Optionally, if called without `new`, accepts a network_id and will
   // create a new version of the contract abstraction with that network_id set.
   function Contract(contract) {
@@ -469,7 +475,7 @@ var contract = (function(module) {
       contract_class.options.address = contract;
       contract = contract_class;
     }
-    // Set provider with this.web3.currentProvider? for At?
+
     this.contract = contract;
     this.contract.setProvider(constructor.web3.currentProvider);
 
@@ -477,24 +483,26 @@ var contract = (function(module) {
     for (var i = 0; i < this.abi.length; i++) {
       var item = this.abi[i];
       if (item.type == "function") {
+        var method = contract.methods[item.name];
+
         if (item.constant == true) {
-          this[item.name] = Utils.executeAsCall(contract.methods[item.name], constructor, item.inputs);
+          this[item.name] = execute.call(method, constructor, item.inputs);
         } else {
-          this[item.name] = Utils.executeAsSend(contract.methods[item.name], this, constructor);
+          this[item.name] = execute.send(method, this, constructor);
         }
 
-        this[item.name].call = Utils.executeAsCall(contract.methods[item.name], constructor, item.inputs);
-        this[item.name].sendTransaction = Utils.executeAsSend(contract.methods[item.name], constructor);
-        this[item.name].request = contract.methods[item.name].request;
-        this[item.name].estimateGas = Utils.executeAsEstimate(contract.methods[item.name], constructor);
+        this[item.name].call = execute.call(method, constructor, item.inputs);
+        this[item.name].sendTransaction = execute.send(method, constructor);
+        this[item.name].request = method.request;
+        this[item.name].estimateGas = execute.estimate(method, constructor);
       }
 
       if (item.type == "event") {
-        this[item.name] = Utils.executeEvent(contract.events[item.name], constructor, contract);
+        this[item.name] = execute.event(contract.events[item.name], constructor, contract);
       }
     }
 
-    this.sendTransaction = Utils.executeSendTransaction(constructor, this);
+    this.sendTransaction = execute.sendTransaction(constructor, this);
 
     this.send = function(value) {
       return self.sendTransaction({value: value});
@@ -522,6 +530,7 @@ var contract = (function(module) {
 
     new: function() {
       var self = this;
+      var promiEvent = new Web3PromiEvent();
 
       if (this.currentProvider == null) {
         throw new Error(this.contractName + " error: Please call setProvider() first before calling new().");
@@ -535,7 +544,7 @@ var contract = (function(module) {
 
       // Args and Promievent for the event management cascade
       var context = {
-        promiEvent: new Web3PromiEvent(),
+        promiEvent: promiEvent,
         allowError: true,
         onlyEmitReceipt: true
       }
@@ -575,10 +584,10 @@ var contract = (function(module) {
         contract_class
           .deploy(options)
           .send()
-          .on('error', Utils.handleError.bind(this, context))
-          .on('transactionHash', Utils.handleHash.bind(this, context))
-          .on('receipt', Utils.handleReceipt.bind(this, context))
-          .on('confirmation', Utils.handleConfirmation.bind(this, context))
+          .on('error', handle.error.bind(self, context))
+          .on('transactionHash', handle.hash.bind(self, context))
+          .on('receipt', handle.receipt.bind(self, context))
+          .on('confirmation', handle.confirmation.bind(self, context))
 
           .then(function(instance){
             if (parseInt(context.receipt.status) == 0){
@@ -587,31 +596,12 @@ var contract = (function(module) {
             }
 
             instance.transactionHash = context.transactionHash;
-            context.promiEvent.resolve(new self(instance));
+            promiEvent.resolve(new self(instance));
           })
-          .catch(context.promiEvent.reject)
-      }).catch(context.promiEvent.reject);
+          .catch(promiEvent.reject)
+      }).catch(promiEvent.reject);
 
-      return context.promiEvent.eventEmitter;
-    },
-
-    estimateDeployment : function(){
-      var self = this;
-      var args = Array.prototype.slice.call(arguments);
-
-      return self.detectNetwork().then(function() {
-        var tx_params = Utils.getTxParams(args, self);
-
-        var options = {
-          data: tx_params.data || self.binary,
-          arguments: args
-        };
-
-        delete tx_params['data'];
-
-        var contract_class = new self.web3.eth.Contract(self.abi, tx_params);
-        return contract_class.deploy(options).estimateGas(tx_params)
-      });
+      return promiEvent.eventEmitter;
     },
 
     at: function(address) {
@@ -821,7 +811,7 @@ var contract = (function(module) {
       temp._property_values = {};
       temp._json = json;
 
-      Utils.bootstrap(temp);
+      bootstrap(temp);
 
       temp.web3 = new Web3();
       temp.class_defaults = temp.prototype.defaults || {};
@@ -1142,7 +1132,25 @@ var contract = (function(module) {
     }
   };
 
-  Utils.bootstrap(Contract);
+  function bootstrap(fn) {
+    // Add our static methods
+    // Add something here about excluding send, privately defined methods
+    Object.keys(fn._static_methods).forEach(function(key) {
+      fn[key] = fn._static_methods[key].bind(fn);
+    });
+
+    // Add our properties.
+    Object.keys(fn._properties).forEach(function(key) {
+      fn.addProp(key, fn._properties[key]);
+    });
+
+    // estimateGas as sub-property of new
+    fn['new'].estimateGas = execute.estimateDeployment.bind(fn);
+
+    return fn;
+  };
+
+  bootstrap(Contract);
   module.exports = Contract;
 
   return Contract;
