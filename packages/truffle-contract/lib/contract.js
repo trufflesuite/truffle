@@ -533,11 +533,13 @@ var contract = (function(module) {
       var promiEvent = new Web3PromiEvent();
 
       if (this.currentProvider == null) {
-        throw new Error(this.contractName + " error: Please call setProvider() first before calling new().");
+        var err = this.contractName + " error: Please call setProvider() first before calling new()."
+        throw new Error(err);
       }
 
       if (!this.bytecode) {
-        throw new Error(this._json.contractName + " error: contract binary not set. Can't deploy new instance.");
+        var err = this._json.contractName + " error: contract binary not set. Can't deploy new instance.";
+        throw new Error(err);
       }
 
       var args = Array.prototype.slice.call(arguments);
@@ -549,57 +551,10 @@ var contract = (function(module) {
         onlyEmitReceipt: true
       }
 
-      self.detectNetwork().then(function(network_id) {
-        // After the network is set, check to make sure everything's ship shape.
-        var regex = /__[^_]+_+/g;
-        var unlinked_libraries = self.binary.match(regex);
-
-        if (unlinked_libraries != null) {
-          unlinked_libraries = unlinked_libraries.map(function(name) {
-            // Remove underscores
-            return name.replace(/_/g, "");
-          }).sort().filter(function(name, index, arr) {
-            // Remove duplicates
-            if (index + 1 >= arr.length) {
-              return true;
-            }
-
-            return name != arr[index + 1];
-          }).join(", ");
-
-          throw new Error(self.contractName + " contains unresolved libraries. You must deploy and link the following libraries before you can deploy a new version of " + self._json.contractName + ": " + unlinked_libraries);
-        }
-      }).then(function() {
-        var tx_params = Utils.getTxParams(args, self);
-
-        var options = {
-          data: tx_params.data || self.binary,
-          arguments: args
-        };
-
-        delete tx_params['data'];
-
-        var contract_class = new self.web3.eth.Contract(self.abi, tx_params);
-
-        contract_class
-          .deploy(options)
-          .send()
-          .on('error', handle.error.bind(self, context))
-          .on('transactionHash', handle.hash.bind(self, context))
-          .on('receipt', handle.receipt.bind(self, context))
-          .on('confirmation', handle.confirmation.bind(self, context))
-
-          .then(function(instance){
-            if (parseInt(context.receipt.status) == 0){
-              var error = new StatusError(tx_params, context.transactionHash, context.receipt);
-              context.promiEvent.reject(error)
-            }
-
-            instance.transactionHash = context.transactionHash;
-            promiEvent.resolve(new self(instance));
-          })
-          .catch(promiEvent.reject)
-      }).catch(promiEvent.reject);
+      self.detectNetwork()
+        .then(Utils.checkLibraries.bind(self))
+        .then(execute.deployment.bind(self, args, context))
+        .catch(promiEvent.reject);
 
       return promiEvent.eventEmitter;
     },

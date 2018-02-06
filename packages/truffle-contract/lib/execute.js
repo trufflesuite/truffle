@@ -1,4 +1,5 @@
 var utils = require("./utils");
+var StatusError = require("./statuserror");
 var handle = require("./handlers");
 var Web3PromiEvent = require('web3-core-promievent');
 
@@ -168,6 +169,38 @@ var execute = {
           return fn(...args).estimateGas(tx_params);
       });
     };
+  },
+
+  deployment: function(args, context) {
+    var self = this;
+    var tx_params = utils.getTxParams(args, self);
+
+    var options = {
+      data: tx_params.data || self.binary,
+      arguments: args
+    };
+
+    delete tx_params['data'];
+
+    var contract_class = new self.web3.eth.Contract(self.abi, tx_params);
+
+    return contract_class
+      .deploy(options)
+      .send()
+      .on('error', handle.error.bind(self, context))
+      .on('transactionHash', handle.hash.bind(self, context))
+      .on('receipt', handle.receipt.bind(self, context))
+      .on('confirmation', handle.confirmation.bind(self, context))
+
+      .then(function(instance){
+        if (parseInt(context.receipt.status) == 0){
+          var error = new StatusError(tx_params, context.transactionHash, context.receipt);
+          context.promiEvent.reject(error)
+        }
+
+        instance.transactionHash = context.transactionHash;
+        context.promiEvent.resolve(new self(instance));
+      })
   },
 
   // This gets attached to `.new` (declared as a static_method in `contract`)
