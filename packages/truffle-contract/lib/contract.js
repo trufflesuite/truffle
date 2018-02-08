@@ -2,11 +2,11 @@ var ethJSABI = require("ethjs-abi");
 var BlockchainUtils = require("truffle-blockchain-utils");
 var Web3 = require("web3");
 var Web3PromiEvent = require('web3-core-promievent');
+var webUtils = require('web3-utils');
 var StatusError = require("./statuserror");
 var Utils = require("./utils");
 var execute = require("./execute");
 var handle = require("./handlers");
-
 
 // For browserified version. If browserify gave us an empty version,
 // look for the one provided by the user.
@@ -15,452 +15,7 @@ if (typeof Web3 == "object" && Object.keys(Web3).length == 0) {
 }
 
 var contract = (function(module) {
-  // Planned for future features, logging, etc.
-  /*function Provider(provider) {
-    this.provider = provider;
-  }
-
-  Provider.prototype.send = function() {
-    return this.provider.send.apply(this.provider, arguments);
-  };
-
-  Provider.prototype.sendAsync = function() {
-    return this.provider.sendAsync.apply(this.provider, arguments);
-  };*/
-
-  // Helper web3
-  var _web3 = new Web3();
-
-  var Utils = {
-    is_object: function(val) {
-      return typeof val == "object" && !Array.isArray(val);
-    },
-    is_big_number: function(val) {
-      if (typeof val != "object") return false;
-
-      return _web3.utils.isBN(val) || _web3.utils.isBigNumber(val);
-    },
-
-    decodeLogs: function(C, events, isSingle) {
-      var logs = Utils.toTruffleLog(events, isSingle);
-
-      return logs.map(function(log) {
-        // toTruffleLog may have already mapped
-        // web3's decoding successfully. Only decoding
-        // Library events here
-        if (log.args) return log;
-
-        var logABI = C.events[log.topics[0]];
-
-        if (logABI == null) {
-          return null;
-        }
-
-        // This function has been adapted from web3's SolidityEvent.decode() method,
-        // and built to work with ethjs-abi.
-
-        var copy = Utils.merge({}, log);
-
-        function partialABI(fullABI, indexed) {
-          var inputs = fullABI.inputs.filter(function (i) {
-            return i.indexed === indexed;
-          });
-
-          var partial = {
-            inputs: inputs,
-            name: fullABI.name,
-            type: fullABI.type,
-            anonymous: fullABI.anonymous
-          };
-
-          return partial;
-        }
-
-        var argTopics = logABI.anonymous ? copy.topics : copy.topics.slice(1);
-        var indexedData = "0x" + argTopics.map(function (topics) { return topics.slice(2); }).join("");
-        var indexedParams = ethJSABI.decodeEvent(partialABI(logABI, true), indexedData);
-
-        var notIndexedData = copy.data;
-        var notIndexedParams = ethJSABI.decodeEvent(partialABI(logABI, false), notIndexedData);
-
-        copy.event = logABI.name;
-
-        copy.args = logABI.inputs.reduce(function (acc, current) {
-          var val = indexedParams[current.name];
-
-          if (val === undefined) {
-            val = notIndexedParams[current.name];
-          }
-
-          acc[current.name] = val;
-          return acc;
-        }, {});
-
-        Object.keys(copy.args).forEach(function(key) {
-          var val = copy.args[key];
-
-          // We have BN. Convert it to BigNumber
-          //if (val.constructor.isBN) {
-          //  copy.args[key] = C.web3.toBigNumber("0x" + val.toString(16));
-          //}
-        });
-
-        delete copy.data;
-        delete copy.topics;
-
-        return copy;
-      }).filter(function(log) {
-        return log != null;
-      });
-    },
-
-    toTruffleLog: function(events, isSingle){
-      var logs = [];
-
-      // Transform singletons (from event listeners) to the kind of
-      // object we find on the receipt
-      if (isSingle){
-        var temp = {};
-        temp[events.event] = events;
-        events = temp;
-      }
-
-      Object.keys(events).forEach(function(key){
-        var log = events[key];
-        var hasReturnValues = Object.keys(log.returnValues).length > 0;
-
-        // Use web3's decoding unless we have something
-        // to add - e.g. Library events.
-        if(hasReturnValues){
-          log.args = log.returnValues;
-        } else {
-          log.data = log.raw.data;
-          log.topics = log.raw.topics;
-        }
-        logs.push(events[key]);
-      })
-      return logs;
-    },
-
-    // Error after some number of ms if receipt never arrives
-    synchronize: function(start, context){
-      // Don't synchronize `new`
-      if(!context.contract) return;
-
-      var sync = context.contract.synchronization_timeout;
-      var timeout;
-
-      ( sync === 0 || sync !== undefined)
-        ? timeout = sync
-        : timeout = 240000;
-
-      if (timeout > 0 && new Date().getTime() - start > timeout) {
-        var err = new Error("Transaction " + tx + " wasn't processed in " + (timeout / 1000) + " seconds!")
-        context.promievent.reject(err);
-      }
-    },
-
-    // Extracts optional tx params from a list of fn arguments
-    getTxParams: function(args, C){
-      var tx_params =  {};
-      var last_arg = args[args.length - 1];
-
-      // It's only tx_params if it's an object and not a BigNumber.
-      if (Utils.is_object(last_arg) && !Utils.is_big_number(last_arg)) {
-        tx_params = args.pop();
-      }
-      tx_params = Utils.merge(C.class_defaults, tx_params);
-      return tx_params;
-    },
-
-    // Emitter handlers for `send` / `sendTransaction` / `new`:
-    // This is the order they're executed in. Web3's `.send` permits
-    // either EventEmitter OR Promise, not both. So we track state in the
-    // context object between `handleHash` and `handleReceipt`.
-    handleError: function(context, error){
-      context.promiEvent.eventEmitter.emit('error', error);
-      clearInterval(context.interval);
-
-      // Everywhere but `new`
-      if (!context.allowError){
-        context.promiEvent.reject(error);
-      }
-    },
-
-    // Collect hash for contract.new (we attach it to the contract there)
-    // Start polling and collect interval so we can kill poll in `handleReceipt`
-    // and `contract.new.then`
-    handleHash: function(context, hash){
-      var start = new Date().getTime();
-      context.transactionHash = hash;
-      context.promiEvent.eventEmitter.emit('transactionHash', hash);
-      context.interval = setInterval(function(){Utils.synchronize(start, context)}, 1000);
-    },
-
-    handleConfirmation: function(context, number, receipt){
-      context.promiEvent.eventEmitter.emit('confirmation', number, receipt)
-    },
-
-    // Keeping a distinction between `receipt emitter` and Truffle resolving
-    // a more processed object
-    handleReceipt: function(context, receipt){
-      context.receipt = receipt;
-      context.promiEvent.eventEmitter.emit('receipt', receipt);
-      clearInterval(context.interval);
-
-      if (context.onlyEmitReceipt)
-        return;
-
-      if (parseInt(receipt.status) == 0){
-        var error = new StatusError(context.tx_params, receipt.transactionHash, receipt);
-        context.promiEvent.reject(error)
-      }
-
-      var logs;
-      (receipt.events)
-        ? logs = Utils.decodeLogs(context.contract, receipt.events)
-        : log = [];
-
-      context.promiEvent.resolve({
-        tx: receipt.transactionHash,
-        receipt: receipt,
-        logs: logs
-      });
-    },
-
-    // Execution wrappers
-    //
-    executeAsCall: function(fn, C, inputs) {
-      return function() {
-        var args = Array.prototype.slice.call(arguments);
-        var tx_params = {};
-        var last_arg = args[args.length - 1];
-        var defaultBlock;
-
-        // It's only tx_params if it's an object and not a BigNumber.
-        // It's only defaultBlock if there's an extra non-object input that's not tx_params.
-        var hasTxParams = Utils.is_object(last_arg) && !Utils.is_big_number(last_arg);
-        var hasDefaultBlock = !hasTxParams && args.length > inputs.length;
-        var hasDefaultBlockWithParams = hasTxParams && args.length - 1 > inputs.length;
-
-        // Detect and extract defaultBlock parameter
-        if (hasDefaultBlock || hasDefaultBlockWithParams) {
-            defaultBlock = args.pop();
-        }
-        // Get tx params
-        if (hasTxParams) {
-          tx_params = args.pop();
-        }
-
-        tx_params = Utils.merge(C.class_defaults, tx_params);
-
-        // Overcomplicated
-        return C.detectNetwork().then(function() {
-          return (defaultBlock !== undefined)
-            ? fn(...args).call(tx_params, defaultBlock)
-            : fn(...args).call(tx_params);
-        });
-      };
-    },
-
-    executeAsEstimate : function(fn, C){
-      return function() {
-        var args = Array.prototype.slice.call(arguments);
-        var tx_params = Utils.getTxParams(args, C);
-
-        return C.detectNetwork().then(function() {
-            return fn(...args).estimateGas(tx_params);
-        });
-      };
-    },
-
-    executeAsSend: function(fn, instance, C) {
-      return function() {
-        var args = Array.prototype.slice.call(arguments);
-        var tx_params = Utils.getTxParams(args, C);
-        var promiEvent = new Web3PromiEvent();
-
-        var context = {
-          contract: C,
-          promiEvent: promiEvent,
-          tx_params: tx_params
-        }
-
-        // .then never resolves here if emitters are attached, so
-        // we're just resolving our own PromiEvent in the receipt handler.
-        C.detectNetwork().then(function() {
-          var listener = fn(...args).send(tx_params)
-          listener.on('error', Utils.handleError.bind(listener, context))
-          listener.on('transactionHash', Utils.handleHash.bind(listener, context))
-          listener.on('confirmation', Utils.handleConfirmation.bind(listener, context))
-          listener.on('receipt', Utils.handleReceipt.bind(listener, context));
-        }).catch(promiEvent.reject);
-
-        return promiEvent.eventEmitter;
-      };
-    },
-
-    executeSendTransaction : function(C, _self) {
-      var self = _self;
-      return function(tx_params, callback){
-        var promiEvent = new Web3PromiEvent();
-
-        if (typeof tx_params == "function") {
-          callback = tx_params;
-          tx_params = {};
-        }
-
-        tx_params = Utils.merge(C.class_defaults, tx_params);
-        tx_params.to = self.address;
-
-        if (callback !== undefined){
-          return C.detectNetwork().then(function(){
-            C.web3.eth.sendTransaction.apply(C.web3.eth, [tx_params, callback]);
-          })
-        }
-
-        var context = {
-          contract: C,
-          promiEvent: promiEvent,
-          tx_params: tx_params
-        }
-
-        // .then never resolves here if emitters are attached, so
-        // we're just resolving our own PromiEvent in the receipt handler.
-        C.detectNetwork().then(function() {
-
-          C.web3.eth.sendTransaction(tx_params)
-            .on('error', Utils.handleError.bind(this, context))
-            .on('transactionHash', Utils.handleHash.bind(this, context))
-            .on('confirmation', Utils.handleConfirmation.bind(this, context))
-            .on('receipt', Utils.handleReceipt.bind(this, context));
-
-        }).catch(promiEvent.reject);
-
-        return promiEvent.eventEmitter;
-      }
-    },
-
-    executeEvent: function(fn, C){
-      return function(params, callback){
-        var promiEvent = new Web3PromiEvent();
-
-        if (typeof params == "function") {
-          callback = params;
-          params = {};
-        }
-
-        // Translate logs and run callback
-        if (callback !== undefined){
-          var intermediary = function(err, data){
-            if (err) callback(err, data);
-
-            var event = Utils.decodeLogs(C, data, true)[0];
-            callback(err, event);
-          }
-
-          return C.detectNetwork().then(function(){
-           fn.apply(C.events, [params, intermediary]);
-          })
-        }
-
-        // Translate logs and re-emit
-        C.detectNetwork().then(function() {
-          var listener = fn(params)
-
-          listener.on('data', function(data){
-            var event = Utils.decodeLogs(C, data, true)[0];
-            promiEvent.eventEmitter.emit('data', event);
-          })
-
-          listener.on('changed', function(data){
-            var event = Utils.decodeLogs(C, data, true)[0]
-            promiEvent.eventEmitter.emit('changed', event);
-          })
-
-          listener.on('error', function(error){
-            promiEvent.eventEmitter.emit('error', error);
-          })
-
-        // Emit the error if detect network fails -- actually what should we do here?
-        }).catch(function(error){
-          promiEvent.eventEmitter.emit('error', error);
-        });
-
-        return promiEvent.eventEmitter;
-      };
-    },
-
-    merge: function() {
-      var merged = {};
-      var args = Array.prototype.slice.call(arguments);
-
-      for (var i = 0; i < args.length; i++) {
-        var object = args[i];
-        var keys = Object.keys(object);
-        for (var j = 0; j < keys.length; j++) {
-          var key = keys[j];
-          var value = object[key];
-          merged[key] = value;
-        }
-      }
-
-      return merged;
-    },
-    parallel: function (arr, callback) {
-      callback = callback || function () {};
-      if (!arr.length) {
-        return callback(null, []);
-      }
-      var index = 0;
-      var results = new Array(arr.length);
-      arr.forEach(function (fn, position) {
-        fn(function (err, result) {
-          if (err) {
-            callback(err);
-            callback = function () {};
-          } else {
-            index++;
-            results[position] = result;
-            if (index >= arr.length) {
-              callback(null, results);
-            }
-          }
-        });
-      });
-    },
-    bootstrap: function(fn) {
-      // Add our static methods
-      Object.keys(fn._static_methods).forEach(function(key) {
-        fn[key] = fn._static_methods[key].bind(fn);
-      });
-
-      // Add our properties.
-      Object.keys(fn._properties).forEach(function(key) {
-        fn.addProp(key, fn._properties[key]);
-      });
-
-      // estimateGas as sub-property of new
-      fn['new'].estimateGas = fn._static_methods.estimateDeployment.bind(fn);
-
-      return fn;
-    },
-    linkBytecode: function(bytecode, links) {
-      Object.keys(links).forEach(function(library_name) {
-        var library_address = links[library_name];
-        var regex = new RegExp("__" + library_name + "_+", "g");
-
-        bytecode = bytecode.replace(regex, library_address.replace("0x", ""));
-      });
-
-      return bytecode;
-    }
-  };
-
-  // Accepts a contract object created with web3.eth.contract.
-=======
   // Accepts a contract object created with web3.eth.Contract.
->>>>>>> f248320... Restructure files:lib/contract.js
   // Optionally, if called without `new`, accepts a network_id and will
   // create a new version of the contract abstraction with that network_id set.
   function Contract(contract) {
@@ -469,7 +24,7 @@ var contract = (function(module) {
 
     this.abi = constructor.abi;
 
-    // at:
+    // at
     if (typeof contract == "string") {
       var contract_class = new constructor.web3.eth.Contract(this.abi);
       contract_class.options.address = contract;
@@ -477,30 +32,51 @@ var contract = (function(module) {
     }
 
     this.contract = contract;
-    this.contract.setProvider(constructor.web3.currentProvider);
+    this.contract.setProvider(constructor.web3.currentProvider); // Web3 now requires this
+    this.methods = {};
 
     // Provision our functions.
-    for (var i = 0; i < this.abi.length; i++) {
-      var item = this.abi[i];
-      if (item.type == "function") {
-        var method = contract.methods[item.name];
+    this.abi.forEach(function(item){
+      var method;
+      var signature;
 
-        if (item.constant == true) {
-          this[item.name] = execute.call(method, constructor, item.inputs);
-        } else {
-          this[item.name] = execute.send(method, this, constructor);
+      // Sort though whether method should be invoked by call or send,
+      // + find out if it's already defined in the map / should be
+      // added to the contract's methods key.
+      if (item.type == "function") {
+        var key;
+        var isConstant = item.constant === true;
+        var signature = webUtils._jsonInterfaceMethodToString(item);
+
+        method = function(constant, web3Method){
+          var fn;
+
+          (constant)
+            ? fn = execute.call(web3Method, constructor, item.inputs)
+            : fn = execute.send(web3Method, constructor);
+
+          fn.call = execute.call(web3Method, constructor, item.inputs);
+          fn.sendTransaction = execute.send(web3Method, constructor);
+          fn.estimateGas = execute.estimate(web3Method, constructor);
+          fn.request = null;
+
+          return fn;
         }
 
-        this[item.name].call = execute.call(method, constructor, item.inputs);
-        this[item.name].sendTransaction = execute.send(method, constructor);
-        this[item.name].request = method.request;
-        this[item.name].estimateGas = execute.estimate(method, constructor);
+        // We only set the direct access path once - overloaded methods should
+        // be invoked via the .methods property although one of
+        // them will be available through the contract.
+        if(self[item.name] === undefined){
+          self[item.name] = method(isConstant, contract.methods[item.name]);
+        }
+
+        self.methods[signature] = method(isConstant, contract.methods[signature]);
       }
 
       if (item.type == "event") {
-        this[item.name] = execute.event(contract.events[item.name], constructor, contract);
+        self[item.name] = execute.event(contract.events[item.name], constructor, contract);
       }
-    }
+    })
 
     this.sendTransaction = execute.sendTransaction(constructor, this);
 
@@ -564,7 +140,8 @@ var contract = (function(module) {
 
       return new Promise(function(accept, reject){
         if (address == null || typeof address != "string" || address.length != 42) {
-          reject(Error("Invalid address passed to " + this._json.contractName + ".at(): " + address));
+          var err = "Invalid address passed to " + this._json.contractName + ".at(): " + address;
+          reject(new Error(err));
         }
 
         return self.detectNetwork().then(function(network_id) {
@@ -574,7 +151,9 @@ var contract = (function(module) {
             var empty = code.replace("0x", "").replace(/0/g, "") === '';
 
             if (!code || empty) {
-              reject(new Error("Cannot create instance of " + self.contractName + "; no code at address " + address));
+              var err = "Cannot create instance of " + self.contractName +
+                        "; no code at address " + address;
+              reject(new Error(err));
             }
 
             accept(instance);
@@ -588,12 +167,19 @@ var contract = (function(module) {
       return self.detectNetwork().then(function() {
         // We don't have a network config for the one we found
         if (self._json.networks[self.network_id] == null) {
-          throw new Error(self.contractName + " has not been deployed to detected network (network/artifact mismatch)");
+          var error = self.contractName +
+                      " has not been deployed to detected network" +
+                      " (network/artifact mismatch)"
+          throw new Error(error);
         }
 
         // If we found the network but it's not deployed
         if (!self.isDeployed()) {
-          throw new Error(self.contractName + " has not been deployed to detected network (" + self.network_id + ")");
+          var error = self.contractName +
+                      " has not been deployed to detected network (" +
+                      self.network_id + ")";
+
+          throw new Error(error);
         }
 
         return new self(self.address);
@@ -848,12 +434,20 @@ var contract = (function(module) {
       var network_id = this.network_id;
 
       if (network_id == null) {
-        throw new Error(this.contractName + " has no network id set, cannot lookup artifact data. Either set the network manually using " + this.contractName + ".setNetwork(), run " + this.contractName + ".detectNetwork(), or use new(), at() or deployed() as a thenable which will detect the network automatically.");
+        var error = this.contractName + " has no network id set, cannot lookup artifact data." +
+                    " Either set the network manually using " + this.contractName +
+                    ".setNetwork(), run " + this.contractName + ".detectNetwork(), or use new()," +
+                    " at() or deployed() as a thenable which will detect the network automatically.";
+
+        throw new Error(error);
       }
 
       // TODO: this might be bad; setting a value on a get.
       if (this._json.networks[network_id] == null) {
-        throw new Error(this.contractName + " has no network configuration for its current network id (" + network_id + ").");
+        var error = this.contractName + " has no network configuration" +
+                    " for its current network id (" + network_id + ").";
+
+        throw new Error(error);
       }
 
       var returnVal = this._json.networks[network_id];
@@ -877,7 +471,9 @@ var contract = (function(module) {
         var address = this.network.address;
 
         if (address == null) {
-          throw new Error("Cannot find deployed address: " + this.contractName + " not deployed or address not set.");
+          var error = "Cannot find deployed address: " +
+                      this.contractName + " not deployed or address not set."
+          throw new Error(error);
         }
 
         return address;
@@ -890,7 +486,13 @@ var contract = (function(module) {
         var network_id = this.network_id;
 
         if (network_id == null) {
-          throw new Error(this.contractName + " has no network id set, cannot lookup artifact data. Either set the network manually using " + this.contractName + ".setNetwork(), run " + this.contractName + ".detectNetwork(), or use new(), at() or deployed() as a thenable which will detect the network automatically.");
+          var error = this.contractName + " has no network id set, cannot lookup artifact data." +
+                      " Either set the network manually using " + this.contractName +
+                      ".setNetwork(), run " + this.contractName + ".detectNetwork()," +
+                      " or use new(), at() or deployed() as a thenable which will" +
+                      " detect the network automatically.";
+
+          throw new Error(error)
         }
 
         // Create a network if we don't have one.
@@ -921,7 +523,12 @@ var contract = (function(module) {
     },
     links: function() {
       if (!this.network_id) {
-        throw new Error(this.contractName + " has no network id set, cannot lookup artifact data. Either set the network manually using " + this.contractName + ".setNetwork(), run " + this.contractName + ".detectNetwork(), or use new(), at() or deployed() as a thenable which will detect the network automatically.");
+        var error = this.contractName + " has no network id set, cannot lookup artifact data." +
+                    " Either set the network manually using " + this.contractName + ".setNetwork()," +
+                    " run " + this.contractName + ".detectNetwork(), or use new(), at()" +
+                    " or deployed() as a thenable which will detect the network automatically.";
+
+        throw new Error(error)
       }
 
       if (this._json.networks[this.network_id] == null) {

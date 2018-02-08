@@ -32,6 +32,7 @@ var handlers = {
     if (!context.allowError){
       context.promiEvent.reject(error);
     }
+    // TO DO: cancel event listeners
   },
 
   // Collect hash for contract.new (we attach it to the contract there)
@@ -49,6 +50,7 @@ var handlers = {
 
   confirmation: function(context, number, receipt){
     context.promiEvent.eventEmitter.emit('confirmation', number, receipt)
+    // TO DO: cancel event listeners here
   },
 
   // Keeping a distinction between `receipt emitter` and Truffle resolving
