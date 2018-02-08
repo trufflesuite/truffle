@@ -9,7 +9,6 @@ var fs = require("fs");
 var requireNoCache = require("require-nocache")(module);
 var util = require('./util');
 
-
 describe("Abstractions", function() {
   var Example;
   var accounts;
@@ -175,33 +174,38 @@ describe("Abstractions", function() {
       }).then(done).catch(done);
     });
 
-    it.skip("should execute overloaded solidity fn calls", function(done) {
+    it("should execute overloaded solidity fn calls", function(done) {
       var example;
       Example.new(5, {gas: 3141592}).then(function(instance) {
         example = instance;
-        return example.methods['getValue()']();
+        return example.methods['overloadedGet()']();
       }).then(function(value) {
         assert.equal(parseInt(value), 5, "Value should have been retrieved");
-        return example.methods['getValue(uint)'](5);
+        return example.methods['overloadedGet(uint256)'](5);
       }).then(function(value) {
         assert.equal(parseInt(value), 25, "Multiplied should have been retrieved");
       }).then(done).catch(done);
     })
 
-    it.skip("should execute overloaded solidity fn sends", function(done) {
+    it("should execute overloaded solidity fn sends", function(done) {
       var example;
-      Example.new(5, {gas: 3141592}).then(function(instance) {
+      Example.new(1, {gas: 3141592}).then(function(instance) {
         example = instance;
-        return example.getValue();
+        return example.value.call();
       }).then(function(value) {
-        assert.equal(parseInt(value), 5, "Value should have been retrieved");
-        return example.getValue(5);
+        assert.equal(value.valueOf(), 1, "Starting value should be 1");
+        return example.methods['overloadedSet(uint256)'](5);
+      }).then(function(tx) {
+        return example.value.call();
       }).then(function(value) {
-        assert.equal(parseInt(value), 25, "Multiplied should have been retrieved");
+        assert.equal(value.valueOf(), 5, "Ending value should be five");
+        return example.methods['overloadedSet(uint256,uint256)'](5, 5);
+      }).then(function(tx) {
+        return example.value.call();
+      }).then(function(value) {
+        assert.equal(value.valueOf(), 25, "Ending value should be twenty five");
       }).then(done).catch(done);
     });
-
-
 
     it.skip("should honor the defaultBlock parameter when called", function(done){
       var example;

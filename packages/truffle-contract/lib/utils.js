@@ -149,6 +149,20 @@ var Utils = {
       throw new Error(error);
     }
   },
+
+  // Converts a `web3` method key to a Truffle contract fn key
+  getMethodTitle(method){
+    if (method.indexOf('0x') === 0)
+      return null;
+
+    var parenIndex = method.indexOf('(');
+
+    return (parenIndex === -1)
+      ? method
+      : method.slice(0, parenIndex);
+
+    return
+  },
 };
 
 module.exports = Utils;

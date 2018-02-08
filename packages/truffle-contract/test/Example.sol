@@ -21,8 +21,20 @@ contract Example {
     return value;
   }
 
-  function getValue(uint multiplier) constant returns(uint){
+  function overloadedGet() constant returns(uint){
+    return value;
+  }
+
+  function overloadedGet(uint multiplier) constant returns(uint){
     return value * multiplier;
+  }
+
+  function overloadedSet(uint val) {
+    value = val;
+  }
+
+  function overloadedSet(uint val, uint multiplier) {
+    value = val * multiplier;
   }
 
   function parrot(uint val) returns(uint) {

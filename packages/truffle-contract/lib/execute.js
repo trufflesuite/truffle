@@ -5,6 +5,13 @@ var Web3PromiEvent = require('web3-core-promievent');
 
 var execute = {
 
+  _setUpListeners: function(result, context){
+    result.on('error', handle.error.bind(null, context))
+    result.on('transactionHash', handle.hash.bind(null, context))
+    result.on('confirmation', handle.confirmation.bind(null, context))
+    result.on('receipt', handle.receipt.bind(null, context));
+  },
+
   call: function(fn, C, inputs) {
     return function() {
       var args = Array.prototype.slice.call(arguments);
@@ -38,7 +45,7 @@ var execute = {
     };
   },
 
-  send: function(fn, instance, C) {
+  send: function(fn, C) {
     return function() {
       var args = Array.prototype.slice.call(arguments);
       var tx_params = utils.getTxParams(args, C);
@@ -50,15 +57,10 @@ var execute = {
         tx_params: tx_params
       }
 
-      // .then never resolves here if emitters are attached, so
-      // we're just resolving our own PromiEvent in the receipt handler.
       C.detectNetwork().then(function() {
-        var listener = fn(...args).send(tx_params);
 
-        listener.on('error', handle.error.bind(instance, context))
-        listener.on('transactionHash', handle.hash.bind(instance, context))
-        listener.on('confirmation', handle.confirmation.bind(instance, context))
-        listener.on('receipt', handle.receipt.bind(instance, context));
+        var result = fn(...args).send(tx_params);
+        execute._setUpListeners(result, context);
 
       }).catch(promiEvent.reject);
 
@@ -95,12 +97,8 @@ var execute = {
       // we're just resolving our own PromiEvent in the receipt handler.
       C.detectNetwork().then(function() {
 
-        var listener = C.web3.eth.sendTransaction(tx_params)
-
-        listener.on('error', handle.error.bind(listener, context))
-        listener.on('transactionHash', handle.hash.bind(listener, context))
-        listener.on('confirmation', handle.confirmation.bind(listener, context))
-        listener.on('receipt', handle.receipt.bind(listener, context));
+        var result = C.web3.eth.sendTransaction(tx_params)
+        execute._setUpListeners(result, context);
 
       }).catch(promiEvent.reject);
 
@@ -171,6 +169,8 @@ var execute = {
     };
   },
 
+  // e.g. contract.new: Network detection for this method happens
+  // before invocation at `contract.js` where we check the libraries.
   deployment: function(args, context) {
     var self = this;
     var tx_params = utils.getTxParams(args, self);
@@ -183,24 +183,21 @@ var execute = {
     delete tx_params['data'];
 
     var contract_class = new self.web3.eth.Contract(self.abi, tx_params);
+    var result = contract_class.deploy(options).send();
 
-    return contract_class
-      .deploy(options)
-      .send()
-      .on('error', handle.error.bind(self, context))
-      .on('transactionHash', handle.hash.bind(self, context))
-      .on('receipt', handle.receipt.bind(self, context))
-      .on('confirmation', handle.confirmation.bind(self, context))
+    execute._setUpListeners(result, context);
 
-      .then(function(instance){
-        if (parseInt(context.receipt.status) == 0){
-          var error = new StatusError(tx_params, context.transactionHash, context.receipt);
-          context.promiEvent.reject(error)
-        }
+    // Errors triggered by web3 are handled by the `error` listener. Status
+    // errors are rejected here.
+    result.then(function(instance){
+      if (parseInt(context.receipt.status) == 0){
+        var error = new StatusError(tx_params, context.transactionHash, context.receipt);
+        context.promiEvent.reject(error)
+      }
 
-        instance.transactionHash = context.transactionHash;
-        context.promiEvent.resolve(new self(instance));
-      })
+      instance.transactionHash = context.transactionHash;
+      context.promiEvent.resolve(new self(instance));
+    })
   },
 
   // This gets attached to `.new` (declared as a static_method in `contract`)
@@ -220,7 +217,10 @@ var execute = {
       delete tx_params['data'];
 
       var contract_class = new self.web3.eth.Contract(self.abi, tx_params);
-      return contract_class.deploy(options).estimateGas(tx_params)
+
+      return self.detectNetwork().then(function() {
+        return contract_class.deploy(options).estimateGas(tx_params)
+      })
     });
   },
 };
