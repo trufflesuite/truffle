@@ -37,18 +37,13 @@ var contract = (function(module) {
 
     // Provision our functions.
     this.abi.forEach(function(item){
-      var method;
-      var signature;
 
-      // Sort though whether method should be invoked by call or send,
-      // + find out if it's already defined in the map / should be
-      // added to the contract's methods key.
       if (item.type == "function") {
         var key;
         var isConstant = item.constant === true;
         var signature = webUtils._jsonInterfaceMethodToString(item);
 
-        method = function(constant, web3Method){
+        var method = function(constant, web3Method){
           var fn;
 
           (constant)
@@ -58,7 +53,7 @@ var contract = (function(module) {
           fn.call = execute.call(web3Method, constructor, item.inputs);
           fn.sendTransaction = execute.send(web3Method, constructor);
           fn.estimateGas = execute.estimate(web3Method, constructor);
-          fn.request = null;
+          fn.request = execute.request(web3Method, constructor);
 
           return fn;
         }

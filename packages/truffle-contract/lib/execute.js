@@ -169,6 +169,17 @@ var execute = {
     };
   },
 
+  request : function(fn, C){
+    return function() {
+      var args = Array.prototype.slice.call(arguments);
+      var tx_params = utils.getTxParams(args, C);
+
+      return C.detectNetwork().then(function() {
+          return fn(...args).request(tx_params);
+      });
+    };
+  },
+
   // e.g. contract.new: Network detection for this method happens
   // before invocation at `contract.js` where we check the libraries.
   deployment: function(args, context) {
