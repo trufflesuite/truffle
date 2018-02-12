@@ -1,15 +1,15 @@
+var Web3PromiEvent = require('web3-core-promievent');
 var utils = require("./utils");
 var StatusError = require("./statuserror");
 var handle = require("./handlers");
-var Web3PromiEvent = require('web3-core-promievent');
 
 var execute = {
 
   _setUpListeners: function(result, context){
-    result.on('error', handle.error.bind(null, context))
-    result.on('transactionHash', handle.hash.bind(null, context))
-    result.on('confirmation', handle.confirmation.bind(null, context))
-    result.on('receipt', handle.receipt.bind(null, context));
+    result.on('error', handle.error.bind(result, context))
+    result.on('transactionHash', handle.hash.bind(result, context))
+    result.on('confirmation', handle.confirmation.bind(result, context))
+    result.on('receipt', handle.receipt.bind(result, context));
   },
 
   call: function(fn, C, inputs) {
@@ -36,11 +36,8 @@ var execute = {
 
       tx_params = utils.merge(C.class_defaults, tx_params);
 
-      // Overcomplicated
       return C.detectNetwork().then(function() {
-        return (defaultBlock !== undefined)
-          ? fn(...args).call(tx_params, defaultBlock)
-          : fn(...args).call(tx_params);
+        return fn(...args).call(tx_params, defaultBlock);
       });
     };
   },
@@ -182,7 +179,7 @@ var execute = {
 
   // e.g. contract.new: Network detection for this method happens
   // before invocation at `contract.js` where we check the libraries.
-  deployment: function(args, context) {
+  deploy: function(args, context) {
     var self = this;
     var tx_params = utils.getTxParams(args, self);
 

@@ -1,11 +1,15 @@
 var StatusError = require("./statuserror");
 var Utils = require("./utils");
 
-// Handlers for events emitted by `send` / `call` etc.
-// Listed in execution order. Web3's `.send` permits
-// either EventEmitter OR Promise, not both - we track state in the
-// context object between `handleHash` and `handleReceipt`.
+/*
+  Handlers for events emitted by `send` / `call` etc.
+  Listed in execution order.
+ */
 var handlers = {
+
+  // Magic number of confirmations to listen for at web3
+  _CONFIRMATIONBLOCKS: 24,
+
   // Error after some number of ms if receipt never arrives
   _synchronize: function(start, context){
     // Don't synchronize `new`
@@ -28,11 +32,14 @@ var handlers = {
     context.promiEvent.eventEmitter.emit('error', error);
     clearInterval(context.interval);
 
-    // Everywhere but `new`
+    // Everywhere but `new`.
     if (!context.allowError){
       context.promiEvent.reject(error);
     }
-    // TO DO: cancel event listeners
+
+    // TO DO: capture & ignore '50 blocks' error for `.new`
+    // All the event emitters & promise will go dead so we'll need
+    // to replicate what web3 does here.
   },
 
   // Collect hash for contract.new (we attach it to the contract there)
@@ -50,7 +57,9 @@ var handlers = {
 
   confirmation: function(context, number, receipt){
     context.promiEvent.eventEmitter.emit('confirmation', number, receipt)
-    // TO DO: cancel event listeners here
+    if (number === handlers._CONFIRMATIONBLOCKS + 1) { // Per web3: initial conf index is 0
+      this.removeAllListeners();
+    }
   },
 
   // Keeping a distinction between `receipt emitter` and Truffle resolving
@@ -71,7 +80,7 @@ var handlers = {
     var logs;
     (receipt.events)
       ? logs = Utils.decodeLogs(context.contract, receipt.events)
-      : log = [];
+      : logs = [];
 
     context.promiEvent.resolve({
       tx: receipt.transactionHash,

@@ -1,4 +1,3 @@
-var ethJSABI = require("ethjs-abi");
 var BlockchainUtils = require("truffle-blockchain-utils");
 var Web3 = require("web3");
 var Web3PromiEvent = require('web3-core-promievent');
@@ -124,7 +123,7 @@ var contract = (function(module) {
 
       self.detectNetwork()
         .then(Utils.checkLibraries.bind(self))
-        .then(execute.deployment.bind(self, args, context))
+        .then(execute.deploy.bind(self, args, context))
         .catch(promiEvent.reject);
 
       return promiEvent.eventEmitter;
@@ -143,9 +142,8 @@ var contract = (function(module) {
           var instance = new self(address);
 
           return self.web3.eth.getCode(address).then(function(code){
-            var empty = code.replace("0x", "").replace(/0/g, "") === '';
 
-            if (!code || empty) {
+            if (!code || code.replace("0x", "").replace(/0/g, "") === '') {
               var err = "Cannot create instance of " + self.contractName +
                         "; no code at address " + address;
               reject(new Error(err));
