@@ -72,7 +72,7 @@ describe("Contract names", function() {
         // the right thing.
         return deployed.specialValue.call();
       }).then(function(value) {
-        assert.equal(value, 1337, "Somehow the wrong contract was deployed, because we don't have the correct value");
+        assert.equal(parseInt(value), 1337, "Somehow the wrong contract was deployed, because we don't have the correct value");
         done();
       }).catch(done);
     });
@@ -104,7 +104,7 @@ describe("Contract names", function() {
           // the right thing.
           return deployed.specialValue.call();
         }).then(function(value) {
-          assert.equal(value, 1337, "Somehow the wrong contract was deployed, because we don't have the correct value");
+          assert.equal(parseInt(value), 1337, "Somehow the wrong contract was deployed, because we don't have the correct value");
           done();
         }).catch(done);
       });
