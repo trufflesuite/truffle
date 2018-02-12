@@ -29,8 +29,10 @@ module.exports = {
       },
       settings: {
         outputSelection: {
-          [fileName]: {
-            "*": ["ast"]
+          "*": {
+            "": [
+              "ast"
+            ]
           }
         }
       }
