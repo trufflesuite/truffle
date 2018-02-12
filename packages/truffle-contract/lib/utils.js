@@ -1,7 +1,7 @@
 var Web3 = require('web3');
-var web3 = new Web3();
-var ethJSABI = require("ethjs-abi");
 var abi = require("web3-eth-abi");
+
+var web3 = new Web3();
 
 var Utils = {
   is_object: function(val) {

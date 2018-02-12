@@ -621,7 +621,7 @@ describe("Abstractions", function() {
       })
     });
 
-    it("should trigger the fallback function when using a callback in sendTransaction()", function(done){
+    it("should be possible to use callback in sendTransaction()", function(done){
       var example = null;
       var callback = function(results){
         web3.eth.getBalance(example.address, function(err, balance) {
