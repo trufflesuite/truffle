@@ -77,7 +77,8 @@ var compile = function(sources, options, callback) {
       outputSelection: {
         "*": {
           "": [
-            "legacyAST"
+            "legacyAST",
+            "ast"
           ],
           "*": [
             "abi",
@@ -150,7 +151,8 @@ var compile = function(sources, options, callback) {
         source: operatingSystemIndependentSources[source_path],
         sourceMap: contract.evm.bytecode.sourceMap,
         deployedSourceMap: contract.evm.deployedBytecode.sourceMap,
-        ast: standardOutput.sources[source_path].legacyAST,
+        legacyAST: standardOutput.sources[source_path].legacyAST,
+        ast: standardOutput.sources[source_path].ast,
         abi: contract.abi,
         bytecode: "0x" + contract.evm.bytecode.object,
         deployedBytecode: "0x" + contract.evm.deployedBytecode.object,
