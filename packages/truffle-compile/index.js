@@ -222,8 +222,8 @@ function orderABI(contract){
   var ordered_function_names = [];
   var ordered_functions = [];
 
-  for (var i = 0; i < contract.ast.children.length; i++) {
-    var definition = contract.ast.children[i];
+  for (var i = 0; i < contract.legacyAST.children.length; i++) {
+    var definition = contract.legacyAST.children[i];
 
     if (definition.name != "ContractDefinition") continue;
 
