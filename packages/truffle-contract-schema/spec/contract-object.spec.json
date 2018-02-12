@@ -48,6 +48,7 @@
     "source": { "$ref": "#/definitions/Source" },
     "sourcePath": { "$ref": "#/definitions/SourcePath" },
     "ast": { "$ref": "#/definitions/AST" },
+    "legacyAST": { "$ref": "#/definitions/LegacyAST" },
     "compiler": {
       "type": "object",
       "properties": {
@@ -107,6 +108,10 @@
     },
 
     "AST": {
+      "type": "object"
+    },
+
+    "LegacyAST": {
       "type": "object"
     },
 

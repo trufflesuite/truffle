@@ -77,6 +77,18 @@ var properties = {
   "source": {},
   "sourcePath": {},
   "ast": {},
+  "legacyAST": {
+    "transform": function(value, obj) {
+      var schemaVersion = obj.schemaVersion || "0.0.0";
+
+      // legacyAST introduced in v2.0.0
+      if (schemaVersion[0] < 2) {
+        return obj.ast;
+      } else {
+        return value
+      }
+    }
+  },
   "compiler": {},
   "networks": {
     "transform": function(value) {
@@ -195,7 +207,7 @@ var TruffleContractSchema = {
       // run source-agnostic transform on value
       // (e.g. make sure bytecode begins 0x)
       if (property.transform) {
-        value = property.transform(value);
+        value = property.transform(value, objDirty);
       }
 
       // add resulting (possibly undefined) to normalized obj

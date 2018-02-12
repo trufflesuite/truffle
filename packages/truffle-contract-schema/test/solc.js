@@ -1,6 +1,7 @@
 var assert = require("assert");
 var solc = require("solc");
 var Schema = require("../");
+var debug = require("debug")("test:solc");
 
 describe("solc", function() {
   var exampleSolidity = "contract A { function doStuff() {} } \n\n contract B { function somethingElse() {} }";
@@ -31,12 +32,25 @@ describe("solc", function() {
         "A.sol": {
           "content": exampleSolidity
         }
+      },
+      settings: {
+        outputSelection: {
+          "*": {
+            "*": [
+              "abi",
+              "evm.bytecode.object",
+              "evm.bytecode.sourceMap",
+              "evm.deployedBytecode.object",
+              "evm.deployedBytecode.sourceMap"
+            ]
+          }
+        }
       }
     });
-    var solcOut = solc.compileStandard(solcIn);
+    var solcOut = JSON.parse(solc.compileStandard(solcIn));
 
     // contracts now grouped by solidity source file
-    var rawA = JSON.parse(solcOut).contracts["A.sol"].A;
+    var rawA = solcOut.contracts["A.sol"].A;
 
     var A = Schema.normalize(rawA);
 

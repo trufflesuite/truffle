@@ -25,7 +25,8 @@
   "homepage": "https://github.com/trufflesuite/truffle-schema#readme",
   "dependencies": {
     "ajv": "^5.1.1",
-    "crypto-js": "^3.1.9-1"
+    "crypto-js": "^3.1.9-1",
+    "debug": "^3.1.0"
   },
   "devDependencies": {
     "mocha": "^3.2.0",
