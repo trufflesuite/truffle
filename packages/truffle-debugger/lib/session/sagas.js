@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:session:sagas");
 
-import { takeLatest, call, all, fork, join, race, take, put, select } from 'redux-saga/effects';
+import { call, all, fork, join, take, put, select } from 'redux-saga/effects';
 
 import astSaga from "../ast/sagas";
 import controllerSaga from "../controller/sagas";
@@ -14,28 +14,25 @@ import * as contextActions from "../context/actions";
 import * as traceActions from "../trace/actions";
 import * as web3Actions from "../web3/actions";
 import * as evmActions from "../evm/actions";
-import context from "../context/selectors";
-
 import * as actions from "./actions";
 
+import context from "../context/selectors";
+
 export default function *saga () {
+  yield fork(web3Saga);
+  yield fork(traceSaga);
+  yield fork(controllerSaga);
+  yield fork(evmSaga);
+  yield fork(astSaga);
+  yield fork(soliditySaga);
+
   yield *initSaga();
-
-  yield race({
-    session: call(sessionSaga),
-
-    cancel: take(traceActions.END_OF_TRACE)
-  });
 }
 
 function* initSaga() {
   // save contracts
   let {contracts} = yield take(actions.RECORD_CONTRACTS);
   yield call(forContracts, contracts);
-
-  yield fork(web3Saga);
-  yield fork(traceSaga);
-
 
   // start session for tx
   let {txHash, provider} = yield take(actions.START);
@@ -62,17 +59,20 @@ function* initSaga() {
     addresses.push(address);
   }
 
+  debug("listening for context info");
   let tasks = yield all(
     addresses.map( (address) => fork(receiveContext, address) )
   );
 
+  debug("requesting context info");
   yield all(
     addresses.map( (address) => call(fetchContext, address) )
   );
 
+  debug("waiting");
   yield join(...tasks);
 
-  debug("READY!");
+  debug("ready");
   yield put(actions.ready());
 }
 
@@ -80,7 +80,6 @@ function *fetchContext(address) {
   debug("fetching context for %s", address);
   yield put(web3Actions.fetchBinary(address));
 }
-
 
 function *receiveContext(address) {
   let {binary} = yield take((action) => (
@@ -91,13 +90,6 @@ function *receiveContext(address) {
 
   yield *addOrMerge({binary, addresses: [address]});
   debug("add-or-merged %s", address);
-}
-
-function* sessionSaga() {
-  yield fork(controllerSaga);
-  yield fork(evmSaga);
-  yield fork(astSaga);
-  yield fork(soliditySaga);
 }
 
 function *addOrMerge(newContext) {
