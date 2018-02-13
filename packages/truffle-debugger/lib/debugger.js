@@ -2,7 +2,6 @@ import debugModule from 'debug';
 import expect from "truffle-expect";
 
 import Session from "./session";
-import Web3Adapter from "./web3";
 
 import traceSelector from "./trace/selectors";
 import evmSelector from "./evm/selectors";
@@ -19,11 +18,8 @@ export default class Debugger {
    * @param {Object} call - initial call (specifies `address` or `binary`)
    * @private
    */
-  constructor(contracts, trace, traceContexts, call) {
-    this._contracts = contracts;
-    this._trace = trace;
-    this._traceContexts = traceContexts;
-    this._call = call;
+  constructor(session) {
+    this._session = session;
   }
 
   /**
@@ -39,15 +35,13 @@ export default class Debugger {
       "provider"
     ]);
 
-    const adapter = new Web3Adapter(options.provider);
-    const { trace, address, binary } = await adapter.getTransactionInfo(txHash);
-    debug("address: %O", address);
+    let session = new Session(
+      options.contracts, txHash, options.provider
+    );
 
-    const traceContexts = await adapter.gatherContexts(trace, address);
+    await session.ready();
 
-    const call = { address, binary };
-
-    return new this(options.contracts, trace, traceContexts, call);
+    return new this(session);
   }
 
 
@@ -57,23 +51,7 @@ export default class Debugger {
    * @return {Session} new session instance
    */
   connect() {
-    return new Session(
-      this._contracts, this._trace, this._traceContexts, this.initialState
-    );
-  }
-
-  /**
-   * @return {State} initial state for the transaction being debugged
-   */
-  get initialState() {
-    return {
-      trace: {
-        index: 0
-      },
-      evm: {
-        callstack: [this._call]
-      }
-    }
+    return this._session;
   }
 
   static get selectors() {

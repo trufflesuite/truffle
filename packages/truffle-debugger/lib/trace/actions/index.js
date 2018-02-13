@@ -6,6 +6,14 @@ export function saveSteps(steps) {
   };
 }
 
+export const RECEIVE_ADDRESSES = "RECEIVE_ADDRESSES";
+export function receiveAddresses(addresses) {
+  return {
+    type: RECEIVE_ADDRESSES,
+    addresses
+  };
+}
+
 export const NEXT = "NEXT";
 export function next() {
   return {type: NEXT};

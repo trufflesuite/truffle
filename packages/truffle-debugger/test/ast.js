@@ -20,6 +20,7 @@ pragma solidity ^0.4.18;
 contract Storage {
   uint storedUint;
   bytes32 storedBytes;
+  string storedString;
 
   function setUint(uint x) public {
     storedUint = x;
@@ -35,6 +36,14 @@ contract Storage {
 
   function getBytes() public view returns (bytes32) {
     return storedBytes;
+  }
+
+  function setString(string x) public {
+    storedString = x;
+  }
+
+  function getString() public view returns (string) {
+    return storedString;
   }
 }
 `;
@@ -185,6 +194,38 @@ describe("AST Stepping", function() {
         .ast
         .storage[abstractions.Storage.deployedBinary]
         .storedBytes;
+
+      assert.equal(expected, actual);
+    });
+
+    it.skip("understands strings", async function() {
+      this.timeout(0);
+      let instance = await abstractions.Storage.deployed();
+
+      // first, increment
+      let receipt = await instance.setString(
+        "hello I am a string of word length at least 2"
+      );
+      let txHash = receipt.tx;
+
+      let bugger = await Debugger.forTx(txHash, {
+        provider,
+        contracts: artifacts
+      });
+
+      let session = bugger.connect();
+      debug("ast: %O", session.view(ast.current));
+
+      do {
+        session.stepNext();
+      } while (!session.finished);
+
+      let expected = await instance.getString();
+
+      let actual = session.state
+        .ast
+        .storage[abstractions.Storage.deployedBinary]
+        .storedString;
 
       assert.equal(expected, actual);
     });

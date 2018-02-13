@@ -100,7 +100,6 @@ describe("Contexts", function () {
 
     // run outer contract method
     let result = await outer.run();
-    debug("receipt: %O", result.receipt);
 
     assert.equal(2, result.receipt.logs.length, "There should be two logs");
 
@@ -110,6 +109,7 @@ describe("Contexts", function () {
       provider,
       contracts: artifacts
     });
+    debug("debugger ready");
 
     let session = bugger.connect();
 

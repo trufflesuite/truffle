@@ -6,6 +6,20 @@ import { take, takeLatest, put, select } from "redux-saga/effects";
 import * as actions from "./actions";
 import trace from "./selectors";
 
+export function *waitForTrace() {
+  let {steps} = yield take(actions.SAVE_STEPS);
+
+  let addresses = [
+    ...new Set(
+      steps
+        .filter( ({op}) => op == "CALL" || op == "DELEGATECALL" )
+        .map( ({stack}) => "0x" + stack[stack.length - 2].substring(24) )
+    )
+  ];
+
+  yield put(actions.receiveAddresses(addresses));
+}
+
 export function* next() {
   let remaining = yield select(trace.stepsRemaining);
   debug("remaining: %o", remaining);
@@ -35,7 +49,7 @@ export function* next() {
 
 export default function* saga() {
   // wait for trace to be defined
-  yield take(actions.SAVE_STEPS);
+  yield *waitForTrace();
 
   yield takeLatest(actions.NEXT, next);
 }

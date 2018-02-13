@@ -3,9 +3,9 @@ const debug = debugModule("debugger:session");
 
 import rootSaga from "./sagas";
 import reducer from "./reducers";
-import { recordContracts, recordTraceContexts } from "./actions";
 
-import * as actions from "../controller/actions";
+import * as controller from "../controller/actions";
+import * as actions from "./actions";
 import { saveSteps } from "../trace/actions";
 import configureStore from "../store";
 
@@ -23,16 +23,23 @@ export default class Session {
    * @param {State} initialState - initial state
    * @private
    */
-  constructor(contracts, trace, traceContexts, initialState) {
-    this._store = configureStore(reducer, rootSaga, initialState);
+  constructor(contracts, txHash, provider) {
+    this._store = configureStore(reducer, rootSaga);
 
-    // TODO remove awkward manual dispatch here, replace with `init` saga maybe
-    this._store.dispatch(saveSteps(trace));
-    this._store.dispatch(recordContracts(...contracts));
-    this._store.dispatch(recordTraceContexts(...traceContexts));
+    // record contracts
+    this._store.dispatch(actions.recordContracts(...contracts));
+
+    this._store.dispatch(actions.start(txHash, provider));
   }
 
   ready() {
+    return new Promise( (accept, reject) => {
+      this._store.subscribe( () => {
+        if (this.state.session == "READY") {
+          accept()
+        }
+      });
+    });
   }
 
   get state() {
@@ -64,26 +71,26 @@ export default class Session {
   }
 
   interrupt() {
-    return this.dispatch(actions.interrupt());
+    return this.dispatch(controller.interrupt());
   }
 
   advance() {
-    return this.dispatch(actions.advance());
+    return this.dispatch(controller.advance());
   }
 
   stepNext() {
-    return this.dispatch(actions.stepNext());
+    return this.dispatch(controller.stepNext());
   }
 
   stepOver() {
-    return this.dispatch(actions.stepOver());
+    return this.dispatch(controller.stepOver());
   }
 
   stepInto() {
-    return this.dispatch(actions.stepInto());
+    return this.dispatch(controller.stepInto());
   }
 
   stepOut() {
-    return this.dispatch(actions.stepOut());
+    return this.dispatch(controller.stepOut());
   }
 }

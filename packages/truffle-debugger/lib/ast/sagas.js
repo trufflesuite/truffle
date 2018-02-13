@@ -21,8 +21,10 @@ export function* nodeSaga() {
     let currentContext = yield select(context.current);
 
     debug("%s %s %s", pointer, node.nodeType, step.op);
+    // simple value assignment
     if (node.nodeType == "Assignment" && step.op == "SSTORE") {
       debug("leftHandSide: %o", node.leftHandSide);
+      debug("storage %O", step);
 
       let value = ABI.decodeParameter(
         node.leftHandSide.typeDescriptions.typeString,
