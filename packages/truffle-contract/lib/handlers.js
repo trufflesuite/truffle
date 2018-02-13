@@ -43,8 +43,8 @@ var handlers = {
   },
 
   // Collect hash for contract.new (we attach it to the contract there)
-  // Start polling and collect interval so we can kill poll in `handleReceipt`
-  // and `contract.new.then`
+  // Start polling / set interval variable so we can kill it in
+  // `handleReceipt` and `contract.new.then`
   hash: function(context, hash){
     var start = new Date().getTime();
     context.transactionHash = hash;
@@ -57,7 +57,9 @@ var handlers = {
 
   confirmation: function(context, number, receipt){
     context.promiEvent.eventEmitter.emit('confirmation', number, receipt)
-    if (number === handlers._CONFIRMATIONBLOCKS + 1) { // Per web3: initial conf index is 0
+
+    // Per web3: initial confirmation index is 0
+    if (number === handlers._CONFIRMATIONBLOCKS + 1) {
       this.removeAllListeners();
     }
   },
@@ -73,13 +75,14 @@ var handlers = {
       return;
 
     if (parseInt(receipt.status) == 0){
-      var error = new StatusError(context.tx_params, receipt.transactionHash, receipt);
+      var error = new StatusError(context.params, receipt.transactionHash, receipt);
       context.promiEvent.reject(error)
     }
 
     var logs;
-    (receipt.events)
-      ? logs = Utils.decodeLogs(context.contract, receipt.events)
+
+    (receipt.logs)
+      ? logs = Utils.decodeLogs(context.contract, receipt.logs)
       : logs = [];
 
     context.promiEvent.resolve({

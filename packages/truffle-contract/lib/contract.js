@@ -47,10 +47,10 @@ var contract = (function(module) {
 
           (constant)
             ? fn = execute.call(web3Method, constructor, item.inputs)
-            : fn = execute.send(web3Method, constructor);
+            : fn = execute.send(web3Method, constructor, self);
 
           fn.call = execute.call(web3Method, constructor, item.inputs);
-          fn.sendTransaction = execute.send(web3Method, constructor);
+          fn.sendTransaction = execute.send(web3Method, constructor, self);
           fn.estimateGas = execute.estimate(web3Method, constructor);
           fn.request = execute.request(web3Method, constructor);
 
@@ -96,6 +96,10 @@ var contract = (function(module) {
 
       this.web3.setProvider(provider);
       this.currentProvider = provider;
+    },
+
+    setWallet: function(wallet) {
+      this.web3.eth.accounts.wallet = wallet;
     },
 
     new: function() {
