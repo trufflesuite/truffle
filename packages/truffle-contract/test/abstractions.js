@@ -187,26 +187,6 @@ describe("Abstractions", function() {
       }).then(done).catch(done);
     })
 
-    it("should execute overloaded solidity fn sends", function(done) {
-      var example;
-      Example.new(1, {gas: 3141592}).then(function(instance) {
-        example = instance;
-        return example.value.call();
-      }).then(function(value) {
-        assert.equal(value.valueOf(), 1, "Starting value should be 1");
-        return example.methods['overloadedSet(uint256)'](5);
-      }).then(function(tx) {
-        return example.value.call();
-      }).then(function(value) {
-        assert.equal(value.valueOf(), 5, "Ending value should be five");
-        return example.methods['overloadedSet(uint256,uint256)'](5, 5);
-      }).then(function(tx) {
-        return example.value.call();
-      }).then(function(value) {
-        assert.equal(value.valueOf(), 25, "Ending value should be twenty five");
-      }).then(done).catch(done);
-    });
-
     it.skip("should honor the defaultBlock parameter when called", function(done){
       var example;
       var initialBlock;
@@ -352,6 +332,59 @@ describe("Abstractions", function() {
           })
         });
     });
+
+    it("should execute overloaded solidity fn sends", function(done) {
+      var example;
+      Example.new(1, {gas: 3141592}).then(function(instance) {
+        example = instance;
+        return example.value.call();
+      }).then(function(value) {
+        assert.equal(value.valueOf(), 1, "Starting value should be 1");
+        return example.methods['overloadedSet(uint256)'](5);
+      }).then(function(tx) {
+        return example.value.call();
+      }).then(function(value) {
+        assert.equal(value.valueOf(), 5, "Ending value should be five");
+        return example.methods['overloadedSet(uint256,uint256)'](5, 5);
+      }).then(function(tx) {
+        return example.value.call();
+      }).then(function(value) {
+        assert.equal(value.valueOf(), 25, "Ending value should be twenty five");
+      }).then(done).catch(done);
+    });
+
+    it("should work with a web3.accounts.wallet account", function(){
+      var example;
+      var wallet = web3.eth.accounts.wallet.create(1);
+
+      // In lieu of setting Example's web3 instance to the outer web3.
+      Example.setWallet(wallet);
+
+      // Fund wallet account
+      return web3.eth.getAccounts().then(function(_accounts){
+        unlocked = _accounts[0];
+        return web3.eth.sendTransaction({
+          from: _accounts[0],
+          to: wallet["0"].address,
+          value: web3.utils.toWei("1", 'ether')
+        });
+      // Deploy contract and check
+      }).then(function(tx){
+        return web3.eth.getBalance(wallet["0"].address);
+      }).then(function(balance){
+        return Example.new(1, {gas: 3141592, from: wallet["0"].address })
+      }).then(function(instance){
+        example = instance;
+        return example.value.call();
+      }).then(function(value) {
+        assert.equal(value.valueOf(), 1, "Starting value should be 1");
+        return example.setValue(5, {from: wallet["0"].address})
+      }).then(function(tx){
+        return example.value.call();
+      }).then(function(value) {
+        assert.equal(value.valueOf(), 5, "Ending value should be 5");
+      });
+    });
   });
 
   describe('methods: (error cases)', function(){
@@ -369,7 +402,8 @@ describe("Abstractions", function() {
       var example;
       Example.new(5, {gas: 3141592}).then(function(instance) {
         example = instance;
-        return example.getValue('apples', 'oranges', 'pineapples'); // NB: call always takes +1 param: defaultBlock
+        // NB: call always takes +1 param: defaultBlock
+        return example.getValue('apples', 'oranges', 'pineapples');
       }).then(function(value) {
         assert.fail();
       }).catch(function(error){
@@ -519,6 +553,7 @@ describe("Abstractions", function() {
           assert.equal("ExampleEvent", data.event);
           assert.equal(accounts[0], data.args._from);
           assert.equal(8, data.args.num); // 8 is a magic number inside Example.sol
+          this.removeAllListeners();
           done();
         });
 
@@ -542,11 +577,17 @@ describe("Abstractions", function() {
     })
 
     it('should be possible to listen for events with a callback', function(done){
+      var finished = false;
+
       var callback = function(err, event){
         assert.equal("ExampleEvent", event.event);
         assert.equal(accounts[0], event.args._from);
-        assert.equal(8, event.args.num); // 8 is a magic number inside Example.sol
-        done();
+        assert.equal(8, event.args.num);
+
+        if (!finished){
+          finished = true;
+          done();
+        }
       }
 
       Example.new(1, {gas: 3141592}).then(function(example) {
@@ -562,6 +603,9 @@ describe("Abstractions", function() {
 
         example.ExampleEvent().on('data', function(data){
           counter++;
+          if (counter === 3 ){
+            this.removeAllListeners();
+          }
         });
 
         example.triggerEvent()

@@ -13,8 +13,8 @@ var Utils = {
     return web3.utils.isBN(val) || web3.utils.isBigNumber(val);
   },
 
-  decodeLogs: function(C, events, isSingle) {
-    var logs = Utils.toTruffleLog(events, isSingle);
+  decodeLogs: function(C, _logs, isSingle) {
+    var logs = Utils.toTruffleLog(_logs, isSingle);
 
     return logs.map(function(log) {
       var logABI = C.events[log.topics[0]];
@@ -39,23 +39,18 @@ var Utils = {
   },
 
   toTruffleLog: function(events, isSingle){
-    var logs = [];
-
     // Transform singletons (from event listeners) to the kind of
     // object we find on the receipt
     if (isSingle){
-      var temp = {};
-      temp[events.event] = events;
-      events = temp;
+      var temp = [];
+      temp.push(events)
+      return temp.map(function(log){
+        log.data = log.raw.data;
+        log.topics = log.raw.topics;
+        return log;
+      })
     }
-
-    Object.keys(events).forEach(function(key){
-      var log = events[key];
-      log.data = log.raw.data;
-      log.topics = log.raw.topics;
-      logs.push(events[key]);
-    })
-    return logs;
+    return events;
   },
 
   merge: function() {
