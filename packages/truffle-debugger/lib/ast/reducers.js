@@ -1,7 +1,19 @@
 import { combineReducers } from "redux";
 
-export function pointer(state = {}, action) {
+import * as actions from "./actions";
+
+export function storage(state = {}, action) {
   switch (action.type) {
+    case actions.ASSIGN_STORAGE:
+      return {
+        ...state,
+
+        [action.binary]: {
+          ...state[action.binary],
+
+          [action.variable]: action.value
+        }
+      };
 
     default:
       return state;
@@ -9,7 +21,7 @@ export function pointer(state = {}, action) {
 }
 
 const reducer = combineReducers({
-  pointer
+  storage
 });
 
 export default reducer;

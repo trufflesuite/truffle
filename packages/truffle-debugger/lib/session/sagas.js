@@ -3,6 +3,7 @@ const debug = debugModule("debugger:session:sagas");
 
 import { takeLatest, call, fork, race, take, put, select } from 'redux-saga/effects';
 
+import astSaga from "../ast/sagas";
 import controllerSaga from "../controller/sagas";
 import soliditySaga from "../solidity/sagas";
 import evmSaga from "../evm/sagas";
@@ -33,6 +34,7 @@ function* sessionSaga() {
   yield fork(traceSaga);
   yield fork(controllerSaga);
   yield fork(evmSaga);
+  yield fork(astSaga);
   yield fork(soliditySaga);
 }
 

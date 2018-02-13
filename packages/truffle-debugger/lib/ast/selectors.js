@@ -16,7 +16,6 @@ const current = createSelector(
   (context) => context.ast
 );
 
-
 const pointer = createSelector(
   [current, solidity.nextStep.sourceRange],
 
@@ -26,12 +25,7 @@ const pointer = createSelector(
 const node = createSelector(
   [current, pointer],
 
-  (ast, pointer) => {
-    // omit children
-    let { children, ...node} = jsonpointer.get(ast, pointer);
-
-    return node;
-  }
+  (ast, pointer) => jsonpointer.get(ast, pointer)
 );
 
 

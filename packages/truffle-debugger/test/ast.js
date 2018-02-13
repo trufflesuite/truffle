@@ -12,8 +12,32 @@ import Debugger from "../lib/debugger";
 import ast from "../lib/ast/selectors";
 import solidity from "../lib/solidity/selectors";
 
-import { getBounds } from "../lib/ast/map";
+import { getRange, findRange, rangeNodes } from "../lib/ast/map";
 
+const __STORAGE = `
+pragma solidity ^0.4.18;
+
+contract Storage {
+  uint storedUint;
+  bytes32 storedBytes;
+
+  function setUint(uint x) public {
+    storedUint = x;
+  }
+
+  function getUint() public view returns (uint256) {
+    return storedUint;
+  }
+
+  function setBytes(bytes32 x) public {
+    storedBytes = x;
+  }
+
+  function getBytes() public view returns (bytes32) {
+    return storedBytes;
+  }
+}
+`;
 
 const __VARIABLES = `
 pragma solidity ^0.4.18;
@@ -42,6 +66,7 @@ contract Variables {
 
 let sources = {
   "Variables.sol": __VARIABLES,
+  "Storage.sol": __STORAGE,
 }
 
 
@@ -86,12 +111,10 @@ describe("AST Stepping", function() {
 
         let node = session.view(ast.next.node);
 
-        let [ nodeStart, nodeLength ] = getBounds(node);
+        let [ nodeStart, nodeLength ] = getRange(node);
         let nodeEnd = nodeStart + nodeLength;
 
         let pointer = session.view(ast.next.pointer);
-
-        debug("node: %O", node);
 
         assert.isAtMost(
           nodeStart, start,
@@ -105,6 +128,65 @@ describe("AST Stepping", function() {
         session.stepNext();
       } while(!session.finished);
 
+    });
+  });
+
+  describe("Storage Assignment", function() {
+    it("understands uints", async function() {
+      this.timeout(0);
+      let instance = await abstractions.Storage.deployed();
+
+      // first, increment
+      let receipt = await instance.setUint(102);
+      let txHash = receipt.tx;
+
+      let bugger = await Debugger.forTx(txHash, {
+        provider,
+        contracts: artifacts
+      });
+
+      let session = bugger.connect();
+
+      do {
+        session.stepNext();
+      } while (!session.finished);
+
+      let expected = (await instance.getUint()).toNumber();
+      let actual = session.state
+        .ast
+        .storage[abstractions.Storage.deployedBinary]
+        .storedUint;
+
+      assert.equal(expected, actual);
+    });
+
+    it("understands bytes32s", async function() {
+      this.timeout(0);
+      let instance = await abstractions.Storage.deployed();
+
+      // first, increment
+      let receipt = await instance.setBytes("hello");
+      let txHash = receipt.tx;
+
+      let bugger = await Debugger.forTx(txHash, {
+        provider,
+        contracts: artifacts
+      });
+
+      let session = bugger.connect();
+
+      do {
+        session.stepNext();
+      } while (!session.finished);
+
+      let expected = await instance.getBytes();
+
+      let actual = session.state
+        .ast
+        .storage[abstractions.Storage.deployedBinary]
+        .storedBytes;
+
+      assert.equal(expected, actual);
     });
   });
 });

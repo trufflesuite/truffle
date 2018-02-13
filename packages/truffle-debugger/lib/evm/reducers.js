@@ -21,7 +21,7 @@ export function callstack(state = [], action) {
 }
 
 const reducer = combineReducers({
-  callstack
+  callstack,
 });
 
 export default reducer;

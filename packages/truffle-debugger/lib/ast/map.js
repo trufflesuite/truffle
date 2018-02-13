@@ -1,43 +1,61 @@
+import debugModule from "debug";
+const debug = debugModule("debugger:ast:map");
 
-export function getBounds(node) {
+import IntervalTree from "node-interval-tree";
+
+
+export function getRange(node) {
   // src: "<start>:<length>:<_>"
-  return node.src
+  // returns [start, end]
+  let [start, length] = node.src
     .split(":")
     .slice(0, 2)
     .map( (i) => parseInt(i) );
+
+  return [start, start + length];
+}
+
+export function rangeNodes(node, pointer = "") {
+  if (node instanceof Array) {
+    return [].concat(
+      ...node.map( (sub, i) => rangeNodes(sub, `${pointer}/${i}`) )
+    );
+  } else if (node instanceof Object) {
+    let results = [];
+
+    if (node.src) {
+      results.push({pointer, range: getRange(node)});
+    }
+
+    return results.concat(
+      ...Object.keys(node).map(
+        (key) => rangeNodes(node[key], `${pointer}/${key}`)
+      )
+    );
+  } else {
+    return [];
+  }
 }
 
 
-export function findRange(node, sourceStart, sourceLength, pointer = "") {
-  // preconditions:
-  //   - node.src is within bounds
-  //   - children src's do not overlap (TODO doublecheck)
-  //
-  // base cases:
-  //   - node has no children
-  //   - children don't match bounds
-  // (return `pointer` as best match based on precondition)
-  //
-  // otherwise:
-  //   recurse with updated pointer and node
+export function findRange(node, sourceStart, sourceLength) {
+  let ranges = rangeNodes(node);
+  let tree = new IntervalTree();
 
-  // base case - handle leaf nodes
-  let children = node.children || [];
+  ranges.forEach( ({range, pointer}) => {
+    let [start, end] = range;
 
-  // check for child range match
-  for (let [index, child] of children.entries()) {
-    let [nodeStart, nodeLength] = getBounds(child);
+    tree.insert(start, end, {range, pointer});
+  });
 
-    if (
-      nodeStart <= sourceStart &&
-      nodeStart + nodeLength >= sourceStart + sourceLength
-    ) {
-      let childPointer = `${pointer}/children/${index}`;
+  let sourceEnd = sourceStart + sourceLength;
 
-      return findRange(child, sourceStart, sourceLength, childPointer);
-    }
-  }
+  let overlapping = tree.search(sourceStart, sourceEnd);
 
-  // otherwise
-  return pointer;
+  // find nodes that fully contain requested range,
+  // return longest pointer
+  return overlapping
+    .filter( ({range}) => sourceStart >= range[0] && sourceEnd <= range[1] )
+    .map( ({pointer}) => pointer )
+    .reduce( (a, b) => a.length > b.length ? a : b );
 }
