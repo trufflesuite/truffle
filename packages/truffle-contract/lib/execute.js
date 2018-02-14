@@ -5,11 +5,11 @@ var handle = require("./handlers");
 
 var execute = {
 
-  _setUpListeners: function(result, context){
-    result.on('error', handle.error.bind(result, context))
-    result.on('transactionHash', handle.hash.bind(result, context))
-    result.on('confirmation', handle.confirmation.bind(result, context))
-    result.on('receipt', handle.receipt.bind(result, context));
+  _setUpHandlers: function(emitter, context){
+    emitter.on('error', handle.error.bind(emitter, context))
+    emitter.on('transactionHash', handle.hash.bind(emitter, context))
+    emitter.on('confirmation', handle.confirmation.bind(emitter, context))
+    emitter.on('receipt', handle.receipt.bind(emitter, context));
   },
 
   call: function(fn, C, inputs) {
@@ -66,9 +66,9 @@ var execute = {
         params.to = self.address;
         params.data = fn(...args).encodeABI();
         result = C.web3.eth.sendTransaction(params);
-        execute._setUpListeners(result, context);
+        execute._setUpHandlers(result, context);
 
-      }).catch(promiEvent.reject);
+      }).catch(promiEvent.reject)
 
       return promiEvent.eventEmitter;
     };
@@ -102,7 +102,7 @@ var execute = {
       C.detectNetwork().then(function() {
 
         var result = C.web3.eth.sendTransaction(params)
-        execute._setUpListeners(result, context);
+        execute._setUpHandlers(result, context);
 
       }).catch(promiEvent.reject);
 
@@ -184,7 +184,7 @@ var execute = {
     };
   },
 
-  // e.g. contract.new: Network detection for this method happens
+  // Network detection for `.new` happens
   // before invocation at `contract.js` where we check the libraries.
   deploy: function(args, context) {
     var self = this;
@@ -198,9 +198,9 @@ var execute = {
     var contract = new self.web3.eth.Contract(self.abi);
     params.data = contract.deploy(options).encodeABI();
     result = self.web3.eth.sendTransaction(params);
-    execute._setUpListeners(result, context);
+    execute._setUpHandlers(result, context);
 
-    // Errors triggered by web3 are handled by the `error` listener. Status
+    // Errors triggered by web3 are rejected at the `error` listener. Status
     // errors are rejected here.
     result.then(function(receipt){
       if (parseInt(receipt.status) == 0){
@@ -212,7 +212,11 @@ var execute = {
       instance.transactionHash = context.transactionHash;
 
       context.promiEvent.resolve(new self(instance));
-    })
+
+    // TO DO: capture & ignore '50 blocks' timeout error.
+    // All the event emitters & promise will go dead so we'll need
+    // to replicate what web3 does here.
+    }).catch(context.promiEvent.reject);
   },
 
   // This gets attached to `.new` (declared as a static_method in `contract`)

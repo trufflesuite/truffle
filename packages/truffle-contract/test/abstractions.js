@@ -107,17 +107,16 @@ describe("Abstractions", function() {
   });
 
   describe('new (error cases)', function(){
-    it.skip("should reject on OOG", function(done){
+    it("should reject on OOG", function(done){
       Example.new(1, {gas: 10}).then(function() {
         assert.fail();
       }).catch(function(error){
-        console.log(error)
         assert(error.message.includes('base fee exceeds gas limit'), 'Error should be OOG');
         done();
       })
     });
 
-    it.skip("should emit OOG errors", function(done){
+    it("should emit OOG errors", function(done){
       Example.new(1, {gas: 10}).on('error', function(error){
         assert(error.message.includes('base fee exceeds gas limit'), 'Error should be OOG');
         done();
@@ -425,24 +424,25 @@ describe("Abstractions", function() {
       })
     });
 
-    it.skip("should reject on OOG", function(done){
+    it("should reject on OOG", function(done){
       Example.new(1, {gas: 3141592}).then(function(instance) {
         return instance.setValue(10, {gas: 10});
       }).catch(function(error){
-        console.log(error)
         assert(error.message.includes('base fee exceeds gas limit'), 'Error should be OOG');
         done();
       })
     });
 
-    it.skip("should emit OOG errors", function(done){
+    it("should emit OOG errors", function(done){
       Example.new(1, {gas: 3141592}).then(function(instance) {
         instance
           .setValue(10, {gas: 10})
           .on('error', function(error){
-            console.log(error);
             assert(error.message.includes('base fee exceeds gas limit'), 'Error should be OOG');
             done();
+          })
+          .catch(function(error){
+            // ignore
           })
       });
     });

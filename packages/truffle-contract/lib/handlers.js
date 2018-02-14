@@ -37,9 +37,6 @@ var handlers = {
       context.promiEvent.reject(error);
     }
 
-    // TO DO: capture & ignore '50 blocks' error for `.new`
-    // All the event emitters & promise will go dead so we'll need
-    // to replicate what web3 does here.
   },
 
   // Collect hash for contract.new (we attach it to the contract there)
