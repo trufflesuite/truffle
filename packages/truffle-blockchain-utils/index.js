@@ -10,8 +10,8 @@ var Blockchain = {
     }, callback)
   },
 
-  getBlockByHash: function(blockNumber, provider, callback){
-    var params = [blockNumber, true];
+  getBlockByHash: function(blockHash, provider, callback){
+    var params = [blockHash, true];
     provider.sendAsync({
       jsonrpc: '2.0',
       method: 'eth_getBlockByHash',
