@@ -54,11 +54,16 @@ pragma solidity ^0.4.18;
 contract Variables {
   event Result(uint256 result);
 
+  uint256 qux;
+  string quux;
+
   function stack(uint256 foo) public returns (uint256) {
     uint256 bar = foo + 1;
     uint256 baz = innerStack(bar);
 
     baz += 4;
+
+    qux = baz;
 
     Result(baz);
 
@@ -78,8 +83,7 @@ let sources = {
   "Storage.sol": __STORAGE,
 }
 
-
-describe("AST Stepping", function() {
+describe("AST", function() {
   var provider;
   var web3;
 
@@ -112,7 +116,7 @@ describe("AST Stepping", function() {
       });
 
       let session = bugger.connect();
-      let next = solidity.nextStep;
+      debug("ast: %O", session.view(ast.current));
 
       do {
         let { start, length } = session.view(solidity.nextStep.sourceRange);
@@ -141,7 +145,7 @@ describe("AST Stepping", function() {
   });
 
   describe("Storage Assignment", function() {
-    it("understands uints", async function() {
+    it.skip("understands uints", async function() {
       this.timeout(0);
       let instance = await abstractions.Storage.deployed();
 
@@ -169,7 +173,7 @@ describe("AST Stepping", function() {
       assert.equal(expected, actual);
     });
 
-    it("understands bytes32s", async function() {
+    it.skip("understands bytes32s", async function() {
       this.timeout(0);
       let instance = await abstractions.Storage.deployed();
 

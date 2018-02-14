@@ -13,6 +13,13 @@ export function ready() {
   };
 }
 
+export const FINISH = "SESSION_FINISH";
+export function finish() {
+  return {
+    type: FINISH,
+  };
+}
+
 export const RECORD_CONTRACTS = "RECORD_CONTRACTS";
 export function recordContracts(...contracts) {
   return {

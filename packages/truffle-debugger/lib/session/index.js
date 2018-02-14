@@ -35,7 +35,7 @@ export default class Session {
   ready() {
     return new Promise( (accept, reject) => {
       this._store.subscribe( () => {
-        if (this.state.session == "READY") {
+        if (this.state.session == "ACTIVE") {
           accept()
         }
       });
@@ -51,7 +51,7 @@ export default class Session {
   }
 
   get finished() {
-    return this.view(trace.step) === undefined;
+    return this.state.session == "FINISHED";
   }
 
   get failed() {

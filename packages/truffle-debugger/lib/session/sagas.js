@@ -10,6 +10,7 @@ import evmSaga from "../evm/sagas";
 import traceSaga from "../trace/sagas";
 import web3Saga from "../web3/sagas";
 
+import * as astActions from "../ast/actions";
 import * as contextActions from "../context/actions";
 import * as traceActions from "../trace/actions";
 import * as web3Actions from "../web3/actions";
@@ -26,17 +27,21 @@ export default function *saga () {
   yield fork(astSaga);
   yield fork(soliditySaga);
 
-  yield *initSaga();
+  let {contracts} = yield take(actions.RECORD_CONTRACTS);
+  yield *recordContracts(...contracts);
+
+  let {txHash, provider} = yield take(actions.START);
+  yield *fetchTx(txHash, provider);
+
+  yield *mapData();
+
+  yield *ready();
+
+  yield take(traceActions.END_OF_TRACE);
+  yield put(actions.finish());
 }
 
-function* initSaga() {
-  // save contracts
-  let {contracts} = yield take(actions.RECORD_CONTRACTS);
-  yield call(forContracts, contracts);
-
-  // start session for tx
-  let {txHash, provider} = yield take(actions.START);
-
+function* fetchTx(txHash, provider) {
   yield put(web3Actions.init(provider));
   yield put(web3Actions.inspect(txHash));
 
@@ -71,7 +76,36 @@ function* initSaga() {
 
   debug("waiting");
   yield join(...tasks);
+}
 
+function* mapData() {
+  let contexts = yield select(context.list);
+
+  let tasks = yield all(
+    contexts.map((context, idx) => [context, idx])
+      .filter( ([{ast, addresses}]) => addresses.length > 0 && ast )
+      .map( ([{ast}, idx]) => fork( () => put(astActions.visit(idx, ast))) )
+  )
+
+  if (tasks.length > 0) {
+    yield join(...tasks);
+  }
+
+  // let contexts = allContexts
+  //   .filter((context) => context.ast);
+
+  // let tasks = yield all([
+  //   contexts.map( (context) => fork(receiveMap, context.binary) )
+  // ]);
+
+  // yield all(
+  //   contexts.map( (context) => call(fetchMap, context.binary) )
+  // );
+}
+
+
+
+function *ready() {
   debug("ready");
   yield put(actions.ready());
 }
@@ -108,7 +142,7 @@ function *addOrMerge(newContext) {
   }
 }
 
-export function* forContracts(contracts) {
+export function* recordContracts(...contracts) {
   for (let contract of contracts) {
     // create Context for binary and deployed binary
     yield *addOrMerge({
@@ -132,3 +166,4 @@ export function* forContracts(contracts) {
     });
   }
 }
+

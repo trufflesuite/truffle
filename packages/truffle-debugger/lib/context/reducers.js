@@ -19,7 +19,7 @@ function merge(context, ...others) {
   } = context;
 
   for (let other of others) {
-    addresses = new Set([...addresses, ...other.addresses]);
+    addresses = [...new Set([...addresses, ...other.addresses])];
 
     ast = ast || other.ast;
     sourceMap = sourceMap || other.sourceMap;
