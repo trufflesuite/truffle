@@ -18,6 +18,27 @@ export default function configureStore (reducer, saga, initialState, composeEnha
     stateTransformer: (state) => ({
       ...state,
 
+      data: {
+        ...Object.assign(
+          {},
+          ...Object.entries(state.data)
+            .map( ([context, scope]) => ({
+              [context]: {
+                ...Object.assign(
+                  {},
+                  ...Object.entries(scope)
+                    .filter( ([id, {variables}]) => variables && variables.length > 0 )
+                    .map(
+                      ([id, {variables}]) => ({
+                        [id]: (variables || []).map( (v) => v.name )
+                      })
+                    )
+                )
+              }
+            }))
+        )
+      },
+
       context: {
         list: ["..."],
         indexForAddress: {"...": "..."},
