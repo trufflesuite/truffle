@@ -6,6 +6,7 @@
   "type": "object",
   "properties": {
     "address": { "$ref": "#/definitions/Address" },
+    "transactionHash": { "$ref": "#/definitions/TransactionHash" },
     "events": {
       "type": "object",
       "patternProperties": {
@@ -27,6 +28,11 @@
     "Address": {
       "type": "string",
       "pattern": "^0x[a-fA-F0-9]{40}$"
+    },
+
+    "TransactionHash": {
+      "type": "string",
+      "pattern": "^0x[a-fA-F0-9]{64}$"
     },
 
     "Link": {
