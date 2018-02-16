@@ -40,6 +40,7 @@ export default function reducer(state = {}, action) {
           [action.id]: {
             ...scope,
 
+            parentId: action.parentId,
             pointer: action.pointer
           }
         }

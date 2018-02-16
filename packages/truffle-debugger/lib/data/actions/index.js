@@ -1,8 +1,8 @@
 export const SCOPE = "SCOPE";
-export function scope(context, id, pointer) {
+export function scope(context, id, pointer, parentId = null) {
   return {
     type: SCOPE,
-    context, id, pointer
+    context, id, pointer, parentId
   }
 }
 

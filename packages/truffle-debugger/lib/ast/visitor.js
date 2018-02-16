@@ -6,17 +6,17 @@ import { call, takeEvery, put } from "redux-saga/effects";
 import * as actions from "./actions";
 import * as dataActions from "../data/actions";
 
-export function *walk(context, node, pointer = "") {
-  yield put(actions.enter(pointer, node, context));
+export function *walk(context, node, pointer = "", parentId = null) {
+  yield put(actions.enter(pointer, node, context, parentId));
   debug("walking %o %o", pointer, node);
 
   if (node instanceof Array) {
     for (let [i, child] of node.entries()) {
-      yield call(walk, context, child, `${pointer}/${i}`);
+      yield call(walk, context, child, `${pointer}/${i}`, parentId);
     }
   } else if (node instanceof Object) {
     for (let [key, child] of Object.entries(node)) {
-      yield call(walk, context, child, `${pointer}/${key}`);
+      yield call(walk, context, child, `${pointer}/${key}`, node.id);
     }
   }
 
@@ -38,9 +38,9 @@ export function *variableDeclarationSaga() {
   yield takeEvery(predicate, recordVariableDeclaration);
 }
 
-export function *recordId({context, node, pointer}) {
+export function *recordId({context, node, pointer, parentId}) {
   debug("recording scope: %o %o", node.id, pointer);
-  yield put(dataActions.scope(context, node.id, pointer));
+  yield put(dataActions.scope(context, node.id, pointer, parentId));
 }
 
 export function *idSaga() {

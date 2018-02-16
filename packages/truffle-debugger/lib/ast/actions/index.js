@@ -7,10 +7,10 @@ export function visit(context, ast) {
 }
 
 export const ENTER = "NODE_ENTER";
-export function enter(pointer, node, context) {
+export function enter(pointer, node, context, parentId) {
   return {
     type: ENTER,
-    pointer, node, context
+    pointer, node, context, parentId
   };
 }
 
