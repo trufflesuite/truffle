@@ -307,7 +307,7 @@ var contract = (function(module) {
 
     this.allEvents = contract.allEvents;
     this.address = contract.address;
-    this.transactionId = contract.transactionHash;
+    this.transactionHash = contract.transactionHash;
   };
 
   Contract._static_methods = {
@@ -745,21 +745,21 @@ var contract = (function(module) {
         this.network.address = val;
       }
     },
-    transactionId: {
+    transactionHash: {
       get: function() {
-        var transactionId = this.network.transactionId;
+        var transactionHash = this.network.transactionHash;
 
-        if(transactionId === null) {
-          throw new Error(`Could not find transaction ID for ${this.contractName}`);
+        if(transactionHash === null) {
+          throw new Error(`Could not find transaction hash for ${this.contractName}`);
         }
 
-        return transactionId;
+        return transactionHash;
       },
       set: function(val) {
         if(val === null) {
-          throw new Error(`Could not set \`${val}\` as the transaction ID for ${this.contractName}`);
+          throw new Error(`Could not set \`${val}\` as the transaction hash for ${this.contractName}`);
         }
-        this.network.transactionId = val;
+        this.network.transactionHash = val;
       }
     },
     links: function() {
