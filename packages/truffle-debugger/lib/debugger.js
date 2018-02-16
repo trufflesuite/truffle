@@ -3,6 +3,8 @@ import expect from "truffle-expect";
 
 import Session from "./session";
 
+import dataSelector from "./data/selectors";
+import astSelector from "./ast/selectors";
 import traceSelector from "./trace/selectors";
 import evmSelector from "./evm/selectors";
 import soliditySelector from "./solidity/selectors";
@@ -56,6 +58,8 @@ export default class Debugger {
 
   static get selectors() {
     return {
+      ast: astSelector,
+      data: dataSelector,
       trace: traceSelector,
       evm: evmSelector,
       solidity: soliditySelector,
