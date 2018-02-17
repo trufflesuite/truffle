@@ -1,8 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:context:selectors");
 
-import { createSelector } from "reselect";
-import { createNestedSelector } from "../selectors";
+import { createSelectorTree, createLeaf } from "../selectors";
 
 import evm from "../evm/selectors";
 
@@ -16,104 +15,133 @@ const contexts = (state) => {
   return state.context || defaultView;
 };
 
-const list = createSelector(
-  [contexts],
 
-  (contexts) => contexts.list
-);
+const selector = createSelectorTree({
+  /**
+   * context.list
+   *
+   * list of all contexts
+   */
+  list: createLeaf([contexts], (contexts) => contexts.list),
 
-const indexByAddress = createSelector(
-  [contexts],
+  /**
+   * context.by
+   */
+  by: {
+    /**
+     * context.by.address
+     *
+     * object (address => context)
+     */
+    address: createLeaf(
+      [contexts, "../indexBy/address"],
 
-  (contexts) => {
-    const { _next, ...map } = contexts.indexForAddress;
-    return map;
-  }
-);
+      (contexts, contextIndexBy) => (
+        (address) => contexts && contexts.list[ contextIndexBy[address] ]
+      )
+    ),
 
-const indexByBinary = createSelector(
-  [contexts],
+    /**
+     * context.by.binary
+     *
+     * object (binary => context)
+     */
+    binary: createLeaf(
+      [contexts, "../indexBy/binary"],
 
-  (contexts) => contexts.indexForBinary
-);
+      (contexts, contextIndexBy) => (
+        (address) => contexts && contexts.list[ contextIndexBy[address] ]
+      )
+    )
+  },
 
-const indexBy = createNestedSelector({
-  address: indexByAddress,
-  binary: indexByBinary,
-});
+  /**
+   * context.indexBy
+   */
+  indexBy: {
+    /**
+     * context.indexBy.address
+     *
+     * object (address => context list index)
+     */
+    address: createLeaf(
+      [contexts],
 
-const byAddress = createSelector(
-  [contexts, indexBy.address],
+      (contexts) => {
+        const { _next, ...map } = contexts.indexForAddress;
+        return map;
+      }
+    ),
 
-  (contexts, contextIndexBy) => (
-    (address) => contexts && contexts.list[ contextIndexBy[address] ]
-  )
-);
+    /**
+     * context.indexBy.binary
+     *
+     * object (binary => context list index)
+     */
+    binary: createLeaf(
+      [contexts],
 
-const byBinary = createSelector(
-  [contexts, indexBy.binary],
+      (contexts) => contexts.indexForBinary
+    )
+  },
 
-  (contexts, contextIndexBy) => (
-    (binary) => contexts && contexts.list[ contextIndexBy[binary] ]
-  )
-);
+  /**
+   * context.current
+   */
+  current: createLeaf(
+    [evm.current.call, "./by"],
 
-const by = createNestedSelector({
-  address: byAddress,
-  binary: byBinary
-});
-
-const currentContext = createSelector(
-  [evm.current.call, by],
-
-  ({address, binary}, contextBy) => {
-    if (address) {
-      return contextBy.address(address);
-    } else {
-      return contextBy.binary(binary);
+    ({address, binary}, contextBy) => {
+      if (address) {
+        return contextBy.address(address);
+      } else {
+        return contextBy.binary(binary);
+      }
     }
-  }
-)
+  ),
 
-const affectedInstances = createSelector(
-  [list, indexBy.address],
+  /**
+   * context.affectedInstances
+   *
+   * contexts interacted with in trace
+   */
+  affectedInstances: createLeaf(
+    ["./list", "./indexBy/address"],
 
-  (list, indexByAddress) => {
-    let map = {};
+    (list, indexByAddress) => {
+      let map = {};
 
-    debug("list: %O", list);
-    debug("indexByAddress: %o", indexByAddress);
+      debug("list: %O", list);
+      debug("indexByAddress: %o", indexByAddress);
 
-    for (let address of Object.keys(indexByAddress)) {
-      let index = indexByAddress[address];
-      let context = list[index];
+      for (let address of Object.keys(indexByAddress)) {
+        let index = indexByAddress[address];
+        let context = list[index];
 
-      map[address] = {
-        contractName: context.contractName,
-        source: context.source,
-        binary: context.binary
-      };
+        map[address] = {
+          contractName: context.contractName,
+          source: context.source,
+          binary: context.binary
+        };
+      }
+
+      return map;
     }
+  ),
 
-    return map;
-  }
-);
+  /**
+   * context.missingSources
+   *
+   * contexts without source defined
+   */
+  missingSources: createLeaf(
+    ['./affectedInstances'],
 
-const missingSources = createSelector(
-  [affectedInstances],
+    (instances) => Object.entries(instances)
+      .filter(([address, instance]) => !instance.source)
+      .map(([address, instance]) => address)
+  )
 
-  (instances) => Object.entries(instances)
-    .filter(([address, instance]) => !instance.source)
-    .map(([address, instance]) => address)
-);
-
-const selector = createNestedSelector({
-  list,
-  by,
-  indexBy,
-  current: currentContext,
-  affectedInstances: affectedInstances,
-  missingSources: missingSources
 });
 
 export default selector;

@@ -1,4 +1,3 @@
-import { createSelector } from "reselect";
 import { createSelectorTree, createLeaf } from "../selectors";
 
 import trace from "../trace/selectors";
