@@ -8,11 +8,13 @@ import CodeUtils from "truffle-code-utils";
 import context from "../context/selectors";
 import evm from "../evm/selectors";
 
-let selector = createSelectorTree({
+
+let solidity = createSelectorTree({
   /**
    * solidity.currentState
    */
   currentState: {
+
     /**
      * solidity.currentState.functionDepth
      */
@@ -85,6 +87,7 @@ let selector = createSelectorTree({
    * solidity.nextStep
    */
   nextStep: {
+
     /**
      * solidity.nextStep.nextInstruction
      */
@@ -125,4 +128,4 @@ let selector = createSelectorTree({
   }
 });
 
-export default selector;
+export default solidity;

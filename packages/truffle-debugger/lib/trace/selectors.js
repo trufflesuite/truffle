@@ -1,6 +1,6 @@
 import { createSelectorTree, createLeaf } from "../selectors";
 
-let selector = createSelectorTree({
+let trace = createSelectorTree({
   /**
    * trace.index
    *
@@ -34,4 +34,4 @@ let selector = createSelectorTree({
   )
 });
 
-export default selector;
+export default trace;

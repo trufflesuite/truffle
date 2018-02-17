@@ -2,10 +2,21 @@ import { createSelectorTree, createLeaf } from "../selectors";
 
 import trace from "../trace/selectors";
 
-const selector = createSelectorTree({
+
+const evm = createSelectorTree({
+  /**
+   * evm.current
+   */
   current: {
+
+    /**
+     * evm.current.callstack
+     */
     callstack: (state) => state.evm.callstack,
 
+    /**
+     * evm.current.call
+     */
     call: createLeaf(
       ["./callstack"],
 
@@ -94,6 +105,6 @@ const selector = createSelectorTree({
       }
     ),
   }
-
 });
-export default selector;
+
+export default evm;

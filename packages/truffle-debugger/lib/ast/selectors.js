@@ -10,7 +10,7 @@ import solidity from "../solidity/selectors";
 import { findRange } from "./map";
 
 
-const selector = createSelectorTree({
+const ast = createSelectorTree({
   /**
    * ast.current
    *
@@ -26,6 +26,7 @@ const selector = createSelectorTree({
    * ast lookups
    */
   by: {
+
     /**
      * ast.by.index
      *
@@ -74,6 +75,7 @@ const selector = createSelectorTree({
    * ast.next
    */
   next: {
+
     /**
      * ast.next.pointer
      *
@@ -97,4 +99,4 @@ const selector = createSelectorTree({
   }
 });
 
-export default selector;
+export default ast;

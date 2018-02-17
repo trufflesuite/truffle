@@ -8,11 +8,12 @@ import evm from "../evm/selectors";
 import context from "../context/selectors";
 
 
-const selector = createSelectorTree({
+const data = createSelectorTree({
   /**
    * data.scopes
    */
   scopes: {
+
     /**
      * data.scopes.current
      */
@@ -46,6 +47,7 @@ const selector = createSelectorTree({
    * data.identifiers
    */
   identifiers: {
+
     /**
      * data.identifiers.current
      *
@@ -75,4 +77,4 @@ const selector = createSelectorTree({
   }
 });
 
-export default selector;
+export default data;

@@ -5,6 +5,7 @@ import { createSelectorTree, createLeaf } from "../selectors";
 
 import evm from "../evm/selectors";
 
+
 const contexts = (state) => {
   const defaultView = {
     list: [],
@@ -15,8 +16,7 @@ const contexts = (state) => {
   return state.context || defaultView;
 };
 
-
-const selector = createSelectorTree({
+const context = createSelectorTree({
   /**
    * context.list
    *
@@ -28,6 +28,7 @@ const selector = createSelectorTree({
    * context.by
    */
   by: {
+
     /**
      * context.by.address
      *
@@ -59,6 +60,7 @@ const selector = createSelectorTree({
    * context.indexBy
    */
   indexBy: {
+
     /**
      * context.indexBy.address
      *
@@ -141,7 +143,6 @@ const selector = createSelectorTree({
       .filter(([address, instance]) => !instance.source)
       .map(([address, instance]) => address)
   )
-
 });
 
-export default selector;
+export default context;
