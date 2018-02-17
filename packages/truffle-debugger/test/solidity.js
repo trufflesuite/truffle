@@ -7,9 +7,9 @@ import Ganache from "ganache-cli";
 import Web3 from "web3";
 
 import { prepareContracts } from "./helpers";
-import Debugger from "../lib/debugger";
+import Debugger from "lib/debugger";
 
-import solidity from "../lib/solidity/selectors";
+import solidity from "lib/solidity/selectors";
 
 
 const __SINGLE_CALL = `

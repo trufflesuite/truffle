@@ -4,12 +4,12 @@ const debug = debugModule("debugger:ast:sagas");
 import { takeEvery, call, fork, put, take, select } from "redux-saga/effects";
 import ABI from "web3-eth-abi";
 
-import { TICK } from "../trace/actions";
+import { TICK } from "lib/trace/actions";
 import * as actions from "./actions";
 
 import ast from "./selectors";
-import trace from "../trace/selectors";
-import context from "../context/selectors";
+import trace from "lib/trace/selectors";
+import context from "lib/context/selectors";
 
 import * as visitor from "./visitor";
 

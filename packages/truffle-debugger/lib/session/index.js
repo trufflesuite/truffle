@@ -1,18 +1,18 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:session");
 
+import trace from "lib/trace/selectors";
+import evm from "lib/evm/selectors";
+import ast from "lib/ast/selectors";
+import solidity from "lib/solidity/selectors";
+
+import configureStore from "lib/store";
+
+import * as controller from "lib/controller/actions";
+import * as actions from "./actions";
+
 import rootSaga from "./sagas";
 import reducer from "./reducers";
-
-import * as controller from "../controller/actions";
-import * as actions from "./actions";
-import { saveSteps } from "../trace/actions";
-import configureStore from "../store";
-
-import trace from "../trace/selectors";
-import evm from "../evm/selectors";
-import ast from "../ast/selectors";
-import solidity from "../ast/selectors";
 
 /**
  * Debugger Session

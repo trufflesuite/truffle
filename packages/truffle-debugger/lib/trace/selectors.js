@@ -1,4 +1,4 @@
-import { createSelectorTree, createLeaf } from "../selectors";
+import { createSelectorTree, createLeaf } from "lib/selectors";
 
 let trace = createSelectorTree({
   /**

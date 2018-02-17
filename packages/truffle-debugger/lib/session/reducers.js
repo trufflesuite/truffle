@@ -1,10 +1,10 @@
 import { combineReducers } from "redux";
 
-import context from "../context/reducers";
-import data from "../data/reducers";
-import evm from "../evm/reducers";
-import solidity from '../solidity/reducers';
-import trace from "../trace/reducers";
+import context from "lib/context/reducers";
+import data from "lib/data/reducers";
+import evm from "lib/evm/reducers";
+import solidity from "lib/solidity/reducers";
+import trace from "lib/trace/reducers";
 
 import * as actions from "./actions";
 

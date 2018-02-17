@@ -1,11 +1,11 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:data:selectors");
 
-import { createSelectorTree, createLeaf } from "../selectors";
+import { createSelectorTree, createLeaf } from "lib/selectors";
 
-import ast from "../ast/selectors";
-import evm from "../evm/selectors";
-import context from "../context/selectors";
+import ast from "lib/ast/selectors";
+import evm from "lib/evm/selectors";
+import context from "lib/context/selectors";
 
 
 const data = createSelectorTree({

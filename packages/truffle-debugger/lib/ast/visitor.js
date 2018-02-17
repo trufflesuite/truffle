@@ -4,7 +4,7 @@ const debug = debugModule("debugger:ast:visitor");
 import { call, takeEvery, put } from "redux-saga/effects";
 
 import * as actions from "./actions";
-import * as dataActions from "../data/actions";
+import * as dataActions from "lib/data/actions";
 
 export function *walk(context, node, pointer = "", parentId = null) {
   yield put(actions.enter(pointer, node, context, parentId));

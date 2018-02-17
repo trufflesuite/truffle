@@ -3,21 +3,21 @@ const debug = debugModule("debugger:session:sagas");
 
 import { call, all, fork, join, take, put, select } from 'redux-saga/effects';
 
-import astSaga from "../ast/sagas";
-import controllerSaga from "../controller/sagas";
-import soliditySaga from "../solidity/sagas";
-import evmSaga from "../evm/sagas";
-import traceSaga from "../trace/sagas";
-import web3Saga from "../web3/sagas";
+import astSaga from "lib/ast/sagas";
+import controllerSaga from "lib/controller/sagas";
+import soliditySaga from "lib/solidity/sagas";
+import evmSaga from "lib/evm/sagas";
+import traceSaga from "lib/trace/sagas";
+import web3Saga from "lib/web3/sagas";
 
-import * as astActions from "../ast/actions";
-import * as contextActions from "../context/actions";
-import * as traceActions from "../trace/actions";
-import * as web3Actions from "../web3/actions";
-import * as evmActions from "../evm/actions";
+import * as astActions from "lib/ast/actions";
+import * as contextActions from "lib/context/actions";
+import * as traceActions from "lib/trace/actions";
+import * as web3Actions from "lib/web3/actions";
+import * as evmActions from "lib/evm/actions";
 import * as actions from "./actions";
 
-import context from "../context/selectors";
+import context from "lib/context/selectors";
 
 export default function *saga () {
   yield fork(web3Saga);

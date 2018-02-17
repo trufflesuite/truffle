@@ -7,12 +7,12 @@ import Ganache from "ganache-cli";
 import Web3 from "web3";
 
 import { prepareContracts } from "./helpers";
-import Debugger from "../lib/debugger";
+import Debugger from "lib/debugger";
 
-import ast from "../lib/ast/selectors";
-import solidity from "../lib/solidity/selectors";
+import ast from "lib/ast/selectors";
+import solidity from "lib/solidity/selectors";
 
-import { getRange, findRange, rangeNodes } from "../lib/ast/map";
+import { getRange, findRange, rangeNodes } from "lib/ast/map";
 
 const __STORAGE = `
 pragma solidity ^0.4.18;

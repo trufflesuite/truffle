@@ -7,9 +7,9 @@ import Ganache from "ganache-cli";
 import Web3 from "web3";
 
 import { prepareContracts } from "./helpers";
-import Debugger from "../lib/debugger";
+import Debugger from "lib/debugger";
 
-import evm from "../lib/evm/selectors";
+import evm from "lib/evm/selectors";
 
 
 const __OUTER = `

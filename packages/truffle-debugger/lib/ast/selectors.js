@@ -1,11 +1,11 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:ast:selectors");
 
-import { createSelectorTree, createLeaf } from "../selectors";
+import { createSelectorTree, createLeaf } from "lib/selectors";
 import jsonpointer from "json-pointer";
 
-import context from "../context/selectors";
-import solidity from "../solidity/selectors";
+import context from "lib/context/selectors";
+import solidity from "lib/solidity/selectors";
 
 import { findRange } from "./map";
 

@@ -1,6 +1,6 @@
-import { createSelectorTree, createLeaf } from "../selectors";
+import { createSelectorTree, createLeaf } from "lib/selectors";
 
-import trace from "../trace/selectors";
+import trace from "lib/trace/selectors";
 
 
 const evm = createSelectorTree({

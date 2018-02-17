@@ -7,10 +7,10 @@ import Ganache from "ganache-cli";
 import Web3 from "web3";
 
 import { prepareContracts } from "./helpers";
-import Debugger from "../lib/debugger";
+import Debugger from "lib/debugger";
 
-import context from "../lib/context/selectors";
-import trace from "../lib/trace/selectors";
+import context from "lib/context/selectors";
+import trace from "lib/trace/selectors";
 
 const __OUTER = `
 pragma solidity ^0.4.18;

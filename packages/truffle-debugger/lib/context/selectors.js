@@ -1,9 +1,9 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:context:selectors");
 
-import { createSelectorTree, createLeaf } from "../selectors";
+import { createSelectorTree, createLeaf } from "lib/selectors";
 
-import evm from "../evm/selectors";
+import evm from "lib/evm/selectors";
 
 
 const contexts = (state) => {

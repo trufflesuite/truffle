@@ -1,12 +1,12 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:solidity:selectors");
 
-import { createSelectorTree, createLeaf } from "../selectors";
+import { createSelectorTree, createLeaf } from "lib/selectors";
 import SolidityUtils from "truffle-solidity-utils";
 import CodeUtils from "truffle-code-utils";
 
-import context from "../context/selectors";
-import evm from "../evm/selectors";
+import context from "lib/context/selectors";
+import evm from "lib/evm/selectors";
 
 
 let solidity = createSelectorTree({
