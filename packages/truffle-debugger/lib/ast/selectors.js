@@ -21,6 +21,56 @@ const selector = createSelectorTree({
   ),
 
   /**
+   * ast.by
+   *
+   * ast lookups
+   */
+  by: {
+    /**
+     * ast.by.index
+     *
+     * ast for context index
+     */
+    index: createLeaf(
+      [context.list], (list) => list.map( (context) => context.ast )
+    ),
+
+    /**
+     * ast.by.address
+     *
+     * ast for context with address
+     */
+    address: createLeaf(
+      [context.by.address],
+
+      (contexts) => ({
+        ...Object.assign(
+          {},
+          ...Object.entries(contexts)
+            .map( ([address, context]) => ({ [address]: context.ast }) )
+        )
+      })
+    ),
+
+    /**
+     * ast.by.binary
+     *
+     * ast for context with binary
+     */
+    binary: createLeaf(
+      [context.by.binary],
+
+      (contexts) => ({
+        ...Object.assign(
+          {},
+          ...Object.entries(contexts)
+            .map( ([binary, context]) => ({ [binary]: context.ast }) )
+        )
+      })
+    ),
+  },
+
+  /**
    * ast.next
    */
   next: {
