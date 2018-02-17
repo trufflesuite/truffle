@@ -9,9 +9,18 @@ import context from "../context/selectors";
 import evm from "../evm/selectors";
 
 let selector = createSelectorTree({
+  /**
+   * solidity.currentState
+   */
   currentState: {
+    /**
+     * solidity.currentState.functionDepth
+     */
     functionDepth: (state) => state.solidity.functionDepth,
 
+    /**
+     * solidity.currentState.instructions
+     */
     instructions: createLeaf(
       [context.current], (context) => {
         debug("context: %o", context);
@@ -56,6 +65,9 @@ let selector = createSelectorTree({
       }
     ),
 
+    /**
+     * solidity.currentState.instructionAtProgramCounter
+     */
     instructionAtProgramCounter: createLeaf(
       ["./instructions"],
 
@@ -69,13 +81,22 @@ let selector = createSelectorTree({
     )
   },
 
+  /**
+   * solidity.nextStep
+   */
   nextStep: {
+    /**
+     * solidity.nextStep.nextInstruction
+     */
     nextInstruction: createLeaf(
       ["../currentState/instructionAtProgramCounter", evm.nextStep.programCounter],
 
       (map, pc) => map[pc]
     ),
 
+    /**
+     * solidity.nextStep.sourceRange
+     */
     sourceRange: createLeaf(
       ["./nextInstruction"],
 
@@ -88,12 +109,18 @@ let selector = createSelectorTree({
       }
     ),
 
+    /**
+     * solidity.nextStep.isMultiline
+     */
     isMultiline: createLeaf(
       ["./sourceRange"],
 
       ( {lines} ) => lines.start.line != lines.end.line
     ),
 
+    /**
+     * solidity.nextStep.jumpDirection
+     */
     jumpDirection: createLeaf(["./nextInstruction"], (i) => i.jump)
   }
 });
