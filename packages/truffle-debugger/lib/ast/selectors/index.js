@@ -7,7 +7,7 @@ import jsonpointer from "json-pointer";
 import context from "lib/context/selectors";
 import solidity from "lib/solidity/selectors";
 
-import { findRange } from "./map";
+import { findRange } from "../map";
 
 
 const ast = createSelectorTree({
