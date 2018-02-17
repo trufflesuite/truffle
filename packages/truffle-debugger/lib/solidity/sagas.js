@@ -16,7 +16,7 @@ function* functionDepthSaga () {
     let instruction = yield select(solidity.next.instruction);
     debug("instruction: %o", instruction);
 
-    if (yield select(evm.nextStep.isJump)) {
+    if (yield select(evm.next.step.isJump)) {
       let jumpDirection = yield select(solidity.next.jumpDirection);
 
 

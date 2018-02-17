@@ -92,7 +92,7 @@ let solidity = createSelectorTree({
      * solidity.next.instruction
      */
     instruction: createLeaf(
-      ["../current/instructionAtProgramCounter", evm.nextStep.programCounter],
+      ["../current/instructionAtProgramCounter", evm.next.step.programCounter],
 
       (map, pc) => map[pc]
     ),

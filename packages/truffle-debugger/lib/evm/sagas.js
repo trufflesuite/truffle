@@ -13,19 +13,19 @@ export function* callstackSaga () {
     yield take(TICK);
     debug("got TICK");
 
-    if (yield select(evm.nextStep.isCall)) {
+    if (yield select(evm.next.step.isCall)) {
       debug("got call");
-      let address = yield select(evm.nextStep.callAddress);
+      let address = yield select(evm.next.step.callAddress);
 
       yield put(actions.call(address));
 
-    } else if (yield select(evm.nextStep.isCreate)) {
+    } else if (yield select(evm.next.step.isCreate)) {
       debug("got create");
-      let binary = yield select(evm.nextStep.createBinary);
+      let binary = yield select(evm.next.step.createBinary);
 
       yield put(actions.create(binary));
 
-    } else if (yield select(evm.nextStep.isHalting)) {
+    } else if (yield select(evm.next.step.isHalting)) {
       debug("got return");
       yield put(actions.returnCall());
     }

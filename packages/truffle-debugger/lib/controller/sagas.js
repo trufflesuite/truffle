@@ -85,7 +85,7 @@ function* stepNext () {
  * step.
  */
 function* stepInto () {
-  if (yield select(evm.nextStep.isJump)) {
+  if (yield select(evm.next.step.isJump)) {
     yield* stepNext();
 
     return;
