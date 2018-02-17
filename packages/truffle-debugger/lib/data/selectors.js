@@ -1,68 +1,78 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:data:selectors");
 
-import { createSelector } from "reselect";
-import { createNestedSelector } from "../selectors";
+import { createSelectorTree, createLeaf } from "../selectors";
 
 import ast from "../ast/selectors";
 import evm from "../evm/selectors";
 import context from "../context/selectors";
 
-const data = (state) => state.data;
 
-const currentScopeId = createSelector(
-  [ast.next.node],
+const selector = createSelectorTree({
+  /**
+   * data.scopes
+   */
+  scopes: {
+    /**
+     * data.scopes.current
+     */
+    current: {
+      /**
+       * data.scopes.current.id
+       *
+       * data scope for current operation
+       */
+      id: createLeaf(
+        [ast.next.node], (node) => node.id
+      ),
 
-  (node) => node.id
-);
+      /**
+       * data.scopes.current.list
+       *
+       * scopes map for current context
+       */
+      list: createLeaf(
+        [evm.current.call, context.indexBy, (state) => state.data],
 
-const currentScopeList = createSelector(
-  [evm.current.call, context.indexBy, data],
+        ({address, binary}, indexBy, data) => {
+          let index = address ? indexBy.address[address] : indexBy.binary[binary];
+          return data[index];
+        }
+      )
+    }
+  },
 
-  ({address, binary}, indexBy, data) => {
-    let index = address ? indexBy.address[address] : indexBy.binary[binary];
-    return data[index];
+  /**
+   * data.identifiers
+   */
+  identifiers: {
+    /**
+     * data.identifiers.current
+     *
+     * map of current identifiers to declaration AST node id
+     */
+    current: createLeaf(
+      ["../scopes/current"],
+
+      ({id, list}) => {
+        let cur = id;
+        let variables = {};
+
+        do {
+          variables = Object.assign(
+            variables,
+            ...(list[cur].variables || [])
+              .filter( (v) => variables[v.name] == undefined )
+              .map( (v) => ({ [v.name]: list[v.id].pointer }) )
+          );
+
+          cur = list[cur].parentId;
+        } while (cur != null);
+
+        return variables;
+      }
+    )
   }
-)
-
-const currentScope = createNestedSelector({
-  id: currentScopeId,
-  list: currentScopeList
-});
-
-const scopes = createNestedSelector({
-  current: currentScope,
-});
-
-const currentIdentifiers = createSelector(
-  [scopes.current],
-
-  ({id, list}) => {
-    let cur = id;
-    let variables = {};
-
-    do {
-      variables = Object.assign(
-        variables,
-        ...(list[cur].variables || [])
-          .filter( (v) => variables[v.name] == undefined )
-          .map( (v) => ({ [v.name]: list[v.id].pointer }) )
-      );
-
-      cur = list[cur].parentId;
-    } while (cur != null);
-
-    return variables;
-  }
-);
-
-const identifiers = createNestedSelector({
-  current: currentIdentifiers,
-});
-
-const selector = createNestedSelector({
-  scopes,
-  identifiers
 });
 
 export default selector;
