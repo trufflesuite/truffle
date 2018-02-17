@@ -55,7 +55,7 @@ function* advance() {
  * instruction. See advance() if you'd like to advance by one instruction.
  */
 function* stepNext () {
-  const startingRange = yield select(solidity.nextStep.sourceRange);
+  const startingRange = yield select(solidity.next.sourceRange);
   var nextRange;
 
   do {
@@ -63,7 +63,7 @@ function* stepNext () {
     yield* advance();
 
     // and check the next source range
-    nextRange = yield select(solidity.nextStep.sourceRange);
+    nextRange = yield select(solidity.next.sourceRange);
 
     // if the next step's source range is still the same, keep going
   } while (
@@ -91,14 +91,14 @@ function* stepInto () {
     return;
   }
 
-  if (yield select(solidity.nextStep.isMultiline)) {
+  if (yield select(solidity.next.isMultiline)) {
     yield* stepOver();
 
     return;
   }
 
   const startingDepth = yield select(solidity.current.functionDepth);
-  const startingRange = yield select(solidity.nextStep.sourceRange);
+  const startingRange = yield select(solidity.next.sourceRange);
   var currentDepth;
   var nextRange;
 
@@ -106,7 +106,7 @@ function* stepInto () {
     yield* stepNext();
 
     currentDepth = yield select(solidity.current.functionDepth);
-    nextRange = yield select(solidity.nextStep.sourceRange);
+    nextRange = yield select(solidity.next.sourceRange);
 
   } while (
     // the function stack has not increased,
@@ -127,7 +127,7 @@ function* stepInto () {
  * This will run until the debugger encounters a decrease in function depth.
  */
 function* stepOut () {
-  if (yield select(solidity.nextStep.isMultiline)) {
+  if (yield select(solidity.next.isMultiline)) {
     yield *stepOver();
 
     return;
@@ -152,7 +152,7 @@ function* stepOut () {
  */
 function* stepOver () {
   const startingDepth = yield select(solidity.current.functionDepth);
-  const startingRange = yield select(solidity.nextStep.sourceRange);
+  const startingRange = yield select(solidity.next.sourceRange);
   var currentDepth;
   var nextRange;
 
@@ -160,7 +160,7 @@ function* stepOver () {
     yield* stepNext();
 
     currentDepth = yield select(solidity.current.functionDepth);
-    nextRange = yield select(solidity.nextStep.sourceRange);
+    nextRange = yield select(solidity.next.sourceRange);
 
   } while (
     // keep stepping provided:

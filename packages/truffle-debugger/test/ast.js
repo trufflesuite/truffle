@@ -119,7 +119,7 @@ describe("AST", function() {
       debug("ast: %O", session.view(ast.current));
 
       do {
-        let { start, length } = session.view(solidity.nextStep.sourceRange);
+        let { start, length } = session.view(solidity.next.sourceRange);
         let end = start + length;
 
         let node = session.view(ast.next.node);

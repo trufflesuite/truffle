@@ -84,12 +84,12 @@ let solidity = createSelectorTree({
   },
 
   /**
-   * solidity.nextStep
+   * solidity.next
    */
-  nextStep: {
+  next: {
 
     /**
-     * solidity.nextStep.nextInstruction
+     * solidity.next.nextInstruction
      */
     nextInstruction: createLeaf(
       ["../current/instructionAtProgramCounter", evm.nextStep.programCounter],
@@ -98,7 +98,7 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.nextStep.sourceRange
+     * solidity.next.sourceRange
      */
     sourceRange: createLeaf(
       ["./nextInstruction"],
@@ -113,7 +113,7 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.nextStep.isMultiline
+     * solidity.next.isMultiline
      */
     isMultiline: createLeaf(
       ["./sourceRange"],
@@ -122,7 +122,7 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.nextStep.jumpDirection
+     * solidity.next.jumpDirection
      */
     jumpDirection: createLeaf(["./nextInstruction"], (i) => i.jump)
   }
