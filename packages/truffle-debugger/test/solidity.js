@@ -106,7 +106,7 @@ describe("Solidity Debugging", function() {
       do {
         stepped = session.stepNext();
 
-        let actual = session.view(solidity.currentState.functionDepth);
+        let actual = session.view(solidity.current.functionDepth);
 
         assert.isAtMost(actual, maxExpected);
 
@@ -130,14 +130,14 @@ describe("Solidity Debugging", function() {
       // follow functionDepth values in list
       // see source above
       let expectedDepthSequence = [1,2,3,2,1,2,1,0];
-      let actualSequence = [session.view(solidity.currentState.functionDepth)];
+      let actualSequence = [session.view(solidity.current.functionDepth)];
 
       var stepped;
 
       do {
         stepped = session.stepNext();
 
-        let currentDepth = session.view(solidity.currentState.functionDepth);
+        let currentDepth = session.view(solidity.current.functionDepth);
         let lastKnown = actualSequence[actualSequence.length - 1];
 
         if (currentDepth !== lastKnown) {

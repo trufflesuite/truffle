@@ -11,17 +11,17 @@ import evm from "../evm/selectors";
 
 let solidity = createSelectorTree({
   /**
-   * solidity.currentState
+   * solidity.current
    */
-  currentState: {
+  current: {
 
     /**
-     * solidity.currentState.functionDepth
+     * solidity.current.functionDepth
      */
     functionDepth: (state) => state.solidity.functionDepth,
 
     /**
-     * solidity.currentState.instructions
+     * solidity.current.instructions
      */
     instructions: createLeaf(
       [context.current], (context) => {
@@ -68,7 +68,7 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.currentState.instructionAtProgramCounter
+     * solidity.current.instructionAtProgramCounter
      */
     instructionAtProgramCounter: createLeaf(
       ["./instructions"],
@@ -92,7 +92,7 @@ let solidity = createSelectorTree({
      * solidity.nextStep.nextInstruction
      */
     nextInstruction: createLeaf(
-      ["../currentState/instructionAtProgramCounter", evm.nextStep.programCounter],
+      ["../current/instructionAtProgramCounter", evm.nextStep.programCounter],
 
       (map, pc) => map[pc]
     ),

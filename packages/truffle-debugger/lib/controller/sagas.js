@@ -97,7 +97,7 @@ function* stepInto () {
     return;
   }
 
-  const startingDepth = yield select(solidity.currentState.functionDepth);
+  const startingDepth = yield select(solidity.current.functionDepth);
   const startingRange = yield select(solidity.nextStep.sourceRange);
   var currentDepth;
   var nextRange;
@@ -105,7 +105,7 @@ function* stepInto () {
   do {
     yield* stepNext();
 
-    currentDepth = yield select(solidity.currentState.functionDepth);
+    currentDepth = yield select(solidity.current.functionDepth);
     nextRange = yield select(solidity.nextStep.sourceRange);
 
   } while (
@@ -133,13 +133,13 @@ function* stepOut () {
     return;
   }
 
-  const startingDepth = yield select(solidity.currentState.functionDepth);
+  const startingDepth = yield select(solidity.current.functionDepth);
   var currentDepth;
 
   do {
     yield* stepNext();
 
-    currentDepth = yield select(solidity.currentState.functionDepth);
+    currentDepth = yield select(solidity.current.functionDepth);
 
   } while(currentDepth <= startingDepth);
 }
@@ -151,7 +151,7 @@ function* stepOut () {
  * exists on a different line of code within the same function depth.
  */
 function* stepOver () {
-  const startingDepth = yield select(solidity.currentState.functionDepth);
+  const startingDepth = yield select(solidity.current.functionDepth);
   const startingRange = yield select(solidity.nextStep.sourceRange);
   var currentDepth;
   var nextRange;
@@ -159,7 +159,7 @@ function* stepOver () {
   do {
     yield* stepNext();
 
-    currentDepth = yield select(solidity.currentState.functionDepth);
+    currentDepth = yield select(solidity.current.functionDepth);
     nextRange = yield select(solidity.nextStep.sourceRange);
 
   } while (
