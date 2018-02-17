@@ -89,9 +89,9 @@ let solidity = createSelectorTree({
   next: {
 
     /**
-     * solidity.next.nextInstruction
+     * solidity.next.instruction
      */
-    nextInstruction: createLeaf(
+    instruction: createLeaf(
       ["../current/instructionAtProgramCounter", evm.nextStep.programCounter],
 
       (map, pc) => map[pc]
@@ -101,7 +101,7 @@ let solidity = createSelectorTree({
      * solidity.next.sourceRange
      */
     sourceRange: createLeaf(
-      ["./nextInstruction"],
+      ["./instruction"],
 
       (instruction) => {
         return {
@@ -124,7 +124,9 @@ let solidity = createSelectorTree({
     /**
      * solidity.next.jumpDirection
      */
-    jumpDirection: createLeaf(["./nextInstruction"], (i) => i.jump)
+    jumpDirection: createLeaf(
+      ["./instruction"], (i) => i.jump
+    )
   }
 });
 

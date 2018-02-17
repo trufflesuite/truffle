@@ -13,7 +13,7 @@ function* functionDepthSaga () {
   while (true) {
     yield take(TICK);
     debug("got TICK");
-    let instruction = yield select(solidity.next.nextInstruction);
+    let instruction = yield select(solidity.next.instruction);
     debug("instruction: %o", instruction);
 
     if (yield select(evm.nextStep.isJump)) {
