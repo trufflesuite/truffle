@@ -40,6 +40,8 @@ describe("Unbox", function() {
     assert(fs.existsSync(path.join(destination, ".gitignore")) == false, ".gitignore didn't get removed!");
   });
 
+
+  // Following tests depend on the previous unboxing.
   it("won't re-init if truffle.js file exists", function(done) {
     this.timeout(5000);
 
@@ -67,5 +69,31 @@ describe("Unbox", function() {
           }
         });
     });
+  });
+
+  it("won't re-init if a README.md exists", function(done){
+    this.timeout(5000);
+
+    var config = path.join(destination, "truffle.js");
+    var readme = path.join(destination, "README.md");
+
+    assert(!fs.existsSync(readme), "README shouldn't exist for this test to be meaningful");
+
+    // Delete other show-stopper.
+    fs.unlinkSync(config);
+
+    // Introduce README
+    fs.writeFileSync(readme, 'npm install --save sir-box-a-lot');
+
+    Box.unbox(TRUFFLE_BOX_DEFAULT, destination)
+      .then(function(boxConfig) {
+        done(assert.fail());
+      })
+      .catch(function(e) {
+        if (!e.message.includes("A project with a README already exists at the destination.")) {
+          done(assert.fail("Should have prevented unboxing into a directory with existing README"))
+        }
+        done();
+      });
   });
 });
