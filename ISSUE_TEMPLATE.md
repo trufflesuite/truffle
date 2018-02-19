@@ -21,7 +21,7 @@ What actually happened. Please give examples and support it with screenshots, co
 ## Environment
 
 * Operating System: 
-* Truffle version:
 * Ethereum client:
-* node version:
-* npm version: 
+* Truffle version (`truffle version`):
+* node version (`node --version`):
+* npm version (`npm --version`): 
