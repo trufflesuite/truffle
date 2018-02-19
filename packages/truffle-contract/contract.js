@@ -170,7 +170,9 @@ var contract = (function(module) {
 
               var make_attempt = function() {
                 C.web3.eth.getTransactionReceipt(tx, function(err, receipt) {
-                  if (err) return reject(err);
+                  if (err && !err.toString().includes('unknown transaction')){
+                    return reject(err);
+                  }
 
                   // Reject on transaction failures, accept otherwise
                   // Handles "0x00" or hex 0
