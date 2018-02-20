@@ -116,7 +116,7 @@ describe("AST", function() {
       });
 
       let session = bugger.connect();
-      debug("ast: %O", session.view(ast.current));
+      debug("ast: %O", session.view(ast.current.tree));
 
       do {
         let { start, length } = session.view(solidity.next.sourceRange);
@@ -218,7 +218,7 @@ describe("AST", function() {
       });
 
       let session = bugger.connect();
-      debug("ast: %O", session.view(ast.current));
+      debug("ast: %O", session.view(ast.current.tree));
 
       do {
         session.stepNext();

@@ -10,15 +10,34 @@ import solidity from "lib/solidity/selectors";
 import { findRange } from "../map";
 
 
+/**
+ * ast
+ */
 const ast = createSelectorTree({
   /**
    * ast.current
-   *
-   * ast for current context
    */
-  current: createLeaf(
-    [context.current], (context) => context.ast
-  ),
+  current: {
+
+    /**
+     * ast.current.tree
+     *
+     * ast for current context
+     */
+    tree: createLeaf(
+      [context.current], (context) => context.ast
+    ),
+
+    /**
+     * ast.current.index
+     *
+     * index in context list
+     */
+    index: createLeaf(
+      [context.current, context.indexBy.binary], (context, indexBy) =>
+        indexBy[context.binary]
+    )
+  },
 
   /**
    * ast.by
@@ -82,7 +101,7 @@ const ast = createSelectorTree({
      * jsonpointer for next ast node
      */
     pointer: createLeaf(
-      ["../current", solidity.next.sourceRange], (ast, range) =>
+      ["/current/tree", solidity.next.sourceRange], (ast, range) =>
         findRange(ast, range.start, range.length)
     ),
 
@@ -92,7 +111,7 @@ const ast = createSelectorTree({
      * next ast node to execute
      */
     node: createLeaf(
-      ["../current", "./pointer"], (ast, pointer) =>
+      ["/current/tree", "./pointer"], (ast, pointer) =>
         jsonpointer.get(ast, pointer)
     ),
 
