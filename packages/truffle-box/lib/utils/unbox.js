@@ -12,20 +12,11 @@ var config = require('../config');
 
 function checkDestination(destination) {
   return Promise.resolve().then(function() {
-    var config_path = path.join(destination, "truffle.js");
-    var alternate_path = path.join(destination, "truffle-config.js");
-    var readme_path = path.join(destination, "README.md");
-    var gitignore_path = path.join(destination, ".gitignore");
 
-    if (fs.existsSync(config_path) || fs.existsSync(alternate_path)) {
-      var err = "A Truffle project already exists at the destination. " +
-                "Stopping to prevent overwriting data."
-
-      throw new Error(err);
-
-    } else if (fs.existsSync(readme_path) || fs.existsSync(gitignore_path)){
-      var err = "A project with a README already exists at the destination. " +
-                "Unbox in an empty folder first and then 'git init' your project. " +
+    var contents = fs.readdirSync(destination);
+    if (contents.length) {
+      var err = "Something already exists at the destination. " +
+                "Please unbox in an empty folder. " +
                 "Stopping to prevent overwriting data."
 
       throw new Error(err);
