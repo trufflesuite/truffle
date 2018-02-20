@@ -6,6 +6,13 @@ export function visit(context, ast) {
   }
 }
 
+export const DONE_VISITING = "DONE_VISITING";
+export function doneVisiting() {
+  return {
+    type: DONE_VISITING
+  };
+}
+
 export const ENTER = "NODE_ENTER";
 export function enter(pointer, node, context, parentId) {
   return {

@@ -93,6 +93,8 @@ function* mapData() {
     yield join(...tasks);
   }
 
+  yield put(astActions.doneVisiting());
+
   // let contexts = allContexts
   //   .filter((context) => context.ast);
 

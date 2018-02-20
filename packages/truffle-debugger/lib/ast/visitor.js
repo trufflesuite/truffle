@@ -53,7 +53,13 @@ export function *idSaga() {
   yield takeEvery(predicate, recordId);
 }
 
+export function *walkSaga({context, ast}) {
+  yield walk(context, ast);
+}
+
 export function *saga() {
   yield *idSaga();
   yield *variableDeclarationSaga();
+
+  yield takeEvery(actions.VISIT, walkSaga);
 }
