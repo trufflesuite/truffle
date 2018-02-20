@@ -3,6 +3,8 @@ import expect from "truffle-expect";
 
 import Session from "./session";
 
+import { createNestedSelector } from "./selectors";
+
 import dataSelector from "./data/selectors";
 import astSelector from "./ast/selectors";
 import traceSelector from "./trace/selectors";
@@ -57,13 +59,13 @@ export default class Debugger {
   }
 
   static get selectors() {
-    return {
+    return createNestedSelector({
       ast: astSelector,
       data: dataSelector,
       trace: traceSelector,
       evm: evmSelector,
       solidity: soliditySelector,
       context: contextSelector
-    };
+    });
   }
 }
