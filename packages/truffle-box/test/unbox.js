@@ -40,7 +40,7 @@ describe("Unbox", function() {
     assert(fs.existsSync(path.join(destination, ".gitignore")) == false, ".gitignore didn't get removed!");
   });
 
-  it("won't re-init if truffle.js file exists", function(done) {
+  it("won't re-init if anything exists in the destination folder", function(done) {
     this.timeout(5000);
 
     var contracts_directory = path.join(destination, "contracts");
@@ -60,7 +60,7 @@ describe("Unbox", function() {
           done();
         })
         .catch(function(e) {
-          if (e.message.indexOf("A Truffle project already exists at the destination.") >= 0) {
+          if (e.message.indexOf("Something already exists at the destination.") >= 0) {
             done();
           } else {
             done(new Error("Unknown error received: " + e.stack));
