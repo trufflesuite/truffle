@@ -31,6 +31,16 @@ let trace = createSelectorTree({
    */
   step: createLeaf(
     ["./steps", "./index"], (steps, index) => steps[index]
+  ),
+
+  /**
+   * trace.next
+   *
+   * next trace step or {}
+   */
+  next: createLeaf(
+    ["./steps", "./index"], (steps, index) =>
+      index < steps.length - 1 ? steps[index + 1] : {}
   )
 });
 
