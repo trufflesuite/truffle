@@ -75,7 +75,9 @@ function* fetchTx(txHash, provider) {
   );
 
   debug("waiting");
-  yield join(...tasks);
+  if (tasks.length > 0) {
+    yield join(...tasks);
+  }
 }
 
 function* mapData() {
