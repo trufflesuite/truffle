@@ -9,7 +9,7 @@ export function callstack(state = [], action) {
       return state.concat([ {address} ]);
 
     case actions.CREATE:
-      const binary = step.createBinary();
+      const binary = action.binary;
       return state.concat([ {binary} ]);
 
     case actions.RETURN:
