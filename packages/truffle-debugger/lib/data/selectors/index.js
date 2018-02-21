@@ -10,6 +10,8 @@ import context from "lib/context/selectors";
 
 import decode from "../decode";
 
+import { BigNumber } from "bignumber.js";
+
 const data = createSelectorTree({
   /**
    * data.scopes
@@ -52,6 +54,15 @@ const data = createSelectorTree({
     }
   },
 
+  current: {
+    stack: createLeaf([evm.next.state.stack], (s) => s),
+    memory: createLeaf([evm.next.state.memory], (m) => new Uint8Array(
+      (m.join("") .match(/.{1,2}/g) || [])
+        .map( (byteString) => parseInt(byteString, 16) )
+    )),
+    storage: createLeaf([evm.next.state.storage], (s) => s)
+  },
+
   /**
    * data.identifiers
    */
@@ -67,7 +78,7 @@ const data = createSelectorTree({
         "/scopes/tables/current",
         "/scopes/current/id",
         ast.current.tree,
-        evm.next.state
+        "/current"
       ],
 
       (list, id, tree, state) => {
@@ -79,7 +90,8 @@ const data = createSelectorTree({
 
           if (stack && v.stackIndex >= 0 && v.stackIndex < stack.length) {
             let definition = jsonpointer.get(tree, v.pointer);
-            return decode(definition, v.stackIndex, state);
+            let rawValue = new BigNumber(stack[v.stackIndex], 16);
+            return decode(definition, rawValue, state, list);
           }
 
           return null;
