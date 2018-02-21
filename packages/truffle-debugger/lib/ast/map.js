@@ -57,5 +57,5 @@ export function findRange(node, sourceStart, sourceLength) {
   return overlapping
     .filter( ({range}) => sourceStart >= range[0] && sourceEnd <= range[1] )
     .map( ({pointer}) => pointer )
-    .reduce( (a, b) => a.length > b.length ? a : b );
+    .reduce( (a, b) => a.length > b.length ? a : b, "" );
 }
