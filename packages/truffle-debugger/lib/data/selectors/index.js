@@ -2,11 +2,13 @@ import debugModule from "debug";
 const debug = debugModule("debugger:data:selectors");
 
 import { createSelectorTree, createLeaf } from "lib/selectors";
+import jsonpointer from "json-pointer";
 
 import ast from "lib/ast/selectors";
 import evm from "lib/evm/selectors";
 import context from "lib/context/selectors";
 
+import decode from "../decode";
 
 const data = createSelectorTree({
   /**
@@ -64,18 +66,31 @@ const data = createSelectorTree({
       [
         "/scopes/tables/current",
         "/scopes/current/id",
+        ast.current.tree,
+        evm.next.state
       ],
 
-      (list, id) => {
+      (list, id, tree, state) => {
         let cur = id;
         let variables = {};
+
+        const format = (v) => {
+          let {stack} = state;
+
+          if (stack && v.stackIndex >= 0 && v.stackIndex < stack.length) {
+            let definition = jsonpointer.get(tree, v.pointer);
+            return decode(definition, v.stackIndex, state);
+          }
+
+          return null;
+        };
 
         do {
           variables = Object.assign(
             variables,
             ...(list[cur].variables || [])
               .filter( (v) => variables[v.name] == undefined )
-              .map( (v) => ({ [v.name]: list[v.id].pointer }) )
+              .map( (v) => ({ [v.name]: format(list[v.id]) }) )
           );
 
           cur = list[cur].parentId;
