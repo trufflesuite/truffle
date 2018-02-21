@@ -47,7 +47,7 @@
     "esdoc-standard-plugin": "^1.0.0",
     "express": "^4.16.2",
     "fs-extra": "^4.0.2",
-    "ganache-cli": "^6.0.3",
+    "ganache-core": "^2.0.2",
     "mocha": "^4.0.1",
     "mocha-webpack": "^1.0.1",
     "remotedev-server": "^0.2.4",
