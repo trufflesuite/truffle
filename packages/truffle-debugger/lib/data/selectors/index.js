@@ -15,9 +15,30 @@ const data = createSelectorTree({
   scopes: {
 
     /**
+     * data.scopes.tables
+     */
+    tables: {
+
+      /**
+       * data.scopes.table.current
+       *
+       * scopes map for current context
+       */
+      current: createLeaf(
+        [evm.current.call, context.indexBy, (state) => state.data],
+
+        ({address, binary}, indexBy, data) => {
+          let index = address ? indexBy.address[address] : indexBy.binary[binary];
+          return data[index];
+        }
+      )
+    },
+
+    /**
      * data.scopes.current
      */
     current: {
+
       /**
        * data.scopes.current.id
        *
@@ -25,20 +46,6 @@ const data = createSelectorTree({
        */
       id: createLeaf(
         [ast.next.node], (node) => node.id
-      ),
-
-      /**
-       * data.scopes.current.list
-       *
-       * scopes map for current context
-       */
-      list: createLeaf(
-        [evm.current.call, context.indexBy, (state) => state.data],
-
-        ({address, binary}, indexBy, data) => {
-          let index = address ? indexBy.address[address] : indexBy.binary[binary];
-          return data[index];
-        }
       )
     }
   },
@@ -54,9 +61,12 @@ const data = createSelectorTree({
      * map of current identifiers to declaration AST node id
      */
     current: createLeaf(
-      ["../scopes/current"],
+      [
+        "/scopes/tables/current",
+        "/scopes/current/id",
+      ],
 
-      ({id, list}) => {
+      (list, id) => {
         let cur = id;
         let variables = {};
 
