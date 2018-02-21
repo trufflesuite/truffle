@@ -72,10 +72,18 @@ const evm = createSelectorTree({
      *
      * evm state as a result of next step operation
      */
-    state: createLeaf(
-      [trace.next], ({depth, error, gas, memory, stack, storage}) =>
-        ({depth, error, gas, memory, stack, storage})
-    ),
+    state: Object.assign({}, ...(
+      [
+        "depth",
+        "error",
+        "gas",
+        "memory",
+        "stack",
+        "storage"
+      ].map( (param) => ({
+        [param]: createLeaf([trace.next], (step) => step[param])
+      }))
+    )),
 
     /**
      * evm.next.step
