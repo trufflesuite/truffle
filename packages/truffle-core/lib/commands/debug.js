@@ -9,7 +9,8 @@ var command = {
   run: function (options, done) {
     var OS = require("os");
     var path = require("path");
-    var debug = require("debug")("lib:commands:debug");
+    var debugModule = require("debug");
+    var debug = debugModule("lib:commands:debug");
 
     var Config = require("truffle-config");
     var Debugger = require("truffle-debugger");
@@ -38,6 +39,7 @@ var command = {
       var txHash = config._[0];
 
       var lastCommand = "n";
+      var enabledSelectors = new Set();
 
       config.logger.log(DebugUtils.formatStartMessage());
 
@@ -97,7 +99,7 @@ var command = {
 
         function printState() {
           var source = session.view(context.current).source;
-          var range = session.view(solidity.nextStep.sourceRange);
+          var range = session.view(solidity.next.sourceRange);
           debug("source: %o", source);
           debug("range: %o", range);
 
@@ -120,7 +122,7 @@ var command = {
         }
 
         function printInstruction() {
-          var instruction = session.view(solidity.nextStep.nextInstruction);
+          var instruction = session.view(solidity.next.instruction);
           var step = session.view(trace.step);
           var traceIndex = session.view(trace.index);
 
@@ -131,14 +133,39 @@ var command = {
           config.logger.log(DebugUtils.formatStack(step.stack));
         };
 
+        function printSelector(specified) {
+          var selector = specified
+            .split(".")
+            .filter(function(next) { return next.length > 0 })
+            .reduce(function(sel, next) {
+              debug("next %o, sel %o", next, sel);
+              return sel[next];
+            }, selectors);
+
+          debug("selector %o", selector);
+          var result = session.view(selector);
+          var debugSelector = debugModule(specified);
+          debugSelector.enabled = true;
+          debugSelector("%O", result);
+        };
+
+        function printEnabledSelectors() {
+          enabledSelectors.forEach(function(sel) {
+            printSelector(sel);
+          });
+        };
+
         function interpreter(cmd, replContext, filename, callback) {
           cmd = cmd.trim();
+          var cmdArgs;
+          debug("cmd %s", cmd);
 
           if (cmd == ".exit") {
             cmd = "q";
           }
 
           if (cmd.length > 0) {
+            cmdArgs = cmd.slice(1).trim();
             cmd = cmd[0];
           }
 
@@ -183,11 +210,17 @@ var command = {
           // Perform post printing
           // (we want to see if execution stopped before printing state).
           switch (cmd) {
+            case "!":
+              enabledSelectors.add(cmdArgs);
+            case "?":
+              printSelector(cmdArgs);
+              break;
             case ";":
             case "p":
               printFile();
               printInstruction();
               printState();
+              printEnabledSelectors();
               break;
             case "o":
             case "i":
@@ -199,12 +232,16 @@ var command = {
 
               printFile();
               printState();
+              printEnabledSelectors();
               break;
             default:
               printHelp();
           }
 
-          if (cmd != "i" && cmd != "u" && cmd != "h" && cmd != "p") {
+          if (
+            cmd != "i" && cmd != "u" &&
+            cmd != "h" && cmd != "p" && cmd != "?" && cmd != "!"
+          ) {
             lastCommand = cmd;
           }
 
