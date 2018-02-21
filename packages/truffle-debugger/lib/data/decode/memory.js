@@ -1,9 +1,9 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:data:decode:memory");
 
-import {BigNumber} from "bignumber.js";
+import { BigNumber } from "bignumber.js";
 
-const WORD_SIZE = 0x20;
+import { WORD_SIZE } from "./utils";
 
 /**
  * read word from memory
@@ -36,6 +36,11 @@ export function read(memory, byte) {
  */
 export function readBytes(memory, byte, length) {
   byte = BigNumber.isBigNumber(byte) ? byte : new BigNumber(byte, 16);
+
+  if (length == undefined) {
+    return new Uint8Array(memory.buffer, byte.toNumber());
+  }
+
   length = BigNumber.isBigNumber(length) ? length : new BigNumber(length, 16);
 
   // grab `length` bytes no matter what, here fill this array
@@ -47,7 +52,7 @@ export function readBytes(memory, byte, length) {
     length = memory.length - byte.toNumber();
   }
 
-  let existing = new Uint8Array(memory.buffer, byte, length);
+  let existing = new Uint8Array(memory.buffer, byte.toNumber(), length.toNumber());
   debug("excess: %o", excess);
   debug("bytes %o", bytes.length);
   debug("existing %o", existing.length);

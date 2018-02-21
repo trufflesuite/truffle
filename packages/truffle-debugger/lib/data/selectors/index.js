@@ -55,7 +55,14 @@ const data = createSelectorTree({
   },
 
   current: {
-    stack: createLeaf([evm.next.state.stack], (s) => s),
+    stack: createLeaf(
+      [evm.next.state.stack],
+
+      (strings) => strings.map( (string) => new Uint8Array(
+        (string.match(/.{1,2}/g) || [])
+          .map( (byte) => parseInt(byte, 16) )
+      ))
+    ),
     memory: createLeaf([evm.next.state.memory], (m) => new Uint8Array(
       (m.join("") .match(/.{1,2}/g) || [])
         .map( (byteString) => parseInt(byteString, 16) )
@@ -90,7 +97,7 @@ const data = createSelectorTree({
 
           if (stack && v.stackIndex >= 0 && v.stackIndex < stack.length) {
             let definition = jsonpointer.get(tree, v.pointer);
-            let rawValue = new BigNumber(stack[v.stackIndex], 16);
+            let rawValue = stack[v.stackIndex];
             return decode(definition, rawValue, state, list);
           }
 
