@@ -45,6 +45,7 @@ var DebugUtils = {
               sourceMap: contract.sourceMap,
               sourcePath: contract.sourcePath,
               binary: contract.binary,
+              ast: contract.ast,
               deployedBinary: contract.deployedBinary,
               deployedSourceMap: contract.deployedSourceMap
             };
