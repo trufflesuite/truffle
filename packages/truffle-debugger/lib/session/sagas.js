@@ -8,6 +8,7 @@ import controllerSaga from "lib/controller/sagas";
 import soliditySaga from "lib/solidity/sagas";
 import evmSaga from "lib/evm/sagas";
 import traceSaga from "lib/trace/sagas";
+import dataSaga from "lib/data/sagas";
 import web3Saga from "lib/web3/sagas";
 
 import * as astActions from "lib/ast/actions";
@@ -26,6 +27,7 @@ export default function *saga () {
   yield fork(evmSaga);
   yield fork(astSaga);
   yield fork(soliditySaga);
+  yield fork(dataSaga);
 
   let {contracts} = yield take(actions.RECORD_CONTRACTS);
   yield *recordContracts(...contracts);

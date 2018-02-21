@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("debugger:data:reducers");
+
 import { combineReducers } from "redux";
 
 import * as actions from "./actions";
@@ -8,14 +11,17 @@ import * as actions from "./actions";
  *
  *  data: {
  *    [context-id]: {
- *      [scope]: {
+ *      [scope-id]: {
  *        pointer: "/json/pointer",
  *        variables: {
- *          [identifier]: {
- *            type: <type>,
- *            pointer: <pointer>
- *          }
+ *          name: <name>,
+ *          id: <id>,
  *        }
+ *      },
+ *
+ *      [var-id]: {
+ *        pointer: "/json/pointer",
+ *        stackAssignment: [index]
  *      }
  *    }
  *  }
@@ -68,6 +74,29 @@ export default function reducer(state = {}, action) {
           }
         }
       }
+
+    case actions.ASSIGN:
+      context = state[action.context] || {};
+      let nodes = Object.assign(
+        {}, ...Object.entries(action.assignments).map( ([id]) => ({ [id]: context[id] }))
+      );
+
+      return {
+        ...state,
+
+        [action.context]: {
+          ...context,
+
+          ...Object.assign(
+            {}, ...Object.entries(action.assignments).map( ([id, stackIndex]) => ({
+              [id]: {
+                ...context[id],
+                stackIndex
+              }
+            }))
+          )
+        }
+      };
 
     default:
       return state;

@@ -13,3 +13,11 @@ export function declare(context, node) {
     context, node
   }
 }
+
+export const ASSIGN = "ASSIGN";
+export function assign(context, assignments) {
+  return {
+    type: ASSIGN,
+    context, assignments
+  };
+}
