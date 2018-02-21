@@ -14,10 +14,11 @@ export default class Web3Adapter {
       this.web3.currentProvider.sendAsync({
         jsonrpc: "2.0",
         method: "debug_traceTransaction",
-        params: [txHash],
+        params: [txHash, {}],
         id: new Date().getTime()
       }, (err, result) => {
         if (err) return reject(err);
+        debug("result: %o", result);
         accept(result.result.structLogs);
       });
     });
