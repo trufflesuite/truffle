@@ -31,12 +31,8 @@ var handlers = {
   error: function(context, error){
     context.promiEvent.eventEmitter.emit('error', error);
     clearInterval(context.interval);
-
-    // Everywhere but `new`.
-    if (!context.allowError){
-      context.promiEvent.reject(error);
-    }
-
+    this.removeListener('error', handlers.error);
+    context.promiEvent.reject(error);
   },
 
   // Collect hash for contract.new (we attach it to the contract there)
@@ -50,6 +46,8 @@ var handlers = {
     context.interval = setInterval(function(){
       handlers._synchronize(start, context)
     }, 1000);
+
+    this.removeListener('transactionHash', handlers.hash);
   },
 
   confirmation: function(context, number, receipt){
@@ -57,7 +55,7 @@ var handlers = {
 
     // Per web3: initial confirmation index is 0
     if (number === handlers._CONFIRMATIONBLOCKS + 1) {
-      this.removeAllListeners();
+      this.removeListener('confirmation', handlers.confirmation);
     }
   },
 
@@ -73,7 +71,7 @@ var handlers = {
 
     if (parseInt(receipt.status) == 0){
       var error = new StatusError(context.params, receipt.transactionHash, receipt);
-      context.promiEvent.reject(error)
+      return context.promiEvent.reject(error)
     }
 
     var logs;

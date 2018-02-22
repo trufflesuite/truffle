@@ -8,11 +8,13 @@ var log = {
 
 var util = {
 
+  web3: null,
+
   // Spins up ganache with arbitrary options and
   // binds web3 & a contract instance to it.
   setUpProvider: function(instance, options){
     options = options || {};
-    Object.assign(options, {logger: log, network_id: 10})
+    Object.assign(options, {logger: log, network_id: 10, ws: true})
 
     return new Promise(function(accept, reject){
       var provider = ganache.provider(options);
@@ -20,6 +22,7 @@ var util = {
 
       web3.setProvider(provider);
       instance.setProvider(provider);
+      util.web3 = web3;
 
       web3.eth.getAccounts(function(err, accs) {
         if (err) reject(err);
@@ -34,6 +37,18 @@ var util = {
       });
     })
   },
+
+  evm_mine: function(){
+    return new Promise(function(accept, reject){
+      util.web3.currentProvider.send({
+        jsonrpc: "2.0",
+        method: "evm_mine",
+        id: new Date().getTime()
+      }, function(err, result){
+          (err) ? reject(err) : accept(result);
+      });
+    });
+  }
 }
 
 module.exports = util;
