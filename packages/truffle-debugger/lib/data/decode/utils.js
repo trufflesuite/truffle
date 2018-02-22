@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("debugger:data:decode:utils");
+
 import { BigNumber } from "bignumber.js";
 
 export const WORD_SIZE = 0x20;
@@ -46,14 +49,34 @@ export function toSignedBigNumber(bytes) {
   }
 }
 
-export function toHexString(bytes, omitZeroes) {
+/**
+ * @param bytes - Uint8Array
+ * @param length - desired byte length (pad with zeroes)
+ * @param trim - omit leading zeroes
+ */
+export function toHexString(bytes, length, trim = false) {
   const pad = (s) => `${"00".slice(0, 2 - s.length)}${s}`
+
+  //                                          0  1  2  3  4
+  //                                 0  1  2  3  4  5  6  7
+  // bytes.length:        5  -  0x(          e5 c2 aa 09 11 )
+  // length (preferred):  8  -  0x( 00 00 00 e5 c2 aa 09 11 )
+  //                                `--.---'
+  //                                     offset 3
+  if (bytes.length < length) {
+    let prior = bytes;
+    bytes = new Uint8Array(length);
+
+    bytes.set(prior.buffer, length - bytes.length);
+  }
+
+  debug("bytes: %o");
 
   let string = bytes.reduce(
     (str, byte) => `${str}${pad(byte.toString(16))}`, ""
   );
 
-  if (omitZeroes) {
+  if (trim) {
     string = string.replace(/^(00)+/, "");
   }
 
@@ -62,4 +85,16 @@ export function toHexString(bytes, omitZeroes) {
   }
 
   return `0x${string}`;
+}
+
+export function toBytes(number) {
+  if (number < 0) {
+    return [];
+  }
+
+  return new Uint8Array(
+    number.toString(16)
+      .match(/.{1,2}/g)
+      .map( (byte) => parseInt(byte, 16) )
+  );
 }
