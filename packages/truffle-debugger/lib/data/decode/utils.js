@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("debugger:data:decode:utils");
 
 import { BigNumber } from "bignumber.js";
+import Web3 from "web3";
 
 export const WORD_SIZE = 0x20;
 export const MAX_WORD = new BigNumber(2).pow(256).minus(1);
@@ -29,7 +30,9 @@ export function referenceType(definition) {
 }
 
 export function toBigNumber(bytes) {
-  if (typeof bytes == "string") {
+  if (bytes == undefined) {
+    return undefined;
+  } else if (typeof bytes == "string") {
     return new BigNumber(bytes, 16);
   } else if (typeof bytes == "number") {
     return new BigNumber(bytes);
@@ -92,14 +95,38 @@ export function toHexString(bytes, length = 0, trim = false) {
   return `0x${string}`;
 }
 
-export function toBytes(number) {
+export function toBytes(number, length = 0) {
   if (number < 0) {
     return [];
   }
 
-  return new Uint8Array(
+  let bytes = new Uint8Array(
     number.toString(16)
       .match(/.{1,2}/g)
       .map( (byte) => parseInt(byte, 16) )
   );
+
+  if (bytes.length < length) {
+    let prior = bytes;
+    bytes = new Uint8Array(length);
+    bytes.set(prior, length - bytes.length);
+  }
+
+  return bytes;
+}
+
+export function keccak256(...args) {
+  let web3 = new Web3();
+
+  args = args.map( (arg) => {
+    if (typeof arg == "number") {
+      return toHexString(toBytes(arg, WORD_SIZE)).slice(2)
+    } else if (typeof arg == "string") {
+      return web3.toHex(arg).slice(2);
+    } else {
+      return "";
+    }
+  });
+
+  return web3.sha3(args.join(''), { encoding: 'hex' });
 }

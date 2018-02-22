@@ -8,7 +8,7 @@ import * as utils from "./utils";
 import { WORD_SIZE } from "./utils";
 
 
-export function decodeValue(definition, bytes) {
+export function decodeValue(definition, bytes, ...args) {
   switch (utils.typeClass(definition)) {
     case "bool":
       return !utils.toBigNumber(bytes).isZero();
@@ -23,9 +23,12 @@ export function decodeValue(definition, bytes) {
       return utils.toHexString(bytes, true);
 
     case "string":
-      let length = utils.toBigNumber(bytes.slice(0, WORD_SIZE)).toNumber();
-      let characters = bytes.slice(WORD_SIZE, WORD_SIZE + length);
-      return String.fromCharCode.apply(null, characters);
+      return String.fromCharCode.apply(null, bytes);
+
+    case "array":
+      return memory.chunk(bytes, WORD_SIZE)
+        .map( (chunk) => decode(definition.typeName.baseType, chunk) );
+      return null;
 
     default:
       debug("Unknown value type: %s", utils.typeIdentifier(definition));
@@ -79,7 +82,7 @@ export default function decode(definition, ...args) {
     case "storage":
       return decodeStorageReference(definition, ...args);
     default:
-      debug("Unknown reference type: %s", utils.typeIdentifier(definition));
+      debug("Unknown reference category: %s", utils.typeIdentifier(definition));
       return null;
   }
 }
