@@ -39,6 +39,7 @@ export function decodeMemoryReference(definition, pointer, state) {
   switch (utils.typeClass(definition)) {
     case "string":
       return decodeValue(definition, memory.readBytes(state.memory, pointer));
+
     case "array":
       let length = utils.toBigNumber(
         memory.read(state.memory, pointer) || [0x0]
@@ -54,7 +55,10 @@ export function decodeMemoryReference(definition, pointer, state) {
       return memory.chunk(arrayBytes, WORD_SIZE)
         .map( (bytes) => decodeValue(definition.typeName.baseType, bytes) );
 
-      // return decodeValue(definition, memory.readBytes(state.memory, pointer));
+    default:
+      debug("Unknown reference type: %s", utils.typeIdentifier(definition));
+      return null;
+
   }
 
 }
