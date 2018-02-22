@@ -84,25 +84,24 @@ describe("Abstractions", function() {
 
     // Only firing once...how is this done @ web3 / default block?
     it.skip("should fire the confirmations event handler repeatedly", function(done){
-      function keepTransacting(address){
-        Example.at(address).then(function(example){
-          return example.setValue(5)
-          .then(function(){ console.log('firing'); return example.setValue(10) })
-          .then(function(){ console.log('firing'); return example.setValue(15) });
-        });
+
+      function keepTransacting(){
+        return util.evm_mine()
+                .then(util.evm_mine)
+                .then(util.evm_mine);
       };
 
-      Example.new(1, {gas: 3141592})
-        .on('confirmation', function(number, receipt){
-          console.log('confirmation');
-          assert.equal(parseInt(receipt.status), 1, 'should have a receipt');
+      function handler(number, receipt){
+        assert.equal(parseInt(receipt.status), 1, 'should have a receipt');
           if(number === 3){
+            this.removeAllListeners();
             done();
           }
-        })
-        .on('receipt', function(receipt){
-          keepTransacting(receipt.contractAddress)
-        })
+      }
+
+      Example.new(1, {gas: 3141592})
+        .on('confirmation', handler)
+        .on('receipt', keepTransacting);
     });
   });
 
@@ -311,25 +310,27 @@ describe("Abstractions", function() {
 
     // Only firing once...how is this done @ web3 / default block?
     it.skip("should fire the confirmations event handler repeatedly", function(done){
-      function keepTransacting(example){
-        return example.setValue(5)
-          .then(function(){ console.log('firing'); return example.setValue(5)})
-          .then(function(){ console.log('firing'); return example.setValue(5)})
+      this.timeout(5000)
+      function keepTransacting(){
+        return util.evm_mine()
+                .then(util.evm_mine)
+                .then(util.evm_mine);
       };
 
+      function handler(number, receipt){
+        assert.equal(parseInt(receipt.status), 1, 'should have a receipt');
+        if(number === 3) {
+          this.removeAllListeners();
+          done();
+        }
+      }
+
       Example.new(5, {gas: 3141592}).then(function(example) {
+
         example.setValue(25)
-          .on('confirmation', function(number, receipt){
-            console.log('confirming');
-            assert.equal(parseInt(receipt.status), 1, 'should have a receipt');
-            if(number === 3){
-              done();
-            }
-          })
-          .on('receipt', function(receipt){
-            keepTransacting(example);
-          })
-        });
+          .on('confirmation', handler)
+          .then(keepTransacting);
+      });
     });
 
     it("should execute overloaded solidity fn sends", function(done) {
