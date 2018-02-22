@@ -3,6 +3,7 @@ const debug = debugModule("debugger:data:decode:memory");
 
 import { BigNumber } from "bignumber.js";
 
+import * as utils from "./utils";
 import { WORD_SIZE } from "./utils";
 
 /**
@@ -14,19 +15,7 @@ import { WORD_SIZE } from "./utils";
  * @return {BigNumber}
  */
 export function read(memory, byte) {
-  byte = BigNumber.isBigNumber(byte) ? byte : new BigNumber(byte, 16);
-
-  if (byte.modulo(WORD_SIZE) != 0) {
-    return null;
-  }
-
-  debug("byte: %o", byte.toNumber());
-  let wordBytes = new Uint8Array(memory.buffer, byte.toNumber(), WORD_SIZE);
-  debug("wordBytes length: %o", wordBytes.length);
-  return wordBytes.reduce(
-    (num, byte) => num.times(16).plus(byte), new BigNumber(0)
-  );
-
+  return readBytes(memory, byte, WORD_SIZE);
 }
 
 /**
@@ -35,13 +24,16 @@ export function read(memory, byte) {
  * @param memory - Uint8Array
  */
 export function readBytes(memory, byte, length) {
-  byte = BigNumber.isBigNumber(byte) ? byte : new BigNumber(byte, 16);
+  byte = utils.toBigNumber(byte);
+  length = utils.toBigNumber(length);
+
+  if (byte.toNumber() >= memory.length) {
+    return new Uint8Array(length ? length.toNumber() : 0);
+  }
 
   if (length == undefined) {
     return new Uint8Array(memory.buffer, byte.toNumber());
   }
-
-  length = BigNumber.isBigNumber(length) ? length : new BigNumber(length, 16);
 
   // grab `length` bytes no matter what, here fill this array
   var bytes = new Uint8Array(length.toNumber());
@@ -49,15 +41,26 @@ export function readBytes(memory, byte, length) {
   // if we're reading past the end of memory, truncate the length to read
   let excess = byte.plus(length).minus(memory.length).toNumber();
   if (excess > 0) {
-    length = memory.length - byte.toNumber();
+    length = new BigNumber(memory.length).minus(byte);
   }
 
   let existing = new Uint8Array(memory.buffer, byte.toNumber(), length.toNumber());
-  debug("excess: %o", excess);
-  debug("bytes %o", bytes.length);
-  debug("existing %o", existing.length);
 
   bytes.set(existing);
 
   return bytes;
+}
+
+/**
+ * Split memory into chunks
+ */
+export function chunk(memory, size = WORD_SIZE) {
+  let chunks = [];
+
+  for (let i = 0; i < memory.length; i += size) {
+    let chunk = readBytes(memory, i, size);
+    chunks.push(chunk);
+  }
+
+  return chunks;
 }

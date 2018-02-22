@@ -9,7 +9,6 @@ import { WORD_SIZE } from "./utils";
 
 
 export function decodeValue(definition, bytes) {
-  debug("decodeValue bytes: %o", bytes);
   switch (utils.typeClass(definition)) {
     case "bool":
       return !utils.toBigNumber(bytes).isZero();
@@ -26,7 +25,6 @@ export function decodeValue(definition, bytes) {
     case "string":
       let length = utils.toBigNumber(bytes.slice(0, WORD_SIZE)).toNumber();
       let characters = bytes.slice(WORD_SIZE, WORD_SIZE + length);
-      debug("character bytes: %o", characters);
       return String.fromCharCode.apply(null, characters);
 
     default:
@@ -36,11 +34,27 @@ export function decodeValue(definition, bytes) {
 }
 
 export function decodeMemoryReference(definition, pointer, state) {
-  pointer = utils.toBigNumber(pointer);
+  pointer = utils.toBigNumber(pointer).toNumber();
 
   switch (utils.typeClass(definition)) {
     case "string":
       return decodeValue(definition, memory.readBytes(state.memory, pointer));
+    case "array":
+      let length = utils.toBigNumber(
+        memory.read(state.memory, pointer) || [0x0]
+      ).toNumber();
+      debug("array length: %o", length);
+
+      debug("array definition: %o", definition);
+
+      let arrayBytes = memory.readBytes(
+        state.memory, pointer + WORD_SIZE, length * WORD_SIZE
+      );
+
+      return memory.chunk(arrayBytes, WORD_SIZE)
+        .map( (bytes) => decodeValue(definition.typeName.baseType, bytes) );
+
+      // return decodeValue(definition, memory.readBytes(state.memory, pointer));
   }
 
 }

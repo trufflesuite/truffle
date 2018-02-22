@@ -26,10 +26,16 @@ export function referenceType(definition) {
 }
 
 export function toBigNumber(bytes) {
-  return bytes.reduce(
-    (num, byte) => num.times(0x100).plus(byte),
-    new BigNumber(0)
-  );
+  if (typeof bytes == "string") {
+    return new BigNumber(bytes, 16);
+  } else if (typeof bytes == "number") {
+    return new BigNumber(bytes);
+  } else if (bytes.reduce) {
+    return bytes.reduce(
+      (num, byte) => num.times(0x100).plus(byte),
+      new BigNumber(0)
+    );
+  }
 }
 
 export function toSignedBigNumber(bytes) {
