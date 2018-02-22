@@ -7,7 +7,7 @@
     "docs": "esdoc",
     "build": "webpack --config webpack/webpack.config.js",
     "start": "node ./webpack/dev-server.js",
-    "test": "mocha-webpack --webpack-config webpack/webpack.config-test.js",
+    "test": "mocha-webpack --webpack-config webpack/webpack.config-test.js --recursive",
     "test:debug": "node --inspect ./node_modules/.bin/mocha-webpack --webpack-config webpack/webpack.config-test.js"
   },
   "keywords": [
