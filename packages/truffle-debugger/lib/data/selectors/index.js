@@ -9,6 +9,7 @@ import evm from "lib/evm/selectors";
 import context from "lib/context/selectors";
 
 import decode from "../decode";
+import * as decodeUtils from "../decode/utils";
 
 import { BigNumber } from "bignumber.js";
 
@@ -58,16 +59,35 @@ const data = createSelectorTree({
     stack: createLeaf(
       [evm.next.state.stack],
 
-      (strings) => strings.map( (string) => new Uint8Array(
-        (string.match(/.{1,2}/g) || [])
+      (words) => words.map( (word) => new Uint8Array(
+        (word.match(/.{1,2}/g) || [])
           .map( (byte) => parseInt(byte, 16) )
       ))
     ),
-    memory: createLeaf([evm.next.state.memory], (m) => new Uint8Array(
-      (m.join("") .match(/.{1,2}/g) || [])
-        .map( (byteString) => parseInt(byteString, 16) )
-    )),
-    storage: createLeaf([evm.next.state.storage], (s) => s)
+
+    memory: createLeaf(
+      [evm.next.state.memory],
+
+      (words) => new Uint8Array(
+        (words.join("").match(/.{1,2}/g) || [])
+          .map( (byte) => parseInt(byte, 16) )
+      )
+    ),
+
+    storage: createLeaf(
+      [evm.next.state.storage],
+
+      (mapping) => Object.assign(
+        {}, ...Object.entries(mapping).map( ([ address, word ]) =>
+          ({
+            [`0x${address}`]: new Uint8Array(
+              (word.match(/.{1,2}/g) || [])
+                .map( (byte) => parseInt(byte, 16) )
+            )
+          })
+        )
+      )
+    )
   },
 
   /**
@@ -93,15 +113,27 @@ const data = createSelectorTree({
         let variables = {};
 
         const format = (v) => {
-          let {stack} = state;
+          let {stack, memory, storage} = state;
+          let definition = jsonpointer.get(tree, v.pointer);
+          var rawValue;
 
-          if (stack && v.stackIndex >= 0 && v.stackIndex < stack.length) {
-            let definition = jsonpointer.get(tree, v.pointer);
-            let rawValue = stack[v.stackIndex];
-            return decode(definition, rawValue, state, list);
+          debug("v.ref: %o", v.ref);
+          if (!v.ref) {
+            return undefined;
           }
 
-          return null;
+          if (v.ref.stack != undefined && stack && v.ref.stack < stack.length) {
+            rawValue = stack[v.ref.stack];
+          } else if (v.ref.storage != undefined) {
+            let key = decodeUtils.toHexString(
+              decodeUtils.toBytes(v.ref.storage), 0x20
+            );
+            rawValue = storage[key];
+          }
+
+          if (rawValue != undefined) {
+            return decode(definition, rawValue, state, list);
+          }
         };
 
         do {

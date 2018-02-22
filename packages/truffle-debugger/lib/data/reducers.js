@@ -21,7 +21,7 @@ import * as actions from "./actions";
  *
  *      [var-id]: {
  *        pointer: "/json/pointer",
- *        stackAssignment: [index]
+ *        ref: { [segment]: [location] }
  *      }
  *    }
  *  }
@@ -88,10 +88,10 @@ export default function reducer(state = {}, action) {
           ...context,
 
           ...Object.assign(
-            {}, ...Object.entries(action.assignments).map( ([id, stackIndex]) => ({
+            {}, ...Object.entries(action.assignments).map( ([id, ref]) => ({
               [id]: {
                 ...context[id],
-                stackIndex
+                ref
               }
             }))
           )

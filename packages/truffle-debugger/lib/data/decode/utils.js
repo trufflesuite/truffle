@@ -54,7 +54,12 @@ export function toSignedBigNumber(bytes) {
  * @param length - desired byte length (pad with zeroes)
  * @param trim - omit leading zeroes
  */
-export function toHexString(bytes, length, trim = false) {
+export function toHexString(bytes, length = 0, trim = false) {
+  if (typeof length == "boolean") {
+    trim = length;
+    length = 0;
+  }
+
   const pad = (s) => `${"00".slice(0, 2 - s.length)}${s}`
 
   //                                          0  1  2  3  4

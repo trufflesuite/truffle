@@ -9,12 +9,14 @@ import * as actions from "./actions";
 
 import ast from "lib/ast/selectors";
 import evm from "lib/evm/selectors";
+import data from "./selectors";
 
 function *tickSaga() {
   let tree = yield select(ast.current.tree);
   let treeId = yield select(ast.current.index);
   let node = yield select(ast.next.node);
   let pointer = yield select(ast.next.pointer);
+  let scopes = yield select(data.scopes.tables.current);
 
   let state = yield select(evm.next.state);
   if (!state.stack) {
@@ -22,19 +24,29 @@ function *tickSaga() {
   }
 
   let top = state.stack.length - 1;
+  var parameters, returnParameters, assignments, storageVars;
 
   switch (node.nodeType) {
 
     case "FunctionDefinition":
-      let parameters = node.parameters.parameters
+      parameters = node.parameters.parameters
         .map( (p, i) => `${pointer}/parameters/parameters/${i}` );
 
-      let returnParameters = node.returnParameters.parameters
+      returnParameters = node.returnParameters.parameters
         .map( (p, i) => `${pointer}/returnParameters/parameters/${i}` );
 
-      let assignments = returnParameters.concat(parameters).reverse()
+      assignments = returnParameters.concat(parameters).reverse()
         .map( (pointer) => jsonpointer.get(tree, pointer).id )
-        .map( (id, i) => ({ [id]: top - i }) )
+        .map( (id, i) => ({ [id]: {"stack": top - i} }) )
+        .reduce( (acc, assignment) => Object.assign(acc, assignment), {} );
+
+      yield put(actions.assign(treeId, assignments));
+      break;
+
+    case "ContractDefinition":
+      storageVars = scopes[node.id].variables || [];
+      assignments = storageVars
+        .map( ({name, id}, i) => ({ [id]: {"storage": i} }) )
         .reduce( (acc, assignment) => Object.assign(acc, assignment), {} );
 
       yield put(actions.assign(treeId, assignments));
@@ -42,7 +54,7 @@ function *tickSaga() {
 
     case "VariableDeclaration":
       yield put(actions.assign(treeId, {
-        [jsonpointer.get(tree, pointer).id]: top
+        [jsonpointer.get(tree, pointer).id]: {"stack": top}
       }));
 
     default:
