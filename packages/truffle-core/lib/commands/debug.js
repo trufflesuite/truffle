@@ -45,7 +45,7 @@ var command = {
       var txHash = config._[0];
 
       var lastCommand = "n";
-      var enabledSelectors = new Set();
+      var enabledExpressions = new Set();
       var breakpoints = [];
 
       config.logger.log(DebugUtils.formatStartMessage());
@@ -156,11 +156,43 @@ var command = {
           debugSelector("%O", result);
         };
 
-        function printEnabledSelectors() {
-          enabledSelectors.forEach(function(sel) {
-            printSelector(sel);
+        function printWatchExpressions() {
+          if (enabledExpressions.size == 0) {
+            config.logger.log("No watch expressions added.");
+            return;
+          }
+
+          config.logger.log("");
+          enabledExpressions.forEach(function(expression) {
+            config.logger.log("  " + expression);
+          });
+          config.logger.log("");
+        }
+
+        function printWatchExpressionsResults() {
+          enabledExpressions.forEach(function(expression) {
+            config.logger.log(expression);
+            // Add some padding. Note: This won't work with all loggers,
+            // meaning it's not portable. But doing this now so we can get something
+            // pretty until we can build more architecture around this.
+            // Note: Selector results already have padding, so this isn't needed.
+            if (expression[0] == ":") {
+              process.stdout.write("  ");
+            }
+            printWatchExpressionResult(expression);
           });
         };
+
+        function printWatchExpressionResult(expression) {
+          var type = expression[0];
+          var exprArgs = expression.substring(1);
+
+          if (type == "!") {
+            printSelector(exprArgs);
+          } else {
+            evalAndPrintExpression(exprArgs, 2);
+          }
+        }
 
         // TODO make this more robust for all cases and move to
         // truffle-debug-utils
@@ -212,11 +244,11 @@ var command = {
           config.logger.log();
         }
 
-        function evalAndPrintExpression(expr) {
+        function evalAndPrintExpression(expr, indent) {
           var context = session.view(data.identifiers.native.current);
           try {
             var result = safeEval(expr, context);
-            var formatted = formatValue(result);
+            var formatted = formatValue(result, indent);
             config.logger.log(formatted);
             config.logger.log();
           } catch (e) {
@@ -326,10 +358,18 @@ var command = {
           // Perform post printing
           // (we want to see if execution stopped before printing state).
           switch (cmd) {
+            case "+":
+              enabledExpressions.add(cmdArgs);
+              printWatchExpressionResult(cmdArgs);
+              break;
+            case "-": 
+              enabledExpressions.delete(cmdArgs);
+              break;
             case "!":
-              enabledSelectors.add(cmdArgs);
-            case "?":
               printSelector(cmdArgs);
+              break;
+            case "?":
+              printWatchExpressions();
               break;
             case "v":
               printVariables();
@@ -345,7 +385,7 @@ var command = {
               printFile();
               printInstruction();
               printState();
-              printEnabledSelectors();
+              printWatchExpressionsResults();
               break;
             case "o":
             case "i":
@@ -358,7 +398,7 @@ var command = {
 
               printFile();
               printState();
-              printEnabledSelectors();
+              printWatchExpressionsResults();
               break;
             default:
               printHelp();
@@ -366,7 +406,7 @@ var command = {
 
           if (
             cmd != "i" && cmd != "u" && cmd != "b" && cmd != "v" &&
-            cmd != "h" && cmd != "p" && cmd != "?" && cmd != "!" && cmd != ":"
+            cmd != "h" && cmd != "p" && cmd != "?" && cmd != "!" && cmd != ":" && cmd != "+" && cmd != "-"
           ) {
             lastCommand = cmd;
           }
