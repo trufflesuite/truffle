@@ -190,7 +190,7 @@ var command = {
           if (type == "!") {
             printSelector(exprArgs);
           } else {
-            evalAndPrintExpression(exprArgs, 2);
+            evalAndPrintExpression(exprArgs, 2, true);
           }
         }
 
@@ -244,7 +244,7 @@ var command = {
           config.logger.log();
         }
 
-        function evalAndPrintExpression(expr, indent) {
+        function evalAndPrintExpression(expr, indent, suppress) {
           var context = session.view(data.identifiers.native.current);
           try {
             var result = safeEval(expr, context);
@@ -265,7 +265,11 @@ var command = {
             //
             // We want to hide this from the user if there's an error.
             e.stack = e.stack.replace(/SAFE_EVAL_\d+=/,"");
-            config.logger.log(e)
+            if (!suppress) {
+              config.logger.log(e);
+            } else {
+              config.logger.log(formatValue(undefined))
+            }
           }
         }
 
@@ -362,7 +366,7 @@ var command = {
               enabledExpressions.add(cmdArgs);
               printWatchExpressionResult(cmdArgs);
               break;
-            case "-": 
+            case "-":
               enabledExpressions.delete(cmdArgs);
               break;
             case "!":
