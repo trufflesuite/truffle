@@ -53,9 +53,17 @@ var toUnderscoreFromCamel = function(string) {
 };
 
 var Create = {
-  contract: function(directory, name, callback) {
+  contract: function(directory, name, options, callback) {
+    if(typeof options == "function") {
+      callback = options;
+    }
+
     var from = templates.contract.filename;
     var to = path.join(directory, name + ".sol");
+
+    if (!options.force && fs.existsSync(to)) {
+      console.error('Can not create ' + name + '.sol: file exists');
+    }
 
     copy.file(from, to, function(err) {
       if (err) return callback(err);
@@ -64,11 +72,19 @@ var Create = {
     });
   },
 
-  test: function(directory, name, callback) {
+  test: function(directory, name, options, callback) {
+    if(typeof options == "function") {
+      callback = options;
+    }
+
     var underscored = toUnderscoreFromCamel(name);
     underscored = underscored.replace(/\./g, "_");
     var from = templates.test.filename;
     var to = path.join(directory, underscored + ".js");
+
+    if (!options.force && fs.existsSync(to)) {
+      console.error('Can not create ' + underscored + '.js: file exists');
+    }
 
     copy.file(from, to, function(err) {
       if (err) return callback(err);
@@ -79,18 +95,26 @@ var Create = {
       });
     });
   },
-  migration: function(directory, name, callback) {
+  migration: function(directory, name, options, callback) {
+    if(typeof options == "function") {
+      callback = options;
+    }
+
     var underscored = toUnderscoreFromCamel(name || "");
     underscored = underscored.replace(/\./g, "_");
     var from = templates.migration.filename;
-    var to = new Date().getTime() / 1000 | 0; // Only do seconds.
+    var filename = new Date().getTime() / 1000 | 0; // Only do seconds.
 
     if (name != null && name != "") {
-      to += "_" + underscored;
+      filename += "_" + underscored;
     }
 
-    to += ".js";
-    to = path.join(directory, to);
+    filename += ".js";
+    var to = path.join(directory, filename);
+
+    if (!options.force && fs.existsSync(to)) {
+      console.error('Can not create ' + filename + ': file exists');
+    }
 
     copy.file(from, to, callback);
   }

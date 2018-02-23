@@ -47,7 +47,7 @@
     "truffle-solidity-utils": "^1.1.1",
     "truffle-workflow-compile": "^1.0.0",
     "web3": "^0.20.1",
-    "yargs": "^6.6.0"
+    "yargs": "^8.0.2"
   },
   "bin": {
     "truffle": "./cli.js",
