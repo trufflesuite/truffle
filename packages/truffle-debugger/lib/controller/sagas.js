@@ -188,20 +188,23 @@ function* stepOver () {
  * @param breakpoints - array of breakpoints ({ ...call, line })
  */
 function *continueUntil ({breakpoints}) {
-  let call = yield select(evm.current.call);
-  let range = yield select(solidity.next.sourceRange);
+  var currentCall;
+  var nextRange;
+  var nextNode;
+
   let breakpointHit = false;
 
   do {
     yield* stepNext();
 
-    call = yield select(evm.current.call);
-    range = yield select(solidity.next.sourceRange);
+    currentCall = yield select(evm.current.call);
+    nextRange = yield select(solidity.next.sourceRange);
+    nextNode = yield select(ast.next.node);
 
     breakpointHit = breakpoints
-      .filter( ({address, binary, line}) =>
-        (address == call.address || binary == call.binary) &&
-        line == range.lines.start.line
+      .filter( ({address, binary, line, node}) =>
+        (address == currentCall.address || binary == currentCall.binary) &&
+        (line == nextRange.lines.start.line || node == nextNode.id)
       )
       .length > 0;
 

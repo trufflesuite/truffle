@@ -114,7 +114,6 @@ describe("Solidity Debugging", function() {
       }
 
     } while(!session.finished);
-
   });
 
   describe("Function Depth", function() {
