@@ -182,7 +182,17 @@ var command = {
             var result = safeEval(expr, context);
             config.logger.log(result);
           } catch (e) {
-            // safeEval edits the expression to capture the result. 
+            // HACK: safeEval edits the expression to capture the result, which
+            // produces really weird output when there are errors. e.g., 
+            //
+            //   evalmachine.<anonymous>:1
+            //   SAFE_EVAL_857712=a
+            //   ^
+            //
+            //   ReferenceError: a is not defined
+            //     at evalmachine.<anonymous>:1:1
+            //     at ContextifyScript.Script.runInContext (vm.js:59:29)
+            //
             // We want to hide this from the user if there's an error.
             e.stack = e.stack.replace(/SAFE_EVAL_\d+=/,"");
             config.logger.log(e)
