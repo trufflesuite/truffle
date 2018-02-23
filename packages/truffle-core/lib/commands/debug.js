@@ -23,6 +23,7 @@ var command = {
     var selectors = require("truffle-debugger").selectors;
 
     // Debugger Session properties
+    var ast = selectors.ast;
     var data = selectors.data;
     var context = selectors.context;
     var trace = selectors.trace;
@@ -238,14 +239,14 @@ var command = {
 
         function toggleBreakpoint() {
           var currentCall = session.view(evm.current.call);
-          var currentLine = session.view(solidity.next.sourceRange).lines.start.line;
+          var currentNode = session.view(ast.next.node).id;
 
           // Try to find the breakpoint in the list
           var found = false;
           for (var index = 0; index < breakpoints.length; index++) {
             var breakpoint = breakpoints[index];
 
-            if (_.isEqual(currentCall, breakpoint.call) && currentLine == breakpoint.line) {
+            if (_.isEqual(currentCall, breakpoint.call) && currentNode == breakpoint.node) {
               found = true;
               // Remove the breakpoint
               breakpoints.splice(index, 1);
@@ -261,7 +262,7 @@ var command = {
           // No breakpoint? Add it.
           breakpoints.push({
             call: currentCall,
-            line: currentLine
+            node: currentNode
           });
 
           config.logger.log("Breakpoint added.");
