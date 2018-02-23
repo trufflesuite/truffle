@@ -29,7 +29,7 @@ class Leaf {
             dep = "/";
           }
 
-          let abspath = path.resolve(pointer, "..", dep);
+          let abspath = path.posix.resolve(pointer, "..", dep);
 
           return (...args) => {
             debug("args: %o", args);
