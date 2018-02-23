@@ -11,6 +11,7 @@ var command = {
     var path = require("path");
     var debugModule = require("debug");
     var debug = debugModule("lib:commands:debug");
+    var safeEval = require('safe-eval')
 
     var Config = require("truffle-config");
     var Debugger = require("truffle-debugger");
@@ -156,6 +157,38 @@ var command = {
           });
         };
 
+        function printVariables() {
+          var variables = session.view(data.identifiers.native.current);
+
+          // Get the length of the longest name.
+          var longestNameLength = Math.max.apply(null, (Object.keys(variables).map(function(name) {
+            return name.length
+          })));
+
+          Object.keys(variables).forEach(function(name) {
+            var paddedName = name + ":";
+
+            while (paddedName.length <= longestNameLength) {
+              paddedName += " ";
+            }
+
+            config.logger.log(paddedName, variables[name]);
+          });
+        }
+
+        function evalAndPrintExpression(expr) {
+          var context = session.view(data.identifiers.native.current);
+          try {
+            var result = safeEval(expr, context);
+            config.logger.log(result);
+          } catch (e) {
+            // safeEval edits the expression to capture the result. 
+            // We want to hide this from the user if there's an error.
+            e.stack = e.stack.replace(/SAFE_EVAL_\d+=/,"");
+            config.logger.log(e)
+          }
+        }
+
         function interpreter(cmd, replContext, filename, callback) {
           cmd = cmd.trim();
           var cmdArgs;
@@ -216,6 +249,12 @@ var command = {
             case "?":
               printSelector(cmdArgs);
               break;
+            case "v":
+              printVariables();
+              break;
+            case ":":
+              evalAndPrintExpression(cmdArgs);
+              break;
             case ";":
             case "p":
               printFile();
@@ -241,7 +280,7 @@ var command = {
 
           if (
             cmd != "i" && cmd != "u" &&
-            cmd != "h" && cmd != "p" && cmd != "?" && cmd != "!"
+            cmd != "h" && cmd != "p" && cmd != "?" && cmd != "!" && cmd != ":"
           ) {
             lastCommand = cmd;
           }

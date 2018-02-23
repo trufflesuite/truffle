@@ -23,6 +23,7 @@
     "node-dir": "0.1.16",
     "node-ipc": "^9.1.1",
     "original-require": "^1.0.0",
+    "safe-eval": "^0.3.0",
     "serve-static": "^1.10.0",
     "source-map-support": "^0.5.3",
     "spawn-args": "^0.1.0",
