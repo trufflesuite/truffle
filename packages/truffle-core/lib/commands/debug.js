@@ -12,6 +12,7 @@ var command = {
     var debugModule = require("debug");
     var debug = debugModule("lib:commands:debug");
     var safeEval = require('safe-eval')
+    var util = require("util");
     var _ = require("lodash");
 
     var Config = require("truffle-config");
@@ -160,6 +161,30 @@ var command = {
           });
         };
 
+        // TODO make this more robust for all cases and move to
+        // truffle-debug-utils
+        function formatValue(value, indent) {
+          if (!indent) {
+            indent = 0;
+          }
+
+          return util
+            .inspect(value, {
+              colors: true,
+              depth: null,
+              breakLength: 30
+            })
+            .split(/\r?\n/g)
+            .map(function (line, i) {
+              // don't indent first line
+              var padding = i > 0 ?
+                Array(indent).join(" ") :
+                "";
+              return padding + line;
+            })
+            .join(OS.EOL);
+        }
+
         function printVariables() {
           var variables = session.view(data.identifiers.native.current);
 
@@ -168,25 +193,34 @@ var command = {
             return name.length
           })));
 
+          config.logger.log();
+
           Object.keys(variables).forEach(function(name) {
             var paddedName = name + ":";
 
             while (paddedName.length <= longestNameLength) {
-              paddedName += " ";
+              paddedName = " " + paddedName;
             }
 
-            config.logger.log(paddedName, variables[name]);
+            var value = variables[name];
+            var formatted = formatValue(value, longestNameLength + 5);
+
+            config.logger.log("  " + paddedName, formatted);
           });
+
+          config.logger.log();
         }
 
         function evalAndPrintExpression(expr) {
           var context = session.view(data.identifiers.native.current);
           try {
             var result = safeEval(expr, context);
-            config.logger.log(result);
+            var formatted = formatValue(result);
+            config.logger.log(formatted);
+            config.logger.log();
           } catch (e) {
             // HACK: safeEval edits the expression to capture the result, which
-            // produces really weird output when there are errors. e.g., 
+            // produces really weird output when there are errors. e.g.,
             //
             //   evalmachine.<anonymous>:1
             //   SAFE_EVAL_857712=a
@@ -224,7 +258,7 @@ var command = {
             return;
           }
 
-          // No breakpoint? Add it. 
+          // No breakpoint? Add it.
           breakpoints.push({
             call: currentCall,
             line: currentLine
@@ -268,7 +302,7 @@ var command = {
             case ";":
               session.advance();
               break;
-            case "c": 
+            case "c":
               session.continueUntil.apply(session, breakpoints);
               break;
             case "q":
@@ -302,7 +336,7 @@ var command = {
             case ":":
               evalAndPrintExpression(cmdArgs);
               break;
-            case "b": 
+            case "b":
               toggleBreakpoint();
               break;
             case ";":
