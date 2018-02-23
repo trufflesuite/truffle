@@ -37,3 +37,10 @@ export function interrupt () {
 }
 
 
+export const CONTINUE_UNTIL = "CONTINUE_UNTIL";
+export function continueUntil(...breakpoints) {
+  return {
+    type: CONTINUE_UNTIL,
+    breakpoints
+  };
+}

@@ -25,8 +25,7 @@ contract SingleCall {
 `;
 
 
-const __NESTED_CALL = `
-pragma solidity ^0.4.18;
+const __NESTED_CALL = `pragma solidity ^0.4.18;
 
 contract NestedCall {
   event First();
@@ -85,6 +84,37 @@ describe("Solidity Debugging", function() {
     let prepared = await prepareContracts(provider, sources)
     abstractions = prepared.abstractions;
     artifacts = prepared.artifacts;
+  });
+
+  it("exposes functionality to stop at breakpoints", async function() {
+    // prepare
+    let instance = await abstractions.NestedCall.deployed();
+    let receipt = await instance.run();
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      contracts: artifacts
+    });
+
+    let session = bugger.connect();
+
+    // at `second();`
+    let breakpoint = { "address": instance.address, line: 16 }
+    let breakpointStopped = false;
+
+    do {
+      session.continueUntil(breakpoint);
+
+      if (!session.finished) {
+        let range = await session.view(solidity.next.sourceRange);
+        assert.equal(range.lines.start.line, 16);
+
+        breakpointStopped = true;
+      }
+
+    } while(!session.finished);
+
   });
 
   describe("Function Depth", function() {

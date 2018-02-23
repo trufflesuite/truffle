@@ -17,7 +17,8 @@ const controlSagas = {
   [actions.STEP_NEXT]: stepNext,
   [actions.STEP_OVER]: stepOver,
   [actions.STEP_INTO]: stepInto,
-  [actions.STEP_OUT]: stepOut
+  [actions.STEP_OUT]: stepOut,
+  [actions.CONTINUE_UNTIL]: continueUntil
 };
 
 export default function* saga() {
@@ -30,7 +31,7 @@ export default function* saga() {
     yield put(actions.beginStep(action.type));
 
     yield race({
-      exec: call(saga),
+      exec: call(saga, action),
       interrupt: take(actions.INTERRUPT)
     });
   }
@@ -179,4 +180,30 @@ function* stepOver () {
     (currentDepth > startingDepth ||
       nextRange.lines.start.line == startingRange.lines.start.line)
   )
+}
+
+/**
+ * continueUntil - step through execution until a breakpoint
+ *
+ * @param breakpoints - array of breakpoints ({ ...call, line })
+ */
+function *continueUntil ({breakpoints}) {
+  let call = yield select(evm.current.call);
+  let range = yield select(solidity.next.sourceRange);
+  let breakpointHit = false;
+
+  do {
+    yield* stepNext();
+
+    call = yield select(evm.current.call);
+    range = yield select(solidity.next.sourceRange);
+
+    breakpointHit = breakpoints
+      .filter( ({address, binary, line}) =>
+        (address == call.address || binary == call.binary) &&
+        line == range.lines.start.line
+      )
+      .length > 0;
+
+  } while (!breakpointHit);
 }

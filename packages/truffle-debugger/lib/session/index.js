@@ -93,4 +93,8 @@ export default class Session {
   stepOut() {
     return this.dispatch(controller.stepOut());
   }
+
+  continueUntil(...breakpoints) {
+    return this.dispatch(controller.continueUntil(...breakpoints));
+  }
 }
