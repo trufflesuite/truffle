@@ -12,6 +12,7 @@ var command = {
     var debugModule = require("debug");
     var debug = debugModule("lib:commands:debug");
     var safeEval = require('safe-eval')
+    var _ = require("lodash");
 
     var Config = require("truffle-config");
     var Debugger = require("truffle-debugger");
@@ -25,6 +26,7 @@ var command = {
     var context = selectors.context;
     var trace = selectors.trace;
     var solidity = selectors.solidity;
+    var evm = selectors.evm;
 
     var config = Config.detect(options);
 
@@ -42,6 +44,7 @@ var command = {
 
       var lastCommand = "n";
       var enabledSelectors = new Set();
+      var breakpoints = [];
 
       config.logger.log(DebugUtils.formatStartMessage());
 
@@ -199,6 +202,37 @@ var command = {
           }
         }
 
+        function toggleBreakpoint() {
+          var currentCall = session.view(evm.current.call);
+          var currentLine = session.view(solidity.next.sourceRange).lines.start.line;
+
+          // Try to find the breakpoint in the list
+          var found = false;
+          for (var index = 0; index < breakpoints.length; index++) {
+            var breakpoint = breakpoints[index];
+
+            if (_.isEqual(currentCall, breakpoint.call) && currentLine == breakpoint.line) {
+              found = true;
+              // Remove the breakpoint
+              breakpoints.splice(index, 1);
+              break;
+            }
+          }
+
+          if (found) {
+            config.logger.log("Breakpoint removed.");
+            return;
+          }
+
+          // No breakpoint? Add it. 
+          breakpoints.push({
+            call: currentCall,
+            line: currentLine
+          });
+
+          config.logger.log("Breakpoint added.");
+        }
+
         function interpreter(cmd, replContext, filename, callback) {
           cmd = cmd.trim();
           var cmdArgs;
@@ -234,6 +268,9 @@ var command = {
             case ";":
               session.advance();
               break;
+            case "c": 
+              session.continueUntil.apply(session, breakpoints);
+              break;
             case "q":
               return repl.stop(callback);
           }
@@ -265,6 +302,9 @@ var command = {
             case ":":
               evalAndPrintExpression(cmdArgs);
               break;
+            case "b": 
+              toggleBreakpoint();
+              break;
             case ";":
             case "p":
               printFile();
@@ -276,6 +316,7 @@ var command = {
             case "i":
             case "u":
             case "n":
+            case "c":
               if(!session.view(context.current).source) {
                 printInstruction();
               }
@@ -289,7 +330,7 @@ var command = {
           }
 
           if (
-            cmd != "i" && cmd != "u" &&
+            cmd != "i" && cmd != "u" && cmd != "b" && cmd != "v" &&
             cmd != "h" && cmd != "p" && cmd != "?" && cmd != "!" && cmd != ":"
           ) {
             lastCommand = cmd;
