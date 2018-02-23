@@ -12,6 +12,8 @@ var commandReference = {
   ";": "step instruction",
   "p": "print instruction",
   "h": "print this help",
+  "v": "print variables and values",
+  ":": "evaluate expression - see `v`",
   "q": "quit"
 };
 
@@ -111,7 +113,8 @@ var DebugUtils = {
 
     var commandSections = [
       ["o", "i", "u", "n"],
-      [";", "p", "h", "q"]
+      [";", "p", "h", "q"],
+      ["v", ":"]
     ].map(function (shortcuts) {
       return shortcuts
         .map(DebugUtils.formatCommandDescription)
