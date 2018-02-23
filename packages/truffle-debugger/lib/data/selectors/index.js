@@ -20,7 +20,7 @@ function cleanBigNumbers(value) {
   } else if (value && value.map != undefined) {
     return value.map( (inner) => cleanBigNumbers(inner) );
 
-  } else if (typeof value == "object") {
+  } else if (value && typeof value == "object") {
     return Object.assign(
       {}, ...Object.entries(value)
         .map( ([key, inner]) => ({ [key]: cleanBigNumbers(inner) }) )
@@ -43,7 +43,7 @@ const data = createSelectorTree({
     tables: {
 
       /**
-       * data.scopes.table.current
+       * data.scopes.tables.current
        *
        * scopes map for current context
        */
@@ -54,7 +54,30 @@ const data = createSelectorTree({
           let index = address ? indexBy.address[address] : indexBy.binary[binary];
           return data[index];
         }
-      )
+      ),
+
+      inlined: {
+        /**
+         * data.scopes.tables.inlined.current
+         *
+         * current scope table with inlined AST nodes
+         */
+        current: createLeaf(
+          ["/scopes/tables/current", ast.current.tree],
+
+          (table, tree) => Object.assign(
+            {}, ...Object.entries(table).map(
+              ([id, entry]) => ({
+                [id]: {
+                  ...entry,
+
+                  definition: jsonpointer.get(tree, entry.pointer)
+                }
+              })
+            )
+          )
+        )
+      }
     },
 
     /**
