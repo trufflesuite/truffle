@@ -62,6 +62,44 @@ export function decodeMemoryReference(definition, pointer, state, ...args) {
       );
       return decodeValue(definition, bytes, state, ...args);
 
+    case "struct":
+      let [refs] = args;
+      let structDefinition = refs[definition.typeName.referencedDeclaration];
+      debug("structDefinition %O", structDefinition);
+      let structVariables = structDefinition.variables || [];
+
+      return Object.assign(
+        {}, ...structVariables
+          .map(
+            ({name, id}, i) => {
+              let memberDefinition = refs[id].definition;
+              let memberPointer = memory.read(state.memory, pointer + i * WORD_SIZE);
+
+              // HACK
+              memberDefinition = {
+                ...memberDefinition,
+
+                typeDescriptions: {
+                  ...memberDefinition.typeDescriptions,
+
+                  typeIdentifier:
+                    memberDefinition.typeDescriptions.typeIdentifier
+                      .replace(/_storage_/g, "_memory_")
+                }
+              };
+
+              debug("name %s %O", name, memberDefinition);
+
+              return {
+                [name]: decode(
+                  memberDefinition, memberPointer, state, ...args
+                )
+              };
+            }
+          )
+      );
+
+
     default:
       debug("Unknown memory reference type: %s", utils.typeIdentifier(definition));
       return null;

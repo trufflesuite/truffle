@@ -139,23 +139,23 @@ const data = createSelectorTree({
     /**
      * data.identifiers.current
      *
-     * map of current identifiers to declaration AST node id
+     * map of current identifiers to precise value
      */
     current: createLeaf(
       [
-        "/scopes/tables/current",
+        "/scopes/tables/inlined/current",
         "/scopes/current/id",
-        ast.current.tree,
         "/current"
       ],
 
-      (list, id, tree, state) => {
+      (refs, id, state) => {
         let cur = id;
         let variables = {};
 
+
         const format = (v) => {
           let {stack, memory, storage} = state;
-          let definition = jsonpointer.get(tree, v.pointer);
+          let definition = v.definition;
           var rawValue;
 
           debug("v.ref: %o", v.ref);
@@ -173,19 +173,19 @@ const data = createSelectorTree({
           }
 
           if (rawValue != undefined) {
-            return decode(definition, rawValue, state, list);
+            return decode(definition, rawValue, state, refs);
           }
         };
 
         do {
           variables = Object.assign(
             variables,
-            ...(list[cur].variables || [])
+            ...(refs[cur].variables || [])
               .filter( (v) => variables[v.name] == undefined )
-              .map( (v) => ({ [v.name]: format(list[v.id]) }) )
+              .map( (v) => ({ [v.name]: format(refs[v.id]) }) )
           );
 
-          cur = list[cur].parentId;
+          cur = refs[cur].parentId;
         } while (cur != null);
 
         return variables;
