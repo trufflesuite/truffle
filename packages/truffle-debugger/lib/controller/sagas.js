@@ -56,7 +56,8 @@ function* advance() {
  */
 function* stepNext () {
   const startingRange = yield select(solidity.next.sourceRange);
-  var nextRange;
+
+  var nextRange, nextNode;
 
   do {
     // advance at least once step
@@ -64,9 +65,13 @@ function* stepNext () {
 
     // and check the next source range
     nextRange = yield select(solidity.next.sourceRange);
+    nextNode = yield select(ast.next.node);
 
     // if the next step's source range is still the same, keep going
   } while (
+    // HACK - just skip over ContractDefinition nodes
+    nextNode.nodeType == "ContractDefinition" ||
+
     nextRange.start == startingRange.start &&
     nextRange.length == startingRange.length
   );
