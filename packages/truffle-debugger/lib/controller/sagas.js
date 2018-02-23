@@ -110,7 +110,7 @@ function* stepInto () {
 
   } while (
     // the function stack has not increased,
-    currentDepth <= initialDepth &&
+    currentDepth <= startingDepth &&
 
     // the next source range begins on or after the starting range
     nextRange.start >= startingRange.start &&
