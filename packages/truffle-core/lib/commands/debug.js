@@ -20,6 +20,7 @@ var command = {
     var selectors = require("truffle-debugger").selectors;
 
     // Debugger Session properties
+    var data = selectors.data;
     var context = selectors.context;
     var trace = selectors.trace;
     var solidity = selectors.solidity;
