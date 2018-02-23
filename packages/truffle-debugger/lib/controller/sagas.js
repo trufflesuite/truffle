@@ -147,7 +147,7 @@ function* stepOut () {
 
     currentDepth = yield select(solidity.current.functionDepth);
 
-  } while(currentDepth <= startingDepth);
+  } while(currentDepth >= startingDepth);
 }
 
 /**
