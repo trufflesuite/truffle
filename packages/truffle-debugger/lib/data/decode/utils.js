@@ -29,6 +29,27 @@ export function referenceType(definition) {
   return typeIdentifier(definition).match(/_([^_]+)_ptr$/)[1];
 }
 
+export function baseDefinition(definition) {
+  let baseIdentifier = typeIdentifier(definition)
+    // first dollar sign     last dollar sign
+    //   `---------.       ,---'
+    .match(/^[^$]+\$_(.+)_\$[^$]+$/)[1]
+    //              `----' greedy match
+
+  // HACK - internal types for memory or storage also seem to be pointers
+  if (baseIdentifier.match(/_(memory|storage)$/) != null) {
+    baseIdentifier = `${baseIdentifier}_ptr`;
+  }
+
+  // another HACK - we get away with it becausewe're only using that one property
+  return {
+    typeDescriptions: {
+      typeIdentifier: baseIdentifier
+    }
+  };
+}
+
+
 export function toBigNumber(bytes) {
   if (bytes == undefined) {
     return undefined;

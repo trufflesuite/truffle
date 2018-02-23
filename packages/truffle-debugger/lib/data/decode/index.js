@@ -26,8 +26,11 @@ export function decodeValue(definition, bytes, ...args) {
       return String.fromCharCode.apply(null, bytes);
 
     case "array":
+      debug("type %s", utils.typeIdentifier(definition));
       return memory.chunk(bytes, WORD_SIZE)
-        .map( (chunk) => decode(definition.typeName.baseType, chunk) );
+        .map(
+          (chunk) => decode(utils.baseDefinition(definition), chunk, ...args)
+        );
       return null;
 
     default:
@@ -36,37 +39,47 @@ export function decodeValue(definition, bytes, ...args) {
   }
 }
 
-export function decodeMemoryReference(definition, pointer, state) {
+export function decodeMemoryReference(definition, pointer, state, ...args) {
   pointer = utils.toBigNumber(pointer).toNumber();
 
+  let rawValue = utils.toBigNumber(
+    memory.read(state.memory, pointer) || 0x0
+  ).toNumber();
+
+  var bytes;
   switch (utils.typeClass(definition)) {
+
     case "string":
-      return decodeValue(definition, memory.readBytes(state.memory, pointer));
+      bytes = memory.readBytes(
+        state.memory, pointer + WORD_SIZE, rawValue /* string length */
+      );
+      return decodeValue(definition, bytes, state, ...args);
 
     case "array":
-      let length = utils.toBigNumber(
-        memory.read(state.memory, pointer) || [0x0]
-      ).toNumber();
-      debug("array length: %o", length);
-
-      debug("array definition: %o", definition);
-
-      let arrayBytes = memory.readBytes(
-        state.memory, pointer + WORD_SIZE, length * WORD_SIZE
+      debug("memory array pointer %s", );
+      bytes = memory.readBytes(
+        state.memory, pointer + WORD_SIZE, rawValue * WORD_SIZE /* array length */
       );
-
-      return memory.chunk(arrayBytes, WORD_SIZE)
-        .map( (bytes) => decodeValue(definition.typeName.baseType, bytes) );
+      return decodeValue(definition, bytes, state, ...args);
 
     default:
-      debug("Unknown reference type: %s", utils.typeIdentifier(definition));
+      debug("Unknown memory reference type: %s", utils.typeIdentifier(definition));
       return null;
 
   }
 
 }
 
-export function decodeStorageReference(definition, pointer, state) {
+export function decodeStorageReference(definition, pointer, state, ...args) {
+  switch (utils.typeClass(definition)) {
+    case "array":
+      debug("storage array!");
+      return null;
+
+    default:
+      debug("Unknown storage reference type: %s", utils.typeIdentifier(definition));
+      return null;
+  }
 }
 
 
