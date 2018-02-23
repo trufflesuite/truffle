@@ -13,6 +13,24 @@ import * as decodeUtils from "../decode/utils";
 
 import { BigNumber } from "bignumber.js";
 
+function cleanBigNumbers(value) {
+  if (BigNumber.isBigNumber(value)) {
+    return value.toNumber();
+
+  } else if (value && value.map != undefined) {
+    return value.map( (inner) => cleanBigNumbers(inner) );
+
+  } else if (typeof value == "object") {
+    return Object.assign(
+      {}, ...Object.entries(value)
+        .map( ([key, inner]) => ({ [key]: cleanBigNumbers(inner) }) )
+    );
+
+  } else {
+    return value;
+  }
+}
+
 const data = createSelectorTree({
   /**
    * data.scopes
@@ -149,7 +167,16 @@ const data = createSelectorTree({
 
         return variables;
       }
-    )
+    ),
+
+    /**
+     * data.identifiers.native.current
+     *
+     * stripped of bignumbers
+     */
+    native: {
+      current: createLeaf(['/identifiers/current'], cleanBigNumbers)
+    }
   }
 });
 
