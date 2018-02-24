@@ -4,6 +4,7 @@ const debug = debugModule("debugger:data:decode");
 import {BigNumber} from "bignumber.js";
 
 import * as memory from "./memory";
+import * as storage from "./storage";
 import * as utils from "./utils";
 import { WORD_SIZE } from "./utils";
 
@@ -112,45 +113,31 @@ export function decodeStorageReference(definition, pointer, state, ...args) {
   var bytes;
   var length;
   var local; // whether the data lives in the pointer word or not
-  let {storage} = state;
 
   switch (utils.typeClass(definition)) {
     case "array":
       debug("storage array!");
-      return null;
+      return undefined;
 
     case "string":
       debug("storage string! %o", pointer);
 
-      let key = utils.toHexString(pointer, 0x20);
-      let data = storage[key];
+      let data = storage.read(state.storage, pointer);
       if (!data) {
         return null;
       }
 
+      var slot;
       if (data[WORD_SIZE - 1] % 2 == 0) {
         // string lives in word, length is last byte / 2
         length = data[WORD_SIZE - 1] / 2;
+        slot = pointer;
       } else {
         length = utils.toBigNumber(data).minus(1).div(2).toNumber();
-        debug("length %o", length);
-        let start = utils.toBigNumber(
-          utils.keccak256(utils.toBigNumber(pointer).toNumber())
-        );
-        debug("start %o", utils.toHexString(start));
-        var slot;
-
-        data = new Uint8Array(length + WORD_SIZE);  // HACK allocate excess
-        for (let i = 0; i < length / WORD_SIZE; i++) {
-          slot = utils.toHexString(start.plus(i), WORD_SIZE);
-          debug("value: %o", storage[slot]);
-          data.set(storage[slot], i * WORD_SIZE);
-        }
+        slot = [pointer];
       }
 
-      debug("data %o", data);
-
-      bytes = memory.readBytes(data, 0, length);
+      bytes = storage.readBytes(state.storage, slot, length);
       return decodeValue(definition, bytes, state, ...args);
 
     default:

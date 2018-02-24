@@ -55,7 +55,7 @@ export function toBigNumber(bytes) {
     return undefined;
   } else if (typeof bytes == "string") {
     return new BigNumber(bytes, 16);
-  } else if (typeof bytes == "number") {
+  } else if (typeof bytes == "number" || BigNumber.isBigNumber(bytes)) {
     return new BigNumber(bytes);
   } else if (bytes.reduce) {
     return bytes.reduce(
@@ -144,7 +144,7 @@ export function keccak256(...args) {
   let web3 = new Web3();
 
   args = args.map( (arg) => {
-    if (typeof arg == "number") {
+    if (typeof arg == "number" || BigNumber.isBigNumber(arg)) {
       return toHexString(toBytes(arg, WORD_SIZE)).slice(2)
     } else if (typeof arg == "string") {
       return web3.toHex(arg).slice(2);
@@ -153,5 +153,6 @@ export function keccak256(...args) {
     }
   });
 
-  return web3.sha3(args.join(''), { encoding: 'hex' });
+  let sha = web3.sha3(args.join(''), { encoding: 'hex' });
+  return toBigNumber(sha);
 }
