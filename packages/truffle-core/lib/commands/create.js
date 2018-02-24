@@ -35,7 +35,7 @@ var command = {
     }
 
     if (!/^[a-zA-Z_$][a-zA-Z_$0-9]*$/.test(name)) {
-      return done(new ConfigurationError("The name " + name + " is invalid. Please enter a valid name to create."));
+      return done(new ConfigurationError("The name " + name + " is invalid. Please enter a valid name using alpha-numeric characters."));
     }
 
     var fn = create[type];
