@@ -128,7 +128,7 @@ describe("Different networks:", function() {
   })
 
   it("has no network if none set", function() {
-    AnotherExample = contract({
+    var AnotherExample = contract({
       contractName: "AnotherExample",
       abi: abi,
       binary: binary

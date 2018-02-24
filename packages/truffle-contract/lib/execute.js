@@ -197,7 +197,7 @@ var execute = {
 
     var contract = new self.web3.eth.Contract(self.abi);
     params.data = contract.deploy(options).encodeABI();
-    result = self.web3.eth.sendTransaction(params);
+    var result = self.web3.eth.sendTransaction(params);
     execute._setUpHandlers(result, context);
 
     // Errors triggered by web3 are rejected at the `error` listener. Status

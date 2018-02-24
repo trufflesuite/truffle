@@ -4,7 +4,7 @@
   "description": "A better contract abstraction for Ethereum (formerly EtherPudding)",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --no-warnings",
+    "test": "mocha --no-warnings --compilers js:babel-core/register --require babel-polyfill test",
     "test:debug": "$(npm bin)/mocha --inspect-brk",
     "test:trace": "$(npm bin)/mocha --trace-warnings",
     "compile": "browserify ./index.js -i web3 -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js"
@@ -34,6 +34,9 @@
   },
   "devDependencies": {
     "async": "^2.3.0",
+    "babel-core": "^6.26.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
     "bignumber.js": "^6.0.0",
     "browserify": "^14.0.0",
     "chai": "^3.5.0",
@@ -46,5 +49,10 @@
     "temp": "^0.8.3",
     "uglify": "^0.1.5",
     "uglify-js": "^2.7.5"
+  },
+  "babel": {
+    "presets": [
+      "env"
+    ]
   }
 }
