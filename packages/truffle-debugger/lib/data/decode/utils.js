@@ -22,11 +22,11 @@ export function typeClass(definition) {
 }
 
 export function isReference(definition) {
-  return typeIdentifier(definition).match(/_ptr$/) != null;
+  return typeIdentifier(definition).match(/_(memory|storage)(_ptr)?$/) != null;
 }
 
 export function referenceType(definition) {
-  return typeIdentifier(definition).match(/_([^_]+)_ptr$/)[1];
+  return typeIdentifier(definition).match(/_([^_]+)(_ptr)?$/)[1];
 }
 
 export function baseDefinition(definition) {
@@ -84,6 +84,10 @@ export function toHexString(bytes, length = 0, trim = false) {
     length = 0;
   }
 
+  if (BigNumber.isBigNumber(bytes)) {
+    bytes = toBytes(bytes);
+  }
+
   const pad = (s) => `${"00".slice(0, 2 - s.length)}${s}`
 
   //                                          0  1  2  3  4
@@ -96,10 +100,10 @@ export function toHexString(bytes, length = 0, trim = false) {
     let prior = bytes;
     bytes = new Uint8Array(length);
 
-    bytes.set(prior.buffer, length - bytes.length);
+    bytes.set(prior, length - prior.length);
   }
 
-  debug("bytes: %o");
+  debug("bytes: %o", bytes);
 
   let string = bytes.reduce(
     (str, byte) => `${str}${pad(byte.toString(16))}`, ""
@@ -130,7 +134,7 @@ export function toBytes(number, length = 0) {
   if (bytes.length < length) {
     let prior = bytes;
     bytes = new Uint8Array(length);
-    bytes.set(prior, length - bytes.length);
+    bytes.set(prior, length - prior.length);
   }
 
   return bytes;

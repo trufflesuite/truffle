@@ -109,14 +109,53 @@ export function decodeMemoryReference(definition, pointer, state, ...args) {
 }
 
 export function decodeStorageReference(definition, pointer, state, ...args) {
+  var bytes;
+  var length;
+  var local; // whether the data lives in the pointer word or not
+  let {storage} = state;
+
   switch (utils.typeClass(definition)) {
     case "array":
       debug("storage array!");
       return null;
 
+    case "string":
+      debug("storage string! %o", pointer);
+
+      let key = utils.toHexString(pointer, 0x20);
+      let data = storage[key];
+      if (!data) {
+        return null;
+      }
+
+      if (data[WORD_SIZE - 1] % 2 == 0) {
+        // string lives in word, length is last byte / 2
+        length = data[WORD_SIZE - 1] / 2;
+      } else {
+        length = utils.toBigNumber(data).minus(1).div(2).toNumber();
+        debug("length %o", length);
+        let start = utils.toBigNumber(
+          utils.keccak256(utils.toBigNumber(pointer).toNumber())
+        );
+        debug("start %o", utils.toHexString(start));
+        var slot;
+
+        data = new Uint8Array(length + WORD_SIZE);  // HACK allocate excess
+        for (let i = 0; i < length / WORD_SIZE; i++) {
+          slot = utils.toHexString(start.plus(i), WORD_SIZE);
+          debug("value: %o", storage[slot]);
+          data.set(storage[slot], i * WORD_SIZE);
+        }
+      }
+
+      debug("data %o", data);
+
+      bytes = memory.readBytes(data, 0, length);
+      return decodeValue(definition, bytes, state, ...args);
+
     default:
       debug("Unknown storage reference type: %s", utils.typeIdentifier(definition));
-      return null;
+      return undefined;
   }
 }
 
@@ -134,7 +173,7 @@ export default function decode(definition, ...args) {
       return decodeStorageReference(definition, ...args);
     default:
       debug("Unknown reference category: %s", utils.typeIdentifier(definition));
-      return null;
+      return undefined;
   }
 }
 

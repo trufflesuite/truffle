@@ -166,10 +166,8 @@ const data = createSelectorTree({
           if (v.ref.stack != undefined && stack && v.ref.stack < stack.length) {
             rawValue = stack[v.ref.stack];
           } else if (v.ref.storage != undefined) {
-            let key = decodeUtils.toHexString(
-              decodeUtils.toBytes(v.ref.storage), 0x20
-            );
-            rawValue = storage[key];
+            debug("definition: %o", definition);
+            rawValue = decodeUtils.toBytes(v.ref.storage);
           }
 
           if (rawValue != undefined) {
