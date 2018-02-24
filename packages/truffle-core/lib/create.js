@@ -62,7 +62,7 @@ var Create = {
     var to = path.join(directory, name + ".sol");
 
     if (!options.force && fs.existsSync(to)) {
-      console.error('Can not create ' + name + '.sol: file exists');
+      return callback(new Error('Can not create ' + name + '.sol: file exists'));
     }
 
     copy.file(from, to, function(err) {
@@ -83,7 +83,7 @@ var Create = {
     var to = path.join(directory, underscored + ".js");
 
     if (!options.force && fs.existsSync(to)) {
-      console.error('Can not create ' + underscored + '.js: file exists');
+      return callback(new Error('Can not create ' + underscored + '.js: file exists'));
     }
 
     copy.file(from, to, function(err) {
@@ -113,7 +113,7 @@ var Create = {
     var to = path.join(directory, filename);
 
     if (!options.force && fs.existsSync(to)) {
-      console.error('Can not create ' + filename + ': file exists');
+      return callback(new Error('Can not create ' + filename + ': file exists'));
     }
 
     copy.file(from, to, callback);
