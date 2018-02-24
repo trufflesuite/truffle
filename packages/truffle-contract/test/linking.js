@@ -80,6 +80,7 @@ describe("Library linking with contract objects", function() {
   var exampleConsumer;
   var accounts;
   var web3;
+  var network_id;
   var provider = TestRPC.provider({logger: log});
   var web3 = new Web3();
   web3.setProvider(provider)

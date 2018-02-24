@@ -22,6 +22,8 @@ var log = {
 describe("Cloning", function() {
   var network_one_id;
   var network_two_id;
+  var network_one;
+  var network_two;
   var ExampleOne;
   var ExampleTwo;
 
