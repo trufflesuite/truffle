@@ -34,6 +34,10 @@ var command = {
       return done(new ConfigurationError("Please specify the name of item to create. Example: truffle create contract MyContract"));
     }
 
+    if (!/^[a-zA-Z_$][a-zA-Z_$0-9]*$/.test(name)) {
+      return done(new ConfigurationError("The name " + name + " is invalid. Please enter a valid name using alpha-numeric characters."));
+    }
+
     var fn = create[type];
 
     if (fn == null) return done(new ConfigurationError("Cannot find creation type: " + type));
