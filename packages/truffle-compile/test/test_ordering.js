@@ -13,15 +13,17 @@ describe("Compile", function() {
   describe("ABI Ordering", function(){
     before("get code", function() {
       orderedSource = fs.readFileSync(path.join(__dirname, "Ordered.sol"), "utf-8");
+      inheritedSource = fs.readFileSync(path.join(__dirname, "InheritB.sol"), "utf-8");
     });
 
     // Ordered.sol's methods are ordered semantically.
     // solc alphabetizes methods within a file (but interpolates imported methods).
     it("ABI should be out of source order when solc compiles it", function(){
-      var alphabetic = ['andThird', 'second', 'theFirst'];
+      var alphabetic = ['andThird', 'second', 'theFirst', 'LogB', 'LogA', 'LogD', 'LogC'];
       var input = {
         language: "Solidity",
-        sources: { "Ordered.sol": { content: orderedSource } },
+        sources: { "Ordered.sol": { content: orderedSource },
+                   "InheritB.sol": { content: inheritedSource },},
         settings: { outputSelection: { "*": { "*": ["abi"] } } }
       };
 
@@ -34,9 +36,10 @@ describe("Compile", function() {
     });
 
     it("orders the ABI", function(){
-      var expectedOrder = ['theFirst', 'second', 'andThird'];
+      var expectedOrder = ['theFirst', 'second', 'andThird', 'LogB', 'LogA', 'LogD', 'LogC'];
       var sources = {};
       sources["Ordered.sol"] = orderedSource;
+      sources["InheritB.sol"] = inheritedSource;
 
       Compile(sources, compileOptions, function(err, result){
         var abi = result["Ordered"].abi.map(function(item){
@@ -50,6 +53,7 @@ describe("Compile", function() {
     it("orders the ABI of a contract without functions", function(){
       var sources = {};
       sources["Ordered.sol"] = orderedSource;
+      sources["InheritB.sol"] = inheritedSource;
 
       Compile(sources, compileOptions, function(err, result){
         assert.equal(result["Empty"].abi.length, 0);
