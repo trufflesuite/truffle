@@ -1,7 +1,7 @@
 {
   "name": "truffle-core",
   "namespace": "consensys",
-  "version": "4.0.6",
+  "version": "4.0.7",
   "description": "Core code for Truffle command line tool",
   "dependencies": {
     "async": "^1.4.2",
@@ -27,23 +27,23 @@
     "source-map-support": "^0.5.3",
     "spawn-args": "^0.1.0",
     "temp": "^0.8.3",
-    "truffle-artifactor": "^3.0.3",
-    "truffle-box": "^1.0.4",
-    "truffle-compile": "^3.0.5",
+    "truffle-artifactor": "^3.0.4",
+    "truffle-box": "^1.0.5",
+    "truffle-compile": "^3.0.6",
     "truffle-config": "^1.0.4",
-    "truffle-contract": "^3.0.3",
+    "truffle-contract": "^3.0.4",
     "truffle-contract-sources": "^0.0.1",
     "truffle-debug-utils": "^1.0.0",
     "truffle-debugger": "^1.1.0",
-    "truffle-deployer": "^2.0.2",
+    "truffle-deployer": "^2.0.3",
     "truffle-error": "^0.0.2",
     "truffle-expect": "^0.0.3",
     "truffle-init": "^1.0.7",
-    "truffle-migrate": "^2.0.1",
+    "truffle-migrate": "^2.0.2",
     "truffle-provider": "^0.0.4",
     "truffle-provisioner": "^0.1.0",
     "truffle-require": "^1.0.5",
-    "truffle-resolver": "^4.0.1",
+    "truffle-resolver": "^4.0.2",
     "truffle-solidity-utils": "^1.1.1",
     "truffle-workflow-compile": "^1.0.0",
     "web3": "^0.20.1",
@@ -74,6 +74,6 @@
   ],
   "devDependencies": {
     "ipfsd-ctl": "^0.21.0",
-    "truffle-blockchain-utils": "^0.0.3"
+    "truffle-blockchain-utils": "^0.0.4"
   }
 }
