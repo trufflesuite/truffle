@@ -110,24 +110,33 @@ export function decodeMemoryReference(definition, pointer, state, ...args) {
 }
 
 export function decodeStorageReference(definition, pointer, state, ...args) {
+  var data;
   var bytes;
   var length;
-  var local; // whether the data lives in the pointer word or not
+  var slot;
 
   switch (utils.typeClass(definition)) {
     case "array":
       debug("storage array!");
-      return undefined;
+      data = storage.read(state.storage, pointer);
 
-    case "string":
-      debug("storage string! %o", pointer);
-
-      let data = storage.read(state.storage, pointer);
       if (!data) {
         return null;
       }
 
-      var slot;
+      length = utils.toBigNumber(data);
+      slot = [pointer];
+      bytes = storage.readBytes(state.storage, slot, length * WORD_SIZE);
+      return decodeValue(definition, bytes, state, ...args);
+
+    case "string":
+      debug("storage string! %o", pointer);
+
+      data = storage.read(state.storage, pointer);
+      if (!data) {
+        return null;
+      }
+
       if (data[WORD_SIZE - 1] % 2 == 0) {
         // string lives in word, length is last byte / 2
         length = data[WORD_SIZE - 1] / 2;
