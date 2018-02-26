@@ -775,14 +775,14 @@ var contract = (function(module) {
         var transactionHash = this.network.transactionHash;
 
         if(transactionHash === null) {
-          throw new Error(`Could not find transaction hash for ${this.contractName}`);
+          throw new Error("Could not find transaction hash for " + this.contractName);
         }
 
         return transactionHash;
       },
       set: function(val) {
         if(val === null) {
-          throw new Error(`Could not set \`${val}\` as the transaction hash for ${this.contractName}`);
+          throw new Error("Could not set \`" + val + "\` as the transaction hash for " + this.contractName);
         }
         this.network.transactionHash = val;
       }
