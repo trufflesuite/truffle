@@ -19,8 +19,9 @@ import reducer from "./reducers";
  */
 export default class Session {
   /**
-   * @param {function(state: State): StateView} viewer - function to view state
-   * @param {State} initialState - initial state
+   * @param {Array<Contract>} contracts - contract definitions
+   * @param {string} txHash - transaction hash
+   * @param {Web3Provider} provider - web3 provider
    * @private
    */
   constructor(contracts, txHash, provider) {

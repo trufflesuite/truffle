@@ -16,10 +16,7 @@ const debug = debugModule("debugger");
 
 export default class Debugger {
   /**
-   * @param {Array<Contract>} contracts - contract definitions
-   * @param {Array<TraceStep>} trace - trace information
-   * @param {Array<Context>} traceContexts - address and binary for contexts addressed in trace
-   * @param {Object} call - initial call (specifies `address` or `binary`)
+   * @param {Session} session - debugger session
    * @private
    */
   constructor(session) {
@@ -52,7 +49,7 @@ export default class Debugger {
   /**
    * Connects to the instantiated Debugger.
    *
-   * @return {Session} new session instance
+   * @return {Session} session instance
    */
   connect() {
     return this._session;
@@ -69,3 +66,16 @@ export default class Debugger {
     });
   }
 }
+
+/**
+ * @typedef {Object} Contract
+ * @property {string} contractName contract name
+ * @property {string} source solidity source code
+ * @property {string} sourcePath path to source file
+ * @property {string} binary 0x-prefixed hex string with create bytecode
+ * @property {string} sourceMap solidity source map for create bytecode
+ * @property {Object} ast Abstract Syntax Tree from Solidity
+ * @property {string} deployedBinary 0x-prefixed compiled binary (on chain)
+ * @property {string} deployedSourceMap solidity source map for on-chain bytecode
+ */
+
