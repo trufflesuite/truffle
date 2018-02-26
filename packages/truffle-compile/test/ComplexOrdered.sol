@@ -10,7 +10,7 @@ contract InheritA is InheritB {
   function InheritA() public {}
 }
 
-contract Ordered is InheritA {
+contract ComplexOrdered is InheritA {
   function theFirst() public pure {}
   function second() public pure {}
   function andThird() public pure {}
