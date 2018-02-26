@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(){function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s}return e})()({1:[function(require,module,exports){
 (function (global){
 var ethJSABI = require("ethjs-abi");
 var BlockchainUtils = require("truffle-blockchain-utils");
@@ -172,7 +172,9 @@ var contract = (function(module) {
 
               var make_attempt = function() {
                 C.web3.eth.getTransactionReceipt(tx, function(err, receipt) {
-                  if (err) return reject(err);
+                  if (err && !err.toString().includes('unknown transaction')){
+                    return reject(err);
+                  }
 
                   // Reject on transaction failures, accept otherwise
                   // Handles "0x00" or hex 0
@@ -770,6 +772,23 @@ var contract = (function(module) {
         this.network.address = val;
       }
     },
+    transactionHash: {
+      get: function() {
+        var transactionHash = this.network.transactionHash;
+
+        if(transactionHash === null) {
+          throw new Error("Could not find transaction hash for " + this.contractName);
+        }
+
+        return transactionHash;
+      },
+      set: function(val) {
+        if(val === null) {
+          throw new Error("Could not set \`" + val + "\` as the transaction hash for " + this.contractName);
+        }
+        this.network.transactionHash = val;
+      }
+    },
     links: function() {
       if (!this.network_id) {
         throw new Error(this.contractName + " has no network id set, cannot lookup artifact data. Either set the network manually using " + this.contractName + ".setNetwork(), run " + this.contractName + ".detectNetwork(), or use new(), at() or deployed() as a thenable which will detect the network automatically.");
@@ -894,6 +913,14 @@ var contract = (function(module) {
         this._json.sourcePath = val;
       }
     },
+    legacyAST: {
+      get: function() {
+        return this._json.legacyAST;
+      },
+      set: function(val) {
+        this._json.legacyAST = val;
+      }
+    },
     ast: {
       get: function() {
         return this._json.ast;
@@ -948,53 +975,6 @@ var contract = function(options) {
   // Note we don't use `new` here at all. This will cause the class to
   // "mutate" instead of instantiate an instance.
   return Contract.clone(binary);
-};
-
-// To be used to upgrade old .sol.js abstractions
-contract.fromSolJS = function(soljs_abstraction, ignore_default_network) {
-  if (ignore_default_network == null) {
-    ignore_default_network = false;
-  }
-
-  // Find the latest binary
-  var latest_network = null;
-  var latest_network_updated_at = 0;
-
-  var networks = {};
-
-  Object.keys(soljs_abstraction.all_networks).forEach(function(network_name) {
-
-    if (network_name == "default") {
-      if (ignore_default_network == true ) {
-        return;
-      } else {
-        throw new Error(soljs_abstraction.contract_name + " has legacy 'default' network artifacts stored within it. Generally these artifacts were a result of running Truffle on a development environment -- in order to store contracts with truffle-contract, all networks must have an identified id. If you're sure this default network represents your development environment, you can ignore processing of the default network by passing `true` as the second argument to this function. However, if you think this network represents artifacts you'd like to keep (i.e., addresses deployed to the main network), you'll need to edit your .sol.js file yourself and change the default network id to be the id of your desired network. For most people, ignoring the default network is the correct option.");
-      }
-    }
-
-    if (soljs_abstraction.all_networks[network_name].updated_at > latest_network_updated_at) {
-      latest_network = network_name;
-      latest_network_updated_at = soljs_abstraction.all_networks[network_name].updated_at;
-    }
-
-    networks[network_name] = {};
-
-    ["address", "events", "links", "updated_at"].forEach(function(key) {
-      networks[network_name][key] = soljs_abstraction.all_networks[network_name][key];
-    })
-  });
-
-  latest_network = soljs_abstraction.all_networks[latest_network] || {};
-
-  var json = {
-    contractName: soljs_abstraction.contractName,
-    unlinked_binary: latest_network.unlinked_binary,
-    abi: latest_network.abi,
-    networks: networks,
-    updated_at: latest_network_updated_at == 0 ? undefined : latest_network_updated_at
-  };
-
-  return contract(json);
 };
 
 module.exports = contract;
@@ -6467,6 +6447,8 @@ for (var i = 0, len = code.length; i < len; ++i) {
   revLookup[code.charCodeAt(i)] = i
 }
 
+// Support decoding URL-safe base64 strings, as Node.js does.
+// See: https://en.wikipedia.org/wiki/Base64#URL_applications
 revLookup['-'.charCodeAt(0)] = 62
 revLookup['_'.charCodeAt(0)] = 63
 
@@ -6528,7 +6510,7 @@ function encodeChunk (uint8, start, end) {
   var tmp
   var output = []
   for (var i = start; i < end; i += 3) {
-    tmp = (uint8[i] << 16) + (uint8[i + 1] << 8) + (uint8[i + 2])
+    tmp = ((uint8[i] << 16) & 0xFF0000) + ((uint8[i + 1] << 8) & 0xFF00) + (uint8[i + 2] & 0xFF)
     output.push(tripletToBase64(tmp))
   }
   return output.join('')
@@ -10053,6 +10035,24 @@ function typedArraySupport () {
   }
 }
 
+Object.defineProperty(Buffer.prototype, 'parent', {
+  get: function () {
+    if (!(this instanceof Buffer)) {
+      return undefined
+    }
+    return this.buffer
+  }
+})
+
+Object.defineProperty(Buffer.prototype, 'offset', {
+  get: function () {
+    if (!(this instanceof Buffer)) {
+      return undefined
+    }
+    return this.byteOffset
+  }
+})
+
 function createBuffer (length) {
   if (length > K_MAX_LENGTH) {
     throw new RangeError('Invalid typed array length')
@@ -10104,7 +10104,7 @@ function from (value, encodingOrOffset, length) {
     throw new TypeError('"value" argument must not be a number')
   }
 
-  if (isArrayBuffer(value)) {
+  if (isArrayBuffer(value) || (value && isArrayBuffer(value.buffer))) {
     return fromArrayBuffer(value, encodingOrOffset, length)
   }
 
@@ -10134,7 +10134,7 @@ Buffer.__proto__ = Uint8Array
 
 function assertSize (size) {
   if (typeof size !== 'number') {
-    throw new TypeError('"size" argument must be a number')
+    throw new TypeError('"size" argument must be of type number')
   } else if (size < 0) {
     throw new RangeError('"size" argument must not be negative')
   }
@@ -10188,7 +10188,7 @@ function fromString (string, encoding) {
   }
 
   if (!Buffer.isEncoding(encoding)) {
-    throw new TypeError('"encoding" must be a valid string encoding')
+    throw new TypeError('Unknown encoding: ' + encoding)
   }
 
   var length = byteLength(string, encoding) | 0
@@ -10217,11 +10217,11 @@ function fromArrayLike (array) {
 
 function fromArrayBuffer (array, byteOffset, length) {
   if (byteOffset < 0 || array.byteLength < byteOffset) {
-    throw new RangeError('\'offset\' is out of bounds')
+    throw new RangeError('"offset" is outside of buffer bounds')
   }
 
   if (array.byteLength < byteOffset + (length || 0)) {
-    throw new RangeError('\'length\' is out of bounds')
+    throw new RangeError('"length" is outside of buffer bounds')
   }
 
   var buf
@@ -10252,7 +10252,7 @@ function fromObject (obj) {
   }
 
   if (obj) {
-    if (isArrayBufferView(obj) || 'length' in obj) {
+    if (ArrayBuffer.isView(obj) || 'length' in obj) {
       if (typeof obj.length !== 'number' || numberIsNaN(obj.length)) {
         return createBuffer(0)
       }
@@ -10264,7 +10264,7 @@ function fromObject (obj) {
     }
   }
 
-  throw new TypeError('First argument must be a string, Buffer, ArrayBuffer, Array, or array-like object.')
+  throw new TypeError('The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object.')
 }
 
 function checked (length) {
@@ -10351,6 +10351,9 @@ Buffer.concat = function concat (list, length) {
   var pos = 0
   for (i = 0; i < list.length; ++i) {
     var buf = list[i]
+    if (ArrayBuffer.isView(buf)) {
+      buf = Buffer.from(buf)
+    }
     if (!Buffer.isBuffer(buf)) {
       throw new TypeError('"list" argument must be an Array of Buffers')
     }
@@ -10364,7 +10367,7 @@ function byteLength (string, encoding) {
   if (Buffer.isBuffer(string)) {
     return string.length
   }
-  if (isArrayBufferView(string) || isArrayBuffer(string)) {
+  if (ArrayBuffer.isView(string) || isArrayBuffer(string)) {
     return string.byteLength
   }
   if (typeof string !== 'string') {
@@ -10531,6 +10534,8 @@ Buffer.prototype.toString = function toString () {
   if (arguments.length === 0) return utf8Slice(this, 0, length)
   return slowToString.apply(this, arguments)
 }
+
+Buffer.prototype.toLocaleString = Buffer.prototype.toString
 
 Buffer.prototype.equals = function equals (b) {
   if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
@@ -10752,9 +10757,7 @@ function hexWrite (buf, string, offset, length) {
     }
   }
 
-  // must be an even number of digits
   var strLen = string.length
-  if (strLen % 2 !== 0) throw new TypeError('Invalid hex string')
 
   if (length > strLen / 2) {
     length = strLen / 2
@@ -11447,6 +11450,7 @@ Buffer.prototype.writeDoubleBE = function writeDoubleBE (value, offset, noAssert
 
 // copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
 Buffer.prototype.copy = function copy (target, targetStart, start, end) {
+  if (!Buffer.isBuffer(target)) throw new TypeError('argument should be a Buffer')
   if (!start) start = 0
   if (!end && end !== 0) end = this.length
   if (targetStart >= target.length) targetStart = target.length
@@ -11461,7 +11465,7 @@ Buffer.prototype.copy = function copy (target, targetStart, start, end) {
   if (targetStart < 0) {
     throw new RangeError('targetStart out of bounds')
   }
-  if (start < 0 || start >= this.length) throw new RangeError('sourceStart out of bounds')
+  if (start < 0 || start >= this.length) throw new RangeError('Index out of range')
   if (end < 0) throw new RangeError('sourceEnd out of bounds')
 
   // Are we oob?
@@ -11471,22 +11475,19 @@ Buffer.prototype.copy = function copy (target, targetStart, start, end) {
   }
 
   var len = end - start
-  var i
 
-  if (this === target && start < targetStart && targetStart < end) {
+  if (this === target && typeof Uint8Array.prototype.copyWithin === 'function') {
+    // Use built-in when available, missing from IE11
+    this.copyWithin(targetStart, start, end)
+  } else if (this === target && start < targetStart && targetStart < end) {
     // descending copy from end
-    for (i = len - 1; i >= 0; --i) {
-      target[i + targetStart] = this[i + start]
-    }
-  } else if (len < 1000) {
-    // ascending copy from start
-    for (i = 0; i < len; ++i) {
+    for (var i = len - 1; i >= 0; --i) {
       target[i + targetStart] = this[i + start]
     }
   } else {
     Uint8Array.prototype.set.call(
       target,
-      this.subarray(start, start + len),
+      this.subarray(start, end),
       targetStart
     )
   }
@@ -11509,17 +11510,19 @@ Buffer.prototype.fill = function fill (val, start, end, encoding) {
       encoding = end
       end = this.length
     }
-    if (val.length === 1) {
-      var code = val.charCodeAt(0)
-      if (code < 256) {
-        val = code
-      }
-    }
     if (encoding !== undefined && typeof encoding !== 'string') {
       throw new TypeError('encoding must be a string')
     }
     if (typeof encoding === 'string' && !Buffer.isEncoding(encoding)) {
       throw new TypeError('Unknown encoding: ' + encoding)
+    }
+    if (val.length === 1) {
+      var code = val.charCodeAt(0)
+      if ((encoding === 'utf8' && code < 128) ||
+          encoding === 'latin1') {
+        // Fast path: If `val` fits into a single byte, use that numeric value.
+        val = code
+      }
     }
   } else if (typeof val === 'number') {
     val = val & 255
@@ -11549,6 +11552,10 @@ Buffer.prototype.fill = function fill (val, start, end, encoding) {
       ? val
       : new Buffer(val, encoding)
     var len = bytes.length
+    if (len === 0) {
+      throw new TypeError('The value "' + val +
+        '" is invalid for argument "value"')
+    }
     for (i = 0; i < end - start; ++i) {
       this[i + start] = bytes[i % len]
     }
@@ -11563,6 +11570,8 @@ Buffer.prototype.fill = function fill (val, start, end, encoding) {
 var INVALID_BASE64_RE = /[^+/0-9A-Za-z-_]/g
 
 function base64clean (str) {
+  // Node takes equal signs as end of the Base64 encoding
+  str = str.split('=')[0]
   // Node strips out invalid characters like \n and \t from the string, base64-js does not
   str = str.trim().replace(INVALID_BASE64_RE, '')
   // Node converts strings with length < 2 to ''
@@ -11702,11 +11711,6 @@ function isArrayBuffer (obj) {
   return obj instanceof ArrayBuffer ||
     (obj != null && obj.constructor != null && obj.constructor.name === 'ArrayBuffer' &&
       typeof obj.byteLength === 'number')
-}
-
-// Node 0.10 supports `ArrayBuffer` but lacks `ArrayBuffer.isView`
-function isArrayBufferView (obj) {
-  return (typeof ArrayBuffer.isView === 'function') && ArrayBuffer.isView(obj)
 }
 
 function numberIsNaN (obj) {
@@ -12511,41 +12515,53 @@ module.exports = {
 },{"bn.js":44,"buffer":46,"js-sha3":54,"number-to-bn":56}],50:[function(require,module,exports){
 'use strict';
 
+var isArray = Array.isArray;
+var keyList = Object.keys;
+var hasProp = Object.prototype.hasOwnProperty;
+
 module.exports = function equal(a, b) {
   if (a === b) return true;
 
-  var arrA = Array.isArray(a)
-    , arrB = Array.isArray(b)
-    , i;
+  var arrA = isArray(a)
+    , arrB = isArray(b)
+    , i
+    , length
+    , key;
 
   if (arrA && arrB) {
-    if (a.length != b.length) return false;
-    for (i = 0; i < a.length; i++)
+    length = a.length;
+    if (length != b.length) return false;
+    for (i = 0; i < length; i++)
       if (!equal(a[i], b[i])) return false;
     return true;
   }
 
   if (arrA != arrB) return false;
 
-  if (a && b && typeof a === 'object' && typeof b === 'object') {
-    var keys = Object.keys(a);
-    if (keys.length !== Object.keys(b).length) return false;
+  var dateA = a instanceof Date
+    , dateB = b instanceof Date;
+  if (dateA != dateB) return false;
+  if (dateA && dateB) return a.getTime() == b.getTime();
 
-    var dateA = a instanceof Date
-      , dateB = b instanceof Date;
-    if (dateA && dateB) return a.getTime() == b.getTime();
-    if (dateA != dateB) return false;
+  var regexpA = a instanceof RegExp
+    , regexpB = b instanceof RegExp;
+  if (regexpA != regexpB) return false;
+  if (regexpA && regexpB) return a.toString() == b.toString();
 
-    var regexpA = a instanceof RegExp
-      , regexpB = b instanceof RegExp;
-    if (regexpA && regexpB) return a.toString() == b.toString();
-    if (regexpA != regexpB) return false;
+  if (a instanceof Object && b instanceof Object) {
+    var keys = keyList(a);
+    length = keys.length;
 
-    for (i = 0; i < keys.length; i++)
-      if (!Object.prototype.hasOwnProperty.call(b, keys[i])) return false;
+    if (length !== keyList(b).length)
+      return false;
 
-    for (i = 0; i < keys.length; i++)
-      if(!equal(a[keys[i]], b[keys[i]])) return false;
+    for (i = 0; i < length; i++)
+      if (!hasProp.call(b, keys[i])) return false;
+
+    for (i = 0; i < length; i++) {
+      key = keys[i];
+      if (!equal(a[key], b[key])) return false;
+    }
 
     return true;
   }
@@ -14232,11 +14248,28 @@ module.exports = function stripHexPrefix(str) {
 }
 
 },{"is-hex-prefixed":53}],63:[function(require,module,exports){
-// TODO: remove web3 requirement
-// Call functions directly on the provider.
-var Web3 = require("web3");
-
 var Blockchain = {
+
+  getBlockByNumber: function(blockNumber, provider, callback){
+    var params = [blockNumber, true];
+    provider.sendAsync({
+      jsonrpc: '2.0',
+      method: 'eth_getBlockByNumber',
+      params: params,
+      id: Date.now(),
+    }, callback)
+  },
+
+  getBlockByHash: function(blockHash, provider, callback){
+    var params = [blockHash, true];
+    provider.sendAsync({
+      jsonrpc: '2.0',
+      method: 'eth_getBlockByHash',
+      params: params,
+      id: Date.now(),
+    }, callback)
+  },
+
   parse: function(uri) {
     var parsed = {};
     if (uri.indexOf("blockchain://") != 0) return parsed;
@@ -14252,36 +14285,38 @@ var Blockchain = {
   },
 
   asURI: function(provider, callback) {
-    var web3 = new Web3(provider);
+    var self = this;
+    var genesis;
 
-    web3.eth.getBlock(0, function(err, genesis) {
+    self.getBlockByNumber("0x0", provider, function(err, response) {
       if (err) return callback(err);
+      genesis = response.result;
 
-      web3.eth.getBlock("latest", function(err, latest) {
+      self.getBlockByNumber("latest", provider, function(err, response) {
         if (err) return callback(err);
-
+        latest = response.result;
         var url = "blockchain://" + genesis.hash.replace("0x", "") + "/block/" + latest.hash.replace("0x", "");
-
         callback(null, url);
       });
     });
   },
 
   matches: function(uri, provider, callback) {
-    uri = this.parse(uri);
+    var self = this;
+    uri = self.parse(uri);
 
     var expected_genesis = uri.genesis_hash;
     var expected_block = uri.block_hash;
 
-    var web3 = new Web3(provider);
-
-    web3.eth.getBlock(0, function(err, block) {
+    self.getBlockByNumber("0x0", provider, function(err, response) {
       if (err) return callback(err);
+      var block = response.result;
       if (block.hash != expected_genesis) return callback(null, false);
 
-      web3.eth.getBlock(expected_block, function(err, block) {
+      self.getBlockByHash(expected_block, provider, function(err, response) {
         // Treat an error as if the block didn't exist. This is because
         // some clients respond differently.
+        var block = response.result;
         if (err || block == null) {
           return callback(null, false);
         }
@@ -14294,7 +14329,7 @@ var Blockchain = {
 
 module.exports = Blockchain;
 
-},{"web3":45}],64:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 var sha3 = require("crypto-js/sha3");
 var pkgVersion = require("./package.json").version;
 var Ajv = require("ajv");
@@ -14374,6 +14409,18 @@ var properties = {
   "source": {},
   "sourcePath": {},
   "ast": {},
+  "legacyAST": {
+    "transform": function(value, obj) {
+      var schemaVersion = obj.schemaVersion || "0.0.0";
+
+      // legacyAST introduced in v2.0.0
+      if (schemaVersion[0] < 2) {
+        return obj.ast;
+      } else {
+        return value
+      }
+    }
+  },
   "compiler": {},
   "networks": {
     "transform": function(value) {
@@ -14492,7 +14539,7 @@ var TruffleContractSchema = {
       // run source-agnostic transform on value
       // (e.g. make sure bytecode begins 0x)
       if (property.transform) {
-        value = property.transform(value);
+        value = property.transform(value, objDirty);
       }
 
       // add resulting (possibly undefined) to normalized obj
@@ -15911,29 +15958,29 @@ module.exports = TruffleContractSchema;
 }));
 },{"./core":65}],68:[function(require,module,exports){
 module.exports={
-  "_from": "truffle-contract-schema@^1.0.0",
-  "_id": "truffle-contract-schema@1.0.1",
+  "_from": "truffle-contract-schema@^2.0.0",
+  "_id": "truffle-contract-schema@2.0.0",
   "_inBundle": false,
-  "_integrity": "sha512-37ZO9FVvmW/PZz/sh00LAz7HN2U4FHERuxI4mCbUR6h3r2cRgZ4YBfzHuAHOnZlrVzM1qx/Dx/1Ng3UyfWseEA==",
+  "_integrity": "sha512-nLlspmu1GKDaluWksBwitHi/7Z3IpRjmBYeO9N+T1nVJD2V4IWJaptCKP1NqnPiJA+FChB7+F7pI6Br51/FtXQ==",
   "_location": "/truffle-contract-schema",
   "_phantomChildren": {},
   "_requested": {
     "type": "range",
     "registry": true,
-    "raw": "truffle-contract-schema@^1.0.0",
+    "raw": "truffle-contract-schema@^2.0.0",
     "name": "truffle-contract-schema",
     "escapedName": "truffle-contract-schema",
-    "rawSpec": "^1.0.0",
+    "rawSpec": "^2.0.0",
     "saveSpec": null,
-    "fetchSpec": "^1.0.0"
+    "fetchSpec": "^2.0.0"
   },
   "_requiredBy": [
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/truffle-contract-schema/-/truffle-contract-schema-1.0.1.tgz",
-  "_shasum": "08ceaefe71062a8ac9ab881a77a30fda3744176e",
-  "_spec": "truffle-contract-schema@^1.0.0",
-  "_where": "/Users/gnidan/src/work/release/dependencies/truffle-contract",
+  "_resolved": "https://registry.npmjs.org/truffle-contract-schema/-/truffle-contract-schema-2.0.0.tgz",
+  "_shasum": "535378c0b6a7f58011ea8d84f57771771cb45163",
+  "_spec": "truffle-contract-schema@^2.0.0",
+  "_where": "/Users/user/Sites/consensys/release-4-0-7/truffle/dependencies/truffle-contract",
   "author": {
     "name": "Tim Coulter",
     "email": "tim.coulter@consensys.net"
@@ -15944,7 +15991,8 @@ module.exports={
   "bundleDependencies": false,
   "dependencies": {
     "ajv": "^5.1.1",
-    "crypto-js": "^3.1.9-1"
+    "crypto-js": "^3.1.9-1",
+    "debug": "^3.1.0"
   },
   "deprecated": false,
   "description": "JSON schema for contract artifacts",
@@ -15970,7 +16018,7 @@ module.exports={
   "scripts": {
     "test": "mocha"
   },
-  "version": "1.0.1"
+  "version": "2.0.0"
 }
 
 },{}],69:[function(require,module,exports){
@@ -16166,6 +16214,7 @@ module.exports={
     "source": { "$ref": "#/definitions/Source" },
     "sourcePath": { "$ref": "#/definitions/SourcePath" },
     "ast": { "$ref": "#/definitions/AST" },
+    "legacyAST": { "$ref": "#/definitions/LegacyAST" },
     "compiler": {
       "type": "object",
       "properties": {
@@ -16228,6 +16277,10 @@ module.exports={
       "type": "object"
     },
 
+    "LegacyAST": {
+      "type": "object"
+    },
+
     "SchemaVersion": {
       "type": "string",
       "pattern": "[0-9]+\\.[0-9]+\\.[0-9]+"
@@ -16244,6 +16297,7 @@ module.exports={
   "type": "object",
   "properties": {
     "address": { "$ref": "#/definitions/Address" },
+    "transactionHash": { "$ref": "#/definitions/TransactionHash" },
     "events": {
       "type": "object",
       "patternProperties": {
@@ -16265,6 +16319,11 @@ module.exports={
     "Address": {
       "type": "string",
       "pattern": "^0x[a-fA-F0-9]{40}$"
+    },
+
+    "TransactionHash": {
+      "type": "string",
+      "pattern": "^0x[a-fA-F0-9]{64}$"
     },
 
     "Link": {
