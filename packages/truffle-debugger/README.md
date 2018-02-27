@@ -8,6 +8,7 @@ Features:
 - Solidity stepping and breakpoints
 - Variable inspection
 - Watch expressions
+- and more!
 
 ## Library Usage
 
