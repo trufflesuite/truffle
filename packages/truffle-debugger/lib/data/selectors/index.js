@@ -100,10 +100,9 @@ const data = createSelectorTree({
     stack: createLeaf(
       [evm.next.state.stack],
 
-      (words) => words.map( (word) => new Uint8Array(
-        (word.match(/.{1,2}/g) || [])
-          .map( (byte) => parseInt(byte, 16) )
-      ))
+      (words) => words.map(
+        (word) => decodeUtils.toBytes(decodeUtils.toBigNumber(word, decodeUtils.WORD_SIZE))
+      )
     ),
 
     memory: createLeaf(
