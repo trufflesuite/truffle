@@ -65,10 +65,6 @@ var DebugUtils = {
   formatStartMessage: function() {
     var lines = [
       "",
-      "Note: This feature's in beta. " +
-        "Please discuss any issues you find in our Gitter channel!",
-      "https://gitter.im/ConsenSys/truffle",
-      "",
       "Gathering transaction data...",
       ""
     ];
