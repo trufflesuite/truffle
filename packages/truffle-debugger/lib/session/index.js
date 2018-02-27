@@ -38,6 +38,8 @@ export default class Session {
       this._store.subscribe( () => {
         if (this.state.session == "ACTIVE") {
           accept()
+        } else if (typeof this.state.session == "object") {
+          reject(this.state.session.error);
         }
       });
     });

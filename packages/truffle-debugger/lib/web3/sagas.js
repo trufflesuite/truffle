@@ -9,7 +9,15 @@ import Web3Adapter from "./adapter";
 
 export function* inspectTransaction(adapter, {txHash}) {
   debug("inspecting transaction");
-  let trace = yield apply(adapter, adapter.getTrace, [txHash]);
+  var trace;
+  try {
+    trace = yield apply(adapter, adapter.getTrace, [txHash]);
+  } catch(e) {
+    debug("putting error");
+    yield put(actions.error(e));
+    return;
+  }
+
   debug("got trace");
   yield put(actions.receiveTrace(trace));
 

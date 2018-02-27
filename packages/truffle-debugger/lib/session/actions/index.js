@@ -13,6 +13,14 @@ export function ready() {
   };
 }
 
+export const ERROR = "SESSION_ERROR";
+export function error(error) {
+  return {
+    type: ERROR,
+    error
+  };
+}
+
 export const FINISH = "SESSION_FINISH";
 export function finish() {
   return {

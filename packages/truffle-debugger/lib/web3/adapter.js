@@ -18,6 +18,7 @@ export default class Web3Adapter {
         id: new Date().getTime()
       }, (err, result) => {
         if (err) return reject(err);
+        if (result.error) return reject(new Error(result.error.message));
         debug("result: %o", result);
         accept(result.result.structLogs);
       });

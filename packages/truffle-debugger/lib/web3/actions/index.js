@@ -45,3 +45,11 @@ export function receiveCall({address, binary}) {
     address, binary
   }
 }
+
+export const ERROR_WEB3 = "ERROR_WEB3";
+export function error(error) {
+  return {
+    type: ERROR_WEB3,
+    error
+  };
+}

@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:session:sagas");
 
-import { call, all, fork, join, take, put, select } from 'redux-saga/effects';
+import { cancel, call, all, fork, join, take, put, race, select } from 'redux-saga/effects';
 
 import astSaga from "lib/ast/sagas";
 import controllerSaga from "lib/controller/sagas";
@@ -33,13 +33,19 @@ export default function *saga () {
   yield *recordContracts(...contracts);
 
   let {txHash, provider} = yield take(actions.START);
-  yield *fetchTx(txHash, provider);
+  let err = yield *fetchTx(txHash, provider);
+  debug("err %o", err);
+  if (err) {
+    yield *error(err);
+    return;
+  }
 
   yield *mapData();
 
   yield *ready();
 
   yield take(traceActions.END_OF_TRACE);
+
   yield put(actions.finish());
 }
 
@@ -47,7 +53,18 @@ function* fetchTx(txHash, provider) {
   yield put(web3Actions.init(provider));
   yield put(web3Actions.inspect(txHash));
 
-  let {trace} = yield take(web3Actions.RECEIVE_TRACE);
+  let action = yield take( ({type}) =>
+    type == web3Actions.RECEIVE_TRACE || type == web3Actions.ERROR_WEB3
+  );
+  debug("action %o", action);
+
+  var trace;
+  if (action.type == web3Actions.RECEIVE_TRACE) {
+    trace = action.trace;
+  } else {
+    return action.error;
+  }
+
   debug("received trace");
 
   let {address, binary} = yield take(web3Actions.RECEIVE_CALL);
@@ -114,6 +131,11 @@ function* mapData() {
 function *ready() {
   debug("ready");
   yield put(actions.ready());
+}
+
+function *error(err) {
+  debug("error");
+  yield put(actions.error(err));
 }
 
 function *fetchContext(address) {

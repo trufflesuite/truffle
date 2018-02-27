@@ -40,7 +40,11 @@ export default class Debugger {
       options.contracts, txHash, options.provider
     );
 
-    await session.ready();
+    try {
+      await session.ready();
+    } catch (e) {
+      throw e;
+    }
 
     return new this(session);
   }
