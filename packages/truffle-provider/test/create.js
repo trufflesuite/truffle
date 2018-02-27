@@ -1,21 +1,21 @@
 var assert = require("assert");
 var Web3 = require("web3");
-var TestRPC = require("ethereumjs-testrpc");
+var Ganache = require("ganache-cli");
 var Provider = require("../index");
 
 describe("Provider", function() {
   var server;
   var port = 12345;
 
-  before("Initialize TestRPC server", function(done) {
-    server = TestRPC.server({});
+  before("Initialize Ganache server", function(done) {
+    server = Ganache.server({});
     server.listen(port, function (err) {
       assert.ifError(err);
       done();
     });
   });
 
-  after("Shutdown TestRPC", function(done) {
+  after("Shutdown Ganache", function(done) {
     server.close(done);
   });
 
@@ -40,7 +40,7 @@ describe("Provider", function() {
   });
 
   it("accepts a provider instance", function(done) {
-    var provider = Provider.create({provider: new TestRPC.provider()});
+    var provider = Provider.create({provider: new Ganache.provider()});
     assert(provider);
 
     Provider.test_connection(provider, function(error, coinbase) {
@@ -51,7 +51,7 @@ describe("Provider", function() {
 
   it("accepts a function that returns a provider instance", function(done) {
     var provider = Provider.create({
-      provider: function() { return new TestRPC.provider()}
+      provider: function() { return new Ganache.provider()}
     });
 
     assert(provider);
