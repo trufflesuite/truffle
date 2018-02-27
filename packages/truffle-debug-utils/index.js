@@ -12,6 +12,13 @@ var commandReference = {
   ";": "step instruction",
   "p": "print instruction",
   "h": "print this help",
+  "v": "print variables and values",
+  ":": "evaluate expression - see `v`",
+  "+": "add watch expression (`+:<expr>`)",
+  "-": "remove watch expression (-:<expr>)",
+  "?": "list existing watch expressions",
+  "b": "toggle breakpoint",
+  "c": "continue until breakpoint",
   "q": "quit"
 };
 
@@ -111,7 +118,11 @@ var DebugUtils = {
 
     var commandSections = [
       ["o", "i", "u", "n"],
-      [";", "p", "h", "q"]
+      [";", "p", "h", "q"],
+      ["b", "c"],
+      ["+", "-"],
+      ["?"],
+      ["v", ":"]
     ].map(function (shortcuts) {
       return shortcuts
         .map(DebugUtils.formatCommandDescription)
