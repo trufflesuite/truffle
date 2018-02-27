@@ -163,16 +163,7 @@ const data = createSelectorTree({
             return undefined;
           }
 
-          if (v.ref.stack != undefined && stack && v.ref.stack < stack.length) {
-            rawValue = stack[v.ref.stack];
-          } else if (v.ref.storage != undefined) {
-            debug("definition: %o", definition);
-            rawValue = decodeUtils.toBytes(v.ref.storage);
-          }
-
-          if (rawValue != undefined) {
-            return decode(definition, rawValue, state, refs);
-          }
+          return decode(definition, v.ref, state, refs);
         };
 
         do {

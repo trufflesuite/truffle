@@ -11,12 +11,16 @@ import ast from "lib/ast/selectors";
 import evm from "lib/evm/selectors";
 import data from "./selectors";
 
+import { WORD_SIZE } from "lib/data/decode/utils";
+import * as utils from "lib/data/decode/utils";
+
 function *tickSaga() {
   let tree = yield select(ast.current.tree);
   let treeId = yield select(ast.current.index);
   let node = yield select(ast.next.node);
   let pointer = yield select(ast.next.pointer);
   let scopes = yield select(data.scopes.tables.current);
+  let definitions = yield select(data.scopes.tables.inlined.current);
 
   let state = yield select(evm.next.state);
   if (!state.stack) {
@@ -44,10 +48,17 @@ function *tickSaga() {
       break;
 
     case "ContractDefinition":
-      storageVars = scopes[node.id].variables || [];
-      assignments = storageVars
-        .map( ({name, id}, i) => ({ [id]: {"storage": i} }) )
-        .reduce( (acc, assignment) => Object.assign(acc, assignment), {} );
+      let storageVars = scopes[node.id].variables || [];
+      let slot = 0;
+      let index = WORD_SIZE - 1;  // cause lower-order
+      debug("storage vars %o", storageVars);
+
+      let allocation = utils.allocateDeclarations(storageVars, definitions);
+      assignments = Object.assign(
+        {}, ...Object.entries(allocation.children)
+          .map( ([id, storage]) => ({ [id]: {storage} }) )
+      );
+      debug("assignments %O", assignments);
 
       yield put(actions.assign(treeId, assignments));
       break;

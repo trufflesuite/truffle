@@ -12,13 +12,13 @@ import * as utils from "./utils";
  * @param offset - for array, offset from the keccak determined location
  */
 export function read(storage, slot, offset = 0) {
-  debug("slot %o", slot);
   if (slot instanceof Array) {
     slot = utils.keccak256(...slot.map(utils.toBigNumber));
-    debug("adjusted: %o", utils.toHexString(slot));
   }
 
   slot = utils.toBigNumber(slot).plus(offset);
+
+  debug("reading slot: %o", utils.toHexString(slot));
 
   return storage[utils.toHexString(slot, WORD_SIZE)] ||
     new Uint8Array(WORD_SIZE);
@@ -27,13 +27,13 @@ export function read(storage, slot, offset = 0) {
 /**
  * read <bytes> amount of bytes from storage, starting at some slot
  */
-export function readBytes(storage, slot, length) {
+export function readBytes(storage, slot, length, offset = 0) {
   let data = new Uint8Array(length);
 
   let bytesLeft = length;
   var buffer;
   for (let i = 0; i < length / WORD_SIZE; i++) {
-    buffer = read(storage, slot, i);
+    buffer = read(storage, slot, i + offset);
     if (bytesLeft < WORD_SIZE) {
       buffer = buffer.slice(0, bytesLeft);
     }
@@ -43,3 +43,20 @@ export function readBytes(storage, slot, length) {
 
   return data;
 }
+
+export function readRange(storage, {from, to, length}) {
+  debug("readRange %o", Array.prototype.slice(arguments, [1]));
+  if (to != undefined) {
+    let trim = to.index - WORD_SIZE + 1;
+
+    return readBytes(
+      storage, from.slot, (to.slot - from.slot + 1) * WORD_SIZE  // round up
+    ).slice(from.index, trim < 0 ? trim : undefined);
+
+  } else {
+    return readBytes(
+      storage, from.slot, length, from.offset
+    ).slice(from.index);
+  }
+}
+

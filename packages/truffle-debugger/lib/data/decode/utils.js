@@ -21,6 +21,102 @@ export function typeClass(definition) {
   return typeIdentifier(definition).match(/t_([^$_0-9]+)/)[1];
 }
 
+/**
+ * Allocate storage for given variable declarations
+ *
+ * Postcondition: starts a new slot and occupies whole slots
+ */
+export function allocateDeclarations(
+  declarations,
+  refs,
+  slot = 0,
+  index = WORD_SIZE - 1,
+  path = []
+) {
+  if (index < WORD_SIZE - 1) {  // starts a new slot
+    slot++;
+    index = WORD_SIZE - 1;
+  }
+
+  let parentFrom = { slot, index: 0 };
+  var parentTo = { slot, index: WORD_SIZE - 1 };
+  let mapping = {};
+
+  for (let declaration of declarations) {
+    let { from, to, next, children } =
+      allocateDeclaration(declaration, refs, slot, index);
+
+    mapping[declaration.id] = { from, to, children, name: declaration.name };
+
+    slot = next.slot;
+    index = next.index;
+
+    parentTo = { slot: to.slot, index: WORD_SIZE - 1 };
+  }
+
+  if (index < WORD_SIZE - 1) {
+    slot++;
+    index = WORD_SIZE - 1;
+  }
+
+  return {
+    from: parentFrom,
+    to: parentTo,
+    next: { slot, index },
+    children: mapping
+  };
+}
+
+function allocateValue(slot, index, bytes) {
+  let from = index - bytes + 1 >= 0 ?
+    { slot, index: index - bytes + 1 } :
+    { slot: slot + 1, index: WORD_SIZE - bytes };
+
+  let to = { slot: from.slot, index: from.index + bytes - 1 };
+
+  let next = from.index == 0 ?
+    { slot: from.slot + 1, index: WORD_SIZE - 1 } :
+    { slot: from.slot, index: from.index - 1 };
+
+  return { from, to, next };
+}
+
+function allocateDeclaration(declaration, refs, slot, index) {
+  let definition = refs[declaration.id].definition;
+  var byteSize = storageSize(definition);  // yum
+
+  if (typeClass(definition) != "struct") {
+    return allocateValue(slot, index, byteSize);
+  }
+
+  let struct = refs[definition.typeName.referencedDeclaration];
+  debug("struct: %O", struct);
+
+  let result =  allocateDeclarations(struct.variables || [], refs, slot, index);
+  debug("struct result %o", result);
+  return result;
+}
+
+export function storageSize(definition) {
+  switch (typeClass(definition)) {
+    case "bool":
+      return 1;
+
+    case "address":
+      return 20;
+
+    case "int":
+    case "uint":
+      // is this a HACK? ("256" / 8)
+      return typeIdentifier(definition).match(/t_[a-z]+([0-9]+)/)[1] / 8;
+
+    case "string":
+    case "bytes":
+    case "array":
+      return WORD_SIZE;
+  }
+}
+
 export function isReference(definition) {
   return typeIdentifier(definition).match(/_(memory|storage)(_ptr)?$/) != null;
 }
@@ -125,9 +221,13 @@ export function toBytes(number, length = 0) {
     return [];
   }
 
+  let hex = number.toString(16);
+  if (hex.length % 2 == 1) {
+    hex = `0${hex}`;
+  }
+
   let bytes = new Uint8Array(
-    number.toString(16)
-      .match(/.{1,2}/g)
+    hex.match(/.{2}/g)
       .map( (byte) => parseInt(byte, 16) )
   );
 
@@ -154,5 +254,6 @@ export function keccak256(...args) {
   });
 
   let sha = web3.sha3(args.join(''), { encoding: 'hex' });
+  debug("sha %o", sha);
   return toBigNumber(sha);
 }
