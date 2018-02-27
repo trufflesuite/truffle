@@ -7,13 +7,28 @@ var command = {
     }
   },
   run: function (options, done) {
+    var OS = require("os");
+    var path = require("path");
+    var debugModule = require("debug");
+    var debug = debugModule("lib:commands:debug");
+    var safeEval = require('safe-eval')
+    var util = require("util");
+    var _ = require("lodash");
+
     var Config = require("truffle-config");
     var Debugger = require("truffle-debugger");
     var DebugUtils = require("truffle-debug-utils");
     var Environment = require("../environment");
     var ReplManager = require("../repl");
-    var OS = require("os");
-    var path = require("path");
+    var selectors = require("truffle-debugger").selectors;
+
+    // Debugger Session properties
+    var ast = selectors.ast;
+    var data = selectors.data;
+    var context = selectors.context;
+    var trace = selectors.trace;
+    var solidity = selectors.solidity;
+    var evm = selectors.evm;
 
     var config = Config.detect(options);
 
@@ -21,18 +36,33 @@ var command = {
       if (err) return done(err);
 
       if (config._.length == 0) {
-        return done(new Error("Please specify a transaction hash as the first parameter in order to debug that transaction. i.e., truffle debug 0x1234..."));
+        return callback(new Error(
+          "Please specify a transaction hash as the first parameter in order to " +
+          "debug that transaction. i.e., truffle debug 0x1234..."
+        ));
       }
 
-      var tx_hash = config._[0];
+      var txHash = config._[0];
 
       var lastCommand = "n";
+      var enabledExpressions = new Set();
+      var breakpoints = [];
 
       config.logger.log(DebugUtils.formatStartMessage());
 
-      var bugger = new Debugger(config);
+      var sessionPromise = DebugUtils.gatherArtifacts(config)
+        .then(function(contracts) {
+          return Debugger.forTx(txHash, {
+            provider: config.provider,
+            contracts: contracts
+          });
+        })
+        .then(function (bugger) {
+          return bugger.connect();
+        })
+        .catch(done);
 
-      bugger.start(tx_hash, function(err, contexts) {
+      sessionPromise.then(function (session) {
         if (err) return done(err);
 
         function splitLines(str) {
@@ -42,8 +72,10 @@ var command = {
         }
 
         function printAddressesAffected() {
+          var affectedInstances = session.view(context.affectedInstances);
+
           config.logger.log("Addresses affected:");
-          config.logger.log(DebugUtils.formatAffectedInstances(contexts));
+          config.logger.log(DebugUtils.formatAffectedInstances(affectedInstances));
         }
 
         function printHelp() {
@@ -54,7 +86,8 @@ var command = {
         function printFile() {
           var message = "";
 
-          var sourcePath = bugger.currentSourcePath();
+          debug("file: %o", session.view(context.current));
+          var sourcePath = session.view(context.current).sourcePath;
 
           if (sourcePath) {
             message += path.basename(sourcePath);
@@ -62,8 +95,7 @@ var command = {
             message += "?";
           }
 
-          var address = bugger.currentAddress();
-
+          var address = session.view(context.current).address;
           if (address) {
             message += " | " + address;
           }
@@ -73,7 +105,10 @@ var command = {
         }
 
         function printState() {
-          var source = bugger.currentSource();
+          var source = session.view(context.current).source;
+          var range = session.view(solidity.next.sourceRange);
+          debug("source: %o", source);
+          debug("range: %o", range);
 
           if (!source) {
             config.logger.log()
@@ -83,38 +118,203 @@ var command = {
           }
 
           var lines = splitLines(source);
-          var range = bugger.currentInstruction().range;
 
           config.logger.log("");
 
           config.logger.log(
-            DebugUtils.formatRangeLines(lines, range, {before: 2, after: 0})
+            DebugUtils.formatRangeLines(lines, range.lines)
           );
 
           config.logger.log("");
         }
 
         function printInstruction() {
-          var instruction = bugger.currentInstruction();
-          var step = bugger.currentStep();
-
-          var stack = DebugUtils.formatStack(step.stack);
+          var instruction = session.view(solidity.next.instruction);
+          var step = session.view(trace.step);
+          var traceIndex = session.view(trace.index);
 
           config.logger.log("");
           config.logger.log(
-            DebugUtils.formatInstruction(bugger.traceIndex, instruction)
+            DebugUtils.formatInstruction(traceIndex, instruction)
           );
-          config.logger.log(stack);
+          config.logger.log(DebugUtils.formatStack(step.stack));
         };
 
-        function interpreter(cmd, context, filename, callback) {
+        function printSelector(specified) {
+          var selector = specified
+            .split(".")
+            .filter(function(next) { return next.length > 0 })
+            .reduce(function(sel, next) {
+              debug("next %o, sel %o", next, sel);
+              return sel[next];
+            }, selectors);
+
+          debug("selector %o", selector);
+          var result = session.view(selector);
+          var debugSelector = debugModule(specified);
+          debugSelector.enabled = true;
+          debugSelector("%O", result);
+        };
+
+        function printWatchExpressions() {
+          if (enabledExpressions.size == 0) {
+            config.logger.log("No watch expressions added.");
+            return;
+          }
+
+          config.logger.log("");
+          enabledExpressions.forEach(function(expression) {
+            config.logger.log("  " + expression);
+          });
+          config.logger.log("");
+        }
+
+        function printWatchExpressionsResults() {
+          enabledExpressions.forEach(function(expression) {
+            config.logger.log(expression);
+            // Add some padding. Note: This won't work with all loggers,
+            // meaning it's not portable. But doing this now so we can get something
+            // pretty until we can build more architecture around this.
+            // Note: Selector results already have padding, so this isn't needed.
+            if (expression[0] == ":") {
+              process.stdout.write("  ");
+            }
+            printWatchExpressionResult(expression);
+          });
+        };
+
+        function printWatchExpressionResult(expression) {
+          var type = expression[0];
+          var exprArgs = expression.substring(1);
+
+          if (type == "!") {
+            printSelector(exprArgs);
+          } else {
+            evalAndPrintExpression(exprArgs, 2, true);
+          }
+        }
+
+        // TODO make this more robust for all cases and move to
+        // truffle-debug-utils
+        function formatValue(value, indent) {
+          if (!indent) {
+            indent = 0;
+          }
+
+          return util
+            .inspect(value, {
+              colors: true,
+              depth: null,
+              breakLength: 30
+            })
+            .split(/\r?\n/g)
+            .map(function (line, i) {
+              // don't indent first line
+              var padding = i > 0 ?
+                Array(indent).join(" ") :
+                "";
+              return padding + line;
+            })
+            .join(OS.EOL);
+        }
+
+        function printVariables() {
+          var variables = session.view(data.identifiers.native.current);
+
+          // Get the length of the longest name.
+          var longestNameLength = Math.max.apply(null, (Object.keys(variables).map(function(name) {
+            return name.length
+          })));
+
+          config.logger.log();
+
+          Object.keys(variables).forEach(function(name) {
+            var paddedName = name + ":";
+
+            while (paddedName.length <= longestNameLength) {
+              paddedName = " " + paddedName;
+            }
+
+            var value = variables[name];
+            var formatted = formatValue(value, longestNameLength + 5);
+
+            config.logger.log("  " + paddedName, formatted);
+          });
+
+          config.logger.log();
+        }
+
+        function evalAndPrintExpression(expr, indent, suppress) {
+          var context = session.view(data.identifiers.native.current);
+          try {
+            var result = safeEval(expr, context);
+            var formatted = formatValue(result, indent);
+            config.logger.log(formatted);
+            config.logger.log();
+          } catch (e) {
+            // HACK: safeEval edits the expression to capture the result, which
+            // produces really weird output when there are errors. e.g.,
+            //
+            //   evalmachine.<anonymous>:1
+            //   SAFE_EVAL_857712=a
+            //   ^
+            //
+            //   ReferenceError: a is not defined
+            //     at evalmachine.<anonymous>:1:1
+            //     at ContextifyScript.Script.runInContext (vm.js:59:29)
+            //
+            // We want to hide this from the user if there's an error.
+            e.stack = e.stack.replace(/SAFE_EVAL_\d+=/,"");
+            if (!suppress) {
+              config.logger.log(e);
+            } else {
+              config.logger.log(formatValue(undefined))
+            }
+          }
+        }
+
+        function toggleBreakpoint() {
+          var currentCall = session.view(evm.current.call);
+          var currentNode = session.view(ast.next.node).id;
+
+          // Try to find the breakpoint in the list
+          var found = false;
+          for (var index = 0; index < breakpoints.length; index++) {
+            var breakpoint = breakpoints[index];
+
+            if (_.isEqual(currentCall, breakpoint.call) && currentNode == breakpoint.node) {
+              found = true;
+              // Remove the breakpoint
+              breakpoints.splice(index, 1);
+              break;
+            }
+          }
+
+          if (found) {
+            config.logger.log("Breakpoint removed.");
+            return;
+          }
+
+          // No breakpoint? Add it.
+          breakpoints.push({
+            call: currentCall,
+            node: currentNode
+          });
+
+          config.logger.log("Breakpoint added.");
+        }
+
+        function interpreter(cmd, replContext, filename, callback) {
           cmd = cmd.trim();
+          var cmdArgs;
+          debug("cmd %s", cmd);
 
           if (cmd == ".exit") {
             cmd = "q";
           }
 
           if (cmd.length > 0) {
+            cmdArgs = cmd.slice(1).trim();
             cmd = cmd[0];
           }
 
@@ -125,63 +325,93 @@ var command = {
           // Perform commands that require state changes.
           switch (cmd) {
             case "o":
-              bugger.stepOver();
+              session.stepOver();
               break;
             case "i":
-              bugger.stepInto();
+              session.stepInto();
               break;
             case "u":
-              bugger.stepOut();
+              session.stepOut();
               break;
             case "n":
-              bugger.step();
+              session.stepNext();
               break;
             case ";":
-              bugger.advance();
+              session.advance();
+              break;
+            case "c":
+              session.continueUntil.apply(session, breakpoints);
               break;
             case "q":
               return repl.stop(callback);
           }
 
           // Check if execution has stopped.
-          if (bugger.isStopped()) {
+          if (session.finished) {
             config.logger.log("");
-            if (bugger.isRuntimeError()) {
+            if (session.failed) {
               config.logger.log("Transaction halted with a RUNTIME ERROR.")
               config.logger.log("");
               config.logger.log("This is likely due to an intentional halting expression, like assert(), require() or revert(). It can also be due to out-of-gas exceptions. Please inspect your transaction parameters and contract code to determine the meaning of this error.");
-              return repl.stop(callback);
             } else {
               config.logger.log("Transaction completed successfully.");
-              return repl.stop(callback);
             }
+            return repl.stop(callback);
           }
 
           // Perform post printing
           // (we want to see if execution stopped before printing state).
           switch (cmd) {
+            case "+":
+              enabledExpressions.add(cmdArgs);
+              printWatchExpressionResult(cmdArgs);
+              break;
+            case "-":
+              enabledExpressions.delete(cmdArgs);
+              break;
+            case "!":
+              printSelector(cmdArgs);
+              break;
+            case "?":
+              printWatchExpressions();
+              break;
+            case "v":
+              printVariables();
+              break;
+            case ":":
+              evalAndPrintExpression(cmdArgs);
+              break;
+            case "b":
+              toggleBreakpoint();
+              break;
             case ";":
             case "p":
               printFile();
               printInstruction();
               printState();
+              printWatchExpressionsResults();
               break;
             case "o":
             case "i":
             case "u":
             case "n":
-              if (bugger.currentSource() == null) {
+            case "c":
+              if(!session.view(context.current).source) {
                 printInstruction();
               }
 
               printFile();
               printState();
+              printWatchExpressionsResults();
               break;
             default:
               printHelp();
           }
 
-          if (cmd != "i" && cmd != "u" && cmd != "h" && cmd != "p") {
+          if (
+            cmd != "i" && cmd != "u" && cmd != "b" && cmd != "v" &&
+            cmd != "h" && cmd != "p" && cmd != "?" && cmd != "!" && cmd != ":" && cmd != "+" && cmd != "-"
+          ) {
             lastCommand = cmd;
           }
 
@@ -196,7 +426,7 @@ var command = {
         var repl = options.repl || new ReplManager(config);
 
         repl.start({
-          prompt: "debug(" + config.network + ":" + tx_hash.substring(0, 10) + "...)> ",
+          prompt: "debug(" + config.network + ":" + txHash.substring(0, 10) + "...)> ",
           interpreter: interpreter
         });
 
