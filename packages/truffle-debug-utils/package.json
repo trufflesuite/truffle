@@ -4,7 +4,8 @@
   "description": "Integration utils for truffle/truffle-debugger",
   "dependencies": {
     "async": "^1.4.2",
-    "debug": "^3.1.0"
+    "debug": "^3.1.0",
+    "node-dir": "^0.1.17"
   },
   "main": "index.js",
   "scripts": {
