@@ -179,10 +179,10 @@ describe("Abstractions", function() {
       assert.equal(parseInt(valueB), 25, "Multiplied should have been retrieved");
     })
 
-    it.skip("should honor the defaultBlock parameter when called", async function(){
+    it("should honor the defaultBlock parameter when called", async function(){
       const expectedInitialValue = 5;
 
-      const example = await Example.new(initialValue, {gas: 3141592});
+      const example = await Example.new(expectedInitialValue, {gas: 3141592});
       const initialBlock = await web3.eth.getBlockNumber();
       const tx = await example.setValue(10);
 

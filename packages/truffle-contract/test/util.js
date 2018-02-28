@@ -14,7 +14,7 @@ var util = {
   // binds web3 & a contract instance to it.
   setUpProvider: function(instance, options){
     options = options || {};
-    Object.assign(options, {logger: log, network_id: 10, ws: true})
+    Object.assign(options, {logger: log, ws: true})
 
     return new Promise(function(accept, reject){
       var provider = ganache.provider(options);
