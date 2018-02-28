@@ -21,6 +21,10 @@ contract Example {
     return value;
   }
 
+  function getValuePlus(uint toAdd) constant returns(uint) {
+    return value + toAdd;
+  }
+
   function overloadedGet() constant returns(uint){
     return value;
   }
