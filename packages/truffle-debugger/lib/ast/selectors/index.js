@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:ast:selectors");
 
-import { createSelectorTree, createLeaf } from "lib/selectors";
+import { createSelectorTree, createLeaf } from "reselect-tree";
 import jsonpointer from "json-pointer";
 
 import context from "lib/context/selectors";

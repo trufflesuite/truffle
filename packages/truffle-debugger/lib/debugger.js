@@ -3,7 +3,7 @@ import expect from "truffle-expect";
 
 import Session from "./session";
 
-import { createNestedSelector } from "./selectors";
+import { createNestedSelector } from "reselect-tree";
 
 import dataSelector from "./data/selectors";
 import astSelector from "./ast/selectors";

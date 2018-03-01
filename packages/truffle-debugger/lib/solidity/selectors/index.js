@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:solidity:selectors");
 
-import { createSelectorTree, createLeaf } from "lib/selectors";
+import { createSelectorTree, createLeaf } from "reselect-tree";
 import SolidityUtils from "truffle-solidity-utils";
 import CodeUtils from "truffle-code-utils";
 
