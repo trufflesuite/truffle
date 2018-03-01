@@ -3,7 +3,7 @@ const debug = debugModule("test:context");
 
 import { assert } from "chai";
 
-import Ganache from "ganache-cli";
+import Ganache from "ganache-core";
 import Web3 from "web3";
 
 import { prepareContracts } from "./helpers";
@@ -116,17 +116,17 @@ describe("Contexts", function () {
     let affectedInstances = session.view(sessionSelector.info.affectedInstances);
     debug("affectedInstances: %o", affectedInstances);
 
-    let affectedAddresses = Object.keys(affectedInstances);
+    let affectedAddresses = Object.keys(affectedInstances).map(address => address.toLowerCase());
 
     assert.equal(2, affectedAddresses.length);
 
     assert.include(
-      affectedAddresses, outer.address,
+      affectedAddresses, outer.address.toLowerCase(),
       "OuterContract should be an affected address"
     );
 
     assert.include(
-      affectedAddresses, inner.address,
+      affectedAddresses, inner.address.toLowerCase(),
       "InnerContract should be an affected address"
     );
   });
