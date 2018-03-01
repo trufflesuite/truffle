@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:context:selectors");
 
-import { createSelectorTree, createLeaf } from "lib/selectors";
+import { createSelectorTree, createLeaf } from "reselect-tree";
 
 import evm from "lib/evm/selectors";
 
