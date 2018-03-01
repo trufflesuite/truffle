@@ -257,7 +257,11 @@ var Migrate = {
     var migrations = Migrations.deployed();
 
     Migrations.deployed().then(function(migrations) {
-      return migrations.last_completed_migration.call();
+      // Two possible Migrations.sol's (lintable/unlintable)
+      return (migrations.last_completed_migration)
+        ? migrations.last_completed_migration.call()
+        : migrations.lastCompletedMigration.call();
+
     }).then(function(completed_migration) {
       callback(null, parseInt(completed_migration));
     }).catch(callback);
