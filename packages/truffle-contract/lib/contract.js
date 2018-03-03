@@ -81,7 +81,6 @@ var contract = (function(module) {
     this.allEvents = contract.allEvents;
     this.address = contract.options.address;
     this.transactionHash = contract.transactionHash;
-    this.__gasMultiplier = 1.25;
   };
 
   Contract._static_methods = {
@@ -97,14 +96,6 @@ var contract = (function(module) {
 
       this.web3.setProvider(provider);
       this.currentProvider = provider;
-    },
-
-    __setWallet: function(wallet) {
-      this.web3.eth.accounts.wallet = wallet;
-    },
-
-    __setGasMulitplier: function(multiplier){
-      this.__gasMultiplier = mutiplier;
     },
 
     new: function() {
@@ -405,8 +396,13 @@ var contract = (function(module) {
 
     toJSON: function() {
       return this._json;
-    }
+    },
+
+     __setWallet: function(wallet) {
+      this.web3.eth.accounts.wallet = wallet;
+    },
   };
+
 
   // Getter functions are scoped to Contract object.
   Contract._properties = {
@@ -424,6 +420,18 @@ var contract = (function(module) {
       },
       set: function(val) {
         this._json.contractName = val;
+      }
+    },
+
+    gasMultiplier: {
+      get: function() {
+        if (this._json.gasMultiplier === undefined){
+          this._json.gasMultiplier = 1.25;
+        }
+        return this._json.gasMultiplier;
+      },
+      set: function(val) {
+        this._json.gasMultiplier = val;
       }
     },
     abi: {
@@ -584,6 +592,7 @@ var contract = (function(module) {
     deployedBinary: function() {
       return Utils.linkBytecode(this.deployedBytecode, this.links);
     },
+
     // deprecated; use bytecode
     unlinked_binary: {
       get: function() {

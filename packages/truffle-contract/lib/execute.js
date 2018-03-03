@@ -14,13 +14,13 @@ var execute = {
     emitter.on('receipt', handle.receipt.bind(emitter, context));
   },
 
-  _getGasEstimate: function(contract, self, params, blockLimit){
+  _getGasEstimate: function(contract, params, blockLimit){
     return new Promise(function(accept, reject){
       // Always prefer specified gas
       if (params.gas) return accept(params.gas);
 
         contract.web3.eth.estimateGas(params).then(function(gas){
-          var bestEstimate = Math.floor(self.__gasMultiplier * gas);
+          var bestEstimate = Math.floor(contract.gasMultiplier * gas);
 
           // Don't go over blockLimit
           (bestEstimate >= blockLimit)
@@ -84,7 +84,7 @@ var execute = {
         params.to = self.address;
         params.data = fn(...args).encodeABI();
 
-        execute._getGasEstimate(C, self, params, blockLimit).then(function(gas){
+        execute._getGasEstimate(C, params, blockLimit).then(function(gas){
 
           params.gas = gas
           result = C.web3.eth.sendTransaction(params);
@@ -110,9 +110,13 @@ var execute = {
       params = utils.merge(C.class_defaults, params);
       params.to = self.address;
 
+      // This is here for backwards compatibility.
       if (callback !== undefined){
-        return C.detectNetwork().then(function(){
-          C.web3.eth.sendTransaction.apply(C.web3.eth, [params, callback]);
+        return C.detectNetwork().then(function(blockLimit){
+          return execute._getGasEstimate(C, params, blockLimit).then(function(gas){
+            params.gas = gas;
+            C.web3.eth.sendTransaction.apply(C.web3.eth, [params, callback]);
+          });
         })
       }
 
@@ -123,7 +127,7 @@ var execute = {
       }
 
       C.detectNetwork().then(function(id, blockLimit){
-        execute._getGasEstimate(C, self, params, blockLimit).then(function(gas){
+        execute._getGasEstimate(C, params, blockLimit).then(function(gas){
 
           params.gas = gas;
           var result = C.web3.eth.sendTransaction(params);
@@ -212,7 +216,7 @@ var execute = {
 
   // Network detection for `.new` happens
   // before invocation at `contract.js` where we check the libraries.
-  deploy: function(args, context) {
+  deploy: function(args, context, blockLimit) {
     var self = this;
     var params = utils.getTxParams(args, self);
 
@@ -223,25 +227,30 @@ var execute = {
 
     var contract = new self.web3.eth.Contract(self.abi);
     params.data = contract.deploy(options).encodeABI();
-    var result = self.web3.eth.sendTransaction(params);
-    execute._setUpHandlers(result, context);
 
-    // Errors triggered by web3 are rejected at the `error` listener. Status
-    // errors are rejected here.
-    result.then(function(receipt){
-      if (parseInt(receipt.status) == 0){
-        var error = new StatusError(params, context.transactionHash, receipt);
-        return context.promiEvent.reject(error)
-      }
+    execute._getGasEstimate(self, params, blockLimit).then(function(gas){
 
-      var instance = new self.web3.eth.Contract(self.abi, receipt.contractAddress);
-      instance.transactionHash = context.transactionHash;
+      params.gas = gas;
+      var result = self.web3.eth.sendTransaction(params);
+      execute._setUpHandlers(result, context);
 
-      context.promiEvent.resolve(new self(instance));
+      // Errors triggered by web3 are rejected at the `error` listener. Status
+      // errors are rejected here.
+      result.then(function(receipt){
+        if (parseInt(receipt.status) == 0){
+          var error = new StatusError(params, context.transactionHash, receipt);
+          return context.promiEvent.reject(error)
+        }
 
-    // TO DO: capture & ignore '50 blocks' timeout error.
-    // All the event emitters & promise will go dead so we'll need
-    // to replicate what web3 does here.
+        var instance = new self.web3.eth.Contract(self.abi, receipt.contractAddress);
+        instance.transactionHash = context.transactionHash;
+
+        context.promiEvent.resolve(new self(instance));
+
+      // TO DO: capture & ignore '50 blocks' timeout error.
+      // All the event emitters & promise will go dead so we'll need
+      // to replicate what web3 does here.
+      }).catch(context.promiEvent.reject);
     }).catch(context.promiEvent.reject);
   },
 
