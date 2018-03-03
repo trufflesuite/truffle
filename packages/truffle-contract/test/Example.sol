@@ -9,7 +9,15 @@ contract Example {
   event ExampleEventII(address indexed _from, uint num);
 
   constructor(uint val) {
-    require(val <= 1000);
+    // Constructor revert
+    require(val <= 9999);
+
+    // Expensive deployment
+    if(val >= 50){
+      for(uint i = 0; i < val; i++){
+        counter = i;
+      }
+    }
 
     value = val;
     fallbackTriggered = false;
@@ -61,6 +69,12 @@ contract Example {
 
   function runsOutOfGas() {
     consumesGas();
+  }
+
+  function isExpensive(uint val){
+    for(uint i = 0; i < val; i++){
+      counter = i;
+    }
   }
 
   function consumesGas() {

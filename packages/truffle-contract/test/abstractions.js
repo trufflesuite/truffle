@@ -1,12 +1,10 @@
 var assert = require("chai").assert;
-var Schema = require("truffle-contract-schema");
 var BigNumber = require("bignumber.js");
 var contract = require("../");
 var temp = require("temp").track();
 var path = require("path");
 var solc = require("solc");
 var fs = require("fs");
-var requireNoCache = require("require-nocache")(module);
 var util = require('./util');
 
 describe("Abstractions", function() {
@@ -102,6 +100,30 @@ describe("Abstractions", function() {
       Example.new(1, {gas: 3141592})
         .on('confirmation', handler)
         .on('receipt', keepTransacting);
+    });
+
+    it('should automatically fund a deployment', async function(){
+      const estimate = await Example.new.estimateGas(1);
+      const defaults = Example.defaults;
+
+      assert(defaults.gas === undefined, "Should not have a gas default");
+      assert(estimate > 90000, "Should be more expensive than default tx");
+
+      await Example.new(1);
+    });
+
+    // Constructor in this test consumes ~6437823 vs blockLimit of 6721975.
+    it('should not multiply past the blockLimit', async function(){
+      const estimate = await Example.new.estimateGas(1200);
+      const block = await web3.eth.getBlock('latest');
+      const multiplier = Example.gasMultiplier;
+
+      assert(multiplier === 1.25, "Multiplier should be initialized to 1.25");
+      assert(!Number.isInteger(multiplier * estimate), "Test shoud multiply by a float");
+      assert((multiplier * estimate) > block.gasLimit, "Multiplied estimate should be too high");
+      assert(estimate < block.gasLimit, "Estimate on it's own should be ok");
+
+      await Example.new(51);
     });
   });
 
@@ -342,6 +364,18 @@ describe("Abstractions", function() {
 
       value = await example.value.call();
       assert.equal(parseInt(value), 5, "Ending value should be 5");
+    });
+
+    it('should automatically fund a tx that costs more than default gas (90k)', async function(){
+      this.timeout(5000);
+
+      const defaultGas = 90000;
+      const instance = await Example.new(1);
+      const estimate = await instance.isExpensive.estimateGas(777);
+
+      assert(estimate > defaultGas, "Estimate should be too high");
+
+      await instance.isExpensive(777);
     });
   });
 
