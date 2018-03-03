@@ -5,11 +5,34 @@ var handle = require("./handlers");
 
 var execute = {
 
+  _defaultGas: 90000,
+
   _setUpHandlers: function(emitter, context){
     emitter.on('error', handle.error.bind(emitter, context))
     emitter.on('transactionHash', handle.hash.bind(emitter, context))
     emitter.on('confirmation', handle.confirmation.bind(emitter, context))
     emitter.on('receipt', handle.receipt.bind(emitter, context));
+  },
+
+  _getGasEstimate: function(contract, self, params, blockLimit){
+    return new Promise(function(accept, reject){
+      // Always prefer specified gas
+      if (params.gas) return accept(params.gas);
+
+        contract.web3.eth.estimateGas(params).then(function(gas){
+          var bestEstimate = Math.floor(self.__gasMultiplier * gas);
+
+          // Don't go over blockLimit
+          (bestEstimate >= blockLimit)
+            ? accept(blockLimit - 1)
+            : accept(bestEstimate);
+
+        // We need to let tx's that revert through because often that's
+        // exactly what you are testing.
+        }).catch(function(err){
+          accept(execute._defaultGas);
+        });
+    })
   },
 
   call: function(fn, C, inputs) {
@@ -57,17 +80,17 @@ var execute = {
         params: params
       }
 
-      C.detectNetwork().then(function() {
-        // Replace this with gasEstimation?
-        if (params.gas === undefined){
-          params.gas = defaultGas
-        }
-
+      C.detectNetwork().then(function(id, blockLimit) {
         params.to = self.address;
         params.data = fn(...args).encodeABI();
-        result = C.web3.eth.sendTransaction(params);
-        execute._setUpHandlers(result, context);
 
+        execute._getGasEstimate(C, self, params, blockLimit).then(function(gas){
+
+          params.gas = gas
+          result = C.web3.eth.sendTransaction(params);
+          execute._setUpHandlers(result, context);
+
+        }).catch(promiEvent.reject)
       }).catch(promiEvent.reject)
 
       return promiEvent.eventEmitter;
@@ -99,12 +122,15 @@ var execute = {
         params: params
       }
 
-      C.detectNetwork().then(function() {
+      C.detectNetwork().then(function(id, blockLimit){
+        execute._getGasEstimate(C, self, params, blockLimit).then(function(gas){
 
-        var result = C.web3.eth.sendTransaction(params)
-        execute._setUpHandlers(result, context);
+          params.gas = gas;
+          var result = C.web3.eth.sendTransaction(params);
+          execute._setUpHandlers(result, context);
 
-      }).catch(promiEvent.reject);
+        }).catch(promiEvent.reject)
+      }).catch(promiEvent.reject)
 
       return promiEvent.eventEmitter;
     }

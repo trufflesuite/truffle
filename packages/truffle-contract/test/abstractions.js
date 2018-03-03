@@ -332,7 +332,7 @@ describe("Abstractions", function() {
       const balance = await web3.eth.getBalance(wallet["0"].address);
       assert.equal(balance, web3.utils.toWei("1", 'ether'));
 
-      Example.setWallet(wallet);
+      Example.__setWallet(wallet);
       const example = await Example.new(1, {gas: 3141592, from: wallet["0"].address })
 
       value = await example.value.call();
@@ -423,6 +423,8 @@ describe("Abstractions", function() {
     });
 
     it("errors with receipt & assert message on internal OOG", async function(){
+      this.timeout(5000);
+
       const example = await Example.new(1, {gas: 3141592})
       try {
         await example.runsOutOfGas();
@@ -528,6 +530,7 @@ describe("Abstractions", function() {
 
   describe('sendTransaction / send', function(){
     it("should trigger the fallback function when calling sendTransaction()", async function() {
+      this.timeout(5000);
       const example = await Example.new(1, {gas: 3141592})
       const triggered = await example.fallbackTriggered();
 
@@ -563,6 +566,7 @@ describe("Abstractions", function() {
     });
 
     it("should trigger the fallback function when calling send() (shorthand notation)", async function() {
+      this.timeout(5000);
       const example = await Example.new(1, {gas: 3141592});
       const triggered = await example.fallbackTriggered();
 
