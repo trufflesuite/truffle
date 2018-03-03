@@ -81,6 +81,7 @@ var contract = (function(module) {
     this.allEvents = contract.allEvents;
     this.address = contract.options.address;
     this.transactionHash = contract.transactionHash;
+    this.__gasMultiplier = 1.25;
   };
 
   Contract._static_methods = {
@@ -98,8 +99,12 @@ var contract = (function(module) {
       this.currentProvider = provider;
     },
 
-    setWallet: function(wallet) {
+    __setWallet: function(wallet) {
       this.web3.eth.accounts.wallet = wallet;
+    },
+
+    __setGasMulitplier: function(multiplier){
+      this.__gasMultiplier = mutiplier;
     },
 
     new: function() {
@@ -221,50 +226,52 @@ var contract = (function(module) {
       var self = this;
 
       return new Promise(function(accept, reject) {
-        // Try to detect the network we have artifacts for.
-        if (self.network_id) {
-          // We have a network id and a configuration, let's go with it.
-          if (self.networks[self.network_id] != null) {
-            return accept(self.network_id);
-          }
-        }
+        // Try to get the current blockLimit
+        self.web3.eth.getBlock('latest').then(function(block){
 
-        self.web3.eth.net.getId().then(function(network_id){
-          // If we found the network via a number, let's use that.
-          if (self.hasNetwork(network_id)) {
-
-            self.setNetwork(network_id);
-            return accept(network_id);
+          // Try to detect the network we have artifacts for.
+          if (self.network_id) {
+            // We have a network id and a configuration, let's go with it.
+            if (self.networks[self.network_id] != null) {
+              return accept(self.network_id, block.gasLimit);
+            }
           }
 
-          // Otherwise, go through all the networks that are listed as
-          // blockchain uris and see if they match.
-          var uris = Object.keys(self._json.networks).filter(function(network) {
-            return network.indexOf("blockchain://") == 0;
-          });
+          self.web3.eth.net.getId().then(function(network_id){
+            // If we found the network via a number, let's use that.
+            if (self.hasNetwork(network_id)) {
 
-          var matches = uris.map(function(uri) {
-            return BlockchainUtils.matches.bind(BlockchainUtils, uri, self.web3.currentProvider);
-          });
-
-          Utils.parallel(matches, function(err, results) {
-            if (err) return reject(err);
-
-            for (var i = 0; i < results.length; i++) {
-              if (results[i]) {
-                self.setNetwork(uris[i]);
-                return accept(network_id);
-              }
+              self.setNetwork(network_id);
+              return accept(self.network_id, block.gasLimit);
             }
 
-            // We found nothing. Set the network id to whatever the provider states.
-            self.setNetwork(network_id);
-            return accept(network_id);
-          });
+            // Otherwise, go through all the networks that are listed as
+            // blockchain uris and see if they match.
+            var uris = Object.keys(self._json.networks).filter(function(network) {
+              return network.indexOf("blockchain://") == 0;
+            });
 
-        }).catch(function(err){
-          return reject(err);
-        });
+            var matches = uris.map(function(uri) {
+              return BlockchainUtils.matches.bind(BlockchainUtils, uri, self.web3.currentProvider);
+            });
+
+            Utils.parallel(matches, function(err, results) {
+              if (err) return reject(err);
+
+              for (var i = 0; i < results.length; i++) {
+                if (results[i]) {
+                  self.setNetwork(uris[i]);
+                  return accept(self.network_id, block.gasLimit);
+                }
+              }
+
+              // We found nothing. Set the network id to whatever the provider states.
+              self.setNetwork(network_id);
+              return accept(self.network_id, block.gasLimit);
+            });
+
+          }).catch(reject);
+        }).catch(reject);
       });
     },
 
