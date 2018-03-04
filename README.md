@@ -34,7 +34,7 @@ $ truffle init
 
 From there, you can run `truffle compile`, `truffle migrate` and `truffle test` to compile your contracts, deploy those contracts to the network, and run their associated unit tests.
 
-Truffle comes bundled with a local development blockchain server that launches automatically when you invoke the commands above. If you're interested in configuring the blockchain server or would like a user-friendly UI for it, check out:
+Truffle comes bundled with a local development blockchain server that launches automatically when you invoke the commands  above. If you'd like to use a more advanced configuration you can install a separate blockchain development client and [configure your truffle network settings to use that blockchain network](http://truffleframework.com/docs/advanced/configuration). We suggest using `ganache-cli` (a Ethereum RPC command-line client) which is also maintained under the wings of the truffle suite. You can easily install it with npm: `npm install ganache-cli`. If you'd like your client to have a beautiful graphical user interface that displays your transaction history and chain state, checkout [ganache](http://truffleframework.com/ganache/).
 
 +  [ganache-cli](https://github.com/trufflesuite/ganache-cli): a command-line version of Truffle's blockchain server.
 +  [ganache](http://truffleframework.com/ganache/): A GUI for the server that displays your transaction history and chain state.
