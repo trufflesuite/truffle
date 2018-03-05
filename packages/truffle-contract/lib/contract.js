@@ -434,6 +434,14 @@ var contract = (function(module) {
         this._json.gasMultiplier = val;
       }
     },
+    timeoutBlocks: {
+      get: function() {
+        return this._json.timeoutBlocks;
+      },
+      set: function(val) {
+        this._json.timeoutBlocks = val;
+      }
+    },
     abi: {
       get: function() {
         return this._json.abi;

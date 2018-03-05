@@ -2,16 +2,53 @@ var Web3PromiEvent = require('web3-core-promievent');
 var utils = require("./utils");
 var StatusError = require("./statuserror");
 var handle = require("./handlers");
+var subscriptions = require("./subscriptions");
 
 var execute = {
 
-  _defaultGas: 90000,
+  _defaultGas: 90000,          // RPC standard
+  _timeoutSignal: '50 blocks', // Substring of timeout err fired by web3
+  _defaultTimeoutBlocks: 50,   // Max # of blocks web3 will wait for a tx
 
   _setUpHandlers: function(emitter, context){
     emitter.on('error', handle.error.bind(emitter, context))
     emitter.on('transactionHash', handle.hash.bind(emitter, context))
     emitter.on('confirmation', handle.confirmation.bind(emitter, context))
     emitter.on('receipt', handle.receipt.bind(emitter, context));
+  },
+
+  _manageTimeout: function(contract, context, error){
+    var counter = 50;
+    var timedOut = error.message && error.message.includes(execute._timeoutSignal);
+    var shouldWait = contract.timeoutBlocks && contract.timeoutBlocks > execute._defaultTimeoutBlocks;
+
+    if (!timedOut || !shouldWait) return context.promiEvent.reject(error);
+
+    subscriptions
+      .subscribe(contract.currentProvider, 'newHeads')
+      .then(function(sub){
+        // get ID?
+        contract.currentProvider.on('data', result => {
+          counter++;
+          if (counter > contract.timeoutBlocks){
+            //unsubcribe ID?
+            context.promiEvent.reject(error);
+          }
+          contract.web3.eth.getTransactionReciept(context.transactionHash)
+            .then(result => {
+              // Handle geth light client (no contractAddress 'bug')
+              return (result.contractAddress)
+                  ? contract.at(contractAddress)
+                      .then(context.promiEvent.resolve)
+                      .catch(context.promiEvent.reject)
+
+                  : context.promiEvent.resolve(result);
+
+            }).catch(err => {
+              // handle geth 1.8 or reject
+            });
+      })
+    }).catch(context.promiEvent.reject);
   },
 
   _getGasEstimate: function(contract, params, blockLimit){
@@ -247,10 +284,8 @@ var execute = {
 
         context.promiEvent.resolve(new self(instance));
 
-      // TO DO: capture & ignore '50 blocks' timeout error.
-      // All the event emitters & promise will go dead so we'll need
-      // to replicate what web3 does here.
-      }).catch(context.promiEvent.reject);
+      // Manage web3's 50 blocks' timeout error. Web3's own subscriptions go dead here.
+      }).catch(execute._manageTimeout.bind(null, self, context));
     }).catch(context.promiEvent.reject);
   },
 
