@@ -25,6 +25,9 @@ export default class Session {
    * @private
    */
   constructor(contracts, txHash, provider) {
+    /**
+     * @private
+     */
     this._store = configureStore(reducer, rootSaga);
 
     // record contracts
