@@ -29,6 +29,9 @@ export default class Debugger {
    * @private
    */
   constructor(session) {
+    /**
+     * @private
+     */
     this._session = session;
   }
 
@@ -68,6 +71,20 @@ export default class Debugger {
     return this._session;
   }
 
+  /**
+   * Exported selectors
+   *
+   * See individual selector docs for full listing
+   *
+   * @example
+   * Debugger.selectors.ast.current.tree
+   *
+   * @example
+   * Debugger.selectors.solidity.next.instruction
+   *
+   * @example
+   * Debugger.selectors.trace.steps
+   */
   static get selectors() {
     return createNestedSelector({
       ast: astSelector,

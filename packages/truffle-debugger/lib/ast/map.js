@@ -4,6 +4,9 @@ const debug = debugModule("debugger:ast:map");
 import IntervalTree from "node-interval-tree";
 
 
+/**
+ * @private
+ */
 export function getRange(node) {
   // src: "<start>:<length>:<_>"
   // returns [start, end]
@@ -15,6 +18,9 @@ export function getRange(node) {
   return [start, start + length];
 }
 
+/**
+ * @private
+ */
 export function rangeNodes(node, pointer = "") {
   if (node instanceof Array) {
     return [].concat(
@@ -37,7 +43,9 @@ export function rangeNodes(node, pointer = "") {
   }
 }
 
-
+/**
+ * @private
+ */
 export function findRange(node, sourceStart, sourceLength) {
   let ranges = rangeNodes(node);
   let tree = new IntervalTree();
