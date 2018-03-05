@@ -14,6 +14,15 @@ import contextSelector from "./context/selectors";
 
 const debug = debugModule("debugger");
 
+/**
+ * @example
+ * let session = Debugger
+ *   .forTx(<txHash>, {
+ *     contracts: [<contract obj>, ...],
+ *     provider: <provider instance>
+ *   })
+ *   .connect();
+ */
 export default class Debugger {
   /**
    * @param {Session} session - debugger session
@@ -82,4 +91,3 @@ export default class Debugger {
  * @property {string} deployedBinary 0x-prefixed compiled binary (on chain)
  * @property {string} deployedSourceMap solidity source map for on-chain bytecode
  */
-
