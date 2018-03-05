@@ -114,6 +114,7 @@ describe("Abstractions", function() {
 
     // Constructor in this test consumes ~6437823 vs blockLimit of 6721975.
     it('should not multiply past the blockLimit', async function(){
+      this.timeout(10000);
       const estimate = await Example.new.estimateGas(1200);
       const block = await web3.eth.getBlock('latest');
       const multiplier = Example.gasMultiplier;
@@ -367,7 +368,7 @@ describe("Abstractions", function() {
     });
 
     it('should automatically fund a tx that costs more than default gas (90k)', async function(){
-      this.timeout(5000);
+      this.timeout(10000);
 
       const defaultGas = 90000;
       const instance = await Example.new(1);
