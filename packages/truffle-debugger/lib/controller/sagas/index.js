@@ -3,7 +3,7 @@ const debug = debugModule("debugger:controller:sagas");
 
 import { put, call, race, take, select } from 'redux-saga/effects';
 
-import * as actions from "./actions";
+import * as actions from "../actions";
 import * as traceActions from "lib/trace/actions";
 
 import trace from "lib/trace/selectors";

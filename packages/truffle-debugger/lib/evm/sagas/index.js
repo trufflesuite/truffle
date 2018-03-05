@@ -4,9 +4,9 @@ const debug = debugModule("debugger:evm:sagas");
 import { call, put, take, select } from "redux-saga/effects";
 
 import { TICK } from "lib/trace/actions";
-import * as actions from "./actions";
+import * as actions from "../actions";
 
-import evm from "./selectors";
+import evm from "../selectors";
 
 export function* callstackSaga () {
   while (true) {

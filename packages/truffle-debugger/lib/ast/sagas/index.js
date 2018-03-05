@@ -3,13 +3,13 @@ const debug = debugModule("debugger:ast:sagas");
 
 import { race, fork, take} from "redux-saga/effects";
 
-import * as actions from "./actions";
+import * as actions from "../actions";
 
-import * as visitor from "./visitor";
+import visitorSaga from "./visitor";
 
 export default function* saga() {
   yield race({
-    visitor: fork(visitor.saga),
+    visitor: fork(visitorSaga),
     done: take(actions.DONE_VISITING)
   });
 }

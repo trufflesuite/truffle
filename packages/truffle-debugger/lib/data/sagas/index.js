@@ -5,11 +5,11 @@ import { put, takeEvery, select } from "redux-saga/effects";
 import jsonpointer from "json-pointer";
 
 import { TICK } from "lib/trace/actions";
-import * as actions from "./actions";
+import * as actions from "../actions";
 
 import ast from "lib/ast/selectors";
 import evm from "lib/evm/selectors";
-import data from "./selectors";
+import data from "../selectors";
 
 import { WORD_SIZE } from "lib/data/decode/utils";
 import * as utils from "lib/data/decode/utils";
