@@ -104,7 +104,7 @@ function* mapData() {
 
   let tasks = yield all(
     contexts.map((context, idx) => [context, idx])
-      .filter( ([{ast, addresses}]) => addresses.length > 0 && ast )
+      .filter( ([{ast}]) => !!ast )
       .map( ([{ast}, idx]) => fork( () => put(astActions.visit(idx, ast))) )
   )
 
