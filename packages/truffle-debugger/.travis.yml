@@ -5,17 +5,23 @@ node_js:
 
 env:
   global:
-  - GIT_NAME: "'Travis Deployer'"
-  - GIT_EMAIL: gnidan@trufflesuite.com
-  - GH_REF: git@github.com:trufflesuite/truffle-debugger.git
-  - WATCH_BRANCH: "develop"
+    - GIT_NAME: "'Travis Deployer'"
+    - GIT_EMAIL: gnidan@trufflesuite.com
+    - GH_REF: git@github.com:trufflesuite/truffle-debugger.git
+    - WATCH_BRANCH: "develop"
+  - TEST=repo
+  - TEST=upstream
+  - TEST=scenario
 
 services:
   - docker
+  
+before_install:
+  - docker pull truffle/ci
 
 before_script:
 - >
-  if [ "${TRAVIS_PULL_REQUEST}" = "false" -a "$TRAVIS_BRANCH" = "${WATCH_BRANCH}" ];
+  if [ "${TEST}" = "repo" -a "${TRAVIS_PULL_REQUEST}" = "false" -a "$TRAVIS_BRANCH" = "${WATCH_BRANCH}" ];
   then
     openssl aes-256-cbc -K $encrypted_59c1e9d151c0_key -iv $encrypted_59c1e9d151c0_iv -in deploy-key.enc -out deploy-key -d
     chmod 600 deploy-key
@@ -24,14 +30,6 @@ before_script:
     git config user.name "${GIT_NAME}"
     git config user.email "${GIT_EMAIL}"
   fi
-
-before_install:
-  - docker pull truffle/ci
-
-env:
-  - TEST=repo
-  - TEST=upstream
-  - TEST=scenario
 
 script:
   - >
@@ -44,10 +42,9 @@ script:
         -e TEST \
       truffle/ci:latest run_tests
 
-
 after_success:
 - >
-  if [ "${TRAVIS_PULL_REQUEST}" = "false" -a "$TRAVIS_BRANCH" = "${WATCH_BRANCH}" ];
+  if [ "${TEST}" = "repo" -a "${TRAVIS_PULL_REQUEST}" = "false" -a "${TRAVIS_BRANCH}" = "${MASTER}" ];
   then
     git push origin :gh-pages
     npm run docs && \
