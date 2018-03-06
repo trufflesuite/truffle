@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:ast:visitor");
+const debug = debugModule("debugger:ast:sagas:visitor");
 
 import { call, takeEvery, put } from "redux-saga/effects";
 
