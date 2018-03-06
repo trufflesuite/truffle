@@ -113,17 +113,6 @@ function* mapData() {
   }
 
   yield put(astActions.doneVisiting());
-
-  // let contexts = allContexts
-  //   .filter((context) => context.ast);
-
-  // let tasks = yield all([
-  //   contexts.map( (context) => fork(receiveMap, context.binary) )
-  // ]);
-
-  // yield all(
-  //   contexts.map( (context) => call(fetchMap, context.binary) )
-  // );
 }
 
 
