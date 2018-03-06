@@ -1,6 +1,7 @@
 var debug = require("debug")("ganache-core");
 var ganache = require("ganache-core");
 var Web3 = require("web3");
+var Web3PromiEvent = require('web3-core-promievent');
 
 var log = {
   log: debug
@@ -9,6 +10,10 @@ var log = {
 var util = {
 
   web3: null,
+  fakePromiEvent: null,
+  fakeReceipt: null,
+  realHash: null,
+  realReceipt: null,
 
   // Spins up ganache with arbitrary options and
   // binds web3 & a contract instance to it.
@@ -48,7 +53,39 @@ var util = {
           (err) ? reject(err) : accept(result);
       });
     });
-  }
+  },
+
+  fakeSendTransaction: function(params){
+    util.fakePromiEvent = new Web3PromiEvent();
+    var real = util.web3.eth.sendTransaction(params)
+
+    real.on('transactionHash', hash => {
+      util.realHash = hash;
+      util.fakePromiEvent.eventEmitter.emit('transactionHash', hash)
+    });
+
+    real.on('receipt', function(receipt) {
+      util.realReceipt = receipt;
+      this.removeAllListeners()
+    });
+
+    return util.fakePromiEvent.eventEmitter;
+  },
+
+  fakeReject: function(msg){
+    var error = msg || "Transaction was not mined within 50 blocks";
+    util.fakePromiEvent.reject(new Error(error));
+  },
+
+  fakeNoReceipt: function(transactionHash){
+    return Promise.resolve(null);
+  },
+
+  fakeGotReceipt: function(transactionHash){
+    // Verify we are polling for the right hash
+    if (transactionHash === util.realHash)
+      return Promise.resolve(util.realReceipt)
+  },
 }
 
 module.exports = util;

@@ -7,8 +7,10 @@ var Utils = require("./utils");
  */
 var handlers = {
 
-  // Magic number of confirmations to listen for at web3
+  // Constants to override at web3
   _CONFIRMATIONBLOCKS: 24,
+  _defaultTimeoutBlocks: 50,
+  _timeoutSignal: '50 blocks',
 
   // Error after some number of ms if receipt never arrives
   _synchronize: function(start, context){
@@ -28,11 +30,22 @@ var handlers = {
     }
   },
 
+  _shouldIgnore: function(context, error){
+    var timedOut = error.message && error.message.includes(handlers._timeoutSignal);
+    var shouldWait = context.contract &&
+                     context.contract.timeoutBlocks &&
+                     context.contract.timeoutBlocks > handlers._defaultTimeoutBlocks;
+
+    return timedOut && shouldWait;
+  },
+
   error: function(context, error){
-    context.promiEvent.eventEmitter.emit('error', error);
-    clearInterval(context.interval);
-    this.removeListener('error', handlers.error);
-    context.promiEvent.reject(error);
+    if (!handlers._shouldIgnore(context, error)){
+      context.promiEvent.eventEmitter.emit('error', error);
+      clearInterval(context.interval);
+      this.removeListener('error', handlers.error);
+      context.promiEvent.reject(error);
+    }
   },
 
   // Collect hash for contract.new (we attach it to the contract there)

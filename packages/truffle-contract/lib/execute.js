@@ -18,37 +18,48 @@ var execute = {
   },
 
   _manageTimeout: function(contract, context, error){
-    var counter = 50;
+    var counter = execute._defaultTimeoutBlocks;
+    var id = new Date().getTime();
     var timedOut = error.message && error.message.includes(execute._timeoutSignal);
     var shouldWait = contract.timeoutBlocks && contract.timeoutBlocks > execute._defaultTimeoutBlocks;
 
     if (!timedOut || !shouldWait) return context.promiEvent.reject(error);
 
-    subscriptions
-      .subscribe(contract.currentProvider, 'newHeads')
-      .then(function(sub){
-        // get ID?
-        contract.currentProvider.on('data', result => {
-          counter++;
-          if (counter > contract.timeoutBlocks){
-            //unsubcribe ID?
-            context.promiEvent.reject(error);
-          }
-          contract.web3.eth.getTransactionReciept(context.transactionHash)
-            .then(result => {
-              // Handle geth light client (no contractAddress 'bug')
-              return (result.contractAddress)
-                  ? contract.at(contractAddress)
-                      .then(context.promiEvent.resolve)
-                      .catch(context.promiEvent.reject)
+    // This will run every block from now until contract.timeoutBlocks
+    var listener = function(){
+      var self = this;
+      counter++;
 
-                  : context.promiEvent.resolve(result);
+      if (counter > contract.timeoutBlocks){
+        subscriptions.unsubscribe(contract, id);
+        context.promiEvent.reject(error);
+        self.removeListener('data', listener);
+        return;
+      }
 
-            }).catch(err => {
-              // handle geth 1.8 or reject
-            });
-      })
-    }).catch(context.promiEvent.reject);
+      contract.web3.eth.getTransactionReceipt(context.transactionHash)
+        .then(result => {
+          if (!result) return;
+
+          (result.contractAddress)
+            ? contract
+                .at(result.contractAddress)
+                .then(context.promiEvent.resolve)
+                .catch(context.promiEvent.reject)
+
+            : contract.promiEvent.resolve(result);
+
+            self.removeListener('data', listener);
+        }).catch(err => {
+          context.promiEvent.reject(err);
+          self.removeListener('data', listener);
+        });
+    };
+
+    //
+    subscriptions.subscribe(contract, 'newHeads', id)
+      .then((result) => contract.web3.currentProvider.on('data', listener))
+      .catch(context.promiEvent.reject);
   },
 
   _getGasEstimate: function(contract, params, blockLimit){
@@ -126,6 +137,7 @@ var execute = {
           params.gas = gas
           result = C.web3.eth.sendTransaction(params);
           execute._setUpHandlers(result, context);
+          result.catch(execute._manageTimeout.bind(null, self, context))
 
         }).catch(promiEvent.reject)
       }).catch(promiEvent.reject)
@@ -169,6 +181,7 @@ var execute = {
           params.gas = gas;
           var result = C.web3.eth.sendTransaction(params);
           execute._setUpHandlers(result, context);
+          result.catch(execute._manageTimeout.bind(null, self, context))
 
         }).catch(promiEvent.reject)
       }).catch(promiEvent.reject)
@@ -285,7 +298,7 @@ var execute = {
         context.promiEvent.resolve(new self(instance));
 
       // Manage web3's 50 blocks' timeout error. Web3's own subscriptions go dead here.
-      }).catch(execute._manageTimeout.bind(null, self, context));
+      }).catch(execute._manageTimeout.bind(null, self, context))
     }).catch(context.promiEvent.reject);
   },
 
