@@ -45,7 +45,7 @@ script:
 
 after_success:
 - >
-  if [ "${TEST}" = "repo" -a "${TRAVIS_PULL_REQUEST}" = "false" -a "${TRAVIS_BRANCH}" = "${MASTER}" ];
+  if [ "${TEST}" = "repo" -a "${TRAVIS_PULL_REQUEST}" = "false" -a "$TRAVIS_BRANCH" = "${WATCH_BRANCH}" ];
   then
     git push origin :gh-pages
     npm run docs && \
