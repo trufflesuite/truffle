@@ -3,7 +3,7 @@ const debug = debugModule("debugger:ast:visitor");
 
 import { call, takeEvery, put } from "redux-saga/effects";
 
-import * as actions from "./actions";
+import * as actions from "../actions";
 import * as dataActions from "lib/data/actions";
 
 export function *walk(context, node, pointer = "", parentId = null) {
@@ -57,7 +57,7 @@ export function *walkSaga({context, ast}) {
   yield walk(context, ast);
 }
 
-export function *saga() {
+export default function *visitorSaga() {
   yield *idSaga();
   yield *variableDeclarationSaga();
 

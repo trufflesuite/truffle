@@ -3,9 +3,9 @@ const debug = debugModule("debugger:web3:sagas");
 
 import { takeEvery, takeLatest, apply, fork, race, take, put, select } from 'redux-saga/effects';
 
-import * as actions from "./actions";
+import * as actions from "../actions";
 
-import Web3Adapter from "./adapter";
+import Web3Adapter from "../adapter";
 
 export function* inspectTransaction(adapter, {txHash}) {
   debug("inspecting transaction");

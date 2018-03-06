@@ -10,6 +10,87 @@ Features:
 - Watch expressions
 - and more!
 
+## API Documentation
+
+API Documentation for this library can be found at [truffleframework.com/truffle-debugger](http://truffleframework.com/truffle-debugger/).
+
 ## Library Usage
 
-Usage documentation coming soon. In the meantime, please refer to [`truffle debug` CLI implementation](https://github.com/trufflesuite/truffle-core/blob/develop/lib/commands/debug.js)
+_:warning: This documentation is currently a work in progress.
+Please see the [reference integration](https://github.com/trufflesuite/truffle-core/blob/develop/lib/commands/debug.js) provided by the `truffle debug` command._
+
+### Required Parameters
+
+To start a truffle-debugger session, you'll need the following:
+
+- `txHash` - a transaction hash (prefixed with `0x`), for the transaction to debug
+- `provider` - a web3 provider instance (see [web3.js](https://github.com/ethereum/web3.js/)
+- `contracts` -  an array of contract objects, with the following properties:
+  - `contractName` - the name of the contract
+  - `source` - the full Solidity source code
+  - `sourcePath` - (optional) the path to the Solidity file on disk
+  - `ast` - The Solidity compiler's output AST (new style, not `legacyAST`)
+  - `binary` - `0x`-prefixed string with the binary used to create a contract instance
+  - `sourceMap` - the Solidity compiler output source map for the creation binary
+  - `deployedBinary` - `0x`-prefixed string with the on-chain binary for a contract instance
+  - `deployedSourceMap` - source map corresponding to the on-chain binary (from the Solidity compiler)
+
+### Invocation
+
+1. Start the debugger session by constructing a Debugger instance with `.forTx()` and then `.connect()` to it:
+
+```javascript
+import Debugger from "truffle-debugger";
+
+let session = Debugger
+  .forTx(txHash, { contracts, provider })
+  .connect();
+```
+
+2. Resolve the session's `ready()` promise:
+
+```javascript
+await session.ready();
+```
+
+3. Use the provided public methods on the `session` instance in order to step through the trace for the transaction:
+
+```javascript
+session.stepNext();
+session.stepOver();
+session.stepInfo();
+```
+
+4. Access data provided by the debugger via the `session.view()` interface, and the provided selectors:
+
+```javascript
+let { ast, context, data, evm, solidity, trace } = Debugger.selectors;
+
+let variables = session.view(data.identifiers.native.current);
+let sourceRange = session.view(solidity.next.sourceRange);
+```
+
+### Useful API Docs References
+
+- [**`Session` class docs**](http://truffleframework.com/truffle-debugger/class/lib/session/index.js~Session.html)
+- **Docs for selectors:**
+  - [**`ast` selectors**](http://truffleframework.com/truffle-debugger/identifiers.html#ast-selectors)
+  - [**`context` selectors**](http://truffleframework.com/truffle-debugger/identifiers.html#context-selectors)
+  - [**`data` selectors**](http://truffleframework.com/truffle-debugger/identifiers.html#data-selectors)
+  - [**`evm` selectors**](http://truffleframework.com/truffle-debugger/identifiers.html#evm-selectors)
+  - [**`solidity` selectors**](http://truffleframework.com/truffle-debugger/identifiers.html#solidity-selectors)
+  - [**`trace` selectors**](http://truffleframework.com/truffle-debugger/identifiers.html#trace-selectors)
+
+## Contributing
+
+It's our goal that this library should serve as a reliable and well-maintained tool for the Solidity ecosystem. Ultimately, we hope to support all language features and meet the varied requirements of a mature debugging library.
+
+We believe that a good Solidity debugger belongs to the community. We welcome, with our most humble gratitude, any and all community efforts in bringing this debugger closer to that goal. If you find something broken or missing, please open an issue!
+
+Some other ideas for how to get involved:
+- Bug fix PRs
+- Documentation improvements
+- Additional tests - unit tests and integration
+- Technical discussion (ways to improve architecture, etc.)
+
+Thank you for all the continued support. :bow:

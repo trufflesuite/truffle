@@ -16,7 +16,7 @@ import * as contextActions from "lib/context/actions";
 import * as traceActions from "lib/trace/actions";
 import * as web3Actions from "lib/web3/actions";
 import * as evmActions from "lib/evm/actions";
-import * as actions from "./actions";
+import * as actions from "../actions";
 
 import context from "lib/context/selectors";
 

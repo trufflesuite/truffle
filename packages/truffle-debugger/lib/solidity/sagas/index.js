@@ -6,8 +6,8 @@ import { call, put, take, select } from "redux-saga/effects";
 import { TICK } from "lib/trace/actions";
 import evm from "lib/evm/selectors";
 
-import * as actions from "./actions";
-import solidity from "./selectors";
+import * as actions from "../actions";
+import solidity from "../selectors";
 
 function* functionDepthSaga () {
   while (true) {

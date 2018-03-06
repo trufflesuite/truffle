@@ -14,12 +14,24 @@ import contextSelector from "./context/selectors";
 
 const debug = debugModule("debugger");
 
+/**
+ * @example
+ * let session = Debugger
+ *   .forTx(<txHash>, {
+ *     contracts: [<contract obj>, ...],
+ *     provider: <provider instance>
+ *   })
+ *   .connect();
+ */
 export default class Debugger {
   /**
    * @param {Session} session - debugger session
    * @private
    */
   constructor(session) {
+    /**
+     * @private
+     */
     this._session = session;
   }
 
@@ -59,6 +71,20 @@ export default class Debugger {
     return this._session;
   }
 
+  /**
+   * Exported selectors
+   *
+   * See individual selector docs for full listing
+   *
+   * @example
+   * Debugger.selectors.ast.current.tree
+   *
+   * @example
+   * Debugger.selectors.solidity.next.instruction
+   *
+   * @example
+   * Debugger.selectors.trace.steps
+   */
   static get selectors() {
     return createNestedSelector({
       ast: astSelector,
@@ -82,4 +108,3 @@ export default class Debugger {
  * @property {string} deployedBinary 0x-prefixed compiled binary (on chain)
  * @property {string} deployedSourceMap solidity source map for on-chain bytecode
  */
-
