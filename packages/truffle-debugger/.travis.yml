@@ -9,9 +9,10 @@ env:
     - GIT_EMAIL: gnidan@trufflesuite.com
     - GH_REF: git@github.com:trufflesuite/truffle-debugger.git
     - WATCH_BRANCH: "develop"
-  - TEST=repo
-  - TEST=upstream
-  - TEST=scenario
+  matrix:
+    - TEST=repo
+    - TEST=upstream
+    - TEST=scenario
 
 services:
   - docker
