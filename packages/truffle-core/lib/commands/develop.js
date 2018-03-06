@@ -1,3 +1,5 @@
+var emoji = require('node-emoji');
+
 var command = {
   command: 'develop',
   description: 'Open a console with a local development blockchain',
@@ -78,8 +80,11 @@ var command = {
       '8d5366123cb560bb606379f90a0bfd4769eecc0557f1b362dcae9012b548b1e5'
     ];
 
+    var onMissing = function(name){ return "**"};
+
     var warning =
-      "** Important **: This mnemonic was created for you by Truffle. It is not secure.\n" +
+      ":warning:  Important :warning:  : " +
+      "This mnemonic was created for you by Truffle. It is not secure.\n" +
       "Ensure you do not use it on production blockchains, or else you risk losing funds.";
 
     var ipcOptions = {
@@ -117,7 +122,7 @@ var command = {
 
         config.logger.log(`Mnemonic: ${mnemonic}`);
         config.logger.log();
-        config.logger.log(warning);
+        config.logger.log(emoji.emojify(warning, onMissing));
         config.logger.log();
       } else {
         config.logger.log(`Connected to existing Truffle Develop session at ${url}`);
