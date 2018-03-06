@@ -80,3 +80,17 @@ let sourceRange = session.view(solidity.next.sourceRange);
   - [**`evm` selectors**](http://truffleframework.com/truffle-debugger/identifiers.html#evm-selectors)
   - [**`solidity` selectors**](http://truffleframework.com/truffle-debugger/identifiers.html#solidity-selectors)
   - [**`trace` selectors**](http://truffleframework.com/truffle-debugger/identifiers.html#trace-selectors)
+
+## Contributing
+
+It's our goal that this library should serve as a reliable and well-maintained tool for the Solidity ecosystem. Ultimately, we hope to support all language features and meet the varied requirements of a mature debugging library.
+
+We believe that a good Solidity debugger belongs to the community. We welcome, with our most humble gratitude, any and all community efforts in bringing this debugger closer to that goal. If you find something broken or missing, please open an issue!
+
+Some other ideas for how to get involved:
+- Bug fix PRs
+- Documentation improvements
+- Additional tests - unit tests and integration
+- Technical discussion (ways to improve architecture, etc.)
+
+Thank you for all the continued support. :bow:
