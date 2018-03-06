@@ -7,8 +7,9 @@ import * as actions from "../actions";
 import * as dataActions from "lib/data/actions";
 
 export function *walk(context, node, pointer = "", parentId = null) {
-  yield put(actions.enter(pointer, node, context, parentId));
   debug("walking %o %o", pointer, node);
+
+  yield *handleEnter(context, node, pointer, parentId);
 
   if (node instanceof Array) {
     for (let [i, child] of node.entries()) {
@@ -20,46 +21,40 @@ export function *walk(context, node, pointer = "", parentId = null) {
     }
   }
 
-  yield put(actions.exit(pointer, node, context));
+  yield *handleExit(context, node, pointer);
 }
 
-export function *recordVariableDeclaration({context, node}) {
-  debug("declaring variable: %o", node);
-  yield put(dataActions.declare(context, node));
+export function *handleEnter(context, node, pointer, parentId) {
+  if (!(node instanceof Object)) {
+    return;
+  }
+
+  debug("entering %s", pointer);
+
+  if (node.id !== undefined) {
+    debug("%s recording scope %s", pointer, node.id);
+    yield put(dataActions.scope(context, node.id, pointer, parentId));
+  }
+
+  switch (node.type) {
+    case "VariableDeclaration":
+      debug("%s recording variable %o", pointer, node);
+      yield put(dataActions.declare(context, node));
+      break;
+  }
 }
 
-export function *variableDeclarationSaga() {
-  const predicate = (action) => (
-    action.type == actions.ENTER &&
-    action.node instanceof Object &&
-    action.node.nodeType == "VariableDeclaration"
-  );
+export function *handleExit(context, node, pointer) {
+  debug("exiting %s", pointer);
 
-  yield takeEvery(predicate, recordVariableDeclaration);
+  // no-op right now
 }
 
-export function *recordId({context, node, pointer, parentId}) {
-  debug("recording scope: %o %o", node.id, pointer);
-  yield put(dataActions.scope(context, node.id, pointer, parentId));
-}
-
-export function *idSaga() {
-  const predicate = (action) => (
-    action.type == actions.ENTER &&
-    action.node instanceof Object &&
-    action.node.id !== undefined
-  );
-
-  yield takeEvery(predicate, recordId);
-}
 
 export function *walkSaga({context, ast}) {
   yield walk(context, ast);
 }
 
 export default function *visitorSaga() {
-  yield *idSaga();
-  yield *variableDeclarationSaga();
-
   yield takeEvery(actions.VISIT, walkSaga);
 }
