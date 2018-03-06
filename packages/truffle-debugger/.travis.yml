@@ -30,6 +30,7 @@ before_script:
     ssh-add deploy-key
     git config user.name "${GIT_NAME}"
     git config user.email "${GIT_EMAIL}"
+    git remote add deploy "${GH_REF}"
   fi
 
 script:
@@ -47,9 +48,10 @@ after_success:
 - >
   if [ "${TEST}" = "repo" -a "${TRAVIS_PULL_REQUEST}" = "false" -a "$TRAVIS_BRANCH" = "${WATCH_BRANCH}" ];
   then
-    git push origin :gh-pages
+    git fetch deploy
+    git push deploy :gh-pages
     npm run docs && \
     git add -f docs && \
     git commit -m "Update docs" && \
-    git subtree push --prefix docs origin gh-pages
+    git subtree push --prefix docs deploy gh-pages
   fi
