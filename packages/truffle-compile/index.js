@@ -225,7 +225,12 @@ function orderABI(contract){
   for (var i = 0; i < contract.legacyAST.children.length; i++) {
     var definition = contract.legacyAST.children[i];
 
-    if (definition.name != "ContractDefinition") continue;
+    // AST can have multiple contract definitions, make sure we have the
+    // one that matches our contract
+    if (definition.name !== "ContractDefinition" ||
+        definition.attributes.name !== contract.contract_name){
+      continue;
+    }
 
     contract_definition = definition;
     break;
