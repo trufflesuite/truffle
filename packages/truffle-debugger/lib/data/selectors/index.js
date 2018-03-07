@@ -33,6 +33,21 @@ function cleanBigNumbers(value) {
 
 const data = createSelectorTree({
   /**
+   * data.views
+   */
+  views: {
+    ast: {
+      current: createLeaf(
+        [ast.current.tree, ast.current.index], (tree, id) => ({tree, id})
+      ),
+
+      next: createLeaf(
+        [ast.next.node, ast.next.pointer], (node, pointer) => ({node, pointer})
+      )
+    }
+  },
+
+  /**
    * data.scopes
    */
   scopes: {
@@ -100,7 +115,7 @@ const data = createSelectorTree({
     stack: createLeaf(
       [evm.next.state.stack],
 
-      (words) => words.map(
+      (words) => (words || []).map(
         (word) => decodeUtils.toBytes(decodeUtils.toBigNumber(word, decodeUtils.WORD_SIZE))
       )
     ),

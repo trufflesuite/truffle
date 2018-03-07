@@ -7,27 +7,23 @@ import jsonpointer from "json-pointer";
 import { TICK } from "lib/trace/actions";
 import * as actions from "../actions";
 
-import ast from "lib/ast/selectors";
-import evm from "lib/evm/selectors";
 import data from "../selectors";
 
 import { WORD_SIZE } from "lib/data/decode/utils";
 import * as utils from "lib/data/decode/utils";
 
 function *tickSaga() {
-  let tree = yield select(ast.current.tree);
-  let treeId = yield select(ast.current.index);
-  let node = yield select(ast.next.node);
-  let pointer = yield select(ast.next.pointer);
+  let {tree, id: treeId} = yield select(data.views.ast.current);
+  let {node, pointer} = yield select(data.views.ast.next);
   let scopes = yield select(data.scopes.tables.current);
   let definitions = yield select(data.scopes.tables.inlined.current);
 
-  let state = yield select(evm.next.state);
-  if (!state.stack) {
+  let stack = yield select(data.current.stack);
+  if (!stack) {
     return;
   }
 
-  let top = state.stack.length - 1;
+  let top = stack.length - 1;
   var parameters, returnParameters, assignments, storageVars;
 
   switch (node.nodeType) {
