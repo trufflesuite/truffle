@@ -6,11 +6,9 @@ import { put, call, race, take, select } from 'redux-saga/effects';
 import * as actions from "../actions";
 import * as traceActions from "lib/trace/actions";
 
-import trace from "lib/trace/selectors";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 import ast from "lib/ast/selectors";
-import data from "lib/data/selectors";
 
 const controlSagas = {
   [actions.ADVANCE]: advance,

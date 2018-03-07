@@ -3,11 +3,12 @@ const debug = debugModule("debugger:solidity:sagas");
 
 import { call, put, take, select } from "redux-saga/effects";
 
+import * as actions from "../actions";
 import { TICK } from "lib/trace/actions";
+
+import solidity from "../selectors";
 import evm from "lib/evm/selectors";
 
-import * as actions from "../actions";
-import solidity from "../selectors";
 
 function* functionDepthSaga () {
   while (true) {

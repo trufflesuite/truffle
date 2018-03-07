@@ -4,7 +4,9 @@ const debug = debugModule("debugger:trace:sagas");
 import { take, takeEvery, put, select } from "redux-saga/effects";
 
 import * as actions from "../actions";
+
 import trace from "../selectors";
+
 
 export function *waitForTrace() {
   let {steps} = yield take(actions.SAVE_STEPS);
