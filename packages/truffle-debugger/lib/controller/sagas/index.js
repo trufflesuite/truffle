@@ -6,9 +6,7 @@ import { put, call, race, take, select } from 'redux-saga/effects';
 import * as actions from "../actions";
 import * as traceActions from "lib/trace/actions";
 
-import evm from "lib/evm/selectors";
-import solidity from "lib/solidity/selectors";
-import ast from "lib/ast/selectors";
+import controller from "../selectors";
 
 const controlSagas = {
   [actions.ADVANCE]: advance,
@@ -54,25 +52,24 @@ function* advance() {
  * instruction. See advance() if you'd like to advance by one instruction.
  */
 function* stepNext () {
-  const startingRange = yield select(solidity.next.sourceRange);
+  const startingRange = yield select(controller.next.location.sourceRange);
 
-  var nextRange, nextNode;
+  var next;
 
   do {
     // advance at least once step
     yield* advance();
 
     // and check the next source range
-    nextRange = yield select(solidity.next.sourceRange);
-    nextNode = yield select(ast.next.node);
+    next = yield select(controller.next.location);
 
     // if the next step's source range is still the same, keep going
   } while (
     // HACK - just skip over ContractDefinition nodes
-    nextNode.nodeType == "ContractDefinition" ||
+    next.node.nodeType == "ContractDefinition" ||
 
-    nextRange.start == startingRange.start &&
-    nextRange.length == startingRange.length
+    next.sourceRange.start == startingRange.start &&
+    next.sourceRange.length == startingRange.length
   );
 }
 
@@ -89,28 +86,28 @@ function* stepNext () {
  * step.
  */
 function* stepInto () {
-  if (yield select(evm.next.step.isJump)) {
+  if (yield select(controller.next.willJump)) {
     yield* stepNext();
 
     return;
   }
 
-  if (yield select(solidity.next.isMultiline)) {
+  if (yield select(controller.next.location.isMultiline)) {
     yield* stepOver();
 
     return;
   }
 
-  const startingDepth = yield select(solidity.current.functionDepth);
-  const startingRange = yield select(solidity.next.sourceRange);
+  const startingDepth = yield select(controller.current.functionDepth);
+  const startingRange = yield select(controller.next.location.sourceRange);
   var currentDepth;
   var nextRange;
 
   do {
     yield* stepNext();
 
-    currentDepth = yield select(solidity.current.functionDepth);
-    nextRange = yield select(solidity.next.sourceRange);
+    currentDepth = yield select(controller.current.functionDepth);
+    nextRange = yield select(controller.next.location.sourceRange);
 
   } while (
     // the function stack has not increased,
@@ -131,19 +128,19 @@ function* stepInto () {
  * This will run until the debugger encounters a decrease in function depth.
  */
 function* stepOut () {
-  if (yield select(solidity.next.isMultiline)) {
+  if (yield select(controller.next.location.isMultiline)) {
     yield *stepOver();
 
     return;
   }
 
-  const startingDepth = yield select(solidity.current.functionDepth);
+  const startingDepth = yield select(controller.current.functionDepth);
   var currentDepth;
 
   do {
     yield* stepNext();
 
-    currentDepth = yield select(solidity.current.functionDepth);
+    currentDepth = yield select(controller.current.functionDepth);
 
   } while(currentDepth >= startingDepth);
 }
@@ -155,16 +152,16 @@ function* stepOut () {
  * exists on a different line of code within the same function depth.
  */
 function* stepOver () {
-  const startingDepth = yield select(solidity.current.functionDepth);
-  const startingRange = yield select(solidity.next.sourceRange);
+  const startingDepth = yield select(controller.current.functionDepth);
+  const startingRange = yield select(controller.next.location.sourceRange);
   var currentDepth;
   var nextRange;
 
   do {
     yield* stepNext();
 
-    currentDepth = yield select(solidity.current.functionDepth);
-    nextRange = yield select(solidity.next.sourceRange);
+    currentDepth = yield select(controller.current.functionDepth);
+    nextRange = yield select(controller.next.location.sourceRange);
 
   } while (
     // keep stepping provided:
@@ -187,22 +184,20 @@ function* stepOver () {
  */
 function *continueUntil ({breakpoints}) {
   var currentCall;
-  var nextRange;
-  var nextNode;
+  var next;
 
   let breakpointHit = false;
 
   do {
     yield* stepNext();
 
-    currentCall = yield select(evm.current.call);
-    nextRange = yield select(solidity.next.sourceRange);
-    nextNode = yield select(ast.next.node);
+    currentCall = yield select(controller.current.executionContext);
+    next = yield select(controller.next.location);
 
     breakpointHit = breakpoints
       .filter( ({address, binary, line, node}) =>
         (address == currentCall.address || binary == currentCall.binary) &&
-        (line == nextRange.lines.start.line || node == nextNode.id)
+        (line == next.sourceRange.lines.start.line || node == next.node.id)
       )
       .length > 0;
 
