@@ -9,7 +9,7 @@ export default function configureStore (reducer, saga, initialState) {
   const composeEnhancers = composeWithDevTools({
     realtime: true,
     actionsBlacklist: [
-      "RECEIVE_TRACE", "NODE_EXIT", "NODE_ENTER", "SCOPE", "DECLARE_VARIABLE",
+      "RECEIVE_TRACE", "SCOPE", "DECLARE_VARIABLE",
       "ASSIGN", "ADVANCE", "SAVE_STEPS", "BEGIN_STEP", "NEXT"
     ],
     stateSanitizer: (state) => ({

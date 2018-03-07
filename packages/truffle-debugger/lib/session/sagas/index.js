@@ -104,7 +104,7 @@ function* mapData() {
 
   let tasks = yield all(
     contexts.map((context, idx) => [context, idx])
-      .filter( ([{ast, addresses}]) => addresses.length > 0 && ast )
+      .filter( ([{ast}]) => !!ast )
       .map( ([{ast}, idx]) => fork( () => put(astActions.visit(idx, ast))) )
   )
 
@@ -113,17 +113,6 @@ function* mapData() {
   }
 
   yield put(astActions.doneVisiting());
-
-  // let contexts = allContexts
-  //   .filter((context) => context.ast);
-
-  // let tasks = yield all([
-  //   contexts.map( (context) => fork(receiveMap, context.binary) )
-  // ]);
-
-  // yield all(
-  //   contexts.map( (context) => call(fetchMap, context.binary) )
-  // );
 }
 
 
