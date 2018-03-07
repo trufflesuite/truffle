@@ -122,6 +122,11 @@ let solidity = createSelectorTree({
     ),
 
     /**
+     * solidity.next.willJump
+     */
+    willJump: createLeaf([evm.next.step.isJump], (isJump) => isJump),
+
+    /**
      * solidity.next.jumpDirection
      */
     jumpDirection: createLeaf(

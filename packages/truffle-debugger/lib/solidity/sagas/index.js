@@ -7,7 +7,6 @@ import * as actions from "../actions";
 import { TICK } from "lib/trace/actions";
 
 import solidity from "../selectors";
-import evm from "lib/evm/selectors";
 
 
 function* functionDepthSaga () {
@@ -17,7 +16,7 @@ function* functionDepthSaga () {
     let instruction = yield select(solidity.next.instruction);
     debug("instruction: %o", instruction);
 
-    if (yield select(evm.next.step.isJump)) {
+    if (yield select(solidity.next.willJump)) {
       let jumpDirection = yield select(solidity.next.jumpDirection);
 
 
