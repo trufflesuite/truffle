@@ -1,7 +1,7 @@
 {
   "name": "truffle-core",
   "namespace": "consensys",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "description": "Core code for Truffle command line tool",
   "dependencies": {
     "async": "^1.4.2",
@@ -31,12 +31,12 @@
     "temp": "^0.8.3",
     "truffle-artifactor": "^3.0.4",
     "truffle-box": "^1.0.5",
-    "truffle-compile": "^3.0.6",
+    "truffle-compile": "^3.0.7",
     "truffle-config": "^1.0.4",
     "truffle-contract": "^3.0.4",
     "truffle-contract-sources": "^0.0.1",
     "truffle-debug-utils": "^1.0.4",
-    "truffle-debugger": "^2.0.0",
+    "truffle-debugger": "^2.0.1",
     "truffle-deployer": "^2.0.3",
     "truffle-error": "^0.0.2",
     "truffle-expect": "^0.0.3",
