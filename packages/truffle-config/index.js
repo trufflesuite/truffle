@@ -227,22 +227,16 @@ Config.default = function() {
 };
 
 Config.detect = function(options, filename) {
-  // Only attempt to detect the backup if a specific file wasn't asked for.
-  var checkBackup = false;
+  var search;
 
-  if (filename == null) {
-    filename = DEFAULT_CONFIG_FILENAME;
-    checkBackup = true;
-  }
+  (filename == null)
+    ? search = [DEFAULT_CONFIG_FILENAME, BACKUP_CONFIG_FILENAME]
+    : search = filename;
 
-  var file = findUp.sync(filename, {cwd: options.working_directory || options.workingDirectory});
+  var file = findUp.sync(search, {cwd: options.working_directory || options.workingDirectory});
 
   if (file == null) {
-    if (checkBackup == true) {
-      return this.detect(options, BACKUP_CONFIG_FILENAME);
-    } else {
-      throw new TruffleError("Could not find suitable configuration file.");
-    }
+    throw new TruffleError("Could not find suitable configuration file.");
   }
 
   return this.load(file, options);
