@@ -3,15 +3,14 @@ const debug = debugModule("debugger:session:sagas");
 
 import { cancel, call, all, fork, join, take, put, race, select } from 'redux-saga/effects';
 
-import astSaga from "lib/ast/sagas";
-import controllerSaga from "lib/controller/sagas";
-import soliditySaga from "lib/solidity/sagas";
-import evmSaga from "lib/evm/sagas";
-import traceSaga from "lib/trace/sagas";
-import dataSaga from "lib/data/sagas";
-import web3Saga from "lib/web3/sagas";
+import astSaga, * as ast from "lib/ast/sagas";
+import controllerSaga, * as controller from "lib/controller/sagas";
+import soliditySaga, * as solidity from "lib/solidity/sagas";
+import evmSaga, * as evm from "lib/evm/sagas";
+import traceSaga, * as trace from "lib/trace/sagas";
+import dataSaga, * as data from "lib/data/sagas";
+import web3Saga, * as web3 from "lib/web3/sagas";
 
-import * as astActions from "lib/ast/actions";
 import * as contextActions from "lib/context/actions";
 import * as traceActions from "lib/trace/actions";
 import * as web3Actions from "lib/web3/actions";
@@ -40,7 +39,7 @@ export default function *saga () {
     return;
   }
 
-  yield *mapData();
+  yield *ast.visitAll();
 
   yield *ready();
 
@@ -98,24 +97,6 @@ function* fetchTx(txHash, provider) {
     yield join(...tasks);
   }
 }
-
-function* mapData() {
-  let contexts = yield select(context.list);
-
-  let tasks = yield all(
-    contexts.map((context, idx) => [context, idx])
-      .filter( ([{ast}]) => !!ast )
-      .map( ([{ast}, idx]) => fork( () => put(astActions.visit(idx, ast))) )
-  )
-
-  if (tasks.length > 0) {
-    yield join(...tasks);
-  }
-
-  yield put(astActions.doneVisiting());
-}
-
-
 
 function *ready() {
   debug("ready");
