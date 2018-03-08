@@ -44,6 +44,8 @@ var command = {
     };
 
     getFiles(function(err, files) {
+      if (err) return done(err);
+
       files = files.filter(function(file) {
         return file.match(config.test_file_extension_regexp) != null;
       });
