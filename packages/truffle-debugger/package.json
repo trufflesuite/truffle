@@ -1,6 +1,6 @@
 {
   "name": "truffle-debugger",
-  "version": "2.0.1",
+  "version": "2.0.3",
   "description": "Core functionality for debugging Solidity files built with Truffle",
   "main": "dist/debugger.js",
   "scripts": {
