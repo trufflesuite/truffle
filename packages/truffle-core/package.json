@@ -36,7 +36,7 @@
     "truffle-contract": "^3.0.4",
     "truffle-contract-sources": "^0.0.1",
     "truffle-debug-utils": "^1.0.4",
-    "truffle-debugger": "^2.0.1",
+    "truffle-debugger": "^2.0.3",
     "truffle-deployer": "^2.0.3",
     "truffle-error": "^0.0.2",
     "truffle-expect": "^0.0.3",
