@@ -22,6 +22,12 @@ export function *waitForTrace() {
   yield put(actions.receiveAddresses(addresses));
 }
 
+export function *advance() {
+  yield put(actions.next());
+
+  yield take(actions.TOCK);
+}
+
 export function* next() {
   let remaining = yield select(trace.stepsRemaining);
   debug("remaining: %o", remaining);

@@ -3,8 +3,9 @@ const debug = debugModule("debugger:controller:sagas");
 
 import { put, call, race, take, select } from 'redux-saga/effects';
 
+import * as trace from "lib/trace/sagas";
+
 import * as actions from "../actions";
-import * as traceActions from "lib/trace/actions";
 
 import controller from "../selectors";
 
@@ -38,10 +39,7 @@ export default function* saga() {
  */
 function* advance() {
   // send action to advance trace
-  yield put(traceActions.next());
-
-  // wait for trace to advance
-  yield take(traceActions.TOCK);
+  yield *trace.advance();
 }
 
 /**
