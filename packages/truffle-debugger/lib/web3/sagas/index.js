@@ -7,7 +7,7 @@ import * as actions from "../actions";
 
 import Web3Adapter from "../adapter";
 
-export function* inspectTransaction(adapter, {txHash}) {
+export function* fetchTransactionInfo(adapter, {txHash}) {
   debug("inspecting transaction");
   var trace;
   try {
@@ -48,11 +48,34 @@ export function* fetchBinary(adapter, {address}) {
   yield put(actions.receiveBinary(address, binary));
 }
 
+export function *inspectTransaction(txHash, provider) {
+  yield put(actions.init(provider));
+  yield put(actions.inspect(txHash));
+
+  let action = yield take( ({type}) =>
+    type == actions.RECEIVE_TRACE || type == actions.ERROR_WEB3
+  );
+  debug("action %o", action);
+
+  var trace;
+  if (action.type == actions.RECEIVE_TRACE) {
+    trace = action.trace;
+    debug("received trace");
+  } else {
+    return { error: action.error };
+  }
+
+  let {address, binary} = yield take(actions.RECEIVE_CALL);
+  debug("received call");
+
+  return { trace, address, binary };
+}
+
 export default function* saga() {
   // wait for web3 init signal
   let {provider} = yield take(actions.INIT_WEB3);
   let adapter = new Web3Adapter(provider);
 
-  yield takeLatest(actions.INSPECT, inspectTransaction, adapter);
+  yield takeLatest(actions.INSPECT, fetchTransactionInfo, adapter);
   yield takeEvery(actions.FETCH_BINARY, fetchBinary, adapter);
 }

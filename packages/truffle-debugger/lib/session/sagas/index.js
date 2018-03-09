@@ -49,25 +49,17 @@ export default function *saga () {
 }
 
 function* fetchTx(txHash, provider) {
-  yield put(web3Actions.init(provider));
-  yield put(web3Actions.inspect(txHash));
+  let {
+    error,
+    trace,
+    address,
+    binary
+  } = yield* web3.inspectTransaction(txHash, provider);
 
-  let action = yield take( ({type}) =>
-    type == web3Actions.RECEIVE_TRACE || type == web3Actions.ERROR_WEB3
-  );
-  debug("action %o", action);
-
-  var trace;
-  if (action.type == web3Actions.RECEIVE_TRACE) {
-    trace = action.trace;
-  } else {
-    return action.error;
+  if (error) {
+    return error;
   }
 
-  debug("received trace");
-
-  let {address, binary} = yield take(web3Actions.RECEIVE_CALL);
-  debug("received call");
   if (address) {
     yield put(evmActions.call(address));
   } else {
