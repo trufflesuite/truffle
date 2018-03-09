@@ -1,33 +1,29 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:session:sagas");
 
-import { cancel, call, all, fork, join, take, put, race, select } from 'redux-saga/effects';
+import { call, all, fork, take, put } from 'redux-saga/effects';
 
-import astSaga from "lib/ast/sagas";
-import controllerSaga from "lib/controller/sagas";
-import soliditySaga from "lib/solidity/sagas";
-import evmSaga from "lib/evm/sagas";
-import traceSaga from "lib/trace/sagas";
-import dataSaga from "lib/data/sagas";
-import web3Saga from "lib/web3/sagas";
+import { prefixName } from "lib/helpers";
 
-import * as astActions from "lib/ast/actions";
-import * as contextActions from "lib/context/actions";
-import * as traceActions from "lib/trace/actions";
-import * as web3Actions from "lib/web3/actions";
-import * as evmActions from "lib/evm/actions";
+import * as ast from "lib/ast/sagas";
+import * as context from "lib/context/sagas";
+import * as controller from "lib/controller/sagas";
+import * as solidity from "lib/solidity/sagas";
+import * as evm from "lib/evm/sagas";
+import * as trace from "lib/trace/sagas";
+import * as data from "lib/data/sagas";
+import * as web3 from "lib/web3/sagas";
+
 import * as actions from "../actions";
 
-import context from "lib/context/selectors";
-
-export default function *saga () {
-  yield fork(web3Saga);
-  yield fork(traceSaga);
-  yield fork(controllerSaga);
-  yield fork(evmSaga);
-  yield fork(astSaga);
-  yield fork(soliditySaga);
-  yield fork(dataSaga);
+export function *saga () {
+  yield fork(web3.saga);
+  yield fork(trace.saga);
+  yield fork(controller.saga);
+  yield fork(evm.saga);
+  yield fork(ast.saga);
+  yield fork(solidity.saga);
+  yield fork(data.saga);
 
   let {contracts} = yield take(actions.RECORD_CONTRACTS);
   yield *recordContracts(...contracts);
@@ -40,82 +36,40 @@ export default function *saga () {
     return;
   }
 
-  yield *mapData();
+  yield *ast.visitAll();
 
   yield *ready();
 
-  yield take(traceActions.END_OF_TRACE);
+  yield *trace.wait();
 
   yield put(actions.finish());
 }
 
+export default prefixName("session", saga);
+
 function* fetchTx(txHash, provider) {
-  yield put(web3Actions.init(provider));
-  yield put(web3Actions.inspect(txHash));
+  let result = yield *web3.inspectTransaction(txHash, provider);
 
-  let action = yield take( ({type}) =>
-    type == web3Actions.RECEIVE_TRACE || type == web3Actions.ERROR_WEB3
-  );
-  debug("action %o", action);
-
-  var trace;
-  if (action.type == web3Actions.RECEIVE_TRACE) {
-    trace = action.trace;
-  } else {
-    return action.error;
+  if (result.error) {
+    return result.error;
   }
 
-  debug("received trace");
+  yield *evm.begin(result);
 
-  let {address, binary} = yield take(web3Actions.RECEIVE_CALL);
-  debug("received call");
-  if (address) {
-    yield put(evmActions.call(address));
-  } else {
-    yield put(evmActions.create(binary));
+  let addresses = yield *trace.processTrace(result.trace);
+  if (result.address && addresses.indexOf(result.address) == -1) {
+    addresses.push(result.address);
   }
 
-  yield put(traceActions.saveSteps(trace));
+  let binaries = yield *web3.obtainBinaries(addresses);
 
-  let {addresses} = yield take(traceActions.RECEIVE_ADDRESSES);
-  debug("received addresses");
-  if (address && addresses.indexOf(address) == -1) {
-    addresses.push(address);
-  }
-
-  debug("listening for context info");
-  let tasks = yield all(
-    addresses.map( (address) => fork(receiveContext, address) )
-  );
-
-  debug("requesting context info");
   yield all(
-    addresses.map( (address) => call(fetchContext, address) )
+    addresses.map( (address, i) => call(context.addOrMerge, {
+      binary: binaries[i],
+      addresses: [address],
+    }))
   );
-
-  debug("waiting");
-  if (tasks.length > 0) {
-    yield join(...tasks);
-  }
 }
-
-function* mapData() {
-  let contexts = yield select(context.list);
-
-  let tasks = yield all(
-    contexts.map((context, idx) => [context, idx])
-      .filter( ([{ast}]) => !!ast )
-      .map( ([{ast}, idx]) => fork( () => put(astActions.visit(idx, ast))) )
-  )
-
-  if (tasks.length > 0) {
-    yield join(...tasks);
-  }
-
-  yield put(astActions.doneVisiting());
-}
-
-
 
 function *ready() {
   debug("ready");
@@ -127,42 +81,10 @@ function *error(err) {
   yield put(actions.error(err));
 }
 
-function *fetchContext(address) {
-  debug("fetching context for %s", address);
-  yield put(web3Actions.fetchBinary(address));
-}
-
-function *receiveContext(address) {
-  let {binary} = yield take((action) => (
-    action.type == web3Actions.RECEIVE_BINARY &&
-    action.address == address
-  ));
-  debug("got binary for %s", address);
-
-  yield *addOrMerge({binary, addresses: [address]});
-  debug("add-or-merged %s", address);
-}
-
-function *addOrMerge(newContext) {
-  debug("inside addOrMerge %o", newContext.binary);
-  let binaryIndexes = yield select(context.indexBy.binary);
-
-  let index = binaryIndexes[newContext.binary];
-  debug("index: %o", index);
-  if (index !== undefined) {
-    // existing context, merge
-    yield put(contextActions.mergeContext(index, newContext))
-
-  } else {
-    // new
-    yield put(contextActions.addContext(newContext));
-  }
-}
-
-export function* recordContracts(...contracts) {
+function* recordContracts(...contracts) {
   for (let contract of contracts) {
     // create Context for binary and deployed binary
-    yield *addOrMerge({
+    yield *context.addOrMerge({
       binary: contract.binary,
       addresses: [],
       ast: contract.ast,
@@ -172,7 +94,7 @@ export function* recordContracts(...contracts) {
       contractName: contract.contractName
     });
 
-    yield *addOrMerge({
+    yield *context.addOrMerge({
       binary: contract.deployedBinary,
       addresses: [],
       ast: contract.ast,

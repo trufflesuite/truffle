@@ -2,12 +2,13 @@ import debugModule from "debug";
 const debug = debugModule("debugger:solidity:sagas");
 
 import { call, put, take, select } from "redux-saga/effects";
-
-import { TICK } from "lib/trace/actions";
-import evm from "lib/evm/selectors";
+import { prefixName } from "lib/helpers";
 
 import * as actions from "../actions";
+import { TICK } from "lib/trace/actions";
+
 import solidity from "../selectors";
+
 
 function* functionDepthSaga () {
   while (true) {
@@ -16,7 +17,7 @@ function* functionDepthSaga () {
     let instruction = yield select(solidity.next.instruction);
     debug("instruction: %o", instruction);
 
-    if (yield select(evm.next.step.isJump)) {
+    if (yield select(solidity.next.willJump)) {
       let jumpDirection = yield select(solidity.next.jumpDirection);
 
 
@@ -25,7 +26,8 @@ function* functionDepthSaga () {
   }
 }
 
-
-export default function* saga () {
+export function* saga () {
   yield call(functionDepthSaga);
 }
+
+export default prefixName("solidity", saga);

@@ -2,11 +2,20 @@ import debugModule from "debug";
 const debug = debugModule("debugger:evm:sagas");
 
 import { call, put, take, select } from "redux-saga/effects";
+import { prefixName } from "lib/helpers";
 
 import { TICK } from "lib/trace/actions";
 import * as actions from "../actions";
 
 import evm from "../selectors";
+
+export function* begin({ address, binary }) {
+  if (address) {
+    yield put(actions.call(address));
+  } else {
+    yield put(actions.create(binary));
+  }
+}
 
 export function* callstackSaga () {
   while (true) {
@@ -32,6 +41,8 @@ export function* callstackSaga () {
   }
 }
 
-export default function* saga () {
+export function* saga () {
   yield call(callstackSaga);
 }
+
+export default prefixName("evm", saga);

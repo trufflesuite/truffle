@@ -2,11 +2,13 @@ import debugModule from "debug";
 const debug = debugModule("debugger:trace:sagas");
 
 import { take, takeEvery, put, select } from "redux-saga/effects";
+import { prefixName } from "lib/helpers";
 
 import * as actions from "../actions";
+
 import trace from "../selectors";
 
-export function *waitForTrace() {
+function *waitForTrace() {
   let {steps} = yield take(actions.SAVE_STEPS);
 
   let addresses = [
@@ -20,7 +22,13 @@ export function *waitForTrace() {
   yield put(actions.receiveAddresses(addresses));
 }
 
-export function* next() {
+export function *advance() {
+  yield put(actions.next());
+
+  yield take(actions.TOCK);
+}
+
+function* next() {
   let remaining = yield select(trace.stepsRemaining);
   debug("remaining: %o", remaining);
   let steps = yield select(trace.steps);
@@ -47,9 +55,24 @@ export function* next() {
   }
 }
 
-export default function* saga() {
+export function* wait() {
+  yield take(actions.END_OF_TRACE);
+}
+
+export function *processTrace(trace) {
+  yield put(actions.saveSteps(trace));
+
+  let {addresses} = yield take(actions.RECEIVE_ADDRESSES);
+  debug("received addresses");
+
+  return addresses;
+}
+
+export function* saga() {
   // wait for trace to be defined
   yield *waitForTrace();
 
   yield takeEvery(actions.NEXT, next);
 }
+
+export default prefixName("trace", saga);

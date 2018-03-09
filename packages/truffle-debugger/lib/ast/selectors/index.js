@@ -15,6 +15,16 @@ import { findRange } from "../map";
  */
 const ast = createSelectorTree({
   /**
+   * ast.views
+   */
+  views: {
+    /**
+     * ast.views.contexts
+     */
+    contexts: createLeaf([context.list], cs => cs)
+  },
+
+  /**
    * ast.current
    */
   current: {
