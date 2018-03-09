@@ -1,5 +1,6 @@
 var CompileError = require("./compileerror");
 var solc = require("solc");
+var fs = require("fs");
 
 // Clean up after solc.
 var listeners = process.listeners("uncaughtException");
@@ -40,7 +41,12 @@ module.exports = {
 
     var output = solc.compileStandard(JSON.stringify(solcStandardInput), function(file_path) {
       // Tell the compiler we have source code for the dependency
-      return {contents: "pragma solidity ^0.4.0;"};
+      path_components = file_path.split(/\/(.+)/);
+      package_name = path_components[0];
+      sol_path = path_components[1];
+
+      dep_path = 'installed_contracts/'+package_name+'/contracts/'+sol_path;
+      return {contents: fs.readFileSync(dep_path, {encoding: 'UTF-8'})};
     });
 
     output = JSON.parse(output);
