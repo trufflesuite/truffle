@@ -229,7 +229,7 @@ Config.default = function() {
 Config.detect = function(options, filename) {
   var search;
 
-  (filename == null)
+  (!filename)
     ? search = [DEFAULT_CONFIG_FILENAME, BACKUP_CONFIG_FILENAME]
     : search = filename;
 
