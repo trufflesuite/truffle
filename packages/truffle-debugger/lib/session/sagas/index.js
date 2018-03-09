@@ -14,7 +14,6 @@ import web3Saga, * as web3 from "lib/web3/sagas";
 import * as contextActions from "lib/context/actions";
 import * as traceActions from "lib/trace/actions";
 import * as web3Actions from "lib/web3/actions";
-import * as evmActions from "lib/evm/actions";
 import * as actions from "../actions";
 
 import context from "lib/context/selectors";
@@ -60,11 +59,7 @@ function* fetchTx(txHash, provider) {
     return error;
   }
 
-  if (address) {
-    yield put(evmActions.call(address));
-  } else {
-    yield put(evmActions.create(binary));
-  }
+  yield *evm.begin({address, binary});
 
   yield put(traceActions.saveSteps(trace));
 

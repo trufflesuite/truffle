@@ -8,6 +8,14 @@ import * as actions from "../actions";
 
 import evm from "../selectors";
 
+export function* begin({ address, binary }) {
+  if (address) {
+    yield put(actions.call(address));
+  } else {
+    yield put(actions.create(binary));
+  }
+}
+
 export function* callstackSaga () {
   while (true) {
     yield take(TICK);
