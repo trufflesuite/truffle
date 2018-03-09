@@ -1,9 +1,10 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:session:sagas");
 
-import { cancel, call, all, fork, join, take, put, race, select } from 'redux-saga/effects';
+import { call, all, fork, take, put } from 'redux-saga/effects';
 
 import astSaga, * as ast from "lib/ast/sagas";
+import * as context from "lib/context/sagas";
 import controllerSaga, * as controller from "lib/controller/sagas";
 import soliditySaga, * as solidity from "lib/solidity/sagas";
 import evmSaga, * as evm from "lib/evm/sagas";
@@ -11,10 +12,7 @@ import traceSaga, * as trace from "lib/trace/sagas";
 import dataSaga, * as data from "lib/data/sagas";
 import web3Saga, * as web3 from "lib/web3/sagas";
 
-import * as contextActions from "lib/context/actions";
 import * as actions from "../actions";
-
-import context from "lib/context/selectors";
 
 export default function *saga () {
   yield fork(web3Saga);
@@ -62,7 +60,10 @@ function* fetchTx(txHash, provider) {
   let binaries = yield *web3.obtainBinaries(addresses);
 
   yield all(
-    addresses.map( (address, i) => call(receiveContext, address, binaries[i]) )
+    addresses.map( (address, i) => call(context.addOrMerge, {
+      binary: binaries[i],
+      addresses: [address],
+    }))
   );
 }
 
@@ -76,31 +77,10 @@ function *error(err) {
   yield put(actions.error(err));
 }
 
-function *receiveContext(address, binary) {
-  yield *addOrMerge({binary, addresses: [address]});
-  debug("add-or-merged %s", address);
-}
-
-function *addOrMerge(newContext) {
-  debug("inside addOrMerge %o", newContext.binary);
-  let binaryIndexes = yield select(context.indexBy.binary);
-
-  let index = binaryIndexes[newContext.binary];
-  debug("index: %o", index);
-  if (index !== undefined) {
-    // existing context, merge
-    yield put(contextActions.mergeContext(index, newContext))
-
-  } else {
-    // new
-    yield put(contextActions.addContext(newContext));
-  }
-}
-
 export function* recordContracts(...contracts) {
   for (let contract of contracts) {
     // create Context for binary and deployed binary
-    yield *addOrMerge({
+    yield *context.addOrMerge({
       binary: contract.binary,
       addresses: [],
       ast: contract.ast,
@@ -110,7 +90,7 @@ export function* recordContracts(...contracts) {
       contractName: contract.contractName
     });
 
-    yield *addOrMerge({
+    yield *context.addOrMerge({
       binary: contract.deployedBinary,
       addresses: [],
       ast: contract.ast,
