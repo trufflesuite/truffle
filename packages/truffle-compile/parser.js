@@ -50,6 +50,14 @@ module.exports = {
       return solidity_error.message.indexOf(preReleaseCompilerWarning) < 0;
     }) : [];
 
+    // Filter out warnings.
+    var warnings = output.errors.filter(function(solidity_error) {
+      return solidity_error.severity == "warning";
+    });
+    var errors = output.errors.filter(function(solidity_error) {
+      return solidity_error.severity != "warning";
+    });
+
     if (errors.length > 0) {
       throw new CompileError(errors[0].formattedMessage);
     }
