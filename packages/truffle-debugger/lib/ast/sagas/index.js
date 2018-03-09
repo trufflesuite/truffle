@@ -3,10 +3,11 @@ const debug = debugModule("debugger:ast:sagas");
 
 import { all, call, race, fork, join, take, takeEvery, put, select } from "redux-saga/effects";
 
-import * as actions from "../actions";
-import * as dataActions from "lib/data/actions";  // TODO remove
+import * as data from "lib/data/sagas";
 
-import context from "lib/context/selectors";  // TODO remove
+import * as actions from "../actions";
+
+import ast from "../selectors";
 
 
 export function *walk(context, node, pointer = "", parentId = null) {
@@ -36,13 +37,13 @@ export function *handleEnter(context, node, pointer, parentId) {
 
   if (node.id !== undefined) {
     debug("%s recording scope %s", pointer, node.id);
-    yield put(dataActions.scope(context, node.id, pointer, parentId));
+    yield *data.scope(context, node.id, pointer, parentId);
   }
 
   switch (node.type) {
     case "VariableDeclaration":
       debug("%s recording variable %o", pointer, node);
-      yield put(dataActions.declare(context, node));
+      yield *data.declare(context, node);
       break;
   }
 }
@@ -57,8 +58,8 @@ export function *walkSaga({context, ast}) {
   yield walk(context, ast);
 }
 
-export function *visitAll(idx, ast) {
-  let contexts = yield select(context.list);
+export function *visitAll(idx) {
+  let contexts = yield select(ast.views.contexts);
 
   let tasks = yield all(
     contexts.map((context, idx) => [context, idx])

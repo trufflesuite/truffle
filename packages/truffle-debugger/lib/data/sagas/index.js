@@ -12,6 +12,14 @@ import data from "../selectors";
 import { WORD_SIZE } from "lib/data/decode/utils";
 import * as utils from "lib/data/decode/utils";
 
+export function *scope(context, nodeId, pointer, parentId) {
+  yield put(actions.scope(context, nodeId, pointer, parentId));
+}
+
+export function *declare(context, node) {
+  yield put(actions.declare(context, node));
+}
+
 function *tickSaga() {
   let {tree, id: treeId} = yield select(data.views.ast.current);
   let {node, pointer} = yield select(data.views.ast.next);
