@@ -26,6 +26,8 @@ function* functionDepthSaga () {
   }
 }
 
-export default prefixName("solidity", function* saga () {
+export function* saga () {
   yield call(functionDepthSaga);
-})
+}
+
+export default prefixName("solidity", saga);

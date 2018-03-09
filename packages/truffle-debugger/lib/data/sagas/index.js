@@ -79,6 +79,8 @@ function *tickSaga() {
   }
 }
 
-export default prefixName("data", function* saga () {
+export function* saga () {
   yield takeEvery(TICK, tickSaga);
-});
+}
+
+export default prefixName("data", saga);

@@ -76,9 +76,11 @@ export function *visitAll(idx) {
   yield put(actions.doneVisiting());
 }
 
-export default prefixName("ast", function* saga() {
+export function* saga() {
   yield race({
     visitor: takeEvery(actions.VISIT, walkSaga),
     done: take(actions.DONE_VISITING)
   });
-});
+}
+
+export default prefixName("ast", saga);

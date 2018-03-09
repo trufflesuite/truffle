@@ -41,6 +41,8 @@ export function* callstackSaga () {
   }
 }
 
-export default prefixName("evm", function* saga () {
+export function* saga () {
   yield call(callstackSaga);
-});
+}
+
+export default prefixName("evm", saga);

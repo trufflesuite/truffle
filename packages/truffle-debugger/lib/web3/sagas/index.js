@@ -102,11 +102,13 @@ function *receiveBinary(address) {
   return binary;
 }
 
-export default prefixName("web3", function* saga() {
+export function* saga() {
   // wait for web3 init signal
   let {provider} = yield take(actions.INIT_WEB3);
   let adapter = new Web3Adapter(provider);
 
   yield takeEvery(actions.INSPECT, fetchTransactionInfo, adapter);
   yield takeEvery(actions.FETCH_BINARY, fetchBinary, adapter);
-});
+}
+
+export default prefixName("web3", saga);

@@ -68,9 +68,11 @@ export function *processTrace(trace) {
   return addresses;
 }
 
-export default prefixName("trace", function* saga() {
+export function* saga() {
   // wait for trace to be defined
   yield *waitForTrace();
 
   yield takeEvery(actions.NEXT, next);
-});
+}
+
+export default prefixName("trace", saga);

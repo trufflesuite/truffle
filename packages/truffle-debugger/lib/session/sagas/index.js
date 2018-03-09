@@ -5,25 +5,25 @@ import { call, all, fork, take, put } from 'redux-saga/effects';
 
 import { prefixName } from "lib/helpers";
 
-import astSaga, * as ast from "lib/ast/sagas";
+import * as ast from "lib/ast/sagas";
 import * as context from "lib/context/sagas";
-import controllerSaga, * as controller from "lib/controller/sagas";
-import soliditySaga, * as solidity from "lib/solidity/sagas";
-import evmSaga, * as evm from "lib/evm/sagas";
-import traceSaga, * as trace from "lib/trace/sagas";
-import dataSaga, * as data from "lib/data/sagas";
-import web3Saga, * as web3 from "lib/web3/sagas";
+import * as controller from "lib/controller/sagas";
+import * as solidity from "lib/solidity/sagas";
+import * as evm from "lib/evm/sagas";
+import * as trace from "lib/trace/sagas";
+import * as data from "lib/data/sagas";
+import * as web3 from "lib/web3/sagas";
 
 import * as actions from "../actions";
 
-export default prefixName("session",  function *saga () {
-  yield fork(web3Saga);
-  yield fork(traceSaga);
-  yield fork(controllerSaga);
-  yield fork(evmSaga);
-  yield fork(astSaga);
-  yield fork(soliditySaga);
-  yield fork(dataSaga);
+export function *saga () {
+  yield fork(web3.saga);
+  yield fork(trace.saga);
+  yield fork(controller.saga);
+  yield fork(evm.saga);
+  yield fork(ast.saga);
+  yield fork(solidity.saga);
+  yield fork(data.saga);
 
   let {contracts} = yield take(actions.RECORD_CONTRACTS);
   yield *recordContracts(...contracts);
@@ -43,7 +43,9 @@ export default prefixName("session",  function *saga () {
   yield *trace.wait();
 
   yield put(actions.finish());
-});
+}
+
+export default prefixName("session", saga);
 
 function* fetchTx(txHash, provider) {
   let result = yield *web3.inspectTransaction(txHash, provider);

@@ -20,7 +20,7 @@ const controlSagas = {
   [actions.CONTINUE_UNTIL]: continueUntil
 };
 
-export default prefixName("controller", function* saga() {
+export function* saga() {
   while (true) {
     debug("waiting for control action");
     let action = yield take(Object.keys(controlSagas));
@@ -34,7 +34,9 @@ export default prefixName("controller", function* saga() {
       interrupt: take(actions.INTERRUPT)
     });
   }
-});
+}
+
+export default prefixName("controller", saga);
 
 /**
  * Advance the state by one instruction
