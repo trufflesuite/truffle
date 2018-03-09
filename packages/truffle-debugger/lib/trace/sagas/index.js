@@ -7,7 +7,6 @@ import * as actions from "../actions";
 
 import trace from "../selectors";
 
-
 export function *waitForTrace() {
   let {steps} = yield take(actions.SAVE_STEPS);
 
@@ -53,6 +52,19 @@ export function* next() {
 
     yield put(actions.endTrace());
   }
+}
+
+export function* wait() {
+  yield take(actions.END_OF_TRACE);
+}
+
+export function *processTrace(trace) {
+  yield put(actions.saveSteps(trace));
+
+  let {addresses} = yield take(actions.RECEIVE_ADDRESSES);
+  debug("received addresses");
+
+  return addresses;
 }
 
 export default function* saga() {

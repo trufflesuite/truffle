@@ -12,7 +12,6 @@ import dataSaga, * as data from "lib/data/sagas";
 import web3Saga, * as web3 from "lib/web3/sagas";
 
 import * as contextActions from "lib/context/actions";
-import * as traceActions from "lib/trace/actions";
 import * as web3Actions from "lib/web3/actions";
 import * as actions from "../actions";
 
@@ -42,31 +41,23 @@ export default function *saga () {
 
   yield *ready();
 
-  yield take(traceActions.END_OF_TRACE);
+  yield *trace.wait();
 
   yield put(actions.finish());
 }
 
 function* fetchTx(txHash, provider) {
-  let {
-    error,
-    trace,
-    address,
-    binary
-  } = yield* web3.inspectTransaction(txHash, provider);
+  let result = yield* web3.inspectTransaction(txHash, provider);
 
-  if (error) {
-    return error;
+  if (result.error) {
+    return result.error;
   }
 
-  yield *evm.begin({address, binary});
+  yield *evm.begin(result);
 
-  yield put(traceActions.saveSteps(trace));
-
-  let {addresses} = yield take(traceActions.RECEIVE_ADDRESSES);
-  debug("received addresses");
-  if (address && addresses.indexOf(address) == -1) {
-    addresses.push(address);
+  let addresses = yield *trace.processTrace(result.trace);
+  if (result.address && addresses.indexOf(result.address) == -1) {
+    addresses.push(result.address);
   }
 
   debug("listening for context info");
