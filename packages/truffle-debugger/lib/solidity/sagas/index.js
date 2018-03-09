@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("debugger:solidity:sagas");
 
 import { call, put, take, select } from "redux-saga/effects";
+import { prefixName } from "lib/helpers";
 
 import * as actions from "../actions";
 import { TICK } from "lib/trace/actions";
@@ -25,7 +26,6 @@ function* functionDepthSaga () {
   }
 }
 
-
-export default function* saga () {
+export default prefixName("solidity", function* saga () {
   yield call(functionDepthSaga);
-}
+})

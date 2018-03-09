@@ -4,6 +4,8 @@ const debug = debugModule("debugger:data:sagas");
 import { put, takeEvery, select } from "redux-saga/effects";
 import jsonpointer from "json-pointer";
 
+import { prefixName } from "lib/helpers";
+
 import { TICK } from "lib/trace/actions";
 import * as actions from "../actions";
 
@@ -77,6 +79,6 @@ function *tickSaga() {
   }
 }
 
-export default function* saga () {
+export default prefixName("data", function* saga () {
   yield takeEvery(TICK, tickSaga);
-}
+});

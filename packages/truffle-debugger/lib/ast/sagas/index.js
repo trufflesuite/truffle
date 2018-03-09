@@ -3,6 +3,8 @@ const debug = debugModule("debugger:ast:sagas");
 
 import { all, call, race, fork, join, take, takeEvery, put, select } from "redux-saga/effects";
 
+import { prefixName } from "lib/helpers";
+
 import * as data from "lib/data/sagas";
 
 import * as actions from "../actions";
@@ -10,7 +12,7 @@ import * as actions from "../actions";
 import ast from "../selectors";
 
 
-export function *walk(context, node, pointer = "", parentId = null) {
+function *walk(context, node, pointer = "", parentId = null) {
   debug("walking %o %o", pointer, node);
 
   yield *handleEnter(context, node, pointer, parentId);
@@ -28,7 +30,7 @@ export function *walk(context, node, pointer = "", parentId = null) {
   yield *handleExit(context, node, pointer);
 }
 
-export function *handleEnter(context, node, pointer, parentId) {
+function *handleEnter(context, node, pointer, parentId) {
   if (!(node instanceof Object)) {
     return;
   }
@@ -48,13 +50,13 @@ export function *handleEnter(context, node, pointer, parentId) {
   }
 }
 
-export function *handleExit(context, node, pointer) {
+function *handleExit(context, node, pointer) {
   debug("exiting %s", pointer);
 
   // no-op right now
 }
 
-export function *walkSaga({context, ast}) {
+function *walkSaga({context, ast}) {
   yield walk(context, ast);
 }
 
@@ -74,9 +76,9 @@ export function *visitAll(idx) {
   yield put(actions.doneVisiting());
 }
 
-export default function* saga() {
+export default prefixName("ast", function* saga() {
   yield race({
     visitor: takeEvery(actions.VISIT, walkSaga),
     done: take(actions.DONE_VISITING)
   });
-}
+});

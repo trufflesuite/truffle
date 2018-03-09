@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("debugger:evm:sagas");
 
 import { call, put, take, select } from "redux-saga/effects";
+import { prefixName } from "lib/helpers";
 
 import { TICK } from "lib/trace/actions";
 import * as actions from "../actions";
@@ -40,6 +41,6 @@ export function* callstackSaga () {
   }
 }
 
-export default function* saga () {
+export default prefixName("evm", function* saga () {
   yield call(callstackSaga);
-}
+});

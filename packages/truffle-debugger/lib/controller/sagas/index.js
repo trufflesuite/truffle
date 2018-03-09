@@ -3,6 +3,8 @@ const debug = debugModule("debugger:controller:sagas");
 
 import { put, call, race, take, select } from 'redux-saga/effects';
 
+import { prefixName } from "lib/helpers";
+
 import * as trace from "lib/trace/sagas";
 
 import * as actions from "../actions";
@@ -18,7 +20,7 @@ const controlSagas = {
   [actions.CONTINUE_UNTIL]: continueUntil
 };
 
-export default function* saga() {
+export default prefixName("controller", function* saga() {
   while (true) {
     debug("waiting for control action");
     let action = yield take(Object.keys(controlSagas));
@@ -32,7 +34,7 @@ export default function* saga() {
       interrupt: take(actions.INTERRUPT)
     });
   }
-}
+});
 
 /**
  * Advance the state by one instruction

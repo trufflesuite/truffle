@@ -3,6 +3,8 @@ const debug = debugModule("debugger:session:sagas");
 
 import { call, all, fork, take, put } from 'redux-saga/effects';
 
+import { prefixName } from "lib/helpers";
+
 import astSaga, * as ast from "lib/ast/sagas";
 import * as context from "lib/context/sagas";
 import controllerSaga, * as controller from "lib/controller/sagas";
@@ -14,7 +16,7 @@ import web3Saga, * as web3 from "lib/web3/sagas";
 
 import * as actions from "../actions";
 
-export default function *saga () {
+export default prefixName("session",  function *saga () {
   yield fork(web3Saga);
   yield fork(traceSaga);
   yield fork(controllerSaga);
@@ -41,7 +43,7 @@ export default function *saga () {
   yield *trace.wait();
 
   yield put(actions.finish());
-}
+});
 
 function* fetchTx(txHash, provider) {
   let result = yield *web3.inspectTransaction(txHash, provider);
@@ -77,7 +79,7 @@ function *error(err) {
   yield put(actions.error(err));
 }
 
-export function* recordContracts(...contracts) {
+function* recordContracts(...contracts) {
   for (let contract of contracts) {
     // create Context for binary and deployed binary
     yield *context.addOrMerge({
