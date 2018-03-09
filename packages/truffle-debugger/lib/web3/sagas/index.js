@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:web3:sagas");
 
-import { takeEvery, takeLatest, apply, fork, race, take, put, select } from 'redux-saga/effects';
+import { all, takeEvery, apply, fork, join, take, put, select } from 'redux-saga/effects';
 
 import * as actions from "../actions";
 
@@ -71,11 +71,41 @@ export function *inspectTransaction(txHash, provider) {
   return { trace, address, binary };
 }
 
+export function *obtainBinaries(addresses) {
+  let tasks = yield all(
+    addresses.map( (address) => fork(receiveBinary, address) )
+  );
+
+  debug("requesting binaries");
+  yield all(
+    addresses.map( (address) => put(actions.fetchBinary(address)) )
+  );
+
+  let binaries = [];
+  binaries = yield all(
+    tasks.map(task => join(task))
+  );
+
+  debug("binaries %o", binaries);
+
+  return binaries;
+}
+
+export function *receiveBinary(address) {
+  let {binary} = yield take((action) => (
+    action.type == actions.RECEIVE_BINARY &&
+    action.address == address
+  ));
+  debug("got binary for %s", address);
+
+  return binary;
+}
+
 export default function* saga() {
   // wait for web3 init signal
   let {provider} = yield take(actions.INIT_WEB3);
   let adapter = new Web3Adapter(provider);
 
-  yield takeLatest(actions.INSPECT, fetchTransactionInfo, adapter);
+  yield takeEvery(actions.INSPECT, fetchTransactionInfo, adapter);
   yield takeEvery(actions.FETCH_BINARY, fetchBinary, adapter);
 }

@@ -12,7 +12,6 @@ import dataSaga, * as data from "lib/data/sagas";
 import web3Saga, * as web3 from "lib/web3/sagas";
 
 import * as contextActions from "lib/context/actions";
-import * as web3Actions from "lib/web3/actions";
 import * as actions from "../actions";
 
 import context from "lib/context/selectors";
@@ -47,7 +46,7 @@ export default function *saga () {
 }
 
 function* fetchTx(txHash, provider) {
-  let result = yield* web3.inspectTransaction(txHash, provider);
+  let result = yield *web3.inspectTransaction(txHash, provider);
 
   if (result.error) {
     return result.error;
@@ -60,20 +59,11 @@ function* fetchTx(txHash, provider) {
     addresses.push(result.address);
   }
 
-  debug("listening for context info");
-  let tasks = yield all(
-    addresses.map( (address) => fork(receiveContext, address) )
-  );
+  let binaries = yield *web3.obtainBinaries(addresses);
 
-  debug("requesting context info");
   yield all(
-    addresses.map( (address) => call(fetchContext, address) )
+    addresses.map( (address, i) => call(receiveContext, address, binaries[i]) )
   );
-
-  debug("waiting");
-  if (tasks.length > 0) {
-    yield join(...tasks);
-  }
 }
 
 function *ready() {
@@ -86,18 +76,7 @@ function *error(err) {
   yield put(actions.error(err));
 }
 
-function *fetchContext(address) {
-  debug("fetching context for %s", address);
-  yield put(web3Actions.fetchBinary(address));
-}
-
-function *receiveContext(address) {
-  let {binary} = yield take((action) => (
-    action.type == web3Actions.RECEIVE_BINARY &&
-    action.address == address
-  ));
-  debug("got binary for %s", address);
-
+function *receiveContext(address, binary) {
   yield *addOrMerge({binary, addresses: [address]});
   debug("add-or-merged %s", address);
 }
