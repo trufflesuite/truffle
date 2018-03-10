@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:session:sagas");
 
-import { call, all, fork, take, put } from 'redux-saga/effects';
+import { cancel, call, all, fork, take, put } from 'redux-saga/effects';
 
 import { prefixName } from "lib/helpers";
 
@@ -17,35 +17,48 @@ import * as web3 from "lib/web3/sagas";
 import * as actions from "../actions";
 
 export function *saga () {
-  yield fork(web3.saga);
-  yield fork(trace.saga);
-  yield fork(controller.saga);
-  yield fork(evm.saga);
-  yield fork(ast.saga);
-  yield fork(solidity.saga);
-  yield fork(data.saga);
+  let listeners = yield *forkListeners();
 
+  // receiving & saving contracts into state
   let {contracts} = yield take(actions.RECORD_CONTRACTS);
   yield *recordContracts(...contracts);
 
+  // wait for start signal
   let {txHash, provider} = yield take(actions.START);
+
+  // process transaction
   let err = yield *fetchTx(txHash, provider);
-  debug("err %o", err);
   if (err) {
     yield *error(err);
-    return;
+
+  } else {
+    // visit asts
+    yield *ast.visitAll();
+
+    // signal that stepping can begin
+    yield *ready();
+
+    // wait until trace hits EOT
+    yield *trace.wait();
+
+    // finish
+    yield put(actions.finish());
   }
 
-  yield *ast.visitAll();
-
-  yield *ready();
-
-  yield *trace.wait();
-
-  yield put(actions.finish());
+  yield all(
+    listeners.map(task => cancel(task))
+  );
 }
 
 export default prefixName("session", saga);
+
+
+function *forkListeners() {
+  return yield all(
+    [ast, controller, data, evm, solidity, trace, web3]
+      .map( app => fork(app.saga) )
+  );
+}
 
 function* fetchTx(txHash, provider) {
   let result = yield *web3.inspectTransaction(txHash, provider);
