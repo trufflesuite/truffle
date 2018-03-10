@@ -45,7 +45,7 @@ const ast = createSelectorTree({
      */
     index: createLeaf(
       [context.current, context.indexBy.binary], (context, indexBy) =>
-        indexBy[context.binary]
+        indexBy(context.binary)
     )
   },
 

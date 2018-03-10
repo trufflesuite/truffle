@@ -66,7 +66,7 @@ const data = createSelectorTree({
         [evm.current.call, context.indexBy, (state) => state.data],
 
         ({address, binary}, indexBy, data) => {
-          let index = address ? indexBy.address[address] : indexBy.binary[binary];
+          let index = address ? indexBy.address(address) : indexBy.binary(binary);
           return data[index];
         }
       ),
