@@ -42,7 +42,7 @@ function *handleEnter(context, node, pointer, parentId) {
     yield *data.scope(context, node.id, pointer, parentId);
   }
 
-  switch (node.type) {
+  switch (node.nodeType) {
     case "VariableDeclaration":
       debug("%s recording variable %o", pointer, node);
       yield *data.declare(context, node);
