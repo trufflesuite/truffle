@@ -35,7 +35,7 @@ var SolidityTest = {
       if (result.logs.length) return result.logs;
 
       var logs = [];
-      var signature = web3.sha3('TestEvent(bool,string)');
+      var signature = web3.utils.sha3('TestEvent(bool,string)');
 
       result.receipt.logs.forEach(function(log) {
         if (log.topics.length === 2 && log.topics[0] === signature){

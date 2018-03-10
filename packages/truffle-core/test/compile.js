@@ -4,7 +4,8 @@ var Contracts = require("truffle-workflow-compile");
 var Artifactor = require("truffle-artifactor");
 var Resolver = require("truffle-resolver");
 var path = require("path");
-var fs = require("fs");
+var fs = require("fs-extra");
+var glob = require("glob");
 
 describe("compile", function() {
   var config;
@@ -28,6 +29,14 @@ describe("compile", function() {
       done();
     });
   });
+
+  after("Cleanup tmp files", function(done){
+    glob('tmp-*', (err, files) => {
+      if(err) done(err);
+      files.forEach(file => fs.removeSync(file));
+      done();
+    })
+  })
 
   it('compiles all initial contracts', function(done) {
     this.timeout(10000);

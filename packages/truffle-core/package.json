@@ -48,7 +48,7 @@
     "truffle-resolver": "^4.0.4",
     "truffle-solidity-utils": "^1.1.2",
     "truffle-workflow-compile": "^1.0.6",
-    "web3": "0.20.6",
+    "web3": "1.0.0-beta.33",
     "yargs": "^8.0.2"
   },
   "bin": {
@@ -75,6 +75,7 @@
     }
   ],
   "devDependencies": {
+    "glob": "^7.1.2",
     "ipfsd-ctl": "^0.21.0",
     "truffle-blockchain-utils": "^0.0.5"
   },

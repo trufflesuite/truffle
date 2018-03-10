@@ -1,4 +1,6 @@
 var assert = require("chai").assert;
+var fs = require("fs-extra");
+var glob = require("glob");
 var Box = require("truffle-box");
 var Profiler = require("truffle-compile/profiler.js");
 var Resolver = require("truffle-resolver");
@@ -20,6 +22,14 @@ describe('profiler', function() {
       done();
     });
   });
+
+  after("Cleanup tmp files", function(done){
+    glob('tmp-*', (err, files) => {
+      if(err) done(err);
+      files.forEach(file => fs.removeSync(file));
+      done();
+    })
+  })
 
   it('profiles example project successfully', function(done) {
     Profiler.required_sources(config.with({

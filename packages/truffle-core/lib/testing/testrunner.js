@@ -67,7 +67,7 @@ TestRunner.prototype.initialize = function(callback) {
         abis.map(function(abi) {
           if (abi.type == "event") {
             var signature = abi.name + "(" + _.map(abi.inputs, "type").join(",") + ")";
-            self.known_events[web3.sha3(signature)] = {
+            self.known_events[web3.utils.sha3(signature)] = {
               signature: signature,
               abi_entry: abi
             };
@@ -124,16 +124,15 @@ TestRunner.prototype.resetState = function(callback) {
 
 TestRunner.prototype.startTest = function(mocha, callback) {
   var self = this;
-  this.web3.eth.getBlockNumber(function(err, result) {
-    if (err) return callback(err);
-
-    result = web3.toBigNumber(result);
+  this.web3.eth.getBlockNumber().then(result => {
+    var one = web3.utils.toBN(1);
+    result = web3.utils.toBN(result);
 
     // Add one in base 10
-    self.currentTestStartBlock = result.plus(1, 10);
+    self.currentTestStartBlock = result.add(one);
 
     callback();
-  });
+  }).catch(callback);
 };
 
 TestRunner.prototype.endTest = function(mocha, callback) {
