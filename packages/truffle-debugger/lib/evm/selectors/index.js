@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("debugger:evm:selectors");
+
 import { createSelectorTree, createLeaf } from "reselect-tree";
 
 import trace from "lib/trace/selectors";

@@ -5,6 +5,7 @@ import { createSelectorTree, createLeaf } from "reselect-tree";
 
 import evm from "lib/evm/selectors";
 
+const WORD_SIZE = 0x20;
 
 const contexts = (state) => {
   const defaultView = {
@@ -38,7 +39,7 @@ const context = createSelectorTree({
       [contexts, "../indexBy/address"],
 
       (contexts, contextIndexBy) => (
-        (address) => contexts && contexts.list[ contextIndexBy[address] ]
+        (address) => contexts && contexts.list[ contextIndexBy(address) ]
       )
     ),
 
@@ -51,7 +52,7 @@ const context = createSelectorTree({
       [contexts, "../indexBy/binary"],
 
       (contexts, contextIndexBy) => (
-        (address) => contexts && contexts.list[ contextIndexBy[address] ]
+        (binary) => contexts && contexts.list[ contextIndexBy(binary) ]
       )
     )
   },
@@ -69,10 +70,12 @@ const context = createSelectorTree({
     address: createLeaf(
       [contexts],
 
-      (contexts) => {
-        const { _next, ...map } = contexts.indexForAddress;
-        return map;
-      }
+      (contexts) => (
+        (address) => {
+          const { _next, ...map } = contexts.indexForAddress;
+          return map[address];
+        }
+      )
     ),
 
     /**
@@ -83,7 +86,19 @@ const context = createSelectorTree({
     binary: createLeaf(
       [contexts],
 
-      (contexts) => contexts.indexForBinary
+      (contexts) => (
+        (binary) => {
+          // trim off possible constructor args, one word at a time
+          // HACK until there's better CREATE semantics
+          let index = undefined;
+          while (index === undefined && binary) {
+            index = contexts.indexForBinary[binary];
+            binary = binary.slice(0, -(WORD_SIZE * 2));
+          }
+
+          return index;
+        }
+      )
     )
   },
 
@@ -108,16 +123,15 @@ const context = createSelectorTree({
    * contexts interacted with in trace
    */
   affectedInstances: createLeaf(
-    ["./list", "./indexBy/address"],
+    [contexts],
 
-    (list, indexByAddress) => {
+    ({list, indexForAddress}) => {
       let map = {};
 
-      debug("list: %O", list);
-      debug("indexByAddress: %o", indexByAddress);
+      for (let address of Object.keys(indexForAddress)) {
+        if (address === "_next") continue;
 
-      for (let address of Object.keys(indexByAddress)) {
-        let index = indexByAddress[address];
+        let index = indexForAddress[address];
         let context = list[index];
 
         map[address] = {
