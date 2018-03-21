@@ -23,17 +23,17 @@ Please see the [reference integration](https://github.com/trufflesuite/truffle-c
 
 To start a truffle-debugger session, you'll need the following:
 
-- `txHash` - a transaction hash (prefixed with `0x`), for the transaction to debug
-- `provider` - a web3 provider instance (see [web3.js](https://github.com/ethereum/web3.js/)
-- `contracts` -  an array of contract objects, with the following properties:
-  - `contractName` - the name of the contract
-  - `source` - the full Solidity source code
+- `txHash` - A transaction hash (prefixed with `0x`), for the transaction to debug
+- `provider` - A web3 provider instance (see [web3.js](https://github.com/ethereum/web3.js/))
+- `contracts` -  An array of contract objects, with the following properties:
+  - `contractName` - The name of the contract
+  - `source` - The full Solidity source code
   - `sourcePath` - (optional) the path to the Solidity file on disk
   - `ast` - The Solidity compiler's output AST (new style, not `legacyAST`)
   - `binary` - `0x`-prefixed string with the binary used to create a contract instance
-  - `sourceMap` - the Solidity compiler output source map for the creation binary
+  - `sourceMap` - The Solidity compiler output source map for the creation binary
   - `deployedBinary` - `0x`-prefixed string with the on-chain binary for a contract instance
-  - `deployedSourceMap` - source map corresponding to the on-chain binary (from the Solidity compiler)
+  - `deployedSourceMap` - The source map corresponding to the on-chain binary (from the Solidity compiler)
 
 ### Invocation
 
