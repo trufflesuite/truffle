@@ -5,8 +5,12 @@ var server = null;
 module.exports = {
   start: function(done) {
     this.stop(function(err) {
-      server = TestRPC.server({gasLimit: 6721975});
-      server.listen(8545, done);
+      if (!process.env.CI || process.env.GANACHE){
+        server = TestRPC.server({gasLimit: 6721975});
+        server.listen(8545, done);
+      } else {
+        done();
+      }
     });
   },
   stop: function(done) {

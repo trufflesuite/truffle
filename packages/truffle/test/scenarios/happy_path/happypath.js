@@ -75,7 +75,7 @@ describe("Happy path (truffle unbox)", function() {
   });
 
   it("will run tests", function(done) {
-    this.timeout(40000);
+    this.timeout(70000);
     CommandRunner.run("test", config, function(err) {
       if (err) return done(err);
 
