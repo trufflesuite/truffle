@@ -5,7 +5,7 @@ var server = null;
 module.exports = {
   start: function(done) {
     this.stop(function(err) {
-      if (process.env.GANACHE){
+      if (!process.env.CI || process.env.GANACHE){
         server = TestRPC.server({gasLimit: 6721975});
         server.listen(8545, done);
       } else {

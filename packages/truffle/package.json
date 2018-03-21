@@ -34,7 +34,8 @@
     "build": "npm run build-cli",
     "build-cli": "webpack --config ./cli.webpack.config.js",
     "test": "npm run build-cli && mocha",
-    "test:ci": "./scripts/test.sh"
+    "test:ci": "./scripts/test.sh",
+    "test:geth": "CI=true npm test"
   },
   "repository": {
     "type": "git",
