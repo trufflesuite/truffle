@@ -7,17 +7,18 @@ services:
 
 before_install:
   - docker pull truffle/ci
+  - docker pull ethereum/client-go:latest
 
 env:
-  - TEST=repo
+  global:
+    - TEST=repo
+  matrix:
+    - GANACHE=true
+    - GETH=true
+
+matrix:
+  allow_failures:
+    - env: GETH=true
 
 script:
-  - >
-    docker run -it --rm --name ${TEST} \
-        -e TRAVIS_REPO_SLUG \
-        -e TRAVIS_PULL_REQUEST \
-        -e TRAVIS_PULL_REQUEST_SLUG \
-        -e TRAVIS_PULL_REQUEST_BRANCH \
-        -e TRAVIS_BRANCH \
-        -e TEST \
-      truffle/ci:latest run_tests
+  - npm run test:ci
