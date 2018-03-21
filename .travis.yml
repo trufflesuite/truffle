@@ -12,7 +12,6 @@ before_install:
 env:
   global:
     - TEST=repo
-    - GETH_CONTAINER=geth
   matrix:
     - GANACHE=true
     - GETH=true
