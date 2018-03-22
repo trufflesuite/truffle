@@ -12,6 +12,7 @@ before_install:
 env:
   global:
     - TEST=repo
+    - MAIN_REPO_CI=true
   matrix:
     - GANACHE=true
     - GETH=true

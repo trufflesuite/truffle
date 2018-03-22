@@ -29,7 +29,7 @@ run_geth_test() {
     -e TRAVIS_BRANCH \
     -e TEST \
     -e GETH \
-    -e CI \
+    -e MAIN_REPO_CI \
   truffle/ci:latest run_tests
 }
 
@@ -42,7 +42,7 @@ run_ganache_test() {
     -e TRAVIS_BRANCH \
     -e TEST \
     -e GANACHE \
-    -e CI \
+    -e MAIN_REPO_CI \
   truffle/ci:latest run_tests
 }
 
