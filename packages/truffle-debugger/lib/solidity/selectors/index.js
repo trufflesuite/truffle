@@ -55,6 +55,7 @@ let solidity = createSelectorTree({
             instruction.jump = sourceMapInstruction.jump;
             instruction.start = sourceMapInstruction.start;
             instruction.length = sourceMapInstruction.length;
+            instruction.file = sourceMapInstruction.file;
             instruction.range = {
               start: lineAndColumnMapping[sourceMapInstruction.start],
               end: lineAndColumnMapping[sourceMapInstruction.start + sourceMapInstruction.length]
