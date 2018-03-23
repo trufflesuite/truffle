@@ -39,7 +39,7 @@ function merge(context, ...others) {
   }
 }
 
-export function list(state = [], action) {
+export default function reducer(state = [], action) {
   switch (action.type) {
 
     case actions.ADD_CONTEXT:
@@ -61,73 +61,3 @@ export function list(state = [], action) {
       return state;
   }
 }
-
-export function indexForBinary(state = {}, action) {
-  switch (action.type) {
-
-    case actions.ADD_CONTEXT:
-      let index = Object.keys(state).length; // new context, new index
-      let binary = action.context.binary;
-      debug("binary: %o", binary);
-
-      // (just because this is the sort of thing to come back to bite us)
-      assert(state[binary] == undefined);
-
-      return {
-        ...state,
-        [binary]: index
-      }
-
-    default:
-      return state;
-  }
-}
-
-export function indexForAddress(state = {_next: 0}, action) {
-  switch (action.type) {
-
-    case actions.ADD_CONTEXT:
-      let index = state._next;
-      debug("adding context to address index: %o", action);
-
-      return {
-        ...state,
-
-        // track the # of contexts because this is a separate reducer
-        _next: state._next + 1,
-
-        ...Object.assign({},
-          ...action.context.addresses.map(
-            (address) => ({ [address]: index })
-          )
-        )
-      };
-
-    case actions.MERGE_CONTEXT:
-      debug("merging context into address index: %o", action);
-      debug("action.context.addresses: %o", action.context.addresses);
-
-      return {
-        ...state,
-
-        ...Object.assign({},
-          ...action.context.addresses.map(
-            (address) => ({ [address]: action.index })
-          )
-        )
-      };
-
-    default:
-      return state;
-  }
-
-}
-
-
-const reducer = combineReducers({
-  list,
-  indexForAddress,
-  indexForBinary,
-});
-
-export default reducer;

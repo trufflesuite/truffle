@@ -7,23 +7,13 @@ import evm from "lib/evm/selectors";
 
 const WORD_SIZE = 0x20;
 
-const contexts = (state) => {
-  const defaultView = {
-    list: [],
-    indexForAddress: {},
-    indexForBinary: {}
-  };
-
-  return state.context || defaultView;
-};
-
 const context = createSelectorTree({
   /**
    * context.list
    *
    * list of all contexts
    */
-  list: createLeaf([contexts], (contexts) => contexts.list),
+  list: (state) => state.context || [],
 
   /**
    * context.by
@@ -36,10 +26,10 @@ const context = createSelectorTree({
      * object (address => context)
      */
     address: createLeaf(
-      [contexts, "../indexBy/address"],
+      ["/list", "../indexBy/address"],
 
-      (contexts, contextIndexBy) => (
-        (address) => contexts && contexts.list[ contextIndexBy(address) ]
+      (list, contextIndexBy) => (
+        (address) => list[ contextIndexBy(address) ]
       )
     ),
 
@@ -49,10 +39,10 @@ const context = createSelectorTree({
      * object (binary => context)
      */
     binary: createLeaf(
-      [contexts, "../indexBy/binary"],
+      ["/list", "../indexBy/binary"],
 
-      (contexts, contextIndexBy) => (
-        (binary) => contexts && contexts.list[ contextIndexBy(binary) ]
+      (list, contextIndexBy) => (
+        (binary) => list[ contextIndexBy(binary) ]
       )
     )
   },
@@ -68,14 +58,19 @@ const context = createSelectorTree({
      * object (address => context list index)
      */
     address: createLeaf(
-      [contexts],
+      ["/list"],
 
-      (contexts) => (
-        (address) => {
-          const { _next, ...map } = contexts.indexForAddress;
-          return map[address];
-        }
-      )
+      (list) => {
+        let map = Object.assign({},
+          ...list.map(
+            (context, index) => Object.assign({},
+              ...context.addresses.map( (address) => ({ [address]: index }) )
+            )
+          )
+        );
+
+        return (address) => map[address]
+      }
     ),
 
     /**
@@ -84,21 +79,27 @@ const context = createSelectorTree({
      * object (binary => context list index)
      */
     binary: createLeaf(
-      [contexts],
+      ["/list"],
 
-      (contexts) => (
-        (binary) => {
+      (list) => {
+        let map = Object.assign({},
+          ...list.map(
+            (context, index) => ({ [context.binary]: index })
+          )
+        );
+
+        return (binary) => {
           // trim off possible constructor args, one word at a time
           // HACK until there's better CREATE semantics
           let index = undefined;
           while (index === undefined && binary) {
-            index = contexts.indexForBinary[binary];
+            index = map[binary];
             binary = binary.slice(0, -(WORD_SIZE * 2));
           }
 
           return index;
         }
-      )
+      }
     )
   },
 
@@ -123,26 +124,23 @@ const context = createSelectorTree({
    * contexts interacted with in trace
    */
   affectedInstances: createLeaf(
-    [contexts],
+    ["/list"],
 
-    ({list, indexForAddress}) => {
-      let map = {};
-
-      for (let address of Object.keys(indexForAddress)) {
-        if (address === "_next") continue;
-
-        let index = indexForAddress[address];
-        let context = list[index];
-
-        map[address] = {
-          contractName: context.contractName,
-          source: context.source,
-          binary: context.binary
-        };
-      }
-
-      return map;
-    }
+    (list) => Object.assign({},
+      ...list.map(
+        (context) => Object.assign({},
+          ...context.addresses.map(
+            (address) => ({
+              [address]: {
+                contractName: context.contractName,
+                source: context.source,
+                binary: context.binary
+              }
+            })
+          )
+        )
+      )
+    )
   ),
 
   /**
