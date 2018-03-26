@@ -21,8 +21,12 @@ function spelunk(jump) {
   }
 }
 
-const reducer = combineReducers({
+const proc = combineReducers({
   functionDepth
+});
+
+const reducer = combineReducers({
+  proc
 });
 
 export default reducer;

@@ -18,7 +18,7 @@ let solidity = createSelectorTree({
     /**
      * solidity.current.functionDepth
      */
-    functionDepth: (state) => state.solidity.functionDepth,
+    functionDepth: (state) => state.solidity.proc.functionDepth,
 
     /**
      * solidity.current.instructions

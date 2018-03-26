@@ -20,8 +20,12 @@ export function callstack(state = [], action) {
   };
 }
 
+const proc = combineReducers({
+  callstack
+});
+
 const reducer = combineReducers({
-  callstack,
+  proc
 });
 
 export default reducer;

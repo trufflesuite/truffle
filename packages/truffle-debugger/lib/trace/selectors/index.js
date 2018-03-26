@@ -6,14 +6,14 @@ let trace = createSelectorTree({
    *
    * current step index
    */
-  index: (state) => state.trace.index,
+  index: (state) => state.trace.proc.index,
 
   /**
    * trace.steps
    *
    * all trace steps
    */
-  steps: (state) => state.trace.steps,
+  steps: (state) => state.trace.info.steps,
 
   /**
    * trace.stepsRemaining

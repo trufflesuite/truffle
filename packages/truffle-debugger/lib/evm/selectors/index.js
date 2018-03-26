@@ -16,7 +16,7 @@ const evm = createSelectorTree({
     /**
      * evm.current.callstack
      */
-    callstack: (state) => state.evm.callstack,
+    callstack: (state) => state.evm.proc.callstack,
 
     /**
      * evm.current.call

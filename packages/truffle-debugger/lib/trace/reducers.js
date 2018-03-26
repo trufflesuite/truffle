@@ -18,9 +18,17 @@ export function steps(state = null, action) {
   }
 }
 
-const reducer = combineReducers({
-  index,
+const info = combineReducers({
   steps
+})
+
+const proc = combineReducers({
+  index
+})
+
+const reducer = combineReducers({
+  info,
+  proc
 });
 
 export default reducer;
