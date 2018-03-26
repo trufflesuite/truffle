@@ -80,7 +80,13 @@ function *tickSaga() {
 }
 
 export function* saga () {
-  yield takeEvery(TICK, tickSaga);
+  yield takeEvery(TICK, function* () {
+    try {
+      yield *tickSaga();
+    } catch (e) {
+      debug(e);
+    }
+  });
 }
 
 export default prefixName("data", saga);
