@@ -136,6 +136,12 @@ var compile = function(sources, options, callback) {
 
   var contracts = standardOutput.contracts;
 
+  var files = [];
+  Object.keys(standardOutput.sources).forEach(function(filename) {
+    var source = standardOutput.sources[filename];
+    files[source.id] = filename;
+  });
+
   var returnVal = {};
 
   // This block has comments in it as it's being prepared for solc > 0.4.10
@@ -196,8 +202,7 @@ var compile = function(sources, options, callback) {
     });
   });
 
-  // TODO: Is the third parameter needed?
-  callback(null, returnVal, Object.keys(sources));
+  callback(null, returnVal, files);
 };
 
 function replaceLinkReferences(bytecode, linkReferences, libraryName) {
