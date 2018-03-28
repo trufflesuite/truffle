@@ -34,68 +34,59 @@ export default function reducer(state = {}, action) {
 
   switch (action.type) {
     case actions.SCOPE:
-      context = state[action.context] || {};
-      scope = context[action.id] || {};
+      scope = state[action.id] || {};
 
       return {
         ...state,
 
-        [action.context]: {
-          ...context,
 
-          [action.id]: {
-            ...scope,
+        [action.id]: {
+          ...scope,
 
-            parentId: action.parentId,
-            pointer: action.pointer
-          }
+          sourceId: action.sourceId,
+          parentId: action.parentId,
+          pointer: action.pointer
         }
       }
 
     case actions.DECLARE:
-      context = state[action.context] || {};
-      scope = context[action.node.scope] || {};
+      scope = state[action.node.scope] || {};
       variables = scope.variables || [];
 
       return {
         ...state,
 
-        [action.context]: {
-          ...context,
+        [action.node.scope]: {
+          ...scope,
 
-          [action.node.scope]: {
-            ...scope,
+          variables: [
+            ...variables,
 
-            variables: [
-              ...variables,
-
-              {name: action.node.name, id: action.node.id}
-            ]
-          }
+            {name: action.node.name, id: action.node.id}
+          ]
         }
       }
 
     case actions.ASSIGN:
-      context = state[action.context] || {};
-      let nodes = Object.assign(
-        {}, ...Object.entries(action.assignments).map( ([id]) => ({ [id]: context[id] }))
+      let nodes = Object.assign({},
+        ...Object.entries(action.assignments).map(
+          ([id]) => ({ [id]: state[id] })
+        )
       );
 
       return {
         ...state,
 
-        [action.context]: {
-          ...context,
-
-          ...Object.assign(
-            {}, ...Object.entries(action.assignments).map( ([id, ref]) => ({
+        ...Object.assign({},
+          ...Object.entries(action.assignments).map(
+            ([id, ref]) => ({
               [id]: {
-                ...context[id],
+                ...state[id],
                 ref
               }
-            }))
+            })
           )
-        }
+        )
       };
 
     default:

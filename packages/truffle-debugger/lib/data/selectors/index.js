@@ -6,7 +6,7 @@ import jsonpointer from "json-pointer";
 
 import ast from "lib/ast/selectors";
 import evm from "lib/evm/selectors";
-import context from "lib/context/selectors";
+import solidity from "lib/solidity/selectors";
 
 import decode from "../decode";
 import * as decodeUtils from "../decode/utils";
@@ -32,6 +32,8 @@ function cleanBigNumbers(value) {
 }
 
 const data = createSelectorTree({
+  state: (state) => state.data,
+
   /**
    * data.views
    */
@@ -63,11 +65,10 @@ const data = createSelectorTree({
        * scopes map for current context
        */
       current: createLeaf(
-        [evm.current.call, context.indexBy, (state) => state.data],
+        ["/state"],
 
-        ({address, binary}, indexBy, data) => {
-          let index = address ? indexBy.address(address) : indexBy.binary(binary);
-          return data[index];
+        (data) => {
+          return data;
         }
       ),
 
@@ -78,15 +79,17 @@ const data = createSelectorTree({
          * current scope table with inlined AST nodes
          */
         current: createLeaf(
-          ["/scopes/tables/current", ast.current.tree],
+          ["/scopes/tables/current", solidity.info.sources],
 
-          (table, tree) => Object.assign(
-            {}, ...Object.entries(table).map(
+          (table, sources) => Object.assign({},
+            ...Object.entries(table).map(
               ([id, entry]) => ({
                 [id]: {
                   ...entry,
 
-                  definition: jsonpointer.get(tree, entry.pointer)
+                  definition: jsonpointer.get(
+                    sources[entry.sourceId].ast, entry.pointer
+                  )
                 }
               })
             )

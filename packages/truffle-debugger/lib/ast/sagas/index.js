@@ -12,25 +12,25 @@ import * as actions from "../actions";
 import ast from "../selectors";
 
 
-function *walk(context, node, pointer = "", parentId = null) {
+function *walk(sourceId, node, pointer = "", parentId = null) {
   debug("walking %o %o", pointer, node);
 
-  yield *handleEnter(context, node, pointer, parentId);
+  yield *handleEnter(sourceId, node, pointer, parentId);
 
   if (node instanceof Array) {
     for (let [i, child] of node.entries()) {
-      yield call(walk, context, child, `${pointer}/${i}`, parentId);
+      yield call(walk, sourceId, child, `${pointer}/${i}`, parentId);
     }
   } else if (node instanceof Object) {
     for (let [key, child] of Object.entries(node)) {
-      yield call(walk, context, child, `${pointer}/${key}`, node.id);
+      yield call(walk, sourceId, child, `${pointer}/${key}`, node.id);
     }
   }
 
-  yield *handleExit(context, node, pointer);
+  yield *handleExit(sourceId, node, pointer);
 }
 
-function *handleEnter(context, node, pointer, parentId) {
+function *handleEnter(sourceId, node, pointer, parentId) {
   if (!(node instanceof Object)) {
     return;
   }
@@ -39,34 +39,34 @@ function *handleEnter(context, node, pointer, parentId) {
 
   if (node.id !== undefined) {
     debug("%s recording scope %s", pointer, node.id);
-    yield *data.scope(context, node.id, pointer, parentId);
+    yield *data.scope(node.id, pointer, parentId, sourceId);
   }
 
   switch (node.nodeType) {
     case "VariableDeclaration":
       debug("%s recording variable %o", pointer, node);
-      yield *data.declare(context, node);
+      yield *data.declare(node);
       break;
   }
 }
 
-function *handleExit(context, node, pointer) {
+function *handleExit(sourceId, node, pointer) {
   debug("exiting %s", pointer);
 
   // no-op right now
 }
 
-function *walkSaga({context, ast}) {
-  yield walk(context, ast);
+function *walkSaga({sourceId, ast}) {
+  yield walk(sourceId, ast);
 }
 
 export function *visitAll(idx) {
-  let contexts = yield select(ast.views.contexts);
+  let sources = yield select(ast.views.sources);
 
   let tasks = yield all(
-    contexts.map((context, idx) => [context, idx])
-      .filter( ([{ast}]) => !!ast )
-      .map( ([{ast}, idx]) => fork( () => put(actions.visit(idx, ast))) )
+    Object.entries(sources)
+      .filter( ([id, {ast}]) => !!ast )
+      .map( ([id, {ast}]) => fork( () => put(actions.visit(id, ast))) )
   )
 
   if (tasks.length > 0) {

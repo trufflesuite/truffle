@@ -4,7 +4,6 @@ const debug = debugModule("debugger:ast:selectors");
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import jsonpointer from "json-pointer";
 
-import context from "lib/context/selectors";
 import solidity from "lib/solidity/selectors";
 
 import { findRange } from "../map";
@@ -19,9 +18,9 @@ const ast = createSelectorTree({
    */
   views: {
     /**
-     * ast.views.contexts
+     * ast.views.sources
      */
-    contexts: createLeaf([context.list], cs => cs)
+    sources: createLeaf([solidity.info.sources], sources => sources)
   },
 
   /**
@@ -32,20 +31,19 @@ const ast = createSelectorTree({
     /**
      * ast.current.tree
      *
-     * ast for current context
+     * ast for current source
      */
     tree: createLeaf(
-      [context.current], (context) => context.ast
+      [solidity.next.source], ({ast}) => ast
     ),
 
     /**
      * ast.current.index
      *
-     * index in context list
+     * source ID
      */
     index: createLeaf(
-      [context.current, context.indexBy.binary], (context, indexBy) =>
-        indexBy(context.binary)
+      [solidity.next.source], ({id}) => id
     )
   },
 
