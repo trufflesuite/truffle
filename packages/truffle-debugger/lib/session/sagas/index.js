@@ -104,13 +104,26 @@ function* recordContracts(...contracts) {
       deployedSourceMap
     } = contract;
 
+    // Add Solidity source
+    if (source) {
+      yield *solidity.addSource(contractName, source, sourcePath, ast);
+    }
+
     // create EVM contexts
     if (binary != "0x") {
       yield *evm.addContext(binary);
+
+      if (sourceMap) {
+        yield *solidity.addSourceMap(binary, sourceMap);
+      }
     }
 
     if (deployedBinary != "0x") {
       yield *evm.addContext(deployedBinary);
+
+      if (deployedSourceMap) {
+        yield *solidity.addSourceMap(deployedBinary, deployedSourceMap);
+      }
     }
 
     // create Context for binary and deployed binary
