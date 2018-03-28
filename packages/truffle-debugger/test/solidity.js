@@ -72,6 +72,7 @@ describe("Solidity Debugging", function() {
 
   var abstractions;
   var artifacts;
+  var files;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
@@ -84,6 +85,7 @@ describe("Solidity Debugging", function() {
     let prepared = await prepareContracts(provider, sources)
     abstractions = prepared.abstractions;
     artifacts = prepared.artifacts;
+    files = prepared.files;
   });
 
   it("exposes functionality to stop at breakpoints", async function() {
@@ -94,6 +96,7 @@ describe("Solidity Debugging", function() {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
+      files,
       contracts: artifacts
     });
 
@@ -126,6 +129,7 @@ describe("Solidity Debugging", function() {
 
       let bugger = await Debugger.forTx(txHash, {
         provider,
+        files,
         contracts: artifacts
       });
 
@@ -151,6 +155,7 @@ describe("Solidity Debugging", function() {
 
       let bugger = await Debugger.forTx(txHash, {
         provider,
+        files,
         contracts: artifacts
       });
 
