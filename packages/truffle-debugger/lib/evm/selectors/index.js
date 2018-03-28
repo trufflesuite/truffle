@@ -5,8 +5,18 @@ import { createSelectorTree, createLeaf } from "reselect-tree";
 
 import trace from "lib/trace/selectors";
 
+const WORD_SIZE = 0x20;
 
 const evm = createSelectorTree({
+  state: (state) => state.evm,
+
+  info: {
+    instances: createLeaf(['/state'], (state) => state.info.instances.byAddress),
+
+    contexts: createLeaf(['/state'], (state) => state.info.contexts.byContext),
+
+    binaries: createLeaf(['/state'], (state) => state.info.contexts.byBinary)
+  },
 
   /**
    * evm.current
@@ -25,6 +35,29 @@ const evm = createSelectorTree({
       ["./callstack"],
 
       (stack) => stack.length ? stack[stack.length - 1] : {}
+    ),
+
+    /**
+     * evm.current.context
+     */
+    context: createLeaf(
+      ["./call", "/info/instances", "/info/binaries", "/info/contexts"],
+
+      ({address, binary}, instances, binaries, contexts) => {
+        var record;
+        if (address) {
+          record = instances[address];
+        } else {
+          // trim off possible constructor args, one word at a time
+          // HACK until there's better CREATE semantics
+          while (record === undefined && binary) {
+            record = binaries[binary];
+            binary = binary.slice(0, -(WORD_SIZE * 2));
+          }
+        }
+
+        return contexts[record.context];
+      }
     ),
 
     /**

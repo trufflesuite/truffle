@@ -2,12 +2,34 @@ import debugModule from "debug";
 const debug = debugModule("debugger:evm:sagas");
 
 import { call, put, take, select } from "redux-saga/effects";
-import { prefixName } from "lib/helpers";
+import { prefixName, keccak256 } from "lib/helpers";
 
 import { TICK } from "lib/trace/actions";
 import * as actions from "../actions";
 
 import evm from "../selectors";
+
+/**
+ * Adds EVM bytecode context
+ *
+ * @return {string} ID (0x-prefixed keccak of binary)
+ */
+export function *addContext(binary) {
+  yield put(actions.addContext(binary));
+
+  return keccak256(binary);
+}
+
+/**
+ * Adds known deployed instance of binary at address
+ *
+ * @return {string} ID (0x-prefixed keccak of binary)
+ */
+export function *addInstance(address, binary) {
+  yield put(actions.addInstance(address, binary));
+
+  return keccak256(binary);
+}
 
 export function* begin({ address, binary }) {
   if (address) {
