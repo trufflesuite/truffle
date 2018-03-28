@@ -104,6 +104,15 @@ function* recordContracts(...contracts) {
       deployedSourceMap
     } = contract;
 
+    // create EVM contexts
+    if (binary != "0x") {
+      yield *evm.addContext(binary);
+    }
+
+    if (deployedBinary != "0x") {
+      yield *evm.addContext(deployedBinary);
+    }
+
     // create Context for binary and deployed binary
     yield *context.addOrMerge({
       binary: binary,
@@ -128,6 +137,8 @@ function* recordContracts(...contracts) {
 }
 
 function *recordInstance(address, binary) {
+  yield *evm.addInstance(address, binary);
+
   yield *context.addOrMerge({
     addresses: [address],
     binary: binary
