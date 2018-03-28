@@ -80,16 +80,6 @@ function* fetchTx(txHash, provider) {
   );
 }
 
-function *ready() {
-  debug("ready");
-  yield put(actions.ready());
-}
-
-function *error(err) {
-  debug("error");
-  yield put(actions.error(err));
-}
-
 function* recordContracts(...contracts) {
   for (let contract of contracts) {
     let {
@@ -129,4 +119,14 @@ function* recordContracts(...contracts) {
 
 function *recordInstance(address, binary) {
   yield *evm.addInstance(address, binary);
+}
+
+function *ready() {
+  debug("ready");
+  yield put(actions.ready());
+}
+
+function *error(err) {
+  debug("error");
+  yield put(actions.error(err));
 }
