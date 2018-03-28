@@ -77,10 +77,7 @@ function* fetchTx(txHash, provider) {
   let binaries = yield *web3.obtainBinaries(addresses);
 
   yield all(
-    addresses.map( (address, i) => call(context.addOrMerge, {
-      binary: binaries[i],
-      addresses: [address],
-    }))
+    addresses.map( (address, i) => call(recordInstance, address, binaries[i]) )
   );
 }
 
@@ -96,26 +93,43 @@ function *error(err) {
 
 function* recordContracts(...contracts) {
   for (let contract of contracts) {
+    let {
+      binary,
+      contractName,
+      source,
+      sourcePath,
+      ast,
+      sourceMap,
+      deployedBinary,
+      deployedSourceMap
+    } = contract;
+
     // create Context for binary and deployed binary
     yield *context.addOrMerge({
-      binary: contract.binary,
+      binary: binary,
       addresses: [],
-      ast: contract.ast,
-      sourceMap: contract.sourceMap,
-      source: contract.source,
-      sourcePath: contract.sourcePath,
-      contractName: contract.contractName
+      ast: ast,
+      sourceMap: sourceMap,
+      source: source,
+      sourcePath: sourcePath,
+      contractName: contractName
     });
 
     yield *context.addOrMerge({
-      binary: contract.deployedBinary,
+      binary: deployedBinary,
       addresses: [],
-      ast: contract.ast,
-      sourceMap: contract.deployedSourceMap,
-      source: contract.source,
-      sourcePath: contract.sourcePath,
-      contractName: contract.contractName
+      ast: ast,
+      sourceMap: deployedSourceMap,
+      source: source,
+      sourcePath: sourcePath,
+      contractName: contractName
     });
   }
 }
 
+function *recordInstance(address, binary) {
+  yield *context.addOrMerge({
+    addresses: [address],
+    binary: binary
+  });
+}
