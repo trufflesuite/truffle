@@ -5,91 +5,99 @@ import { combineReducers } from "redux";
 
 import * as actions from "./actions";
 
-/*
- * state shape
- * -----------
- *
- *  data: {
- *    [context-id]: {
- *      [scope-id]: {
- *        pointer: "/json/pointer",
- *        variables: {
- *          name: <name>,
- *          id: <id>,
- *        }
- *      },
- *
- *      [var-id]: {
- *        pointer: "/json/pointer",
- *        ref: { [segment]: [location] }
- *      }
- *    }
- *  }
- */
+const DEFAULT_SCOPES = {
+  byId: {}
+};
 
-export default function reducer(state = {}, action) {
+function scopes(state = DEFAULT_SCOPES, action) {
   var context;
   var scope;
   var variables;
 
   switch (action.type) {
     case actions.SCOPE:
-      scope = state[action.id] || {};
+      scope = state.byId[action.id] || {};
 
       return {
-        ...state,
+        byId: {
+          ...state.byId,
 
+          [action.id]: {
+            ...scope,
 
-        [action.id]: {
-          ...scope,
-
-          sourceId: action.sourceId,
-          parentId: action.parentId,
-          pointer: action.pointer
+            id: action.id,
+            sourceId: action.sourceId,
+            parentId: action.parentId,
+            pointer: action.pointer
+          }
         }
       }
 
     case actions.DECLARE:
-      scope = state[action.node.scope] || {};
+      scope = state.byId[action.node.scope] || {};
       variables = scope.variables || [];
 
       return {
-        ...state,
+        byId: {
+          ...state.byId,
 
-        [action.node.scope]: {
-          ...scope,
+          [action.node.scope]: {
+            ...scope,
 
-          variables: [
-            ...variables,
+            variables: [
+              ...variables,
 
-            {name: action.node.name, id: action.node.id}
-          ]
+              {name: action.node.name, id: action.node.id}
+            ]
+          }
         }
       }
 
+    default:
+      return state;
+  }
+}
+
+const info = combineReducers({
+  scopes
+});
+
+const DEFAULT_ASSIGNMENTS = {
+  byId: {}
+};
+
+function assignments(state = DEFAULT_ASSIGNMENTS, action) {
+  switch (action.type) {
     case actions.ASSIGN:
-      let nodes = Object.assign({},
-        ...Object.entries(action.assignments).map(
-          ([id]) => ({ [id]: state[id] })
-        )
-      );
-
       return {
-        ...state,
+        byId: {
+          ...state.byId,
 
-        ...Object.assign({},
-          ...Object.entries(action.assignments).map(
-            ([id, ref]) => ({
-              [id]: {
-                ...state[id],
-                ref
-              }
-            })
+          ...Object.assign({},
+            ...Object.entries(action.assignments).map(
+              ([id, ref]) => ({
+                [id]: {
+                  ...state.byId[id],
+                  ref
+                }
+              })
+            )
           )
-        )
+        }
       };
 
     default:
       return state;
   }
 };
+
+const proc = combineReducers({
+  assignments
+});
+
+const reducer = combineReducers({
+  info,
+  proc
+});
+
+export default reducer;

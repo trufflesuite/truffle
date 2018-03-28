@@ -49,6 +49,14 @@ const data = createSelectorTree({
     }
   },
 
+  info: {
+    scopes: createLeaf(["/state"], (state) => state.info.scopes.byId)
+  },
+
+  proc: {
+    assignments: createLeaf(["/state"], (state) => state.proc.assignments.byId)
+  },
+
   /**
    * data.scopes
    */
@@ -65,7 +73,7 @@ const data = createSelectorTree({
        * scopes map for current context
        */
       current: createLeaf(
-        ["/state"],
+        ["/info/scopes"],
 
         (data) => {
           return data;
@@ -162,10 +170,11 @@ const data = createSelectorTree({
       [
         "/scopes/tables/inlined/current",
         "/scopes/current/id",
+        "/proc/assignments",
         "/current"
       ],
 
-      (refs, id, state) => {
+      (refs, id, assignments, state) => {
         let cur = id;
         let variables = {};
 
@@ -173,14 +182,17 @@ const data = createSelectorTree({
         const format = (v) => {
           let {stack, memory, storage} = state;
           let definition = v.definition;
+          debug("assignments %O", assignments);
+          debug("v.id %o", v.id);
+          let assignment = (assignments[v.id] || {}).ref;
           var rawValue;
 
-          debug("v.ref: %o", v.ref);
-          if (!v.ref) {
+          debug("assignment: %o", assignment);
+          if (!assignment) {
             return undefined;
           }
 
-          return decode(definition, v.ref, state, refs);
+          return decode(definition, assignment, state, refs);
         };
 
         do {
