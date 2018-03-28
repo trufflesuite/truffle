@@ -119,39 +119,33 @@ var Package = {
       host = new EthPM.hosts.IPFS(options.ethpm.ipfs_host, options.ethpm.ipfs_port, options.ethpm.ipfs_protocol);
     }
 
-    options.logger.log("Gathering contracts...");
+    options.logger.log("Finding publishable artifacts...");
 
-    Profiler.defined_contracts(options.contracts_directory, function(err, contract_names) {
+    self.publishable_artifacts(options, function(err, artifacts) {
       if (err) return callback(err);
 
-      options.logger.log("Finding publishable artifacts...");
-
-      self.publishable_artifacts(options, Object.keys(contract_names), function(err, artifacts) {
+      web3.eth.getAccounts(function(err, accs) {
         if (err) return callback(err);
 
-        web3.eth.getAccounts(function(err, accs) {
-          if (err) return callback(err);
+        var registry = EthPMRegistry.use(options.ethpm.registry, accs[0], provider);
+        var pkg = new EthPM(options.working_directory, host, registry);
 
-          var registry = EthPMRegistry.use(options.ethpm.registry, accs[0], provider);
-          var pkg = new EthPM(options.working_directory, host, registry);
+        fs.access(path.join(options.working_directory, "ethpm.json"), fs.constants.R_OK, function(err) {
+          var manifest;
 
-          fs.access(path.join(options.working_directory, "ethpm.json"), fs.constants.R_OK, function(err) {
-            var manifest;
+          // If the ethpm.json file doesn't exist, use the config as the manifest.
+          if (err) {
+            manifest = options;
+          }
 
-            // If the ethpm.json file doesn't exist, use the config as the manifest.
-            if (err) {
-              manifest = options;
-            }
+          options.logger.log("Uploading sources and publishing to registry...");
 
-            options.logger.log("Uploading sources and publishing to registry...");
-
-            // TODO: Gather contract_types and deployments
-            pkg.publish(artifacts.contract_types, artifacts.deployments, manifest).then(function(lockfile) {
-              // If we get here, publishing was a success.
-              options.logger.log("+ " + lockfile.package_name + "@" + lockfile.version);
-              callback();
-            }).catch(callback);
-          });
+          // TODO: Gather contract_types and deployments
+          pkg.publish(artifacts.contract_types, artifacts.deployments, manifest).then(function(lockfile) {
+            // If we get here, publishing was a success.
+            options.logger.log("+ " + lockfile.package_name + "@" + lockfile.version);
+            callback();
+          }).catch(callback);
         });
       });
     });
@@ -174,7 +168,7 @@ var Package = {
   },
 
   // Return a list of publishable artifacts
-  publishable_artifacts: function(options, contract_names, callback) {
+  publishable_artifacts: function(options, callback) {
     // Filter out "test" and "development" networks.
     var deployed_networks = Object.keys(options.networks).filter(function(network_name) {
       return network_name != "test" && network_name != "development";
@@ -190,9 +184,16 @@ var Package = {
         return callback(new Error("Could not connect to the following networks: " + result.failed.join(", ") + ". These networks have deployed artifacts that can't be published as a package without an active and accessible connection. Please ensure clients for each network are up and running prior to publishing, or use the -n option to specify specific networks you'd like published."));
       }
 
-      var files = contract_names.map(function(contract_name) {
-        return contract_name + ".json";
-      });
+      var files = fs.readdirSync(options.contracts_build_directory)
+      files = files.filter(file => file.includes('.json'));
+
+      if(!files.length){
+        var msg = "Could not locate any publishable artifacts in " +
+                  options.contracts_build_directory + ". " +
+                  "Run `truffle compile` before publishing.";
+
+        return callback(new Error(msg));
+      }
 
       var promises = files.map(function(file) {
         return new Promise(function(accept, reject) {
