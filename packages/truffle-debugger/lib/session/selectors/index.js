@@ -7,7 +7,14 @@ import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
 const session = createSelectorTree({
+  /**
+   * session.info
+   */
   info: {
+
+    /**
+     * session.info.affectedInstances
+     */
     affectedInstances: createLeaf(
       [evm.info.instances, evm.info.contexts, solidity.info.sources, solidity.info.sourceMaps],
 

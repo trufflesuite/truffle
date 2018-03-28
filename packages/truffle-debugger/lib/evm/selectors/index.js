@@ -8,13 +8,28 @@ import trace from "lib/trace/selectors";
 const WORD_SIZE = 0x20;
 
 const evm = createSelectorTree({
+  /**
+   * evm.state
+   */
   state: (state) => state.evm,
 
+  /**
+   * evm.info
+   */
   info: {
-    instances: createLeaf(['/state'], (state) => state.info.instances.byAddress),
-
+    /**
+     * evm.info.contexts
+     */
     contexts: createLeaf(['/state'], (state) => state.info.contexts.byContext),
 
+    /**
+     * evm.info.instances
+     */
+    instances: createLeaf(['/state'], (state) => state.info.instances.byAddress),
+
+    /**
+     * evm.info.binaries
+     */
     binaries: createLeaf(['/state'], (state) => state.info.contexts.byBinary)
   },
 

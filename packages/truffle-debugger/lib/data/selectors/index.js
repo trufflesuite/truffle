@@ -70,7 +70,7 @@ const data = createSelectorTree({
       /**
        * data.scopes.tables.current
        *
-       * scopes map for current context
+       * all scopes with AST references
        */
       current: createLeaf(
         ["/info/scopes"],
@@ -84,7 +84,7 @@ const data = createSelectorTree({
         /**
          * data.scopes.tables.inlined.current
          *
-         * current scope table with inlined AST nodes
+         * all scopes with AST nodes inlined
          */
         current: createLeaf(
           ["/scopes/tables/current", solidity.info.sources],

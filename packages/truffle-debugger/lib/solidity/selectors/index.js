@@ -9,10 +9,23 @@ import evm from "lib/evm/selectors";
 
 
 let solidity = createSelectorTree({
+  /**
+   * solidity.state
+   */
   state: (state) => state.solidity,
 
+  /**
+   * solidity.info
+   */
   info: {
+    /**
+     * solidity.info.sources
+     */
     sources: createLeaf(['/state'], (state) => state.info.sources.byId),
+
+    /**
+     * solidity.info.sourceMaps
+     */
     sourceMaps: createLeaf(['/state'], (state) => state.info.sourceMaps.byContext)
   },
 
@@ -20,6 +33,10 @@ let solidity = createSelectorTree({
    * solidity.current
    */
   current: {
+
+    /**
+     * solidity.current.sourceMap
+     */
     sourceMap: createLeaf(
       [evm.current.context, "/info/sourceMaps"],
 
@@ -116,6 +133,9 @@ let solidity = createSelectorTree({
       (map, pc) => map[pc]
     ),
 
+    /**
+     * solidity.next.source
+     */
     source: createLeaf(
       ["/info/sources", "./instruction"],
 
