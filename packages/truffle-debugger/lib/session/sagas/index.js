@@ -6,7 +6,6 @@ import { cancel, call, all, fork, take, put } from 'redux-saga/effects';
 import { prefixName } from "lib/helpers";
 
 import * as ast from "lib/ast/sagas";
-import * as context from "lib/context/sagas";
 import * as controller from "lib/controller/sagas";
 import * as solidity from "lib/solidity/sagas";
 import * as evm from "lib/evm/sagas";
@@ -125,35 +124,9 @@ function* recordContracts(...contracts) {
         yield *solidity.addSourceMap(deployedBinary, deployedSourceMap);
       }
     }
-
-    // create Context for binary and deployed binary
-    yield *context.addOrMerge({
-      binary: binary,
-      addresses: [],
-      ast: ast,
-      sourceMap: sourceMap,
-      source: source,
-      sourcePath: sourcePath,
-      contractName: contractName
-    });
-
-    yield *context.addOrMerge({
-      binary: deployedBinary,
-      addresses: [],
-      ast: ast,
-      sourceMap: deployedSourceMap,
-      source: source,
-      sourcePath: sourcePath,
-      contractName: contractName
-    });
   }
 }
 
 function *recordInstance(address, binary) {
   yield *evm.addInstance(address, binary);
-
-  yield *context.addOrMerge({
-    addresses: [address],
-    binary: binary
-  });
 }

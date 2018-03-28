@@ -10,7 +10,6 @@ import astSelector from "./ast/selectors";
 import traceSelector from "./trace/selectors";
 import evmSelector from "./evm/selectors";
 import soliditySelector from "./solidity/selectors";
-import contextSelector from "./context/selectors";
 import sessionSelector from "./session/selectors";
 
 const debug = debugModule("debugger");
@@ -111,7 +110,6 @@ export default class Debugger {
       trace: traceSelector,
       evm: evmSelector,
       solidity: soliditySelector,
-      context: contextSelector
       session: sessionSelector,
     });
   }

@@ -1,6 +1,5 @@
 import { combineReducers } from "redux";
 
-import context from "lib/context/reducers";
 import data from "lib/data/reducers";
 import evm from "lib/evm/reducers";
 import solidity from "lib/solidity/reducers";
@@ -31,7 +30,6 @@ export function session(state = WAITING, action) {
 
 const reduceState = combineReducers({
   session,
-  context,
   data,
   evm,
   solidity,
