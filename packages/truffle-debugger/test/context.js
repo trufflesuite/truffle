@@ -9,7 +9,7 @@ import Web3 from "web3";
 import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
 
-import context from "lib/context/selectors";
+import sessionSelector from "lib/session/selectors";
 import trace from "lib/trace/selectors";
 
 const __OUTER = `
@@ -113,7 +113,7 @@ describe("Contexts", function () {
 
     let session = bugger.connect();
 
-    let affectedInstances = session.view(context.affectedInstances);
+    let affectedInstances = session.view(sessionSelector.info.affectedInstances);
     debug("affectedInstances: %o", affectedInstances);
 
     let affectedAddresses = Object.keys(affectedInstances);
@@ -129,52 +129,5 @@ describe("Contexts", function () {
       affectedAddresses, inner.address,
       "InnerContract should be an affected address"
     );
-  });
-
-  it("returns view of missing contracts", async function () {
-    let outer = await abstractions.OuterContract.deployed();
-    let inner = await abstractions.InnerContract.deployed();
-
-    // run outer contract method
-    let result = await outer.run();
-    debug("receipt: %O", result.receipt);
-
-    assert.equal(2, result.receipt.logs.length, "There should be two logs");
-
-    let txHash = result.tx;
-
-    // omit the artifact for InnerContract
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      contracts: artifacts
-        .filter((artifact) => artifact.contractName != "InnerContract")
-    });
-
-    let session = bugger.connect();
-
-    let affectedInstances = session.view(context.affectedInstances);
-    debug("affectedInstances: %o", affectedInstances);
-
-    let affectedAddresses = Object.keys(affectedInstances);
-
-    // check for affected addresses while at it
-    assert.equal(2, affectedAddresses.length);
-
-    assert.include(
-      affectedAddresses, outer.address,
-      "OuterContract should be an affected address"
-    );
-
-    assert.include(
-      affectedAddresses, inner.address,
-      "InnerContract should be an affected address"
-    );
-
-    // ensure missing sources is correct
-    let missingSources = session.view(context.missingSources);
-    debug("missingSources: %o", missingSources);
-
-    assert.equal(1, missingSources.length);
-    assert.equal(inner.address, missingSources[0]);
   });
 });
