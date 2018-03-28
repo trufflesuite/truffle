@@ -15,6 +15,7 @@ var command = {
     var util = require("util");
     var _ = require("lodash");
 
+    var compile = require("truffle-compile");
     var Config = require("truffle-config");
     var Debugger = require("truffle-debugger");
     var DebugUtils = require("truffle-debug-utils");
@@ -25,7 +26,6 @@ var command = {
     // Debugger Session properties
     var ast = selectors.ast;
     var data = selectors.data;
-    var context = selectors.context;
     var trace = selectors.trace;
     var solidity = selectors.solidity;
     var evm = selectors.evm;
@@ -48,13 +48,40 @@ var command = {
       var enabledExpressions = new Set();
       var breakpoints = [];
 
-      config.logger.log(DebugUtils.formatStartMessage());
 
-      var sessionPromise = DebugUtils.gatherArtifacts(config)
-        .then(function(contracts) {
+      let compilePromise = new Promise(function(accept, reject) {
+        compile.all(config, function(err, contracts, files) {
+          if (err) { return reject(err); }
+
+          return accept({
+            contracts: contracts,
+            files: files
+          });
+        });
+      });
+
+      var sessionPromise = compilePromise
+        .then(function(result) {
+          config.logger.log(DebugUtils.formatStartMessage());
+
+          debug("contracts %O", result.contracts);
+
           return Debugger.forTx(txHash, {
             provider: config.provider,
-            contracts: contracts
+            files: result.files,
+            contracts: Object.keys(result.contracts).map(function(name) {
+              var contract = result.contracts[name];
+              return {
+                contractName: contract.contractName || contract.contract_name,
+                source: contract.source,
+                sourcePath: contract.sourcePath,
+                ast: contract.ast,
+                binary: contract.binary || contract.bytecode,
+                sourceMap: contract.sourceMap,
+                deployedBinary: contract.deployedBinary || contract.deployedBytecode,
+                deployedSourceMap: contract.deployedSourceMap
+              };
+            })
           });
         })
         .then(function (bugger) {
@@ -72,7 +99,7 @@ var command = {
         }
 
         function printAddressesAffected() {
-          var affectedInstances = session.view(context.affectedInstances);
+          var affectedInstances = session.view(selectors.session.info.affectedInstances);
 
           config.logger.log("Addresses affected:");
           config.logger.log(DebugUtils.formatAffectedInstances(affectedInstances));
@@ -86,8 +113,7 @@ var command = {
         function printFile() {
           var message = "";
 
-          debug("file: %o", session.view(context.current));
-          var sourcePath = session.view(context.current).sourcePath;
+          var sourcePath = session.view(solidity.next.source).sourcePath;
 
           if (sourcePath) {
             message += path.basename(sourcePath);
@@ -95,17 +121,12 @@ var command = {
             message += "?";
           }
 
-          var address = session.view(context.current).address;
-          if (address) {
-            message += " | " + address;
-          }
-
           config.logger.log("");
           config.logger.log(message + ":");
         }
 
         function printState() {
-          var source = session.view(context.current).source;
+          var source = session.view(solidity.next.source).source;
           var range = session.view(solidity.next.sourceRange);
           debug("source: %o", source);
           debug("range: %o", range);
@@ -396,7 +417,7 @@ var command = {
             case "u":
             case "n":
             case "c":
-              if(!session.view(context.current).source) {
+              if(!session.view(solidity.next.source).source) {
                 printInstruction();
               }
 
