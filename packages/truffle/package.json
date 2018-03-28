@@ -6,7 +6,7 @@
   "dependencies": {
     "mocha": "^3.4.2",
     "original-require": "^1.0.1",
-    "solc": "0.4.19"
+    "solc": "0.4.21"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^0.1.16",
