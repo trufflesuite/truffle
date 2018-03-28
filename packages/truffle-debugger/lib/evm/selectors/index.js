@@ -56,7 +56,7 @@ const evm = createSelectorTree({
           }
         }
 
-        return contexts[record.context];
+        return contexts[(record || {}).context];
       }
     ),
 
