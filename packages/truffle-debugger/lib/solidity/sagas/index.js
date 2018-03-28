@@ -9,6 +9,13 @@ import { TICK } from "lib/trace/actions";
 
 import solidity from "../selectors";
 
+export function *addSource(contractName, source, sourcePath, ast) {
+  yield put(actions.addSource(contractName, source, sourcePath, ast));
+}
+
+export function *addSourceMap(binary, sourceMap) {
+  yield put(actions.addSourceMap(binary, sourceMap));
+}
 
 function* functionDepthSaga () {
   while (true) {
