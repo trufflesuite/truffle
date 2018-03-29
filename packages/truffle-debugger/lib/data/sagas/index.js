@@ -14,12 +14,12 @@ import data from "../selectors";
 import { WORD_SIZE } from "lib/data/decode/utils";
 import * as utils from "lib/data/decode/utils";
 
-export function *scope(context, nodeId, pointer, parentId) {
-  yield put(actions.scope(context, nodeId, pointer, parentId));
+export function *scope(nodeId, pointer, parentId, sourceId) {
+  yield put(actions.scope(nodeId, pointer, parentId, sourceId));
 }
 
-export function *declare(context, node) {
-  yield put(actions.declare(context, node));
+export function *declare(node) {
+  yield put(actions.declare(node));
 }
 
 function *tickSaga() {
@@ -80,7 +80,13 @@ function *tickSaga() {
 }
 
 export function* saga () {
-  yield takeEvery(TICK, tickSaga);
+  yield takeEvery(TICK, function* () {
+    try {
+      yield *tickSaga();
+    } catch (e) {
+      debug(e);
+    }
+  });
 }
 
 export default prefixName("data", saga);

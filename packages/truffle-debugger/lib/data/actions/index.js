@@ -1,16 +1,16 @@
 export const SCOPE = "SCOPE";
-export function scope(context, id, pointer, parentId = null) {
+export function scope(id, pointer, parentId, sourceId) {
   return {
     type: SCOPE,
-    context, id, pointer, parentId
+    id, pointer, parentId, sourceId
   }
 }
 
 export const DECLARE = "DECLARE_VARIABLE";
-export function declare(context, node) {
+export function declare(node) {
   return {
     type: DECLARE,
-    context, node
+    node
   }
 }
 

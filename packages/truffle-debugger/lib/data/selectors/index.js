@@ -6,7 +6,7 @@ import jsonpointer from "json-pointer";
 
 import ast from "lib/ast/selectors";
 import evm from "lib/evm/selectors";
-import context from "lib/context/selectors";
+import solidity from "lib/solidity/selectors";
 
 import decode from "../decode";
 import * as decodeUtils from "../decode/utils";
@@ -32,6 +32,8 @@ function cleanBigNumbers(value) {
 }
 
 const data = createSelectorTree({
+  state: (state) => state.data,
+
   /**
    * data.views
    */
@@ -47,6 +49,14 @@ const data = createSelectorTree({
     }
   },
 
+  info: {
+    scopes: createLeaf(["/state"], (state) => state.info.scopes.byId)
+  },
+
+  proc: {
+    assignments: createLeaf(["/state"], (state) => state.proc.assignments.byId)
+  },
+
   /**
    * data.scopes
    */
@@ -60,14 +70,13 @@ const data = createSelectorTree({
       /**
        * data.scopes.tables.current
        *
-       * scopes map for current context
+       * all scopes with AST references
        */
       current: createLeaf(
-        [evm.current.call, context.indexBy, (state) => state.data],
+        ["/info/scopes"],
 
-        ({address, binary}, indexBy, data) => {
-          let index = address ? indexBy.address(address) : indexBy.binary(binary);
-          return data[index];
+        (data) => {
+          return data;
         }
       ),
 
@@ -75,18 +84,20 @@ const data = createSelectorTree({
         /**
          * data.scopes.tables.inlined.current
          *
-         * current scope table with inlined AST nodes
+         * all scopes with AST nodes inlined
          */
         current: createLeaf(
-          ["/scopes/tables/current", ast.current.tree],
+          ["/scopes/tables/current", solidity.info.sources],
 
-          (table, tree) => Object.assign(
-            {}, ...Object.entries(table).map(
+          (table, sources) => Object.assign({},
+            ...Object.entries(table).map(
               ([id, entry]) => ({
                 [id]: {
                   ...entry,
 
-                  definition: jsonpointer.get(tree, entry.pointer)
+                  definition: jsonpointer.get(
+                    sources[entry.sourceId].ast, entry.pointer
+                  )
                 }
               })
             )
@@ -159,10 +170,11 @@ const data = createSelectorTree({
       [
         "/scopes/tables/inlined/current",
         "/scopes/current/id",
+        "/proc/assignments",
         "/current"
       ],
 
-      (refs, id, state) => {
+      (refs, id, assignments, state) => {
         let cur = id;
         let variables = {};
 
@@ -170,14 +182,17 @@ const data = createSelectorTree({
         const format = (v) => {
           let {stack, memory, storage} = state;
           let definition = v.definition;
+          debug("assignments %O", assignments);
+          debug("v.id %o", v.id);
+          let assignment = (assignments[v.id] || {}).ref;
           var rawValue;
 
-          debug("v.ref: %o", v.ref);
-          if (!v.ref) {
+          debug("assignment: %o", assignment);
+          if (!assignment) {
             return undefined;
           }
 
-          return decode(definition, v.ref, state, refs);
+          return decode(definition, assignment, state, refs);
         };
 
         do {

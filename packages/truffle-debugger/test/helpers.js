@@ -28,8 +28,8 @@ export async function prepareContracts(provider, sources = {}, migrations) {
   config.network = "debugger";
 
   await addContracts(config, sources);
-  let compiledContracts = await compile(config);
-  let contractNames = Object.keys(compiledContracts);
+  let { contracts, files } = await compile(config);
+  let contractNames = Object.keys(contracts);
 
   if (!migrations) {
     migrations = await defaultMigrations(contractNames);
@@ -47,6 +47,7 @@ export async function prepareContracts(provider, sources = {}, migrations) {
   });
 
   return {
+    files,
     abstractions,
     artifacts,
     config
@@ -133,9 +134,9 @@ export async function compile(config) {
     Contracts.compile(config.with({
       all: true,
       quiet: true
-    }), function(err, contracts) {
+    }), function(err, contracts, files) {
       if (err) return reject(err);
-      return accept(contracts);
+      return accept({contracts, files});
     });
   });
 }

@@ -30,7 +30,7 @@ function* fetchTransactionInfo(adapter, {txHash}) {
 
   let receipt = yield apply(adapter, adapter.getReceipt, [txHash]);
   if (receipt.contractAddress) {
-    yield put(actions.receiveCall({binary: receipt.input}));
+    yield put(actions.receiveCall({binary: tx.input}));
     return;
   }
 

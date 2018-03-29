@@ -6,7 +6,6 @@ import { cancel, call, all, fork, take, put } from 'redux-saga/effects';
 import { prefixName } from "lib/helpers";
 
 import * as ast from "lib/ast/sagas";
-import * as context from "lib/context/sagas";
 import * as controller from "lib/controller/sagas";
 import * as solidity from "lib/solidity/sagas";
 import * as evm from "lib/evm/sagas";
@@ -77,11 +76,49 @@ function* fetchTx(txHash, provider) {
   let binaries = yield *web3.obtainBinaries(addresses);
 
   yield all(
-    addresses.map( (address, i) => call(context.addOrMerge, {
-      binary: binaries[i],
-      addresses: [address],
-    }))
+    addresses.map( (address, i) => call(recordInstance, address, binaries[i]) )
   );
+}
+
+function* recordContracts(...contracts) {
+  for (let contract of contracts) {
+    let {
+      binary,
+      contractName,
+      source,
+      sourcePath,
+      ast,
+      sourceMap,
+      deployedBinary,
+      deployedSourceMap
+    } = contract;
+
+    // Add Solidity source
+    if (source) {
+      yield *solidity.addSource(contractName, source, sourcePath, ast);
+    }
+
+    // create EVM contexts
+    if (binary != "0x") {
+      yield *evm.addContext(binary);
+
+      if (sourceMap) {
+        yield *solidity.addSourceMap(binary, sourceMap);
+      }
+    }
+
+    if (deployedBinary != "0x") {
+      yield *evm.addContext(deployedBinary);
+
+      if (deployedSourceMap) {
+        yield *solidity.addSourceMap(deployedBinary, deployedSourceMap);
+      }
+    }
+  }
+}
+
+function *recordInstance(address, binary) {
+  yield *evm.addInstance(address, binary);
 }
 
 function *ready() {
@@ -93,29 +130,3 @@ function *error(err) {
   debug("error");
   yield put(actions.error(err));
 }
-
-function* recordContracts(...contracts) {
-  for (let contract of contracts) {
-    // create Context for binary and deployed binary
-    yield *context.addOrMerge({
-      binary: contract.binary,
-      addresses: [],
-      ast: contract.ast,
-      sourceMap: contract.sourceMap,
-      source: contract.source,
-      sourcePath: contract.sourcePath,
-      contractName: contract.contractName
-    });
-
-    yield *context.addOrMerge({
-      binary: contract.deployedBinary,
-      addresses: [],
-      ast: contract.ast,
-      sourceMap: contract.deployedSourceMap,
-      source: contract.source,
-      sourcePath: contract.sourcePath,
-      contractName: contract.contractName
-    });
-  }
-}
-

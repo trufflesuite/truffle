@@ -1,8 +1,8 @@
 export const VISIT = "VISIT";
-export function visit(context, ast) {
+export function visit(sourceId, ast) {
   return {
     type: VISIT,
-    context, ast
+    sourceId, ast
   }
 }
 

@@ -5,30 +5,58 @@ import { createSelectorTree, createLeaf } from "reselect-tree";
 import SolidityUtils from "truffle-solidity-utils";
 import CodeUtils from "truffle-code-utils";
 
-import context from "lib/context/selectors";
 import evm from "lib/evm/selectors";
 
 
 let solidity = createSelectorTree({
+  /**
+   * solidity.state
+   */
+  state: (state) => state.solidity,
+
+  /**
+   * solidity.info
+   */
+  info: {
+    /**
+     * solidity.info.sources
+     */
+    sources: createLeaf(['/state'], (state) => state.info.sources.byId),
+
+    /**
+     * solidity.info.sourceMaps
+     */
+    sourceMaps: createLeaf(['/state'], (state) => state.info.sourceMaps.byContext)
+  },
+
   /**
    * solidity.current
    */
   current: {
 
     /**
+     * solidity.current.sourceMap
+     */
+    sourceMap: createLeaf(
+      [evm.current.context, "/info/sourceMaps"],
+
+      ({context}, sourceMaps) => sourceMaps[context]
+    ),
+
+    /**
      * solidity.current.functionDepth
      */
-    functionDepth: (state) => state.solidity.functionDepth,
+    functionDepth: (state) => state.solidity.proc.functionDepth,
 
     /**
      * solidity.current.instructions
      */
     instructions: createLeaf(
-      [context.current], (context) => {
-        debug("context: %o", context);
-        let instructions = CodeUtils.parseCode(context.binary);
+      ["/info/sources", evm.current.context, "./sourceMap"],
 
-        let sourceMap = context.sourceMap;
+      (sources, {binary}, {sourceMap}) => {
+        let instructions = CodeUtils.parseCode(binary);
+
         if (!sourceMap) {
           // Let's create a source map to use since none exists. This source map
           // maps just as many ranges as there are instructions, and ensures every
@@ -43,7 +71,13 @@ let solidity = createSelectorTree({
           }
         }
 
-        var lineAndColumnMapping = SolidityUtils.getCharacterOffsetToLineAndColumnMapping(context.source || "");
+        var lineAndColumnMappings = Object.assign({},
+          ...Object.entries(sources).map(
+            ([id, {source}]) => ({
+              [id]: SolidityUtils.getCharacterOffsetToLineAndColumnMapping(source || "")
+            })
+          )
+        );
         var humanReadableSourceMap = SolidityUtils.getHumanReadableSourceMap(sourceMap);
 
         instructions.forEach(function(instruction, instructionIndex) {
@@ -52,16 +86,18 @@ let solidity = createSelectorTree({
           instruction.index = instructionIndex;
 
           if (sourceMapInstruction) {
+            var lineAndColumnMapping = lineAndColumnMappings[sourceMapInstruction.file];
+
             instruction.jump = sourceMapInstruction.jump;
             instruction.start = sourceMapInstruction.start;
             instruction.length = sourceMapInstruction.length;
+            instruction.file = sourceMapInstruction.file;
             instruction.range = {
               start: lineAndColumnMapping[sourceMapInstruction.start],
               end: lineAndColumnMapping[sourceMapInstruction.start + sourceMapInstruction.length]
             }
           }
         });
-        debug("instructions: %O", instructions.filter((i) => i.jump != "-"));
 
         return instructions;
       }
@@ -98,16 +134,33 @@ let solidity = createSelectorTree({
     ),
 
     /**
+     * solidity.next.source
+     */
+    source: createLeaf(
+      ["/info/sources", "./instruction"],
+
+      (sources, {file: id}) => sources[id]
+    ),
+
+    /**
      * solidity.next.sourceRange
      */
     sourceRange: createLeaf(
       ["./instruction"],
 
       (instruction) => {
+        instruction = instruction || {};
         return {
-          start: instruction.start,
-          length: instruction.length,
-          lines: instruction.range
+          start: instruction.start || 0,
+          length: instruction.length || 0,
+          lines: instruction.range || {
+            start: {
+              line: 0, column: 0
+            },
+            end: {
+              line: 0, column: 0
+            }
+          }
         };
       }
     ),
@@ -130,7 +183,7 @@ let solidity = createSelectorTree({
      * solidity.next.jumpDirection
      */
     jumpDirection: createLeaf(
-      ["./instruction"], (i) => i.jump
+      ["./instruction"], (i = {}) => (i.jump || "-")
     )
   }
 });

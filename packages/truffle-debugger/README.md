@@ -64,7 +64,7 @@ session.stepInfo();
 4. Access data provided by the debugger via the `session.view()` interface, and the provided selectors:
 
 ```javascript
-let { ast, context, data, evm, solidity, trace } = Debugger.selectors;
+let { ast, data, evm, solidity, trace } = Debugger.selectors;
 
 let variables = session.view(data.identifiers.native.current);
 let sourceRange = session.view(solidity.next.sourceRange);
@@ -75,7 +75,6 @@ let sourceRange = session.view(solidity.next.sourceRange);
 - [**`Session` class docs**](http://truffleframework.com/truffle-debugger/class/lib/session/index.js~Session.html)
 - **Docs for selectors:**
   - [**`ast` selectors**](http://truffleframework.com/truffle-debugger/identifiers.html#ast-selectors)
-  - [**`context` selectors**](http://truffleframework.com/truffle-debugger/identifiers.html#context-selectors)
   - [**`data` selectors**](http://truffleframework.com/truffle-debugger/identifiers.html#data-selectors)
   - [**`evm` selectors**](http://truffleframework.com/truffle-debugger/identifiers.html#evm-selectors)
   - [**`solidity` selectors**](http://truffleframework.com/truffle-debugger/identifiers.html#solidity-selectors)

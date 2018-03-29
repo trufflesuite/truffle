@@ -20,7 +20,7 @@ app.listen(port, () => {
 
   console.log(`Starting remotedev-server`);
   remotedev({
-    hostname: "127.0.0.1",
-    port: 1117
+    hostname: "localhost",
+    port: 11117
   });
 });
