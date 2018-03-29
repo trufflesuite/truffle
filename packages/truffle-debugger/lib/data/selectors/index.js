@@ -46,83 +46,80 @@ const data = createSelectorTree({
       next: createLeaf(
         [ast.next.node, ast.next.pointer], (node, pointer) => ({node, pointer})
       )
-    }
-  },
-
-  info: {
-    scopes: createLeaf(["/state"], (state) => state.info.scopes.byId)
-  },
-
-  proc: {
-    assignments: createLeaf(["/state"], (state) => state.proc.assignments.byId)
-  },
-
-  /**
-   * data.scopes
-   */
-  scopes: {
-
-    /**
-     * data.scopes.tables
-     */
-    tables: {
-
-      /**
-       * data.scopes.tables.current
-       *
-       * all scopes with AST references
-       */
-      current: createLeaf(
-        ["/info/scopes"],
-
-        (data) => {
-          return data;
-        }
-      ),
-
-      inlined: {
-        /**
-         * data.scopes.tables.inlined.current
-         *
-         * all scopes with AST nodes inlined
-         */
-        current: createLeaf(
-          ["/scopes/tables/current", solidity.info.sources],
-
-          (table, sources) => Object.assign({},
-            ...Object.entries(table).map(
-              ([id, entry]) => ({
-                [id]: {
-                  ...entry,
-
-                  definition: jsonpointer.get(
-                    sources[entry.sourceId].ast, entry.pointer
-                  )
-                }
-              })
-            )
-          )
-        )
-      }
     },
 
     /**
-     * data.scopes.current
+     * data.views.scopes
      */
-    current: {
+    scopes: {
 
       /**
-       * data.scopes.current.id
-       *
-       * data scope for current operation
+       * data.views.scopes.inlined
        */
-      id: createLeaf(
-        [ast.next.node], (node) => node.id
+      inlined: createLeaf(
+        ["/info/scopes", solidity.info.sources],
+
+        (scopes, sources) => Object.assign({},
+          ...Object.entries(scopes).map(
+            ([id, entry]) => ({
+              [id]: {
+                ...entry,
+
+                definition: jsonpointer.get(
+                  sources[entry.sourceId].ast, entry.pointer
+                )
+              }
+            })
+          )
+        )
       )
     }
   },
 
-  current: {
+  /**
+   * data.info
+   */
+  info: {
+
+    /**
+     * data.info.scopes
+     */
+    scopes: createLeaf(["/state"], (state) => state.info.scopes.byId)
+  },
+
+  /**
+   * data.proc
+   */
+  proc: {
+
+    /**
+     * data.proc.assignments
+     */
+    assignments: createLeaf(["/state"], (state) => state.proc.assignments.byId)
+  },
+
+  /**
+   * data.next
+   */
+  next: {
+
+    /**
+     *
+     * data.next.scope
+     */
+    scope: {
+
+      /**
+       * data.next.scope.id
+       */
+      id: createLeaf(
+        [ast.next.node], (node) => node.id
+      )
+    },
+
+    /**
+     * data.next.stack
+     */
     stack: createLeaf(
       [evm.next.state.stack],
 
@@ -131,6 +128,9 @@ const data = createSelectorTree({
       )
     ),
 
+    /**
+     * data.next.memory
+     */
     memory: createLeaf(
       [evm.next.state.memory],
 
@@ -140,6 +140,9 @@ const data = createSelectorTree({
       )
     ),
 
+    /**
+     * data.next.storage
+     */
     storage: createLeaf(
       [evm.next.state.storage],
 
@@ -154,6 +157,7 @@ const data = createSelectorTree({
         )
       )
     )
+
   },
 
   /**
@@ -168,19 +172,18 @@ const data = createSelectorTree({
      */
     current: createLeaf(
       [
-        "/scopes/tables/inlined/current",
-        "/scopes/current/id",
+        "/views/scopes/inlined",
         "/proc/assignments",
-        "/current"
+        "/next"
       ],
 
-      (refs, id, assignments, state) => {
-        let cur = id;
+      (scopes, assignments, next) => {
+        let {scope, stack, memory, storage} = next;
+        let cur = scope.id;
         let variables = {};
 
 
         const format = (v) => {
-          let {stack, memory, storage} = state;
           let definition = v.definition;
           debug("assignments %O", assignments);
           debug("v.id %o", v.id);
@@ -192,18 +195,18 @@ const data = createSelectorTree({
             return undefined;
           }
 
-          return decode(definition, assignment, state, refs);
+          return decode(definition, assignment, next, scopes);
         };
 
         do {
           variables = Object.assign(
             variables,
-            ...(refs[cur].variables || [])
+            ...(scopes[cur].variables || [])
               .filter( (v) => variables[v.name] == undefined )
-              .map( (v) => ({ [v.name]: format(refs[v.id]) }) )
+              .map( (v) => ({ [v.name]: format(scopes[v.id]) }) )
           );
 
-          cur = refs[cur].parentId;
+          cur = scopes[cur].parentId;
         } while (cur != null);
 
         return variables;

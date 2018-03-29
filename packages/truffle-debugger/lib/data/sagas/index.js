@@ -25,10 +25,10 @@ export function *declare(node) {
 function *tickSaga() {
   let {tree, id: treeId} = yield select(data.views.ast.current);
   let {node, pointer} = yield select(data.views.ast.next);
-  let scopes = yield select(data.scopes.tables.current);
-  let definitions = yield select(data.scopes.tables.inlined.current);
+  let scopes = yield select(data.info.scopes);
+  let definitions = yield select(data.views.scopes.inlined);
 
-  let stack = yield select(data.current.stack);
+  let stack = yield select(data.next.stack);
   if (!stack) {
     return;
   }
