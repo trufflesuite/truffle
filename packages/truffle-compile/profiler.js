@@ -231,6 +231,9 @@ module.exports = {
     find_contracts(options.base_path, function(err, allPaths) {
       if (err) return callback(err);
 
+      // Include paths for Solidity .sols, specified in options.
+      allPaths = allPaths.concat(paths);
+
       self.dependency_graph(allPaths, options.resolver, function(err, dependsGraph) {
         if (err) return callback(err);
 
