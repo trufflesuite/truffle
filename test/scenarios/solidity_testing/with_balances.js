@@ -47,9 +47,13 @@ describe("Solidity Tests with balances", function() {
     this.timeout(40000);
 
     CommandRunner.run("test", config, function(err) {
-      if (err) return done(err);
+      var output = logger.contents();
+      if (err) {
+        console.log(output);
+        return done(err);
+      }
 
-      assert(logger.contents().indexOf("1 passing") >= 0);
+      assert(output.indexOf("1 passing") >= 0);
 
       done();
     });
