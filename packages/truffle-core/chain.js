@@ -38,7 +38,7 @@ try {
   throw new Error("Fatal: Error parsing arguments; please contact the Truffle developers for help.");
 }
 
-options.host = options.host || "localhost";
+options.host = options.host || "127.0.0.1";
 options.port = options.port || 9545;
 options.network_id = options.network_id || 4447;
 options.mnemonic = options.mnemonic || "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
