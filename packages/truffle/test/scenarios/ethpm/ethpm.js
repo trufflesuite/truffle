@@ -1,4 +1,3 @@
-var Box = require("truffle-box");
 var MemoryLogger = require("../memorylogger");
 var CommandRunner = require("../commandrunner");
 var fs = require("fs");
@@ -6,6 +5,7 @@ var path = require("path");
 var assert = require("assert");
 var Server = require("../server");
 var Reporter = require("../reporter");
+var sandbox = require("../sandbox");
 var log = console.log;
 
 describe("EthPM commands", function() {
@@ -21,17 +21,15 @@ describe("EthPM commands", function() {
     Server.stop(done);
   });
 
-  before("set up sandbox", function(done) {
+  before("set up sandbox", function() {
     this.timeout(10000);
-    Box.sandbox(project, function(err, conf) {
-      if (err) return done(err);
+    return sandbox.create(project).then(conf => {
       config = conf;
       config.network = "development";
       config.logger = logger;
       config.mocha = {
         reporter: new Reporter(logger)
       }
-      done();
     });
   });
 
