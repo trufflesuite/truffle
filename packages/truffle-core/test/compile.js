@@ -57,10 +57,11 @@ describe("compile", function() {
     });
   });
 
-  it('compiles contract and dependencies after an update', function(done) {
+  it('compiles updated contract and descendents', function(done) {
     this.timeout(10000);
 
     var file_to_update = path.resolve(path.join(config.contracts_directory, "MetaCoin.sol"));
+    var stat = fs.statSync(file_to_update);
 
     // Update the modification time to simulate an edit.
     var newTime = new Date().getTime();
@@ -73,6 +74,35 @@ describe("compile", function() {
       if (err) return done(err);
 
       assert.equal(Object.keys(contracts).length, 2, "Expected MetaCoin and ConvertLib to be compiled");
+
+      // reset time
+      fs.utimesSync(file_to_update, stat.atime, stat.mtime);
+
+      done();
+    });
+  });
+
+  it('compiles updated contract and its ancestors', function(done) {
+    this.timeout(10000);
+
+    var file_to_update = path.resolve(path.join(config.contracts_directory, "ConvertLib.sol"));
+    var stat = fs.statSync(file_to_update);
+
+    // Update the modification time to simulate an edit.
+    var newTime = new Date().getTime();
+    fs.utimesSync(file_to_update, newTime, newTime);
+
+    Contracts.compile(config.with({
+      all: false,
+      quiet: true
+    }), function(err, contracts) {
+      if (err) return done(err);
+
+      assert.equal(Object.keys(contracts).length, 2, "Expected MetaCoin and ConvertLib to be compiled");
+
+      // reset time
+      fs.utimesSync(file_to_update, stat.atime, stat.mtime);
+
       done();
     });
   });
