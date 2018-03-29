@@ -49,6 +49,12 @@ There are many ways to contribute!
 1. Take a look at [our Waffle](https://waffle.io/ConsenSys/truffle) for prioritization. Note that this includes issues for Truffle and related tools.
 1. Contact us in our [gitter chat](https://gitter.im/consensys/truffle)!
 
+Please see the main projects [CONTRIBUTING.md][1] for instructions on how to setup a Development Environment to work on Truffle itself.
+
+[1]:https://github.com/trufflesuite/truffle/blob/develop/CONTRIBUTING.md#development
+
+### Contributors
+
 A project by Consensys and [@tcoulter](https://github.com/tcoulter), and many contributers.
 
 ### License
