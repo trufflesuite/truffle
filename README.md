@@ -39,7 +39,6 @@ Truffle comes bundled with a local development blockchain server that launches a
 +  [ganache-cli](https://github.com/trufflesuite/ganache-cli): a command-line version of Truffle's blockchain server.
 +  [ganache](http://truffleframework.com/ganache/): A GUI for the server that displays your transaction history and chain state.
 
-See [the documentation](http://truffleframework.com/docs/) for more details.
 
 ### Documentation
 
