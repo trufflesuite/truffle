@@ -38,7 +38,11 @@ describe("Happy path (truffle unbox)", function() {
     this.timeout(20000);
 
     CommandRunner.run("compile", config, function(err) {
-      if (err) return done(err);
+      var output = logger.contents();
+      if (err) {
+        console.log(output);
+        return done(err);
+      }
 
       assert(fs.existsSync(path.join(config.contracts_build_directory, "MetaCoin.json")));
       assert(fs.existsSync(path.join(config.contracts_build_directory, "ConvertLib.json")));
@@ -52,7 +56,11 @@ describe("Happy path (truffle unbox)", function() {
     this.timeout(20000);
 
     CommandRunner.run("migrate", config, function(err) {
-      if (err) return done(err);
+      var output = logger.contents();
+      if (err) {
+        console.log(output);
+        return done(err);
+      }
 
       var MetaCoin = contract(require(path.join(config.contracts_build_directory, "MetaCoin.json")));
       var ConvertLib = contract(require(path.join(config.contracts_build_directory, "ConvertLib.json")));
@@ -77,9 +85,13 @@ describe("Happy path (truffle unbox)", function() {
   it("will run tests", function(done) {
     this.timeout(70000);
     CommandRunner.run("test", config, function(err) {
-      if (err) return done(err);
+      var output = logger.contents();
+      if (err) {
+        console.log(output);
+        return done(err);
+      }
 
-      assert(logger.contents().indexOf("5 passing") >= 0);
+      assert(output.indexOf("5 passing") >= 0);
       done();
     });
   });
