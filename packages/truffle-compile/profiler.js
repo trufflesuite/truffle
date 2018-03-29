@@ -10,6 +10,7 @@ var Parser = require("./parser");
 var CompileError = require("./compileerror");
 var expect = require("truffle-expect");
 var find_contracts = require("truffle-contract-sources");
+var debug = require("debug")("compile:profiler");
 
 module.exports = {
   updated: function(options, callback) {
@@ -159,6 +160,8 @@ module.exports = {
   },
 
   required_sources: function(options, callback) {
+    var self = this;
+
     expect.options(options, [
       "paths",
       "base_path",
@@ -167,9 +170,7 @@ module.exports = {
 
     var paths = this.convert_to_absolute_paths(options.paths, options.base_path);
 
-    this.dependency_graph(paths, options.resolver, function(err, dependsGraph) {
-      if (err) return callback(err);
-
+    function findRequiredSources(dependsGraph, done) {
       var required = {};
 
       function hasBeenTraversed(import_path) {
@@ -213,18 +214,31 @@ module.exports = {
 
         include(import_path);
 
-        if (ancestors.length > 0) {
+        if (ancestors && ancestors.length > 0) {
           ancestors.forEach(walk_from);
         }
 
-        if (dependencies.length > 0) {
+        if (dependencies && dependencies.length > 0) {
           dependencies.forEach(walk_down);
         }
       }
 
       paths.forEach(walk_from);
 
-      callback(null, required);
+      done(null, required);
+    }
+
+    find_contracts(options.base_path, function(err, allPaths) {
+      if (err) return callback(err);
+
+      // Include paths for Solidity .sols, specified in options.
+      allPaths = allPaths.concat(paths);
+
+      self.dependency_graph(allPaths, options.resolver, function(err, dependsGraph) {
+        if (err) return callback(err);
+
+        findRequiredSources(dependsGraph, callback);
+      });
     });
   },
 
