@@ -7,6 +7,20 @@ import CodeUtils from "truffle-code-utils";
 
 import evm from "lib/evm/selectors";
 
+function getSourceRange(instruction = {}) {
+  return {
+    start: instruction.start || 0,
+    length: instruction.length || 0,
+    lines: instruction.range || {
+      start: {
+        line: 0, column: 0
+      },
+      end: {
+        line: 0, column: 0
+      }
+    }
+  };
+}
 
 let solidity = createSelectorTree({
   /**
@@ -145,25 +159,7 @@ let solidity = createSelectorTree({
     /**
      * solidity.next.sourceRange
      */
-    sourceRange: createLeaf(
-      ["./instruction"],
-
-      (instruction) => {
-        instruction = instruction || {};
-        return {
-          start: instruction.start || 0,
-          length: instruction.length || 0,
-          lines: instruction.range || {
-            start: {
-              line: 0, column: 0
-            },
-            end: {
-              line: 0, column: 0
-            }
-          }
-        };
-      }
-    ),
+    sourceRange: createLeaf(["./instruction"], getSourceRange),
 
     /**
      * solidity.next.isMultiline
