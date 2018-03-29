@@ -80,37 +80,18 @@ const evm = createSelectorTree({
      *
      * evm state info: as of last operation, before op defined in step
      */
-    state: createLeaf(
-      [trace.step], ({depth, error, gas, memory, stack, storage}) =>
-        ({depth, error, gas, memory, stack, storage})
-    ),
-
-    /**
-     * evm.current.stack
-     *
-     * stack data
-     */
-    stack: createLeaf(
-      [trace.step], (step) => step.stack
-    ),
-
-    /**
-     * evm.current.memory
-     *
-     * memory data
-     */
-    memory: createLeaf(
-      [trace.step], (step) => step.memory
-    ),
-
-    /**
-     * evm.current.storage,
-     *
-     * storage data
-     */
-    storage: createLeaf(
-      [trace.step], (step) => step.storage
-    )
+    state: Object.assign({}, ...(
+      [
+        "depth",
+        "error",
+        "gas",
+        "memory",
+        "stack",
+        "storage"
+      ].map( (param) => ({
+        [param]: createLeaf([trace.step], (step) => step[param])
+      }))
+    ))
   },
 
   /**
