@@ -781,9 +781,6 @@ var contract = (function(module) {
         return transactionHash;
       },
       set: function(val) {
-        if(val === null) {
-          throw new Error("Could not set \`" + val + "\` as the transaction hash for " + this.contractName);
-        }
         this.network.transactionHash = val;
       }
     },
