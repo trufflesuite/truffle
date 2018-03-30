@@ -47,7 +47,7 @@
     "truffle-require": "^1.0.5",
     "truffle-resolver": "^4.0.2",
     "truffle-solidity-utils": "^1.1.1",
-    "truffle-workflow-compile": "^1.0.0",
+    "truffle-workflow-compile": "^1.0.1",
     "web3": "^0.20.1",
     "yargs": "^8.0.2"
   },
