@@ -256,7 +256,7 @@ describe("Repeated compilation of contracts with inheritance", function() {
   //                   LeafB*              |
   // ------------------------------------------------------------
 
-  it("Updates everything except LibraryA and SameFile2 when LeafC is touched", function(done) {
+  it("Updates everything except LibraryA when LeafC is touched", function(done) {
     this.timeout(30000);
 
     touchContract('LeafC', getContract('LeafC'));
