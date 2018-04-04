@@ -7,7 +7,6 @@
     "async": "^2.1.4",
     "colors": "^1.1.2",
     "debug": "^3.1.0",
-    "graphlib": "^2.1.1",
     "solc": "0.4.24",
     "truffle-config": "^1.0.4",
     "truffle-contract-sources": "^0.0.1",
