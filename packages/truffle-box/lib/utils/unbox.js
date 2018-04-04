@@ -16,7 +16,7 @@ function checkDestination(destination) {
     var contents = fs.readdirSync(destination);
     if (contents.length) {
       var err = "Something already exists at the destination. " +
-                "Please unbox in an empty folder. " +
+                "`truffle init` and `truffle unbox` must be executed in an empty folder. " +
                 "Stopping to prevent overwriting data."
 
       throw new Error(err);
