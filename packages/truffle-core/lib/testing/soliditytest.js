@@ -104,6 +104,7 @@ var SolidityTest = {
 
       compile.with_dependencies(runner.config.with({
         paths: [
+          "truffle/Assert.sol",
           "truffle/DeployedAddresses.sol",
           path.join(__dirname, "SafeSend.sol")
         ],
