@@ -16,7 +16,7 @@ describe('NPM integration', function() {
   var parentContractSource = "pragma solidity ^0.4.2; import 'fake_source/contracts/Module.sol'; contract Parent {}";
 
   before("Create a sandbox", function(done) {
-    this.timeout(10000);
+    this.timeout(15000);
     Box.sandbox(function(err, result) {
       if (err) return done(err);
       config = result;

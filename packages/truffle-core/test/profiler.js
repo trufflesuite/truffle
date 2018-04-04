@@ -33,12 +33,13 @@ describe('profiler', function() {
 
   it('profiles example project successfully', function(done) {
     Profiler.required_sources(config.with({
-      paths: ["./MetaCoin.sol"],
+      paths: ["./ConvertLib.sol"],
       base_path: config.contracts_directory
-    }), function(err, result) {
+    }), function(err, allSources, compilationTargets) {
       if (err) return done(err);
 
-      assert.equal(Object.keys(result).length, 2);
+      assert.equal(Object.keys(allSources).length, 3);
+      assert.equal(Object.keys(compilationTargets).length, 2);
       done();
     });
   });

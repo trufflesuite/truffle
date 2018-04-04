@@ -162,6 +162,8 @@ describe.skip('EthPM integration', function() {
         assert.isNotNull(contracts["transferable"]);
 
         fs.readdir(config.contracts_build_directory, function(err, files) {
+          if (err) return done(err);
+
           var found = [false, false];
           var search = ["owned", "transferable"];
 
