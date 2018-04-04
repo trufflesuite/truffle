@@ -43,8 +43,8 @@ describe("truffle publish", function() {
         log(logger.contents());
         return done(err);
       }
+
       assert(fs.existsSync(path.join(config.contracts_build_directory, "PLCRVoting.json")));
-      assert(fs.existsSync(path.join(config.contracts_build_directory, "EIP20.json")));
       assert(fs.existsSync(path.join(config.contracts_build_directory, "Local.json")));
 
       CommandRunner.run("publish", config, function(err) {
@@ -55,6 +55,7 @@ describe("truffle publish", function() {
           log(output);
           done(err);
         }
+
         assert(output.includes('Uploading sources and publishing'), 'Should have found sources');
         done();
       })
