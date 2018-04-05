@@ -10,8 +10,8 @@ var log = console.log;
 
 describe("Repeated compilation of contracts with inheritance", function() {
   var config;
-  var contracts;
-  var contractPaths;
+  var sources;
+  var sourcePaths;
   var artifactPaths;
   var initialTimes;
   var finalTimes;
@@ -34,8 +34,8 @@ describe("Repeated compilation of contracts with inheritance", function() {
     return new Promise((resolve, reject) => setTimeout(() => resolve(), 1250));
   }
 
-  function getContract(key) {
-    return fs.readFileSync(mapping[key].contractPath);
+  function getSource(key) {
+    return fs.readFileSync(mapping[key].sourcePath);
   }
 
   function getArtifact(key) {
@@ -51,8 +51,9 @@ describe("Repeated compilation of contracts with inheritance", function() {
     return stats;
   }
 
-  function touchContract(key, file) {
-    fs.writeFileSync(mapping[key].contractPath, file);
+  function touchSource(key) {
+    const source = getSource(key);
+    fs.writeFileSync(mapping[key].sourcePath, source);
   }
 
   // ----------------------- Setup -----------------------------
@@ -76,15 +77,15 @@ describe("Repeated compilation of contracts with inheritance", function() {
         reporter: new Reporter(logger),
       }
 
-      contracts = names.map(name => name + '.sol');
+      sources = names.map(name => name + '.sol');
       artifactPaths = names.map(name => path.join(config.contracts_build_directory, name + '.json'));
-      contractPaths = contracts.map(contract => path.join(config.contracts_directory, contract));
+      sourcePaths = sources.map(source => path.join(config.contracts_directory, source));
 
       names.forEach((name, i) => {
         mapping[name] = {};
-        mapping[name].contract = contracts[i];
+        mapping[name].source = sources[i];
         mapping[name].artifactPath = artifactPaths[i];
-        mapping[name].contractPath = contractPaths[i];
+        mapping[name].sourcePath = sourcePaths[i];
       })
 
       CommandRunner.run("compile", config, function(err) {
@@ -111,7 +112,7 @@ describe("Repeated compilation of contracts with inheritance", function() {
   it("Updates only Root when Root is touched", function(done) {
     this.timeout(30000);
 
-    touchContract('Root', getContract('Root'));
+    touchSource('Root');
 
     CommandRunner.run("compile", config, function(err) {
       output = logger.contents();
@@ -148,7 +149,7 @@ describe("Repeated compilation of contracts with inheritance", function() {
   it("Updates Root and Library when Library is touched", function(done) {
     this.timeout(30000);
 
-    touchContract('LibraryA', getContract('LibraryA'));
+    touchSource('LibraryA');
 
     CommandRunner.run("compile", config, function(err) {
       output = logger.contents();
@@ -185,7 +186,7 @@ describe("Repeated compilation of contracts with inheritance", function() {
   it("Updates Branch and Root when Branch is touched", function(done) {
     this.timeout(30000);
 
-    touchContract('Branch', getContract('Branch'));
+    touchSource('Branch');
 
     CommandRunner.run("compile", config, function(err) {
       output = logger.contents();
@@ -222,7 +223,7 @@ describe("Repeated compilation of contracts with inheritance", function() {
   it("Updates LeafA, Branch and Root when LeafA is touched", function(done) {
     this.timeout(30000);
 
-    touchContract('LeafA', getContract('LeafA'));
+    touchSource('LeafA');
 
     CommandRunner.run("compile", config, function(err) {
       output = logger.contents();
@@ -259,7 +260,7 @@ describe("Repeated compilation of contracts with inheritance", function() {
   it("Updates everything except LibraryA when LeafC is touched", function(done) {
     this.timeout(30000);
 
-    touchContract('LeafC', getContract('LeafC'));
+    touchSource('LeafC');
 
     CommandRunner.run("compile", config, function(err) {
       output = logger.contents();
