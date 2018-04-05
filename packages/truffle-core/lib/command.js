@@ -5,9 +5,7 @@ var _ = require("lodash");
 function Command(commands) {
   this.commands = commands;
 
-  var args = yargs()
-    .boolean(['f', 'force'])
-    .alias('f', 'force');
+  var args = yargs();
 
   Object.keys(this.commands).forEach(function(command) {
     args = args.command(commands[command]);
