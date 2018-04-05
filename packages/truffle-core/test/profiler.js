@@ -39,7 +39,7 @@ describe('profiler', function() {
       if (err) return done(err);
 
       assert.equal(Object.keys(allSources).length, 3);
-      assert.equal(Object.keys(compilationTargets).length, 2);
+      assert.equal(compilationTargets.length, 2);
       done();
     });
   });
