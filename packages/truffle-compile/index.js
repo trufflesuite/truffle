@@ -92,6 +92,7 @@ var compile = function(sources, options, callback) {
   }
 
   // Specify compilation targets
+  // Each target uses defaultSelectors, defaulting to single target `*` if targets are unspecified
   var outputSelection = {};
   var targets = operatingSystemIndependentTargets;
   var targetPaths = Object.keys(targets);

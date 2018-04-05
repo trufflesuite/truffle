@@ -205,7 +205,10 @@ module.exports = {
         // Seed compilationTargets with known updates
         updates.forEach(update => compilationTargets.push(update));
 
-        // While updates: dequeue
+        // While there are updated files in the queue, we take each one
+        // and search the entire file corpus to find any sources that import it.
+        // Those sources are added to list of compilation targets as well as
+        // the update queue because their own ancestors need to be discovered.
         async.whilst(() => updates.length > 0, updateFinished => {
           var currentUpdate = updates.shift();
           var files = allPaths.slice();
