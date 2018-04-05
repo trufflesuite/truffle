@@ -31,6 +31,8 @@ var compile = function(sources, options, callback) {
     options.logger = console;
   }
 
+  var hasTargets = options.compilationTargets && options.compilationTargets.length;
+
   expect.options(options, [
     "contracts_directory",
     "solc"
@@ -67,7 +69,7 @@ var compile = function(sources, options, callback) {
 
     // Just substitute replacement for original in target case. It's
     // a disposable subset of `sources`
-    if(options.compilationTargets && options.compilationTargets[source]){
+    if(hasTargets && options.compilationTargets.includes(source)){
       operatingSystemIndependentTargets[replacement] = sources[source];
     }
 
