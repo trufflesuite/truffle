@@ -365,7 +365,7 @@ compile.with_dependencies = function(options, callback) {
   }), (err, allSources, required) => {
     if (err) return callback(err);
 
-    var hasTargets = Object.keys(required).length;
+    var hasTargets = required.length;
 
     (hasTargets)
       ? self.display(required, options)
@@ -378,15 +378,15 @@ compile.with_dependencies = function(options, callback) {
 
 compile.display = function(paths, options){
   if (options.quiet != true) {
-    Object
-      .keys(paths)
-      .sort()
-      .forEach(contract => {
+    if (!Array.isArray(paths)){
+      paths = Object.keys(paths);
+    }
 
-        if (path.isAbsolute(contract)) {
-          contract = "." + path.sep + path.relative(options.working_directory, contract);
-        }
-        options.logger.log("Compiling " + contract + "...");
+    paths.sort().forEach(contract => {
+      if (path.isAbsolute(contract)) {
+        contract = "." + path.sep + path.relative(options.working_directory, contract);
+      }
+      options.logger.log("Compiling " + contract + "...");
     });
   }
 }
