@@ -5,6 +5,10 @@ var command = {
     all: {
       type: "boolean",
       default: false
+    },
+    force: {
+      type: "boolean",
+      default: false
     }
   },
   run: function (options, done) {
@@ -42,17 +46,13 @@ var command = {
 
     if (fn == null) return done(new ConfigurationError("Cannot find creation type: " + type));
 
-    var create_options = {
-      force: config.force
-    };
-
     var destinations = {
       "contract": config.contracts_directory,
       "migration": config.migrations_directory,
       "test": config.test_directory
     };
 
-    create[type](destinations[type], name, create_options, done);
+    create[type](destinations[type], name, options, done);
   }
 }
 

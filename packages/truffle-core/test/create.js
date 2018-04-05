@@ -34,7 +34,36 @@ describe('create', function() {
 
       done();
     });
-  }); // it
+  });
+
+  it('will not overwrite an existing contract (by default)', function(done){
+    Create.contract(config.contracts_directory, "MyNewContract2", function(err) {
+      if (err) return done(err);
+
+      var expected_file = path.join(config.contracts_directory, "MyNewContract2.sol");
+      assert.isTrue(fs.existsSync(expected_file), `Contract to be created doesns't exist, ${expected_file}`);
+
+      Create.contract(config.contracts_directory, "MyNewContract2", function(err) {
+        assert(err.message.includes('file exists'));
+        done();
+      });
+    });
+  });
+
+  it('will overwrite an existing contract if the force option is enabled', function(done){
+    Create.contract(config.contracts_directory, "MyNewContract3", function(err) {
+      if (err) return done(err);
+
+      var expected_file = path.join(config.contracts_directory, "MyNewContract3.sol");
+      assert.isTrue(fs.existsSync(expected_file), `Contract to be created doesns't exist, ${expected_file}`);
+
+      var options = {force: true};
+      Create.contract(config.contracts_directory, "MyNewContract3", options, function(err) {
+        assert(err === null);
+        done();
+      });
+    });
+  });
 
   it('creates a new test', function(done) {
     Create.test(config.test_directory, "MyNewTest", function(err) {
