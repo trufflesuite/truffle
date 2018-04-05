@@ -185,7 +185,7 @@ module.exports = {
       var allPaths = self.convert_to_absolute_paths(allPaths, options.base_path).sort();
 
       var allSources = {};
-      var compilationTargets = {};
+      var compilationTargets = [];
 
       // Get all the source code
       self.resolveAllSources(resolver, allPaths, (err, resolved) => {
@@ -203,7 +203,7 @@ module.exports = {
         }
 
         // Seed compilationTargets with known updates
-        updates.forEach(update => compilationTargets[update] = resolved[update].body);
+        updates.forEach(update => compilationTargets.push(update));
 
         // While updates: dequeue
         async.whilst(() => updates.length > 0, updateFinished => {
@@ -216,7 +216,7 @@ module.exports = {
             var currentFile = files.shift();
 
             // Ignore targets already selected.
-            if (compilationTargets[currentFile]){
+            if (compilationTargets.includes(currentFile)){
               return fileFinished();
             }
 
@@ -232,7 +232,7 @@ module.exports = {
             // to list of updates and compilation targets
             if (imports.includes(currentUpdate)){
               updates.push(currentFile);
-              compilationTargets[currentFile] = resolved[currentFile].body;
+              compilationTargets.push(currentFile);
             }
 
             fileFinished();
