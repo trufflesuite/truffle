@@ -81,7 +81,7 @@ describe("Abstractions", function() {
     });
 
     // Only firing once...how is this done @ web3 / default block?
-    it.skip("should fire the confirmations event handler repeatedly", function(done){
+    it("should fire the confirmations event handler repeatedly", function(done){
 
       function keepTransacting(){
         return util.evm_mine()
@@ -161,7 +161,6 @@ describe("Abstractions", function() {
   });
 
   describe('new (error cases)', function(){
-
     it("should reject on OOG", async function(){
       try {
         await Example.new(1, {gas: 10});
@@ -330,8 +329,7 @@ describe("Abstractions", function() {
       })
     });
 
-    // Only firing once...how is this done @ web3 / default block?
-    it.skip("should fire the confirmations event handler repeatedly", function(done){
+    it("should fire the confirmations event handler repeatedly", function(done){
       this.timeout(5000)
       function keepTransacting(){
         return util.evm_mine()
