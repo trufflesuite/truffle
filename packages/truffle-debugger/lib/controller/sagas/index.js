@@ -20,6 +20,12 @@ const controlSagas = {
   [actions.CONTINUE_UNTIL]: continueUntil
 };
 
+/** AST node types that are skipped to filter out some noise */
+const SKIPPED_TYPES = new Set([
+  "ContractDefinition",
+  "VariableDeclaration",
+]);
+
 export function* saga() {
   while (true) {
     debug("waiting for control action");
@@ -67,8 +73,7 @@ function* stepNext () {
 
     // if the next step's source range is still the same, keep going
   } while (
-    // HACK - just skip over ContractDefinition nodes
-    next.node.nodeType == "ContractDefinition" ||
+    SKIPPED_TYPES.has(next.node.nodeType) ||
 
     next.sourceRange.start == startingRange.start &&
     next.sourceRange.length == startingRange.length
