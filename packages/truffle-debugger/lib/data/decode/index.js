@@ -62,14 +62,6 @@ export function decodeMemoryReference(definition, pointer, state, ...args) {
   switch (utils.typeClass(definition)) {
 
     case "bytes":
-      bytes = read({
-        memory: { start: rawValue, length: WORD_SIZE }
-      }, state); // bytes contain length
-
-      return decodeValue(definition, {
-        memory: { start: rawValue + WORD_SIZE, length: bytes }
-      }, state, ...args);
-
     case "string":
       bytes = read({
         memory: { start: rawValue, length: WORD_SIZE}
@@ -190,6 +182,7 @@ export function decodeStorageReference(definition, pointer, state, ...args) {
           }}, state, ...args);
         });
 
+    case "bytes":
     case "string":
       data = read(pointer, state);
       if (!data) {
