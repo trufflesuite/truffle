@@ -97,6 +97,32 @@ function allocateDeclaration(declaration, refs, slot, index) {
   return result;
 }
 
+/**
+ * e.g. uint48 -> 6
+ * @return size in bytes for explicit type size, or `null` if not stated
+ */
+export function specifiedSize(definition) {
+  let specified = typeIdentifier(definition).match(/t_[a-z]+([0-9]+)/);
+
+  if (!specified) {
+    return null;
+  }
+
+  let num = specified[1];
+
+  switch (typeClass(definition)) {
+    case "int":
+    case "uint":
+      return num / 8;
+
+    case "bytes":
+      return num;
+
+    default:
+      debug("Unknown type for size specification: %s", typeIdentifier(definition));
+  }
+}
+
 export function storageSize(definition) {
   switch (typeClass(definition)) {
     case "bool":
