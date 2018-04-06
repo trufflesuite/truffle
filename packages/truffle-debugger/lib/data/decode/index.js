@@ -199,7 +199,7 @@ export function decodeStorageReference(definition, pointer, state, ...args) {
 
         return decodeValue(definition, { storage: {
           from: { slot: pointer.storage.from.slot, index: 0 },
-          to: { slot: pointer.storage.from.slot, index: length }
+          to: { slot: pointer.storage.from.slot, index: length - 1}
         }}, state, ...args);
 
       } else {
