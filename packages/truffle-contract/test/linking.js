@@ -95,8 +95,8 @@ describe("Library linking with contract objects", function() {
     this.timeout(10000);
 
     var sources = {
-      "ExampleLibrary.sol": fs.readFileSync("./test/ExampleLibrary.sol", {encoding: "utf8"}),
-      "ExampleLibraryConsumer.sol": fs.readFileSync("./test/ExampleLibraryConsumer.sol", {encoding: "utf8"})
+      "ExampleLibrary.sol": fs.readFileSync("./test/sources/ExampleLibrary.sol", {encoding: "utf8"}),
+      "ExampleLibraryConsumer.sol": fs.readFileSync("./test/sources/ExampleLibraryConsumer.sol", {encoding: "utf8"})
     };
 
     // Compile first

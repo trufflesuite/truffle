@@ -31,7 +31,7 @@ describe("Cloning", function() {
     this.timeout(10000);
 
     // Compile first
-    var result = solc.compile(fs.readFileSync("./test/Example.sol", {encoding: "utf8"}), 1);
+    var result = solc.compile(fs.readFileSync("./test/sources/Example.sol", {encoding: "utf8"}), 1);
 
     var compiled = result.contracts["Example"];
 

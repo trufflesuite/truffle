@@ -128,11 +128,11 @@ var execute = {
         params: params
       }
 
-      C.detectNetwork().then(function(id, blockLimit) {
+      C.detectNetwork().then(network => {
         params.to = self.address;
         params.data = fn(...args).encodeABI();
 
-        execute._getGasEstimate(C, params, blockLimit).then(function(gas){
+        execute._getGasEstimate(C, params, network.blockLimit).then(function(gas){
 
           params.gas = gas
           result = C.web3.eth.sendTransaction(params);
@@ -161,8 +161,8 @@ var execute = {
 
       // This is here for backwards compatibility.
       if (callback !== undefined){
-        return C.detectNetwork().then(function(blockLimit){
-          return execute._getGasEstimate(C, params, blockLimit).then(function(gas){
+        return C.detectNetwork().then(network => {
+          return execute._getGasEstimate(C, params, network.blockLimit).then(function(gas){
             params.gas = gas;
             C.web3.eth.sendTransaction.apply(C.web3.eth, [params, callback]);
           });
@@ -175,8 +175,8 @@ var execute = {
         params: params
       }
 
-      C.detectNetwork().then(function(id, blockLimit){
-        execute._getGasEstimate(C, params, blockLimit).then(function(gas){
+      C.detectNetwork().then(network => {
+        execute._getGasEstimate(C, params, network.blockLimit).then(function(gas){
 
           params.gas = gas;
           var result = C.web3.eth.sendTransaction(params);
@@ -266,8 +266,8 @@ var execute = {
 
   // Network detection for `.new` happens
   // before invocation at `contract.js` where we check the libraries.
-  deploy: function(args, context, blockLimit) {
-    var self = this;
+  deploy: function(args, context, blockLimit, C) {
+    var self = C;
     var params = utils.getTxParams(args, self);
 
     var options = {
@@ -279,7 +279,6 @@ var execute = {
     params.data = contract.deploy(options).encodeABI();
 
     execute._getGasEstimate(self, params, blockLimit).then(function(gas){
-
       params.gas = gas;
       var result = self.web3.eth.sendTransaction(params);
       execute._setUpHandlers(result, context);
@@ -318,10 +317,10 @@ var execute = {
 
       delete params['data'];
 
-      var contract_class = new self.web3.eth.Contract(self.abi, params);
+      var instance = new self.web3.eth.Contract(self.abi, params);
 
       return self.detectNetwork().then(function() {
-        return contract_class.deploy(options).estimateGas(params)
+        return instance.deploy(options).estimateGas(params)
       })
     });
   },
