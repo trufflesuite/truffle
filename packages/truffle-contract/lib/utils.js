@@ -118,9 +118,9 @@ var Utils = {
 
   // Verifies that a contracts libraries have been linked correctly.
   // Throws on error
-  checkLibraries: function(){
+  checkLibraries: function(C){
     var regex = /__[^_]+_+/g;
-    var unlinked_libraries = this.binary.match(regex);
+    var unlinked_libraries = C.binary.match(regex);
 
     if (unlinked_libraries != null) {
       unlinked_libraries = unlinked_libraries.map(function(name) {
@@ -135,10 +135,10 @@ var Utils = {
         return name != arr[index + 1];
       }).join(", ");
 
-      var error = this.contractName +
+      var error = C.contractName +
                   " contains unresolved libraries. You must deploy and link" +
                   " the following libraries before you can deploy a new version of " +
-                  this._json.contractName + ": " + unlinked_libraries;
+                  C._json.contractName + ": " + unlinked_libraries;
 
 
       throw new Error(error);

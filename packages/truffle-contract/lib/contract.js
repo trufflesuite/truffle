@@ -19,23 +19,23 @@ var contract = (function(module) {
   // create a new version of the contract abstraction with that network_id set.
   function Contract(contract) {
     var self = this;
-    var constructor = this.constructor;
+    var constructor = self.constructor;
 
-    this.abi = constructor.abi;
+    self.abi = constructor.abi;
 
     // at
     if (typeof contract == "string") {
-      var contract_class = new constructor.web3.eth.Contract(this.abi);
+      var contract_class = new constructor.web3.eth.Contract(self.abi);
       contract_class.options.address = contract;
       contract = contract_class;
     }
 
-    this.contract = contract;
-    this.contract.setProvider(constructor.web3.currentProvider); // Web3 now requires this
-    this.methods = {};
+    self.contract = contract;
+    self.contract.setProvider(constructor.web3.currentProvider); // Web3 now requires this
+    self.methods = {};
 
     // Provision our functions.
-    this.abi.forEach(function(item){
+    self.abi.forEach(function(item){
 
       if (item.type == "function") {
         var key;
@@ -72,15 +72,15 @@ var contract = (function(module) {
       }
     })
 
-    this.sendTransaction = execute.sendTransaction(constructor, this);
+    self.sendTransaction = execute.sendTransaction(constructor, self);
 
-    this.send = function(value) {
+    self.send = function(value) {
       return self.sendTransaction({value: value});
     };
 
-    this.allEvents = contract.allEvents;
-    this.address = contract.options.address;
-    this.transactionHash = contract.transactionHash;
+    self.allEvents = contract.allEvents;
+    self.address = contract.options.address;
+    self.transactionHash = contract.transactionHash;
   };
 
   Contract._static_methods = {
@@ -102,13 +102,13 @@ var contract = (function(module) {
       var self = this;
       var promiEvent = new Web3PromiEvent();
 
-      if (this.currentProvider == null) {
-        var err = this.contractName + " error: Please call setProvider() first before calling new()."
+      if (self.currentProvider == null) {
+        var err = self.contractName + " error: Please call setProvider() first before calling new()."
         throw new Error(err);
       }
 
-      if (!this.bytecode) {
-        var err = this._json.contractName + " error: contract binary not set. Can't deploy new instance.";
+      if (!self.bytecode) {
+        var err = self._json.contractName + " error: contract binary not set. Can't deploy new instance.";
         throw new Error(err);
       }
 
@@ -121,10 +121,11 @@ var contract = (function(module) {
         onlyEmitReceipt: true
       }
 
-      self.detectNetwork()
-        .then(Utils.checkLibraries.bind(self))
-        .then(execute.deploy.bind(self, args, context))
-        .catch(promiEvent.reject);
+      self.detectNetwork().then(network => {
+        Utils.checkLibraries(self);
+        return execute.deploy(args, context, network.blockLimit, self);
+      }).catch(promiEvent.reject)
+
 
       return promiEvent.eventEmitter;
     },
@@ -134,7 +135,7 @@ var contract = (function(module) {
 
       return new Promise(function(accept, reject){
         if (address == null || typeof address != "string" || address.length != 42) {
-          var err = "Invalid address passed to " + this._json.contractName + ".at(): " + address;
+          var err = "Invalid address passed to " + self._json.contractName + ".at(): " + address;
           reject(new Error(err));
         }
 
@@ -219,12 +220,11 @@ var contract = (function(module) {
       return new Promise(function(accept, reject) {
         // Try to get the current blockLimit
         self.web3.eth.getBlock('latest').then(function(block){
-
           // Try to detect the network we have artifacts for.
           if (self.network_id) {
             // We have a network id and a configuration, let's go with it.
             if (self.networks[self.network_id] != null) {
-              return accept(self.network_id, block.gasLimit);
+              return accept({id: self.network_id, blockLimit: block.gasLimit});
             }
           }
 
@@ -233,7 +233,7 @@ var contract = (function(module) {
             if (self.hasNetwork(network_id)) {
 
               self.setNetwork(network_id);
-              return accept(self.network_id, block.gasLimit);
+              return accept({id: self.network_id, blockLimit: block.gasLimit});
             }
 
             // Otherwise, go through all the networks that are listed as
@@ -252,13 +252,13 @@ var contract = (function(module) {
               for (var i = 0; i < results.length; i++) {
                 if (results[i]) {
                   self.setNetwork(uris[i]);
-                  return accept(self.network_id, block.gasLimit);
+                  return accept({id: self.network_id, blockLimit: block.gasLimit});
                 }
               }
 
               // We found nothing. Set the network id to whatever the provider states.
               self.setNetwork(network_id);
-              return accept(self.network_id, block.gasLimit);
+              return accept({id: self.network_id, blockLimit: block.gasLimit});
             });
 
           }).catch(reject);

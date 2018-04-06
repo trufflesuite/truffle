@@ -1,19 +1,42 @@
 var debug = require("debug")("ganache-core");
+var fs = require("fs");
 var ganache = require("ganache-core");
 var Web3 = require("web3");
 var Web3PromiEvent = require('web3-core-promievent');
+var solc = require("solc");
+var contract = require("../");
 
 var log = {
   log: debug
 }
 
 var util = {
-
+  // Persistent state
   web3: null,
   fakePromiEvent: null,
   fakeReceipt: null,
   realHash: null,
   realReceipt: null,
+
+  // Compiles and instantiates (our friend) Example.sol
+  createExample: function() {
+    var contractObj;
+    var contractName;
+
+    var result = solc.compile(fs.readFileSync("./test/sources/Example.sol", {encoding: "utf8"}), 1);
+
+    if (process.listeners("uncaughtException").length){
+      process.removeListener("uncaughtException", process.listeners("uncaughtException")[0]);
+    }
+
+    (result.contracts["Example"])
+      ? contractName = "Example"
+      : contractName = ":Example";
+
+    contractObj = result.contracts[contractName];
+    contractObj.contractName = contractName;
+    return contract(contractObj);
+  },
 
   // Spins up ganache with arbitrary options and
   // binds web3 & a contract instance to it.
@@ -43,6 +66,7 @@ var util = {
     })
   },
 
+  // RPC Methods
   evm_mine: function(){
     return new Promise(function(accept, reject){
       util.web3.currentProvider.send({
@@ -55,6 +79,7 @@ var util = {
     });
   },
 
+  // Mocks for delayed tx resolution to simulate real clients
   fakeSendTransaction: function(params){
     util.fakePromiEvent = new Web3PromiEvent();
     var real = util.web3.eth.sendTransaction(params)
