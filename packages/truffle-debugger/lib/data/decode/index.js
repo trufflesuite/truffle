@@ -41,10 +41,12 @@ export function decodeValue(definition, pointer, state, ...args) {
       return utils.toHexString(bytes, true);
 
     case "bytes":
+      debug("typeIdentifier %s %o", utils.typeIdentifier(definition), bytes);
       let length = utils.specifiedSize(definition);
       return utils.toHexString(bytes, length);
 
     case "string":
+      debug("typeIdentifier %s %o", utils.typeIdentifier(definition), bytes);
       return String.fromCharCode.apply(null, bytes);
 
     default:
@@ -197,6 +199,7 @@ export function decodeStorageReference(definition, pointer, state, ...args) {
       if (data[WORD_SIZE - 1] % 2 == 0) {
         // string lives in word, length is last byte / 2
         length = data[WORD_SIZE - 1] / 2;
+        debug("in-word; length %o", length);
         if (length == 0) {
           return "";
         }
@@ -208,7 +211,7 @@ export function decodeStorageReference(definition, pointer, state, ...args) {
 
       } else {
         length = utils.toBigNumber(data).minus(1).div(2).toNumber();
-        debug("length %o", length);
+        debug("new-word, length %o", length);
 
         return decodeValue(definition, { storage: {
           from: { slot: [pointer.storage.from.slot], index: 0 },
@@ -227,40 +230,6 @@ export function decodeStorageReference(definition, pointer, state, ...args) {
             )
           }))
       );
-
-      // return Object.assign(
-      //   {}, ...structVariables
-      //     .map(
-      //       ({name, id}, i) => {
-      //         let memberDefinition = refs[id].definition;
-      //         let memberPointer = {
-      //           storage: {
-
-      //           }
-      //         };
-
-      //         // HACK
-      //         memberDefinition = {
-      //           ...memberDefinition,
-
-      //           typeDescriptions: {
-      //             ...memberDefinition.typeDescriptions,
-
-      //             typeIdentifier:
-      //               memberDefinition.typeDescriptions.typeIdentifier
-      //           }
-      //         };
-
-      //         debug("name %s %O", name, memberDefinition);
-
-      //         return {
-      //           [name]: decode(
-      //             memberDefinition, memberPointer, state, ...args
-      //           )
-      //         };
-      //       }
-      //     )
-      // );
 
     default:
       debug("Unknown storage reference type: %s", utils.typeIdentifier(definition));
