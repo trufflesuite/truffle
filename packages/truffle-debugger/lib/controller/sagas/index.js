@@ -11,7 +11,7 @@ import * as actions from "../actions";
 
 import controller from "../selectors";
 
-const controlSagas = {
+const CONTROL_SAGAS = {
   [actions.ADVANCE]: advance,
   [actions.STEP_NEXT]: stepNext,
   [actions.STEP_OVER]: stepOver,
@@ -29,9 +29,9 @@ const SKIPPED_TYPES = new Set([
 export function* saga() {
   while (true) {
     debug("waiting for control action");
-    let action = yield take(Object.keys(controlSagas));
+    let action = yield take(Object.keys(CONTROL_SAGAS));
     debug("got control action");
-    let saga = controlSagas[action.type];
+    let saga = CONTROL_SAGAS[action.type];
 
     yield put(actions.beginStep(action.type));
 
