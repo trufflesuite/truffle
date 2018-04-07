@@ -1,10 +1,7 @@
 var assert = require("chai").assert;
-var BigNumber = require("bignumber.js");
-var temp = require("temp").track();
 var path = require("path");
 var fs = require("fs");
 var util = require('./util');
-var contract = require("../");
 
 describe("Deployments", function() {
   var Example;
@@ -25,8 +22,6 @@ describe("Deployments", function() {
         accounts = result.accounts;
       });
   });
-
-  after(() => temp.cleanupSync());
 
   describe(".at()", function(){
     it('should return a usable duplicate instance with at()', async function(){
@@ -114,7 +109,7 @@ describe("Deployments", function() {
       await Example.new(1200);
     });
 
-    it.skip('should override the web3 50 blocks timeout and return a usable instance', async function(){
+    it('should override the web3 50 blocks timeout and return a usable instance', async function(){
       this.timeout(50000);
 
       // Mock web3 non-response, fire error @ block 50, resolve receipt @ block 52.

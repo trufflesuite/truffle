@@ -23,8 +23,9 @@ var handlers = {
   ignoreTimeoutError: function(context, error){
     var timedOut = error.message && error.message.includes(handlers.timeoutMessage);
 
-    var shouldWait = context.contract && context.contract.timeoutBlocks &&
-                     context.contract.timeoutBlocks > handlers._defaultTimeoutBlocks;
+    var shouldWait = context.contract &&
+                     context.contract.timeoutBlocks &&
+                     context.contract.timeoutBlocks > handlers.defaultTimeoutBlocks;
 
     return timedOut && shouldWait;
   },
