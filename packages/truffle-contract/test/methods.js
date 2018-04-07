@@ -343,27 +343,6 @@ describe("Methods", function() {
       assert(balance == web3.utils.toWei("1", "ether"), "Balance should be 1 ether");
     });
 
-    it("should be possible to use callback in sendTransaction()", function(done){
-      var example = null;
-      var callback = results => {
-        web3.eth.getBalance(example.address, (err, balance) => {
-          if (err) done(err);
-          assert(balance == web3.utils.toWei("1", "ether"));
-          done();
-        });
-      }
-
-      Example.new(1).then(instance => {
-        example = instance;
-        return example.fallbackTriggered();
-      }).then(triggered => {
-        assert(triggered == false, "Fallback should not have been triggered yet");
-        example.sendTransaction({
-          value: web3.utils.toWei("1", "ether")
-        }, callback);
-      })
-    });
-
     it("should trigger the fallback function when calling send() (shorthand notation)", async function() {
       this.timeout(5000);
       const example = await Example.new(1);

@@ -61,25 +61,6 @@ describe("Events", function() {
   })
 
   // Emitter is firing twice for each event. :/
-  it('should be possible to listen for events with a callback', function(done){
-    let finished = false;
-    const callback = (err, event) => {
-      assert.equal("ExampleEvent", event.event);
-      assert.equal(accounts[0], event.args._from);
-      assert.equal(8, event.args.num);
-      if (!finished){
-        finished = true;
-        done();
-      }
-    }
-
-    Example.new(1).then(example => {
-      example.ExampleEvent(callback);
-      example.triggerEvent();
-    })
-  });
-
-  // Emitter is firing twice for each event. :/
   it('should fire repeatedly', async function(){
     let emitter;
     let counter = 0;
