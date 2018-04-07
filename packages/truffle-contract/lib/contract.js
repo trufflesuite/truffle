@@ -3,7 +3,7 @@ var Web3 = require("web3");
 var Web3PromiEvent = require('web3-core-promievent');
 var webUtils = require('web3-utils');
 var StatusError = require("./statuserror");
-var Utils = require("./utils");
+var utils = require("./utils");
 var execute = require("./execute");
 var handle = require("./handlers");
 
@@ -14,29 +14,28 @@ if (typeof Web3 == "object" && Object.keys(Web3).length == 0) {
 }
 
 var contract = (function(module) {
-  // Accepts a contract object created with web3.eth.Contract.
-  // Optionally, if called without `new`, accepts a network_id and will
-  // create a new version of the contract abstraction with that network_id set.
+  // Accepts a contract object created with web3.eth.Contract or an address.
   function Contract(contract) {
-    var self = this;
-    var constructor = self.constructor;
+    var instance = this;
+    var constructor = instance.constructor;
 
-    self.abi = constructor.abi;
-
-    // at
+    // Disabiguate between .at() and .new()
     if (typeof contract == "string") {
-      var contract_class = new constructor.web3.eth.Contract(self.abi);
-      contract_class.options.address = contract;
-      contract = contract_class;
+      var web3Instance = new constructor.web3.eth.Contract(constructor.abi);
+      web3Instance.options.address = contract;
+      contract = web3Instance;
     }
 
-    self.contract = contract;
-    self.contract.setProvider(constructor.web3.currentProvider); // Web3 now requires this
-    self.methods = {};
+    // Core:
+    instance.methods = {};
+    instance.abi = constructor.abi;
+    instance.address = contract.options.address;
+    instance.transactionHash = contract.transactionHash;
+    instance.contract = contract;
+    instance.contract.setProvider(constructor.web3.currentProvider);
 
-    // Provision our functions.
-    self.abi.forEach(function(item){
-
+    // User defined methods, overloaded methods, events
+    instance.abi.forEach(function(item){
       if (item.type == "function") {
         var key;
         var isConstant = item.constant === true;
@@ -46,41 +45,36 @@ var contract = (function(module) {
           var fn;
 
           (constant)
-            ? fn = execute.call(web3Method, constructor, item.inputs)
-            : fn = execute.send(web3Method, constructor, self);
+            ? fn = execute.call.call(constructor, web3Method, item.inputs, instance.address)
+            : fn = execute.send.call(constructor, web3Method, instance.address);
 
-          fn.call = execute.call(web3Method, constructor, item.inputs);
-          fn.sendTransaction = execute.send(web3Method, constructor, self);
-          fn.estimateGas = execute.estimate(web3Method, constructor);
-          fn.request = execute.request(web3Method, constructor);
+          fn.call = execute.call.call(constructor, web3Method, item.inputs, instance.address);
+          fn.sendTransaction = execute.send.call(constructor, web3Method, instance.address);
+          fn.estimateGas = execute.estimate.call(constructor, web3Method, instance.address);
+          fn.request = execute.request.call(constructor, web3Method, instance.address);
 
           return fn;
         }
 
-        // We only set the direct access path once - overloaded methods should
-        // be invoked via the .methods property although one of
-        // them will be available through the contract.
-        if(self[item.name] === undefined){
-          self[item.name] = method(isConstant, contract.methods[item.name]);
+        if(instance[item.name] === undefined ){
+          instance[item.name] = method(isConstant, contract.methods[item.name]);
         }
 
-        self.methods[signature] = method(isConstant, contract.methods[signature]);
+        // Overloaded methods should be invoked via the .methods property
+        instance.methods[signature] = method(isConstant, contract.methods[signature]);
       }
 
       if (item.type == "event") {
-        self[item.name] = execute.event(contract.events[item.name], constructor, contract);
+        instance[item.name] = execute.event.call(constructor, contract.events[item.name], contract);
       }
     })
 
-    self.sendTransaction = execute.sendTransaction(constructor, self);
+    // sendTransaction / send
+    instance.sendTransaction = execute.send.call(constructor, null, instance.address);
+    instance.send = (value) => instance.sendTransaction({value: value});
 
-    self.send = function(value) {
-      return self.sendTransaction({value: value});
-    };
-
-    self.allEvents = contract.allEvents;
-    self.address = contract.options.address;
-    self.transactionHash = contract.transactionHash;
+    // Miscellany
+    instance.allEvents = contract.allEvents;
   };
 
   Contract._static_methods = {
@@ -88,11 +82,6 @@ var contract = (function(module) {
       if (!provider) {
         throw new Error("Invalid provider passed to setProvider(); provider is " + provider);
       }
-
-      /* TURNED THIS OFF - it breaks event listening
-      var wrapped = new Provider(provider);
-      this.web3.setProvider(wrapped)
-      **/
 
       this.web3.setProvider(provider);
       this.currentProvider = provider;
@@ -108,7 +97,7 @@ var contract = (function(module) {
       }
 
       if (!self.bytecode) {
-        var err = self._json.contractName + " error: contract binary not set. Can't deploy new instance.";
+        var err = self.contractName + " error: contract binary not set. Can't deploy new instance.";
         throw new Error(err);
       }
 
@@ -122,10 +111,9 @@ var contract = (function(module) {
       }
 
       self.detectNetwork().then(network => {
-        Utils.checkLibraries(self);
-        return execute.deploy(args, context, network.blockLimit, self);
+        utils.checkLibraries.apply(self);
+        return execute.deploy.call(self, args, context, network.blockLimit);
       }).catch(promiEvent.reject)
-
 
       return promiEvent.eventEmitter;
     },
@@ -135,7 +123,7 @@ var contract = (function(module) {
 
       return new Promise(function(accept, reject){
         if (address == null || typeof address != "string" || address.length != 42) {
-          var err = "Invalid address passed to " + self._json.contractName + ".at(): " + address;
+          var err = "Invalid address passed to " + self.contractName + ".at(): " + address;
           reject(new Error(err));
         }
 
@@ -246,7 +234,7 @@ var contract = (function(module) {
               return BlockchainUtils.matches.bind(BlockchainUtils, uri, self.web3.currentProvider);
             });
 
-            Utils.parallel(matches, function(err, results) {
+            utils.parallel(matches, function(err, results) {
               if (err) return reject(err);
 
               for (var i = 0; i < results.length; i++) {
@@ -339,7 +327,7 @@ var contract = (function(module) {
         json = self._json;
       }
 
-      json = Utils.merge({}, self._json || {}, json);
+      json = utils.merge({}, self._json || {}, json);
 
       temp._static_methods = this._static_methods;
       temp._properties = this._properties;
@@ -529,13 +517,7 @@ var contract = (function(module) {
     },
     transactionHash: {
       get: function() {
-        var transactionHash = this.network.transactionHash;
-
-        if(transactionHash === null) {
-          throw new Error("Could not find transaction hash for " + this.contractName);
-        }
-
-        return transactionHash;
+        return this.network.transactionHash;
       },
       set: function(val) {
         this.network.transactionHash = val;
@@ -595,10 +577,10 @@ var contract = (function(module) {
       return events;
     },
     binary: function() {
-      return Utils.linkBytecode(this.bytecode, this.links);
+      return utils.linkBytecode(this.bytecode, this.links);
     },
     deployedBinary: function() {
-      return Utils.linkBytecode(this.deployedBytecode, this.links);
+      return utils.linkBytecode(this.deployedBytecode, this.links);
     },
 
     // deprecated; use bytecode

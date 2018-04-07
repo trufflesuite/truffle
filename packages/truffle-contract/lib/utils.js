@@ -13,11 +13,12 @@ var Utils = {
     return web3.utils.isBN(val) || web3.utils.isBigNumber(val);
   },
 
-  decodeLogs: function(C, _logs, isSingle) {
+  decodeLogs: function(_logs, isSingle) {
+    var constructor = this;
     var logs = Utils.toTruffleLog(_logs, isSingle);
 
     return logs.map(function(log) {
-      var logABI = C.events[log.topics[0]];
+      var logABI = constructor.events[log.topics[0]];
 
       if (logABI == null) {
         return null;
@@ -41,7 +42,7 @@ var Utils = {
   toTruffleLog: function(events, isSingle){
     // Transform singletons (from event listeners) to the kind of
     // object we find on the receipt
-    if (isSingle){
+    if (isSingle && typeof isSingle === 'boolean'){
       var temp = [];
       temp.push(events)
       return temp.map(function(log){
@@ -104,7 +105,9 @@ var Utils = {
   },
 
   // Extracts optional tx params from a list of fn arguments
-  getTxParams: function(args, C){
+  getTxParams: function(args){
+    var constructor = this;
+
     var tx_params =  {};
     var last_arg = args[args.length - 1];
 
@@ -112,15 +115,16 @@ var Utils = {
     if (Utils.is_object(last_arg) && !Utils.is_big_number(last_arg)) {
       tx_params = args.pop();
     }
-    tx_params = Utils.merge(C.class_defaults, tx_params);
+    tx_params = Utils.merge(constructor.class_defaults, tx_params);
     return tx_params;
   },
 
   // Verifies that a contracts libraries have been linked correctly.
   // Throws on error
-  checkLibraries: function(C){
+  checkLibraries: function(){
+    var constructor = this;
     var regex = /__[^_]+_+/g;
-    var unlinked_libraries = C.binary.match(regex);
+    var unlinked_libraries = constructor.binary.match(regex);
 
     if (unlinked_libraries != null) {
       unlinked_libraries = unlinked_libraries.map(function(name) {
@@ -135,10 +139,10 @@ var Utils = {
         return name != arr[index + 1];
       }).join(", ");
 
-      var error = C.contractName +
+      var error = constructor.contractName +
                   " contains unresolved libraries. You must deploy and link" +
                   " the following libraries before you can deploy a new version of " +
-                  C._json.contractName + ": " + unlinked_libraries;
+                  constructor.contractName + ": " + unlinked_libraries;
 
 
       throw new Error(error);

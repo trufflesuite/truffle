@@ -114,7 +114,7 @@ describe("Deployments", function() {
       await Example.new(1200);
     });
 
-    it('should override the web3 50 blocks timeout and return a usable instance', async function(){
+    it.skip('should override the web3 50 blocks timeout and return a usable instance', async function(){
       this.timeout(50000);
 
       // Mock web3 non-response, fire error @ block 50, resolve receipt @ block 52.
