@@ -7,6 +7,80 @@ var override = require("./override");
 
 var execute = {
 
+  // -----------------------------------  Helpers --------------------------------------------------
+
+  /**
+   * Retrieves gas estimate multiplied by the set gas multiplier for a `sendTransaction` call.
+   * @param  {Object} params     `sendTransaction` parameters
+   * @param  {Number} blockLimit  most recent network block.blockLimit
+   * @return {Number}             gas estimate
+   */
+  getGasEstimate: function(params, blockLimit){
+    var constructor = this;
+    var web3 = this.web3;
+    var defaultGas = 90000; // We need to disabiguate between deployment defaults & tx defaults.
+
+    return new Promise(function(accept, reject){
+      // Always prefer specified gas
+      if (params.gas) return accept(params.gas);
+
+        web3.eth
+          .estimateGas(params)
+          .then(gas => {
+            var bestEstimate = Math.floor(constructor.gasMultiplier * gas);
+
+            // Don't go over blockLimit
+            (bestEstimate >= blockLimit)
+              ? accept(blockLimit - 1)
+              : accept(bestEstimate);
+
+          // We need to let txs that revert through.
+          // Often that's exactly what you are testing.
+          }).catch(err => accept(defaultGas));
+    })
+  },
+
+  /**
+   * Prepares simple wrapped calls by checking network and organizing the method inputs into
+   * into objects web3 can consume.
+   * @param  {Object} constructor   TruffleContract constructor
+   * @param  {Array}  _arguments    Arguments passed to method invocation
+   * @return {Promise}              Resolves object w/ tx params disambiguated from arguments
+   */
+  prepareCall: function(constructor, _arguments){
+    var args = Array.prototype.slice.call(_arguments);
+    var params = utils.getTxParams.call(constructor, args);
+
+    return constructor
+      .detectNetwork()
+      .then(() => {return {args: args, params: params}});
+  },
+
+  /**
+   * Disambiguates between transaction parameter objects and BN / BigNumber objects
+   * @param  {Any}  arg
+   * @return {Boolean}
+   */
+  hasTxParams: function(arg){
+    return utils.is_object(arg) && !utils.is_big_number(arg);
+  },
+
+  /**
+   * Parses function arguments to discover if the terminal argument specifies the `defaultBlock`
+   * to execute a call at.
+   * @param  {Array}  args      `arguments` that were passed to method
+   * @param  {Any}    lastArg    terminal argument passed to method
+   * @param  {Array}  inputs     ABI segment defining method arguments
+   * @return {Boolean}           true if final argument is `defaultBlock`
+   */
+  hasDefaultBlock:  function(args, lastArg, inputs){
+    var hasDefaultBlock = !execute.hasTxParams(lastArg) && (args.length > inputs.length);
+    var hasDefaultBlockWithParams = execute.hasTxParams(lastArg) && (args.length - 1 > inputs.length);
+    return hasDefaultBlock || hasDefaultBlockWithParams;
+  },
+
+  // -----------------------------------  Methods --------------------------------------------------
+
   /**
    * Executes method as .call and processes optional `defaultBlock` argument.
    * @param  {Function} fn      method
@@ -59,7 +133,7 @@ var execute = {
       var promiEvent = new Web3PromiEvent();
 
       var context = {
-        contract: constructor,
+        contract: constructor,   // Can't name this field `constructor` or `_constructor`
         promiEvent: promiEvent,
         params: params
       }
@@ -165,24 +239,20 @@ var execute = {
   estimate : function(fn){
     var constructor = this;
     return function() {
-      var args = Array.prototype.slice.call(arguments);
-      var params = utils.getTxParams.call(constructor, args);
 
-      return constructor.detectNetwork().then(function() {
-          return fn(...args).estimateGas(params);
-      });
+      return execute
+        .prepareCall(constructor, arguments)
+        .then(res => fn(...res.args).estimateGas(res.params));
     };
   },
 
   request : function(fn){
     var constructor = this;
     return function() {
-      var args = Array.prototype.slice.call(arguments);
-      var params = utils.getTxParams.call(constructor, args);
 
-      return constructor.detectNetwork().then(function() {
-          return fn(...args).request(params);
-      });
+      return execute
+        .prepareCall(constructor, arguments)
+        .then(res => fn(...res.args).request(res.params));
     };
   },
 
@@ -190,62 +260,19 @@ var execute = {
   // during bootstrapping as `estimate`
   estimateDeployment : function(){
     var constructor = this;
-    var args = Array.prototype.slice.call(arguments);
-    var params = utils.getTxParams.call(constructor, args);
+    return execute
+      .prepareCall(constructor, arguments)
+      .then(res => {
+        var options = {
+          data: constructor.binary,
+          arguments: res.args
+        };
 
-    return constructor.detectNetwork().then(function() {
+        delete res.params['data'];  // Is this necessary?
 
-      var options = {
-        data: constructor.binary,
-        arguments: args
-      };
-
-      delete params['data'];
-
-      var instance = new constructor.web3.eth.Contract(constructor.abi, params);
-      return instance.deploy(options).estimateGas(params);
-    });
-  },
-
-  /**
-   * [getGasEstimate description]
-   * @param  {[type]} params     [description]
-   * @param  {[type]} blockLimit [description]
-   * @return {[type]}            [description]
-   */
-  getGasEstimate: function(params, blockLimit){
-    var constructor = this;
-    var web3 = this.web3;
-    var defaultGas = 90000;
-
-    return new Promise(function(accept, reject){
-      // Always prefer specified gas
-      if (params.gas) return accept(params.gas);
-
-        web3.eth
-          .estimateGas(params)
-          .then(gas => {
-            var bestEstimate = Math.floor(constructor.gasMultiplier * gas);
-
-            // Don't go over blockLimit
-            (bestEstimate >= blockLimit)
-              ? accept(blockLimit - 1)
-              : accept(bestEstimate);
-
-          // We need to let tx's that revert through.
-          // Often that's exactly what you are testing.
-          }).catch(err => accept(defaultGas));
-    })
-  },
-
-  hasTxParams(arg){
-    return utils.is_object(arg) && !utils.is_big_number(arg);
-  },
-
-  hasDefaultBlock(args, lastArg, inputs){
-    var hasDefaultBlock = !execute.hasTxParams(lastArg) && (args.length > inputs.length);
-    var hasDefaultBlockWithParams = execute.hasTxParams(lastArg) && (args.length - 1 > inputs.length);
-    return hasDefaultBlock || hasDefaultBlockWithParams;
+        var instance = new constructor.web3.eth.Contract(constructor.abi, res.params);
+        return instance.deploy(options).estimateGas(res.params);
+      });
   },
 };
 

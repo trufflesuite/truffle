@@ -103,10 +103,9 @@ var contract = (function(module) {
 
       var args = Array.prototype.slice.call(arguments);
 
-      // Args and Promievent for the event management cascade
+      // Promievent and flag that allows instance to resolve (rather than just receipt)
       var context = {
         promiEvent: promiEvent,
-        allowError: true,
         onlyEmitReceipt: true
       }
 

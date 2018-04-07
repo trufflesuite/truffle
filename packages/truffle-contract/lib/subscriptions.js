@@ -1,12 +1,11 @@
-
 module.exports = {
   /**
    * @param  {String} e.g. "newHeads"
    * @return {Promise} subscription enabled on resolution
    */
-  subscribe: function(contract, topic, id){
+  subscribe: function(constructor, topic, id){
     return new Promise((accept, reject) => {
-        contract.web3.currentProvider.send({
+        constructor.web3.currentProvider.send({
           jsonrpc: "2.0",
           method: "eth_subscribe",
           params: [topic],
@@ -20,9 +19,9 @@ module.exports = {
    * @param  {Number} id of subscription to cancel
    * @return {Promise} subscription cancelled on resolution
    */
-  unsubscribe: function(contract, id){
+  unsubscribe: function(constructor, id){
     return new Promise((accept, reject) => {
-        contract.web3.currentProvider.send({
+        constructor.web3.currentProvider.send({
           jsonrpc: "2.0",
           method: "eth_unsubscribe",
           params: [id],
