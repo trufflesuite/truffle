@@ -23,7 +23,7 @@ describe("Methods", function() {
       });
   });
 
-  describe(".method(): success", function(){
+  describe(".method(): success [ @geth ]", function(){
 
     it("should get and set values via methods and get values via .call", async function() {
       let value;
@@ -151,11 +151,12 @@ describe("Methods", function() {
     });
 
     it("should fire the confirmations event handler repeatedly", function(done){
-      this.timeout(5000)
-      function keepTransacting(){
-        return util.evm_mine()
-                .then(util.evm_mine)
-                .then(util.evm_mine);
+      let example;
+
+      async function keepTransacting(){
+        await example.setValue(5);
+        await example.setValue(10);
+        await example.setValue(15);
       };
 
       function handler(number, receipt){
@@ -166,7 +167,8 @@ describe("Methods", function() {
         }
       }
 
-      Example.new(5).then(function(example) {
+      Example.new(5).then(instance => {
+        example = instance;
         example.setValue(25)
           .on('confirmation', handler)
           .then(keepTransacting);
@@ -191,33 +193,6 @@ describe("Methods", function() {
       assert.equal(parseInt(value), 25, "Ending value should be twenty five");
     });
 
-    it("should work with a web3.accounts.wallet account", async function(){
-      let value;
-
-      // Create and fund wallet account
-      const wallet = web3.eth.accounts.wallet.create(1);
-      const providerAccounts = await web3.eth.getAccounts();
-      await web3.eth.sendTransaction({
-        from: providerAccounts[0],
-        to: wallet["0"].address,
-        value: web3.utils.toWei("1", 'ether')
-      });
-
-      const balance = await web3.eth.getBalance(wallet["0"].address);
-      assert.equal(balance, web3.utils.toWei("1", 'ether'));
-
-      Example.__setWallet(wallet);
-      const example = await Example.new(1, {from: wallet["0"].address })
-
-      value = await example.value.call();
-      assert.equal(parseInt(value), 1, "Starting value should be 1");
-
-      await example.setValue(5, {from: wallet["0"].address})
-
-      value = await example.value.call();
-      assert.equal(parseInt(value), 5, "Ending value should be 5");
-    });
-
     it('should automatically fund a tx that costs more than default gas (90k)', async function(){
       this.timeout(10000);
 
@@ -231,7 +206,8 @@ describe("Methods", function() {
     });
   });
 
-  describe(".method(): errors", function(){
+
+  describe(".method(): errors [ @geth ]", function(){
     // NB: call always takes +1 param: defaultBlock
     it('should validate method arguments for .calls', async function(){
       const example = await Example.new(5);
@@ -259,7 +235,10 @@ describe("Methods", function() {
         await example.setValue(10, {gas: 10});
         assert.fail();
       } catch(e){
-        assert(e.message.includes('exceeds gas limit'), 'Error should be OOG');
+        const errorCorrect = e.message.includes('exceeds gas limit') ||
+                             e.message.includes('intrinsic gas too low');
+
+        assert(errorCorrect, 'Should OOG');
       }
     });
 
@@ -268,7 +247,10 @@ describe("Methods", function() {
         example
           .setValue(10, {gas: 10})
           .on('error', e => {
-            assert(e.message.includes('exceeds gas limit'), 'Error should be OOG');
+            const errorCorrect = e.message.includes('exceeds gas limit') ||
+                                 e.message.includes('intrinsic gas too low');
+
+            assert(errorCorrect, 'Should OOG');
             done();
           })
           .catch(e => null);
@@ -309,7 +291,7 @@ describe("Methods", function() {
     });
 
     it("errors with receipt & assert message on internal OOG", async function(){
-      this.timeout(5000);
+      this.timeout(25000);
 
       const example = await Example.new(1)
       try {
@@ -322,9 +304,37 @@ describe("Methods", function() {
     });
   });
 
-  describe('sendTransaction() / send()', function(){
+  describe('web3 wallet', function(){
+    it("should work with a web3.accounts.wallet account", async function(){
+      let value;
+
+      // Create and fund wallet account
+      const wallet = web3.eth.accounts.wallet.create(1);
+      const providerAccounts = await web3.eth.getAccounts();
+      await web3.eth.sendTransaction({
+        from: providerAccounts[0],
+        to: wallet["0"].address,
+        value: web3.utils.toWei("1", 'ether')
+      });
+
+      const balance = await web3.eth.getBalance(wallet["0"].address);
+      assert.equal(balance, web3.utils.toWei("1", 'ether'));
+
+      Example.__setWallet(wallet);
+      const example = await Example.new(1, {from: wallet["0"].address })
+
+      value = await example.value.call();
+      assert.equal(parseInt(value), 1, "Starting value should be 1");
+
+      await example.setValue(5, {from: wallet["0"].address})
+
+      value = await example.value.call();
+      assert.equal(parseInt(value), 5, "Ending value should be 5");
+    });
+  });
+
+  describe('sendTransaction() / send() [ @geth ]', function(){
     it("should trigger the fallback function when calling sendTransaction()", async function() {
-      this.timeout(5000);
       const example = await Example.new(1)
       const triggered = await example.fallbackTriggered();
 
@@ -339,7 +349,6 @@ describe("Methods", function() {
     });
 
     it("should trigger the fallback function when calling send() (shorthand notation)", async function() {
-      this.timeout(5000);
       const example = await Example.new(1);
       const triggered = await example.fallbackTriggered();
 

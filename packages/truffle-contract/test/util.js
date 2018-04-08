@@ -45,8 +45,12 @@ var util = {
     Object.assign(options, {logger: log, ws: true})
 
     return new Promise(function(accept, reject){
-      var provider = ganache.provider(options);
+      var provider;
       var web3 = new Web3();
+
+      (process.env.GETH)
+        ? provider = new Web3.providers.HttpProvider('http://localhost:8545')
+        : provider = ganache.provider(options);
 
       web3.setProvider(provider);
       instance.setProvider(provider);

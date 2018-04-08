@@ -39,7 +39,7 @@ function getAndSetAccounts(contract, done) {
   }).catch(done);
 };
 
-describe("Different networks:", function() {
+describe("Different networks: ", function() {
   var binary;
   var abi;
   var temp_dir;

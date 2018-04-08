@@ -10,7 +10,7 @@ contract Example {
 
   constructor(uint val) {
     // Constructor revert
-    require(val <= 9999);
+    require(val != 13);
 
     // Expensive deployment
     if(val >= 50){
