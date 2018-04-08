@@ -1,7 +1,7 @@
 var assert = require("chai").assert;
 var util = require('./util');
 
-describe("Ganache errors (vmErrorsOnRPCResponse)", function() {
+describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
   var Example;
   var accounts;
   var network_id;
@@ -41,12 +41,12 @@ describe("Ganache errors (vmErrorsOnRPCResponse)", function() {
         .catch(err => null);
     });
 
-    it("should error if constructor reverts", async function(){
+    it("should error w/gas limit error if constructor reverts", async function(){
       try {
-        await Example.new(10000, {gas: 5000000})
+        await Example.new(13) // 13 fails a constructor require gate
         assert.fail()
       } catch(e){
-        assert(e.message.includes('revert'), 'Error should be revert');
+        assert(e.message.includes('exceeds gas limit'), 'Error should be gas limit err');
       }
     });
 

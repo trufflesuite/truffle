@@ -6,7 +6,7 @@ var fs = require("fs");
 var util = require('./util');
 var contract = require("../");
 
-describe("Network Object", function() {
+describe("Network Object [ @geth ]", function() {
   var Example;
   var accounts;
   var network_id;

@@ -14,17 +14,17 @@ var override = {
    * @param  {Object} context execution state
    * @param  {Object} err     error
    */
-  start: function(context, err){
+  start: function(context, web3Error){
     var constructor = this;
     var blockNumber = null;
     var currentBlock = override.defaultMaxBlocks;
     var maxBlocks = constructor.timeoutBlocks;
 
-    var timedOut = err.message && err.message.includes(override.timeoutMessage);
+    var timedOut = web3Error.message && web3Error.message.includes(override.timeoutMessage);
     var shouldWait = maxBlocks > currentBlock;
 
     // Reject if we shouldn't be waiting.
-    if (!timedOut || !shouldWait) return context.promiEvent.reject(err);
+    if (!timedOut || !shouldWait) return context.promiEvent.reject(web3Error);
 
     // This will run every block from now until contract.timeoutBlocks
     var listener = function(err, data){
@@ -34,7 +34,7 @@ var override = {
       if (currentBlock > constructor.timeoutBlocks){
         subscriptions.unsubscribe(constructor, id);
         self.removeListener('data', listener);
-        context.promiEvent.reject(error);
+        context.promiEvent.reject(err);
         return;
       }
 
@@ -42,7 +42,7 @@ var override = {
         .then(result => {
           if (!result) return;
 
-          self.removeListener('data', listener);
+          //self.removeListener('data', listener);
 
           (result.contractAddress)
             ? constructor
@@ -53,7 +53,7 @@ var override = {
             : constructor.promiEvent.resolve(result);
 
         }).catch(err => {
-          self.removeListener('data', listener);
+          //self.removeListener('data', listener);
           context.promiEvent.reject(err);
         });
     };

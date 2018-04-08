@@ -18,25 +18,25 @@ var execute = {
   getGasEstimate: function(params, blockLimit){
     var constructor = this;
     var web3 = this.web3;
-    var defaultGas = 90000; // We need to disabiguate between deployment defaults & tx defaults.
+    var defaultGas = 90000;
 
     return new Promise(function(accept, reject){
       // Always prefer specified gas - this includes gas set by class_defaults
       if (params.gas) return accept(params.gas);
 
-        web3.eth
-          .estimateGas(params)
-          .then(gas => {
-            var bestEstimate = Math.floor(constructor.gasMultiplier * gas);
+      web3.eth
+        .estimateGas(params)
+        .then(gas => {
+          var bestEstimate = Math.floor(constructor.gasMultiplier * gas);
 
-            // Don't go over blockLimit
-            (bestEstimate >= blockLimit)
-              ? accept(blockLimit - 1)
-              : accept(bestEstimate);
+          // Don't go over blockLimit
+          (bestEstimate >= blockLimit)
+            ? accept(blockLimit - 1)
+            : accept(bestEstimate);
 
-          // We need to let txs that revert through.
-          // Often that's exactly what you are testing.
-          }).catch(err => accept(defaultGas));
+        // We need to let txs that revert through.
+        // Often that's exactly what you are testing.
+        }).catch(err => accept(defaultGas));
     })
   },
 
