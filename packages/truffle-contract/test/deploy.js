@@ -102,7 +102,6 @@ describe("Deployments", function() {
       const multiplier = Example.gasMultiplier;
 
       assert(multiplier === 1.25, "Multiplier should be initialized to 1.25");
-      assert(!Number.isInteger(multiplier * estimate), "Test shoud multiply by a float");
       assert((multiplier * estimate) > block.gasLimit, "Multiplied estimate should be too high");
       assert(estimate < block.gasLimit, "Estimate on it's own should be ok");
 

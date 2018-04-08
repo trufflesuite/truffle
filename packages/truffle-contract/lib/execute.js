@@ -21,7 +21,7 @@ var execute = {
     var defaultGas = 90000; // We need to disabiguate between deployment defaults & tx defaults.
 
     return new Promise(function(accept, reject){
-      // Always prefer specified gas
+      // Always prefer specified gas - this includes gas set by class_defaults
       if (params.gas) return accept(params.gas);
 
         web3.eth
@@ -214,17 +214,25 @@ var execute = {
    */
   event: function(fn){
     var constructor = this;
-    var decoder = utils.decodeLogs;
+    var decode = utils.decodeLogs;
+    var currentLogID = null;
+
+    // Someone upstream is firing duplicates :/
+    function dedupe(id){
+      return (id === currentLogID)
+        ? false
+        : currentLogID = id;
+    }
 
     return function(params){
       var emitter = new EventEmitter();
 
       constructor.detectNetwork().then(() =>{
-        var listener = fn(params);
+        var event = fn(params);
 
-        listener.on('data',    e => emitter.emit('data', decoder.call(constructor, e, true)[0]));
-        listener.on('changed', e => emitter.emit('changed', decoder.call(constructor, e, true)[0]));
-        listener.on('error',   e => emitter.emit('error', e));
+        event.on('data', e => dedupe(e.id) && emitter.emit('data', decode.call(constructor, e, true)[0]));
+        event.on('changed', e => dedupe(e.id) && emitter.emit('changed', decode.call(constructor, e, true)[0]));
+        event.on('error', e => emitter.emit('error', e));
       });
 
       return emitter;

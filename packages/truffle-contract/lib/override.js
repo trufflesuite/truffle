@@ -16,6 +16,7 @@ var override = {
    */
   start: function(context, err){
     var constructor = this;
+    var blockNumber = null;
     var currentBlock = override.defaultMaxBlocks;
     var maxBlocks = constructor.timeoutBlocks;
 
@@ -26,7 +27,7 @@ var override = {
     if (!timedOut || !shouldWait) return context.promiEvent.reject(err);
 
     // This will run every block from now until contract.timeoutBlocks
-    var listener = function(){
+    var listener = function(err, data){
       var self = this;
       currentBlock++;
 
