@@ -2,9 +2,9 @@ contract Example {
   uint public value;
   uint public counter;
   bool public fallbackTriggered;
-  event EmptyEvent();
+
   event ExampleEvent(address indexed _from, uint num);
-  event ExampleEventII(address indexed _from, uint num);
+  event SpecialEvent();
 
   function Example(uint val) {
     // Constructor revert
@@ -55,6 +55,14 @@ contract Example {
 
   function triggerEvent() {
     ExampleEvent(msg.sender, 8);
+  }
+
+  function triggerEventWithArgument(uint arg) {
+    ExampleEvent(msg.sender, arg);
+  }
+
+  function triggerSpecialEvent() {
+    SpecialEvent();
   }
 
   function triggerRequireError() {

@@ -1,10 +1,5 @@
 var assert = require("chai").assert;
-var BigNumber = require("bignumber.js");
-var temp = require("temp").track();
-var path = require("path");
-var fs = require("fs");
 var util = require('./util');
-var contract = require("../");
 
 describe("Events", function() {
   var Example;
@@ -25,8 +20,6 @@ describe("Events", function() {
         accounts = result.accounts;
       });
   });
-
-  after(() => temp.cleanupSync());
 
   it('should expose the "on" handler / format event correctly', function(done){
     Example.new(1).then(example => {
@@ -60,8 +53,7 @@ describe("Events", function() {
     });
   })
 
-  // Emitter is firing twice for each event. :/
-  it('should fire repeatedly', async function(){
+  it('should fire repeatedly (without duplicates)', async function(){
     let emitter;
     let counter = 0;
     const example = await Example.new(1)
@@ -73,11 +65,55 @@ describe("Events", function() {
         counter++
       });
 
+    await example.triggerEventWithArgument(1);
+    await example.triggerEventWithArgument(2);
+    await example.triggerEventWithArgument(3);
+
+    assert(counter === 3, 'emitter should have fired repeatedly');
+    emitter.removeAllListeners();
+  });
+
+  it('should listen for `allEvents`', async function(){
+    let emitter;
+    const events = [];
+    const signatures = ['ExampleEvent', 'SpecialEvent'];
+    const example = await Example.new(1)
+
+    example
+      .allEvents()
+      .on('data', function(data){
+        data.event && events.push(data.event);
+        emitter = this;
+      });
+
     await example.triggerEvent();
+    await example.triggerSpecialEvent();
+
+    assert(events.includes(signatures[0]), `Expected to hear ${signatures[0]}`);
+    assert(events.includes(signatures[1]), `Expected to hear ${signatures[1]}`);
+    emitter.removeAllListeners();
+  });
+
+  it('should `getPastEvents`', async function(){
+    const signatures = ['ExampleEvent', 'SpecialEvent'];
+    const example = await Example.new(1)
+    const options = {fromBlock: 0, toBlock: "latest"};
+
     await example.triggerEvent();
     await example.triggerEvent();
 
-    assert(counter >= 3, 'emitter should have fired repeatedly');
-    emitter.removeAllListeners();
+    await example.triggerSpecialEvent();
+    await example.triggerSpecialEvent();
+
+    const exampleEvent = await example.getPastEvents('ExampleEvent', options);
+    const specialEvent = await example.getPastEvents('SpecialEvent', options);
+
+    assert(exampleEvent.length === 2);
+    assert(exampleEvent[0].event === signatures[0]);
+    assert(exampleEvent[1].event === signatures[0]);
+
+    assert(specialEvent.length === 2);
+    assert(specialEvent[0].event === signatures[1]);
+    assert(specialEvent[1].event === signatures[1]);
   });
 });

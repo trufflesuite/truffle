@@ -65,7 +65,7 @@ var contract = (function(module) {
       }
 
       if (item.type == "event") {
-        instance[item.name] = execute.event.call(constructor, contract.events[item.name], contract);
+        instance[item.name] = execute.event.call(constructor, contract.events[item.name]);
       }
     })
 
@@ -73,8 +73,9 @@ var contract = (function(module) {
     instance.sendTransaction = execute.send.call(constructor, null, instance.address);
     instance.send = (value) => instance.sendTransaction({value: value});
 
-    // Miscellany
-    instance.allEvents = contract.allEvents;
+    // Other events
+    instance.allEvents = contract.events.allEvents;
+    instance.getPastEvents = (event, options) => contract.getPastEvents(event, options);
   };
 
   Contract._static_methods = {
@@ -91,7 +92,7 @@ var contract = (function(module) {
       var self = this;
       var promiEvent = new Web3PromiEvent();
 
-      if (self.currentProvider == null) {
+      if (!self.currentProvider) {
         var err = self.contractName + " error: Please call setProvider() first before calling new()."
         throw new Error(err);
       }
