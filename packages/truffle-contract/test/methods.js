@@ -1,8 +1,5 @@
 var assert = require("chai").assert;
 var BigNumber = require("bignumber.js");
-var temp = require("temp").track();
-var path = require("path");
-var fs = require("fs");
 var util = require('./util');
 var contract = require("../");
 
@@ -25,8 +22,6 @@ describe("Methods", function() {
         accounts = result.accounts;
       });
   });
-
-  after(() => temp.cleanupSync());
 
   describe(".method(): success", function(){
 

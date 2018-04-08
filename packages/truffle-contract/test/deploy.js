@@ -1,6 +1,4 @@
 var assert = require("chai").assert;
-var path = require("path");
-var fs = require("fs");
 var util = require('./util');
 
 describe("Deployments", function() {
