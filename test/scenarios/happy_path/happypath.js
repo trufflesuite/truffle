@@ -53,7 +53,7 @@ describe("Happy path (truffle unbox)", function() {
   });
 
   it("will migrate", function(done) {
-    this.timeout(20000);
+    this.timeout(50000);
 
     CommandRunner.run("migrate", config, function(err) {
       var output = logger.contents();

@@ -55,7 +55,7 @@ describe("Contract names", function() {
   });
 
   it("will migrate when artifacts.require() doesn't have an extension and names do not match", function(done) {
-    this.timeout(20000);
+    this.timeout(50000);
 
     CommandRunner.run("migrate", config, function(err) {
       if (err) return done(err);
@@ -79,7 +79,7 @@ describe("Contract names", function() {
   });
 
   it("will compile and migrate with relative imports (using filename)", function(done) {
-    this.timeout(30000);
+    this.timeout(50000);
 
     fs.copySync(path.join(__dirname, "relative_import.sol"), path.join(config.contracts_directory, "relative_import.sol"));
     fs.copySync(path.join(__dirname, "3_deploy_relative_import.js.template"), path.join(config.migrations_directory, "3_deploy_relative_import.js"));
@@ -154,5 +154,4 @@ describe("Contract names", function() {
   //     done();
   //   });
   // });
-
 });
