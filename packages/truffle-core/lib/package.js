@@ -124,29 +124,28 @@ var Package = {
     self.publishable_artifacts(options, function(err, artifacts) {
       if (err) return callback(err);
 
-        web3.eth.getAccounts().then(accs => {
-          var registry = EthPMRegistry.use(options.ethpm.registry, accs[0], provider);
-          var pkg = new EthPM(options.working_directory, host, registry);
+      web3.eth.getAccounts().then(accs => {
+        var registry = EthPMRegistry.use(options.ethpm.registry, accs[0], provider);
+        var pkg = new EthPM(options.working_directory, host, registry);
 
-          fs.access(path.join(options.working_directory, "ethpm.json"), fs.constants.R_OK, function(err) {
-            var manifest;
+        fs.access(path.join(options.working_directory, "ethpm.json"), fs.constants.R_OK, function(err) {
+          var manifest;
 
-            // If the ethpm.json file doesn't exist, use the config as the manifest.
-            if (err) {
-              manifest = options;
-            }
+          // If the ethpm.json file doesn't exist, use the config as the manifest.
+          if (err) {
+            manifest = options;
+          }
 
-            options.logger.log("Uploading sources and publishing to registry...");
+          options.logger.log("Uploading sources and publishing to registry...");
 
-            // TODO: Gather contract_types and deployments
-            pkg.publish(artifacts.contract_types, artifacts.deployments, manifest).then(function(lockfile) {
-              // If we get here, publishing was a success.
-              options.logger.log("+ " + lockfile.package_name + "@" + lockfile.version);
-              callback();
-            }).catch(callback);
-          });
-        }).catch(callback);
-      });
+          // TODO: Gather contract_types and deployments
+          pkg.publish(artifacts.contract_types, artifacts.deployments, manifest).then(function(lockfile) {
+            // If we get here, publishing was a success.
+            options.logger.log("+ " + lockfile.package_name + "@" + lockfile.version);
+            callback();
+          }).catch(callback);
+        });
+      }).catch(callback);
     });
   },
 
