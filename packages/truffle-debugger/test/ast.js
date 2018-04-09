@@ -3,7 +3,7 @@ const debug = debugModule("test:ast");
 
 import { assert } from "chai";
 
-import Ganache from "ganache-core";
+import Ganache from "ganache-cli";
 import Web3 from "web3";
 
 import { prepareContracts } from "./helpers";
