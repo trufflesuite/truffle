@@ -320,7 +320,7 @@ describe("Methods", function() {
       const balance = await web3.eth.getBalance(wallet["0"].address);
       assert.equal(balance, web3.utils.toWei("1", 'ether'));
 
-      Example.__setWallet(wallet);
+      Example.setWallet(wallet);
       const example = await Example.new(1, {from: wallet["0"].address })
 
       value = await example.value.call();

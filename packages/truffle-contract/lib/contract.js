@@ -259,6 +259,10 @@ var contract = (function(module) {
       this.network_id = network_id + "";
     },
 
+    setWallet: function(wallet) {
+      this.web3.eth.accounts.wallet = wallet;
+    },
+
     // Overrides the deployed address to null.
     // You must call this explicitly so you don't inadvertently do this otherwise.
     resetAddress: function() {
@@ -384,10 +388,6 @@ var contract = (function(module) {
 
     toJSON: function() {
       return this._json;
-    },
-
-     __setWallet: function(wallet) {
-      this.web3.eth.accounts.wallet = wallet;
     },
   };
 
