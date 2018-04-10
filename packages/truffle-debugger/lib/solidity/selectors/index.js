@@ -100,7 +100,8 @@ let solidity = createSelectorTree({
           instruction.index = instructionIndex;
 
           if (sourceMapInstruction) {
-            var lineAndColumnMapping = lineAndColumnMappings[sourceMapInstruction.file];
+            var lineAndColumnMapping =
+              lineAndColumnMappings[sourceMapInstruction.file] || {};
 
             instruction.jump = sourceMapInstruction.jump;
             instruction.start = sourceMapInstruction.start;
