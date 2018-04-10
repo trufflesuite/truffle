@@ -32,12 +32,10 @@ var contract = (function(module) {
     instance.address = contract.options.address;
     instance.transactionHash = contract.transactionHash;
     instance.contract = contract;
-    instance.contract.setProvider(constructor.web3.currentProvider);
 
     // User defined methods, overloaded methods, events
     instance.abi.forEach(function(item){
       if (item.type == "function") {
-        var key;
         var isConstant = item.constant === true;
         var signature = webUtils._jsonInterfaceMethodToString(item);
 

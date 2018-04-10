@@ -304,6 +304,8 @@ describe("Methods", function() {
     });
   });
 
+  // This doesn't work on geth --dev because chainId is too high: 1337? Apparently
+  // not configurable. Might work on a sub 100 id.
   describe('web3 wallet', function(){
     it("should work with a web3.accounts.wallet account", async function(){
       let value;
