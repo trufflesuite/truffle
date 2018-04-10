@@ -455,7 +455,7 @@ var command = {
         // This leaves the process at the whim of the repl; the repl is
         // responsible for closing the process when done.
         done();
-      });
+      }).catch(done);
     });
   }
 }
