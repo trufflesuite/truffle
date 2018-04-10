@@ -1,7 +1,7 @@
 var assert = require("chai").assert;
 var util = require('./util');
 
-describe("Events", function() {
+describe("Events [ @geth ]", function() {
   var Example;
   var accounts;
   var network_id;

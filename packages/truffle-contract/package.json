@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha --no-warnings --timeout 5000 --compilers js:babel-core/register --require babel-polyfill test",
     "test:ci": "./scripts/test.sh",
-    "test:geth": "GETH=true mocha --timeout 25000 --grep @geth --compilers js:babel-core/register --require babel-polyfill test",
+    "test:geth": "GETH=true mocha --timeout 50000 --grep @geth --compilers js:babel-core/register --require babel-polyfill test",
     "test:debug": "$(npm bin)/mocha --inspect-brk",
     "test:trace": "$(npm bin)/mocha --trace-warnings",
     "compile": "browserify ./index.js -i web3 -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js"
