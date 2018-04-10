@@ -92,9 +92,7 @@ var handlers = {
       ? logs = Utils.decodeLogs.call(context.contract, receipt.logs)
       : logs = [];
 
-
-    // Rewrite logs and emit receipt
-    receipt.logs = logs;
+    // Emit receipt
     context.promiEvent.eventEmitter.emit('receipt', receipt)
 
     // .new(): Exit early. We need the promiEvent to resolve a contract instance.
