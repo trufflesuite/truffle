@@ -428,6 +428,17 @@ var contract = (function(module) {
         this._json.timeoutBlocks = val;
       }
     },
+    autoGas: {
+      get: function() {
+        if (this._json.autoGas === undefined){
+          this._json.autoGas = true;
+        }
+        return this._json.autoGas;
+      },
+      set: function(val) {
+        this._json.autoGas = val;
+      }
+    },
     abi: {
       get: function() {
         return this._json.abi;

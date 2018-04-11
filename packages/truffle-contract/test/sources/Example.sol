@@ -6,6 +6,7 @@ contract Example {
   bool public fallbackTriggered;
 
   event ExampleEvent(address indexed _from, uint num);
+  event ContractAddressEvent(address _contract);
   event SpecialEvent();
 
   constructor(uint val) {
@@ -25,6 +26,10 @@ contract Example {
 
   function setValue(uint val) {
     value = val;
+  }
+
+  function isDeployed() constant returns (address){
+    return address(this);
   }
 
   function getValue() constant returns(uint) {
@@ -65,6 +70,10 @@ contract Example {
 
   function triggerSpecialEvent() {
     SpecialEvent();
+  }
+
+  function triggerContractAddressEvent(){
+    ContractAddressEvent(address(this));
   }
 
   function triggerRequireError() {

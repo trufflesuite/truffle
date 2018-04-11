@@ -18,11 +18,11 @@ var execute = {
   getGasEstimate: function(params, blockLimit){
     var constructor = this;
     var web3 = this.web3;
-    var defaultGas = 90000;
 
     return new Promise(function(accept, reject){
       // Always prefer specified gas - this includes gas set by class_defaults
-      if (params.gas) return accept(params.gas);
+      if (params.gas)           return accept(params.gas);
+      if (!constructor.autoGas) return accept();
 
       web3.eth
         .estimateGas(params)
@@ -36,7 +36,7 @@ var execute = {
 
         // We need to let txs that revert through.
         // Often that's exactly what you are testing.
-        }).catch(err => accept(defaultGas));
+        }).catch(err => accept());
     })
   },
 

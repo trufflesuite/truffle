@@ -145,6 +145,27 @@ describe("Deployments", function() {
       await Example.new(1);
     });
 
+    it('should be possible to turn gas estimation on and off', async function(){
+      Example.autoGas = false;
+
+      try {
+        await Example.new(1);
+        assert.fail()
+      } catch(err) {
+        assert(err.message.includes('exceeds gas limit'), 'Should OOG');
+      }
+
+      Example.autoGas = true;
+      await Example.new(1);
+
+      const estimate = await Example.new.estimateGas(1);
+
+      Example.autoGas = false;
+      await Example.new(1, {gas: estimate});
+
+      Example.autoGas = true;
+    });
+
     // Constructor in this test consumes ~6437823 (ganache) vs blockLimit of 6721975.
     it('should not multiply past the blockLimit', async function(){
       this.timeout(50000);
