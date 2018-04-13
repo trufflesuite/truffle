@@ -51,13 +51,19 @@ export default class Session {
     });
   }
 
-
   /**
-   * Map contracts and files options into lists of binaries and sources
+   * Split up artifacts into "contexts" and "sources", dividing artifact
+   * data into appropriate buckets.
    *
+   * Multiple contracts can be defined in the same source file, but have
+   * different bytecodes.
+   *
+   * This iterates over the contracts and collects binaries separately
+   * from sources, using the optional `files` argument to force
+   * source ordering.
    * @private
    */
-  static normalize(contracts, files) {
+  static normalize(contracts, files = null) {
     let sourcesByPath = {};
     let contexts = [];
     let sources;
