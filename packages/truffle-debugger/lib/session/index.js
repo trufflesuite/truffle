@@ -30,10 +30,10 @@ export default class Session {
      */
     this._store = configureStore(reducer, rootSaga);
 
-    contracts = Session.normalize(contracts, files);
+    let { contexts, sources } = Session.normalize(contracts, files);
 
     // record contracts
-    this._store.dispatch(actions.recordContracts(...contracts));
+    this._store.dispatch(actions.recordContracts(contexts, sources));
 
     this._store.dispatch(actions.start(txHash, provider));
   }
@@ -52,21 +52,53 @@ export default class Session {
 
 
   /**
-   * Map contracts and files options into normalized array
+   * Map contracts and files options into lists of binaries and sources
    *
    * @private
    */
   static normalize(contracts, files) {
-    if (!files) {
-      return contracts;
+    let sourcesByPath = {};
+    let contexts = [];
+    let sources;
+
+    for (let contract of contracts) {
+      let {
+        contractName,
+        binary,
+        sourceMap,
+        deployedBinary,
+        deployedSourceMap,
+        sourcePath,
+        source,
+        ast
+      } = contract;
+
+      sourcesByPath[sourcePath] = { sourcePath, source, ast };
+
+      if (binary && binary != "0x") {
+        contexts.push({
+          contractName,
+          binary,
+          sourceMap
+        });
+      }
+
+      if (deployedBinary && deployedBinary != "0x") {
+        contexts.push({
+          contractName,
+          binary: deployedBinary,
+          sourceMap: deployedSourceMap
+        });
+      }
     }
 
-    debug("files %o", files);
-    let map = Object.assign({}, ...contracts.map(
-      (contract) => ({ [contract.sourcePath]: contract })
-    ));
+    if (!files) {
+      sources = Object.values(sourcesByPath);
+    } else {
+      sources = files.map(file => sourcesByPath[file]);
+    }
 
-    return files.map(filename => map[filename]);
+    return { contexts, sources };
   }
 
   get state() {

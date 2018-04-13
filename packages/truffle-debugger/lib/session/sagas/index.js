@@ -19,8 +19,9 @@ export function *saga () {
   let listeners = yield *forkListeners();
 
   // receiving & saving contracts into state
-  let {contracts} = yield take(actions.RECORD_CONTRACTS);
-  yield *recordContracts(...contracts);
+  let { contexts, sources } = yield take(actions.RECORD_CONTRACTS);
+  yield *recordContexts(...contexts);
+  yield *recordSources(...sources);
 
   // wait for start signal
   let {txHash, provider} = yield take(actions.START);
@@ -80,40 +81,19 @@ function* fetchTx(txHash, provider) {
   );
 }
 
-function* recordContracts(...contracts) {
-  for (let contract of contracts) {
-    let {
-      binary,
-      contractName,
-      source,
-      sourcePath,
-      ast,
-      sourceMap,
-      deployedBinary,
-      deployedSourceMap
-    } = contract;
+function* recordContexts(...contexts) {
+  for (let { contractName, binary, sourceMap } of contexts) {
+    yield *evm.addContext(contractName, binary);
 
-    // Add Solidity source
-    if (source) {
-      yield *solidity.addSource(source, sourcePath, ast);
+    if (sourceMap) {
+      yield *solidity.addSourceMap(binary, sourceMap);
     }
+  }
+}
 
-    // create EVM contexts
-    if (binary != "0x") {
-      yield *evm.addContext(contractName, binary);
-
-      if (sourceMap) {
-        yield *solidity.addSourceMap(binary, sourceMap);
-      }
-    }
-
-    if (deployedBinary != "0x") {
-      yield *evm.addContext(contractName, deployedBinary);
-
-      if (deployedSourceMap) {
-        yield *solidity.addSourceMap(deployedBinary, deployedSourceMap);
-      }
-    }
+function* recordSources(...sources) {
+  for (let { sourcePath, source, ast } of sources) {
+    yield *solidity.addSource(source, sourcePath, ast);
   }
 }
 

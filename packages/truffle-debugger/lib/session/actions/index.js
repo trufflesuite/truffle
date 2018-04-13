@@ -29,10 +29,10 @@ export function finish() {
 }
 
 export const RECORD_CONTRACTS = "RECORD_CONTRACTS";
-export function recordContracts(...contracts) {
+export function recordContracts(contexts, sources) {
   return {
     type: RECORD_CONTRACTS,
-    contracts
+    contexts, sources
   }
 }
 
