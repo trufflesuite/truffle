@@ -14,7 +14,7 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
      * Adding a new context
      */
     case actions.ADD_CONTEXT:
-      let { binary } = action;
+      let { contractName, binary } = action;
 
       if (state.byBinary[binary]) {
         return state;
@@ -26,7 +26,7 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
         byContext: {
           ...state.byContext,
 
-          [context]: { context, binary }
+          [context]: { context, binary, contractName }
         },
 
         byBinary: {

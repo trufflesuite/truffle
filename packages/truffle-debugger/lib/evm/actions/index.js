@@ -1,8 +1,8 @@
 export const ADD_CONTEXT = "EVM_ADD_CONTEXT";
-export function addContext(binary) {
+export function addContext(contractName, binary) {
   return {
     type: ADD_CONTEXT,
-    binary
+    contractName, binary
   }
 }
 

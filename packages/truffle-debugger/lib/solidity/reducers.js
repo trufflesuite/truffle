@@ -14,7 +14,7 @@ function sources(state = DEFAULT_SOURCES, action) {
      * Adding a new source
      */
     case actions.ADD_SOURCE:
-      let { contractName, ast, source, sourcePath } = action;
+      let { ast, source, sourcePath } = action;
 
       let id = Object.keys(state.byId).length;
 
@@ -25,7 +25,6 @@ function sources(state = DEFAULT_SOURCES, action) {
           [id]: {
             id,
             ast,
-            contractName,
             source,
             sourcePath
           }

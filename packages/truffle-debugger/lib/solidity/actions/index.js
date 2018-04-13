@@ -1,8 +1,8 @@
 export const ADD_SOURCE = "SOLIDITY_ADD_SOURCE";
-export function addSource(contractName, source, sourcePath, ast) {
+export function addSource(source, sourcePath, ast) {
   return {
     type: ADD_SOURCE,
-    contractName, source, sourcePath, ast
+    source, sourcePath, ast
   };
 }
 

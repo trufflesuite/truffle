@@ -14,8 +14,8 @@ import evm from "../selectors";
  *
  * @return {string} ID (0x-prefixed keccak of binary)
  */
-export function *addContext(binary) {
-  yield put(actions.addContext(binary));
+export function *addContext(contractName, binary) {
+  yield put(actions.addContext(contractName, binary));
 
   return keccak256(binary);
 }
