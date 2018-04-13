@@ -35,11 +35,3 @@ export function recordContracts(contexts, sources) {
     contexts, sources
   }
 }
-
-export const RECORD_TRACE_CONTEXTS = "RECORD_TRACE_CONTEXTS";
-export function recordTraceContexts(...contexts) {
-  return {
-    type: RECORD_TRACE_CONTEXTS,
-    contexts
-  }
-}
