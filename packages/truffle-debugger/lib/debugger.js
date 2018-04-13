@@ -49,7 +49,7 @@ export default class Debugger {
     ]);
 
     let session = new Session(
-      this.normalize(options.contracts, options.files),
+      options.contracts, options.files,
       txHash, options.provider
     );
 
@@ -70,23 +70,6 @@ export default class Debugger {
    */
   connect() {
     return this._session;
-  }
-
-  /**
-   * Map contracts and files options into normalized array
-   *
-   * @private
-   */
-  static normalize(contracts, files) {
-    if (!files) {
-      return contracts;
-    }
-
-    let map = Object.assign({}, ...contracts.map(
-      (contract) => ({ [contract.sourcePath]: contract })
-    ));
-
-    return files.map(filename => map[filename]);
   }
 
   /**

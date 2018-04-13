@@ -24,11 +24,13 @@ export default class Session {
    * @param {Web3Provider} provider - web3 provider
    * @private
    */
-  constructor(contracts, txHash, provider) {
+  constructor(contracts, files, txHash, provider) {
     /**
      * @private
      */
     this._store = configureStore(reducer, rootSaga);
+
+    contracts = Session.normalize(contracts, files);
 
     // record contracts
     this._store.dispatch(actions.recordContracts(...contracts));
@@ -46,6 +48,25 @@ export default class Session {
         }
       });
     });
+  }
+
+
+  /**
+   * Map contracts and files options into normalized array
+   *
+   * @private
+   */
+  static normalize(contracts, files) {
+    if (!files) {
+      return contracts;
+    }
+
+    debug("files %o", files);
+    let map = Object.assign({}, ...contracts.map(
+      (contract) => ({ [contract.sourcePath]: contract })
+    ));
+
+    return files.map(filename => map[filename]);
   }
 
   get state() {
