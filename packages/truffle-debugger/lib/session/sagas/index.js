@@ -16,35 +16,50 @@ import * as web3 from "lib/web3/sagas";
 import * as actions from "../actions";
 
 export function *saga () {
+  debug("starting listeners");
   let listeners = yield *forkListeners();
 
   // receiving & saving contracts into state
+  debug("waiting for contract information");
   let { contexts, sources } = yield take(actions.RECORD_CONTRACTS);
+
+  debug("recording contract binaries");
   yield *recordContexts(...contexts);
+
+  debug("recording contract sources");
   yield *recordSources(...sources);
 
+  debug("waiting for start");
   // wait for start signal
   let {txHash, provider} = yield take(actions.START);
+  debug("starting");
 
   // process transaction
+  debug("fetching transaction info");
   let err = yield *fetchTx(txHash, provider);
   if (err) {
+    debug("error %o", err);
     yield *error(err);
 
   } else {
+    debug("visiting ASTs");
     // visit asts
     yield *ast.visitAll();
 
+    debug("readying");
     // signal that stepping can begin
     yield *ready();
 
+    debug("waiting for trace EOT");
     // wait until trace hits EOT
     yield *trace.wait();
 
+    debug("finishing");
     // finish
     yield put(actions.finish());
   }
 
+  debug("stopping listeners");
   yield all(
     listeners.map(task => cancel(task))
   );
@@ -102,11 +117,9 @@ function *recordInstance(address, binary) {
 }
 
 function *ready() {
-  debug("ready");
   yield put(actions.ready());
 }
 
 function *error(err) {
-  debug("error");
   yield put(actions.error(err));
 }
