@@ -20,6 +20,7 @@ import reducer from "./reducers";
 export default class Session {
   /**
    * @param {Array<Contract>} contracts - contract definitions
+   * @param {Array<String>} files - array of filenames for sourceMap indexes
    * @param {string} txHash - transaction hash
    * @param {Web3Provider} provider - web3 provider
    * @private
