@@ -16,34 +16,50 @@ import * as web3 from "lib/web3/sagas";
 import * as actions from "../actions";
 
 export function *saga () {
+  debug("starting listeners");
   let listeners = yield *forkListeners();
 
   // receiving & saving contracts into state
-  let {contracts} = yield take(actions.RECORD_CONTRACTS);
-  yield *recordContracts(...contracts);
+  debug("waiting for contract information");
+  let { contexts, sources } = yield take(actions.RECORD_CONTRACTS);
 
+  debug("recording contract binaries");
+  yield *recordContexts(...contexts);
+
+  debug("recording contract sources");
+  yield *recordSources(...sources);
+
+  debug("waiting for start");
   // wait for start signal
   let {txHash, provider} = yield take(actions.START);
+  debug("starting");
 
   // process transaction
+  debug("fetching transaction info");
   let err = yield *fetchTx(txHash, provider);
   if (err) {
+    debug("error %o", err);
     yield *error(err);
 
   } else {
+    debug("visiting ASTs");
     // visit asts
     yield *ast.visitAll();
 
+    debug("readying");
     // signal that stepping can begin
     yield *ready();
 
+    debug("waiting for trace EOT");
     // wait until trace hits EOT
     yield *trace.wait();
 
+    debug("finishing");
     // finish
     yield put(actions.finish());
   }
 
+  debug("stopping listeners");
   yield all(
     listeners.map(task => cancel(task))
   );
@@ -80,40 +96,19 @@ function* fetchTx(txHash, provider) {
   );
 }
 
-function* recordContracts(...contracts) {
-  for (let contract of contracts) {
-    let {
-      binary,
-      contractName,
-      source,
-      sourcePath,
-      ast,
-      sourceMap,
-      deployedBinary,
-      deployedSourceMap
-    } = contract;
+function* recordContexts(...contexts) {
+  for (let { contractName, binary, sourceMap } of contexts) {
+    yield *evm.addContext(contractName, binary);
 
-    // Add Solidity source
-    if (source) {
-      yield *solidity.addSource(contractName, source, sourcePath, ast);
+    if (sourceMap) {
+      yield *solidity.addSourceMap(binary, sourceMap);
     }
+  }
+}
 
-    // create EVM contexts
-    if (binary != "0x") {
-      yield *evm.addContext(binary);
-
-      if (sourceMap) {
-        yield *solidity.addSourceMap(binary, sourceMap);
-      }
-    }
-
-    if (deployedBinary != "0x") {
-      yield *evm.addContext(deployedBinary);
-
-      if (deployedSourceMap) {
-        yield *solidity.addSourceMap(deployedBinary, deployedSourceMap);
-      }
-    }
+function* recordSources(...sources) {
+  for (let { sourcePath, source, ast } of sources) {
+    yield *solidity.addSource(source, sourcePath, ast);
   }
 }
 
@@ -122,11 +117,9 @@ function *recordInstance(address, binary) {
 }
 
 function *ready() {
-  debug("ready");
   yield put(actions.ready());
 }
 
 function *error(err) {
-  debug("error");
   yield put(actions.error(err));
 }

@@ -39,7 +39,7 @@ export default class Debugger {
    * Instantiates a Debugger for a given transaction hash.
    *
    * @param {String} txHash - transaction hash with leading "0x"
-   * @param {{contracts: Array<Contract>, provider: Web3Provider}} options -
+   * @param {{contracts: Array<Contract>, files: Array<String>, provider: Web3Provider}} options -
    * @return {Debugger} instance
    */
   static async forTx(txHash, options = {}) {
@@ -49,7 +49,7 @@ export default class Debugger {
     ]);
 
     let session = new Session(
-      this.normalize(options.contracts, options.files),
+      options.contracts, options.files,
       txHash, options.provider
     );
 
@@ -70,23 +70,6 @@ export default class Debugger {
    */
   connect() {
     return this._session;
-  }
-
-  /**
-   * Map contracts and files options into normalized array
-   *
-   * @private
-   */
-  static normalize(contracts, files) {
-    if (!files) {
-      return contracts;
-    }
-
-    let map = Object.assign({}, ...contracts.map(
-      (contract) => ({ [contract.sourcePath]: contract })
-    ));
-
-    return files.map(filename => map[filename]);
   }
 
   /**

@@ -21,10 +21,10 @@ const session = createSelectorTree({
       (instances, contexts, sources, sourceMaps) => Object.assign({},
         ...Object.entries(instances).map(
           ([address, {context}]) => {
-            let {binary} = contexts[context];
-            let {sourceMap} = sourceMaps[context];
+            let { contractName, binary } = contexts[context];
+            let { sourceMap } = sourceMaps[context];
 
-            let { contractName, source } = sourceMap ?
+            let { source } = sourceMap ?
               // look for source ID between second and third colons (HACK)
               sources[sourceMap.match(/^[^:]+:[^:]+:([^:]+):/)[1]] :
               {};

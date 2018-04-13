@@ -20,18 +20,21 @@ import reducer from "./reducers";
 export default class Session {
   /**
    * @param {Array<Contract>} contracts - contract definitions
+   * @param {Array<String>} files - array of filenames for sourceMap indexes
    * @param {string} txHash - transaction hash
    * @param {Web3Provider} provider - web3 provider
    * @private
    */
-  constructor(contracts, txHash, provider) {
+  constructor(contracts, files, txHash, provider) {
     /**
      * @private
      */
     this._store = configureStore(reducer, rootSaga);
 
+    let { contexts, sources } = Session.normalize(contracts, files);
+
     // record contracts
-    this._store.dispatch(actions.recordContracts(...contracts));
+    this._store.dispatch(actions.recordContracts(contexts, sources));
 
     this._store.dispatch(actions.start(txHash, provider));
   }
@@ -46,6 +49,63 @@ export default class Session {
         }
       });
     });
+  }
+
+  /**
+   * Split up artifacts into "contexts" and "sources", dividing artifact
+   * data into appropriate buckets.
+   *
+   * Multiple contracts can be defined in the same source file, but have
+   * different bytecodes.
+   *
+   * This iterates over the contracts and collects binaries separately
+   * from sources, using the optional `files` argument to force
+   * source ordering.
+   * @private
+   */
+  static normalize(contracts, files = null) {
+    let sourcesByPath = {};
+    let contexts = [];
+    let sources;
+
+    for (let contract of contracts) {
+      let {
+        contractName,
+        binary,
+        sourceMap,
+        deployedBinary,
+        deployedSourceMap,
+        sourcePath,
+        source,
+        ast
+      } = contract;
+
+      sourcesByPath[sourcePath] = { sourcePath, source, ast };
+
+      if (binary && binary != "0x") {
+        contexts.push({
+          contractName,
+          binary,
+          sourceMap
+        });
+      }
+
+      if (deployedBinary && deployedBinary != "0x") {
+        contexts.push({
+          contractName,
+          binary: deployedBinary,
+          sourceMap: deployedSourceMap
+        });
+      }
+    }
+
+    if (!files) {
+      sources = Object.values(sourcesByPath);
+    } else {
+      sources = files.map(file => sourcesByPath[file]);
+    }
+
+    return { contexts, sources };
   }
 
   get state() {
