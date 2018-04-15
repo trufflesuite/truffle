@@ -7,6 +7,68 @@ import trace from "lib/trace/selectors";
 
 const WORD_SIZE = 0x20;
 
+/**
+ * create EVM-level selectors for a given trace step selector
+ * may specify additional selectors to include
+ */
+function createStepSelectors(step, additional = {}) {
+  let base = {
+    /**
+     * .trace
+     *
+     * trace step info related to next evm operation
+     */
+    trace: createLeaf(
+      [step], ({gasCost, op, pc}) => ({gasCost, op, pc})
+    ),
+
+    /**
+     * .programCounter
+     */
+    programCounter: createLeaf(
+      ["./trace"], (step) => step.pc
+    ),
+
+    /**
+     * .isJump
+     */
+    isJump: createLeaf(
+      ["./trace"], (step) => (
+        step.op != "JUMPDEST" && step.op.indexOf("JUMP") == 0
+      )
+    ),
+
+    /**
+     * .isCall
+     *
+     * whether the next opcode will switch to another calling context
+     */
+    isCall: createLeaf(
+      ["./trace"], (step) => step.op == "CALL" || step.op == "DELEGATECALL"
+    ),
+
+    /**
+     * .isCreate
+     */
+    isCreate: createLeaf(
+      ["./trace"], (step) => step.op == "CREATE"
+    ),
+
+    /**
+     * .isHalting
+     *
+     * whether the next instruction halts or returns from a calling context
+     */
+    isHalting: createLeaf(
+      ["./trace"], (step) => step.op == "STOP" || step.op == "RETURN"
+    )
+  };
+
+  Object.assign(base, additional);
+
+  return base;
+}
+
 const evm = createSelectorTree({
   /**
    * evm.state
@@ -120,59 +182,9 @@ const evm = createSelectorTree({
     /**
      * evm.next.step
      */
-    step: {
+    step: createStepSelectors(trace.step, {
       /**
-       * evm.next.step.trace
-       *
-       * trace step info related to next evm operation
-       */
-      trace: createLeaf(
-        [trace.step], ({gasCost, op, pc}) => ({gasCost, op, pc})
-      ),
-
-      /**
-       * evm.next.step.programCounter
-       */
-      programCounter: createLeaf(
-        ["./trace"], (step) => step.pc
-      ),
-
-      /**
-       * evm.next.step.isJump
-       */
-      isJump: createLeaf(
-        ["./trace"], (step) => (
-          step.op != "JUMPDEST" && step.op.indexOf("JUMP") == 0
-        )
-      ),
-
-      /**
-       * evm.next.step.isCall
-       *
-       * whether the next opcode will switch to another calling context
-       */
-      isCall: createLeaf(
-        ["./trace"], (step) => step.op == "CALL" || step.op == "DELEGATECALL"
-      ),
-
-      /**
-       * evm.next.step.isCreate
-       */
-      isCreate: createLeaf(
-        ["./trace"], (step) => step.op == "CREATE"
-      ),
-
-      /**
-       * evm.next.step.isHalting
-       *
-       * whether the next instruction halts or returns from a calling context
-       */
-      isHalting: createLeaf(
-        ["./trace"], (step) => step.op == "STOP" || step.op == "RETURN"
-      ),
-
-      /**
-       * evm.next.step.callAddress
+       * .callAddress
        *
        * address transferred to by call operation
        */
@@ -189,7 +201,7 @@ const evm = createSelectorTree({
       ),
 
       /**
-       * evm.next.step.createBinary
+       * .createBinary
        *
        * binary code to execute via create operation
        */
@@ -206,8 +218,8 @@ const evm = createSelectorTree({
 
           return "0x" + memory.join("").substring(offset, offset + length);
         }
-      ),
-    }
+      )
+    })
   }
 });
 
