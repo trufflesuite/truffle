@@ -131,25 +131,19 @@ let solidity = createSelectorTree({
         });
         return map;
       }
-    )
-  },
-
-  /**
-   * solidity.next
-   */
-  next: {
+    ),
 
     /**
-     * solidity.next.instruction
+     * solidity.current.instruction
      */
     instruction: createLeaf(
-      ["../current/instructionAtProgramCounter", evm.next.step.programCounter],
+      ["../current/instructionAtProgramCounter", evm.current.step.programCounter],
 
       (map, pc) => map[pc]
     ),
 
     /**
-     * solidity.next.source
+     * solidity.current.source
      */
     source: createLeaf(
       ["/info/sources", "./instruction"],
@@ -158,12 +152,12 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.next.sourceRange
+     * solidity.current.sourceRange
      */
     sourceRange: createLeaf(["./instruction"], getSourceRange),
 
     /**
-     * solidity.next.isMultiline
+     * solidity.current.isMultiline
      */
     isMultiline: createLeaf(
       ["./sourceRange"],
@@ -172,12 +166,12 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.next.willJump
+     * solidity.current.willJump
      */
-    willJump: createLeaf([evm.next.step.isJump], (isJump) => isJump),
+    willJump: createLeaf([evm.current.step.isJump], (isJump) => isJump),
 
     /**
-     * solidity.next.jumpDirection
+     * solidity.current.jumpDirection
      */
     jumpDirection: createLeaf(
       ["./instruction"], (i = {}) => (i.jump || "-")

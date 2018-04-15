@@ -81,7 +81,7 @@ export default class Debugger {
    * Debugger.selectors.ast.current.tree
    *
    * @example
-   * Debugger.selectors.solidity.next.instruction
+   * Debugger.selectors.solidity.current.instruction
    *
    * @example
    * Debugger.selectors.trace.steps

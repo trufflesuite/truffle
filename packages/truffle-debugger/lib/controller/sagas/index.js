@@ -60,23 +60,23 @@ function* advance() {
  * instruction. See advance() if you'd like to advance by one instruction.
  */
 function* stepNext () {
-  const startingRange = yield select(controller.next.location.sourceRange);
+  const startingRange = yield select(controller.current.location.sourceRange);
 
-  var next;
+  var upcoming;
 
   do {
     // advance at least once step
     yield* advance();
 
     // and check the next source range
-    next = yield select(controller.next.location);
+    upcoming = yield select(controller.current.location);
 
     // if the next step's source range is still the same, keep going
   } while (
-    SKIPPED_TYPES.has(next.node.nodeType) ||
+    SKIPPED_TYPES.has(upcoming.node.nodeType) ||
 
-    next.sourceRange.start == startingRange.start &&
-    next.sourceRange.length == startingRange.length
+    upcoming.sourceRange.start == startingRange.start &&
+    upcoming.sourceRange.length == startingRange.length
   );
 }
 
@@ -93,38 +93,38 @@ function* stepNext () {
  * step.
  */
 function* stepInto () {
-  if (yield select(controller.next.willJump)) {
+  if (yield select(controller.current.willJump)) {
     yield* stepNext();
 
     return;
   }
 
-  if (yield select(controller.next.location.isMultiline)) {
+  if (yield select(controller.current.location.isMultiline)) {
     yield* stepOver();
 
     return;
   }
 
   const startingDepth = yield select(controller.current.functionDepth);
-  const startingRange = yield select(controller.next.location.sourceRange);
+  const startingRange = yield select(controller.current.location.sourceRange);
   var currentDepth;
-  var nextRange;
+  var currentRange;
 
   do {
     yield* stepNext();
 
     currentDepth = yield select(controller.current.functionDepth);
-    nextRange = yield select(controller.next.location.sourceRange);
+    currentRange = yield select(controller.current.location.sourceRange);
 
   } while (
     // the function stack has not increased,
     currentDepth <= startingDepth &&
 
-    // the next source range begins on or after the starting range
-    nextRange.start >= startingRange.start &&
+    // the current source range begins on or after the starting range
+    currentRange.start >= startingRange.start &&
 
-    // and the next range ends on or before the starting range ends
-    (nextRange.start + nextRange.length) <=
+    // and the current range ends on or before the starting range ends
+    (currentRange.start + currentRange.length) <=
       (startingRange.start + startingRange.length)
   );
 }
@@ -135,7 +135,7 @@ function* stepInto () {
  * This will run until the debugger encounters a decrease in function depth.
  */
 function* stepOut () {
-  if (yield select(controller.next.location.isMultiline)) {
+  if (yield select(controller.current.location.isMultiline)) {
     yield *stepOver();
 
     return;
@@ -160,15 +160,15 @@ function* stepOut () {
  */
 function* stepOver () {
   const startingDepth = yield select(controller.current.functionDepth);
-  const startingRange = yield select(controller.next.location.sourceRange);
+  const startingRange = yield select(controller.current.location.sourceRange);
   var currentDepth;
-  var nextRange;
+  var currentRange;
 
   do {
     yield* stepNext();
 
     currentDepth = yield select(controller.current.functionDepth);
-    nextRange = yield select(controller.next.location.sourceRange);
+    currentRange = yield select(controller.current.location.sourceRange);
 
   } while (
     // keep stepping provided:
@@ -180,7 +180,7 @@ function* stepOver () {
     // or, if we're at the same depth, keep stepping until we're on a new
     // line.
     (currentDepth > startingDepth ||
-      nextRange.lines.start.line == startingRange.lines.start.line)
+      currentRange.lines.start.line == startingRange.lines.start.line)
   )
 }
 
@@ -191,7 +191,7 @@ function* stepOver () {
  */
 function *continueUntil ({breakpoints}) {
   var currentCall;
-  var next;
+  var currentLocation;
 
   let breakpointHit = false;
 
@@ -199,12 +199,17 @@ function *continueUntil ({breakpoints}) {
     yield* stepNext();
 
     currentCall = yield select(controller.current.executionContext);
-    next = yield select(controller.next.location);
+    currentLocation = yield select(controller.current.location);
 
     breakpointHit = breakpoints
       .filter( ({address, binary, line, node}) =>
-        (address == currentCall.address || binary == currentCall.binary) &&
-        (line == next.sourceRange.lines.start.line || node == next.node.id)
+        (
+          address == currentCall.address ||
+          binary == currentCall.binary
+        ) && (
+          line == currentLocation.sourceRange.lines.start.line ||
+          node == currentLocation.node.id
+        )
       )
       .length > 0;
 

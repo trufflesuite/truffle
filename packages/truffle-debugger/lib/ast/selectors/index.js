@@ -34,7 +34,7 @@ const ast = createSelectorTree({
      * ast for current source
      */
     tree: createLeaf(
-      [solidity.next.source], ({ast}) => ast
+      [solidity.current.source], ({ast}) => ast
     ),
 
     /**
@@ -43,32 +43,26 @@ const ast = createSelectorTree({
      * source ID
      */
     index: createLeaf(
-      [solidity.next.source], ({id}) => id
-    )
-  },
-
-  /**
-   * ast.next
-   */
-  next: {
+      [solidity.current.source], ({id}) => id
+    ),
 
     /**
-     * ast.next.pointer
+     * ast.current.pointer
      *
-     * jsonpointer for next ast node
+     * jsonpointer for current ast node
      */
     pointer: createLeaf(
-      ["/current/tree", solidity.next.sourceRange], (ast, range) =>
+      ["./tree", solidity.current.sourceRange], (ast, range) =>
         findRange(ast, range.start, range.length)
     ),
 
     /**
-     * ast.next.node
+     * ast.current.node
      *
-     * next ast node to execute
+     * current ast node to execute
      */
     node: createLeaf(
-      ["/current/tree", "./pointer"], (ast, pointer) =>
+      ["./tree", "./pointer"], (ast, pointer) =>
         jsonpointer.get(ast, pointer)
     ),
 

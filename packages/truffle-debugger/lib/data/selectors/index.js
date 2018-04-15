@@ -38,15 +38,9 @@ const data = createSelectorTree({
    * data.views
    */
   views: {
-    ast: {
-      current: createLeaf(
-        [ast.current.tree, ast.current.index], (tree, id) => ({tree, id})
-      ),
-
-      next: createLeaf(
-        [ast.next.node, ast.next.pointer], (node, pointer) => ({node, pointer})
-      )
-    },
+    ast: createLeaf(
+      [ast.current], (tree) => tree
+    ),
 
     /**
      * data.views.scopes
@@ -99,23 +93,28 @@ const data = createSelectorTree({
   },
 
   /**
-   * data.next
+   * data.current
    */
-  next: {
-
+  current: {
     /**
      *
-     * data.next.scope
+     * data.current.scope
      */
     scope: {
 
       /**
-       * data.next.scope.id
+       * data.current.scope.id
        */
       id: createLeaf(
-        [ast.next.node], (node) => node.id
+        [ast.current.node], (node) => node.id
       )
     },
+  },
+
+  /**
+   * data.next
+   */
+  next: {
 
     /**
      * data.next.stack
@@ -174,11 +173,12 @@ const data = createSelectorTree({
       [
         "/views/scopes/inlined",
         "/proc/assignments",
+        "/current/scope",
         "/next"
       ],
 
-      (scopes, assignments, next) => {
-        let {scope, stack, memory, storage} = next;
+      (scopes, assignments, scope, next) => {
+        let { stack, memory, storage } = next;
         let cur = scope.id;
         let variables = {};
 
