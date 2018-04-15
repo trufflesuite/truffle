@@ -8,8 +8,8 @@ describe("Parser", function() {
   var erroneousSource = null;
 
   before("get code", function() {
-    source = fs.readFileSync(path.join(__dirname, "MyContract.sol"), "utf-8");
-    erroneousSource = fs.readFileSync(path.join(__dirname, "ShouldError.sol"), "utf-8");
+    source = fs.readFileSync(path.join(__dirname, "./sources/MyContract.sol"), "utf-8");
+    erroneousSource = fs.readFileSync(path.join(__dirname, "./sources/ShouldError.sol"), "utf-8");
   });
 
   it("should return correct imports", function() {
@@ -49,10 +49,10 @@ describe("Parser", function() {
     var output = Parser.parse(source);
 
     assert.deepEqual(output.contracts, ["MyContract", "SomeInterface", "SomeLibrary"]);
-    assert(output.ast.nodes.length > 0); 
-    
+    assert(output.ast.nodes.length > 0);
+
     // The above assert means we at least got some kind of AST.
-    // Is there something we specifically need here? 
+    // Is there something we specifically need here?
   });
 
   it("should throw an error when parsing completely if there's an actual parse error", function() {
