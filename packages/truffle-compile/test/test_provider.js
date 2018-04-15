@@ -10,7 +10,7 @@ function waitSecond() {
   return new Promise((resolve, reject) => setTimeout(() => resolve(), 1250));
 }
 
-describe.only('CompilerProvider', function(){
+describe('CompilerProvider', function(){
   let provider;
 
   describe('getters', function(){
@@ -22,31 +22,31 @@ describe.only('CompilerProvider', function(){
       assert(list.releases !== undefined);
     });
 
-    it('getVersionUrl: should return a url component', async function(){
+    it('getVersionUrlSegment: should return a JS file name', async function(){
       const list = await provider.getVersions();
 
       let input = '0.4.21';
       let expected = 'soljson-v0.4.21+commit.dfe3193c.js';
 
-      location = await provider.getVersionUrl(input, list);
+      location = await provider.getVersionUrlSegment(input, list);
       assert(location === expected, 'Should locate by version');
 
       input = 'nightly.2018.4.12';
       expected = 'soljson-v0.4.22-nightly.2018.4.12+commit.c3dc67d0.js';
 
-      location = await provider.getVersionUrl(input, list);
+      location = await provider.getVersionUrlSegment(input, list);
       assert(location === expected, 'Should locate by nightly');
 
       input = 'commit.c3dc67d0';
       expected = 'soljson-v0.4.22-nightly.2018.4.12+commit.c3dc67d0.js';
 
-      location = await provider.getVersionUrl(input, list);
+      location = await provider.getVersionUrlSegment(input, list);
       assert(location === expected, 'Should locate by commit');
 
       input = '0.4.55.77-fantasy-solc';
       expected = null;
 
-      location = await provider.getVersionUrl(input, list);
+      location = await provider.getVersionUrlSegment(input, list);
       assert(location === null, 'Should return null if not found')
     });
 

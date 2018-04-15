@@ -38,12 +38,12 @@ CompilerProvider.prototype.config = {
  * - a solc cache                  (param: <version-string> && cache contains version)
  * - a remote solc-bin source      (param: <version-string> && version not cached)
  *
- * @param  {String} pathOrVersion [optional] version OR absolute path
+ * @param  {String} options [optional] options to pass to native solc binary
  * @return {Module}          solc
  */
-CompilerProvider.prototype.load = function(pathOrVersion){
+CompilerProvider.prototype.load = function(options){
   const self = this;
-  const solc = pathOrVersion || self.config.solc;
+  const solc = self.config.solc;
 
   return new Promise((accept, reject) => {
     const useDefault = !solc;
@@ -121,7 +121,7 @@ CompilerProvider.prototype.getLocal = function(localPath){
 /**
  * Fetches solc versions object from remote solc-bin. This includes an array of build
  * objects with detailed version info, an array of release version numbers
- * and their terminal url component strings, and a latest version key with the
+ * and their terminal url segment strings, and a latest version key with the
  * same.
  * @return {Object} versions
  */
@@ -135,13 +135,13 @@ CompilerProvider.prototype.getVersions = function(){
 }
 
 /**
- * Returns terminal url component for `version` from the versions object
+ * Returns terminal url segment for `version` from the versions object
  * generated  by `getVersions`.
  * @param  {String} version         ex: "0.4.1", "0.4.16-nightly.2017.8.9+commit.81887bc7"
  * @param  {Object} allVersions     (see `getVersions`)
  * @return {String} url             ex: "soljson-v0.4.21+commit.dfe3193c.js"
  */
-CompilerProvider.prototype.getVersionUrl = function(version, allVersions){
+CompilerProvider.prototype.getVersionUrlSegment = function(version, allVersions){
 
   if (allVersions.releases[version]) return allVersions.releases[version];
 
@@ -170,19 +170,19 @@ CompilerProvider.prototype.getByUrl = function(version){
 
   return self
     .getVersions(self.config.versionsUrl)
-    .then(list => {
-      const location = self.getVersionUrl(version, list);
+    .then(allVersions => {
+      const file = self.getVersionUrlSegment(version, allVersions);
 
-      if (!location)               throw self.errors('noVersion', version);
+      if (!file)               throw self.errors('noVersion', version);
 
-      if (self.isCached(location)) return self.getFromCache(location);
+      if (self.isCached(file)) return self.getFromCache(file);
 
-      const url = self.config.compilerUrl + location;
+      const url = self.config.compilerUrl + file;
 
       return request
         .get(url)
         .then(response => {
-          self.addToCache(response, location);
+          self.addToCache(response, file);
           return self.compilerFromString(response);
         })
         .catch(err => self.errors('noRequest', url, err));
