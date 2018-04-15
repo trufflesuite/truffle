@@ -12,9 +12,9 @@ describe("Compile", function() {
 
   describe("ABI Ordering", function(){
     before("get code", function() {
-      simpleOrderedSource = fs.readFileSync(path.join(__dirname, "SimpleOrdered.sol"), "utf-8");
-      complexOrderedSource = fs.readFileSync(path.join(__dirname, "ComplexOrdered.sol"), "utf-8");
-      inheritedSource = fs.readFileSync(path.join(__dirname, "InheritB.sol"), "utf-8");
+      simpleOrderedSource = fs.readFileSync(path.join(__dirname, "./sources/SimpleOrdered.sol"), "utf-8");
+      complexOrderedSource = fs.readFileSync(path.join(__dirname, "./sources/ComplexOrdered.sol"), "utf-8");
+      inheritedSource = fs.readFileSync(path.join(__dirname, "./sources/InheritB.sol"), "utf-8");
     });
 
     // Ordered.sol's methods are ordered semantically.
