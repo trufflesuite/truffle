@@ -19,10 +19,18 @@
   "devDependencies": {
     "mocha": "5.2.0",
     "truffle-resolver": "^4.0.4",
-    "tmp": "0.0.33"
+    "tmp": "0.0.33",
+    "babel-core": "^6.26.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.1"
+  },
+  "babel": {
+    "presets": [
+      "env"
+    ]
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha --timeout 5000 --compilers js:babel-core/register --require babel-polyfill test"
   },
   "repository": {
     "type": "git",
