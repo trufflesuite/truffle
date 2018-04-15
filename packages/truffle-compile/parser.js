@@ -1,5 +1,4 @@
 var CompileError = require("./compileerror");
-var solc = require("solc");
 var fs = require("fs");
 var path = require("path");
 
@@ -33,7 +32,7 @@ module.exports = {
           remappings.push(pkg + "/=" + path.join(installedContractsDir, pkg, 'contracts', '/'));
         }
       }
-      
+
       return remappings;
     }
 
@@ -97,7 +96,7 @@ module.exports = {
   },
 
   // This needs to be fast! It is fast (as of this writing). Keep it fast!
-  parseImports: function(body) {
+  parseImports: function(body, solc) {
     var self = this;
 
     // WARNING: Kind of a hack (an expedient one).

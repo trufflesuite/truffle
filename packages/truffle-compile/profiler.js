@@ -6,6 +6,7 @@ var async = require("async");
 var fs = require("fs");
 var Parser = require("./parser");
 var CompileError = require("./compileerror");
+var CompilerProvider = require("./compilerProvider");
 var expect = require("truffle-expect");
 var find_contracts = require("truffle-contract-sources");
 var debug = require("debug")("compile:profiler");
@@ -187,68 +188,73 @@ module.exports = {
       var allSources = {};
       var compilationTargets = [];
 
-      // Get all the source code
-      self.resolveAllSources(resolver, allPaths, (err, resolved) => {
-        if(err) return callback(err);
+      // Load compiler
+      var provider = new CompilerProvider(options.compiler)
+      provider.load().then(solc => {
 
-        // Generate hash of all sources including external packages - passed to solc inputs.
-        var resolvedPaths = Object.keys(resolved);
-        resolvedPaths.forEach(file => allSources[file] = resolved[file].body)
+        // Get all the source code
+        self.resolveAllSources(resolver, allPaths, solc, (err, resolved) => {
+          if(err) return callback(err);
 
-        // Exit w/out minimizing if we've been asked to compile everything, or nothing.
-        if (self.listsEqual(options.paths, allPaths)){
-          return callback(null, allSources, {});
-        } else if (!options.paths.length){
-          return callback(null, {}, {});
-        }
+          // Generate hash of all sources including external packages - passed to solc inputs.
+          var resolvedPaths = Object.keys(resolved);
+          resolvedPaths.forEach(file => allSources[file] = resolved[file].body)
 
-        // Seed compilationTargets with known updates
-        updates.forEach(update => compilationTargets.push(update));
+          // Exit w/out minimizing if we've been asked to compile everything, or nothing.
+          if (self.listsEqual(options.paths, allPaths)){
+            return callback(null, allSources, {});
+          } else if (!options.paths.length){
+            return callback(null, {}, {});
+          }
 
-        // While there are updated files in the queue, we take each one
-        // and search the entire file corpus to find any sources that import it.
-        // Those sources are added to list of compilation targets as well as
-        // the update queue because their own ancestors need to be discovered.
-        async.whilst(() => updates.length > 0, updateFinished => {
-          var currentUpdate = updates.shift();
-          var files = allPaths.slice();
+          // Seed compilationTargets with known updates
+          updates.forEach(update => compilationTargets.push(update));
 
-          // While files: dequeue and inspect their imports
-          async.whilst(() => files.length > 0, fileFinished => {
+          // While there are updated files in the queue, we take each one
+          // and search the entire file corpus to find any sources that import it.
+          // Those sources are added to list of compilation targets as well as
+          // the update queue because their own ancestors need to be discovered.
+          async.whilst(() => updates.length > 0, updateFinished => {
+            var currentUpdate = updates.shift();
+            var files = allPaths.slice();
 
-            var currentFile = files.shift();
+            // While files: dequeue and inspect their imports
+            async.whilst(() => files.length > 0, fileFinished => {
 
-            // Ignore targets already selected.
-            if (compilationTargets.includes(currentFile)){
-              return fileFinished();
-            }
+              var currentFile = files.shift();
 
-            var imports;
-            try {
-              imports = self.getImports(currentFile, resolved[currentFile]);
-            } catch (err) {
-              err.message = "Error parsing " + currentFile + ": " + e.message;
-              return fileFinished(err);
-            }
+              // Ignore targets already selected.
+              if (compilationTargets.includes(currentFile)){
+                return fileFinished();
+              }
 
-            // If file imports a compilation target, add it
-            // to list of updates and compilation targets
-            if (imports.includes(currentUpdate)){
-              updates.push(currentFile);
-              compilationTargets.push(currentFile);
-            }
+              var imports;
+              try {
+                imports = self.getImports(currentFile, resolved[currentFile], solc);
+              } catch (err) {
+                err.message = "Error parsing " + currentFile + ": " + e.message;
+                return fileFinished(err);
+              }
 
-            fileFinished();
+              // If file imports a compilation target, add it
+              // to list of updates and compilation targets
+              if (imports.includes(currentUpdate)){
+                updates.push(currentFile);
+                compilationTargets.push(currentFile);
+              }
 
-          }, err => updateFinished(err));
-        }, err => (err) ? callback(err) : callback(null, allSources, compilationTargets))
-      })
+              fileFinished();
+
+            }, err => updateFinished(err));
+          }, err => (err) ? callback(err) : callback(null, allSources, compilationTargets))
+        })
+      }).catch(callback)
     })
   },
 
   // Resolves sources in several async passes. For each resolved set it detects unknown
   // imports from external packages and adds them to the set of files to resolve.
-  resolveAllSources: function(resolver, initialPaths, callback){
+  resolveAllSources: function(resolver, initialPaths, solc, callback){
     var self = this;
     var mapping = {};
     var allPaths = initialPaths.slice();
@@ -285,7 +291,7 @@ module.exports = {
           // Inspect the imports
           var imports;
           try {
-            imports = self.getImports(result.file, result);
+            imports = self.getImports(result.file, result, solc);
           } catch (err) {
             err.message = "Error parsing " + result[file] + ": " + err.message;
             return finished(err);
@@ -305,10 +311,10 @@ module.exports = {
     );
   },
 
-  getImports: function(file, resolved){
+  getImports: function(file, resolved, solc){
     var self = this;
 
-    var imports = Parser.parseImports(resolved.body);
+    var imports = Parser.parseImports(resolved.body, solc);
 
     // Convert explicitly relative dependencies of modules back into module paths.
     return imports.map(dependencyPath => {

@@ -118,7 +118,7 @@ var compile = function(sources, options, callback) {
   // Load solc module only when compilation is actually required.
   var provider = new CompilerProvider(options.compiler);
 
-  provider.load(options.solc).then(solc => {
+  provider.load().then(solc => {
     var result = solc.compileStandard(JSON.stringify(solcStandardInput));
 
     var standardOutput = JSON.parse(result);
