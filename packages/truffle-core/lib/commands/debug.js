@@ -113,7 +113,7 @@ var command = {
         function printFile() {
           var message = "";
 
-          var sourcePath = session.view(solidity.next.source).sourcePath;
+          var sourcePath = session.view(solidity.current.source).sourcePath;
 
           if (sourcePath) {
             message += path.basename(sourcePath);
@@ -126,8 +126,8 @@ var command = {
         }
 
         function printState() {
-          var source = session.view(solidity.next.source).source;
-          var range = session.view(solidity.next.sourceRange);
+          var source = session.view(solidity.current.source).source;
+          var range = session.view(solidity.current.sourceRange);
           debug("source: %o", source);
           debug("range: %o", range);
 
@@ -150,7 +150,7 @@ var command = {
         }
 
         function printInstruction() {
-          var instruction = session.view(solidity.next.instruction);
+          var instruction = session.view(solidity.current.instruction);
           var step = session.view(trace.step);
           var traceIndex = session.view(trace.index);
 
@@ -296,7 +296,7 @@ var command = {
 
         function toggleBreakpoint() {
           var currentCall = session.view(evm.current.call);
-          var currentNode = session.view(ast.next.node).id;
+          var currentNode = session.view(ast.current.node).id;
 
           // Try to find the breakpoint in the list
           var found = false;
@@ -417,7 +417,7 @@ var command = {
             case "u":
             case "n":
             case "c":
-              if(!session.view(solidity.next.source).source) {
+              if(!session.view(solidity.current.source).source) {
                 printInstruction();
               }
 
