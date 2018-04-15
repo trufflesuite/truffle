@@ -127,9 +127,8 @@ CompilerProvider.prototype.getLocal = function(localPath){
  */
 CompilerProvider.prototype.getVersions = function(){
   const self = this;
-  url = self.config.versionsUrl;
 
-  return request(url)
+  return request(self.config.versionsUrl)
     .then(list => JSON.parse(list))
     .catch(err => self.errors('noRequest', url, err));
 }

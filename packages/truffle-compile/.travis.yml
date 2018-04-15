@@ -22,4 +22,5 @@ script:
         -e TRAVIS_PULL_REQUEST_BRANCH \
         -e TRAVIS_BRANCH \
         -e TEST \
+        -e CI \
       truffle/ci:latest run_tests
