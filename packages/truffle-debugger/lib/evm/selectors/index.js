@@ -231,7 +231,9 @@ const evm = createSelectorTree({
       ].map( (param) => ({
         [param]: createLeaf([trace.next], (step) => step[param])
       }))
-    ))
+    )),
+
+    step: createStepSelectors(trace.next, "./state")
   }
 });
 
