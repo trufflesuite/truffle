@@ -2,7 +2,8 @@ const path = require('path');
 const fs = require('fs');
 const request = require('request-promise');
 const requireFromString = require('require-from-string');
-const mkdirp = require('mkdirp');
+const findCacheDir = require('find-cache-dir');
+const originalRequire = require('original-require');
 
 
 //------------------------------ Constructor/Config ------------------------------------------------
@@ -23,11 +24,16 @@ function CompilerProvider(_config){
 CompilerProvider.prototype.config = {
   solc: null,
   versionsUrl: 'https://solc-bin.ethereum.org/bin/list.json',
-  compilerUrl: 'https://solc-bin.ethereum.org/bin/',
-  compilerNpm: 'solc',
+  compilerUrlRoot: 'https://solc-bin.ethereum.org/bin/',
   cache: true,
-  cachePath: '/var/lib/truffle/cache/solc/',
 }
+
+
+CompilerProvider.prototype.cachePath = findCacheDir({
+  name: 'truffle',
+  cwd: __dirname,
+  create: true,
+})
 
 //----------------------------------- Interface  ---------------------------------------------------
 
@@ -52,7 +58,7 @@ CompilerProvider.prototype.load = function(options){
 
     if (useDefault) return accept(self.getDefault());
     if (useLocal)   return accept(self.getLocal(solc));
-    if (useRemote)  return accept(self.getByUrl(solc));
+    if (useRemote)  return accept(self.getByUrl(solc)); // Tries cache first, then remote.
   });
 }
 
@@ -94,7 +100,7 @@ CompilerProvider.prototype.getReleases = function(){
  * @return {Module} solc
  */
 CompilerProvider.prototype.getDefault = function(){
-  const compiler = require(this.config.compilerNpm);
+  const compiler = require('solc');
   this.removeListener();
   return compiler;
 }
@@ -109,7 +115,7 @@ CompilerProvider.prototype.getLocal = function(localPath){
   let compiler;
 
   try {
-    compiler = require(localPath)
+    compiler = originalRequire(localPath)
     self.removeListener();
   } catch (err) {
     throw self.errors('noPath', localPath);
@@ -176,7 +182,7 @@ CompilerProvider.prototype.getByUrl = function(version){
 
       if (self.isCached(file)) return self.getFromCache(file);
 
-      const url = self.config.compilerUrl + file;
+      const url = self.config.compilerUrlRoot + file;
 
       return request
         .get(url)
@@ -200,13 +206,25 @@ CompilerProvider.prototype.isLocal = function(localPath){
 }
 
 /**
+ * Returns path to cached solc version
+ * @param  {String} fileName ex: "soljson-v0.4.21+commit.dfe3193c.js"
+ * @return {String}          path
+ */
+CompilerProvider.prototype.resolveCache = function(fileName){
+  const thunk = findCacheDir({name: 'truffle', thunk: true});
+  return thunk(fileName);
+}
+
+/**
  * Returns true if `fileName` exists in the cache.
  * @param  {String}  fileName   ex: "soljson-v0.4.21+commit.dfe3193c.js"
  * @return {Boolean}
  */
 CompilerProvider.prototype.isCached = function(fileName){
-  return fs.existsSync(this.config.cachePath + fileName);
+  const file = this.resolveCache(fileName);
+  return fs.existsSync(file);
 }
+
 
 /**
  * Write  to the cache at `config.cachePath`. Creates `cachePath` directory if
@@ -217,11 +235,8 @@ CompilerProvider.prototype.isCached = function(fileName){
 CompilerProvider.prototype.addToCache = function(code, fileName){
   if (!this.config.cache) return;
 
-  if (!fs.existsSync(this.config.cachePath)){
-    mkdirp.sync(this.config.cachePath);
-  }
-
-  fs.writeFileSync(this.config.cachePath + fileName, code);
+  const filePath = this.resolveCache(fileName);
+  fs.writeFileSync(filePath, code);
 }
 
 /**
@@ -230,7 +245,8 @@ CompilerProvider.prototype.addToCache = function(code, fileName){
  * @return {Module}       solc
  */
 CompilerProvider.prototype.getFromCache = function(fileName){
-  const cached = fs.readFileSync(this.config.cachePath + fileName, "utf-8");
+  const filePath = this.resolveCache(fileName)
+  const cached = fs.readFileSync(filePath, "utf-8");
   return this.compilerFromString(cached);
 }
 

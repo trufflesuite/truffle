@@ -3,6 +3,7 @@ const tmp = require("tmp");
 const path = require("path");
 const solc = require("solc");
 const assert = require("assert");
+const findCacheDir = require('find-cache-dir');
 const compile = require("../index");
 const CompilerProvider = require('../compilerProvider');
 
@@ -86,7 +87,8 @@ describe('CompilerProvider', function(){
       options.compiler = { cache: false };
 
       compile(newPragmaSource, options, (err, result) => {
-        assert(err == null);
+        if (err) return done(err);
+
         assert(result['NewPragma'].contract_name === 'NewPragma');
         done();
       });
@@ -99,7 +101,8 @@ describe('CompilerProvider', function(){
       };
 
       compile(oldPragmaPinSource, options, (err, result) => {
-        assert(err == null);
+        if (err) return done(err);
+
         assert(result['OldPragmaPin'].contract_name === 'OldPragmaPin');
         done();
       });
@@ -113,7 +116,8 @@ describe('CompilerProvider', function(){
       };
 
       compile(oldPragmaFloatSource, options, (err, result) => {
-        assert(err == null);
+        if (err) return done(err);
+
         assert(result['OldPragmaFloat'].contract_name === 'OldPragmaFloat');
         done();
       });
@@ -140,7 +144,8 @@ describe('CompilerProvider', function(){
       };
 
       compile(newPragmaSource, options, (err, result) => {
-        assert(err == null);
+        if (err) return done(err);
+
         assert(result['NewPragma'].contract_name === 'NewPragma');
         done();
       });
@@ -166,18 +171,18 @@ describe('CompilerProvider', function(){
         let initialAccessTime;
         let finalAccessTime;
 
-        const truffleCacheDir = dir + "/truffle/solc/cache/";
-        const expectedCache = truffleCacheDir + 'soljson-v0.4.21+commit.dfe3193c.js';
+        const thunk = findCacheDir({name: 'truffle', thunk: true});
+        const expectedCache = thunk('soljson-v0.4.21+commit.dfe3193c.js');
 
         options.compiler = {
           cache: true,
-          cachePath: truffleCacheDir,
           solc: "0.4.21"
         };
 
         // Run compiler, expecting solc to be downloaded and cached.
         compile(newPragmaSource, options, (err, result) => {
           if (err) return done(err);
+
           assert(fs.existsSync(expectedCache), 'Should have cached compiler');
 
           // Get cached solc access time
