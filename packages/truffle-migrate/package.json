@@ -25,7 +25,7 @@
   "dependencies": {
     "async": "^2.1.4",
     "node-dir": "^0.1.16",
-    "truffle-deployer": "^2.0.3",
+    "truffle-deployer": "^2.0.4",
     "truffle-expect": "^0.0.3",
     "truffle-require": "^1.0.5",
     "web3": "^0.20.1"
