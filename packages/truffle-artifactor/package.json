@@ -28,7 +28,7 @@
     "debug": "^3.1.0",
     "fs-extra": "^1.0.0",
     "lodash": "^4.11.2",
-    "truffle-contract": "^3.0.4",
+    "truffle-contract": "^3.0.5",
     "truffle-contract-schema": "^2.0.0",
     "truffle-expect": "^0.0.3"
   }
