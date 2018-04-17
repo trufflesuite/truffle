@@ -73,6 +73,7 @@ function* stepNext () {
 
     // if the next step's source range is still the same, keep going
   } while (
+    !next.node ||
     SKIPPED_TYPES.has(next.node.nodeType) ||
 
     next.sourceRange.start == startingRange.start &&
