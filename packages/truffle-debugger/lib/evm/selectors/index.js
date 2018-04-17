@@ -7,6 +7,117 @@ import trace from "lib/trace/selectors";
 
 const WORD_SIZE = 0x20;
 
+/**
+ * create EVM-level selectors for a given trace step selector
+ * may specify additional selectors to include
+ */
+function createStepSelectors(step, state = null) {
+  let base = {
+    /**
+     * .trace
+     *
+     * trace step info related to next evm operation
+     */
+    trace: createLeaf(
+      [step], ({gasCost, op, pc}) => ({gasCost, op, pc})
+    ),
+
+    /**
+     * .programCounter
+     */
+    programCounter: createLeaf(
+      ["./trace"], (step) => step.pc
+    ),
+
+    /**
+     * .isJump
+     */
+    isJump: createLeaf(
+      ["./trace"], (step) => (
+        step.op != "JUMPDEST" && step.op.indexOf("JUMP") == 0
+      )
+    ),
+
+    /**
+     * .isCall
+     *
+     * whether the next opcode will switch to another calling context
+     */
+    isCall: createLeaf(
+      ["./trace"], (step) => step.op == "CALL" || step.op == "DELEGATECALL"
+    ),
+
+    /**
+     * .isCreate
+     */
+    isCreate: createLeaf(
+      ["./trace"], (step) => step.op == "CREATE"
+    ),
+
+    /**
+     * .isHalting
+     *
+     * whether the next instruction halts or returns from a calling context
+     */
+    isHalting: createLeaf(
+      ["./trace"], (step) => step.op == "STOP" || step.op == "RETURN"
+    )
+  };
+
+  if (state) {
+    const isRelative = (path) => (
+      typeof path == "string" && (
+        path.startsWith("./") || path.startsWith("../")
+      )
+    );
+
+    if (isRelative(state)) {
+      state = `../${state}`;
+    }
+
+    Object.assign(base, {
+      /**
+       * .callAddress
+       *
+       * address transferred to by call operation
+       */
+      callAddress: createLeaf(
+        ["./isCall", "./trace", state],
+
+        (matches, step, {stack}) => {
+          if (!matches) return null;
+
+          let address = stack[stack.length - 2]
+          address = "0x" + address.substring(24);
+          return address;
+        }
+      ),
+
+      /**
+       * .createBinary
+       *
+       * binary code to execute via create operation
+       */
+      createBinary: createLeaf(
+        ["./isCreate", "./trace", state],
+
+        (matches, step, {stack, memory}) => {
+          if (!matches) return null;
+
+          // Get the code that's going to be created from memory.
+          // Note we multiply by 2 because these offsets are in bytes.
+          const offset = parseInt(stack[stack.length - 2], 16) * 2;
+          const length = parseInt(stack[stack.length - 3], 16) * 2;
+
+          return "0x" + memory.join("").substring(offset, offset + length);
+        }
+      )
+    });
+  }
+
+  return base;
+}
+
 const evm = createSelectorTree({
   /**
    * evm.state
@@ -120,94 +231,7 @@ const evm = createSelectorTree({
     /**
      * evm.next.step
      */
-    step: {
-      /**
-       * evm.next.step.trace
-       *
-       * trace step info related to next evm operation
-       */
-      trace: createLeaf(
-        [trace.step], ({gasCost, op, pc}) => ({gasCost, op, pc})
-      ),
-
-      /**
-       * evm.next.step.programCounter
-       */
-      programCounter: createLeaf(
-        ["./trace"], (step) => step.pc
-      ),
-
-      /**
-       * evm.next.step.isJump
-       */
-      isJump: createLeaf(
-        ["./trace"], (step) => (
-          step.op != "JUMPDEST" && step.op.indexOf("JUMP") == 0
-        )
-      ),
-
-      /**
-       * evm.next.step.isCall
-       *
-       * whether the next opcode will switch to another calling context
-       */
-      isCall: createLeaf(
-        ["./trace"], (step) => step.op == "CALL" || step.op == "DELEGATECALL"
-      ),
-
-      /**
-       * evm.next.step.isCreate
-       */
-      isCreate: createLeaf(
-        ["./trace"], (step) => step.op == "CREATE"
-      ),
-
-      /**
-       * evm.next.step.isHalting
-       *
-       * whether the next instruction halts or returns from a calling context
-       */
-      isHalting: createLeaf(
-        ["./trace"], (step) => step.op == "STOP" || step.op == "RETURN"
-      ),
-
-      /**
-       * evm.next.step.callAddress
-       *
-       * address transferred to by call operation
-       */
-      callAddress: createLeaf(
-        ["./isCall", "./trace", "/current/state"],
-
-        (matches, step, {stack}) => {
-          if (!matches) return null;
-
-          let address = stack[stack.length - 2]
-          address = "0x" + address.substring(24);
-          return address;
-        }
-      ),
-
-      /**
-       * evm.next.step.createBinary
-       *
-       * binary code to execute via create operation
-       */
-      createBinary: createLeaf(
-        ["./isCreate", "./trace", "/current/state"],
-
-        (matches, step, {stack, memory}) => {
-          if (!matches) return null;
-
-          // Get the code that's going to be created from memory.
-          // Note we multiply by 2 because these offsets are in bytes.
-          const offset = parseInt(stack[stack.length - 2], 16) * 2;
-          const length = parseInt(stack[stack.length - 3], 16) * 2;
-
-          return "0x" + memory.join("").substring(offset, offset + length);
-        }
-      ),
-    }
+    step: createStepSelectors(trace.step, "/current/state")
   }
 });
 
