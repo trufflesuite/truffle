@@ -275,6 +275,7 @@ var contract = (function(module) {
     link: function(name, address) {
       var constructor = this;
 
+      // Case: Contract.link(instance)
       if (typeof name == "function") {
         var contract = name;
 
@@ -292,6 +293,7 @@ var contract = (function(module) {
         return;
       }
 
+      // Case: Contract.link({<libraryName>: <address>, ... })
       if (typeof name == "object") {
         var obj = name;
         Object.keys(obj).forEach(function(name) {
@@ -301,6 +303,7 @@ var contract = (function(module) {
         return;
       }
 
+      // Case: Contract.link(<libraryName>, <address>)
       if (this._json.networks[this.network_id] == null) {
         this._json.networks[this.network_id] = {
           events: {},
