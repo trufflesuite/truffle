@@ -42,7 +42,7 @@ var execute = {
 
   /**
    * Prepares simple wrapped calls by checking network and organizing the method inputs into
-   * into objects web3 can consume.
+   * objects web3 can consume.
    * @param  {Object} constructor   TruffleContract constructor
    * @param  {Array}  _arguments    Arguments passed to method invocation
    * @return {Promise}              Resolves object w/ tx params disambiguated from arguments
