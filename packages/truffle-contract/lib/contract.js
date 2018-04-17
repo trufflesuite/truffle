@@ -92,16 +92,16 @@ var contract = (function(module) {
     },
 
     new: function() {
-      var self = this;
+      var constructor = this;
       var promiEvent = new Web3PromiEvent();
 
-      if (!self.currentProvider) {
-        var err = self.contractName + " error: Please call setProvider() first before calling new()."
+      if (!constructor.currentProvider) {
+        var err = constructor.contractName + " error: Please call setProvider() first before calling new()."
         throw new Error(err);
       }
 
-      if (!self.bytecode) {
-        var err = self.contractName + " error: contract binary not set. Can't deploy new instance.";
+      if (!constructor.bytecode) {
+        var err = constructor.contractName + " error: contract binary not set. Can't deploy new instance.";
         throw new Error(err);
       }
 
@@ -113,30 +113,30 @@ var contract = (function(module) {
         onlyEmitReceipt: true
       }
 
-      self.detectNetwork().then(network => {
-        utils.checkLibraries.apply(self);
-        return execute.deploy.call(self, args, context, network.blockLimit);
+      constructor.detectNetwork().then(network => {
+        utils.checkLibraries.apply(constructor);
+        return execute.deploy.call(constructor, args, context, network.blockLimit);
       }).catch(promiEvent.reject)
 
       return promiEvent.eventEmitter;
     },
 
     at: function(address) {
-      var self = this;
+      var constructor = this;
 
       return new Promise(function(accept, reject){
         if (address == null || typeof address != "string" || address.length != 42) {
-          var err = "Invalid address passed to " + self.contractName + ".at(): " + address;
+          var err = "Invalid address passed to " + constructor.contractName + ".at(): " + address;
           reject(new Error(err));
         }
 
-        return self.detectNetwork().then(function(network_id) {
-          var instance = new self(address);
+        return constructor.detectNetwork().then(function(network_id) {
+          var instance = new constructor(address);
 
-          return self.web3.eth.getCode(address).then(function(code){
+          return constructor.web3.eth.getCode(address).then(function(code){
 
             if (!code || code.replace("0x", "").replace(/0/g, "") === '') {
-              var err = "Cannot create instance of " + self.contractName +
+              var err = "Cannot create instance of " + constructor.contractName +
                         "; no code at address " + address;
               reject(new Error(err));
             }
@@ -148,26 +148,26 @@ var contract = (function(module) {
     },
 
     deployed: function() {
-      var self = this;
-      return self.detectNetwork().then(function() {
+      var constructor = this;
+      return constructor.detectNetwork().then(function() {
         // We don't have a network config for the one we found
-        if (self._json.networks[self.network_id] == null) {
-          var error = self.contractName +
+        if (constructor._json.networks[constructor.network_id] == null) {
+          var error = constructor.contractName +
                       " has not been deployed to detected network" +
                       " (network/artifact mismatch)"
           throw new Error(error);
         }
 
         // If we found the network but it's not deployed
-        if (!self.isDeployed()) {
-          var error = self.contractName +
+        if (!constructor.isDeployed()) {
+          var error = constructor.contractName +
                       " has not been deployed to detected network (" +
-                      self.network_id + ")";
+                      constructor.network_id + ")";
 
           throw new Error(error);
         }
 
-        return new self(self.address);
+        return new constructor(constructor.address);
       });
     },
 
@@ -180,10 +180,10 @@ var contract = (function(module) {
         class_defaults = {};
       }
 
-      var self = this;
+      var constructor = this;
       Object.keys(class_defaults).forEach(function(key) {
         var value = class_defaults[key];
-        self.class_defaults[key] = value;
+        constructor.class_defaults[key] = value;
       });
 
       return this.class_defaults;
@@ -206,35 +206,35 @@ var contract = (function(module) {
     },
 
     detectNetwork: function() {
-      var self = this;
+      var constructor = this;
 
       return new Promise(function(accept, reject) {
         // Try to get the current blockLimit
-        self.web3.eth.getBlock('latest').then(function(block){
+        constructor.web3.eth.getBlock('latest').then(function(block){
           // Try to detect the network we have artifacts for.
-          if (self.network_id) {
+          if (constructor.network_id) {
             // We have a network id and a configuration, let's go with it.
-            if (self.networks[self.network_id] != null) {
-              return accept({id: self.network_id, blockLimit: block.gasLimit});
+            if (constructor.networks[constructor.network_id] != null) {
+              return accept({id: constructor.network_id, blockLimit: block.gasLimit});
             }
           }
 
-          self.web3.eth.net.getId().then(function(network_id){
+          constructor.web3.eth.net.getId().then(function(network_id){
             // If we found the network via a number, let's use that.
-            if (self.hasNetwork(network_id)) {
+            if (constructor.hasNetwork(network_id)) {
 
-              self.setNetwork(network_id);
-              return accept({id: self.network_id, blockLimit: block.gasLimit});
+              constructor.setNetwork(network_id);
+              return accept({id: constructor.network_id, blockLimit: block.gasLimit});
             }
 
             // Otherwise, go through all the networks that are listed as
             // blockchain uris and see if they match.
-            var uris = Object.keys(self._json.networks).filter(function(network) {
+            var uris = Object.keys(constructor._json.networks).filter(function(network) {
               return network.indexOf("blockchain://") == 0;
             });
 
             var matches = uris.map(function(uri) {
-              return BlockchainUtils.matches.bind(BlockchainUtils, uri, self.web3.currentProvider);
+              return BlockchainUtils.matches.bind(BlockchainUtils, uri, constructor.web3.currentProvider);
             });
 
             utils.parallel(matches, function(err, results) {
@@ -242,14 +242,14 @@ var contract = (function(module) {
 
               for (var i = 0; i < results.length; i++) {
                 if (results[i]) {
-                  self.setNetwork(uris[i]);
-                  return accept({id: self.network_id, blockLimit: block.gasLimit});
+                  constructor.setNetwork(uris[i]);
+                  return accept({id: constructor.network_id, blockLimit: block.gasLimit});
                 }
               }
 
               // We found nothing. Set the network id to whatever the provider states.
-              self.setNetwork(network_id);
-              return accept({id: self.network_id, blockLimit: block.gasLimit});
+              constructor.setNetwork(network_id);
+              return accept({id: constructor.network_id, blockLimit: block.gasLimit});
             });
 
           }).catch(reject);
@@ -273,7 +273,7 @@ var contract = (function(module) {
     },
 
     link: function(name, address) {
-      var self = this;
+      var constructor = this;
 
       if (typeof name == "function") {
         var contract = name;
@@ -286,7 +286,7 @@ var contract = (function(module) {
 
         // Merge events so this contract knows about library's events
         Object.keys(contract.events).forEach(function(topic) {
-          self.network.events[topic] = contract.events[topic];
+          constructor.network.events[topic] = contract.events[topic];
         });
 
         return;
@@ -296,7 +296,7 @@ var contract = (function(module) {
         var obj = name;
         Object.keys(obj).forEach(function(name) {
           var a = obj[name];
-          self.link(name, a);
+          constructor.link(name, a);
         });
         return;
       }
@@ -315,7 +315,7 @@ var contract = (function(module) {
     // 1. Object with a bunch of data; this data will be merged with the json data of contract being cloned.
     // 2. network id; this will clone the contract and set a specific network id upon cloning.
     clone: function(json) {
-      var self = this;
+      var constructor = this;
 
       json = json || {};
 
@@ -324,17 +324,17 @@ var contract = (function(module) {
         return Contract.apply(this, arguments);
       };
 
-      temp.prototype = Object.create(self.prototype);
+      temp.prototype = Object.create(constructor.prototype);
 
       var network_id;
 
       // If we have a network id passed
       if (typeof json != "object") {
         network_id = json;
-        json = self._json;
+        json = constructor._json;
       }
 
-      json = utils.merge({}, self._json || {}, json);
+      json = utils.merge({}, constructor._json || {}, json);
 
       temp._static_methods = this._static_methods;
       temp._properties = this._properties;
@@ -361,18 +361,18 @@ var contract = (function(module) {
     },
 
     addProp: function(key, fn) {
-      var self = this;
+      var constructor = this;
 
       var getter = function() {
         if (fn.get != null) {
-          return fn.get.call(self);
+          return fn.get.call(constructor);
         }
 
-        return self._property_values[key] || fn.call(self);
+        return constructor._property_values[key] || fn.call(constructor);
       }
       var setter = function(val) {
         if (fn.set != null) {
-          fn.set.call(self, val);
+          fn.set.call(constructor, val);
           return;
         }
 
