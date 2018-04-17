@@ -258,7 +258,9 @@ CompilerProvider.prototype.getFromCache = function(fileName){
 CompilerProvider.prototype.compilerFromString = function(code){
   const solc = this.getDefault();
   const compiler = requireFromString(code);
-  return solc.setupMethods(compiler);
+  const wrapped = solc.setupMethods(compiler);
+  this.removeListener();
+  return wrapped;
 }
 
 /**
