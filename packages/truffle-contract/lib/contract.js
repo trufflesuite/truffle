@@ -19,7 +19,7 @@ var contract = (function(module) {
     var instance = this;
     var constructor = instance.constructor;
 
-    // Disabiguate between .at() and .new()
+    // Disambiguate between .at() and .new()
     if (typeof contract == "string") {
       var web3Instance = new constructor.web3.eth.Contract(constructor.abi);
       web3Instance.options.address = contract;
@@ -35,35 +35,40 @@ var contract = (function(module) {
 
     // User defined methods, overloaded methods, events
     instance.abi.forEach(function(item){
-      if (item.type == "function") {
-        var isConstant = item.constant === true;
-        var signature = webUtils._jsonInterfaceMethodToString(item);
 
-        var method = function(constant, web3Method){
-          var fn;
+      switch(item.type) {
+        case "function":
+          var isConstant = item.constant === true;
+          var signature = webUtils._jsonInterfaceMethodToString(item);
 
-          (constant)
-            ? fn = execute.call.call(constructor, web3Method, item.inputs, instance.address)
-            : fn = execute.send.call(constructor, web3Method, instance.address);
+          var method = function(constant, web3Method){
+            var fn;
 
-          fn.call = execute.call.call(constructor, web3Method, item.inputs, instance.address);
-          fn.sendTransaction = execute.send.call(constructor, web3Method, instance.address);
-          fn.estimateGas = execute.estimate.call(constructor, web3Method, instance.address);
-          fn.request = execute.request.call(constructor, web3Method, instance.address);
+            (constant)
+              ? fn = execute.call.call(constructor, web3Method, item.inputs, instance.address)
+              : fn = execute.send.call(constructor, web3Method, instance.address);
 
-          return fn;
-        }
+            fn.call = execute.call.call(constructor, web3Method, item.inputs, instance.address);
+            fn.sendTransaction = execute.send.call(constructor, web3Method, instance.address);
+            fn.estimateGas = execute.estimate.call(constructor, web3Method, instance.address);
+            fn.request = execute.request.call(constructor, web3Method, instance.address);
 
-        if(instance[item.name] === undefined ){
-          instance[item.name] = method(isConstant, contract.methods[item.name]);
-        }
+            return fn;
+          }
 
-        // Overloaded methods should be invoked via the .methods property
-        instance.methods[signature] = method(isConstant, contract.methods[signature]);
-      }
+          // Only define methods once. Any overloaded methods will have all their
+          // accessors available by ABI signature available on the `methods` key below.
+          if(instance[item.name] === undefined ){
+            instance[item.name] = method(isConstant, contract.methods[item.name]);
+          }
 
-      if (item.type == "event") {
-        instance[item.name] = execute.event.call(constructor, contract.events[item.name]);
+          // Overloaded methods should be invoked via the .methods property
+          instance.methods[signature] = method(isConstant, contract.methods[signature]);
+          break;
+
+        case "event":
+          instance[item.name] = execute.event.call(constructor, contract.events[item.name]);
+          break;
       }
     })
 
