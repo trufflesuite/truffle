@@ -81,7 +81,7 @@ var contract = (function(module) {
     instance.getPastEvents = (event, options) => contract.getPastEvents(event, options);
   };
 
-  Contract._static_methods = {
+  Contract._constructorMethods = {
     setProvider: function(provider) {
       if (!provider) {
         throw new Error("Invalid provider passed to setProvider(); provider is " + provider);
@@ -336,7 +336,7 @@ var contract = (function(module) {
 
       json = utils.merge({}, constructor._json || {}, json);
 
-      temp._static_methods = this._static_methods;
+      temp._constructorMethods = this._constructorMethods;
       temp._properties = this._properties;
 
       temp._property_values = {};
@@ -714,8 +714,8 @@ var contract = (function(module) {
   function bootstrap(fn) {
     // Add our static methods
     // Add something here about excluding send, privately defined methods
-    Object.keys(fn._static_methods).forEach(function(key) {
-      fn[key] = fn._static_methods[key].bind(fn);
+    Object.keys(fn._constructorMethods).forEach(function(key) {
+      fn[key] = fn._constructorMethods[key].bind(fn);
     });
 
     // Add our properties.
