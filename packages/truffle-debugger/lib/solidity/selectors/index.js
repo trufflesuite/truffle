@@ -81,7 +81,7 @@ let solidity = createSelectorTree({
           // context types. TODO
           sourceMap = "";
           for (var i = 0; i < instructions.length; i++) {
-            sourceMap += i + ":" + i + ":1:o;";
+            sourceMap += i + ":" + i + ":1:-1;";
           }
         }
 
@@ -94,27 +94,49 @@ let solidity = createSelectorTree({
         );
         var humanReadableSourceMap = SolidityUtils.getHumanReadableSourceMap(sourceMap);
 
-        instructions.forEach(function(instruction, instructionIndex) {
-          var sourceMapInstruction = humanReadableSourceMap[instructionIndex];
+        let primaryFile = humanReadableSourceMap[0].file;
+        debug("primaryFile %o", primaryFile);
 
-          instruction.index = instructionIndex;
+        return instructions
+          .map( (instruction, index) => {
+            // lookup source map by index and add `index` property to
+            // instruction
+            //
 
-          if (sourceMapInstruction) {
-            var lineAndColumnMapping =
-              lineAndColumnMappings[sourceMapInstruction.file] || {};
+            const sourceMap = humanReadableSourceMap[index] || {};
 
-            instruction.jump = sourceMapInstruction.jump;
-            instruction.start = sourceMapInstruction.start;
-            instruction.length = sourceMapInstruction.length;
-            instruction.file = sourceMapInstruction.file;
-            instruction.range = {
-              start: lineAndColumnMapping[sourceMapInstruction.start],
-              end: lineAndColumnMapping[sourceMapInstruction.start + sourceMapInstruction.length]
+            return {
+              instruction: { ...instruction, index },
+              sourceMap,
+            };
+          })
+          .map( ({ instruction, sourceMap}) => {
+            // add source map information to instruction, or defaults
+            //
+
+            const { jump, start = 0, length = 0, file = primaryFile } = sourceMap;
+            const lineAndColumnMapping = lineAndColumnMappings[file] || {};
+            const range = {
+              start: lineAndColumnMapping[start] ||
+                { line: null, column: null },
+              end: lineAndColumnMapping[start + length] ||
+                { line: null, column: null }
+            };
+
+            if (range.start.line === null) {
+              debug("sourceMap %o", sourceMap);
             }
-          }
-        });
 
-        return instructions;
+            return {
+              ...instruction,
+
+              jump,
+              start,
+              length,
+              file,
+              range
+            }
+          });
       }
     ),
 
@@ -164,7 +186,7 @@ let solidity = createSelectorTree({
     source: createLeaf(
       ["/info/sources", "./instruction"],
 
-      (sources, {file: id}) => sources[id]
+      (sources, {file: id}) => sources[id] || {}
     ),
 
     /**
