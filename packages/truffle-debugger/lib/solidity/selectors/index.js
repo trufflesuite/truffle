@@ -129,6 +129,16 @@ let solidity = createSelectorTree({
         instructions.forEach(function(instruction) {
           map[instruction.pc] = instruction;
         });
+
+        // fill in gaps in map by defaulting to the last known instruction
+        let lastSeen = null;
+        for (let [pc, instruction] of map.entries()) {
+          if (instruction) {
+            lastSeen = instruction;
+          } else {
+            map[pc] = lastSeen;
+          }
+        }
         return map;
       }
     )
@@ -145,7 +155,7 @@ let solidity = createSelectorTree({
     instruction: createLeaf(
       ["../current/instructionAtProgramCounter", evm.next.step.programCounter],
 
-      (map, pc) => map[pc]
+      (map, pc) => map[pc] || {}
     ),
 
     /**
