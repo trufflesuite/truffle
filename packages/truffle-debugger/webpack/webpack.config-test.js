@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const merge = require('webpack-merge');
+const WriteFilePlugin = require('write-file-webpack-plugin');
 
 const commonConfig = require('./webpack.config-common.js');
 
@@ -24,5 +25,7 @@ module.exports = merge(commonConfig, {
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('test')
     }),
+
+    new WriteFilePlugin(),
   ],
 });

@@ -1,6 +1,6 @@
 {
   "name": "truffle-debugger",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Core functionality for debugging Solidity files built with Truffle",
   "main": "dist/debugger.js",
   "scripts": {
@@ -50,7 +50,7 @@
     "fs-extra": "^4.0.2",
     "ganache-cli": "^6.1.0-beta.4",
     "mocha": "^4.0.1",
-    "mocha-webpack": "^1.0.1",
+    "mocha-webpack": "^1.1.0",
     "remotedev-server": "^0.2.4",
     "truffle-artifactor": "^3.0.0",
     "truffle-box": "^1.0.3",
