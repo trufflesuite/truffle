@@ -206,7 +206,18 @@ describe('CompilerProvider', function(){
       });
     });
 
-    describe('docker [ @native ]', function() {
+    describe('native / docker [ @native ]', function() {
+
+      it('compiles with native solc', function(done){
+        options.compiler = {
+          solc: "native"
+        };
+
+        compile(newPragmaSource, options, (err, result) => {
+          assert(result['NewPragma'].contract_name === 'NewPragma', 'Should have compiled');
+          done();
+        });
+      });
 
       it('compiles with dockerized solc', function(done){
         options.compiler = {
@@ -233,7 +244,7 @@ describe('CompilerProvider', function(){
       })
 
       it('errors if running dockerized solc when image does not exist locally', function(done){
-        const imageName = 'fantasySolc.777555';
+        const imageName = 'fantasySolc.7777555';
 
         options.compiler = {
           solc: imageName,
