@@ -53,16 +53,19 @@ CompilerProvider.prototype.cachePath = findCacheDir({
 CompilerProvider.prototype.load = function(){
   const self = this;
   const solc = self.config.solc;
+  const isNative = self.config.solc === 'native';
 
   return new Promise((accept, reject) => {
     const useDocker =  self.config.docker;
     const useDefault = !solc;
     const useLocal =   !useDefault && self.isLocal(solc);
-    const useRemote =  !useLocal
+    const useNative =  !useLocal && isNative;
+    const useRemote =  !useNative
 
     if (useDocker)  return accept(self.getDocker());
     if (useDefault) return accept(self.getDefault());
     if (useLocal)   return accept(self.getLocal(solc));
+    if (useNative)  return accept(self.getNative(solc));
     if (useRemote)  return accept(self.getByUrl(solc)); // Tries cache first, then remote.
   });
 }
@@ -209,25 +212,47 @@ CompilerProvider.prototype.getDocker = function(){
 
   this.validateDocker();
 
-  return this
-    .getVersions()
-    .then(versions => {
-      return {
+  return this.getVersions().then(versions => {
+    return {
 
-        compileStandard: (options) => {
-          const command = 'docker run -i ethereum/solc:' + version + ' --standard-json';
+      compileStandard: (options) => {
+        const command = 'docker run -i ethereum/solc:' + version + ' --standard-json';
+        const result = child.execSync(command, {input: options});
+        return String(result);
+      },
 
-          const result = child.execSync(command, {input: options});
-          return String(result);
-        },
-
-        version: () => {
-          return (version === 'stable')
-            ? versions.latestRelease
-            : version
-        }
+      version: () => {
+        return (version === 'stable')
+          ? versions.latestRelease
+          : version
       }
-    })
+    }
+  })
+}
+
+/**
+ * Makes solc.compileStandard a wrapper to a child process invocation of dockerized solc.
+ * @return {Object} solc output
+ */
+CompilerProvider.prototype.getNative = function(){
+  const version = this.config.solc;
+
+  return this.getVersions().then(versions => {
+    return {
+
+      compileStandard: (options) => {
+        const command = 'solc --standard-json';
+        const result = child.execSync(command, {input: options});
+        return String(result);
+      },
+
+      version: () => {
+        return (version === 'stable')
+          ? versions.latestRelease
+          : version
+      }
+    }
+  })
 }
 
 //------------------------------------ Utils -------------------------------------------------------

@@ -3,6 +3,10 @@
 set -o errexit
 
 run_native_tests() {
+  sudo add-apt-repository --yes ppa:ethereum/ethereum
+  sudo apt-get update
+  sudo apt-get install solc
+
   docker pull ethereum/solc:0.4.22
   npm install
   npm run test:native
@@ -20,7 +24,7 @@ run_container_tests() {
 }
 
 if [ "$TEST" == "native" ]; then
-  run_solc_native_tests
+  run_native_tests
 else
   run_container_tests
 fi
