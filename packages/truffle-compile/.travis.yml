@@ -1,6 +1,8 @@
+dist: trusty
 sudo: required
-
-language: generic
+language: node_js
+node_js:
+  - "6"
 
 services:
   - docker
@@ -9,18 +11,10 @@ before_install:
   - docker pull truffle/ci
 
 env:
+  - TEST=native
   - TEST=repo
   - TEST=upstream
   - TEST=scenario
 
 script:
-  - >
-    docker run -it --rm --name ${TEST} \
-        -e TRAVIS_REPO_SLUG \
-        -e TRAVIS_PULL_REQUEST \
-        -e TRAVIS_PULL_REQUEST_SLUG \
-        -e TRAVIS_PULL_REQUEST_BRANCH \
-        -e TRAVIS_BRANCH \
-        -e TEST \
-        -e CI \
-      truffle/ci:latest run_tests
+  - npm run test:ci
