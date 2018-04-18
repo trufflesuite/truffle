@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const child = require('child_process');
 const request = require('request-promise');
 const requireFromString = require('require-from-string');
 const findCacheDir = require('find-cache-dir');
@@ -38,24 +39,28 @@ CompilerProvider.prototype.cachePath = findCacheDir({
 //----------------------------------- Interface  ---------------------------------------------------
 
 /**
- * Loads solc from four possible locations:
- * - local node_modules            (param: <undefined>)
- * - absolute path to a local solc (param: <path>)
- * - a solc cache                  (param: <version-string> && cache contains version)
- * - a remote solc-bin source      (param: <version-string> && version not cached)
+ * Load solcjs from four possible locations:
+ * - local node_modules            (config.solc = <undefined>)
+ * - absolute path to a local solc (config.solc = <path>)
+ * - a solc cache                  (config.solc = <version-string> && cache contains version)
+ * - a remote solc-bin source      (config.solc = <version-string> && version not cached)
  *
- * @param  {String} options [optional] options to pass to native solc binary
- * @return {Module}          solc
+ * OR specify that solc.compileStandard should wrap:
+ * - dockerized solc               (config.solc = "<image-name>" && config.docker: true)
+ *
+ * @return {Module|Object}         solc
  */
-CompilerProvider.prototype.load = function(options){
+CompilerProvider.prototype.load = function(){
   const self = this;
   const solc = self.config.solc;
 
   return new Promise((accept, reject) => {
+    const useDocker =  self.config.docker;
     const useDefault = !solc;
     const useLocal =   !useDefault && self.isLocal(solc);
-    const useRemote =  !useLocal;
+    const useRemote =  !useLocal
 
+    if (useDocker)  return accept(self.getDocker());
     if (useDefault) return accept(self.getDefault());
     if (useLocal)   return accept(self.getLocal(solc));
     if (useRemote)  return accept(self.getByUrl(solc)); // Tries cache first, then remote.
@@ -124,6 +129,7 @@ CompilerProvider.prototype.getLocal = function(localPath){
   return compiler;
 }
 
+
 /**
  * Fetches solc versions object from remote solc-bin. This includes an array of build
  * objects with detailed version info, an array of release version numbers
@@ -136,7 +142,7 @@ CompilerProvider.prototype.getVersions = function(){
 
   return request(self.config.versionsUrl)
     .then(list => JSON.parse(list))
-    .catch(err => self.errors('noRequest', url, err));
+    .catch(err => {throw self.errors('noRequest', url, err)});
 }
 
 /**
@@ -194,6 +200,36 @@ CompilerProvider.prototype.getByUrl = function(version){
     });
 }
 
+/**
+ * Makes solc.compileStandard a wrapper to a child process invocation of dockerized solc.
+ * @return {Object} solc output
+ */
+CompilerProvider.prototype.getDocker = function(){
+  const version = this.config.solc;
+
+  this.validateDocker();
+
+  return this
+    .getVersions()
+    .then(versions => {
+      return {
+
+        compileStandard: (options) => {
+          const command = 'docker run -i ethereum/solc:' + version + ' --standard-json';
+
+          const result = child.execSync(command, {input: options});
+          return String(result);
+        },
+
+        version: () => {
+          return (version === 'stable')
+            ? versions.latestRelease
+            : version
+        }
+      }
+    })
+}
+
 //------------------------------------ Utils -------------------------------------------------------
 
 /**
@@ -203,6 +239,34 @@ CompilerProvider.prototype.getByUrl = function(version){
  */
 CompilerProvider.prototype.isLocal = function(localPath){
   return fs.existsSync(localPath) || path.isAbsolute(localPath);
+}
+
+/**
+ * Checks to make sure image is specified in the config, that docker exists and that
+ * the image exists locally. If the last condition isn't true, docker will try to pull
+ * it down and this breaks everything.
+ * @throws {Error}
+ */
+CompilerProvider.prototype.validateDocker = function(){
+  let result;
+  const image = this.config.solc;
+
+  // Image specified
+  if (!image) throw this.errors('noString', image);
+
+  // Docker exists locally
+  try {
+    result = child.execSync('docker -v');
+  } catch(err){
+    throw this.errors('noDocker');
+  }
+
+  // Image exists locally
+  try {
+    child.execSync('docker inspect --type=image ethereum/solc:' + image);
+  } catch(err){
+    throw this.errors('noImage', image);
+  }
 }
 
 /**
@@ -289,8 +353,10 @@ CompilerProvider.prototype.errors = function(kind, input, err){
   const kinds = {
     noPath:    "Could not find compiler at: " + input,
     noVersion: "Could not find compiler version:\n" + input + ".\n" + info,
-    noString:  "Expected string (`path` or `version`), got: " + input.toString(),
+    noString:  "`compiler.solc` option must be string specifying a path, solc version, or docker image, got: " + input,
     noRequest: "Failed to complete request to: " + input + ".\n\n" + err,
+    noDocker: "You are trying to run dockerized solc, but docker is not installed on this machine.",
+    noImage: "Please pull " + input + " from docker before trying to compile with it.",
   }
 
   return new Error(kinds[kind]);

@@ -23,7 +23,6 @@
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "mocha": "^3.5.3",
-    "tmp": "0.0.33",
     "truffle-resolver": "2.0.0"
   },
   "babel": {
