@@ -47,6 +47,7 @@ CompilerProvider.prototype.cachePath = findCacheDir({
  *
  * OR specify that solc.compileStandard should wrap:
  * - dockerized solc               (config.solc = "<image-name>" && config.docker: true)
+ * - native built solc             (cofing.solc = "native")
  *
  * @return {Module|Object}         solc
  */
@@ -375,12 +376,19 @@ CompilerProvider.prototype.errors = function(kind, input, err){
   const info = 'Run `truffle compile --list` to see available versions.'
 
   const kinds = {
+
     noPath:    "Could not find compiler at: " + input,
     noVersion: "Could not find compiler version:\n" + input + ".\n" + info,
-    noString:  "`compiler.solc` option must be string specifying a path, solc version, or docker image, got: " + input,
     noRequest: "Failed to complete request to: " + input + ".\n\n" + err,
-    noDocker: "You are trying to run dockerized solc, but docker is not installed on this machine.",
-    noImage: "Please pull " + input + " from docker before trying to compile with it.",
+    noDocker:  "You are trying to run dockerized solc, but docker is not installed.",
+    noImage:   "Please pull " + input + " from docker before trying to compile with it.",
+
+    // Lists
+    noString:  "`compiler.solc` option must be a string specifying:\n" +
+               "   - a path to a locally installed solcjs\n" +
+               "   - a solc version (ex: '0.4.22')\n" +
+               "   - a docker image name (ex: 'stable')\n" +
+               "Received: " + input + " instead.",
   }
 
   return new Error(kinds[kind]);

@@ -214,6 +214,8 @@ describe('CompilerProvider', function(){
         };
 
         compile(newPragmaSource, options, (err, result) => {
+          if (err) return done(err);
+
           assert(result['NewPragma'].contract_name === 'NewPragma', 'Should have compiled');
           done();
         });
@@ -226,6 +228,8 @@ describe('CompilerProvider', function(){
         };
 
         compile(newPragmaSource, options, (err, result) => {
+          if (err) return done(err);
+
           assert(result['NewPragma'].contract_name === 'NewPragma', 'Should have compiled');
           done();
         });
