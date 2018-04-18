@@ -289,7 +289,6 @@ CompilerProvider.prototype.isCached = function(fileName){
   return fs.existsSync(file);
 }
 
-
 /**
  * Write  to the cache at `config.cachePath`. Creates `cachePath` directory if
  * does not exist.

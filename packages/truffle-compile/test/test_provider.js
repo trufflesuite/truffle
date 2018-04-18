@@ -196,53 +196,55 @@ describe('CompilerProvider', function(){
             assert(result['NewPragma'].contract_name === 'NewPragma', 'Should have compiled');
 
             // atime is not getting updated on read in CI.
-            if (!process.env.CI){
+            if (!process.env.TEST){
               assert(initialAccessTime < finalAccessTime, "Should have used cached compiler");
             }
 
             done();
           });
-
         }).catch(done);
       });
     });
 
-    it('compiles with dockerized solc', function(done){
-      options.compiler = {
-        solc: "0.4.22",
-        docker: true
-      };
+    describe('docker [ @native ]', function() {
 
-      compile(newPragmaSource, options, (err, result) => {
-        assert(result['NewPragma'].contract_name === 'NewPragma', 'Should have compiled');
-        done();
+      it('compiles with dockerized solc', function(done){
+        options.compiler = {
+          solc: "0.4.22",
+          docker: true
+        };
+
+        compile(newPragmaSource, options, (err, result) => {
+          assert(result['NewPragma'].contract_name === 'NewPragma', 'Should have compiled');
+          done();
+        });
       });
+
+      it('errors if running dockerized solc without specifying an image', function(done){
+        options.compiler = {
+          solc: undefined,
+          docker: true
+        };
+
+        compile(newPragmaSource, options, (err, result) => {
+          assert(err.message.includes('option must be'));
+          done();
+        });
+      })
+
+      it('errors if running dockerized solc when image does not exist locally', function(done){
+        const imageName = 'fantasySolc.777555';
+
+        options.compiler = {
+          solc: imageName,
+          docker: true
+        };
+
+        compile(newPragmaSource, options, (err, result) => {
+          assert(err.message.includes(imageName));
+          done();
+        });
+      })
     });
-
-    it('errors if running dockerized solc without specifying an image', function(done){
-      options.compiler = {
-        solc: undefined,
-        docker: true
-      };
-
-      compile(newPragmaSource, options, (err, result) => {
-        assert(err.message.includes('option must be'));
-        done();
-      });
-    })
-
-    it('errors if running dockerized solc when image does not exist locally', function(done){
-      const imageName = 'fantasySolc.777555';
-
-      options.compiler = {
-        solc: imageName,
-        docker: true
-      };
-
-      compile(newPragmaSource, options, (err, result) => {
-        assert(err.message.includes(imageName));
-        done();
-      });
-    })
   });
 });
