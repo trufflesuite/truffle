@@ -1,13 +1,13 @@
 {
   "name": "truffle-workflow-compile",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Core workflow behavior for `truffle compile` command",
   "dependencies": {
     "async": "^1.4.2",
     "lodash": "^4.5.1",
     "mkdirp": "^0.5.1",
     "truffle-artifactor": "^3.0.5",
-    "truffle-compile": "^3.0.9",
+    "truffle-compile": "^3.0.10",
     "truffle-config": "^1.0.4",
     "truffle-expect": "^0.0.3",
     "truffle-resolver": "^4.0.3"
