@@ -1,8 +1,6 @@
 import debugModule from "debug";
 const debug = debugModule("test:helpers");
 
-import "source-map-support/register";
-
 import path from "path";
 import fs from "fs-extra";
 import async from "async";

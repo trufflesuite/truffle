@@ -52,8 +52,9 @@ const ast = createSelectorTree({
      * jsonpointer for current ast node
      */
     pointer: createLeaf(
-      ["./tree", solidity.current.sourceRange], (ast, range) =>
-        findRange(ast, range.start, range.length)
+      ["./tree", solidity.current.sourceRange],
+
+      (ast, range) => findRange(ast, range.start, range.length)
     ),
 
     /**
@@ -63,7 +64,9 @@ const ast = createSelectorTree({
      */
     node: createLeaf(
       ["./tree", "./pointer"], (ast, pointer) =>
-        jsonpointer.get(ast, pointer)
+        (pointer)
+          ? jsonpointer.get(ast, pointer)
+          : jsonpointer.get(ast, "")
     ),
 
   }
