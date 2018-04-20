@@ -31,6 +31,51 @@ function cleanBigNumbers(value) {
   }
 }
 
+function createStateSelectors({ stack, memory, storage }) {
+  return {
+    /**
+     * .stack
+     */
+    stack: createLeaf(
+      [stack],
+
+      (words) => (words || []).map(
+        (word) => decodeUtils.toBytes(decodeUtils.toBigNumber(word, decodeUtils.WORD_SIZE))
+      )
+    ),
+
+    /**
+     * .memory
+     */
+    memory: createLeaf(
+      [memory],
+
+      (words) => new Uint8Array(
+        (words.join("").match(/.{1,2}/g) || [])
+          .map( (byte) => parseInt(byte, 16) )
+      )
+    ),
+
+    /**
+     * .storage
+     */
+    storage: createLeaf(
+      [storage],
+
+      (mapping) => Object.assign(
+        {}, ...Object.entries(mapping).map( ([ address, word ]) =>
+          ({
+            [`0x${address}`]: new Uint8Array(
+              (word.match(/.{1,2}/g) || [])
+                .map( (byte) => parseInt(byte, 16) )
+            )
+          })
+        )
+      )
+    )
+  };
+}
+
 const data = createSelectorTree({
   state: (state) => state.data,
 
@@ -109,118 +154,75 @@ const data = createSelectorTree({
         [ast.current.node], (node) => node.id
       )
     },
+
+    /**
+     * data.current.state
+     */
+    state: createStateSelectors(evm.current.state),
+
+    /**
+     * data.current.identifiers (namespace)
+     */
+    identifiers: {
+
+      /**
+       * data.current.identifiers (selector)
+       */
+      _: createLeaf(
+        [
+          "/views/scopes/inlined",
+          "/proc/assignments",
+          "/current/scope",
+          "/current/state"
+        ],
+
+        (scopes, assignments, scope, state) => {
+          let { stack, memory, storage } = state;
+          let cur = scope.id;
+          let variables = {};
+
+
+          const format = (v) => {
+            let definition = v.definition;
+            debug("assignments %O", assignments);
+            debug("v.id %o", v.id);
+            let assignment = (assignments[v.id] || {}).ref;
+
+            debug("assignment: %o", assignment);
+            if (!assignment) {
+              return undefined;
+            }
+
+            return decode(definition, assignment, state, scopes);
+          };
+
+          do {
+            variables = Object.assign(
+              variables,
+              ...(scopes[cur].variables || [])
+                .filter( (v) => variables[v.name] == undefined )
+                .map( (v) => ({ [v.name]: format(scopes[v.id]) }) )
+            );
+
+            cur = scopes[cur].parentId;
+          } while (cur != null);
+
+          return variables;
+        }
+      ),
+
+      native: createLeaf(['./_'], cleanBigNumbers)
+    }
   },
 
   /**
    * data.next
    */
   next: {
-
     /**
-     * data.next.stack
+     * data.next.state
      */
-    stack: createLeaf(
-      [evm.next.state.stack],
-
-      (words) => (words || []).map(
-        (word) => decodeUtils.toBytes(decodeUtils.toBigNumber(word, decodeUtils.WORD_SIZE))
-      )
-    ),
-
-    /**
-     * data.next.memory
-     */
-    memory: createLeaf(
-      [evm.next.state.memory],
-
-      (words) => new Uint8Array(
-        (words.join("").match(/.{1,2}/g) || [])
-          .map( (byte) => parseInt(byte, 16) )
-      )
-    ),
-
-    /**
-     * data.next.storage
-     */
-    storage: createLeaf(
-      [evm.next.state.storage],
-
-      (mapping) => Object.assign(
-        {}, ...Object.entries(mapping).map( ([ address, word ]) =>
-          ({
-            [`0x${address}`]: new Uint8Array(
-              (word.match(/.{1,2}/g) || [])
-                .map( (byte) => parseInt(byte, 16) )
-            )
-          })
-        )
-      )
-    )
-
-  },
-
-  /**
-   * data.identifiers
-   */
-  identifiers: {
-
-    /**
-     * data.identifiers.current
-     *
-     * map of current identifiers to precise value
-     */
-    current: createLeaf(
-      [
-        "/views/scopes/inlined",
-        "/proc/assignments",
-        "/current/scope",
-        "/next"
-      ],
-
-      (scopes, assignments, scope, next) => {
-        let { stack, memory, storage } = next;
-        let cur = scope.id;
-        let variables = {};
-
-
-        const format = (v) => {
-          let definition = v.definition;
-          debug("assignments %O", assignments);
-          debug("v.id %o", v.id);
-          let assignment = (assignments[v.id] || {}).ref;
-          var rawValue;
-
-          debug("assignment: %o", assignment);
-          if (!assignment) {
-            return undefined;
-          }
-
-          return decode(definition, assignment, next, scopes);
-        };
-
-        do {
-          variables = Object.assign(
-            variables,
-            ...(scopes[cur].variables || [])
-              .filter( (v) => variables[v.name] == undefined )
-              .map( (v) => ({ [v.name]: format(scopes[v.id]) }) )
-          );
-
-          cur = scopes[cur].parentId;
-        } while (cur != null);
-
-        return variables;
-      }
-    ),
-
-    /**
-     * data.identifiers.native.current
-     *
-     * stripped of bignumbers
-     */
-    native: {
-      current: createLeaf(['/identifiers/current'], cleanBigNumbers)
-    }
+    state: createStateSelectors(evm.next.state)
   }
 });
 

@@ -33,7 +33,7 @@ function *tickSaga() {
   let scopes = yield select(data.info.scopes);
   let definitions = yield select(data.views.scopes.inlined);
 
-  let stack = yield select(data.next.stack);
+  let stack = yield select(data.next.state.stack);
   if (!stack) {
     return;
   }
