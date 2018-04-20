@@ -240,7 +240,7 @@ var command = {
         }
 
         function printVariables() {
-          var variables = session.view(data.identifiers.native.current);
+          var variables = session.view(data.current.identifiers.native);
 
           // Get the length of the longest name.
           var longestNameLength = Math.max.apply(null, (Object.keys(variables).map(function(name) {
@@ -266,7 +266,7 @@ var command = {
         }
 
         function evalAndPrintExpression(expr, indent, suppress) {
-          var context = session.view(data.identifiers.native.current);
+          var context = session.view(data.current.identifiers.native);
           try {
             var result = safeEval(expr, context);
             var formatted = formatValue(result, indent);
