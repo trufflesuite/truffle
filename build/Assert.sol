@@ -1344,9 +1344,9 @@ library Assert {
         */
     function _report(bool result, string message) internal {
         if(result)
-            TestEvent(true, "");
+            emit TestEvent(true, "");
         else
-            TestEvent(false, message);
+            emit TestEvent(false, message);
     }
 
     /*
@@ -1560,7 +1560,7 @@ library Assert {
             result (string) - "tag: _itoa(value)"
     */
     function _tag(int value, string tag) internal pure returns (string) {
-        var nstr = _itoa(value, 10);
+        string memory nstr = _itoa(value, 10);
         return _tag(nstr, tag);
     }
 
@@ -1577,7 +1577,7 @@ library Assert {
             result (string) - "tag: _utoa(value)"
     */
     function _tag(uint value, string tag) internal pure returns (string) {
-        var nstr = _utoa(value, 10);
+        string memory nstr = _utoa(value, 10);
         return _tag(nstr, tag);
     }
 
@@ -1594,7 +1594,7 @@ library Assert {
             result (string) - "tag: _ltoa(value)"
     */
     function _tag(bool value, string tag) internal pure returns (string) {
-        var nstr = _ltoa(value);
+        string memory nstr = _ltoa(value);
         return _tag(nstr, tag);
     }
 
