@@ -82,6 +82,7 @@ describe('CompilerProvider', function(){
       oldPragmaFloatSource = { "OldPragmaFloat.sol": oldPragmaFloat};
     });
 
+
     it('compiles w/ default solc if no compiler specified (float)', function(done){
       options.compiler = { cache: false };
 
@@ -216,6 +217,7 @@ describe('CompilerProvider', function(){
         compile(newPragmaSource, options, (err, result) => {
           if (err) return done(err);
 
+          assert(result['NewPragma'].compiler.version.included('Linux.g++'));
           assert(result['NewPragma'].contract_name === 'NewPragma', 'Should have compiled');
           done();
         });
@@ -227,9 +229,12 @@ describe('CompilerProvider', function(){
           docker: true
         };
 
+        const expectedVersion = '0.4.22+commit.4cb486ee.Linux.g++';
+
         compile(newPragmaSource, options, (err, result) => {
           if (err) return done(err);
 
+          assert(result['NewPragma'].compiler.version === expectedVersion);
           assert(result['NewPragma'].contract_name === 'NewPragma', 'Should have compiled');
           done();
         });

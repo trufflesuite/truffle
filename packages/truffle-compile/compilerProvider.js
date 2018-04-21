@@ -210,25 +210,17 @@ CompilerProvider.prototype.getByUrl = function(version){
  */
 CompilerProvider.prototype.getDocker = function(){
   const version = this.config.solc;
+  const versionString = this.validateDocker();
 
-  this.validateDocker();
+  return {
+    compileStandard: (options) => {
+      const command = 'docker run -i ethereum/solc:' + version + ' --standard-json';
+      const result = child.execSync(command, {input: options});
+      return String(result);
+    },
 
-  return this.getVersions().then(versions => {
-    return {
-
-      compileStandard: (options) => {
-        const command = 'docker run -i ethereum/solc:' + version + ' --standard-json';
-        const result = child.execSync(command, {input: options});
-        return String(result);
-      },
-
-      version: () => {
-        return (version === 'stable')
-          ? versions.latestRelease
-          : version
-      }
-    }
-  })
+    version: () => versionString,
+  }
 }
 
 /**
@@ -237,23 +229,17 @@ CompilerProvider.prototype.getDocker = function(){
  */
 CompilerProvider.prototype.getNative = function(){
   const version = this.config.solc;
+  const versionString = this.validateNative();
 
-  return this.getVersions().then(versions => {
-    return {
+  return {
+    compileStandard: (options) => {
+      const command = 'solc --standard-json';
+      const result = child.execSync(command, {input: options});
+      return String(result);
+    },
 
-      compileStandard: (options) => {
-        const command = 'solc --standard-json';
-        const result = child.execSync(command, {input: options});
-        return String(result);
-      },
-
-      version: () => {
-        return (version === 'stable')
-          ? versions.latestRelease
-          : version
-      }
-    }
-  })
+    version: () => versionString,
+  }
 }
 
 //------------------------------------ Utils -------------------------------------------------------
@@ -271,10 +257,10 @@ CompilerProvider.prototype.isLocal = function(localPath){
  * Checks to make sure image is specified in the config, that docker exists and that
  * the image exists locally. If the last condition isn't true, docker will try to pull
  * it down and this breaks everything.
+ * @return {String}  solc version string
  * @throws {Error}
  */
 CompilerProvider.prototype.validateDocker = function(){
-  let result;
   const image = this.config.solc;
 
   // Image specified
@@ -282,7 +268,7 @@ CompilerProvider.prototype.validateDocker = function(){
 
   // Docker exists locally
   try {
-    result = child.execSync('docker -v');
+    child.execSync('docker -v');
   } catch(err){
     throw this.errors('noDocker');
   }
@@ -293,6 +279,39 @@ CompilerProvider.prototype.validateDocker = function(){
   } catch(err){
     throw this.errors('noImage', image);
   }
+
+  // Get version
+  const version = child.execSync('docker run ethereum/solc:' + image + ' --version');
+  return this.normalizeVersion(version);
+}
+
+/**
+ * Checks to make sure image is specified in the config, that docker exists and that
+ * the image exists locally. If the last condition isn't true, docker will try to pull
+ * it down and this breaks everything.
+ * @return {String}  solc version string
+ * @throws {Error}
+ */
+CompilerProvider.prototype.validateNative = function(){
+  let version;
+  try {
+    version = child.execSync('solc --version');
+  } catch(err){
+    throw this.errors('noNative', null, err);
+  }
+
+  return this.normalizeVersion(version);
+}
+
+/**
+ * Converts shell exec'd solc version from buffer to string and strips out human readable
+ * description.
+ * @param  {Buffer} version result of childprocess
+ * @return {String}         normalized version string: e.g 0.4.22+commit.4cb486ee.Linux.g++
+ */
+CompilerProvider.prototype.normalizeVersion = function(version){
+  version = String(version);
+  return version.split(':')[1].trim();
 }
 
 /**
@@ -382,6 +401,7 @@ CompilerProvider.prototype.errors = function(kind, input, err){
     noRequest: "Failed to complete request to: " + input + ".\n\n" + err,
     noDocker:  "You are trying to run dockerized solc, but docker is not installed.",
     noImage:   "Please pull " + input + " from docker before trying to compile with it.",
+    noNative:  "Could not execute local solc binary: " + err,
 
     // Lists
     noString:  "`compiler.solc` option must be a string specifying:\n" +
