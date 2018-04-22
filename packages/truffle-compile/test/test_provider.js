@@ -58,6 +58,12 @@ describe('CompilerProvider', function(){
       assert(releases.prereleases[0] === firstSolc, 'Should return prereleases');
       assert(releases.releases[0] === releases.latestRelease, 'Should return releases/latestRelease');
     });
+
+    it('lists available docker images [ @native ]', async function(){
+      const list = await provider.getDockerTags();
+      assert(Array.isArray(list));
+      assert(typeof list[0] === 'string');
+    })
   });
 
   describe('integration', function(){
@@ -217,7 +223,7 @@ describe('CompilerProvider', function(){
         compile(newPragmaSource, options, (err, result) => {
           if (err) return done(err);
 
-          assert(result['NewPragma'].compiler.version.included('Linux.g++'));
+          assert(result['NewPragma'].compiler.version.includes('Linux.g++'));
           assert(result['NewPragma'].contract_name === 'NewPragma', 'Should have compiled');
           done();
         });
