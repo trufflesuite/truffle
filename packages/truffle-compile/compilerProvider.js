@@ -26,6 +26,7 @@ CompilerProvider.prototype.config = {
   solc: null,
   versionsUrl: 'https://solc-bin.ethereum.org/bin/list.json',
   compilerUrlRoot: 'https://solc-bin.ethereum.org/bin/',
+  dockerTagsUrl: 'https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/',
   cache: true,
 }
 
@@ -102,6 +103,24 @@ CompilerProvider.prototype.getReleases = function(){
     });
 }
 
+/**
+ * Fetches the first page of docker tags for the the ethereum/solc image
+ * @return {Object} tags
+ */
+CompilerProvider.prototype.getDockerTags = function(){
+  const self = this;
+
+  return request(self.config.dockerTagsUrl)
+    .then(list =>
+      JSON
+        .parse(list)
+        .results
+        .map(item => item.name)
+    )
+    .catch(err => {throw self.errors('noRequest', url, err)});
+}
+
+
 //------------------------------------ Getters -----------------------------------------------------
 
 /**
@@ -148,6 +167,7 @@ CompilerProvider.prototype.getVersions = function(){
     .then(list => JSON.parse(list))
     .catch(err => {throw self.errors('noRequest', url, err)});
 }
+
 
 /**
  * Returns terminal url segment for `version` from the versions object
