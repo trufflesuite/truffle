@@ -8,6 +8,7 @@ var command = {
   },
   run: function (options, done) {
     var Config = require("truffle-config");
+    var Contracts = require("truffle-workflow-compile");
     var ConfigurationError = require("../errors/configurationerror");
     var Require = require("truffle-require");
     var Environment = require("../environment");
@@ -38,9 +39,13 @@ var command = {
         config.logger.log("Using network '" + config.network + "'." + OS.EOL);
       }
 
-      Require.exec(config.with({
-        file: file
-      }), done);
+      Contracts.compile(config, function(err){
+        if(err) return done(err);
+
+        Require.exec(config.with({
+          file: file
+        }), done);
+      });
     });
   }
 }
