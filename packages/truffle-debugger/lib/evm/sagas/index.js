@@ -26,7 +26,6 @@ export function *addContext(contractName, binary) {
  * @return {string} ID (0x-prefixed keccak of binary)
  */
 export function *addInstance(address, binary) {
-  let contexts = yield select(evm.info.contexts);
   let search = yield select(evm.info.binaries.search);
   let { context } = search(binary);
 
