@@ -52,11 +52,10 @@ const DEFAULT_INSTANCES = {
 function instances(state = DEFAULT_INSTANCES, action) {
   switch (action.type) {
     /*
-     * Adding a new address (with binary)
+     * Adding a new address for context
      */
     case actions.ADD_INSTANCE:
-      let { address, binary } = action;
-      let context = keccak256(binary);
+      let { address, context, binary } = action;
 
       // get known addresses for this context
       let otherInstances = state.byContext[context] || [];
@@ -66,7 +65,7 @@ function instances(state = DEFAULT_INSTANCES, action) {
         byAddress: {
           ...state.byAddress,
 
-          [address]: { context }
+          [address]: { context, binary }
         },
 
         byContext: {

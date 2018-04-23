@@ -141,7 +141,34 @@ const evm = createSelectorTree({
     /**
      * evm.info.binaries
      */
-    binaries: createLeaf(['/state'], (state) => state.info.contexts.byBinary)
+    binaries: {
+      _: createLeaf(['/state'], (state) => state.info.contexts.byBinary),
+
+      /**
+       * evm.info.binaries.search
+       *
+       * returns function (binary) => context
+       */
+      search: createLeaf(['./_'], (binaries) => {
+        // HACK ignore link references for search
+        // link references come in two forms: with underscores or all zeroes
+        const toRegExp = (binary) =>
+          new RegExp(`^${binary.replace(/__.{38}|0{40}/g, ".{40}")}`)
+
+        let matchers = Object.entries(binaries)
+          .map( ([binary, {context}]) => ({
+            context,
+            regex: toRegExp(binary)
+          }))
+
+        return (binary) => {
+          return matchers
+            .filter( ({ context, regex }) => binary.match(regex) )
+            .map( ({ context }) => ({ context }) )
+            [0] || null;
+        };
+      })
+    }
   },
 
   /**
