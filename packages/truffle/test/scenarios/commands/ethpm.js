@@ -8,7 +8,7 @@ var Reporter = require("../reporter");
 var sandbox = require("../sandbox");
 var log = console.log;
 
-describe("EthPM commands", function() {
+describe("truffle publish", function() {
   var config;
   var project = path.join(__dirname, '../../sources/ethpm');
   var logger = new MemoryLogger();
