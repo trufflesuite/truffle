@@ -4,6 +4,14 @@ var command = {
   builder: {
     file: {
       type: "string"
+    },
+    c: {
+      type: "boolean",
+      default: false
+    },
+    compile: {
+      type: "boolean",
+      default: false
     }
   },
   run: function (options, done) {
@@ -39,13 +47,21 @@ var command = {
         config.logger.log("Using network '" + config.network + "'." + OS.EOL);
       }
 
-      Contracts.compile(config, function(err){
-        if(err) return done(err);
+      // `--compile`
+      if (options.c || options.compile){
+        return Contracts.compile(config, function(err){
+          if(err) return done(err);
 
-        Require.exec(config.with({
-          file: file
-        }), done);
-      });
+          Require.exec(config.with({
+            file: file
+          }), done);
+        });
+      };
+
+      // Just exec
+      Require.exec(config.with({
+        file: file
+      }), done);
     });
   }
 }
