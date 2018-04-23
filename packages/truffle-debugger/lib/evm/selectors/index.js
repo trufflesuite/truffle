@@ -194,22 +194,26 @@ const evm = createSelectorTree({
      * evm.current.context
      */
     context: createLeaf(
-      ["./call", "/info/instances", "/info/binaries", "/info/contexts"],
+      ["./call", "/info/instances", "/info/binaries/search", "/info/contexts"],
 
-      ({address, binary}, instances, binaries, contexts) => {
-        var record;
+      ({address, binary}, instances, search, contexts) => {
+        let record;
         if (address) {
           record = instances[address];
+          binary = record.binary
         } else {
-          // trim off possible constructor args, one word at a time
-          // HACK until there's better CREATE semantics
-          while (record === undefined && binary) {
-            record = binaries[binary];
-            binary = binary.slice(0, -(WORD_SIZE * 2));
-          }
+          record = search(binary);
+          debug("record %o", record);
         }
 
-        return contexts[(record || {}).context];
+        let context = contexts[(record || {}).context];
+
+        debug("contexts %o", contexts);
+
+        return {
+          ...context,
+          binary
+        }
       }
     ),
 
