@@ -161,12 +161,10 @@ const evm = createSelectorTree({
             regex: toRegExp(binary)
           }))
 
-        return (binary) => {
-          return matchers
-            .filter( ({ context, regex }) => binary.match(regex) )
-            .map( ({ context }) => ({ context }) )
-            [0] || null;
-        };
+        return (binary) => matchers
+          .filter( ({ context, regex }) => binary.match(regex) )
+          .map( ({ context }) => ({ context }) )
+          [0] || null;
       })
     }
   },
@@ -203,12 +201,9 @@ const evm = createSelectorTree({
           binary = record.binary
         } else {
           record = search(binary);
-          debug("record %o", record);
         }
 
         let context = contexts[(record || {}).context];
-
-        debug("contexts %o", contexts);
 
         return {
           ...context,
