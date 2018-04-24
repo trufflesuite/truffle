@@ -1,15 +1,14 @@
-var spawn = require('child_process').spawn;
+var exec = require('child_process').exec;
 var yargs = require("yargs/yargs");
 var path = require("path");
 
 module.exports = {
   run: function(command, config, callback) {
-    var args = yargs();
-    var argv = args.parse(command)._;
+    var execString = "node " +
+                     path.join(__dirname, "../", "../", "build", "cli.bundled.js") +
+                     " " + command;
 
-    argv.unshift(path.join(__dirname, "../", "../", "build", "cli.bundled.js"))
-
-    var child = spawn("node", argv, {
+    var child = exec(execString, {
       cwd: config.working_directory,
     });
 
