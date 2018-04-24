@@ -32,6 +32,7 @@ var command = {
 
   listVersions: function(provider, options, done){
     const log = options.logger.log;
+    options.list = (options.list.length) ? options.list : "releases";
 
     // Help
     if (options.list && options.help){
@@ -77,10 +78,15 @@ var command = {
     return val;
   },
 
-  help: "--list [option]: See available solc versions. " +
-        "(Default: solcjs stable releases)\n" +
-        "Options:\n" +
+  help: "\n" +
+        "See available solc versions. (Default: solcjs stable releases)\n\n" +
+
+        "USAGE:\n" +
+        "   --list [option] [--all]\n\n" +
+
+        "OPTIONS:\n" +
         " `docker`         recently published docker tags\n" +
+        " `releases`       solcjs stable releases\n" +
         " `prereleases`    solcjs nightly builds\n" +
         " `latestRelease`  solcjs latest\n\n",
 }

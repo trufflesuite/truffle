@@ -115,7 +115,7 @@ describe("compile", function() {
       this.timeout(5000);
 
       const options = {
-        list: "releases"
+        list: ""
       };
 
       command.run(config.with(options), (err, result) => {
@@ -167,6 +167,26 @@ describe("compile", function() {
           const arr = JSON.parse(output);
           assert(arr.length > 11);
           assert(typeof arr[0] === 'string');
+          done();
+        });
+
+        memStream.end('');
+      })
+    });
+
+    it("prints a help when list and help are set", function(done){
+      this.timeout(5000);
+
+      const options = {
+        list: "releases",
+        help: true
+      };
+
+      command.run(config.with(options), (err, result) => {
+        if(err) return done(err);
+
+        memStream.on('end', function() {
+          assert(output.includes('USAGE'));
           done();
         });
 
