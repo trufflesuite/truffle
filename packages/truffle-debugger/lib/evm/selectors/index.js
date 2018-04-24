@@ -152,6 +152,9 @@ const evm = createSelectorTree({
       search: createLeaf(['./_'], (binaries) => {
         // HACK ignore link references for search
         // link references come in two forms: with underscores or all zeroes
+        // the underscore format is used by Truffle to reference links by name
+        // zeroes are used by solc directly, as libraries inject their own
+        // address at CREATE-time
         const toRegExp = (binary) =>
           new RegExp(`^${binary.replace(/__.{38}|0{40}/g, ".{40}")}`)
 
