@@ -26,9 +26,12 @@ export function *addContext(contractName, binary) {
  * @return {string} ID (0x-prefixed keccak of binary)
  */
 export function *addInstance(address, binary) {
-  yield put(actions.addInstance(address, binary));
+  let search = yield select(evm.info.binaries.search);
+  let { context } = search(binary);
 
-  return keccak256(binary);
+  yield put(actions.addInstance(address, context, binary));
+
+  return context;
 }
 
 export function* begin({ address, binary }) {
