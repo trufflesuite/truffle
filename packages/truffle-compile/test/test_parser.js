@@ -10,8 +10,8 @@ describe("Parser", function() {
   var solc;
 
   before("get code", async function() {
-    source = fs.readFileSync(path.join(__dirname, "./sources/MyContract.sol"), "utf-8");
-    erroneousSource = fs.readFileSync(path.join(__dirname, "./sources/ShouldError.sol"), "utf-8");
+    source = fs.readFileSync(path.join(__dirname, "./mock/MyContract.sol"), "utf-8");
+    erroneousSource = fs.readFileSync(path.join(__dirname, "./mock/ShouldError.sol"), "utf-8");
 
     const provider = new CompilerProvider();
     solc = await provider.load();
