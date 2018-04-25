@@ -64,10 +64,10 @@ CompilerProvider.prototype.load = function(){
     const useNative =  !useLocal && isNative;
     const useRemote =  !useNative
 
-    if (useDocker)  return accept(self.getDocker());
+    if (useDocker)  return accept(self.getBuilt("docker"));
+    if (useNative)  return accept(self.getBuilt("native"));
     if (useDefault) return accept(self.getDefault());
     if (useLocal)   return accept(self.getLocal(solc));
-    if (useNative)  return accept(self.getNative(solc));
     if (useRemote)  return accept(self.getByUrl(solc)); // Tries cache first, then remote.
   });
 }
@@ -225,41 +225,36 @@ CompilerProvider.prototype.getByUrl = function(version){
 }
 
 /**
- * Makes solc.compileStandard a wrapper to a child process invocation of dockerized solc.
+ * Makes solc.compileStandard a wrapper to a child process invocation of dockerized solc
+ * or natively build solc. Also fetches a companion solcjs for the built js to parse imports
  * @return {Object} solc output
  */
-CompilerProvider.prototype.getDocker = function(){
-  const version = this.config.solc;
-  const versionString = this.validateDocker();
+CompilerProvider.prototype.getBuilt = function(buildType){
+  let versionString;
+  let command;
 
-  return {
-    compileStandard: (options) => {
-      const command = 'docker run -i ethereum/solc:' + version + ' --standard-json';
-      const result = child.execSync(command, {input: options});
-      return String(result);
-    },
-
-    version: () => versionString,
+  switch (buildType) {
+    case "native":
+      versionString = this.validateNative();
+      command = 'solc --standard-json';
+      break;
+    case "docker":
+      versionString = this.validateDocker();
+      command = 'docker run -i ethereum/solc:' + this.config.solc + ' --standard-json';
+      break;
   }
-}
 
-/**
- * Makes solc.compileStandard a wrapper to a child process invocation of dockerized solc.
- * @return {Object} solc output
- */
-CompilerProvider.prototype.getNative = function(){
-  const version = this.config.solc;
-  const versionString = this.validateNative();
+  const commit = this.getCommitFromVersion(versionString);
 
-  return {
-    compileStandard: (options) => {
-      const command = 'solc --standard-json';
-      const result = child.execSync(command, {input: options});
-      return String(result);
-    },
-
-    version: () => versionString,
-  }
+  return this
+    .getByUrl(commit)
+    .then(solcjs => {
+      return {
+        compileStandard: (options) => String(child.execSync(command, {input: options})),
+        version: () => versionString,
+        importsParser: solcjs,
+      }
+    });
 }
 
 //------------------------------------ Utils -------------------------------------------------------
@@ -321,6 +316,17 @@ CompilerProvider.prototype.validateNative = function(){
   }
 
   return this.normalizeVersion(version);
+}
+
+/**
+ * Extracts a commit key from the version info returned by native/docker solc.
+ * We use this to fetch a companion solcjs from solc-bin in order to parse imports
+ * correctly.
+ * @param  {String} versionString   version info from ex: `solc -v`
+ * @return {String}                 commit key, ex: commit.4cb486ee
+ */
+CompilerProvider.prototype.getCommitFromVersion = function(versionString){
+  return 'commit.' + versionString.match(/commit\.(.*?)\./)[1]
 }
 
 /**

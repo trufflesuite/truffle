@@ -3,8 +3,10 @@ const path = require("path");
 const solc = require("solc");
 const assert = require("assert");
 const findCacheDir = require('find-cache-dir');
+const Resolver = require('truffle-resolver');
 const compile = require("../index");
 const CompilerProvider = require('../compilerProvider');
+
 
 function waitSecond() {
   return new Promise((resolve, reject) => setTimeout(() => resolve(), 5000));
@@ -80,7 +82,7 @@ describe('CompilerProvider', function(){
 
     before("get code", function() {
       const newPragma = fs.readFileSync(path.join(__dirname, "./sources/NewPragma.sol"), "utf-8");
-      const oldPragmaPin = fs.readFileSync(path.join(__dirname, "./sources/OldPragmaPin.sol"), "utf-8");
+      const oldPragmaPin = fs.readFileSync(path.join(__dirname, "./mock/OldPragmaPin.sol"), "utf-8");
       const oldPragmaFloat = fs.readFileSync(path.join(__dirname, "./sources/OldPragmaFloat.sol"), "utf-8");
 
       newPragmaSource = { "NewPragma.sol": newPragma};
@@ -245,6 +247,35 @@ describe('CompilerProvider', function(){
           done();
         });
       });
+
+      it('resolves imports correctly when using built solc', function(done){
+        const paths = [];
+        paths.push(path.join(__dirname, "./sources/ComplexOrdered.sol"));
+        paths.push(path.join(__dirname, "./sources/InheritB.sol"));
+
+        let options = {
+          compiler : {
+            solc: "0.4.22",
+            docker: true
+          },
+          quiet: true,
+          solc: '',
+          contracts_build_directory: path.join(__dirname, "./build"),
+          contracts_directory: path.join(__dirname, "./sources"),
+          working_directory: __dirname,
+          paths: paths
+        }
+
+        options.resolver = new Resolver(options);
+
+        compile.with_dependencies(options, (err, result) => {
+          if (err) return done(err);
+
+          // This contract imports / inherits
+          assert(result['ComplexOrdered'].contract_name === 'ComplexOrdered', 'Should have compiled');
+          done();
+        });
+      })
 
       it('errors if running dockerized solc without specifying an image', function(done){
         options.compiler = {
