@@ -1,4 +1,4 @@
-var TestRPC = require("ethereumjs-testrpc");
+var TestRPC = require("ganache-cli");
 var contract = require("truffle-contract");
 var Deployer = require("../index");
 var Web3 = require("web3");
@@ -72,7 +72,7 @@ describe("deployer", function() {
       from: accounts[0]
     });
 
-    deployer.deploy(Example);
+    deployer.deploy(Example, 1);
 
     return deployer.start().then(function() {
       assert.notEqual(Example.address, null);
