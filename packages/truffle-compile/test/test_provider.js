@@ -9,7 +9,7 @@ const CompilerProvider = require('../compilerProvider');
 
 
 function waitSecond() {
-  return new Promise((resolve, reject) => setTimeout(() => resolve(), 5000));
+  return new Promise((resolve, reject) => setTimeout(() => resolve(), 1250));
 }
 
 describe('CompilerProvider', function(){
@@ -178,6 +178,9 @@ describe('CompilerProvider', function(){
 
       const thunk = findCacheDir({name: 'truffle', thunk: true});
       const expectedCache = thunk('soljson-v0.4.21+commit.dfe3193c.js');
+
+      // Delete if it's already there.
+      if (fs.existsSync(expectedCache)) fs.unlinkSync(expectedCache);
 
       options.compiler = {
         cache: true,
