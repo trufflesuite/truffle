@@ -5,6 +5,7 @@ const request = require('request-promise');
 const requireFromString = require('require-from-string');
 const findCacheDir = require('find-cache-dir');
 const originalRequire = require('original-require');
+const solcWrap = require('./solcWrap.js');
 
 
 //------------------------------ Constructor/Config ------------------------------------------------
@@ -379,9 +380,11 @@ CompilerProvider.prototype.addToCache = function(code, fileName){
  * @return {Module}       solc
  */
 CompilerProvider.prototype.getFromCache = function(fileName){
-  const filePath = this.resolveCache(fileName)
-  const cached = fs.readFileSync(filePath, "utf-8");
-  return this.compilerFromString(cached);
+  const filePath = this.resolveCache(fileName);
+  const soljson = require(filePath);
+  const wrapped = solcWrap(soljson);
+  this.removeListener();
+  return wrapped;
 }
 
 /**
@@ -390,9 +393,8 @@ CompilerProvider.prototype.getFromCache = function(fileName){
  * @return {Module}      solc
  */
 CompilerProvider.prototype.compilerFromString = function(code){
-  const solc = this.getDefault();
-  const compiler = requireFromString(code);
-  const wrapped = solc.setupMethods(compiler);
+  const soljson = requireFromString(code);
+  const wrapped = solcWrap(soljson);
   this.removeListener();
   return wrapped;
 }
