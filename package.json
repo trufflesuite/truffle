@@ -1,6 +1,6 @@
 {
   "name": "truffle-hdwallet-provider",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "HD Wallet-enabled Web3 provider",
   "main": "index.js",
   "scripts": {
