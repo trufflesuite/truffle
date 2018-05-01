@@ -3,7 +3,7 @@ var hdkey = require('ethereumjs-wallet/hdkey');
 var ProviderEngine = require("web3-provider-engine");
 var FiltersSubprovider = require('web3-provider-engine/subproviders/filters.js');
 var HookedSubprovider = require('web3-provider-engine/subproviders/hooked-wallet.js');
-var Web3Subprovider = require("web3-provider-engine/subproviders/web3.js");
+var ProviderSubprovider = require("web3-provider-engine/subproviders/provider.js");
 var Web3 = require("web3");
 var Transaction = require('ethereumjs-tx');
 
@@ -42,7 +42,7 @@ function HDWalletProvider(mnemonic, provider_url, address_index=0, num_addresses
     }
   }));
   this.engine.addProvider(new FiltersSubprovider());
-  this.engine.addProvider(new Web3Subprovider(new Web3.providers.HttpProvider(provider_url)));
+  this.engine.addProvider(new ProviderSubprovider(new Web3.providers.HttpProvider(provider_url)));
   this.engine.start(); // Required by the provider engine.
 };
 
