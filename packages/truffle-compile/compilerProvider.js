@@ -278,6 +278,13 @@ CompilerProvider.prototype.isLocal = function(localPath){
  */
 CompilerProvider.prototype.validateDocker = function(){
   const image = this.config.solc;
+  const fileName = image + '.version';
+
+  // Skip validation if they've validated for this image before.
+  if (this.isCached(fileName)){
+    const cachePath = this.resolveCache(fileName);
+    return fs.readFileSync(cachePath, 'utf-8');
+  }
 
   // Image specified
   if (!image) throw this.errors('noString', image);
@@ -296,9 +303,11 @@ CompilerProvider.prototype.validateDocker = function(){
     throw this.errors('noImage', image);
   }
 
-  // Get version
+  // Get version & cache.
   const version = child.execSync('docker run ethereum/solc:' + image + ' --version');
-  return this.normalizeVersion(version);
+  const normalized = this.normalizeVersion(version);
+  this.addToCache(normalized, fileName);
+  return normalized;
 }
 
 /**
@@ -340,6 +349,7 @@ CompilerProvider.prototype.normalizeVersion = function(version){
   version = String(version);
   return version.split(':')[1].trim();
 }
+
 
 /**
  * Returns path to cached solc version
