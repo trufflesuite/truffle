@@ -4,7 +4,7 @@
   "description": "HD Wallet-enabled Web3 provider",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --timeout 5000"
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,10 @@
     "bip39": "^2.2.0",
     "ethereumjs-wallet": "^0.6.0",
     "web3": "^0.18.2",
-    "web3-provider-engine": "^8.4.0"
+    "web3-provider-engine": "^14.0.5"
+  },
+  "devDependencies": {
+    "ganache-core": "^2.1.0",
+    "mocha": "^5.1.1"
   }
 }
