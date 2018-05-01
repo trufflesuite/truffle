@@ -36,6 +36,7 @@ module.exports = function(contract, args, deployer) {
       // Ensure the address and tx-hash are set on the contract.
       contract.address = instance.address;
       contract.transactionHash = instance.transactionHash;
+      return instance;
     });
   };
 };
