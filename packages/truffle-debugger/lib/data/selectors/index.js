@@ -102,11 +102,9 @@ const data = createSelectorTree({
      * selector returns (ast node definition, data reference) => value
      */
     decoder: createLeaf(
-      ["/views/scopes/inlined", "/next"],
+      ["/views/scopes/inlined", "/current/state"],
 
       (scopes, state) => {
-        let {stack, memory, storage} = state;
-
         return (definition, ref) => decode(definition, ref, state, scopes)
       }
     )
@@ -164,36 +162,25 @@ const data = createSelectorTree({
 
       /**
        * data.current.identifiers (selector)
+       *
+       * returns identifers and corresponding definition node ID
        */
       _: createLeaf(
         [
           "/views/scopes/inlined",
-          "/proc/assignments",
           "/current/scope",
-          "/views/decoder"
         ],
 
-        (scopes, assignments, scope, decode) => {
+        (scopes, scope) => {
           let cur = scope.id;
           let variables = {};
-
-          const format = (v) => {
-            let definition = v.definition;
-            let ref = (assignments[v.id] || {}).ref;
-
-            if (!ref) {
-              return undefined;
-            }
-
-            return decode(definition, ref);
-          };
 
           do {
             variables = Object.assign(
               variables,
               ...(scopes[cur].variables || [])
                 .filter( (v) => variables[v.name] == undefined )
-                .map( (v) => ({ [v.name]: format(scopes[v.id]) }) )
+                .map( (v) => ({ [v.name]: v.id }) )
             );
 
             cur = scopes[cur].parentId;
@@ -203,7 +190,67 @@ const data = createSelectorTree({
         }
       ),
 
-      native: createLeaf(['./_'], decodeUtils.cleanBigNumbers)
+      /**
+       * data.current.identifiers.definitions
+       *
+       * current variable definitions
+       */
+      definitions: createLeaf(
+        [
+          "/views/scopes/inlined",
+          "./_"
+        ],
+
+        (scopes, identifiers) => Object.assign({},
+          ...Object.entries(identifiers)
+            .map( ([identifier, id]) => {
+              let { definition } = scopes[id];
+
+              return { [identifier]: definition };
+            })
+        )
+      ),
+
+      /**
+       * data.current.identifiers.refs
+       *
+       * current variables' value refs
+       */
+      refs: createLeaf(
+        [
+          "/proc/assignments",
+          "./_"
+        ],
+
+        (assignments, identifiers) => Object.assign({},
+          ...Object.entries(identifiers)
+            .map( ([identifier, id]) => {
+              let { ref } = (assignments[id] || {})
+              if (!ref) { return undefined };
+
+              return {
+                [identifier]: ref
+              };
+            })
+        )
+      ),
+
+      decoded: createLeaf(
+        [
+          "/views/decoder",
+          "./definitions",
+          "./refs",
+        ],
+
+        (decode, definitions, refs) => Object.assign({},
+          ...Object.entries(refs)
+            .map( ([identifier, ref]) => ({
+              [identifier]: decode(definitions[identifier], ref)
+            }) )
+        )
+      ),
+
+      native: createLeaf(['./decoded'], decodeUtils.cleanBigNumbers)
     }
   },
 
