@@ -125,7 +125,7 @@ CompilerProvider.prototype.getDockerTags = function(){
 //------------------------------------ Getters -----------------------------------------------------
 
 /**
- * Gets solc from local `node_modules`. Equivalent to `require("solc")`
+ * Gets solc from `node_modules`.`
  * @return {Module} solc
  */
 CompilerProvider.prototype.getDefault = function(){
@@ -135,7 +135,7 @@ CompilerProvider.prototype.getDefault = function(){
 }
 
 /**
- * Gets an npm installed solc from specified absolute path.
+ * Gets an npm installed solc from specified path.
  * @param  {String} localPath
  * @return {Module}
  */
@@ -391,7 +391,7 @@ CompilerProvider.prototype.addToCache = function(code, fileName){
  */
 CompilerProvider.prototype.getFromCache = function(fileName){
   const filePath = this.resolveCache(fileName);
-  const soljson = require(filePath);
+  const soljson = originalRequire(filePath);
   const wrapped = solcWrap(soljson);
   this.removeListener();
   return wrapped;
