@@ -112,7 +112,22 @@ const data = createSelectorTree({
           )
         )
       )
-    }
+    },
+
+    /**
+     * data.views.decoder
+     *
+     * selector returns (ast node definition, data reference) => value
+     */
+    decoder: createLeaf(
+      ["/views/scopes/inlined", "/next"],
+
+      (scopes, state) => {
+        let {stack, memory, storage} = state;
+
+        return (definition, ref) => decode(definition, ref, state, scopes)
+      }
+    )
   },
 
   /**
@@ -173,27 +188,22 @@ const data = createSelectorTree({
           "/views/scopes/inlined",
           "/proc/assignments",
           "/current/scope",
-          "/current/state"
+          "/views/decoder"
         ],
 
-        (scopes, assignments, scope, state) => {
-          let { stack, memory, storage } = state;
+        (scopes, assignments, scope, decode) => {
           let cur = scope.id;
           let variables = {};
 
-
           const format = (v) => {
             let definition = v.definition;
-            debug("assignments %O", assignments);
-            debug("v.id %o", v.id);
-            let assignment = (assignments[v.id] || {}).ref;
+            let ref = (assignments[v.id] || {}).ref;
 
-            debug("assignment: %o", assignment);
-            if (!assignment) {
+            if (!ref) {
               return undefined;
             }
 
-            return decode(definition, assignment, state, scopes);
+            return decode(definition, ref);
           };
 
           do {
@@ -219,6 +229,7 @@ const data = createSelectorTree({
    * data.next
    */
   next: {
+
     /**
      * data.next.state
      */
