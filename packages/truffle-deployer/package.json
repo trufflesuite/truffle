@@ -28,8 +28,8 @@
     "truffle-expect": "^0.0.3"
   },
   "devDependencies": {
-    "ganache-cli": "6.0.3",
+    "ganache-cli": "6.1.0",
     "mocha": "^3.2.0",
-    "web3": "^0.20.1"
+    "web3": "1.0.0-beta.33"
   }
 }
