@@ -13,24 +13,6 @@ import * as decodeUtils from "../decode/utils";
 
 import { BigNumber } from "bignumber.js";
 
-function cleanBigNumbers(value) {
-  if (BigNumber.isBigNumber(value)) {
-    return value.toNumber();
-
-  } else if (value && value.map != undefined) {
-    return value.map( (inner) => cleanBigNumbers(inner) );
-
-  } else if (value && typeof value == "object") {
-    return Object.assign(
-      {}, ...Object.entries(value)
-        .map( ([key, inner]) => ({ [key]: cleanBigNumbers(inner) }) )
-    );
-
-  } else {
-    return value;
-  }
-}
-
 function createStateSelectors({ stack, memory, storage }) {
   return {
     /**
@@ -221,7 +203,7 @@ const data = createSelectorTree({
         }
       ),
 
-      native: createLeaf(['./_'], cleanBigNumbers)
+      native: createLeaf(['./_'], decodeUtils.cleanBigNumbers)
     }
   },
 
