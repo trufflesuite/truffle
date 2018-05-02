@@ -20,8 +20,11 @@ export function read(storage, slot, offset = 0) {
 
   debug("reading slot: %o", utils.toHexString(slot));
 
-  return storage[utils.toHexString(slot, WORD_SIZE)] ||
+  let word = storage[utils.toHexString(slot, WORD_SIZE)] ||
     new Uint8Array(WORD_SIZE);
+
+  debug("word %o", word);
+  return word
 }
 
 /**
@@ -41,11 +44,16 @@ export function readBytes(storage, slot, length, offset = 0) {
     bytesLeft -= buffer.length;
   }
 
+  debug(
+    "readbytes slot=%o length=%o offset=%o data=%o",
+    slot, length, offset, data
+  );
+
   return data;
 }
 
 export function readRange(storage, {from, to, length}) {
-  debug("readRange %o", Array.prototype.slice(arguments, [1]));
+  debug("readRange %o", {from,to,length});
   if (to != undefined) {
     let trim = to.index - WORD_SIZE + 1;
 

@@ -151,6 +151,7 @@ export function decodeStorageReference(definition, pointer, state, ...args) {
       debug("length %o", length);
 
       let baseSize = utils.storageSize(utils.baseDefinition(definition));
+      debug("baseSize %o", baseSize);
 
       const offset = (i) => Math.floor(i * baseSize / WORD_SIZE);
       const index = (i) => i * baseSize % WORD_SIZE;
