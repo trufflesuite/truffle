@@ -43,21 +43,18 @@ describe("truffle publish", function() {
         log(logger.contents());
         return done(err);
       }
-
       assert(fs.existsSync(path.join(config.contracts_build_directory, "PLCRVoting.json")));
+      assert(fs.existsSync(path.join(config.contracts_build_directory, "EIP20.json")));
       assert(fs.existsSync(path.join(config.contracts_build_directory, "Local.json")));
 
       CommandRunner.run("publish", config, function(err) {
         var output = logger.contents();
-        var expected = output.includes('not a contract') || output.includes('previously published');
 
         // We expect publication to be rejected by the client.
-        // Ganache and Geth trigger diff errs.
-        if (!err || !expected) {
+        if (!err) {
           log(output);
           done(err);
         }
-
         assert(output.includes('Uploading sources and publishing'), 'Should have found sources');
         done();
       })
