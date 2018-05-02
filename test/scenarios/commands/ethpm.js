@@ -49,11 +49,9 @@ describe("truffle publish", function() {
 
       CommandRunner.run("publish", config, function(err) {
         var output = logger.contents();
-        var expected = output.includes('not a contract') || output.includes('previously published');
 
         // We expect publication to be rejected by the client.
-        // Ganache and Geth trigger diff errs.
-        if (!err || !expected) {
+        if (!err) {
           log(output);
           done(err);
         }
