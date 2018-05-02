@@ -1,6 +1,6 @@
 {
   "name": "truffle-debugger",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Core functionality for debugging Solidity files built with Truffle",
   "main": "dist/debugger.js",
   "scripts": {
@@ -55,9 +55,9 @@
     "truffle-artifactor": "^3.0.0",
     "truffle-box": "^1.0.3",
     "truffle-debug-utils": "^1.0.1",
-    "truffle-migrate": "^2.0.0",
+    "truffle-migrate": "^2.0.5",
     "truffle-resolver": "^4.0.1",
-    "truffle-workflow-compile": "^1.0.0",
+    "truffle-workflow-compile": "^1.0.3",
     "webpack": "^3.8.1",
     "webpack-dev-middleware": "^2.0.4",
     "webpack-merge": "^4.1.1",

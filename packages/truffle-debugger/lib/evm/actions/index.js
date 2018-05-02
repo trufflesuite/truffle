@@ -7,10 +7,10 @@ export function addContext(contractName, binary) {
 }
 
 export const ADD_INSTANCE = "EVM_ADD_INSTANCE";
-export function addInstance(address, binary) {
+export function addInstance(address, context, binary) {
   return {
     type: ADD_INSTANCE,
-    address, binary
+    address, context, binary
   }
 }
 

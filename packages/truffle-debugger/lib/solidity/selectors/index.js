@@ -54,7 +54,7 @@ let solidity = createSelectorTree({
     sourceMap: createLeaf(
       [evm.current.context, "/info/sourceMaps"],
 
-      ({context}, sourceMaps) => sourceMaps[context]
+      ({context}, sourceMaps) => sourceMaps[context] || {}
     ),
 
     /**
