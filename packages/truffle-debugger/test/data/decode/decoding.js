@@ -10,8 +10,10 @@ import { prepareContracts } from "test/helpers";
 
 import Debugger from "lib/debugger";
 
+import { cleanBigNumbers } from "lib/data/decode/utils";
+
 import data from "lib/data/selectors";
-import ast from "lib/ast/selectors";
+import evm from "lib/evm/selectors";
 
 const __STORAGE = `pragma solidity ^0.4.18;
 
@@ -94,14 +96,16 @@ const sources = {
   "StorageVars.sol": __STORAGE,
 }
 
-describe("Data Decoding", function() {
+describe.skip("Data Decoding", function() {
   var provider;
   var web3;
 
   var abstractions;
   var artifacts;
   var files;
-  var actualValues;
+  var definitions;
+  var refs;
+  var decode;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
@@ -137,12 +141,20 @@ describe("Data Decoding", function() {
 
     session.continueUntil(breakpoint);
 
-    actualValues = session.view(data.identifiers.native.current);
+    definitions = session.view(data.current.identifiers.definitions);
+    refs = session.view(data.current.identifiers.refs);
+    decode = session.view(data.views.decoder);
+
+    debug("storage %O", session.view(evm.current.state.storage));
   });
 
   for (let [identifier, expected] of Object.entries(imitateRun())) {
     it(`correctly decodes ${identifier}`, function() {
-      let actual = actualValues[identifier];
+      let definition = definitions[identifier];
+      let ref = refs[identifier];
+      debug("ref: %O", ref);
+
+      let actual = cleanBigNumbers(decode(definition, ref));
 
       assert.deepEqual(actual, expected);
     });
