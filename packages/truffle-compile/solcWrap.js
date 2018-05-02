@@ -55,12 +55,24 @@ function solcWrap (soljson) {
       return output;
     };
 
-    var compileInternal = soljson.cwrap('compileJSONCallback', 'string', ['string', 'number', 'number']);
+    var compileInternal = soljson.cwrap(
+      'compileJSONCallback',
+      'string',
+      ['string', 'number', 'number']
+    );
+
     compileJSONCallback = function (input, optimize, readCallback) {
       return runWithReadCallback(readCallback, compileInternal, [ input, optimize ]);
     };
+
     if ('_compileStandard' in soljson) {
-      var compileStandardInternal = soljson.cwrap('compileStandard', 'string', ['string', 'number']);
+
+      var compileStandardInternal = soljson.cwrap(
+        'compileStandard',
+        'string',
+        ['string', 'number']
+      );
+
       compileStandard = function (input, readCallback) {
         return runWithReadCallback(readCallback, compileStandardInternal, [ input ]);
       };
