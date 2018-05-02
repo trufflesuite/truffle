@@ -141,7 +141,35 @@ const evm = createSelectorTree({
     /**
      * evm.info.binaries
      */
-    binaries: createLeaf(['/state'], (state) => state.info.contexts.byBinary)
+    binaries: {
+      _: createLeaf(['/state'], (state) => state.info.contexts.byBinary),
+
+      /**
+       * evm.info.binaries.search
+       *
+       * returns function (binary) => context
+       */
+      search: createLeaf(['./_'], (binaries) => {
+        // HACK ignore link references for search
+        // link references come in two forms: with underscores or all zeroes
+        // the underscore format is used by Truffle to reference links by name
+        // zeroes are used by solc directly, as libraries inject their own
+        // address at CREATE-time
+        const toRegExp = (binary) =>
+          new RegExp(`^${binary.replace(/__.{38}|0{40}/g, ".{40}")}`)
+
+        let matchers = Object.entries(binaries)
+          .map( ([binary, {context}]) => ({
+            context,
+            regex: toRegExp(binary)
+          }))
+
+        return (binary) => matchers
+          .filter( ({ context, regex }) => binary.match(regex) )
+          .map( ({ context }) => ({ context }) )
+          [0] || null;
+      })
+    }
   },
 
   /**
@@ -167,22 +195,23 @@ const evm = createSelectorTree({
      * evm.current.context
      */
     context: createLeaf(
-      ["./call", "/info/instances", "/info/binaries", "/info/contexts"],
+      ["./call", "/info/instances", "/info/binaries/search", "/info/contexts"],
 
-      ({address, binary}, instances, binaries, contexts) => {
-        var record;
+      ({address, binary}, instances, search, contexts) => {
+        let record;
         if (address) {
           record = instances[address];
+          binary = record.binary
         } else {
-          // trim off possible constructor args, one word at a time
-          // HACK until there's better CREATE semantics
-          while (record === undefined && binary) {
-            record = binaries[binary];
-            binary = binary.slice(0, -(WORD_SIZE * 2));
-          }
+          record = search(binary);
         }
 
-        return contexts[(record || {}).context];
+        let context = contexts[(record || {}).context];
+
+        return {
+          ...context,
+          binary
+        }
       }
     ),
 
