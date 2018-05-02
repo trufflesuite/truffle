@@ -85,6 +85,7 @@ module.exports = {
       // It doesn't pack well, and is OS X specific, so let's get rid of it.
       "fsevents": path.join(__dirname, "./nil.js"),
       "ws": path.join(__dirname, "./nil.js"),
+      "original-fs": path.join(__dirname, "./nil.js"),
       "scrypt": "js-scrypt",
       "secp256k1": path.join(__dirname, "node_modules", "secp256k1", "elliptic.js")
     }
