@@ -4,7 +4,7 @@
   "description": "Light deployment module for easily deploying Ethereum contracts",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha --no-warnings"
   },
   "repository": {
     "type": "git",
