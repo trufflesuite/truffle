@@ -20,15 +20,21 @@ const __STORAGE = `pragma solidity ^0.4.18;
 contract StorageVars {
   event Ran();
 
+  string shortString;
+  string longString;
+
   uint[] multipleFullWordArray;  // length 3, will take up 3 words
   uint16[] withinWordArray;  // length 10, will take up >1/2 word
   uint64[] multiplePartWordArray; // length 9, will take up 2.25 words
 
-  uint240[] inconvenientlyWordOffsetArray; // length 3, takes 3.2 words
+  uint240[] inconvenientlyWordOffsetArray; // length 3, takes ~2.8 words
 
   function run() public {
     uint start = 1;
     uint i;
+
+    shortString = "hello world";
+    longString = "solidity storage is a fun lesson in endianness";
 
     for (i = 0; i < 3; i++) {
       multipleFullWordArray.push(start + i);
@@ -60,6 +66,8 @@ function imitateRun() {
   let withinWordArray = [];
   let multiplePartWordArray = [];
   let inconvenientlyWordOffsetArray = [];
+  let shortString = "hello world";
+  let longString = "solidity storage is a fun lesson in endianness";
 
   let start = 1;
   let i;
@@ -84,6 +92,8 @@ function imitateRun() {
   }
 
   return {
+    shortString,
+    longString,
     multipleFullWordArray,
     withinWordArray,
     multiplePartWordArray,
@@ -137,7 +147,7 @@ describe.skip("Data Decoding", function() {
     let session = bugger.connect();
     var stepped;  // session steppers return false when done
 
-    let breakpoint = { address: instance.address, line: 35 };
+    let breakpoint = { address: instance.address, line: 41 };
 
     session.continueUntil(breakpoint);
 
