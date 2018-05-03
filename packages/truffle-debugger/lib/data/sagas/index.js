@@ -41,6 +41,10 @@ function *tickSaga() {
   let top = stack.length - 1;
   var parameters, returnParameters, assignments, storageVars;
 
+  if (!node) {
+    return;
+  }
+
   switch (node.nodeType) {
 
     case "FunctionDefinition":

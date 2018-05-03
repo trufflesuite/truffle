@@ -7,6 +7,27 @@ import Web3 from "web3";
 export const WORD_SIZE = 0x20;
 export const MAX_WORD = new BigNumber(2).pow(256).minus(1);
 
+/**
+ * recursively converts big numbers into something nicer to look at
+ */
+export function cleanBigNumbers(value) {
+  if (BigNumber.isBigNumber(value)) {
+    return value.toNumber();
+
+  } else if (value && value.map != undefined) {
+    return value.map( (inner) => cleanBigNumbers(inner) );
+
+  } else if (value && typeof value == "object") {
+    return Object.assign(
+      {}, ...Object.entries(value)
+        .map( ([key, inner]) => ({ [key]: cleanBigNumbers(inner) }) )
+    );
+
+  } else {
+    return value;
+  }
+}
+
 export function typeIdentifier(definition) {
   return definition.typeDescriptions.typeIdentifier;
 }
@@ -46,7 +67,10 @@ export function allocateDeclarations(
     let { from, to, next, children } =
       allocateDeclaration(declaration, refs, slot, index);
 
-    mapping[declaration.id] = { from, to, children, name: declaration.name };
+    mapping[declaration.id] = { from, to, name: declaration.name };
+    if (children !== undefined) {
+      mapping[declaration.id].children = children;
+    }
 
     slot = next.slot;
     index = next.index;

@@ -13,24 +13,6 @@ import * as decodeUtils from "../decode/utils";
 
 import { BigNumber } from "bignumber.js";
 
-function cleanBigNumbers(value) {
-  if (BigNumber.isBigNumber(value)) {
-    return value.toNumber();
-
-  } else if (value && value.map != undefined) {
-    return value.map( (inner) => cleanBigNumbers(inner) );
-
-  } else if (value && typeof value == "object") {
-    return Object.assign(
-      {}, ...Object.entries(value)
-        .map( ([key, inner]) => ({ [key]: cleanBigNumbers(inner) }) )
-    );
-
-  } else {
-    return value;
-  }
-}
-
 function createStateSelectors({ stack, memory, storage }) {
   return {
     /**
@@ -112,7 +94,20 @@ const data = createSelectorTree({
           )
         )
       )
-    }
+    },
+
+    /**
+     * data.views.decoder
+     *
+     * selector returns (ast node definition, data reference) => value
+     */
+    decoder: createLeaf(
+      ["/views/scopes/inlined", "/current/state"],
+
+      (scopes, state) => {
+        return (definition, ref) => decode(definition, ref, state, scopes)
+      }
+    )
   },
 
   /**
@@ -167,41 +162,25 @@ const data = createSelectorTree({
 
       /**
        * data.current.identifiers (selector)
+       *
+       * returns identifers and corresponding definition node ID
        */
       _: createLeaf(
         [
           "/views/scopes/inlined",
-          "/proc/assignments",
           "/current/scope",
-          "/current/state"
         ],
 
-        (scopes, assignments, scope, state) => {
-          let { stack, memory, storage } = state;
+        (scopes, scope) => {
           let cur = scope.id;
           let variables = {};
-
-
-          const format = (v) => {
-            let definition = v.definition;
-            debug("assignments %O", assignments);
-            debug("v.id %o", v.id);
-            let assignment = (assignments[v.id] || {}).ref;
-
-            debug("assignment: %o", assignment);
-            if (!assignment) {
-              return undefined;
-            }
-
-            return decode(definition, assignment, state, scopes);
-          };
 
           do {
             variables = Object.assign(
               variables,
               ...(scopes[cur].variables || [])
                 .filter( (v) => variables[v.name] == undefined )
-                .map( (v) => ({ [v.name]: format(scopes[v.id]) }) )
+                .map( (v) => ({ [v.name]: v.id }) )
             );
 
             cur = scopes[cur].parentId;
@@ -211,7 +190,67 @@ const data = createSelectorTree({
         }
       ),
 
-      native: createLeaf(['./_'], cleanBigNumbers)
+      /**
+       * data.current.identifiers.definitions
+       *
+       * current variable definitions
+       */
+      definitions: createLeaf(
+        [
+          "/views/scopes/inlined",
+          "./_"
+        ],
+
+        (scopes, identifiers) => Object.assign({},
+          ...Object.entries(identifiers)
+            .map( ([identifier, id]) => {
+              let { definition } = scopes[id];
+
+              return { [identifier]: definition };
+            })
+        )
+      ),
+
+      /**
+       * data.current.identifiers.refs
+       *
+       * current variables' value refs
+       */
+      refs: createLeaf(
+        [
+          "/proc/assignments",
+          "./_"
+        ],
+
+        (assignments, identifiers) => Object.assign({},
+          ...Object.entries(identifiers)
+            .map( ([identifier, id]) => {
+              let { ref } = (assignments[id] || {})
+              if (!ref) { return undefined };
+
+              return {
+                [identifier]: ref
+              };
+            })
+        )
+      ),
+
+      decoded: createLeaf(
+        [
+          "/views/decoder",
+          "./definitions",
+          "./refs",
+        ],
+
+        (decode, definitions, refs) => Object.assign({},
+          ...Object.entries(refs)
+            .map( ([identifier, ref]) => ({
+              [identifier]: decode(definitions[identifier], ref)
+            }) )
+        )
+      ),
+
+      native: createLeaf(['./decoded'], decodeUtils.cleanBigNumbers)
     }
   },
 
@@ -219,6 +258,7 @@ const data = createSelectorTree({
    * data.next
    */
   next: {
+
     /**
      * data.next.state
      */

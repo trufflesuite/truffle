@@ -14,40 +14,6 @@ import solidity from "lib/solidity/selectors";
 
 import { getRange, findRange, rangeNodes } from "lib/ast/map";
 
-const __STORAGE = `
-pragma solidity ^0.4.18;
-
-contract Storage {
-  uint storedUint;
-  bytes32 storedBytes;
-  string storedString;
-
-  function setUint(uint x) public {
-    storedUint = x;
-  }
-
-  function getUint() public view returns (uint256) {
-    return storedUint;
-  }
-
-  function setBytes(bytes32 x) public {
-    storedBytes = x;
-  }
-
-  function getBytes() public view returns (bytes32) {
-    return storedBytes;
-  }
-
-  function setString(string x) public {
-    storedString = x;
-  }
-
-  function getString() public view returns (string) {
-    return storedString;
-  }
-}
-`;
-
 const __VARIABLES = `
 pragma solidity ^0.4.18;
 
@@ -79,8 +45,7 @@ contract Variables {
 
 
 let sources = {
-  "Variables.sol": __VARIABLES,
-  "Storage.sol": __STORAGE,
+  "Variables.sol": __VARIABLES
 }
 
 describe("AST", function() {
@@ -144,100 +109,6 @@ describe("AST", function() {
         session.stepNext();
       } while(!session.finished);
 
-    });
-  });
-
-  describe("Storage Assignment", function() {
-    it.skip("understands uints", async function() {
-      this.timeout(0);
-      let instance = await abstractions.Storage.deployed();
-
-      // first, increment
-      let receipt = await instance.setUint(102);
-      let txHash = receipt.tx;
-
-      let bugger = await Debugger.forTx(txHash, {
-        provider,
-        files,
-        contracts: artifacts
-      });
-
-      let session = bugger.connect();
-
-      do {
-        session.stepNext();
-      } while (!session.finished);
-
-      let expected = (await instance.getUint()).toNumber();
-      let actual = session.state
-        .ast
-        .storage[abstractions.Storage.deployedBinary]
-        .storedUint;
-
-      assert.equal(expected, actual);
-    });
-
-    it.skip("understands bytes32s", async function() {
-      this.timeout(0);
-      let instance = await abstractions.Storage.deployed();
-
-      // first, increment
-      let receipt = await instance.setBytes("hello");
-      let txHash = receipt.tx;
-
-      let bugger = await Debugger.forTx(txHash, {
-        provider,
-        files,
-        contracts: artifacts
-      });
-
-      let session = bugger.connect();
-
-      do {
-        session.stepNext();
-      } while (!session.finished);
-
-      let expected = await instance.getBytes();
-
-      let actual = session.state
-        .ast
-        .storage[abstractions.Storage.deployedBinary]
-        .storedBytes;
-
-      assert.equal(expected, actual);
-    });
-
-    it.skip("understands strings", async function() {
-      this.timeout(0);
-      let instance = await abstractions.Storage.deployed();
-
-      // first, increment
-      let receipt = await instance.setString(
-        "hello I am a string of word length at least 2"
-      );
-      let txHash = receipt.tx;
-
-      let bugger = await Debugger.forTx(txHash, {
-        provider,
-        files,
-        contracts: artifacts
-      });
-
-      let session = bugger.connect();
-      debug("ast: %O", session.view(ast.current.tree));
-
-      do {
-        session.stepNext();
-      } while (!session.finished);
-
-      let expected = await instance.getString();
-
-      let actual = session.state
-        .ast
-        .storage[abstractions.Storage.deployedBinary]
-        .storedString;
-
-      assert.equal(expected, actual);
     });
   });
 });
