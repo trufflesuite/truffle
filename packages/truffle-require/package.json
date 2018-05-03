@@ -29,7 +29,7 @@
     "original-require": "1.0.1",
     "truffle-config": "^1.0.6",
     "truffle-expect": "^0.0.4",
-    "web3": "0.20.6"
+    "web3": "1.0.0-beta.33"
   },
   "publishConfig": {
     "access": "public"
