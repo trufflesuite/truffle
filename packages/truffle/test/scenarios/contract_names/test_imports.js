@@ -58,6 +58,7 @@ describe("Contract names", function() {
     this.timeout(50000);
 
     CommandRunner.run("migrate", config, function(err) {
+
       if (err) return done(err);
 
       var Contract = contract(require(path.join(config.contracts_build_directory, "Contract.json")));
