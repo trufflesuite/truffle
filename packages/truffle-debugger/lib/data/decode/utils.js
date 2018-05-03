@@ -67,7 +67,10 @@ export function allocateDeclarations(
     let { from, to, next, children } =
       allocateDeclaration(declaration, refs, slot, index);
 
-    mapping[declaration.id] = { from, to, children, name: declaration.name };
+    mapping[declaration.id] = { from, to, name: declaration.name };
+    if (children !== undefined) {
+      mapping[declaration.id].children = children;
+    }
 
     slot = next.slot;
     index = next.index;
