@@ -150,15 +150,31 @@ export function decodeStorageReference(definition, pointer, state, ...args) {
       length = utils.toBigNumber(data).toNumber();
       debug("length %o", length);
 
-      let baseSize = utils.storageSize(utils.baseDefinition(definition));
+      const baseSize = utils.storageSize(utils.baseDefinition(definition));
+      const perWord = Math.floor(WORD_SIZE / baseSize);
       debug("baseSize %o", baseSize);
+      debug("perWord %d", perWord);
 
-      const offset = (i) => Math.floor(i * baseSize / WORD_SIZE);
-      const index = (i) => i * baseSize % WORD_SIZE;
+      const offset = (i) => {
+        if (perWord == 1) {
+          return i;
+        }
 
+        return Math.floor(i * baseSize / WORD_SIZE);
+      }
+
+      const index = (i) => {
+        if (perWord == 1) {
+          return WORD_SIZE - baseSize;
+        }
+
+        const position = perWord - i % perWord - 1;
+        return position * baseSize;
+      }
+
+      debug("pointer: %o", pointer);
       return [...Array(length).keys()]
         .map( (i) => {
-          debug("pointer: %o", pointer);
           let childFrom = pointer.storage.from.offset != undefined ?
             {
               slot: ["0x" + utils.toBigNumber(
@@ -171,12 +187,10 @@ export function decodeStorageReference(definition, pointer, state, ...args) {
               offset: offset(i),
               index: index(i)
             };
-          debug("childFrom %o: %o", i, childFrom);
-          let lookup = read({ storage: { from: childFrom, length: baseSize }}, state);
-          debug("done %o", i);
           return childFrom;
         })
-        .map( (childFrom) => {
+        .map( (childFrom, idx) => {
+          debug("childFrom %d, %o", idx, childFrom);
           return decode(utils.baseDefinition(definition), { storage: {
             from: childFrom,
             length: baseSize

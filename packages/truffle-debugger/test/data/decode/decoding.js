@@ -106,7 +106,7 @@ const sources = {
   "StorageVars.sol": __STORAGE,
 }
 
-describe.skip("Data Decoding", function() {
+describe("Data Decoding", function() {
   var provider;
   var web3;
 
