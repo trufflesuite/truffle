@@ -69,6 +69,10 @@ const data = createSelectorTree({
       [ast.current], (tree) => tree
     ),
 
+    atLastInstructionForSourceRange: createLeaf(
+      [solidity.current.isSourceRangeFinal], (final) => final
+    ),
+
     /**
      * data.views.scopes
      */

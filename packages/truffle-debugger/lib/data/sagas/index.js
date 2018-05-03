@@ -48,6 +48,17 @@ function *tickSaga() {
   switch (node.nodeType) {
 
     case "FunctionDefinition":
+      // stack is only ready for interpretation after the last step of each
+      // source range
+      //
+      // the data module always looks at the result of a particular opcode
+      // (i.e., the following trace step's stack/memory/storage), so this
+      // asserts that the _current_ operation is the final one before
+      // proceeding
+      if (!(yield select(data.views.atLastInstructionForSourceRange))) {
+        break;
+      }
+
       parameters = node.parameters.parameters
         .map( (p, i) => `${pointer}/parameters/parameters/${i}` );
 

@@ -169,7 +169,7 @@ let solidity = createSelectorTree({
      * solidity.current.instruction
      */
     instruction: createLeaf(
-      ["../current/instructionAtProgramCounter", evm.current.step.programCounter],
+      ["./instructionAtProgramCounter", evm.current.step.programCounter],
 
       (map, pc) => map[pc] || {}
     ),
@@ -187,6 +187,32 @@ let solidity = createSelectorTree({
      * solidity.current.sourceRange
      */
     sourceRange: createLeaf(["./instruction"], getSourceRange),
+
+    /**
+     * solidity.current.isSourceRangeFinal
+     */
+    isSourceRangeFinal: createLeaf(
+      [
+        "./instructionAtProgramCounter",
+        evm.current.step.programCounter,
+        evm.next.step.programCounter
+      ],
+
+      (map, current, next) => {
+        if (!map[next]) {
+          return true;
+        }
+
+        current = map[current];
+        next = map[next];
+
+        return (
+          current.start != next.start ||
+          current.length != next.length ||
+          current.file != next.file
+        );
+      }
+    ),
 
     /**
      * solidity.current.isMultiline
