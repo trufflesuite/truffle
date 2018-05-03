@@ -122,15 +122,15 @@ describe("AST", function() {
       debug("ast: %O", session.view(ast.current.tree));
 
       do {
-        let { start, length } = session.view(solidity.next.sourceRange);
+        let { start, length } = session.view(solidity.current.sourceRange);
         let end = start + length;
 
-        let node = session.view(ast.next.node);
+        let node = session.view(ast.current.node);
 
         let [ nodeStart, nodeLength ] = getRange(node);
         let nodeEnd = nodeStart + nodeLength;
 
-        let pointer = session.view(ast.next.pointer);
+        let pointer = session.view(ast.current.pointer);
 
         assert.isAtMost(
           nodeStart, start,

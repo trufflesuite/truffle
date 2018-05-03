@@ -21,11 +21,11 @@ function* functionDepthSaga () {
   while (true) {
     yield take(TICK);
     debug("got TICK");
-    let instruction = yield select(solidity.next.instruction);
+    let instruction = yield select(solidity.current.instruction);
     debug("instruction: %o", instruction);
 
-    if (yield select(solidity.next.willJump)) {
-      let jumpDirection = yield select(solidity.next.jumpDirection);
+    if (yield select(solidity.current.willJump)) {
+      let jumpDirection = yield select(solidity.current.jumpDirection);
 
 
       yield put(actions.jump(jumpDirection));

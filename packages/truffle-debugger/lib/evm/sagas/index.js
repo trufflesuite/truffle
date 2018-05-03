@@ -47,19 +47,19 @@ export function* callstackSaga () {
     yield take(TICK);
     debug("got TICK");
 
-    if (yield select(evm.next.step.isCall)) {
+    if (yield select(evm.current.step.isCall)) {
       debug("got call");
-      let address = yield select(evm.next.step.callAddress);
+      let address = yield select(evm.current.step.callAddress);
 
       yield put(actions.call(address));
 
-    } else if (yield select(evm.next.step.isCreate)) {
+    } else if (yield select(evm.current.step.isCreate)) {
       debug("got create");
-      let binary = yield select(evm.next.step.createBinary);
+      let binary = yield select(evm.current.step.createBinary);
 
       yield put(actions.create(binary));
 
-    } else if (yield select(evm.next.step.isHalting)) {
+    } else if (yield select(evm.current.step.isHalting)) {
       debug("got return");
       yield put(actions.returnCall());
     }

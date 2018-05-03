@@ -16,7 +16,7 @@ function createStepSelectors(step, state = null) {
     /**
      * .trace
      *
-     * trace step info related to next evm operation
+     * trace step info related to operation
      */
     trace: createLeaf(
       [step], ({gasCost, op, pc}) => ({gasCost, op, pc})
@@ -41,7 +41,7 @@ function createStepSelectors(step, state = null) {
     /**
      * .isCall
      *
-     * whether the next opcode will switch to another calling context
+     * whether the opcode will switch to another calling context
      */
     isCall: createLeaf(
       ["./trace"], (step) => step.op == "CALL" || step.op == "DELEGATECALL"
@@ -57,7 +57,7 @@ function createStepSelectors(step, state = null) {
     /**
      * .isHalting
      *
-     * whether the next instruction halts or returns from a calling context
+     * whether the instruction halts or returns from a calling context
      */
     isHalting: createLeaf(
       ["./trace"], (step) => step.op == "STOP" || step.op == "RETURN"
@@ -231,7 +231,12 @@ const evm = createSelectorTree({
       ].map( (param) => ({
         [param]: createLeaf([trace.step], (step) => step[param])
       }))
-    ))
+    )),
+
+    /**
+     * evm.current.step
+     */
+    step: createStepSelectors(trace.step, "./state")
   },
 
   /**
@@ -257,10 +262,7 @@ const evm = createSelectorTree({
       }))
     )),
 
-    /**
-     * evm.next.step
-     */
-    step: createStepSelectors(trace.step, "/current/state")
+    step: createStepSelectors(trace.next, "./state")
   }
 });
 

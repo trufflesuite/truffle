@@ -29,37 +29,31 @@ const controller = createSelectorTree({
     /**
      * controller.current.executionContext
      */
-    executionContext: createLeaf([evm.current.call], identity)
-  },
-
-  /**
-   * controller.next
-   */
-  next: {
+    executionContext: createLeaf([evm.current.call], identity),
 
     /**
-     * controller.next.willJump
+     * controller.current.willJump
      */
-    willJump: createLeaf([evm.next.step.isJump], identity),
+    willJump: createLeaf([evm.current.step.isJump], identity),
 
     /**
-     * controller.next.location
+     * controller.current.location
      */
     location: {
       /**
-       * controller.next.location.sourceRange
+       * controller.current.location.sourceRange
        */
-      sourceRange: createLeaf([solidity.next.sourceRange], identity),
+      sourceRange: createLeaf([solidity.current.sourceRange], identity),
 
       /**
-       * controller.next.location.node
+       * controller.current.location.node
        */
-      node: createLeaf([ast.next.node], identity),
+      node: createLeaf([ast.current.node], identity),
 
       /**
-       * controller.next.location.isMultiline
+       * controller.current.location.isMultiline
        */
-      isMultiline: createLeaf([solidity.next.isMultiline], identity),
+      isMultiline: createLeaf([solidity.current.isMultiline], identity),
     }
   }
 });

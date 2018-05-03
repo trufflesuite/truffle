@@ -110,7 +110,7 @@ describe("Solidity Debugging", function() {
       session.continueUntil(breakpoint);
 
       if (!session.finished) {
-        let range = await session.view(solidity.next.sourceRange);
+        let range = await session.view(solidity.current.sourceRange);
         assert.equal(range.lines.start.line, 16);
 
         breakpointStopped = true;

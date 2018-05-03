@@ -67,7 +67,7 @@ session.stepInfo();
 let { ast, data, evm, solidity, trace } = Debugger.selectors;
 
 let variables = session.view(data.identifiers.native.current);
-let sourceRange = session.view(solidity.next.sourceRange);
+let sourceRange = session.view(solidity.current.sourceRange);
 ```
 
 ### Useful API Docs References

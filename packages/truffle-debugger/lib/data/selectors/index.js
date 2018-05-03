@@ -31,6 +31,51 @@ function cleanBigNumbers(value) {
   }
 }
 
+function createStateSelectors({ stack, memory, storage }) {
+  return {
+    /**
+     * .stack
+     */
+    stack: createLeaf(
+      [stack],
+
+      (words) => (words || []).map(
+        (word) => decodeUtils.toBytes(decodeUtils.toBigNumber(word, decodeUtils.WORD_SIZE))
+      )
+    ),
+
+    /**
+     * .memory
+     */
+    memory: createLeaf(
+      [memory],
+
+      (words) => new Uint8Array(
+        (words.join("").match(/.{1,2}/g) || [])
+          .map( (byte) => parseInt(byte, 16) )
+      )
+    ),
+
+    /**
+     * .storage
+     */
+    storage: createLeaf(
+      [storage],
+
+      (mapping) => Object.assign(
+        {}, ...Object.entries(mapping).map( ([ address, word ]) =>
+          ({
+            [`0x${address}`]: new Uint8Array(
+              (word.match(/.{1,2}/g) || [])
+                .map( (byte) => parseInt(byte, 16) )
+            )
+          })
+        )
+      )
+    )
+  };
+}
+
 const data = createSelectorTree({
   state: (state) => state.data,
 
@@ -38,15 +83,9 @@ const data = createSelectorTree({
    * data.views
    */
   views: {
-    ast: {
-      current: createLeaf(
-        [ast.current.tree, ast.current.index], (tree, id) => ({tree, id})
-      ),
-
-      next: createLeaf(
-        [ast.next.node, ast.next.pointer], (node, pointer) => ({node, pointer})
-      )
-    },
+    ast: createLeaf(
+      [ast.current], (tree) => tree
+    ),
 
     /**
      * data.views.scopes
@@ -99,128 +138,91 @@ const data = createSelectorTree({
   },
 
   /**
-   * data.next
+   * data.current
    */
-  next: {
-
+  current: {
     /**
      *
-     * data.next.scope
+     * data.current.scope
      */
     scope: {
 
       /**
-       * data.next.scope.id
+       * data.current.scope.id
        */
       id: createLeaf(
-        [ast.next.node], (node) => node.id
+        [ast.current.node], (node) => node.id
       )
     },
 
     /**
-     * data.next.stack
+     * data.current.state
      */
-    stack: createLeaf(
-      [evm.next.state.stack],
-
-      (words) => (words || []).map(
-        (word) => decodeUtils.toBytes(decodeUtils.toBigNumber(word, decodeUtils.WORD_SIZE))
-      )
-    ),
+    state: createStateSelectors(evm.current.state),
 
     /**
-     * data.next.memory
+     * data.current.identifiers (namespace)
      */
-    memory: createLeaf(
-      [evm.next.state.memory],
+    identifiers: {
 
-      (words) => new Uint8Array(
-        (words.join("").match(/.{1,2}/g) || [])
-          .map( (byte) => parseInt(byte, 16) )
-      )
-    ),
+      /**
+       * data.current.identifiers (selector)
+       */
+      _: createLeaf(
+        [
+          "/views/scopes/inlined",
+          "/proc/assignments",
+          "/current/scope",
+          "/current/state"
+        ],
 
-    /**
-     * data.next.storage
-     */
-    storage: createLeaf(
-      [evm.next.state.storage],
+        (scopes, assignments, scope, state) => {
+          let { stack, memory, storage } = state;
+          let cur = scope.id;
+          let variables = {};
 
-      (mapping) => Object.assign(
-        {}, ...Object.entries(mapping).map( ([ address, word ]) =>
-          ({
-            [`0x${address}`]: new Uint8Array(
-              (word.match(/.{1,2}/g) || [])
-                .map( (byte) => parseInt(byte, 16) )
-            )
-          })
-        )
-      )
-    )
 
+          const format = (v) => {
+            let definition = v.definition;
+            debug("assignments %O", assignments);
+            debug("v.id %o", v.id);
+            let assignment = (assignments[v.id] || {}).ref;
+
+            debug("assignment: %o", assignment);
+            if (!assignment) {
+              return undefined;
+            }
+
+            return decode(definition, assignment, state, scopes);
+          };
+
+          do {
+            variables = Object.assign(
+              variables,
+              ...(scopes[cur].variables || [])
+                .filter( (v) => variables[v.name] == undefined )
+                .map( (v) => ({ [v.name]: format(scopes[v.id]) }) )
+            );
+
+            cur = scopes[cur].parentId;
+          } while (cur != null);
+
+          return variables;
+        }
+      ),
+
+      native: createLeaf(['./_'], cleanBigNumbers)
+    }
   },
 
   /**
-   * data.identifiers
+   * data.next
    */
-  identifiers: {
-
+  next: {
     /**
-     * data.identifiers.current
-     *
-     * map of current identifiers to precise value
+     * data.next.state
      */
-    current: createLeaf(
-      [
-        "/views/scopes/inlined",
-        "/proc/assignments",
-        "/next"
-      ],
-
-      (scopes, assignments, next) => {
-        let {scope, stack, memory, storage} = next;
-        let cur = scope.id;
-        let variables = {};
-
-
-        const format = (v) => {
-          let definition = v.definition;
-          debug("assignments %O", assignments);
-          debug("v.id %o", v.id);
-          let assignment = (assignments[v.id] || {}).ref;
-          var rawValue;
-
-          debug("assignment: %o", assignment);
-          if (!assignment) {
-            return undefined;
-          }
-
-          return decode(definition, assignment, next, scopes);
-        };
-
-        do {
-          variables = Object.assign(
-            variables,
-            ...(scopes[cur].variables || [])
-              .filter( (v) => variables[v.name] == undefined )
-              .map( (v) => ({ [v.name]: format(scopes[v.id]) }) )
-          );
-
-          cur = scopes[cur].parentId;
-        } while (cur != null);
-
-        return variables;
-      }
-    ),
-
-    /**
-     * data.identifiers.native.current
-     *
-     * stripped of bignumbers
-     */
-    native: {
-      current: createLeaf(['/identifiers/current'], cleanBigNumbers)
-    }
+    state: createStateSelectors(evm.next.state)
   }
 });
 

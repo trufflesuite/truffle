@@ -23,12 +23,17 @@ export function *declare(node) {
 }
 
 function *tickSaga() {
-  let {tree, id: treeId} = yield select(data.views.ast.current);
-  let {node, pointer} = yield select(data.views.ast.next);
+  let {
+    tree,
+    id: treeId,
+    node,
+    pointer
+  } = yield select(data.views.ast);
+
   let scopes = yield select(data.info.scopes);
   let definitions = yield select(data.views.scopes.inlined);
 
-  let stack = yield select(data.next.stack);
+  let stack = yield select(data.next.state.stack);
   if (!stack) {
     return;
   }
