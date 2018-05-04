@@ -234,7 +234,7 @@ TestRunner.prototype.rpc = function(method, arg, cb) {
     cb(null, result);
   };
 
-  this.provider.sendAsync(req, intermediary);
+  this.provider.send(req, intermediary);
 };
 
 module.exports = TestRunner;
