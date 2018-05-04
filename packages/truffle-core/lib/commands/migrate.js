@@ -77,6 +77,8 @@ var command = {
 
           if (needsMigrating) {
             Migrate.run(config, done);
+            console.log('Forcing exit after `migrate.run`');
+            process.exit(0);
           } else {
             config.logger.log("Network up to date.")
             callback();
