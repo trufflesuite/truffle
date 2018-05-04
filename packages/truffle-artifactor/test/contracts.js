@@ -21,12 +21,12 @@ describe("artifactor + require", function() {
   var web3 = new Web3();
   web3.setProvider(provider)
 
-  before(function(done) {
-    web3.version.getNetwork(function(err, id) {
-      if (err) return done(err);
-      network_id = id;
-      done();
-    });
+  before(function() {
+    return web3
+      .eth
+      .net
+      .getId()
+      .then(id => network_id = id);
   });
 
   before(function(done) {
@@ -66,16 +66,17 @@ describe("artifactor + require", function() {
     }).then(done).catch(done);
   });
 
-  before(function(done) {
-    web3.eth.getAccounts(function(err, accs) {
-      accounts = accs;
+  before(function() {
+    return web3
+      .eth
+      .getAccounts()
+      .then(accs => {
+        accounts = accs;
 
-      Example.defaults({
-        from: accounts[0]
+        Example.defaults({
+          from: accounts[0]
+        });
       });
-
-      done(err);
-    });
   });
 
   after(function(done) {
@@ -100,7 +101,7 @@ describe("artifactor + require", function() {
     }).then(function(tx) {
       return example.value.call();
     }).then(function(value) {
-      assert.equal(value.valueOf(), 5, "Ending value should be five");
+      assert.equal(parseInt(value), 5, "Ending value should be five");
     }).then(done).catch(done);
   });
 
@@ -117,27 +118,27 @@ describe("artifactor + require", function() {
   it("should allow BigNumbers as input parameters, and not confuse them as transaction objects", function(done) {
     // BigNumber passed on new()
     var example = null;
-    Example.new(web3.toBigNumber(30), {gas: 3141592}).then(function(instance) {
+    Example.new('30', {gas: 3141592}).then(function(instance) {
       example = instance;
       return example.value.call();
     }).then(function(value) {
-      assert.equal(value.valueOf(), 30, "Starting value should be 30");
+      assert.equal(parseInt(value), 30, "Starting value should be 30");
       // BigNumber passed in a transaction.
-      return example.setValue(web3.toBigNumber(25), {gas: 3141592});
+      return example.setValue('25', {gas: 3141592});
     }).then(function(tx) {
       return example.value.call();
     }).then(function(value) {
-      assert.equal(value.valueOf(), 25, "Ending value should be twenty-five");
+      assert.equal(parseInt(value), 25, "Ending value should be twenty-five");
       // BigNumber passed in a call.
-      return example.parrot.call(web3.toBigNumber(865));
+      return example.parrot.call(865);
     }).then(function(parrot_value) {
-      assert.equal(parrot_value.valueOf(), 865, "Parrotted value should equal 865")
+      assert.equal(parseInt(parrot_value), 865, "Parrotted value should equal 865")
     }).then(done).catch(done);
   });
 
   it("should return transaction hash, logs and receipt when using synchronised transactions", function(done) {
     var example = null;
-    Example.new(1, {gas: 3141592}).then(function(instance) {
+    Example.new('1', {gas: 3141592}).then(function(instance) {
       example = instance;
       return example.triggerEvent();
     }).then(function(result) {
@@ -151,20 +152,20 @@ describe("artifactor + require", function() {
       var log = result.logs[0];
 
       assert.equal("ExampleEvent", log.event);
-      assert.equal(accounts[0], log.args._from.toLowerCase());
+      assert.equal(accounts[0], log.args._from);
       assert.equal(8, log.args.num); // 8 is a magic number inside Example.sol
     }).then(done).catch(done);
   });
 
   it("should trigger the fallback function when calling sendTransaction()", function() {
     var example = null;
-    return Example.new(1, {gas: 3141592}).then(function(instance) {
+    return Example.new('1', {gas: 3141592}).then(function(instance) {
       example = instance;
       return example.fallbackTriggered();
     }).then(function(triggered) {
       assert(triggered == false, "Fallback should not have been triggered yet");
       return example.sendTransaction({
-        value: web3.toWei(1, "ether")
+        value: web3.utils.toWei('1', "ether")
       });
     }).then(function(results) {
       return new Promise(function(accept, reject) {
@@ -174,18 +175,18 @@ describe("artifactor + require", function() {
         });
       });
     }).then(function(balance) {
-      assert(balance == web3.toWei(1, "ether"));
+      assert(balance == web3.utils.toWei('1', "ether"));
     });
   });
 
   it("should trigger the fallback function when calling send() (shorthand notation)", function() {
     var example = null;
-    return Example.new(1, {gas: 3141592}).then(function(instance) {
+    return Example.new('1', {gas: 3141592}).then(function(instance) {
       example = instance;
       return example.fallbackTriggered();
     }).then(function(triggered) {
       assert(triggered == false, "Fallback should not have been triggered yet");
-      return example.send(web3.toWei(1, "ether"));
+      return example.send(web3.utils.toWei('1', "ether"));
     }).then(function(results) {
       return new Promise(function(accept, reject) {
         return web3.eth.getBalance(example.address, function(err, balance) {
@@ -194,7 +195,7 @@ describe("artifactor + require", function() {
         });
       });
     }).then(function(balance) {
-      assert(balance == web3.toWei(1, "ether"));
+      assert(balance == web3.utils.toWei('1', "ether"));
     });
   });
 
@@ -264,7 +265,7 @@ describe("artifactor + require", function() {
 
     MyContract.setNetwork(5);
 
-    var expected_event_topic = web3.sha3("PackageRelease(bytes32,bytes32)");
+    var expected_event_topic = web3.utils.sha3("PackageRelease(bytes32,bytes32)");
 
     // We want to make sure these don't throw when a network configuration doesn't exist.
     // While we're at it, lets make sure we still get the event we expect.
