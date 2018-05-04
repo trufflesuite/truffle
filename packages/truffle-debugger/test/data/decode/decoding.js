@@ -10,164 +10,99 @@ import { prepareContracts } from "test/helpers";
 
 import Debugger from "lib/debugger";
 
-import { cleanBigNumbers } from "lib/data/decode/utils";
+import { MAX_WORD, cleanBigNumbers } from "lib/data/decode/utils";
 
 import data from "lib/data/selectors";
 import evm from "lib/evm/selectors";
 
-const __STORAGE = `pragma solidity ^0.4.18;
+import {
+  generateUints, solidityForFixtures, testCasesForFixtures
+} from "./helpers";
 
-contract StorageVars {
-  event Ran();
+const uints = generateUints();
 
-  string shortString;
-  string longString;
-
-  uint[] multipleFullWordArray;  // length 3, will take up 3 words
-  uint16[] withinWordArray;  // length 10, will take up >1/2 word
-  uint64[] multiplePartWordArray; // length 9, will take up 2.25 words
-
-  uint240[] inconvenientlyWordOffsetArray; // length 3, takes ~2.8 words
-
-  function run() public {
-    uint start = 1;
-    uint i;
-
-    shortString = "hello world";
-    longString = "solidity storage is a fun lesson in endianness";
-
-    for (i = 0; i < 3; i++) {
-      multipleFullWordArray.push(start + i);
-    }
-    start = i;
-
-    for (i = 0; i < 10; i++) {
-      withinWordArray.push(uint16(start + i));
-    }
-    start = i;
-
-    for (i = 0; i < 9; i++) {
-      multiplePartWordArray.push(uint64(start + i));
-    }
-    start = i;
-
-    for (i = 0; i < 3; i++) {
-      inconvenientlyWordOffsetArray.push(uint240(start + i));
-    }
-    start = i;
-
-    Ran();
-  }
+function generateArray(length) {
+  return [...Array(length)]
+    .map(() => uints.next().value)
 }
-`;
 
-function imitateRun() {
-  let multipleFullWordArray = [];
-  let withinWordArray = [];
-  let multiplePartWordArray = [];
-  let inconvenientlyWordOffsetArray = [];
-  let shortString = "hello world";
-  let longString = "solidity storage is a fun lesson in endianness";
+const TEST_NAME = "StorageVars";
 
-  let start = 1;
-  let i;
+const FIXTURES = [{
+  name: "multipleFullWordArray",
+  type: "uint[]",
+  value: generateArray(3)  // takes up 3 whole words
+}, {
+  name: "withinWordArray",
+  type: "uint16[]",
+  value: generateArray(10)  // takes up >1/2 word
+}, {
+  name: "multiplePartWordArray",
+  type: "uint64[]",
+  value: generateArray(9)  // takes up 2.25 words
+}, {
+  name: "inconvenientlyWordOffsetArray",
+  type: "uint240[]",
+  value: generateArray(3)  // takes up ~2.8 words
+}, {
+  name: "shortString",
+  type: "string",
+  value: "hello world"
+}, {
+  name: "longString",
+  type: "string",
+  value: "solidity storage is a fun lesson in endianness"
+}];
 
-  for (i = 0; i < 3; i++) {
-    multipleFullWordArray.push(start + i);
-  }
-  start = i;
-
-  for (i = 0; i < 10; i++) {
-    withinWordArray.push(start + i);
-  }
-  start = i;
-
-  for (i = 0; i < 9; i++) {
-    multiplePartWordArray.push(start + i);
-  }
-  start = i;
-
-  for (i = 0; i < 3; i++) {
-    inconvenientlyWordOffsetArray.push(start + i);
-  }
-
-  return {
-    shortString,
-    longString,
-    multipleFullWordArray,
-    withinWordArray,
-    multiplePartWordArray,
-    inconvenientlyWordOffsetArray
-  }
-
-}
+const SOURCE = solidityForFixtures(TEST_NAME, FIXTURES);
 
 const sources = {
-  "StorageVars.sol": __STORAGE,
+  [`${TEST_NAME}.sol`]: SOURCE
 }
 
 describe("Data Decoding", function() {
-  var provider;
-  var web3;
+  this.timeout(30000);
 
-  var abstractions;
-  var artifacts;
-  var files;
-  var definitions;
-  var refs;
-  var decode;
-
-  before("Create Provider", async function() {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
-    web3 = new Web3(provider);
+  before("Create Provider", () => {
+    this.provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
+    this.web3 = new Web3(this.provider);
   });
 
-  before("Prepare contracts and artifacts", async function() {
-    this.timeout(30000);
-
-    let prepared = await prepareContracts(provider, sources)
-    abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
-    files = prepared.files;
+  before("Prepare contracts and artifacts", async () => {
+    let prepared = await prepareContracts(this.provider, sources)
+    this.abstractions = prepared.abstractions;
+    this.artifacts = prepared.artifacts;
+    this.files = prepared.files;
   });
 
-  before("Run transaction, save decoded variable values", async function() {
-    this.timeout(30000);
-
-    let instance = await abstractions.StorageVars.deployed();
+  before("Run transaction, save decoded variable values", async () => {
+    let instance = await this.abstractions[TEST_NAME].deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
     let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
+      provider: this.provider,
+      files: this.files,
+      contracts: this.artifacts
     });
 
     let session = bugger.connect();
     var stepped;  // session steppers return false when done
 
-    let breakpoint = { address: instance.address, line: 41 };
+    let breakpoint = {
+      address: instance.address,
+      line: SOURCE.split("\n").length - 4
+    };
 
     session.continueUntil(breakpoint);
 
-    definitions = session.view(data.current.identifiers.definitions);
-    refs = session.view(data.current.identifiers.refs);
-    decode = session.view(data.views.decoder);
+    this.definitions = session.view(data.current.identifiers.definitions);
+    this.refs = session.view(data.current.identifiers.refs);
+    let decode = session.view(data.views.decoder);
+    this.decode = (...args) => cleanBigNumbers(decode(...args));
 
     debug("storage %O", session.view(evm.current.state.storage));
   });
 
-  for (let [identifier, expected] of Object.entries(imitateRun())) {
-    it(`correctly decodes ${identifier}`, function() {
-      let definition = definitions[identifier];
-      let ref = refs[identifier];
-      debug("ref: %O", ref);
-
-      let actual = cleanBigNumbers(decode(definition, ref));
-
-      assert.deepEqual(actual, expected);
-    });
-  }
-
+  testCasesForFixtures.bind(this)(FIXTURES);
 });
