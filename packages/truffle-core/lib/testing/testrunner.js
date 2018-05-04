@@ -5,7 +5,7 @@ var TestResolver = require("./testresolver");
 var TestSource = require("./testsource");
 var expect = require("truffle-expect");
 var contract = require("truffle-contract");
-var SolidityCoder = require("web3/lib/solidity/coder.js");
+var abi = require("web3-eth-abi");
 var path = require("path");
 var _ = require("lodash");
 var async = require("async");
@@ -173,7 +173,8 @@ TestRunner.prototype.endTest = function(mocha, callback) {
       }).filter(function(type) {
         return type != null;
       });
-      var values = SolidityCoder.decodeParams(types, log.data.replace("0x", ""));
+
+      var values = abi.decodeLog(event.abi_entry.inputs, log.data, log.topics);
       var index = 0;
 
       var line = "    " + event.abi_entry.name + "(";
