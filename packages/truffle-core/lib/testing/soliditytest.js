@@ -5,9 +5,9 @@ var find_contracts = require("truffle-contract-sources");
 var compile = require("truffle-compile");
 var artifactor = require("truffle-artifactor");
 var contract = require("truffle-contract");
+var abi = require("web3-eth-abi");
 var series = require("async").series;
 var path = require("path");
-var SolidityCoder = require("web3/lib/solidity/coder.js");
 
 var SolidityTest = {
   define: function(abstraction, dependency_paths, runner, mocha) {
@@ -42,8 +42,8 @@ var SolidityTest = {
           var decoded = {
             event: 'TestEvent',
             args: {
-              result: SolidityCoder.decodeParams(['bool'], log.topics[1].replace("0x", ""))[0],
-              message: SolidityCoder.decodeParams(['string'], log.data.replace("0x", ""))[0]
+              result: abi.decodeLog(['bool'], log.topics[1], log.topics)[0],
+              message: abi.decodeLog(['string'], log.data, log.topics)[0]
             }
           };
           logs.push(decoded);
