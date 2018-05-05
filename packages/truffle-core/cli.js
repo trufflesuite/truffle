@@ -40,12 +40,11 @@ command.run(process.argv.slice(2), options, function(err) {
   // Don't exit if no error; if something is keeping the process open,
   // like `truffle console`, then let it.
 
-  // Clear any polling though - `provider-engine` in HDWallet
-  // and `web3 1.0 confirmations` both interval timers wide open.
-  const Timer = process.binding('timer_wrap').Timer;
+  // Clear any polling or open sockets - `provider-engine` in HDWallet
+  // and `web3 1.0 confirmations` both leave interval timers etc wide open.
   const handles = process._getActiveHandles();
   handles.forEach(handle => {
-    if (handle instanceof Timer){
+    if (typeof handle.close === 'function'){
       handle.close();
     }
   })
