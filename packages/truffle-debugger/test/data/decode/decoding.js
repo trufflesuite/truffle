@@ -1,22 +1,10 @@
 import debugModule from "debug";
 const debug = debugModule("test:data:decode");
 
-import { assert } from "chai";
-import Ganache from "ganache-cli";
-import Web3 from "web3";
-import util from "util";
-
-import { prepareContracts } from "test/helpers";
-
-import Debugger from "lib/debugger";
-
-import { MAX_WORD, cleanBigNumbers } from "lib/data/decode/utils";
-
-import data from "lib/data/selectors";
 import evm from "lib/evm/selectors";
 
 import {
-  generateUints, solidityForFixtures, testCasesForFixtures
+  generateUints, describeDecoding
 } from "./helpers";
 
 const uints = generateUints();
@@ -26,9 +14,7 @@ function generateArray(length) {
     .map(() => uints.next().value)
 }
 
-const TEST_NAME = "StorageVars";
-
-const FIXTURES = [{
+const fixtures = [{
   name: "multipleFullWordArray",
   type: "uint[]",
   value: generateArray(3)  // takes up 3 whole words
@@ -51,58 +37,76 @@ const FIXTURES = [{
 }, {
   name: "longString",
   type: "string",
-  value: "solidity storage is a fun lesson in endianness"
+  value: "solidity allocation is a fun lesson in endianness"
 }];
 
-const SOURCE = solidityForFixtures(TEST_NAME, FIXTURES);
 
-const sources = {
-  [`${TEST_NAME}.sol`]: SOURCE
+describe("Decoding", function() {
+
+  /*
+   * Storage Tests
+   */
+  describeDecoding(
+    "Storage Variables", fixtures, evm.current.state.storage,
+
+    (contractName) => {
+      return `pragma solidity ^0.4.23;
+
+contract ${contractName} {
+
+  event Done();
+
+  // declarations
+  ${fixtures
+    .map( ({type, name}) => `${type} ${name};` )
+    .join("\n  ")}
+
+  function run() public {
+    ${fixtures
+      .map( ({name, value}) => `${name} = ${JSON.stringify(value)};` )
+      .join("\n    ")}
+
+    emit Done();
+  }
 }
+`   }
+  );
 
-describe("Data Decoding", function() {
-  this.timeout(30000);
+  /*
+   * Memory Tests
+   */
+  describeDecoding(
+    "Memory Variables", fixtures, evm.current.state.memory,
 
-  before("Create Provider", () => {
-    this.provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
-    this.web3 = new Web3(this.provider);
-  });
+    (contractName) => {
+      const separator = ";\n    ";
 
-  before("Prepare contracts and artifacts", async () => {
-    let prepared = await prepareContracts(this.provider, sources)
-    this.abstractions = prepared.abstractions;
-    this.artifacts = prepared.artifacts;
-    this.files = prepared.files;
-  });
+      function declareAssign({name, type, value}) {
+        if (type.indexOf("[]") != -1) {
+          // array, must `new`
+          let declare = `${type} memory ${name} = new ${type}(${value.length})`
+          let assigns = value.map((k, i) => `${name}[${i}] = ${k}`);
+          return `${declare}${separator}${assigns.join(separator)}`
+        } else {
+          return `${type} memory ${name} = ${JSON.stringify(value)}`
+        }
+      }
 
-  before("Run transaction, save decoded variable values", async () => {
-    let instance = await this.abstractions[TEST_NAME].deployed();
-    let receipt = await instance.run();
-    let txHash = receipt.tx;
+      return `pragma solidity ^0.4.23;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider: this.provider,
-      files: this.files,
-      contracts: this.artifacts
-    });
+contract ${contractName} {
 
-    let session = bugger.connect();
-    var stepped;  // session steppers return false when done
+  event Done();
 
-    let breakpoint = {
-      address: instance.address,
-      line: SOURCE.split("\n").length - 4
-    };
+  function run() public {
+    uint i;
+    // declarations
+    ${fixtures.map(declareAssign).join(separator)};
 
-    session.continueUntil(breakpoint);
-
-    this.definitions = session.view(data.current.identifiers.definitions);
-    this.refs = session.view(data.current.identifiers.refs);
-    let decode = session.view(data.views.decoder);
-    this.decode = (...args) => cleanBigNumbers(decode(...args));
-
-    debug("storage %O", session.view(evm.current.state.storage));
-  });
-
-  testCasesForFixtures.bind(this)(FIXTURES);
+    emit Done();
+  }
+}
+`
+    }
+  );
 });
