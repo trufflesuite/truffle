@@ -67,7 +67,7 @@ describe("Repeated compilation of contracts with inheritance", function() {
   });
 
   beforeEach("set up sandbox and do initial compile", function(done) {
-    this.timeout(10000);
+    this.timeout(30000);
 
     sandbox.create(project).then(conf => {
       config = conf;
