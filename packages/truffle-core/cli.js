@@ -36,9 +36,17 @@ command.run(process.argv.slice(2), options, function(err) {
     }
     process.exit(1);
   }
-  console.log('Forcing exit...')
-  process.exit(0);
 
   // Don't exit if no error; if something is keeping the process open,
   // like `truffle console`, then let it.
+
+  // Clear any polling though - `provider-engine` in HDWallet
+  // and `web3 1.0 confirmations` both interval timers wide open.
+  const Timer = process.binding('timer_wrap').Timer;
+  const handles = process._getActiveHandles();
+  handles.forEach(handle => {
+    if (handle instanceof Timer){
+      handle.close();
+    }
+  })
 });
