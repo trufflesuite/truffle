@@ -116,17 +116,17 @@ describe("Contexts", function () {
     let affectedInstances = session.view(sessionSelector.info.affectedInstances);
     debug("affectedInstances: %o", affectedInstances);
 
-    let affectedAddresses = Object.keys(affectedInstances).map(address => address.toLowerCase());
+    let affectedAddresses = Object.keys(affectedInstances);
 
     assert.equal(2, affectedAddresses.length);
 
     assert.include(
-      affectedAddresses, outer.address.toLowerCase(),
+      affectedAddresses, outer.address,
       "OuterContract should be an affected address"
     );
 
     assert.include(
-      affectedAddresses, inner.address.toLowerCase(),
+      affectedAddresses, inner.address,
       "InnerContract should be an affected address"
     );
   });
