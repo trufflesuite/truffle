@@ -53,7 +53,7 @@
     "solc": "^0.4.8",
     "temp": "^0.8.3",
     "uglify": "^0.1.5",
-    "uglify-js": "^2.7.5"
+    "uglify-js-es6": "^2.8.9"
   },
   "babel": {
     "presets": [
