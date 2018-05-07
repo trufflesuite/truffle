@@ -293,6 +293,8 @@ export function toBytes(number, length = 0) {
 export function keccak256(...args) {
   let web3 = new Web3();
 
+  debug("args %o", args);
+
   args = args.map( (arg) => {
     if (typeof arg == "number" || BigNumber.isBigNumber(arg)) {
       return toHexString(toBytes(arg, WORD_SIZE)).slice(2)
@@ -303,7 +305,9 @@ export function keccak256(...args) {
     }
   });
 
-  let sha = web3.utils.sha3(args.join(''), { encoding: 'hex' });
+  debug("processed args %o", args);
+
+  let sha = web3.utils.soliditySha3(...args);
   debug("sha %o", sha);
   return toBigNumber(sha);
 }
