@@ -297,13 +297,13 @@ export function keccak256(...args) {
     if (typeof arg == "number" || BigNumber.isBigNumber(arg)) {
       return toHexString(toBytes(arg, WORD_SIZE)).slice(2)
     } else if (typeof arg == "string") {
-      return web3.toHex(arg).slice(2);
+      return web3.utils.toHex(arg).slice(2);
     } else {
       return "";
     }
   });
 
-  let sha = web3.sha3(args.join(''), { encoding: 'hex' });
+  let sha = web3.utils.sha3(args.join(''), { encoding: 'hex' });
   debug("sha %o", sha);
   return toBigNumber(sha);
 }
