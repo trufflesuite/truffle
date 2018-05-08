@@ -97,8 +97,8 @@ var contract = (function(module) {
     instance.send = (value) => instance.sendTransaction({value: value});
 
     // Other events
-    instance.allEvents = contract.events.allEvents;
-    instance.getPastEvents = (event, options) => contract.getPastEvents(event, options);
+    instance.allEvents = execute.allEvents.call(constructor, contract);
+    instance.getPastEvents = execute.getPastEvents.call(constructor, contract);
   };
 
   Contract._constructorMethods = {
@@ -129,6 +129,7 @@ var contract = (function(module) {
 
       // Promievent and flag that allows instance to resolve (rather than just receipt)
       var context = {
+        contract: constructor,
         promiEvent: promiEvent,
         onlyEmitReceipt: true
       }
@@ -1002,6 +1003,52 @@ var execute = {
   },
 
   /**
+   * Wraps web3 `allEvents`, with additional log decoding
+   * @return {PromiEvent}  EventEmitter
+   */
+  allEvents: function(web3Instance){
+    var constructor = this;
+    var decode = utils.decodeLogs;
+    var currentLogID = null;
+
+    // Someone upstream is firing duplicates :/
+    function dedupe(id){
+      return (id === currentLogID)
+        ? false
+        : currentLogID = id;
+    }
+
+    return function(params){
+      var emitter = new EventEmitter();
+
+      constructor.detectNetwork().then(() => {
+        var event = web3Instance.events.allEvents(params);
+
+        event.on('data', e => dedupe(e.id) && emitter.emit('data', decode.call(constructor, e, true)[0]));
+        event.on('changed', e => dedupe(e.id) && emitter.emit('changed', decode.call(constructor, e, true)[0]));
+        event.on('error', e => emitter.emit('error', e));
+      });
+
+      return emitter;
+    };
+  },
+
+  /**
+   * Wraps web3 `getPastEvents`, with additional log decoding
+   * @return {Promise}  Resolves array of event objects
+   */
+  getPastEvents: function(web3Instance){
+    var constructor = this;
+    var decode = utils.decodeLogs;
+
+    return function(event, options){
+      return web3Instance
+        .getPastEvents(event, options)
+        .then(events => decode.call(constructor, events, false))
+    }
+  },
+
+  /**
    * Estimates gas cost of a method invocation
    * @param  {Function} fn  Method to target
    * @return {Promise}
@@ -1364,6 +1411,15 @@ var Utils = {
         return log;
       })
     }
+
+    // Or reformat items in the existing array
+    events.forEach(event => {
+      if (event.raw){
+        event.data = event.raw.data;
+        event.topics = event.raw.topics;
+      }
+    })
+
     return events;
   },
 
@@ -14717,34 +14773,29 @@ module.exports = TruffleContractSchema;
 
 },{"./package.json":78,"./spec/abi.spec.json":79,"./spec/contract-object.spec.json":80,"./spec/network-object.spec.json":81,"ajv":10,"crypto-js/sha3":57}],78:[function(require,module,exports){
 module.exports={
-  "_args": [
-    [
-      "truffle-contract-schema@2.0.0",
-      "/Users/cgewecke/code/consensys/web3-list/truffle/dependencies/truffle-contract"
-    ]
-  ],
-  "_from": "truffle-contract-schema@2.0.0",
+  "_from": "truffle-contract-schema@^2.0.0",
   "_id": "truffle-contract-schema@2.0.0",
   "_inBundle": false,
   "_integrity": "sha512-nLlspmu1GKDaluWksBwitHi/7Z3IpRjmBYeO9N+T1nVJD2V4IWJaptCKP1NqnPiJA+FChB7+F7pI6Br51/FtXQ==",
   "_location": "/truffle-contract-schema",
   "_phantomChildren": {},
   "_requested": {
-    "type": "version",
+    "type": "range",
     "registry": true,
-    "raw": "truffle-contract-schema@2.0.0",
+    "raw": "truffle-contract-schema@^2.0.0",
     "name": "truffle-contract-schema",
     "escapedName": "truffle-contract-schema",
-    "rawSpec": "2.0.0",
+    "rawSpec": "^2.0.0",
     "saveSpec": null,
-    "fetchSpec": "2.0.0"
+    "fetchSpec": "^2.0.0"
   },
   "_requiredBy": [
     "/"
   ],
   "_resolved": "https://registry.npmjs.org/truffle-contract-schema/-/truffle-contract-schema-2.0.0.tgz",
-  "_spec": "2.0.0",
-  "_where": "/Users/cgewecke/code/consensys/web3-list/truffle/dependencies/truffle-contract",
+  "_shasum": "535378c0b6a7f58011ea8d84f57771771cb45163",
+  "_spec": "truffle-contract-schema@^2.0.0",
+  "_where": "/Users/cgewecke/code/consensys/truffle-contract",
   "author": {
     "name": "Tim Coulter",
     "email": "tim.coulter@consensys.net"
@@ -14752,11 +14803,13 @@ module.exports={
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle-schema/issues"
   },
+  "bundleDependencies": false,
   "dependencies": {
     "ajv": "^5.1.1",
     "crypto-js": "^3.1.9-1",
     "debug": "^3.1.0"
   },
+  "deprecated": false,
   "description": "JSON schema for contract artifacts",
   "devDependencies": {
     "mocha": "^3.2.0",
