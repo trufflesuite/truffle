@@ -76,21 +76,28 @@ describe("Events [ @geth ]", function() {
   it('should listen for `allEvents`', async function(){
     let emitter;
     const events = [];
+    const eventNames = [];
     const signatures = ['ExampleEvent', 'SpecialEvent'];
     const example = await Example.new(1)
 
     example
       .allEvents()
       .on('data', function(data){
-        data.event && events.push(data.event);
+        events.push(data);
+        data.event && eventNames.push(data.event);
         emitter = this;
       });
 
     await example.triggerEvent();
     await example.triggerSpecialEvent();
 
-    assert(events.includes(signatures[0]), `Expected to hear ${signatures[0]}`);
-    assert(events.includes(signatures[1]), `Expected to hear ${signatures[1]}`);
+    assert(eventNames.includes(signatures[0]), `Expected to hear ${signatures[0]}`);
+    assert(eventNames.includes(signatures[1]), `Expected to hear ${signatures[1]}`);
+
+    // Make sure we're formattingfor backwards compatibility
+    assert.equal(events[0].args._from, accounts[0]);
+    assert.equal(events[0].args.num, 8);
+
     emitter.removeAllListeners();
   });
 
@@ -111,6 +118,10 @@ describe("Events [ @geth ]", function() {
     assert(exampleEvent.length === 2);
     assert(exampleEvent[0].event === signatures[0]);
     assert(exampleEvent[1].event === signatures[0]);
+
+    // Make sure we're formatting for backwards compatibility
+    assert.equal(exampleEvent[0].args._from, accounts[0]);
+    assert.equal(exampleEvent[0].args.num, 8);
 
     assert(specialEvent.length === 2);
     assert(specialEvent[0].event === signatures[1]);

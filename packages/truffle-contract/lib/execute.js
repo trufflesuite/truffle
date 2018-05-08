@@ -240,6 +240,52 @@ var execute = {
   },
 
   /**
+   * Wraps web3 `allEvents`, with additional log decoding
+   * @return {PromiEvent}  EventEmitter
+   */
+  allEvents: function(web3Instance){
+    var constructor = this;
+    var decode = utils.decodeLogs;
+    var currentLogID = null;
+
+    // Someone upstream is firing duplicates :/
+    function dedupe(id){
+      return (id === currentLogID)
+        ? false
+        : currentLogID = id;
+    }
+
+    return function(params){
+      var emitter = new EventEmitter();
+
+      constructor.detectNetwork().then(() => {
+        var event = web3Instance.events.allEvents(params);
+
+        event.on('data', e => dedupe(e.id) && emitter.emit('data', decode.call(constructor, e, true)[0]));
+        event.on('changed', e => dedupe(e.id) && emitter.emit('changed', decode.call(constructor, e, true)[0]));
+        event.on('error', e => emitter.emit('error', e));
+      });
+
+      return emitter;
+    };
+  },
+
+  /**
+   * Wraps web3 `getPastEvents`, with additional log decoding
+   * @return {Promise}  Resolves array of event objects
+   */
+  getPastEvents: function(web3Instance){
+    var constructor = this;
+    var decode = utils.decodeLogs;
+
+    return function(event, options){
+      return web3Instance
+        .getPastEvents(event, options)
+        .then(events => decode.call(constructor, events, false))
+    }
+  },
+
+  /**
    * Estimates gas cost of a method invocation
    * @param  {Function} fn  Method to target
    * @return {Promise}

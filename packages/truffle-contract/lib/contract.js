@@ -77,8 +77,8 @@ var contract = (function(module) {
     instance.send = (value) => instance.sendTransaction({value: value});
 
     // Other events
-    instance.allEvents = contract.events.allEvents;
-    instance.getPastEvents = (event, options) => contract.getPastEvents(event, options);
+    instance.allEvents = execute.allEvents.call(constructor, contract);
+    instance.getPastEvents = execute.getPastEvents.call(constructor, contract);
   };
 
   Contract._constructorMethods = {
@@ -109,6 +109,7 @@ var contract = (function(module) {
 
       // Promievent and flag that allows instance to resolve (rather than just receipt)
       var context = {
+        contract: constructor,
         promiEvent: promiEvent,
         onlyEmitReceipt: true
       }
