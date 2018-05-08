@@ -51,6 +51,15 @@ var Utils = {
         return log;
       })
     }
+
+    // Or reformat items in the existing array
+    events.forEach(event => {
+      if (event.raw){
+        event.data = event.raw.data;
+        event.topics = event.raw.topics;
+      }
+    })
+
     return events;
   },
 
