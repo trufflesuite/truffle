@@ -35,6 +35,10 @@ To start a truffle-debugger session, you'll need the following:
   - `deployedBinary` - `0x`-prefixed string with the on-chain binary for a contract instance
   - `deployedSourceMap` - The source map corresponding to the on-chain binary (from the Solidity compiler)
 
+Optionally (and recommended), you can also provide a `files` argument:
+
+- `files` - An array of sourcePaths representing file indexes (from `solc` or `truffle-compile`)
+
 ### Invocation
 
 1. Start the debugger session by constructing a Debugger instance with `.forTx()` and then `.connect()` to it:
@@ -42,9 +46,10 @@ To start a truffle-debugger session, you'll need the following:
 ```javascript
 import Debugger from "truffle-debugger";
 
-let session = Debugger
-  .forTx(txHash, { contracts, provider })
-  .connect();
+let bugger = await Debugger
+  .forTx(txHash, { contracts, files, provider });
+
+let session = bugger.connect();
 ```
 
 2. Resolve the session's `ready()` promise:
@@ -58,7 +63,7 @@ await session.ready();
 ```javascript
 session.stepNext();
 session.stepOver();
-session.stepInfo();
+session.stepInto();
 ```
 
 4. Access data provided by the debugger via the `session.view()` interface, and the provided selectors:
@@ -66,7 +71,7 @@ session.stepInfo();
 ```javascript
 let { ast, data, evm, solidity, trace } = Debugger.selectors;
 
-let variables = session.view(data.identifiers.native.current);
+let variables = session.view(data.current.identifiers.native);
 let sourceRange = session.view(solidity.current.sourceRange);
 ```
 
