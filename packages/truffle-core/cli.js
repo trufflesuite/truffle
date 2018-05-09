@@ -46,6 +46,8 @@ command.run(process.argv.slice(2), options, function(err) {
   handles.forEach(handle => {
     if (typeof handle.close === 'function'){
       handle.close();
+    } else if (handle.readable && !handle._isStdio){
+      handle.destroy();
     }
-  })
+  });
 });
