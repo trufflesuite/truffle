@@ -2432,7 +2432,7 @@ debounce@^1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/debounce/-/debounce-1.0.2.tgz#503cc674d8d7f737099664fb75ddbd36b9626dc6"
 
-debug@2, debug@^2.1.0, debug@^2.1.1, debug@^2.6.0, debug@^2.6.1, debug@^2.6.3, debug@^2.6.8, debug@~2.6.7:
+debug@2, debug@2.6.8, debug@^2.1.0, debug@^2.1.1, debug@^2.6.0, debug@^2.6.1, debug@^2.6.3, debug@^2.6.8, debug@~2.6.7:
   version "2.6.8"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.8.tgz#e731531ca2ede27d188222427da17821d68ff4fc"
   dependencies:
@@ -6932,13 +6932,29 @@ mocha@^2.4.5:
     supports-color "1.2.0"
     to-iso-string "0.0.2"
 
-mocha@^3.0.0, mocha@^3.2.0, mocha@^3.4.2:
+mocha@^3.0.0, mocha@^3.2.0:
   version "3.4.2"
   resolved "https://registry.yarnpkg.com/mocha/-/mocha-3.4.2.tgz#d0ef4d332126dbf18d0d640c9b382dd48be97594"
   dependencies:
     browser-stdout "1.3.0"
     commander "2.9.0"
     debug "2.6.0"
+    diff "3.2.0"
+    escape-string-regexp "1.0.5"
+    glob "7.1.1"
+    growl "1.9.2"
+    json3 "3.3.2"
+    lodash.create "3.1.1"
+    mkdirp "0.5.1"
+    supports-color "3.1.2"
+
+mocha@^3.5.0:
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/mocha/-/mocha-3.5.0.tgz#1328567d2717f997030f8006234bce9b8cd72465"
+  dependencies:
+    browser-stdout "1.3.0"
+    commander "2.9.0"
+    debug "2.6.8"
     diff "3.2.0"
     escape-string-regexp "1.0.5"
     glob "7.1.1"
@@ -9112,6 +9128,16 @@ solc@0.4.13:
     semver "^5.3.0"
     yargs "^4.7.1"
 
+solc@0.4.15:
+  version "0.4.15"
+  resolved "https://registry.yarnpkg.com/solc/-/solc-0.4.15.tgz#8ae8f1606a124a3f81c28b9dcecb0964ebdf9f25"
+  dependencies:
+    fs-extra "^0.30.0"
+    memorystream "^0.3.1"
+    require-from-string "^1.1.0"
+    semver "^5.3.0"
+    yargs "^4.7.1"
+
 solidity-parser@^0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/solidity-parser/-/solidity-parser-0.3.0.tgz#cab04f8e406bdc1f3c16512eec6aa87a1072f8b9"
@@ -9796,14 +9822,14 @@ truffle-box@^1.0.2:
     tmp "^0.0.31"
     vcsurl "^0.1.1"
 
-truffle-compile@^2.0.6:
-  version "2.0.6"
-  resolved "https://registry.yarnpkg.com/truffle-compile/-/truffle-compile-2.0.6.tgz#88bc6597157aa26668ddbf99da70b7e396692884"
+truffle-compile@^2.0.7:
+  version "2.0.7"
+  resolved "https://registry.yarnpkg.com/truffle-compile/-/truffle-compile-2.0.7.tgz#7cf46ab1262c54cc927e56314fe78e662faad2eb"
   dependencies:
     async "^2.1.4"
     colors "^1.1.2"
     graphlib "^2.1.1"
-    solc "0.4.13"
+    solc "0.4.15"
     solidity-parser "^0.3.0"
     truffle-config "^1.0.2"
     truffle-contract-sources "^0.0.1"
@@ -9869,9 +9895,9 @@ truffle-contract@^2.0.5:
     truffle-contract-schema "^0.0.5"
     web3 "^0.20.1"
 
-truffle-core@^3.4.7:
-  version "3.4.7"
-  resolved "https://registry.yarnpkg.com/truffle-core/-/truffle-core-3.4.7.tgz#bd7cf5af9e7a6b41687c423e5dab74d5326b33db"
+truffle-core@^3.4.8:
+  version "3.4.8"
+  resolved "https://registry.yarnpkg.com/truffle-core/-/truffle-core-3.4.8.tgz#77f1e9fe86becf11547fdb52ccefec23922a1da7"
   dependencies:
     async "^1.4.2"
     chai "^3.3.0"
@@ -9894,7 +9920,7 @@ truffle-core@^3.4.7:
     temp "^0.8.3"
     truffle-artifactor "^2.1.5"
     truffle-box "^1.0.2"
-    truffle-compile "^2.0.6"
+    truffle-compile "^2.0.7"
     truffle-config "^1.0.2"
     truffle-contract "^2.0.5"
     truffle-contract-sources "^0.0.1"
