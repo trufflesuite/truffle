@@ -13,7 +13,7 @@ var TestRPC = require("ganache-cli");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
 
-describe.skip('EthPM integration', function() {
+describe('EthPM integration', function() {
   var config;
   var host;
   var registry;
