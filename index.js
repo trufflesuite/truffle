@@ -6,19 +6,32 @@ var HookedSubprovider = require('web3-provider-engine/subproviders/hooked-wallet
 var ProviderSubprovider = require("web3-provider-engine/subproviders/provider.js");
 var Web3 = require("web3");
 var Transaction = require('ethereumjs-tx');
+var Wallet = require('ethereumjs-wallet');
+var EthUtil = require('ethereumjs-util');
 
 function HDWalletProvider(mnemonic, provider_url, address_index=0, num_addresses=1) {
-  this.mnemonic = mnemonic;
-  this.hdwallet = hdkey.fromMasterSeed(bip39.mnemonicToSeed(mnemonic));
-  this.wallet_hdpath = "m/44'/60'/0'/0/";
-  this.wallets = {};
-  this.addresses = [];
+  if (mnemonic.indexOf(' ') === -1) {
+    var privateKey = new Buffer(mnemonic, 'hex');
+    if (EthUtil.isValidPrivate(privateKey)) {
+      var wallet = Wallet.fromPrivateKey(privateKey);
+      var address = wallet.getAddressString();
+      this.addresses = [address];
+      this.wallets = {};
+      this.wallets[address] = wallet;
+    }
+  } else {
+    this.mnemonic = mnemonic;
+    this.hdwallet = hdkey.fromMasterSeed(bip39.mnemonicToSeed(mnemonic));
+    this.wallet_hdpath = "m/44'/60'/0'/0/";
+    this.wallets = {};
+    this.addresses = [];
 
-  for (let i = address_index; i < address_index + num_addresses; i++){
-    var wallet = this.hdwallet.derivePath(this.wallet_hdpath + i).getWallet();
-    var addr = '0x' + wallet.getAddress().toString('hex');
-    this.addresses.push(addr);
-    this.wallets[addr] = wallet;
+    for (let i = address_index; i < address_index + num_addresses; i++){
+      var wallet = this.hdwallet.derivePath(this.wallet_hdpath + i).getWallet();
+      var addr = '0x' + wallet.getAddress().toString('hex');
+      this.addresses.push(addr);
+      this.wallets[addr] = wallet;
+    }
   }
 
   const tmp_accounts = this.addresses;
