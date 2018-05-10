@@ -40,8 +40,8 @@ var provider = new HDWalletProvider("3f841bf589fdf83a521e55d51afddc34fa65351161e
 
 // Or, pass an array of private keys, and optionally use a certain subset of addresses
 var privateKeys = [
-  '3f841bf589fdf83a521e55d51afddc34fa65351161eead24f064855fc29c9580',
-  '9549f39decea7b7504e15572b2c6a72766df0281cea22bd1a3bc87166b1ca290',
+  "3f841bf589fdf83a521e55d51afddc34fa65351161eead24f064855fc29c9580",
+  "9549f39decea7b7504e15572b2c6a72766df0281cea22bd1a3bc87166b1ca290",
 ];
 var provider = new HDWalletProvider(privateKeys, "http://localhost:8545", 0, 2); //start at address_index 0 and load both addresses
 ```
