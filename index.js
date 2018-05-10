@@ -10,14 +10,18 @@ var Wallet = require('ethereumjs-wallet');
 var EthUtil = require('ethereumjs-util');
 
 function HDWalletProvider(mnemonic, provider_url, address_index=0, num_addresses=1) {
-  if (mnemonic.indexOf(' ') === -1) {
-    var privateKey = new Buffer(mnemonic, 'hex');
-    if (EthUtil.isValidPrivate(privateKey)) {
-      var wallet = Wallet.fromPrivateKey(privateKey);
-      var address = wallet.getAddressString();
-      this.addresses = [address];
-      this.wallets = {};
-      this.wallets[address] = wallet;
+  if (mnemonic.indexOf(' ') === -1 || Array.isArray(mnemonic)) {
+    var privateKeys = Array.isArray(mnemonic) ? mnemonic : [mnemonic];
+    this.wallets = {};
+    this.addresses = [];
+    for (let i = address_index; i < address_index + num_addresses; i++){
+      var privateKey = new Buffer(privateKeys[i], 'hex');
+      if (EthUtil.isValidPrivate(privateKey)) {
+        var wallet = Wallet.fromPrivateKey(privateKey);
+        var address = wallet.getAddressString();
+        this.addresses.push(address);
+        this.wallets[address] = wallet;
+      }
     }
   } else {
     this.mnemonic = mnemonic;
