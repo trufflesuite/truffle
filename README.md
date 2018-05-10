@@ -35,7 +35,8 @@ Instead of a mnemonic, you can alternatively provide a private key or array of p
 
 ```javascript
 var HDWalletProvider = require("truffle-hdwallet-provider");
-var provider = new HDWalletProvider("3f841bf589fdf83a521e55d51afddc34fa65351161eead24f064855fc29c9580", "http://localhost:8545"); //load single private key as string
+//load single private key as string
+var provider = new HDWalletProvider("3f841bf589fdf83a521e55d51afddc34fa65351161eead24f064855fc29c9580", "http://localhost:8545");
 
 // Or, pass an array of private keys, and optionally use a certain subset of addresses
 var privateKeys = [
