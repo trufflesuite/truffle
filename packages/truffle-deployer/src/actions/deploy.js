@@ -1,42 +1,56 @@
-module.exports = function(contract, args, deployer) {
-  return function() {
-    var should_deploy = true;
+
+const canOverwrite = function(args, isDeployed){
+  const lastArg = args[args.length - 1];
+  const isObject = typeof lastArg === "object";
+
+  const overwrite = isObject &&
+                    isDeployed &&
+                    lastArg.overwrite === false;
+
+  isObject && delete lastArg.overwrite;
+  return !overwrite;
+}
+
+const deploy = function(contract, args, deployer) {
+  return async function() {
+    let instance;
+    let shouldDeploy = true;
+    const isDeployed = contract.isDeployed();
 
     // First detect the network to see if it's deployed.
-    return contract.detectNetwork().then(function() {
-      // Evaluate any arguments if they're promises (we need to do this in all cases to maintain consistency)
-      return Promise.all(args)
-    }).then(function(new_args) {
-      // Check the last argument. If it's an object that tells us not to overwrite, then lets not.
-      if (new_args.length > 0) {
-        var last_arg = new_args[new_args.length - 1];
-        if (typeof last_arg == "object" && last_arg.overwrite === false && contract.isDeployed()) {
-          should_deploy = false;
-        }
-        delete last_arg.overwrite;
-      }
+    await contract.detectNetwork();
 
-      if (should_deploy == true) {
-        var prefix = "Deploying ";
-        if (contract.isDeployed()) {
-          prefix = "Replacing ";
-        }
-        deployer.logger.log(prefix + contract.contract_name + "...");
-        return contract.new.apply(contract, new_args);
-      } else {
-        return contract.deployed();
-      }
-    }).then(function(instance) {
-      if (should_deploy == true) {
-        deployer.logger.log(contract.contract_name + ": " + instance.address);
-      } else {
-        deployer.logger.log("Didn't deploy " + contract.contract_name + "; using " + instance.address);
-      }
+    // Evaluate any arguments if they're promises
+    // (we need to do this in all cases to maintain consistency)
+    const newArgs = await Promise.all(args);
 
-      // Ensure the address and tx-hash are set on the contract.
-      contract.address = instance.address;
-      contract.transactionHash = instance.transactionHash;
-      return instance;
-    });
+    // Check the last argument. If it's an object that tells us not to overwrite, then lets not.
+    if (newArgs.length > 0) {
+      shouldDeploy = canOverwrite(newArgs, isDeployed);
+    }
+
+    if (shouldDeploy) {
+      let prefix;
+      (isDeployed)
+        ? prefix = "Deploying "
+        : prefix = "Replacing ";
+
+      deployer.logger.log(prefix + contract.contract_name + "...");
+      instance = await contract.new.apply(contract, newArgs);
+    } else {
+      instance = await contract.deployed();
+    }
+
+    (shouldDeploy)
+      ? deployer.logger.log(contract.contract_name + ": " + instance.address)
+      : deployer.logger.log("Didn't deploy " + contract.contract_name + "; using " + instance.address);
+
+
+    // Ensure the address and tx-hash are set on the contract.
+    contract.address = instance.address;
+    contract.transactionHash = instance.transactionHash;
+    return instance;
   };
 };
+
+module.exports = deploy;

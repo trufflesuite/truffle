@@ -1,6 +1,7 @@
 module.exports = {
   link: function(library, destinations, logger) {
-    var self = this;
+    const self = this;
+    let hasAddress;
 
     logger = logger || console;
 
@@ -12,14 +13,10 @@ module.exports = {
       throw new Error("Cannot link a library with no name.");
     }
 
-    var hasAddress = false;
-
     // Abstractions; don't want to use .address directly because it will throw.
-    if (typeof library.isDeployed) {
-      hasAddress = library.isDeployed();
-    } else {
-      hasAddress = library.address != null;
-    }
+    (typeof library.isDeployed)
+      ? hasAddress = library.isDeployed()
+      : hasAddress = library.address != null;
 
     if (!hasAddress) {
       throw new Error("Cannot link library: " + library.contract_name + " has no address. Has it been deployed?");
