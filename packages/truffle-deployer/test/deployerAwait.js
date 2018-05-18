@@ -6,7 +6,7 @@ const assert = require("assert");
 const Deployer = require("../index");
 const utils = require('./utils');
 
-describe("deployer", function() {
+describe("deployer (async / await)", function() {
   let owner
   let options;
   let networkId;
@@ -32,19 +32,18 @@ describe("deployer", function() {
 
   describe('sync', function(){
 
-    it("deploy()", async function() {
+    it("single deploy()", async function() {
       const Example = utils.getContract('Example', provider, networkId, owner);
       options.contracts = [ Example ];
 
       const deployer = new Deployer(options);
 
-      const migrate = function(){
-        deployer.deploy(Example);
+      const migrate = async function(){
+        await deployer.deploy(Example);
       };
 
-      migrate();
-
-      await deployer.start();
+      await deployer.start()
+      await deployer.then(migrate);
 
       assert(Example.address !== null);
       assert(Example.transactionHash !== null);
@@ -53,7 +52,7 @@ describe("deployer", function() {
       assert(await example.id() === 'Example' );
     });
 
-    it('deploy().then', async function(){
+    it('deploy() with interdependent contracts', async function(){
       const Example = utils.getContract('Example', provider, networkId, owner);
       const UsesExample = utils.getContract('UsesExample', provider, networkId, owner);
 
@@ -61,14 +60,14 @@ describe("deployer", function() {
 
       const deployer = new Deployer(options);
 
-      const migrate = function(){
-        deployer.deploy(Example).then(function() {
-          return deployer.deploy(UsesExample, Example.address);
-        });
+      const migrate = async function(){
+        await deployer.deploy(Example)
+        await deployer.deploy(UsesExample, Example.address);
+
       };
 
-      migrate();
       await deployer.start();
+      await deployer.then(migrate);
 
       const example = await Example.deployed();
       const usesExample = await UsesExample.deployed();
@@ -78,34 +77,6 @@ describe("deployer", function() {
       assert(await example.id() === 'Example' );
       assert(await usesExample.id() === 'UsesExample' );
 
-      assert(await usesExample.other() === Example.address);
-    });
-
-    it('deployer.then', async function(){
-      const Example = utils.getContract('Example', provider, networkId, owner);
-      const UsesExample = utils.getContract('UsesExample', provider, networkId, owner);
-
-      options.contracts = [ Example, UsesExample ];
-
-      const deployer = new Deployer(options);
-
-      const migrate = function(){
-        deployer.then(async function(){
-          const example = await deployer.deploy(Example);
-          await deployer.deploy(UsesExample, example.address);
-        })
-      };
-
-      migrate();
-      await deployer.start();
-
-      const example = await Example.deployed();
-      const usesExample = await UsesExample.deployed();
-
-      assert(Example.address !== null);
-
-      assert(await example.id() === 'Example' );
-      assert(await usesExample.id() === 'UsesExample' );
       assert(await usesExample.other() === Example.address);
     });
 
@@ -116,15 +87,14 @@ describe("deployer", function() {
 
       const deployer = new Deployer(options);
 
-      const migrate = function(){
-        deployer.deploy(IsLibrary);
-        deployer.link(IsLibrary, UsesLibrary);
-        deployer.deploy(UsesLibrary);
+      const migrate = async function(){
+        await deployer.deploy(IsLibrary);
+        await deployer.link(IsLibrary, UsesLibrary);
+        await deployer.deploy(UsesLibrary);
       };
 
-      migrate();
-
       await deployer.start();
+      await deployer.then(migrate);
 
       assert(UsesLibrary.address !== null);
       assert(IsLibrary.address !== null);

@@ -66,13 +66,9 @@ class Deployer {
   queueOrExec(fn){
     var self = this;
 
-    if (this.chain.started == true) {
-      return new Promise(function(accept, reject) {
-        accept();
-      }).then(fn);
-    } else {
-      return this.chain.then(fn);
-    }
+    return (this.chain.started == true)
+      ? new Promise(accept => accept()).then(fn)
+      : this.chain.then(fn);
   }
 }
 

@@ -36,7 +36,18 @@ const deploy = function(contract, args, deployer) {
         : prefix = "Replacing ";
 
       deployer.logger.log(prefix + contract.contract_name + "...");
-      instance = await contract.new.apply(contract, newArgs);
+      const promiEvent = contract.new.apply(contract, newArgs)
+
+      promiEvent
+        .on('transactionHash', function(hash){
+          this.removeListener('transactionHash');
+         })
+        .on('confirmation', function(num, receipt){
+          this.removeListener('confirmation');
+        });
+
+      instance = await promiEvent;
+
     } else {
       instance = await contract.deployed();
     }
