@@ -1,47 +1,45 @@
-function DeferredChain() {
-  var self = this;
-  this.chain = new Promise(function(accept, reject) {
-    self._accept = accept;
-    self._reject = reject;
-  });
+class DeferredChain {
+  constructor(){
+    const self = this;
 
-  this.await = new Promise(function() {
-    self._done = arguments[0];
-    self._error = arguments[1];
-  });
-  this.started = false;
-};
+    this.chain = new Promise(function(accept, reject){
+      self._accept = accept;
+      self._reject = reject;
+    });
 
-DeferredChain.prototype.then = function(fn) {
-  var self = this;
-  this.chain = this.chain.then(function() {
-    var args = Array.prototype.slice.call(arguments);
+    this.await = new Promise(function(){
+      self._done = arguments[0];
+      self._error = arguments[1];
+    });
 
-    return fn.apply(null, args);
-  });
-  this.chain = this.chain.catch(function(e) {
-    self._error(e);
-  });
+    this.started = false;
+  }
 
-  return this;
-};
+  then(fn){
+    this.chain = this.chain.then(() => {
+      var args = Array.prototype.slice.call(arguments);
+      return fn.apply(null, args);
+    });
 
-DeferredChain.prototype.catch = function(fn) {
-  var self = this;
-  this.chain = this.chain.catch(function() {
-    var args = Array.prototype.slice.call(arguments);
+    this.chain = this.chain.catch(e => this._error(e));
+    return this;
+  }
 
-    return fn.apply(null, args);
-  });
+  catch(fn){
+    this.chain = this.chain.catch(() => {
+      var args = Array.prototype.slice.call(arguments);
+      return fn.apply(null, args);
+    });
 
-  return this;
-};
+    return this;
+  }
 
-DeferredChain.prototype.start = function() {
-  this.started = true;
-  this.chain = this.chain.then(this._done);
-  this._accept();
-  return this.await;
-};
+  start(){
+    this.started = true;
+    this.chain = this.chain.then(this._done);
+    this._accept();
+    return this.await;
+  }
+}
 
 module.exports = DeferredChain;
