@@ -1,12 +1,14 @@
-var expect = require("truffle-expect");
-var DeferredChain = require("./src/deferredchain");
-var deploy = require("./src/actions/deploy");
-var deployMany = require("./src/actions/deploymany");
-var link = require("./src/actions/link");
-var create = require("./src/actions/new");
+const expect = require("truffle-expect");
+const EventEmitter = require('async-eventemitter');
+const DeferredChain = require("./src/deferredchain");
+const deploy = require("./src/actions/deploy");
+const deployMany = require("./src/actions/deploymany");
+const link = require("./src/actions/link");
+const create = require("./src/actions/new");
 
-class Deployer {
+class Deployer extends EventEmitter {
   constructor(options){
+    super();
     options = options || {};
     expect.options(options, [
       "provider",
@@ -58,7 +60,7 @@ class Deployer {
     var self = this;
 
     return this.queueOrExec(function() {
-      self.logger.log("Running step...");
+      self.emit('step', {});
       return fn(this);
     });
   }
