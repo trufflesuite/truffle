@@ -1,6 +1,6 @@
 {
   "name": "truffle-workflow-compile",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Core workflow behavior for `truffle compile` command",
   "dependencies": {
     "async": "^1.4.2",
