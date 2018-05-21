@@ -7,7 +7,7 @@
     "lodash": "^4.5.1",
     "mkdirp": "^0.5.1",
     "truffle-artifactor": "^3.0.5",
-    "truffle-compile": "^3.0.10",
+    "truffle-compile": "^3.0.11",
     "truffle-config": "^1.0.4",
     "truffle-expect": "^0.0.3",
     "truffle-resolver": "^4.0.3"
