@@ -40,6 +40,7 @@ describe("HD Wallet Provider", function(done) {
     web3.setProvider(provider);
 
     const addresses = provider.getAddresses();
+    assert.equal(addresses[0], '0xc515db5834d8f110eee96c3036854dbf1d87de2b');
     addresses.forEach((address) => {
       assert(EthUtil.isValidAddress(address), 'invalid address');
     });
