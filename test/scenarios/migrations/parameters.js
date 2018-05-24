@@ -55,7 +55,11 @@ describe("Migration Parameters", function() {
     var expected_file = path.join(config.migrations_directory, "output.json");
 
     CommandRunner.run("migrate", config, function(err) {
-      if (err) return done(err);
+      var output = logger.contents();
+      if (err) {
+        console.log(output);
+        return done(err);
+      }
 
       var data = fs.readFileSync(expected_file, "utf8");
       data = JSON.parse(data);
