@@ -1,0 +1,8 @@
+{
+  "name": "root",
+  "version": "1.0.0",
+  "dependencies": {
+    "@org/pkg": "^1.0.0",
+    "dep2": "^1.0.0"
+  }
+}
