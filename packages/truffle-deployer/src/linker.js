@@ -1,18 +1,18 @@
 module.exports = {
   link: function(library, destinations, deployer) {
+    let eventArgs;
 
-    if (!Array.isArray(destinations)) {
-      destinations = [destinations];
-    }
-
+    // Validate name
     if (library.contract_name == null) {
-      deployer.emit('error', {
+      eventArgs = {
         type: 'noLibName'
-      });
-      throw new Error();
+      }
+
+      deployer.emitter.emit('error', eventArgs);
+      throw new Error(); // <-- Handle this
     }
 
-    // Abstractions; don't want to use .address directly because it will throw.
+    // Validate address: don't want to use .address directly because it will throw.
     let hasAddress;
 
     (typeof library.isDeployed)
@@ -20,27 +20,34 @@ module.exports = {
       : hasAddress = library.address != null;
 
     if (!hasAddress) {
-      deployer.emit('error', {
+      eventArgs = {
         type: 'noLibAddress',
         contract: library
-      });
+      }
 
-      throw new Error();
+      deployer.emitter.emit('error', eventArgs);
+      throw new Error(); // <-- Handle this
     }
 
-    destinations.forEach(function(destination) {
+    // Link all destinations
+    if (!Array.isArray(destinations)) {
+      destinations = [destinations];
+    }
+
+    for (let destination of destinations) {
       // Don't link if result will have no effect.
       const alreadyLinked = (destination.links[library.contract_name] == library.address);
       const noLinkage =     (destination.unlinked_binary.indexOf(library.contract_name) < 0);
 
       if (alreadyLinked || noLinkage) return;
 
-      deployer.emit('linking', {
+      eventArgs = {
         library: library,
         destination: destination
-      });
+      }
 
+      deployer.emitter.emit('linking', eventArgs);
       destination.link(library);
-    });
+    };
   },
 };

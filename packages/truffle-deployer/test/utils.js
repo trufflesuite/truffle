@@ -18,6 +18,18 @@ const utils = {
     })
   },
 
+  evm_mine: function(web3){
+    return new Promise(function(accept, reject){
+      web3.currentProvider.send({
+        jsonrpc: "2.0",
+        method: "evm_mine",
+        id: new Date().getTime()
+      }, function(err, result){
+          (err) ? reject(err) : accept(result);
+      });
+    });
+  },
+
   cleanUp: () => fs.removeSync(utils.buildDir),
 
   getContract: function(name, provider, networkId, account){

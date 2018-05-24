@@ -5,6 +5,7 @@ const assert = require("assert");
 
 const Deployer = require("../index");
 const utils = require('./utils');
+const AsyncReporter = require('./reporters/asyncReporter')
 
 describe("deployer (async / await)", function() {
   let owner
@@ -29,85 +30,86 @@ describe("deployer (async / await)", function() {
   });
 
   afterEach(() => utils.cleanUp());
+  afterEach(() => deployer.finish());
 
-  describe('sync', function(){
+  it("single deploy()", async function() {
+    const Example = utils.getContract('Example', provider, networkId, owner);
+    options.contracts = [ Example ];
 
-    it("single deploy()", async function() {
-      const Example = utils.getContract('Example', provider, networkId, owner);
-      options.contracts = [ Example ];
+    deployer = new Deployer(options);
+    reporter = new AsyncReporter(deployer, web3, utils.evm_mine);
 
-      const deployer = new Deployer(options);
+    const migrate = async function(){
+      await deployer.deploy(Example);
+    };
 
-      const migrate = async function(){
-        await deployer.deploy(Example);
-      };
+    await deployer.start()
+    await deployer.then(migrate);
 
-      await deployer.start()
-      await deployer.then(migrate);
+    assert(Example.address !== null);
+    assert(Example.transactionHash !== null);
 
-      assert(Example.address !== null);
-      assert(Example.transactionHash !== null);
-
-      example = await Example.deployed();
-      assert(await example.id() === 'Example' );
-    });
-
-    it('deploy() with interdependent contracts', async function(){
-      const Example = utils.getContract('Example', provider, networkId, owner);
-      const UsesExample = utils.getContract('UsesExample', provider, networkId, owner);
-
-      options.contracts = [ Example, UsesExample ];
-
-      const deployer = new Deployer(options);
-
-      const migrate = async function(){
-        await deployer.deploy(Example)
-        await deployer.deploy(UsesExample, Example.address);
-
-      };
-
-      await deployer.start();
-      await deployer.then(migrate);
-
-      const example = await Example.deployed();
-      const usesExample = await UsesExample.deployed();
-
-      assert(Example.address !== null);
-
-      assert(await example.id() === 'Example' );
-      assert(await usesExample.id() === 'UsesExample' );
-
-      assert(await usesExample.other() === Example.address);
-    });
-
-    it('deployer.link', async function(){
-      const UsesLibrary = utils.getContract('UsesLibrary', provider, networkId, owner);
-      const IsLibrary = utils.getContract('IsLibrary', provider, networkId, owner);
-      options.contracts = [ UsesLibrary, IsLibrary ];
-
-      const deployer = new Deployer(options);
-
-      const migrate = async function(){
-        await deployer.deploy(IsLibrary);
-        await deployer.link(IsLibrary, UsesLibrary);
-        await deployer.deploy(UsesLibrary);
-      };
-
-      await deployer.start();
-      await deployer.then(migrate);
-
-      assert(UsesLibrary.address !== null);
-      assert(IsLibrary.address !== null);
-
-      const usesLibrary = await UsesLibrary.deployed();
-      await usesLibrary.fireIsLibraryEvent(5);
-      await usesLibrary.fireUsesLibraryEvent(7);
-
-      eventOptions = {fromBlock: 0, toBlock: 'latest'};
-      const events = await usesLibrary.getPastEvents("allEvents", eventOptions);
-
-      assert(events[0].args.eventID === '5');
-      assert(events[1].args.eventID === '7');
-    });
+    example = await Example.deployed();
+    assert(await example.id() === 'Example' );
   });
+
+  it('deploy() with interdependent contracts', async function(){
+    const Example = utils.getContract('Example', provider, networkId, owner);
+    const UsesExample = utils.getContract('UsesExample', provider, networkId, owner);
+
+    options.contracts = [ Example, UsesExample ];
+
+    deployer = new Deployer(options);
+    reporter = new AsyncReporter(deployer, web3, utils.evm_mine)
+
+    const migrate = async function(){
+      await deployer.deploy(Example)
+      await deployer.deploy(UsesExample, Example.address);
+    };
+
+    await deployer.start();
+    await deployer.then(migrate);
+
+    const example = await Example.deployed();
+    const usesExample = await UsesExample.deployed();
+
+    assert(Example.address !== null);
+
+    assert(await example.id() === 'Example' );
+    assert(await usesExample.id() === 'UsesExample' );
+
+    assert(await usesExample.other() === Example.address);
+  });
+
+  it('deployer.link', async function(){
+    const UsesLibrary = utils.getContract('UsesLibrary', provider, networkId, owner);
+    const IsLibrary = utils.getContract('IsLibrary', provider, networkId, owner);
+    options.contracts = [ UsesLibrary, IsLibrary ];
+
+    deployer = new Deployer(options);
+    reporter = new AsyncReporter(deployer, web3, utils.evm_mine)
+
+    const migrate = async function(){
+      await deployer.deploy(IsLibrary);
+      await deployer.link(IsLibrary, UsesLibrary);
+      await deployer.deploy(UsesLibrary);
+    };
+
+    await deployer.start();
+    await deployer.then(migrate);
+
+    assert(UsesLibrary.address !== null);
+    assert(IsLibrary.address !== null);
+
+    const usesLibrary = await UsesLibrary.deployed();
+    await usesLibrary.fireIsLibraryEvent(5);
+    await usesLibrary.fireUsesLibraryEvent(7);
+
+    eventOptions = {fromBlock: 0, toBlock: 'latest'};
+    const events = await usesLibrary.getPastEvents("allEvents", eventOptions);
+
+    assert(events[0].args.eventID === '5');
+    assert(events[1].args.eventID === '7');
+  });
+
 });

@@ -1,14 +1,13 @@
 const expect = require("truffle-expect");
-const EventEmitter = require('async-eventemitter');
+const Emittery = require('emittery');
 const DeferredChain = require("./src/deferredchain");
-const deploy = require("./src/actions/deploy");
-const deployMany = require("./src/actions/deploymany");
+const Deployment = require("./src/deployment");
 const link = require("./src/actions/link");
 const create = require("./src/actions/new");
 
-class Deployer extends EventEmitter {
+class Deployer extends Deployment {
+
   constructor(options){
-    super();
     options = options || {};
     expect.options(options, [
       "provider",
@@ -16,17 +15,20 @@ class Deployer extends EventEmitter {
       "network_id"
     ]);
 
+    const emitter = new Emittery();
+    super(emitter);
+
+    this.emitter = emitter;
     this.chain = new DeferredChain();
     this.logger = options.logger || {log: function() {}};
-    this.known_contracts = {};
-
-    (options.contracts || [])
-      .forEach(contract => this.known_contracts[contract.contract_name] = contract);
-
     this.network = options.network;
     this.network_id = options.network_id;
     this.provider = options.provider;
     this.basePath = options.basePath || process.cwd();
+    this.known_contracts = {};
+
+    (options.contracts || [])
+      .forEach(contract => this.known_contracts[contract.contract_name] = contract);
   }
 
   // Note: In all code below we overwrite this.chain every time .then() is used
@@ -45,8 +47,8 @@ class Deployer extends EventEmitter {
     const contract = args.shift();
 
     return (Array.isArray(contract))
-      ? this.queueOrExec(deployMany(contract, this))
-      : this.queueOrExec(deploy(contract, args, this));
+      ? this.queueOrExec(this._deployMany(contract, this))
+      : this.queueOrExec(this._deploy(contract, args, this));
   }
 
   new() {
@@ -59,8 +61,7 @@ class Deployer extends EventEmitter {
   then(fn) {
     var self = this;
 
-    return this.queueOrExec(function() {
-      self.emit('step', {});
+    return this.queueOrExec(function(){
       return fn(this);
     });
   }
@@ -71,6 +72,11 @@ class Deployer extends EventEmitter {
     return (this.chain.started == true)
       ? new Promise(accept => accept()).then(fn)
       : this.chain.then(fn);
+  }
+
+  finish(){
+    this.emitter.clearListeners();
+    this._close();
   }
 }
 

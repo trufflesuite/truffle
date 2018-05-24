@@ -4,6 +4,7 @@ const Web3 = require("web3");
 const assert = require("assert");
 
 const Deployer = require("../index");
+const SyncReporter = require("./reporters/syncReporter")
 const utils = require('./utils');
 
 describe("deployer (classic)", function() {
@@ -22,122 +23,125 @@ describe("deployer (classic)", function() {
       contracts: null,
       network: 'test',
       network_id: networkId,
-      provider: provider
+      provider: provider,
+      //logger: console
     }
 
     await utils.compile();
   });
 
   afterEach(() => utils.cleanUp());
+  afterEach(() => deployer.finish());
 
-  describe('sync', function(){
+  it("deploy()", async function() {
+    const Example = utils.getContract('Example', provider, networkId, owner);
+    options.contracts = [ Example ];
 
-    it("deploy()", async function() {
-      const Example = utils.getContract('Example', provider, networkId, owner);
-      options.contracts = [ Example ];
+    deployer = new Deployer(options);
+    reporter = new SyncReporter(deployer);
 
-      const deployer = new Deployer(options);
+    const migrate = function(){
+      deployer.deploy(Example);
+    };
 
-      const migrate = function(){
-        deployer.deploy(Example);
-      };
+    migrate();
 
-      migrate();
+    await deployer.start();
 
-      await deployer.start();
+    assert(Example.address !== null);
+    assert(Example.transactionHash !== null);
 
-      assert(Example.address !== null);
-      assert(Example.transactionHash !== null);
+    example = await Example.deployed();
+    assert(await example.id() === 'Example' );
+  });
 
-      example = await Example.deployed();
-      assert(await example.id() === 'Example' );
-    });
+  it('deploy().then', async function(){
+    const Example = utils.getContract('Example', provider, networkId, owner);
+    const UsesExample = utils.getContract('UsesExample', provider, networkId, owner);
 
-    it('deploy().then', async function(){
-      const Example = utils.getContract('Example', provider, networkId, owner);
-      const UsesExample = utils.getContract('UsesExample', provider, networkId, owner);
+    options.contracts = [ Example, UsesExample ];
 
-      options.contracts = [ Example, UsesExample ];
+    deployer = new Deployer(options);
+    reporter = new SyncReporter(deployer);
 
-      const deployer = new Deployer(options);
+    const migrate = function(){
+      deployer.deploy(Example).then(function() {
+        return deployer.deploy(UsesExample, Example.address);
+      });
+    };
 
-      const migrate = function(){
-        deployer.deploy(Example).then(function() {
-          return deployer.deploy(UsesExample, Example.address);
-        });
-      };
+    migrate();
+    await deployer.start();
 
-      migrate();
-      await deployer.start();
+    const example = await Example.deployed();
+    const usesExample = await UsesExample.deployed();
 
-      const example = await Example.deployed();
-      const usesExample = await UsesExample.deployed();
+    assert(Example.address !== null);
 
-      assert(Example.address !== null);
+    assert(await example.id() === 'Example' );
+    assert(await usesExample.id() === 'UsesExample' );
 
-      assert(await example.id() === 'Example' );
-      assert(await usesExample.id() === 'UsesExample' );
+    assert(await usesExample.other() === Example.address);
+  });
 
-      assert(await usesExample.other() === Example.address);
-    });
+  it('deployer.then', async function(){
+    const Example = utils.getContract('Example', provider, networkId, owner);
+    const UsesExample = utils.getContract('UsesExample', provider, networkId, owner);
 
-    it('deployer.then', async function(){
-      const Example = utils.getContract('Example', provider, networkId, owner);
-      const UsesExample = utils.getContract('UsesExample', provider, networkId, owner);
+    options.contracts = [ Example, UsesExample ];
 
-      options.contracts = [ Example, UsesExample ];
+    deployer = new Deployer(options);
+    reporter = new SyncReporter(deployer);
 
-      const deployer = new Deployer(options);
+    const migrate = function(){
+      deployer.then(async function(){
+        const example = await deployer.deploy(Example);
+        await deployer.deploy(UsesExample, example.address);
+      })
+    };
 
-      const migrate = function(){
-        deployer.then(async function(){
-          const example = await deployer.deploy(Example);
-          await deployer.deploy(UsesExample, example.address);
-        })
-      };
+    migrate();
+    await deployer.start();
 
-      migrate();
-      await deployer.start();
+    const example = await Example.deployed();
+    const usesExample = await UsesExample.deployed();
 
-      const example = await Example.deployed();
-      const usesExample = await UsesExample.deployed();
+    assert(Example.address !== null);
 
-      assert(Example.address !== null);
+    assert(await example.id() === 'Example' );
+    assert(await usesExample.id() === 'UsesExample' );
+    assert(await usesExample.other() === Example.address);
+  });
 
-      assert(await example.id() === 'Example' );
-      assert(await usesExample.id() === 'UsesExample' );
-      assert(await usesExample.other() === Example.address);
-    });
+  it('deployer.link', async function(){
+    const UsesLibrary = utils.getContract('UsesLibrary', provider, networkId, owner);
+    const IsLibrary = utils.getContract('IsLibrary', provider, networkId, owner);
+    options.contracts = [ UsesLibrary, IsLibrary ];
 
-    it('deployer.link', async function(){
-      const UsesLibrary = utils.getContract('UsesLibrary', provider, networkId, owner);
-      const IsLibrary = utils.getContract('IsLibrary', provider, networkId, owner);
-      options.contracts = [ UsesLibrary, IsLibrary ];
+    deployer = new Deployer(options);
+    reporter = new SyncReporter(deployer);
 
-      const deployer = new Deployer(options);
+    const migrate = function(){
+      deployer.deploy(IsLibrary);
+      deployer.link(IsLibrary, UsesLibrary);
+      deployer.deploy(UsesLibrary);
+    };
 
-      const migrate = function(){
-        deployer.deploy(IsLibrary);
-        deployer.link(IsLibrary, UsesLibrary);
-        deployer.deploy(UsesLibrary);
-      };
+    migrate();
 
-      migrate();
+    await deployer.start();
 
-      await deployer.start();
+    assert(UsesLibrary.address !== null);
+    assert(IsLibrary.address !== null);
 
-      assert(UsesLibrary.address !== null);
-      assert(IsLibrary.address !== null);
+    const usesLibrary = await UsesLibrary.deployed();
+    await usesLibrary.fireIsLibraryEvent(5);
+    await usesLibrary.fireUsesLibraryEvent(7);
 
-      const usesLibrary = await UsesLibrary.deployed();
-      await usesLibrary.fireIsLibraryEvent(5);
-      await usesLibrary.fireUsesLibraryEvent(7);
+    eventOptions = {fromBlock: 0, toBlock: 'latest'};
+    const events = await usesLibrary.getPastEvents("allEvents", eventOptions);
 
-      eventOptions = {fromBlock: 0, toBlock: 'latest'};
-      const events = await usesLibrary.getPastEvents("allEvents", eventOptions);
-
-      assert(events[0].args.eventID === '5');
-      assert(events[1].args.eventID === '7');
-    });
+    assert(events[0].args.eventID === '5');
+    assert(events[1].args.eventID === '7');
   });
 });
