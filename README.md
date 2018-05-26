@@ -7,6 +7,11 @@ HD Wallet-enabled Web3 provider. Use it to sign transactions for addresses deriv
 $ npm install truffle-hdwallet-provider
 ```
 
+## Requirements
+```
+Node >= 7.6
+```
+
 ## General Usage
 
 You can use this provider wherever a Web3 provider is needed, not just in Truffle. For Truffle-specific usage, see next section.
