@@ -47,6 +47,7 @@ Please see the [Official Truffle Documentation](http://truffleframework.com/docs
 ### Contributing
 
 This package is a distribution package of the Truffle command line tool. Please see [truffle-core](https://github.com/trufflesuite/truffle-core) to contribute to the main core code.
+To contribute to this repository, please follow the [contributing guidelines](CONTRIBUTING.md).
 
 ### License
 
