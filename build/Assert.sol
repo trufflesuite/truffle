@@ -455,6 +455,99 @@ library Assert {
         else
             _report(result, _appendTagged(_tag(a, "Tested"), _tag(b, "Against"), message));
     }
+    function equal(uint8 a, uint8 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint16 a, uint16 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint24 a, uint24 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint32 a, uint32 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint40 a, uint40 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint48 a, uint48 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint56 a, uint56 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint64 a, uint64 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint72 a, uint72 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint80 a, uint80 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint88 a, uint88 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint96 a, uint96 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint104 a, uint104 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint112 a, uint112 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint120 a, uint120 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint128 a, uint128 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint136 a, uint136 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint144 a, uint144 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint152 a, uint152 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint160 a, uint160 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint168 a, uint168 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint176 a, uint176 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint184 a, uint184 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint192 a, uint192 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint200 a, uint200 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint208 a, uint208 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint216 a, uint216 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint224 a, uint224 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint232 a, uint232 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint240 a, uint240 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
+    function equal(uint248 a, uint248 b, string message) public returns (bool) {
+        return equal(uint(a), uint(b), message);
+    }
 
     /*
         Function: notEqual(uint)
@@ -477,6 +570,99 @@ library Assert {
             _report(result, message);
         else
             _report(result, _appendTagged(_tag(a, "Tested"), _tag(b, "Against"), message));
+    }
+    function notEqual(uint8 a, uint8 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint16 a, uint16 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint24 a, uint24 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint32 a, uint32 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint40 a, uint40 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint48 a, uint48 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint56 a, uint56 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint64 a, uint64 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint72 a, uint72 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint80 a, uint80 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint88 a, uint88 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint96 a, uint96 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint104 a, uint104 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint112 a, uint112 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint120 a, uint120 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint128 a, uint128 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint136 a, uint136 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint144 a, uint144 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint152 a, uint152 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint160 a, uint160 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint168 a, uint168 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint176 a, uint176 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint184 a, uint184 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint192 a, uint192 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint200 a, uint200 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint208 a, uint208 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint216 a, uint216 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint224 a, uint224 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint232 a, uint232 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint240 a, uint240 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
+    }
+    function notEqual(uint248 a, uint248 b, string message) public returns (bool) {
+        return notEqual(uint(a), uint(b), message);
     }
 
     /*
