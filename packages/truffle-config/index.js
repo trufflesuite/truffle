@@ -70,6 +70,7 @@ function Config(truffle_directory, working_directory, network) {
     // These are already set.
     truffle_directory: function() {},
     working_directory: function() {},
+    node_modules_directory: function() {},
     network: function() {},
     networks: function() {},
     verboseRpc: function() {},
@@ -109,6 +110,9 @@ function Config(truffle_directory, working_directory, network) {
     example_project_directory: {
       default: () => path.join(self.truffle_directory, "example"),
       transform: resolveDirectory
+    },
+    node_modules_directory: function() {
+      return path.join(self.working_directory, "node_modules");
     },
     network_id: {
       get: function() {
