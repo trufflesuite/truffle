@@ -1,21 +1,28 @@
 var path = require("path");
 var fs = require("fs");
-function NPM(working_directory) {
+
+function NPM(working_directory, node_modules_directory) {
   this.working_directory = working_directory;
+  this.node_modules_directory = node_modules_directory;
 };
 
 NPM.prototype.require = function(import_path, search_path) {
-  if (import_path.indexOf(".") == 0 || import_path.indexOf("/") == 0) {
+  if (import_path.indexOf(".") == 0 || import_path.indexOf("/") <= 0) {
     return null;
   }
+
+  var package_name = import_path.match(/^(?:@[^/]+\/)?[^/]+[/]/)[0].slice(0, -1);
   var contract_name = path.basename(import_path, ".sol");
-  var regex = new RegExp(`(.*)/${contract_name}`);
-  let package_name = '';
-  var matched =  regex.exec(import_path);
-  if(matched){
-    package_name = matched[1];
+
+  // Ugh this is so kludgey
+  var search_modules_directory;
+  if(search_path) {
+    search_modules_directory = path.join(search_path, "node_modules");
+  } else {
+    search_modules_directory = this.node_modules_directory;
   }
-  var expected_path = path.join((search_path || this.working_directory), "node_modules", package_name, "build", "contracts", contract_name + ".json");
+  var expected_path = path.join(search_modules_directory, package_name, "build", "contracts", contract_name + ".json");
+
   try {
     var result = fs.readFileSync(expected_path, "utf8");
     return JSON.parse(result);
@@ -25,6 +32,7 @@ NPM.prototype.require = function(import_path, search_path) {
 };
 
 NPM.prototype.resolve = function(import_path, imported_from, callback) {
+  var expected_path = path.join(this.node_modules_directory, import_path);
 
   // If nothing's found, body returns `undefined`
   var body;

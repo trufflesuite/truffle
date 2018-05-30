@@ -10,13 +10,14 @@ function Resolver(options) {
   expect.options(options, [
     "working_directory",
     "contracts_build_directory",
+    "node_modules_directory",
   ]);
 
   this.options = options;
 
   this.sources = [
     new EPMSource(options.working_directory, options.contracts_build_directory),
-    new NPMSource(options.working_directory),
+    new NPMSource(options.working_directory, options.node_modules_directory),
     new FSSource(options.working_directory, options.contracts_build_directory)
   ];
 };
