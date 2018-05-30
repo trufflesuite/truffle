@@ -142,6 +142,7 @@ var command = {
 
     var rootConfig = Config.detect(options);
     var logger = rootConfig.logger;
+
     var migrationConfigs = NPMDependencies.detect(rootConfig, options);
 
     async.eachSeries(migrationConfigs, Environment.detect, function(err) {
