@@ -39,13 +39,15 @@ FS.prototype.getContractName = function(sourcePath, searchPath) {
   for(var i = 0; i < filenames.length; i++) {
     var filename = filenames[i];
 
-    var artifact = JSON.parse(
-      fs.readFileSync(path.resolve(searchPath, filename))
-    );
+    try {
+      var artifact = JSON.parse(
+        fs.readFileSync(path.resolve(searchPath, filename))
+      );
 
-    if (artifact.sourcePath == sourcePath) {
-      return artifact.contractName;
-    }
+      if (artifact.sourcePath == sourcePath) {
+        return artifact.contractName;
+      }
+    } catch(e) {}
   };
 
   // fallback
