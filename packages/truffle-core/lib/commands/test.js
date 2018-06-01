@@ -31,25 +31,29 @@ var command = {
   },
   run: function (options, done) {
     var OS = require("os");
+    var path = require("path");
     var dir = require("node-dir");
     var temp = require("temp");
     var Config = require("truffle-config");
     var Artifactor = require("truffle-artifactor");
     var Develop = require("../develop");
     var Test = require("../test");
+    var NPMDependencies = require("../npmdeps");
     var fs = require("fs");
+    var mkdirp = require("mkdirp");
     var copy = require("../copy");
     var Environment = require("../environment");
+    var async = require("async");
 
-    var config = Config.detect(options);
+    var rootConfig = Config.detect(options);
 
     // if "development" exists, default to using that for testing
-    if (!config.network && config.networks.development) {
-      config.network = "development";
+    if (!rootConfig.network && rootConfig.networks.development) {
+      rootConfig.network = "development";
     }
 
-    if (!config.network) {
-      config.network = "test";
+    if (!rootConfig.network) {
+      rootConfig.network = "test";
     }
 
     var ipcDisconnect;
@@ -67,14 +71,14 @@ var command = {
         return callback(null, files);
       }
 
-      dir.files(config.test_directory, callback);
+      dir.files(rootConfig.test_directory, callback);
     };
 
     getFiles(function(err, files) {
       if (err) return done(err);
 
       files = files.filter(function(file) {
-        return file.match(config.test_file_extension_regexp) != null;
+        return file.match(rootConfig.test_file_extension_regexp) != null;
       });
 
       temp.mkdir('test-', function(err, temporaryDirectory) {
@@ -92,37 +96,70 @@ var command = {
           });
         };
 
-        function run() {
+        var depConfigs = NPMDependencies.detect(rootConfig, options).map(function(config) {
+          var pkgTempDir;
+
+          // HACK: setup temporary directory like node_modules to help the NPM resolver out
+          if (config.packageName) {
+            pkgTempDir = path.join(temporaryDirectory, "node_modules", config.packageName, "build", "contracts");
+          } else {
+            pkgTempDir = temporaryDirectory;
+          }
+
           // Set a new artifactor; don't rely on the one created by Environments.
           // TODO: Make the test artifactor configurable.
-          config.artifactor = new Artifactor(temporaryDirectory);
+          config.artifactor = new Artifactor(pkgTempDir);
+          if(config === rootConfig)
+            return config.with({
+              test_files: files,
+              pkgTempDir: pkgTempDir,
+            });
+          else
+            return config.with({
+              pkgTempDir: pkgTempDir,
+            })
+        });
 
-          Test.run(config.with({
-            test_files: files,
-            contracts_build_directory: temporaryDirectory
-          }), cleanup);
+        function run() {
+          depConfigs.forEach(function(config) {
+            config.contracts_build_directory = config.pkgTempDir;
+          });
+
+          Test.run(depConfigs, cleanup);
         };
 
         var environmentCallback = function(err) {
           if (err) return done(err);
-          // Copy all the built files over to a temporary directory, because we
-          // don't want to save any tests artifacts. Only do this if the build directory
-          // exists.
-          fs.stat(config.contracts_build_directory, function(err, stat) {
-            if (err) return run();
 
-            copy(config.contracts_build_directory, temporaryDirectory, function(err) {
-              if (err) return done(err);
+          async.eachSeries(depConfigs, function(config, callback) {
 
-              config.logger.log("Using network '" + config.network + "'." + OS.EOL);
+            // Copy all the built files over to a temporary directory, because we
+            // don't want to save any tests artifacts. Only do this if the build directory
+            // exists.
+            mkdirp(config.pkgTempDir, function(err) {
+              if (err) return callback(err);
 
-              run();
+              fs.stat(config.contracts_build_directory, function(err, stat) {
+                if (err) return callback();
+
+                copy(config.contracts_build_directory, config.pkgTempDir, function(err) {
+                  if (err) return callback(err);
+
+                  config.logger.log("Using network '" + config.network + "'." + OS.EOL);
+
+                  callback();
+                });
+              });
             });
+          }, function(err) {
+            if (err) return done(err);
+
+            run();
           });
         };
 
-        if (config.networks[config.network]) {
-          Environment.detect(config, environmentCallback);
+        if (rootConfig.networks[rootConfig.network]) {
+          Environment.detect(rootConfig, environmentCallback);
         } else {
           var ipcOptions = {
             network: "test"
@@ -133,13 +170,13 @@ var command = {
             port: 7545,
             network_id: 4447,
             mnemonic: "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
-            gasLimit: config.gas,
             noVMErrorsOnRPCResponse: true,
+            gasLimit: rootConfig.gas
           };
 
           Develop.connectOrStart(ipcOptions, testrpcOptions, function(started, disconnect) {
             ipcDisconnect = disconnect;
-            Environment.develop(config, testrpcOptions, environmentCallback);
+            Environment.develop(rootConfig, testrpcOptions, environmentCallback);
           });
         }
       });

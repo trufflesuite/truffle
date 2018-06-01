@@ -17,35 +17,43 @@ var originalrequire = require("original-require");
 chai.use(require("./assertions"));
 
 var Test = {
-  run: function(options, callback) {
+  run: function(migrationConfigs, callback) {
     var self = this;
 
-    expect.options(options, [
-      "contracts_directory",
-      "contracts_build_directory",
-      "migrations_directory",
+    migrationConfigs = migrationConfigs.map(function(config) {
+      expect.options(config, [
+        "contracts_directory",
+        "contracts_build_directory",
+        "migrations_directory",
+        "network",
+        "network_id",
+      ]);
+
+      return Config.default().merge(config);
+    });
+
+    var rootConfig = migrationConfigs[migrationConfigs.length - 1];
+    var otherConfigs = migrationConfigs.slice(0, -1);
+
+    expect.options(rootConfig, [
       "test_files",
-      "network",
-      "network_id",
       "provider",
     ]);
 
-    var config = Config.default().merge(options);
-
-    config.test_files = config.test_files.map(function(test_file) {
+    rootConfig.test_files = rootConfig.test_files.map(function(test_file) {
       return path.resolve(test_file);
     });
 
     // `accounts` will be populated before each contract() invocation
     // and passed to it so tests don't have to call it themselves.
     var web3 = new Web3();
-    web3.setProvider(config.provider);
+    web3.setProvider(rootConfig.provider);
 
     // Override console.warn() because web3 outputs gross errors to it.
     // e.g., https://github.com/ethereum/web3.js/blob/master/lib/web3/allevents.js#L61
     // Output looks like this during tests: https://gist.github.com/tcoulter/1988349d1ec65ce6b958
-    var warn = config.logger.warn;
-    config.logger.warn = function(message) {
+    var warn = rootConfig.logger.warn;
+    rootConfig.logger.warn = function(message) {
       if (message == "cannot find event for log") {
         return;
       } else {
@@ -55,13 +63,13 @@ var Test = {
       }
     };
 
-    var mocha = this.createMocha(config);
+    var mocha = this.createMocha(rootConfig);
 
-    var js_tests = config.test_files.filter(function(file) {
+    var js_tests = rootConfig.test_files.filter(function(file) {
       return path.extname(file) != ".sol";
     });
 
-    var sol_tests = config.test_files.filter(function(file) {
+    var sol_tests = rootConfig.test_files.filter(function(file) {
       return path.extname(file) == ".sol";
     });
 
@@ -85,15 +93,20 @@ var Test = {
     web3.eth.getAccounts().then(function(accs) {
       accounts = accs;
 
-      if (!config.resolver) {
-        config.resolver = new Resolver(config);
+      if (!rootConfig.from) {
+        rootConfig.from = accounts[0];
       }
 
-      var test_source = new TestSource(config);
-      test_resolver = new TestResolver(config.resolver, test_source, config.contracts_build_directory);
+      if (!rootConfig.resolver) {
+        rootConfig.resolver = new Resolver(rootConfig);
+      }
+
+      var test_source = new TestSource(rootConfig);
+
+      test_resolver = new TestResolver(rootConfig.resolver, test_source, rootConfig.contracts_build_directory);
       test_resolver.cache_on = false;
 
-      return self.compileContractsWithTestFilesIfNeeded(sol_tests, config, test_resolver);
+      return self.compileContractsWithTestFilesIfNeeded(sol_tests, rootConfig, otherConfigs, test_resolver);
     }).then(function(paths) {
       dependency_paths = paths;
 
@@ -102,9 +115,9 @@ var Test = {
         return test_resolver.require(built_name);
       });
 
-      runner = new TestRunner(config);
+      runner = new TestRunner(rootConfig);
 
-      return self.performInitialDeploy(config, test_resolver);
+      return self.performInitialDeploy(migrationConfigs, test_resolver);
     }).then(function() {
       return self.defineSolidityTests(mocha, testContracts, dependency_paths, runner);
     }).then(function() {
@@ -116,7 +129,7 @@ var Test = {
       });
 
       mocha.run(function(failures) {
-        config.logger.warn = warn;
+        rootConfig.logger.warn = warn;
 
         callback(failures);
       });
@@ -142,38 +155,54 @@ var Test = {
     return mocha;
   },
 
-  compileContractsWithTestFilesIfNeeded: function(solidity_test_files, config, test_resolver) {
+  getAccounts: function(web3, config) {
     return new Promise(function(accept, reject) {
-      Profiler.updated(config.with({
-        resolver: test_resolver
-      }), function(err, updated) {
+      web3.eth.getAccounts(function(err, accs) {
+        if (err) return reject(err);
+        accept(accs);
+      });
+    });
+  },
+
+  compileContractsWithTestFilesIfNeeded: function(solidity_test_files, rootConfig, otherConfigs, test_resolver) {
+    return new Promise(function(accept, reject) {
+      async.eachSeries(otherConfigs, function(config, callback) {
+        Contracts.compile(config, callback);
+      }, function(err) {
         if (err) return reject(err);
 
-        updated = updated || [];
-
-        // Compile project contracts and test contracts
-        Contracts.compile(config.with({
-          all: config.compileAll === true,
-          files: updated.concat(solidity_test_files),
-          resolver: test_resolver,
-          quiet: false,
-          quietWrite: true
-        }), function(err, result) {
+        Profiler.updated(rootConfig.with({
+          resolver: test_resolver
+        }), function(err, updated) {
           if (err) return reject(err);
-          const paths = result.outputs.solc;
-          accept(paths);
+
+          updated = updated || [];
+
+          // Compile project contracts and test contracts
+          Contracts.compile(rootConfig.with({
+            all: rootConfig.compileAll === true,
+            files: updated.concat(solidity_test_files),
+            resolver: test_resolver,
+            quiet: false,
+            quietWrite: true
+          }), function(err, abstractions, paths) {
+            if (err) return reject(err);
+            accept(paths);
+          });
         });
       });
     });
   },
 
-  performInitialDeploy: function(config, resolver) {
+  performInitialDeploy: function(migrationConfigs, resolver) {
     return new Promise(function(accept, reject) {
-      Migrate.run(config.with({
-        reset: true,
-        resolver: resolver,
-        quiet: true
-      }), function(err) {
+      async.eachSeries(migrationConfigs, function(config, callback) {
+        Migrate.run(config.with({
+          reset: true,
+          resolver: resolver,
+          quiet: true
+        }), callback);
+      }, function(err) {
         if (err) return reject(err);
         accept();
       });
