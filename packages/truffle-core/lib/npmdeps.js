@@ -38,6 +38,8 @@ var NPMDependencies = {
           return;
         }
 
+        config.packageName = pkgName;
+
         visitedPackages[pkgName] = config;
       }
 
@@ -83,6 +85,7 @@ var NPMDependencies = {
 
     migrationConfigs.forEach(function(config) {
       config.networks = rootConfig.networks;
+      config.network = rootConfig.network;
       config.node_modules_directory = rootConfig.node_modules_directory;
     });
 
