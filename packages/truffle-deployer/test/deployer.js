@@ -6,6 +6,7 @@ const assert = require("assert");
 const Deployer = require("../index");
 const Reporter = require("./helpers/reporter")
 const utils = require('./helpers/utils');
+const util = require('util');
 
 describe("Deployer (sync)", function() {
   let owner
@@ -192,6 +193,30 @@ describe("Deployer (sync)", function() {
     assert(output.includes('IsLibrary'));
     assert(output.includes('UsesLibrary'));
   });
+
+  // There's a chain like this in the truffle-core solidity-tests
+  it('deployer.deploy().then()', async function(){
+    const migrate = function(){
+      deployer.deploy(Example).then(function() {
+        return Example.deployed();
+      }).then(function(instance) {
+        return instance.id();
+      }).then(function(id) {
+         return deployer.deploy(UsesExample, utils.zeroAddress)
+          .then(function() {
+            return UsesExample.deployed();
+          })
+          .then(function(usesExample) {
+            return usesExample.id();
+          })
+      })
+    }
+    migrate();
+
+    await deployer.start();
+    assert(output.includes('Example'));
+    assert(output.includes('UsesExample'));
+  })
 
   it('waits for confirmations', async function(){
     this.timeout(5000);
