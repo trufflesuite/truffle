@@ -184,8 +184,8 @@ TestRunner.prototype.endTest = function(mocha, callback) {
           value = "<indexed>";
         } else {
           value = values[index];
-          index += 1;
         }
+        index += 1;
 
         return input.name + ": " + value.toString();
       }).join(", ");
