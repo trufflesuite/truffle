@@ -4,10 +4,9 @@ const Web3 = require("web3");
 const assert = require("assert");
 
 const Deployer = require("../index");
-const utils = require('./utils');
-const AsyncReporter = require('./reporters/asyncReporter')
+const utils = require('./helpers/utils');
 
-describe("deployer (async / await)", function() {
+describe("Deployer (async / await)", function() {
   let owner
   let options;
   let networkId;
@@ -37,7 +36,6 @@ describe("deployer (async / await)", function() {
     options.contracts = [ Example ];
 
     deployer = new Deployer(options);
-    reporter = new AsyncReporter(deployer, web3, utils.evm_mine);
 
     const migrate = async function(){
       await deployer.deploy(Example);
@@ -60,7 +58,6 @@ describe("deployer (async / await)", function() {
     options.contracts = [ Example, UsesExample ];
 
     deployer = new Deployer(options);
-    reporter = new AsyncReporter(deployer, web3, utils.evm_mine)
 
     const migrate = async function(){
       await deployer.deploy(Example)
@@ -77,7 +74,6 @@ describe("deployer (async / await)", function() {
 
     assert(await example.id() === 'Example' );
     assert(await usesExample.id() === 'UsesExample' );
-
     assert(await usesExample.other() === Example.address);
   });
 
@@ -87,11 +83,10 @@ describe("deployer (async / await)", function() {
     options.contracts = [ UsesLibrary, IsLibrary ];
 
     deployer = new Deployer(options);
-    reporter = new AsyncReporter(deployer, web3, utils.evm_mine)
 
     const migrate = async function(){
       await deployer.deploy(IsLibrary);
-      await deployer.link(IsLibrary, UsesLibrary);
+      deployer.link(IsLibrary, UsesLibrary);
       await deployer.deploy(UsesLibrary);
     };
 
@@ -111,5 +106,4 @@ describe("deployer (async / await)", function() {
     assert(events[0].args.eventID === '5');
     assert(events[1].args.eventID === '7');
   });
-
 });

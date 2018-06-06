@@ -1,8 +1,7 @@
 pragma solidity ^0.4.4;
 
 
-contract ExampleError {
-  string public id = 'ExampleError';
+contract ExampleRevert {
   constructor() public {
     require(false);
   }

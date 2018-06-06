@@ -22,7 +22,7 @@ module.exports = {
     if (!hasAddress) {
       eventArgs = {
         type: 'noLibAddress',
-        contract: library
+        contract: library,
       }
 
       deployer.emitter.emit('error', eventArgs);
@@ -42,8 +42,10 @@ module.exports = {
       if (alreadyLinked || noLinkage) return;
 
       eventArgs = {
-        library: library,
-        destination: destination
+        libraryName: library.contractName,
+        libraryAddress: library.address,
+        contractName: destination.contractName,
+        contractAddress: destination.contractAddress,
       }
 
       deployer.emitter.emit('linking', eventArgs);

@@ -4,7 +4,7 @@
   "description": "Light deployment module for easily deploying Ethereum contracts",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --no-warnings"
+    "test": "mocha --no-warnings --timeout 10000"
   },
   "repository": {
     "type": "git",
@@ -30,7 +30,8 @@
   },
   "devDependencies": {
     "fs-extra": "^6.0.1",
-    "ganache-cli": "6.1.0-beta.4",
+    "ganache-cli": "6.1.0",
+    "memorystream": "^0.3.1",
     "mocha": "5.2.0",
     "truffle-workflow-compile": "^1.0.3",
     "web3": "1.0.0-beta.33"

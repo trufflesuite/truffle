@@ -1,15 +1,14 @@
-
 /**
  * @class  Deployment
  */
 class Deployment {
   /**
    * constructor
-   * @param  {Object} emitter        async `Emittery` emitter
-   * @param  {Number} blocksToWait   confirmations needed to resolve an instance
+   * @param  {Object} emitter                 async `Emittery` emitter
+   * @param  {Number} confirmationsRequired   confirmations needed to resolve an instance
    */
-  constructor(emitter, blocksToWait){
-    this.blocksToWait = blocksToWait || 0;
+  constructor(emitter, confirmationsRequired){
+    this.confirmationsRequired = confirmationsRequired || 0;
     this.emitter = emitter;
     this.promiEventEmitters = [];
     this.confirmations = {};
@@ -17,6 +16,15 @@ class Deployment {
   }
 
   // ------------------------------------  Utils ---------------------------------------------------
+
+  /**
+   * Stub for future error code assignments on process.exit
+   * @param  {String} type key map to code
+   * @return {Number}      code to exit
+   */
+  _errorCodes(type){
+    return 1;
+  }
 
   /**
    * Helper to parse a deploy statement's overwrite option
@@ -37,24 +45,64 @@ class Deployment {
   }
 
   /**
-   * Queries the confirmations mappping periodically to see if we have
+   * Gets arbitrary values from constructor params, if they exist.
+   * @param  {Array}              args constructor params
+   * @return {Any|Undefined}      gas value
+   */
+  _extractFromArgs(args, key){
+    let value;
+
+    args.forEach(arg => {
+      const hasKey = !Array.isArray(arg) &&
+                     typeof arg === 'object' &&
+                     Object.keys(arg).includes(key);
+
+      if(hasKey) value = arg[key];
+    });
+    return value;
+  }
+
+  /**
+   * Queries the confirmations mapping periodically to see if we have
    * heard enough confirmations for a given tx to allow `deploy` to complete.
    * Resolves when this is true.
    * @param  {String} hash contract creation tx hash
    * @return {Promise}
    */
-  _waitForConfirmation(hash){
+  async _waitForConfirmations(hash){
     let interval;
     const self = this;
 
     return new Promise(accept => {
       interval = setInterval(() => {
-        if (self.confirmations[hash] >= self.blocksToWait){
+        if (self.confirmations[hash] >= self.confirmationsRequired){
           clearInterval(interval);
-          resolve();
+          accept();
         }
-      }, self.pollingInterval );
+      }, self.pollingInterval);
     })
+  }
+
+  /**
+   * Sanity checks catch-all:
+   * Are we connected?
+   * Is contract deployable?
+   * @param  {Object} contract TruffleContract
+   * @return {Promise}         throws on error
+   */
+  async _preFlightCheck(contract){
+    // Check bytecode
+    if(contract.bytecode === '0x') {
+      await this.emitter.emit('error', {
+        type: 'noBytecode',
+        contract: contract,
+      })
+
+      throw new Error(this._errorCodes('noBytecode'));
+    }
+
+    // Check network
+    await contract.detectNetwork();
   }
 
   /**
@@ -62,11 +110,12 @@ class Deployment {
    * @param  {Object} parent Deployment instance. Local `this` belongs to promievent
    * @param  {String} hash   tranactionHash
    */
-  async _hashCb(parent, hash){
+  async _hashCb(parent, state, hash){
     const eventArgs = {
+      contractName: state.contractName,
       transactionHash: hash
     }
-
+    state.transactionHash = hash;
     await parent.emitter.emit('transactionHash', eventArgs);
     this.removeListener('transactionHash', parent._hashCb);
   }
@@ -79,6 +128,7 @@ class Deployment {
    */
   async _receiptCb(parent, state, receipt){
     const eventArgs = {
+      contractName: state.contractName,
       receipt: receipt
     }
 
@@ -98,8 +148,9 @@ class Deployment {
    * @param  {Number} num     Confirmation number
    * @param  {Object} receipt transaction receipt
    */
-  async _confirmationCb(parent, num, receipt){
+  async _confirmationCb(parent, state, num, receipt){
     const eventArgs = {
+      contractName: state.contractName,
       num: num,
       receipt: receipt
     };
@@ -121,14 +172,16 @@ class Deployment {
     return async function() {
       let instance;
       let eventArgs;
-      let state = {};
       let shouldDeploy = true;
+      let state = {
+        contractName: contract.contractName
+      };
+
+      await self._preFlightCheck(contract);
+
       const isDeployed = contract.isDeployed();
-
-      await contract.detectNetwork();
-
-      // Arguments may be promises
       const newArgs = await Promise.all(args);
+      const currentBlock = await contract.web3.eth.getBlock('latest');
 
       // Last arg can be an object that tells us not to overwrite.
       if (newArgs.length > 0) {
@@ -138,8 +191,20 @@ class Deployment {
       // Case: deploy:
       if (shouldDeploy) {
         eventArgs = {
+          state: state,
           contract: contract,
-          deployed: isDeployed
+          deployed: isDeployed,
+          blockLimit: currentBlock.gasLimit,
+          gas: self._extractFromArgs(newArgs, 'gas') || contract.defaults().gas,
+          gasPrice: self._extractFromArgs(newArgs, 'gasPrice') || contract.defaults().gasPrice,
+          from: self._extractFromArgs(newArgs, 'from')  || contract.defaults().from,
+        }
+
+        // Detect constructor revert by running estimateGas
+        try {
+          eventArgs.estimate = await contract.new.estimateGas.apply(contract, newArgs);
+        } catch(err){
+          eventArgs.estimateError = err;
         }
 
         // Emit `preDeploy` & send transaction
@@ -151,21 +216,22 @@ class Deployment {
 
         // Subscribe to contract events / rebroadcast them to any reporters
         promiEvent
-          .on('transactionHash', self._hashCb.bind(promiEvent, self))
+          .on('transactionHash', self._hashCb.bind(promiEvent, self, state))
           .on('receipt',         self._receiptCb.bind(promiEvent, self, state))
-          .on('confirmation',    self._confirmationCb.bind(promiEvent, self))
+          .on('confirmation',    self._confirmationCb.bind(promiEvent, self, state))
 
         // Get instance (or error)
         try {
           instance = await promiEvent;
-        } catch(error){
-          await self.emitter.emit('deployFailed', { error: error});
-          throw new Error();
+        } catch(err){
+          eventArgs.error = err.error || err;
+          await self.emitter.emit('deployFailed', eventArgs);
+          throw new Error(self._errorCodes('deployFailed'));
         }
 
         // Wait for confirmations
-        if(self.blocksToWait !== 0){
-          await self.waitForConfirmations(instance.transactionHash)
+        if(self.confirmationsRequired !== 0){
+          await self._waitForConfirmations(instance.transactionHash)
         }
 
       // Case: already deployed
@@ -196,21 +262,31 @@ class Deployment {
    * @return {Promise}
    */
   _deployMany(arr){
-    return function() {
+    const self = this;
+
+    return async function() {
       const deployments = arr.map(args => {
+        let params;
         let contract;
 
         if (Array.isArray(args)) {
-          contract = args.shift();
+          contract = args[0];
+
+          (args.length > 1)
+            ? params = args.slice(1)
+            : params = [];
+
         } else {
           contract = args;
-          args = [];
+          params = [];
         }
 
-        return deploy(contract, args, deployer)();
+        return self._deploy(contract, params)();
       });
 
-      return Promise.all(deployments);
+      await self.emitter.emit('preDeployMany', arr);
+      await Promise.all(deployments);
+      await self.emitter.emit('postDeployMany', arr);
     };
   }
 

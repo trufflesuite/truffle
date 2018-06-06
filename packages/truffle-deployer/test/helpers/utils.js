@@ -4,8 +4,15 @@ const path = require('path');
 const fs = require('fs-extra');
 
 const utils = {
-  buildDir: path.join(__dirname, './build'),
-  sourcesDir: path.join(__dirname, './sources'),
+
+  miningId: null,
+
+  // Constants
+  zeroAddress: '0x0000000000000000000000000000000000000000',
+
+  // Paths
+  buildDir: path.join(__dirname, '../build'),
+  sourcesDir: path.join(__dirname, '../sources'),
 
   compile: async function(){
      const config = {
@@ -30,10 +37,18 @@ const utils = {
     });
   },
 
+  startAutoMine: function(web3, interval){
+    utils.miningId = setInterval(async() => {
+      await utils.evm_mine(web3);
+    }, interval);
+  },
+
+  stopAutoMine: () => clearInterval(utils.miningId),
+
   cleanUp: () => fs.removeSync(utils.buildDir),
 
   getContract: function(name, provider, networkId, account){
-    const json = require(`./build/${name}`);
+    const json = require(`../build/${name}`);
     const contract = TruffleContract(json)
     contract.setProvider(provider);
     contract.setNetwork(networkId);
