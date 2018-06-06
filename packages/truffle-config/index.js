@@ -41,7 +41,8 @@ function Config(truffle_directory, working_directory, network) {
       optimizer: {
         enabled: false,
         runs: 200
-      }
+      },
+      evmVersion: "byzantium"
     },
     logger: {
       log: function() {},
