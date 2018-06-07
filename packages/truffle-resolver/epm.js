@@ -75,31 +75,37 @@ EPM.prototype.resolve = function(import_path, imported_from, callback) {
   var separator = import_path.indexOf("/");
   var package_name = import_path.substring(0, separator);
   var internal_path = import_path.substring(separator + 1);
-  var install_directory = path.join(this.working_directory, "installed_contracts");
+  var installDir = this.working_directory;
 
-  var resolved_contents = undefined;
-  var resolved_path = undefined;
+  // If nothing's found, body returns `undefined`
+  var body;
 
-  detectSeries([
-    path.join(install_directory, import_path),
-    path.join(install_directory, package_name, "contracts", internal_path)
-  ], function(file_path, finished) {
-    fs.readFile(file_path, {encoding: "utf8"}, function(err, body) {
-      if (err) return finished(null, false);
+  while(true){
+    var file_path = path.join(installDir, "installed_contracts", import_path);
 
-      resolved_contents = body;
-      resolved_path = file_path;
+    try {
+      body = fs.readFileSync(file_path, {encoding: "utf8"});
+      break;
+    }
+    catch(err){}
 
-      finished(null, true);
-    });
-  }, function(err, existing_path) {
-    // If there's an error, that means we can't read the source even if
-    // it exists. Treat it as if it doesn't by ignoring any errors.
-    // Perhaps we can do something better here in the future.
+    file_path = path.join(installDir, "installed_contracts", package_name, "contracts", internal_path)
 
-    // Note: resolved_path is the import path, because these imports are special.
-    return callback(null, resolved_contents, import_path);
-  });
+    try {
+      body = fs.readFileSync(file_path, {encoding: "utf8"});
+      break;
+    }
+    catch(err){}
+
+    // Recurse outwards until impossible
+    var oldInstallDir = installDir;
+    installDir = path.join(installDir, '..');
+    if (installDir === oldInstallDir) {
+      break;
+    }
+  }
+
+  return callback(null, body, import_path);
 },
 
 // We're resolving package paths to other package paths, not absolute paths.

@@ -25,21 +25,28 @@ NPM.prototype.require = function(import_path, search_path) {
 };
 
 NPM.prototype.resolve = function(import_path, imported_from, callback) {
-  var expected_path = path.join(this.working_directory, "node_modules", import_path);
 
-  fs.readFile(expected_path, {encoding: "utf8"}, function(err, body) {
-    var resolved_path;
-    if (body) {
-      resolved_path = expected_path;
+  // If nothing's found, body returns `undefined`
+  var body;
+  var modulesDir = this.working_directory;
+
+  while(true){
+    var expected_path = path.join(modulesDir, "node_modules", import_path);
+
+    try {
+      var body = fs.readFileSync(expected_path, {encoding: "utf8"});
+      break;
     }
+    catch(err){}
 
-    // If there's an error, that means we can't read the source even if
-    // it exists. Treat it as if it doesn't by ignoring any errors.
-    // Perhaps we can do something better here in the future.
-
-    // Note: resolved_path is the import path because these imports are special.
-    return callback(null, body, import_path);
-  })
+    // Recurse outwards until impossible
+    var oldModulesDir = modulesDir;
+    modulesDir = path.join(modulesDir, '..');
+    if (modulesDir === oldModulesDir) {
+      break;
+    }
+  }
+  return callback(null, body, import_path);
 };
 
 // We're resolving package paths to other package paths, not absolute paths.
