@@ -13,7 +13,8 @@ module.exports = {
     });
   },
 
-  create: function(source){
+  create: function(source, subPath){
+    subPath = subPath || '';
     var self = this;
 
     return new Promise((resolve, reject) => {
@@ -26,7 +27,7 @@ module.exports = {
 
         self.copyDirectory(source, dir)
           .then(() => {
-            var conf = config.load(path.join(dir, "truffle.js"), {});
+            var conf = config.load(path.join(dir, subPath, "truffle.js"), {});
             resolve(conf);
           })
           .catch(reject);
