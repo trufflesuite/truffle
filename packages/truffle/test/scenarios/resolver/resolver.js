@@ -80,7 +80,7 @@ describe("Solidity Imports", function() {
   describe('failure', function(){
     before(function() {
       this.timeout(10000);
-      return sandbox.create(project, 'errorProject').then(conf => {
+      return sandbox.create(project, 'errorproject').then(conf => {
         config = conf;
         config.network = "development";
         config.logger = logger;

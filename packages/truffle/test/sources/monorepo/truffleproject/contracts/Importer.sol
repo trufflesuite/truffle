@@ -8,3 +8,4 @@ contract Importer is LocalNodeImport, NodeImport, EthPMImport {
   uint local;
   constructor() public {}
 }
+

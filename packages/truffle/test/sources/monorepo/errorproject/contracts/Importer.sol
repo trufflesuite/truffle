@@ -6,3 +6,4 @@ contract Importer is DoesNotExist {
   uint local;
   constructor() public {}
 }
+
