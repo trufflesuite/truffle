@@ -1,18 +1,24 @@
 const fs = require("fs");
 const dir = require("node-dir");
 const path = require("path");
-const ResolverIntercept = require("./resolverintercept");
-const Require = require("truffle-require");
+
+const Emittery = require('emittery');
 const async = require("async");
 const Web3 = require("web3");
+
 const expect = require("truffle-expect");
 const Deployer = require("truffle-deployer");
+const Require = require("truffle-require");
+
+const ResolverIntercept = require("./resolverintercept");
+const Reporter = require("./reporter");
 
 class Migration {
 
   constructor(file){
     this.file = path.resolve(file);
-    this.number = parseInt(path.basename(file))
+    this.number = parseInt(path.basename(file));
+    this.emitter = new Emittery();
   }
 
   async run(options, callback) {
@@ -21,8 +27,6 @@ class Migration {
     const resolver = new ResolverIntercept(options.resolver);
     const web3 = new Web3();
     web3.setProvider(options.provider);
-
-    logger.log("Running migration: " + path.relative(options.migrations_directory, this.file));
 
     // Initial context.
     const context = {
@@ -38,8 +42,12 @@ class Migration {
       network: options.network,
       network_id: options.network_id,
       provider: options.provider,
-      basePath: path.dirname(this.file)
+      basePath: path.dirname(self.file)
     });
+
+    const reporter = new Reporter(deployer, self);
+    const migrationsPath = path.relative(options.migrations_directory, self.file)
+    await self.emitter.emit('preMigrate', migrationsPath);
 
     const finish = async function(err) {
       if (err) return callback(err);
@@ -52,19 +60,19 @@ class Migration {
         const Migrations = resolver.require("./Migrations.sol");
 
         if (Migrations && Migrations.isDeployed()) {
-          logger.log("Saving successful migration to network...");
+          await self.emitter.emit('saveMigration', self.number);
           const migrations = await Migrations.deployed();
           await migrations.setCompleted(self.number);
         }
 
-        logger.log("Saving artifacts...");
+        await self.emitter.emit('postMigrate');
         await options.artifactor.saveAll(resolver.contracts());
 
         // Use process.nextTicK() to prevent errors thrown in the
         // callback from triggering the below catch()
         process.nextTick(callback);
       } catch(e) {
-        logger.log("Error encountered, bailing. Review successful transactions manually.");
+        await self.emitter.emit('error');
         callback(e);
       };
     };
@@ -240,7 +248,8 @@ const Migrate = {
     try {
       Migrations = options.resolver.require("Migrations");
     } catch (e) {
-      return callback(new Error("Could not find built Migrations contract: " + e.message));
+      const message = `Could not find built Migrations contract: ${e.message}`;
+      return callback(new Error());
     }
 
     if (Migrations.isDeployed() == false) {
