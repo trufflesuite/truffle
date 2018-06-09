@@ -36,7 +36,7 @@ class Migration {
     const deployer = new Deployer({
       logger: {
         log: function(msg) {
-          logger.log("  " + msg);
+          logger.log(msg);
         }
       },
       network: options.network,
@@ -68,8 +68,7 @@ class Migration {
         await self.emitter.emit('postMigrate');
         await options.artifactor.saveAll(resolver.contracts());
 
-        // Use process.nextTicK() to prevent errors thrown in the
-        // callback from triggering the below catch()
+        // Prevent errors thrown in the callback from triggering the below catch()
         process.nextTick(callback);
       } catch(e) {
         await self.emitter.emit('error');
@@ -209,21 +208,13 @@ const Migrate = {
     }, callback);
   },
 
-  wrapProvider: function(provider, logger) {
-    const printTransaction = function(tx_hash) {
-      logger.log("  ... " + tx_hash);
-    };
-
+  wrapProvider: function(provider) {
     return {
       send: function(payload, callback) {
         provider.send(payload, function(err, result) {
-          if (err) return callback(err);
-
-          if (payload.method == "eth_sendTransaction") {
-            printTransaction(result.result);
-          }
-
-          callback(err, result);
+          (err)
+            ? callback(err)
+            : callback(err, result);
         });
       }
     };
@@ -233,9 +224,7 @@ const Migrate = {
     return {
       require: function(import_path, search_path) {
         const abstraction = resolver.require(import_path, search_path);
-
         abstraction.setProvider(provider);
-
         return abstraction;
       },
       resolve: resolver.resolve

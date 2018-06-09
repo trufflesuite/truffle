@@ -2,12 +2,17 @@
  * Example reporter class that emulates the classic logger behavior
  */
 
+const util = require('util');
+const web3Utils = require('web3-utils');
+
 class Reporter {
   constructor(deployer, migration){
     this.deployingMany = false;
     this.logConfirmations = false;
     this.deployer = deployer;
     this.migration = migration;
+    this.currentGasTotal = 0;
+    this.currentCostTotal = new web3Utils.BN(0);
     this.separator = '\n';
     this.listen();
   }
@@ -29,40 +34,71 @@ class Reporter {
     this.deployer.emitter.on('confirmation',    this.confirmation.bind(this));
   }
 
-  async preMigrate(payload){
-    const message = this.messages('preMigrate', payload);
+  getGasTotal(){
+    const gas = this.currentGasTotal;
+    const cost = web3Utils.fromWei(this.currentCostTotal, "ether");
+
+    this.currentGasTotal = 0;
+    this.currentCostTotal = new web3Utils.BN(0);
+
+    return {
+      gas: gas,
+      cost: cost
+    }
+  }
+
+  async preMigrate(data){
+    const message = this.messages('preMigrate', data);
     this.deployer.logger.log(message);
   }
 
-  async saveMigrate(payload){
-    const message = this.messages('saving', payload);
+  async saveMigrate(data){
+    const message = this.messages('saving', data);
     this.deployer.logger.log(message);
   }
 
-  async postMigrate(payload){
-    const message = this.messages('postMigrate', payload);
+  async postMigrate(data){
+    const message = this.messages('postMigrate', data);
     this.deployer.logger.log(message);
   }
 
-  async migrationError(payload){
-    const message = this.messages('migrateErr', payload);
+  async migrationError(data){
+    const message = this.messages('migrateErr', data);
     this.deployer.logger.log(message);
   }
 
-  async preDeploy(payload){
+  async preDeploy(data){
     let message;
-    (payload.deployed)
-      ? message = this.messages('replacing', payload.contract, payload.deployed)
-      : message = this.messages('deploying', payload.contract, payload.deployed);
+    (data.deployed)
+      ? message = this.messages('replacing', data)
+      : message = this.messages('deploying', data);
 
     !this.deployingMany && this.deployer.logger.log(message);
   }
 
-  async postDeploy(payload){
+  async postDeploy(data){
     let message;
-    (payload.deployed)
-      ? message = this.messages('deployed', payload.contract.contractName, payload.instance.address)
-      : message = this.messages('notDeployed', payload.contract.contractName, payload.instance.address);
+    if (data.deployed){
+      const web3 = data.contract.web3;
+      const tx = await data.contract.web3.eth.getTransaction(data.receipt.transactionHash);
+      const balance = await data.contract.web3.eth.getBalance(tx.from);
+      const gasPrice = new web3Utils.BN(tx.gasPrice);
+      const gas = new web3Utils.BN(data.receipt.gasUsed);
+      const cost = gasPrice.mul(gas);
+
+      data.gas = data.receipt.gasUsed;
+      data.from = tx.from;
+      data.cost = web3Utils.fromWei(cost, 'ether');
+      data.balance = web3Utils.fromWei(balance, 'ether');
+
+      this.currentGasTotal += data.gas;
+      this.currentCostTotal = this.currentCostTotal.add(cost)
+      this.currentAddress = this.from;
+
+      message = this.messages('deployed', data);
+    } else {
+      message = this.messages('notDeployed', data);
+    }
 
     this.deployer.logger.log(message);
   }
@@ -75,8 +111,8 @@ class Reporter {
 
     batch.forEach(item => {
       Array.isArray(item)
-        ? message = this.messages('listMany', item[0].contractName)
-        : message = this.messages('listMany', item.contractName)
+        ? message = this.messages('listMany', item[0])
+        : message = this.messages('listMany', item)
 
       this.deployer.logger.log(message);
     })
@@ -88,157 +124,186 @@ class Reporter {
     this.deployingMany = false;
   }
 
-  async deployFailed(payload){
-    const message = await this.processDeploymentError(payload);
+  async deployFailed(data){
+    const message = await this.processDeploymentError(data);
     this.deployer.logger.error(message)
   }
 
-  linking(payload){
-    let message = this.messages('linking', payload.libraryName, payload.libraryAddress, payload.contractName);
+  linking(data){
+    let message = this.messages('linking', data);
     this.deployer.logger.log(message);
   }
 
-  async error(payload){
-    let message = this.messages(payload.type, payload.contract);
+  async error(data){
+    let message = this.messages(data.type, data);
     this.deployer.logger.error(message);
   }
 
-  async hash(payload){
-    let message = this.messages('hash', payload.transactionHash, payload.contractName);
+  async hash(data){
+    let message = this.messages('hash', data);
     this.deployer.logger.log(message);
   }
 
-  async receipt(payload){
-    let message = this.messages('receipt', payload.receipt.gasUsed, payload.contractName);
-    this.deployer.logger.log(message);
+  async receipt(data){
+    let message = this.messages('receipt', data);
   }
 
-  async confirmation(payload){
-    let message = this.messages('confirmation', payload.num, payload.receipt, payload.contractName);
+  async confirmation(data){
+    let message = this.messages('confirmation', data);
     this.logConfirmations && this.deployer.logger.log(message);
   }
 
   underline(msg){
+    return (typeof msg === 'number')
+      ? `\n   ${'-'.repeat(msg)}`
+      : `\n   ${msg}\n   ${'-'.repeat(msg.length)}`;
+  }
+
+  doubleline(msg){
     const ul = '='.repeat(msg.length);
     return `\n${msg}\n${ul}`;
   }
 
-  messages(kind, ...args){
+  messages(kind, data){
+    //console.log('data --> ' + util.format("%O", data));
+
     const prefix = '\nError:';
-
-    args[0] = args[0] || {};
-    args[1] = args[1] || {};
-    args[2] = args[2] || {};
-    args[3] = args[3] || {};
-
     const kinds = {
 
       // --------------------------------------- Errors --------------------------------------------
-      migrateErr:   `Error encountered, bailing. Review successful transactions manually.\n` +
-                    `${args[0].message}`,
+      migrateErr:   () =>
+        `Error encountered, bailing. Review successful transactions manually.\n` +
+        `${data.message}`,
 
-      noLibName:    `${prefix} Cannot link a library with no name.\n`,
-      noLibAddress: `${prefix} "${args[0].contractName}" has no address. Has it been deployed?\n`,
+      noLibName:    () =>
+        `${prefix} Cannot link a library with no name.\n`,
 
-      noBytecode:   `${prefix} "${args[0].contractName}" ` +
-                    `is an abstract contract or an interface and cannot be deployed\n` +
-                    `   * Hint: just import the contract into the '.sol' file that uses it.\n`,
+      noLibAddress: () =>
+        `${prefix} "${data.contract.contractName}" has no address. Has it been deployed?\n`,
 
-      intWithGas:   `${prefix} "${args[0].contractName}" ran out of gas ` +
-                    `(using a value you set in your network config or deployment parameters.)\n` +
-                    `   * Block limit:  ${args[2]}\n` +
-                    `   * Gas sent:     ${args[1]}\n`,
+      noBytecode:   () =>
+        `${prefix} "${data.contract.contractName}" ` +
+        `is an abstract contract or an interface and cannot be deployed\n` +
+        `   * Hint: just import the contract into the '.sol' file that uses it.\n`,
 
-      intNoGas:     `${prefix} "${args[0].contractName}" ran out of gas ` +
-                    `(using Truffle's estimate.)\n` +
-                    `   * Block limit:  ${args[1]}\n` +
-                    `   * Gas sent:     ${args[2]}\n` +
-                    `   * Try:\n` +
-                    `      + Setting a higher gas estimate multiplier for this contract\n` +
-                    `      + Using the solc optimizer settings in 'truffle.js'\n` +
-                    `      + Making your contract smaller\n` +
-                    `      + Making your contract constructor more efficient\n` +
-                    `      + Setting a higher network block limit if you are on a\n` +
-                    `        private network or test client (like ganache).\n`,
+      intWithGas:   () =>
+        `${prefix} "${data.contract.contractName}" ran out of gas ` +
+        `(using a value you set in your network config or deployment parameters.)\n` +
+        `   * Block limit:  ${data.blockLimit}\n` +
+        `   * Gas sent:     ${data.gas}\n`,
 
-      oogNoGas:     `${prefix} "${args[0].contractName}" ran out of gas. Something in the constructor ` +
-                    `(ex: infinite loop) caused gas estimation to fail. Try:\n` +
-                    `   * Making your contract constructor more efficient\n` +
-                    `   * Setting the gas manually in your config or a deployment parameter\n` +
-                    `   * Using the solc optimizer settings in 'truffle.js'\n` +
-                    `   * Setting a higher network block limit if you are on a\n` +
-                    `     private network or test client (like ganache).\n`,
+      intNoGas:     () =>
+        `${prefix} "${data.contract.contractName}" ran out of gas ` +
+        `(using Truffle's estimate.)\n` +
+        `   * Block limit:  ${data.blockLimit}\n` +
+        `   * Gas sent:     ${data.estimate}\n` +
+        `   * Try:\n` +
+        `      + Setting a higher gas estimate multiplier for this contract\n` +
+        `      + Using the solc optimizer settings in 'truffle.js'\n` +
+        `      + Making your contract smaller\n` +
+        `      + Making your contract constructor more efficient\n` +
+        `      + Setting a higher network block limit if you are on a\n` +
+        `        private network or test client (like ganache).\n`,
 
-      rvtReason:    `Revert with string error not implemented yet.`,
-      asrtReason:   `Assert with string error not implemented yet.`,
+      oogNoGas:     () =>
+        `${prefix} "${data.contract.contractName}" ran out of gas. Something in the constructor ` +
+        `(ex: infinite loop) caused gas estimation to fail. Try:\n` +
+        `   * Making your contract constructor more efficient\n` +
+        `   * Setting the gas manually in your config or a deployment parameter\n` +
+        `   * Using the solc optimizer settings in 'truffle.js'\n` +
+        `   * Setting a higher network block limit if you are on a\n` +
+        `     private network or test client (like ganache).\n`,
 
-      rvtNoReason:  `${prefix} "${args[0].contractName}" hit a require or revert statement ` +
-                    `somewhere in its constructor. Try:\n` +
-                    `   * Verifying that your constructor params satisfy all require conditions.\n` +
-                    `   * Adding reason strings to your require statements.\n`,
+      rvtReason:    () =>
+        `Revert with string error not implemented yet.`,
 
-      asrtNoReason: `${prefix} "${args[0].contractName}" hit an invalid opcode while deploying. Try:\n` +
-                    `   * Verifying that your constructor params satisfy all assert conditions.\n` +
-                    `   * Verifying your constructor code doesn't access an array out of bounds.\n` +
-                    `   * Adding reason strings to your assert statements.\n`,
+      asrtReason:   () =>
+        `Assert with string error not implemented yet.`,
 
-      noMoney:      `${prefix} "${args[0].contractName}" could not deploy due to insufficient funds\n` +
-                    `   * Account:  ${args[1]}\n` +
-                    `   * Balance:  ${args[2]} wei\n` +
-                    `   * Message:  ${args[3]}\n` +
-                    `   * Try:\n` +
-                    `      + Using an adequately funded account\n` +
-                    `      + If you are using a local Geth node, verify that your node is synced.\n`,
+      rvtNoReason:  () =>
+        `${prefix} "${data.contract.contractName}" hit a require or revert statement ` +
+        `somewhere in its constructor. Try:\n` +
+        `   * Verifying that your constructor params satisfy all require conditions.\n` +
+        `   * Adding reason strings to your require statements.\n`,
 
-      blockWithGas: `${prefix} "${args[0].contractName}" exceeded the block limit ` +
-                    `(with a gas value you set).\n` +
-                    `   * Block limit:  ${args[2]}\n` +
-                    `   * Gas sent:     ${args[1]}\n` +
-                    `   * Try:\n` +
-                    `      + Sending less gas.\n` +
-                    `      + Setting a higher network block limit if you are on a\n` +
-                    `        private network or test client (like ganache).\n`,
+      asrtNoReason: () =>
+        `${prefix} "${data.contract.contractName}" hit an invalid opcode while deploying. Try:\n` +
+        `   * Verifying that your constructor params satisfy all assert conditions.\n` +
+        `   * Verifying your constructor code doesn't access an array out of bounds.\n` +
+        `   * Adding reason strings to your assert statements.\n`,
 
-      blockNoGas:   `${prefix} "${args[0].contractName}" exceeded the block limit ` +
-                    `(using Truffle's estimate).\n` +
-                    `   * Block limit: ${args[1]}\n` +
-                    `   * Report this error in the Truffle issues on Github. It should not happen.\n` +
-                    `   * Try: setting gas manually in 'truffle.js' or as parameter to 'deployer.deploy'\n`,
+      noMoney:      () =>
+        `${prefix} "${data.contract.contractName}" could not deploy due to insufficient funds\n` +
+        `   * Account:  ${data.from}\n` +
+        `   * Balance:  ${data.balance} wei\n` +
+        `   * Message:  ${data.error.message}\n` +
+        `   * Try:\n` +
+        `      + Using an adequately funded account\n` +
+        `      + If you are using a local Geth node, verify that your node is synced.\n`,
 
-      nonce:        `${prefix} "${args[0].contractName}" received: ${args[1]}.\n` +
-                    `   * This error is common when Infura is under heavy network load.\n` +
-                    `   * Try: setting the 'confirmations' key in your network config\n` +
-                    `          to wait for several block confirmations between each deployment.\n`,
+      blockWithGas: () =>
+        `${prefix} "${data.contract.contractName}" exceeded the block limit ` +
+        `(with a gas value you set).\n` +
+        `   * Block limit:  ${data.blockLimit}\n` +
+        `   * Gas sent:     ${data.gas}\n` +
+        `   * Try:\n` +
+        `      + Sending less gas.\n` +
+        `      + Setting a higher network block limit if you are on a\n` +
+        `        private network or test client (like ganache).\n`,
 
-      default:      `${prefix} "${args[0].contractName}" -- ${args[1]}.\n`,
+      blockNoGas:   () =>
+        `${prefix} "${data.contract.contractName}" exceeded the block limit ` +
+        `(using Truffle's estimate).\n` +
+        `   * Block limit: ${data.blockLimit}\n` +
+        `   * Report this error in the Truffle issues on Github. It should not happen.\n` +
+        `   * Try: setting gas manually in 'truffle.js' or as parameter to 'deployer.deploy'\n`,
+
+      nonce:        () =>
+        `${prefix} "${data.contract.contractName}" received: ${data.error.message}.\n` +
+        `   * This error is common when Infura is under heavy network load.\n` +
+        `   * Try: setting the 'confirmations' key in your network config\n` +
+        `          to wait for several block confirmations between each deployment.\n`,
+
+      default:      () =>
+        `${prefix} "${data.contract.contractName}" -- ${data.error.message}.\n`,
 
       // ------------------------------------ Successes --------------------------------------------
 
-      deploying:    this.underline(`Deploying ${args[0]}.contractName`),
-      replacing:    this.underline(`Replacing ${args[0]}.contractName`),
-      reusing:      this.underline(`Re-using. ${args[0]}.contractName`),
-      many:         this.underline(`Deploying Batch`),
-      linking:      this.underline('Linking') + '\n' +
-                    `${args[2]}`.padEnd(20) + `  > ${args[0]}`.padEnd(25)            + `(${args[1]})`,
+      deploying:    () => this.underline(`Deploying '${data.contract.contractName}'`),
+      replacing:    () => this.underline(`Replacing '${data.contract.contractName}'`),
+      reusing:      () => this.underline(`Re-using  '${data.contract.contractName}'`),
+      many:         () => this.underline(`Deploying Batch`),
 
-      preMigrate:   `${args[0]}`,
-      saving:       `\nSaving migration number: ${args[0]}`,
-      postMigrate:  `\nSaving artifacts...`,
+      linking:      () => this.underline(`Linking`) +
+                         `\n   * Contract: ${data.contractName} <--> Library: ${data.libraryName} `+
+                        `(at address: ${data.libraryAddress})`,
 
-      listMany:     `* ${args[0]}`,
-      deployed:     `  > address:'.padEnd(25)`              + args[1],
-      hash:         `  > transaction hash:'.padEnd(25)`     + args[0],
-      receipt:      `  > gas usage:'.padEnd(25)`            + args[0],
-      confirmation: `  > confirmation number:'.padEnd(25)`  + args[0],
+      preMigrate:   () => this.doubleline(`${data}`),
+      saving:       () => `\n   * Saving migration #${data}...`,
+
+      postMigrate:  () => `   * Saving artifacts...` +
+                          this.underline(`* Migration complete`) + '\n' +
+                          `   > ${'Total cost:'.padEnd(15)} ${this.getGasTotal().cost.padStart(15)} ETH\n`,
+
+      deployed:     () => `   > ${'contract address:'.padEnd(20)} ${data.receipt.contractAddress}\n` +
+                          `   > ${'gas used:'.padEnd(20)} ${data.gas}\n` +
+                          `   > ${'cost:'.padEnd(20)} ${data.cost} ETH\n` +
+                          `   > ${'account:'.padEnd(20)} ${data.from}\n` +
+                          `   > ${'balance:'.padEnd(20)} ${data.balance}\n`,
+
+      listMany:     () => `   * ${data.contractName}`,
+      hash:         () => `   > ${'transaction hash:'.padEnd(20)}`     + data.transactionHash,
+      receipt:      () => `   > ${'gas usage:'.padEnd(20)}`            + data.gas,
+      confirmation: () => `   > ${'confirmation number:'.padEnd(20)}`  + data.num,
     }
 
-    return kinds[kind];
+    return kinds[kind]();
   }
 
-  async processDeploymentError(payload){
+  async processDeploymentError(data){
     let message;
 
-    const error = payload.estimateError || payload.error;
+    const error = data.estimateError || data.error;
 
     const errors = {
       INT: error.message.includes('base fee') || error.message.includes('intrinsic'),
@@ -254,59 +319,59 @@ class Reporter {
 
     switch (type) {
       case 'INT':
-        (payload.gas)
-          ? message = this.messages('intWithGas', payload.contract, payload.gas, payload.blockLimit)
-          : message = this.messages('intNoGas', payload.contract, payload.blockLimit, payload.estimate);
+        (data.gas)
+          ? message = this.messages('intWithGas', data)
+          : message = this.messages('intNoGas', data);
 
         this.deployer.logger.error(message);
         break;
 
       case 'OOG':
-        (payload.gas)
-          ? message = this.messages('intWithGas', payload.contract, payload.gas, payload.blockLimit)
-          : message = this.messages('oogNoGas', payload.contract, payload.blockLimit, payload.estimate);
+        (data.gas)
+          ? message = this.messages('intWithGas', data)
+          : message = this.messages('oogNoGas', data);
 
         this.deployer.logger.error(message);
         break;
 
       case 'RVT':
-        (payload.reason)
-          ? message = this.messages('rvtReason', payload.contract, payload.reason)
-          : message = this.messages('rvtNoReason', payload.contract);
+        (data.reason)
+          ? message = this.messages('rvtReason', data)
+          : message = this.messages('rvtNoReason', data);
 
         this.deployer.logger.error(message);
         break;
 
       case 'INV':
-        (payload.reason)
-          ? message = this.messages('asrtReason', payload.contract, payload.reason)
-          : message = this.messages('asrtNoReason', payload.contract);
+        (data.reason)
+          ? message = this.messages('asrtReason', data)
+          : message = this.messages('asrtNoReason', data);
 
         this.deployer.logger.error(message);
         break;
 
       case 'BLK':
-        (payload.gas)
-          ? message = this.messages('blockWithGas', payload.contract, payload.gas, payload.blockLimit)
-          : message = this.messages('blockNoGas', payload.contract, payload.blockLimit)
+        (data.gas)
+          ? message = this.messages('blockWithGas', data)
+          : message = this.messages('blockNoGas', data)
 
         this.deployer.logger.error(message);
         break;
 
       case 'ETH':
-        let balance = await payload.contract.web3.eth.getBalance(payload.from);
-        balance = balance.toString();
-        message = this.messages('noMoney', payload.contract, payload.from, balance, error.message);
+        const balance = await data.contract.web3.eth.getBalance(data.from);
+        data.balance = balance.toString();
+        message = this.messages('noMoney', data);
         this.deployer.logger.error(message);
         break;
 
       case 'NCE':
-        message = this.messages('nonce', payload.contract, error.message);
+        message = this.messages('nonce', data);
         this.deployer.logger.error(message);
         break;
 
       default:
-        message = this.messages('default', payload.contract, error.message);
+        message = this.messages('default', data);
         this.deployer.logger.error(message);
     }
   }
