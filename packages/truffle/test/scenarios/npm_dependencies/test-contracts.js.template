@@ -1,6 +1,7 @@
 var ExtraLibrary = artifacts.require("@org/pkg/ExtraLibrary");
 var ExtraLibraryX = artifacts.require("@org/pkg/ExtraLibraryX");
 var ExtraLibrary2 = artifacts.require("dep2/ExtraLibrary2");
+var ExtraOtherLibrary2 = artifacts.require("dep2/ExtraOtherLibrary2");
 var Contract2 = artifacts.require("dep2/Contract2");
 Contract2.link(ExtraLibraryX);
 var Contract3 = artifacts.require("Contract3");
@@ -30,4 +31,9 @@ contract("stuff", function(accounts) {
         var instance2 = await Contract2.new();
         assert.equal(await instance2.doOtherThing(), 3735928558);
     });
+
+    it("does a sixth thing", async function() {
+        var extraOtherLib2 = await ExtraOtherLibrary2.deployed();
+        assert.equal(await extraOtherLib2.doOtherThing(2), 3);
+    })
 });

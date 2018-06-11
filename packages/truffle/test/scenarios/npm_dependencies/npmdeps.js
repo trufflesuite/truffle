@@ -51,9 +51,11 @@ describe("NPM dependencies", function() {
 
     var dep2Root = path.join(config.working_directory, "node_modules", "dep2")
     fs.copySync(path.join(__dirname, "extralib2.sol"), path.join(dep2Root, "contracts", "extralib2.sol"));
+    fs.copySync(path.join(__dirname, "extraotherlib2.sol"), path.join(dep2Root, "contracts", "extraotherlib2.sol"));
     fs.copySync(path.join(config.migrations_directory, "1_initial_migration.js"), path.join(dep2Root, "migrations", "1_initial_migration.js"));
     fs.copySync(path.join(config.contracts_directory, "Migrations.sol"), path.join(dep2Root, "contracts", "Migrations.sol"))
     fs.copySync(path.join(__dirname, "2_deploy_extralib2.js.template"), path.join(dep2Root, "migrations", "2_deploy_extralib2.js"));
+    fs.copySync(path.join(__dirname, "3_deploy_extraotherlib2.js.template"), path.join(dep2Root, "migrations", "3_deploy_extraotherlib2.js"));
     fs.copySync(path.join(__dirname, "dep2-package.json"), path.join(dep2Root, "package.json"));
     fs.copySync(path.join(__dirname, "dep2-truffle-config.js.template"), path.join(dep2Root, "truffle-config.js"));
   });
@@ -111,12 +113,16 @@ describe("NPM dependencies", function() {
     this.timeout(70000);
     CommandRunner.run("test", config, function(err) {
       var output = logger.contents();
+
+      if (!err && output.indexOf("6 passing") < 0) {
+        err = new Error("a test case failed");
+      }
+
       if (err) {
         console.log(output);
         return done(err);
       }
 
-      assert(output.indexOf("5 passing") >= 0);
       done();
     });
   });
@@ -131,13 +137,13 @@ describe("NPM dependencies", function() {
         return done(err);
       }
 
-      var Contract = contract(require(path.join(config.contracts_build_directory, "Contract.json")));
+      var Contract3 = contract(require(path.join(config.contracts_build_directory, "Contract3.json")));
       var ExtraLibrary = contract(require(path.join(config.working_directory, "node_modules", "@org", "pkg", "build", "contracts", "ExtraLibrary.json")));
       var Migrations = contract(require(path.join(config.contracts_build_directory, "Migrations.json")));
 
       var promises = [];
 
-      [Contract, ExtraLibrary, Migrations].forEach(function(abstraction) {
+      [Contract3, ExtraLibrary, Migrations].forEach(function(abstraction) {
         abstraction.setProvider(config.provider);
 
         promises.push(abstraction.deployed().then(function(instance) {
@@ -150,6 +156,5 @@ describe("NPM dependencies", function() {
       }).catch(done);
     });
   });
-
 
 });
