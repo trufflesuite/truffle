@@ -4,6 +4,7 @@ set -o errexit
 
 run_geth() {
   docker run \
+    -v /$PWD/scripts:/scripts \
     -d \
     -p 8546:8546 \
     -p 30303:30303 \
@@ -16,6 +17,7 @@ run_geth() {
     --dev \
     --dev.period 2 \
     --targetgaslimit '7000000' \
+    js ./scripts/geth-accounts.js \
     > /dev/null &
 }
 
