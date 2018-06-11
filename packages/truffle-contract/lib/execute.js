@@ -92,7 +92,7 @@ var execute = {
 
     return function() {
       var params = {};
-      var defaultBlock;
+      var defaultBlock = 'latest';
       var args = Array.prototype.slice.call(arguments);
       var lastArg = args[args.length - 1];
 
