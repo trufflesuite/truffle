@@ -74,6 +74,12 @@ describe("Methods", function() {
       assert.equal(expectedValuePlus, retrievedValuePlus, "should get inital value + 10");
     });
 
+    it('should honor tx params when called', async function(){
+      const example = await Example.new(5);
+      const sender = await example.viewSender({from: accounts[2]});
+      assert.equal(sender, accounts[2]);
+    });
+
     it('should estimate gas', async function(){
       const example = await Example.new(5);
       const estimate = await example.setValue.estimateGas(25);
@@ -84,7 +90,7 @@ describe("Methods", function() {
 
     it("should return hash, logs and receipt when using synchronised transactions", async function() {
       const example = await Example.new(1);
-      const result = await example.triggerEvent();
+      const result = await example.triggerEvent({from: accounts[2]});
       const log = result.logs[0];
 
       assert.isDefined(result.tx, "transaction hash wasn't returned");
@@ -94,7 +100,7 @@ describe("Methods", function() {
       assert.equal(result.tx, result.receipt.transactionHash, "Tx had different hash than receipt");
       assert.equal(result.logs.length, 1, "logs array expected to be 1");
       assert.equal("ExampleEvent", log.event);
-      assert.equal(accounts[0], log.args._from);
+      assert.equal(accounts[2], log.args._from);
       assert.equal(8, log.args.num); // 8 is a magic number inside Example.sol
     });
 

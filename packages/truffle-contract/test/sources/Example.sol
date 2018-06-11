@@ -30,6 +30,10 @@ contract Example {
     return address(this);
   }
 
+  function viewSender() view returns(address){
+    return msg.sender;
+  }
+
   function getValue() constant returns(uint) {
     return value;
   }
