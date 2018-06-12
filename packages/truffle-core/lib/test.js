@@ -97,31 +97,38 @@ var Test = {
         rootConfig.from = accounts[0];
       }
 
-      if (!rootConfig.resolver) {
-        rootConfig.resolver = new Resolver(rootConfig);
-      }
-
       var test_source = new TestSource(rootConfig);
 
-      test_resolver = new TestResolver(rootConfig.resolver, test_source, rootConfig.contracts_build_directory);
-      test_resolver.cache_on = false;
+      migrationConfigs.forEach(function(config) {
+        if (!config.resolver) {
+          config.resolver = new Resolver(config);
+        }
 
-      return self.compileContractsWithTestFilesIfNeeded(sol_tests, rootConfig, otherConfigs, test_resolver);
+        if(config === rootConfig)
+          config.test_resolver = new TestResolver(config.resolver, test_source, config.contracts_build_directory);
+        else
+          config.test_resolver = new Resolver(config.with({
+            node_modules_directory: path.join(rootConfig.contracts_build_directory, "node_modules")
+          }));
+        config.test_resolver.cache_on = false;
+      });
+
+      return self.compileContractsWithTestFilesIfNeeded(sol_tests, rootConfig, otherConfigs);
     }).then(function(paths) {
       dependency_paths = paths;
 
       testContracts = sol_tests.map(function(test_file_path) {
         var built_name = "./" + path.basename(test_file_path);
-        return test_resolver.require(built_name);
+        return rootConfig.test_resolver.require(built_name);
       });
 
       runner = new TestRunner(rootConfig);
 
-      return self.performInitialDeploy(migrationConfigs, test_resolver);
+      return self.performInitialDeploy(migrationConfigs);
     }).then(function() {
       return self.defineSolidityTests(mocha, testContracts, dependency_paths, runner);
     }).then(function() {
-      return self.setJSTestGlobals(web3, accounts, test_resolver, runner);
+      return self.setJSTestGlobals(web3, accounts, rootConfig.test_resolver, runner);
     }).then(function() {
       // Finally, run mocha.
       process.on('unhandledRejection', function(reason, p) {
@@ -164,7 +171,7 @@ var Test = {
     });
   },
 
-  compileContractsWithTestFilesIfNeeded: function(solidity_test_files, rootConfig, otherConfigs, test_resolver) {
+  compileContractsWithTestFilesIfNeeded: function(solidity_test_files, rootConfig, otherConfigs) {
     return new Promise(function(accept, reject) {
       async.eachSeries(otherConfigs, function(config, callback) {
         Contracts.compile(config, callback);
@@ -172,7 +179,7 @@ var Test = {
         if (err) return reject(err);
 
         Profiler.updated(rootConfig.with({
-          resolver: test_resolver
+          resolver: rootConfig.test_resolver
         }), function(err, updated) {
           if (err) return reject(err);
 
@@ -182,7 +189,7 @@ var Test = {
           Contracts.compile(rootConfig.with({
             all: rootConfig.compileAll === true,
             files: updated.concat(solidity_test_files),
-            resolver: test_resolver,
+            resolver: rootConfig.test_resolver,
             quiet: false,
             quietWrite: true
           }), function(err, abstractions, paths) {
@@ -194,12 +201,12 @@ var Test = {
     });
   },
 
-  performInitialDeploy: function(migrationConfigs, resolver) {
+  performInitialDeploy: function(migrationConfigs) {
     return new Promise(function(accept, reject) {
       async.eachSeries(migrationConfigs, function(config, callback) {
         Migrate.run(config.with({
           reset: true,
-          resolver: resolver,
+          resolver: config.test_resolver,
           quiet: true
         }), callback);
       }, function(err) {

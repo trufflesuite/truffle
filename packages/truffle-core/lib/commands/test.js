@@ -145,15 +145,15 @@ var command = {
                 copy(config.contracts_build_directory, config.pkgTempDir, function(err) {
                   if (err) return callback(err);
 
-                  config.logger.log("Using network '" + config.network + "'." + OS.EOL);
+                  config.logger.log((config.packageName || "own artifacts") + " using network '" + config.network + "'.");
 
                   callback();
                 });
               });
             });
           }, function(err) {
+            rootConfig.logger.log();
             if (err) return done(err);
-
             run();
           });
         };
