@@ -4,7 +4,6 @@
   "description": "On-chain migrations management",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
   },
   "repository": {
     "type": "git",

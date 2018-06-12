@@ -35,7 +35,7 @@ describe("truffle publish", function() {
 
   // This test only validates package assembly. We expect it to run logic up to the attempt to
   // publish to the network and fail.
-  it("Can locate all the sources to publish", function(done) {
+  it.skip("Can locate all the sources to publish", function(done) {
     this.timeout(30000);
 
     CommandRunner.run("compile", config, function(err) {
