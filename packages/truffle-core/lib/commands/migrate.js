@@ -96,7 +96,6 @@ var command = {
     }
 
     function runMigrations(config, callback) {
-
       Migrate.launchReporter();
 
       if (options.f) {
