@@ -39,7 +39,8 @@
     "build-cli": "webpack --config ./cli.webpack.config.js",
     "test": "npm run build-cli && mocha --colors",
     "publish:byoc": "node ./scripts/prereleaseVersion.js byoc-safe byoc",
-    "publish:next": "node ./scripts/prereleaseVersion.js next next"
+    "publish:next": "node ./scripts/prereleaseVersion.js next next",
+    "test:raw": "NO_BUILD=true mocha"
   },
   "repository": {
     "type": "git",
