@@ -4,6 +4,7 @@
 
 const util = require('util');
 const web3Utils = require('web3-utils');
+const spinner = require('./indentedSpinner');
 
 class Reporter {
   constructor(deployer, migration){
@@ -13,6 +14,8 @@ class Reporter {
     this.migration = migration;
     this.currentGasTotal = 0;
     this.currentCostTotal = new web3Utils.BN(0);
+    this.finalCostTotal = new web3Utils.BN(0);
+    this.deployments = 0;
     this.separator = '\n';
     this.listen();
   }
@@ -21,6 +24,7 @@ class Reporter {
     this.migration.emitter.on('preMigrate',     this.preMigrate.bind(this));
     this.migration.emitter.on('saveMigration',  this.saveMigrate.bind(this));
     this.migration.emitter.on('postMigrate',    this.postMigrate.bind(this));
+    this.migration.emitter.on('error',          this.error.bind(this));
 
     this.deployer.emitter.on('preDeploy',       this.preDeploy.bind(this));
     this.deployer.emitter.on('postDeploy',      this.postDeploy.bind(this));
@@ -34,21 +38,29 @@ class Reporter {
     this.deployer.emitter.on('confirmation',    this.confirmation.bind(this));
   }
 
-  getGasTotal(){
+  getTotals(){
     const gas = this.currentGasTotal;
     const cost = web3Utils.fromWei(this.currentCostTotal, "ether");
+    this.finalCostTotal = this.finalCostTotal.add(this.currentCostTotal);
 
     this.currentGasTotal = 0;
     this.currentCostTotal = new web3Utils.BN(0);
 
     return {
       gas: gas,
-      cost: cost
+      cost: cost,
+      finalCost: web3Utils.fromWei(this.finalCostTotal, "ether"),
+      deployments: this.deployments.toString()
     }
   }
 
   async preMigrate(data){
-    const message = this.messages('preMigrate', data);
+    let message;
+    if (data.isFirst){
+      message = this.messages('firstMigrate', data);
+      this.deployer.logger.log(message);
+    }
+    message = this.messages('preMigrate', data);
     this.deployer.logger.log(message);
   }
 
@@ -57,9 +69,14 @@ class Reporter {
     this.deployer.logger.log(message);
   }
 
-  async postMigrate(data){
-    const message = this.messages('postMigrate', data);
+  async postMigrate(isLast){
+    let message = this.messages('postMigrate');
     this.deployer.logger.log(message);
+
+    if (isLast){
+      message = this.messages('lastMigrate');
+      this.deployer.logger.log(message);
+    }
   }
 
   async migrationError(data){
@@ -82,6 +99,7 @@ class Reporter {
       const web3 = data.contract.web3;
       const tx = await data.contract.web3.eth.getTransaction(data.receipt.transactionHash);
       const balance = await data.contract.web3.eth.getBalance(tx.from);
+
       const gasPrice = new web3Utils.BN(tx.gasPrice);
       const gas = new web3Utils.BN(data.receipt.gasUsed);
       const cost = gasPrice.mul(gas);
@@ -94,6 +112,7 @@ class Reporter {
       this.currentGasTotal += data.gas;
       this.currentCostTotal = this.currentCostTotal.add(cost)
       this.currentAddress = this.from;
+      this.deployments++;
 
       message = this.messages('deployed', data);
     } else {
@@ -172,8 +191,8 @@ class Reporter {
 
       // --------------------------------------- Errors --------------------------------------------
       migrateErr:   () =>
-        `Error encountered, bailing. Review successful transactions manually.\n` +
-        `${data.message}`,
+        `Exiting: Review successful transactions manually by checking the transaction hashes ` +
+        `above on Etherscan.\n`,
 
       noLibName:    () =>
         `${prefix} Cannot link a library with no name.\n`,
@@ -269,32 +288,62 @@ class Reporter {
 
       // ------------------------------------ Successes --------------------------------------------
 
-      deploying:    () => this.underline(`Deploying '${data.contract.contractName}'`),
-      replacing:    () => this.underline(`Replacing '${data.contract.contractName}'`),
-      reusing:      () => this.underline(`Re-using  '${data.contract.contractName}'`),
-      many:         () => this.underline(`Deploying Batch`),
+      deploying:    () =>
+        this.underline(`Deploying '${data.contract.contractName}'`),
 
-      linking:      () => this.underline(`Linking`) +
-                         `\n   * Contract: ${data.contractName} <--> Library: ${data.libraryName} `+
-                        `(at address: ${data.libraryAddress})`,
+      replacing:    () =>
+        this.underline(`Replacing '${data.contract.contractName}'`),
 
-      preMigrate:   () => this.doubleline(`${data}`),
-      saving:       () => `\n   * Saving migration #${data}...`,
+      reusing:      () =>
+        this.underline(`Re-using  '${data.contract.contractName}'`),
 
-      postMigrate:  () => `   * Saving artifacts...` +
-                          this.underline(`* Migration complete`) + '\n' +
-                          `   > ${'Total cost:'.padEnd(15)} ${this.getGasTotal().cost.padStart(15)} ETH\n`,
+      many:         () =>
+        this.underline(`Deploying Batch`),
 
-      deployed:     () => `   > ${'contract address:'.padEnd(20)} ${data.receipt.contractAddress}\n` +
-                          `   > ${'gas used:'.padEnd(20)} ${data.gas}\n` +
-                          `   > ${'cost:'.padEnd(20)} ${data.cost} ETH\n` +
-                          `   > ${'account:'.padEnd(20)} ${data.from}\n` +
-                          `   > ${'balance:'.padEnd(20)} ${data.balance}\n`,
+      linking:      () =>
+        this.underline(`Linking`) +
+        `\n   * Contract: ${data.contractName} <--> Library: ${data.libraryName} `+
+        `(at address: ${data.libraryAddress})`,
 
-      listMany:     () => `   * ${data.contractName}`,
-      hash:         () => `   > ${'transaction hash:'.padEnd(20)}`     + data.transactionHash,
-      receipt:      () => `   > ${'gas usage:'.padEnd(20)}`            + data.gas,
-      confirmation: () => `   > ${'confirmation number:'.padEnd(20)}`  + data.num,
+      preMigrate:   () =>
+        this.doubleline(`${data.file}`),
+
+      saving:       () =>
+        `\n   * Saving migration`,
+
+      firstMigrate: () =>
+        this.doubleline(`Starting migrations...`) + '\n' +
+        `> Network name: '${data.network}'\n` +
+        `> Network id:   ${data.networkId}\n`,
+
+      postMigrate:  () =>
+        `   * Saving artifacts` +
+        this.underline(18) + '\n' +
+        `   > ${'Total cost:'.padEnd(15)} ${this.getTotals().cost.padStart(15)} ETH\n`,
+
+      lastMigrate: () =>
+        this.doubleline('Summary') + '\n' +
+        `> ${'TotalDeployments:'.padEnd(20)} ${this.getTotals().deployments}\n` +
+        `> ${'Final cost:'.padEnd(20)} ${this.getTotals().finalCost} ETH\n`,
+
+      deployed:     () =>
+        `   > ${'contract address:'.padEnd(20)} ${data.receipt.contractAddress}\n` +
+        `   > ${'account:'.padEnd(20)} ${data.from}\n` +
+        `   > ${'cost:'.padEnd(20)} ${data.cost} ETH\n` +
+        `   > ${'balance:'.padEnd(20)} ${data.balance}\n` +
+        `   > ${'gas used:'.padEnd(20)} ${data.gas}\n`,
+
+      listMany:     () =>
+        `   * ${data.contractName}`,
+
+      hash:         () =>
+        `   > ${'transaction hash:'.padEnd(20)} ` + data.transactionHash,
+
+      receipt:      () =>
+        `   > ${'gas usage:'.padEnd(20)} ` + data.gas,
+
+      confirmation: () =>
+        `   > ${'confirmation number:'.padEnd(20)} ` + data.num,
     }
 
     return kinds[kind]();

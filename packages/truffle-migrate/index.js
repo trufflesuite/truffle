@@ -11,7 +11,7 @@ const Deployer = require("truffle-deployer");
 const Require = require("truffle-require");
 
 const ResolverIntercept = require("./resolverintercept");
-const Reporter = require("./reporter");
+const Reporter = require("./reporter/reporter");
 
 class Migration {
 
@@ -19,6 +19,8 @@ class Migration {
     this.file = path.resolve(file);
     this.number = parseInt(path.basename(file));
     this.emitter = new Emittery();
+    this.isFirst = false;
+    this.isLast = false;
   }
 
   async run(options, callback) {
@@ -37,6 +39,9 @@ class Migration {
       logger: {
         log: function(msg) {
           logger.log(msg);
+        },
+        error: function(msg){
+          logger.error(msg);
         }
       },
       network: options.network,
@@ -46,14 +51,24 @@ class Migration {
     });
 
     const reporter = new Reporter(deployer, self);
-    const migrationsPath = path.relative(options.migrations_directory, self.file)
-    await self.emitter.emit('preMigrate', migrationsPath);
+    const file = path.relative(options.migrations_directory, self.file)
 
-    const finish = async function(err) {
-      if (err) return callback(err);
+    const preMigrationsData = {
+      file: file,
+      isFirst: this.isFirst,
+      network: options.network,
+      networkId: options.network_id,
+    }
 
+    await self.emitter.emit('preMigrate', preMigrationsData);
+
+    var finish = async function(migrateFn) {
       try {
         await deployer.start();
+
+        if (migrateFn && migrateFn.then !== undefined){
+          await deployer.then(() => migrateFn);
+        }
 
         if (options.save === false) return;
 
@@ -65,13 +80,23 @@ class Migration {
           await migrations.setCompleted(self.number);
         }
 
-        await self.emitter.emit('postMigrate');
+        await self.emitter.emit('postMigrate', self.isLast);
         await options.artifactor.saveAll(resolver.contracts());
+        deployer.finish();
 
+        if (self.isLast){
+          self.emitter.clearListeners();
+        }
         // Prevent errors thrown in the callback from triggering the below catch()
         process.nextTick(callback);
       } catch(e) {
-        await self.emitter.emit('error');
+        const payload = {
+          type: 'migrateErr',
+          error: e
+        };
+
+        await self.emitter.emit('error', payload);
+        deployer.finish();
         callback(e);
       };
     };
@@ -85,7 +110,7 @@ class Migration {
         args: [deployer],
       }
 
-      Require.file(requireOptions, (err, fn) => {
+      Require.file(requireOptions, async (err, fn) => {
         if (err) return callback(err);
 
         const unRunnable = !fn || !fn.length || fn.length == 0;
@@ -95,8 +120,8 @@ class Migration {
           return callback(new Error(msg));
         }
 
-        fn(deployer, options.network, accounts);
-        finish();
+        const migrateFn = fn(deployer, options.network, accounts);
+        await finish(migrateFn);
       });
 
     } catch(err){
@@ -199,6 +224,13 @@ const Migrate = {
 
     clone.provider = this.wrapProvider(options.provider, clone.logger);
     clone.resolver = this.wrapResolver(options.resolver, clone.provider);
+
+    // Make migrations aware of their position in sequence
+    const total = migrations.length;
+    if(total){
+      migrations[0].isFirst = true;
+      migrations[total - 1].isLast = true;
+    }
 
     async.eachSeries(migrations, function(migration, finished) {
       migration.run(clone, function(err) {
