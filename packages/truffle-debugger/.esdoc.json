@@ -1,0 +1,43 @@
+{
+  "source": "./lib",
+  "destination": "./docs",
+  "plugins": [
+    {
+      "name": "esdoc-standard-plugin",
+      "option": {
+        "lint": {"enable": false},
+        "coverage": {"enable": true},
+        "accessor": {"access": ["public", "protected"], "autoPrivate": false},
+        "undocumentIdentifier": {"enable": true},
+        "unexportedIdentifier": {"enable": false},
+        "typeInference": {"enable": true},
+        "test": {
+          "source": "./test/",
+          "interfaces": ["describe", "it", "context", "suite", "test"],
+          "includes": ["(spec|Spec|test|Test)\\.js$"],
+          "excludes": ["\\.config\\.js$"]
+        }
+      }
+    },
+    {
+      "name": "esdoc-ecmascript-proposal-plugin",
+      "option": {
+        "classProperties": true,
+        "objectRestSpread": true,
+        "doExpressions": true,
+        "functionBind": true,
+        "functionSent": true,
+        "asyncGenerators": true,
+        "decorators": false,
+        "exportExtensions": true,
+        "dynamicImport": true
+      }
+    },
+    {
+      "name": "reselect-tree/esdoc-plugin", "option": {
+        "source": "./lib/"
+      }
+    }
+  ]
+}
+

@@ -1,0 +1,57 @@
+sudo: required
+language: node_js
+node_js:
+  - "6.9.1"
+
+env:
+  global:
+    - GIT_NAME: "'Travis Deployer'"
+    - GIT_EMAIL: gnidan@trufflesuite.com
+    - GH_REF: git@github.com:trufflesuite/truffle-debugger.git
+    - WATCH_BRANCH: "develop"
+  matrix:
+    - TEST=repo
+    - TEST=upstream
+    - TEST=scenario
+
+services:
+  - docker
+  
+before_install:
+  - docker pull truffle/ci
+
+before_script:
+- >
+  if [ "${TEST}" = "repo" -a "${TRAVIS_PULL_REQUEST}" = "false" -a "$TRAVIS_BRANCH" = "${WATCH_BRANCH}" ];
+  then
+    openssl aes-256-cbc -K $encrypted_59c1e9d151c0_key -iv $encrypted_59c1e9d151c0_iv -in deploy-key.enc -out deploy-key -d
+    chmod 600 deploy-key
+    eval `ssh-agent -s`
+    ssh-add deploy-key
+    git config user.name "${GIT_NAME}"
+    git config user.email "${GIT_EMAIL}"
+    git remote add deploy "${GH_REF}"
+  fi
+
+script:
+  - >
+    docker run -it --rm --name ${TEST} \
+        -e TRAVIS_REPO_SLUG \
+        -e TRAVIS_PULL_REQUEST \
+        -e TRAVIS_PULL_REQUEST_SLUG \
+        -e TRAVIS_PULL_REQUEST_BRANCH \
+        -e TRAVIS_BRANCH \
+        -e TEST \
+      truffle/ci:latest run_tests
+
+after_success:
+- >
+  if [ "${TEST}" = "repo" -a "${TRAVIS_PULL_REQUEST}" = "false" -a "$TRAVIS_BRANCH" = "${WATCH_BRANCH}" ];
+  then
+    git fetch deploy
+    git push deploy :gh-pages
+    npm run docs && \
+    git add -f docs && \
+    git commit -m "Update docs" && \
+    git subtree push --prefix docs deploy gh-pages
+  fi
