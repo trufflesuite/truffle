@@ -1,0 +1,48 @@
+{
+  "name": "truffle-contract",
+  "version": "3.0.5",
+  "description": "A better contract abstraction for Ethereum (formerly EtherPudding)",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "debug": "DEBUG=ganache-core mocha",
+    "compile": "browserify ./index.js -i web3 -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trufflesuite/truffle-contract.git"
+  },
+  "keywords": [
+    "ethereum",
+    "truffle",
+    "contract",
+    "abstraction"
+  ],
+  "author": "Tim Coulter <tim.coulter@consensys.net>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle-contract/issues"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle-contract#readme",
+  "dependencies": {
+    "ethjs-abi": "0.1.8",
+    "truffle-blockchain-utils": "^0.0.4",
+    "truffle-contract-schema": "^2.0.0",
+    "truffle-error": "0.0.2",
+    "web3": "^0.20.1"
+  },
+  "devDependencies": {
+    "async": "^2.3.0",
+    "browserify": "^14.0.0",
+    "chai": "^3.5.0",
+    "debug": "^3.1.0",
+    "ganache-core": "2.1.0-beta.0",
+    "lodash": "^4.17.4",
+    "mocha": "^3.2.0",
+    "require-nocache": "^1.0.0",
+    "solc": "^0.4.8",
+    "temp": "^0.8.3",
+    "uglify": "^0.1.5",
+    "uglify-js": "^2.7.5"
+  }
+}
