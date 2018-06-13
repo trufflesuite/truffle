@@ -1,0 +1,26 @@
+{
+  "name": "truffle-provisioner",
+  "version": "0.1.0",
+  "description": "Provision contract objects for use from multiple sources",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trufflesuite/truffle-provisioner.git"
+  },
+  "keywords": [
+    "ethereum",
+    "truffle",
+    "contracts",
+    "provision"
+  ],
+  "author": "Tim Coulter <tim.coulter@consensys.net>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle-provisioner/issues"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle-provisioner#readme",
+  "dependencies": {}
+}
