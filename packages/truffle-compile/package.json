@@ -1,0 +1,40 @@
+{
+  "name": "truffle-compile",
+  "version": "3.0.11",
+  "description": "Compiler helper and artifact manager",
+  "main": "index.js",
+  "dependencies": {
+    "async": "^2.1.4",
+    "colors": "^1.1.2",
+    "debug": "^3.1.0",
+    "graphlib": "^2.1.1",
+    "solc": "0.4.24",
+    "truffle-config": "^1.0.4",
+    "truffle-contract-sources": "^0.0.1",
+    "truffle-error": "^0.0.2",
+    "truffle-expect": "^0.0.3"
+  },
+  "devDependencies": {
+    "mocha": "^3.5.3",
+    "truffle-resolver": "2.0.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trufflesuite/truffle-compile.git"
+  },
+  "keywords": [
+    "ethereum",
+    "truffle",
+    "compile",
+    "solidity"
+  ],
+  "author": "Tim Coulter <tim.coulter@consensys.net>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle-compile/issues"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle-compile#readme"
+}
