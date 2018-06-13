@@ -44,6 +44,18 @@ Truffle comes bundled with a local development blockchain server that launches a
 
 Please see the [Official Truffle Documentation](http://truffleframework.com/docs/) for guides, tips, and examples.
 
+### Development
+
+We welcome pull requests. To get started just fork this repo, clone it locally and run:
+
+```shell
+# Install
+npm run bootstrap
+
+# Test
+npm test
+```
+
 ### License
 
 MIT
