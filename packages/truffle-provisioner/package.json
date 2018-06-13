@@ -4,7 +4,6 @@
   "description": "Provision contract objects for use from multiple sources",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
   },
   "repository": {
     "type": "git",

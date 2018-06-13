@@ -4,7 +4,6 @@
   "description": "Utility for interacting with truffle.js files",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
   },
   "repository": {
     "type": "git",
