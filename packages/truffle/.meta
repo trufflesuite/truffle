@@ -1,0 +1,28 @@
+{
+  "projects": {
+    "dependencies/reselect-tree": "git@github.com:trufflesuite/reselect-tree.git",
+    "dependencies/truffle-artifactor": "git@github.com:trufflesuite/truffle-artifactor.git",
+    "dependencies/truffle-blockchain-utils": "git@github.com:trufflesuite/truffle-blockchain-utils.git",
+    "dependencies/truffle-box": "git@github.com:trufflesuite/truffle-box.git",
+    "dependencies/truffle-code-utils": "git@github.com:trufflesuite/truffle-code-utils.git",
+    "dependencies/truffle-compile": "git@github.com:trufflesuite/truffle-compile.git",
+    "dependencies/truffle-config": "git@github.com:trufflesuite/truffle-config.git",
+    "dependencies/truffle-contract": "git@github.com:trufflesuite/truffle-contract.git",
+    "dependencies/truffle-contract-schema": "git@github.com:trufflesuite/truffle-contract-schema.git",
+    "dependencies/truffle-contract-sources": "git@github.com:trufflesuite/truffle-contract-sources.git",
+    "dependencies/truffle-core": "git@github.com:trufflesuite/truffle-core.git",
+    "dependencies/truffle-debug-utils": "git@github.com:trufflesuite/truffle-debug-utils.git",
+    "dependencies/truffle-debugger": "git@github.com:trufflesuite/truffle-debugger.git",
+    "dependencies/truffle-deployer": "git@github.com:trufflesuite/truffle-deployer.git",
+    "dependencies/truffle-error": "git@github.com:trufflesuite/truffle-error.git",
+    "dependencies/truffle-expect": "git@github.com:trufflesuite/truffle-expect.git",
+    "dependencies/truffle-init": "git@github.com:trufflesuite/truffle-init.git",
+    "dependencies/truffle-migrate": "git@github.com:trufflesuite/truffle-migrate.git",
+    "dependencies/truffle-provider": "git@github.com:trufflesuite/truffle-provider.git",
+    "dependencies/truffle-provisioner": "git@github.com:trufflesuite/truffle-provisioner.git",
+    "dependencies/truffle-require": "git@github.com:trufflesuite/truffle-require.git",
+    "dependencies/truffle-resolver": "git@github.com:trufflesuite/truffle-resolver.git",
+    "dependencies/truffle-solidity-utils": "git@github.com:trufflesuite/truffle-solidity-utils.git",
+    "dependencies/truffle-workflow-compile": "git@github.com:trufflesuite/truffle-workflow-compile.git"
+  }
+}
