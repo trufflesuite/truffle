@@ -1,0 +1,27 @@
+---
+site_name: Truffle
+repo_url: https://github.com/Consensys/truffle
+site_description: Truffle Documentation
+theme: readthedocs
+extra_css: [extra.css]
+pages:
+- Introduction: 'index.md'
+- Getting Started:
+  - Installation: 'getting_started/installation.md'
+  - Choosing an Ethereum client: 'getting_started/client.md'
+  - Creating a project: 'getting_started/project.md'
+  - Compiling contracts: 'getting_started/compile.md'
+  - Package Management: 'getting_started/packages.md'
+  - Running migrations: 'getting_started/migrations.md'
+  - Building your application: 'getting_started/build.md'
+  - Testing your contracts: 'getting_started/testing.md'
+  - Interacting with your contracts: 'getting_started/contracts.md'
+  - Using the console: 'getting_started/console.md'
+  - Writing external scripts: 'getting_started/scripts.md'
+  - Improving your workflow: 'getting_started/workflow.md'
+  - Contact the developers: 'getting_started/contact.md'
+- Advanced:
+  - Configuration: 'advanced/configuration.md'
+  - Networks & App Deployment: 'advanced/networks.md'
+  - Build Processes: 'advanced/build_processes.md'
+  - Command Reference: 'advanced/commands.md'
