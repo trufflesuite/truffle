@@ -16,7 +16,7 @@ run_geth() {
     --wsorigins '*' \
     --nodiscover \
     --dev \
-    --dev.period 2 \
+    --dev.period 1 \
     --targetgaslimit '7000000' \
     js ./scripts/geth-accounts.js \
     > /dev/null &

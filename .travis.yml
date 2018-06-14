@@ -20,6 +20,7 @@ env:
   - PACKAGES=true
 
 matrix:
+  fast_finish: true
   allow_failures:
     - env: GETH=true
 
