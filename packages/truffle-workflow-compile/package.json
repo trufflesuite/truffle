@@ -2,6 +2,7 @@
   "name": "truffle-workflow-compile",
   "version": "1.0.4",
   "description": "Core workflow behavior for `truffle compile` command",
+  "npmClient": "yarn",
   "dependencies": {
     "async": "^1.4.2",
     "lodash": "^4.5.1",

@@ -3,6 +3,7 @@
   "version": "3.0.5",
   "description": "A contract packager for Ethereum and Javascript",
   "author": "Tim Coulter",
+  "npmClient": "yarn",
   "main": "./index.js",
   "private": false,
   "scripts": {

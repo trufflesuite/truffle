@@ -3,6 +3,7 @@
   "version": "2.0.5",
   "description": "Light deployment module for easily deploying Ethereum contracts",
   "main": "index.js",
+  "npmClient": "yarn",
   "scripts": {
     "test": "mocha"
   },

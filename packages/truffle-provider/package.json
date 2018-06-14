@@ -3,6 +3,7 @@
   "version": "0.0.4",
   "description": "Beefed up provider module for Truffle",
   "main": "index.js",
+  "npmClient": "yarn",
   "scripts": {
     "test": "mocha"
   },

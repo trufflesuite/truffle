@@ -2,6 +2,7 @@
   "name": "truffle-debug-utils",
   "version": "1.0.5",
   "description": "Integration utils for truffle/truffle-debugger",
+  "npmClient": "yarn",
   "dependencies": {
     "async": "^1.4.2",
     "debug": "^3.1.0",

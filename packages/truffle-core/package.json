@@ -3,6 +3,7 @@
   "namespace": "consensys",
   "version": "4.1.11",
   "description": "Core code for Truffle command line tool",
+  "npmClient": "yarn",
   "dependencies": {
     "async": "^1.4.2",
     "chai": "^3.3.0",

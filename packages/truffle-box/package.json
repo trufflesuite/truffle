@@ -3,6 +3,7 @@
   "version": "1.0.5",
   "description": "Truffle project boilerplate utility",
   "main": "box.js",
+  "npmClient": "yarn",
   "scripts": {
     "lint": "eslint ./index.js ./lib || true",
     "test": "mocha"

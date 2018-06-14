@@ -3,6 +3,7 @@
   "namespace": "consensys",
   "version": "4.1.11",
   "description": "Truffle - Simple development framework for Ethereum",
+  "npmClient": "yarn",
   "dependencies": {
     "mocha": "^4.1.0",
     "original-require": "^1.0.1",
