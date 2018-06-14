@@ -33,9 +33,10 @@
     "truffle": "./build/cli.bundled.js"
   },
   "scripts": {
+    "prepare": "npm run build",
     "build": "npm run build-cli",
     "build-cli": "webpack --config ./cli.webpack.config.js",
-    "test": "npm run build-cli && mocha --colors && git checkout -- ./build && echo",
+    "test": "npm run build-cli && mocha --colors",
     "test:ci": "./scripts/test.sh",
     "test:geth": "MAIN_REPO_CI=true npm test"
   },
