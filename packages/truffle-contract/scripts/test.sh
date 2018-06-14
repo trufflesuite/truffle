@@ -2,45 +2,8 @@
 
 set -o errexit
 
-run_geth() {
-  docker run \
-    -v /$PWD/scripts:/scripts \
-    -d \
-    -p 8546:8546 \
-    -p 30303:30303 \
-    ethereum/client-go:latest \
-    --rpccorsdomain '*' \
-    --ws \
-    --wsaddr '0.0.0.0' \
-    --wsorigins '*' \
-    --nodiscover \
-    --dev \
-    --dev.period 2 \
-    --targetgaslimit '7000000' \
-    js ./scripts/geth-accounts.js \
-    > /dev/null &
-}
-
-run_geth_test() {
-  npm install
-  npm run test:geth
-}
-
-run_docker_test() {
-  docker run -it --rm --name ${TEST} \
-    -e TRAVIS_REPO_SLUG \
-    -e TRAVIS_PULL_REQUEST \
-    -e TRAVIS_PULL_REQUEST_SLUG \
-    -e TRAVIS_PULL_REQUEST_BRANCH \
-    -e TRAVIS_BRANCH \
-    -e TEST \
-  truffle/ci:latest run_tests
-}
-
-if [ "$GETH" == "true" ]; then
-  run_geth
-  sleep 30
-  run_geth_test
+if [ "$GETH" == true ]; then
+  mocha --timeout 50000 --grep @geth
 else
-  run_docker_test
+  mocha --no-warnings --timeout 7000
 fi
