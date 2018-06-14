@@ -50,6 +50,8 @@ We welcome pull requests. To get started just fork this repo, clone it locally a
 
 ```shell
 # Install
+npm install -g lerna
+npm install -g yarn
 npm run bootstrap
 
 # Test
