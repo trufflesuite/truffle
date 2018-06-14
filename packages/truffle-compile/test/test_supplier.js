@@ -5,56 +5,56 @@ const assert = require("assert");
 const findCacheDir = require('find-cache-dir');
 const Resolver = require('truffle-resolver');
 const compile = require("../index");
-const CompilerProvider = require('../compilerProvider');
+const CompilerSupplier = require('../compilerSupplier');
 
 
 function waitSecond() {
   return new Promise((resolve, reject) => setTimeout(() => resolve(), 1250));
 }
 
-describe('CompilerProvider', function(){
-  let provider;
+describe('CompilerSupplier', function(){
+  let supplier;
 
   describe('getters', function(){
 
-    before(() => provider = new CompilerProvider());
+    before(() => supplier = new CompilerSupplier());
 
     it('getVersions: should return versions object', async function(){
-      const list = await provider.getVersions();
+      const list = await supplier.getVersions();
       assert(list.releases !== undefined);
     });
 
     it('getVersionUrlSegment: should return a JS file name', async function(){
-      const list = await provider.getVersions();
+      const list = await supplier.getVersions();
 
       let input = '0.4.21';
       let expected = 'soljson-v0.4.21+commit.dfe3193c.js';
 
-      let fileName = await provider.getVersionUrlSegment(input, list);
+      let fileName = await supplier.getVersionUrlSegment(input, list);
       assert(fileName === expected, 'Should locate by version');
 
       input = 'nightly.2018.4.12';
       expected = 'soljson-v0.4.22-nightly.2018.4.12+commit.c3dc67d0.js';
 
-      fileName = await provider.getVersionUrlSegment(input, list);
+      fileName = await supplier.getVersionUrlSegment(input, list);
       assert(fileName === expected, 'Should locate by nightly');
 
       input = 'commit.c3dc67d0';
       expected = 'soljson-v0.4.22-nightly.2018.4.12+commit.c3dc67d0.js';
 
-      fileName = await provider.getVersionUrlSegment(input, list);
+      fileName = await supplier.getVersionUrlSegment(input, list);
       assert(fileName === expected, 'Should locate by commit');
 
       input = '0.4.55.77-fantasy-solc';
       expected = null;
 
-      fileName = await provider.getVersionUrlSegment(input, list);
+      fileName = await supplier.getVersionUrlSegment(input, list);
       assert(fileName === null, 'Should return null if not found')
     });
 
     it('getReleases: should return a `releases` object', async function(){
-      const list = await provider.getVersions();
-      const releases = await provider.getReleases();
+      const list = await supplier.getVersions();
+      const releases = await supplier.getReleases();
       const firstSolc = "0.1.3-nightly.2015.9.25+commit.4457170"
 
       assert(releases.prereleases[0] === firstSolc, 'Should return prereleases');
@@ -62,7 +62,7 @@ describe('CompilerProvider', function(){
     });
 
     it('lists available docker images [ @native ]', async function(){
-      const list = await provider.getDockerTags();
+      const list = await supplier.getDockerTags();
       assert(Array.isArray(list));
       assert(typeof list[0] === 'string');
     })

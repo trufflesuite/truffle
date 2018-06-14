@@ -20,17 +20,17 @@ var command = {
   run: function (options, done) {
     var Config = require("truffle-config");
     var Contracts = require("truffle-workflow-compile");
-    var CompilerProvider = require("truffle-compile").CompilerProvider;
-    var provider = new CompilerProvider();
+    var CompilerSupplier = require("truffle-compile").CompilerSupplier;
+    var supplier = new CompilerSupplier();
 
     var config = Config.detect(options);
 
     (config.list !== undefined)
-      ? command.listVersions(provider, config, done)
+      ? command.listVersions(supplier, config, done)
       : Contracts.compile(config, done);
   },
 
-  listVersions: function(provider, options, done){
+  listVersions: function(supplier, options, done){
     const log = options.logger.log;
     options.list = (options.list.length) ? options.list : "releases";
 
@@ -42,7 +42,7 @@ var command = {
 
     // Docker tags
     if (options.list === 'docker'){
-      return provider
+      return supplier
         .getDockerTags()
         .then(tags => {
           tags.push('See more at: hub.docker.com/r/ethereum/solc/tags/')
@@ -53,7 +53,7 @@ var command = {
     }
 
     // Solcjs releases
-    provider
+    supplier
       .getReleases()
       .then(releases => {
         const shortener = options.all ? null : command.shortener;

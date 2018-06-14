@@ -6,7 +6,7 @@ var fs = require("fs");
 var async = require("async");
 var Profiler = require("./profiler");
 var CompileError = require("./compileerror");
-var CompilerProvider = require("./compilerProvider");
+var CompilerSupplier = require("./compilerSupplier");
 var expect = require("truffle-expect");
 var find_contracts = require("truffle-contract-sources");
 var Config = require("truffle-config");
@@ -116,9 +116,9 @@ var compile = function(sources, options, callback) {
   });
 
   // Load solc module only when compilation is actually required.
-  var provider = new CompilerProvider(options.compiler);
+  var supplier = new CompilerSupplier(options.compiler);
 
-  provider.load().then(solc => {
+  supplier.load().then(solc => {
     var result = solc.compileStandard(JSON.stringify(solcStandardInput));
 
     var standardOutput = JSON.parse(result);
@@ -390,5 +390,5 @@ compile.display = function(paths, options){
   }
 };
 
-compile.CompilerProvider = CompilerProvider;
+compile.CompilerSupplier = CompilerSupplier;
 module.exports = compile;
