@@ -265,10 +265,21 @@ module.exports = {
       // Dequeue all the known paths, generating resolver promises,
       // We'll add paths if we discover external package imports.
       while(allPaths.length){
-        var file = allPaths.shift();
+        var file;
+        var parent = null;
 
+        var candidate = allPaths.shift();
+
+        // Some paths will have been extracted as imports from a file
+        // and have information about their parent location we need to track.
+        if (typeof candidate === 'object'){
+          file = candidate.file;
+          parent = candidate.parent;
+        } else {
+          file = candidate;
+        }
         var promise = new Promise((accept, reject)=> {
-          resolver.resolve(file, null, (err, body, absolutePath, source) => {
+          resolver.resolve(file, parent, (err, body, absolutePath, source) => {
             (err)
               ? reject(err)
               : accept({ file: absolutePath, body: body, source: source });
@@ -298,10 +309,14 @@ module.exports = {
           }
 
           // Detect unknown external packages / add them to the list of files to resolve
-          imports.forEach(item => (!mapping[item]) ? allPaths.push(item) : null)
+          // Keep track of location of this import because we need to report that.
+          imports.forEach(item => {
+            if (!mapping[item])
+              allPaths.push({file: item, parent: result.file});
+          });
         };
         finished()
-      }).catch(err => { throw new Error(err) });
+      }).catch(err => { finished(err) });
     }
 
     async.whilst(

@@ -31,9 +31,7 @@
     ]
   },
   "scripts": {
-    "test": "mocha --invert --grep native --timeout 5000 --compilers js:babel-core/register --require babel-polyfill test",
-    "test:native": "mocha --grep native --timeout 5000 --compilers js:babel-core/register --require babel-polyfill test",
-    "test:ci": "./scripts/ci.sh"
+    "test": "./scripts/test.sh"
   },
   "repository": {
     "type": "git",
