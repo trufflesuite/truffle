@@ -6,7 +6,7 @@ var async = require("async");
 var fs = require("fs");
 var Parser = require("./parser");
 var CompileError = require("./compileerror");
-var CompilerProvider = require("./compilerProvider");
+var CompilerSupplier = require("./compilerSupplier");
 var expect = require("truffle-expect");
 var find_contracts = require("truffle-contract-sources");
 var debug = require("debug")("compile:profiler");
@@ -189,8 +189,8 @@ module.exports = {
       var compilationTargets = [];
 
       // Load compiler
-      var provider = new CompilerProvider(options.compiler)
-      provider.load().then(solc => {
+      var supplier = new CompilerSupplier(options.compiler)
+      supplier.load().then(solc => {
 
         // Get all the source code
         self.resolveAllSources(resolver, allPaths, solc, (err, resolved) => {

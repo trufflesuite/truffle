@@ -12,9 +12,9 @@ const solcWrap = require('./solcWrap.js');
 
 /**
  * Constructor:
- * @param {Object} _config (see `provider.config`)
+ * @param {Object} _config (see `supplier.config`)
  */
-function CompilerProvider(_config){
+function CompilerSupplier(_config){
   _config = _config || {};
   this.config = Object.assign(this.config, _config);
 }
@@ -23,7 +23,7 @@ function CompilerProvider(_config){
  * Default configuration
  * @type {Object}
  */
-CompilerProvider.prototype.config = {
+CompilerSupplier.prototype.config = {
   solc: null,
   versionsUrl: 'https://solc-bin.ethereum.org/bin/list.json',
   compilerUrlRoot: 'https://solc-bin.ethereum.org/bin/',
@@ -32,7 +32,7 @@ CompilerProvider.prototype.config = {
 }
 
 
-CompilerProvider.prototype.cachePath = findCacheDir({
+CompilerSupplier.prototype.cachePath = findCacheDir({
   name: 'truffle',
   cwd: __dirname,
   create: true,
@@ -53,7 +53,7 @@ CompilerProvider.prototype.cachePath = findCacheDir({
  *
  * @return {Module|Object}         solc
  */
-CompilerProvider.prototype.load = function(){
+CompilerSupplier.prototype.load = function(){
   const self = this;
   const solc = self.config.solc;
   const isNative = self.config.solc === 'native';
@@ -82,7 +82,7 @@ CompilerProvider.prototype.load = function(){
  * ```
  * @return {Object} See above
  */
-CompilerProvider.prototype.getReleases = function(){
+CompilerSupplier.prototype.getReleases = function(){
   return this
     .getVersions()
     .then(list => {
@@ -108,7 +108,7 @@ CompilerProvider.prototype.getReleases = function(){
  * Fetches the first page of docker tags for the the ethereum/solc image
  * @return {Object} tags
  */
-CompilerProvider.prototype.getDockerTags = function(){
+CompilerSupplier.prototype.getDockerTags = function(){
   const self = this;
 
   return request(self.config.dockerTagsUrl)
@@ -128,7 +128,7 @@ CompilerProvider.prototype.getDockerTags = function(){
  * Gets solc from `node_modules`.`
  * @return {Module} solc
  */
-CompilerProvider.prototype.getDefault = function(){
+CompilerSupplier.prototype.getDefault = function(){
   const compiler = require('solc');
   this.removeListener();
   return compiler;
@@ -139,7 +139,7 @@ CompilerProvider.prototype.getDefault = function(){
  * @param  {String} localPath
  * @return {Module}
  */
-CompilerProvider.prototype.getLocal = function(localPath){
+CompilerSupplier.prototype.getLocal = function(localPath){
   const self = this;
   let compiler;
 
@@ -161,7 +161,7 @@ CompilerProvider.prototype.getLocal = function(localPath){
  * same.
  * @return {Object} versions
  */
-CompilerProvider.prototype.getVersions = function(){
+CompilerSupplier.prototype.getVersions = function(){
   const self = this;
 
   return request(self.config.versionsUrl)
@@ -177,7 +177,7 @@ CompilerProvider.prototype.getVersions = function(){
  * @param  {Object} allVersions     (see `getVersions`)
  * @return {String} url             ex: "soljson-v0.4.21+commit.dfe3193c.js"
  */
-CompilerProvider.prototype.getVersionUrlSegment = function(version, allVersions){
+CompilerSupplier.prototype.getVersionUrlSegment = function(version, allVersions){
 
   if (allVersions.releases[version]) return allVersions.releases[version];
 
@@ -201,7 +201,7 @@ CompilerProvider.prototype.getVersionUrlSegment = function(version, allVersions)
  * @param  {String} version ex: "0.4.1", "0.4.16-nightly.2017.8.9+commit.81887bc7"
  * @return {Module}         solc
  */
-CompilerProvider.prototype.getByUrl = function(version){
+CompilerSupplier.prototype.getByUrl = function(version){
   const self = this;
 
   return self
@@ -230,7 +230,7 @@ CompilerProvider.prototype.getByUrl = function(version){
  * or natively build solc. Also fetches a companion solcjs for the built js to parse imports
  * @return {Object} solc output
  */
-CompilerProvider.prototype.getBuilt = function(buildType){
+CompilerSupplier.prototype.getBuilt = function(buildType){
   let versionString;
   let command;
 
@@ -265,7 +265,7 @@ CompilerProvider.prototype.getBuilt = function(buildType){
  * @param  {String}  localPath
  * @return {Boolean}
  */
-CompilerProvider.prototype.isLocal = function(localPath){
+CompilerSupplier.prototype.isLocal = function(localPath){
   return fs.existsSync(localPath) || path.isAbsolute(localPath);
 }
 
@@ -276,7 +276,7 @@ CompilerProvider.prototype.isLocal = function(localPath){
  * @return {String}  solc version string
  * @throws {Error}
  */
-CompilerProvider.prototype.validateDocker = function(){
+CompilerSupplier.prototype.validateDocker = function(){
   const image = this.config.solc;
   const fileName = image + '.version';
 
@@ -317,7 +317,7 @@ CompilerProvider.prototype.validateDocker = function(){
  * @return {String}  solc version string
  * @throws {Error}
  */
-CompilerProvider.prototype.validateNative = function(){
+CompilerSupplier.prototype.validateNative = function(){
   let version;
   try {
     version = child.execSync('solc --version');
@@ -335,7 +335,7 @@ CompilerProvider.prototype.validateNative = function(){
  * @param  {String} versionString   version info from ex: `solc -v`
  * @return {String}                 commit key, ex: commit.4cb486ee
  */
-CompilerProvider.prototype.getCommitFromVersion = function(versionString){
+CompilerSupplier.prototype.getCommitFromVersion = function(versionString){
   return 'commit.' + versionString.match(/commit\.(.*?)\./)[1]
 }
 
@@ -345,7 +345,7 @@ CompilerProvider.prototype.getCommitFromVersion = function(versionString){
  * @param  {Buffer} version result of childprocess
  * @return {String}         normalized version string: e.g 0.4.22+commit.4cb486ee.Linux.g++
  */
-CompilerProvider.prototype.normalizeVersion = function(version){
+CompilerSupplier.prototype.normalizeVersion = function(version){
   version = String(version);
   return version.split(':')[1].trim();
 }
@@ -356,7 +356,7 @@ CompilerProvider.prototype.normalizeVersion = function(version){
  * @param  {String} fileName ex: "soljson-v0.4.21+commit.dfe3193c.js"
  * @return {String}          path
  */
-CompilerProvider.prototype.resolveCache = function(fileName){
+CompilerSupplier.prototype.resolveCache = function(fileName){
   const thunk = findCacheDir({name: 'truffle', cwd: __dirname, thunk: true});
   return thunk(fileName);
 }
@@ -366,7 +366,7 @@ CompilerProvider.prototype.resolveCache = function(fileName){
  * @param  {String}  fileName   ex: "soljson-v0.4.21+commit.dfe3193c.js"
  * @return {Boolean}
  */
-CompilerProvider.prototype.isCached = function(fileName){
+CompilerSupplier.prototype.isCached = function(fileName){
   const file = this.resolveCache(fileName);
   return fs.existsSync(file);
 }
@@ -377,7 +377,7 @@ CompilerProvider.prototype.isCached = function(fileName){
  * @param {String} code       JS code string downloaded from solc-bin
  * @param {String} fileName   ex: "soljson-v0.4.21+commit.dfe3193c.js"
  */
-CompilerProvider.prototype.addToCache = function(code, fileName){
+CompilerSupplier.prototype.addToCache = function(code, fileName){
   if (!this.config.cache) return;
 
   const filePath = this.resolveCache(fileName);
@@ -389,7 +389,7 @@ CompilerProvider.prototype.addToCache = function(code, fileName){
  * @param  {String} file  ex: "soljson-v0.4.21+commit.dfe3193c.js"
  * @return {Module}       solc
  */
-CompilerProvider.prototype.getFromCache = function(fileName){
+CompilerSupplier.prototype.getFromCache = function(fileName){
   const filePath = this.resolveCache(fileName);
   const soljson = originalRequire(filePath);
   const wrapped = solcWrap(soljson);
@@ -402,7 +402,7 @@ CompilerProvider.prototype.getFromCache = function(fileName){
  * @param  {String} code JS code
  * @return {Module}      solc
  */
-CompilerProvider.prototype.compilerFromString = function(code){
+CompilerSupplier.prototype.compilerFromString = function(code){
   const soljson = requireFromString(code);
   const wrapped = solcWrap(soljson);
   this.removeListener();
@@ -413,7 +413,7 @@ CompilerProvider.prototype.compilerFromString = function(code){
  * Cleans up error listeners set (by solc?) when requiring it. (This code inherited from
  * previous implementation, note to self - ask Tim about this)
  */
-CompilerProvider.prototype.removeListener = function(){
+CompilerSupplier.prototype.removeListener = function(){
   const listeners = process.listeners("uncaughtException");
   const execeptionHandler = listeners[listeners.length - 1];
 
@@ -429,7 +429,7 @@ CompilerProvider.prototype.removeListener = function(){
  * @param  {Object} err   [optional] additional error associated with this error
  * @return {Error}
  */
-CompilerProvider.prototype.errors = function(kind, input, err){
+CompilerSupplier.prototype.errors = function(kind, input, err){
   const info = 'Run `truffle compile --list` to see available versions.'
 
   const kinds = {
@@ -452,4 +452,4 @@ CompilerProvider.prototype.errors = function(kind, input, err){
   return new Error(kinds[kind]);
 }
 
-module.exports = CompilerProvider;
+module.exports = CompilerSupplier;

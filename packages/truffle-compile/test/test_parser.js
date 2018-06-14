@@ -1,7 +1,7 @@
 var fs = require("fs");
 var path = require("path");
 var Parser = require("../parser");
-var CompilerProvider = require("../compilerProvider")
+var CompilerSupplier = require("../compilerSupplier")
 var assert = require("assert");
 
 describe("Parser", function() {
@@ -13,8 +13,8 @@ describe("Parser", function() {
     source = fs.readFileSync(path.join(__dirname, "./mock/MyContract.sol"), "utf-8");
     erroneousSource = fs.readFileSync(path.join(__dirname, "./mock/ShouldError.sol"), "utf-8");
 
-    const provider = new CompilerProvider();
-    solc = await provider.load();
+    const supplier = new CompilerSupplier();
+    solc = await supplier.load();
   });
 
   it("should return correct imports", function() {
