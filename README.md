@@ -1,7 +1,7 @@
 <img src="http://truffleframework.com/docs/img/logo.png" width="200">
 
-+[![npm](https://img.shields.io/npm/v/truffle.svg)](https://www.npmjs.com/package/truffle)
-+[![npm](https://img.shields.io/npm/dm/truffle.svg)](https://www.npmjs.com/package/truffle)
+[![npm](https://img.shields.io/npm/v/truffle.svg)](https://www.npmjs.com/package/truffle)
+[![npm](https://img.shields.io/npm/dm/truffle.svg)](https://www.npmjs.com/package/truffle)
 [![Join the chat at https://gitter.im/consensys/truffle](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/consensys/truffle?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 -----------------------
@@ -46,7 +46,7 @@ Please see the [Official Truffle Documentation](http://truffleframework.com/docs
 
 ### Development
 
-We welcome pull requests. To get started just fork this repo, clone it locally and run:
+We welcome pull requests. To get started, just fork this repo, clone it locally, and run:
 
 ```shell
 # Install
