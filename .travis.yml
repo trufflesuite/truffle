@@ -7,6 +7,10 @@ services:
 
 before_install:
   - docker pull ethereum/client-go:latest
+  - docker pull ethereum/solc:0.4.22
+  - sudo add-apt-repository --yes ppa:ethereum/ethereum
+  - sudo apt-get update
+  - sudo apt-get install solc
 
 matrix:
   fast_finish: true
