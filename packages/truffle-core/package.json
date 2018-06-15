@@ -12,7 +12,7 @@
     "debug": "^3.1.0",
     "del": "^2.2.0",
     "diff": "1.4.0",
-    "ethpm": "0.0.15",
+    "ethpm": "0.0.16",
     "ethpm-registry": "0.0.10",
     "finalhandler": "^0.4.0",
     "fs-extra": "^2.0.0",
