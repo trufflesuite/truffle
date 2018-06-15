@@ -3,6 +3,7 @@
   "version": "2.0.6",
   "description": "On-chain migrations management",
   "main": "index.js",
+  "npmClient": "yarn",
   "scripts": {
   },
   "repository": {

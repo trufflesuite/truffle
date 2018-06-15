@@ -3,6 +3,7 @@
   "version": "1.0.4",
   "description": "Utility for interacting with truffle.js files",
   "main": "index.js",
+  "npmClient": "yarn",
   "scripts": {
   },
   "repository": {

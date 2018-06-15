@@ -3,6 +3,7 @@
   "version": "3.0.11",
   "description": "Compiler helper and artifact manager",
   "main": "index.js",
+  "npmClient": "yarn",
   "dependencies": {
     "async": "^2.1.4",
     "colors": "^1.1.2",

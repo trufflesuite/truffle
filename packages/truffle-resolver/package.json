@@ -3,6 +3,7 @@
   "version": "4.0.3",
   "description": "Resolve contract dependencies given multiple configurable dependency sources",
   "main": "index.js",
+  "npmClient": "yarn",
   "scripts": {
   },
   "repository": {

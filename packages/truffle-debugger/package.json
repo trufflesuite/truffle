@@ -3,6 +3,7 @@
   "version": "4.0.0",
   "description": "Core functionality for debugging Solidity files built with Truffle",
   "main": "dist/debugger.js",
+  "npmClient": "yarn",
   "scripts": {
     "docs": "esdoc",
     "prepare": "npm run build",
