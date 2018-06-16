@@ -24,5 +24,8 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle-workflow-compile/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-workflow-compile#readme"
+  "homepage": "https://github.com/trufflesuite/truffle-workflow-compile#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }

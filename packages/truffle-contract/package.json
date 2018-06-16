@@ -44,5 +44,8 @@
     "temp": "^0.8.3",
     "uglify": "^0.1.5",
     "uglify-js": "^2.7.5"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

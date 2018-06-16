@@ -55,5 +55,8 @@
       "email": "tim@timothyjcoulter.com",
       "url": "https://github.com/tcoulter"
     }
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }

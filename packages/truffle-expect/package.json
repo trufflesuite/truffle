@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle-expect/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-expect#readme"
+  "homepage": "https://github.com/trufflesuite/truffle-expect#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }
