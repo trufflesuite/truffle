@@ -46,7 +46,7 @@ var command = {
         .getDockerTags()
         .then(tags => {
           tags.push('See more at: hub.docker.com/r/ethereum/solc/tags/')
-          log(format(tags));
+          log(format(tags, null, ' '));
           done();
         })
         .catch(done);
