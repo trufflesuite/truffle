@@ -19,7 +19,7 @@ function processErr(err, output){
   }
 }
 
-describe("migrate (sync)", function() {
+describe("migrate (dry-run)", function() {
   let config;
   let web3;
   let networkId;
@@ -43,40 +43,23 @@ describe("migrate (sync)", function() {
     networkId = await web3.eth.net.getId();
   });
 
-  it("runs migrations (sync & async/await)", function(done) {
+  it('does a dry-run with the dry-run option', function(done){
     this.timeout(20000);
 
-    CommandRunner.run("migrate", config, err => {
+    CommandRunner.run("migrate --dry-run", config, err => {
       const output = logger.contents();
       processErr(err, output);
 
+      assert(output.includes('Migrations'));
+      assert(output.includes('development-fork'))
       assert(output.includes('2_migrations_sync.js'));
       assert(output.includes("Deploying 'UsesExample'"))
       assert(output.includes('3_migrations_async.js'));
       assert(output.includes("Replacing 'UsesExample'"))
+      assert(output.includes('Total deployments'));
 
       const location = path.join(config.contracts_build_directory, "UsesExample.json");
-      const artifact = require(location);
-      const network = artifact.networks[networkId];
 
-      assert(output.includes(network.transactionHash));
-      assert(output.includes(network.address));
-
-      console.log(output)
-      done();
-    })
-  });
-
-  it('forces a migration with the -f option', function(done){
-    this.timeout(20000);
-
-    CommandRunner.run("migrate -f 3", config, err => {
-      const output = logger.contents();
-      processErr(err, output);
-      assert(!output.includes('2_migrations_sync.js'));
-      assert(output.includes('3_migrations_async.js'));
-      assert(output.includes("Replacing 'IsLibrary'"))
-      assert(output.includes("Replacing 'UsesLibrary'"));
       console.log(output)
       done();
     })

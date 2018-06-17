@@ -69,6 +69,7 @@ var command = {
     }
 
     function runMigrations(callback) {
+
       if (options.f) {
         Migrate.runFrom(options.f, config, done);
       } else {
@@ -93,18 +94,10 @@ var command = {
 
         var dryRun = options.dryRun === true;
 
-        var networkMessage = "Using network '" + config.network + "'";
-
-        if (dryRun) {
-          networkMessage += " (dry run)";
-        }
-
-        config.logger.log(networkMessage + "." + OS.EOL);
-
         if (dryRun) {
           setupDryRunEnvironmentThenRunMigrations(done);
         } else {
-          runMigrations(done);
+          runMigrations(true, done);
         }
       });
     });

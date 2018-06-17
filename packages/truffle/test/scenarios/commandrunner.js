@@ -8,7 +8,7 @@ module.exports = {
 
     (process.env.NO_BUILD)
       ? execString = "node " +
-                     path.join(__dirname, "../", "../", "node_modules",
+                     path.join(__dirname, "../", "../", "../",
                                "truffle-core", "cli.js") +
                      " " + command
 

@@ -13,14 +13,18 @@ const Require = require("truffle-require");
 const ResolverIntercept = require("./resolverintercept");
 const Reporter = require("./reporter/reporter");
 
+const util = require('util');
+
 class Migration {
 
-  constructor(file){
+  constructor(file, options){
     this.file = path.resolve(file);
     this.number = parseInt(path.basename(file));
     this.emitter = new Emittery();
     this.isFirst = false;
     this.isLast = false;
+    this.options = options || {};
+
   }
 
   async run(options, callback) {
@@ -142,7 +146,7 @@ const Migrate = {
       let migrations = files
         .filter(file => isNaN(parseInt(path.basename(file))) == false)
         .filter(file => path.extname(file).match(options.allowed_extensions) != null)
-        .map(file => new Migration(file, options.network));
+        .map(file => new Migration(file, options));
 
       // Make sure to sort the prefixes as numbers and not strings.
       migrations = migrations.sort((a, b) => {

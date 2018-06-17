@@ -88,7 +88,7 @@ var Environment = {
 
     var web3 = new Web3(config.provider);
 
-    web3.eth.getAccounts.then(accounts => {
+    web3.eth.getAccounts().then(accounts => {
 
       var upstreamNetwork = config.network;
       var upstreamConfig = config.networks[upstreamNetwork];

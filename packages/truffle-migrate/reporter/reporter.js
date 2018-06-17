@@ -17,6 +17,10 @@ class Reporter {
     this.finalCostTotal = new web3Utils.BN(0);
     this.deployments = 0;
     this.separator = '\n';
+    this.summary = [];
+    this.dryRun = migration.options.dryRun;
+    this.interactive = migration.options.interactive;
+    this.currentFileIndex = -1;
     this.listen();
   }
 
@@ -60,6 +64,14 @@ class Reporter {
       message = this.messages('firstMigrate', data);
       this.deployer.logger.log(message);
     }
+
+    this.summary.push({
+      file: data.file,
+      deployments: [],
+    });
+
+    this.currentFileIndex++;
+
     message = this.messages('preMigrate', data);
     this.deployer.logger.log(message);
   }
@@ -70,16 +82,27 @@ class Reporter {
   }
 
   async postMigrate(isLast){
-    let message = this.messages('postMigrate');
+    let data = {};
+    data.cost = this.getTotals().cost;
+    this.summary[this.currentFileIndex].totalCost = data.cost;
+
+    let message = this.messages('postMigrate', data);
     this.deployer.logger.log(message);
 
     if (isLast){
-      message = this.messages('lastMigrate');
+      data.totalDeployments = this.getTotals().deployments;
+      data.finalCost = this.getTotals().finalCost;
+
+      this.summary.totalDeployments = data.totalDeployments;
+      this.summary.finalCost = data.finalCost;
+
+      message = this.messages('lastMigrate', data);
       this.deployer.logger.log(message);
     }
   }
 
   async migrationError(data){
+    this.summary[this.currentFileIndex].errored = true;
     const message = this.messages('migrateErr', data);
     this.deployer.logger.log(message);
   }
@@ -104,6 +127,7 @@ class Reporter {
       const gas = new web3Utils.BN(data.receipt.gasUsed);
       const cost = gasPrice.mul(gas);
 
+      data.gasPrice = web3Utils.fromWei(gasPrice, 'gwei');
       data.gas = data.receipt.gasUsed;
       data.from = tx.from;
       data.cost = web3Utils.fromWei(cost, 'ether');
@@ -114,6 +138,7 @@ class Reporter {
       this.currentAddress = this.from;
       this.deployments++;
 
+      this.summary[this.currentFileIndex].deployments.push(data);
       message = this.messages('deployed', data);
     } else {
       message = this.messages('notDeployed', data);
@@ -174,7 +199,7 @@ class Reporter {
 
   underline(msg){
     return (typeof msg === 'number')
-      ? `\n   ${'-'.repeat(msg)}`
+      ? `   ${'-'.repeat(msg)}`
       : `\n   ${msg}\n   ${'-'.repeat(msg.length)}`;
   }
 
@@ -184,7 +209,7 @@ class Reporter {
   }
 
   messages(kind, data){
-    //console.log('data --> ' + util.format("%O", data));
+    const self = this;
 
     const prefix = '\nError:';
     const kinds = {
@@ -300,44 +325,80 @@ class Reporter {
       many:         () =>
         this.underline(`Deploying Batch`),
 
-      linking:      () =>
-        this.underline(`Linking`) +
-        `\n   * Contract: ${data.contractName} <--> Library: ${data.libraryName} `+
-        `(at address: ${data.libraryAddress})`,
+      linking:      () => {
+        let output = this.underline(`Linking`) +
+        `\n   * Contract: ${data.contractName} <--> Library: ${data.libraryName} `;
+
+        if(!self.dryRun)
+          output +=`(at address: ${data.libraryAddress})`;
+
+        return output;
+      },
 
       preMigrate:   () =>
         this.doubleline(`${data.file}`),
 
-      saving:       () =>
-        `\n   * Saving migration`,
+      saving:       () => {
+        return (!self.dryRun)
+          ? `\n   * Saving migration`
+          : '';
+      },
 
-      firstMigrate: () =>
-        this.doubleline(`Starting migrations...`) + '\n' +
-        `> Network name: '${data.network}'\n` +
-        `> Network id:   ${data.networkId}\n`,
+      firstMigrate: () => {
+        let output;
+        (self.dryRun)
+          ? output = this.doubleline(`Migrations dry-run (simulation)`) + '\n'
+          : output = this.doubleline(`Starting migrations...`) + '\n';
 
-      postMigrate:  () =>
-        `   * Saving artifacts` +
-        this.underline(18) + '\n' +
-        `   > ${'Total cost:'.padEnd(15)} ${this.getTotals().cost.padStart(15)} ETH\n`,
+
+        output +=
+          `> Network name: '${data.network}'\n` +
+          `> Network id:   ${data.networkId}\n`;
+
+        return output;
+      },
+
+      postMigrate:  () => {
+        let output = '';
+
+        if (!self.dryRun)
+          output += `   * Saving artifacts\n`;
+
+        output += this.underline(37) + '\n' +
+          `   > ${'Total cost:'.padEnd(15)} ${data.cost.padStart(15)} ETH\n`;
+
+        return output;
+      },
 
       lastMigrate: () =>
         this.doubleline('Summary') + '\n' +
-        `> ${'TotalDeployments:'.padEnd(20)} ${this.getTotals().deployments}\n` +
-        `> ${'Final cost:'.padEnd(20)} ${this.getTotals().finalCost} ETH\n`,
+        `> ${'Total deployments:'.padEnd(20)} ${data.totalDeployments}\n` +
+        `> ${'Final cost:'.padEnd(20)} ${data.finalCost} ETH\n`,
 
-      deployed:     () =>
-        `   > ${'contract address:'.padEnd(20)} ${data.receipt.contractAddress}\n` +
-        `   > ${'account:'.padEnd(20)} ${data.from}\n` +
-        `   > ${'cost:'.padEnd(20)} ${data.cost} ETH\n` +
-        `   > ${'balance:'.padEnd(20)} ${data.balance}\n` +
-        `   > ${'gas used:'.padEnd(20)} ${data.gas}\n`,
+      deployed:     () => {
+        let output = '';
+
+        if(!self.dryRun) output +=
+          `   > ${'contract address:'.padEnd(20)} ${data.receipt.contractAddress}\n`;
+
+        output +=
+          `   > ${'account:'.padEnd(20)} ${data.from}\n` +
+          `   > ${'balance:'.padEnd(20)} ${data.balance}\n` +
+          `   > ${'cost:'.padEnd(20)} ${data.cost} ETH\n` +
+          `   > ${'gas used:'.padEnd(20)} ${data.gas}\n` +
+          `   > ${'gas price:'.padEnd(20)} ${data.gasPrice} gwei\n`;
+
+        return output;
+      },
 
       listMany:     () =>
         `   * ${data.contractName}`,
 
-      hash:         () =>
-        `   > ${'transaction hash:'.padEnd(20)} ` + data.transactionHash,
+      hash:         () => {
+        return (!self.dryRun)
+          ? `   > ${'transaction hash:'.padEnd(20)} ` + data.transactionHash
+          : ''
+      },
 
       receipt:      () =>
         `   > ${'gas usage:'.padEnd(20)} ` + data.gas,
