@@ -22,5 +22,8 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle-solidity-utils#readme",
   "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {},
+  "publishConfig": {
+    "access": "public"
+  }
 }

@@ -31,5 +31,8 @@
     "ganache-cli": "6.0.3",
     "mocha": "^3.2.0",
     "web3": "^0.20.1"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

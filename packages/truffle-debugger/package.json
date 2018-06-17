@@ -71,5 +71,8 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle-debugger/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-debugger#readme"
+  "homepage": "https://github.com/trufflesuite/truffle-debugger#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }

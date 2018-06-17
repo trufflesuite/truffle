@@ -21,5 +21,8 @@
     "url": "https://github.com/trufflesuite/truffle-provisioner/issues"
   },
   "homepage": "https://github.com/trufflesuite/truffle-provisioner#readme",
-  "dependencies": {}
+  "dependencies": {},
+  "publishConfig": {
+    "access": "public"
+  }
 }

@@ -36,5 +36,8 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle-compile/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-compile#readme"
+  "homepage": "https://github.com/trufflesuite/truffle-compile#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }
