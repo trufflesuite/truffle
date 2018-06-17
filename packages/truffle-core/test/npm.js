@@ -28,7 +28,8 @@ describe('NPM integration', function() {
       };
       config.network = "development";
 
-      fs.writeFile(path.join(config.contracts_directory, "Parent.sol"), parentContractSource, {encoding: "utf8"}, done());
+      fs.writeFileSync(path.join(config.contracts_directory, "Parent.sol"), parentContractSource, {encoding: "utf8"});
+      done();
     });
   });
 
