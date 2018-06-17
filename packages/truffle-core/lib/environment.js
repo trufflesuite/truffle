@@ -100,7 +100,9 @@ var Environment = {
           fork: config.provider,
           unlocked_accounts: accounts
         }),
-        from: config.from
+        from: config.from,
+        gas: upstreamConfig.gas,
+        gasPrice: upstreamConfig.gasPrice
       }
       config.network = forkedNetwork;
 
