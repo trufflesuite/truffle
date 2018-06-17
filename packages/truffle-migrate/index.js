@@ -17,8 +17,9 @@ const util = require('util');
 
 class Migration {
 
-  constructor(file, options){
+  constructor(file, reporter, options){
     this.file = path.resolve(file);
+    this.reporter = reporter;
     this.number = parseInt(path.basename(file));
     this.emitter = new Emittery();
     this.isFirst = false;
@@ -54,7 +55,10 @@ class Migration {
       basePath: path.dirname(self.file)
     });
 
-    const reporter = new Reporter(deployer, self);
+    this.reporter.migration = self;
+    this.reporter.deployer = deployer;
+    this.reporter.listen();
+
     const file = path.relative(options.migrations_directory, self.file)
 
     const preMigrationsData = {
@@ -136,6 +140,7 @@ class Migration {
 
 const Migrate = {
   Migration: Migration,
+  reporter: new Reporter(),
 
   assemble: function(options, callback) {
     dir.files(options.migrations_directory, function(err, files) {
@@ -146,7 +151,7 @@ const Migrate = {
       let migrations = files
         .filter(file => isNaN(parseInt(path.basename(file))) == false)
         .filter(file => path.extname(file).match(options.allowed_extensions) != null)
-        .map(file => new Migration(file, options));
+        .map(file => new Migration(file, Migrate.reporter, options));
 
       // Make sure to sort the prefixes as numbers and not strings.
       migrations = migrations.sort((a, b) => {

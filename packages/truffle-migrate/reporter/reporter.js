@@ -7,21 +7,18 @@ const web3Utils = require('web3-utils');
 const spinner = require('./indentedSpinner');
 
 class Reporter {
-  constructor(deployer, migration){
+  constructor(){
     this.deployingMany = false;
     this.logConfirmations = false;
-    this.deployer = deployer;
-    this.migration = migration;
+    this.deployer = null;
+    this.migration = null;
     this.currentGasTotal = 0;
     this.currentCostTotal = new web3Utils.BN(0);
     this.finalCostTotal = new web3Utils.BN(0);
     this.deployments = 0;
     this.separator = '\n';
     this.summary = [];
-    this.dryRun = migration.options.dryRun;
-    this.interactive = migration.options.interactive;
     this.currentFileIndex = -1;
-    this.listen();
   }
 
   listen(){
@@ -329,7 +326,7 @@ class Reporter {
         let output = this.underline(`Linking`) +
         `\n   * Contract: ${data.contractName} <--> Library: ${data.libraryName} `;
 
-        if(!self.dryRun)
+        if(!self.migration.dryRun)
           output +=`(at address: ${data.libraryAddress})`;
 
         return output;
@@ -339,14 +336,14 @@ class Reporter {
         this.doubleline(`${data.file}`),
 
       saving:       () => {
-        return (!self.dryRun)
+        return (!self.migration.dryRun)
           ? `\n   * Saving migration`
           : '';
       },
 
       firstMigrate: () => {
         let output;
-        (self.dryRun)
+        (self.migration.dryRun)
           ? output = this.doubleline(`Migrations dry-run (simulation)`) + '\n'
           : output = this.doubleline(`Starting migrations...`) + '\n';
 
@@ -361,7 +358,7 @@ class Reporter {
       postMigrate:  () => {
         let output = '';
 
-        if (!self.dryRun)
+        if (!self.migration.dryRun)
           output += `   * Saving artifacts\n`;
 
         output += this.underline(37) + '\n' +
@@ -378,7 +375,7 @@ class Reporter {
       deployed:     () => {
         let output = '';
 
-        if(!self.dryRun) output +=
+        if(!self.migration.dryRun) output +=
           `   > ${'contract address:'.padEnd(20)} ${data.receipt.contractAddress}\n`;
 
         output +=
@@ -395,7 +392,7 @@ class Reporter {
         `   * ${data.contractName}`,
 
       hash:         () => {
-        return (!self.dryRun)
+        return (!self.migration.dryRun)
           ? `   > ${'transaction hash:'.padEnd(20)} ` + data.transactionHash
           : ''
       },
