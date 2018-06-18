@@ -23,7 +23,6 @@ var execute = {
       web3.eth
         .estimateGas(params)
         .then(gas => {
-
           // Always prefer specified gas - this includes gas set by class_defaults
           if (params.gas)           return accept({gas: params.gas, error: null});
           if (!constructor.autoGas) return accept({gas: null, error: null});
@@ -82,7 +81,7 @@ var execute = {
     if (err && err.results){
       const hash = Object.keys(err.results)[0];
 
-      if (err.results[hash].return.includes('0x08c379a0')){
+      if (err.results[hash].return && err.results[hash].return.includes('0x08c379a0')){
         return web3.eth.abi.decodeParameter('string', err.results[hash].return.slice(10))
       }
     }
