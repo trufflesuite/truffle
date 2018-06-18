@@ -310,6 +310,20 @@ describe("Methods", function() {
     });
   });
 
+  describe('revert with reason (ganache only)', function(){
+    it("errors with receipt and revert message", async function(){
+      const example = await Example.new(1)
+      try {
+        await example.triggerRequireWithReasonError();
+        assert.fail();
+      } catch(e){
+        assert(e.reason === 'reasonstring');
+        assert(e.message.includes('revert'));
+        assert(parseInt(e.receipt.status, 16) == 0)
+      };
+    });
+  })
+
   // This doesn't work on geth --dev because chainId is too high: 1337? Apparently
   // not configurable. Might work on a sub 100 id.
   describe.skip('web3 wallet', function(){

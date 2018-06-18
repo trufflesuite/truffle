@@ -12,6 +12,7 @@ contract Example {
   constructor(uint val) {
     // Constructor revert
     require(val != 13);
+    require(val != 2001, 'reasonstring');
 
     // Expensive deployment
     if(val >= 50){
@@ -86,6 +87,10 @@ contract Example {
 
   function triggerAssertError() {
     assert(false);
+  }
+
+  function triggerRequireWithReasonError(){
+    require(false, 'reasonstring');
   }
 
   function runsOutOfGas() {

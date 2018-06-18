@@ -1,4 +1,6 @@
 var Web3PromiEvent = require('web3-core-promievent');
+var abi = require('ethereumjs-abi');
+
 var EventEmitter = require('events');
 var utils = require("./utils");
 var StatusError = require("./statuserror");
@@ -20,23 +22,30 @@ var execute = {
     var web3 = this.web3;
 
     return new Promise(function(accept, reject){
-      // Always prefer specified gas - this includes gas set by class_defaults
-      if (params.gas)           return accept(params.gas);
-      if (!constructor.autoGas) return accept();
-
       web3.eth
         .estimateGas(params)
         .then(gas => {
+
+          // Always prefer specified gas - this includes gas set by class_defaults
+          if (params.gas)           return accept({gas: params.gas, error: null});
+          if (!constructor.autoGas) return accept({gas: null, error: null});
+
           var bestEstimate = Math.floor(constructor.gasMultiplier * gas);
 
           // Don't go over blockLimit
           (bestEstimate >= blockLimit)
-            ? accept(blockLimit - 1)
-            : accept(bestEstimate);
+            ? accept({gas: blockLimit - 1, error: null})
+            : accept({gas: bestEstimate, error: null});
 
-        // We need to let txs that revert through.
-        // Often that's exactly what you are testing.
-        }).catch(err => accept());
+        // If there's reason string in the revert and the client is ganache
+        // we can extract it here - this is a `.call`
+        }).catch(err => {
+          err.reason = execute.extractReason(err, web3);
+
+          (params.gas)
+            ? accept({gas: params.gas, error: err})
+            : accept({gas: null, error: err})
+        });
     })
   },
 
@@ -63,6 +72,22 @@ var execute = {
    */
   hasTxParams: function(arg){
     return utils.is_object(arg) && !utils.is_big_number(arg);
+  },
+
+  /**
+   * Processes .call/.estimateGas errors and extracts a reason string if
+   *
+   * @param  {[type]} err [description]
+   * @return {[type]}     [description]
+   */
+  extractReason(err, web3){
+    if (err && err.results){
+      const hash = Object.keys(err.results)[0];
+
+      if (err.results[hash].return.includes('0x08c379a0')){
+        return web3.eth.abi.decodeParameter('string', err.results[hash].return.slice(10))
+      }
+    }
   },
 
   /**
@@ -131,6 +156,7 @@ var execute = {
       var args = Array.prototype.slice.call(arguments);
       var params = utils.getTxParams.call(constructor, args);
       var promiEvent = new Web3PromiEvent();
+      var reason;
 
       var context = {
         contract: constructor,   // Can't name this field `constructor` or `_constructor`
@@ -145,10 +171,21 @@ var execute = {
         execute
           .getGasEstimate
           .call(constructor, params, network.blockLimit)
-          .then(gas => {
-            params.gas = gas
+          .then(result => {
+            (result.error)
+              ? context.reason = result.error.reason
+              : context.reason = null;
+
+            params.gas = result.gas || undefined;
             deferred = web3.eth.sendTransaction(params);
-            deferred.catch(override.start.bind(constructor, context));
+
+            // vmErrorsOnResponse path. Client emulator will
+            // reject via the receipt handler
+            deferred.catch(err => {
+              err.reason = result.error.reason;
+              override.start.call(constructor, context, err)
+            });
+
             handlers.setup(deferred, context);
           })
           .catch(promiEvent.reject)
@@ -173,6 +210,7 @@ var execute = {
     var web3 = constructor.web3;
     var params = utils.getTxParams.call(constructor, args);
     var deferred;
+    var reason;
 
     var options = {
       data: constructor.binary,
@@ -185,14 +223,18 @@ var execute = {
     execute
       .getGasEstimate
       .call(constructor, params, blockLimit)
-      .then(gas => {
-        params.gas = gas;
+      .then(result => {
+
+        if (result.error) reason = result.error.reason;
+
+        params.gas = result.gas || undefined;
         deferred = web3.eth.sendTransaction(params);
         handlers.setup(deferred, context);
 
         deferred.then(receipt => {
           if (parseInt(receipt.status) == 0){
             var error = new StatusError(params, context.transactionHash, receipt);
+            error.reason = reason;
             return context.promiEvent.reject(error)
           }
 
@@ -201,9 +243,12 @@ var execute = {
 
           context.promiEvent.resolve(new constructor(web3Instance));
 
-        // Manage web3's 50 blocks' timeout error.
-        // Web3's own subscriptions go dead here.
-        }).catch(override.start.bind(constructor, context))
+        // Manage web3's 50 blocks' timeout error. Web3's own subscriptions go dead here.
+        // Also propagate any reason strings captured during estimate gas.
+        }).catch(err => {
+          err.reason = reason;
+          override.start.call(constructor, context, err)
+        })
       }).catch(context.promiEvent.reject);
   },
 

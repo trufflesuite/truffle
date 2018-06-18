@@ -46,6 +46,17 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
         await Example.new(13) // 13 fails a constructor require gate
         assert.fail()
       } catch(e){
+        assert(!e.reason, 'Error should not include reason string');
+        assert(e.message.includes('exceeds gas limit'), 'Error should be gas limit err');
+      }
+    });
+
+    it("should error w/reason string if constructor reverts", async function(){
+      try {
+        await Example.new(2001) // 2001 fails a constructor require gate w/ a reason
+        assert.fail()
+      } catch(e){
+        assert(e.reason === 'reasonstring', 'Error should include reason string');
         assert(e.message.includes('exceeds gas limit'), 'Error should be gas limit err');
       }
     });
@@ -112,8 +123,31 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
         await example.triggerRequireError();
         assert.fail();
       } catch(e){
-        assert(e.message.includes('revert'));
+        assert(!e.reason, 'Should not include reasonstring');
+        assert(e.message.includes('revert'), 'Should include revert message');
       };
+    });
+
+    it("errors with reason string on revert", async function(){
+      const example = await Example.new(1)
+      try {
+        await example.triggerRequireWithReasonError();
+        assert.fail();
+      } catch(e){
+        assert(e.reason === 'reasonstring', 'Should include reasonstring');
+        assert(e.message.includes('revert'), 'Should include revert message');
+      };
+    });
+
+    it("errors with reason string on revert (gas specified)", async function(){
+      const example = await Example.new(1)
+      try {
+        await example.triggerRequireWithReasonError({gas: 200000});
+        assert.fail();
+      } catch(e){
+        assert(e.reason === 'reasonstring', 'Should include reason string');
+        assert(e.message.includes('revert'), 'Should include revert');
+      }
     });
 
     it("errors with invalid opcode when gas specified", async function(){
@@ -122,7 +156,8 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
         await example.triggerAssertError({gas: 200000});
         assert.fail();
       } catch(e){
-        assert(e.message.includes('invalid opcode'));
+        assert(!e.reason, 'Should not include reason string');
+        assert(e.message.includes('invalid opcode'), 'Should include invalid opcode');
       }
     });
 
