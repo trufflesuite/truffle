@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.22;
 
 import "./InheritB.sol";
 
@@ -7,7 +7,7 @@ import "./InheritB.sol";
 contract InheritA is InheritB {
   event LogB();
   event LogA();
-  function InheritA() public {}
+  constructor() public {}
 }
 
 contract ComplexOrdered is InheritA {
