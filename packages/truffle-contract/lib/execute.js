@@ -1,6 +1,4 @@
 var Web3PromiEvent = require('web3-core-promievent');
-var abi = require('ethereumjs-abi');
-
 var EventEmitter = require('events');
 var utils = require("./utils");
 var StatusError = require("./statuserror");
