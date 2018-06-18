@@ -1,10 +1,12 @@
+pragma solidity ^0.4.22;
+
 contract Example {
   uint public value;
   uint public counter;
   bool public fallbackTriggered;
   event ExampleEvent(address indexed _from, uint num);
 
-  function Example(uint val) {
+  constructor(uint val) {
     value = val;
     fallbackTriggered = false;
   }
