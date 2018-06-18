@@ -179,7 +179,7 @@ var execute = {
             // vmErrorsOnResponse path. Client emulator will
             // reject via the receipt handler
             deferred.catch(err => {
-              err.reason = result.error.reason;
+              err.reason = (result.error) ? result.error.reason : null;
               override.start.call(constructor, context, err)
             });
 

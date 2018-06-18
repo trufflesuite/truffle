@@ -44,7 +44,7 @@ describe("migrate (sync)", function() {
   });
 
   it("runs migrations (sync & async/await)", function(done) {
-    this.timeout(20000);
+    this.timeout(70000);
 
     CommandRunner.run("migrate", config, err => {
       const output = logger.contents();
@@ -68,7 +68,7 @@ describe("migrate (sync)", function() {
   });
 
   it('forces a migration with the -f option', function(done){
-    this.timeout(20000);
+    this.timeout(70000);
 
     CommandRunner.run("migrate -f 3", config, err => {
       const output = logger.contents();

@@ -44,7 +44,7 @@ describe("migration errors", function() {
   });
 
   it("should error and stop", function(done) {
-    this.timeout(20000);
+    this.timeout(70000);
 
     CommandRunner.run("migrate", config, err => {
       const output = logger.contents();
@@ -55,6 +55,7 @@ describe("migration errors", function() {
       assert(output.includes("Deploying 'Example'"))
       assert(output.includes("Deploying 'ExampleRevert'"));
       assert(output.includes("Error"));
+      assert(output.includes('out of gas') || output.includes('gas required exceeds'));
       assert(!output.includes("Deploying 'UsesExample'"))
       assert(!output.includes('3_migrations_ok.js'));
 
@@ -67,7 +68,7 @@ describe("migration errors", function() {
   });
 
   it("should run from the last successfully completely migration", function(done) {
-    this.timeout(20000);
+    this.timeout(70000);
 
     CommandRunner.run("migrate", config, err => {
       const output = logger.contents();
@@ -81,7 +82,7 @@ describe("migration errors", function() {
   });
 
   it("should run out of gas correctly", function(done){
-    this.timeout(20000);
+    this.timeout(70000);
 
     CommandRunner.run("migrate -f 4", config, err => {
       const output = logger.contents();
@@ -90,7 +91,7 @@ describe("migration errors", function() {
       assert(output.includes('4_migrations_oog.js'));
       assert(output.includes("Deploying 'Loops'"));
       assert(output.includes('Error'));
-      assert(output.includes('out of gas'));
+      assert(output.includes('out of gas') || output.includes('gas required exceeds'));
       done();
     });
   })

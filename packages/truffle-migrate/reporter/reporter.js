@@ -305,6 +305,13 @@ class Reporter {
         `   * Try: setting the 'confirmations' key in your network config\n` +
         `          to wait for several block confirmations between each deployment.\n`,
 
+      geth:        () =>
+        `${prefix} "${data.contract.contractName}" received a generic error from Geth that\n` +
+        `can be caused by hitting revert in a contract constructor or running out of gas.\n` +
+        `   * ${data.estimateError.message}.\n` +
+        `   * Try: + using the '--dry-run' option to reproduce this failure with clearer errors.\n` +
+        `          + verifying that your gas is adequate for this deployment.\n`,
+
       default:      () =>
         `${prefix} "${data.contract.contractName}" -- ${data.error.message}.\n`,
 
@@ -409,7 +416,6 @@ class Reporter {
 
   async processDeploymentError(data){
     let message;
-
     const error = data.estimateError || data.error;
 
     const errors = {
@@ -420,6 +426,7 @@ class Reporter {
       BLK: error.message.includes('block gas limit'),
       NCE: error.message.includes('nonce'),
       INV: error.message.includes('invalid opcode'),
+      GTH: error.message.includes('always failing transaction')
     }
 
     let type = Object.keys(errors).find(key => errors[key]);
@@ -474,6 +481,11 @@ class Reporter {
 
       case 'NCE':
         message = this.messages('nonce', data);
+        this.deployer.logger.error(message);
+        break;
+
+      case 'GTH':
+        message = this.messages('geth', data);
         this.deployer.logger.error(message);
         break;
 
