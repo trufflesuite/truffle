@@ -221,7 +221,6 @@ var execute = {
       .getGasEstimate
       .call(constructor, params, blockLimit)
       .then(result => {
-
         if (result.error) reason = result.error.reason;
 
         params.gas = result.gas || undefined;

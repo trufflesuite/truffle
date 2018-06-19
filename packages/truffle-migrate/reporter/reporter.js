@@ -256,10 +256,9 @@ class Reporter {
         `     private network or test client (like ganache).\n`,
 
       rvtReason:    () =>
-        `Revert with string error not implemented yet.`,
-
-      asrtReason:   () =>
-        `Assert with string error not implemented yet.`,
+        `${prefix} "${data.contract.contractName}" hit a require or revert statement ` +
+        `with the following reason given:\n` +
+        `   * ${data.reason}\n`,
 
       rvtNoReason:  () =>
         `${prefix} "${data.contract.contractName}" hit a require or revert statement ` +
