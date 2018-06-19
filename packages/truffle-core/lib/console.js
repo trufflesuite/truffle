@@ -175,26 +175,29 @@ Console.prototype.interpret = function(cmd, context, filename, callback) {
   let includesAwait = /^\s*((?:(?:var|const|let)\s+)?[a-zA-Z_$][0-9a-zA-Z_$]*\s*=\s*)?(\(?\s*await[\s\S]*)/;
 
   var match = cmd.match(includesAwait);
-  var source = cmd;
+  var newSource = cmd;
   var assignment = null;
 
   // If our code includes an await, add special processing to ensure it's evaluated properly.
   if (match) {
     var assign = match[1];
     var expression = match[2];
-  
+
     var RESULT = "__await_outside_result";
 
     // Wrap the await inside an async function.
     // Strange indentation keeps column offset correct in stack traces
-    source = `(async function() { try { ${assign ? `global.${RESULT} =` : "return"} (
+    newSource = `(async function() { try { ${assign ? `global.${RESULT} =` : "return"} (
 ${expression.trim()}
 ); } catch(e) { global.ERROR = e; throw e; } }())`;
 
     assignment = assign
       ? `${assign.trim()} global.${RESULT}; void delete global.${RESULT};`
       : null;
-  } 
+  } else {
+    // No await? Just process the source as normal.
+    newSource = cmd;
+  }
 
   var runScript = function(s) {
     const options = { displayErrors: true, breakOnSigint: true, filename: filename };
@@ -203,7 +206,7 @@ ${expression.trim()}
 
   try {
     const options = { displayErrors: true, lineOffset: -1 };
-    var script = vm.createScript(source, options);
+    var script = vm.createScript(newSource, options);
   } catch (e) {
     // If syntax error, or similar, bail.
     return callback(e);
@@ -214,7 +217,7 @@ ${expression.trim()}
   // this will ensure the console waits until that await is finished.
   Promise.resolve(runScript(script)).then(function(value) {
     // If there's an assignment to run, run that.
-    if (assignment) { 
+    if (assignment) {
       return runScript(vm.createScript(assignment));
     } else {
       return value;
