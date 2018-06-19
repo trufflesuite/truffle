@@ -5,6 +5,7 @@ var StatusError = require("./statuserror");
 var handlers = require("./handlers");
 var override = require("./override");
 
+var util = require('util');
 var execute = {
 
   // -----------------------------------  Helpers --------------------------------------------------

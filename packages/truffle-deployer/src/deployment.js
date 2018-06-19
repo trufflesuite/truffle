@@ -1,3 +1,5 @@
+const util = require('util')
+
 /**
  * @class  Deployment
  */
@@ -224,6 +226,7 @@ class Deployment {
         try {
           instance = await promiEvent;
         } catch(err){
+          console.log('err @ deploy --> ' + util.format("%O", err))
           eventArgs.error = err.error || err;
           await self.emitter.emit('deployFailed', eventArgs);
           throw new Error(self._errorCodes('deployFailed'));

@@ -96,7 +96,7 @@ describe("migration errors", function() {
     });
   })
 
-  it("should expose the reason string if available [ @ganache ]", function(done){
+  it.skip("should expose the reason string if available [ @ganache ]", function(done){
     this.timeout(70000);
 
     CommandRunner.run("migrate -f 5", config, err => {

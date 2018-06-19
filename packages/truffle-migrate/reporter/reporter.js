@@ -415,6 +415,7 @@ class Reporter {
 
   async processDeploymentError(data){
     let message;
+    console.log(util.format('%O', data))
     const error = data.estimateError || data.error;
 
     const errors = {
