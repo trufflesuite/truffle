@@ -416,15 +416,15 @@ async@2.0.0:
   dependencies:
     lodash "^4.8.0"
 
-async@^1.4.0, async@^1.4.2, async@^1.5.0, async@^1.5.2:
-  version "1.5.2"
-  resolved "https://registry.yarnpkg.com/async/-/async-1.5.2.tgz#ec6a61ae56480c0c3cb241c95618e20892f9672a"
-
-async@^2.0.1, async@^2.1.2, async@^2.1.4, async@^2.3.0, async@^2.4.0, async@^2.5.0, async@^2.6.0:
+async@2.6.1, async@^2.0.1, async@^2.1.2, async@^2.1.4, async@^2.3.0, async@^2.4.0, async@^2.5.0, async@^2.6.0:
   version "2.6.1"
   resolved "https://registry.yarnpkg.com/async/-/async-2.6.1.tgz#b245a23ca71930044ec53fa46aa00a3e87c6a610"
   dependencies:
     lodash "^4.17.10"
+
+async@^1.4.0, async@^1.4.2, async@^1.5.0, async@^1.5.2:
+  version "1.5.2"
+  resolved "https://registry.yarnpkg.com/async/-/async-1.5.2.tgz#ec6a61ae56480c0c3cb241c95618e20892f9672a"
 
 async@~0.1.22:
   version "0.1.22"

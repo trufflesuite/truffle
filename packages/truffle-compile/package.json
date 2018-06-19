@@ -4,7 +4,7 @@
   "description": "Compiler helper and artifact manager",
   "main": "index.js",
   "dependencies": {
-    "async": "^2.1.4",
+    "async": "2.6.1",
     "colors": "^1.1.2",
     "debug": "^3.1.0",
     "graphlib": "^2.1.1",

@@ -24,7 +24,7 @@
     "web3": "^0.20.1"
   },
   "dependencies": {
-    "async": "^1.5.2",
+    "async": "2.6.1",
     "debug": "^3.1.0",
     "fs-extra": "^1.0.0",
     "lodash": "^4.11.2",
