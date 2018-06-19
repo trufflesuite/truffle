@@ -26,7 +26,7 @@
     "truffle-deployer": "^2.0.5",
     "truffle-expect": "^0.0.3",
     "truffle-require": "^1.0.5",
-    "web3": "^0.20.1"
+    "web3": "0.20.6"
   },
   "devDependencies": {
     "mocha": "^3.2.0"
