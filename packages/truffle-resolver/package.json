@@ -27,7 +27,7 @@
     "truffle-provisioner": "^0.1.0"
   },
   "devDependencies": {
-    "mocha": "^3.2.0"
+    "mocha": "5.2.0"
   },
   "publishConfig": {
     "access": "public"

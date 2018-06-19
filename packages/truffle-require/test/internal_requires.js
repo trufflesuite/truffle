@@ -44,7 +44,7 @@ describe("Require", function() {
     });
   });
 
-  it("allows require statements for locally install modules (node_modules)", function() {
+  it("allows require statements for locally install modules (node_modules)", function(done) {
     Require.file({
       file: path.join(__dirname, "lib", "module_with_local_module_require.js")
     }, function(err, exports) {

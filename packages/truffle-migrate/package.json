@@ -29,7 +29,7 @@
     "web3": "0.20.6"
   },
   "devDependencies": {
-    "mocha": "^3.2.0"
+    "mocha": "5.2.0"
   },
   "publishConfig": {
     "access": "public"
