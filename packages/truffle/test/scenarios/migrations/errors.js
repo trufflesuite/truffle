@@ -109,4 +109,22 @@ describe("migration errors", function() {
       done();
     });
   });
+
+  it("should error on insufficient funds correctly", function(done){
+    this.timeout(70000);
+
+    CommandRunner.run("migrate -f 6", config, err => {
+      const output = logger.contents();
+      assert(err);
+      console.log(output);
+      assert(output.includes('6_migrations_funds.js'));
+      assert(output.includes("Deploying 'Example'"));
+      assert(output.includes('insufficient funds'));
+      assert(output.includes('Account'));
+      assert(output.includes('Balance'));
+      done();
+    });
+
+  });
 });
+
