@@ -30,7 +30,7 @@
     "lodash": "4.17.10",
     "truffle-contract": "^3.0.5",
     "truffle-contract-schema": "^2.0.0",
-    "truffle-expect": "^0.0.3"
+    "truffle-expect": "0.0.3"
   },
   "publishConfig": {
     "access": "public"

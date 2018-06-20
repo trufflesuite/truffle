@@ -39,7 +39,7 @@
     "truffle-debugger": "^4.0.0",
     "truffle-deployer": "^2.0.5",
     "truffle-error": "0.0.2",
-    "truffle-expect": "^0.0.3",
+    "truffle-expect": "0.0.3",
     "truffle-init": "^1.0.7",
     "truffle-migrate": "^2.0.6",
     "truffle-provider": "^0.0.4",
