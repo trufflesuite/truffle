@@ -22,7 +22,7 @@
   "dependencies": {
     "find-up": "^2.1.0",
     "lodash": "4.17.10",
-    "original-require": "^1.0.0",
+    "original-require": "1.0.1",
     "truffle-error": "^0.0.2",
     "truffle-provider": "^0.0.4"
   },
