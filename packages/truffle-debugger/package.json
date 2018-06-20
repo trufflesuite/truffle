@@ -31,7 +31,7 @@
     "reselect-tree": "^1.2.0",
     "truffle-code-utils": "^1.1.0",
     "truffle-expect": "0.0.3",
-    "truffle-solidity-utils": "^1.1.0",
+    "truffle-solidity-utils": "1.1.1",
     "web3": "0.20.6",
     "web3-eth-abi": "^1.0.0-beta.29"
   },
