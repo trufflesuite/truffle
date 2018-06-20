@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "mocha": "5.2.0",
-    "truffle-resolver": "2.0.0"
+    "truffle-resolver": "4.0.3"
   },
   "scripts": {
     "test": "mocha"

@@ -10059,7 +10059,7 @@ truffle-contract-schema@^2.0.0:
     crypto-js "^3.1.9-1"
     debug "^3.1.0"
 
-truffle-contract@^1.1.6, truffle-contract@^1.1.8:
+truffle-contract@^1.1.6:
   version "1.1.11"
   resolved "https://registry.yarnpkg.com/truffle-contract/-/truffle-contract-1.1.11.tgz#ce1fa787f797758aff572f45e8b1174527f6edaa"
   dependencies:
@@ -10091,15 +10091,6 @@ truffle-init@^1.0.7:
     rimraf "^2.5.4"
     temp "^0.8.3"
     truffle-config "^1.0.1"
-
-truffle-resolver@2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/truffle-resolver/-/truffle-resolver-2.0.0.tgz#323c3ab82450878e41dbdaf918c1aea5380dd025"
-  dependencies:
-    async "^2.1.4"
-    truffle-contract "^1.1.8"
-    truffle-expect "0.0.3"
-    truffle-provisioner "^0.1.0"
 
 tslib@^1.9.0:
   version "1.9.2"
