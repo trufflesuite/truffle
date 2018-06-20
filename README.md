@@ -63,6 +63,7 @@ cd packages/<truffle-package>
 yarn add <npm-package> [--dev] # Use yarn
 ```
 
+If you'd like to update a dependency to the same version across all packages, you might find [this utility](https://www.npmjs.com/package/lerna-update-wizard) helpful.   
 ### License
 
 MIT
