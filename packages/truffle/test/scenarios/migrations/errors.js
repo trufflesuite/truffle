@@ -97,8 +97,6 @@ describe("migration errors", function() {
   })
 
   it("should expose the reason string if available [ @ganache ]", function(done){
-    if (process.env.GETH) return;
-
     this.timeout(70000);
 
     CommandRunner.run("migrate -f 5", config, err => {
