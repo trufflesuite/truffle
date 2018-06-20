@@ -7,7 +7,7 @@ describe("solc", function() {
   var exampleSolidity = "contract A { function doStuff() {} } \n\n contract B { function somethingElse() {} }";
 
   it("processes solc compile output correctly", function(done) {
-    this.timeout(5000);
+    this.timeout(10000);
     var result = solc.compile(exampleSolidity, 1);
 
     var data = result.contracts[":A"];
