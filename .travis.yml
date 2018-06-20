@@ -20,7 +20,7 @@ matrix:
     - env: GETH=true
 
 install:
-  - npm install -g lerna
+  - npm install -g lerna@^3.0.0-beta.21
   - npm install -g yarn
   - npm run bootstrap
 

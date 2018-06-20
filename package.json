@@ -8,7 +8,7 @@
     "ci": "./scripts/ci.sh"
   },
   "devDependencies": {
-    "lerna": "^2.11.0"
+    "lerna": "^3.0.0-beta.21"
   },
   "workspaces": {
     "packages": [
