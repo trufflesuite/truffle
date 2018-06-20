@@ -367,5 +367,26 @@ describe("Methods", function() {
       const balance = await web3.eth.getBalance(example.address);
       assert(balance == web3.utils.toWei("1", "ether"));
     });
+
+    it("should accept tx params (send)", async function(){
+      const example = await Example.new(1);
+      const eth = web3.utils.toWei("1", "ether");
+      const sender = accounts[1];
+      const initialSenderBalance = await web3.eth.getBalance(sender);
+
+      await example.send(eth, {from: sender});
+
+      const finalSenderBalance = await web3.eth.getBalance(sender);
+      const contractBalance = await web3.eth.getBalance(example.address);
+
+      assert(contractBalance === eth, 'Contract should receive eth');
+
+      const initialBN = new web3.utils.BN(initialSenderBalance);
+      const finalBN = new web3.utils.BN(finalSenderBalance);
+      const ethBN = new web3.utils.BN(eth);
+      const expectedBN = initialBN.sub(ethBN);
+      assert(finalBN.lte(expectedBN), 'send should send from the specified address');
+    });
   })
 });
+
