@@ -20,7 +20,7 @@
     "lodash": "4.17.10",
     "mkdirp": "^0.5.1",
     "mocha": "5.2.0",
-    "node-dir": "0.1.16",
+    "node-dir": "0.1.17",
     "node-emoji": "^1.8.1",
     "node-ipc": "^9.1.1",
     "original-require": "^1.0.0",

@@ -22,7 +22,7 @@
   "homepage": "https://github.com/trufflesuite/truffle-migrate#readme",
   "dependencies": {
     "async": "2.6.1",
-    "node-dir": "^0.1.16",
+    "node-dir": "0.1.17",
     "truffle-deployer": "^2.0.5",
     "truffle-expect": "^0.0.3",
     "truffle-require": "^1.0.5",
