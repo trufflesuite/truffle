@@ -1,6 +1,6 @@
 {
   "name": "truffle-debugger",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Core functionality for debugging Solidity files built with Truffle",
   "main": "dist/debugger.js",
   "scripts": {
@@ -29,14 +29,14 @@
     "redux-saga": "^0.16.0",
     "remote-redux-devtools": "^0.5.12",
     "reselect-tree": "^1.2.0",
-    "truffle-code-utils": "^1.1.0",
-    "truffle-expect": "0.0.3",
-    "truffle-solidity-utils": "^1.1.0",
+    "truffle-code-utils": "^1.1.1",
+    "truffle-expect": "^0.0.4",
+    "truffle-solidity-utils": "^1.1.2",
     "web3": "1.0.0-beta.33",
     "web3-eth-abi": "^1.0.0-beta.29"
   },
   "devDependencies": {
-    "async": "^1.5.2",
+    "async": "2.6.1",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
@@ -49,16 +49,16 @@
     "esdoc-standard-plugin": "^1.0.0",
     "express": "^4.16.2",
     "fs-extra": "^4.0.2",
-    "ganache-cli": "^6.1.0-beta.4",
-    "mocha": "^4.0.1",
+    "ganache-cli": "6.1.3",
+    "mocha": "5.2.0",
     "mocha-webpack": "^1.1.0",
     "remotedev-server": "^0.2.4",
-    "truffle-artifactor": "^3.0.0",
-    "truffle-box": "^1.0.3",
-    "truffle-debug-utils": "^1.0.1",
-    "truffle-migrate": "^2.0.5",
-    "truffle-resolver": "^4.0.1",
-    "truffle-workflow-compile": "^1.0.3",
+    "truffle-artifactor": "^3.0.6",
+    "truffle-box": "^1.0.6",
+    "truffle-debug-utils": "^1.0.6",
+    "truffle-migrate": "^2.0.7",
+    "truffle-resolver": "^4.0.4",
+    "truffle-workflow-compile": "^1.0.5",
     "webpack": "^3.8.1",
     "webpack-dev-middleware": "^2.0.4",
     "webpack-merge": "^4.1.1",
@@ -72,5 +72,8 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle-debugger/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-debugger#readme"
+  "homepage": "https://github.com/trufflesuite/truffle-debugger#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }

@@ -1,15 +1,14 @@
 {
   "name": "truffle-debug-utils",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Integration utils for truffle/truffle-debugger",
   "dependencies": {
-    "async": "^1.4.2",
+    "async": "2.6.1",
     "debug": "^3.1.0",
-    "node-dir": "^0.1.17"
+    "node-dir": "0.1.17"
   },
   "main": "index.js",
-  "scripts": {
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/trufflesuite/truffle-debug-utils.git"
@@ -19,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle-debug-utils/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-debug-utils#readme"
+  "homepage": "https://github.com/trufflesuite/truffle-debug-utils#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }

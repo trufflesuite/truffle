@@ -1,10 +1,10 @@
 {
   "name": "truffle-compile",
-  "version": "3.0.11",
+  "version": "3.0.12",
   "description": "Compiler helper and artifact manager",
   "main": "index.js",
   "dependencies": {
-    "async": "^2.1.4",
+    "async": "2.6.1",
     "colors": "^1.1.2",
     "debug": "^3.1.0",
     "find-cache-dir": "^1.0.0",
@@ -13,17 +13,17 @@
     "request-promise": "^4.2.2",
     "require-from-string": "^2.0.2",
     "solc": "0.4.24",
-    "truffle-config": "^1.0.4",
-    "truffle-contract-sources": "^0.0.1",
-    "truffle-error": "^0.0.2",
-    "truffle-expect": "^0.0.3"
+    "truffle-config": "^1.0.5",
+    "truffle-contract-sources": "^0.0.2",
+    "truffle-error": "^0.0.3",
+    "truffle-expect": "^0.0.4"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
-    "mocha": "^3.5.3",
-    "truffle-resolver": "2.0.0"
+    "mocha": "5.2.0",
+    "truffle-resolver": "^4.0.4"
   },
   "babel": {
     "presets": [
@@ -48,5 +48,8 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle-compile/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-compile#readme"
+  "homepage": "https://github.com/trufflesuite/truffle-compile#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }

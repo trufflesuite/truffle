@@ -1,10 +1,9 @@
 {
   "name": "truffle-config",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Utility for interacting with truffle.js files",
   "main": "index.js",
-  "scripts": {
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/trufflesuite/truffle-config.git"
@@ -22,9 +21,12 @@
   "homepage": "https://github.com/trufflesuite/truffle-config#readme",
   "dependencies": {
     "find-up": "^2.1.0",
-    "lodash": "^4.17.4",
-    "original-require": "^1.0.0",
-    "truffle-error": "^0.0.2",
-    "truffle-provider": "^0.0.4"
+    "lodash": "4.17.10",
+    "original-require": "1.0.1",
+    "truffle-error": "^0.0.3",
+    "truffle-provider": "^0.0.5"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

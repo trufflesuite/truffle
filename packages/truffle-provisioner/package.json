@@ -1,10 +1,9 @@
 {
   "name": "truffle-provisioner",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Provision contract objects for use from multiple sources",
   "main": "index.js",
-  "scripts": {
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/trufflesuite/truffle-provisioner.git"
@@ -21,5 +20,7 @@
     "url": "https://github.com/trufflesuite/truffle-provisioner/issues"
   },
   "homepage": "https://github.com/trufflesuite/truffle-provisioner#readme",
-  "dependencies": {}
+  "publishConfig": {
+    "access": "public"
+  }
 }

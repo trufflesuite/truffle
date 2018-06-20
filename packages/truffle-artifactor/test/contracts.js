@@ -39,7 +39,7 @@ describe("artifactor + require", function() {
     // which happens to be the first.
     process.removeListener("uncaughtException", process.listeners("uncaughtException")[0]);
 
-    var compiled = Schema.normalize(result.contracts["Example"]);
+    var compiled = Schema.normalize(result.contracts[":Example"]);
     abi = compiled.abi;
     binary = compiled.bytecode;
 

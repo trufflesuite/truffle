@@ -1,10 +1,9 @@
 {
   "name": "truffle-resolver",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "description": "Resolve contract dependencies given multiple configurable dependency sources",
   "main": "index.js",
-  "scripts": {
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/trufflesuite/truffle-resolver.git"
@@ -22,12 +21,15 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle-resolver#readme",
   "dependencies": {
-    "async": "^2.1.4",
-    "truffle-contract": "^3.0.5",
-    "truffle-expect": "0.0.3",
-    "truffle-provisioner": "^0.1.0"
+    "async": "2.6.1",
+    "truffle-contract": "^3.0.6",
+    "truffle-expect": "^0.0.4",
+    "truffle-provisioner": "^0.1.1"
   },
   "devDependencies": {
-    "mocha": "^3.2.0"
+    "mocha": "5.2.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

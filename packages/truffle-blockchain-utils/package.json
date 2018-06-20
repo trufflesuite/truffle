@@ -1,0 +1,22 @@
+{
+  "name": "truffle-blockchain-utils",
+  "version": "0.0.5",
+  "description": "Utilities for identifying and managing blockchains",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trufflesuite/truffle-blockchain-utils.git"
+  },
+  "keywords": [
+    "ethereum",
+    "truffle",
+    "blockchain"
+  ],
+  "author": "Tim Coulter <tim.coulter@consensys.net>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle-blockchain-utils/issues"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle-blockchain-utils#readme"
+}

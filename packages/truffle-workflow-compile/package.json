@@ -1,20 +1,19 @@
 {
   "name": "truffle-workflow-compile",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Core workflow behavior for `truffle compile` command",
   "dependencies": {
-    "async": "^1.4.2",
-    "lodash": "^4.5.1",
+    "async": "2.6.1",
+    "lodash": "4.17.10",
     "mkdirp": "^0.5.1",
-    "truffle-artifactor": "^3.0.5",
-    "truffle-compile": "^3.0.11",
-    "truffle-config": "^1.0.4",
-    "truffle-expect": "^0.0.3",
-    "truffle-resolver": "^4.0.3"
+    "truffle-artifactor": "^3.0.6",
+    "truffle-compile": "^3.0.12",
+    "truffle-config": "^1.0.5",
+    "truffle-expect": "^0.0.4",
+    "truffle-resolver": "^4.0.4"
   },
   "main": "index.js",
-  "scripts": {
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/trufflesuite/truffle-debug-utils.git"
@@ -24,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle-workflow-compile/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-workflow-compile#readme"
+  "homepage": "https://github.com/trufflesuite/truffle-workflow-compile#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }

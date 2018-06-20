@@ -1,9 +1,9 @@
-pragma solidity ^0.4.8;
+pragma solidity ^0.4.22;
 
 contract SafeSend {
   address public recipient;
   
-  function SafeSend(address _recipient) payable {
+  constructor(address _recipient) payable {
     recipient = _recipient;
   }
 

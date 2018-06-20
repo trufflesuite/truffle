@@ -1,10 +1,9 @@
 {
   "name": "truffle-solidity-utils",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Utilities for Solidity contracts",
   "main": "index.js",
-  "scripts": {
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/trufflesuite/truffle-solidity-utils.git"
@@ -21,6 +20,7 @@
     "url": "https://github.com/trufflesuite/truffle-solidity-utils/issues"
   },
   "homepage": "https://github.com/trufflesuite/truffle-solidity-utils#readme",
-  "dependencies": {},
-  "devDependencies": {}
+  "publishConfig": {
+    "access": "public"
+  }
 }
