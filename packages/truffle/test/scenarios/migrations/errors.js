@@ -96,14 +96,16 @@ describe("migration errors", function() {
     });
   })
 
-  it.skip("should expose the reason string if available [ @ganache ]", function(done){
+  it("should expose the reason string if available [ @ganache ]", function(done){
+    if (process.env.GETH) return;
+
     this.timeout(70000);
 
     CommandRunner.run("migrate -f 5", config, err => {
       const output = logger.contents();
       assert(err);
       console.log(output);
-      assert(output.includes('5_migrations_revert.js'));
+      assert(output.includes('5_migrations_reason.js'));
       assert(output.includes("Deploying 'RevertWithReason'"));
       assert(output.includes('reasonstring'));
       done();

@@ -9,9 +9,9 @@ var util = require('util');
 var execute = {
 
   // -----------------------------------  Helpers --------------------------------------------------
-
   /**
    * Retrieves gas estimate multiplied by the set gas multiplier for a `sendTransaction` call.
+   * We're using low level rpc calls here
    * @param  {Object} params     `sendTransaction` parameters
    * @param  {Number} blockLimit  most recent network block.blockLimit
    * @return {Number}             gas estimate
@@ -21,29 +21,44 @@ var execute = {
     var web3 = this.web3;
 
     return new Promise(function(accept, reject){
-      web3.eth
-        .estimateGas(params)
-        .then(gas => {
-          // Always prefer specified gas - this includes gas set by class_defaults
-          if (params.gas)           return accept({gas: params.gas, error: null});
-          if (!constructor.autoGas) return accept({gas: null, error: null});
+      let reason;
 
-          var bestEstimate = Math.floor(constructor.gasMultiplier * gas);
+      const packet = {
+        jsonrpc: "2.0",
+        method: "eth_call",
+        params: [params],
+        id: new Date().getTime(),
+      }
 
-          // Don't go over blockLimit
-          (bestEstimate >= blockLimit)
-            ? accept({gas: blockLimit - 1, error: null})
-            : accept({gas: bestEstimate, error: null});
+      // This rpc call extracts the reason string
+      web3.currentProvider.send(packet, (err, response) => {
+        if (response.error || response.result ) {
+          reason = execute.extractReason(response, web3)
+        }
 
-        // If there's reason string in the revert and the client is ganache
-        // we can extract it here - this is a `.call`
-        }).catch(err => {
-          err.reason = execute.extractReason(err, web3);
+        web3
+          .eth
+          .estimateGas(params)
+          .then(gas => {
+            // Always prefer specified gas - this includes gas set by class_defaults
+            if (params.gas)           return accept({gas: params.gas, error: null});
+            if (!constructor.autoGas) return accept({gas: null, error: null});
 
-          (params.gas)
-            ? accept({gas: params.gas, error: err})
-            : accept({gas: null, error: err})
-        });
+            var bestEstimate = Math.floor(constructor.gasMultiplier * gas);
+
+            // Don't go over blockLimit
+            (bestEstimate >= blockLimit)
+              ? accept({gas: blockLimit - 1, error: null})
+              : accept({gas: bestEstimate, error: null});
+          })
+          .catch(err => {
+            err.reason = reason;
+
+            (params.gas)
+              ? accept({gas: params.gas, error: err})
+              : accept({gas: null, error: err});
+          })
+      })
     })
   },
 
@@ -78,13 +93,21 @@ var execute = {
    * @param  {[type]} err [description]
    * @return {[type]}     [description]
    */
-  extractReason(err, web3){
-    if (err && err.results){
-      const hash = Object.keys(err.results)[0];
+  extractReason(res, web3){
+    const isObject = res && typeof res === 'object' && res.error && res.error.data;
+    const isString = res && typeof res === 'object' && typeof res.result === 'string';
 
-      if (err.results[hash].return && err.results[hash].return.includes('0x08c379a0')){
-        return web3.eth.abi.decodeParameter('string', err.results[hash].return.slice(10))
+    if (isObject){
+      const data = res.error.data;
+      const hash = Object.keys(data)[0];
+
+      if (data[hash].return && data[hash].return.includes('0x08c379a0')){
+        return web3.eth.abi.decodeParameter('string', data[hash].return.slice(10))
       }
+    }
+
+    if (isString && res.result.includes('0x08c379a0')){
+      return web3.eth.abi.decodeParameter('string', res.result.slice(10))
     }
   },
 

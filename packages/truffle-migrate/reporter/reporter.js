@@ -250,7 +250,7 @@ class Reporter {
         `${prefix} "${data.contract.contractName}" ran out of gas. Something in the constructor ` +
         `(ex: infinite loop) caused gas estimation to fail. Try:\n` +
         `   * Making your contract constructor more efficient\n` +
-        `   * Setting the gas manually in your config or a deployment parameter\n` +
+        `   * Setting the gas manually in your config or as a deployment parameter\n` +
         `   * Using the solc optimizer settings in 'truffle.js'\n` +
         `   * Setting a higher network block limit if you are on a\n` +
         `     private network or test client (like ganache).\n`,
@@ -416,6 +416,8 @@ class Reporter {
   async processDeploymentError(data){
     let message;
     const error = data.estimateError || data.error;
+
+    data.reason = (data.error) ? data.error.reason : null;
 
     const errors = {
       INT: error.message.includes('base fee') || error.message.includes('intrinsic'),
