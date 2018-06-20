@@ -4,7 +4,6 @@
   "description": "Simple module that allows native Error objects to be extended",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
   },
   "repository": {
     "type": "git",
