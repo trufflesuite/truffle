@@ -57,6 +57,10 @@ npm run bootstrap
 
 # Test
 npm test
+
+# Adding dependencies to a package
+cd packages/<truffle-package> 
+yarn add <npm-package> [--dev] # Use yarn
 ```
 
 ### License
