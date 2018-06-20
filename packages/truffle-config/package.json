@@ -1,6 +1,6 @@
 {
   "name": "truffle-config",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Utility for interacting with truffle.js files",
   "main": "index.js",
   "scripts": {},
@@ -23,8 +23,8 @@
     "find-up": "^2.1.0",
     "lodash": "4.17.10",
     "original-require": "1.0.1",
-    "truffle-error": "0.0.2",
-    "truffle-provider": "^0.0.4"
+    "truffle-error": "^0.0.3",
+    "truffle-provider": "^0.0.5"
   },
   "publishConfig": {
     "access": "public"
