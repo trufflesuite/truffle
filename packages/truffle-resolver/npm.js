@@ -1,6 +1,5 @@
 var path = require("path");
 var fs = require("fs");
-
 function NPM(working_directory) {
   this.working_directory = working_directory;
 };
@@ -9,13 +8,14 @@ NPM.prototype.require = function(import_path, search_path) {
   if (import_path.indexOf(".") == 0 || import_path.indexOf("/") == 0) {
     return null;
   }
-
-  var separator = import_path.indexOf("/")
-  var package_name = import_path.substring(0, separator);
   var contract_name = path.basename(import_path, ".sol");
-
+  var regex = new RegExp(`(.*)/${contract_name}`);
+  let package_name = '';
+  var matched =  regex.exec(import_path);
+  if(matched){
+    package_name = matched[1];
+  }
   var expected_path = path.join((search_path || this.working_directory), "node_modules", package_name, "build", "contracts", contract_name + ".json");
-
   try {
     var result = fs.readFileSync(expected_path, "utf8");
     return JSON.parse(result);
