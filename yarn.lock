@@ -10041,23 +10041,11 @@ truffle-blockchain-utils@^0.0.3:
   dependencies:
     web3 "^0.20.1"
 
-truffle-blockchain-utils@^0.0.4:
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/truffle-blockchain-utils/-/truffle-blockchain-utils-0.0.4.tgz#e31a346db61775c80ccd6f632de5e72f97f20ea5"
-
 truffle-contract-schema@0.0.5, truffle-contract-schema@^0.0.5:
   version "0.0.5"
   resolved "https://registry.yarnpkg.com/truffle-contract-schema/-/truffle-contract-schema-0.0.5.tgz#5e9d20bd0bf2a27fe94310748249d484eee49961"
   dependencies:
     crypto-js "^3.1.9-1"
-
-truffle-contract-schema@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/truffle-contract-schema/-/truffle-contract-schema-2.0.0.tgz#535378c0b6a7f58011ea8d84f57771771cb45163"
-  dependencies:
-    ajv "^5.1.1"
-    crypto-js "^3.1.9-1"
-    debug "^3.1.0"
 
 truffle-contract@^1.1.6:
   version "1.1.11"
@@ -10076,10 +10064,6 @@ truffle-contract@^2.0.3:
     truffle-blockchain-utils "^0.0.3"
     truffle-contract-schema "^0.0.5"
     web3 "^0.20.1"
-
-truffle-error@0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/truffle-error/-/truffle-error-0.0.2.tgz#01b189b78505566ae1689c239c7ca2dd121cfe4c"
 
 truffle-init@^1.0.7:
   version "1.0.7"
