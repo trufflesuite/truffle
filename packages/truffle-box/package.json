@@ -24,7 +24,7 @@
     "fs-extra": "^3.0.1",
     "github-download": "^0.5.0",
     "request": "^2.83.0",
-    "tmp": "^0.0.31",
+    "tmp": "0.0.33",
     "vcsurl": "^0.1.1"
   },
   "publishConfig": {
