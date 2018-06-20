@@ -3,8 +3,7 @@
   "version": "2.0.6",
   "description": "On-chain migrations management",
   "main": "index.js",
-  "scripts": {
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/trufflesuite/truffle-migrate.git"
@@ -22,15 +21,15 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle-migrate#readme",
   "dependencies": {
-    "async": "^2.1.4",
-    "node-dir": "^0.1.16",
+    "async": "2.6.1",
+    "node-dir": "0.1.17",
     "truffle-deployer": "^2.0.5",
-    "truffle-expect": "^0.0.3",
+    "truffle-expect": "0.0.3",
     "truffle-require": "^1.0.5",
-    "web3": "^0.20.1"
+    "web3": "0.20.6"
   },
   "devDependencies": {
-    "mocha": "^3.2.0"
+    "mocha": "5.2.0"
   },
   "publishConfig": {
     "access": "public"

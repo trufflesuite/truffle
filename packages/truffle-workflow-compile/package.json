@@ -3,18 +3,17 @@
   "version": "1.0.4",
   "description": "Core workflow behavior for `truffle compile` command",
   "dependencies": {
-    "async": "^1.4.2",
-    "lodash": "^4.5.1",
+    "async": "2.6.1",
+    "lodash": "4.17.10",
     "mkdirp": "^0.5.1",
-    "truffle-artifactor": "^3.0.5",
+    "truffle-artifactor": "3.0.5",
     "truffle-compile": "^3.0.11",
-    "truffle-config": "^1.0.4",
-    "truffle-expect": "^0.0.3",
-    "truffle-resolver": "^4.0.3"
+    "truffle-config": "1.0.4",
+    "truffle-expect": "0.0.3",
+    "truffle-resolver": "4.0.3"
   },
   "main": "index.js",
-  "scripts": {
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/trufflesuite/truffle-debug-utils.git"

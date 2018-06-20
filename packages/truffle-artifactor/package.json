@@ -14,23 +14,23 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "chai": "^3.4.1",
-    "ganache-cli": "6.1.0-beta.4",
-    "mocha": "^2.3.4",
+    "chai": "4.1.2",
+    "ganache-cli": "6.1.3",
+    "mocha": "5.2.0",
     "require-nocache": "^1.0.0",
-    "solc": "0.4.8",
+    "solc": "0.4.24",
     "temp": "^0.8.3",
     "truffle-blockchain-utils": "^0.0.4",
-    "web3": "^0.20.1"
+    "web3": "0.20.6"
   },
   "dependencies": {
-    "async": "^1.5.2",
+    "async": "2.6.1",
     "debug": "^3.1.0",
     "fs-extra": "^1.0.0",
-    "lodash": "^4.11.2",
+    "lodash": "4.17.10",
     "truffle-contract": "^3.0.5",
     "truffle-contract-schema": "^2.0.0",
-    "truffle-expect": "^0.0.3"
+    "truffle-expect": "0.0.3"
   },
   "publishConfig": {
     "access": "public"
