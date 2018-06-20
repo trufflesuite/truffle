@@ -1,0 +1,140 @@
+{
+  "id": "abi.spec.json",
+  "$schema": "http://json-schema.org/schema#",
+  "title": "ABI",
+
+  "type": "array",
+  "items": { "oneOf": [
+    { "$ref": "#/definitions/Event" },
+    { "$ref": "#/definitions/ConstructorFunction" },
+    { "$ref": "#/definitions/FallbackFunction" },
+    { "$ref": "#/definitions/NormalFunction" }
+  ]},
+
+  "definitions": {
+    "Name": {
+      "type": "string",
+      "pattern": "^$|^[a-zA-Z_\\$][a-zA-Z_\\$0-9]*$"
+    },
+
+    "Type": {
+      "type": "string",
+      "oneOf": [
+        { "pattern": "^u?int(8|16|24|32|40|48|56|64|72|80|88|96|104|112|120|128|136|144|152|160|168|176|184|192|200|208|216|224|232|240|248|256)?(\\[[0-9]*\\])?$" },
+        { "pattern": "^address(\\[[0-9]*\\])?$"},
+        { "pattern": "^bool(\\[[0-9]*\\])?$"},
+        { "pattern": "^u?fixed(0x8|8x0|0x16|8x8|16x0|0x24|8x16|16x8|24x0|0x32|8x24|16x16|24x8|32x0|0x40|8x32|16x24|24x16|32x8|40x0|0x48|8x40|16x32|24x24|32x16|40x8|48x0|0x56|8x48|16x40|24x32|32x24|40x16|48x8|56x0|0x64|8x56|16x48|24x40|32x32|40x24|48x16|56x8|64x0|0x72|8x64|16x56|24x48|32x40|40x32|48x24|56x16|64x8|72x0|0x80|8x72|16x64|24x56|32x48|40x40|48x32|56x24|64x16|72x8|80x0|0x88|8x80|16x72|24x64|32x56|40x48|48x40|56x32|64x24|72x16|80x8|88x0|0x96|8x88|16x80|24x72|32x64|40x56|48x48|56x40|64x32|72x24|80x16|88x8|96x0|0x104|8x96|16x88|24x80|32x72|40x64|48x56|56x48|64x40|72x32|80x24|88x16|96x8|104x0|0x112|8x104|16x96|24x88|32x80|40x72|48x64|56x56|64x48|72x40|80x32|88x24|96x16|104x8|112x0|0x120|8x112|16x104|24x96|32x88|40x80|48x72|56x64|64x56|72x48|80x40|88x32|96x24|104x16|112x8|120x0|0x128|8x120|16x112|24x104|32x96|40x88|48x80|56x72|64x64|72x56|80x48|88x40|96x32|104x24|112x16|120x8|128x0|0x136|8x128|16x120|24x112|32x104|40x96|48x88|56x80|64x72|72x64|80x56|88x48|96x40|104x32|112x24|120x16|128x8|136x0|0x144|8x136|16x128|24x120|32x112|40x104|48x96|56x88|64x80|72x72|80x64|88x56|96x48|104x40|112x32|120x24|128x16|136x8|144x0|0x152|8x144|16x136|24x128|32x120|40x112|48x104|56x96|64x88|72x80|80x72|88x64|96x56|104x48|112x40|120x32|128x24|136x16|144x8|152x0|0x160|8x152|16x144|24x136|32x128|40x120|48x112|56x104|64x96|72x88|80x80|88x72|96x64|104x56|112x48|120x40|128x32|136x24|144x16|152x8|160x0|0x168|8x160|16x152|24x144|32x136|40x128|48x120|56x112|64x104|72x96|80x88|88x80|96x72|104x64|112x56|120x48|128x40|136x32|144x24|152x16|160x8|168x0|0x176|8x168|16x160|24x152|32x144|40x136|48x128|56x120|64x112|72x104|80x96|88x88|96x80|104x72|112x64|120x56|128x48|136x40|144x32|152x24|160x16|168x8|176x0|0x184|8x176|16x168|24x160|32x152|40x144|48x136|56x128|64x120|72x112|80x104|88x96|96x88|104x80|112x72|120x64|128x56|136x48|144x40|152x32|160x24|168x16|176x8|184x0|0x192|8x184|16x176|24x168|32x160|40x152|48x144|56x136|64x128|72x120|80x112|88x104|96x96|104x88|112x80|120x72|128x64|136x56|144x48|152x40|160x32|168x24|176x16|184x8|192x0|0x200|8x192|16x184|24x176|32x168|40x160|48x152|56x144|64x136|72x128|80x120|88x112|96x104|104x96|112x88|120x80|128x72|136x64|144x56|152x48|160x40|168x32|176x24|184x16|192x8|200x0|0x208|8x200|16x192|24x184|32x176|40x168|48x160|56x152|64x144|72x136|80x128|88x120|96x112|104x104|112x96|120x88|128x80|136x72|144x64|152x56|160x48|168x40|176x32|184x24|192x16|200x8|208x0|0x216|8x208|16x200|24x192|32x184|40x176|48x168|56x160|64x152|72x144|80x136|88x128|96x120|104x112|112x104|120x96|128x88|136x80|144x72|152x64|160x56|168x48|176x40|184x32|192x24|200x16|208x8|216x0|0x224|8x216|16x208|24x200|32x192|40x184|48x176|56x168|64x160|72x152|80x144|88x136|96x128|104x120|112x112|120x104|128x96|136x88|144x80|152x72|160x64|168x56|176x48|184x40|192x32|200x24|208x16|216x8|224x0|0x232|8x224|16x216|24x208|32x200|40x192|48x184|56x176|64x168|72x160|80x152|88x144|96x136|104x128|112x120|120x112|128x104|136x96|144x88|152x80|160x72|168x64|176x56|184x48|192x40|200x32|208x24|216x16|224x8|232x0|0x240|8x232|16x224|24x216|32x208|40x200|48x192|56x184|64x176|72x168|80x160|88x152|96x144|104x136|112x128|120x120|128x112|136x104|144x96|152x88|160x80|168x72|176x64|184x56|192x48|200x40|208x32|216x24|224x16|232x8|240x0|0x248|8x240|16x232|24x224|32x216|40x208|48x200|56x192|64x184|72x176|80x168|88x160|96x152|104x144|112x136|120x128|128x120|136x112|144x104|152x96|160x88|168x80|176x72|184x64|192x56|200x48|208x40|216x32|224x24|232x16|240x8|248x0|0x256|8x248|16x240|24x232|32x224|40x216|48x208|56x200|64x192|72x184|80x176|88x168|96x160|104x152|112x144|120x136|128x128|136x120|144x112|152x104|160x96|168x88|176x80|184x72|192x64|200x56|208x48|216x40|224x32|232x24|240x16|248x8|256x0)?(\\[[0-9]*\\])?$" },
+        { "pattern": "^bytes(0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32)(\\[[0-9]*\\])?" },
+        { "pattern": "^bytes$" },
+        { "pattern": "^function(\\[[0-9]*\\])?$" },
+        { "pattern": "^string$" }
+      ]
+    },
+
+    "StateMutability": {
+      "type": "string",
+      "enum": [
+        "pure",
+        "view",
+        "nonpayable",
+        "payable"
+      ]
+    },
+
+    "NormalFunction": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["function"],
+          "default": "function"
+        },
+        "name": { "$ref": "#/definitions/Name" },
+        "inputs": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Parameter" }
+        },
+        "outputs": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Parameter" },
+          "default": []
+        },
+        "stateMutability": {
+          "$ref": "#/definitions/StateMutability"
+        },
+        "constant": { "type": "boolean" },
+        "payable": { "type": "boolean", "default": false }
+      },
+      "required": ["name", "inputs", "constant"],
+      "additionalProperties": false
+    },
+
+    "ConstructorFunction": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["constructor"]
+        },
+        "inputs": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Parameter" }
+        },
+        "payable": { "type": "boolean", "default": false }
+      },
+      "required": ["type", "inputs"],
+      "additionalProperties": false
+    },
+
+    "FallbackFunction": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["fallback"]
+        },
+        "constant": { "type": "boolean" },
+        "payable": { "type": "boolean", "default": false }
+      },
+      "required": ["type"],
+      "additionalProperties": false
+    },
+
+    "Event": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["event"]
+        },
+        "name": { "$ref": "#/definitions/Name" },
+        "inputs": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/EventParameter" }
+        },
+        "anonymous": { "type": "boolean" }
+      },
+      "required": ["type", "name", "inputs", "anonymous"],
+      "additionalProperties": false
+    },
+
+    "Parameter": {
+      "type": "object",
+      "properties": {
+        "name": { "$ref": "#/definitions/Name" },
+        "type": { "$ref": "#/definitions/Type" }
+      },
+      "required": ["name", "type"]
+    },
+
+    "EventParameter": {
+      "type": "object",
+      "properties": {
+        "name": { "$ref": "#/definitions/Name" },
+        "type": { "$ref": "#/definitions/Type" },
+        "indexed": { "type": "boolean" }
+      },
+      "required": ["name", "type", "indexed"]
+    }
+  }
+}
