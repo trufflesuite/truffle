@@ -2,3 +2,4 @@ lerna-debug.log
 packages/truffle/build
 packages/truffle-debugger/.tmp
 node_modules
+yarn-error.log
