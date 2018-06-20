@@ -74,7 +74,14 @@ var contract = (function(module) {
 
     // sendTransaction / send
     instance.sendTransaction = execute.send.call(constructor, null, instance.address);
-    instance.send = (value) => instance.sendTransaction({value: value});
+
+    // Prefer user defined `send`
+    if (!instance.send){
+      instance.send = (value, txParams={}) => {
+        const packet = Object.assign({value: value}, txParams);
+        return instance.sendTransaction(packet)
+      };
+    }
 
     // Other events
     instance.allEvents = execute.allEvents.call(constructor, contract);
