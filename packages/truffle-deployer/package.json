@@ -4,7 +4,7 @@
   "description": "Light deployment module for easily deploying Ethereum contracts",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --no-warnings --timeout 10000"
+    "test": "mocha --no-warnings --timeout 10000 --exit"
   },
   "repository": {
     "type": "git",

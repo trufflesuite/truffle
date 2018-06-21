@@ -38,6 +38,6 @@ elif [ "$GETH" = true ]; then
 
 else
 
-  lerna run --scope truffle-* test --stream
+  lerna run --scope truffle-* test --stream --concurrency=1
 
 fi

@@ -9,13 +9,8 @@ var TRUFFLE_BOX_DEFAULT = "git@github.com:trufflesuite/truffle-init-default.git"
 describe("Unbox", function() {
   var destination = path.join(__dirname, ".truffle_test_tmp");
 
-  before("mkdir", function(done) {
-    fs.ensureDir(destination, done);
-  });
-
-  after("remove tmp dir", function(done) {
-    fs.remove(destination, done);
-  });
+  before("mkdir", async() => fs.ensureDir(destination));
+  after("remove tmp dir", async() => fs.remove(destination));
 
   it("unboxes truffle box from github", function() {
     this.timeout(5000);
@@ -48,9 +43,7 @@ describe("Unbox", function() {
     // Assert our precondition
     assert(fs.existsSync(contracts_directory), "contracts directory should exist for this test to be meaningful");
 
-    fs.remove(contracts_directory, function(err) {
-      if (err) return done(err);
-
+    fs.remove(contracts_directory).then(() => {
       Box.unbox(TRUFFLE_BOX_DEFAULT, destination)
         .then(function(boxConfig) {
           assert(
