@@ -219,7 +219,7 @@ describe("Deployer (sync)", function() {
   })
 
   it('waits for confirmations', async function(){
-    this.timeout(5000);
+    this.timeout(10000);
     const startBlock = await web3.eth.getBlockNumber();
 
     utils.startAutoMine(web3, 500);
@@ -248,5 +248,29 @@ describe("Deployer (sync)", function() {
     assert(exampleReceipt.blockNumber === (libReceipt.blockNumber + 3))
 
     deployer.confirmationsRequired = 0;
+  });
+
+  it('emits block events while waiting for a tx to mine', async function(){
+    this.timeout(10000);
+    const startBlock = await web3.eth.getBlockNumber();
+
+    utils.startAutoMine(web3, 2000);
+
+    const migrate = function(){
+      deployer.then(async function(){
+        await deployer._startBlockPolling(web3);
+        await utils.waitMS(5000);
+        deployer._startBlockPolling();
+      });
+    };
+
+    migrate();
+    await deployer.start();
+    utils.stopAutoMine();
+
+    assert(output.includes(`Block number: ${startBlock + 1}`));
+    assert(output.includes(`Wait: 1`));
+    assert(output.includes(`Block number: ${startBlock + 2}`));
+    assert(output.includes(`Wait: 2`))
   });
 });

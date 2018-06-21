@@ -22,6 +22,7 @@ class Reporter {
     this.deployer.emitter.on('transactionHash', this.hash.bind(this));
     this.deployer.emitter.on('receipt',         this.receipt.bind(this));
     this.deployer.emitter.on('confirmation',    this.confirmation.bind(this));
+    this.deployer.emitter.on('block',           this.block.bind(this));
   }
 
   async preDeploy(payload){
@@ -91,6 +92,11 @@ class Reporter {
   async confirmation(payload){
     let message = this.messages('confirmation', payload.num, payload.receipt, payload.contractName);
     this.logConfirmations && this.deployer.logger.log(message);
+  }
+
+  async block(payload){
+    let message = this.messages('block', payload.blockNumber, payload.blocksWaited);
+    this.deployer.logger.log(message);
   }
 
   underline(msg){
@@ -199,6 +205,7 @@ class Reporter {
       hash:         `${args[1]}`.padEnd(20) + '  > transaction hash:'.padEnd(25)     + args[0],
       receipt:      `${args[1]}`.padEnd(20) + '  > gas usage:'.padEnd(25)            + args[0],
       confirmation: `${args[2]}`.padEnd(20) + '  > confirmation number:'.padEnd(25)  + args[0],
+      block:        `Block number: ${args[0]}  Wait: ${args[1]}`,
     }
 
     return kinds[kind];

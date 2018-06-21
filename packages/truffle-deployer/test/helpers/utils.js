@@ -45,6 +45,8 @@ const utils = {
 
   stopAutoMine: () => clearInterval(utils.miningId),
 
+  waitMS: async (ms) => new Promise(resolve => setTimeout(() => resolve(), ms)),
+
   cleanUp: () => fs.removeSync(utils.buildDir),
 
   getContract: function(name, provider, networkId, account){

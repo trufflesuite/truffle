@@ -15,6 +15,7 @@ class Deployment {
     this.promiEventEmitters = [];
     this.confirmations = {};
     this.pollingInterval = 1000;
+    this.blockPoll;
   }
 
   // ------------------------------------  Utils ---------------------------------------------------
@@ -65,6 +66,11 @@ class Deployment {
   }
 
   /**
+   * NB: This should work but there are outstanding issues at both
+   * geth (with websockets) & web3 (with confirmation handling over RPC) that
+   * prevent it from being reliable. We're using very simple block polling instead.
+   * (See also _confirmationCb )
+   *
    * Queries the confirmations mapping periodically to see if we have
    * heard enough confirmations for a given tx to allow `deploy` to complete.
    * Resolves when this is true.
@@ -83,6 +89,78 @@ class Deployment {
         }
       }, self.pollingInterval);
     })
+  }
+
+  /**
+   * Emits a `block` event on each new block heard. This polling is
+   * meant to be cancelled immediately on resolution of the
+   * contract instance or on error. (See stopBlockPolling)
+   */
+  async _startBlockPolling(web3){
+    const self = this;
+    let blocksWaited = 0;
+    let currentBlock = await web3.eth.getBlockNumber();
+
+    self.blockPoll = setInterval(async() => {
+      const newBlock = await web3.eth.getBlockNumber();
+
+      if (newBlock > currentBlock){
+        blocksWaited = (newBlock - currentBlock) + blocksWaited;
+        currentBlock = newBlock;
+
+        const eventArgs = {
+          blockNumber: newBlock,
+          blocksWaited: blocksWaited
+        };
+
+        await self.emitter.emit('block', eventArgs);
+      }
+    }, self.pollingInterval);
+  }
+
+  /**
+   * Clears the interval timer initiated by `startBlockPolling
+   */
+  _stopBlockPolling(){
+    clearInterval(this.blockPoll);
+  }
+
+  /**
+   * Waits `n` blocks after a tx is mined, firing a pseudo
+   * 'confirmation' event for each one.
+   * @param  {Number} blocksToWait
+   * @param  {Object} receipt
+   * @param  {Object} web3
+   * @return {Promise}             Resolves after `blockToWait` blocks
+   */
+  async _waitBlocks(blocksToWait, state, web3){
+    const self = this;
+    let currentBlock = await web3.eth.getBlockNumber();
+
+    return new Promise(accept => {
+      let blocksHeard = 0;
+
+      const poll = setInterval(async () => {
+        const newBlock = await web3.eth.getBlockNumber();
+
+        if(newBlock > currentBlock){
+          blocksHeard = (newBlock - currentBlock) + blocksHeard;
+          currentBlock = newBlock;
+
+          const eventArgs = {
+            contractName: state.contractName,
+            receipt: state.receipt,
+            num: blocksHeard,
+          };
+          await self.emitter.emit('confirmation', eventArgs);
+        }
+
+        if (blocksHeard >= blocksToWait){
+          clearInterval(poll)
+          accept();
+        }
+      }, self.pollingInterval);
+    });
   }
 
   /**
@@ -142,6 +220,11 @@ class Deployment {
   }
 
   /**
+   * NB: This should work but there are outstanding issues at both
+   * geth (with websockets) & web3 (with confirmation handling over RPC) that
+   * prevent it from being reliable. We're using very simple block polling instead.
+   * (See also _waitForConfirmations )
+   *
    * Handler for contract's `confirmation` event. Rebroadcasts as a deployer event
    * and maintains a table of txHashes & their current confirmation number. This
    * table gets polled if the user needs to wait a few blocks before getting
@@ -220,20 +303,26 @@ class Deployment {
         promiEvent
           .on('transactionHash', self._hashCb.bind(promiEvent, self, state))
           .on('receipt',         self._receiptCb.bind(promiEvent, self, state))
-          .on('confirmation',    self._confirmationCb.bind(promiEvent, self, state))
+
+        await self._startBlockPolling(contract.web3);
 
         // Get instance (or error)
         try {
+
           instance = await promiEvent;
+          self._stopBlockPolling();
+
         } catch(err){
+
+          self._stopBlockPolling();
           eventArgs.error = err.error || err;
           await self.emitter.emit('deployFailed', eventArgs);
           throw new Error(self._errorCodes('deployFailed'));
         }
 
-        // Wait for confirmations
+        // Wait for `n` blocks
         if(self.confirmationsRequired !== 0){
-          await self._waitForConfirmations(instance.transactionHash)
+          await self._waitBlocks(self.confirmationsRequired, state, contract.web3);
         }
 
       // Case: already deployed
