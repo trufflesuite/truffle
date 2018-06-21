@@ -175,6 +175,16 @@ function Config(truffle_directory, working_directory, network) {
   });
 };
 
+Config.prototype.getProviderAsync = function() {
+  if (!this.network) {
+    return null;
+  }
+
+  var options = this.network_config;
+  options.verboseRpc = this.verboseRpc;
+  return Provider.createAsync(options);
+}
+
 Config.prototype.addProp = function(key, obj) {
   Object.defineProperty(this, key, {
     get: obj.get || function() {
