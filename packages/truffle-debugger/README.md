@@ -12,12 +12,12 @@ Features:
 
 ## API Documentation
 
-API Documentation for this library can be found at [truffleframework.com/truffle-debugger](http://truffleframework.com/truffle-debugger/).
+API Documentation for this library can be found at [trufflesuite.github.io/truffle-debugger](https://trufflesuite.github.io/truffle-debugger/).
 
 ## Library Usage
 
 _:warning: This documentation is currently a work in progress.
-Please see the [reference integration](https://github.com/trufflesuite/truffle-core/blob/develop/lib/commands/debug.js) provided by the `truffle debug` command._
+Please see the [reference integration](https://github.com/trufflesuite/truffle/blob/develop/packages/truffle-core/lib/commands/debug.js) provided by the `truffle debug` command._
 
 ### Required Parameters
 
@@ -77,13 +77,13 @@ let sourceRange = session.view(solidity.current.sourceRange);
 
 ### Useful API Docs References
 
-- [**`Session` class docs**](http://truffleframework.com/truffle-debugger/class/lib/session/index.js~Session.html)
+- [**`Session` class docs**](https://trufflesuite.github.io/truffle-debugger/class/lib/session/index.js~Session.html)
 - **Docs for selectors:**
-  - [**`ast` selectors**](http://truffleframework.com/truffle-debugger/identifiers.html#ast-selectors)
-  - [**`data` selectors**](http://truffleframework.com/truffle-debugger/identifiers.html#data-selectors)
-  - [**`evm` selectors**](http://truffleframework.com/truffle-debugger/identifiers.html#evm-selectors)
-  - [**`solidity` selectors**](http://truffleframework.com/truffle-debugger/identifiers.html#solidity-selectors)
-  - [**`trace` selectors**](http://truffleframework.com/truffle-debugger/identifiers.html#trace-selectors)
+  - [**`ast` selectors**](https://trufflesuite.github.io/truffle-debugger/identifiers.html#ast-selectors)
+  - [**`data` selectors**](https://trufflesuite.github.io/truffle-debugger/identifiers.html#data-selectors)
+  - [**`evm` selectors**](https://trufflesuite.github.io/truffle-debugger/identifiers.html#evm-selectors)
+  - [**`solidity` selectors**](https://trufflesuite.github.io/truffle-debugger/identifiers.html#solidity-selectors)
+  - [**`trace` selectors**](https://trufflesuite.github.io/truffle-debugger/identifiers.html#trace-selectors)
 
 ## Contributing
 
