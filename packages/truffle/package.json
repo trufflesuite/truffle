@@ -37,8 +37,8 @@
     "build": "npm run build-cli",
     "build-cli": "webpack --config ./cli.webpack.config.js",
     "test": "npm run build-cli && mocha --colors",
-    "test:ci": "./scripts/test.sh",
-    "test:geth": "MAIN_REPO_CI=true npm test"
+    "version:byoc-safe": "node ./scripts/prereleaseVersion.js byoc-safe byoc",
+    "version:next": "node node ./scripts/prereleaseVersion.js next next"
   },
   "repository": {
     "type": "git",
