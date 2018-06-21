@@ -20,7 +20,8 @@ const args = process.argv.slice(2);
 // Example command node ./version.js byoc-safe byoc
 const branch = args[0];
 const tag = args[1];
-const step = 'prerelease';
+const premajor = 'premajor';
+const prerelease = 'prerelease';
 
 // Checkout branch
 exec(`git checkout ${branch}`, {stdio:[0,1,2]});
@@ -31,9 +32,20 @@ console.log('Loading package');
 let pkg = fs.readFileSync('./package.json');
 pkg = JSON.parse(pkg);
 
-// Get semver increment string
-const version = semver.inc(pkg.version, step, tag);
+// Get semver increment string.
+// This bumps to 5.0.0-tag.0 the first time we do it
+// and increments the final number each time after.
+// As we merge develop into these branches we should prefer
+// the branch versioning (until they're mergeable).
+let version;
 
-// npm version: this updates the package and commits
+(!pkg.version.includes(tag))
+  ? version = semver.inc(pkg.version, premajor)
+  : version = pkg.version;
+
+version = semver.inc(version, prerelease, tag);
+
+// Updates the package and commits
 console.log(`Running: npm version ${version}`)
 exec(`npm version ${version}`);
+
