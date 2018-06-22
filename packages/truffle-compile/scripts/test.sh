@@ -3,7 +3,7 @@
 set -o errexit
 
 if [ "$CI" = true ]; then
-  mocha --timeout 5000
+  mocha --timeout 5000 $@
 else
-  mocha --invert --grep native --timeout 5000
+  mocha --invert --grep native --timeout 5000 $@
 fi
