@@ -44,6 +44,9 @@ module.exports = {
   // in order to ignore all modules in node_modules folder
   externals: [nodeExternals({
     modulesFromFile: true,
+    whitelist: [
+      "node-interval-tree"
+    ]
   })],
 
   devtool: "inline-cheap-module-source-map",
