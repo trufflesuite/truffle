@@ -10664,7 +10664,7 @@ web3-eth-abi@1.0.0-beta.33:
     web3-core-helpers "1.0.0-beta.33"
     web3-utils "1.0.0-beta.33"
 
-web3-eth-abi@1.0.0-beta.34, web3-eth-abi@^1.0.0-beta.29:
+web3-eth-abi@1.0.0-beta.34:
   version "1.0.0-beta.34"
   resolved "https://registry.yarnpkg.com/web3-eth-abi/-/web3-eth-abi-1.0.0-beta.34.tgz#034533e3aa2f7e59ff31793eaea685c0ed5af67a"
   dependencies:
