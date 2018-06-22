@@ -43,39 +43,41 @@ var Environment = {
       return callback(new Error("You must specify a network_id in your '" + config.network + "' configuration in order to use this network."));
     }
 
-    var web3 = new Web3(config.provider);
+    config.getProviderAsync().then(function(provider) {
+      var web3 = new Web3(provider);
 
-    function detectNetworkId(done) {
-      if (network_id != "*") {
-        return done(null, network_id);
+      function detectNetworkId(done) {
+        if (network_id != "*") {
+          return done(null, network_id);
+        }
+
+        // We have a "*" network. Get the current network and replace it with the real one.
+        // TODO: Should we replace this with the blockchain uri?
+        web3.version.getNetwork(function(err, id) {
+          if (err) return callback(err);
+          network_id = id;
+          config.networks[config.network].network_id = network_id;
+          done(null, network_id);
+        });
       }
 
-      // We have a "*" network. Get the current network and replace it with the real one.
-      // TODO: Should we replace this with the blockchain uri?
-      web3.version.getNetwork(function(err, id) {
+      function detectFromAddress(done) {
+        if (config.from) {
+          return done();
+        }
+
+        web3.eth.getAccounts(function(err, accounts) {
+          if (err) return done(err);
+          config.networks[config.network].from = accounts[0];
+          done();
+        });
+      }
+
+      detectNetworkId(function(err) {
         if (err) return callback(err);
-        network_id = id;
-        config.networks[config.network].network_id = network_id;
-        done(null, network_id);
+        detectFromAddress(callback);
       });
-    }
-
-    function detectFromAddress(done) {
-      if (config.from) {
-        return done();
-      }
-
-      web3.eth.getAccounts(function(err, accounts) {
-        if (err) return done(err);
-        config.networks[config.network].from = accounts[0];
-        done();
-      });
-    }
-
-    detectNetworkId(function(err) {
-      if (err) return callback(err);
-      detectFromAddress(callback);
-    });
+    }).catch(callback);
   },
 
   // Ensure you call Environment.detect() first.
@@ -84,27 +86,31 @@ var Environment = {
       "from"
     ]);
 
-    var web3 = new Web3(config.provider);
+    config.getProviderAsync().then(function(provider) {
+      var web3 = new Web3(provider);
 
-    web3.eth.getAccounts(function(err, accounts) {
-      if (err) return callback(err);
+      web3.eth.getAccounts(function(err, accounts) {
+        if (err) return callback(err);
 
-      var upstreamNetwork = config.network;
-      var upstreamConfig = config.networks[upstreamNetwork];
-      var forkedNetwork = config.network + "-fork";
+        var upstreamNetwork = config.network;
+        var upstreamConfig = config.networks[upstreamNetwork];
+        var forkedNetwork = config.network + "-fork";
 
-      config.networks[forkedNetwork] = {
-        network_id: config.network_id,
-        provider: TestRPC.provider({
-          fork: config.provider,
-          unlocked_accounts: accounts
-        }),
-        from: config.from
-      }
-      config.network = forkedNetwork;
+        config.getProviderAsync().then(function(provider) {
+          config.networks[forkedNetwork] = {
+            network_id: config.network_id,
+            provider: TestRPC.provider({
+              fork: provider,
+              unlocked_accounts: accounts
+            }),
+            from: config.from
+          }
+          config.network = forkedNetwork;
 
-      callback();
-    });
+          callback();
+        }).catch(callback);
+      });
+    }).catch(callback);
   },
 
   develop: function(config, testrpcOptions, callback) {
