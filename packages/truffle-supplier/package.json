@@ -1,0 +1,42 @@
+{
+  "name": "truffle-supplier",
+  "version": "0.1.0",
+  "description": "Dynamic component fetching for Truffle",
+  "keywords": [
+    "truffle",
+    "ethereum",
+    "smart-contracts"
+  ],
+  "author": "g. nicholas d'andrea <gnidan@users.noreply.github.com>",
+  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "license": "MIT",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trufflesuite/truffle.git"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "dependencies": {
+    "debug": "^3.1.0",
+    "find-cache-dir": "^2.0.0",
+    "original-require": "^1.0.1",
+    "request-promise": "^4.2.2",
+    "require-from-string": "^2.0.2",
+    "truffle-expect": "^0.0.4"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0"
+  }
+}

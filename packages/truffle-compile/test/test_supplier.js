@@ -105,7 +105,7 @@ describe('CompilerSupplier', function(){
     it('compiles w/ remote solc when options specify release (pinned)', function(done){
       options.compiler = {
         cache: false,
-        solc: "0.4.15"
+        version: "0.4.15"
       };
 
       compile(oldPragmaPinSource, options, (err, result) => {
@@ -120,7 +120,7 @@ describe('CompilerSupplier', function(){
       // An 0.4.16 prerelease for 0.4.15
       options.compiler = {
         cache: false,
-        solc: "0.4.16-nightly.2017.8.9+commit.81887bc7"
+        version: "0.4.16-nightly.2017.8.9+commit.81887bc7"
       };
 
       compile(oldPragmaFloatSource, options, (err, result) => {
@@ -134,7 +134,7 @@ describe('CompilerSupplier', function(){
     it('errors when specified release does not exist', function(done){
       options.compiler = {
         cache: false,
-        solc: "0.4.55.77-fantasy-solc"
+        version: "0.4.55.77-fantasy-solc"
       };
 
       compile(newPragmaSource, options, (err, result) => {
@@ -148,7 +148,7 @@ describe('CompilerSupplier', function(){
 
       options.compiler = {
         cache: false,
-        solc: pathToSolc
+        version: pathToSolc
       };
 
       compile(newPragmaSource, options, (err, result) => {
@@ -163,7 +163,7 @@ describe('CompilerSupplier', function(){
       const pathToSolc = path.join(__dirname, "../solidity-warehouse/solc/index.js");
       options.compiler = {
         cache: false,
-        solc: pathToSolc
+        version: pathToSolc
       };
 
       compile(newPragmaSource, options, (err, result) => {
@@ -176,7 +176,11 @@ describe('CompilerSupplier', function(){
       let initialAccessTime;
       let finalAccessTime;
 
-      const thunk = findCacheDir({name: 'truffle', thunk: true});
+      const thunk = findCacheDir({
+        name: 'truffle',
+        cwd: CompilerSupplier.prototype.cacheRoot,
+        thunk: true
+      });
       const expectedCache = thunk('soljson-v0.4.21+commit.dfe3193c.js');
 
       // Delete if it's already there.
@@ -184,7 +188,7 @@ describe('CompilerSupplier', function(){
 
       options.compiler = {
         cache: true,
-        solc: "0.4.21"
+        version: "0.4.21"
       };
 
       // Run compiler, expecting solc to be downloaded and cached.
@@ -222,7 +226,7 @@ describe('CompilerSupplier', function(){
 
       it('compiles with native solc', function(done){
         options.compiler = {
-          solc: "native"
+          version: "native"
         };
 
         compile(newPragmaSource, options, (err, result) => {
@@ -236,7 +240,7 @@ describe('CompilerSupplier', function(){
 
       it('compiles with dockerized solc', function(done){
         options.compiler = {
-          solc: "0.4.22",
+          version: "0.4.22",
           docker: true
         };
 
@@ -258,7 +262,7 @@ describe('CompilerSupplier', function(){
 
         let options = {
           compiler : {
-            solc: "0.4.22",
+            version: "0.4.22",
             docker: true
           },
           quiet: true,
@@ -282,7 +286,7 @@ describe('CompilerSupplier', function(){
 
       it('errors if running dockerized solc without specifying an image', function(done){
         options.compiler = {
-          solc: undefined,
+          version: undefined,
           docker: true
         };
 
@@ -296,7 +300,7 @@ describe('CompilerSupplier', function(){
         const imageName = 'fantasySolc.7777555';
 
         options.compiler = {
-          solc: imageName,
+          version: imageName,
           docker: true
         };
 
