@@ -31,7 +31,7 @@
   "dependencies": {
     "debug": "^3.1.0",
     "find-cache-dir": "^2.0.0",
-    "original-require": "^1.0.1",
+    "original-require": "1.0.1",
     "request": "2.87.0",
     "request-promise": "^4.2.2",
     "require-from-string": "^2.0.2",
