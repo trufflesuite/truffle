@@ -7,21 +7,18 @@
     "async": "2.6.1",
     "colors": "^1.1.2",
     "debug": "^3.1.0",
-    "find-cache-dir": "^1.0.0",
-    "original-require": "^1.0.1",
-    "request": "^2.85.0",
-    "request-promise": "^4.2.2",
-    "require-from-string": "^2.0.2",
     "solc": "0.4.24",
     "truffle-config": "^1.0.5",
     "truffle-contract-sources": "^0.0.2",
     "truffle-error": "^0.0.3",
-    "truffle-expect": "^0.0.4"
+    "truffle-expect": "^0.0.4",
+    "truffle-supplier": "^0.1.0"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
+    "find-cache-dir": "2.0.0",
     "mocha": "5.2.0",
     "truffle-resolver": "^4.0.4"
   },
