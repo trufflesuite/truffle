@@ -1,8 +1,6 @@
 dist: trusty
 sudo: required
 language: node_js
-node_js:
-  - "8"
 
 services:
   - docker
@@ -10,14 +8,23 @@ services:
 before_install:
   - docker pull ethereum/client-go:latest
 
-env:
-  - INTEGRATION=true
-  - GETH=true
-  - PACKAGES=true
-
 matrix:
+  fast_finish: true
+  include:
+    - node_js: 8
+      env: GETH=true
+    - node_js: 8
+      env: PACKAGES=true
+    - node_js: 8
+      env: INTEGRATION=true
+    - node_js: 6
+      env: INTEGRATION=true
   allow_failures:
-    - env: GETH=true
+    - node_js: 8
+      env: GETH=true
+    - node_js: 6
+      env: INTEGRATION=true
+
 
 install:
   - npm install -g lerna
