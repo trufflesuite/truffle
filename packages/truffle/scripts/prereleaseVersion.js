@@ -22,8 +22,6 @@ const semver = require('semver');
 const readline = require('readline');
 
 const args = process.argv.slice(2);
-
-// Example command node ./version.js byoc-safe byoc
 const branch = args[0];
 const tag = args[1];
 const premajor = 'premajor';
@@ -35,15 +33,14 @@ if (!branch || !tag ){
   const help =
   `** You forgot to pass in some arguments **\n\n` +
   `USAGE:\n` +
-  `   node ./publishPrerelase <branch> <tag>\n\n` +
+  `   node ./scripts/prereleaseVersion.js <branch> <tag>\n\n` +
 
-  `Ex: node ./publishPrerelease next next\n` +
+  `Ex: node ./scripts/prereleaseVersion.js next next\n` +
   `>>  truffle@4.1.12-next.0  truffle@next\n`;
 
   console.log(help);
   return;
 }
-
 
 // Checkout branch
 exec(`git checkout ${branch}`, opts);
@@ -62,6 +59,7 @@ let version;
 
 version = semver.inc(version, prerelease, tag);
 
+// Describe actions:
 const warn = `You are about to:\n` +
              `  + increment the package version to ${version}\n` +
              `  + publish the package on npm at tag: '${tag}'\n` +
@@ -78,6 +76,7 @@ const input = readline.createInterface({
   output: process.stdout
 });
 
+// Confirm
 input.question(warn + quest, (answer) => {
   const reminder = `\n` +
   `** Remember: don't overwrite this version in the 'package.json' when you merge develop in. **\n`;
@@ -97,6 +96,8 @@ input.question(warn + quest, (answer) => {
     input.close();
     return;
   }
+
+  // Exit doing nothing.
   console.log(exit);
   input.close();
 });
