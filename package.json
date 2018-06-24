@@ -5,7 +5,8 @@
     "lerna:bootstrap": "lerna bootstrap",
     "bootstrap": "npm run lerna:bootstrap && npm run build:debugger",
     "test": "lerna run test --stream --concurrency=1 -- --colors",
-    "ci": "./scripts/ci.sh"
+    "ci": "./scripts/ci.sh",
+    "geth": "./scripts/geth.sh"
   },
   "devDependencies": {
     "lerna": "^2.11.0"

@@ -7,13 +7,13 @@ class Deployment {
   /**
    * constructor
    * @param  {Object} emitter                 async `Emittery` emitter
-   * @param  {Number} confirmationsRequired   confirmations needed to resolve an instance
+   * @param  {Number} confirmations   confirmations needed to resolve an instance
    */
-  constructor(emitter, confirmationsRequired){
-    this.confirmationsRequired = confirmationsRequired || 0;
+  constructor(emitter, confirmations){
+    this.confirmations = confirmations || 0;
     this.emitter = emitter;
     this.promiEventEmitters = [];
-    this.confirmations = {};
+    this.confirmationsMap = {};
     this.pollingInterval = 1000;
     this.blockPoll;
   }
@@ -83,7 +83,7 @@ class Deployment {
 
     return new Promise(accept => {
       interval = setInterval(() => {
-        if (self.confirmations[hash] >= self.confirmationsRequired){
+        if (self.confirmationsMap[hash] >= self.confirmations){
           clearInterval(interval);
           accept();
         }
@@ -240,7 +240,7 @@ class Deployment {
       receipt: receipt
     };
 
-    parent.confirmations[receipt.transactionHash] = num;
+    parent.confirmationsMap[receipt.transactionHash] = num;
     await parent.emitter.emit('confirmation', eventArgs);
   }
 
@@ -321,8 +321,8 @@ class Deployment {
         }
 
         // Wait for `n` blocks
-        if(self.confirmationsRequired !== 0){
-          await self._waitBlocks(self.confirmationsRequired, state, contract.web3);
+        if(self.confirmations !== 0){
+          await self._waitBlocks(self.confirmations, state, contract.web3);
         }
 
       // Case: already deployed

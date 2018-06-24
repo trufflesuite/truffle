@@ -16,7 +16,8 @@ function Config(truffle_directory, working_directory, network) {
   var default_tx_values = {
     gas: 6721975,
     gasPrice: 100000000000, // 100 Shannon,
-    from: null
+    from: null,
+    confirmations: 0
   };
 
   this._values = {
@@ -166,6 +167,18 @@ function Config(truffle_directory, working_directory, network) {
       },
       set: function(val) {
         throw new Error("Don't set config.provider directly. Instead, set config.networks and then set config.networks[<network name>].provider")
+      }
+    },
+    confirmations: {
+      get: function() {
+        try {
+          return self.network_config.confirmations;
+        } catch (e) {
+          return default_tx_values.confirmations;
+        }
+      },
+      set: function(val) {
+        throw new Error("Don't set config.confirmations directly. Instead, set config.networks and then config.networks[<network name>].confirmations")
       }
     }
   };
