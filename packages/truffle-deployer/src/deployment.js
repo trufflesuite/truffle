@@ -151,7 +151,9 @@ class Deployment {
             contractName: state.contractName,
             receipt: state.receipt,
             num: blocksHeard,
+            block: currentBlock,
           };
+
           await self.emitter.emit('confirmation', eventArgs);
         }
 
@@ -320,11 +322,6 @@ class Deployment {
           throw new Error(self._errorCodes('deployFailed'));
         }
 
-        // Wait for `n` blocks
-        if(self.confirmations !== 0){
-          await self._waitBlocks(self.confirmations, state, contract.web3);
-        }
-
       // Case: already deployed
       } else {
         instance = await contract.deployed();
@@ -340,6 +337,10 @@ class Deployment {
 
       await self.emitter.emit('postDeploy', eventArgs);
 
+      // Wait for `n` blocks
+      if(self.confirmations !== 0 && shouldDeploy){
+        await self._waitBlocks(self.confirmations, state, contract.web3);
+      }
       // Finish: Ensure the address and tx-hash are set on the contract.
       contract.address = instance.address;
       contract.transactionHash = instance.transactionHash;

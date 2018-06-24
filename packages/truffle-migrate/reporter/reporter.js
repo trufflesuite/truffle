@@ -9,7 +9,6 @@ const spinner = require('./indentedSpinner');
 class Reporter {
   constructor(){
     this.deployingMany = false;
-    this.logConfirmations = false;
     this.deployer = null;
     this.migration = null;
     this.currentGasTotal = 0;
@@ -191,7 +190,7 @@ class Reporter {
 
   async confirmation(data){
     let message = this.messages('confirmation', data);
-    this.logConfirmations && this.deployer.logger.log(message);
+    this.deployer.logger.log(message);
   }
 
   underline(msg){
@@ -391,6 +390,9 @@ class Reporter {
           `   > ${'gas used:'.padEnd(20)} ${data.gas}\n` +
           `   > ${'gas price:'.padEnd(20)} ${data.gasPrice} gwei\n`;
 
+        if (self.confirmations !== 0) output +=
+          this.underline(`Pausing for ${self.confirmations} confirmations...`);
+
         return output;
       },
 
@@ -407,7 +409,7 @@ class Reporter {
         `   > ${'gas usage:'.padEnd(20)} ` + data.gas,
 
       confirmation: () =>
-        `   > ${'confirmation number:'.padEnd(20)} ` + data.num,
+        `   > ${'confirmation number:'.padEnd(20)} ` + `${data.num} (block: ${data.block})`,
     }
 
     return kinds[kind]();

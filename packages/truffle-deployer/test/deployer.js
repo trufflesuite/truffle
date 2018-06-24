@@ -231,7 +231,7 @@ describe("Deployer (sync)", function() {
 
     migrate();
 
-    deployer.confirmationsRequired = 2;
+    deployer.confirmations = 2;
     await deployer.start();
 
     utils.stopAutoMine();

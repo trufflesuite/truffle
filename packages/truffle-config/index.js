@@ -17,7 +17,6 @@ function Config(truffle_directory, working_directory, network) {
     gas: 6721975,
     gasPrice: 100000000000, // 100 Shannon,
     from: null,
-    confirmations: 0
   };
 
   this._values = {
@@ -29,6 +28,7 @@ function Config(truffle_directory, working_directory, network) {
     gas: null,
     gasPrice: null,
     from: null,
+    confirmations: 0,
     build: null,
     resolver: null,
     artifactor: null,

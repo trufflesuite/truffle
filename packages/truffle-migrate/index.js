@@ -147,6 +147,7 @@ class Migration {
     // Instantiate a Deployer
     const deployer = new Deployer({
       logger: logger,
+      confirmations: options.confirmations,
       network: options.network,
       network_id: options.network_id,
       provider: options.provider,
@@ -156,6 +157,7 @@ class Migration {
     // Connect reporter to this migration
     self.reporter.migration = self;
     self.reporter.deployer = deployer;
+    self.reporter.confirmations = options.confirmations || 0;
     self.reporter.listen();
 
     // Get file path and emit pre-migration event

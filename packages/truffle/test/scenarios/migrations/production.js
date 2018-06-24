@@ -46,7 +46,7 @@ describe.only("production migrations [ @geth ]", function() {
   it("runs migrations (sync & async/await)", function(done) {
     this.timeout(70000);
 
-    CommandRunner.run("migrate", config, err => {
+    CommandRunner.run("migrate --network ropsten", config, err => {
       const output = logger.contents();
       processErr(err, output);
 
@@ -59,24 +59,12 @@ describe.only("production migrations [ @geth ]", function() {
 
       assert(output.includes(network.transactionHash));
       assert(output.includes(network.address));
+      assert(output.includes('2 confirmations'));
+      assert(output.includes('confirmation number: 1'));
+      assert(output.includes('confirmation number: 2'));
 
       console.log(output)
       done();
     })
   });
-
-  /*it('forces a migration with the -f option', function(done){
-    this.timeout(70000);
-
-    CommandRunner.run("migrate -f 3", config, err => {
-      const output = logger.contents();
-      processErr(err, output);
-      assert(!output.includes('2_migrations_sync.js'));
-      assert(output.includes('3_migrations_async.js'));
-      assert(output.includes("Replacing 'IsLibrary'"))
-      assert(output.includes("Replacing 'UsesLibrary'"));
-      console.log(output)
-      done();
-    })
-  });*/
 });
