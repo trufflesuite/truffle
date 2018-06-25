@@ -82,7 +82,7 @@ input.question(warn + quest, (answer) => {
   `** Remember: don't overwrite this version in the 'package.json' when you merge develop in. **\n`;
 
   const affirmations = [
-    'y', 'yes', 'YES', 'Yes', 'OK', 'Ok', 'ok', 'peace', 'np', 'almost'
+    'y', 'yes', 'YES', 'Yes', 'OK', 'Ok', 'ok', 'peace', 'almost'
   ];
 
   const exit = `Exiting without publishing.`
