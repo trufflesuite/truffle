@@ -156,10 +156,12 @@ class Migration {
     });
 
     // Connect reporter to this migration
-    self.reporter.migration = self;
-    self.reporter.deployer = deployer;
-    self.reporter.confirmations = options.confirmations || 0;
-    self.reporter.listen();
+    if (self.reporter){
+      self.reporter.migration = self;
+      self.reporter.deployer = deployer;
+      self.reporter.confirmations = options.confirmations || 0;
+      self.reporter.listen();
+    }
 
     // Get file path and emit pre-migration event
     const file = path.relative(options.migrations_directory, self.file)
@@ -179,7 +181,11 @@ class Migration {
 
 const Migrate = {
   Migration: Migration,
-  reporter: new Reporter(),
+  reporter: null,
+
+  launchReporter: function(){
+    Migrate.reporter = new Reporter();
+  },
 
   assemble: function(options, callback) {
     dir.files(options.migrations_directory, function(err, files) {
@@ -275,7 +281,6 @@ const Migrate = {
 
     // Make migrations aware of their position in sequence
     const total = migrations.length;
-
     if(total){
       migrations[0].isFirst = true;
       migrations[total - 1].isLast = true;
@@ -362,5 +367,6 @@ const Migrate = {
     });
   }
 };
+
 
 module.exports = Migrate;

@@ -27,7 +27,7 @@ var command = {
     var Contracts = require("truffle-workflow-compile");
     var Resolver = require("truffle-resolver");
     var Artifactor = require("truffle-artifactor");
-    //var Migrate = require("truffle-migrate");
+    var Migrate = require("truffle-migrate");
     var Environment = require("../environment");
     var temp = require("temp");
     var copy = require("../copy");
@@ -87,7 +87,7 @@ var command = {
     }
 
     function runMigrations(config, callback) {
-      const Migrate = require('truffle-migrate');
+      Migrate.launchReporter();
 
       if (options.f) {
         Migrate.runFrom(options.f, config, done);

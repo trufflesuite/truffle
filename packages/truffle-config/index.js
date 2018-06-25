@@ -29,6 +29,7 @@ function Config(truffle_directory, working_directory, network) {
     gasPrice: null,
     from: null,
     confirmations: 0,
+    production: false,
     build: null,
     resolver: null,
     artifactor: null,
@@ -174,13 +175,25 @@ function Config(truffle_directory, working_directory, network) {
         try {
           return self.network_config.confirmations;
         } catch (e) {
-          return default_tx_values.confirmations;
+          return 0;
         }
       },
       set: function(val) {
         throw new Error("Don't set config.confirmations directly. Instead, set config.networks and then config.networks[<network name>].confirmations")
       }
-    }
+    },
+    production: {
+      get: function() {
+        try {
+          return self.network_config.production;
+        } catch (e) {
+          return false;
+        }
+      },
+      set: function(val) {
+        throw new Error("Don't set config.production directly. Instead, set config.networks and then config.networks[<network name>].production")
+      }
+    },
   };
 
   Object.keys(props).forEach(function(prop) {

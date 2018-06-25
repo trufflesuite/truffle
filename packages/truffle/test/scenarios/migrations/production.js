@@ -19,7 +19,7 @@ function processErr(err, output){
   }
 }
 
-describe.only("production migrations [ @geth ]", function() {
+describe("production migrations [ @geth ]", function() {
   if (!process.env.GETH) return;
 
   let config;
