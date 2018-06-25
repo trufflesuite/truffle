@@ -8,6 +8,7 @@ const spinner = require('./indentedSpinner');
 
 class Reporter {
   constructor(){
+    console.log('running reporter constructor')
     this.deployingMany = false;
     this.deployer = null;
     this.migration = null;

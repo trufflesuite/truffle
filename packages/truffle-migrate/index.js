@@ -24,6 +24,7 @@ class Migration {
     this.emitter = new Emittery();
     this.isFirst = false;
     this.isLast = false;
+    this.dryRun = options.dryRun;
     this.options = options || {};
   }
 
@@ -274,6 +275,7 @@ const Migrate = {
 
     // Make migrations aware of their position in sequence
     const total = migrations.length;
+
     if(total){
       migrations[0].isFirst = true;
       migrations[total - 1].isLast = true;

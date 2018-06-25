@@ -27,48 +27,67 @@ var command = {
     var Contracts = require("truffle-workflow-compile");
     var Resolver = require("truffle-resolver");
     var Artifactor = require("truffle-artifactor");
-    var Migrate = require("truffle-migrate");
+    //var Migrate = require("truffle-migrate");
     var Environment = require("../environment");
     var temp = require("temp");
     var copy = require("../copy");
 
-    var config = Config.detect(options);
+    // Source: ethereum.stackexchange.com/questions/17051
+    var networkWhitelist = [
+      1, // Mainnet (ETH & ETC)
+      2, // Morden (ETC)
+      3, // Ropsten
+      4, // Rinkeby
+      8, // Ubiq
+     42, // Kovan (Parity)
+     77, // Sokol
+     99, // Core
 
-    function setupDryRunEnvironmentThenRunMigrations(callback) {
-      Environment.fork(config, function(err) {
-        if (err) return callback(err);
+     7762959, // Musiccoin
+     61717561 // Aquachain
+    ]
 
-        // Copy artifacts to a temporary directory
-        temp.mkdir('migrate-dry-run-', function(err, temporaryDirectory) {
-          if (err) return callback(err);
 
-          function cleanup() {
-            var args = arguments;
-            // Ensure directory cleanup.
-            temp.cleanup(function(err) {
-              // Ignore cleanup errors.
-              callback.apply(null, args);
+    function setupDryRunEnvironmentThenRunMigrations(config) {
+      return new Promise((resolve, reject) => {
+        Environment.fork(config, function(err) {
+          if (err) return reject(err);
+
+          // Copy artifacts to a temporary directory
+          temp.mkdir('migrate-dry-run-', function(err, temporaryDirectory) {
+            if (err) return reject(err);
+
+            function cleanup() {
+              var args = arguments;
+
+              // Ensure directory cleanup.
+              temp.cleanup(function(err) {
+                (args.length && args[0] !== null)
+                  ? reject(args[0])
+                  : resolve();
+              });
+            };
+
+            copy(config.contracts_build_directory, temporaryDirectory, function(err) {
+              if (err) return reject(err);
+
+              config.contracts_build_directory = temporaryDirectory;
+
+              // Note: Create a new artifactor and resolver with the updated config.
+              // This is because the contracts_build_directory changed.
+              // Ideally we could architect them to be reactive of the config changes.
+              config.artifactor = new Artifactor(temporaryDirectory);
+              config.resolver = new Resolver(config);
+
+              runMigrations(config, cleanup);
             });
-          };
-
-          copy(config.contracts_build_directory, temporaryDirectory, function(err) {
-            if (err) return callback(err);
-
-            config.contracts_build_directory = temporaryDirectory;
-
-            // Note: Create a new artifactor and resolver with the updated config.
-            // This is because the contracts_build_directory changed.
-            // Ideally we could architect them to be reactive of the config changes.
-            config.artifactor = new Artifactor(temporaryDirectory);
-            config.resolver = new Resolver(config);
-
-            runMigrations(cleanup);
           });
         });
       });
     }
 
-    function runMigrations(callback) {
+    function runMigrations(config, callback) {
+      const Migrate = require('truffle-migrate');
 
       if (options.f) {
         Migrate.runFrom(options.f, config, done);
@@ -77,7 +96,7 @@ var command = {
           if (err) return callback(err);
 
           if (needsMigrating) {
-            Migrate.run(config, done);
+            Migrate.run(config, callback);
           } else {
             config.logger.log("Network up to date.")
             callback();
@@ -86,18 +105,62 @@ var command = {
       }
     };
 
-    Contracts.compile(config, function(err) {
+    function executePostDryRunMigration(buildDir){
+      const environment = require('../environment');
+      const NewConfig = require('truffle-config');
+      const config = NewConfig.detect(options);
+
+      config.contracts_build_directory = buildDir;
+      config.artifactor = new Artifactor(buildDir);
+      config.resolver = new Resolver(config);
+
+      environment.detect(config, function(err) {
+        config.dryRun = false;
+        runMigrations(config, done);
+      })
+    }
+
+    const conf = Config.detect(options);
+
+    Contracts.compile(conf, function(err) {
       if (err) return done(err);
 
-      Environment.detect(config, function(err) {
+      Environment.detect(conf, async function(err) {
         if (err) return done(err);
 
         var dryRun = options.dryRun === true;
+        var production = networkWhitelist.includes(conf.network_id) || conf.production;
 
+        // Dry run only
         if (dryRun) {
-          setupDryRunEnvironmentThenRunMigrations(done);
+
+          try {
+            await setupDryRunEnvironmentThenRunMigrations(conf);
+            done();
+          } catch(err){
+            done(err)
+          };
+          return;
+
+        // Production: dry-run then real run
+        }
+
+        else if (production){
+
+          const currentBuild = conf.contracts_build_directory;
+          conf.dryRun = true;
+
+          try {
+            await setupDryRunEnvironmentThenRunMigrations(conf)
+          } catch(err){
+            return done(err)
+          };
+
+          executePostDryRunMigration(currentBuild);
+
+        // Development
         } else {
-          runMigrations(true, done);
+          runMigrations(conf, done);
         }
       });
     });

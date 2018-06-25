@@ -43,12 +43,17 @@ describe("migrate (dry-run)", function() {
     networkId = await web3.eth.net.getId();
   });
 
-  it('does a dry-run with the dry-run option', function(done){
+  it('uses the dry-run option', function(done){
     this.timeout(70000);
 
     CommandRunner.run("migrate --dry-run", config, err => {
       const output = logger.contents();
       processErr(err, output);
+
+      assert(output.includes('dry-run'));
+
+      assert(!output.includes('transaction hash'));
+      assert(!output.includes('contract address'));
 
       assert(output.includes('Migrations'));
       assert(output.includes('development-fork'))
