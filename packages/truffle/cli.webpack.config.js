@@ -7,6 +7,7 @@ var CleanWebpackPlugin = require('clean-webpack-plugin');
 var webpack = require('webpack');
 var pkg = require("./package.json");
 
+var rootDir = path.join(__dirname, "../..");
 var outputDir = path.join(__dirname, "build");
 var outputFilename = 'cli.bundled.js';
 
@@ -21,6 +22,7 @@ module.exports = {
     __dirname: false,
     __filename: false
   },
+  context: rootDir,
   output: {
     path: outputDir,
     filename: '[name].bundled.js'
