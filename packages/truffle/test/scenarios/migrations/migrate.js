@@ -19,7 +19,7 @@ function processErr(err, output){
   }
 }
 
-describe("migrate (sync)", function() {
+describe("migrate (success)", function() {
   let config;
   let web3;
   let networkId;
@@ -54,6 +54,8 @@ describe("migrate (sync)", function() {
       assert(output.includes("Deploying 'UsesExample'"))
       assert(output.includes('3_migrations_async.js'));
       assert(output.includes("Replacing 'UsesExample'"))
+      assert(output.includes("PayableExample"));
+      assert(output.includes("1 ETH"));
 
       const location = path.join(config.contracts_build_directory, "UsesExample.json");
       const artifact = require(location);

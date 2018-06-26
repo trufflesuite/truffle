@@ -121,11 +121,13 @@ class Reporter {
 
       const gasPrice = new web3Utils.BN(tx.gasPrice);
       const gas = new web3Utils.BN(data.receipt.gasUsed);
-      const cost = gasPrice.mul(gas);
+      const value = new web3Utils.BN(tx.value);
+      const cost = gasPrice.mul(gas).add(value);
 
       data.gasPrice = web3Utils.fromWei(gasPrice, 'gwei');
       data.gas = data.receipt.gasUsed;
       data.from = tx.from;
+      data.value = web3Utils.fromWei(value, 'ether');
       data.cost = web3Utils.fromWei(cost, 'ether');
       data.balance = web3Utils.fromWei(balance, 'ether');
 
@@ -386,9 +388,10 @@ class Reporter {
         output +=
           `   > ${'account:'.padEnd(20)} ${data.from}\n` +
           `   > ${'balance:'.padEnd(20)} ${data.balance}\n` +
-          `   > ${'cost:'.padEnd(20)} ${data.cost} ETH\n` +
           `   > ${'gas used:'.padEnd(20)} ${data.gas}\n` +
-          `   > ${'gas price:'.padEnd(20)} ${data.gasPrice} gwei\n`;
+          `   > ${'gas price:'.padEnd(20)} ${data.gasPrice} gwei\n` +
+          `   > ${'value sent:'.padEnd(20)} ${data.value} ETH\n` +
+          `   > ${'total cost:'.padEnd(20)} ${data.cost} ETH\n`;
 
         if (self.confirmations !== 0) output +=
           this.underline(`Pausing for ${self.confirmations} confirmations...`);
