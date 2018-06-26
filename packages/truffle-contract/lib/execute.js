@@ -32,7 +32,7 @@ var execute = {
 
       // This rpc call extracts the reason string
       web3.currentProvider.send(packet, (err, response) => {
-        if (response.error || response.result ) {
+        if (response && (response.error || response.result)) {
           reason = execute.extractReason(response, web3)
         }
 
