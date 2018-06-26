@@ -111,6 +111,13 @@ class Migration {
       // Cleanup
       if (self.isLast){
         self.emitter.clearListeners();
+
+        // Exiting w provider-engine appears to be hopeless. This hack on
+        // our fork just swallows errors from eth-block-tracking
+        // as we unwind the handlers downstream from here.
+        if (self.options.provider && self.options.provider.engine){
+          self.options.provider.engine.silent = true;
+        }
       }
       // Prevent errors thrown in the callback from triggering the below catch()
       process.nextTick(callback);
