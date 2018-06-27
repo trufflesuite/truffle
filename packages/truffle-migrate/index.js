@@ -67,22 +67,26 @@ Migration.prototype.run = function(options, callback) {
     });
   };
 
-  web3.eth.getAccounts(function(err, accounts) {
-    if (err) return callback(err);
+  web3
+    .eth
+    .getAccounts()
+    .then(accounts => {
 
-    Require.file({
-      file: self.file,
-      context: context,
-      resolver: resolver,
-      args: [deployer],
-    }, function(err, fn) {
-      if (!fn || !fn.length || fn.length == 0) {
-        return callback(new Error("Migration " + self.file + " invalid or does not take any parameters"));
-      }
-      fn(deployer, options.network, accounts);
-      finish();
-    });
-  });
+      Require.file({
+        file: self.file,
+        context: context,
+        resolver: resolver,
+        args: [deployer],
+      }, function(err, fn) {
+        if (!fn || !fn.length || fn.length == 0) {
+          return callback(new Error("Migration " + self.file + " invalid or does not take any parameters"));
+        }
+        fn(deployer, options.network, accounts);
+        finish();
+      });
+
+    })
+    .catch(callback);
 };
 
 var Migrate = {
@@ -205,17 +209,8 @@ var Migrate = {
     };
 
     return {
-      send: function(payload) {
-        var result = provider.send(payload);
-
-        if (payload.method == "eth_sendTransaction") {
-          printTransaction(result.result);
-        }
-
-        return result;
-      },
-      sendAsync: function(payload, callback) {
-        provider.sendAsync(payload, function(err, result) {
+      send: function(payload, callback) {
+        provider.send(payload, function(err, result) {
           if (err) return callback(err);
 
           if (payload.method == "eth_sendTransaction") {
@@ -263,7 +258,7 @@ var Migrate = {
         : migrations.lastCompletedMigration.call();
 
     }).then(function(completed_migration) {
-      callback(null, completed_migration.toNumber());
+      callback(null, parseInt(completed_migration));
     }).catch(callback);
   },
 

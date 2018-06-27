@@ -5,7 +5,7 @@ var TestResolver = require("./testresolver");
 var TestSource = require("./testsource");
 var expect = require("truffle-expect");
 var contract = require("truffle-contract");
-var SolidityCoder = require("web3/lib/solidity/coder.js");
+var abi = require("web3-eth-abi");
 var path = require("path");
 var _ = require("lodash");
 var async = require("async");
@@ -67,7 +67,7 @@ TestRunner.prototype.initialize = function(callback) {
         abis.map(function(abi) {
           if (abi.type == "event") {
             var signature = abi.name + "(" + _.map(abi.inputs, "type").join(",") + ")";
-            self.known_events[web3.sha3(signature)] = {
+            self.known_events[web3.utils.sha3(signature)] = {
               signature: signature,
               abi_entry: abi
             };
@@ -124,16 +124,15 @@ TestRunner.prototype.resetState = function(callback) {
 
 TestRunner.prototype.startTest = function(mocha, callback) {
   var self = this;
-  this.web3.eth.getBlockNumber(function(err, result) {
-    if (err) return callback(err);
-
-    result = web3.toBigNumber(result);
+  this.web3.eth.getBlockNumber().then(result => {
+    var one = web3.utils.toBN(1);
+    result = web3.utils.toBN(result);
 
     // Add one in base 10
-    self.currentTestStartBlock = result.plus(1, 10);
+    self.currentTestStartBlock = result.add(one);
 
     callback();
-  });
+  }).catch(callback);
 };
 
 TestRunner.prototype.endTest = function(mocha, callback) {
@@ -174,7 +173,8 @@ TestRunner.prototype.endTest = function(mocha, callback) {
       }).filter(function(type) {
         return type != null;
       });
-      var values = SolidityCoder.decodeParams(types, log.data.replace("0x", ""));
+
+      var values = abi.decodeLog(event.abi_entry.inputs, log.data, log.topics);
       var index = 0;
 
       var line = "    " + event.abi_entry.name + "(";
@@ -184,8 +184,8 @@ TestRunner.prototype.endTest = function(mocha, callback) {
           value = "<indexed>";
         } else {
           value = values[index];
-          index += 1;
         }
+        index += 1;
 
         return input.name + ": " + value.toString();
       }).join(", ");
@@ -234,7 +234,7 @@ TestRunner.prototype.rpc = function(method, arg, cb) {
     cb(null, result);
   };
 
-  this.provider.sendAsync(req, intermediary);
+  this.provider.send(req, intermediary);
 };
 
 module.exports = TestRunner;

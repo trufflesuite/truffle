@@ -6,15 +6,16 @@ var assert = require("assert");
 
 describe("Compile", function() {
   this.timeout(5000); // solc
-  var orderedSource = null;
-  var emptySource = null;
-  var compileOptions = { contracts_directory: '', solc: ''};
+  var simpleOrderedSource = null;
+  var complexOrderedSource = null;
+  var inheritedSource = null;
+  var compileOptions = { contracts_directory: '', solc: '', quiet: true};
 
   describe("ABI Ordering", function(){
     before("get code", function() {
-      simpleOrderedSource = fs.readFileSync(path.join(__dirname, "SimpleOrdered.sol"), "utf-8");
-      complexOrderedSource = fs.readFileSync(path.join(__dirname, "ComplexOrdered.sol"), "utf-8");
-      inheritedSource = fs.readFileSync(path.join(__dirname, "InheritB.sol"), "utf-8");
+      simpleOrderedSource = fs.readFileSync(path.join(__dirname, "./sources/SimpleOrdered.sol"), "utf-8");
+      complexOrderedSource = fs.readFileSync(path.join(__dirname, "./sources/ComplexOrdered.sol"), "utf-8");
+      inheritedSource = fs.readFileSync(path.join(__dirname, "./sources/InheritB.sol"), "utf-8");
     });
 
     // Ordered.sol's methods are ordered semantically.
@@ -35,7 +36,7 @@ describe("Compile", function() {
       assert.deepEqual(abi, alphabetic);
     });
 
-    it("orders the simple ABI", function(){
+    it("orders the simple ABI", function(done){
       var expectedOrder = ['theFirst', 'second', 'andThird'];
       var sources = {};
       sources["SimpleOrdered.sol"] = simpleOrderedSource;
@@ -45,6 +46,7 @@ describe("Compile", function() {
           return item.name;
         });
         assert.deepEqual(abi, expectedOrder);
+        done();
       })
     });
 
@@ -67,7 +69,7 @@ describe("Compile", function() {
       assert.deepEqual(abi, alphabetic);
     });
 
-    it("orders the complex ABI", function(){
+    it("orders the complex ABI", function(done){
       var expectedOrder = ['LogB', 'LogA', 'LogD', 'LogC', 'theFirst', 'second', 'andThird'];
       var sources = {};
       sources["ComplexOrdered.sol"] = complexOrderedSource;
@@ -78,17 +80,20 @@ describe("Compile", function() {
           return item.name;
         });
         assert.deepEqual(abi, expectedOrder);
+        done();
       })
     });
 
     // Ported from `truffle-solidity-utils`
-    it("orders the ABI of a contract without functions", function(){
+    it("orders the ABI of a contract without functions", function(done){
       var sources = {};
+      // ComplexOrdered.sol includes contract `Empty`
       sources["ComplexOrdered.sol"] = complexOrderedSource;
       sources["InheritB.sol"] = inheritedSource;
 
       Compile(sources, compileOptions, function(err, result){
         assert.equal(result["Empty"].abi.length, 0);
+        done();
       })
     })
   })

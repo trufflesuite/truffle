@@ -10,7 +10,7 @@ module.exports = function(chai, utils) {
     // Controversial: Technically there is that edge case where
     // all zeroes could be a valid address. But: This catches all
     // those cases where Ethereum returns 0x0000... if something fails.
-    var number = web3.toBigNumber(this._obj);
+    var number = web3.utils.toBN(this._obj);
     this.assert(number.equals(0) === false, 'expected address #{this} to not be zero', 'you shouldn\'t ever see this.');
   });
   assert.isAddress = function(val, exp, msg) {

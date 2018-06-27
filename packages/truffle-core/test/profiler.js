@@ -1,4 +1,6 @@
 var assert = require("chai").assert;
+var fs = require("fs-extra");
+var glob = require("glob");
 var Box = require("truffle-box");
 var Profiler = require("truffle-compile/profiler.js");
 var Resolver = require("truffle-resolver");
@@ -21,14 +23,23 @@ describe('profiler', function() {
     });
   });
 
+  after("Cleanup tmp files", function(done){
+    glob('tmp-*', (err, files) => {
+      if(err) done(err);
+      files.forEach(file => fs.removeSync(file));
+      done();
+    })
+  })
+
   it('profiles example project successfully', function(done) {
     Profiler.required_sources(config.with({
-      paths: ["./MetaCoin.sol"],
+      paths: ["./ConvertLib.sol"],
       base_path: config.contracts_directory
-    }), function(err, result) {
+    }), function(err, allSources, compilationTargets) {
       if (err) return done(err);
 
-      assert.equal(Object.keys(result).length, 2);
+      assert.equal(Object.keys(allSources).length, 3);
+      assert.equal(compilationTargets.length, 2);
       done();
     });
   });

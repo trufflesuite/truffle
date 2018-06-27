@@ -4,8 +4,9 @@
   "description": "A better contract abstraction for Ethereum (formerly EtherPudding)",
   "main": "index.js",
   "scripts": {
-    "test": "mocha",
-    "debug": "DEBUG=ganache-core mocha",
+    "test": "./scripts/test.sh",
+    "test:debug": "$(npm bin)/mocha --inspect-brk",
+    "test:trace": "$(npm bin)/mocha --trace-warnings",
     "compile": "browserify ./index.js -i web3 -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js"
   },
   "repository": {
@@ -29,23 +30,36 @@
     "truffle-blockchain-utils": "^0.0.5",
     "truffle-contract-schema": "^2.0.1",
     "truffle-error": "^0.0.3",
-    "web3": "0.20.6"
+    "web3": "1.0.0-beta.33",
+    "web3-core-promievent": "1.0.0-beta.33",
+    "web3-eth-abi": "1.0.0-beta.33",
+    "web3-utils": "1.0.0-beta.33"
   },
   "devDependencies": {
     "async": "2.6.1",
+    "babel-core": "^6.26.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "bignumber.js": "^6.0.0",
     "browserify": "^14.0.0",
     "chai": "4.1.2",
     "debug": "^3.1.0",
-    "ganache-core": "2.1.0-beta.0",
+    "ganache-core": "2.1.0",
     "lodash": "4.17.10",
     "mocha": "5.2.0",
     "require-nocache": "^1.0.0",
     "solc": "0.4.24",
     "temp": "^0.8.3",
     "uglify": "^0.1.5",
-    "uglify-js": "^2.7.5"
+    "uglify-js": "^2.7.5",
+    "uglify-js-es6": "^2.8.9"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "babel": {
+    "presets": [
+      "env"
+    ]
   }
 }

@@ -21,30 +21,25 @@ var log = {
   log: debug
 }
 
-function getNetworkId(provider, callback) {
-  var web3 = new Web3();
-  web3.setProvider(provider);
-
-  web3.version.getNetwork(function(err, result) {
-    if (err) return callback(err);
-
-    callback(null, result);
-  })
+function getNetworkId(provider) {
+  return new Promise(function(accept, reject){
+    var web3 = new Web3();
+    web3.setProvider(provider);
+    return web3.eth.net.getId();
+  });
 }
 
 function getAndSetAccounts(contract, done) {
-  contract.web3.eth.getAccounts(function(err, accs) {
-    if (err) return done(err);
-
+  contract.web3.eth.getAccounts().then(function(accs){
     contract.defaults({
       from: accs[0]
     });
 
-    done(err);
-  });
+    done();
+  }).catch(done);
 };
 
-describe("Different networks:", function() {
+describe("Different networks: ", function() {
   var binary;
   var abi;
   var temp_dir;
@@ -59,7 +54,7 @@ describe("Different networks:", function() {
     this.timeout(10000);
 
     // Compile first
-    var result = solc.compile(fs.readFileSync("./test/Example.sol", {encoding: "utf8"}), 1);
+    var result = solc.compile(fs.readFileSync("./test/sources/Example.sol", {encoding: "utf8"}), 1);
 
     var compiled = Schema.normalize(
       result.contracts["Example"] || result.contracts[":Example"]
@@ -85,6 +80,7 @@ describe("Different networks:", function() {
       abi: abi,
       binary: binary
     });
+
     ExampleTwo = ExampleOne.clone();
 
     ExampleOne.setProvider(network_one);
@@ -132,7 +128,7 @@ describe("Different networks:", function() {
   })
 
   it("has no network if none set", function() {
-    AnotherExample = contract({
+    var AnotherExample = contract({
       contractName: "AnotherExample",
       abi: abi,
       binary: binary
@@ -281,10 +277,9 @@ describe("Different networks:", function() {
     var example;
 
     return ExampleSetup.new(1, {from: from, gas: 3141592}).then(function(instance) {
-      example = ExampleDetect.at(instance.address);
-
       assert.equal(ExampleDetect.network_id, null);
-
+      return ExampleDetect.at(instance.address);
+    }).then(function(example){
       return example.setValue(47, {from: from, gas: 3141592});
     }).then(function() {
       assert.equal(ExampleDetect.network_id, network_two_id);
@@ -308,10 +303,9 @@ describe("Different networks:", function() {
     var example;
 
     return ExampleSetup.new(1, {from: from, gas: 3141592}).then(function(instance) {
-      example = ExampleDetect.at(instance.address);
-
       assert.equal(ExampleDetect.network_id, null);
-
+      return ExampleDetect.at(instance.address);
+    }).then(function(example){
       return example.getValue({from: from, gas: 3141592});
     }).then(function() {
       assert.equal(ExampleDetect.network_id, network_two_id);
@@ -439,9 +433,6 @@ describe("Different networks:", function() {
           }).catch(done);
         });
       });
-
     });
   });
-
-
 });

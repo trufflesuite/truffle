@@ -24,7 +24,7 @@ describe("Migration Parameters", function() {
 
   before("set up sandbox", function(done) {
     this.timeout(10000);
-    Box.sandbox("default", function(err, conf) {
+    Box.sandbox("default#web3-one", function(err, conf) {
       if (err) return done(err);
       config = conf;
       config.logger = logger;

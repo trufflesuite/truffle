@@ -1,5 +1,5 @@
 var Schema = require("truffle-contract-schema");
-var Contract = require("./contract.js");
+var Contract = require("./lib/contract.js");
 
 var contract = function(options) {
   var binary = Schema.normalize(options || {});
