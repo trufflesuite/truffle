@@ -26,19 +26,20 @@ describe("deployer", function() {
   var network_id;
   var accounts;
 
-  before("get network id", function() {
-    return web3
-      .eth
-      .net
-      .getId()
-      .then(id => network_id = id);
+  before("get network id", function(done) {
+    web3.version.getNetwork(function(err, id) {
+      if (err) return done(err);
+      network_id = id;
+      done();
+    });
   });
 
-  before("get accounts", function() {
-    return web3
-      .eth
-      .getAccounts()
-      .then(accs => accounts = accs)
+  before("get accounts", function(done) {
+    web3.eth.getAccounts(function(err, accs) {
+      if (err) return done(err);
+      accounts = accs;
+      done();
+    })
   });
 
   it("deploys a contract correctly", function() {

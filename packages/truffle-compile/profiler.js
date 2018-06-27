@@ -4,9 +4,10 @@
 var path = require("path");
 var async = require("async");
 var fs = require("fs");
+var Graph = require("graphlib").Graph;
+var isAcyclic = require("graphlib/lib/alg").isAcyclic;
 var Parser = require("./parser");
 var CompileError = require("./compileerror");
-var CompilerSupplier = require("./compilerSupplier");
 var expect = require("truffle-expect");
 var find_contracts = require("truffle-contract-sources");
 var debug = require("debug")("compile:profiler");
@@ -158,8 +159,6 @@ module.exports = {
     });
   },
 
-  // Returns the minimal set of sources to pass to solc as compilations targets,
-  // as well as the complete set of sources so solc can resolve the comp targets' imports.
   required_sources: function(options, callback) {
     var self = this;
 
@@ -169,181 +168,78 @@ module.exports = {
       "resolver"
     ]);
 
-    var resolver = options.resolver;
+    var paths = this.convert_to_absolute_paths(options.paths, options.base_path);
 
-    // Fetch the whole contract set
-    find_contracts(options.contracts_directory, (err, allPaths) => {
-      if(err) return callback(err);
+    function findRequiredSources(dependsGraph, done) {
+      var required = {};
 
-      // Solidity test files might have been injected. Include them in the known set.
-      options.paths.forEach(_path => {
-        if (!allPaths.includes(_path)) {
-          allPaths.push(_path)
+      function hasBeenTraversed(import_path) {
+        return required[import_path] != null;
+      }
+
+      function include(import_path) {
+        //console.log("Including: " + file)
+
+        required[import_path] = dependsGraph.node(import_path);
+      }
+
+      function walk_down(import_path) {
+        if (hasBeenTraversed(import_path)) {
+          return;
         }
-      });
 
-      var updates = self.convert_to_absolute_paths(options.paths, options.base_path).sort();
-      var allPaths = self.convert_to_absolute_paths(allPaths, options.base_path).sort();
+        include(import_path);
 
-      var allSources = {};
-      var compilationTargets = [];
+        var dependencies = dependsGraph.successors(import_path);
 
-      // Load compiler
-      var supplier = new CompilerSupplier(options.compiler)
-      supplier.load().then(solc => {
+        // console.log("At: " + import_path);
+        // console.log("   Dependencies: ", dependencies);
 
-        // Get all the source code
-        self.resolveAllSources(resolver, allPaths, solc, (err, resolved) => {
-          if(err) return callback(err);
-
-          // Generate hash of all sources including external packages - passed to solc inputs.
-          var resolvedPaths = Object.keys(resolved);
-          resolvedPaths.forEach(file => allSources[file] = resolved[file].body)
-
-          // Exit w/out minimizing if we've been asked to compile everything, or nothing.
-          if (self.listsEqual(options.paths, allPaths)){
-            return callback(null, allSources, {});
-          } else if (!options.paths.length){
-            return callback(null, {}, {});
-          }
-
-          // Seed compilationTargets with known updates
-          updates.forEach(update => compilationTargets.push(update));
-
-          // While there are updated files in the queue, we take each one
-          // and search the entire file corpus to find any sources that import it.
-          // Those sources are added to list of compilation targets as well as
-          // the update queue because their own ancestors need to be discovered.
-          async.whilst(() => updates.length > 0, updateFinished => {
-            var currentUpdate = updates.shift();
-            var files = allPaths.slice();
-
-            // While files: dequeue and inspect their imports
-            async.whilst(() => files.length > 0, fileFinished => {
-
-              var currentFile = files.shift();
-
-              // Ignore targets already selected.
-              if (compilationTargets.includes(currentFile)){
-                return fileFinished();
-              }
-
-              var imports;
-              try {
-                imports = self.getImports(currentFile, resolved[currentFile], solc);
-              } catch (err) {
-                err.message = "Error parsing " + currentFile + ": " + e.message;
-                return fileFinished(err);
-              }
-
-              // If file imports a compilation target, add it
-              // to list of updates and compilation targets
-              if (imports.includes(currentUpdate)){
-                updates.push(currentFile);
-                compilationTargets.push(currentFile);
-              }
-
-              fileFinished();
-
-            }, err => updateFinished(err));
-          }, err => (err) ? callback(err) : callback(null, allSources, compilationTargets))
-        })
-      }).catch(callback)
-    })
-  },
-
-  // Resolves sources in several async passes. For each resolved set it detects unknown
-  // imports from external packages and adds them to the set of files to resolve.
-  resolveAllSources: function(resolver, initialPaths, solc, callback){
-    var self = this;
-    var mapping = {};
-    var allPaths = initialPaths.slice();
-
-    function generateMapping(finished){
-      var promises = [];
-
-      // Dequeue all the known paths, generating resolver promises,
-      // We'll add paths if we discover external package imports.
-      while(allPaths.length){
-        var file;
-        var parent = null;
-
-        var candidate = allPaths.shift();
-
-        // Some paths will have been extracted as imports from a file
-        // and have information about their parent location we need to track.
-        if (typeof candidate === 'object'){
-          file = candidate.file;
-          parent = candidate.parent;
-        } else {
-          file = candidate;
+        if (dependencies.length > 0) {
+          dependencies.forEach(walk_down);
         }
-        var promise = new Promise((accept, reject)=> {
-          resolver.resolve(file, parent, (err, body, absolutePath, source) => {
-            (err)
-              ? reject(err)
-              : accept({ file: absolutePath, body: body, source: source });
-          });
-        });
-        promises.push(promise);
-      };
+      }
 
-      // Resolve everything known and add it to the map, then inspect each file's
-      // imports and add those to the list of paths to resolve if we don't have it.
-      Promise.all(promises).then(results => {
+      function walk_from(import_path) {
+        if (hasBeenTraversed(import_path)) {
+          return;
+        }
 
-        // Generate the sources mapping
-        results.forEach(item => mapping[item.file] = Object.assign({}, item));
+        var ancestors = dependsGraph.predecessors(import_path);
+        var dependencies = dependsGraph.successors(import_path);
 
-        // Queue unknown imports for the next resolver cycle
-        while(results.length){
-          var result = results.shift();
+        // console.log("At: " + import_path);
+        // console.log("   Ancestors: ", ancestors);
+        // console.log("   Dependencies: ", dependencies);
 
-          // Inspect the imports
-          var imports;
-          try {
-            imports = self.getImports(result.file, result, solc);
-          } catch (err) {
-            err.message = "Error parsing " + result[file] + ": " + err.message;
-            return finished(err);
-          }
+        include(import_path);
 
-          // Detect unknown external packages / add them to the list of files to resolve
-          // Keep track of location of this import because we need to report that.
-          imports.forEach(item => {
-            if (!mapping[item])
-              allPaths.push({file: item, parent: result.file});
-          });
-        };
-        finished()
-      }).catch(err => { finished(err) });
+        if (ancestors && ancestors.length > 0) {
+          ancestors.forEach(walk_from);
+        }
+
+        if (dependencies && dependencies.length > 0) {
+          dependencies.forEach(walk_down);
+        }
+      }
+
+      paths.forEach(walk_from);
+
+      done(null, required);
     }
 
-    async.whilst(
-      () => allPaths.length,
-      generateMapping,
-      (err) => (err) ? callback(err) : callback(null, mapping)
-    );
-  },
+    find_contracts(options.base_path, function(err, allPaths) {
+      if (err) return callback(err);
 
-  getImports: function(file, resolved, solc){
-    var self = this;
+      // Include paths for Solidity .sols, specified in options.
+      allPaths = allPaths.concat(paths);
 
-    var imports = Parser.parseImports(resolved.body, solc);
+      self.dependency_graph(allPaths, options.resolver, function(err, dependsGraph) {
+        if (err) return callback(err);
 
-    // Convert explicitly relative dependencies of modules back into module paths.
-    return imports.map(dependencyPath => {
-      return (self.isExplicitlyRelative(dependencyPath))
-        ? resolved.source.resolve_dependency_path(file, dependencyPath)
-        : dependencyPath;
+        findRequiredSources(dependsGraph, callback);
+      });
     });
-  },
-
-  listsEqual: function(listA, listB){
-    var a = listA.sort();
-    var b = listB.sort();
-
-    return JSON.stringify(a) === JSON.stringify(b);
   },
 
   convert_to_absolute_paths: function(paths, base) {
@@ -363,4 +259,135 @@ module.exports = {
   isExplicitlyRelative: function(import_path) {
     return import_path.indexOf(".") == 0;
   },
+
+  dependency_graph: function(paths, resolver, callback) {
+    var self = this;
+
+    // Iterate through all the contracts looking for libraries and building a dependency graph
+    var dependsGraph = new Graph();
+
+    var imports_cache = {};
+
+    // For the purposes of determining correct error messages.
+    // The second array item denotes which path imported the current path.
+    // In the case of the paths passed in, there was none.
+    paths = paths.map(function(p) {
+      return [p, null];
+    });
+
+    async.whilst(function() {
+      return paths.length > 0;
+    }, function(finished) {
+      var current = paths.shift();
+      var import_path = current[0];
+      var imported_from = current[1];
+
+      if (dependsGraph.hasNode(import_path) && imports_cache[import_path] != null) {
+        return finished();
+      }
+
+      resolver.resolve(import_path, imported_from, function(err, resolved_body, resolved_path, source) {
+        if (err) return finished(err);
+
+        if (dependsGraph.hasNode(resolved_path) && imports_cache[resolved_path] != null) {
+          return finished();
+        }
+
+        // Add the contract to the depends graph.
+        dependsGraph.setNode(resolved_path, resolved_body);
+
+        var imports;
+
+        try {
+          imports = Parser.parseImports(resolved_body);
+        } catch (e) {
+          e.message = "Error parsing " + import_path + ": " + e.message;
+          return finished(e);
+        }
+
+        // Convert explicitly relative dependencies of modules
+        // back into module paths. We also use this loop to update
+        // the graph edges.
+        imports = imports.map(function(dependency_path) {
+          // Convert explicitly relative paths
+          if (self.isExplicitlyRelative(dependency_path)) {
+            dependency_path = source.resolve_dependency_path(import_path, dependency_path);
+          }
+
+          // Update graph edges
+          if (!dependsGraph.hasEdge(import_path, dependency_path)) {
+            dependsGraph.setEdge(import_path, dependency_path);
+          }
+
+          // Return an array that denotes a new import and the path it was imported from.
+          return [dependency_path, import_path];
+        });
+
+        imports_cache[import_path] = imports;
+
+        Array.prototype.push.apply(paths, imports);
+
+        finished();
+      });
+    },
+    function(err) {
+      if (err) return callback(err);
+      callback(null, dependsGraph)
+    });
+  },
+
+  // Parse all source files in the directory and output the names of contracts and their source paths
+  // directory can either be a directory or array of files.
+  defined_contracts: function(directory, callback) {
+    function getFiles(callback) {
+      if (Array.isArray(directory)) {
+        callback(null, directory);
+      } else {
+        find_contracts(directory, callback);
+      }
+    }
+
+    getFiles(function(err, files) {
+      if (err) return callback(err);
+
+      var promises = files.map(function(file) {
+        return new Promise(function(accept, reject) {
+          fs.readFile(file, "utf8", function(err, body) {
+            if (err) return reject(err);
+
+            var output;
+
+            try {
+              output = Parser.parse(body);
+            } catch (e) {
+              e.message = "Error parsing " + file + ": " + e.message;
+              return reject(e);
+            }
+
+            accept(output.contracts);
+          });
+        }).then(function(contract_names) {
+          var returnVal = {};
+
+          contract_names.forEach(function(contract_name) {
+            returnVal[contract_name] = file;
+          });
+
+          return returnVal;
+        });
+      });
+
+      Promise.all(promises).then(function(objects) {
+        var contract_source_paths = {};
+
+        objects.forEach(function(object) {
+          Object.keys(object).forEach(function(contract_name) {
+            contract_source_paths[contract_name] = object[contract_name];
+          });
+        });
+
+        callback(null, contract_source_paths);
+      }).catch(callback);
+    });
+  }
 };

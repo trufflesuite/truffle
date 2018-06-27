@@ -22,8 +22,6 @@ var log = {
 describe("Cloning", function() {
   var network_one_id;
   var network_two_id;
-  var network_one;
-  var network_two;
   var ExampleOne;
   var ExampleTwo;
 
@@ -31,7 +29,7 @@ describe("Cloning", function() {
     this.timeout(10000);
 
     // Compile first
-    var result = solc.compile(fs.readFileSync("./test/sources/Example.sol", {encoding: "utf8"}), 1);
+    var result = solc.compile(fs.readFileSync("./test/Example.sol", {encoding: "utf8"}), 1);
 
     var compiled = result.contracts["Example"];
 

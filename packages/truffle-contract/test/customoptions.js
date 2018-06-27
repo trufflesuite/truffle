@@ -7,7 +7,7 @@ var requireNoCache = require("require-nocache")(module);
 describe("Custom options", function() {
 
   it("allows custom options", function() {
-    var Example = contract({
+    Example = contract({
       contractName: "Example",
       abi: [],
       binary: "0xabcdef",

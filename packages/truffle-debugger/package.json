@@ -31,7 +31,7 @@
     "truffle-code-utils": "^1.1.1",
     "truffle-expect": "^0.0.4",
     "truffle-solidity-utils": "^1.1.2",
-    "web3": "1.0.0-beta.33",
+    "web3": "0.20.6",
     "web3-eth-abi": "^1.0.0-beta.29"
   },
   "devDependencies": {
@@ -42,7 +42,6 @@
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.6.1",
     "babel-runtime": "^6.26.0",
-    "chai": "^4.1.2",
     "esdoc": "^1.0.4",
     "esdoc-ecmascript-proposal-plugin": "^1.0.0",
     "esdoc-standard-plugin": "^1.0.0",

@@ -160,69 +160,16 @@ Console.prototype.interpret = function(cmd, context, filename, callback) {
   }
 
   var result;
-
-  // Much of the following code is from here, though spruced up:
-  // https://github.com/nfcampos/await-outside
-
-  /*
-  - allow whitespace before everything else
-  - optionally capture `var|let|const <varname> = `
-    - varname only matches if it starts with a-Z or _ or $
-      and if contains only those chars or numbers
-    - this is overly restrictive but is easier to maintain
-  - capture `await <anything that follows it>`
-  */
-  let includesAwait = /^\s*((?:(?:var|const|let)\s+)?[a-zA-Z_$][0-9a-zA-Z_$]*\s*=\s*)?(\(?\s*await[\s\S]*)/;
-
-  var match = cmd.match(includesAwait);
-  var source = cmd;
-  var assignment = null;
-
-  // If our code includes an await, add special processing to ensure it's evaluated properly.
-  if (match) {
-    var assign = match[1];
-    var expression = match[2];
-  
-    var RESULT = "__await_outside_result";
-
-    // Wrap the await inside an async function.
-    // Strange indentation keeps column offset correct in stack traces
-    source = `(async function() { try { ${assign ? `global.${RESULT} =` : "return"} (
-${expression.trim()}
-); } catch(e) { global.ERROR = e; throw e; } }())`;
-
-    assignment = assign
-      ? `${assign.trim()} global.${RESULT}; void delete global.${RESULT};`
-      : null;
-  } 
-
-  var runScript = function(s) {
-    const options = { displayErrors: true, breakOnSigint: true, filename: filename };
-    return s.runInContext(context, options);
-  };
-
   try {
-    const options = { displayErrors: true, lineOffset: -1 };
-    var script = vm.createScript(source, options);
+    result = vm.runInContext(cmd, context, {
+      displayErrors: false
+    });
   } catch (e) {
-    // If syntax error, or similar, bail.
     return callback(e);
   }
 
-  // Ensure our script returns a promise whether we're using an
-  // async function or not. If our script is an async function,
-  // this will ensure the console waits until that await is finished.
-  Promise.resolve(runScript(script)).then(function(value) {
-    // If there's an assignment to run, run that.
-    if (assignment) { 
-      return runScript(vm.createScript(assignment));
-    } else {
-      return value;
-    }
-  }).then(function(value) {
-    // All good? Return the value (e.g., eval'd script or assignment)
-    callback(null, value);
-  }).catch(callback);
+  // Resolve all promises. This will leave non-promises alone.
+  Promise.resolve(result).then(function(res) { callback(null, res) }).catch(callback);
 }
 
 module.exports = Console;

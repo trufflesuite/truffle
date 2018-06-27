@@ -4,7 +4,7 @@
   "description": "Light deployment module for easily deploying Ethereum contracts",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --no-warnings"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -30,7 +30,7 @@
   "devDependencies": {
     "ganache-cli": "6.1.0-beta.4",
     "mocha": "5.2.0",
-    "web3": "1.0.0-beta.33"
+    "web3": "0.20.6"
   },
   "publishConfig": {
     "access": "public"

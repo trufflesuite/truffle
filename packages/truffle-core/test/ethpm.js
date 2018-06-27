@@ -1,7 +1,6 @@
 var assert = require("chai").assert;
 var Box = require("truffle-box");
-var fs = require("fs-extra");
-var glob = require("glob");
+var fs = require("fs");
 var path = require('path');
 var mkdirp = require("mkdirp");
 var async = require("async");
@@ -78,14 +77,6 @@ describe.skip('EthPM integration', function() {
     });
   });
 
-  after("Cleanup tmp files", function(done){
-    glob('tmp-*', (err, files) => {
-      if(err) done(err);
-      files.forEach(file => fs.removeSync(file));
-      done();
-    })
-  })
-
   // afterEach("stop ipfs server", function(done) {
   //   this.timeout(10000);
   //
@@ -104,7 +95,7 @@ describe.skip('EthPM integration', function() {
   // });
 
   it("successfully installs single dependency from EthPM", function(done) {
-    this.timeout(30000); // Giving ample time for requests to time out.
+    this.timeout(20000); // Giving ample time for requests to time out.
 
     Package.install(config.with({
       ethpm: {
@@ -126,7 +117,7 @@ describe.skip('EthPM integration', function() {
   });
 
   it("successfully installs and provisions a package with dependencies from EthPM", function(done) {
-    this.timeout(30000); // Giving ample time for requests to time out.
+    this.timeout(15000); // Giving ample time for requests to time out.
     this.retries(2);
 
     Package.install(config.with({
@@ -162,8 +153,6 @@ describe.skip('EthPM integration', function() {
         assert.isNotNull(contracts["transferable"]);
 
         fs.readdir(config.contracts_build_directory, function(err, files) {
-          if (err) return done(err);
-
           var found = [false, false];
           var search = ["owned", "transferable"];
 
@@ -189,7 +178,7 @@ describe.skip('EthPM integration', function() {
   // treats the package as if it had no sources; to do so, we simply don't compile its code.
   // In addition, this package contains deployments. We need to make sure these deployments are available.
   it("successfully installs and provisions a deployed package with network artifacts from EthPM, without compiling", function(done) {
-    this.timeout(30000); // Giving ample time for requests to time out.
+    this.timeout(15000); // Giving ample time for requests to time out.
 
     Package.install(config.with({
       ethpm: {

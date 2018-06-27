@@ -33,7 +33,7 @@ var Deployed = {
   toChecksumAddress: function (address) {
     var web3 = new Web3();
     address = address.toLowerCase().replace("0x", "");
-    var hash = web3.utils.sha3(address).replace("0x", "");
+    var hash = web3.sha3(address).replace("0x", "");
     var ret = '0x'
 
     for (var i = 0; i < address.length; i++) {

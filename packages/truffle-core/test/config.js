@@ -1,7 +1,6 @@
 var assert = require("chai").assert;
 var path = require("path");
-var fs = require("fs-extra");
-var glob = require("glob");
+var fs = require("fs");
 var Box = require("truffle-box");
 var Contracts = require("truffle-workflow-compile");
 var TestRPC = require("ganache-cli");
@@ -44,14 +43,6 @@ describe('config', function() {
     Contracts.compile(config.with({
       quiet: true
     }), done);
-  });
-
-  after("Cleanup tmp files", function(done){
-    glob('tmp-*', (err, files) => {
-      if(err) done(err);
-      files.forEach(file => fs.removeSync(file));
-      done();
-    })
   });
 
   it('Provisioning contracts should set proper RPC values', function() {

@@ -52,13 +52,12 @@ var Environment = {
 
       // We have a "*" network. Get the current network and replace it with the real one.
       // TODO: Should we replace this with the blockchain uri?
-      web3.eth.net.getId().then(id => {
-
+      web3.version.getNetwork(function(err, id) {
+        if (err) return callback(err);
         network_id = id;
         config.networks[config.network].network_id = network_id;
         done(null, network_id);
-
-      }).catch(callback);
+      });
     }
 
     function detectFromAddress(done) {
@@ -66,12 +65,11 @@ var Environment = {
         return done();
       }
 
-      web3.eth.getAccounts().then(accounts => {
-
+      web3.eth.getAccounts(function(err, accounts) {
+        if (err) return done(err);
         config.networks[config.network].from = accounts[0];
         done();
-
-      }).catch(done);
+      });
     }
 
     detectNetworkId(function(err) {
@@ -88,7 +86,8 @@ var Environment = {
 
     var web3 = new Web3(config.provider);
 
-    web3.eth.getAccounts.then(accounts => {
+    web3.eth.getAccounts(function(err, accounts) {
+      if (err) return callback(err);
 
       var upstreamNetwork = config.network;
       var upstreamConfig = config.networks[upstreamNetwork];
@@ -105,8 +104,7 @@ var Environment = {
       config.network = forkedNetwork;
 
       callback();
-
-    }).catch(callback);
+    });
   },
 
   develop: function(config, testrpcOptions, callback) {

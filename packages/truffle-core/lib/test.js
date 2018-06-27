@@ -85,7 +85,7 @@ var Test = {
     var runner;
     var test_resolver;
 
-    web3.eth.getAccounts().then(function(accs) {
+    this.getAccounts(web3).then(function(accs) {
       accounts = accs;
 
       if (!config.from) {
@@ -147,6 +147,15 @@ var Test = {
     var mocha = new Mocha(mochaConfig);
 
     return mocha;
+  },
+
+  getAccounts: function(web3, config) {
+    return new Promise(function(accept, reject) {
+      web3.eth.getAccounts(function(err, accs) {
+        if (err) return reject(err);
+        accept(accs);
+      });
+    });
   },
 
   compileContractsWithTestFilesIfNeeded: function(solidity_test_files, config, test_resolver) {

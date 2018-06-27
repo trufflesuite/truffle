@@ -1,13 +1,103 @@
 var CompileError = require("./compileerror");
+var solc = require("solc");
 var fs = require("fs");
 var path = require("path");
+
+// Clean up after solc.
+var listeners = process.listeners("uncaughtException");
+var solc_listener = listeners[listeners.length - 1];
+
+if (solc_listener) {
+  process.removeListener("uncaughtException", solc_listener);
+}
 
 // Warning issued by a pre-release compiler version, ignored by this component.
 var preReleaseCompilerWarning = "This is a pre-release compiler version, please do not use it in production.";
 
+var installedContractsDir = "installed_contracts"
+
 module.exports = {
+  parse: function(body, fileName) {
+    // Here, we want a valid AST even if imports don't exist. The way to
+    // get around that is to tell the compiler, as they happen, that we
+    // have source for them (an empty file).
+
+    var build_remappings = function() {
+      // Maps import paths to paths from EthPM installed contracts, so we can correctly solve imports
+      // e.g. "my_pkg/=installed_contracts/my_pkg/contracts/"
+      var remappings = [];
+
+      if (fs.existsSync('ethpm.json')) {
+        ethpm = JSON.parse(fs.readFileSync('ethpm.json'));
+        for (pkg in ethpm.dependencies) {
+          remappings.push(pkg + "/=" + path.join(installedContractsDir, pkg, 'contracts', '/'));
+        }
+      }
+      
+      return remappings;
+    }
+
+    var fileName = fileName || "ParsedContract.sol";
+
+    var remappings = build_remappings();
+
+    var solcStandardInput = {
+      language: "Solidity",
+      sources: {
+        [fileName]: {
+          content: body
+        }
+      },
+      settings: {
+        remappings: remappings,
+        outputSelection: {
+          "*": {
+            "": [
+              "ast"
+            ]
+          }
+        }
+      }
+    };
+
+    var output = solc.compileStandard(JSON.stringify(solcStandardInput), function(file_path) {
+      // Resolve dependency manually.
+      if (fs.existsSync(file_path)) {
+        contents = fs.readFileSync(file_path, {encoding: 'UTF-8'});
+      }
+      else {
+        contents = "pragma solidity ^0.4.0;";
+      }
+      return {contents: contents};
+    });
+
+    output = JSON.parse(output);
+
+    // Filter out the "pre-release compiler" warning, if present.
+    var errors = output.errors ? output.errors.filter(function(solidity_error) {
+      return solidity_error.message.indexOf(preReleaseCompilerWarning) < 0;
+    }) : [];
+
+    // Filter out warnings.
+    var warnings = output.errors ? output.errors.filter(function(solidity_error) {
+      return solidity_error.severity == "warning";
+    }) : [];
+    var errors = output.errors ? output.errors.filter(function(solidity_error) {
+      return solidity_error.severity != "warning";
+    }) : [];
+
+    if (errors.length > 0) {
+      throw new CompileError(errors[0].formattedMessage);
+    }
+
+    return {
+      contracts: Object.keys(output.contracts[fileName]),
+      ast: output.sources[fileName].ast
+    };
+  },
+
   // This needs to be fast! It is fast (as of this writing). Keep it fast!
-  parseImports: function(body, solc) {
+  parseImports: function(body) {
     var self = this;
 
     // WARNING: Kind of a hack (an expedient one).
@@ -18,9 +108,6 @@ module.exports = {
     // compilation when a file has no import statements, we inject an import
     // statement right on the end; just to ensure it will error and we can parse
     // the imports speedily without doing extra work.
-
-    // If we're using docker/native, we'll still want to use solcjs to do this part.
-    if (solc.importsParser) solc = solc.importsParser;
 
     // Helper to detect import errors with an easy regex.
     var importErrorKey = "TRUFFLE_IMPORT";

@@ -124,7 +124,9 @@ var Package = {
     self.publishable_artifacts(options, function(err, artifacts) {
       if (err) return callback(err);
 
-      web3.eth.getAccounts().then(accs => {
+      web3.eth.getAccounts(function(err, accs) {
+        if (err) return callback(err);
+
         var registry = EthPMRegistry.use(options.ethpm.registry, accs[0], provider);
         var pkg = new EthPM(options.working_directory, host, registry);
 
@@ -145,7 +147,7 @@ var Package = {
             callback();
           }).catch(callback);
         });
-      }).catch(callback);
+      });
     });
   },
 

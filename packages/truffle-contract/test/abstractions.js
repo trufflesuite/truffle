@@ -1,33 +1,20 @@
 var assert = require("chai").assert;
-var Artifactor = require("../");
-var contract = require("truffle-contract");
 var Schema = require("truffle-contract-schema");
+var contract = require("../");
 var temp = require("temp").track();
 var path = require("path");
 var solc = require("solc");
 var fs = require("fs");
 var requireNoCache = require("require-nocache")(module);
-var TestRPC = require("ganache-cli");
-var Web3 = require("web3");
+var util = require('./util');
 
-describe("artifactor + require", function() {
+describe("Abstractions", function() {
   var Example;
   var accounts;
   var abi;
   var binary;
   var network_id;
-  var artifactor;
-  var provider = TestRPC.provider();
-  var web3 = new Web3();
-  web3.setProvider(provider)
-
-  before(function(done) {
-    web3.version.getNetwork(function(err, id) {
-      if (err) return done(err);
-      network_id = id;
-      done();
-    });
-  });
+  var web3;
 
   before(function(done) {
     this.timeout(10000);
@@ -39,43 +26,26 @@ describe("artifactor + require", function() {
     // which happens to be the first.
     process.removeListener("uncaughtException", process.listeners("uncaughtException")[0]);
 
-    var compiled = Schema.normalize(result.contracts[":Example"]);
-    abi = compiled.abi;
-    binary = compiled.bytecode;
+    var contractObj, contractName;
+    if (result.contracts["Example"]) {
+      contractName = "Example";
+    } else {
+      contractName = ":Example";
+    }
 
-    // Setup
-    var dirPath = temp.mkdirSync({
-      dir: path.resolve("./"),
-      prefix: 'tmp-test-contract-'
-    });
+    contractObj = result.contracts[contractName];
+    contractObj.contractName = contractName;
+    Example = contract(contractObj);
 
-    var expected_filepath = path.join(dirPath, "Example.json");
+    // save abi and binary for later
+    abi = Example.abi;
+    binary = Example.bytecode;
 
-    artifactor = new Artifactor(dirPath);
-
-    artifactor.save({
-      contractName: "Example",
-      abi: abi,
-      binary: binary,
-      address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01",
-      network_id: network_id
-    }).then(function() {
-      var json = requireNoCache(expected_filepath);
-      Example = contract(json);
-      Example.setProvider(provider);
-    }).then(done).catch(done);
-  });
-
-  before(function(done) {
-    web3.eth.getAccounts(function(err, accs) {
-      accounts = accs;
-
-      Example.defaults({
-        from: accounts[0]
-      });
-
-      done(err);
-    });
+    util.setUpProvider(Example).then(function(result){
+      web3 = result.web3;
+      accounts = result.accounts;
+      done();
+    }).catch(done);
   });
 
   after(function(done) {
@@ -208,69 +178,137 @@ describe("artifactor + require", function() {
     done();
   });
 
+  it("errors when creating a contract with invalid constructor params", function(){
+    return Example.new(25, 25, {gas: 3141592}).then(function(){
+      assert.fail();
+    }).catch(function(error){
+      assert(error.message.search("constructor") >= 0, "new() should have thrown");
+    });
+  });
+
+  it("errors with a revert message when ganache appends an error to the response", function(done){
+    var example = Example.clone();
+    var options = {
+      vmErrorsOnRPCResponse: true,
+    };
+
+    util.setUpProvider(example, options).then(function(){
+      example.new(1, {gas: 3141592}).then(function(instance) {
+        return instance.triggerRequireError()
+      }).then(function(){
+        assert.fail();
+      }).catch(function(e){
+        assert(e.message.includes('revert'))
+        done();
+      });
+    }).catch(done);
+  });
+
+  it("errors with receipt and revert message (ganache err flag false)", function(done){
+    var example = Example.clone();
+    var options = {
+      vmErrorsOnRPCResponse: false,
+    };
+
+    util.setUpProvider(example, options).then(function(){
+      example.new(1, {gas: 3141592}).then(function(instance) {
+        return instance.triggerRequireError()
+      }).then(function(){
+        assert.fail();
+      }).catch(function(e){
+        assert(e.message.includes('revert'));
+        assert(parseInt(e.receipt.status, 16) == 0)
+        done();
+      });
+    }).catch(done)
+  });
+
+  it("errors with receipt & assert message when gas specified (ganache err flag false)", function(done){
+    var example = Example.clone();
+    var options = {
+      vmErrorsOnRPCResponse: false,
+    };
+
+    util.setUpProvider(example, options).then(function(result){
+      var gas = result.web3.toBigNumber(200000);
+
+      example.new(1, {gas: 3141592}).then(function(instance) {
+        return instance.triggerAssertError({gas: gas});
+      }).then(function(){
+        assert.fail();
+      }).catch(function(e){
+        assert(e.message.includes('invalid opcode'));
+        assert(parseInt(e.receipt.status, 16) == 0)
+        done();
+      });
+    }).catch(done)
+  });
+
+  it("errors with receipt & assert message when gas not specified (ganache err flag false)", function(done){
+    var example = Example.clone();
+    var options = {
+      vmErrorsOnRPCResponse: false,
+    };
+
+    util.setUpProvider(example, options).then(function(result){
+      example.new(1, {gas: 3141592}).then(function(instance) {
+        return instance.triggerAssertError();
+      }).then(function(){
+        assert.fail();
+      }).catch(function(e){
+        assert(e.message.includes('invalid opcode'));
+        assert(parseInt(e.receipt.status, 16) == 0)
+        done();
+      });
+    }).catch(done)
+  });
+
+  it("errors with receipt & assert message on internal OOG (ganache err flag false)", function(done){
+    var example = Example.clone();
+    var options = {
+      vmErrorsOnRPCResponse: false,
+    };
+
+    util.setUpProvider(example, options).then(function(result){
+      example.new(1, {gas: 3141592}).then(function(instance) {
+        return instance.runsOutOfGas();
+      }).then(function(){
+        assert.fail();
+      }).catch(function(e){
+        assert(e.message.includes('invalid opcode'));
+        assert(parseInt(e.receipt.status, 16) == 0)
+        done();
+      });
+    }).catch(done)
+  });
+
   it("creates a network object when an address is set if no network specified", function(done) {
     var NewExample = contract({
       abi: abi,
       unlinked_binary: binary
     });
 
-    NewExample.setProvider(provider);
-    NewExample.defaults({
-      from: accounts[0]
-    });
+    util.setUpProvider(NewExample).then(function(result){
+      result.web3.version.getNetwork(function(err, id) {
+        if (err) return done(err);
+        network_id = id;
 
-    assert.equal(NewExample.network_id, null);
+        assert.equal(NewExample.network_id, null);
 
-    NewExample.new(1, {gas: 3141592}).then(function(instance) {
-      // We have a network id in this case, with new(), since it was detected,
-      // but no further configuration.
-      assert.equal(NewExample.network_id, network_id);
-      assert.equal(NewExample.toJSON().networks[network_id], null);
+        NewExample.new(1, {gas: 3141592}).then(function(instance) {
+          // We have a network id in this case, with new(), since it was detected,
+          // but no further configuration.
+          assert.equal(NewExample.network_id, network_id);
+          assert.equal(NewExample.toJSON().networks[network_id], null);
 
-      NewExample.address = instance.address;
+          NewExample.address = instance.address;
 
-      assert.equal(NewExample.toJSON().networks[network_id].address, instance.address);
+          assert.equal(NewExample.toJSON().networks[network_id].address, instance.address);
 
-      done();
+          done();
+
+        }).catch(done);
+      })
     }).catch(done);
-  });
-
-  it("doesn't error when calling .links() or .events() with no network configuration", function(done) {
-    var event_abi = {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "name": "nameHash",
-          "type": "bytes32"
-        },
-        {
-          "indexed": true,
-          "name": "releaseHash",
-          "type": "bytes32"
-        }
-      ],
-      "name": "PackageRelease",
-      "type": "event"
-    };
-
-    var MyContract = contract({
-      contractName: "MyContract",
-      abi: [
-        event_abi
-      ],
-      binary: "0x12345678",
-    });
-
-    MyContract.setNetwork(5);
-
-    var expected_event_topic = web3.sha3("PackageRelease(bytes32,bytes32)");
-
-    // We want to make sure these don't throw when a network configuration doesn't exist.
-    // While we're at it, lets make sure we still get the event we expect.
-    assert.deepEqual(MyContract.links, {});
-    assert.deepEqual(MyContract.events[expected_event_topic], event_abi);
-
-    done();
   });
 });

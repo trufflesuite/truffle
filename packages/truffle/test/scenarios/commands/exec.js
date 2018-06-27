@@ -41,7 +41,7 @@ describe("truffle exec", function() {
   }
 
   it("runs script after compiling", function(done) {
-    this.timeout(20000);
+    this.timeout(30000);
 
     CommandRunner.run("compile", config, function(err) {
       processErr(err);
@@ -49,8 +49,8 @@ describe("truffle exec", function() {
       assert(fs.existsSync(path.join(config.contracts_build_directory, "Executable.json")));
 
       CommandRunner.run("exec script.js", config, function(err) {
+        processErr(err);
         const output = logger.contents();
-        processErr(err, output);
         assert(output.includes('5'));
         done();
       })
@@ -70,8 +70,8 @@ describe("truffle exec", function() {
     this.timeout(30000);
 
     CommandRunner.run("exec -c script.js", config, function(err) {
+      processErr(err);
       const output = logger.contents();
-      processErr(err, output);
       assert(output.includes('5'));
       done();
     });

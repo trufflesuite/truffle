@@ -4,8 +4,7 @@ var Migrate = require("truffle-migrate");
 var Contracts = require("truffle-workflow-compile");
 var Networks = require("../lib/networks");
 var path = require("path");
-var fs = require("fs-extra");
-var glob = require("glob");
+var fs = require("fs");
 var TestRPC = require("ganache-cli");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
@@ -19,7 +18,7 @@ describe("migrate", function() {
   var from_addresses = [];
 
   before("Create a sandbox", function(done) {
-    this.timeout(30000);
+    this.timeout(10000);
     Box.sandbox(function(err, result) {
       if (err) return done(err);
       config = result;
@@ -30,39 +29,38 @@ describe("migrate", function() {
     });
   });
 
-  function createProviderAndSetNetworkConfig(network) {
+  function createProviderAndSetNetworkConfig(network, callback) {
     var provider = TestRPC.provider({seed: network, gasLimit: config.gas});
     var web3 = new Web3(provider);
-    return web3.eth.getAccounts().then(accs => {
-      return web3.eth.net.getId().then(network_id => {
+    web3.eth.getAccounts(function(err, accs) {
+      if (err) return callback(err);
+
+      web3.version.getNetwork(function(err, network_id) {
+        if (err) return callback(err);
+
         config.networks[network] = {
           provider: provider,
           network_id: network_id + "",
           from: accs[0]
         };
-      })
-    })
+
+        callback();
+      });
+    });
   };
 
-  before("Get accounts and network id of network one", function() {
-    return createProviderAndSetNetworkConfig("primary");
+  before("Get accounts and network id of network one", function(done) {
+    createProviderAndSetNetworkConfig("primary", done);
   });
 
-  before("Get accounts and network id of network one", function() {
-    return createProviderAndSetNetworkConfig("secondary");
+  before("Get accounts and network id of network one", function(done) {
+    createProviderAndSetNetworkConfig("secondary", done);
   });
-
-  after("Cleanup tmp files", function(done){
-    glob('tmp-*', (err, files) => {
-      if(err) done(err);
-      files.forEach(file => fs.removeSync(file));
-      done();
-    })
-  })
 
   it('profiles a new project as not having any contracts deployed', function(done) {
     Networks.deployed(config, function(err, networks) {
       if (err) return done(err);
+
       assert.equal(Object.keys(networks).length, 2, "Should have results for two networks from profiler");
       assert.equal(Object.keys(networks["primary"]), 0, "Primary network should not have been deployed to");
       assert.equal(Object.keys(networks["secondary"]), 0, "Secondary network should not have been deployed to");
@@ -122,6 +120,7 @@ describe("migrate", function() {
 
         Networks.deployed(config, function(err, networks) {
           if (err) return done(err);
+
           assert.equal(Object.keys(networks).length, 2, "Should have results for two networks from profiler");
           assert.equal(Object.keys(networks["primary"]).length, 3, "Primary network should have three contracts deployed");
           assert.equal(networks["primary"]["MetaCoin"], currentAddresses["MetaCoin"], "MetaCoin contract updated on primary network");

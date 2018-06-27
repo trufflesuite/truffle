@@ -23,9 +23,11 @@ module.exports = {
     var postHook = this.postHook(options);
 
     var originalSend = provider.send.bind(provider);
+    var originalSendAsync = provider.sendAsync.bind(provider);
 
-    /* overwrite method */
+    /* overwrite methods */
     provider.send = this.send(originalSend, preHook, postHook);
+    provider.sendAsync = this.sendAsync(originalSendAsync, preHook, postHook);
 
     /* mark as wrapped */
     provider._alreadyWrapped = true;
@@ -88,11 +90,42 @@ module.exports = {
    *
    * Return the wrapped function matching the original function's signature.
    */
+
+  // wrap a `provider.send` function with behavior hooks
+  // returns a function(payload) to replace `provider.send`
   send: function(originalSend, preHook, postHook) {
+    return function(payload) {
+      var result = null;
+      var error = null;
+
+      payload = preHook(payload);
+
+      try {
+        result = originalSend(payload);
+      } catch (e) {
+        error = e;
+      }
+
+      var modified = postHook(payload, error, result);
+      payload = modified[0];
+      error = modified[1];
+      result = modified[2];
+
+      if (error != null) {
+        throw error;
+      }
+
+      return result;
+    }
+  },
+
+  // wrap a `provider.sendAsync` function with behavior hooks
+  // returns a function(payload, callback) to replace `provider.sendAsync`
+  sendAsync: function(originalSendAsync, preHook, postHook) {
     return function(payload, callback) {
       payload = preHook(payload);
 
-      originalSend(payload, function(error, result) {
+      originalSendAsync(payload, function(error, result) {
         var modified = postHook(payload, error, result);
         payload = modified[0];
         error = modified[1];
