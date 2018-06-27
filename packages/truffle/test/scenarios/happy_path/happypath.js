@@ -66,20 +66,17 @@ describe("Happy path (truffle unbox)", function() {
       var ConvertLib = contract(require(path.join(config.contracts_build_directory, "ConvertLib.json")));
       var Migrations = contract(require(path.join(config.contracts_build_directory, "Migrations.json")));
 
+      var promises = [];
 
-      config.getProviderAsync().then(function(provider) {
-        var promises = [];
+      [MetaCoin, ConvertLib, Migrations].forEach(function(abstraction) {
+        abstraction.setProvider(config.provider);
 
-        [MetaCoin, ConvertLib, Migrations].forEach(function(abstraction) {
-          abstraction.setProvider(provider);
+        promises.push(abstraction.deployed().then(function(instance) {
+          assert.notEqual(instance.address, null, instance.contract_name + " didn't have an address!")
+        }));
+      });
 
-          promises.push(abstraction.deployed().then(function(instance) {
-            assert.notEqual(instance.address, null, instance.contract_name + " didn't have an address!")
-          }));
-        });
-
-        return Promise.all(promises)
-      }).then(function() {
+      Promise.all(promises).then(function() {
         done();
       }).catch(done);
     });

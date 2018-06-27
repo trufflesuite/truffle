@@ -219,16 +219,14 @@ var Networks = {
     };
 
     async.each(networks, function(network_name, finished) {
-      Provider.createAsync(options.networks[network_name])
-        .then(function(provider) {
-          BlockchainUtils.asURI(provider, function(err, uri) {
-            if (err) {
-              result.failed.push(network_name);
-            } else {
-              result.uris[network_name] = uri;
-            }
-            finished();
-          });
+      var provider = Provider.create(options.networks[network_name]);
+      BlockchainUtils.asURI(provider, function(err, uri) {
+        if (err) {
+          result.failed.push(network_name);
+        } else {
+          result.uris[network_name] = uri;
+        }
+        finished();
       });
     }, function(err) {
       if (err) return callback(err);
@@ -237,39 +235,37 @@ var Networks = {
   },
 
   matchesNetwork: function(network_id, network_options, callback) {
-    Provider.createAsync(network_options)
-      .then(function(provider) {
+    var provider = Provider.create(network_options);
 
-        var first = network_id + "";
-        var second = network_options.network_id + "";
+    var first = network_id + "";
+    var second = network_options.network_id + "";
 
-        if (first == second) {
-          return callback(null, true);
-        }
+    if (first == second) {
+      return callback(null, true);
+    }
 
-        var isFirstANumber = isNaN(parseInt(network_id)) === false;
-        var isSecondANumber = isNaN(parseInt(network_options.network_id)) === false;
+    var isFirstANumber = isNaN(parseInt(network_id)) === false;
+    var isSecondANumber = isNaN(parseInt(network_options.network_id)) === false;
 
-        // If both network ids are numbers, then they don't match, and we should quit.
-        if (isFirstANumber && isSecondANumber) {
-          return callback(null, false);
-        }
+    // If both network ids are numbers, then they don't match, and we should quit.
+    if (isFirstANumber && isSecondANumber) {
+      return callback(null, false);
+    }
 
-        var web3 = new Web3(provider);
-        web3.version.getNetwork(function(err, current_network_id) {
-          if (err) return callback(err);
+    var web3 = new Web3(provider);
+    web3.version.getNetwork(function(err, current_network_id) {
+      if (err) return callback(err);
 
-          if (first == current_network_id) {
-            return callback(null, true);
-          }
+      if (first == current_network_id) {
+        return callback(null, true);
+      }
 
-          if (isFirstANumber == false) {
-            BlockchainUtils.matches(first, provider, callback);
-          } else {
-            // Nothing else to compare.
-            return callback(null, false);
-          }
-        });
+      if (isFirstANumber == false) {
+        BlockchainUtils.matches(first, provider, callback);
+      } else {
+        // Nothing else to compare.
+        return callback(null, false);
+      }
     });
   }
 };

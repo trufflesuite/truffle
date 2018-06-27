@@ -39,60 +39,53 @@ var Test = {
       return path.resolve(test_file);
     });
 
-    var web3;
-    var sol_tests;
-    var mocha;
-    var js_tests;
+    // `accounts` will be populated before each contract() invocation
+    // and passed to it so tests don't have to call it themselves.
+    var web3 = new Web3();
+    web3.setProvider(config.provider);
+
+    // Override console.warn() because web3 outputs gross errors to it.
+    // e.g., https://github.com/ethereum/web3.js/blob/master/lib/web3/allevents.js#L61
+    // Output looks like this during tests: https://gist.github.com/tcoulter/1988349d1ec65ce6b958
+    var warn = config.logger.warn;
+    config.logger.warn = function(message) {
+      if (message == "cannot find event for log") {
+        return;
+      } else {
+        if (warn) {
+          warn.apply(console, arguments);
+        }
+      }
+    };
+
+    var mocha = this.createMocha(config);
+
+    var js_tests = config.test_files.filter(function(file) {
+      return path.extname(file) != ".sol";
+    });
+
+    var sol_tests = config.test_files.filter(function(file) {
+      return path.extname(file) == ".sol";
+    });
+
+    // Add Javascript tests because there's nothing we need to do with them.
+    // Solidity tests will be handled later.
+    js_tests.forEach(function(file) {
+      // There's an idiosyncracy in Mocha where the same file can't be run twice
+      // unless we delete the `require` cache.
+      // https://github.com/mochajs/mocha/issues/995
+      delete originalrequire.cache[file];
+
+      mocha.addFile(file);
+    });
+
     var dependency_paths = [];
     var testContracts = [];
     var accounts = [];
     var runner;
     var test_resolver;
-    var warn;
 
-    config.getProviderAsync().then(function(provider) {
-      // `accounts` will be populated before each contract() invocation
-      // and passed to it so tests don't have to call it themselves.
-      web3 = new Web3();
-      web3.setProvider(provider);
-
-      // Override console.warn() because web3 outputs gross errors to it.
-      // e.g., https://github.com/ethereum/web3.js/blob/master/lib/web3/allevents.js#L61
-      // Output looks like this during tests: https://gist.github.com/tcoulter/1988349d1ec65ce6b958
-      warn = config.logger.warn;
-      config.logger.warn = function(message) {
-        if (message == "cannot find event for log") {
-          return;
-        } else {
-          if (warn) {
-            warn.apply(console, arguments);
-          }
-        }
-      };
-
-      mocha = self.createMocha(config);
-
-      js_tests = config.test_files.filter(function(file) {
-        return path.extname(file) != ".sol";
-      });
-
-      sol_tests = config.test_files.filter(function(file) {
-        return path.extname(file) == ".sol";
-      });
-
-      // Add Javascript tests because there's nothing we need to do with them.
-      // Solidity tests will be handled later.
-      js_tests.forEach(function(file) {
-        // There's an idiosyncracy in Mocha where the same file can't be run twice
-        // unless we delete the `require` cache.
-        // https://github.com/mochajs/mocha/issues/995
-        delete originalrequire.cache[file];
-
-        mocha.addFile(file);
-      });
-
-      return self.getAccounts(web3);
-    }).then(function(accs) {
+    this.getAccounts(web3).then(function(accs) {
       accounts = accs;
 
       if (!config.from) {
