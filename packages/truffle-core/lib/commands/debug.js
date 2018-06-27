@@ -66,24 +66,22 @@ var command = {
 
           debug("contracts %O", result.contracts);
 
-          config.getProviderAsync().then(function(provider) {
-            return Debugger.forTx(txHash, {
-              provider: provider,
-              files: result.files,
-              contracts: Object.keys(result.contracts).map(function(name) {
-                var contract = result.contracts[name];
-                return {
-                  contractName: contract.contractName || contract.contract_name,
-                  source: contract.source,
-                  sourcePath: contract.sourcePath,
-                  ast: contract.ast,
-                  binary: contract.binary || contract.bytecode,
-                  sourceMap: contract.sourceMap,
-                  deployedBinary: contract.deployedBinary || contract.deployedBytecode,
-                  deployedSourceMap: contract.deployedSourceMap
-                };
-              })
-            });
+          return Debugger.forTx(txHash, {
+            provider: config.provider,
+            files: result.files,
+            contracts: Object.keys(result.contracts).map(function(name) {
+              var contract = result.contracts[name];
+              return {
+                contractName: contract.contractName || contract.contract_name,
+                source: contract.source,
+                sourcePath: contract.sourcePath,
+                ast: contract.ast,
+                binary: contract.binary || contract.bytecode,
+                sourceMap: contract.sourceMap,
+                deployedBinary: contract.deployedBinary || contract.deployedBytecode,
+                deployedSourceMap: contract.deployedSourceMap
+              };
+            })
           });
         })
         .then(function (bugger) {
