@@ -11,7 +11,12 @@ module.exports = merge(commonConfig, {
       test: /\.js$/,
       loader: "babel-loader",
       query: {
-        presets: ['babel-preset-env'],
+        presets: [
+          [
+            'babel-preset-env',
+            { targets: { "node": "6.14" } }
+          ]
+        ],
         plugins: ['transform-object-rest-spread', 'transform-runtime'],
       },
       include: [

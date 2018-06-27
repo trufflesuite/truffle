@@ -1,6 +1,6 @@
 {
   "name": "truffle-artifactor",
-  "version": "3.0.6",
+  "version": "3.0.7",
   "description": "A contract packager for Ethereum and Javascript",
   "author": "Tim Coulter",
   "main": "./index.js",
@@ -15,7 +15,7 @@
   "license": "MIT",
   "devDependencies": {
     "chai": "4.1.2",
-    "ganache-cli": "6.1.3",
+    "ganache-cli": "6.1.0-beta.4",
     "mocha": "5.2.0",
     "require-nocache": "^1.0.0",
     "solc": "0.4.24",
