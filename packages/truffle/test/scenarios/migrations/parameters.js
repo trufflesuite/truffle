@@ -41,11 +41,13 @@ describe("Migration Parameters", function() {
   });
 
   before("get accounts", function(done) {
-    var web3 = new Web3(config.provider);
-    web3.eth.getAccounts(function(err, accs) {
-      if (err) return done(err);
-      accounts = accs;
-      done();
+    config.getProviderAsync().then(function(provider) {
+      var web3 = new Web3(config.provider);
+      web3.eth.getAccounts(function(err, accs) {
+        if (err) return done(err);
+        accounts = accs;
+        done();
+      });
     });
   });
 

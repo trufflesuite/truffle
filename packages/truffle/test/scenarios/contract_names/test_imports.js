@@ -60,11 +60,14 @@ describe("Contract names", function() {
     CommandRunner.run("migrate", config, function(err) {
       if (err) return done(err);
 
-      var Contract = contract(require(path.join(config.contracts_build_directory, "Contract.json")));
-      Contract.setProvider(config.provider);
-
       var deployed;
-      Contract.deployed().then(function(instance) {
+
+      config.getProviderAsync().then(function(provider) {
+        var Contract = contract(require(path.join(config.contracts_build_directory, "Contract.json")));
+        Contract.setProvider(config.provider);
+
+        return Contract.deployed()
+      }).then(function(instance) {
         deployed = instance;
         assert.notEqual(instance.address, null, instance.contract_name + " didn't have an address!")
       }).then(function() {
@@ -92,11 +95,13 @@ describe("Contract names", function() {
       CommandRunner.run("migrate", config, function(err) {
         if (err) return done(err);
 
-        var RelativeImport = contract(require(path.join(config.contracts_build_directory, "RelativeImport.json")));
-        RelativeImport.setProvider(config.provider);
-
         var deployed;
-        RelativeImport.deployed().then(function(instance) {
+        config.getProviderAsync().then(function(provider) {
+          var RelativeImport = contract(require(path.join(config.contracts_build_directory, "RelativeImport.json")));
+          RelativeImport.setProvider(provider);
+
+          return RelativeImport.deployed()
+        }).then(function(instance) {
           deployed = instance;
           assert.notEqual(instance.address, null, instance.contract_name + " didn't have an address!")
         }).then(function() {
@@ -125,11 +130,13 @@ describe("Contract names", function() {
   //     CommandRunner.run("migrate", config, function(err) {
   //       if (err) return done(err);
   //
-  //       var FloatingImport = contract(require(path.join(config.contracts_build_directory, "FloatingImport.json")));
-  //       FloatingImport.setProvider(config.provider);
+  //       config.getProviderAsync().then(function(provider) {
+  //         var FloatingImport = contract(require(path.join(config.contracts_build_directory, "FloatingImport.json")));
+  //         FloatingImport.setProvider(provider);
   //
-  //       var deployed;
-  //       FloatingImport.deployed().then(function(instance) {
+  //         var deployed;
+  //         return FloatingImport.deployed()
+  //       }).then(function(instance) {
   //         deployed = instance;
   //         assert.notEqual(instance.address, null, instance.contract_name + " didn't have an address!")
   //       }).then(function() {
