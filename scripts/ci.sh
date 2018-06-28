@@ -29,8 +29,8 @@ if [ "$INTEGRATION" = true ]; then
 elif [ "$GETH" = true ]; then
 
   run_geth
-  lerna run --scope truffle test --stream
-  lerna run --scope truffle-contract test --stream
+  lerna run --scope truffle test --stream --exit
+  lerna run --scope truffle-contract test --stream --exit
 
 else
 
