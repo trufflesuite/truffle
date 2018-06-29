@@ -29,6 +29,10 @@ class Deployment {
     return 1;
   }
 
+  async _waitMS(ms){
+    return new Promise(resolve => setTimeout(() => resolve(), ms))
+  }
+
   /**
    * Helper to parse a deploy statement's overwrite option
    * @param  {Arry}    args        arguments passed to deploy
@@ -98,6 +102,9 @@ class Deployment {
    */
   async _startBlockPolling(web3){
     const self = this;
+    const startTime = new Date().getTime();
+
+    let secondsWaited = 0;
     let blocksWaited = 0;
     let currentBlock = await web3.eth.getBlockNumber();
 
@@ -107,10 +114,12 @@ class Deployment {
       if (newBlock > currentBlock){
         blocksWaited = (newBlock - currentBlock) + blocksWaited;
         currentBlock = newBlock;
+        secondsWaited = Math.floor((new Date().getTime() - startTime) / 1000);
 
         const eventArgs = {
           blockNumber: newBlock,
-          blocksWaited: blocksWaited
+          blocksWaited: blocksWaited,
+          secondsWaited: secondsWaited
         };
 
         await self.emitter.emit('block', eventArgs);
@@ -310,7 +319,6 @@ class Deployment {
 
         // Get instance (or error)
         try {
-
           instance = await promiEvent;
           self._stopBlockPolling();
 

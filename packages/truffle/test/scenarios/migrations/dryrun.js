@@ -49,7 +49,7 @@ describe("migrate (dry-run)", function() {
     CommandRunner.run("migrate --dry-run", config, err => {
       const output = logger.contents();
       processErr(err, output);
-
+      console.log(output)
       assert(output.includes('dry-run'));
 
       assert(!output.includes('transaction hash'));
@@ -65,7 +65,7 @@ describe("migrate (dry-run)", function() {
 
       const location = path.join(config.contracts_build_directory, "UsesExample.json");
 
-      console.log(output)
+
       done();
     })
   });

@@ -103,9 +103,11 @@ class Migration {
         await migrations.setCompleted(self.number);
       }
 
-      // Save artifacts to local filesystem
       await self.emitter.emit('postMigrate', self.isLast);
+
+      // Save artifacts to local filesystem
       await options.artifactor.saveAll(resolver.contracts());
+
       deployer.finish();
 
       // Cleanup

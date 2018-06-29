@@ -4,7 +4,8 @@
 
 const util = require('util');
 const web3Utils = require('web3-utils');
-const spinner = require('./indentedSpinner');
+const indentedSpinner = require('./indentedSpinner');
+const ora = require('ora');
 
 class Reporter {
   constructor(){
@@ -18,6 +19,8 @@ class Reporter {
     this.separator = '\n';
     this.summary = [];
     this.currentFileIndex = -1;
+    this.blockSpinner = null;
+    this.currentBlockWait = '';
   }
 
   listen(){
@@ -36,6 +39,7 @@ class Reporter {
     this.deployer.emitter.on('transactionHash', this.hash.bind(this));
     this.deployer.emitter.on('receipt',         this.receipt.bind(this));
     this.deployer.emitter.on('confirmation',    this.confirmation.bind(this));
+    this.deployer.emitter.on('block',           this.block.bind(this));
   }
 
   getTotals(){
@@ -167,6 +171,10 @@ class Reporter {
   }
 
   async deployFailed(data){
+    if (this.blockSpinner){
+      this.blockSpinner.stop();
+    }
+
     const message = await this.processDeploymentError(data);
     this.deployer.logger.error(message)
   }
@@ -184,6 +192,17 @@ class Reporter {
   async hash(data){
     let message = this.messages('hash', data);
     this.deployer.logger.log(message);
+
+    this.currentBlockWait = `Blocks: 0`.padEnd(21) +
+                            `Seconds: 0`;
+
+    this.blockSpinner = new ora({
+      text: this.currentBlockWait,
+      spinner: indentedSpinner,
+      color: 'red'
+    });
+
+    this.blockSpinner.start();
   }
 
   async receipt(data){
@@ -193,6 +212,14 @@ class Reporter {
   async confirmation(data){
     let message = this.messages('confirmation', data);
     this.deployer.logger.log(message);
+  }
+
+  async block(data){
+    this.currentBlockWait = `Blocks: ${data.blocksWaited}`.padEnd(21) +
+                            `Seconds: ${data.secondsWaited}`;
+    if (this.blockSpinner){
+      this.blockSpinner.text = this.currentBlockWait;
+    }
   }
 
   underline(msg){
@@ -380,6 +407,13 @@ class Reporter {
         `> ${'Final cost:'.padEnd(20)} ${data.finalCost} ETH\n`,
 
       deployed:     () => {
+
+        if(this.blockSpinner){
+          this.blockSpinner.stop();
+          const stopText = `   > ${this.currentBlockWait}`;
+          this.deployer.logger.log(stopText);
+        }
+
         let output = '';
 
         if(!self.migration.dryRun) output +=
