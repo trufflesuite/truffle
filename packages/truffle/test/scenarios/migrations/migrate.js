@@ -53,6 +53,7 @@ describe("migrate (success)", function() {
       assert(output.includes('2_migrations_sync.js'));
       assert(output.includes("Deploying 'UsesExample'"))
       assert(output.includes('3_migrations_async.js'));
+      assert(output.includes("Re-using deployed 'Example'"))
       assert(output.includes("Replacing 'UsesExample'"))
       assert(output.includes("PayableExample"));
       assert(output.includes("1 ETH"));

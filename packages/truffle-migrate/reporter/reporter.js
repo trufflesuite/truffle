@@ -177,7 +177,7 @@ class Reporter {
       this.summary[this.currentFileIndex].deployments.push(data);
       message = this.messages('deployed', data);
     } else {
-      message = this.messages('notDeployed', data);
+      message = this.messages('reusing', data);
     }
 
     this.deployer.logger.log(message);
@@ -403,7 +403,8 @@ class Reporter {
         this.underline(`Replacing '${data.contract.contractName}'`),
 
       reusing:      () =>
-        this.underline(`Re-using  '${data.contract.contractName}'`),
+        this.underline(`Re-using deployed '${data.contract.contractName}'`) + '\n' +
+        `   > ${'contract address:'.padEnd(20)} ${data.contract.address}\n`,
 
       many:         () =>
         this.underline(`Deploying Batch`),

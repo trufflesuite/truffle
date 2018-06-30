@@ -53,7 +53,6 @@ describe("migrate (dry-run)", function() {
       assert(output.includes('dry-run'));
 
       assert(!output.includes('transaction hash'));
-      assert(!output.includes('contract address'));
 
       assert(output.includes('Migrations'));
       assert(output.includes('development-fork'))
