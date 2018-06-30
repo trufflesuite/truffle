@@ -5,6 +5,7 @@
 const util = require('util');
 const web3Utils = require('web3-utils');
 const indentedSpinner = require('./indentedSpinner');
+const readline = require('readline');
 const ora = require('ora');
 
 class Reporter {
@@ -24,22 +25,22 @@ class Reporter {
   }
 
   listen(){
-    this.migration.emitter.on('preMigrate',     this.preMigrate.bind(this));
-    this.migration.emitter.on('saveMigration',  this.saveMigrate.bind(this));
-    this.migration.emitter.on('postMigrate',    this.postMigrate.bind(this));
-    this.migration.emitter.on('error',          this.error.bind(this));
+    this.migration.emitter.on('preMigrate',          this.preMigrate.bind(this));
+    this.migration.emitter.on('saveMigration',       this.saveMigrate.bind(this));
+    this.migration.emitter.on('postMigrate',         this.postMigrate.bind(this));
+    this.migration.emitter.on('error',               this.error.bind(this));
 
-    this.deployer.emitter.on('preDeploy',       this.preDeploy.bind(this));
-    this.deployer.emitter.on('postDeploy',      this.postDeploy.bind(this));
-    this.deployer.emitter.on('preDeployMany',   this.preDeployMany.bind(this));
-    this.deployer.emitter.on('postDeployMany',  this.postDeployMany.bind(this));
-    this.deployer.emitter.on('deployFailed',    this.deployFailed.bind(this));
-    this.deployer.emitter.on('linking',         this.linking.bind(this));
-    this.deployer.emitter.on('error',           this.error.bind(this));
-    this.deployer.emitter.on('transactionHash', this.hash.bind(this));
-    this.deployer.emitter.on('receipt',         this.receipt.bind(this));
-    this.deployer.emitter.on('confirmation',    this.confirmation.bind(this));
-    this.deployer.emitter.on('block',           this.block.bind(this));
+    this.deployer.emitter.on('preDeploy',            this.preDeploy.bind(this));
+    this.deployer.emitter.on('postDeploy',           this.postDeploy.bind(this));
+    this.deployer.emitter.on('preDeployMany',        this.preDeployMany.bind(this));
+    this.deployer.emitter.on('postDeployMany',       this.postDeployMany.bind(this));
+    this.deployer.emitter.on('deployFailed',         this.deployFailed.bind(this));
+    this.deployer.emitter.on('linking',              this.linking.bind(this));
+    this.deployer.emitter.on('error',                this.error.bind(this));
+    this.deployer.emitter.on('transactionHash',      this.hash.bind(this));
+    this.deployer.emitter.on('receipt',              this.receipt.bind(this));
+    this.deployer.emitter.on('confirmation',         this.confirmation.bind(this));
+    this.deployer.emitter.on('block',                this.block.bind(this));
   }
 
   getTotals(){
@@ -56,6 +57,35 @@ class Reporter {
       finalCost: web3Utils.fromWei(this.finalCostTotal, "ether"),
       deployments: this.deployments.toString()
     }
+  }
+
+  askBoolean(type){
+    const self = this;
+    const question = self.questions(type);
+    const exitLine = self.exitLines(type);
+
+    // NB: We need direct access to a writeable stream here.
+    // This ignores `quiet` - but we only use that mode for `truffle test`.
+    const input = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+
+    const affirmations = ['y', 'yes', 'YES', 'Yes'];
+
+    return new Promise(resolve => {
+
+      input.question(question, (answer) => {
+        if (affirmations.includes(answer.trim())){
+          input.close();
+          return resolve(true);
+        };
+
+        input.close();
+        self.migration.logger.log(exitLine);
+        resolve(false);
+      })
+    });
   }
 
   async preMigrate(data){
@@ -99,6 +129,10 @@ class Reporter {
       message = this.messages('lastMigrate', data);
       this.deployer.logger.log(message);
     }
+  }
+
+  async acceptDryRun(){
+    return this.askBoolean('acceptDryRun');
   }
 
   async migrationError(data){
@@ -231,6 +265,24 @@ class Reporter {
   doubleline(msg){
     const ul = '='.repeat(msg.length);
     return `\n${msg}\n${ul}`;
+  }
+
+  questions(kind){
+    const prompt = " >> (y/n): "
+    const kinds = {
+      "acceptDryRun": `Dry-run successful. ` +
+                      `Do you want to proceed with real deployment? ${prompt}`
+    }
+
+    return kinds[kind];
+  }
+
+  exitLines(kind){
+    const kinds = {
+      "acceptDryRun": "\nExiting without migrating...\n\n",
+    }
+
+    return kinds[kind];
   }
 
   messages(kind, data){
@@ -381,7 +433,6 @@ class Reporter {
           ? output = this.doubleline(`Migrations dry-run (simulation)`) + '\n'
           : output = this.doubleline(`Starting migrations...`) + '\n';
 
-
         output +=
           `> Network name: '${data.network}'\n` +
           `> Network id:   ${data.networkId}\n`;
@@ -459,8 +510,8 @@ class Reporter {
     data.reason = (data.error) ? data.error.reason : null;
 
     const errors = {
+      OOG: error.message.includes('out of gas') || (data.gas === data.blockLimit),
       INT: error.message.includes('base fee') || error.message.includes('intrinsic'),
-      OOG: error.message.includes('out of gas'),
       RVT: error.message.includes('revert'),
       ETH: error.message.includes('funds'),
       BLK: error.message.includes('block gas limit'),
@@ -481,7 +532,7 @@ class Reporter {
         break;
 
       case 'OOG':
-        (data.gas)
+        (data.gas && !(data.gas === data.blockLimit))
           ? message = this.messages('intWithGas', data)
           : message = this.messages('oogNoGas', data);
 

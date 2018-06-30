@@ -25,6 +25,7 @@ class Migration {
     this.isFirst = false;
     this.isLast = false;
     this.dryRun = options.dryRun;
+    this.interactive = options.interactive;
     this.options = options || {};
   }
 
@@ -194,6 +195,10 @@ const Migrate = {
 
   launchReporter: function(){
     Migrate.reporter = new Reporter();
+  },
+
+  acceptDryRun: async function(){
+    return Migrate.reporter.acceptDryRun();
   },
 
   assemble: function(options, callback) {

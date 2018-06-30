@@ -19,7 +19,12 @@ var command = {
     f: {
       describe: "Specify a migration number to run from",
       type: "number"
-    }
+    },
+    "interactive": {
+      describe: "Manually authorize deployments after seeing a preview",
+      type: "boolean",
+      default: false
+    },
   },
   run: function (options, done) {
     var OS = require("os");
@@ -105,19 +110,29 @@ var command = {
       }
     };
 
-    function executePostDryRunMigration(buildDir){
-      const environment = require('../environment');
-      const NewConfig = require('truffle-config');
-      const config = NewConfig.detect(options);
+    async function executePostDryRunMigration(buildDir){
+      let accept = true;
 
-      config.contracts_build_directory = buildDir;
-      config.artifactor = new Artifactor(buildDir);
-      config.resolver = new Resolver(config);
+      if (options.interactive){
+        accept = await Migrate.acceptDryRun();
+      }
 
-      environment.detect(config, function(err) {
-        config.dryRun = false;
-        runMigrations(config, done);
-      })
+      if (accept){
+        const environment = require('../environment');
+        const NewConfig = require('truffle-config');
+        const config = NewConfig.detect(options);
+
+        config.contracts_build_directory = buildDir;
+        config.artifactor = new Artifactor(buildDir);
+        config.resolver = new Resolver(config);
+
+        environment.detect(config, function(err) {
+          config.dryRun = false;
+          runMigrations(config, done);
+        })
+      } else {
+        done();
+      }
     }
 
     const conf = Config.detect(options);
