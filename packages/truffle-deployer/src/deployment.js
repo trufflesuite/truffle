@@ -6,7 +6,7 @@ const util = require('util')
 class Deployment {
   /**
    * constructor
-   * @param  {Object} emitter                 async `Emittery` emitter
+   * @param  {Object} emitter         async `Emittery` emitter
    * @param  {Number} confirmations   confirmations needed to resolve an instance
    */
   constructor(emitter, confirmations){

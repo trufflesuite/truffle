@@ -1,14 +1,28 @@
-/**
- * Example reporter class that emulates the classic logger behavior
- */
-
 const util = require('util');
 const web3Utils = require('web3-utils');
-const indentedSpinner = require('./indentedSpinner');
 const readline = require('readline');
 const ora = require('ora');
 
+const indentedSpinner = require('./indentedSpinner');
+const MigrationsMessages = require('./messages');
+
+/**
+ *  Reporter consumed by a migrations sequence which iteself consumes a series of Migration and
+ *  Deployer instances that emit both async `Emittery` events and conventional EventEmitter
+ *  events (from Web3PromiEvent). This reporter is designed to track the execution of
+ *  several migrations files in sequence and is analagous to the Mocha reporter in that:
+ *
+ *  test:: deployment
+ *  suite:: deployer.start to deployer.finish
+ *  test file:: migrations file
+ *
+ *  Each time a new migrations file loads, the reporter needs the following properties
+ *  updated to reflect the current emitter source:
+ *  + `this.migration`
+ *  + `this.deployer`
+ */
 class Reporter {
+
   constructor(){
     this.deployingMany = false;
     this.deployer = null;
@@ -22,14 +36,40 @@ class Reporter {
     this.currentFileIndex = -1;
     this.blockSpinner = null;
     this.currentBlockWait = '';
+
+    this.messages = new MigrationsMessages(this);
   }
 
+  // ------------------------------------  Utilities -----------------------------------------------
+
+  /**
+   * Sets a Migration instance to be the current migrations events emitter source
+   * @param {Migration} migration
+   */
+  setMigration(migration){
+    this.migration = migration;
+  }
+
+  /**
+   * Sets a Deployer instance as the current deployer events emitter source
+   * @param {Deployer} deployer
+   */
+  setDeployer(deployer){
+    this.deployer = deployer
+  }
+
+  /**
+   * Registers emitter handlers
+   */
   listen(){
+
+    // Migration
     this.migration.emitter.on('preMigrate',          this.preMigrate.bind(this));
     this.migration.emitter.on('saveMigration',       this.saveMigrate.bind(this));
     this.migration.emitter.on('postMigrate',         this.postMigrate.bind(this));
     this.migration.emitter.on('error',               this.error.bind(this));
 
+    // Deployment
     this.deployer.emitter.on('preDeploy',            this.preDeploy.bind(this));
     this.deployer.emitter.on('postDeploy',           this.postDeploy.bind(this));
     this.deployer.emitter.on('preDeployMany',        this.preDeployMany.bind(this));
@@ -38,11 +78,14 @@ class Reporter {
     this.deployer.emitter.on('linking',              this.linking.bind(this));
     this.deployer.emitter.on('error',                this.error.bind(this));
     this.deployer.emitter.on('transactionHash',      this.hash.bind(this));
-    this.deployer.emitter.on('receipt',              this.receipt.bind(this));
     this.deployer.emitter.on('confirmation',         this.confirmation.bind(this));
     this.deployer.emitter.on('block',                this.block.bind(this));
   }
 
+  /**
+   * Retrieves gas usage totals per migrations file / totals since the reporter
+   * started running. Calling this method resets the gas counters for migrations totals
+   */
   getTotals(){
     const gas = this.currentGasTotal;
     const cost = web3Utils.fromWei(this.currentCostTotal, "ether");
@@ -59,10 +102,15 @@ class Reporter {
     }
   }
 
+  /**
+   * Queries the user for a true/false response and resolves the result.
+   * @param  {String} type identifier the reporter consumes to format query
+   * @return {Promise}
+   */
   askBoolean(type){
     const self = this;
-    const question = self.questions(type);
-    const exitLine = self.exitLines(type);
+    const question = this.messages.questions(type);
+    const exitLine = this.messages.exitLines(type);
 
     // NB: We need direct access to a writeable stream here.
     // This ignores `quiet` - but we only use that mode for `truffle test`.
@@ -88,10 +136,118 @@ class Reporter {
     });
   }
 
+  /**
+   * Error dispatcher. Parses the error returned from web3 and outputs a more verbose error after
+   * doing what it can to evaluate the failure context from data passed to it.
+   * @param  {Object} data info collected during deployment attempt
+   */
+  async processDeploymentError(data){
+    let message;
+    const error = data.estimateError || data.error;
+
+    data.reason = (data.error) ? data.error.reason : null;
+
+    const errors = {
+      OOG: error.message.includes('out of gas') || (data.gas === data.blockLimit),
+      INT: error.message.includes('base fee') || error.message.includes('intrinsic'),
+      RVT: error.message.includes('revert'),
+      ETH: error.message.includes('funds'),
+      BLK: error.message.includes('block gas limit'),
+      NCE: error.message.includes('nonce'),
+      INV: error.message.includes('invalid opcode'),
+      GTH: error.message.includes('always failing transaction')
+    }
+
+    let type = Object.keys(errors).find(key => errors[key]);
+
+    switch (type) {
+      // `Intrinsic gas too low`
+      case 'INT':
+        (data.gas)
+          ? message = this.messages.errors('intWithGas', data)
+          : message = this.messages.errors('intNoGas', data);
+
+        this.deployer.logger.error(message);
+        break;
+
+      // `Out of gas`
+      case 'OOG':
+        (data.gas && !(data.gas === data.blockLimit))
+          ? message = this.messages.errors('intWithGas', data)
+          : message = this.messages.errors('oogNoGas', data);
+
+        this.deployer.logger.error(message);
+        break;
+
+      // `Revert`
+      case 'RVT':
+        (data.reason)
+          ? message = this.messages.errors('rvtReason', data)
+          : message = this.messages.errors('rvtNoReason', data);
+
+        this.deployer.logger.error(message);
+        break;
+
+      // `Invalid opcode`
+      case 'INV':
+        (data.reason)
+          ? message = this.messages.errors('asrtReason', data)
+          : message = this.messages.errors('asrtNoReason', data);
+
+        this.deployer.logger.error(message);
+        break;
+
+      // `Exceeds block limit`
+      case 'BLK':
+        (data.gas)
+          ? message = this.messages.errors('blockWithGas', data)
+          : message = this.messages.errors('blockNoGas', data)
+
+        this.deployer.logger.error(message);
+        break;
+
+      // `Insufficient funds`
+      case 'ETH':
+        const balance = await data.contract.web3.eth.getBalance(data.from);
+        data.balance = balance.toString();
+        message = this.messages.errors('noMoney', data);
+        this.deployer.logger.error(message);
+        break;
+
+      // `Invalid nonce`
+      case 'NCE':
+        message = this.messages.errors('nonce', data);
+        this.deployer.logger.error(message);
+        break;
+
+      // Generic geth error
+      case 'GTH':
+        message = this.messages.errors('geth', data);
+        this.deployer.logger.error(message);
+        break;
+
+      default:
+        message = this.messages.errors('default', data);
+        this.deployer.logger.error(message);
+    }
+  }
+
+  // ---------------------------- Interaction Handlers ---------------------------------------------
+
+  async acceptDryRun(){
+    return this.askBoolean('acceptDryRun');
+  }
+
+  // -------------------------  Migration File Handlers --------------------------------------------
+
+  /**
+   * Run when a migrations file is loaded, before deployments begin
+   * @param  {Object} data
+   */
   async preMigrate(data){
     let message;
     if (data.isFirst){
-      message = this.messages('firstMigrate', data);
+      message = this.messages.steps('firstMigrate', data);
       this.deployer.logger.log(message);
     }
 
@@ -102,21 +258,32 @@ class Reporter {
 
     this.currentFileIndex++;
 
-    message = this.messages('preMigrate', data);
+    message = this.messages.steps('preMigrate', data);
     this.deployer.logger.log(message);
   }
 
+  /**
+   * Run when a migrations file deployment sequence has completed,
+   * before the migrations is saved to chain via Migrations.sol
+   * @param  {Object} data
+   */
   async saveMigrate(data){
-    const message = this.messages('saving', data);
+    if (this.migration.dryRun) return;
+
+    const message = this.messages.steps('saving', data);
     this.deployer.logger.log(message);
   }
 
+  /**
+   * Run after a migrations file has completed and the migration has been saved.
+   * @param  {Boolean} isLast  true if this the last file in the sequence.
+   */
   async postMigrate(isLast){
     let data = {};
     data.cost = this.getTotals().cost;
     this.summary[this.currentFileIndex].totalCost = data.cost;
 
-    let message = this.messages('postMigrate', data);
+    let message = this.messages.steps('postMigrate', data);
     this.deployer.logger.log(message);
 
     if (isLast){
@@ -126,30 +293,45 @@ class Reporter {
       this.summary.totalDeployments = data.totalDeployments;
       this.summary.finalCost = data.finalCost;
 
-      message = this.messages('lastMigrate', data);
+      message = this.messages.steps('lastMigrate', data);
       this.deployer.logger.log(message);
     }
   }
 
-  async acceptDryRun(){
-    return this.askBoolean('acceptDryRun');
-  }
+  // ----------------------------  Deployment Handlers --------------------------------------------
 
-  async migrationError(data){
-    this.summary[this.currentFileIndex].errored = true;
-    const message = this.messages('migrateErr', data);
-    this.deployer.logger.log(message);
-  }
-
+  /**
+   * Runs after pre-flight estimate has executed, before the sendTx is attempted
+   * @param  {Object} data
+   */
   async preDeploy(data){
     let message;
     (data.deployed)
-      ? message = this.messages('replacing', data)
-      : message = this.messages('deploying', data);
+      ? message = this.messages.steps('replacing', data)
+      : message = this.messages.steps('deploying', data);
 
     !this.deployingMany && this.deployer.logger.log(message);
   }
 
+  /**
+   * Run at intervals after the sendTx has executed, before the deployment resolves
+   * @param  {Object} data
+   */
+  async block(data){
+    this.currentBlockWait = `Blocks: ${data.blocksWaited}`.padEnd(21) +
+                            `Seconds: ${data.secondsWaited}`;
+    if (this.blockSpinner){
+      this.blockSpinner.text = this.currentBlockWait;
+    }
+  }
+
+  /**
+   * Run after a deployment instance has resolved. This handler collects deployment cost
+   * data and stores it a `summary` map so that it can later be replayed in an interactive
+   * preview (e.g. dry-run --> real). Also passes this data to the messaging utility for
+   * output formatting.
+   * @param  {Object} data
+   */
   async postDeploy(data){
     let message;
     if (data.deployed){
@@ -175,35 +357,20 @@ class Reporter {
       this.deployments++;
 
       this.summary[this.currentFileIndex].deployments.push(data);
-      message = this.messages('deployed', data);
+      message = this.messages.steps('deployed', data);
     } else {
-      message = this.messages('reusing', data);
+      message = this.messages.steps('reusing', data);
     }
 
     this.deployer.logger.log(message);
   }
 
-  async preDeployMany(batch){
-    let message = this.messages('many');
-
-    this.deployingMany = true;
-    this.deployer.logger.log(message);
-
-    batch.forEach(item => {
-      Array.isArray(item)
-        ? message = this.messages('listMany', item[0])
-        : message = this.messages('listMany', item)
-
-      this.deployer.logger.log(message);
-    })
-
-    this.deployer.logger.log(this.separator);
-  }
-
-  async postDeployMany(){
-    this.deployingMany = false;
-  }
-
+  /**
+   * Runs on deployment error. Forwards err to the error parser/dispatcher after shutting down
+   * any `pending` UI.
+   * @param  {O} data [description]
+   * @return {[type]}      [description]
+   */
   async deployFailed(data){
     if (this.blockSpinner){
       this.blockSpinner.stop();
@@ -212,18 +379,33 @@ class Reporter {
     await this.processDeploymentError(data);
   }
 
+  // ----------------------------  Library Event Handlers ------------------------------------------
   linking(data){
-    let message = this.messages('linking', data);
+    let message = this.messages.steps('linking', data);
     this.deployer.logger.log(message);
   }
 
+
+  // ----------------------------  PromiEvent Handlers --------------------------------------------
+
+  /**
+   * For misc error reporting that requires no context specific UI mgmt
+   * @param  {Object} data
+   */
   async error(data){
-    let message = this.messages(data.type, data);
+    let message = this.messages.errors(data.type, data);
     this.deployer.logger.error(message);
   }
 
+  /**
+   * Fired on Web3Promievent 'transactionHash' event. Begins running a UI
+   * a block / time counter.
+   * @param  {Object} data
+   */
   async hash(data){
-    let message = this.messages('hash', data);
+    if (this.migration.dryRun) return;
+
+    let message = this.messages.steps('hash', data);
     this.deployer.logger.log(message);
 
     this.currentBlockWait = `Blocks: 0`.padEnd(21) +
@@ -238,353 +420,40 @@ class Reporter {
     this.blockSpinner.start();
   }
 
-  async receipt(data){
-    let message = this.messages('receipt', data);
-  }
-
+  /**
+   * Fired on Web3Promievent 'confirmation' event. Begins running a UI
+   * a block / time counter.
+   * @param  {Object} data
+   */
   async confirmation(data){
-    let message = this.messages('confirmation', data);
+    let message = this.messages.steps('confirmation', data);
     this.deployer.logger.log(message);
   }
 
-  async block(data){
-    this.currentBlockWait = `Blocks: ${data.blocksWaited}`.padEnd(21) +
-                            `Seconds: ${data.secondsWaited}`;
-    if (this.blockSpinner){
-      this.blockSpinner.text = this.currentBlockWait;
-    }
+  // ----------------------------  Batch Handlers --------------------------------------------------
+
+  async preDeployMany(batch){
+    let message = this.messages.steps('many');
+
+    this.deployingMany = true;
+    this.deployer.logger.log(message);
+
+    batch.forEach(item => {
+      Array.isArray(item)
+        ? message = this.messages.steps('listMany', item[0])
+        : message = this.messages.steps('listMany', item)
+
+      this.deployer.logger.log(message);
+    })
+
+    this.deployer.logger.log(this.separator);
   }
 
-  underline(msg){
-    return (typeof msg === 'number')
-      ? `   ${'-'.repeat(msg)}`
-      : `\n   ${msg}\n   ${'-'.repeat(msg.length)}`;
+  async postDeployMany(){
+    this.deployingMany = false;
   }
 
-  doubleline(msg){
-    const ul = '='.repeat(msg.length);
-    return `\n${msg}\n${ul}`;
-  }
-
-  questions(kind){
-    const prompt = " >> (y/n): "
-    const kinds = {
-      "acceptDryRun": `Dry-run successful. ` +
-                      `Do you want to proceed with real deployment? ${prompt}`
-    }
-
-    return kinds[kind];
-  }
-
-  exitLines(kind){
-    const kinds = {
-      "acceptDryRun": "\nExiting without migrating...\n\n",
-    }
-
-    return kinds[kind];
-  }
-
-  messages(kind, data){
-    const self = this;
-
-    const prefix = '\n*** Deployment Failed ***\n\n';
-    const kinds = {
-
-      // --------------------------------------- Errors --------------------------------------------
-      migrateErr:   () =>
-        `Exiting: Review successful transactions manually by checking the transaction hashes ` +
-        `above on Etherscan.\n`,
-
-      noLibName:    () =>
-        `${prefix} Cannot link a library with no name.\n`,
-
-      noLibAddress: () =>
-        `${prefix} "${data.contract.contractName}" has no address. Has it been deployed?\n`,
-
-      noBytecode:   () =>
-        `${prefix} "${data.contract.contractName}" ` +
-        `is an abstract contract or an interface and cannot be deployed\n` +
-        `   * Hint: just import the contract into the '.sol' file that uses it.\n`,
-
-      intWithGas:   () =>
-        `${prefix} "${data.contract.contractName}" ran out of gas ` +
-        `(using a value you set in your network config or deployment parameters.)\n` +
-        `   * Block limit:  ${data.blockLimit}\n` +
-        `   * Gas sent:     ${data.gas}\n`,
-
-      intNoGas:     () =>
-        `${prefix} "${data.contract.contractName}" ran out of gas ` +
-        `(using Truffle's estimate.)\n` +
-        `   * Block limit:  ${data.blockLimit}\n` +
-        `   * Gas sent:     ${data.estimate}\n` +
-        `   * Try:\n` +
-        `      + Setting a higher gas estimate multiplier for this contract\n` +
-        `      + Using the solc optimizer settings in 'truffle.js'\n` +
-        `      + Making your contract smaller\n` +
-        `      + Making your contract constructor more efficient\n` +
-        `      + Setting a higher network block limit if you are on a\n` +
-        `        private network or test client (like ganache).\n`,
-
-      oogNoGas:     () =>
-        `${prefix} "${data.contract.contractName}" ran out of gas. Something in the constructor ` +
-        `(ex: infinite loop) caused gas estimation to fail. Try:\n` +
-        `   * Making your contract constructor more efficient\n` +
-        `   * Setting the gas manually in your config or as a deployment parameter\n` +
-        `   * Using the solc optimizer settings in 'truffle.js'\n` +
-        `   * Setting a higher network block limit if you are on a\n` +
-        `     private network or test client (like ganache).\n`,
-
-      rvtReason:    () =>
-        `${prefix} "${data.contract.contractName}" hit a require or revert statement ` +
-        `with the following reason given:\n` +
-        `   * ${data.reason}\n`,
-
-      rvtNoReason:  () =>
-        `${prefix} "${data.contract.contractName}" hit a require or revert statement ` +
-        `somewhere in its constructor. Try:\n` +
-        `   * Verifying that your constructor params satisfy all require conditions.\n` +
-        `   * Adding reason strings to your require statements.\n`,
-
-      asrtNoReason: () =>
-        `${prefix} "${data.contract.contractName}" hit an invalid opcode while deploying. Try:\n` +
-        `   * Verifying that your constructor params satisfy all assert conditions.\n` +
-        `   * Verifying your constructor code doesn't access an array out of bounds.\n` +
-        `   * Adding reason strings to your assert statements.\n`,
-
-      noMoney:      () =>
-        `${prefix} "${data.contract.contractName}" could not deploy due to insufficient funds\n` +
-        `   * Account:  ${data.from}\n` +
-        `   * Balance:  ${data.balance} wei\n` +
-        `   * Message:  ${data.error.message}\n` +
-        `   * Try:\n` +
-        `      + Using an adequately funded account\n` +
-        `      + If you are using a local Geth node, verify that your node is synced.\n`,
-
-      blockWithGas: () =>
-        `${prefix} "${data.contract.contractName}" exceeded the block limit ` +
-        `(with a gas value you set).\n` +
-        `   * Block limit:  ${data.blockLimit}\n` +
-        `   * Gas sent:     ${data.gas}\n` +
-        `   * Try:\n` +
-        `      + Sending less gas.\n` +
-        `      + Setting a higher network block limit if you are on a\n` +
-        `        private network or test client (like ganache).\n`,
-
-      blockNoGas:   () =>
-        `${prefix} "${data.contract.contractName}" exceeded the block limit ` +
-        `(using Truffle's estimate).\n` +
-        `   * Block limit: ${data.blockLimit}\n` +
-        `   * Report this error in the Truffle issues on Github. It should not happen.\n` +
-        `   * Try: setting gas manually in 'truffle.js' or as parameter to 'deployer.deploy'\n`,
-
-      nonce:        () =>
-        `${prefix} "${data.contract.contractName}" received: ${data.error.message}.\n` +
-        `   * This error is common when Infura is under heavy network load.\n` +
-        `   * Try: setting the 'confirmations' key in your network config\n` +
-        `          to wait for several block confirmations between each deployment.\n`,
-
-      geth:        () =>
-        `${prefix} "${data.contract.contractName}" received a generic error from Geth that\n` +
-        `can be caused by hitting revert in a contract constructor or running out of gas.\n` +
-        `   * ${data.estimateError.message}.\n` +
-        `   * Try: + using the '--dry-run' option to reproduce this failure with clearer errors.\n` +
-        `          + verifying that your gas is adequate for this deployment.\n`,
-
-      default:      () =>
-        `${prefix} "${data.contract.contractName}" -- ${data.error.message}.\n`,
-
-      // ------------------------------------ Successes --------------------------------------------
-
-      deploying:    () =>
-        this.underline(`Deploying '${data.contract.contractName}'`),
-
-      replacing:    () =>
-        this.underline(`Replacing '${data.contract.contractName}'`),
-
-      reusing:      () =>
-        this.underline(`Re-using deployed '${data.contract.contractName}'`) + '\n' +
-        `   > ${'contract address:'.padEnd(20)} ${data.contract.address}\n`,
-
-      many:         () =>
-        this.underline(`Deploying Batch`),
-
-      linking:      () => {
-        let output = this.underline(`Linking`) +
-        `\n   * Contract: ${data.contractName} <--> Library: ${data.libraryName} `;
-
-        if(!self.migration.dryRun)
-          output +=`(at address: ${data.libraryAddress})`;
-
-        return output;
-      },
-
-      preMigrate:   () =>
-        this.doubleline(`${data.file}`),
-
-      saving:       () => {
-        return (!self.migration.dryRun)
-          ? `\n   * Saving migration`
-          : '';
-      },
-
-      firstMigrate: () => {
-        let output;
-        (self.migration.dryRun)
-          ? output = this.doubleline(`Migrations dry-run (simulation)`) + '\n'
-          : output = this.doubleline(`Starting migrations...`) + '\n';
-
-        output +=
-          `> Network name: '${data.network}'\n` +
-          `> Network id:   ${data.networkId}\n`;
-
-        return output;
-      },
-
-      postMigrate:  () => {
-        let output = '';
-
-        if (!self.migration.dryRun)
-          output += `   * Saving artifacts\n`;
-
-        output += this.underline(37) + '\n' +
-          `   > ${'Total cost:'.padEnd(15)} ${data.cost.padStart(15)} ETH\n`;
-
-        return output;
-      },
-
-      lastMigrate: () =>
-        this.doubleline('Summary') + '\n' +
-        `> ${'Total deployments:'.padEnd(20)} ${data.totalDeployments}\n` +
-        `> ${'Final cost:'.padEnd(20)} ${data.finalCost} ETH\n`,
-
-      deployed:     () => {
-
-        if(this.blockSpinner){
-          this.blockSpinner.stop();
-          const stopText = `   > ${this.currentBlockWait}`;
-          this.deployer.logger.log(stopText);
-        }
-
-        let output = '';
-
-        if(!self.migration.dryRun) output +=
-          `   > ${'contract address:'.padEnd(20)} ${data.receipt.contractAddress}\n`;
-
-        output +=
-          `   > ${'account:'.padEnd(20)} ${data.from}\n` +
-          `   > ${'balance:'.padEnd(20)} ${data.balance}\n` +
-          `   > ${'gas used:'.padEnd(20)} ${data.gas}\n` +
-          `   > ${'gas price:'.padEnd(20)} ${data.gasPrice} gwei\n` +
-          `   > ${'value sent:'.padEnd(20)} ${data.value} ETH\n` +
-          `   > ${'total cost:'.padEnd(20)} ${data.cost} ETH\n`;
-
-        if (self.confirmations !== 0) output +=
-          this.underline(`Pausing for ${self.confirmations} confirmations...`);
-
-        return output;
-      },
-
-      listMany:     () =>
-        `   * ${data.contractName}`,
-
-      hash:         () => {
-        return (!self.migration.dryRun)
-          ? `   > ${'transaction hash:'.padEnd(20)} ` + data.transactionHash
-          : ''
-      },
-
-      receipt:      () =>
-        `   > ${'gas usage:'.padEnd(20)} ` + data.gas,
-
-      confirmation: () =>
-        `   > ${'confirmation number:'.padEnd(20)} ` + `${data.num} (block: ${data.block})`,
-    }
-
-    return kinds[kind]();
-  }
-
-  async processDeploymentError(data){
-    let message;
-    const error = data.estimateError || data.error;
-
-    data.reason = (data.error) ? data.error.reason : null;
-
-    const errors = {
-      OOG: error.message.includes('out of gas') || (data.gas === data.blockLimit),
-      INT: error.message.includes('base fee') || error.message.includes('intrinsic'),
-      RVT: error.message.includes('revert'),
-      ETH: error.message.includes('funds'),
-      BLK: error.message.includes('block gas limit'),
-      NCE: error.message.includes('nonce'),
-      INV: error.message.includes('invalid opcode'),
-      GTH: error.message.includes('always failing transaction')
-    }
-
-    let type = Object.keys(errors).find(key => errors[key]);
-
-    switch (type) {
-      case 'INT':
-        (data.gas)
-          ? message = this.messages('intWithGas', data)
-          : message = this.messages('intNoGas', data);
-
-        this.deployer.logger.error(message);
-        break;
-
-      case 'OOG':
-        (data.gas && !(data.gas === data.blockLimit))
-          ? message = this.messages('intWithGas', data)
-          : message = this.messages('oogNoGas', data);
-
-        this.deployer.logger.error(message);
-        break;
-
-      case 'RVT':
-        (data.reason)
-          ? message = this.messages('rvtReason', data)
-          : message = this.messages('rvtNoReason', data);
-
-        this.deployer.logger.error(message);
-        break;
-
-      case 'INV':
-        (data.reason)
-          ? message = this.messages('asrtReason', data)
-          : message = this.messages('asrtNoReason', data);
-
-        this.deployer.logger.error(message);
-        break;
-
-      case 'BLK':
-        (data.gas)
-          ? message = this.messages('blockWithGas', data)
-          : message = this.messages('blockNoGas', data)
-
-        this.deployer.logger.error(message);
-        break;
-
-      case 'ETH':
-        const balance = await data.contract.web3.eth.getBalance(data.from);
-        data.balance = balance.toString();
-        message = this.messages('noMoney', data);
-        this.deployer.logger.error(message);
-        break;
-
-      case 'NCE':
-        message = this.messages('nonce', data);
-        this.deployer.logger.error(message);
-        break;
-
-      case 'GTH':
-        message = this.messages('geth', data);
-        this.deployer.logger.error(message);
-        break;
-
-      default:
-        message = this.messages('default', data);
-        this.deployer.logger.error(message);
-    }
-  }
 }
 
 module.exports = Reporter;
+

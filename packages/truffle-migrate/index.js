@@ -167,8 +167,8 @@ class Migration {
 
     // Connect reporter to this migration
     if (self.reporter){
-      self.reporter.migration = self;
-      self.reporter.deployer = deployer;
+      self.reporter.setMigration(self);
+      self.reporter.setDeployer(deployer);
       self.reporter.confirmations = options.confirmations || 0;
       self.reporter.listen();
     }
