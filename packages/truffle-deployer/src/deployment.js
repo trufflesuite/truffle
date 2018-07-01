@@ -22,11 +22,11 @@ class Deployment {
 
   /**
    * Stub for future error code assignments on process.exit
-   * @param  {String} type key map to code
+   * @param  {String} name contract name
    * @return {Number}      code to exit
    */
-  _errorCodes(type){
-    return 1;
+  _errors(name){
+    return `Migrations failure`
   }
 
   async _waitMS(ms){
@@ -189,7 +189,7 @@ class Deployment {
         contract: contract,
       })
 
-      throw new Error(this._errorCodes('noBytecode'));
+      throw new Error(this._errors(contract.contractName));
     }
 
     // Check network
@@ -327,7 +327,8 @@ class Deployment {
           self._stopBlockPolling();
           eventArgs.error = err.error || err;
           await self.emitter.emit('deployFailed', eventArgs);
-          throw new Error(self._errorCodes('deployFailed'));
+          self._close();
+          throw new Error(self._errors(contract.contractName));
         }
 
       // Case: already deployed

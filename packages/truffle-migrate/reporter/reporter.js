@@ -209,8 +209,7 @@ class Reporter {
       this.blockSpinner.stop();
     }
 
-    const message = await this.processDeploymentError(data);
-    this.deployer.logger.error(message)
+    await this.processDeploymentError(data);
   }
 
   linking(data){
@@ -288,7 +287,7 @@ class Reporter {
   messages(kind, data){
     const self = this;
 
-    const prefix = '\nError:';
+    const prefix = '\n*** Deployment Failed ***\n\n';
     const kinds = {
 
       // --------------------------------------- Errors --------------------------------------------
