@@ -154,6 +154,7 @@ class Migration {
     const deployer = new Deployer({
       logger: logger,
       confirmations: options.confirmations,
+      timeoutBlocks: options.timeoutBlocks,
       network: options.network,
       network_id: options.network_id,
       provider: options.provider,

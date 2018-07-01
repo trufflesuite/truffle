@@ -16,7 +16,7 @@ class Deployer extends Deployment {
     ]);
 
     const emitter = new Emittery();
-    super(emitter, options.confirmations);
+    super(emitter, options);
 
     this.emitter = emitter;
     this.chain = new DeferredChain();

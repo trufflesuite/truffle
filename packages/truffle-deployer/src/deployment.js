@@ -9,8 +9,9 @@ class Deployment {
    * @param  {Object} emitter         async `Emittery` emitter
    * @param  {Number} confirmations   confirmations needed to resolve an instance
    */
-  constructor(emitter, confirmations){
-    this.confirmations = confirmations || 0;
+  constructor(emitter, options){
+    this.confirmations = options.confirmations || 0;
+    this.timeoutBlocks = options.timeoutBlocks || 0;
     this.emitter = emitter;
     this.promiEventEmitters = [];
     this.confirmationsMap = {};
@@ -27,10 +28,6 @@ class Deployment {
    */
   _errors(name){
     return `Migrations failure`
-  }
-
-  async _waitMS(ms){
-    return new Promise(resolve => setTimeout(() => resolve(), ms))
   }
 
   /**
@@ -67,32 +64,6 @@ class Deployment {
       if(hasKey) value = arg[key];
     });
     return value;
-  }
-
-  /**
-   * NB: This should work but there are outstanding issues at both
-   * geth (with websockets) & web3 (with confirmation handling over RPC) that
-   * prevent it from being reliable. We're using very simple block polling instead.
-   * (See also _confirmationCb )
-   *
-   * Queries the confirmations mapping periodically to see if we have
-   * heard enough confirmations for a given tx to allow `deploy` to complete.
-   * Resolves when this is true.
-   * @param  {String} hash contract creation tx hash
-   * @return {Promise}
-   */
-  async _waitForConfirmations(hash){
-    let interval;
-    const self = this;
-
-    return new Promise(accept => {
-      interval = setInterval(() => {
-        if (self.confirmationsMap[hash] >= self.confirmations){
-          clearInterval(interval);
-          accept();
-        }
-      }, self.pollingInterval);
-    })
   }
 
   /**
@@ -230,12 +201,33 @@ class Deployment {
     this.removeListener('receipt', parent._receiptCb);
   }
 
+  // ----------------- Confirmations Handling (temporarily disabled) -------------------------------
   /**
-   * NB: This should work but there are outstanding issues at both
-   * geth (with websockets) & web3 (with confirmation handling over RPC) that
-   * prevent it from being reliable. We're using very simple block polling instead.
-   * (See also _waitForConfirmations )
+   * There are outstanding issues at both geth (with websockets) & web3 (with confirmation handling
+   * over RPC) that impair the confirmations handlers' reliability. In the interim we're using
+   * simple block polling instead. (See also _confirmationCb )
    *
+   * Queries the confirmations mapping periodically to see if we have
+   * heard enough confirmations for a given tx to allow `deploy` to complete.
+   * Resolves when this is true.
+   * @param  {String} hash contract creation tx hash
+   * @return {Promise}
+   */
+  async _waitForConfirmations(hash){
+    let interval;
+    const self = this;
+
+    return new Promise(accept => {
+      interval = setInterval(() => {
+        if (self.confirmationsMap[hash] >= self.confirmations){
+          clearInterval(interval);
+          accept();
+        }
+      }, self.pollingInterval);
+    })
+  }
+
+  /**
    * Handler for contract's `confirmation` event. Rebroadcasts as a deployer event
    * and maintains a table of txHashes & their current confirmation number. This
    * table gets polled if the user needs to wait a few blocks before getting
@@ -286,6 +278,13 @@ class Deployment {
 
       // Case: deploy:
       if (shouldDeploy) {
+        /*
+          Set timeout override. If this value is zero,
+          truffle-contract will defer to web3's defaults:
+          - 50 blocks (websockets) OR 50 * 15sec (http)
+        */
+        contract.timeoutBlocks = self.timeoutBlocks;
+
         eventArgs = {
           state: state,
           contract: contract,
@@ -296,7 +295,8 @@ class Deployment {
           from: self._extractFromArgs(newArgs, 'from')  || contract.defaults().from,
         }
 
-        // Detect constructor revert by running estimateGas
+        // Get an estimate for previews / detect constructor revert
+        // NB: web3 does not strip the revert msg here like it does for `deploy`
         try {
           eventArgs.estimate = await contract.new.estimateGas.apply(contract, newArgs);
         } catch(err){

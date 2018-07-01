@@ -2,8 +2,9 @@ var subscriptions = require("./subscriptions");
 
 var override = {
 
-  timeoutMessage: '50 blocks', // Substring of timeout err fired by web3
-  defaultMaxBlocks: 50,        // Max # of blocks web3 will wait for a tx
+  timeoutMessage: 'not mined within', // Substring of timeout err fired by web3
+  defaultMaxBlocks: 50,               // Max # of blocks web3 will wait for a tx
+  pollingInterval: 1000,
 
   /**
    * Fired after web3 ceases to support subscriptions if user has specified
@@ -14,7 +15,7 @@ var override = {
    * @param  {Object} context execution state
    * @param  {Object} err     error
    */
-  start: function(context, web3Error){
+  start: async function(context, web3Error){
     var constructor = this;
     var blockNumber = null;
     var currentBlock = override.defaultMaxBlocks;
@@ -27,22 +28,18 @@ var override = {
     if (!timedOut || !shouldWait) return context.promiEvent.reject(web3Error);
 
     // This will run every block from now until contract.timeoutBlocks
-    var listener = function(err, data){
+    var listener = function(pollID){
       var self = this;
       currentBlock++;
 
       if (currentBlock > constructor.timeoutBlocks){
-        subscriptions.unsubscribe(constructor, id);
-        self.removeListener('data', listener);
-        context.promiEvent.reject(err);
+        clearInterval(pollID)
         return;
       }
 
       constructor.web3.eth.getTransactionReceipt(context.transactionHash)
         .then(result => {
           if (!result) return;
-
-          //self.removeListener('data', listener);
 
           (result.contractAddress)
             ? constructor
@@ -52,16 +49,35 @@ var override = {
 
             : constructor.promiEvent.resolve(result);
 
-        }).catch(err => {
-          //self.removeListener('data', listener);
+        })
+        .catch(err => {
+          clearInterval(pollID)
           context.promiEvent.reject(err);
         });
     };
 
+    // Start polling
+    let currentPollingBlock = await constructor.web3.eth.getBlockNumber();
+
+    const pollID = setInterval(async() => {
+      const newBlock = await constructor.web3.eth.getBlockNumber();
+
+      if(newBlock > currentPollingBlock){
+        currentPollingBlock = newBlock;
+        listener(pollID);
+      }
+    }, override.pollingInterval);
+
+
+    // Temporarily disabled new_head subscription. There are bugs at Web3 and at
+    // Geth that impair the reliablility of this sub atm.
+
+    /*
     var id = new Date().getTime();
     subscriptions.subscribe(constructor, 'newHeads', id)
       .then(result => constructor.web3.currentProvider.on('data', listener))
       .catch(context.promiEvent.reject);
+    */
   },
 }
 

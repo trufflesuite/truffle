@@ -1,3 +1,8 @@
+/**
+ * This code is temporarily unused pending resolution of bugs at Web3 & Geth that make
+ * subscriptions for the block head unreliable.
+ */
+
 module.exports = {
   /**
    * @param  {String} e.g. "newHeads"

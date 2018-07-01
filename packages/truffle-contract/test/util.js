@@ -115,6 +115,10 @@ var util = {
     if (transactionHash === util.realHash)
       return Promise.resolve(util.realReceipt)
   },
+
+  waitMS: async function(ms){
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 }
 
 module.exports = util;

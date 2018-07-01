@@ -7,7 +7,8 @@ module.exports = {
       gas: 4700000,
       gasPrice: 20000000000,
       confirmations: 2,
-      production: true
+      production: true,
+      timeoutBlocks: 70,
     },
   },
 };

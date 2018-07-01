@@ -29,6 +29,7 @@ function Config(truffle_directory, working_directory, network) {
     gasPrice: null,
     from: null,
     confirmations: 0,
+    timeoutBlocks: 0,
     production: false,
     build: null,
     resolver: null,
@@ -194,6 +195,18 @@ function Config(truffle_directory, working_directory, network) {
         throw new Error("Don't set config.production directly. Instead, set config.networks and then config.networks[<network name>].production")
       }
     },
+    timeoutBlocks: {
+      get: function(){
+        try {
+          return self.network_config.timeoutBlocks;
+        } catch (e) {
+          return 0;
+        }
+      },
+      set: function(val) {
+        throw new Error("Don't set config.timeoutBlocks directly. Instead, set config.networks and then config.networks[<network name>].timeoutBlocks")
+      }
+    }
   };
 
   Object.keys(props).forEach(function(prop) {
