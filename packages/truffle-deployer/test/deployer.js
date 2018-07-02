@@ -222,7 +222,7 @@ describe("Deployer (sync)", function() {
     this.timeout(10000);
     const startBlock = await web3.eth.getBlockNumber();
 
-    utils.startAutoMine(web3, 500);
+    utils.startAutoMine(web3, 1500);
 
     const migrate = function(){
       deployer.deploy(IsLibrary);
@@ -251,10 +251,10 @@ describe("Deployer (sync)", function() {
   });
 
   it('emits block events while waiting for a tx to mine', async function(){
-    this.timeout(10000);
+    this.timeout(15000);
     const startBlock = await web3.eth.getBlockNumber();
 
-    utils.startAutoMine(web3, 2000);
+    utils.startAutoMine(web3, 1500);
 
     const migrate = function(){
       deployer.then(async function(){

@@ -130,7 +130,7 @@ class Reporter {
         };
 
         input.close();
-        self.migration.logger.log(exitLine);
+        self.deployer && self.deployer.logger.log(exitLine);
         resolve(false);
       })
     });

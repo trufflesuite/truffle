@@ -15,7 +15,7 @@ class Deployment {
     this.emitter = emitter;
     this.promiEventEmitters = [];
     this.confirmationsMap = {};
-    this.pollingInterval = 1000;
+    this.pollingInterval = 2000;
     this.blockPoll;
   }
 
@@ -82,19 +82,18 @@ class Deployment {
     self.blockPoll = setInterval(async() => {
       const newBlock = await web3.eth.getBlockNumber();
 
-      if (newBlock > currentBlock){
-        blocksWaited = (newBlock - currentBlock) + blocksWaited;
-        currentBlock = newBlock;
-        secondsWaited = Math.floor((new Date().getTime() - startTime) / 1000);
+      blocksWaited = (newBlock - currentBlock) + blocksWaited;
+      currentBlock = newBlock;
+      secondsWaited = Math.floor((new Date().getTime() - startTime) / 1000);
 
-        const eventArgs = {
-          blockNumber: newBlock,
-          blocksWaited: blocksWaited,
-          secondsWaited: secondsWaited
-        };
+      const eventArgs = {
+        blockNumber: newBlock,
+        blocksWaited: blocksWaited,
+        secondsWaited: secondsWaited
+      };
 
-        await self.emitter.emit('block', eventArgs);
-      }
+      await self.emitter.emit('block', eventArgs);
+
     }, self.pollingInterval);
   }
 
@@ -395,6 +394,7 @@ class Deployment {
    * Cleans up promiEvents' emitter listeners
    */
   _close(){
+    this.emitter.clearListeners();
     this.promiEventEmitters.forEach(item => {
       item.removeAllListeners();
     });
