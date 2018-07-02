@@ -25,7 +25,7 @@
   "homepage": "https://github.com/trufflesuite/truffle-deployer#readme",
   "dependencies": {
     "emittery": "^0.3.0",
-    "truffle-contract": "git+https://github.com/trufflesuite/truffle-contract.git#8f90e82bb3e22e2da6b493d8edd217fb49d8906c",
+    "truffle-contract": "^3.0.5",
     "truffle-expect": "^0.0.4"
   },
   "devDependencies": {
