@@ -8,3 +8,4 @@ library IsLibrary {
     emit IsLibraryEvent(_id);
   }
 }
+

@@ -107,3 +107,4 @@ describe("Deployer (async / await)", function() {
     assert(events[1].args.eventID === '7');
   });
 });
+

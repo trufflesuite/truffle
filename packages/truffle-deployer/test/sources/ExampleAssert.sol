@@ -6,3 +6,4 @@ contract ExampleAssert {
     assert(false);
   }
 }
+
