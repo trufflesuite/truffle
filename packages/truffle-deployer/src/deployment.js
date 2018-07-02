@@ -15,7 +15,7 @@ class Deployment {
     this.emitter = emitter;
     this.promiEventEmitters = [];
     this.confirmationsMap = {};
-    this.pollingInterval = 2000;
+    this.pollingInterval = 4000;
     this.blockPoll;
   }
 

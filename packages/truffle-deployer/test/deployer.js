@@ -219,7 +219,7 @@ describe("Deployer (sync)", function() {
   })
 
   it('waits for confirmations', async function(){
-    this.timeout(10000);
+    this.timeout(15000);
     const startBlock = await web3.eth.getBlockNumber();
 
     utils.startAutoMine(web3, 1500);
@@ -254,12 +254,12 @@ describe("Deployer (sync)", function() {
     this.timeout(15000);
     const startBlock = await web3.eth.getBlockNumber();
 
-    utils.startAutoMine(web3, 1500);
+    utils.startAutoMine(web3, 4000);
 
     const migrate = function(){
       deployer.then(async function(){
         await deployer._startBlockPolling(web3);
-        await utils.waitMS(5000);
+        await utils.waitMS(9000);
         deployer._startBlockPolling();
       });
     };
@@ -267,7 +267,7 @@ describe("Deployer (sync)", function() {
     migrate();
     await deployer.start();
     utils.stopAutoMine();
-
+    console.log(output)
     assert(output.includes(`Block number: ${startBlock + 1}`));
     assert(output.includes(`Wait: 1`));
     assert(output.includes(`Block number: ${startBlock + 2}`));
