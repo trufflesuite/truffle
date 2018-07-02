@@ -20,7 +20,7 @@
   "author": "Tim Coulter <tim.coulter@consenseys.net>",
   "license": "MIT",
   "dependencies": {
-    "bignumber.js": "^6.0.0",
+    "bignumber.js": "^7.2.1",
     "debug": "^3.1.0",
     "json-pointer": "^0.6.0",
     "redux": "^3.7.2",
