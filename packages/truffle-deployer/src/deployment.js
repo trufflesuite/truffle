@@ -357,40 +357,6 @@ class Deployment {
   }
 
   /**
-   * Deploys an array of contracts
-   * @param  {Array} arr  Array of contract abstractions to deploy
-   * @return {Promise}
-   */
-  _deployMany(arr){
-    const self = this;
-
-    return async function() {
-      const deployments = arr.map(args => {
-        let params;
-        let contract;
-
-        if (Array.isArray(args)) {
-          contract = args[0];
-
-          (args.length > 1)
-            ? params = args.slice(1)
-            : params = [];
-
-        } else {
-          contract = args;
-          params = [];
-        }
-
-        return self._deploy(contract, params)();
-      });
-
-      await self.emitter.emit('preDeployMany', arr);
-      await Promise.all(deployments);
-      await self.emitter.emit('postDeployMany', arr);
-    };
-  }
-
-  /**
    * Cleans up promiEvents' emitter listeners
    */
   _close(){

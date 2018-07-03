@@ -111,32 +111,6 @@ describe("Deployer (sync)", function() {
     assert(output.includes('UsesExample'));
   });
 
-  it('deploy([contract, [contract, args], ...])', async function(){
-    const deployArgs = [Example, [UsesExample, utils.zeroAddress]]
-
-    function migrate(){
-      deployer.deploy(deployArgs);
-    };
-
-    migrate();
-    await deployer.start();
-
-    const example =       await Example.deployed();
-    const usesExample =   await UsesExample.deployed();
-    const exampleId =     await example.id();
-    const usesExampleId = await usesExample.id();
-    const other =         await usesExample.other();
-
-    assert(Example.address !== null);
-    assert(exampleId === 'Example' );
-    assert(usesExampleId === 'UsesExample' );
-    assert(other === utils.zeroAddress);
-
-    assert(output.includes('Deploying Batch'))
-    assert(output.includes('Example'));
-    assert(output.includes('UsesExample'));
-  });
-
   it('deployer.then', async function(){
     function migrate(){
       deployer.then(async function(){

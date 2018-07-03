@@ -46,9 +46,13 @@ class Deployer extends Deployment {
     const args = Array.prototype.slice.call(arguments);
     const contract = args.shift();
 
-    return (Array.isArray(contract))
-      ? this.queueOrExec(this._deployMany(contract, this))
-      : this.queueOrExec(this._deploy(contract, args, this));
+    if (Array.isArray(contract)){
+      const msg = 'Support for batch deployments has been deprecated. ' +
+                  'Please deploy each contract individually.'
+      throw new Error(msg);
+    }
+
+    this.queueOrExec(this._deploy(contract, args, this));
   }
 
   new() {
