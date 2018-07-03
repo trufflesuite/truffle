@@ -49,10 +49,11 @@ class Deployer extends Deployment {
     if (Array.isArray(contract)){
       const msg = 'Support for batch deployments has been deprecated. ' +
                   'Please deploy each contract individually.'
+
       throw new Error(msg);
     }
 
-    this.queueOrExec(this._deploy(contract, args, this));
+    return this.queueOrExec(this.executeDeployment(contract, args, this));
   }
 
   new() {
@@ -80,7 +81,7 @@ class Deployer extends Deployment {
 
   finish(){
     this.emitter.clearListeners();
-    this._close();
+    this.close();
   }
 }
 

@@ -23,6 +23,7 @@ class Deployment {
 
   /**
    * Stub for future error code assignments on process.exit
+   * @private
    * @param  {String} name contract name
    * @return {Number}      code to exit
    */
@@ -32,6 +33,7 @@ class Deployment {
 
   /**
    * Helper to parse a deploy statement's overwrite option
+   * @private
    * @param  {Arry}    args        arguments passed to deploy
    * @param  {Boolean} isDeployed  is contract deployed?
    * @return {Boolean}             true if overwrite is ok
@@ -50,6 +52,7 @@ class Deployment {
 
   /**
    * Gets arbitrary values from constructor params, if they exist.
+   * @private
    * @param  {Array}              args constructor params
    * @return {Any|Undefined}      gas value
    */
@@ -70,6 +73,8 @@ class Deployment {
    * Emits a `block` event on each new block heard. This polling is
    * meant to be cancelled immediately on resolution of the
    * contract instance or on error. (See stopBlockPolling)
+   * @private
+   * @param  {Object}    web3
    */
   async _startBlockPolling(web3){
     const self = this;
@@ -99,6 +104,7 @@ class Deployment {
 
   /**
    * Clears the interval timer initiated by `startBlockPolling
+   * @private
    */
   _stopBlockPolling(){
     clearInterval(this.blockPoll);
@@ -107,6 +113,7 @@ class Deployment {
   /**
    * Waits `n` blocks after a tx is mined, firing a pseudo
    * 'confirmation' event for each one.
+   * @private
    * @param  {Number} blocksToWait
    * @param  {Object} receipt
    * @param  {Object} web3
@@ -148,6 +155,7 @@ class Deployment {
    * Sanity checks catch-all:
    * Are we connected?
    * Is contract deployable?
+   * @private
    * @param  {Object} contract TruffleContract
    * @return {Promise}         throws on error
    */
@@ -168,6 +176,7 @@ class Deployment {
 
   /**
    * Handler for contract's `transactionHash` event. Rebroadcasts as a deployer event
+   * @private
    * @param  {Object} parent Deployment instance. Local `this` belongs to promievent
    * @param  {String} hash   tranactionHash
    */
@@ -183,6 +192,7 @@ class Deployment {
 
   /**
    * Handler for contract's `receipt` event. Rebroadcasts as a deployer event
+   * @private
    * @param  {Object} parent  Deployment instance. Local `this` belongs to promievent
    * @param  {Object} state   store for the receipt value
    * @param  {Object} receipt
@@ -209,6 +219,8 @@ class Deployment {
    * Queries the confirmations mapping periodically to see if we have
    * heard enough confirmations for a given tx to allow `deploy` to complete.
    * Resolves when this is true.
+   *
+   * @private
    * @param  {String} hash contract creation tx hash
    * @return {Promise}
    */
@@ -231,6 +243,7 @@ class Deployment {
    * and maintains a table of txHashes & their current confirmation number. This
    * table gets polled if the user needs to wait a few blocks before getting
    * an instance back.
+   * @private
    * @param  {Object} parent  Deployment instance. Local `this` belongs to promievent
    * @param  {Number} num     Confirmation number
    * @param  {Object} receipt transaction receipt
@@ -253,7 +266,7 @@ class Deployment {
    * @param  {Array}  args      Constructor arguments
    * @return {Promise}          Resolves an instance
    */
-  _deploy(contract, args){
+  executeDeployment(contract, args){
     const self = this;
 
     return async function() {
@@ -359,7 +372,7 @@ class Deployment {
   /**
    * Cleans up promiEvents' emitter listeners
    */
-  _close(){
+  close(){
     this.emitter.clearListeners();
     this.promiEventEmitters.forEach(item => {
       item.removeAllListeners();

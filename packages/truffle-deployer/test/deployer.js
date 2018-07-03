@@ -241,7 +241,7 @@ describe("Deployer (sync)", function() {
     migrate();
     await deployer.start();
     utils.stopAutoMine();
-    console.log(output)
+
     assert(output.includes(`Block number: ${startBlock + 1}`));
     assert(output.includes(`Wait: 1`));
     assert(output.includes(`Block number: ${startBlock + 2}`));
