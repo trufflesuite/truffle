@@ -97,16 +97,15 @@ var execute = {
     const isObject = res && typeof res === 'object' && res.error && res.error.data;
     const isString = res && typeof res === 'object' && typeof res.result === 'string';
 
-    if (isObject){
+    if (isObject) {
       const data = res.error.data;
       const hash = Object.keys(data)[0];
 
       if (data[hash].return && data[hash].return.includes('0x08c379a0')){
         return web3.eth.abi.decodeParameter('string', data[hash].return.slice(10))
       }
-    }
 
-    if (isString && res.result.includes('0x08c379a0')){
+    } else if (isString && res.result.includes('0x08c379a0')){
       return web3.eth.abi.decodeParameter('string', res.result.slice(10))
     }
   },
