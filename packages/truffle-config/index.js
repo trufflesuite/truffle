@@ -37,12 +37,14 @@ function Config(truffle_directory, working_directory, network) {
       registry: "0x8011df4830b4f696cd81393997e5371b93338878",
       install_provider_uri: "https://ropsten.infura.io/truffle"
     },
-    solc: {
-      optimizer: {
-        enabled: false,
-        runs: 200
-      },
-      evmVersion: "byzantium"
+    compilers: {
+      solc: {
+        optimizer: {
+          enabled: false,
+          runs: 200
+        },
+        evmVersion: "byzantium"
+      }
     },
     logger: {
       log: function() {},
@@ -60,8 +62,8 @@ function Config(truffle_directory, working_directory, network) {
     resolver: function() {},
     artifactor: function() {},
     ethpm: function() {},
-    solc: function() {},
     logger: function() {},
+    compilers: function() {},
 
     build_directory: function() {
       return path.join(self.working_directory, "build");
@@ -168,6 +170,7 @@ function Config(truffle_directory, working_directory, network) {
         throw new Error("Don't set config.provider directly. Instead, set config.networks and then set config.networks[<network name>].provider")
       }
     }
+
   };
 
   Object.keys(props).forEach(function(prop) {

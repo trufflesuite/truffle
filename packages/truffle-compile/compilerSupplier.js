@@ -24,7 +24,7 @@ function CompilerSupplier(_config){
  * @type {Object}
  */
 CompilerSupplier.prototype.config = {
-  solc: null,
+  version: null,
   versionsUrl: 'https://solc-bin.ethereum.org/bin/list.json',
   compilerUrlRoot: 'https://solc-bin.ethereum.org/bin/',
   dockerTagsUrl: 'https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/',
@@ -42,34 +42,34 @@ CompilerSupplier.prototype.cachePath = findCacheDir({
 
 /**
  * Load solcjs from four possible locations:
- * - local node_modules            (config.solc = <undefined>)
- * - absolute path to a local solc (config.solc = <path>)
- * - a solc cache                  (config.solc = <version-string> && cache contains version)
- * - a remote solc-bin source      (config.solc = <version-string> && version not cached)
+ * - local node_modules            (config.version = <undefined>)
+ * - absolute path to a local solc (config.version = <path>)
+ * - a solc cache                  (config.version = <version-string> && cache contains version)
+ * - a remote solc-bin source      (config.version = <version-string> && version not cached)
  *
  * OR specify that solc.compileStandard should wrap:
- * - dockerized solc               (config.solc = "<image-name>" && config.docker: true)
- * - native built solc             (cofing.solc = "native")
+ * - dockerized solc               (config.version = "<image-name>" && config.docker: true)
+ * - native built solc             (cofing.version = "native")
  *
  * @return {Module|Object}         solc
  */
 CompilerSupplier.prototype.load = function(){
   const self = this;
-  const solc = self.config.solc;
-  const isNative = self.config.solc === 'native';
+  const version = self.config.version;
+  const isNative = self.config.version === 'native';
 
   return new Promise((accept, reject) => {
     const useDocker =  self.config.docker;
-    const useDefault = !solc;
-    const useLocal =   !useDefault && self.isLocal(solc);
+    const useDefault = !version;
+    const useLocal =   !useDefault && self.isLocal(version);
     const useNative =  !useLocal && isNative;
     const useRemote =  !useNative
 
     if (useDocker)  return accept(self.getBuilt("docker"));
     if (useNative)  return accept(self.getBuilt("native"));
     if (useDefault) return accept(self.getDefault());
-    if (useLocal)   return accept(self.getLocal(solc));
-    if (useRemote)  return accept(self.getByUrl(solc)); // Tries cache first, then remote.
+    if (useLocal)   return accept(self.getLocal(version));
+    if (useRemote)  return accept(self.getByUrl(version)); // Tries cache first, then remote.
   });
 }
 
@@ -241,7 +241,7 @@ CompilerSupplier.prototype.getBuilt = function(buildType){
       break;
     case "docker":
       versionString = this.validateDocker();
-      command = 'docker run -i ethereum/solc:' + this.config.solc + ' --standard-json';
+      command = 'docker run -i ethereum/solc:' + this.config.version + ' --standard-json';
       break;
   }
 
@@ -277,7 +277,7 @@ CompilerSupplier.prototype.isLocal = function(localPath){
  * @throws {Error}
  */
 CompilerSupplier.prototype.validateDocker = function(){
-  const image = this.config.solc;
+  const image = this.config.version;
   const fileName = image + '.version';
 
   // Skip validation if they've validated for this image before.
@@ -442,7 +442,7 @@ CompilerSupplier.prototype.errors = function(kind, input, err){
     noNative:  "Could not execute local solc binary: " + err,
 
     // Lists
-    noString:  "`compiler.solc` option must be a string specifying:\n" +
+    noString:  "`compilers.solc.version` option must be a string specifying:\n" +
                "   - a path to a locally installed solcjs\n" +
                "   - a solc version (ex: '0.4.22')\n" +
                "   - a docker image name (ex: 'stable')\n" +
