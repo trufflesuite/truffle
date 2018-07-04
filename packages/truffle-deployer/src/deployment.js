@@ -339,7 +339,7 @@ class Deployment {
           self._stopBlockPolling();
           eventArgs.error = err.error || err;
           await self.emitter.emit('deployFailed', eventArgs);
-          self._close();
+          self.close();
           throw new Error(self._errors(contract.contractName));
         }
 
