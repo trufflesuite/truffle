@@ -155,12 +155,9 @@ var command = {
           } catch(err){
             done(err)
           };
-          return;
 
         // Production: dry-run then real run
-        }
-
-        else if (production){
+        } else if (production) {
 
           const currentBuild = conf.contracts_build_directory;
           conf.dryRun = true;
