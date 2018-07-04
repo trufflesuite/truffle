@@ -53,7 +53,7 @@
     "truffle-exec": "./exec.js"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha --no-warnings --exit"
   },
   "repository": {
     "type": "git",
