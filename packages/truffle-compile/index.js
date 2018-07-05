@@ -41,8 +41,8 @@ var compile = function(sources, options, callback) {
 
   // Grandfather in old solc config
   if (options.solc){
-    compilers.solc.evmVersion = options.solc.evmVersion;
-    compilers.solc.optimizer = options.solc.optimizer;
+    compilers.solc.settings.evmVersion = options.solc.evmVersion;
+    compilers.solc.settings.optimizer = options.solc.optimizer;
   }
 
   // Ensure sources have operating system independent paths
@@ -102,8 +102,8 @@ var compile = function(sources, options, callback) {
     language: "Solidity",
     sources: {},
     settings: {
-      evmVersion: options.compilers.solc.evmVersion,
-      optimizer: options.compilers.solc.optimizer,
+      evmVersion: options.compilers.solc.settings.evmVersion,
+      optimizer: options.compilers.solc.settings.optimizer,
       outputSelection: outputSelection,
     }
   };

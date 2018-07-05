@@ -94,7 +94,8 @@ describe('CompilerSupplier', function(){
     it('compiles w/ default solc if no compiler specified (float)', function(done){
       options.compilers = {
         solc: {
-          cache: false
+          cache: false,
+          settings: {},
         }
       };
 
@@ -110,7 +111,8 @@ describe('CompilerSupplier', function(){
       options.compilers = {
         solc: {
           cache: false,
-          version: "0.4.15"
+          version: "0.4.15",
+          settings: {},
         }
       };
 
@@ -127,7 +129,8 @@ describe('CompilerSupplier', function(){
       options.compilers = {
         solc: {
           cache: false,
-          version: "0.4.16-nightly.2017.8.9+commit.81887bc7"
+          version: "0.4.16-nightly.2017.8.9+commit.81887bc7",
+          settings: {},
         }
       };
 
@@ -143,7 +146,8 @@ describe('CompilerSupplier', function(){
       options.compilers = {
         solc: {
           cache: false,
-          version: "0.4.55.77-fantasy-solc"
+          version: "0.4.55.77-fantasy-solc",
+          settings: {},
         }
       };
 
@@ -159,7 +163,8 @@ describe('CompilerSupplier', function(){
       options.compilers = {
         solc: {
           cache: false,
-          version: pathToSolc
+          version: pathToSolc,
+          settings: {},
         }
       };
 
@@ -176,7 +181,8 @@ describe('CompilerSupplier', function(){
       options.compilers = {
         solc: {
           cache: false,
-          version: pathToSolc
+          version: pathToSolc,
+          settings: {},
         }
       };
 
@@ -199,7 +205,8 @@ describe('CompilerSupplier', function(){
       options.compilers = {
         solc: {
           cache: true,
-          version: "0.4.21"
+          version: "0.4.21",
+          settings: {},
         }
       };
 
@@ -239,7 +246,8 @@ describe('CompilerSupplier', function(){
       it('compiles with native solc', function(done){
         options.compilers = {
           solc: {
-            version: "native"
+            version: "native",
+            settings: {},
           }
         };
 
@@ -256,7 +264,8 @@ describe('CompilerSupplier', function(){
         options.compilers = {
           solc: {
             version: "0.4.22",
-            docker: true
+            docker: true,
+            settings: {},
           }
         };
 
@@ -280,7 +289,8 @@ describe('CompilerSupplier', function(){
           compilers : {
             solc: {
               version: "0.4.22",
-              docker: true
+              docker: true,
+              settings: {},
             }
           },
           quiet: true,
@@ -306,7 +316,8 @@ describe('CompilerSupplier', function(){
         options.compilers = {
           solc: {
             version: undefined,
-            docker: true
+            docker: true,
+            settings: {},
           }
         };
 
@@ -322,7 +333,8 @@ describe('CompilerSupplier', function(){
         options.compilers = {
           solc: {
             version: imageName,
-            docker: true
+            docker: true,
+            settings: {},
           }
         };
 

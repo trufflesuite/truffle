@@ -39,11 +39,13 @@ function Config(truffle_directory, working_directory, network) {
     },
     compilers: {
       solc: {
-        optimizer: {
-          enabled: false,
-          runs: 200
-        },
-        evmVersion: "byzantium"
+        settings: {
+          optimizer: {
+            enabled: false,
+            runs: 200
+          },
+          evmVersion: "byzantium"
+        }
       }
     },
     logger: {
