@@ -63,8 +63,6 @@ describe("migrate (dry-run)", function() {
       assert(output.includes('Total deployments'));
 
       const location = path.join(config.contracts_build_directory, "UsesExample.json");
-
-
       done();
     })
   });
