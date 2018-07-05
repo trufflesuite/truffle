@@ -339,6 +339,7 @@ describe("CompilerSupplier", function() {
           },
           quiet: true,
           solc: "",
+          node_modules_directory: path.join(__dirname, "./node_modules"),
           contracts_build_directory: path.join(__dirname, "./build"),
           contracts_directory: path.join(__dirname, "./sources/v0.4.x"),
           working_directory: __dirname,
