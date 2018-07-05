@@ -189,7 +189,7 @@ module.exports = {
       var compilationTargets = [];
 
       // Load compiler
-      var supplier = new CompilerSupplier(options.compiler)
+      var supplier = new CompilerSupplier(options.compilers.solc)
       supplier.load().then(solc => {
 
         // Get all the source code

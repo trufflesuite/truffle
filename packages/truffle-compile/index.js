@@ -36,10 +36,14 @@ var compile = function(sources, options, callback) {
 
   expect.options(options, [
     "contracts_directory",
-    "solc"
+    "compilers"
   ]);
 
-
+  // Grandfather in old solc config
+  if (options.solc){
+    compilers.solc.settings.evmVersion = options.solc.evmVersion;
+    compilers.solc.settings.optimizer = options.solc.optimizer;
+  }
 
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
@@ -98,8 +102,8 @@ var compile = function(sources, options, callback) {
     language: "Solidity",
     sources: {},
     settings: {
-      evmVersion: options.solc.evmVersion,
-      optimizer: options.solc.optimizer,
+      evmVersion: options.compilers.solc.settings.evmVersion,
+      optimizer: options.compilers.solc.settings.optimizer,
       outputSelection: outputSelection,
     }
   };
@@ -116,7 +120,7 @@ var compile = function(sources, options, callback) {
   });
 
   // Load solc module only when compilation is actually required.
-  var supplier = new CompilerSupplier(options.compiler);
+  var supplier = new CompilerSupplier(options.compilers.solc);
 
   supplier.load().then(solc => {
     var result = solc.compileStandard(JSON.stringify(solcStandardInput));

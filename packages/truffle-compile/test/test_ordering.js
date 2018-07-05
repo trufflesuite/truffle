@@ -9,7 +9,15 @@ describe("Compile", function() {
   var simpleOrderedSource = null;
   var complexOrderedSource = null;
   var inheritedSource = null;
-  var compileOptions = { contracts_directory: '', solc: '', quiet: true};
+
+  var compileOptions = {
+    contracts_directory: '',
+    compilers: {
+      solc: {
+        settings: {},
+      }
+    }, quiet: true
+  };
 
   describe("ABI Ordering", function(){
     before("get code", function() {

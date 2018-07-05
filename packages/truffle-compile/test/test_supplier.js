@@ -92,7 +92,12 @@ describe('CompilerSupplier', function(){
 
 
     it('compiles w/ default solc if no compiler specified (float)', function(done){
-      options.compiler = { cache: false };
+      options.compilers = {
+        solc: {
+          cache: false,
+          settings: {},
+        }
+      };
 
       compile(newPragmaSource, options, (err, result) => {
         if (err) return done(err);
@@ -103,9 +108,12 @@ describe('CompilerSupplier', function(){
     });
 
     it('compiles w/ remote solc when options specify release (pinned)', function(done){
-      options.compiler = {
-        cache: false,
-        solc: "0.4.15"
+      options.compilers = {
+        solc: {
+          cache: false,
+          version: "0.4.15",
+          settings: {},
+        }
       };
 
       compile(oldPragmaPinSource, options, (err, result) => {
@@ -118,9 +126,12 @@ describe('CompilerSupplier', function(){
 
     it('compiles w/ remote solc when options specify prerelease (float)', function(done){
       // An 0.4.16 prerelease for 0.4.15
-      options.compiler = {
-        cache: false,
-        solc: "0.4.16-nightly.2017.8.9+commit.81887bc7"
+      options.compilers = {
+        solc: {
+          cache: false,
+          version: "0.4.16-nightly.2017.8.9+commit.81887bc7",
+          settings: {},
+        }
       };
 
       compile(oldPragmaFloatSource, options, (err, result) => {
@@ -132,9 +143,12 @@ describe('CompilerSupplier', function(){
     });
 
     it('errors when specified release does not exist', function(done){
-      options.compiler = {
-        cache: false,
-        solc: "0.4.55.77-fantasy-solc"
+      options.compilers = {
+        solc: {
+          cache: false,
+          version: "0.4.55.77-fantasy-solc",
+          settings: {},
+        }
       };
 
       compile(newPragmaSource, options, (err, result) => {
@@ -146,9 +160,12 @@ describe('CompilerSupplier', function(){
     it('compiles w/ local path solc when options specify path', function(done){
       const pathToSolc = path.join(__dirname, "../../../node_modules/solc/index.js");
 
-      options.compiler = {
-        cache: false,
-        solc: pathToSolc
+      options.compilers = {
+        solc: {
+          cache: false,
+          version: pathToSolc,
+          settings: {},
+        }
       };
 
       compile(newPragmaSource, options, (err, result) => {
@@ -161,9 +178,12 @@ describe('CompilerSupplier', function(){
 
     it('errors when specified path does not exist', function(done){
       const pathToSolc = path.join(__dirname, "../solidity-warehouse/solc/index.js");
-      options.compiler = {
-        cache: false,
-        solc: pathToSolc
+      options.compilers = {
+        solc: {
+          cache: false,
+          version: pathToSolc,
+          settings: {},
+        }
       };
 
       compile(newPragmaSource, options, (err, result) => {
@@ -182,9 +202,12 @@ describe('CompilerSupplier', function(){
       // Delete if it's already there.
       if (fs.existsSync(expectedCache)) fs.unlinkSync(expectedCache);
 
-      options.compiler = {
-        cache: true,
-        solc: "0.4.21"
+      options.compilers = {
+        solc: {
+          cache: true,
+          version: "0.4.21",
+          settings: {},
+        }
       };
 
       // Run compiler, expecting solc to be downloaded and cached.
@@ -221,8 +244,11 @@ describe('CompilerSupplier', function(){
     describe('native / docker [ @native ]', function() {
 
       it('compiles with native solc', function(done){
-        options.compiler = {
-          solc: "native"
+        options.compilers = {
+          solc: {
+            version: "native",
+            settings: {},
+          }
         };
 
         compile(newPragmaSource, options, (err, result) => {
@@ -235,9 +261,12 @@ describe('CompilerSupplier', function(){
       });
 
       it('compiles with dockerized solc', function(done){
-        options.compiler = {
-          solc: "0.4.22",
-          docker: true
+        options.compilers = {
+          solc: {
+            version: "0.4.22",
+            docker: true,
+            settings: {},
+          }
         };
 
         const expectedVersion = '0.4.22+commit.4cb486ee.Linux.g++';
@@ -257,9 +286,12 @@ describe('CompilerSupplier', function(){
         paths.push(path.join(__dirname, "./sources/InheritB.sol"));
 
         let options = {
-          compiler : {
-            solc: "0.4.22",
-            docker: true
+          compilers : {
+            solc: {
+              version: "0.4.22",
+              docker: true,
+              settings: {},
+            }
           },
           quiet: true,
           solc: '',
@@ -281,9 +313,12 @@ describe('CompilerSupplier', function(){
       })
 
       it('errors if running dockerized solc without specifying an image', function(done){
-        options.compiler = {
-          solc: undefined,
-          docker: true
+        options.compilers = {
+          solc: {
+            version: undefined,
+            docker: true,
+            settings: {},
+          }
         };
 
         compile(newPragmaSource, options, (err, result) => {
@@ -295,9 +330,12 @@ describe('CompilerSupplier', function(){
       it('errors if running dockerized solc when image does not exist locally', function(done){
         const imageName = 'fantasySolc.7777555';
 
-        options.compiler = {
-          solc: imageName,
-          docker: true
+        options.compilers = {
+          solc: {
+            version: imageName,
+            docker: true,
+            settings: {},
+          }
         };
 
         compile(newPragmaSource, options, (err, result) => {
