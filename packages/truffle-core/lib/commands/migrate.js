@@ -114,7 +114,7 @@ var command = {
       }
     };
 
-    async function executePostDryRunMigration(buildDir){
+    async function executePostDryRunMigration(config, buildDir, callback){
       let accept = true;
 
       if (options.interactive){
@@ -132,10 +132,10 @@ var command = {
 
         environment.detect(config, function(err) {
           config.dryRun = false;
-          runMigrations(config, done);
+          runMigrations(config, callback);
         })
       } else {
-        done();
+        callback();
       }
     }
 
@@ -178,11 +178,9 @@ var command = {
             return done(err)
           };
 
-          async.eachSeries(
-            migrationConfigs,
-            executePostDryRunMigration.bind(buildDir),
-            done
-          );
+          async.eachSeries(migrationConfigs, function(config, callback){
+            executePostDryRunMigration(config, currentBuild, callback);
+          }, done);
 
         // Development
         } else {
