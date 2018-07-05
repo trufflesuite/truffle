@@ -237,8 +237,9 @@ class MigrationsMessages{
           : output = self.doubleline(`Starting migrations...`) + '\n';
 
         output +=
-          `> Network name: '${data.network}'\n` +
-          `> Network id:   ${data.networkId}\n`;
+          `> Network name:    '${data.network}'\n` +
+          `> Network id:      ${data.networkId}\n` +
+          `> Block gas limit: ${data.blockLimit}\n`;
 
         return output;
       },

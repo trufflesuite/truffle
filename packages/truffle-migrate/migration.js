@@ -171,12 +171,14 @@ class Migration {
 
     // Get file path and emit pre-migration event
     const file = path.relative(options.migrations_directory, self.file)
+    const block = await web3.eth.getBlock('latest');
 
     const preMigrationsData = {
       file: file,
       isFirst: self.isFirst,
       network: options.network,
       networkId: options.network_id,
+      blockLimit: block.gasLimit
     }
 
     await self.emitter.emit('preMigrate', preMigrationsData);
