@@ -80,19 +80,19 @@ describe("ABI Schema", function() {
     });
   });
   describe("normal function definition", function() {
-    it("can omit type, outputs, and payable", function() {
+    it("can omit type, outputs, constant, and payable", function() {
       var abi = [{
         "name": "press",
         "inputs": [{
           "name": "button",
           "type": "uint256"
         }],
-        "constant": false
+        "stateMutability": "nonpayable"
       }];
 
       assert(validate(abi));
       assert.equal(abi[0].type, "function");
-      assert.equal(abi[0].payable, false);
+      assert.equal(abi[0].stateMutability, "nonpayable");
       assert.deepEqual(abi[0].outputs, []);
     });
 
@@ -100,9 +100,8 @@ describe("ABI Schema", function() {
       var abi = [{
         "type": "function",
         "outputs": [],
-        "payable": true,
         "inputs": [],
-        "constant": false
+        "stateMutability": "nonpayable"
       }];
 
       assert(!validate(abi));
@@ -113,20 +112,7 @@ describe("ABI Schema", function() {
         "name": "pressButton",
         "type": "function",
         "outputs": [],
-        "payable": true,
-        "constant": false
-      }];
-
-      assert(!validate(abi));
-    });
-
-    it("cannot omit constant", function() {
-      var abi = [{
-        "name": "pressButton",
-        "type": "function",
-        "inputs": [],
-        "outputs": [],
-        "payable": true
+        "stateMutability": "nonpayable"
       }];
 
       assert(!validate(abi));
@@ -134,18 +120,20 @@ describe("ABI Schema", function() {
   });
 
   describe("constructor function definition", function() {
-    it("can omit payable", function() {
+    it("can omit constant, and payable", function() {
       var abi = [{
         "type": "constructor",
         "inputs": [{
           "name": "button",
           "type": "uint256"
-        }]
+        }],
+        "stateMutability": "nonpayable"
       }];
 
-      var valid = validate(abi);
-      assert(valid);
-      assert.equal(abi[0].payable, false);
+      assert(validate(abi));
+      assert.equal(abi[0].type, "constructor");
+      assert.equal(abi[0].stateMutability, "nonpayable");
+      assert.deepEqual(abi[0].outputs, []);
     });
 
     it("cannot include name", function() {
@@ -155,7 +143,8 @@ describe("ABI Schema", function() {
         "inputs": [{
           "name": "button",
           "type": "uint256"
-        }]
+        }],
+        "stateMutability": "nonpayable"
       }];
 
       assert(!validate(abi));
@@ -173,7 +162,8 @@ describe("ABI Schema", function() {
         "outputs": [{
           "name": "amount",
           "type": "uint256"
-        }]
+        }],
+        "stateMutability": "nonpayable"
       }];
       assert(!validate(abi));
 
@@ -183,7 +173,8 @@ describe("ABI Schema", function() {
           "name": "button",
           "type": "uint256"
         }],
-        "outputs": []
+        "outputs": [],
+        "stateMutability": "nonpayable"
       }];
       assert(!validate(abi));
     });
@@ -191,42 +182,30 @@ describe("ABI Schema", function() {
     it("cannot omit inputs", function() {
       var abi = [{
         "type": "constructor",
-        "payable": true
+        "stateMutability": "nonpayable"
       }];
 
-      assert(!validate(abi));
-    });
-
-    it("cannot include constant", function() {
-      var abi = [{
-        "type": "constructor",
-        "inputs": [{
-          "name": "button",
-          "type": "uint256"
-        }],
-        "constant": false
-      }];
       assert(!validate(abi));
     });
   });
 
   describe("fallback function definition", function() {
-    it("can omit payable", function() {
+    it("can omit constant and payable", function() {
       var abi = [{
         "type": "fallback",
-        "constant": false
+        "stateMutability": "nonpayable"
       }];
 
       var valid = validate(abi);
       assert(valid);
-      assert.equal(abi[0].payable, false);
+      assert.equal(abi[0].stateMutability, "nonpayable");
     });
 
     it("cannot include name", function() {
       var abi = [{
         "type": "fallback",
-        "constant": false,
         "name": "default",
+        "stateMutability": "nonpayable"
       }];
 
       assert(!validate(abi));
@@ -237,7 +216,7 @@ describe("ABI Schema", function() {
 
       abi = [{
         "type": "fallback",
-        "constant": false,
+        "stateMutability": "nonpayable",
         "outputs": [{
           "name": "amount",
           "type": "uint256"
@@ -247,7 +226,7 @@ describe("ABI Schema", function() {
 
       abi = [{
         "type": "fallback",
-        "constant": false,
+        "stateMutability": "nonpayable",
         "outputs": []
       }];
       assert(!validate(abi));
@@ -256,7 +235,7 @@ describe("ABI Schema", function() {
     it("cannot include inputs", function() {
       var abi = [{
         "type": "fallback",
-        "payable": true,
+        "stateMutability": "payable",
         "inputs": [{
           "name": "arg",
           "type": "uint256"
@@ -264,15 +243,6 @@ describe("ABI Schema", function() {
       }];
 
       assert(!validate(abi));
-    });
-
-    it("can omit constant", function() {
-      var abi = [{
-        "type": "fallback",
-        "payable": true
-      }];
-
-      assert(validate(abi));
     });
   });
 });
