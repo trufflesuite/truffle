@@ -38,7 +38,10 @@ var contract = (function(module) {
 
       switch(item.type) {
         case "function":
-          var isConstant = item.constant === true;
+          var isConstant =
+            ["pure", "view"].includes(item.stateMutability) ||  // new form
+            item.constant;  // deprecated case
+
           var signature = webUtils._jsonInterfaceMethodToString(item);
 
           var method = function(constant, web3Method){
