@@ -152,13 +152,25 @@ describe("Deployments", function() {
   describe(".new(): revert with reasonstring (ganache only)", function(){
     it("should reject with reason string on revert", async function(){
       try {
-        await Example.new(2001);
+        await Example.new(2001); // Triggers error with a normal reason string
         assert.fail();
       } catch(error) {
         assert(error.message.includes('exceeds gas limit'));
         assert(error.message.includes('reasonstring'));
         assert(error.receipt === undefined, 'Expected no receipt')
         assert(error.reason === 'reasonstring');
+      }
+    });
+
+    it("should reject with long reason string on revert", async function(){
+      try {
+        await Example.new(20001); // Triggers error with a long reason string
+        assert.fail();
+      } catch(error) {
+        assert(error.message.includes('exceeds gas limit'));
+        assert(error.message.includes('solidity storage is a fun lesson in endianness'));
+        assert(error.receipt === undefined, 'Expected no receipt')
+        assert(error.reason === 'solidity storage is a fun lesson in endianness');
       }
     });
   })

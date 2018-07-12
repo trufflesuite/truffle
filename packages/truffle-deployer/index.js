@@ -47,7 +47,7 @@ class Deployer extends Deployment {
     const contract = args.shift();
 
     if (Array.isArray(contract)){
-      const msg = 'Support for batch deployments has been deprecated. ' +
+      const msg = 'Support for batch deployments is no longer supported. ' +
                   'Please deploy each contract individually.'
 
       throw new Error(msg);
