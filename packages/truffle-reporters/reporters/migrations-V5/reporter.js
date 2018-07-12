@@ -24,7 +24,6 @@ const MigrationsMessages = require('./messages');
 class Reporter {
 
   constructor(){
-    this.deployingMany = false;
     this.deployer = null;
     this.migration = null;
     this.currentGasTotal = 0;
@@ -72,8 +71,6 @@ class Reporter {
     // Deployment
     this.deployer.emitter.on('preDeploy',            this.preDeploy.bind(this));
     this.deployer.emitter.on('postDeploy',           this.postDeploy.bind(this));
-    this.deployer.emitter.on('preDeployMany',        this.preDeployMany.bind(this));
-    this.deployer.emitter.on('postDeployMany',       this.postDeployMany.bind(this));
     this.deployer.emitter.on('deployFailed',         this.deployFailed.bind(this));
     this.deployer.emitter.on('linking',              this.linking.bind(this));
     this.deployer.emitter.on('error',                this.error.bind(this));
@@ -424,38 +421,13 @@ class Reporter {
   }
 
   /**
-   * Fired on Web3Promievent 'confirmation' event. Begins running a UI
-   * a block / time counter.
+   * Fired on Web3Promievent 'confirmation' event.
    * @param  {Object} data
    */
   async confirmation(data){
     let message = this.messages.steps('confirmation', data);
     this.deployer.logger.log(message);
   }
-
-  // ----------------------------  Batch Handlers --------------------------------------------------
-
-  async preDeployMany(batch){
-    let message = this.messages.steps('many');
-
-    this.deployingMany = true;
-    this.deployer.logger.log(message);
-
-    batch.forEach(item => {
-      Array.isArray(item)
-        ? message = this.messages.steps('listMany', item[0])
-        : message = this.messages.steps('listMany', item)
-
-      this.deployer.logger.log(message);
-    })
-
-    this.deployer.logger.log(this.separator);
-  }
-
-  async postDeployMany(){
-    this.deployingMany = false;
-  }
-
 }
 
 module.exports = Reporter;
