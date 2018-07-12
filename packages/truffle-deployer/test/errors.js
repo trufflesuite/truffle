@@ -2,9 +2,10 @@ const ganache = require("ganache-cli");
 const contract = require("truffle-contract");
 const Web3 = require("web3");
 const assert = require("assert");
+const Reporter = require("truffle-reporters").migrationsV5;
+const EventEmitter = require('events');
 
 const Deployer = require("../index");
-const Reporter = require("./helpers/reporter")
 const utils = require('./helpers/utils');
 
 describe("Error cases", function() {
@@ -23,6 +24,10 @@ describe("Error cases", function() {
   const provider = ganache.provider({
     vmErrorsOnRPCResponse: false
   });
+
+  const mockMigration = {
+    emitter: new EventEmitter()
+  }
 
   const web3 = new Web3(provider);
 
@@ -62,7 +67,10 @@ describe("Error cases", function() {
       }
     }
     deployer = new Deployer(options);
-    reporter = new Reporter(deployer);
+    reporter = new Reporter();
+    reporter.setDeployer(deployer);
+    reporter.setMigration(mockMigration);
+    reporter.listen();
   });
 
   afterEach(() => {
@@ -82,8 +90,9 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch( err ) {
-      assert(output.includes('Error'));
+      assert(output.includes('Deployment Failed'));
       assert(output.includes('IsLibrary'));
+      assert(output.includes('has no address'));
     }
   });
 
@@ -98,9 +107,10 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch(err){
+      assert(output.includes('Deployment Failed'));
       assert(output.includes('Abstract'));
-      assert(output.includes('Error'));
       assert(output.includes('interface'));
+      assert(output.includes('cannot be deployed'));
     }
   });
 

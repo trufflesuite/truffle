@@ -4,7 +4,7 @@ const async = require("async");
 const expect = require("truffle-expect");
 const util = require('util');
 
-const Reporter = require("./reporter/reporter");
+const Reporter = require("truffle-reporters").migrationsV5;
 const Migration = require('./migration.js');
 
 /**

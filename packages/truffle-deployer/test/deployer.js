@@ -2,9 +2,10 @@ const ganache = require("ganache-cli");
 const contract = require("truffle-contract");
 const Web3 = require("web3");
 const assert = require("assert");
+const Reporter = require("truffle-reporters").migrationsV5;
+const EventEmitter = require('events');
 
 const Deployer = require("../index");
-const Reporter = require("./helpers/reporter")
 const utils = require('./helpers/utils');
 const util = require('util');
 
@@ -23,6 +24,10 @@ describe("Deployer (sync)", function() {
   const provider = ganache.provider({
     vmErrorsOnRPCResponse: false
   });
+
+  const mockMigration = {
+    emitter: new EventEmitter()
+  }
 
   const web3 = new Web3(provider);
 
@@ -51,7 +56,10 @@ describe("Deployer (sync)", function() {
       }
     }
     deployer = new Deployer(options);
-    reporter = new Reporter(deployer);
+    reporter = new Reporter();
+    reporter.setDeployer(deployer);
+    reporter.setMigration(mockMigration);
+    reporter.listen();
   });
 
   afterEach(() => {
@@ -76,12 +84,11 @@ describe("Deployer (sync)", function() {
     const id = await example.id();
 
     assert(id === 'Example' );
-
     assert(output.includes('Example'));
     assert(output.includes('Deploying'));
     assert(output.includes('transaction hash'));
     assert(output.includes('address'));
-    assert(output.includes('gas usage'));
+    assert(output.includes('gas used'));
   });
 
   it('deploy().then', async function(){
@@ -105,7 +112,7 @@ describe("Deployer (sync)", function() {
     assert(usesExampleId === 'UsesExample' );
     assert(other === Example.address);
 
-    assert(output.includes('Replacing'))
+    assert(output.includes('Replacing'));
     assert(output.includes('Deploying'));
     assert(output.includes('Example'));
     assert(output.includes('UsesExample'));
@@ -242,9 +249,7 @@ describe("Deployer (sync)", function() {
     await deployer.start();
     utils.stopAutoMine();
 
-    assert(output.includes(`Block number: ${startBlock + 1}`));
-    assert(output.includes(`Wait: 1`));
-    assert(output.includes(`Block number: ${startBlock + 2}`));
-    assert(output.includes(`Wait: 2`))
+    // We used to test output here but the ora spinner doesn't use the logger
+    // Keeping this test just to run the logic, make sure it's not crashing.
   });
 });
