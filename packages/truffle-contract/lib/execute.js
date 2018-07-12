@@ -21,8 +21,6 @@ var execute = {
     var web3 = this.web3;
 
     return new Promise(function(accept, reject){
-      let reason;
-
       const packet = {
         jsonrpc: "2.0",
         method: "eth_call",
@@ -32,12 +30,9 @@ var execute = {
 
       // This rpc call extracts the reason string
       web3.currentProvider.send(packet, (err, response) => {
-        if (response && (response.error || response.result)) {
-          reason = execute.extractReason(response, web3)
-        }
+        const reason = execute.extractReason(response, web3);
 
-        web3
-          .eth
+        web3.eth
           .estimateGas(params)
           .then(gas => {
             // Always prefer specified gas - this includes gas set by class_defaults
@@ -89,11 +84,15 @@ var execute = {
 
   /**
    * Processes .call/.estimateGas errors and extracts a reason string if
-   *
-   * @param  {[type]} err [description]
-   * @return {[type]}     [description]
+   * @param  {Object}           res  response from `eth_call` to extract reason
+   * @param  {Web3}             web3 a helpful friend
+   * @return {String|Undefined}      decoded reason string
    */
   extractReason(res, web3){
+    if (!res || (!res.error && !res.result)) return;
+
+    const errorStringHash = '0x08c379a0';
+
     const isObject = res && typeof res === 'object' && res.error && res.error.data;
     const isString = res && typeof res === 'object' && typeof res.result === 'string';
 
@@ -101,11 +100,11 @@ var execute = {
       const data = res.error.data;
       const hash = Object.keys(data)[0];
 
-      if (data[hash].return && data[hash].return.includes('0x08c379a0')){
+      if (data[hash].return && data[hash].return.includes(errorStringHash)){
         return web3.eth.abi.decodeParameter('string', data[hash].return.slice(10))
       }
 
-    } else if (isString && res.result.includes('0x08c379a0')){
+    } else if (isString && res.result.includes(errorStringHash)){
       return web3.eth.abi.decodeParameter('string', res.result.slice(10))
     }
   },
@@ -176,7 +175,6 @@ var execute = {
       var args = Array.prototype.slice.call(arguments);
       var params = utils.getTxParams.call(constructor, args);
       var promiEvent = new Web3PromiEvent();
-      var reason;
 
       var context = {
         contract: constructor,   // Can't name this field `constructor` or `_constructor`
