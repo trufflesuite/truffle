@@ -356,7 +356,10 @@ class Reporter {
       this.currentAddress = this.from;
       this.deployments++;
 
-      this.summary[this.currentFileIndex].deployments.push(data);
+      if (this.summary[this.currentFileIndex]){
+        this.summary[this.currentFileIndex].deployments.push(data);
+      }
+
       message = this.messages.steps('deployed', data);
     } else {
       message = this.messages.steps('reusing', data);
