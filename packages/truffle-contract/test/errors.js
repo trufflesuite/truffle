@@ -46,7 +46,8 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
         await Example.new(13) // 13 fails a constructor require gate
         assert.fail()
       } catch(e){
-        assert(!e.reason, 'Error should not include reason string');
+        assert(!e.reason, 'Error should not include reason property');
+        assert(!e.message.includes('Reason'), 'Should not include reason message');
         assert(e.message.includes('exceeds gas limit'), 'Error should be gas limit err');
       }
     });
@@ -56,7 +57,8 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
         await Example.new(2001) // 2001 fails a constructor require gate w/ a reason
         assert.fail()
       } catch(e){
-        assert(e.reason === 'reasonstring', 'Error should include reason string');
+        assert(e.reason === 'reasonstring', 'Error should include reason property');
+        assert(e.message.includes('reasonstring'), 'Error message should include reason');
         assert(e.message.includes('exceeds gas limit'), 'Error should be gas limit err');
       }
     });
@@ -124,6 +126,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
         assert.fail();
       } catch(e){
         assert(!e.reason, 'Should not include reasonstring');
+        assert(!e.message.includes('Reason'), 'Error message should not include reason');
         assert(e.message.includes('revert'), 'Should include revert message');
       };
     });
@@ -134,7 +137,8 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
         await example.triggerRequireWithReasonError();
         assert.fail();
       } catch(e){
-        assert(e.reason === 'reasonstring', 'Should include reasonstring');
+        assert(e.reason === 'reasonstring', 'Should include reason property');
+        assert(e.message.includes('reasonstring'), 'Should reason in message');
         assert(e.message.includes('revert'), 'Should include revert message');
       };
     });
@@ -145,7 +149,8 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
         await example.triggerRequireWithReasonError({gas: 200000});
         assert.fail();
       } catch(e){
-        assert(e.reason === 'reasonstring', 'Should include reason string');
+        assert(e.reason === 'reasonstring', 'Should include reason property');
+        assert(e.message.includes('reasonstring'), 'Should reason in message');
         assert(e.message.includes('revert'), 'Should include revert');
       }
     });
@@ -157,6 +162,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
         assert.fail();
       } catch(e){
         assert(!e.reason, 'Should not include reason string');
+        assert(!e.message.includes('Reason'), 'Should not include reason message');
         assert(e.message.includes('invalid opcode'), 'Should include invalid opcode');
       }
     });

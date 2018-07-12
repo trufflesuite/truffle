@@ -121,7 +121,10 @@ describe("Deployments", function() {
       }
     });
 
+    // This example contains a reason string when run with ganache but no
+    // reason strings when run vs geth.
     it("Handles absence of reason string gracefully", async function(){
+
       try {
         await Example.new(2001) // 2001 fails a require gate
         assert.fail()
@@ -130,7 +133,7 @@ describe("Deployments", function() {
                              e.message.includes('intrinsic gas too low');
 
         assert(errorCorrect, 'Expected gas limit error');
-        assert(e.receipt === undefined, 'Expected no receipt')
+        assert(e.receipt === undefined, 'Expected no receipt');
       }
     });
 
@@ -153,6 +156,7 @@ describe("Deployments", function() {
         assert.fail();
       } catch(error) {
         assert(error.message.includes('exceeds gas limit'));
+        assert(error.message.includes('reasonstring'));
         assert(error.receipt === undefined, 'Expected no receipt')
         assert(error.reason === 'reasonstring');
       }

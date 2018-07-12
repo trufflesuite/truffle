@@ -6,9 +6,12 @@ inherits(StatusError, TruffleError);
 
 var defaultGas = 90000;
 
-function StatusError(args, tx, receipt) {
+function StatusError(args, tx, receipt, reason) {
   var message;
   var gasLimit = parseInt(args.gas) || defaultGas;
+  var reasonString = '';
+
+  if(reason) reasonString = `Reason given: ${reason}.`;
 
   if(receipt.gasUsed === gasLimit){
 
@@ -20,7 +23,7 @@ function StatusError(args, tx, receipt) {
 
   } else {
 
-    message = "Transaction: " + tx + " exited with an error (status 0).\n" +
+    message = `Transaction: ${tx} exited with an error (status 0). ${reasonString}\n` +
       "     Please check that the transaction:\n" +
       "     - satisfies all conditions set by Solidity `require` statements.\n" +
       "     - does not trigger a Solidity `revert` statement.\n";
@@ -29,6 +32,7 @@ function StatusError(args, tx, receipt) {
   StatusError.super_.call(this, message);
   this.tx = tx;
   this.receipt = receipt;
+  this.reason = reason;
 }
 
 module.exports = StatusError;

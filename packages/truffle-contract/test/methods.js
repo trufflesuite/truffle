@@ -318,6 +318,7 @@ describe("Methods", function() {
         assert.fail();
       } catch(e){
         assert(e.reason === 'reasonstring');
+        assert(e.message.includes('reasonstring'));
         assert(e.message.includes('revert'));
         assert(parseInt(e.receipt.status, 16) == 0)
       };

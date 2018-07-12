@@ -252,8 +252,14 @@ var execute = {
 
         deferred.then(receipt => {
           if (parseInt(receipt.status) == 0){
-            var error = new StatusError(params, context.transactionHash, receipt);
-            error.reason = reason;
+
+            var error = new StatusError(
+              params,
+              context.transactionHash,
+              receipt,
+              reason
+            );
+
             return context.promiEvent.reject(error)
           }
 

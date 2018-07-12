@@ -24,6 +24,9 @@ var override = {
     var timedOut = web3Error.message && web3Error.message.includes(override.timeoutMessage);
     var shouldWait = maxBlocks > currentBlock;
 
+    // Append error message
+    if (web3Error.reason) web3Error.message += ` -- Reason given: ${web3Error.reason}.`;
+
     // Reject if we shouldn't be waiting.
     if (!timedOut || !shouldWait) return context.promiEvent.reject(web3Error);
 
