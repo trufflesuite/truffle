@@ -2,9 +2,9 @@ const ganache = require("ganache-cli");
 const contract = require("truffle-contract");
 const Web3 = require("web3");
 const assert = require("assert");
+const Reporter = require("truffle-reporters").migrationsV5;
 
 const Deployer = require("../index");
-const Reporter = require("./helpers/reporter")
 const utils = require('./helpers/utils');
 
 describe("Error cases", function() {
