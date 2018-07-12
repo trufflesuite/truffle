@@ -91,7 +91,7 @@ class Migration {
       if (options.save === false) return;
 
       // Write migrations record to chain
-      const Migrations = resolver.require("Migrations");
+      const Migrations = resolver.require("./Migrations.sol");
 
       if (Migrations && Migrations.isDeployed()) {
         await self.emitter.emit('saveMigration', self.number);

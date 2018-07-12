@@ -1,5 +1,3 @@
-var subscriptions = require("./subscriptions");
-
 var override = {
 
   timeoutMessage: 'not mined within', // Substring of timeout err fired by web3
@@ -70,17 +68,6 @@ var override = {
         listener(pollID);
       }
     }, override.pollingInterval);
-
-
-    // Temporarily disabled new_head subscription. There are bugs at Web3 and at
-    // Geth that impair the reliablility of this sub atm.
-
-    /*
-    var id = new Date().getTime();
-    subscriptions.subscribe(constructor, 'newHeads', id)
-      .then(result => constructor.web3.currentProvider.on('data', listener))
-      .catch(context.promiEvent.reject);
-    */
   },
 }
 
