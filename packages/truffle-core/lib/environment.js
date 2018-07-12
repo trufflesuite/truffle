@@ -81,14 +81,16 @@ var Environment = {
   },
 
   // Ensure you call Environment.detect() first.
-  fork: function(config, callback) {
+  fork: async function(config, callback) {
     expect.options(config, [
       "from"
     ]);
 
     var web3 = new Web3(config.provider);
 
-    web3.eth.getAccounts.then(accounts => {
+    try {
+      var accounts = await web3.eth.getAccounts()
+      var block = await web3.eth.getBlock('latest');
 
       var upstreamNetwork = config.network;
       var upstreamConfig = config.networks[upstreamNetwork];
@@ -98,15 +100,20 @@ var Environment = {
         network_id: config.network_id,
         provider: TestRPC.provider({
           fork: config.provider,
-          unlocked_accounts: accounts
+          unlocked_accounts: accounts,
+          gasLimit: block.gasLimit
         }),
-        from: config.from
+        from: config.from,
+        gas: upstreamConfig.gas,
+        gasPrice: upstreamConfig.gasPrice
       }
       config.network = forkedNetwork;
 
       callback();
 
-    }).catch(callback);
+    } catch(err){
+      callback(err)
+    };
   },
 
   develop: function(config, testrpcOptions, callback) {

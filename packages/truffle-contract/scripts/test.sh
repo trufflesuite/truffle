@@ -2,8 +2,11 @@
 
 set -o errexit
 
+# Since mocha v4, the test runner doesn't automatically process.exit
+# when it's done running. Because we're running geth as a separate client in CI,
+# the provider connections stay open and everything hangs. Hence the `--exit` flag.
 if [ "$GETH" == true ]; then
-  mocha --timeout 50000 --grep @geth --colors
+  mocha --timeout 50000 --grep @geth --colors --exit
 else
-  mocha --no-warnings --timeout 7000 --colors
+  mocha --no-warnings --timeout 7000 --colors --exit
 fi

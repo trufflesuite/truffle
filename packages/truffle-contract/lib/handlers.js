@@ -103,7 +103,14 @@ var handlers = {
 
     // .method(): resolve/reject receipt in handler
     if (parseInt(receipt.status) == 0 && !context.onlyEmitReceipt){
-      var error = new StatusError(context.params, receipt.transactionHash, receipt);
+
+      var error = new StatusError(
+        context.params,
+        receipt.transactionHash,
+        receipt,
+        context.reason
+      );
+
       return context.promiEvent.reject(error)
     }
 

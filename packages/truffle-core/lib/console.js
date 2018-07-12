@@ -182,7 +182,7 @@ Console.prototype.interpret = function(cmd, context, filename, callback) {
   if (match) {
     var assign = match[1];
     var expression = match[2];
-  
+
     var RESULT = "__await_outside_result";
 
     // Wrap the await inside an async function.
@@ -214,7 +214,7 @@ ${expression.trim()}
   // this will ensure the console waits until that await is finished.
   Promise.resolve(runScript(script)).then(function(value) {
     // If there's an assignment to run, run that.
-    if (assignment) { 
+    if (assignment) {
       return runScript(vm.createScript(assignment));
     } else {
       return value;

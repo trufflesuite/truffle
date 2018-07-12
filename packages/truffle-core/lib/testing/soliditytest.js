@@ -134,18 +134,17 @@ var SolidityTest = {
     var DeployedAddresses = runner.config.resolver.require("truffle/DeployedAddresses.sol");
     var SafeSend = runner.config.resolver.require("SafeSend.sol");
 
-    deployer.deploy([
-      Assert,
-      DeployedAddresses
-    ]).then(function() {
-      dependency_paths.forEach(function(dependency_path) {
-        var dependency = runner.config.resolver.require(dependency_path);
+    deployer.deploy(Assert)
+      .then(() => deployer.deploy(DeployedAddresses))
+      .then(() => {
+        return dependency_paths.forEach(function(dependency_path) {
+          var dependency = runner.config.resolver.require(dependency_path);
 
-        if (dependency.isDeployed()) {
-          deployer.link(dependency, abstraction);
-        }
+          if (dependency.isDeployed()) {
+            deployer.link(dependency, abstraction);
+          }
+        });
       });
-    });
 
     var deployed;
     deployer.deploy(abstraction).then(function() {

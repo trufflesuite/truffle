@@ -15,7 +15,7 @@ describe("compile", function() {
   var memStream;
 
   before("Create a sandbox", function(done) {
-    this.timeout(10000);
+    this.timeout(20000);
 
     Box.sandbox(function(err, result) {
       if (err) return done(err);

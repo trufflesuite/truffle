@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+
+# Exit script as soon as a command fails.
+set -o errexit
+
 run_geth() {
   docker run \
     -v /$PWD/scripts:/scripts \
@@ -34,6 +38,6 @@ elif [ "$GETH" = true ]; then
 
 else
 
-  lerna run --scope truffle-* test --stream
+  lerna run --scope truffle-* test --stream --concurrency=1
 
 fi

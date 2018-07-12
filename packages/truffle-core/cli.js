@@ -53,7 +53,9 @@ command.run(process.argv.slice(2), options, function(err) {
     if (typeof handle.close === 'function'){
       handle.close();
     } else if (handle.readable && !handle._isStdio){
-      handle.destroy();
+      //This is causing problems over RPC
+      //with hd-wallet-provider V5
+      //handle.destroy();
     }
   });
 });
