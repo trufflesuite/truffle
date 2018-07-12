@@ -74,7 +74,7 @@ var command = {
             };
 
             copy(config.contracts_build_directory, temporaryDirectory, function(err) {
-              if (err) return reject(err);
+              if (err) return cleanup(err);
 
               config.contracts_build_directory = temporaryDirectory;
 
