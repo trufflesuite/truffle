@@ -43,19 +43,5 @@ command.run(process.argv.slice(2), options, function(err) {
     process.exit(1);
   }
 
-  // Don't exit if no error; if something is keeping the process open,
-  // like `truffle console`, then let it.
-
-  // Clear any polling or open sockets - `provider-engine` in HDWallet
-  // and `web3 1.0 confirmations` both leave interval timers etc wide open.
-  const handles = process._getActiveHandles();
-  handles.forEach(handle => {
-    if (typeof handle.close === 'function'){
-      handle.close();
-    } else if (handle.readable && !handle._isStdio){
-      //This is causing problems over RPC
-      //with hd-wallet-provider V5
-      //handle.destroy();
-    }
-  });
+  process.exit(0);
 });
