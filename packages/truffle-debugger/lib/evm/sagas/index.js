@@ -27,11 +27,13 @@ export function *addContext(contractName, binary) {
  */
 export function *addInstance(address, binary) {
   let search = yield select(evm.info.binaries.search);
-  let { context } = search(binary);
+  if (binary != "0x0") {
+    let { context } = search(binary);
 
-  yield put(actions.addInstance(address, context, binary));
+    yield put(actions.addInstance(address, context, binary));
 
-  return context;
+    return context;
+  }
 }
 
 export function* begin({ address, binary }) {
