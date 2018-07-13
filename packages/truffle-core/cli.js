@@ -10,6 +10,12 @@ var OS = require("os");
 
 var command = new Command(require("./lib/commands"));
 
+// Hack to suppress web3 MaxListenersExceededWarning
+// This should be removed when issue is resolved upstream:
+// https://github.com/ethereum/web3.js/issues/1648
+var listeners = process.listeners('warning');
+listeners.forEach(listener => process.removeListener('warning', listener));
+
 var options = {
   logger: console
 };
@@ -37,15 +43,5 @@ command.run(process.argv.slice(2), options, function(err) {
     process.exit(1);
   }
 
-  // Don't exit if no error; if something is keeping the process open,
-  // like `truffle console`, then let it.
-
-  // Clear any polling or open sockets - `provider-engine` in HDWallet
-  // and `web3 1.0 confirmations` both leave interval timers etc wide open.
-  const handles = process._getActiveHandles();
-  handles.forEach(handle => {
-    if (typeof handle.close === 'function'){
-      handle.close();
-    }
-  })
+  process.exit(0);
 });
