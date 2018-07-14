@@ -66,7 +66,6 @@ describe("NPM dependencies", function() {
 
     CommandRunner.run("migrate --dry-run", config, function(err) {
       var output = logger.contents();
-      console.log(output)
       processErr(err, output);
 
       const buildDir = config.contracts_build_directory;
