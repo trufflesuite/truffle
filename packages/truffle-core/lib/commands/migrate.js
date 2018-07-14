@@ -55,6 +55,7 @@ var command = {
     ]
   },
   run: function (options, done) {
+    var path = require("path");
     var Config = require("truffle-config");
     var Contracts = require("truffle-workflow-compile");
     var Resolver = require("truffle-resolver");
@@ -81,7 +82,7 @@ var command = {
      61717561 // Aquachain
     ];
 
-    function setupDryRunEnvironmentAndRunAllMigrations(rootConfig, configs, callback) {
+    function setupDryRunEnvironmentAndRunAllMigrations(rootConfig, configs) {
       return new Promise((resolve, reject) => {
         Environment.fork(rootConfig, function(err) {
           if (err) return reject(err);
@@ -98,25 +99,33 @@ var command = {
           };
 
           // Copy artifacts to a temporary directory
-          async.eachSeries(configs, function(config, cb2) {
-            temp.mkdir('migrate-dry-run-', function(err, temporaryDirectory) {
-              if (err) return cb2(err);
+          temp.mkdir('migrate-dry-run-', function(err, temporaryDirectory) {
+            if (err) return cleanup(err);
 
-              copy(config.contracts_build_directory, temporaryDirectory, function(err) {
+            async.eachSeries(configs, function(config, cb2) {
+              // HACK: setup temporary directory like node_modules to help the NPM resolver out
+              //       This is also done in ./test.js
+              const targDir = config.packageName ?
+                path.join(temporaryDirectory, "node_modules", config.packageName, "build", "contracts") :
+                temporaryDirectory
+
+              copy(config.contracts_build_directory, targDir, function(err) {
                 if (err) return cb2(err);
 
-                config.contracts_build_directory = temporaryDirectory;
+                config.contracts_build_directory = targDir;
 
                 // Note: Create a new artifactor and resolver with the updated config.
                 // This is because the contracts_build_directory changed.
                 // Ideally we could architect them to be reactive of the config changes.
-                config.artifactor = new Artifactor(temporaryDirectory);
-                config.resolver = new Resolver(config);
+                config.artifactor = new Artifactor(targDir);
+                config.resolver = new Resolver(config.with({
+                  node_modules_directory: path.join(temporaryDirectory, "node_modules")
+                }));
 
                 runMigrations(config, cb2);
               });
-            });
-          }, cleanup);
+            }, cleanup);
+          });
         });
       });
     }

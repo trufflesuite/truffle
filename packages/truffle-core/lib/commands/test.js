@@ -100,6 +100,7 @@ var command = {
           var pkgTempDir;
 
           // HACK: setup temporary directory like node_modules to help the NPM resolver out
+          //       this is also done in ./migrate.js
           if (config.packageName) {
             pkgTempDir = path.join(temporaryDirectory, "node_modules", config.packageName, "build", "contracts");
           } else {
