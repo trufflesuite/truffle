@@ -4,6 +4,7 @@ const debug = debugModule("test:data:decode");
 import Ganache from "ganache-cli";
 import Web3 from "web3";
 import { assert } from "chai";
+import changeCase from "change-case";
 
 import { prepareContracts } from "test/helpers";
 
@@ -86,10 +87,16 @@ async function getDecode(session) {
 
 export function describeDecoding(testName, fixtures, selector, generateSource) {
   const sources = {
-    [fileName(testName)]: generateSource(contractName(testName))
+    [fileName(testName)]: generateSource(contractName(testName), fixtures)
   };
 
   describe(testName, function() {
+    const testDebug = debugModule(
+      `test:data:decode:${changeCase.paramCase(testName)}`
+    );
+
+    testDebug("source %s", Object.values(sources)[0]);
+
     this.timeout(30000);
 
     before("runs and observes debugger", async () => {
