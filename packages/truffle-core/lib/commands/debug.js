@@ -448,13 +448,9 @@ var command = {
 
         repl.start({
           prompt: "debug(" + config.network + ":" + txHash.substring(0, 10) + "...)> ",
-          interpreter: interpreter
+          interpreter: interpreter,
+          done: done
         });
-
-        // Call the done function even though the repl hasn't finished.
-        // This leaves the process at the whim of the repl; the repl is
-        // responsible for closing the process when done.
-        done();
       }).catch(done);
     });
   }
