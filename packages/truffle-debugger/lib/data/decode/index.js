@@ -51,8 +51,12 @@ export function decodeValue(definition, pointer, state, ...args) {
       return utils.toHexString(bytes, length);
 
     case "string":
+    case "stringliteral":
       debug("typeIdentifier %s %o", utils.typeIdentifier(definition), bytes);
-      return String.fromCharCode.apply(null, bytes);
+      if (typeof bytes == "string") {
+        return bytes;
+      }
+      return String.fromCharCode.apply(undefined, bytes);
 
     case "rational":
       debug("typeIdentifier %s %o", utils.typeIdentifier(definition), bytes);
