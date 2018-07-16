@@ -106,7 +106,7 @@ const data = createSelectorTree({
      * selector returns (ast node definition, data reference) => value
      */
     decoder: createLeaf(
-      ["/views/scopes/inlined", "/current/state"],
+      ["/views/scopes/inlined", "/next/state"],
 
       (scopes, state) => {
         return (definition, ref) => decode(definition, ref, state, scopes)
