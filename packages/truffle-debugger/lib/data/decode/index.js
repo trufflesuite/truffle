@@ -270,20 +270,81 @@ export function decodeStorageReference(definition, pointer, state, ...args) {
   }
 }
 
+export function decodeMapping(definition, pointer, ...args) {
+  if (definition.referencedDeclaration) {
+    // attempting to decode reference to mapping, thus missing valid pointer
+    return undefined;
+  }
+  debug("mapping %O", pointer);
+  debug("mapping definition %O", definition);
+  let { keys } = pointer;
+  keys = keys || [];
+  debug("known keys %o", keys);
 
+  let keyDefinition = definition.typeName.keyType;
+  let valueDefinition = definition.typeName.valueType;
 
-export default function decode(definition, ...args) {
-  if (!utils.isReference(definition)) {
-    return decodeValue(definition, ...args);
+  let baseSlot = pointer.storage.from.slot;
+  if (!Array.isArray(baseSlot)) {
+    baseSlot = [baseSlot];
   }
 
-  switch (utils.referenceType(definition)) {
-    case "memory":
-      return decodeMemoryReference(definition, ...args);
-    case "storage":
-      return decodeStorageReference(definition, ...args);
-    default:
-      debug("Unknown reference category: %s", utils.typeIdentifier(definition));
-      return undefined;
+  let mapping = {};
+  debug("mapping %O", mapping);
+  for (let key of keys) {
+    let keyPointer = { "literal": key };
+    let valuePointer = {
+      storage: {
+        from: {
+          slot: [key, ...baseSlot],
+          index: 0
+        },
+        to: {
+          slot: [key, ...baseSlot],
+          index: 31
+        }
+      }
+    };
+    debug("keyPointer %o", keyPointer);
+
+    // NOTE mapping keys are potentially lossy because JS only likes strings
+    let keyValue = decode(keyDefinition, keyPointer, ...args);
+    debug("keyValue %o", keyValue);
+    if (keyValue != undefined) {
+      mapping[keyValue.toString()] =
+        decode(valueDefinition, valuePointer, ...args);
+    }
   }
+
+  return mapping;
+}
+
+
+export default function decode(definition, pointer, ...args) {
+  if (pointer.literal) {
+    return decodeValue(definition, pointer, ...args);
+  }
+
+  const identifier = utils.typeIdentifier(definition);
+  if (utils.isReference(definition)) {
+    switch (utils.referenceType(definition)) {
+      case "memory":
+        debug("decoding memory reference, type: %s", identifier);
+        return decodeMemoryReference(definition, pointer, ...args);
+      case "storage":
+        debug("decoding storage reference, type: %s", identifier);
+        return decodeStorageReference(definition, pointer, ...args);
+      default:
+        debug("Unknown reference category: %s", utils.typeIdentifier(definition));
+        return undefined;
+    }
+  }
+
+  if (utils.isMapping(definition)) {
+    debug("decoding mapping, type: %s", identifier);
+    return decodeMapping(definition, pointer, ...args);
+  }
+
+  debug("decoding value, type: %s", identifier);
+  return decodeValue(definition, pointer, ...args);
 }
