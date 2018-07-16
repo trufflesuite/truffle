@@ -7,6 +7,18 @@ import { BigNumber } from "bignumber.js";
 import * as utils from "lib/data/decode/utils";
 
 describe("Utils", function() {
+  describe("typeClass()", function() {
+    it("handles mappings", function() {
+      let definition = {
+        typeDescriptions: {
+          typeIdentifier: "t_mapping$_t_uint256_$_t_uint256_$"
+        }
+      };
+
+      assert.equal(utils.typeClass(definition), "mapping");
+    });
+  });
+
   describe("toBigNumber()", function() {
     it("returns correct value", function() {
       let bytes = [0xf5, 0xe2, 0xc5, 0x17];
