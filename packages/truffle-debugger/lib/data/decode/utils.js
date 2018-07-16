@@ -267,7 +267,7 @@ export function toHexString(bytes, length = 0, trim = false) {
 }
 
 export function toBytes(number, length = 0) {
-  if (number < 0) {
+  if (number < 0 || number === "") {
     return [];
   }
 
