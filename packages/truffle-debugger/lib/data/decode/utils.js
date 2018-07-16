@@ -164,7 +164,15 @@ export function storageSize(definition) {
     case "bytes":
     case "array":
       return WORD_SIZE;
+
+    case "mapping":
+      // HACK just to reserve slot. mappings have no size as such
+      return WORD_SIZE;
   }
+}
+
+export function isMapping(definition) {
+  return typeIdentifier(definition).match(/^t_mapping/) != null;
 }
 
 export function isReference(definition) {
