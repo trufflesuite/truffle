@@ -145,14 +145,13 @@ function *tickSaga() {
     case "Assignment":
       break;
 
-
     default:
       if (node.typeDescriptions == undefined) {
         break;
       }
 
       debug("decoding expression value %O", node.typeDescriptions);
-      let literal = decode(node, { "stack": top });
+      let literal = stack[top];
 
       yield put(actions.assign(treeId, {
         [node.id]: { literal }
