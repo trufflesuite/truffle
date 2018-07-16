@@ -116,7 +116,15 @@ export function decodeMemoryReference(definition, pointer, info) {
 
     case "struct":
       const { scopes } = info;
-      let structDefinition = scopes[definition.typeName.referencedDeclaration];
+
+      // Declaration reference usually appears in `typeName`, but for
+      // { nodeType: "FunctionCall", kind: "structConstructorCall" }, this
+      // reference appears to live in `expression`
+      const referencedDeclaration = (definition.typeName)
+        ? definition.typeName.referencedDeclaration
+        : definition.expression.referencedDeclaration;
+
+      let structDefinition = scopes[referencedDeclaration];
       let structVariables = structDefinition.variables || [];
 
       return Object.assign(
