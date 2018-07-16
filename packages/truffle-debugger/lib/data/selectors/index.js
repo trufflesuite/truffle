@@ -109,7 +109,7 @@ const data = createSelectorTree({
       ["/views/scopes/inlined", "/next/state"],
 
       (scopes, state) => {
-        return (definition, ref) => decode(definition, ref, state, scopes)
+        return (definition, ref) => decode(definition, ref, { state, scopes })
       }
     )
   },
