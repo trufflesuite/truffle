@@ -136,25 +136,10 @@ function *tickSaga() {
             });
 
       debug("index value %O", indexValue);
-      if (indexValue == undefined) {
-        break;
+      if (indexValue != undefined) {
+        yield put(actions.mapKey(baseDeclarationId, indexValue));
       }
 
-      assignments = {
-        [baseDeclarationId]: {
-          ...baseAssignment,
-          keys: [
-            ...new Set([
-              ...(baseAssignment.keys || []),
-              indexValue
-            ])
-          ]
-        }
-      }
-
-      debug("mapping assignments %O", assignments);
-      yield put(actions.assign(treeId, assignments));
-      debug("new assignments %O", yield select(data.proc.assignments));
       break;
 
     case "Assignment":

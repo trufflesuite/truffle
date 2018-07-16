@@ -281,10 +281,12 @@ export function decodeMapping(definition, pointer, info) {
     // attempting to decode reference to mapping, thus missing valid pointer
     return undefined;
   }
+
+  const { mappingKeys } = info;
+
   debug("mapping %O", pointer);
   debug("mapping definition %O", definition);
-  let { keys } = pointer;
-  keys = keys || [];
+  let keys = mappingKeys[definition.id] || [];
   debug("known keys %o", keys);
 
   let keyDefinition = definition.typeName.keyType;
