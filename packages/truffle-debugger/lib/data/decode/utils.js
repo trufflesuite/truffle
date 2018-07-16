@@ -303,18 +303,6 @@ export function keccak256(...args) {
 
   debug("args %o", args);
 
-  args = args.map( (arg) => {
-    if (typeof arg == "number" || BigNumber.isBigNumber(arg)) {
-      return toHexString(toBytes(arg, WORD_SIZE)).slice(2)
-    } else if (typeof arg == "string") {
-      return web3.utils.toHex(arg).slice(2);
-    } else {
-      return "";
-    }
-  });
-
-  debug("processed args %o", args);
-
   let sha = web3.utils.soliditySha3(...args);
   debug("sha %o", sha);
   return toBigNumber(sha);
