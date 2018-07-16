@@ -61,7 +61,7 @@ const mappingFixtures = [{
     to: "string"
   },
   value: {
-    ...Object.assign({}, ...generateArray(5).map(
+    ...Object.assign({}, ...generateArray(7).map(
       (value, idx) => ({ [value]: faker.lorem.slug(idx) })
     ))
   }
