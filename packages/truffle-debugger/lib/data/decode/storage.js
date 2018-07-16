@@ -15,6 +15,8 @@ import * as utils from "./utils";
 export function slotAddress(slot) {
   if (slot instanceof Array) {
     return utils.keccak256(...slot.map(slotAddress));
+  } else if (typeof slot == "string" && slot.slice(0,2) == "0x") {
+    return utils.toBigNumber(slot);
   } else {
     return slot;
   }

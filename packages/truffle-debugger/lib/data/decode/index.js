@@ -48,6 +48,10 @@ export function decodeValue(definition, pointer, info) {
 
     case "bytes":
       debug("typeIdentifier %s %o", utils.typeIdentifier(definition), bytes);
+      // HACK bytes may be getting passed in as a literal hexstring
+      if (typeof bytes == "string") {
+        return bytes;
+      }
       let length = utils.specifiedSize(definition);
       return utils.toHexString(bytes, length);
 
@@ -329,7 +333,7 @@ export function decodeMapping(definition, pointer, info) {
 
 
 export default function decode(definition, pointer, info) {
-  if (pointer.literal) {
+  if (pointer.literal != undefined) {
     return decodeValue(definition, pointer, info);
   }
 
