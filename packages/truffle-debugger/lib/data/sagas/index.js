@@ -125,15 +125,18 @@ function *tickSaga() {
       }
 
       const indexAssignment = (currentAssignments[indexId] || {}).ref;
+      debug("indexAssignment %O", indexAssignment);
       // HACK because string literal AST nodes are not sourcemapped to directly
       // value appears to be available in `node.indexExpression.hexValue`
       // [observed with solc v0.4.24]
-      const indexValue = (indexAssignment)
-        ? decode(node.indexExpression, indexAssignment)
-        : utils.typeClass(node.indexExpression) == "stringliteral" &&
-            decode(node.indexExpression, {
-              "literal": utils.toBytes(node.indexExpression.hexValue)
-            });
+      let indexValue;
+      if (indexAssignment) {
+        indexValue = decode(node.indexExpression, indexAssignment)
+      } else if (utils.typeClass(node.indexExpression) == "stringliteral") {
+        indexValue = decode(node.indexExpression, {
+          "literal": utils.toBytes(node.indexExpression.hexValue)
+        })
+      }
 
       debug("index value %O", indexValue);
       if (indexValue != undefined) {
