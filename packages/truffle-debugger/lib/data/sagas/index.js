@@ -30,8 +30,10 @@ function *tickSaga() {
     pointer
   } = yield select(data.views.ast);
 
+  let decode = yield select(data.views.decoder);
   let scopes = yield select(data.info.scopes);
   let definitions = yield select(data.views.scopes.inlined);
+  let currentAssignments = yield select(data.proc.assignments);
 
   let stack = yield select(data.next.state.stack);
   if (!stack) {
@@ -82,7 +84,12 @@ function *tickSaga() {
       let allocation = utils.allocateDeclarations(storageVars, definitions);
       assignments = Object.assign(
         {}, ...Object.entries(allocation.children)
-          .map( ([id, storage]) => ({ [id]: {storage} }) )
+          .map( ([id, storage]) => ({
+            [id]: {
+              ...(currentAssignments[id] || { ref: {} }).ref,
+              storage
+            }
+          }) )
       );
       debug("assignments %O", assignments);
 
@@ -93,8 +100,78 @@ function *tickSaga() {
       yield put(actions.assign(treeId, {
         [jsonpointer.get(tree, pointer).id]: {"stack": top}
       }));
+      break;
+
+    case "IndexAccess":
+      // to track `mapping` types known indexes
+      let {
+        baseExpression: {
+          id: baseId,
+          referencedDeclaration: baseDeclarationId,
+        },
+        indexExpression: {
+          id: indexId,
+        }
+      } = node;
+
+      let baseAssignment = (currentAssignments[baseDeclarationId] || {
+        ref: {}
+      }).ref;
+      debug("baseAssignment %O", baseAssignment);
+
+      let baseDefinition = definitions[baseDeclarationId].definition;
+      if (utils.typeClass(baseDefinition) !== "mapping") {
+        break;
+      }
+
+      const indexAssignment = (currentAssignments[indexId] || {}).ref;
+      // HACK because string literal AST nodes are not sourcemapped to directly
+      // value appears to be available in `node.indexExpression.hexValue`
+      // [observed with solc v0.4.24]
+      const indexValue = (indexAssignment)
+        ? decode(node.indexExpression, indexAssignment)
+        : utils.typeClass(node.indexExpression) == "stringliteral" &&
+            decode(node.indexExpression, {
+              "literal": utils.toBytes(node.indexExpression.hexValue)
+            });
+
+      debug("index value %O", indexValue);
+      if (indexValue == undefined) {
+        break;
+      }
+
+      assignments = {
+        [baseDeclarationId]: {
+          ...baseAssignment,
+          keys: [
+            ...new Set([
+              ...(baseAssignment.keys || []),
+              indexValue
+            ])
+          ]
+        }
+      }
+
+      debug("mapping assignments %O", assignments);
+      yield put(actions.assign(treeId, assignments));
+      debug("new assignments %O", yield select(data.proc.assignments));
+      break;
+
+    case "Assignment":
+      break;
+
 
     default:
+      if (node.typeDescriptions == undefined) {
+        break;
+      }
+
+      debug("decoding expression value %O", node.typeDescriptions);
+      let literal = decode(node, { "stack": top });
+
+      yield put(actions.assign(treeId, {
+        [node.id]: { literal }
+      }));
       break;
   }
 }
