@@ -15,15 +15,20 @@ export function read(pointer, state) {
     return storage.readRange(state.storage, pointer.storage);
   } else if (pointer.memory != undefined && state.memory) {
     return memory.readBytes(state.memory, pointer.memory.start, pointer.memory.length);
-  } else if (pointer.literal) {
+  } else if (pointer.literal != undefined) {
     return pointer.literal;
   }
 }
 
 
 export function decodeValue(definition, pointer, state, ...args) {
+  debug(
+    "decoding value, pointer: %o, typeClass: %s",
+    pointer, utils.typeClass(definition)
+  );
   let bytes = read(pointer, state);
-  if (!bytes) {
+  if (bytes == undefined) {
+    debug("segfault, pointer %o, state: %O", pointer, state);
     return undefined;
   }
 
@@ -51,12 +56,18 @@ export function decodeValue(definition, pointer, state, ...args) {
 
     default:
       debug("Unknown value type: %s", utils.typeIdentifier(definition));
-      return null;
+      return undefined;
   }
 }
 
 export function decodeMemoryReference(definition, pointer, state, ...args) {
-  let rawValue = utils.toBigNumber(read(pointer, state)).toNumber();
+  debug("pointer %o", pointer);
+  let rawValue = read(pointer, state)
+  if (rawValue == undefined) {
+    return undefined;
+  }
+
+  rawValue = utils.toBigNumber(rawValue).toNumber();
 
   var bytes;
   switch (utils.typeClass(definition)) {
@@ -127,7 +138,7 @@ export function decodeMemoryReference(definition, pointer, state, ...args) {
 
     default:
       debug("Unknown memory reference type: %s", utils.typeIdentifier(definition));
-      return null;
+      return undefined;
 
   }
 
@@ -144,7 +155,7 @@ export function decodeStorageReference(definition, pointer, state, ...args) {
       debug("storage array! %o", pointer);
       data = read(pointer, state);
       if (!data) {
-        return null;
+        return undefined;
       }
 
       length = utils.toBigNumber(data).toNumber();
@@ -200,13 +211,19 @@ export function decodeStorageReference(definition, pointer, state, ...args) {
     case "bytes":
     case "string":
       data = read(pointer, state);
-      if (!data) {
-        return null;
+      if (data == undefined) {
+        return undefined;
       }
 
-      if (data[WORD_SIZE - 1] % 2 == 0) {
+      debug("data %O", data);
+      let lengthByte = data[WORD_SIZE - 1];
+      if (!lengthByte) {
+        lengthByte = 0;
+      }
+
+      if (lengthByte % 2 == 0) {
         // string lives in word, length is last byte / 2
-        length = data[WORD_SIZE - 1] / 2;
+        length = lengthByte / 2;
         debug("in-word; length %o", length);
         if (length == 0) {
           return "";
