@@ -4,6 +4,21 @@ const debug = debugModule("debugger:data:decode:storage");
 import { WORD_SIZE } from "./utils";
 import * as utils from "./utils";
 
+/**
+ * convert a slot to a word corresponding to actual storage address
+ *
+ * if `slot` is an array, return hash of array values.
+ * if `slot` array is nested, recurse on sub-arrays
+ *
+ * @param slot - number or possibly-nested array of numbers
+ */
+export function slotAddress(slot) {
+  if (slot instanceof Array) {
+    return utils.keccak256(...slot.map(slotAddress));
+  } else {
+    return slot;
+  }
+}
 
 /**
  * read slot from storage
@@ -12,15 +27,11 @@ import * as utils from "./utils";
  * @param offset - for array, offset from the keccak determined location
  */
 export function read(storage, slot, offset = 0) {
-  if (slot instanceof Array) {
-    slot = utils.keccak256(...slot.map(utils.toBigNumber));
-  }
+  const address = utils.toBigNumber(slotAddress(slot)).plus(offset);
 
-  slot = utils.toBigNumber(slot).plus(offset);
+  debug("reading slot: %o", utils.toHexString(address));
 
-  debug("reading slot: %o", utils.toHexString(slot));
-
-  let word = storage[utils.toHexString(slot, WORD_SIZE)] ||
+  let word = storage[utils.toHexString(address, WORD_SIZE)] ||
     new Uint8Array(WORD_SIZE);
 
   debug("word %o", word);
