@@ -54,6 +54,10 @@ export function decodeValue(definition, pointer, state, ...args) {
       debug("typeIdentifier %s %o", utils.typeIdentifier(definition), bytes);
       return String.fromCharCode.apply(null, bytes);
 
+    case "rational":
+      debug("typeIdentifier %s %o", utils.typeIdentifier(definition), bytes);
+      return utils.toBigNumber(bytes);
+
     default:
       debug("Unknown value type: %s", utils.typeIdentifier(definition));
       return undefined;
