@@ -2,6 +2,7 @@ var Web3PromiEvent = require('web3-core-promievent');
 var EventEmitter = require('events');
 var utils = require("./utils");
 var StatusError = require("./statuserror");
+var Reason = require("./reason");
 var handlers = require("./handlers");
 var override = require("./override");
 
@@ -11,7 +12,6 @@ var execute = {
   // -----------------------------------  Helpers --------------------------------------------------
   /**
    * Retrieves gas estimate multiplied by the set gas multiplier for a `sendTransaction` call.
-   * We're using low level rpc calls here
    * @param  {Object} params     `sendTransaction` parameters
    * @param  {Number} blockLimit  most recent network block.blockLimit
    * @return {Number}             gas estimate
@@ -21,39 +21,23 @@ var execute = {
     var web3 = this.web3;
 
     return new Promise(function(accept, reject){
-      const packet = {
-        jsonrpc: "2.0",
-        method: "eth_call",
-        params: [params],
-        id: new Date().getTime(),
-      }
+      // Always prefer specified gas - this includes gas set by class_defaults
+      if (params.gas)           return accept(params.gas);
+      if (!constructor.autoGas) return accept();
 
-      // This rpc call extracts the reason string
-      web3.currentProvider.send(packet, (err, response) => {
-        const reason = execute.extractReason(response, web3);
+      web3.eth
+        .estimateGas(params)
+        .then(gas => {
+          var bestEstimate = Math.floor(constructor.gasMultiplier * gas);
 
-        web3.eth
-          .estimateGas(params)
-          .then(gas => {
-            // Always prefer specified gas - this includes gas set by class_defaults
-            if (params.gas)           return accept({gas: params.gas, error: null});
-            if (!constructor.autoGas) return accept({gas: null, error: null});
+          // Don't go over blockLimit
+          (bestEstimate >= blockLimit)
+            ? accept(blockLimit - 1)
+            : accept(bestEstimate);
 
-            var bestEstimate = Math.floor(constructor.gasMultiplier * gas);
-
-            // Don't go over blockLimit
-            (bestEstimate >= blockLimit)
-              ? accept({gas: blockLimit - 1, error: null})
-              : accept({gas: bestEstimate, error: null});
-          })
-          .catch(err => {
-            err.reason = reason;
-
-            (params.gas)
-              ? accept({gas: params.gas, error: err})
-              : accept({gas: null, error: err});
-          })
-      })
+        // We need to let txs that revert through.
+        // Often that's exactly what you are testing.
+        }).catch(err => accept());
     })
   },
 
@@ -80,33 +64,6 @@ var execute = {
    */
   hasTxParams: function(arg){
     return utils.is_object(arg) && !utils.is_big_number(arg);
-  },
-
-  /**
-   * Processes .call/.estimateGas errors and extracts a reason string if
-   * @param  {Object}           res  response from `eth_call` to extract reason
-   * @param  {Web3}             web3 a helpful friend
-   * @return {String|Undefined}      decoded reason string
-   */
-  extractReason(res, web3){
-    if (!res || (!res.error && !res.result)) return;
-
-    const errorStringHash = '0x08c379a0';
-
-    const isObject = res && typeof res === 'object' && res.error && res.error.data;
-    const isString = res && typeof res === 'object' && typeof res.result === 'string';
-
-    if (isObject) {
-      const data = res.error.data;
-      const hash = Object.keys(data)[0];
-
-      if (data[hash].return && data[hash].return.includes(errorStringHash)){
-        return web3.eth.abi.decodeParameter('string', data[hash].return.slice(10))
-      }
-
-    } else if (isString && res.result.includes(errorStringHash)){
-      return web3.eth.abi.decodeParameter('string', res.result.slice(10))
-    }
   },
 
   /**
@@ -189,21 +146,10 @@ var execute = {
         execute
           .getGasEstimate
           .call(constructor, params, network.blockLimit)
-          .then(result => {
-            (result.error)
-              ? context.reason = result.error.reason
-              : context.reason = null;
-
-            params.gas = result.gas || undefined;
+          .then(gas => {
+            params.gas = gas
             deferred = web3.eth.sendTransaction(params);
-
-            // vmErrorsOnResponse path. Client emulator will
-            // reject via the receipt handler
-            deferred.catch(err => {
-              err.reason = (result.error) ? result.error.reason : null;
-              override.start.call(constructor, context, err)
-            });
-
+            deferred.catch(override.start.bind(constructor, context));
             handlers.setup(deferred, context);
           })
           .catch(promiEvent.reject)
@@ -212,7 +158,6 @@ var execute = {
       return promiEvent.eventEmitter;
     };
   },
-
 
   /**
    * Deploys an instance. Network detection for `.new` happens before invocation at `contract.js`
@@ -228,7 +173,6 @@ var execute = {
     var web3 = constructor.web3;
     var params = utils.getTxParams.call(constructor, args);
     var deferred;
-    var reason;
 
     var options = {
       data: constructor.binary,
@@ -241,15 +185,15 @@ var execute = {
     execute
       .getGasEstimate
       .call(constructor, params, blockLimit)
-      .then(result => {
-        if (result.error) reason = result.error.reason;
-
-        params.gas = result.gas || undefined;
+      .then(gas => {
+        params.gas = gas;
+        context.params = params;
         deferred = web3.eth.sendTransaction(params);
         handlers.setup(deferred, context);
 
-        deferred.then(receipt => {
+        deferred.then(async (receipt) => {
           if (parseInt(receipt.status) == 0){
+            var reason = await Reason.get(params, web3);
 
             var error = new StatusError(
               params,
@@ -266,12 +210,9 @@ var execute = {
 
           context.promiEvent.resolve(new constructor(web3Instance));
 
-        // Manage web3's 50 blocks' timeout error. Web3's own subscriptions go dead here.
-        // Also propagate any reason strings captured during estimate gas.
-        }).catch(err => {
-          err.reason = reason;
-          override.start.call(constructor, context, err)
-        })
+        // Manage web3's 50 blocks' timeout error.
+        // Web3's own subscriptions go dead here.
+        }).catch(override.start.bind(constructor, context))
       }).catch(context.promiEvent.reject);
   },
 
