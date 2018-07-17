@@ -52,7 +52,6 @@ export function allocateDeclarations(
   refs,
   slot = 0,
   index = WORD_SIZE - 1,
-  path = []
 ) {
   if (index < WORD_SIZE - 1) {  // starts a new slot
     slot++;
