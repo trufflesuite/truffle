@@ -1,3 +1,5 @@
+var Reason = require('./reason');
+
 var override = {
 
   timeoutMessage: 'not mined within', // Substring of timeout err fired by web3
@@ -22,11 +24,15 @@ var override = {
     var timedOut = web3Error.message && web3Error.message.includes(override.timeoutMessage);
     var shouldWait = maxBlocks > currentBlock;
 
-    // Append error message
-    if (web3Error.reason) web3Error.message += ` -- Reason given: ${web3Error.reason}.`;
-
-    // Reject if we shouldn't be waiting.
-    if (!timedOut || !shouldWait) return context.promiEvent.reject(web3Error);
+    // Reject after attempting to get reason string if we shouldn't be waiting.
+    if (!timedOut || !shouldWait){
+      var reason = await Reason.get(context.params, constructor.web3);
+      if (reason) {
+        web3Error.reason = reason;
+        web3Error.message += ` -- Reason given: ${reason}.`;
+      }
+      return context.promiEvent.reject(web3Error);
+    }
 
     // This will run every block from now until contract.timeoutBlocks
     var listener = function(pollID){

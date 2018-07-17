@@ -1,5 +1,6 @@
 var StatusError = require("./statuserror");
 var Utils = require("./utils");
+var Reason = require("./reason");
 
 /*
   Handlers for events emitted by `send` / `call` etc.
@@ -53,7 +54,6 @@ var handlers = {
     if (!handlers.ignoreTimeoutError(context, error)){
       context.promiEvent.eventEmitter.emit('error', error);
       this.removeListener('error', handlers.error);
-      context.promiEvent.reject(error); // This shouldn't be necessary!!!
     }
   },
 
@@ -84,7 +84,7 @@ var handlers = {
    * @param  {Object} context   execution state
    * @param  {Object} receipt   transaction receipt
    */
-  receipt: function(context, receipt){
+  receipt: async function(context, receipt){
     // Decode logs
     var logs;
 
@@ -104,11 +104,13 @@ var handlers = {
     // .method(): resolve/reject receipt in handler
     if (parseInt(receipt.status) == 0 && !context.onlyEmitReceipt){
 
+      var reason = await Reason.get(context.params, context.contract.web3);
+
       var error = new StatusError(
         context.params,
         receipt.transactionHash,
         receipt,
-        context.reason
+        reason
       );
 
       return context.promiEvent.reject(error)
