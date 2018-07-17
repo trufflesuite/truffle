@@ -91,8 +91,34 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
   }
 };
 
+const DEFAULT_MAPPING_KEYS = {
+  byId: {}
+}
+
+function mappingKeys(state = DEFAULT_MAPPING_KEYS, action) {
+  switch (action.type) {
+    case actions.MAP_KEY:
+      let { id, key } = action;
+      return {
+        byId: {
+          ...state.byId,
+
+          // add new key to set of keys already defined
+          [id]: [...new Set([
+            ...(state.byId[id] || []),
+            key
+          ])]
+        }
+      };
+
+    default:
+      return state;
+  }
+}
+
 const proc = combineReducers({
-  assignments
+  assignments,
+  mappingKeys
 });
 
 const reducer = combineReducers({

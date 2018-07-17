@@ -52,10 +52,14 @@ export function allocateDeclarations(
   refs,
   slot = 0,
   index = WORD_SIZE - 1,
-  path = []
 ) {
+  slot = normalizeSlot(slot);
+
   if (index < WORD_SIZE - 1) {  // starts a new slot
-    slot++;
+    slot = {
+      path: slot,
+      offset: 1
+    };
     index = WORD_SIZE - 1;
   }
 
@@ -79,7 +83,10 @@ export function allocateDeclarations(
   }
 
   if (index < WORD_SIZE - 1) {
-    slot++;
+    slot = {
+      path: slot,
+      offset: 1
+    };
     index = WORD_SIZE - 1;
   }
 
@@ -92,15 +99,27 @@ export function allocateDeclarations(
 }
 
 function allocateValue(slot, index, bytes) {
-  let from = index - bytes + 1 >= 0 ?
-    { slot, index: index - bytes + 1 } :
-    { slot: slot + 1, index: WORD_SIZE - bytes };
+  let from = (index - bytes + 1 >= 0)
+    ? { slot, index: index - bytes + 1 }
+    : {
+        slot: {
+          path: slot.path,
+          offset: slot.offset + 1
+        },
+        index: WORD_SIZE - bytes
+      };
 
   let to = { slot: from.slot, index: from.index + bytes - 1 };
 
-  let next = from.index == 0 ?
-    { slot: from.slot + 1, index: WORD_SIZE - 1 } :
-    { slot: from.slot, index: from.index - 1 };
+  let next = (from.index == 0)
+    ? {
+        slot: {
+          path: from.slot.path,
+          offset: from.slot.offset + 1
+        },
+        index: WORD_SIZE - 1
+      }
+    : { slot: from.slot, index: from.index - 1 };
 
   return { from, to, next };
 }
@@ -120,6 +139,24 @@ function allocateDeclaration(declaration, refs, slot, index) {
   debug("struct result %o", result);
   return result;
 }
+
+/**
+ * Convert polymorphic slot value into canonical { path, offset } pair.
+ */
+export function normalizeSlot(slot) {
+  if (typeof slot == "object" && slot.path != undefined) {
+    return {
+      path: slot.path,
+      offset: slot.offset || 0
+    };
+  }
+
+  return {
+    path: slot,
+    offset: 0
+  };
+}
+
 
 /**
  * e.g. uint48 -> 6

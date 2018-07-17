@@ -21,7 +21,8 @@ export function read(pointer, state) {
 }
 
 
-export function decodeValue(definition, pointer, state, ...args) {
+export function decodeValue(definition, pointer, info) {
+  const { state } = info;
   debug(
     "decoding value, pointer: %o, typeClass: %s",
     pointer, utils.typeClass(definition)
@@ -47,6 +48,10 @@ export function decodeValue(definition, pointer, state, ...args) {
 
     case "bytes":
       debug("typeIdentifier %s %o", utils.typeIdentifier(definition), bytes);
+      // HACK bytes may be getting passed in as a literal hexstring
+      if (typeof bytes == "string") {
+        return bytes;
+      }
       let length = utils.specifiedSize(definition);
       return utils.toHexString(bytes, length);
 
@@ -68,7 +73,8 @@ export function decodeValue(definition, pointer, state, ...args) {
   }
 }
 
-export function decodeMemoryReference(definition, pointer, state, ...args) {
+export function decodeMemoryReference(definition, pointer, info) {
+  const { state } = info
   debug("pointer %o", pointer);
   let rawValue = read(pointer, state)
   if (rawValue == undefined) {
@@ -86,9 +92,11 @@ export function decodeMemoryReference(definition, pointer, state, ...args) {
         memory: { start: rawValue, length: WORD_SIZE}
       }, state); // bytes contain length
 
-      return decodeValue(definition, {
+      let childPointer = {
         memory: { start: rawValue + WORD_SIZE, length: bytes }
-      }, state, ...args);
+      }
+
+      return decodeValue(definition, childPointer, info);
 
     case "array":
       bytes = utils.toBigNumber(read({
@@ -103,19 +111,26 @@ export function decodeMemoryReference(definition, pointer, state, ...args) {
         .map(
           (chunk) => decode(utils.baseDefinition(definition), {
             literal: chunk
-          }, state, ...args)
+          }, info)
         )
 
     case "struct":
-      let [refs] = args;
-      let structDefinition = refs[definition.typeName.referencedDeclaration];
-      let structVariables = structDefinition.variables || [];
+      const { scopes } = info;
+
+      // Declaration reference usually appears in `typeName`, but for
+      // { nodeType: "FunctionCall", kind: "structConstructorCall" }, this
+      // reference appears to live in `expression`
+      const referencedDeclaration = (definition.typeName)
+        ? definition.typeName.referencedDeclaration
+        : definition.expression.referencedDeclaration;
+
+      let { variables } = (scopes[referencedDeclaration] || {});
 
       return Object.assign(
-        {}, ...structVariables
+        {}, ...(variables || [])
           .map(
             ({name, id}, i) => {
-              let memberDefinition = refs[id].definition;
+              let memberDefinition = scopes[id].definition;
               let memberPointer = {
                 memory: { start: rawValue + i * WORD_SIZE, length: WORD_SIZE }
               };
@@ -136,7 +151,7 @@ export function decodeMemoryReference(definition, pointer, state, ...args) {
 
               return {
                 [name]: decode(
-                  memberDefinition, memberPointer, state, ...args
+                  memberDefinition, memberPointer, info
                 )
               };
             }
@@ -152,11 +167,13 @@ export function decodeMemoryReference(definition, pointer, state, ...args) {
 
 }
 
-export function decodeStorageReference(definition, pointer, state, ...args) {
+export function decodeStorageReference(definition, pointer, info) {
   var data;
   var bytes;
   var length;
   var slot;
+
+  const { state } = info;
 
   switch (utils.typeClass(definition)) {
     case "array":
@@ -191,21 +208,23 @@ export function decodeStorageReference(definition, pointer, state, ...args) {
         return position * baseSize;
       }
 
+      let from = {
+        slot: utils.normalizeSlot(pointer.storage.from.slot),
+        index: pointer.storage.from.index
+      };
+
       debug("pointer: %o", pointer);
       return [...Array(length).keys()]
         .map( (i) => {
-          let childFrom = pointer.storage.from.offset != undefined ?
-            {
-              slot: ["0x" + utils.toBigNumber(
-                utils.keccak256(...pointer.storage.from.slot)
-              ).plus(pointer.storage.from.offset).toString(16)],
+          let childFrom = {
+            slot: {
+              path: (from.slot.path instanceof Array)
+                ? from.slot.path
+                : [from.slot],
               offset: offset(i),
-              index: index(i)
-            } : {
-              slot: [pointer.storage.from.slot],
-              offset: offset(i),
-              index: index(i)
-            };
+            },
+            index: index(i)
+          };
           return childFrom;
         })
         .map( (childFrom, idx) => {
@@ -213,7 +232,7 @@ export function decodeStorageReference(definition, pointer, state, ...args) {
           return decode(utils.baseDefinition(definition), { storage: {
             from: childFrom,
             length: baseSize
-          }}, state, ...args);
+          }}, info);
         });
 
     case "bytes":
@@ -240,7 +259,7 @@ export function decodeStorageReference(definition, pointer, state, ...args) {
         return decodeValue(definition, { storage: {
           from: { slot: pointer.storage.from.slot, index: 0 },
           to: { slot: pointer.storage.from.slot, index: length - 1}
-        }}, state, ...args);
+        }}, info);
 
       } else {
         length = utils.toBigNumber(data).minus(1).div(2).toNumber();
@@ -249,17 +268,27 @@ export function decodeStorageReference(definition, pointer, state, ...args) {
         return decodeValue(definition, { storage: {
           from: { slot: [pointer.storage.from.slot], index: 0 },
           length
-        }}, state, ...args);
+        }}, info);
       }
 
     case "struct":
-      let [refs] = args;
+      const { scopes } = info;
+
+      const referencedDeclaration = (definition.typeName)
+        ? definition.typeName.referencedDeclaration
+        : definition.referencedDeclaration;
+
+      const { variables } = (scopes[referencedDeclaration] || {});
+
+      const allocation = utils.allocateDeclarations(
+        variables || [], scopes, pointer.storage.from.slot
+      );
 
       return Object.assign(
-        {}, ...Object.entries(pointer.storage.children)
+        {}, ...Object.entries(allocation.children)
           .map( ([id, childPointer]) => ({
             [childPointer.name]: decode(
-              refs[id].definition, { storage: childPointer }, state, ...args
+              scopes[id].definition, { storage: childPointer }, info
             )
           }))
       );
@@ -270,15 +299,17 @@ export function decodeStorageReference(definition, pointer, state, ...args) {
   }
 }
 
-export function decodeMapping(definition, pointer, ...args) {
+export function decodeMapping(definition, pointer, info) {
   if (definition.referencedDeclaration) {
     // attempting to decode reference to mapping, thus missing valid pointer
     return undefined;
   }
+
+  const { mappingKeys } = info;
+
   debug("mapping %O", pointer);
   debug("mapping definition %O", definition);
-  let { keys } = pointer;
-  keys = keys || [];
+  let keys = mappingKeys[definition.id] || [];
   debug("known keys %o", keys);
 
   let keyDefinition = definition.typeName.keyType;
@@ -308,11 +339,11 @@ export function decodeMapping(definition, pointer, ...args) {
     debug("keyPointer %o", keyPointer);
 
     // NOTE mapping keys are potentially lossy because JS only likes strings
-    let keyValue = decode(keyDefinition, keyPointer, ...args);
+    let keyValue = decode(keyDefinition, keyPointer, info);
     debug("keyValue %o", keyValue);
     if (keyValue != undefined) {
       mapping[keyValue.toString()] =
-        decode(valueDefinition, valuePointer, ...args);
+        decode(valueDefinition, valuePointer, info);
     }
   }
 
@@ -320,9 +351,9 @@ export function decodeMapping(definition, pointer, ...args) {
 }
 
 
-export default function decode(definition, pointer, ...args) {
-  if (pointer.literal) {
-    return decodeValue(definition, pointer, ...args);
+export default function decode(definition, pointer, info) {
+  if (pointer.literal != undefined) {
+    return decodeValue(definition, pointer, info);
   }
 
   const identifier = utils.typeIdentifier(definition);
@@ -330,10 +361,10 @@ export default function decode(definition, pointer, ...args) {
     switch (utils.referenceType(definition)) {
       case "memory":
         debug("decoding memory reference, type: %s", identifier);
-        return decodeMemoryReference(definition, pointer, ...args);
+        return decodeMemoryReference(definition, pointer, info);
       case "storage":
         debug("decoding storage reference, type: %s", identifier);
-        return decodeStorageReference(definition, pointer, ...args);
+        return decodeStorageReference(definition, pointer, info);
       default:
         debug("Unknown reference category: %s", utils.typeIdentifier(definition));
         return undefined;
@@ -342,9 +373,9 @@ export default function decode(definition, pointer, ...args) {
 
   if (utils.isMapping(definition)) {
     debug("decoding mapping, type: %s", identifier);
-    return decodeMapping(definition, pointer, ...args);
+    return decodeMapping(definition, pointer, info);
   }
 
   debug("decoding value, type: %s", identifier);
-  return decodeValue(definition, pointer, ...args);
+  return decodeValue(definition, pointer, info);
 }
