@@ -209,21 +209,23 @@ export function decodeStorageReference(definition, pointer, info) {
         return position * baseSize;
       }
 
+      let from = {
+        slot: utils.normalizeSlot(pointer.storage.from.slot),
+        index: pointer.storage.from.index
+      };
+
       debug("pointer: %o", pointer);
       return [...Array(length).keys()]
         .map( (i) => {
-          let childFrom = pointer.storage.from.offset != undefined ?
-            {
-              slot: ["0x" + utils.toBigNumber(
-                utils.keccak256(...pointer.storage.from.slot)
-              ).plus(pointer.storage.from.offset).toString(16)],
+          let childFrom = {
+            slot: {
+              path: (from.slot.path instanceof Array)
+                ? from.slot.path
+                : [from.slot],
               offset: offset(i),
-              index: index(i)
-            } : {
-              slot: [pointer.storage.from.slot],
-              offset: offset(i),
-              index: index(i)
-            };
+            },
+            index: index(i)
+          };
           return childFrom;
         })
         .map( (childFrom, idx) => {
