@@ -4,6 +4,26 @@ const debug = debugModule("debugger:data:decode:storage");
 import { WORD_SIZE } from "./utils";
 import * as utils from "./utils";
 
+/**
+ * convert a slot to a word corresponding to actual storage address
+ *
+ * if `slot` is an array, return hash of array values.
+ * if `slot` array is nested, recurse on sub-arrays
+ *
+ * @param slot - number or possibly-nested array of numbers
+ */
+export function slotAddress(slot) {
+  if (slot instanceof Array) {
+    return utils.keccak256(...slot.map(slotAddress));
+  } else if (typeof slot == "object" && slot.path != undefined) {
+    let { path, offset } = slot;
+    return utils.toBigNumber(slotAddress(path)).plus(offset);
+  } else if (typeof slot == "string" && slot.slice(0,2) == "0x") {
+    return utils.toBigNumber(slot);
+  } else {
+    return slot;
+  }
+}
 
 /**
  * read slot from storage
@@ -11,16 +31,12 @@ import * as utils from "./utils";
  * @param slot - big number or array of regular numbers
  * @param offset - for array, offset from the keccak determined location
  */
-export function read(storage, slot, offset = 0) {
-  if (slot instanceof Array) {
-    slot = utils.keccak256(...slot.map(utils.toBigNumber));
-  }
+export function read(storage, slot) {
+  const address = slotAddress(slot);
 
-  slot = utils.toBigNumber(slot).plus(offset);
+  debug("reading slot: %o", utils.toHexString(address));
 
-  debug("reading slot: %o", utils.toHexString(slot));
-
-  let word = storage[utils.toHexString(slot, WORD_SIZE)] ||
+  let word = storage[utils.toHexString(address, WORD_SIZE)] ||
     new Uint8Array(WORD_SIZE);
 
   debug("word %o", word);
@@ -32,15 +48,18 @@ export function read(storage, slot, offset = 0) {
  *
  * parameters `from` and `to` are objects with the following properties:
  *
- *   slot - (required) either a bignumber or a "path" array of integer offsets
+ *   slot - (required) one of the following:
+ *     - a literal value referring to a slot (a number, a bytestring, etc.)
  *
- *     path array values get converted into keccak256 hash as per solidity
- *     storage allocation method
+ *     - a "path" array of literal values
+ *       path array values get converted into keccak256 hash as per solidity
+ *       storage allocation method, after recursing.
+ *
+ *     - an object { path, offset }, where path is one of the above ^
+ *       offset values indicate sequential address offset, post-keccak
  *
  *     ref: https://solidity.readthedocs.io/en/v0.4.23/miscellaneous.html#layout-of-state-variables-in-storage
  *     (search "concatenation")
- *
- *  offset - (default: 0) slot offset
  *
  *  index - (default: 0) byte index in word
  *
@@ -48,39 +67,45 @@ export function read(storage, slot, offset = 0) {
  * @param to - location (see ^). inclusive.
  * @param length - instead of `to`, number of bytes after `from`
  */
-export function readRange(storage, {from, to, length}) {
+export function readRange(storage, range) {
+  debug("readRange %o", range);
+
+  let { from, to, length } = range;
   if (!length && !to || length && to) {
     throw new Error("must specify exactly one `to`|`length`");
   }
 
   from = {
-    ...from,
-    offset: from.offset || 0
+    slot: utils.normalizeSlot(from.slot),
+    index: from.index || 0
   };
 
   if (length) {
     to = {
-      slot: from.slot,
-      offset: from.offset + Math.floor((from.index + length - 1) / WORD_SIZE),
+      slot: {
+        path: from.slot.path,
+        offset: from.slot.offset +
+          Math.floor((from.index + length - 1) / WORD_SIZE)
+      },
       index: (from.index + length - 1) % WORD_SIZE
     };
   } else {
     to = {
-      ...to,
-      offset: to.offset || 0
+      slot: utils.normalizeSlot(to.slot),
+      index: to.index
     }
   }
 
-  debug("readRange %o", {from,to});
+  debug("normalized readRange %o", {from,to});
 
-  const totalWords = to.offset - from.offset + 1;
+  const totalWords = to.slot.offset - from.slot.offset + 1;
   debug("totalWords %o", totalWords);
 
   let data = new Uint8Array(totalWords * WORD_SIZE);
 
   for (let i = 0; i < totalWords; i++) {
-    let offset = i + from.offset;
-    data.set(read(storage, from.slot, offset), i * WORD_SIZE);
+    let offset = i + from.slot.offset;
+    data.set(read(storage, { ...from.slot, offset }), i * WORD_SIZE);
   }
   debug("words %o", data);
 

@@ -30,8 +30,10 @@ function *tickSaga() {
     pointer
   } = yield select(data.views.ast);
 
+  let decode = yield select(data.views.decoder);
   let scopes = yield select(data.info.scopes);
   let definitions = yield select(data.views.scopes.inlined);
+  let currentAssignments = yield select(data.proc.assignments);
 
   let stack = yield select(data.next.state.stack);
   if (!stack) {
@@ -45,20 +47,20 @@ function *tickSaga() {
     return;
   }
 
+  // stack is only ready for interpretation after the last step of each
+  // source range
+  //
+  // the data module always looks at the result of a particular opcode
+  // (i.e., the following trace step's stack/memory/storage), so this
+  // asserts that the _current_ operation is the final one before
+  // proceeding
+  if (!(yield select(data.views.atLastInstructionForSourceRange))) {
+    return;
+  }
+
   switch (node.nodeType) {
 
     case "FunctionDefinition":
-      // stack is only ready for interpretation after the last step of each
-      // source range
-      //
-      // the data module always looks at the result of a particular opcode
-      // (i.e., the following trace step's stack/memory/storage), so this
-      // asserts that the _current_ operation is the final one before
-      // proceeding
-      if (!(yield select(data.views.atLastInstructionForSourceRange))) {
-        break;
-      }
-
       parameters = node.parameters.parameters
         .map( (p, i) => `${pointer}/parameters/parameters/${i}` );
 
@@ -82,7 +84,12 @@ function *tickSaga() {
       let allocation = utils.allocateDeclarations(storageVars, definitions);
       assignments = Object.assign(
         {}, ...Object.entries(allocation.children)
-          .map( ([id, storage]) => ({ [id]: {storage} }) )
+          .map( ([id, storage]) => ({
+            [id]: {
+              ...(currentAssignments[id] || { ref: {} }).ref,
+              storage
+            }
+          }) )
       );
       debug("assignments %O", assignments);
 
@@ -93,8 +100,65 @@ function *tickSaga() {
       yield put(actions.assign(treeId, {
         [jsonpointer.get(tree, pointer).id]: {"stack": top}
       }));
+      break;
+
+    case "IndexAccess":
+      // to track `mapping` types known indexes
+      let {
+        baseExpression: {
+          id: baseId,
+          referencedDeclaration: baseDeclarationId,
+        },
+        indexExpression: {
+          id: indexId,
+        }
+      } = node;
+
+      let baseAssignment = (currentAssignments[baseDeclarationId] || {
+        ref: {}
+      }).ref;
+      debug("baseAssignment %O", baseAssignment);
+
+      let baseDefinition = definitions[baseDeclarationId].definition;
+      if (utils.typeClass(baseDefinition) !== "mapping") {
+        break;
+      }
+
+      const indexAssignment = (currentAssignments[indexId] || {}).ref;
+      debug("indexAssignment %O", indexAssignment);
+      // HACK because string literal AST nodes are not sourcemapped to directly
+      // value appears to be available in `node.indexExpression.hexValue`
+      // [observed with solc v0.4.24]
+      let indexValue;
+      if (indexAssignment) {
+        indexValue = decode(node.indexExpression, indexAssignment)
+      } else if (utils.typeClass(node.indexExpression) == "stringliteral") {
+        indexValue = decode(node.indexExpression, {
+          "literal": utils.toBytes(node.indexExpression.hexValue)
+        })
+      }
+
+      debug("index value %O", indexValue);
+      if (indexValue != undefined) {
+        yield put(actions.mapKey(baseDeclarationId, indexValue));
+      }
+
+      break;
+
+    case "Assignment":
+      break;
 
     default:
+      if (node.typeDescriptions == undefined) {
+        break;
+      }
+
+      debug("decoding expression value %O", node.typeDescriptions);
+      let literal = stack[top];
+
+      yield put(actions.assign(treeId, {
+        [node.id]: { literal }
+      }));
       break;
   }
 }

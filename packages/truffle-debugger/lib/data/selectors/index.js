@@ -106,11 +106,12 @@ const data = createSelectorTree({
      * selector returns (ast node definition, data reference) => value
      */
     decoder: createLeaf(
-      ["/views/scopes/inlined", "/current/state"],
+      ["/views/scopes/inlined", "/next/state", "/proc/mappingKeys"],
 
-      (scopes, state) => {
-        return (definition, ref) => decode(definition, ref, state, scopes)
-      }
+      (scopes, state, mappingKeys) =>
+        (definition, ref) => decode(definition, ref, {
+          scopes, state, mappingKeys
+        })
     )
   },
 
@@ -133,7 +134,18 @@ const data = createSelectorTree({
     /**
      * data.proc.assignments
      */
-    assignments: createLeaf(["/state"], (state) => state.proc.assignments.byId)
+    assignments: createLeaf(
+      ["/state"], (state) => state.proc.assignments.byId
+    ),
+
+    /**
+     * data.proc.mappingKeys
+     *
+     * known keys for each mapping (identified by node ID)
+     */
+    mappingKeys: createLeaf(
+      ["/state"], (state) => state.proc.mappingKeys.byId
+    )
   },
 
   /**
