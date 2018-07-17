@@ -53,8 +53,13 @@ export function allocateDeclarations(
   slot = 0,
   index = WORD_SIZE - 1,
 ) {
+  slot = normalizeSlot(slot);
+
   if (index < WORD_SIZE - 1) {  // starts a new slot
-    slot++;
+    slot = {
+      path: slot,
+      offset: 1
+    };
     index = WORD_SIZE - 1;
   }
 
@@ -78,7 +83,10 @@ export function allocateDeclarations(
   }
 
   if (index < WORD_SIZE - 1) {
-    slot++;
+    slot = {
+      path: slot,
+      offset: 1
+    };
     index = WORD_SIZE - 1;
   }
 
@@ -91,8 +99,6 @@ export function allocateDeclarations(
 }
 
 function allocateValue(slot, index, bytes) {
-  slot = normalizeSlot(slot);
-
   let from = (index - bytes + 1 >= 0)
     ? { slot, index: index - bytes + 1 }
     : {
