@@ -124,11 +124,10 @@ export function decodeMemoryReference(definition, pointer, info) {
         ? definition.typeName.referencedDeclaration
         : definition.expression.referencedDeclaration;
 
-      let structDefinition = scopes[referencedDeclaration];
-      let structVariables = structDefinition.variables || [];
+      let { variables } = (scopes[referencedDeclaration] || {});
 
       return Object.assign(
-        {}, ...structVariables
+        {}, ...(variables || [])
           .map(
             ({name, id}, i) => {
               let memberDefinition = scopes[id].definition;
@@ -275,8 +274,18 @@ export function decodeStorageReference(definition, pointer, info) {
     case "struct":
       const { scopes } = info;
 
+      const referencedDeclaration = (definition.typeName)
+        ? definition.typeName.referencedDeclaration
+        : definition.referencedDeclaration;
+
+      const { variables } = (scopes[referencedDeclaration] || {});
+
+      const allocation = utils.allocateDeclarations(
+        variables || [], scopes, pointer.storage.from.slot
+      );
+
       return Object.assign(
-        {}, ...Object.entries(pointer.storage.children)
+        {}, ...Object.entries(allocation.children)
           .map( ([id, childPointer]) => ({
             [childPointer.name]: decode(
               scopes[id].definition, { storage: childPointer }, info
