@@ -45,12 +45,12 @@ class MigrationsMessages{
 
   errors(kind, data){
     const reporter = this.reporter;
-    const prefix = '\n*** Deployment Failed ***\n\n';
+    const prefix = ' *** Deployment Failed ***\n\n';
 
     const kinds = {
 
       migrateErr: () =>
-        `Exiting: Review successful transactions manually by checking the transaction hashes ` +
+        `\nExiting: Review successful transactions manually by checking the transaction hashes ` +
         `above on Etherscan.\n`,
 
       noLibName: () =>

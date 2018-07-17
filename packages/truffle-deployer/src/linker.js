@@ -1,5 +1,5 @@
 module.exports = {
-  link: function(library, destinations, deployer) {
+  link: async function(library, destinations, deployer) {
     let eventArgs;
 
     // Validate name
@@ -8,8 +8,8 @@ module.exports = {
         type: 'noLibName'
       }
 
-      deployer.emitter.emit('error', eventArgs);
-      throw new Error(); // <-- Handle this
+      const message = await deployer.emitter.emit('error', eventArgs);
+      throw new Error(message);
     }
 
     // Validate address: don't want to use .address directly because it will throw.
@@ -25,8 +25,8 @@ module.exports = {
         contract: library,
       }
 
-      deployer.emitter.emit('error', eventArgs);
-      throw new Error(); // <-- Handle this
+      const message = await deployer.emitter.emit('error', eventArgs);
+      throw new Error(message);
     }
 
     // Link all destinations
@@ -48,7 +48,7 @@ module.exports = {
         contractAddress: destination.contractAddress,
       }
 
-      deployer.emitter.emit('linking', eventArgs);
+      await deployer.emitter.emit('linking', eventArgs);
       destination.link(library);
     };
   },

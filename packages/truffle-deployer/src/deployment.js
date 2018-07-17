@@ -162,12 +162,12 @@ class Deployment {
   async _preFlightCheck(contract){
     // Check bytecode
     if(contract.bytecode === '0x') {
-      await this.emitter.emit('error', {
+      const message = await this.emitter.emit('error', {
         type: 'noBytecode',
         contract: contract,
       })
 
-      throw new Error(this._errors(contract.contractName));
+      throw new Error(message);
     }
 
     // Check network
@@ -338,9 +338,9 @@ class Deployment {
 
           self._stopBlockPolling();
           eventArgs.error = err.error || err;
-          await self.emitter.emit('deployFailed', eventArgs);
+          const message = await self.emitter.emit('deployFailed', eventArgs);
           self.close();
-          throw new Error(self._errors(contract.contractName));
+          throw new Error(message);
         }
 
       // Case: already deployed
