@@ -120,9 +120,6 @@ function *tickSaga() {
       debug("baseAssignment %O", baseAssignment);
 
       let baseDefinition = definitions[baseDeclarationId].definition;
-      if (utils.typeClass(baseDefinition) !== "mapping") {
-        break;
-      }
 
       const indexAssignment = (currentAssignments[indexId] || {}).ref;
       debug("indexAssignment %O", indexAssignment);
