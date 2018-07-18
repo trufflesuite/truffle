@@ -53,6 +53,20 @@ describe("Events [ @geth ]", function() {
     });
   })
 
+  it('should be possible to listen for events with a callback', function(done){
+    const callback = (err, data) => {
+      assert.equal("ExampleEvent", data.event);
+      assert.equal(accounts[0], data.args._from);
+      assert.equal(8, data.args.num);
+      done();
+    }
+
+    Example.new(1).then(example => {
+      example.ExampleEvent(callback);
+      example.triggerEvent();
+    })
+  });
+
   it('should fire repeatedly (without duplicates)', async function(){
     let emitter;
     let counter = 0;
