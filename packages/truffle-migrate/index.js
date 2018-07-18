@@ -198,7 +198,7 @@ const Migrate = {
           migrations.shift();
         }
 
-        callback(null, migrations.length > 1);
+        callback(null, migrations.length > 1 || (migrations.length && number === 0));
       });
     });
   }
