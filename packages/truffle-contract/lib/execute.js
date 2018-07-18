@@ -276,7 +276,7 @@ var execute = {
   },
 
   /**
-   * Begins listening for an event
+   * Begins listening for an event OR manages the event callback
    * @param  {Function} fn  Solidity event method
    * @return {Emitter}      Event emitter
    */
@@ -292,10 +292,28 @@ var execute = {
         : currentLogID = id;
     }
 
-    return function(params){
+    return function(params, callback){
+      if (typeof params == "function") {
+        callback = params;
+        params = {};
+      }
+
+      // As callback
+      if (callback !== undefined){
+        var intermediary = function(err, e){
+          if (err) callback(err);
+          var event = dedupe(e.id) && decode.call(constructor, e, true)[0];
+          callback(null, event);
+        }
+
+        return constructor.detectNetwork()
+          .then(() => fn.call(constructor.events, params, intermediary));
+      }
+
+      // As EventEmitter
       var emitter = new EventEmitter();
 
-      constructor.detectNetwork().then(() =>{
+      constructor.detectNetwork().then(() => {
         var event = fn(params);
 
         event.on('data', e => dedupe(e.id) && emitter.emit('data', decode.call(constructor, e, true)[0]));
