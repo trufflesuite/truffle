@@ -161,32 +161,32 @@ class Reporter {
       // `Intrinsic gas too low`
       case 'INT':
         return (data.gas)
-          ? message = this.messages.errors('intWithGas', data)
-          : message = this.messages.errors('intNoGas', data);
+          ? this.messages.errors('intWithGas', data)
+          : this.messages.errors('intNoGas', data);
 
       // `Out of gas`
       case 'OOG':
         return (data.gas && !(data.gas === data.blockLimit))
-          ? message = this.messages.errors('intWithGas', data)
-          : message = this.messages.errors('oogNoGas', data);
+          ? this.messages.errors('intWithGas', data)
+          : this.messages.errors('oogNoGas', data);
 
       // `Revert`
       case 'RVT':
         return (data.reason)
-          ? message = this.messages.errors('rvtReason', data)
-          : message = this.messages.errors('rvtNoReason', data);
+          ? this.messages.errors('rvtReason', data)
+          : this.messages.errors('rvtNoReason', data);
 
       // `Invalid opcode`
       case 'INV':
         return (data.reason)
-          ? message = this.messages.errors('asrtReason', data)
-          : message = this.messages.errors('asrtNoReason', data);
+          ? this.messages.errors('asrtReason', data)
+          : this.messages.errors('asrtNoReason', data);
 
       // `Exceeds block limit`
       case 'BLK':
         return (data.gas)
-          ? message = this.messages.errors('blockWithGas', data)
-          : message = this.messages.errors('blockNoGas', data)
+          ? this.messages.errors('blockWithGas', data)
+          : this.messages.errors('blockNoGas', data)
 
       // `Insufficient funds`
       case 'ETH':
