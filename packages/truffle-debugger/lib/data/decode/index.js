@@ -278,11 +278,16 @@ export function decodeStorageReference(definition, pointer, info) {
         ? definition.typeName.referencedDeclaration
         : definition.referencedDeclaration;
 
-      const { variables } = (scopes[referencedDeclaration] || {});
+      const variables = (scopes[referencedDeclaration] || {}).variables || [];
 
-      const allocation = utils.allocateDeclarations(
-        variables || [], scopes, pointer.storage.from.slot
-      );
+      let slot;
+      if (pointer.storage != undefined) {
+        slot = pointer.storage.from.slot;
+      } else {
+        slot = utils.normalizeSlot(utils.toBigNumber(read(pointer, state)));
+      }
+
+      const allocation = utils.allocateDeclarations(variables, scopes, slot);
 
       return Object.assign(
         {}, ...Object.entries(allocation.children)
