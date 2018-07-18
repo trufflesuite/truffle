@@ -44,6 +44,11 @@ function Console(tasks, options) {
   this.repl.on("exit", function() {
     self.emit("exit");
   });
+
+  // Bubble the ReplManager's reset event
+  this.repl.on("reset", function() {
+    self.emit("reset");
+  });
 };
 
 Console.prototype.start = function(callback) {
