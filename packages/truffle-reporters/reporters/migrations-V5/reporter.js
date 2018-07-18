@@ -160,72 +160,50 @@ class Reporter {
     switch (type) {
       // `Intrinsic gas too low`
       case 'INT':
-        (data.gas)
-          ? message = this.messages.errors('intWithGas', data)
-          : message = this.messages.errors('intNoGas', data);
-
-        this.deployer.logger.error(message);
-        break;
+        return (data.gas)
+          ? this.messages.errors('intWithGas', data)
+          : this.messages.errors('intNoGas', data);
 
       // `Out of gas`
       case 'OOG':
-        (data.gas && !(data.gas === data.blockLimit))
-          ? message = this.messages.errors('intWithGas', data)
-          : message = this.messages.errors('oogNoGas', data);
-
-        this.deployer.logger.error(message);
-        break;
+        return (data.gas && !(data.gas === data.blockLimit))
+          ? this.messages.errors('intWithGas', data)
+          : this.messages.errors('oogNoGas', data);
 
       // `Revert`
       case 'RVT':
-        (data.reason)
-          ? message = this.messages.errors('rvtReason', data)
-          : message = this.messages.errors('rvtNoReason', data);
-
-        this.deployer.logger.error(message);
-        break;
+        return (data.reason)
+          ? this.messages.errors('rvtReason', data)
+          : this.messages.errors('rvtNoReason', data);
 
       // `Invalid opcode`
       case 'INV':
-        (data.reason)
-          ? message = this.messages.errors('asrtReason', data)
-          : message = this.messages.errors('asrtNoReason', data);
-
-        this.deployer.logger.error(message);
-        break;
+        return (data.reason)
+          ? this.messages.errors('asrtReason', data)
+          : this.messages.errors('asrtNoReason', data);
 
       // `Exceeds block limit`
       case 'BLK':
-        (data.gas)
-          ? message = this.messages.errors('blockWithGas', data)
-          : message = this.messages.errors('blockNoGas', data)
-
-        this.deployer.logger.error(message);
-        break;
+        return (data.gas)
+          ? this.messages.errors('blockWithGas', data)
+          : this.messages.errors('blockNoGas', data)
 
       // `Insufficient funds`
       case 'ETH':
         const balance = await data.contract.web3.eth.getBalance(data.from);
         data.balance = balance.toString();
-        message = this.messages.errors('noMoney', data);
-        this.deployer.logger.error(message);
-        break;
+        return this.messages.errors('noMoney', data);
 
       // `Invalid nonce`
       case 'NCE':
-        message = this.messages.errors('nonce', data);
-        this.deployer.logger.error(message);
-        break;
+        return this.messages.errors('nonce', data);
 
       // Generic geth error
       case 'GTH':
-        message = this.messages.errors('geth', data);
-        this.deployer.logger.error(message);
-        break;
+        return this.messages.errors('geth', data);
 
       default:
-        message = this.messages.errors('default', data);
-        this.deployer.logger.error(message);
+        return this.messages.errors('default', data);
     }
   }
 
@@ -367,16 +345,21 @@ class Reporter {
 
   /**
    * Runs on deployment error. Forwards err to the error parser/dispatcher after shutting down
-   * any `pending` UI.
-   * @param  {O} data [description]
-   * @return {[type]}      [description]
+   * any `pending` UI.any `pending` UI. Returns the error message OR logs it out from the reporter
+   * if data.log is true.
+   * @param  {Object}  data  event args
+   * @return {Promise}       resolves string error message
    */
   async deployFailed(data){
     if (this.blockSpinner){
       this.blockSpinner.stop();
     }
 
-    await this.processDeploymentError(data);
+    const message = await this.processDeploymentError(data);
+
+    return (data.log)
+      ? this.deployer.logger.error(message)
+      : message;
   }
 
   // ----------------------------  Library Event Handlers ------------------------------------------
@@ -393,8 +376,11 @@ class Reporter {
    * @param  {Object} data
    */
   async error(data){
-    let message = this.messages.errors(data.type, data);
-    this.deployer.logger.error(message);
+    const message = this.messages.errors(data.type, data);
+
+    return (data.log)
+      ? this.deployer.logger.error(message)
+      : message;
   }
 
   /**

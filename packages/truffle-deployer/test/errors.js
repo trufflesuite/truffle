@@ -15,7 +15,6 @@ describe("Error cases", function() {
   let networkId;
   let deployer;
   let reporter;
-  let output = '';
   let Example;
   let UsesExample;
   let IsLibrary;
@@ -62,8 +61,8 @@ describe("Error cases", function() {
       network_id: networkId,
       provider: provider,
       logger: {
-        log:   (val) => { if (val) output += `${val}\n`},
-        error: (val) => { if (val) output += `${val}\n`}
+        log:   (val) => {},
+        error: (val) => {}
       }
     }
     deployer = new Deployer(options);
@@ -74,7 +73,6 @@ describe("Error cases", function() {
   });
 
   afterEach(() => {
-    output = '';
     utils.cleanUp();
     deployer.finish();
   });
@@ -90,9 +88,9 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch( err ) {
-      assert(output.includes('Deployment Failed'));
-      assert(output.includes('IsLibrary'));
-      assert(output.includes('has no address'));
+      assert(err.message.includes('Deployment Failed'));
+      assert(err.message.includes('IsLibrary'));
+      assert(err.message.includes('has no address'));
     }
   });
 
@@ -107,10 +105,10 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch(err){
-      assert(output.includes('Deployment Failed'));
-      assert(output.includes('Abstract'));
-      assert(output.includes('interface'));
-      assert(output.includes('cannot be deployed'));
+      assert(err.message.includes('Deployment Failed'));
+      assert(err.message.includes('Abstract'));
+      assert(err.message.includes('interface'));
+      assert(err.message.includes('cannot be deployed'));
     }
   });
 
@@ -125,11 +123,11 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch(err){
-      assert(output.includes('Example'));
-      assert(output.includes('value you set'));
-      assert(output.includes('Block limit'));
-      assert(output.includes('Gas sent'));
-      assert(output.includes('10'));
+      assert(err.message.includes('Example'));
+      assert(err.message.includes('value you set'));
+      assert(err.message.includes('Block limit'));
+      assert(err.message.includes('Gas sent'));
+      assert(err.message.includes('10'));
     }
   });
 
@@ -144,11 +142,11 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch(err){
-      assert(output.includes('UsesExample'));
-      assert(output.includes('value you set'));
-      assert(output.includes('Block limit'));
-      assert(output.includes('Gas sent'));
-      assert(output.includes('10'));
+      assert(err.message.includes('UsesExample'));
+      assert(err.message.includes('value you set'));
+      assert(err.message.includes('Block limit'));
+      assert(err.message.includes('Gas sent'));
+      assert(err.message.includes('10'));
     }
   });
 
@@ -165,9 +163,9 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch(err){
-      assert(output.includes('Loops'));
-      assert(output.includes('out of gas'));
-      assert(output.includes('constructor'));
+      assert(err.message.includes('Loops'));
+      assert(err.message.includes('out of gas'));
+      assert(err.message.includes('constructor'));
     }
   });
 
@@ -184,10 +182,10 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch(err){
-      assert(output.includes('Loops'));
-      assert(output.includes('out of gas'));
-      assert(output.includes('Gas sent'));
-      assert(output.includes('Block limit'));
+      assert(err.message.includes('Loops'));
+      assert(err.message.includes('out of gas'));
+      assert(err.message.includes('Gas sent'));
+      assert(err.message.includes('Block limit'));
     }
   });
 
@@ -202,7 +200,7 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch(err){
-      assert(output.includes('revert'));
+      assert(err.message.includes('revert'));
     }
   });
 
@@ -217,7 +215,7 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch(err){
-      assert(output.includes('invalid opcode'));
+      assert(err.message.includes('invalid opcode'));
     }
   });
 
@@ -235,10 +233,10 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch(err){
-      assert(output.includes('Example'));
-      assert(output.includes('Block limit'));
-      assert(output.includes('Gas sent'))
-      assert(output.includes('less gas'));
+      assert(err.message.includes('Example'));
+      assert(err.message.includes('Block limit'));
+      assert(err.message.includes('Gas sent'))
+      assert(err.message.includes('less gas'));
     }
   })
 
@@ -265,10 +263,10 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch(err){
-      assert(output.includes('Example'));
-      assert(output.includes('insufficient funds'));
-      assert(output.includes('Account'))
-      assert(output.includes('Balance'));
+      assert(err.message.includes('Example'));
+      assert(err.message.includes('insufficient funds'));
+      assert(err.message.includes('Account'))
+      assert(err.message.includes('Balance'));
     }
   })
 });
