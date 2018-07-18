@@ -20,7 +20,7 @@ var options = {
   logger: console
 };
 
-command.run(process.argv.slice(2), options, function(err, no_exit = false) {
+command.run(process.argv.slice(2), options, function(err) {
   if (err) {
     if (err instanceof TaskError) {
       command.args
@@ -42,7 +42,6 @@ command.run(process.argv.slice(2), options, function(err, no_exit = false) {
     }
     process.exit(1);
   }
-  if(!no_exit) {
-    process.exit(0);
-  }
+
+  process.exit(0);
 });
