@@ -19,6 +19,11 @@ function Config(truffle_directory, working_directory, network) {
     from: null,
   };
 
+  // This is a list of multi-level keys with defaults
+  // we need to _.merge. Using this list for safety
+  // vs. just merging all objects.
+  this._deepCopy = ['compilers'];
+
   this._values = {
     truffle_directory: truffle_directory || path.resolve(path.join(__dirname, "../")),
     working_directory: working_directory || process.cwd(),
@@ -258,7 +263,11 @@ Config.prototype.merge = function(obj) {
   // Only set keys for values that don't throw.
   Object.keys(obj).forEach(function(key) {
     try {
-      self[key] = clone[key];
+      if (typeof clone[key] === 'object' && self._deepCopy.includes(key)){
+        self[key] = _.merge(self[key], clone[key])
+      } else {
+        self[key] = clone[key];
+      }
     } catch (e) {
       // Do nothing.
     }

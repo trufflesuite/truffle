@@ -39,6 +39,9 @@ var compile = function(sources, options, callback) {
     "compilers"
   ]);
 
+  expect.options(options.compilers, ["solc"]);
+  expect.options(options.compilers.solc, ["settings"]);
+
   // Grandfather in old solc config
   if (options.solc){
     compilers.solc.settings.evmVersion = options.solc.evmVersion;
