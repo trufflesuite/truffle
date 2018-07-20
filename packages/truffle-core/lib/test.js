@@ -207,6 +207,10 @@ var Test = {
         }
       };
 
+      // Hack to give web3 1.0 string numbers a convenience method
+      // that BigNumber has - widely used in truffle tests prior to V5.
+      String.prototype.toNumber = function() { return parseInt(this) };
+
       var template = function(tests) {
         this.timeout(runner.TEST_TIMEOUT);
 
