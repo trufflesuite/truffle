@@ -458,6 +458,28 @@ var contract = (function(module) {
         this._json.autoGas = val;
       }
     },
+    numberFormat: {
+      get: function() {
+        if (this._json.numberFormat === undefined){
+          this._json.numberFormat = 'bignumber';
+        }
+        return this._json.numberFormat;
+      },
+      set: function(val) {
+        const allowedFormats = [
+          'bignumber',
+          'bn',
+          'string'
+        ];
+
+        const msg = `Invalid number format setting: ${val}: ` +
+                    `valid formats are: ${allowedFormats}.`;
+
+        if (!allowedFormats.includes(val)) throw new Error(mg);
+
+        this._json.numberFormat = val;
+      }
+    },
     abi: {
       get: function() {
         return this._json.abi;
