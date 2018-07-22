@@ -110,11 +110,29 @@ contract Example {
     }
   }
 
-  function returnsTuple () view returns (uint256 hello, uint8 goodbye){
-    return (5, 5);
+  function returnsNamedTuple () view returns (uint256 hello, string black, uint8 goodbye){
+    return (5, 'black', 5);
   }
 
-  function returnsStaticArray () view returns (uint[2]){
+  function returnsUnnamedTuple() view returns (string, uint, uint[2]){
+    uint[2] arr;
+    arr[0] = 5;
+    arr[1] = 5;
+    return ('hello', 5, arr);
+  }
+
+  function returnsInt() view returns (int){
+    return 5;
+  }
+
+  function returnsNamedStaticArray() view returns (uint[2] named ){
+    uint[2] arr;
+    arr[0] = 5;
+    arr[1] = 5;
+    return arr;
+  }
+
+  function returnsUnnamedStaticArray () view returns (uint[2]){
     uint[2] arr;
     arr[0] = 5;
     arr[1] = 5;

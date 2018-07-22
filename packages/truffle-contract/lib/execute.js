@@ -5,6 +5,7 @@ var StatusError = require("./statuserror");
 var Reason = require("./reason");
 var handlers = require("./handlers");
 var override = require("./override");
+var reformat = require("./reformat");
 
 var util = require('util');
 var execute = {
@@ -84,11 +85,11 @@ var execute = {
 
   /**
    * Executes method as .call and processes optional `defaultBlock` argument.
-   * @param  {Function} fn      method
-   * @param  {Array}    inputs  ABI segment defining the methods inputs.
-   * @return {Promise}          Return value of the call.
+   * @param  {Function} fn         method
+   * @param  {Array}    methodABI  ABI segment defining the methods inputs.
+   * @return {Promise}             Return value of the call.
    */
-  call: function(fn, inputs, address) {
+  call: function(fn, methodABI, address) {
     var constructor = this;
 
     return function() {
@@ -98,7 +99,7 @@ var execute = {
       var lastArg = args[args.length - 1];
 
       // Extract defaultBlock parameter
-      if (execute.hasDefaultBlock(args, lastArg, inputs)){
+      if (execute.hasDefaultBlock(args, lastArg, methodABI.inputs)){
           defaultBlock = args.pop();
       }
 
@@ -110,9 +111,19 @@ var execute = {
       params.to = address;
       params = utils.merge(constructor.class_defaults, params);
 
-      return constructor
-        .detectNetwork()
-        .then(() => fn(...args).call(params, defaultBlock));
+      return new Promise(async (resolve, reject) => {
+        let result;
+        try {
+
+          await constructor.detectNetwork();
+          result = await fn(...args).call(params, defaultBlock);
+          result = reformat.callOutput.call(constructor, result, methodABI.outputs);
+          resolve(result);
+
+        } catch (err) {
+          reject(err);
+        }
+      });
     };
   },
 

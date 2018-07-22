@@ -136,6 +136,32 @@ describe("Methods", function() {
       assert.equal(parseInt(value), 865, "Parrotted value should equal 865")
     });
 
+    it.only("should output uint tuples as BigNumber by default (call)", async function(){
+      let value;
+      const example = await Example.new(1)
+
+      value = await example.returnsNamedTuple();
+      value = await example.returnsUnnamedTuple();
+    });
+
+    it.only("should output uint array values as BigNumber by default (call)", async function(){
+      let value;
+      Example.numberFormat = 'bn';
+      const example = await Example.new(1)
+
+      value = await example.returnsNamedStaticArray();
+      value = await example.returnsUnnamedStaticArray();
+    });
+
+    it("should output int values as BigNumber by default (call)", async function(){
+      let value;
+      Example.numberFormat = 'bn';
+      const example = await Example.new(1)
+
+      value = await example.returnsInt();
+
+    });
+
     it("should emit a transaction hash", function(done){
       Example.new(5).then(function(instance) {
         instance.setValue(25).on('transactionHash', function(hash){
@@ -307,6 +333,21 @@ describe("Methods", function() {
         assert(e.message.includes('invalid opcode'));
         assert(parseInt(e.receipt.status, 16) == 0)
       }
+    });
+
+    it("errors if constructor `numberFormat` is unknown", async function(){
+      let value;
+      Example.numberFormat = undefined;
+      const example = await Example.new(1)
+
+      try {
+        await example.returnsNamedTuple();
+        assert.fail()
+      } catch(err){
+        assert(err.message.includes('unknown number format'));
+      }
+
+      Example.numberFormat = 'bignumber';
     });
   });
 

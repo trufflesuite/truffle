@@ -48,10 +48,10 @@ var contract = (function(module) {
             var fn;
 
             (constant)
-              ? fn = execute.call.call(constructor, web3Method, item.inputs, instance.address)
+              ? fn = execute.call.call(constructor, web3Method, item, instance.address)
               : fn = execute.send.call(constructor, web3Method, instance.address);
 
-            fn.call = execute.call.call(constructor, web3Method, item.inputs, instance.address);
+            fn.call = execute.call.call(constructor, web3Method, item, instance.address);
             fn.sendTransaction = execute.send.call(constructor, web3Method, instance.address);
             fn.estimateGas = execute.estimate.call(constructor, web3Method, instance.address);
             fn.request = execute.request.call(constructor, web3Method, instance.address);
