@@ -472,10 +472,10 @@ var contract = (function(module) {
           'string'
         ];
 
-        const msg = `Invalid number format setting: ${val}: ` +
-                    `valid formats are: ${allowedFormats}.`;
+        const msg = `Invalid number format setting: "${val}": ` +
+                    `valid formats are: ${JSON.stringify(allowedFormats)}.`;
 
-        if (!allowedFormats.includes(val)) throw new Error(mg);
+        if (!allowedFormats.includes(val)) throw new Error(msg);
 
         this._json.numberFormat = val;
       }
