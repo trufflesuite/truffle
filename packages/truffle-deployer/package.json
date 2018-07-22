@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "fs-extra": "^6.0.1",
-    "ganache-cli": "6.1.4",
+    "ganache-cli": "6.1.6",
     "memorystream": "^0.3.1",
     "mocha": "5.2.0",
     "truffle-reporters": "^1.0.0",
