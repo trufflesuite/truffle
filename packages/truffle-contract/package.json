@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle-contract#readme",
   "dependencies": {
+    "bignumber.js": "^7.2.1",
     "ethereumjs-util": "^5.2.0",
     "ethjs-abi": "0.1.8",
     "truffle-blockchain-utils": "^0.0.5",
@@ -41,7 +42,6 @@
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
-    "bignumber.js": "^6.0.0",
     "browserify": "^14.0.0",
     "chai": "4.1.2",
     "debug": "^3.1.0",
