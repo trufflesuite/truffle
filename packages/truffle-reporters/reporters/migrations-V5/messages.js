@@ -64,6 +64,10 @@ class MigrationsMessages{
         `is an abstract contract or an interface and cannot be deployed\n` +
         `   * Hint: just import the contract into the '.sol' file that uses it.\n`,
 
+      noBatches: () =>
+        `Support for batch deployments (array syntax) is deprecated. ` +
+        `Please deploy each contract individually.`,
+
       intWithGas: () =>
         `${prefix}"${data.contract.contractName}" ran out of gas ` +
         `(using a value you set in your network config or deployment parameters.)\n` +

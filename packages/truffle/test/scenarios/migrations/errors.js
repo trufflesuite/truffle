@@ -124,7 +124,20 @@ describe("migration errors", function() {
       assert(output.includes('Balance'));
       done();
     });
-
   });
+
+  it("should error if user tries to use batch syntax", function(done){
+    this.timeout(70000);
+
+    CommandRunner.run("migrate -f 7", config, err => {
+      const output = logger.contents();
+      assert(err);
+      console.log(output);
+      assert(output.includes('7_batch_deployments.js'));
+      assert(output.includes("batch deployments"));
+      assert(output.includes("deprecated"));
+      done();
+    });
+  })
 });
 

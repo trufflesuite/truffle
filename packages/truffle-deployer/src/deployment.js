@@ -160,6 +160,17 @@ class Deployment {
    * @return {Promise}         throws on error
    */
   async _preFlightCheck(contract){
+
+    // Check that contract is not array
+    if (Array.isArray(contract)){
+      const message = await this.emitter.emit('error', {
+        type: 'noBatches',
+        contract: null,
+      })
+
+      throw new Error(message);
+    }
+
     // Check bytecode
     if(contract.bytecode === '0x') {
       const message = await this.emitter.emit('error', {
@@ -270,14 +281,14 @@ class Deployment {
     const self = this;
 
     return async function() {
+      await self._preFlightCheck(contract);
+
       let instance;
       let eventArgs;
       let shouldDeploy = true;
       let state = {
         contractName: contract.contractName
       };
-
-      await self._preFlightCheck(contract);
 
       const isDeployed = contract.isDeployed();
       const newArgs = await Promise.all(args);
