@@ -136,6 +136,93 @@ describe("Methods", function() {
       assert.equal(parseInt(value), 865, "Parrotted value should equal 865")
     });
 
+    it("should output uint tuples as BigNumber by default (call)", async function(){
+      let value;
+      const example = await Example.new(1)
+
+      value = await example.returnsNamedTuple();
+
+      assert(web3.utils.isBigNumber(value[0]));
+      assert(typeof value[1] === 'string');
+      assert(web3.utils.isBigNumber(value[2]));
+
+      assert(web3.utils.isBigNumber(value.hello));
+      assert(typeof value.black === 'string');
+      assert(web3.utils.isBigNumber(value.goodbye));
+
+      value = await example.returnsUnnamedTuple();
+
+      assert(typeof value[0] === 'string');
+      assert(web3.utils.isBigNumber(value[1]));
+
+      // uint sub-array
+      assert(Array.isArray(value[2]));
+      assert(web3.utils.isBigNumber(value[2][0]));
+      assert(web3.utils.isBigNumber(value[2][1]));
+    });
+
+    it("should output uint array values as BigNumber by default (call)", async function(){
+      let value;
+      const example = await Example.new(1)
+
+      value = await example.returnsNamedStaticArray();
+      assert(Array.isArray(value));
+      assert(web3.utils.isBigNumber(value[0]));
+      assert(web3.utils.isBigNumber(value[1]));
+
+      value = await example.returnsUnnamedStaticArray();
+
+      assert(Array.isArray(value));
+      assert(web3.utils.isBigNumber(value[0]));
+      assert(web3.utils.isBigNumber(value[1]));
+    });
+
+    it("should output int values as BigNumber by default (call)", async function(){
+      let value;
+      const example = await Example.new(1)
+
+      value = await example.returnsInt();
+      assert(web3.utils.isBigNumber(value));
+    });
+
+    it("should output uint tuples as BN when set to 'bn' (call)", async function(){
+      let value;
+      Example.numberFormat = 'bn';
+      const example = await Example.new(1)
+
+      value = await example.returnsNamedTuple();
+
+      assert(web3.utils.isBN(value[0]));
+      assert(typeof value[1] === 'string');
+      assert(web3.utils.isBN(value[2]));
+
+      assert(web3.utils.isBN(value.hello));
+      assert(typeof value.black === 'string');
+      assert(web3.utils.isBN(value.goodbye));
+
+      value = await example.returnsUnnamedTuple();
+
+      assert(typeof value[0] === 'string');
+      assert(web3.utils.isBN(value[1]));
+
+      // uint sub-array
+      assert(Array.isArray(value[2]));
+      assert(web3.utils.isBN(value[2][0]));
+      assert(web3.utils.isBN(value[2][1]));
+
+      Example.numberFormat = 'bignumber';
+    });
+
+    it("should output int values as string when set to 'string' (call)", async function(){
+      let value;
+      Example.numberFormat = 'string';
+      const example = await Example.new(1)
+
+      value = await example.returnsInt();
+      assert(typeof value === 'string');
+      Example.numberFormat = 'bignumber';
+    });
+
     it("should emit a transaction hash", function(done){
       Example.new(5).then(function(instance) {
         instance.setValue(25).on('transactionHash', function(hash){
@@ -306,6 +393,16 @@ describe("Methods", function() {
       } catch(e){
         assert(e.message.includes('invalid opcode'));
         assert(parseInt(e.receipt.status, 16) == 0)
+      }
+    });
+
+    it("errors when setting `numberFormat` to invalid value", async function(){
+      try {
+        Example.numberFormat = undefined;
+        assert.fail()
+      } catch(err){
+        assert(err.message.includes('Invalid number format'));
+        assert(Example.numberFormat === 'bignumber');
       }
     });
   });

@@ -41,7 +41,6 @@
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
-    "bignumber.js": "^6.0.0",
     "browserify": "^14.0.0",
     "chai": "4.1.2",
     "debug": "^3.1.0",
