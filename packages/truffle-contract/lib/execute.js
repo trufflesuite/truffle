@@ -86,7 +86,7 @@ var execute = {
   /**
    * Executes method as .call and processes optional `defaultBlock` argument.
    * @param  {Function} fn         method
-   * @param  {Array}    methodABI  ABI segment defining the methods inputs.
+   * @param  {Object}   methodABI  function ABI segment w/ inputs & outputs keys.
    * @return {Promise}             Return value of the call.
    */
   call: function(fn, methodABI, address) {
