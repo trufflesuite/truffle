@@ -461,15 +461,15 @@ var contract = (function(module) {
     numberFormat: {
       get: function() {
         if (this._json.numberFormat === undefined){
-          this._json.numberFormat = 'bignumber';
+          this._json.numberFormat = 'BN';
         }
         return this._json.numberFormat;
       },
       set: function(val) {
         const allowedFormats = [
-          'bignumber',
-          'bn',
-          'string'
+          'BigNumber',
+          'BN',
+          'String'
         ];
 
         const msg = `Invalid number format setting: "${val}": ` +

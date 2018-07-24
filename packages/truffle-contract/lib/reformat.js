@@ -14,9 +14,9 @@ const _convertNumber = function(val, format){
   const badFormatMsg = `Attempting to convert to unknown number format: ${format}`;
 
   switch(format){
-    case 'bignumber': return new BigNumber(val);
-    case 'bn':        return web3Utils.toBN(val);
-    case 'string':    return val;
+    case 'BigNumber': return new BigNumber(val);
+    case 'BN':        return web3Utils.toBN(val);
+    case 'String':    return val;
     default:          throw new Error(badFormatMsg);
   }
 }
