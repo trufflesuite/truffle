@@ -1,6 +1,7 @@
 pragma solidity ^0.4.22;
 
 contract Example {
+  bytes32 public hash;
   uint public value;
   uint public counter;
   bool public fallbackTriggered;
@@ -54,11 +55,13 @@ contract Example {
     return value * multiplier;
   }
 
-  function overloadedSet(uint val) {
+  function overloadedSet(bytes32 h, uint val) {
+    hash = h;
     value = val;
   }
 
-  function overloadedSet(uint val, uint multiplier) {
+  function overloadedSet(bytes32 h, uint val, uint multiplier) {
+    hash = h;
     value = val * multiplier;
   }
 

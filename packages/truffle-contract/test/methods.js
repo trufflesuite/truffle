@@ -269,20 +269,29 @@ describe("Methods", function() {
     });
 
     it("should execute overloaded solidity fn sends", async function() {
+      let hash;
       let value;
       const example = await Example.new(1);
 
       value = await example.value.call();
       assert.equal(parseInt(value), 1, "Starting value should be 1");
 
-      await example.methods['overloadedSet(uint256)'](5);
+      let helloHash = web3.utils.soliditySha3('hello');
+      await example.methods['overloadedSet(bytes32,uint256)'](helloHash, 5);
 
+      hash = await example.hash.call();
       value = await example.value.call();
+
+      assert.equal(hash, helloHash)
       assert.equal(parseInt(value), 5, "Ending value should be five");
 
-      await example.methods['overloadedSet(uint256,uint256)'](5, 5);
+      goodbyeHash = web3.utils.soliditySha3('goodbye');
+      await example.methods['overloadedSet(bytes32,uint256,uint256)'](goodbyeHash, 5, 5);
 
+      hash = await example.hash.call();
       value = await example.value.call();
+
+      assert.equal(hash, goodbyeHash);
       assert.equal(parseInt(value), 25, "Ending value should be twenty five");
     });
 
