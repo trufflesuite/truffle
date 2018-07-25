@@ -13,7 +13,6 @@ module.exports = {
   publish: require("./publish"),
   //digest: require("./digest"),
   networks: require("./networks"),
-  serve: require("./serve"),
   exec: require("./exec"),
   unbox: require("./unbox"),
   version: require("./version"),
