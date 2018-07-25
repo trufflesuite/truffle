@@ -164,8 +164,9 @@ var Test = {
           resolver: test_resolver,
           quiet: false,
           quietWrite: true
-        }), function(err, abstractions, paths) {
+        }), function(err, result) {
           if (err) return reject(err);
+          const paths = result.outputs.solc;
           accept(paths);
         });
       });

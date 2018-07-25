@@ -4,7 +4,7 @@ var async = require("async");
 var fs = require("fs");
 var mkdirp = require("mkdirp");
 var path = require("path");
-var promisify = require("util").promisify;
+var { callbackify, promisify } = require("util");
 var Config = require("truffle-config");
 var solcCompile = require("truffle-compile");
 var expect = require("truffle-expect");
@@ -62,10 +62,8 @@ var Contracts = {
   // network_id: network id to link saved contract artifacts.
   // quiet: Boolean. Suppress output. Defaults to false.
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
-  compile: function(options, callback) {
+  compile: callbackify(async function(options) {
     const config = prepareConfig(options);
-
-    const writeContracts = promisify(this.write_contracts);
 
     // convert to promise to compile+write
     const compilations = Object.keys(config.compilers)
@@ -77,64 +75,52 @@ var Contracts = {
           ? compile.all
           : compile.necessary;
 
-        let [contracts, paths] = await multiPromisify(compileFunc)(config);
-        paths = paths || [];
+        let [contracts, output] = await multiPromisify(compileFunc)(config);
 
-        let abstractions = (contracts && Object.keys(contracts).length > 0)
-          ? await writeContracts(contracts, config)
-          : {}
+        if (contracts && Object.keys(contracts).length > 0) {
+          await this.writeContracts(contracts, config)
+        }
 
-        return { compiler, abstractions, paths };
+        return { compiler, contracts, output };
       });
 
     const collect = async (compilations) => {
-      let paths = [];
-      let abstractions = {};
+      let result = {
+        outputs: {},
+        contracts: {}
+      }
 
       for (let compilation of await Promise.all(compilations)) {
-        let {
-          compiler,
-          abstractions: newAbstractions,
-          paths: newPaths
-        } = compilation;
+        let { compiler, output, contracts } = compilation;
 
-        paths = paths.concat(newPaths);
+        result.outputs[compiler] = output;
 
-        for (let [ name, abstraction ] of Object.entries(newAbstractions)) {
-          abstractions[name] = abstraction;
+        for (let [ name, abstraction ] of Object.entries(contracts)) {
+          result.contracts[name] = abstraction;
         }
 
       }
 
-      return { paths, abstractions };
+      return result;
     }
 
-    collect(compilations)
-      .then( ({abstractions, paths}) => callback(null, abstractions, paths) )
-      .catch( (err) => callback(err) );
-  },
+    return await collect(compilations);
+  }),
 
-  write_contracts: function(contracts, options, callback) {
+  writeContracts: async function(contracts, options) {
     var logger = options.logger || console;
 
-    mkdirp(options.contracts_build_directory, function(err, result) {
-      if (err != null) {
-        callback(err);
-        return;
-      }
+    const result = await promisify(mkdirp)(options.contracts_build_directory);
 
-      if (options.quiet != true && options.quietWrite != true) {
-        logger.log("Writing artifacts to ." + path.sep + path.relative(options.working_directory, options.contracts_build_directory) + OS.EOL);
-      }
+    if (options.quiet != true && options.quietWrite != true) {
+      logger.log("Writing artifacts to ." + path.sep + path.relative(options.working_directory, options.contracts_build_directory) + OS.EOL);
+    }
 
-      var extra_opts = {
-        network_id: options.network_id
-      };
+    var extra_opts = {
+      network_id: options.network_id
+    };
 
-      options.artifactor.saveAll(contracts, extra_opts).then(function() {
-        callback(null, contracts);
-      }).catch(callback);
-    });
+    await options.artifactor.saveAll(contracts, extra_opts);
   }
 };
 

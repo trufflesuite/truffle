@@ -52,8 +52,9 @@ describe("compile", function() {
     Contracts.compile(config.with({
       all: false,
       quiet: true
-    }), function(err, contracts) {
+    }), function(err, result) {
       if (err) return done(err);
+      let { contracts } = result;
 
       assert.equal(Object.keys(contracts).length, 3, "Didn't compile the expected number of contracts");
       done();
@@ -66,8 +67,9 @@ describe("compile", function() {
     Contracts.compile(config.with({
       all: false,
       quiet: true
-    }), function(err, contracts) {
+    }), function(err, result) {
       if (err) return done(err);
+      let { contracts } = result;
 
       assert.equal(Object.keys(contracts).length, 0, "Compiled a contract even though we weren't expecting it");
       done();
@@ -87,8 +89,9 @@ describe("compile", function() {
     Contracts.compile(config.with({
       all: false,
       quiet: true
-    }), function(err, contracts) {
+    }), function(err, result) {
       if (err) return done(err);
+      let { contracts } = result;
 
       assert.equal(Object.keys(contracts).length, 2, "Expected MetaCoin and ConvertLib to be compiled");
 

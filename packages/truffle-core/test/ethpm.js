@@ -155,8 +155,9 @@ describe.skip('EthPM integration', function() {
       Contracts.compile(config.with({
         all: true,
         quiet: true
-      }), function(err, contracts) {
+      }), function(err, result) {
         if (err) return done(err);
+        let { contracts } = result;
 
         assert.isNotNull(contracts["owned"]);
         assert.isNotNull(contracts["transferable"]);
