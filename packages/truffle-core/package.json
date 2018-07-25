@@ -27,7 +27,6 @@
     "safe-eval": "^0.3.0",
     "serve-static": "^1.10.0",
     "source-map-support": "^0.5.3",
-    "spawn-args": "^0.1.0",
     "temp": "^0.8.3",
     "truffle-artifactor": "^3.0.7",
     "truffle-box": "^1.0.7",

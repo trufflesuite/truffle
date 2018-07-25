@@ -3,7 +3,6 @@ module.exports = {
   compile: require("./compile"),
   migrate: require("./migrate"),
   deploy: require("./deploy"),
-  build: require("./build"),
   test: require("./test"),
   debug: require("./debug"),
   opcode: require("./opcode"),
