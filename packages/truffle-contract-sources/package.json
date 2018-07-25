@@ -21,7 +21,8 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle-contract-sources#readme",
   "dependencies": {
-    "node-dir": "0.1.17"
+    "debug": "^3.1.0",
+    "glob": "^7.1.2"
   },
   "publishConfig": {
     "access": "public"

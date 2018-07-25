@@ -11,7 +11,6 @@ var TestResolver = require("./testing/testresolver");
 var TestSource = require("./testing/testsource");
 var SolidityTest = require("./testing/soliditytest");
 var expect = require("truffle-expect");
-var find_contracts = require("truffle-contract-sources");
 var Migrate = require("truffle-migrate");
 var Profiler = require("truffle-compile/profiler.js");
 var async = require("async");
