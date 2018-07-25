@@ -1,14 +1,57 @@
+var debug = require("debug")("workflow-compile");
+
 var async = require("async");
 var fs = require("fs");
 var mkdirp = require("mkdirp");
 var path = require("path");
+var promisify = require("util").promisify;
 var Config = require("truffle-config");
-var compile = require("truffle-compile");
+var solcCompile = require("truffle-compile");
 var expect = require("truffle-expect");
 var _ = require("lodash");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
 var OS = require("os");
+
+const SUPPORTED_COMPILERS = {
+  "solc": solcCompile,
+};
+
+function prepareConfig(options) {
+  expect.options(options, [
+    "contracts_build_directory"
+  ]);
+
+  expect.one(options, [
+    "contracts_directory",
+    "files"
+  ]);
+
+  // Use a config object to ensure we get the default sources.
+  const config = Config.default().merge(options);
+
+  if (!config.resolver) {
+    config.resolver = new Resolver(config);
+  }
+
+  if (!config.artifactor) {
+    config.artifactor = new Artifactor(config.contracts_build_directory);
+  }
+
+  return config;
+}
+
+function multiPromisify (func) {
+  return (...args) => new Promise( (accept, reject) => {
+    const callback = (err, ...results) => {
+      if (err) reject(err);
+
+      accept(results);
+    };
+
+    func(...args, callback);
+  });
+}
 
 var Contracts = {
 
@@ -20,45 +63,55 @@ var Contracts = {
   // quiet: Boolean. Suppress output. Defaults to false.
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
   compile: function(options, callback) {
-    var self = this;
+    const config = prepareConfig(options);
 
-    expect.options(options, [
-      "contracts_build_directory"
-    ]);
+    const writeContracts = promisify(this.write_contracts);
 
-    expect.one(options, [
-      "contracts_directory",
-      "files"
-    ]);
+    // convert to promise to compile+write
+    const compilations = Object.keys(config.compilers)
+      .map(async (compiler) => {
+        const compile = SUPPORTED_COMPILERS[compiler];
+        if (!compile) throw new Error("Unsupported compiler: " + name);
 
-    // Use a config object to ensure we get the default sources.
-    var config = Config.default().merge(options);
+        const compileFunc = (config.all === true || config.compileAll === true)
+          ? compile.all
+          : compile.necessary;
 
-    if (!config.resolver) {
-      config.resolver = new Resolver(config);
-    }
+        let [contracts, paths] = await multiPromisify(compileFunc)(config);
+        paths = paths || [];
 
-    if (!config.artifactor) {
-      config.artifactor = new Artifactor(config.contracts_build_directory);
-    }
+        let abstractions = (contracts && Object.keys(contracts).length > 0)
+          ? await writeContracts(contracts, config)
+          : {}
 
-    function finished(err, contracts, paths) {
-      if (err) return callback(err);
+        return { compiler, abstractions, paths };
+      });
 
-      if (contracts != null && Object.keys(contracts).length > 0) {
-        self.write_contracts(contracts, config, function(err, abstractions) {
-          callback(err, abstractions, paths);
-        });
-      } else {
-        callback(null, [], paths);
+    const collect = async (compilations) => {
+      let paths = [];
+      let abstractions = {};
+
+      for (let compilation of await Promise.all(compilations)) {
+        let {
+          compiler,
+          abstractions: newAbstractions,
+          paths: newPaths
+        } = compilation;
+
+        paths = paths.concat(newPaths);
+
+        for (let [ name, abstraction ] of Object.entries(newAbstractions)) {
+          abstractions[name] = abstraction;
+        }
+
       }
-    };
 
-    if (config.all === true || config.compileAll === true) {
-      compile.all(config, finished);
-    } else {
-      compile.necessary(config, finished);
+      return { paths, abstractions };
     }
+
+    collect(compilations)
+      .then( ({abstractions, paths}) => callback(null, abstractions, paths) )
+      .catch( (err) => callback(err) );
   },
 
   write_contracts: function(contracts, options, callback) {
