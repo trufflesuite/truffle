@@ -23,8 +23,6 @@ var command = {
     var excluded = [
       "console",
       "init",
-      "watch",
-      "serve",
       "develop"
     ];
 
