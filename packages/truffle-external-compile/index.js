@@ -1,6 +1,6 @@
 'use strict';
 
-const exec = require('child_process').exec;
+const { exec, execSync } = require('child_process');
 const path = require("path");
 const { callbackify, promisify } = require("util");
 const glob = promisify(require("glob"));
@@ -8,8 +8,9 @@ const fs = require("fs");
 const expect = require("truffle-expect");
 const debug = require("debug")("external-compile");
 
-const runCompile = promisify(function (command, cwd, logger, callback) {
-  const child = exec(command, { cwd });
+const runCommand = promisify(function (command, options, callback) {
+  const { cwd, logger, input } = options;
+  const child = exec(command, { cwd, input });
 
   child.stdout.on('data', function(data) {
     data = data.toString().replace(/\n$/, '');
@@ -48,17 +49,24 @@ const compile = callbackify(async function(options) {
   ]);
 
   const { command, targets } = options.compilers.external;
+  const cwd = options.working_directory;
+  const logger = options.logger;
 
   debug("running compile command: %s", command);
-  await runCompile(command, options.working_directory, options.logger);
+  await runCommand(command, { cwd, logger });
 
   const contracts = {};
   for (let target of targets) {
-    const pattern = path.join(options.working_directory, target.path);
-    for (let artifact of await glob( pattern, { follow: true })) {
-      debug("processing artifact: %s", artifact);
+    const pattern = path.join(cwd, target.path);
 
-      let contract = JSON.parse(fs.readFileSync(artifact));
+    for (let preprocessed of await glob( pattern, { follow: true })) {
+      debug("processing target: %s", preprocessed);
+      const input = fs.readFileSync(preprocessed).toString();
+
+      const output = (target.command)
+        ? execSync(target.command, { cwd, input })
+        : input;
+      const contract = JSON.parse(output);
       contracts[contract.contractName] = contract;
     }
   }

@@ -10,9 +10,10 @@ In your Truffle config (`truffle.js`):
 module.exports = {
   compilers: {
     external: {
-      command: "<command-to-run>",
+      command: "<compilation-command>",
       targets: [{
-        path: "relative/globbed/path/to/artifacts/*.json"
+        path: "<relative/globbed/path/to/outputs/*.output>",
+        command: "<artifact-generation-command>"
       }]
     }
   }

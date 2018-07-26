@@ -5,7 +5,8 @@ module.exports = {
         "--compiler=solc " +
         "--contracts_build_directory=external",
       targets: [{
-        path: "external/*.json"
+        path: "external/*.json",
+        command: "cat"
       }]
     }
   },
