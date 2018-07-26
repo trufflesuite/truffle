@@ -65,24 +65,27 @@ var Contracts = {
   compile: callbackify(async function(options) {
     const config = prepareConfig(options);
 
+    const compilers = (config.compiler)
+      ? [config.compiler]
+      : Object.keys(config.compilers);
+
     // convert to promise to compile+write
-    const compilations = Object.keys(config.compilers)
-      .map(async (compiler) => {
-        const compile = SUPPORTED_COMPILERS[compiler];
-        if (!compile) throw new Error("Unsupported compiler: " + name);
+    const compilations = compilers.map(async (compiler) => {
+      const compile = SUPPORTED_COMPILERS[compiler];
+      if (!compile) throw new Error("Unsupported compiler: " + compiler);
 
-        const compileFunc = (config.all === true || config.compileAll === true)
-          ? compile.all
-          : compile.necessary;
+      const compileFunc = (config.all === true || config.compileAll === true)
+        ? compile.all
+        : compile.necessary;
 
-        let [contracts, output] = await multiPromisify(compileFunc)(config);
+      let [contracts, output] = await multiPromisify(compileFunc)(config);
 
-        if (contracts && Object.keys(contracts).length > 0) {
-          await this.writeContracts(contracts, config)
-        }
+      if (contracts && Object.keys(contracts).length > 0) {
+        await this.writeContracts(contracts, config)
+      }
 
-        return { compiler, contracts, output };
-      });
+      return { compiler, contracts, output };
+    });
 
     const collect = async (compilations) => {
       let result = {
