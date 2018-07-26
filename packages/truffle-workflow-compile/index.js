@@ -7,6 +7,7 @@ var path = require("path");
 var { callbackify, promisify } = require("util");
 var Config = require("truffle-config");
 var solcCompile = require("truffle-compile");
+var externalCompile = require("truffle-external-compile");
 var expect = require("truffle-expect");
 var _ = require("lodash");
 var Resolver = require("truffle-resolver");
@@ -15,6 +16,7 @@ var OS = require("os");
 
 const SUPPORTED_COMPILERS = {
   "solc": solcCompile,
+  "external": externalCompile,
 };
 
 function prepareConfig(options) {
