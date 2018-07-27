@@ -62,13 +62,31 @@ const compile = callbackify(async function(options) {
     if (target.path != undefined) {
       const pattern = path.join(cwd, target.path);
 
+      // by default, pipe `target.path` contents to `target.command` stdin
+      // otherwise, append as argument
+      if (target.stdin == undefined) {
+        target.stdin = true;
+      } else {
+        target.stdin = false;
+      }
+
       for (let preprocessed of await glob( pattern, { follow: true })) {
         debug("processing target: %s", preprocessed);
-        const input = fs.readFileSync(preprocessed).toString();
 
-        const output = (target.command)
-          ? execSync(target.command, { cwd, input })
+        let input, command, execOptions;
+        if (target.stdin) {
+          input = fs.readFileSync(preprocessed).toString();
+          command = target.command;
+          execOptions = { cwd, input };
+        } else {
+          command = `${target.command} ${preprocessed}`;
+          execOptions = { cwd };
+        }
+
+        const output = (command)
+          ? execSync(command, execOptions)
           : input;
+
         const contract = JSON.parse(output);
         contracts[contract.contractName] = contract;
       }
