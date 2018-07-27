@@ -1,12 +1,22 @@
 module.exports = {
   compilers: {
     external: {
-      command: "truffle compile " +
-        "--compiler=solc " +
-        "--contracts_build_directory=external",
+      command: "./compile-external",
       targets: [{
-        path: "external/*.json",
-        command: "cat"
+        path: "external/M*.json",  // MetaCoin and Migrations
+        command: "cat -"
+      }, {
+        path: "external/ConvertLib.json",
+        command: "cat",
+        stdin: false
+      }, {
+        properties: {
+          contractName: "ExtraMetaCoin"
+        },
+        fileProperties: {
+          abi: "external/MetaCoin.abi",
+          bytecode: "external/MetaCoin.bytecode"
+        }
       }]
     }
   },

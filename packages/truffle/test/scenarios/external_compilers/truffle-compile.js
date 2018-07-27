@@ -46,6 +46,7 @@ describe("`truffle compile` as external", function() {
       assert(fs.existsSync(path.join(config.contracts_build_directory, "MetaCoin.json")));
       assert(fs.existsSync(path.join(config.contracts_build_directory, "ConvertLib.json")));
       assert(fs.existsSync(path.join(config.contracts_build_directory, "Migrations.json")));
+      assert(fs.existsSync(path.join(config.contracts_build_directory, "ExtraMetaCoin.json")));
 
       done();
     });
@@ -64,10 +65,11 @@ describe("`truffle compile` as external", function() {
       var MetaCoin = contract(require(path.join(config.contracts_build_directory, "MetaCoin.json")));
       var ConvertLib = contract(require(path.join(config.contracts_build_directory, "ConvertLib.json")));
       var Migrations = contract(require(path.join(config.contracts_build_directory, "Migrations.json")));
+      var ExtraMetaCoin = contract(require(path.join(config.contracts_build_directory, "ExtraMetaCoin.json")));
 
       var promises = [];
 
-      [MetaCoin, ConvertLib, Migrations].forEach(function(abstraction) {
+      [MetaCoin, ConvertLib, Migrations, ExtraMetaCoin].forEach(function(abstraction) {
         abstraction.setProvider(config.provider);
 
         promises.push(abstraction.deployed().then(function(instance) {

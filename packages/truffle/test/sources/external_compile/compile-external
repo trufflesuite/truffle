@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+truffle compile --compiler=solc --contracts_build_directory=external
+
+cat ./external/MetaCoin.json | jq '.abi' > ./external/MetaCoin.abi
+cat ./external/MetaCoin.json | jq '.bytecode' > ./external/MetaCoin.bytecode

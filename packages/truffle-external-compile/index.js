@@ -1,7 +1,7 @@
 'use strict';
 
 const { exec, execSync } = require('child_process');
-const path = require("path");
+const resolve = require("path").resolve;
 const { callbackify, promisify } = require("util");
 const glob = promisify(require("glob"));
 const fs = require("fs");
@@ -33,6 +33,96 @@ const runCommand = promisify(function (command, options, callback) {
   });
 });
 
+async function processTargets (targets, cwd) {
+  const contracts = {};
+  for (let target of targets) {
+    let targetContracts = await processTarget(target, cwd);
+    for (let [name, contract] of Object.entries(targetContracts)) {
+      contracts[name] = contract;
+    }
+  }
+
+  return contracts;
+}
+
+async function processTarget (target, cwd) {
+  const usesPath = target.path != undefined;
+  const usesCommand = target.command != undefined;
+  const usesStdin = target.stdin || target.stdin == undefined;  // default true
+  const usesProperties = target.properties || target.fileProperties;
+
+  if (usesProperties && usesPath) {
+    throw new Error(
+      "External compilation target cannot define both properties and path"
+    );
+  }
+
+  if (usesProperties && usesCommand) {
+    throw new Error(
+      "External compilation target cannot define both properties and command"
+    );
+  }
+
+
+  if (usesCommand && !usesPath) {
+    // just run command
+    const output = execSync(target.command, { cwd });
+    const contract = JSON.parse(output);
+    return { [contract.contractName]: contract };
+  }
+
+  if (usesPath && !glob.hasMagic(target.path)) {
+    // individual file
+    const filename = resolve(cwd, target.path);
+    let input, command, execOptions;
+    if (usesStdin) {
+      input = fs.readFileSync(filename).toString();
+      command = target.command;
+      execOptions = { cwd, input };
+    } else {
+      command = `${target.command} ${filename}`;
+      execOptions = { cwd };
+    }
+
+    const output = (usesCommand)
+      ? execSync(command, execOptions)
+      : input;
+
+    const contract = JSON.parse(output);
+    return { [contract.contractName]: contract };
+  }
+
+  if (usesPath && glob.hasMagic(target.path)) {
+    // glob expression, recurse after expansion
+    let paths = await glob(target.path, { cwd, follow: true });
+    // copy target properties, overriding path with expanded form
+    let targets = paths.map(path => Object.assign({}, target, { path }));
+    return await processTargets(targets, cwd);
+  }
+
+  if (usesProperties) {
+    // contract properties listed individually
+    const contract = Object.assign({}, target.properties || {});
+
+    for (let [key, path] of Object.entries(target.fileProperties || {})) {
+      const contents = fs.readFileSync(resolve(cwd, path)).toString();
+      let value;
+      try {
+        value = JSON.parse(contents);
+      } catch (e) {
+        value = contents;
+      }
+
+      contract[key] = value;
+    }
+
+    if (!contract.contractName) {
+      throw new Error("External compilation target must specify contractName");
+    }
+    return { [contract.contractName]: contract };
+  }
+}
+
 const compile = callbackify(async function(options) {
   if (options.logger == null) {
     options.logger = console;
@@ -55,49 +145,7 @@ const compile = callbackify(async function(options) {
   debug("running compile command: %s", command);
   await runCommand(command, { cwd, logger });
 
-  const contracts = {};
-  for (let target of targets) {
-    expect.one(target, [ "path", "command" ]);  // also allows both
-
-    if (target.path != undefined) {
-      const pattern = path.join(cwd, target.path);
-
-      // by default, pipe `target.path` contents to `target.command` stdin
-      // otherwise, append as argument
-      if (target.stdin == undefined) {
-        target.stdin = true;
-      } else {
-        target.stdin = false;
-      }
-
-      for (let preprocessed of await glob( pattern, { follow: true })) {
-        debug("processing target: %s", preprocessed);
-
-        let input, command, execOptions;
-        if (target.stdin) {
-          input = fs.readFileSync(preprocessed).toString();
-          command = target.command;
-          execOptions = { cwd, input };
-        } else {
-          command = `${target.command} ${preprocessed}`;
-          execOptions = { cwd };
-        }
-
-        const output = (command)
-          ? execSync(command, execOptions)
-          : input;
-
-        const contract = JSON.parse(output);
-        contracts[contract.contractName] = contract;
-      }
-    } else {
-      const output = execSync(target.command, { cwd });
-      const contract = JSON.parse(output);
-      contracts[contract.contractName] = contract;
-    }
-  }
-
-  return contracts;
+  return await processTargets(targets, cwd);
 });
 
 compile.all = compile;
