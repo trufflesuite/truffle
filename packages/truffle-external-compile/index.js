@@ -57,15 +57,23 @@ const compile = callbackify(async function(options) {
 
   const contracts = {};
   for (let target of targets) {
-    const pattern = path.join(cwd, target.path);
+    expect.one(target, [ "path", "command" ]);  // also allows both
 
-    for (let preprocessed of await glob( pattern, { follow: true })) {
-      debug("processing target: %s", preprocessed);
-      const input = fs.readFileSync(preprocessed).toString();
+    if (target.path != undefined) {
+      const pattern = path.join(cwd, target.path);
 
-      const output = (target.command)
-        ? execSync(target.command, { cwd, input })
-        : input;
+      for (let preprocessed of await glob( pattern, { follow: true })) {
+        debug("processing target: %s", preprocessed);
+        const input = fs.readFileSync(preprocessed).toString();
+
+        const output = (target.command)
+          ? execSync(target.command, { cwd, input })
+          : input;
+        const contract = JSON.parse(output);
+        contracts[contract.contractName] = contract;
+      }
+    } else {
+      const output = execSync(target.command, { cwd });
       const contract = JSON.parse(output);
       contracts[contract.contractName] = contract;
     }
