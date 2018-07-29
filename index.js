@@ -1,5 +1,5 @@
 var bip39 = require("bip39");
-var hdkey = require('ethereumjs-wallet/hdkey');
+var hdkey = require('ethereumjs-wallet/dist/hdkey');
 var ProviderEngine = require("web3-provider-engine");
 var FiltersSubprovider = require('web3-provider-engine/subproviders/filters.js');
 var HookedSubprovider = require('web3-provider-engine/subproviders/hooked-wallet.js');
