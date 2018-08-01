@@ -5,7 +5,7 @@ var solc = require("solc");
 
 // Clean up after solidity. Only remove solidity's listener,
 // which happens to be the first.
-process.removeListener("uncaughtException", process.listeners("uncaughtException")[0]);
+process.removeListener("uncaughtException", process.listeners("uncaughtException")[0] || function() {});
 
 var fs = require("fs");
 var requireNoCache = require("require-nocache")(module);
