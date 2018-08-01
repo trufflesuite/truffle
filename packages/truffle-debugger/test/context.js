@@ -22,14 +22,14 @@ contract OuterContract {
 
   InnerContract inner;
 
-  function OuterContract(address _inner) public {
+  constructor(address _inner) public {
     inner = InnerContract(_inner);
   }
 
   function run() public {
     inner.run();
 
-    Outer();
+    emit Outer();
   }
 }
 `;
@@ -41,7 +41,7 @@ contract InnerContract {
   event Inner();
 
   function run() public {
-    Inner();
+    emit Inner();
   }
 }
 `;
