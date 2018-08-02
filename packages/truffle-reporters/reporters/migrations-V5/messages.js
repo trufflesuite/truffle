@@ -204,6 +204,12 @@ class MigrationsMessages{
         return output;
       },
 
+      // Transactions
+      endTransaction: () => {
+        if(reporter.blockSpinner) reporter.blockSpinner.stop();
+
+        return `   > ${data.message}`;
+      },
 
       // Libraries
       linking: () => {
