@@ -353,6 +353,8 @@ class Reporter {
       : message;
   }
 
+  // --------------------------  Transaction Handlers  ------------------------------------------
+
   /**
    * Run on `startTransaction` event. This is fired by migrations on save
    * but could also be fired within a migrations script by a user.
@@ -370,8 +372,6 @@ class Reporter {
 
     this.blockSpinner.start();
   }
-
-  // ----------------------------  Library Event Handlers ------------------------------------------
 
   /**
    * Run after a start transaction
