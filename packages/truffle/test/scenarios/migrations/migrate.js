@@ -57,6 +57,8 @@ describe("migrate (success)", function() {
       assert(output.includes("Replacing 'UsesExample'"))
       assert(output.includes("PayableExample"));
       assert(output.includes("1 ETH"));
+      assert(output.includes("Saving migration"));
+      assert(output.includes("Saving artifacts"));
 
       const location = path.join(config.contracts_build_directory, "UsesExample.json");
       const artifact = require(location);

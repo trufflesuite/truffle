@@ -94,7 +94,7 @@ class Migration {
       const Migrations = resolver.require("./Migrations.sol");
 
       if (Migrations && Migrations.isDeployed()) {
-        const message = `Saving migration (#${self.number}) to chain.`;
+        const message = `Saving migration to chain.`;
 
         if (!this.dryRun){
           const data = { message: message }
