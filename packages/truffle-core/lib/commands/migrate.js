@@ -157,7 +157,7 @@ var command = {
           };
 
         // Production: dry-run then real run
-        } else if (production) {
+        } else if (production && !conf.skipDryRun) {
 
           const currentBuild = conf.contracts_build_directory;
           conf.dryRun = true;
