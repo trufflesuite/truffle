@@ -37,14 +37,14 @@ const _convertNumberArray = function(arr, format){
  *   - object (with index keys and optionally, named keys)
  *   - array
  *   - single primitive
- * @param  {String|Object|Array} result  web3 call result
- * @param  {Array}               outputs ABI outputs array
+ * @param  {String|Object|Array} result      web3 call result
+ * @param  {Array}               abiSegment  event params OR .call outputs
  * @return {String|Object|Array} reformatted result
  */
-const callOutput = function(result, outputs){
+const numbers = function(result, abiSegment){
   const format = this.numberFormat;
 
-  outputs.forEach((output, i) => {
+  abiSegment.forEach((output, i) => {
 
     // output is a number type (uint || int);
     if (output.type.includes('int')){
@@ -85,6 +85,6 @@ const callOutput = function(result, outputs){
 }
 
 module.exports = {
-  callOutput: callOutput
+  numbers: numbers
 }
 

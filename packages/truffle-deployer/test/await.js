@@ -103,8 +103,8 @@ describe("Deployer (async / await)", function() {
     eventOptions = {fromBlock: 0, toBlock: 'latest'};
     const events = await usesLibrary.getPastEvents("allEvents", eventOptions);
 
-    assert(events[0].args.eventID === '5');
-    assert(events[1].args.eventID === '7');
+    assert(events[0].args.eventID.toNumber() === 5);
+    assert(events[1].args.eventID.toNumber() === 7);
   });
 });
 

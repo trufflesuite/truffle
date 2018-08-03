@@ -9,6 +9,7 @@ contract Example {
   event ExampleEvent(address indexed _from, uint num);
   event ContractAddressEvent(address _contract);
   event SpecialEvent();
+  event NumberEvent(int numA, int indexed numB, address addrC, uint numD, uint);
 
   constructor(uint val) {
     // Constructor revert
@@ -83,6 +84,10 @@ contract Example {
 
   function triggerContractAddressEvent(){
     ContractAddressEvent(address(this));
+  }
+
+  function triggerNumberEvent(int a, int b, address c, uint d, uint e){
+    NumberEvent(a,b,c,d,e);
   }
 
   function triggerRequireError() {
