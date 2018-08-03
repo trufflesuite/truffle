@@ -74,6 +74,9 @@ module.exports = {
         options.logger.log(" <   " + JSON.stringify(result, null, 2).split("\n").join("\n <   "));
       }
 
+      // aleth sometimes does these horrible things to us
+      if (result.result === '0x') result.result = '';
+
       return [payload, error, result];
     };
   },
