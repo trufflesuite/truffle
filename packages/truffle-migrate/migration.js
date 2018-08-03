@@ -94,9 +94,20 @@ class Migration {
       const Migrations = resolver.require("./Migrations.sol");
 
       if (Migrations && Migrations.isDeployed()) {
-        await self.emitter.emit('saveMigration', self.number);
+        const message = `Saving migration to chain.`;
+
+        if (!this.dryRun){
+          const data = { message: message }
+          await self.emitter.emit('startTransaction', data);
+        }
+
         const migrations = await Migrations.deployed();
-        await migrations.setCompleted(self.number);
+        const receipt = await migrations.setCompleted(self.number);
+
+        if (!this.dryRun){
+          const data = {receipt: receipt, message: message };
+          await self.emitter.emit('endTransaction', data);
+        }
       }
 
       await self.emitter.emit('postMigrate', self.isLast);

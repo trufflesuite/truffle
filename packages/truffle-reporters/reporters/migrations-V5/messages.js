@@ -204,6 +204,12 @@ class MigrationsMessages{
         return output;
       },
 
+      // Transactions
+      endTransaction: () => {
+        if(reporter.blockSpinner) reporter.blockSpinner.stop();
+
+        return `   > ${data.message}`;
+      },
 
       // Libraries
       linking: () => {
@@ -250,9 +256,10 @@ class MigrationsMessages{
 
       postMigrate: () => {
         let output = '';
+        let deployments = reporter.summary[reporter.currentFileIndex].deployments;
 
-        if (!reporter.migration.dryRun)
-          output += `   * Saving artifacts\n`;
+        if (!reporter.migration.dryRun && deployments.length)
+          output += `   > Saving artifacts\n`;
 
         output += self.underline(37) + '\n' +
           `   > ${'Total cost:'.padEnd(15)} ${data.cost.padStart(15)} ETH\n`;
