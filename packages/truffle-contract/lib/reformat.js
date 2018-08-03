@@ -38,7 +38,7 @@ const _convertNumberArray = function(arr, format){
  *   - array
  *   - single primitive
  * @param  {String|Object|Array} result      web3 call result
- * @param  {Array}               abiSegment  event inputs OR .call outputs
+ * @param  {Array}               abiSegment  event params OR .call outputs
  * @return {String|Object|Array} reformatted result
  */
 const numbers = function(result, abiSegment){
