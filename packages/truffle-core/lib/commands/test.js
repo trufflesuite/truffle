@@ -106,7 +106,8 @@ var command = {
             port: 7545,
             network_id: 4447,
             mnemonic: "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
-            gasLimit: config.gas
+            gasLimit: config.gas,
+            noVMErrorsOnRPCResponse: true,
           };
 
           Develop.connectOrStart(ipcOptions, testrpcOptions, function(started, disconnect) {
