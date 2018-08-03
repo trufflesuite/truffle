@@ -4,7 +4,8 @@
   "description": "HD Wallet-enabled Web3 provider",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --timeout 5000"
+    "test": "mocha --timeout 5000",
+    "publish:web3-one": "npm publish --tag web3-one"
   },
   "repository": {
     "type": "git",
