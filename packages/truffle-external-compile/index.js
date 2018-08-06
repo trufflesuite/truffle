@@ -42,18 +42,20 @@ const runCommand = promisify(function (command, options, callback) {
 });
 
 function decodeContents (contents) {
-  // HACK to test if contents has binary data
-  // from https://stackoverflow.com/a/49773659
-  if (/\ufffd/.test(contents.toString())) {
-    return web3.utils.bytesToHex(contents);
-  }
+  // accepts JSON, a hex string, or raw binary
 
+  // JSON
   try {
     return JSON.parse(contents);
-  } catch (e) {
-    return contents;
+  } catch (e) { /* no-op */ }
+
+  // hex string
+  if (contents.toString().startsWith("0x")) {
+    return contents.toString();
   }
 
+  // raw binary
+  return web3.utils.bytesToHex(contents);
 }
 
 async function processTargets (targets, cwd) {

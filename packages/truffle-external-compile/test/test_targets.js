@@ -83,7 +83,7 @@ describe("Compilation Targets", () => {
     it("reads UTF-8 file properties", async () => {
       const contractName = "My😀Contract";
       const contractNameFile = "contractName";
-      const fileContents = contractName;
+      const fileContents = JSON.stringify(contractName);
 
       fs.writeFileSync(path.join(cwd, contractNameFile), fileContents);
 
