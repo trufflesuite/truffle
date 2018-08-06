@@ -1,12 +1,14 @@
 'use strict';
 
+const debug = require("debug")("external-compile");
 const { exec, execSync } = require('child_process');
 const resolve = require("path").resolve;
 const { callbackify, promisify } = require("util");
 const glob = promisify(require("glob"));
 const fs = require("fs");
 const expect = require("truffle-expect");
-const debug = require("debug")("external-compile");
+const web3 = {};
+web3.utils = require("web3-utils");
 
 const DEFAULT_ABI = [{
   payable: true,
@@ -38,6 +40,21 @@ const runCommand = promisify(function (command, options, callback) {
     callback();
   });
 });
+
+function decodeContents (contents) {
+  // HACK to test if contents has binary data
+  // from https://stackoverflow.com/a/49773659
+  if (/\ufffd/.test(contents.toString())) {
+    return web3.utils.bytesToHex(contents);
+  }
+
+  try {
+    return JSON.parse(contents);
+  } catch (e) {
+    return contents;
+  }
+
+}
 
 async function processTargets (targets, cwd) {
   const contracts = {};
@@ -111,13 +128,8 @@ async function processTarget (target, cwd) {
     const contract = Object.assign({}, target.properties || {});
 
     for (let [key, path] of Object.entries(target.fileProperties || {})) {
-      const contents = fs.readFileSync(resolve(cwd, path)).toString();
-      let value;
-      try {
-        value = JSON.parse(contents);
-      } catch (e) {
-        value = contents;
-      }
+      const contents = fs.readFileSync(resolve(cwd, path));
+      const value = decodeContents(contents);
 
       contract[key] = value;
     }

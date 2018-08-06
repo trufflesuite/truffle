@@ -1,19 +1,26 @@
+const debug = require("debug")("test:targets");
+
+const fs = require("fs");
+const path = require("path");
 const { promisify } = require("util");
 const temp = require("temp").track();
 const assert = require("chai").assert;
+const web3 = {};
+web3.utils = require("web3-utils");
 
 const { processTarget, DEFAULT_ABI } = require("..");
 
 describe("Compilation Targets", () => {
-  let outputDir;
+  let cwd;
 
   before("make temporary directory", async () => {
-    outputDir = await promisify(temp.mkdir)("external-targets");
+    cwd = await promisify(temp.mkdir)("external-targets");
   });
 
   describe("Property outputs", () => {
+    const contractName = "MyContract";
+
     it("includes default ABI when not specified", async () => {
-      const contractName = "MyContract";
       const abi = DEFAULT_ABI;
 
       const target = {
@@ -26,9 +33,72 @@ describe("Compilation Targets", () => {
         [contractName]: { contractName, abi },
       };
 
-      const actual = await processTarget(target, outputDir);
+      const actual = await processTarget(target, cwd);
 
-      assert.deepEqual(expected, actual);
+      assert.deepEqual(actual, expected);
+    });
+
+    it("reads JSON file properties", async () => {
+      const bytecode = "0x603160008181600b";
+      const bytecodeFile = "bytecode.json";
+      const fileContents = JSON.stringify(bytecode);
+
+      fs.writeFileSync(path.join(cwd, bytecodeFile), fileContents);
+
+      const target = {
+        properties: {
+          contractName
+        },
+        fileProperties: {
+          bytecode: bytecodeFile
+        }
+      };
+
+      const processed = await processTarget(target, cwd);
+
+      assert.equal(processed[contractName].bytecode, bytecode);
+    });
+
+    it("reads UTF-8 string file properties", async () => {
+      const bytecode = "0x603160008181600b";
+      const bytecodeFile = "bytecode";
+      const fileContents = bytecode;
+
+      fs.writeFileSync(path.join(cwd, bytecodeFile), fileContents);
+
+      const target = {
+        properties: {
+          contractName
+        },
+        fileProperties: {
+          bytecode: bytecodeFile
+        }
+      };
+
+      const processed = await processTarget(target, cwd);
+
+      assert.equal(processed[contractName].bytecode, bytecode);
+    });
+
+    it("reads raw binary file properties", async () => {
+      const bytecode = "0x603160008181600b";
+      const bytecodeFile = "bytecode.bin";
+      const fileContents = new Uint8Array(web3.utils.hexToBytes(bytecode));
+
+      fs.writeFileSync(path.join(cwd, bytecodeFile), fileContents);
+
+      const target = {
+        properties: {
+          contractName
+        },
+        fileProperties: {
+          bytecode: bytecodeFile
+        }
+      };
+
+      const processed = await processTarget(target, cwd);
+
+      assert.equal(processed[contractName].bytecode, bytecode);
     });
   });
 });
