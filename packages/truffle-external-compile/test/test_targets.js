@@ -59,7 +59,7 @@ describe("Compilation Targets", () => {
       assert.equal(processed[contractName].bytecode, bytecode);
     });
 
-    it("reads UTF-8 string file properties", async () => {
+    it("reads hex-string file properties", async () => {
       const bytecode = "0x603160008181600b";
       const bytecodeFile = "bytecode";
       const fileContents = bytecode;
@@ -78,6 +78,24 @@ describe("Compilation Targets", () => {
       const processed = await processTarget(target, cwd);
 
       assert.equal(processed[contractName].bytecode, bytecode);
+    });
+
+    it("reads UTF-8 file properties", async () => {
+      const contractName = "My😀Contract";
+      const contractNameFile = "contractName";
+      const fileContents = contractName;
+
+      fs.writeFileSync(path.join(cwd, contractNameFile), fileContents);
+
+      const target = {
+        fileProperties: {
+          contractName: contractNameFile
+        }
+      };
+
+      const processed = await processTarget(target, cwd);
+
+      assert.equal(processed[contractName].contractName, contractName);
     });
 
     it("reads raw binary file properties", async () => {
