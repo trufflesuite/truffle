@@ -8,6 +8,12 @@ const fs = require("fs");
 const expect = require("truffle-expect");
 const debug = require("debug")("external-compile");
 
+const DEFAULT_ABI = [{
+  payable: true,
+  stateMutability: "payable",
+  type: "fallback"
+}];
+
 const runCommand = promisify(function (command, options, callback) {
   const { cwd, logger, input } = options;
   const child = exec(command, { cwd, input });
@@ -119,6 +125,11 @@ async function processTarget (target, cwd) {
     if (!contract.contractName) {
       throw new Error("External compilation target must specify contractName");
     }
+
+    if (!contract.abi) {
+      contract.abi = DEFAULT_ABI;
+    }
+
     return { [contract.contractName]: contract };
   }
 }
@@ -148,7 +159,12 @@ const compile = callbackify(async function(options) {
   return await processTargets(targets, cwd);
 });
 
+// required public interface
 compile.all = compile;
 compile.necessary = compile;
+
+// specific exports
+compile.DEFAULT_ABI = DEFAULT_ABI;
+compile.processTarget = processTarget;
 
 module.exports = compile;

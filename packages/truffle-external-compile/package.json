@@ -15,7 +15,9 @@
     "type": "git",
     "url": "git+https://github.com/trufflesuite/truffle.git"
   },
-  "scripts": {},
+  "scripts": {
+    "test": "mocha"
+  },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
@@ -23,5 +25,10 @@
     "debug": "^3.1.0",
     "glob": "^7.1.2",
     "truffle-expect": "^0.0.4"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "5.2.0",
+    "temp": "^0.8.3"
   }
 }
