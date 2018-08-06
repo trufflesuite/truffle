@@ -21,12 +21,12 @@ const runCommand = promisify(function (command, options, callback) {
   const child = exec(command, { cwd, input });
 
   child.stdout.on('data', function(data) {
-    data = data.toString().replace(/\n$/, '');
+    data = data.toString().replace(/(\r|\n)+$/, '');
     logger.log(data);
   });
 
   child.stderr.on('data', function(data) {
-    data = data.toString().replace(/\n$/, '');
+    data = data.toString().replace(/(\r|\n)+$/, '');
     logger.log(data);
   });
 
