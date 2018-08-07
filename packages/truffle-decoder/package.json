@@ -1,0 +1,31 @@
+{
+  "name": "truffle-decoder",
+  "version": "0.1.0",
+  "description": "A library that provides both high and low level decoding of Ethereum contract variables",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trufflesuite/truffle.git"
+  },
+  "keywords": [
+    "ethereum",
+    "contract",
+    "state",
+    "decoder"
+  ],
+  "author": "Mike Seese",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "devDependencies": {
+    "typescript": "^3.0.1"
+  }
+}
