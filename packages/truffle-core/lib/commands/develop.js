@@ -94,7 +94,8 @@ var command = {
       port: 9545,
       network_id: 4447,
       mnemonic: mnemonic,
-      gasLimit: config.gas
+      gasLimit: config.gas,
+      noVMErrorsOnRPCResponse: true,
     };
 
     Develop.connectOrStart(ipcOptions, testrpcOptions, function(started) {

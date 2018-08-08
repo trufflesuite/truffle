@@ -36,6 +36,7 @@ function Config(truffle_directory, working_directory, network) {
     confirmations: 0,
     timeoutBlocks: 0,
     production: false,
+    skipDryRun: false,
     build: null,
     resolver: null,
     artifactor: null,
@@ -214,6 +215,18 @@ function Config(truffle_directory, working_directory, network) {
       },
       set: function(val) {
         throw new Error("Don't set config.timeoutBlocks directly. Instead, set config.networks and then config.networks[<network name>].timeoutBlocks")
+      }
+    },
+    skipDryRun: {
+      get: function(){
+        try {
+          return self.network_config.skipDryRun;
+        } catch (e) {
+          return false;
+        }
+      },
+      set: function(val) {
+        throw new Error("Don't set config.skipDryRun directly. Instead, set config.networks and then config.networks[<network name>].skipDryRun")
       }
     }
 

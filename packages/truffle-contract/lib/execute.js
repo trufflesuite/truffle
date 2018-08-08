@@ -117,7 +117,7 @@ var execute = {
 
           await constructor.detectNetwork();
           result = await fn(...args).call(params, defaultBlock);
-          result = reformat.callOutput.call(constructor, result, methodABI.outputs);
+          result = reformat.numbers.call(constructor, result, methodABI.outputs);
           resolve(result);
 
         } catch (err) {

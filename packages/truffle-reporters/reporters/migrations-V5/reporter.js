@@ -64,7 +64,8 @@ class Reporter {
 
     // Migration
     this.migration.emitter.on('preMigrate',          this.preMigrate.bind(this));
-    this.migration.emitter.on('saveMigration',       this.saveMigrate.bind(this));
+    this.migration.emitter.on('startTransaction',    this.startTransaction.bind(this));
+    this.migration.emitter.on('endTransaction',      this.endTransaction.bind(this));
     this.migration.emitter.on('postMigrate',         this.postMigrate.bind(this));
     this.migration.emitter.on('error',               this.error.bind(this));
 
@@ -77,6 +78,8 @@ class Reporter {
     this.deployer.emitter.on('transactionHash',      this.hash.bind(this));
     this.deployer.emitter.on('confirmation',         this.confirmation.bind(this));
     this.deployer.emitter.on('block',                this.block.bind(this));
+    this.deployer.emitter.on('startTransaction',     this.startTransaction.bind(this));
+    this.deployer.emitter.on('endTransaction',       this.endTransaction.bind(this));
   }
 
   /**
@@ -238,18 +241,6 @@ class Reporter {
   }
 
   /**
-   * Run when a migrations file deployment sequence has completed,
-   * before the migrations is saved to chain via Migrations.sol
-   * @param  {Object} data
-   */
-  async saveMigrate(data){
-    if (this.migration.dryRun) return;
-
-    const message = this.messages.steps('saving', data);
-    this.deployer.logger.log(message);
-  }
-
-  /**
    * Run after a migrations file has completed and the migration has been saved.
    * @param  {Boolean} isLast  true if this the last file in the sequence.
    */
@@ -360,6 +351,36 @@ class Reporter {
     return (data.log)
       ? this.deployer.logger.error(message)
       : message;
+  }
+
+  // --------------------------  Transaction Handlers  ------------------------------------------
+
+  /**
+   * Run on `startTransaction` event. This is fired by migrations on save
+   * but could also be fired within a migrations script by a user.
+   * @param  {Object} data
+   */
+  async startTransaction(data){
+    const message = data.message || 'Starting unknown transaction...';
+    this.deployer.logger.log();
+
+    this.blockSpinner = new ora({
+      text: message,
+      spinner: indentedSpinner,
+      color: 'red'
+    });
+
+    this.blockSpinner.start();
+  }
+
+  /**
+   * Run after a start transaction
+   * @param  {Object} data
+   */
+  async endTransaction(data){
+    data.message = data.message || 'Ending unknown transaction....';
+    const message = this.messages.steps('endTransaction', data);
+    this.deployer.logger.log(message);
   }
 
   // ----------------------------  Library Event Handlers ------------------------------------------
