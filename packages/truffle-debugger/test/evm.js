@@ -22,7 +22,7 @@ contract Outer {
 
   Inner inner;
 
-  function Outer(address _inner) {
+  constructor(address _inner) public {
     inner = Inner(_inner);
   }
 
