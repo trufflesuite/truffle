@@ -58,10 +58,10 @@ function decodeContents (contents) {
   return web3.utils.bytesToHex(contents);
 }
 
-async function processTargets (targets, cwd) {
+async function processTargets (targets, cwd, logger) {
   const contracts = {};
   for (let target of targets) {
-    let targetContracts = await processTarget(target, cwd);
+    let targetContracts = await processTarget(target, cwd, logger);
     for (let [name, contract] of Object.entries(targetContracts)) {
       contracts[name] = contract;
     }
@@ -70,7 +70,7 @@ async function processTargets (targets, cwd) {
   return contracts;
 }
 
-async function processTarget (target, cwd) {
+async function processTarget (target, cwd, logger) {
   const usesPath = target.path != undefined;
   const usesCommand = target.command != undefined;
   const usesStdin = target.stdin || target.stdin == undefined;  // default true
@@ -122,7 +122,7 @@ async function processTarget (target, cwd) {
     let paths = await glob(target.path, { cwd, follow: true });
     // copy target properties, overriding path with expanded form
     let targets = paths.map(path => Object.assign({}, target, { path }));
-    return await processTargets(targets, cwd);
+    return await processTargets(targets, cwd, logger);
   }
 
   if (usesProperties) {
@@ -142,6 +142,13 @@ async function processTarget (target, cwd) {
 
     if (!contract.abi) {
       contract.abi = DEFAULT_ABI;
+    }
+
+    if (!contract.bytecode && logger) {
+      logger.log(
+        "Warning: contract " + contract.contractName +
+        " does not specify bytecode. You won't be able to deploy it."
+      );
     }
 
     return { [contract.contractName]: contract };
@@ -170,7 +177,7 @@ const compile = callbackify(async function(options) {
   debug("running compile command: %s", command);
   await runCommand(command, { cwd, logger });
 
-  return await processTargets(targets, cwd);
+  return await processTargets(targets, cwd, logger);
 });
 
 // required public interface
