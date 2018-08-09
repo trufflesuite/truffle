@@ -15,7 +15,7 @@ function Config(truffle_directory, working_directory, network) {
 
   var default_tx_values = {
     gas: 6721975,
-    gasPrice: 100000000000, // 100 Shannon,
+    gasPrice: 20000000000, // 20 gwei,
     from: null,
   };
 
