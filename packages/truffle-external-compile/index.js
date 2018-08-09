@@ -7,6 +7,7 @@ const { callbackify, promisify } = require("util");
 const glob = promisify(require("glob"));
 const fs = require("fs");
 const expect = require("truffle-expect");
+const Schema = require("truffle-contract-schema");
 const web3 = {};
 web3.utils = require("web3-utils");
 
@@ -63,7 +64,7 @@ async function processTargets (targets, cwd, logger) {
   for (let target of targets) {
     let targetContracts = await processTarget(target, cwd, logger);
     for (let [name, contract] of Object.entries(targetContracts)) {
-      contracts[name] = contract;
+      contracts[name] = Schema.validate(contract);
     }
   }
 
