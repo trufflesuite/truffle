@@ -1,4 +1,6 @@
-⚠️ **This is an early draft. Details subject to change.** ⚠️
+**DO NOT MERGE** - this is here so people can do review stuff to it if they want to.
+
+⚠️ **Early draft. Details subject to change.** ⚠️
 
 # 🐘 🐘 V5 🐘 🐘  🐘
 
@@ -19,7 +21,7 @@ $ truffle compile --list releases --all    # Complete list of stable releases.
 
 ### Specify a solcjs version in `truffle.js`
 
-Set the compiler solc key to the version you'd like. Truffle will fetch it from the solc-bin server and cache it in your local evironment.
+Set the compilers solc `version` key to the one you'd like. Truffle will fetch it from the solc-bin server and cache it in your local evironment.
 ```javascript
 module.exports = {
   networks: {
@@ -33,9 +35,13 @@ module.exports = {
 };
 ```
 
-### Using docker / natively built binaries
+### Advanced:
++ docker
++ native binary
++ `path/to/solc`
++ solc settings
 
-Solc docker images should be installed locally by running:
+Docker images should be installed locally by running:
 ```shell
 $ docker pull ethereum/solc:0.4.22  // Example image
 ```
@@ -55,10 +61,30 @@ compilers: {
     docker: true
   }
 }
+
+// Relative or absolute path to an npm installed solc-js
+compilers: {
+  solc: {
+    version: "/Users/axic/.nvm/versions/node/v8.9.4/lib/node_modules/solc"
+  }
+}
+
+// Optimization and EVM version settings
+compilers: {
+  solc: {
+    settings: {
+      optimizer: {
+        enabled: true, // Default: false
+        runs: 1000     // Default: 200
+      },
+      evmVersion: "homestead"  // Default: "byzantium"
+    }
+  }
+}
 ```
 
 ### Speed comparison
-Docker and native binary compilers process large contract sets much faster than solcjs. If you're just compiling a few contracts at a time, the speedup isn't significant relative to the overhead of running a command (see below). The first time truffle uses a docker version there's some extra overhead as it caches the solc version string and a solcjs companion compiler. All subsequent runs should be at full speed.
+Docker and native binary compilers process large contract sets faster than solcjs. If you're just compiling a few contracts at a time, the speedup isn't significant relative to the overhead of running a command (see below). The first time `truffle` uses a docker version there's some extra overhead as it caches the solc version string and a solcjs companion compiler. All subsequent runs should be at full speed.
 
 Times to `truffle compile` on a MacBook Air 1.8GHz, Node 8.11.1
 
@@ -71,22 +97,46 @@ Times to `truffle compile` on a MacBook Air 1.8GHz, Node 8.11.1
 
 For help installing a natively built compiler, see the Solidity docs [here](https://solidity.readthedocs.io/en/v0.4.23/installing-solidity.html#binary-packages).
 
-### Contract Profiling.
-Truffle has long tried to figure out which contracts changed recently and selectively compile the smallest set necessary, with varying degrees of success. It now *actually* does this. So if you're often writing a test suite and switching back and forth between JS and Solidity changes, you might get some time savings by setting up an `npm` convenience script that looks like this:
+### Contract Profiling
+Truffle has always tried figure out which contracts changed recently and compile the smallest set necessary (with varying degrees of success). It now does this reliably so you may benefit from setting up an `npm` convenience script that looks like this:
 ```
 "test": "truffle compile && truffle test"
 ```
 
-Many thanks to the Solidity team for making all of the above possible, and for their helpful advice over the last year.
+Many thanks to the Solidity team for making all of the above possible and for their helpful advice over the last year.  🙌 🙌
 
 
-# 2. Web3 1.0.  🏎  🏎
+# 2. 🐇 🐇  Web3 1.0  🐇 🐇
 
-`truffle-contract` now uses Web3 1.0 under the hood.  It's nice! The error handling (especially the parameter checking) is great. And there's lots of new work happening over there  - ENS support is being added and EthPrize is funding an API to make contract packages published to EthPM easily available as well.
+`truffle-contract` now uses Web3 1.0 under the hood.  It's nice! The error handling (especially the parameter checking) is really good. And there's lots of new work happening over there  - ENS support is being added and [EthPrize](http://ethprize.io/) is funding an API to make contract packages published to EthPM easily available as well.
 
-We've tried to minimize the number of changes that will be necessary to transition an existing test suite from Web3 0.x to 1.0, but unfortunately some things **will** break, because there have been a number of changes to library's outputs.
+We've tried to minimize the number of changes required to transition an existing test suite from Web3 0.x to 1.0. Unfortunately there are some breaking changes due to differences in the way Web3 1.0 formats outputs (see chart below).
 
-First, here's a list things that are new and better:
+The biggest change is that `truffle-contract` now returns numbers as [BN](https://github.com/indutny/bn.js/) by default instead of BigNumber. This is necessary - BigNumber doesn't have the precision required by the EVM. The number libraries share some methods (notably `.toNumber()`) but their arithmetic operations are quite different.
+
+**Important**: If you receive a number directly from web3 (e.g. *not* from a truffle-contract instance)  you'll get a **string**. Luckily there's a helpful BN conversion method in the web3 utils.
+```javascript
+const stringBalance = await web3.eth.getBalance('0xabc..');
+const bnBalance = web3.utils.toBN(stringBalance);
+```
+
+**Helpful Resources**
++  Web3 1.0's documentation. Well worth taking a look - lots of differences in their new API.
++ EthWork's [bn-chai](https://github.com/EthWorks/bn-chai) library: BN helpers for your tests. (💡 ProTip courtesy elenadimitrova)
+
+------------
+### ⚠️ Breaking Changes ⚠️
+
+| Category | V4 (Web3 0.0) |  V5 (Web3 1.0) |
+| ------ | ---- | ------- |
+| addresses (return value) | lower-case | check-summed (mixed-case) |
+| numbers  (return value)  | BigNumber | BN (configurable) |
+| tuples (return value)       | Array | Object w/ named & indexed keys |
+| `.contract` (underlying Web3 abstraction)| same as now | completely [different](https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html) |
+|`.at` (TruffleContract method)| sync / then-able | async |
+
+-----------
+### 🍨 Features 🍨
 
 ### Methods / `.new` have an EventEmitter interface *and*  return a promise.
 ```javascript
@@ -116,7 +166,7 @@ require(msg.sender == owner, 'not authorized');
 
 // In JS
 try {
-  await Example.transferToSelf({from: nonOwner})
+  await example.transferToSelf({from: nonOwner})
 } catch (err) {
   assert(err.reason === 'not authorized');
   assert(err.message.includes('not authorized');
@@ -127,6 +177,14 @@ try {
 ```javascript
 example.methods['setValue(uint256)'](123);
 example.methods['setValue(uint256,uint256)'](11,55);
+```
+
+### Configure format of number return values
+As mentioned above - `truffle-contract` now returns BN. We've made this configurable so if you have an existing test suite you'd prefer to gradually transition from BigNumber to BN, it's possible to configure a contract's number format as below.
+```javascript
+// Choices are:  `["BigNumber", "BN", "String"].
+const Example = artifacts.require('Example');
+Example.numberFormat = 'BigNumber';
 ```
 
 ### Call methods at any block using the `defaultBlock` parameter.
@@ -157,7 +215,7 @@ const deploymentCost = await Example.new.estimateGas();
 ```
 
 ### Config
-To take advantage of the `confirmations` listener and to hear Events using `.on` or `.once`, you'll need to explicitly enable websockets in your network config as below.
+To take advantage of the `confirmations` listener and to hear Events using `.on` or `.once`, you'll need to enable websockets in your network config as below.
 ```js
 module.exports = {
   networks: {
@@ -171,17 +229,70 @@ module.exports = {
 };
 ```
 
-### ⚠️ Breaking Changes ⚠️
+## 🐦 🐦  New Migrations 🐦 🐦
 
-| Category | Web3 0.0 | Web3 1.0 |
-| ------ | ---- | ------- |
-| addresses (return value) | lower-case | check-summed (mixed-case) |
-| numbers  (return value)  | BigNumber/BN | string |
-| tuples (return value)       | Array | Object w/ named & indexed keys |
-| `.contract` | same as now | completely different |
-|`.at` | sync / then-able | async |
+Deploying contracts to public networks is hard ... 🙂 The topic dominates our 10 most visited GitHub issues.  On the bright side, those discussion threads are a rich trove of advice and brilliant insight from experienced Truffle users. V5 includes a rewrite of the `migrations` command that tries to integrate all their hard won knowledge into an easier to use deployment manager.
+
+**Highlights**
++ **Improved error messaging.**  If Truffle can guess why a deployment might have failed it tells you and suggests some possible solutions.
++ **More information** about what's going on as you deploy, including cost summaries and real-time status updates about how long transactions have been pending. (See GIF below)
++ **Improved dry run** deployment simulations. This feature has had it's kinks worked out and now runs automatically if you're deploying to a known public network.  You can also use the `--interactive` flag at the command line to get a prompt between your dry run and real deployment.
++ Configure the number of block **confirmations** to wait between deployments. This is helpful when deploying to Infura because their load balancer sometimes executes back-to-back transactions out of sequence and  noncing can go awry.
++ Specify how many **blocks to wait** before timing out a pending deployment. Web3 hardcodes this value at 50 blocks which can be a problem if you're trying to deploy large contracts at the lower end of the gas price range.
++ A deployer interface that works seamlessly with ES6 **async/await** syntax. (Also backward compatible with Truffle V4's then-able pattern.)
+
+⚠️  **Important** ⚠️  If you're using `truffle-hdwallet-provider` with Truffle V5 you **must** install the Web3 1.0 enabled version:
+```shell
+$ npm install --save truffle-hdwallet-provider@web3-one
+```
+
+**Example network config**
+```javascript
+ropsten: {
+  provider: () => new HDWalletProvider(mnemonic, `https://ropsten.infura.io`),
+  network_id: 3,
+  gas: 5500000,           // Default gas to send per transaction
+  gasPrice: 10000000000,  // 10 gwei (default: 20 gwei)
+  confirmations: 2,       // # of confs to wait between deployments. (default: 0)
+  timeoutBlocks: 200,     // # of blocks before a deployment times out  (minimum/default: 50)
+  skipDryRun: true        // Skip dry run before migrations? (default: false for public nets )
+},
+```
+
+**Example Migration using async / await**
+```javascript
+const One = artifacts.require("One");
+const Two = artifacts.require("Two");
+
+module.exports = async function(deployer) {
+  await deployer.deploy(One);
+
+  const one = await One.deployed();
+  const value = await one.value();
+
+  await deployer.deploy(Two, value);
+};
+```
+**Deploying to Rinkeby...**
 
 
-## Migrations
+![migrate-rinkeby](https://user-images.githubusercontent.com/7332026/43867960-3499922c-9b20-11e8-8553-589308a6cd61.gif)
 
-[Coming]
+**More migrations improvements are coming soon...**.
++ cag from Gnosis has written a really nice addition to the Migrations module that will automatically deploy contract dependencies you've installed with `npm` along with your own contracts.
++ Under the hood, the `migrations` command is now completely evented and managed by a reporter module. Those hooks will be exposed so anyone can write a UI for it and hopefully you'll be plugging into ever more sophisticated deployment script managers soon. Work on the default UI to make it more interactive and colorful is ongoing.
+
+## Even More!
+
+### truffle-console now supports async/await
+
+A small but decisive improvement that should make the console much easier to use.
+**Example**
+```shell
+truffle(development)> let instance = await MetaCoin.deployed()
+truffle(development)> let accounts = await web3.eth.getAccounts()
+truffle(development)> let balance = await instance.getBalanceInEth(accounts[0])
+truffle(development)> balance.toNumber()
+20000
+truffle(development)>
+```
