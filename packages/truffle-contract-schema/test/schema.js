@@ -16,8 +16,8 @@ describe("Schema", function() {
 
     try {
       Schema.validate(invalid)
-    } catch (errors) {
-      var abiErrors = errors.filter(function(error) {
+    } catch (err) {
+      var abiErrors = err.errors.filter(function(error) {
         return error.dataPath === ".abi"
       });
       assert(abiErrors);
