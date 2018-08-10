@@ -4,10 +4,15 @@
 
 # 🐘 🐘 V5 🐘 🐘  🐘
 
-## 1. All SOLC.
+- [Bring your own compiler](#Bring-your-own-compiler)
+- [Web3.js 1.0](#Web3.js-1.0)
+- [New Migrations](#New-Migrations)
+- [More](#Even-More!)
 
-It's now possible to have truffle compile with:
-+ any solc-js version listed at [solc-bin](http://solc-bin.ethereum.org/bin/list.json). Specify the one you want and truffle will get it for you.
+## Bring your own compiler
+
+It's now possible to have Truffle compile with:
++ any solc-js version listed at [solc-bin](http://solc-bin.ethereum.org/bin/list.json). Specify the one you want and Truffle will get it for you.
 + a natively compiled solc binary (you'll need to install this yourself, links to help below).
 + dockerized solc from one of images published [here](https://hub.docker.com/r/ethereum/solc/tags/). (You'll also need to pull down the docker image yourself but it's really easy.)
 
@@ -29,7 +34,7 @@ module.exports = {
   },
   compilers: {
      solc: {
-       version: <string>  // ex:  "0.4.20". (Default: truffle's installed solc)
+       version: <string>  // ex:  "0.4.20". (Default: Truffle's installed solc)
      }
   }
 };
@@ -84,7 +89,7 @@ compilers: {
 ```
 
 ### Speed comparison
-Docker and native binary compilers process large contract sets faster than solcjs. If you're just compiling a few contracts at a time, the speedup isn't significant relative to the overhead of running a command (see below). The first time `truffle` uses a docker version there's some extra overhead as it caches the solc version string and a solcjs companion compiler. All subsequent runs should be at full speed.
+Docker and native binary compilers process large contract sets faster than solcjs. If you're just compiling a few contracts at a time, the speedup isn't significant relative to the overhead of running a command (see below). The first time Truffle uses a docker version there's a small delay as it caches the solc version string and a solcjs companion compiler. All subsequent runs should be at full speed.
 
 Times to `truffle compile` on a MacBook Air 1.8GHz, Node 8.11.1
 
@@ -106,28 +111,28 @@ Truffle has always tried figure out which contracts changed recently and compile
 Many thanks to the Solidity team for making all of the above possible and for their helpful advice over the last year.  🙌 🙌
 
 
-# 2. 🐇 🐇  Web3 1.0  🐇 🐇
+## 🐇 🐇 Web3.js 1.0 🐇 🐇
 
-`truffle-contract` now uses Web3 1.0 under the hood.  It's nice! The error handling (especially the parameter checking) is really good. And there's lots of new work happening over there  - ENS support is being added and [EthPrize](http://ethprize.io/) is funding an API to make contract packages published to EthPM easily available as well.
+**truffle-contract** now uses Web3.js 1.0 under the hood.  It's nice! The error handling (especially the parameter checking) is really good. And there's lots of new work happening over there  - ENS support is being added and [EthPrize](http://ethprize.io/) is funding an API to make contract packages published to EthPM easily available as well.
 
-We've tried to minimize the number of changes required to transition an existing test suite from Web3 0.x to 1.0. Unfortunately there are some breaking changes due to differences in the way Web3 1.0 formats outputs (see chart below).
+We've tried to minimize the inconvenience involved in transitioning an existing test suite from Web3 0.x to 1.0. Unfortunately there are some breaking changes due to differences in the way Web3 1.0 formats outputs (see chart below).
 
-The biggest change is that `truffle-contract` now returns numbers as [BN](https://github.com/indutny/bn.js/) by default instead of BigNumber. This is necessary - BigNumber doesn't have the precision required by the EVM. The number libraries share some methods (notably `.toNumber()`) but their arithmetic operations are quite different.
+The biggest of these is that **truffle-contract** now returns numbers as [BN](https://github.com/indutny/bn.js/) by default instead of [BigNumber](https://github.com/MikeMcl/bignumber.js). This is necessary - BigNumber doesn't have the precision required by the EVM. The number libraries share some methods (notably `.toNumber()`) but their arithmetic operations are quite different.
 
-**Important**: If you receive a number directly from web3 (e.g. *not* from a truffle-contract instance)  you'll get a **string**. Luckily there's a helpful BN conversion method in the web3 utils.
+**Important**: If you receive a number directly from Web3 (e.g. *not* from a **truffle-contract** instance)  you'll get a **string**. Luckily there's a helpful BN conversion method in the Web3 utils.
 ```javascript
 const stringBalance = await web3.eth.getBalance('0xabc..');
 const bnBalance = web3.utils.toBN(stringBalance);
 ```
 
 **Helpful Resources**
-+  Web3 1.0's documentation. Well worth taking a look - lots of differences in their new API.
++  Web3 1.0's [documentation](https://web3js.readthedocs.io/en/1.0/). Well worth taking a look - lots of differences in their new API.
 + EthWork's [bn-chai](https://github.com/EthWorks/bn-chai) library: BN helpers for your tests. (💡 ProTip courtesy elenadimitrova)
 
 ------------
 ### ⚠️ Breaking Changes ⚠️
 
-| Category | V4 (Web3 0.0) |  V5 (Web3 1.0) |
+| Category | v4 (Web3 0.0) |  v5 (Web3 1.0) |
 | ------ | ---- | ------- |
 | addresses (return value) | lower-case | check-summed (mixed-case) |
 | numbers  (return value)  | BigNumber | BN (configurable) |
@@ -140,8 +145,10 @@ const bnBalance = web3.utils.toBN(stringBalance);
 
 ### Methods / `.new` have an EventEmitter interface *and*  return a promise.
 ```javascript
+const example = await artifacts.require("Example").deployed();
+
 example
-  .setValue(123)
+  .setValue(45)
   .on('transactionHash', hash => {} )
   .on('receipt', receipt => {})
   .on('error', error => {})
@@ -160,11 +167,14 @@ example
   .once('data', event => ... etc ... )
 ```
 ### Reason strings!! Find out the reason.
-```javascript
-# In a Solidity file
-require(msg.sender == owner, 'not authorized');
 
-// In JS
+**Solidity**
+```solidity
+require(msg.sender == owner, 'not authorized');
+```
+
+**Javascript**
+```javascript
 try {
   await example.transferToSelf({from: nonOwner})
 } catch (err) {
@@ -179,8 +189,8 @@ example.methods['setValue(uint256)'](123);
 example.methods['setValue(uint256,uint256)'](11,55);
 ```
 
-### Configure format of number return values
-As mentioned above - `truffle-contract` now returns BN. We've made this configurable so if you have an existing test suite you'd prefer to gradually transition from BigNumber to BN, it's possible to configure a contract's number format as below.
+### Configure number return format
+As mentioned above - **truffle-contract** now returns [BN](https://github.com/indutny/bn.js). We've made this configurable so if you have an existing test suite you'd prefer to gradually transition from [BigNumber](https://github.com/MikeMcl/bignumber.js) to BN, it's possible to configure a contract's number format as below.
 ```javascript
 // Choices are:  `["BigNumber", "BN", "String"].
 const Example = artifacts.require('Example');
@@ -233,18 +243,20 @@ module.exports = {
 
 Deploying contracts to public networks is hard ... 🙂 The topic dominates our 10 most visited GitHub issues.  On the bright side, those discussion threads are a rich trove of advice and brilliant insight from experienced Truffle users. V5 includes a rewrite of the `migrations` command that tries to integrate all their hard won knowledge into an easier to use deployment manager.
 
-**Highlights**
-+ **Improved error messaging.**  If Truffle can guess why a deployment might have failed it tells you and suggests some possible solutions.
+#### Features
++ **Improved error messaging.**  If Truffle can guess why a deployment failed it tells you and suggests some possible solutions.
 + **More information** about what's going on as you deploy, including cost summaries and real-time status updates about how long transactions have been pending. (See GIF below)
 + **Improved dry run** deployment simulations. This feature has had it's kinks worked out and now runs automatically if you're deploying to a known public network.  You can also use the `--interactive` flag at the command line to get a prompt between your dry run and real deployment.
 + Configure the number of block **confirmations** to wait between deployments. This is helpful when deploying to Infura because their load balancer sometimes executes back-to-back transactions out of sequence and  noncing can go awry.
 + Specify how many **blocks to wait** before timing out a pending deployment. Web3 hardcodes this value at 50 blocks which can be a problem if you're trying to deploy large contracts at the lower end of the gas price range.
 + A deployer interface that works seamlessly with ES6 **async/await** syntax. (Also backward compatible with Truffle V4's then-able pattern.)
 
-⚠️  **Important** ⚠️  If you're using `truffle-hdwallet-provider` with Truffle V5 you **must** install the Web3 1.0 enabled version:
+⚠️  **Important** ⚠️  If you're using **truffle-hdwallet-provider** with Truffle v5 you **must** install the Web3 1.0 enabled version:
 ```shell
 $ npm install --save truffle-hdwallet-provider@web3-one
 ```
+
+#### Configuration and use
 
 **Example network config**
 ```javascript
@@ -284,7 +296,7 @@ module.exports = async function(deployer) {
 
 ## Even More!
 
-### truffle-console now supports async/await
+### **truffle-console** now supports async/await
 
 A small but decisive improvement that should make the console much easier to use.
 **Example**
