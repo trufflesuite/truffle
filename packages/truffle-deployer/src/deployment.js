@@ -349,7 +349,14 @@ class Deployment {
 
           self._stopBlockPolling();
           eventArgs.error = err.error || err;
-          const message = await self.emitter.emit('deployFailed', eventArgs);
+          let message = await self.emitter.emit('deployFailed', eventArgs);
+
+          // Reporter might not be enabled (via Migrate.launchReporter) so
+          // message is a (potentially empty) array of results from the emitter
+          if (!message.length){
+            message = `while migrating ${contract.contractName}: ${eventArgs.error.message}`
+          }
+
           self.close();
           throw new Error(message);
         }
