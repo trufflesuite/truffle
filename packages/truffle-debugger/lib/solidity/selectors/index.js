@@ -69,6 +69,10 @@ let solidity = createSelectorTree({
       ["/info/sources", evm.current.context, "./sourceMap"],
 
       (sources, {binary}, {sourceMap}) => {
+        if (!binary) {
+          return [];
+        }
+
         let instructions = CodeUtils.parseCode(binary);
 
         if (!sourceMap) {
