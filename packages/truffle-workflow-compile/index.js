@@ -1,14 +1,59 @@
+var debug = require("debug")("workflow-compile");
+
 var async = require("async");
 var fs = require("fs");
 var mkdirp = require("mkdirp");
 var path = require("path");
+var { callbackify, promisify } = require("util");
 var Config = require("truffle-config");
-var compile = require("truffle-compile");
+var solcCompile = require("truffle-compile");
+var externalCompile = require("truffle-external-compile");
 var expect = require("truffle-expect");
 var _ = require("lodash");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
 var OS = require("os");
+
+const SUPPORTED_COMPILERS = {
+  "solc": solcCompile,
+  "external": externalCompile,
+};
+
+function prepareConfig(options) {
+  expect.options(options, [
+    "contracts_build_directory"
+  ]);
+
+  expect.one(options, [
+    "contracts_directory",
+    "files"
+  ]);
+
+  // Use a config object to ensure we get the default sources.
+  const config = Config.default().merge(options);
+
+  if (!config.resolver) {
+    config.resolver = new Resolver(config);
+  }
+
+  if (!config.artifactor) {
+    config.artifactor = new Artifactor(config.contracts_build_directory);
+  }
+
+  return config;
+}
+
+function multiPromisify (func) {
+  return (...args) => new Promise( (accept, reject) => {
+    const callback = (err, ...results) => {
+      if (err) reject(err);
+
+      accept(results);
+    };
+
+    func(...args, callback);
+  });
+}
 
 var Contracts = {
 
@@ -19,69 +64,68 @@ var Contracts = {
   // network_id: network id to link saved contract artifacts.
   // quiet: Boolean. Suppress output. Defaults to false.
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
-  compile: function(options, callback) {
-    var self = this;
+  compile: callbackify(async function(options) {
+    const config = prepareConfig(options);
 
-    expect.options(options, [
-      "contracts_build_directory"
-    ]);
+    const compilers = (config.compiler)
+      ? [config.compiler]
+      : Object.keys(config.compilers);
 
-    expect.one(options, [
-      "contracts_directory",
-      "files"
-    ]);
+    // convert to promise to compile+write
+    const compilations = compilers.map(async (compiler) => {
+      const compile = SUPPORTED_COMPILERS[compiler];
+      if (!compile) throw new Error("Unsupported compiler: " + compiler);
 
-    // Use a config object to ensure we get the default sources.
-    var config = Config.default().merge(options);
+      const compileFunc = (config.all === true || config.compileAll === true)
+        ? compile.all
+        : compile.necessary;
 
-    if (!config.resolver) {
-      config.resolver = new Resolver(config);
-    }
+      let [contracts, output] = await multiPromisify(compileFunc)(config);
 
-    if (!config.artifactor) {
-      config.artifactor = new Artifactor(config.contracts_build_directory);
-    }
-
-    function finished(err, contracts, paths) {
-      if (err) return callback(err);
-
-      if (contracts != null && Object.keys(contracts).length > 0) {
-        self.write_contracts(contracts, config, function(err, abstractions) {
-          callback(err, abstractions, paths);
-        });
-      } else {
-        callback(null, [], paths);
+      if (contracts && Object.keys(contracts).length > 0) {
+        await this.writeContracts(contracts, config)
       }
-    };
 
-    if (config.all === true || config.compileAll === true) {
-      compile.all(config, finished);
-    } else {
-      compile.necessary(config, finished);
+      return { compiler, contracts, output };
+    });
+
+    const collect = async (compilations) => {
+      let result = {
+        outputs: {},
+        contracts: {}
+      }
+
+      for (let compilation of await Promise.all(compilations)) {
+        let { compiler, output, contracts } = compilation;
+
+        result.outputs[compiler] = output;
+
+        for (let [ name, abstraction ] of Object.entries(contracts)) {
+          result.contracts[name] = abstraction;
+        }
+
+      }
+
+      return result;
     }
-  },
 
-  write_contracts: function(contracts, options, callback) {
+    return await collect(compilations);
+  }),
+
+  writeContracts: async function(contracts, options) {
     var logger = options.logger || console;
 
-    mkdirp(options.contracts_build_directory, function(err, result) {
-      if (err != null) {
-        callback(err);
-        return;
-      }
+    const result = await promisify(mkdirp)(options.contracts_build_directory);
 
-      if (options.quiet != true && options.quietWrite != true) {
-        logger.log("Writing artifacts to ." + path.sep + path.relative(options.working_directory, options.contracts_build_directory) + OS.EOL);
-      }
+    if (options.quiet != true && options.quietWrite != true) {
+      logger.log("Writing artifacts to ." + path.sep + path.relative(options.working_directory, options.contracts_build_directory) + OS.EOL);
+    }
 
-      var extra_opts = {
-        network_id: options.network_id
-      };
+    var extra_opts = {
+      network_id: options.network_id
+    };
 
-      options.artifactor.saveAll(contracts, extra_opts).then(function() {
-        callback(null, contracts);
-      }).catch(callback);
-    });
+    await options.artifactor.saveAll(contracts, extra_opts);
   }
 };
 

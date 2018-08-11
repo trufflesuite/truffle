@@ -8,6 +8,10 @@ var command = {
       type: "boolean",
       default: false
     },
+    compiler: {
+      type: "string",
+      default: null
+    },
     list: {
       type: "string",
     },

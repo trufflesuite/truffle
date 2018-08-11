@@ -132,9 +132,11 @@ export async function compile(config) {
     Contracts.compile(config.with({
       all: true,
       quiet: true
-    }), function(err, contracts, files) {
+    }), function(err, result) {
       if (err) return reject(err);
-      return accept({contracts, files});
+      const { contracts, outputs } = result;
+      debug("result %O", result);
+      return accept({ contracts, files: outputs.solc });
     });
   });
 }
