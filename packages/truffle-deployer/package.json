@@ -35,7 +35,7 @@
     "mocha": "5.2.0",
     "truffle-reporters": "^1.0.0",
     "truffle-workflow-compile": "^1.0.3",
-    "web3": "1.0.0-beta.33"
+    "web3": "1.0.0-beta.35"
   },
   "publishConfig": {
     "access": "public"
