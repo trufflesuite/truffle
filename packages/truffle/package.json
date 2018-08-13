@@ -25,7 +25,6 @@
     "tmp": "0.0.33",
     "truffle-box": "^1.0.7",
     "truffle-contract": "^3.0.6",
-    "truffle-core": "^4.1.13",
     "web3": "1.0.0-beta.33",
     "webpack": "^2.5.1",
     "yargs": "^8.0.2"
