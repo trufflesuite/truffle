@@ -149,7 +149,7 @@ class Reporter {
 
     const errors = {
       ETH: error.message.includes('funds'),
-      OOG: error.message.includes('out of gas') || (data.gas === data.blockLimit),
+      OOG: error.message.includes('out of gas'),
       INT: error.message.includes('base fee') || error.message.includes('intrinsic'),
       RVT: error.message.includes('revert'),
       BLK: error.message.includes('block gas limit'),
