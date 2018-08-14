@@ -203,7 +203,7 @@ var execute = {
         handlers.setup(deferred, context);
 
         deferred.then(async (receipt) => {
-          if (parseInt(receipt.status) == 0){
+          if (!receipt.status){
             var reason = await Reason.get(params, web3);
 
             var error = new StatusError(
