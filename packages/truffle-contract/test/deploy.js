@@ -61,24 +61,21 @@ describe("Deployments", function() {
       assert.equal(example.transactionHash, txHash, "contract tx hash should be emitted tx hash")
     });
 
-    it("should fire the confirmations event handler repeatedly", function(done){
-      function keepTransacting(){
-        return util.evm_mine()
-                .then(util.evm_mine)
-                .then(util.evm_mine);
-      };
 
-      function handler(number, receipt){
-        assert.equal(parseInt(receipt.status), 1, 'should have a receipt');
+    it("should fire the confirmations event handler repeatedly", function(done){
+      Example.new(5)
+        .on('confirmation', function(number, receipt){
           if(number === 3){
+            assert(receipt.status === true);
             this.removeAllListeners();
             done();
           }
-      }
-
-      Example.new(1)
-        .on('confirmation', handler)
-        .on('receipt', keepTransacting);
+        })
+        .then(async instance => {
+          await util.evm_mine();
+          await util.evm_mine();
+          await util.evm_mine();
+        });
     });
   });
 
