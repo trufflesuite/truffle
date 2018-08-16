@@ -24,7 +24,7 @@
     "stream-buffers": "^3.0.1",
     "tmp": "0.0.33",
     "truffle-box": "^1.0.7",
-    "truffle-contract": "^3.0.6",
+    "truffle-contract": "^4.0.0-next.0",
     "web3": "1.0.0-beta.35",
     "webpack": "^2.5.1",
     "yargs": "^8.0.2"
