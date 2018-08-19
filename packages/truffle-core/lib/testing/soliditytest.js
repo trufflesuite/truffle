@@ -57,7 +57,7 @@ var SolidityTest = {
       result.logs = decodeTestEvents(result);
 
       result.logs.forEach(function(log) {
-        if (log.event == "TestEvent" && log.args.result == false) {
+        if (log.event == "TestEvent" && !log.args.result) {
           throw new Error(log.args.message);
         }
       })
