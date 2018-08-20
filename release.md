@@ -26,28 +26,28 @@ Or keep reading for more information!
 
 * [Bring your own compiler](#bring-your-own-compiler)
   + [List available versions at the command line](#list-available-versions-at-the-command-line)
-  + [Specify a solcjs version in `truffle.js`](#specify-a-solcjs-version-in--trufflejs-)
+  + [Specify a solcjs version](#specify-a-solcjs-version)
   + [Advanced](#advanced)
   + [Speed comparison](#speed-comparison)
   + [Contract Profiling](#contract-profiling)
 * [🐇 🐇 Web3.js 1.0 🐇 🐇](#------web3js-10------)
-  + [⚠️ Breaking Changes ⚠️](#---breaking-changes---)
-  + [🍨 Features 🍨](#---features---)
-  + [Methods / `.new` have an EventEmitter interface *and*  return a promise.](#methods----new--have-an-eventemitter-interface--and---return-a-promise)
+  + [⚠️ Breaking Changes ⚠️](#️-breaking-changes-️)
+  + [🍨 Features 🍨](#-features-)
+  + [Methods / `.new` have an EventEmitter interface *and*  return a promise.](#methods--new-have-an-eventemitter-interface-and--return-a-promise)
   + [Events have an EventEmitter interface](#events-have-an-eventemitter-interface)
-  + [Reason strings!! Find out the reason.](#reason-strings---find-out-the-reason)
-  + [Overloaded Solidity methods (credit to @rudolfix and @mcdee)](#overloaded-solidity-methods--credit-to--rudolfix-and--mcdee-)
+  + [Reason strings!! Find out the reason.](#reason-strings-find-out-the-reason)
+  + [Overloaded Solidity methods (credit to @rudolfix and @mcdee)](#overloaded-solidity-methods-credit-to-rudolfix-and-mcdee)
   + [Configure number return format](#configure-number-return-format)
-  + [Call methods at any block using the `defaultBlock` parameter.](#call-methods-at-any-block-using-the--defaultblock--parameter)
+  + [Call methods at any block using the `defaultBlock` parameter.](#call-methods-at-any-block-using-the-defaultblock-parameter)
   + [Automated fueling for method calls and deployments.](#automated-fueling-for-method-calls-and-deployments)
-  + [Contract deployments & transactions allowed to take as long as they take:](#contract-deployments---transactions-allowed-to-take-as-long-as-they-take-)
-  + [Gas estimation for `.new`:](#gas-estimation-for--new--)
+  + [Contract deployments & transactions allowed to take as long as they take:](#contract-deployments--transactions-allowed-to-take-as-long-as-they-take)
+  + [Gas estimation for `.new`:](#gas-estimation-for-new)
   + [Config](#config)
-* [🐦 🐦  New Migrations 🐦 🐦](#-------new-migrations------)
+* [🐦 🐦  New Migrations 🐦 🐦](#---new-migrations--)
     - [Features](#features)
     - [Configuration and use](#configuration-and-use)
-* [Even More!](#even-more-)
-  + [**truffle-console** now supports async/await](#--truffle-console---now-supports-async-await)
+* [Even More!](#even-more)
+  + [**truffle-console** now supports async/await](#truffle-console-now-supports-asyncawait)
   + [External compiler support](#external-compiler-support)
     - [Target generated artifacts](#target-generated-artifacts)
       * [Post-processing artifacts](#post-processing-artifacts)
@@ -68,7 +68,7 @@ $ truffle compile --list docker            # Recent docker tags from hub.docker.
 $ truffle compile --list releases --all    # Complete list of stable releases.
 ```
 
-### Specify a solcjs version in `truffle.js`
+### Specify a solcjs version
 
 Set the compilers solc `version` key to the one you'd like. Truffle will fetch it from the solc-bin server and cache it in your local evironment.
 ```javascript
