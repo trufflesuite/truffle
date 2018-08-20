@@ -326,3 +326,120 @@ truffle(development)> balance.toNumber()
 20000
 truffle(development)>
 ```
+
+### External compiler support
+
+For more advanced use cases, let's say your smart contract development workflow
+involves more than just compiling Solidity contracts. Maybe you're writing
+[eWASM precompiles](https://github.com/ewasm/ewasm-precompiles/tree/ecadd-truffle-tests/ecadd)
+or making a [two-dimensional `delegatecall` proxy](https://github.com/GNSPS/2DProxy).
+Or maybe you would just rather use [@pubkey's solidity-cli](https://github.com/pubkey/solidity-cli)
+instead of Truffle's `solc` configuration.
+
+This is now supported by adding a `compilers.external` object to your Truffle
+config:
+```javascript
+{
+  /* ... */
+
+  compilers: {
+    /* ... */
+
+    external: {
+      command: "./compile-contracts",
+      targets: [{
+        /* compilation output */
+      }]
+    }
+  }
+
+  /* ... */
+}
+```
+
+When you run `truffle compile`, Truffle will run the configured `command` and
+look for contract artifacts specified by `targets`.
+
+This new configuration supports two main use cases:
+- Your compilation command outputs Truffle JSON artifacts directly
+- Your compilation command outputs individual parts of an artifact, and you
+  want Truffle to generate the artifacts for you.
+
+#### Target generated artifacts
+
+If your compilation command generates artifacts directly, or generates output
+that contains all the information for an artifact, configure a target as
+follows:
+```javascript
+{
+  compilers: {
+    external: {
+      command: "./compile-contracts",
+      targets: [{
+        path: "./path/to/artifacts/*.json"
+      }]
+    }
+  }
+}
+```
+
+Truffle will expand the glob (`*`) and find all `.json` files in the listed
+path and copy those over as artifacts in the `build/contracts/` directory.
+
+##### Post-processing artifacts
+
+The above use case might not be sufficient for all use cases. You can configure
+your target to run an arbitrary post-processing command:
+```javascript
+{
+  compilers: {
+    external: {
+      command: "./compile-contracts",
+      targets: [{
+        path: "./path/to/preprocessed-artifacts/*.json",
+        command: "./process-artifact"
+      }]
+    }
+  }
+}
+```
+
+This will run `./process-artifact` for each matched `.json` file, piping
+the contents of that file as stdin. Your `./process-artifact` command is then
+expected to output a complete Truffle artifact as stdout.
+
+Want to provide the path as a filename instead? Add `stdin: false` to your
+target configuration.
+
+
+#### Target individual artifact properties
+
+The other way to configure your external compilation is to specify the
+individual properties of your contracts and have Truffle generate the
+artifacts itself:
+```javascript
+{
+  compilers: {
+    external: {
+      command: "./compile-contracts",
+      targets: [{
+        properties: {
+          contractName: "MyContract",
+          /* other literal properties */
+        },
+        fileProperties: {
+          abi: "./output/contract.abi",
+          bytecode: "./output/contract.bytecode",
+          /* other properties encoded in output files */
+        }
+      }]
+    }
+  }
+}
+```
+
+Specify `properties` and/or `fileProperties`, and Truffle will look for those
+values when building the artifacts.
+
+These two approaches aim to provide flexibility, aiming to meet whatever your
+compilation needs may be.
