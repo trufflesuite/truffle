@@ -396,6 +396,8 @@ This new configuration supports two main use cases:
 - Your compilation command outputs Truffle JSON artifacts directly
 - Your compilation command outputs individual parts of an artifact, and you want Truffle to generate the artifacts for you.
 
+Credit to @axic for the idea and for helping to hone our requirements as we implemented it. Thank you!
+
 <a href="#" id="target-generated-artifacts"></a>
 #### Target generated artifacts
 
