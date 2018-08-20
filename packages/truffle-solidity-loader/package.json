@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lintjs": "standard",
-    "lintjs-fix": "standard --fix",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lintjs-fix": "standard --fix"
   },
   "authors": [
     "John McDowall <john@kantan.io>",
