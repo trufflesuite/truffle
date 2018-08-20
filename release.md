@@ -22,10 +22,36 @@ npm install -g truffle
 
 Or keep reading for more information!
 
-- [Bring your own compiler](#Bring-your-own-compiler)
-- [Web3.js 1.0](#Web3.js-1.0)
-- [New Migrations](#New-Migrations)
-- [More](#Even-More!)
+## Release Contents
+
+* [Bring your own compiler](#bring-your-own-compiler)
+  + [List available versions at the command line](#list-available-versions-at-the-command-line)
+  + [Specify a solcjs version in `truffle.js`](#specify-a-solcjs-version-in--trufflejs-)
+  + [Advanced](#advanced)
+  + [Speed comparison](#speed-comparison)
+  + [Contract Profiling](#contract-profiling)
+* [🐇 🐇 Web3.js 1.0 🐇 🐇](#------web3js-10------)
+  + [⚠️ Breaking Changes ⚠️](#---breaking-changes---)
+  + [🍨 Features 🍨](#---features---)
+  + [Methods / `.new` have an EventEmitter interface *and*  return a promise.](#methods----new--have-an-eventemitter-interface--and---return-a-promise)
+  + [Events have an EventEmitter interface](#events-have-an-eventemitter-interface)
+  + [Reason strings!! Find out the reason.](#reason-strings---find-out-the-reason)
+  + [Overloaded Solidity methods (credit to @rudolfix and @mcdee)](#overloaded-solidity-methods--credit-to--rudolfix-and--mcdee-)
+  + [Configure number return format](#configure-number-return-format)
+  + [Call methods at any block using the `defaultBlock` parameter.](#call-methods-at-any-block-using-the--defaultblock--parameter)
+  + [Automated fueling for method calls and deployments.](#automated-fueling-for-method-calls-and-deployments)
+  + [Contract deployments & transactions allowed to take as long as they take:](#contract-deployments---transactions-allowed-to-take-as-long-as-they-take-)
+  + [Gas estimation for `.new`:](#gas-estimation-for--new--)
+  + [Config](#config)
+* [🐦 🐦  New Migrations 🐦 🐦](#-------new-migrations------)
+    - [Features](#features)
+    - [Configuration and use](#configuration-and-use)
+* [Even More!](#even-more-)
+  + [**truffle-console** now supports async/await](#--truffle-console---now-supports-async-await)
+  + [External compiler support](#external-compiler-support)
+    - [Target generated artifacts](#target-generated-artifacts)
+      * [Post-processing artifacts](#post-processing-artifacts)
+    - [Target individual artifact properties](#target-individual-artifact-properties)
 
 ## Bring your own compiler
 
@@ -58,7 +84,7 @@ module.exports = {
 };
 ```
 
-### Advanced:
+### Advanced
 + docker
 + native binary
 + `path/to/solc`
