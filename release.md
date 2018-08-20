@@ -1,5 +1,6 @@
+Good day! We're pleased to announce the first beta release of Truffle v5. With this release, we're excited to bring you some new features and improvements that will make your life easier. 
 
-Good day! We're pleased to announce the first beta release of Truffle v5. With this release, we're excited to bring you some new features and improvements that will make your life easier. What's included, you ask? Well, get ready to use whatever Solidity version you want (Truffle will even automatically download it for you.) Or how about an improved migrations system, which dry-runs by default and provides lots of information to understand what is going right or wrong. Or maybe you've been waiting for Web3.js 1.0. Or maybe you're sick of typing `.then()` in console and want to use `await` instead. Truffle v5 has all of this, and more.
+What's included, you ask? Well, get ready to use **whatever Solidity version you want** (Truffle will even automatically download it for you.) Or how about an **improved migrations system**, which dry-runs by default and provides lots of information to understand what is going right or wrong. Maybe you've been waiting for **Web3.js 1.0**. Perhaps you're sick of typing `.then()` and want to use **`await` in the console**. Truffle v5 has all of this, and more!
 
 If you're as excited as we are and can't wait, here's how to upgrade:
 ```bash
