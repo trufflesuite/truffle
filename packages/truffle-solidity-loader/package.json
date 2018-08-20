@@ -3,9 +3,7 @@
   "version": "0.0.8",
   "description": "A Webpack loader that uses Truffle to load and provision solidity contracts, with Truffle migrations.",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "scripts": {},
   "author": "John McDowall <john@kantan.io>",
   "license": "MIT",
   "dependencies": {
