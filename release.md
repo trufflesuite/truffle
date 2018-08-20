@@ -30,7 +30,7 @@ Or keep reading for more information!
   + [Advanced](#advanced)
   + [Speed comparison](#speed-comparison)
   + [Contract Profiling](#contract-profiling)
-* [🐇 🐇 Web3.js 1.0 🐇 🐇](#------web3js-10------)
+* [🐇 🐇 Web3.js 1.0 🐇 🐇](#--web3js-10--)
   + [⚠️ Breaking Changes ⚠️](#️-breaking-changes-️)
   + [🍨 Features 🍨](#-features-)
   + [Methods / `.new` have an EventEmitter interface *and*  return a promise.](#methods--new-have-an-eventemitter-interface-and--return-a-promise)
@@ -40,8 +40,8 @@ Or keep reading for more information!
   + [Configure number return format](#configure-number-return-format)
   + [Call methods at any block using the `defaultBlock` parameter.](#call-methods-at-any-block-using-the-defaultblock-parameter)
   + [Automated fueling for method calls and deployments.](#automated-fueling-for-method-calls-and-deployments)
-  + [Contract deployments & transactions allowed to take as long as they take:](#contract-deployments--transactions-allowed-to-take-as-long-as-they-take)
-  + [Gas estimation for `.new`:](#gas-estimation-for-new)
+  + [Contract deployments & transactions allowed to take as long as they take](#contract-deployments--transactions-allowed-to-take-as-long-as-they-take)
+  + [Gas estimation for `.new`](#gas-estimation-for-new)
   + [Config](#config)
 * [🐦 🐦  New Migrations 🐦 🐦](#---new-migrations--)
     - [Features](#features)
@@ -255,7 +255,7 @@ const instance = await Example.new();
 await instance.callExpensiveMethod();
 ```
 
-### Contract deployments & transactions allowed to take as long as they take:
+### Contract deployments & transactions allowed to take as long as they take
 ```javascript
 Example.timeoutBlocks = 10000;
 const example = await Example.new(1);
@@ -263,7 +263,7 @@ const example = await Example.new(1);
 await example.setValue(5)
 ```
 
-### Gas estimation for `.new`:
+### Gas estimation for `.new`
 ```javascript
 const deploymentCost = await Example.new.estimateGas();
 ```
