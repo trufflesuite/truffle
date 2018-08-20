@@ -1,23 +1,10 @@
-**DO NOT MERGE** - this is here so people can do review stuff to it if they want to.
 
-⚠️ **Early draft. Details subject to change.** ⚠️
-
-# 🐘 🐘 V5 🐘 🐘  🐘
-
-Good day! We're pleased to announce the first beta release of Truffle v5.
-With this release, we're excited to bring you some new features and
-improvements that will make your life easier. What's included, you ask?
-Well, get ready to use whatever Solidity version you want (Truffle will even
-automatically download it for you.) Or how about an improved migrations system,
-which dry-runs by default and provides lots of information to understand what
-is going right or wrong. Or maybe you've been waiting for Web3.js 1.0. Or
-maybe you're sick of typing `.then()` in console and want to use `await`
-instead. Truffle v5 has all of this, and more.
+Good day! We're pleased to announce the first beta release of Truffle v5. With this release, we're excited to bring you some new features and improvements that will make your life easier. What's included, you ask? Well, get ready to use whatever Solidity version you want (Truffle will even automatically download it for you.) Or how about an improved migrations system, which dry-runs by default and provides lots of information to understand what is going right or wrong. Or maybe you've been waiting for Web3.js 1.0. Or maybe you're sick of typing `.then()` in console and want to use `await` instead. Truffle v5 has all of this, and more.
 
 If you're as excited as we are and can't wait, here's how to upgrade:
 ```bash
 npm uninstall -g truffle
-npm install -g truffle
+npm install -g truffle@beta
 ```
 
 Or keep reading for more information!
@@ -30,21 +17,21 @@ Or keep reading for more information!
   + [Advanced](#advanced)
   + [Speed comparison](#speed-comparison)
   + [Contract Profiling](#contract-profiling)
-* [🐇 🐇 Web3.js 1.0 🐇 🐇](#--web3js-10--)
-  + [⚠️ Breaking Changes ⚠️](#️-breaking-changes-️)
-  + [🍨 Features 🍨](#-features-)
-  + [Methods / `.new` have an EventEmitter interface *and*  return a promise.](#methods--new-have-an-eventemitter-interface-and--return-a-promise)
-  + [Events have an EventEmitter interface](#events-have-an-eventemitter-interface)
-  + [Reason strings!! Find out the reason.](#reason-strings-find-out-the-reason)
-  + [Overloaded Solidity methods (credit to @rudolfix and @mcdee)](#overloaded-solidity-methods-credit-to-rudolfix-and-mcdee)
+* [🐇 🐇 Web3.js 1.0 🐇 🐇](#web3js-1.0)
+  + [⚠️ Breaking Changes ⚠️](#breaking-changes)
+  + [🍨 Features 🍨](#web3-features)
+  + [Methods / `.new` have an EventEmitter interface *and*  return a promise.](#methods-eventemitter)
+  + [Events have an EventEmitter interface](#events-eventemitter)
+  + [Reason strings!! Find out the reason.](#reason-strings)
+  + [Overloaded Solidity methods (credit to @rudolfix and @mcdee)](#overloaded-solidity-methods)
   + [Configure number return format](#configure-number-return-format)
-  + [Call methods at any block using the `defaultBlock` parameter.](#call-methods-at-any-block-using-the-defaultblock-parameter)
-  + [Automated fueling for method calls and deployments.](#automated-fueling-for-method-calls-and-deployments)
-  + [Contract deployments & transactions allowed to take as long as they take](#contract-deployments--transactions-allowed-to-take-as-long-as-they-take)
+  + [Call methods at any block using the `defaultBlock` parameter.](#default-block)
+  + [Automated fueling for method calls and deployments.](#automated-fueling)
+  + [Contract deployments & transactions allowed to take as long as they take](#contract-deployments-transactions)
   + [Gas estimation for `.new`](#gas-estimation-for-new)
   + [Config](#config)
-* [🐦 🐦  New Migrations 🐦 🐦](#---new-migrations--)
-    - [Features](#features)
+* [🐦 🐦  New Migrations 🐦 🐦](#new-migrations)
+    - [Features](#new-migrations-features)
     - [Configuration and use](#configuration-and-use)
 * [Even More!](#even-more)
   + [**truffle-console** now supports async/await](#truffle-console-now-supports-asyncawait)
@@ -55,6 +42,7 @@ Or keep reading for more information!
   + [Debugger mapping support](#debugger-mapping-support)
 * [Acknowledgements](#acknowledgements)
 
+<a href="#" id="bring-your-own-compiler"></a>
 ## Bring your own compiler
 
 It's now possible to have Truffle compile with:
@@ -62,6 +50,7 @@ It's now possible to have Truffle compile with:
 + a natively compiled solc binary (you'll need to install this yourself, links to help below).
 + dockerized solc from one of images published [here](https://hub.docker.com/r/ethereum/solc/tags/). (You'll also need to pull down the docker image yourself but it's really easy.)
 
+<a href="#" id="list-available-versions-at-the-command-line"></a>
 ### List available versions at the command line
 ```shell
 $ truffle compile --list                   # Recent stable releases from solc-bin (JS)
@@ -70,6 +59,7 @@ $ truffle compile --list docker            # Recent docker tags from hub.docker.
 $ truffle compile --list releases --all    # Complete list of stable releases.
 ```
 
+<a href="#" id="specify-a-solcjs-version"></a>
 ### Specify a solcjs version
 
 Set the compilers solc `version` key to the one you'd like. Truffle will fetch it from the solc-bin server and cache it in your local evironment.
@@ -86,6 +76,7 @@ module.exports = {
 };
 ```
 
+<a href="#" id="advanced"></a>
 ### Advanced
 + docker
 + native binary
@@ -134,6 +125,7 @@ compilers: {
 }
 ```
 
+<a href="#" id="speed-comparison"></a>
 ### Speed comparison
 Docker and native binary compilers process large contract sets faster than solcjs. If you're just compiling a few contracts at a time, the speedup isn't significant relative to the overhead of running a command (see below). The first time Truffle uses a docker version there's a small delay as it caches the solc version string and a solcjs companion compiler. All subsequent runs should be at full speed.
 
@@ -148,6 +140,7 @@ Times to `truffle compile` on a MacBook Air 1.8GHz, Node 8.11.1
 
 For help installing a natively built compiler, see the Solidity docs [here](https://solidity.readthedocs.io/en/v0.4.23/installing-solidity.html#binary-packages).
 
+<a href="#" id="contract-profiling"></a>
 ### Contract Profiling
 Truffle has always tried figure out which contracts changed recently and compile the smallest set necessary (with varying degrees of success). It now does this reliably so you may benefit from setting up an `npm` convenience script that looks like this:
 ```
@@ -156,7 +149,7 @@ Truffle has always tried figure out which contracts changed recently and compile
 
 Many thanks to the Solidity team for making all of the above possible and for their helpful advice over the last year.  🙌 🙌
 
-
+<a href="#" id="web3js-1.0"></a>
 ## 🐇 🐇 Web3.js 1.0 🐇 🐇
 
 **truffle-contract** now uses Web3.js 1.0 under the hood.  It's nice! The error handling (especially the parameter checking) is really good. And there's lots of new work happening over there  - ENS support is being added and [EthPrize](http://ethprize.io/) is funding an API to make contract packages published to EthPM easily available as well.
@@ -176,6 +169,7 @@ const bnBalance = web3.utils.toBN(stringBalance);
 + EthWork's [bn-chai](https://github.com/EthWorks/bn-chai) library: BN helpers for your tests. (💡 ProTip courtesy elenadimitrova)
 
 ------------
+<a href="#" id="breaking-changes"></a>
 ### ⚠️ Breaking Changes ⚠️
 
 | Category | v4 (Web3 0.0) |  v5 (Web3 1.0) |
@@ -187,8 +181,10 @@ const bnBalance = web3.utils.toBN(stringBalance);
 |`.at` (TruffleContract method)| sync / then-able | async |
 
 -----------
+<a href="#" id="web3-features"></a>
 ### 🍨 Features 🍨
 
+<a href="#" id="methods-eventemitter"></a>
 ### Methods / `.new` have an EventEmitter interface *and*  return a promise.
 ```javascript
 const example = await artifacts.require("Example").deployed();
@@ -202,6 +198,7 @@ example
   .then( receipt => {} )
 ```
 
+<a href="#" id="events-eventemitter"></a>
 ### Events have an EventEmitter interface
 ```javascript
 example
@@ -212,6 +209,7 @@ example
   .ExampleEvent()
   .once('data', event => ... etc ... )
 ```
+<a href="#" id="reason-strings"></a>
 ### Reason strings!! Find out the reason.
 
 **Solidity**
@@ -229,12 +227,14 @@ try {
 }
 ```
 
+<a href="#" id="overloaded-solidity-methods"></a>
 ### Overloaded Solidity methods (credit to @rudolfix and @mcdee)
 ```javascript
 example.methods['setValue(uint256)'](123);
 example.methods['setValue(uint256,uint256)'](11,55);
 ```
 
+<a href="#" id="configure-number-return-format"></a>
 ### Configure number return format
 As mentioned above - **truffle-contract** now returns [BN](https://github.com/indutny/bn.js). We've made this configurable so if you have an existing test suite you'd prefer to gradually transition from [BigNumber](https://github.com/MikeMcl/bignumber.js) to BN, it's possible to configure a contract's number format as below.
 ```javascript
@@ -243,12 +243,14 @@ const Example = artifacts.require('Example');
 Example.numberFormat = 'BigNumber';
 ```
 
+<a href="#" id="default-block"></a>
 ### Call methods at any block using the `defaultBlock` parameter.
 ```javascript
 const oldBlock = 777;
 const valueInThePast = await example.getBalance("0xabc..545", oldBlock);
 ```
 
+<a href="#" id="automated-fueling"></a>
 ### Automated fueling for method calls and deployments.
 ```javascript
 Example.autoGas = true;   // Defaults to true
@@ -257,6 +259,7 @@ const instance = await Example.new();
 await instance.callExpensiveMethod();
 ```
 
+<a href="#" id="contract-deployments-transactions"></a>
 ### Contract deployments & transactions allowed to take as long as they take
 ```javascript
 Example.timeoutBlocks = 10000;
@@ -265,11 +268,13 @@ const example = await Example.new(1);
 await example.setValue(5)
 ```
 
+<a href="#" id="gas-estimation-for-new"></a>
 ### Gas estimation for `.new`
 ```javascript
 const deploymentCost = await Example.new.estimateGas();
 ```
 
+<a href="#" id="config"></a>
 ### Config
 To take advantage of the `confirmations` listener and to hear Events using `.on` or `.once`, you'll need to enable websockets in your network config as below.
 ```js
@@ -285,10 +290,12 @@ module.exports = {
 };
 ```
 
+<a href="#" id="new-migrations"></a>
 ## 🐦 🐦  New Migrations 🐦 🐦
 
 Deploying contracts to public networks is hard ... 🙂 The topic dominates our 10 most visited GitHub issues.  On the bright side, those discussion threads are a rich trove of advice and brilliant insight from experienced Truffle users. V5 includes a rewrite of the `migrations` command that tries to integrate all their hard won knowledge into an easier to use deployment manager.
 
+<a href="#" id="new-migrations-features"></a>
 #### Features
 + **Improved error messaging.**  If Truffle can guess why a deployment failed it tells you and suggests some possible solutions.
 + **More information** about what's going on as you deploy, including cost summaries and real-time status updates about how long transactions have been pending. (See GIF below)
@@ -302,6 +309,7 @@ Deploying contracts to public networks is hard ... 🙂 The topic dominates our 
 $ npm install --save truffle-hdwallet-provider@web3-one
 ```
 
+<a href="#" id="configuration-and-use"></a>
 #### Configuration and use
 
 **Example network config**
@@ -340,8 +348,10 @@ module.exports = async function(deployer) {
 + cag from Gnosis has written a really nice addition to the Migrations module that will automatically deploy contract dependencies you've installed with `npm` along with your own contracts.
 + Under the hood, the `migrations` command is now completely evented and managed by a reporter module. Those hooks will be exposed so anyone can write a UI for it and hopefully you'll be plugging into ever more sophisticated deployment script managers soon. Work on the default UI to make it more interactive and colorful is ongoing.
 
+<a href="#" id="even-more"></a>
 ## Even More!
 
+<a href="#" id="truffle-console-now-supports-asyncawait"></a>
 ### **truffle-console** now supports async/await
 
 A small but decisive improvement that should make the console much easier to use.
@@ -355,17 +365,12 @@ truffle(development)> balance.toNumber()
 truffle(development)>
 ```
 
+<a href="#" id="external-compiler-support"></a>
 ### External compiler support
 
-For more advanced use cases, let's say your smart contract development workflow
-involves more than just compiling Solidity contracts. Maybe you're writing
-[eWASM precompiles](https://github.com/ewasm/ewasm-precompiles/tree/ecadd-truffle-tests/ecadd)
-or making a [two-dimensional `delegatecall` proxy](https://github.com/GNSPS/2DProxy).
-Or maybe you would just rather use [@pubkey's solidity-cli](https://github.com/pubkey/solidity-cli)
-instead of Truffle's `solc` configuration.
+For more advanced use cases, let's say your smart contract development workflow involves more than just compiling Solidity contracts. Maybe you're writing [eWASM precompiles](https://github.com/ewasm/ewasm-precompiles/tree/ecadd-truffle-tests/ecadd) or making a [two-dimensional `delegatecall` proxy](https://github.com/GNSPS/2DProxy). Or maybe you would just rather use [@pubkey's solidity-cli](https://github.com/pubkey/solidity-cli) instead of Truffle's `solc` configuration.
 
-This is now supported by adding a `compilers.external` object to your Truffle
-config:
+This is now supported by adding a `compilers.external` object to your Truffle config:
 ```javascript
 {
   /* ... */
@@ -385,19 +390,16 @@ config:
 }
 ```
 
-When you run `truffle compile`, Truffle will run the configured `command` and
-look for contract artifacts specified by `targets`.
+When you run `truffle compile`, Truffle will run the configured `command` and look for contract artifacts specified by `targets`.
 
 This new configuration supports two main use cases:
 - Your compilation command outputs Truffle JSON artifacts directly
-- Your compilation command outputs individual parts of an artifact, and you
-  want Truffle to generate the artifacts for you.
+- Your compilation command outputs individual parts of an artifact, and you want Truffle to generate the artifacts for you.
 
+<a href="#" id="target-generated-artifacts"></a>
 #### Target generated artifacts
 
-If your compilation command generates artifacts directly, or generates output
-that contains all the information for an artifact, configure a target as
-follows:
+If your compilation command generates artifacts directly, or generates output that contains all the information for an artifact, configure a target as follows:
 ```javascript
 {
   compilers: {
@@ -411,13 +413,12 @@ follows:
 }
 ```
 
-Truffle will expand the glob (`*`) and find all `.json` files in the listed
-path and copy those over as artifacts in the `build/contracts/` directory.
+Truffle will expand the glob (`*`) and find all `.json` files in the listed path and copy those over as artifacts in the `build/contracts/` directory.
 
+<a href="#" id="post-processing-artifacts"></a>
 ##### Post-processing artifacts
 
-The above use case might not be sufficient for all use cases. You can configure
-your target to run an arbitrary post-processing command:
+The above use case might not be sufficient for all use cases. You can configure your target to run an arbitrary post-processing command:
 ```javascript
 {
   compilers: {
@@ -432,19 +433,14 @@ your target to run an arbitrary post-processing command:
 }
 ```
 
-This will run `./process-artifact` for each matched `.json` file, piping
-the contents of that file as stdin. Your `./process-artifact` command is then
-expected to output a complete Truffle artifact as stdout.
+This will run `./process-artifact` for each matched `.json` file, piping the contents of that file as stdin. Your `./process-artifact` command is then expected to output a complete Truffle artifact as stdout.
 
-Want to provide the path as a filename instead? Add `stdin: false` to your
-target configuration.
+Want to provide the path as a filename instead? Add `stdin: false` to your target configuration.
 
-
+<a href="#" id="target-individual-artifact-properties"></a>
 #### Target individual artifact properties
 
-The other way to configure your external compilation is to specify the
-individual properties of your contracts and have Truffle generate the
-artifacts itself:
+The other way to configure your external compilation is to specify the individual properties of your contracts and have Truffle generate the artifacts itself:
 ```javascript
 {
   compilers: {
@@ -466,24 +462,18 @@ artifacts itself:
 }
 ```
 
-Specify `properties` and/or `fileProperties`, and Truffle will look for those
-values when building the artifacts.
+Specify `properties` and/or `fileProperties`, and Truffle will look for those values when building the artifacts.
 
-These two approaches aim to provide flexibility, aiming to meet whatever your
-compilation needs may be.
+These two approaches aim to provide flexibility, aiming to meet whatever your compilation needs may be.
 
+<a href="#" id="debugger-mapping-support"></a>
 ### Debugger mapping support
 
-Mappings are now supported in **truffle-debugger**. Truffle will keep track
-of known mapping keys and let you inspect your contract's `mapping` variables
-with the `v` command. What's more, this means you can inspect `mapping`s of
-`struct`s and `struct`s of `mapping`s, etc.!
+Mappings are now supported in **truffle-debugger**. Truffle will keep track of known mapping keys and let you inspect your contract's `mapping` variables with the `v` command. What's more, this means you can inspect `mapping`s of `struct`s and `struct`s of `mapping`s, etc.!
 
+<a href="#" id="acknowledgements"></a>
 ## Acknowledgements
 
-We'd like to extend a huge thank you to our community, our users, and our
-contributors, who have all been instrumental in helping us get this this
-point. We hope you enjoy this beta and all of Truffle's new features.
+We'd like to extend a huge thank you to our community, our users, and our contributors, who have all been instrumental in helping us get this this point. We hope you enjoy this beta and all of Truffle's new features.
 
-Please let us know if you find any problems or have any suggestions for
-making this release better. 🙇
+Please let us know if you find any problems or have any suggestions for making this release better. 🙇
