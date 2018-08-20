@@ -52,6 +52,8 @@ Or keep reading for more information!
     - [Target generated artifacts](#target-generated-artifacts)
       * [Post-processing artifacts](#post-processing-artifacts)
     - [Target individual artifact properties](#target-individual-artifact-properties)
+  + [Debugger mapping support](#debugger-mapping-support)
+* [Acknowledgements](#acknowledgements)
 
 ## Bring your own compiler
 
@@ -469,3 +471,19 @@ values when building the artifacts.
 
 These two approaches aim to provide flexibility, aiming to meet whatever your
 compilation needs may be.
+
+### Debugger mapping support
+
+Mappings are now supported in **truffle-debugger**. Truffle will keep track
+of known mapping keys and let you inspect your contract's `mapping` variables
+with the `v` command. What's more, this means you can inspect `mapping`s of
+`struct`s and `struct`s of `mapping`s, etc.!
+
+## Acknowledgements
+
+We'd like to extend a huge thank you to our community, our users, and our
+contributors, who have all been instrumental in helping us get this this
+point. We hope you enjoy this beta and all of Truffle's new features.
+
+Please let us know if you find any problems or have any suggestions for
+making this release better. 🙇
