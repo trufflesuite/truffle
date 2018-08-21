@@ -51,11 +51,11 @@ module.exports = function (source, map, meta) {
   // this.addDependency(contractJsonPath); // NOTE adding dependency causes this to run twice
 
   if (this.debug) {
-    Logger.debugger(`this.resourcePath = ${this.resourcePath}`)
-    Logger.debugger(`contract Name = ${contractName}`)
-    Logger.debugger(`migrations Directory = ${migrationsDirectory}`)
-    Logger.debugger(`contracts Build Directory = ${contractsBuildDirectory}`)
-    Logger.debugger(`contract Json Path = ${contractJsonPath}`)
+    Logger.debug(`this.resourcePath = ${this.resourcePath}`)
+    Logger.debug(`contract Name = ${contractName}`)
+    Logger.debug(`migrations Directory = ${migrationsDirectory}`)
+    Logger.debug(`contracts Build Directory = ${contractsBuildDirectory}`)
+    Logger.debug(`contract Json Path = ${contractJsonPath}`)
   }
 
   let callback = this.async()
