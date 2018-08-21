@@ -8,7 +8,7 @@ const Logger = {
     console.log(chalk.red('[! TRUFFLE SOLIDITY ERROR] ' + msg))
   },
   debugger: function (msg) {
-    console.log(chalk.red('[! TRUFFLE SOLIDITY DEBUGGER] ' + msg))
+    console.debug(chalk.red('[! TRUFFLE SOLIDITY DEBUGGER] ' + msg))
   }
 }
 

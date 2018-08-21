@@ -19,7 +19,7 @@ var MyContract = contract(myContract_artifacts)
 MyContract.setProvider(provider);
 ```
 
-You can see this plugin in operation in the [Truffle+Webpack Demo App](https://github.com/ConsenSys/truffle-webpack-demo). The demo is for truffle 4.0 & webpack 4
+You can see this plugin in operation in the [Truffle+Webpack Demo App](https://github.com/ConsenSys/truffle-webpack-demo). The demo is for Truffle 4.0 & Webpack 4
 
 ## Installation
 
