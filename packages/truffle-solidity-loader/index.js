@@ -1,133 +1,69 @@
-/* External Module Dependencies */
-var TruffleContractCompiler = require('truffle/lib/contracts')
-var TruffleContractMigrator = require('truffle/lib/migrate')
-var SolidityParser = require('solidity-parser')
-var Web3 = require('web3')
+const path = require('path')
+const fs = require('fs')
+const { getOptions } = require('loader-utils')
+const validateOptions = require('schema-utils')
+const truffleMigrator = require('truffle-core/lib/commands/migrate')
 
-/* Internal Module Dependencies */
-var Logger = require('./lib/logger_decorator')
-var BuildOptionNormalizer = require('./lib/build_option_normalizer')
-var ScratchDir = require('./lib/scratch_dir')
+const Logger = require('./lib/logDecorator')
+const genBuildOptions = require('./lib/genBuildOptions')
 
-/* Native Node Imports */
-var path = require('path')
-var fs = require('fs')
-
-// Synchronus file existence check helper
-function compiledContractExists (filePath) {
-  try {
-    fs.statSync(filePath)
-  } catch (err) {
-    if (err.code === 'ENOENT') return false
-  }
-  return true
+function parseContractName (resourcePath) {
+  var contractFileName = path.basename(resourcePath)
+  return contractFileName.charAt(0).toUpperCase() + contractFileName.slice(1, contractFileName.length - 4)
 }
 
-// Read the contract source file and pass it to the `compilationFinished` callback
-function returnContractAsSource (filePath, compilationFinished) {
-  fs.readFile(filePath, 'utf8', function (err, solJsFile) {
+function returnContractAsSource (filePath, callback) {
+  return fs.readFile(filePath, 'utf8', function (err, solJSON) {
     if (err) {
       Logger.error(err)
-      return compilationFinished(err, null)
+      return callback(err, null)
     }
-
-    compilationFinished(err, solJsFile)
+    callback(null, solJSON)
   })
 }
 
-// This acts as a mutex to prevent multiple compilation runs
-var isCompilingContracts = false
-
-module.exports = function (source) {
-  this.cacheable && this.cacheable()
-
-  var scratchPath = new ScratchDir()
-  scratchPath.createIfMissing()
-
-  var buildPath = scratchPath.path()
-
-  var compilationFinished = this.async()
-  var contractPath = this.context
-  var contractFilePath = this.resourcePath
-  var contractFileName = path.basename(contractFilePath)
-  var contractName = contractFileName.charAt(0).toUpperCase() + contractFileName.slice(1, contractFileName.length - 4)
-  var compiledContractPath = path.resolve(buildPath, contractFileName + '.js')
-
-  var imports = SolidityParser.parseFile(contractFilePath, 'imports')
-
-  imports.forEach(function (solidityImport) {
-    var dependencyPath = path.resolve(contractPath, solidityImport)
-    this.addDependency(dependencyPath)
-
-    if (compiledContractExists(compiledContractPath)) {
-      fs.unlinkSync(compiledContractPath)
+const schema = {
+  'type': 'object',
+  'required': ['network'],
+  'properties': {
+    'migrations_directory': {
+      'type': 'string'
+    },
+    'network': {
+      'type': 'string'
+    },
+    'contracts_build_directory': {
+      'type': 'string'
     }
-  }.bind(this))
+  },
+  'additionalProperties': false
+}
 
-  var buildOpts = {}
-  buildOpts.logger = Logger
-  buildOpts = BuildOptionNormalizer.normalize(buildOpts, this.query)
+module.exports = function (source, map, meta) {
+  let WebpackOptions = getOptions(this) || {}
+  validateOptions(schema, WebpackOptions, 'truffle-solidity-loader')
 
-  function waitForContractCompilation () {
-    setTimeout(function () {
-      if (compiledContractExists(compiledContractPath)) {
-        returnContractAsSource(compiledContractPath, compilationFinished)
-      } else {
-        waitForContractCompilation()
-      }
-    }.bind(this), 500)
+  let buildOpts = genBuildOptions(WebpackOptions)
+  let migrationsDirectory = WebpackOptions.migrations_directory || `${buildOpts.working_directory}/migrations`
+  let contractsBuildDirectory = WebpackOptions.contracts_build_directory || `${buildOpts.working_directory}/build/contracts`
+  let contractName = parseContractName(this.resourcePath) // this.resourcePath will be the path to the .sol file
+  let contractJsonPath = path.resolve(buildOpts.contracts_build_directory, contractName + '.json')
+  // this.addDependency(contractJsonPath); // NOTE adding dependency causes this to run twice
+
+  if (this.debug) {
+    Logger.debug(`this.resourcePath = ${this.resourcePath}`)
+    Logger.debug(`contract Name = ${contractName}`)
+    Logger.debug(`migrations Directory = ${migrationsDirectory}`)
+    Logger.debug(`contracts Build Directory = ${contractsBuildDirectory}`)
+    Logger.debug(`contract Json Path = ${contractJsonPath}`)
   }
 
-  if (!isCompilingContracts) {
-    Logger.log(`Writing temporary contract build artifacts to ${buildPath}`)
-    isCompilingContracts = true
-
-    var compilerOpts = buildOpts
-    compilerOpts.contracts_directory = contractPath
-    compilerOpts.contracts_build_directory = buildPath
-    compilerOpts.logger = Logger
-    compilerOpts.all = false
-
-    var provisionOpts = {}
-    provisionOpts.provider = new Web3.providers.HttpProvider(buildOpts.web3_rpc_uri)
-    provisionOpts.contracts_build_directory = buildPath
-
-    TruffleContractCompiler.compile(compilerOpts, function (err, contracts) {
-      if (err) {
-        Logger.error(err)
-        return compilationFinished(err, null)
-      }
-
-      isCompilingContracts = false
-      Logger.log('COMPILATION FINISHED')
-      Logger.log('RUNNING MIGRATIONS')
-
-      var migrationOpts = compilerOpts
-      migrationOpts.migrations_directory = buildOpts.migrations_directory
-      migrationOpts.contracts_build_directory = buildPath
-      migrationOpts.provider = provisionOpts.provider
-      migrationOpts.logger = Logger
-      migrationOpts.reset = true                                 // Force the migrations to re-run
-
-      // Once all of the contracts have been compiled, we know we can immediately
-      // try to run the migrations safely.
-      TruffleContractMigrator.run(migrationOpts, function (err, result) {
-        if (err) {
-          Logger.error(err)
-          return compilationFinished(err, null)
-        }
-        console.log('here', result)
-        // Finally return the contract source we were originally asked for.
-        returnContractAsSource(compiledContractPath, compilationFinished)
-      })
-    })
-
-    return
-  }
-
-  if (compiledContractExists(compiledContractPath)) {
-    returnContractAsSource(compiledContractPath, compilationFinished)
-  } else {
-    waitForContractCompilation()
-  }
+  let callback = this.async()
+  truffleMigrator.run(buildOpts, function (err) {
+    if (err) {
+      return callback(err)
+    } else {
+      return returnContractAsSource(contractJsonPath, callback)
+    }
+  })
 }
