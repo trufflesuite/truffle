@@ -52,5 +52,6 @@
   "homepage": "https://github.com/trufflesuite/truffle-compile#readme",
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "gitHead": "07967b472112f1c771ebbc90319781454cf9331b"
 }

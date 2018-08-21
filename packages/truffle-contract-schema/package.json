@@ -31,5 +31,6 @@
   "devDependencies": {
     "mocha": "5.2.0",
     "solc": "0.4.24"
-  }
+  },
+  "gitHead": "07967b472112f1c771ebbc90319781454cf9331b"
 }
