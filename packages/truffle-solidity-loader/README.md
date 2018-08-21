@@ -1,50 +1,81 @@
 ## truffle-solidity-loader
 
-A Webpack loader that will parse and provision Solidity files to Javascript using Truffle for compilation, and utilising Truffle's migrations. This allows you to develop your contracts with Hot Reloading support, and have your migrations automatically re-run on change.
+A Webpack loader allows importing a solidity contract that return a truffle artifact json object. This allows you to develop your contracts with Hot Reloading support, and have your migrations automatically re-run on change. When you run a production build, the contracts will be bundled into your main bundle for easy deployment.
 
-Each time you change a Solidity contract, Webpack will detect the change, recompile the Solidity files, and re-run your Truffle migrations. The updated Solidity contract will be Hot updated in teh browser if enabled.
+## Example
 
-When you run a production build, the contracts will be bundled into your main bundle for easy deployment.
+```javascript
+var provider = new Web3.providers.HttpProvider("http://localhost:8545");
+var contract = require("truffle-contract");
 
-You can see this plugin in operation in the [Truffle+Webpack Demo App](https://github.com/ConsenSys/truffle-webpack-demo)
+// Instead of including a built json file
+import myContract_artifacts from '../build/contracts/MyContract.json'
+var MyContract = contract(myContract_artifacts)
 
-A project by ConsenSys and @johnmcdowall.
+//You can import the solidity contract directly
+import myContract_artifacts from '../contracts/MyContract.sol'
+var MyContract = contract(myContract_artifacts)
+
+MyContract.setProvider(provider);
+```
+
+You can see this plugin in operation in the [Truffle+Webpack Demo App](https://github.com/ConsenSys/truffle-webpack-demo). The demo is for Truffle 4.0 & Webpack 4
 
 ## Installation
 
 `$ npm install --save-dev truffle-solidity-loader`
 
-Add the appropriate config to your `loaders` section of your Webpack config:
+Add the appropriate config to your `loaders` section of your Webpack 4 config:
 
 ```javascript
 {
   test: /\.sol/,
-  loader: 'truffle-solidity'
+  use: [
+    {
+      loader: 'json-loader'
+    },
+    {
+      loader: 'truffle-solidity-loader',
+      options: {
+        network: 'ganache',
+      }
+    }
+  ]
 }
 ```
+
+Webpack applies loaders [right to left](https://webpack.js.org/api/loaders/#pitching-loader), therefore the output of `truffle-solidity-loader` goes into `json-loader`.
+
 
 ### `truffle.js` integration
 
-The loader will detect a `truffle.js` (or `truffle-config.js` for Windows users) config file in your project and use that for configuration.
+The loader will auto detect a `truffle.js` (or `truffle-config.js` for Windows users) config file in your project and use that for configuration.
 
-Importantly, you will need to specify the location of your `migrations` directory in the `truffle.js` file like so:
+### Loader options
 
-`"migrations_directory": "./migrations"`
-
-You can also override the Truffle config using a loader querystring as outlined below:
+  - `migrations_directory`: The path truffle migration scripts
+  - `network`: A network name to use
+  - `contracts_build_directory`: path to directory of truffle JSON artifacts
 
 ```javascript
 {
   test: /\.sol/,
-  loader: 'truffle-solidity?migrations_directory='+path.resolve(__dirname, '../migrations' )
+  use: [
+    {
+      loader: 'json-loader'
+    },
+    {
+      loader: 'truffle-solidity-loader',
+      options: {
+        network: 'ganache',
+        migrations_directory: path.resolve(__dirname, './migrations'),
+        contracts_build_directory: path.resolve(__dirname, '../build/contracts')
+      }
+    }
+  ]
 }
 ```
 
-### Loader Query string config
-
-  - `migrations_directory`: The path to a directory containing your Truffle migrations
-  - `network`: A network name to use
-  - `network_id`: A network id to use
 
 ## Contributing
 

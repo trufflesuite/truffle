@@ -18,7 +18,7 @@ What actually happened. Please give examples and support it with screenshots, co
 
 * Operating System:
 * Truffle version:
-* Testrpc version:
+* ganache-core version:
 * Ethereum client:
 * node version:
 * npm version:
