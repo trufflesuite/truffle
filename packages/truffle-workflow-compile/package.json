@@ -11,6 +11,7 @@
     "truffle-compile": "^4.0.0-beta.0",
     "truffle-config": "^1.1.0-beta.0",
     "truffle-expect": "^0.0.4",
+    "truffle-external-compile": "^1.0.0-beta.0",
     "truffle-resolver": "^5.0.0-beta.0"
   },
   "main": "index.js",
