@@ -19,7 +19,7 @@ function processErr(err, output){
   }
 }
 
-describe.only("migration errors", function() {
+describe("migration errors", function() {
   let config;
   let web3;
   let networkId;
