@@ -19,7 +19,7 @@ function processErr(err, output){
   }
 }
 
-describe("migration errors", function() {
+describe.only("migration errors", function() {
   let config;
   let web3;
   let networkId;
@@ -136,6 +136,32 @@ describe("migration errors", function() {
       assert(output.includes('7_batch_deployments.js'));
       assert(output.includes("batch deployments"));
       assert(output.includes("deprecated"));
+      done();
+    });
+  })
+
+  it("should error if there are js errors in the migrations script (sync)", function(done){
+    this.timeout(70000);
+
+    CommandRunner.run("migrate -f 8", config, err => {
+      const output = logger.contents();
+      assert(err);
+      console.log(output);
+      assert(output.includes('8_js_error_sync.js'));
+      assert(output.includes("ReferenceError"));
+      done();
+    });
+  })
+
+  it("should error if there are js errors in the migrations script (async)", function(done){
+    this.timeout(70000);
+
+    CommandRunner.run("migrate -f 9", config, err => {
+      const output = logger.contents();
+      assert(err);
+      console.log(output);
+      assert(output.includes('9_js_error_async.js'));
+      assert(output.includes("ReferenceError"));
       done();
     });
   })
