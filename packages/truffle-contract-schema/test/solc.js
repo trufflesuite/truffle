@@ -41,7 +41,9 @@ describe("solc", function() {
               "evm.bytecode.object",
               "evm.bytecode.sourceMap",
               "evm.deployedBytecode.object",
-              "evm.deployedBytecode.sourceMap"
+              "evm.deployedBytecode.sourceMap",
+              "devdoc",
+              "userdoc"
             ]
           }
         }
