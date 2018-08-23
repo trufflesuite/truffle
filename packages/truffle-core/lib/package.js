@@ -13,7 +13,7 @@ var fs = require('fs');
 var OS = require("os");
 
 var Package = {
-  install: function(options, callback) {
+  install: async function(options, callback) {
     expect.options(options, [
       "working_directory",
       "ethpm"
@@ -47,7 +47,7 @@ var Package = {
     var registry = options.ethpm.registry;
 
     if (typeof registry == "string") {
-      registry = EthPMRegistry.use(options.ethpm.registry, fakeAddress, provider);
+      registry = await EthPMRegistry.use(options.ethpm.registry, fakeAddress, provider);
     }
 
     var pkg = new EthPM(options.working_directory, host, registry);
@@ -124,8 +124,8 @@ var Package = {
     self.publishable_artifacts(options, function(err, artifacts) {
       if (err) return callback(err);
 
-      web3.eth.getAccounts().then(accs => {
-        var registry = EthPMRegistry.use(options.ethpm.registry, accs[0], provider);
+      web3.eth.getAccounts().then(async (accs) => {
+        var registry = await EthPMRegistry.use(options.ethpm.registry, accs[0], provider);
         var pkg = new EthPM(options.working_directory, host, registry);
 
         fs.access(path.join(options.working_directory, "ethpm.json"), fs.constants.R_OK, function(err) {
