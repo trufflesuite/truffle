@@ -58,8 +58,12 @@ class Migration {
 
         // `migrateFn` might be sync or async. We negotiate that difference in
         // `execute` through the deployer API.
-        const migrateFn = fn(deployer, options.network, accounts);
-        await self._deploy(options, deployer, resolver, migrateFn, callback);
+        try {
+          const migrateFn = fn(deployer, options.network, accounts);
+          await self._deploy(options, deployer, resolver, migrateFn, callback);
+        } catch (err){
+          callback(err);
+        }
       });
 
     } catch(err){

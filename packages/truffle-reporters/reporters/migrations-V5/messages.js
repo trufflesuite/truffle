@@ -61,8 +61,10 @@ class MigrationsMessages{
 
       noBytecode: () =>
         `${prefix}"${data.contract.contractName}" ` +
-        `is an abstract contract or an interface and cannot be deployed\n` +
-        `   * Hint: just import the contract into the '.sol' file that uses it.\n`,
+        `is an abstract contract or an interface and cannot be deployed.\n` +
+        `   * Import abstractions into the '.sol' file that uses them instead of deploying them separately.\n` +
+        `   * Contracts that inherit an abstraction must implement all its method signatures exactly.\n` +
+        `   * A contract that only implements part of an inherited abstraction is also considered abstract.\n`,
 
       noBatches: () =>
         `Support for batch deployments (array syntax) is deprecated. ` +

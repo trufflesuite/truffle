@@ -139,5 +139,31 @@ describe("migration errors", function() {
       done();
     });
   })
+
+  it("should error if there are js errors in the migrations script (sync)", function(done){
+    this.timeout(70000);
+
+    CommandRunner.run("migrate -f 8", config, err => {
+      const output = logger.contents();
+      assert(err);
+      console.log(output);
+      assert(output.includes('8_js_error_sync.js'));
+      assert(output.includes("ReferenceError"));
+      done();
+    });
+  })
+
+  it("should error if there are js errors in the migrations script (async)", function(done){
+    this.timeout(70000);
+
+    CommandRunner.run("migrate -f 9", config, err => {
+      const output = logger.contents();
+      assert(err);
+      console.log(output);
+      assert(output.includes('9_js_error_async.js'));
+      assert(output.includes("ReferenceError"));
+      done();
+    });
+  })
 });
 
