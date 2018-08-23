@@ -51,7 +51,7 @@ There are many ways to contribute!
 
 Please see the main projects [CONTRIBUTING.md][1] for instructions on how to setup a Development Environment to work on Truffle itself.
 
-[1]:https://github.com/trufflesuite/truffle/blob/develop/CONTRIBUTING.md#development
+[1]:https://github.com/trufflesuite/truffle/blob/develop/packages/truffle/CONTRIBUTING.md#development
 
 ### Contributors
 
