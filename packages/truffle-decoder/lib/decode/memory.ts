@@ -1,0 +1,100 @@
+import read from "../read";
+import * as utils from "../utils";
+import decodeValue from "./value";
+import decode from "./index";
+import { chunk } from "../read/memory";
+import { AstDefinition, DataPointer } from "../define/definition";
+
+export default function decodeMemoryReference(definition: AstDefinition, pointer: DataPointer, info) {
+  const { state } = info
+  // debug("pointer %o", pointer);
+  let rawValue: Uint8Array | number = read(pointer, state);
+  if (rawValue == undefined) {
+    return undefined;
+  }
+
+  rawValue = utils.Conversion.toBN(rawValue).toNumber();
+
+  var bytes;
+  switch (utils.Definition.typeClass(definition)) {
+
+    case "bytes":
+    case "string":
+      bytes = read({
+        memory: { start: rawValue, length: utils.EVM.WORD_SIZE}
+      }, state); // bytes contain length
+
+      let childPointer = {
+        memory: { start: rawValue + utils.EVM.WORD_SIZE, length: bytes }
+      }
+
+      return decodeValue(definition, childPointer, info);
+
+    case "array":
+      bytes = utils.Conversion.toBN(read({
+        memory: { start: rawValue, length: utils.EVM.WORD_SIZE },
+      }, state)).toNumber();  // bytes contain array length
+
+      bytes = read({ memory: {
+        start: rawValue + utils.EVM.WORD_SIZE, length: bytes * utils.EVM.WORD_SIZE
+      }}, state); // now bytes contain items
+
+      return chunk(bytes, utils.EVM.WORD_SIZE)
+        .map(
+          (chunk) => decode(utils.Definition.baseDefinition(definition), {
+            literal: chunk
+          }, info)
+        )
+
+    case "struct":
+      const { scopes } = info;
+
+      // Declaration reference usually appears in `typeName`, but for
+      // { nodeType: "FunctionCall", kind: "structConstructorCall" }, this
+      // reference appears to live in `expression`
+      const referencedDeclaration = (definition.typeName)
+        ? definition.typeName.referencedDeclaration
+        : definition.expression.referencedDeclaration;
+
+      let { variables } = (scopes[referencedDeclaration] || {});
+
+      return Object.assign(
+        {}, ...(variables || [])
+          .map(
+            ({name, id}, i) => {
+              let memberDefinition = scopes[id].definition;
+              let memberPointer = {
+                memory: { start: rawValue + i * utils.EVM.WORD_SIZE, length: utils.EVM.WORD_SIZE }
+              };
+              // let memberPointer = memory.read(state.memory, pointer + i * utils.EVM.WORD_SIZE);
+
+              // HACK
+              memberDefinition = {
+                ...memberDefinition,
+
+                typeDescriptions: {
+                  ...memberDefinition.typeDescriptions,
+
+                  typeIdentifier:
+                    memberDefinition.typeDescriptions.typeIdentifier
+                      .replace(/_storage_/g, "_memory_")
+                }
+              };
+
+              return {
+                [name]: decode(
+                  memberDefinition, memberPointer, info
+                )
+              };
+            }
+          )
+      );
+
+
+    default:
+      // debug("Unknown memory reference type: %s", utils.typeIdentifier(definition));
+      return undefined;
+
+  }
+
+}

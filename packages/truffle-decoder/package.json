@@ -2,11 +2,12 @@
   "name": "truffle-decoder",
   "version": "0.1.0",
   "description": "A library that provides both high and low level decoding of Ethereum contract variables",
-  "main": "index.js",
+  "main": "dist/index.js",
   "directories": {
     "lib": "lib"
   },
   "scripts": {
+    "build": "node_modules/.bin/tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -26,6 +27,11 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle#readme",
   "devDependencies": {
+    "@types/bn.js": "^4.11.1",
+    "@types/web3": "^1.0.3",
     "typescript": "^3.0.1"
+  },
+  "dependencies": {
+    "bn.js": "^4.11.8"
   }
 }
