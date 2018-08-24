@@ -87,10 +87,6 @@ var Test = {
     web3.eth.getAccounts().then(function(accs) {
       accounts = accs;
 
-      if (!config.from) {
-        config.from = accounts[0];
-      }
-
       if (!config.resolver) {
         config.resolver = new Resolver(config);
       }
