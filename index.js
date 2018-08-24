@@ -7,10 +7,10 @@ var ProviderSubprovider = require("web3-provider-engine/subproviders/provider.js
 var Web3 = require("web3");
 var Transaction = require('ethereumjs-tx');
 
-function HDWalletProvider(mnemonic, provider_url, address_index=0, num_addresses=1) {
+function HDWalletProvider(mnemonic, provider_url, address_index=0, num_addresses=1, wallet_hdpath="m/44'/60'/0'/0/") {
   this.mnemonic = mnemonic;
   this.hdwallet = hdkey.fromMasterSeed(bip39.mnemonicToSeed(mnemonic));
-  this.wallet_hdpath = "m/44'/60'/0'/0/";
+  this.wallet_hdpath = wallet_hdpath;
   this.wallets = {};
   this.addresses = [];
 
