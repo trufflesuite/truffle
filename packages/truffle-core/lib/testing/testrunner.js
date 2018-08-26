@@ -139,7 +139,7 @@ TestRunner.prototype.startTest = function(mocha, callback) {
 TestRunner.prototype.endTest = function(mocha, callback) {
   var self = this;
 
-  if (mocha.currentTest.state != "failed") {
+  if (mocha.currentTest.state != "failed" && !self.config["show-events"]) {
     return callback();
   }
 
