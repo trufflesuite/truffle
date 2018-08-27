@@ -47,7 +47,8 @@ Please see the [Official Truffle Documentation](http://truffleframework.com/docs
 
 ### Development
 
-We welcome pull requests. To get started, just fork this repo, clone it locally, and run:
+We welcome pull requests. And we have some bounties for high proiority tasks on [gitcoin.co](https://gitcoin.co/explorer?keywords=trufflesuite&order_by=-web3_created)
+To get started, just fork this repo, clone it locally, and run:
 
 ```shell
 # Install
