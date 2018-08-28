@@ -1,7 +1,13 @@
 var command = {
   command: 'test',
   description: 'Run JavaScript and Solidity tests',
-  builder: {},
+  builder: {
+    "show-events": {
+      describe: "Show all test logs",
+      type: "boolean",
+      default: false
+    },
+  },
   run: function (options, done) {
     var OS = require("os");
     var dir = require("node-dir");
