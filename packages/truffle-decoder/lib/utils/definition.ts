@@ -1,8 +1,8 @@
 import { EVM as EVMUtils } from "./evm";
-import { AstDefinition } from "../define/definition";
+import { AstDefinition } from "../types/ast";
 
 export namespace Definition {
-  export function typeIdentifier(definition: AstDefinition) {
+  export function typeIdentifier(definition: AstDefinition): string {
     return definition.typeDescriptions.typeIdentifier;
   }
 
@@ -12,7 +12,7 @@ export namespace Definition {
    *  `t_uint256` becomes `uint`
    *  `t_struct$_Thing_$20_memory_ptr` becomes `struct`
    */
-  export function typeClass(definition: AstDefinition) {
+  export function typeClass(definition: AstDefinition): string {
     return typeIdentifier(definition).match(/t_([^$_0-9]+)/)[1];
   }
 
@@ -21,7 +21,7 @@ export namespace Definition {
    * e.g. uint48 -> 6
    * @return size in bytes for explicit type size, or `null` if not stated
    */
-  export function specifiedSize(definition: AstDefinition) {
+  export function specifiedSize(definition: AstDefinition): number {
     let specified = typeIdentifier(definition).match(/t_[a-z]+([0-9]+)/);
 
     if (!specified) {
@@ -43,7 +43,7 @@ export namespace Definition {
     }
   }
 
-  export function storageSize(definition: AstDefinition) {
+  export function storageSize(definition: AstDefinition): number {
     switch (typeClass(definition)) {
       case "bool":
         return 1;
@@ -66,19 +66,19 @@ export namespace Definition {
     }
   }
 
-  export function isMapping(definition: AstDefinition) {
+  export function isMapping(definition: AstDefinition): boolean {
     return typeIdentifier(definition).match(/^t_mapping/) != null;
   }
 
-  export function isReference(definition: AstDefinition) {
+  export function isReference(definition: AstDefinition): boolean {
     return typeIdentifier(definition).match(/_(memory|storage)(_ptr)?$/) != null;
   }
 
-  export function referenceType(definition: AstDefinition) {
+  export function referenceType(definition: AstDefinition): string {
     return typeIdentifier(definition).match(/_([^_]+)(_ptr)?$/)[1];
   }
 
-  export function baseDefinition(definition: AstDefinition) {
+  export function baseDefinition(definition: AstDefinition): AstDefinition {
     let baseIdentifier = typeIdentifier(definition)
       // first dollar sign     last dollar sign
       //   `---------.       ,---'
@@ -91,10 +91,8 @@ export namespace Definition {
     }
 
     // another HACK - we get away with it becausewe're only using that one property
-    return {
-      typeDescriptions: {
-        typeIdentifier: baseIdentifier
-      }
-    };
+    let result: AstDefinition;
+    result.typeDescriptions.typeIdentifier = baseIdentifier;
+    return result;
   }
 }

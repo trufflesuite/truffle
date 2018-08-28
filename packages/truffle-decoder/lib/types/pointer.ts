@@ -1,35 +1,9 @@
 import { Allocation } from "../utils";
 
-export interface AstTypeDescriptions {
-  typeIdentifier: string;
-  typeString: string;
-}
-
-export interface AstDefinition {
-  constant: boolean;
-  id: number;
-  name: string;
-  nodeType: string;
-  scope: number;
-  src: string;
-  stateVariable: boolean;
-  storageLocation: string;
-  typeDescriptions: AstTypeDescriptions;
-  typeName: {
-    id: number,
-    name: string;
-    nodeType: string;
-    src: string;
-    typeDescriptions: AstTypeDescriptions
-  };
-  value: null | any;
-  visibility: string;
-}
-
 export type DataPointer = StackPointer | MemoryPointer | StoragePointer | LiteralPointer;
 
 export interface GenericPointer {
-  typeClass: string;
+  typeClass?: string;
 }
 
 export interface StackPointer extends GenericPointer {

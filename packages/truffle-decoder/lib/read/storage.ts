@@ -10,19 +10,16 @@ import BN from "bn.js";
  * @param slot - number or possibly-nested array of numbers
  */
 export function slotAddress(slot: utils.Allocation.Slot): BN {
-  // TODO:
-  /*if (slot instanceof Array) {
-    return utils.EVM.keccak256(...slot.map(slotAddress));
-  } else if (typeof slot == "object" && slot.path != undefined) {
-    let { path, offset } = slot;
-    return utils.Conversion.toBN(slotAddress(path)).addn(offset);
-  } else if (typeof slot == "string" && slot.slice(0,2) == "0x") {
-    return utils.Conversion.toBN(slot);
-  } else {
-    return slot;
-  }*/
-
-  return new BN(0);
+  if ("key" in slot && "path" in slot) {
+    // mapping reference
+    return utils.EVM.keccak256(slot.key, slotAddress(slot.path)).add(slot.offset);
+  }
+  else if ("path" in slot) {
+    return slotAddress(slot.path).add(slot.offset);
+  }
+  else {
+    return slot.offset;
+  }
 }
 
 /**
@@ -67,7 +64,7 @@ export function read(storage: any, slot: utils.Allocation.Slot) {
  * @param to - location (see ^). inclusive.
  * @param length - instead of `to`, number of bytes after `from`
  */
-export function readRange(storage: any, range: utils.Allocation.Range) {
+export function readRange(storage: any, range: utils.Allocation.Range): Uint8Array {
   // debug("readRange %o", range);
 
   let { from, to, length } = range;
@@ -83,9 +80,10 @@ export function readRange(storage: any, range: utils.Allocation.Range) {
   if (length) {
     to = {
       slot: {
-        path: from.slot.path,
-        offset: from.slot.offset +
+        path: from.slot.path || undefined,
+        offset: from.slot.offset.addn(
           Math.floor((from.index + length - 1) / utils.EVM.WORD_SIZE)
+        )
       },
       index: (from.index + length - 1) % utils.EVM.WORD_SIZE
     };
@@ -98,13 +96,17 @@ export function readRange(storage: any, range: utils.Allocation.Range) {
 
   // debug("normalized readRange %o", {from,to});
 
-  const totalWords = to.slot.offset - from.slot.offset + 1;
+  let totalWords: BN | number = to.slot.offset.sub(from.slot.offset).addn(1);
+  if (totalWords.bitLength() > 53) {
+    throw new Error("must specify range that is less than 53 bits");
+  }
+  totalWords = totalWords.toNumber();
   // debug("totalWords %o", totalWords);
 
   let data = new Uint8Array(totalWords * utils.EVM.WORD_SIZE);
 
   for (let i = 0; i < totalWords; i++) {
-    let offset = i + from.slot.offset;
+    let offset = from.slot.offset.addn(i);
     data.set(read(storage, { ...from.slot, offset }), i * utils.EVM.WORD_SIZE);
   }
   // debug("words %o", data);

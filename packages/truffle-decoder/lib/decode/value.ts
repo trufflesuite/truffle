@@ -1,9 +1,11 @@
 import read from "../read";
 import * as utils from "../utils";
 import BN from "bn.js";
-import { AstDefinition } from "../define/definition";
+import { AstDefinition } from "../types/ast";
+import { DataPointer } from "../types/pointer";
+import { EvmInfo } from "../types/evm";
 
-export default function decodeValue(definition: AstDefinition, pointer, info): undefined | boolean | BN | string {
+export default function decodeValue(definition: AstDefinition, pointer: DataPointer, info: EvmInfo): undefined | boolean | BN | string {
   const { state } = info;
 
   let bytes = read(pointer, state);

@@ -4,9 +4,11 @@ import decodeValue from "./value";
 import decodeMemoryReference from "./memory";
 import decodeStorageReference from "./storage";
 import decodeMapping from "./mapping";
-import { AstDefinition, DataPointer, isLiteralPointer } from "../define/definition";
+import { AstDefinition } from "../types/ast";
+import { DataPointer, isLiteralPointer, isStoragePointer, isMemoryPointer } from "../types/pointer";
+import { EvmInfo } from "../types/evm";
 
-export default function decode(definition: AstDefinition, pointer: DataPointer, info) {
+export default function decode(definition: AstDefinition, pointer: DataPointer, info: EvmInfo) {
   if (isLiteralPointer(pointer)) {
     return decodeValue(definition, pointer, info);
   }
@@ -16,17 +18,17 @@ export default function decode(definition: AstDefinition, pointer: DataPointer, 
     switch (utils.Definition.referenceType(definition)) {
       case "memory":
         // debug("decoding memory reference, type: %s", identifier);
-        return decodeMemoryReference(definition, pointer, info);
+        return isMemoryPointer(pointer) ? decodeMemoryReference(definition, pointer, info) : undefined;
       case "storage":
         // debug("decoding storage reference, type: %s", identifier);
-        return decodeStorageReference(definition, pointer, info);
+        return isStoragePointer(pointer) ? decodeStorageReference(definition, pointer, info) : undefined;
       default:
         // debug("Unknown reference category: %s", utils.typeIdentifier(definition));
         return undefined;
     }
   }
 
-  if (utils.Definition.isMapping(definition)) {
+  if (utils.Definition.isMapping(definition) && isStoragePointer(pointer)) {
     // debug("decoding mapping, type: %s", identifier);
     return decodeMapping(definition, pointer, info);
   }

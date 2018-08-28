@@ -1,5 +1,6 @@
 import { EVM as EVMUtils } from "./evm";
 import { Definition as DefinitionUtils } from "./definition";
+import { Conversion as ConversionUtils }from "./conversion";
 import BN from "bn.js";
 
 export namespace Allocation {
@@ -17,12 +18,13 @@ export namespace Allocation {
   export interface StorageReference {
     slot: Slot;
     index: number;
-  }
+  };
 
   export interface Slot {
-    path: BN[] | Slot;
-    offset: number;
-  }
+    key?: any; // TODO:
+    path?: Slot;
+    offset: BN;
+  };
 
   /**
    * Allocate storage for given variable declarations
@@ -32,13 +34,13 @@ export namespace Allocation {
   export function allocateDeclarations(
     declarations: any[],
     refs: any[],
-    slot: Slot = { path: [], offset: 0 },
+    slot: Slot = <Slot>{ offset: new BN(0) },
     index: number = EVMUtils.WORD_SIZE - 1,
   ): Range {
     if (index < EVMUtils.WORD_SIZE - 1) {  // starts a new slot
       slot = {
         path: slot,
-        offset: 1
+        offset: new BN(1)
       };
       index = EVMUtils.WORD_SIZE - 1;
     }
@@ -65,7 +67,7 @@ export namespace Allocation {
     if (index < EVMUtils.WORD_SIZE - 1) {
       slot = {
         path: slot,
-        offset: 1
+        offset: new BN(1)
       };
       index = EVMUtils.WORD_SIZE - 1;
     }
@@ -83,8 +85,8 @@ export namespace Allocation {
       ? { slot, index: index - bytes + 1 }
       : {
           slot: {
-            path: slot.path,
-            offset: slot.offset + 1
+            path: slot.path || undefined,
+            offset: slot.offset.addn(1)
           },
           index: EVMUtils.WORD_SIZE - bytes
         };
@@ -94,8 +96,8 @@ export namespace Allocation {
     let next: StorageReference = (from.index == 0)
       ? {
           slot: {
-            path: from.slot.path,
-            offset: from.slot.offset + 1
+            path: from.slot.path || undefined,
+            offset: from.slot.offset.addn(1)
           },
           index: EVMUtils.WORD_SIZE - 1
         }
@@ -118,5 +120,26 @@ export namespace Allocation {
     let result =  allocateDeclarations(struct.variables || [], refs, slot, index);
     // debug("struct result %o", result);
     return result;
+  }
+
+  export function normalizeSlot(inputSlot: any): Slot {
+    if ((typeof inputSlot === "string" && inputSlot.slice(0,2) == "0x") || typeof inputSlot === "number") {
+      return <Slot>{
+        offset: ConversionUtils.toBN(inputSlot)
+      };
+    }
+
+    if (inputSlot instanceof Array) {
+      //
+    }
+
+    if (typeof inputSlot === "object") {
+      // blargh
+    }
+
+    // not a known format, give the 0 slot
+    return <Slot>{
+      offset: new BN(0)
+    };
   }
 }

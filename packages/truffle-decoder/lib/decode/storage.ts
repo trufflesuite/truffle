@@ -2,13 +2,15 @@ import read from "../read";
 import * as utils from "../utils";
 import decode from "./index";
 import decodeValue from "./value";
-import { AstDefinition } from "../define/definition";
+import { AstDefinition } from "../types/ast";
+import { StoragePointer } from "../types/pointer";
+import { EvmInfo } from "../types/evm";
+import { Allocation } from "../utils";
+import BN from "bn.js";
 
-export default function decodeStorageReference(definition: AstDefinition, pointer, info) {
+export default function decodeStorageReference(definition: AstDefinition, pointer: StoragePointer, info: EvmInfo): any {
   var data;
-  var bytes;
   var length;
-  var slot;
 
   const { state } = info;
 
@@ -28,7 +30,7 @@ export default function decodeStorageReference(definition: AstDefinition, pointe
       // debug("baseSize %o", baseSize);
       // debug("perWord %d", perWord);
 
-      const offset = (i) => {
+      const offset = (i: number): number => {
         if (perWord == 1) {
           return i;
         }
@@ -36,7 +38,7 @@ export default function decodeStorageReference(definition: AstDefinition, pointe
         return Math.floor(i * baseSize / utils.EVM.WORD_SIZE);
       }
 
-      const index = (i) => {
+      const index = (i: number) => {
         if (perWord == 1) {
           return utils.EVM.WORD_SIZE - baseSize;
         }
@@ -46,19 +48,17 @@ export default function decodeStorageReference(definition: AstDefinition, pointe
       }
 
       let from = {
-        slot: utils.Allocation.normalizeSlot(pointer.storage.from.slot),
+        slot: pointer.storage.from.slot,
         index: pointer.storage.from.index
       };
 
       // debug("pointer: %o", pointer);
       return [...Array(length).keys()]
         .map( (i) => {
-          let childFrom = {
+          let childFrom: Allocation.StorageReference = {
             slot: {
-              path: (from.slot.path instanceof Array)
-                ? from.slot.path
-                : [from.slot],
-              offset: offset(i),
+              path: from.slot.path || undefined,
+              offset: new BN(offset(i)),
             },
             index: index(i)
           };
@@ -66,10 +66,12 @@ export default function decodeStorageReference(definition: AstDefinition, pointe
         })
         .map( (childFrom, idx) => {
           // debug("childFrom %d, %o", idx, childFrom);
-          return decode(utils.Definition.baseDefinition(definition), { storage: {
-            from: childFrom,
-            length: baseSize
-          }}, info);
+          return decode(utils.Definition.baseDefinition(definition), <StoragePointer>{
+            storage: {
+              from: childFrom,
+              length: baseSize
+            }
+          }, info);
         });
 
     case "bytes":
@@ -102,10 +104,15 @@ export default function decodeStorageReference(definition: AstDefinition, pointe
         length = utils.Conversion.toBN(data).subn(1).divn(2).toNumber();
         // debug("new-word, length %o", length);
 
-        return decodeValue(definition, { storage: {
-          from: { slot: [pointer.storage.from.slot], index: 0 },
-          length
-        }}, info);
+        return decodeValue(definition, <StoragePointer>{
+          storage: {
+            from: {
+              slot: pointer.storage.from.slot,
+              index: 0
+            },
+            length
+          }
+        }, info);
       }
 
     case "struct":
@@ -126,14 +133,14 @@ export default function decodeStorageReference(definition: AstDefinition, pointe
 
       const allocation = utils.Allocation.allocateDeclarations(variables, scopes, slot);
 
-      return Object.assign(
+      return undefined; /*Object.assign( // TODO:
         {}, ...Object.entries(allocation.children)
-          .map( ([id, childPointer]) => ({
+          .map( ([id, childPointer: Datapoint]) => ({
             [childPointer.name]: decode(
               scopes[id].definition, { storage: childPointer }, info
             )
           }))
-      );
+      );*/
 
     default:
       // debug("Unknown storage reference type: %s", utils.typeIdentifier(definition));
