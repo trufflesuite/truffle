@@ -11,6 +11,7 @@ var expect = require("truffle-expect");
 var find_contracts = require("truffle-contract-sources");
 var Config = require("truffle-config");
 var debug = require("debug")("compile");
+var exec = require("child_process").exec;
 
 // Most basic of the compile commands. Takes a hash of sources, where
 // the keys are file or module paths and the values are the bodies of
