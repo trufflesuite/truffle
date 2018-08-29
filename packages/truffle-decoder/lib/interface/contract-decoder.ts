@@ -1,13 +1,21 @@
 import AsyncEventEmitter from "async-eventemitter";
 import Web3 from "web3";
-import { TruffleContractInstance } from "truffle-contract";
+import { TruffleContractInstance } from "./truffle-contract";
 import BN from "bn.js";
+import { AstDefinition } from "../types/ast";
+import cloneDeep from "lodash.clonedeep";
+import getVariableReferences from "../allocate/references";
 
 type BlockReference = number | "latest";
+
+export interface EvmVariableReferenceMapping {
+  [id: string]: AstDefinition
+}
 
 interface EvmMapping {
   name: string;
   type: string;
+  id: string; // UUID that helps request for more key-value pairs
   keyType: string;
   valueType: string;
   members: {
@@ -41,8 +49,13 @@ interface ContractEvent {
   // TODO:
 };
 
-export default class TruffleDecoder extends AsyncEventEmitter {
+export default class TruffleContractDecoder extends AsyncEventEmitter {
   private web3: Web3;
+
+  private contract: TruffleContractInstance;
+  private inheritedContracts: TruffleContractInstance[];
+
+  private stateVariableReferences: EvmVariableReferenceMapping;
 
   constructor(contract: TruffleContractInstance, inheritedContracts: TruffleContractInstance[], provider: string) {
     super();
@@ -54,7 +67,12 @@ export default class TruffleDecoder extends AsyncEventEmitter {
       this.web3 = new Web3(new Web3.providers.WebsocketProvider(provider));
     }
 
-    // slot allocation!
+    this.contract = cloneDeep(contract);
+    this.inheritedContracts = cloneDeep(inheritedContracts);
+  }
+
+  public async init(): Promise<void> {
+    this.variableReferences = await getVariableReferences(this.contract, this.inheritedContracts);
   }
 
   public async state(block: BlockReference = "latest"): Promise<ContractState | undefined> {
@@ -62,6 +80,10 @@ export default class TruffleDecoder extends AsyncEventEmitter {
   }
 
   public async variable(name: string, block: BlockReference = "latest"): Promise<DecodedVariable | undefined> {
+    return undefined;
+  }
+
+  public async mapping(mappingId: number, key: number | BN | string): Promise<EvmVariable | undefined> {
     return undefined;
   }
 

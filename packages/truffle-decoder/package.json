@@ -28,12 +28,15 @@
   "homepage": "https://github.com/trufflesuite/truffle#readme",
   "devDependencies": {
     "@types/bn.js": "^4.11.1",
+    "@types/lodash": "^4.14.116",
     "@types/web3": "^1.0.3",
+    "json-schema-to-typescript": "^5.5.0",
     "typescript": "^3.0.1"
   },
   "dependencies": {
     "async-eventemitter": "^0.2.4",
     "bn.js": "^4.11.8",
+    "lodash.clonedeep": "^4.5.0",
     "web3": "^1.0.0-beta.35"
   }
 }
