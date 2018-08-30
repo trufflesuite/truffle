@@ -215,9 +215,9 @@ var Package = {
       Promise.all(promises).then(function(contracts) {
         // contract_types first.
         contracts.forEach(function(data) {
-          contract_types[data.contract_name] = {
-            contract_name: data.contract_name,
-            bytecode: data.unlinked_binary,
+          contract_types[data.contractName] = {
+            contract_name: data.contractName,
+            bytecode: data.bytecode,
             abi: data.abi
           };
         });
@@ -241,8 +241,8 @@ var Package = {
                       deployments[uri] = {};
                     }
 
-                    deployments[uri][data.contract_name] = {
-                      contract_type: data.contract_name, // TODO: Handle conflict resolution
+                    deployments[uri][data.contractName] = {
+                      contract_type: data.contractName, // TODO: Handle conflict resolution
                       address: data.networks[network_id].address
                     };
 

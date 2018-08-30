@@ -137,8 +137,9 @@ TestRunner.prototype.startTest = function(mocha, callback) {
 
 TestRunner.prototype.endTest = function(mocha, callback) {
   var self = this;
-
-  if (mocha.currentTest.state != "failed") {
+  
+  // Skip logging if test passes and `show-events` option is not true
+  if (mocha.currentTest.state != "failed" && !self.config["show-events"]) {
     return callback();
   }
 
