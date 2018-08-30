@@ -4,7 +4,7 @@
   "description": "JSON schema for contract artifacts",
   "main": "index.js",
   "scripts": {
-    "prepare": "cd spec && json2ts -i contract-object.spec.json -o ../index.d.ts",
+    "prepare": "cd spec && json2ts -i contract-object.spec.json -o ./index.d.ts",
     "test": "mocha"
   },
   "repository": {
@@ -33,5 +33,8 @@
     "json-schema-to-typescript": "^5.5.0",
     "mocha": "5.2.0",
     "solc": "0.4.24"
+  },
+  "directories": {
+    "spec": "./spec"
   }
 }
