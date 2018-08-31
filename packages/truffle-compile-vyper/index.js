@@ -42,6 +42,7 @@ function execVyper(source_path, callback) {
 function compile(options, callback) {
   options.logger = options.logger || console;
 
+
   async.map(options.paths, function (source_path, c) {
     execVyper(source_path, function (err, compiled_contract) {
       options.logger.log(`Compiling ${source_path}...`);
@@ -76,6 +77,9 @@ function compile(options, callback) {
 
 // Check that vyper is available then forward to internal compile function
 function compileVyper(options, callback) {
+  // no vyper files found, no need to check vyper
+  if (options.paths.length === 0) return callback(null, {}, []);
+
   checkVyper(function (err) {
     if (err) return callback(err);
 
