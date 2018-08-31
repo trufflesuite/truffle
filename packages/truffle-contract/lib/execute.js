@@ -203,7 +203,7 @@ var execute = {
         handlers.setup(deferred, context);
 
         deferred.then(async (receipt) => {
-          if (!receipt.status){
+          if (receipt.status !== undefined && !receipt.status){
             var reason = await Reason.get(params, web3);
 
             var error = new StatusError(
