@@ -9,7 +9,7 @@ describe("Deployments", function() {
   var providerOptions = {vmErrorsOnRPCResponse: false};
 
   before(function() {
-    this.timeout(10000);
+    this.timeout(20000);
 
     Example = util.createExample();
 
