@@ -110,8 +110,11 @@ var contract = (function(module) {
         throw new Error(err);
       }
 
-      if (!constructor.bytecode) {
-        var err = constructor.contractName + " error: contract binary not set. Can't deploy new instance.";
+      if (!constructor.bytecode || constructor.bytecode === "0x") {
+        var err = `${constructor.contractName} error: contract binary not set. Can't deploy new instance.\n` +
+                  `This contract may be abstract, not implement an abstract parent's methods completely\n` +
+                  `or not invoke an inherited contract's constructor correctly\n`;
+
         throw new Error(err);
       }
 
