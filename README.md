@@ -22,7 +22,7 @@ Truffle is a development environment, testing framework and asset pipeline for E
 ### Install
 
 ```
-$ npm install -g truffle
+$ npm install -g abi-decoder truffle
 ```
 
 ### Quick Usage
