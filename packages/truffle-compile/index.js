@@ -338,16 +338,20 @@ compile.necessary = function(options, callback) {
   var self = this;
   options.logger = options.logger || console;
 
-  Profiler.updated(options, function(err, updated) {
-    if (err) return callback(err);
+  forEachCompiler(function (compiler, extension, c) {
 
-    if (updated.length == 0 && options.quiet != true) {
-      return callback(null, [], {});
-    }
+    Profiler.updated(options, extension, function(err, updated) {
+      if (err) return c(err);
 
-    options.paths = updated;
-    compile.with_dependencies(options, callback);
-  });
+      if (updated.length == 0 && options.quiet != true) {
+        return c(null, {}, []);
+      }
+
+      options.paths = updated;
+      compiler(options, c);
+    });
+
+  }, callback);
 };
 
 compile.with_dependencies = function(options, callback) {
