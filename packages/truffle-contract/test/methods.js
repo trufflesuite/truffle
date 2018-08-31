@@ -256,10 +256,10 @@ describe("Methods", function() {
               done();
             }
           })
-          .then(async instance => {
-            await util.evm_mine();
-            await util.evm_mine();
-            await util.evm_mine();
+          .then(async receipt => {
+            await example.setValue(5);
+            await example.setValue(10);
+            await example.setValue(15);
           });
       });
     });

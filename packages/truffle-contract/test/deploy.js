@@ -72,9 +72,9 @@ describe("Deployments", function() {
           }
         })
         .then(async instance => {
-          await util.evm_mine();
-          await util.evm_mine();
-          await util.evm_mine();
+          await instance.setValue(5);
+          await instance.setValue(10);
+          await instance.setValue(15);
         });
     });
   });
