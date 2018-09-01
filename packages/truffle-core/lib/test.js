@@ -115,6 +115,7 @@ var Test = {
 
       return self.compileContractsWithTestFilesIfNeeded(sol_tests, rootConfig, otherConfigs);
     }).then(function(paths) {
+      console.log('paths --> ' + paths)
       dependency_paths = paths;
 
       testContracts = sol_tests.map(function(test_file_path) {
@@ -192,8 +193,9 @@ var Test = {
             resolver: rootConfig.test_resolver,
             quiet: false,
             quietWrite: true
-          }), function(err, abstractions, paths) {
+          }), function(err, result) {
             if (err) return reject(err);
+            const paths = result.outputs.solc;
             accept(paths);
           });
         });
