@@ -10,6 +10,7 @@
     "access": "public"
   },
   "dependencies": {
+    "node-emoji": "^1.8.1",
     "ora": "^2.1.0",
     "web3-utils": "1.0.0-beta.35"
   },
