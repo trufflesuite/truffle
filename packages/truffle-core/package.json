@@ -44,7 +44,7 @@
     "truffle-resolver": "^5.0.0-beta.0",
     "truffle-solidity-utils": "^1.1.2",
     "truffle-workflow-compile": "^2.0.0-beta.0",
-    "web3": "1.0.0-beta.35",
+    "web3": "1.0.0-beta.36",
     "yargs": "^8.0.2"
   },
   "bin": {
