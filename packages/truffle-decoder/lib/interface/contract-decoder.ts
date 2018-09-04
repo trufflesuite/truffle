@@ -1,21 +1,27 @@
 import AsyncEventEmitter from "async-eventemitter";
 import Web3 from "web3";
-import { TruffleContractInstance } from "./truffle-contract";
+import { ContractObject, Ast } from "truffle-contract-schema/spec";
 import BN from "bn.js";
 import { AstDefinition } from "../types/ast";
 import cloneDeep from "lodash.clonedeep";
-import getVariableReferences from "../allocate/references";
+import * as references from "../allocate/references";
+import { StoragePointer } from "../types/pointer";
 
 type BlockReference = number | "latest";
 
+export interface ContractStateVariable {
+  definition: AstDefinition;
+  pointer?: StoragePointer;
+}
+
 export interface EvmVariableReferenceMapping {
-  [id: string]: AstDefinition
+  [nodeId: number]: ContractStateVariable
 }
 
 interface EvmMapping {
   name: string;
   type: string;
-  id: string; // UUID that helps request for more key-value pairs
+  id: number;
   keyType: string;
   valueType: string;
   members: {
@@ -49,15 +55,43 @@ interface ContractEvent {
   // TODO:
 };
 
+export interface AstReferences {
+  [nodeId: number]: AstDefinition;
+};
+
+export interface ContractMapping {
+  [nodeId: number]: ContractObject;
+};
+
+export function getContractNode(contract: ContractObject): Ast {
+  for (let j = 0; j < contract.ast.nodes.length; j++) {
+    const contractNode = contract.ast.nodes[j];
+    if (contractNode.nodeType === "ContractDefinition" && contractNode.name === contract.contractName) {
+      return contractNode;
+    }
+  }
+
+  return undefined;
+}
+
+function getContractNodeId(contract: ContractObject): number {
+  const node = getContractNode(contract);
+  return node ? node.id : 0;
+}
+
 export default class TruffleContractDecoder extends AsyncEventEmitter {
   private web3: Web3;
 
-  private contract: TruffleContractInstance;
-  private inheritedContracts: TruffleContractInstance[];
+  private contract: ContractObject;
+  private inheritedContracts: ContractObject[];
+
+  private contracts: ContractMapping = {};
+
+  private referenceDeclarations: AstReferences;
 
   private stateVariableReferences: EvmVariableReferenceMapping;
 
-  constructor(contract: TruffleContractInstance, inheritedContracts: TruffleContractInstance[], provider: string) {
+  constructor(contract: ContractObject, inheritedContracts: ContractObject[], provider: string) {
     super();
 
     if (provider.startsWith("http://") || provider.startsWith("https://")) {
@@ -69,10 +103,16 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
     this.contract = cloneDeep(contract);
     this.inheritedContracts = cloneDeep(inheritedContracts);
+
+    this.contracts[getContractNodeId(this.contract)] = this.contract;
+    this.inheritedContracts.forEach((inheritedContract) => {
+      this.contracts[getContractNodeId(inheritedContract)] = inheritedContract;
+    });
   }
 
   public async init(): Promise<void> {
-    this.variableReferences = await getVariableReferences(this.contract, this.inheritedContracts);
+    this.referenceDeclarations = references.getReferenceDeclarations([this.contract, ...this.inheritedContracts]);
+    this.stateVariableReferences = references.getContractStateVariables(this.contract, this.contracts, this.referenceDeclarations);
   }
 
   public async state(block: BlockReference = "latest"): Promise<ContractState | undefined> {

@@ -30,4 +30,5 @@ export interface AstDefinition {
   value: null | any;
   visibility: string;
   referencedDeclaration?: any;
+  [k: string]: any;
 }

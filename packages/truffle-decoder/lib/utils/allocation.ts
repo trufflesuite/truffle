@@ -80,7 +80,7 @@ export namespace Allocation {
     };
   }
 
-  function allocateValue(slot: Slot, index: number, bytes: number): Range {
+  export function allocateValue(slot: Slot, index: number, bytes: number): Range {
     let from: StorageReference = (index - bytes + 1 >= 0)
       ? { slot, index: index - bytes + 1 }
       : {
@@ -88,7 +88,7 @@ export namespace Allocation {
             path: slot.path || undefined,
             offset: slot.offset.addn(1)
           },
-          index: EVMUtils.WORD_SIZE - bytes
+          index: EVMUtils.WORD_SIZE - bytes // TODO: shouldn't this be 0?
         };
 
     let to: StorageReference = { slot: from.slot, index: from.index + bytes - 1 };
