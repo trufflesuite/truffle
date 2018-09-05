@@ -8,6 +8,7 @@ import cloneDeep from "lodash.clonedeep";
 import * as references from "../allocate/references";
 import { StoragePointer } from "../types/pointer";
 import decode from "../decode";
+import { Definition as DefinitionUtils } from "../utils";
 
 type BlockReference = number | "latest";
 
@@ -144,7 +145,12 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       };
 
       const val = await decode(variable.definition, variable.pointer, info, this.web3, contractAddress);
-      console.log(val);
+
+      result.variables.push(<DecodedVariable>{
+        name: variable.definition.name,
+        type: DefinitionUtils.typeClass(variable.definition),
+        value: val
+      });
     }
 
     return result;
