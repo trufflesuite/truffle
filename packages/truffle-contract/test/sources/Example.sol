@@ -7,6 +7,7 @@ contract Example {
   uint public counter;
   bool public fallbackTriggered;
   uint[] public numbers;
+  bytes public data;
 
   event ExampleEvent(address indexed _from, uint num);
   event ContractAddressEvent(address _contract);
@@ -40,6 +41,10 @@ contract Example {
 
   function getNumbers() public view returns (uint [] vals){
     return numbers;
+  }
+
+  function setBytesDataToZero() public {
+    data = new bytes(0);
   }
 
   function isDeployed() public view returns (address){

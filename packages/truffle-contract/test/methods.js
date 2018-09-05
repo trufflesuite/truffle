@@ -236,6 +236,13 @@ describe("Methods", function() {
       Example.numberFormat = 'BigNumber';
     });
 
+    it.skip('should represent zero bytes as `0x`', async function(){
+      const example = await Example.new(1)
+      await example.setBytesDataToZero();
+      const data = await example.data();
+      assert(data === '0x');
+    });
+
     it("should output int values as string when set to 'String' (call)", async function(){
       let value;
       Example.numberFormat = 'String';
