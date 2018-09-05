@@ -18,7 +18,7 @@ You can use this provider wherever a Web3 provider is needed, not just in Truffl
 
 ```javascript
 var HDWalletProvider = require("truffle-hdwallet-provider");
-var mnemonic = "opinion destroy betray ..."; // 12 word mnemonic
+var mnemonic = "mountains supernatural bird..."; // 12 word mnemonic
 var provider = new HDWalletProvider(mnemonic, "http://localhost:8545");
 
 // Or, alternatively pass in a zero-based address index.
@@ -29,9 +29,13 @@ By default, the `HDWalletProvider` will use the address of the first address tha
 
 Parameters:
 
-- `mnemonic`: `string`. 12 word mnemonic which addresses are created from.
-- `provider_uri`: `string`. URI of Ethereum client to send all other non-transaction-related Web3 requests.
-- `address_index`: `number`, optional. If specified, will tell the provider to manage the address at the index specified. Defaults to the first address (index `0`).
+| Parameter | Type | Default | Description |
+| ------ | ---- | ------- | ----------- |
+| mnemonic | *string* | null | <required> 12 word mnemonic which addresses are created from. |
+| provider_uri | *string* | null | <required> URI of Ethereum client to send all other non-transaction-related Web3 requests |
+| address_index | *number* | 0 | <optional> If specified, will tell the provider to manage the address at the index specified |
+| num_addresses | *number* | 1 | <optional> If specified, will create `number` addresses when instantiated |
+| shareNonce | *boolean* | true | <optional> If false, a new WalletProvider will track its own nonce-state |
 
 ## Truffle Usage
 
@@ -41,7 +45,7 @@ truffle.js
 ```javascript
 var HDWalletProvider = require("truffle-hdwallet-provider");
 
-var mnemonic = "opinion destroy betray ...";
+var mnemonic = "mountains supernatural bird ...";
 
 module.exports = {
   networks: {

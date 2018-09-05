@@ -8,7 +8,20 @@ var ProviderSubprovider = require("web3-provider-engine/subproviders/provider.js
 var Web3 = require("web3");
 var Transaction = require('ethereumjs-tx');
 
-function HDWalletProvider(mnemonic, provider_url, address_index=0, num_addresses=1) {
+// This line shares nonce state across multiple provider instances. Necessary
+// because within truffle the wallet is repeatedly newed if it's declared in the config within a
+// function, resetting nonce from tx to tx. An instance can opt out
+// of this behavior by passing `shareNonce=false` to the constructor.
+// See issue #65 for more
+var singletonNonceSubProvider = new NonceSubProvider();
+
+function HDWalletProvider(
+  mnemonic,
+  provider_url,
+  address_index=0,
+  num_addresses=1,
+  shareNonce=true
+) {
   this.mnemonic = mnemonic;
   this.hdwallet = hdkey.fromMasterSeed(bip39.mnemonicToSeed(mnemonic));
   this.wallet_hdpath = "m/44'/60'/0'/0/";
@@ -43,7 +56,10 @@ function HDWalletProvider(mnemonic, provider_url, address_index=0, num_addresses
     }
   }));
 
-  this.engine.addProvider(new NonceSubProvider());
+  (!shareNonce)
+    ? this.engine.addProvider(new NonceSubProvider())
+    : this.engine.addProvider(singletonNonceSubProvider);
+
   this.engine.addProvider(new FiltersSubprovider());
   this.engine.addProvider(new ProviderSubprovider(new Web3.providers.HttpProvider(provider_url)));
   this.engine.start(); // Required by the provider engine.
