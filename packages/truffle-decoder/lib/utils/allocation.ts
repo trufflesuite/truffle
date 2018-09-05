@@ -23,6 +23,7 @@ export namespace Allocation {
   export interface Slot {
     key?: any; // TODO:
     path?: Slot;
+    hashOffset?: boolean;
     offset: BN;
   };
 
@@ -88,7 +89,7 @@ export namespace Allocation {
             path: slot.path || undefined,
             offset: slot.offset.addn(1)
           },
-          index: EVMUtils.WORD_SIZE - bytes // TODO: shouldn't this be 0?
+          index: EVMUtils.WORD_SIZE - bytes
         };
 
     let to: StorageReference = { slot: from.slot, index: from.index + bytes - 1 };
