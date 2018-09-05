@@ -1,6 +1,7 @@
-var Web3 = require('web3');
+var Web3 = require("web3");
+var ethers = require("ethers");
 var abi = require("web3-eth-abi");
-var reformat = require('./reformat');
+var reformat = require("./reformat");
 
 var web3 = new Web3();
 
@@ -18,37 +19,39 @@ var Utils = {
     var constructor = this;
     var logs = Utils.toTruffleLog(_logs, isSingle);
 
-    return logs.map(function(log) {
-      var logABI = constructor.events[log.topics[0]];
+    return logs
+      .map(function(log) {
+        var logABI = constructor.events[log.topics[0]];
 
-      if (logABI == null) {
-        return null;
-      }
+        if (logABI == null) {
+          return null;
+        }
 
-      var copy = Utils.merge({}, log);
+        var copy = Utils.merge({}, log);
 
-      copy.event = logABI.name;
-      copy.topics = logABI.anonymous ? copy.topics : copy.topics.slice(1);
+        copy.event = logABI.name;
+        copy.topics = logABI.anonymous ? copy.topics : copy.topics.slice(1);
 
-      const logArgs = abi.decodeLog(logABI.inputs, copy.data, copy.topics);
-      copy.args = reformat.numbers.call(constructor, logArgs, logABI.inputs);
+        const logArgs = abi.decodeLog(logABI.inputs, copy.data, copy.topics);
+        copy.args = reformat.numbers.call(constructor, logArgs, logABI.inputs);
 
-      delete copy.data;
-      delete copy.topics;
+        delete copy.data;
+        delete copy.topics;
 
-      return copy;
-    }).filter(function(log) {
-      return log != null;
-    });
+        return copy;
+      })
+      .filter(function(log) {
+        return log != null;
+      });
   },
 
-  toTruffleLog: function(events, isSingle){
+  toTruffleLog: function(events, isSingle) {
     // Transform singletons (from event listeners) to the kind of
     // object we find on the receipt
-    if (isSingle && typeof isSingle === 'boolean'){
+    if (isSingle && typeof isSingle === "boolean") {
       var temp = [];
       temp.push(events);
-      return temp.map(function(log){
+      return temp.map(function(log) {
         log.data = log.raw.data;
         log.topics = log.raw.topics;
         return log;
@@ -57,7 +60,7 @@ var Utils = {
 
     // Or reformat items in the existing array
     events.forEach(event => {
-      if (event.raw){
+      if (event.raw) {
         event.data = event.raw.data;
         event.topics = event.raw.topics;
       }
@@ -82,18 +85,18 @@ var Utils = {
 
     return merged;
   },
-  parallel: function (arr, callback) {
-    callback = callback || function () {};
+  parallel: function(arr, callback) {
+    callback = callback || function() {};
     if (!arr.length) {
       return callback(null, []);
     }
     var index = 0;
     var results = new Array(arr.length);
-    arr.forEach(function (fn, position) {
-      fn(function (err, result) {
+    arr.forEach(function(fn, position) {
+      fn(function(err, result) {
         if (err) {
           callback(err);
-          callback = function () {};
+          callback = function() {};
         } else {
           index++;
           results[position] = result;
@@ -117,10 +120,10 @@ var Utils = {
   },
 
   // Extracts optional tx params from a list of fn arguments
-  getTxParams: function(args){
+  getTxParams: function(args) {
     var constructor = this;
 
-    var tx_params =  {};
+    var tx_params = {};
     var last_arg = args[args.length - 1];
 
     // It's only tx_params if it's an object and not a BigNumber.
@@ -133,33 +136,57 @@ var Utils = {
 
   // Verifies that a contracts libraries have been linked correctly.
   // Throws on error
-  checkLibraries: function(){
+  checkLibraries: function() {
     var constructor = this;
     var regex = /__[^_]+_+/g;
     var unlinked_libraries = constructor.binary.match(regex);
 
     if (unlinked_libraries != null) {
-      unlinked_libraries = unlinked_libraries.map(function(name) {
-        // Remove underscores
-        return name.replace(/_/g, "");
-      }).sort().filter(function(name, index, arr) {
-        // Remove duplicates
-        if (index + 1 >= arr.length) {
-          return true;
-        }
+      unlinked_libraries = unlinked_libraries
+        .map(function(name) {
+          // Remove underscores
+          return name.replace(/_/g, "");
+        })
+        .sort()
+        .filter(function(name, index, arr) {
+          // Remove duplicates
+          if (index + 1 >= arr.length) {
+            return true;
+          }
 
-        return name != arr[index + 1];
-      }).join(", ");
+          return name != arr[index + 1];
+        })
+        .join(", ");
 
-      var error = constructor.contractName +
-                  " contains unresolved libraries. You must deploy and link" +
-                  " the following libraries before you can deploy a new version of " +
-                  constructor.contractName + ": " + unlinked_libraries;
-
+      var error =
+        constructor.contractName +
+        " contains unresolved libraries. You must deploy and link" +
+        " the following libraries before you can deploy a new version of " +
+        constructor.contractName +
+        ": " +
+        unlinked_libraries;
 
       throw new Error(error);
     }
   },
+
+  convertToEthersBN: function(original) {
+    const converted = [];
+    original.forEach(item => {
+      // Recurse for arrays
+      if (Array.isArray(item)) {
+        converted.push(Utils.convertToEthersBN(item));
+
+        // Convert Web3 BN / BigNumber
+      } else if (Utils.is_big_number(item)) {
+        const ethersBN = ethers.utils.bigNumberify(item.toString());
+        converted.push(ethersBN);
+      } else {
+        converted.push(item);
+      }
+    });
+    return converted;
+  }
 };
 
 module.exports = Utils;
