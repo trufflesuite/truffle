@@ -53,6 +53,8 @@ var execute = {
     var args = Array.prototype.slice.call(_arguments);
     var params = utils.getTxParams.call(constructor, args);
 
+    args = utils.convertToEthersBN(args);
+
     return constructor
       .detectNetwork()
       .then(() => {return {args: args, params: params}});
@@ -116,6 +118,7 @@ var execute = {
         try {
 
           await constructor.detectNetwork();
+          args = utils.convertToEthersBN(args);
           result = await fn(...args).call(params, defaultBlock);
           result = reformat.numbers.call(constructor, result, methodABI.outputs);
           resolve(result);
@@ -151,6 +154,7 @@ var execute = {
       }
 
       constructor.detectNetwork().then(network => {
+        args = utils.convertToEthersBN(args);
         params.to = address;
         params.data = fn ? fn(...args).encodeABI() : undefined;
 
@@ -187,7 +191,7 @@ var execute = {
 
     var options = {
       data: constructor.binary,
-      arguments: args
+      arguments: utils.convertToEthersBN(args)
     };
 
     var contract = new web3.eth.Contract(abi);

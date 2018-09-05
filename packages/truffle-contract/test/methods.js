@@ -2,6 +2,7 @@ var assert = require("chai").assert;
 var BigNumber = require("bignumber.js");
 var util = require('./util');
 var contract = require("../");
+var ethers = require('ethers');
 
 describe("Methods", function() {
   var Example;
@@ -106,7 +107,7 @@ describe("Methods", function() {
 
     it("should allow BigNumbers as input params, not treat them as tx objects", async function() {
       let value;
-      const example = await Example.new( new BigNumber(30))
+      const example = await Example.new(new BigNumber(30))
 
       value = await example.value.call();
       assert.equal(value.valueOf(), 30, "Starting value should be 30");
@@ -118,11 +119,22 @@ describe("Methods", function() {
 
       value = await example.parrot.call(new BigNumber(865));
       assert.equal(parseInt(value), 865, "Parrotted value should equal 865")
+
+      // Arrays
+      const numArray = [
+        new BigNumber(1),
+        new BigNumber(2)
+      ];
+
+      await example.setNumbers(numArray);
+      const numbers = await example.getNumbers();
+      assert(numbers[0].toNumber() === 1);
+      assert(numbers[1].toNumber() === 2);
     });
 
-    it("should allow BN's as input paramss, not treat them as tx objects", async function() {
+    it("should allow BN's as input params, not treat them as tx objects", async function() {
       let value;
-      const example = await Example.new( new web3.utils.BN(30))
+      const example = await Example.new(new web3.utils.BN(30))
 
       value = await example.value.call();
       assert.equal(value.valueOf(), 30, "Starting value should be 30");
@@ -133,7 +145,18 @@ describe("Methods", function() {
       assert.equal(value.valueOf(), 25, "Ending value should be twenty-five");
 
       value = await example.parrot.call(new web3.utils.BN(865));
-      assert.equal(parseInt(value), 865, "Parrotted value should equal 865")
+      assert.equal(parseInt(value), 865, "Parrotted value should equal 865");
+
+      // Arrays
+      const numArray = [
+        web3.utils.toBN(1),
+        web3.utils.toBN(2)
+      ];
+
+      await example.setNumbers(numArray);
+      const numbers = await example.getNumbers();
+      assert(numbers[0].toNumber() === 1);
+      assert(numbers[1].toNumber() === 2);
     });
 
     it("should output uint tuples as BN by default (call)", async function(){

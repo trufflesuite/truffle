@@ -1,10 +1,12 @@
 pragma solidity ^0.4.22;
 
 contract Example {
+
   bytes32 public hash;
   uint public value;
   uint public counter;
   bool public fallbackTriggered;
+  uint[] public numbers;
 
   event ExampleEvent(address indexed _from, uint num);
   event ContractAddressEvent(address _contract);
@@ -30,6 +32,14 @@ contract Example {
 
   function setValue(uint val) public {
     value = val;
+  }
+
+  function setNumbers(uint[] vals) public {
+    numbers = vals;
+  }
+
+  function getNumbers() public view returns (uint [] vals){
+    return numbers;
   }
 
   function isDeployed() public view returns (address){

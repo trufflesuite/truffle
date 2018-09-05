@@ -1,4 +1,5 @@
 var Web3 = require('web3');
+var ethers = require('ethers');
 var abi = require("web3-eth-abi");
 var reformat = require('./reformat');
 
@@ -160,6 +161,26 @@ var Utils = {
       throw new Error(error);
     }
   },
+
+  convertToEthersBN: function(original){
+    const converted = [];
+    original.forEach(item => {
+
+      // Recurse for arrays
+      if (Array.isArray(item)){
+        converted.push(Utils.convertToEthersBN(item));
+
+      // Convert Web3 BN / BigNumber
+      } else if (Utils.is_big_number(item)){
+        const ethersBN = ethers.utils.bigNumberify(item.toString())
+        converted.push(ethersBN);
+
+      } else {
+        converted.push(item);
+      }
+    })
+    return converted;
+  }
 };
 
 module.exports = Utils;
