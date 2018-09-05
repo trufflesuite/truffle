@@ -11,5 +11,5 @@ export interface EvmState {
 export interface EvmInfo {
   scopes: any;
   state: EvmState;
-  mappingKeys: any;
+  mappingKeys?: any;
 }

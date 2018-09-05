@@ -3,9 +3,11 @@ import Web3 from "web3";
 import { ContractObject, Ast } from "truffle-contract-schema/spec";
 import BN from "bn.js";
 import { AstDefinition } from "../types/ast";
+import { EvmInfo } from "../types/evm";
 import cloneDeep from "lodash.clonedeep";
 import * as references from "../allocate/references";
 import { StoragePointer } from "../types/pointer";
+import decode from "../decode";
 
 type BlockReference = number | "latest";
 
@@ -83,6 +85,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   private web3: Web3;
 
   private contract: ContractObject;
+  private contractNetwork: string;
   private inheritedContracts: ContractObject[];
 
   private contracts: ContractMapping = {};
@@ -101,8 +104,10 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       this.web3 = new Web3(new Web3.providers.WebsocketProvider(provider));
     }
 
-    this.contract = cloneDeep(contract);
-    this.inheritedContracts = cloneDeep(inheritedContracts);
+    this.contract = contract; //cloneDeep(contract);
+    this.inheritedContracts = inheritedContracts; //cloneDeep(inheritedContracts);
+
+    this.contractNetwork = Object.keys(this.contract.networks)[0];
 
     this.contracts[getContractNodeId(this.contract)] = this.contract;
     this.inheritedContracts.forEach((inheritedContract) => {
@@ -116,7 +121,33 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   public async state(block: BlockReference = "latest"): Promise<ContractState | undefined> {
-    return undefined;
+    const contractAddress = this.contract.networks[this.contractNetwork].address;
+
+    let result: ContractState = {
+      name: this.contract.contractName,
+      balance: new BN(await this.web3.eth.getBalance(contractAddress)),
+      variables: []
+    };
+
+    const nodeIds = Object.keys(this.stateVariableReferences);
+
+    for(let i = 0; i < nodeIds.length; i++) {
+      const variable = this.stateVariableReferences[parseInt(nodeIds[i])];
+      const info: EvmInfo = {
+        scopes: {},
+        state: {
+          stack: [],
+          storage: {},
+          memory: new Uint8Array(0)
+        },
+        mappingKeys: {}
+      };
+
+      const val = await decode(variable.definition, variable.pointer, info, this.web3, contractAddress);
+      console.log(val);
+    }
+
+    return result;
   }
 
   public async variable(name: string, block: BlockReference = "latest"): Promise<DecodedVariable | undefined> {

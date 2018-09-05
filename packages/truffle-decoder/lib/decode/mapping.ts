@@ -3,8 +3,9 @@ import { AstDefinition } from "../types/ast";
 import { StoragePointer, LiteralPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { Allocation } from "../utils";
+import Web3 from "web3";
 
-export default function decodeMapping(definition: AstDefinition, pointer: StoragePointer, info: EvmInfo) {
+export default function decodeMapping(definition: AstDefinition, pointer: StoragePointer, info: EvmInfo, web3?: Web3, contractAddress?: string) {
   if (definition.referencedDeclaration) {
     // attempting to decode reference to mapping, thus missing valid pointer
     return undefined;
@@ -51,11 +52,11 @@ export default function decodeMapping(definition: AstDefinition, pointer: Storag
     // debug("keyPointer %o", keyPointer);
 
     // NOTE mapping keys are potentially lossy because JS only likes strings
-    let keyValue = decode(keyDefinition, keyPointer, info);
+    let keyValue = decode(keyDefinition, keyPointer, info, web3, contractAddress);
     // debug("keyValue %o", keyValue);
     if (keyValue != undefined) {
       mapping[keyValue.toString()] =
-        decode(valueDefinition, valuePointer, info);
+        decode(valueDefinition, valuePointer, info, web3, contractAddress);
     }
   }
 

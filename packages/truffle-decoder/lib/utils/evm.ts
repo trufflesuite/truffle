@@ -1,7 +1,6 @@
 import BN from "bn.js";
 import Web3 from "web3";
 import { Conversion as ConversionUtils } from "./conversion";
-import { Mixed } from "web3/utils";
 
 export namespace EVM {
   export const WORD_SIZE = 0x20;
@@ -29,7 +28,7 @@ export namespace EVM {
     }
   }*/
 
-  export function keccak256(...args: Mixed[]): BN {
+  export function keccak256(...args: any[]): BN {
     let web3 = new Web3();
 
     // debug("args %o", args);

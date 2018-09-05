@@ -7,10 +7,11 @@ import decodeMapping from "./mapping";
 import { AstDefinition } from "../types/ast";
 import { DataPointer, isLiteralPointer, isStoragePointer, isMemoryPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
+import Web3 from "web3";
 
-export default function decode(definition: AstDefinition, pointer: DataPointer, info: EvmInfo) {
+export default async function decode(definition: AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<any> {
   if (isLiteralPointer(pointer)) {
-    return decodeValue(definition, pointer, info);
+    return await decodeValue(definition, pointer, info, web3, contractAddress);
   }
 
   const identifier = utils.Definition.typeIdentifier(definition);
@@ -18,10 +19,10 @@ export default function decode(definition: AstDefinition, pointer: DataPointer, 
     switch (utils.Definition.referenceType(definition)) {
       case "memory":
         // debug("decoding memory reference, type: %s", identifier);
-        return isMemoryPointer(pointer) ? decodeMemoryReference(definition, pointer, info) : undefined;
+        return isMemoryPointer(pointer) ? await decodeMemoryReference(definition, pointer, info) : undefined;
       case "storage":
         // debug("decoding storage reference, type: %s", identifier);
-        return isStoragePointer(pointer) ? decodeStorageReference(definition, pointer, info) : undefined;
+        return isStoragePointer(pointer) ? await decodeStorageReference(definition, pointer, info, web3, contractAddress) : undefined;
       default:
         // debug("Unknown reference category: %s", utils.typeIdentifier(definition));
         return undefined;
@@ -30,9 +31,9 @@ export default function decode(definition: AstDefinition, pointer: DataPointer, 
 
   if (utils.Definition.isMapping(definition) && isStoragePointer(pointer)) {
     // debug("decoding mapping, type: %s", identifier);
-    return decodeMapping(definition, pointer, info);
+    return await decodeMapping(definition, pointer, info, web3, contractAddress);
   }
 
   // debug("decoding value, type: %s", identifier);
-  return decodeValue(definition, pointer, info);
+  return await decodeValue(definition, pointer, info, web3, contractAddress);
 }

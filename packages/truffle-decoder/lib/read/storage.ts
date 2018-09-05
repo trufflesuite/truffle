@@ -1,5 +1,7 @@
 import * as utils from "../utils";
 import BN from "bn.js";
+import Web3 from "web3";
+import { Conversion } from "../utils";
 
 /**
  * convert a slot to a word corresponding to actual storage address
@@ -10,11 +12,14 @@ import BN from "bn.js";
  * @param slot - number or possibly-nested array of numbers
  */
 export function slotAddress(slot: utils.Allocation.Slot): BN {
-  if ("key" in slot && "path" in slot) {
+  if (typeof slot.key !== "undefined" && typeof slot.path !== "undefined") {
     // mapping reference
     return utils.EVM.keccak256(slot.key, slotAddress(slot.path)).add(slot.offset);
   }
-  else if ("path" in slot) {
+  else if (slot.hashOffset === true) {
+    return utils.EVM.keccak256(slot.offset);
+  }
+  else if (typeof slot.path !== "undefined") {
     return slotAddress(slot.path).add(slot.offset);
   }
   else {
@@ -28,13 +33,18 @@ export function slotAddress(slot: utils.Allocation.Slot): BN {
  * @param slot - big number or array of regular numbers
  * @param offset - for array, offset from the keccak determined location
  */
-export function read(storage: any, slot: utils.Allocation.Slot) {
+export async function read(storage: any, slot: utils.Allocation.Slot, web3?: Web3, contractAddress?: string): Promise<Uint8Array> {
   const address = slotAddress(slot);
 
   // debug("reading slot: %o", utils.toHexString(address));
 
-  let word = storage[utils.Conversion.toHexString(address, utils.EVM.WORD_SIZE)] ||
-    new Uint8Array(utils.EVM.WORD_SIZE);
+  const hexAddress = utils.Conversion.toHexString(address, utils.EVM.WORD_SIZE);
+  let word = storage[hexAddress];
+
+  if (typeof word === "undefined" && web3 && contractAddress) {
+    // fallback
+    word = Conversion.toBytes(await web3.eth.getStorageAt(contractAddress, address), 32);
+  }
 
   // debug("word %o", word);
   return word;
@@ -64,7 +74,7 @@ export function read(storage: any, slot: utils.Allocation.Slot) {
  * @param to - location (see ^). inclusive.
  * @param length - instead of `to`, number of bytes after `from`
  */
-export function readRange(storage: any, range: utils.Allocation.Range): Uint8Array {
+export async function readRange(storage: any, range: utils.Allocation.Range, web3?: Web3, contractAddress?: string): Promise<Uint8Array> {
   // debug("readRange %o", range);
 
   let { from, to, length } = range;
@@ -107,7 +117,8 @@ export function readRange(storage: any, range: utils.Allocation.Range): Uint8Arr
 
   for (let i = 0; i < totalWords; i++) {
     let offset = from.slot.offset.addn(i);
-    data.set(read(storage, { ...from.slot, offset }), i * utils.EVM.WORD_SIZE);
+    const word = await read(storage, { ...from.slot, offset }, web3, contractAddress);
+    data.set(word, i * utils.EVM.WORD_SIZE);
   }
   // debug("words %o", data);
 

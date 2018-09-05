@@ -7,10 +7,10 @@ import { AstDefinition } from "../types/ast";
 import { MemoryPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 
-export default function decodeMemoryReference(definition: AstDefinition, pointer: MemoryPointer, info: EvmInfo): any {
+export default async function decodeMemoryReference(definition: AstDefinition, pointer: MemoryPointer, info: EvmInfo): Promise<any> {
   const { state } = info
   // debug("pointer %o", pointer);
-  let rawValue: Uint8Array = read(pointer, state);
+  let rawValue: Uint8Array = await read(pointer, state);
   if (rawValue == undefined) {
     return undefined;
   }
@@ -22,7 +22,7 @@ export default function decodeMemoryReference(definition: AstDefinition, pointer
 
     case "bytes":
     case "string":
-      bytes = read({
+      bytes = await read({
         memory: { start: rawValueNumber, length: utils.EVM.WORD_SIZE}
       }, state); // bytes contain length
 
@@ -33,11 +33,11 @@ export default function decodeMemoryReference(definition: AstDefinition, pointer
       return decodeValue(definition, childPointer, info);
 
     case "array":
-      bytes = utils.Conversion.toBN(read({
+      bytes = utils.Conversion.toBN(await read({
         memory: { start: rawValueNumber, length: utils.EVM.WORD_SIZE },
       }, state)).toNumber();  // bytes contain array length
 
-      bytes = read({ memory: {
+      bytes = await read({ memory: {
         start: rawValueNumber + utils.EVM.WORD_SIZE, length: bytes * utils.EVM.WORD_SIZE
       }}, state); // now bytes contain items
 

@@ -7,8 +7,9 @@ import { StoragePointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { Allocation } from "../utils";
 import BN from "bn.js";
+import Web3 from "web3";
 
-export default function decodeStorageReference(definition: AstDefinition, pointer: StoragePointer, info: EvmInfo): any {
+export default async function decodeStorageReference(definition: AstDefinition, pointer: StoragePointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<any> {
   var data;
   var length;
 
@@ -17,7 +18,7 @@ export default function decodeStorageReference(definition: AstDefinition, pointe
   switch (utils.Definition.typeClass(definition)) {
     case "array":
       // debug("storage array! %o", pointer);
-      data = read(pointer, state);
+      data = await read(pointer, state, web3, contractAddress);
       if (!data) {
         return undefined;
       }
@@ -71,12 +72,12 @@ export default function decodeStorageReference(definition: AstDefinition, pointe
               from: childFrom,
               length: baseSize
             }
-          }, info);
+          }, info, web3, contractAddress);
         });
 
     case "bytes":
     case "string":
-      data = read(pointer, state);
+      data = await read(pointer, state, web3, contractAddress);
       if (data == undefined) {
         return undefined;
       }
@@ -98,7 +99,7 @@ export default function decodeStorageReference(definition: AstDefinition, pointe
         return decodeValue(definition, { storage: {
           from: { slot: pointer.storage.from.slot, index: 0 },
           to: { slot: pointer.storage.from.slot, index: length - 1}
-        }}, info);
+        }}, info, web3, contractAddress);
 
       } else {
         length = utils.Conversion.toBN(data).subn(1).divn(2).toNumber();
@@ -107,12 +108,19 @@ export default function decodeStorageReference(definition: AstDefinition, pointe
         return decodeValue(definition, <StoragePointer>{
           storage: {
             from: {
-              slot: pointer.storage.from.slot,
+              slot: {
+                path: {
+                  path: pointer.storage.from.slot.path || undefined,
+                  offset: pointer.storage.from.slot.offset,
+                  hashOffset: true
+                },
+                offset: new BN(0)
+              },
               index: 0
             },
             length
           }
-        }, info);
+        }, info, web3, contractAddress);
       }
 
     case "struct":
@@ -128,7 +136,7 @@ export default function decodeStorageReference(definition: AstDefinition, pointe
       if (pointer.storage != undefined) {
         slot = pointer.storage.from.slot;
       } else {
-        slot = utils.Allocation.normalizeSlot(utils.Conversion.toBN(read(pointer, state)));
+        slot = utils.Allocation.normalizeSlot(utils.Conversion.toBN(await read(pointer, state, web3, contractAddress)));
       }
 
       const allocation = utils.Allocation.allocateDeclarations(variables, scopes, slot);
@@ -137,7 +145,7 @@ export default function decodeStorageReference(definition: AstDefinition, pointe
         {}, ...Object.entries(allocation.children)
           .map( ([id, childPointer: Datapoint]) => ({
             [childPointer.name]: decode(
-              scopes[id].definition, { storage: childPointer }, info
+              scopes[id].definition, { storage: childPointer }, info, web3, contractAddress
             )
           }))
       );*/
