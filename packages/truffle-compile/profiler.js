@@ -12,13 +12,8 @@ var find_contracts = require("truffle-contract-sources");
 var debug = require("debug")("compile:profiler");
 
 module.exports = {
-  updated: function(options, extension, callback) {
+  updated: function(options, callback) {
     var self = this;
-
-    if (typeof extension == "function") {
-      callback = extension;
-      extension = ".sol";
-    }
 
     expect.options(options, [
       "resolver"
@@ -31,7 +26,7 @@ module.exports = {
       if (options.files) {
         done(null, options.files);
       } else {
-        find_contracts(contracts_directory, extension, done);
+        find_contracts(contracts_directory, done);
       }
     }
 
