@@ -78,7 +78,7 @@ export async function readRange(storage: any, range: utils.Allocation.Range, web
   // debug("readRange %o", range);
 
   let { from, to, length } = range;
-  if (!length && !to || length && to) {
+  if (typeof length === "undefined" && !to || length && to) {
     throw new Error("must specify exactly one `to`|`length`");
   }
 
@@ -87,7 +87,7 @@ export async function readRange(storage: any, range: utils.Allocation.Range, web
     index: from.index || 0
   };
 
-  if (length) {
+  if (typeof length !== "undefined") {
     to = {
       slot: {
         path: from.slot.path || undefined,

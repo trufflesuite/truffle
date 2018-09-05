@@ -13,6 +13,7 @@ import { Definition as DefinitionUtils } from "../utils";
 type BlockReference = number | "latest";
 
 export interface ContractStateVariable {
+  isChildVariable: boolean;
   definition: AstDefinition;
   pointer?: StoragePointer;
 }
@@ -21,7 +22,7 @@ export interface EvmVariableReferenceMapping {
   [nodeId: number]: ContractStateVariable
 }
 
-interface EvmMapping {
+export interface EvmMapping {
   name: string;
   type: string;
   id: number;
@@ -32,7 +33,7 @@ interface EvmMapping {
   };
 };
 
-interface EvmStruct {
+export interface EvmStruct {
   name: string;
   type: string;
   members: {
@@ -98,10 +99,10 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   constructor(contract: ContractObject, inheritedContracts: ContractObject[], provider: string) {
     super();
 
-    if (provider.startsWith("http://") || provider.startsWith("https://")) {
+    if (provider.startsWith("http:\/\/") || provider.startsWith("https:\/\/")) {
       this.web3 = new Web3(new Web3.providers.HttpProvider(provider));
     }
-    else if (provider.startsWith("ws://")) {
+    else if (provider.startsWith("ws:\/\/")) {
       this.web3 = new Web3(new Web3.providers.WebsocketProvider(provider));
     }
 
@@ -134,23 +135,28 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
     for(let i = 0; i < nodeIds.length; i++) {
       const variable = this.stateVariableReferences[parseInt(nodeIds[i])];
-      const info: EvmInfo = {
-        scopes: {},
-        state: {
-          stack: [],
-          storage: {},
-          memory: new Uint8Array(0)
-        },
-        mappingKeys: {}
-      };
 
-      const val = await decode(variable.definition, variable.pointer, info, this.web3, contractAddress);
+      if (!variable.isChildVariable) {
+        const info: EvmInfo = {
+          scopes: {},
+          state: {
+            stack: [],
+            storage: {},
+            memory: new Uint8Array(0)
+          },
+          mappingKeys: {},
+          referenceDeclarations: this.referenceDeclarations,
+          variables: this.stateVariableReferences
+        };
 
-      result.variables.push(<DecodedVariable>{
-        name: variable.definition.name,
-        type: DefinitionUtils.typeClass(variable.definition),
-        value: val
-      });
+        const val = await decode(variable.definition, variable.pointer, info, this.web3, contractAddress);
+
+        result.variables.push(<DecodedVariable>{
+          name: variable.definition.name,
+          type: DefinitionUtils.typeClass(variable.definition),
+          value: val
+        });
+      }
     }
 
     return result;

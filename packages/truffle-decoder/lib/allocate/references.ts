@@ -40,18 +40,22 @@ export function getReferenceDeclarations(contracts: ContractObject[]): AstRefere
 }
 
 function allocateDefinition(node: any, state: ContractStateInfo, referenceDeclarations: AstReferences, path?: Allocation.Slot): void {
+  let isChildVariable: boolean = false;
   let slot: Allocation.Slot = {
     offset: state.slot.offset.clone()
   };
 
   if (typeof path !== "undefined") {
     slot.path = cloneDeep(path);
+    slot.offset = new BN(0);
+    isChildVariable = true;
   }
 
   if (Definition.typeClass(node) != "struct") {
     const range = Allocation.allocateValue(slot, state.slot.index, Definition.storageSize(node));
 
     state.variables[node.id] = <ContractStateVariable>{
+      isChildVariable,
       definition: node,
       pointer: <StoragePointer>{
         storage: cloneDeep(range)
@@ -64,10 +68,40 @@ function allocateDefinition(node: any, state: ContractStateInfo, referenceDeclar
   else {
     const structDefinition = referenceDeclarations[node.typeName.referencedDeclaration]; // ast node of StructDefinition
     if (structDefinition) {
+      let structSlotAllocation: SlotAllocation = {
+        offset: new BN(0),
+        index: EVM.WORD_SIZE - 1
+      };
+      let structContractState: ContractStateInfo = {
+        variables: state.variables,
+        slot: structSlotAllocation
+      };
+
       for (let l = 0; l < structDefinition.members.length; l++) {
         const memberNode = structDefinition.members[l];
-        state.variables[node.id].definition = node;
-        allocateDefinition(memberNode, state, referenceDeclarations, slot);
+        state.variables[node.id] = <ContractStateVariable>{
+          isChildVariable,
+          definition: node,
+          pointer: <StoragePointer>{
+            storage: {
+              from: {
+                slot: slot,
+                index: 0
+              },
+              to: {
+                slot: slot,
+                index: 0
+              }
+            }
+          }
+        };
+        allocateDefinition(memberNode, structContractState, referenceDeclarations, slot);
+      }
+
+      state.slot.offset = state.slot.offset.add(structContractState.slot.offset);
+      state.slot.index = EVM.WORD_SIZE - 1;
+      if (structContractState.slot.index < EVM.WORD_SIZE - 1) {
+        state.slot.offset = state.slot.offset.addn(1);
       }
     }
   }

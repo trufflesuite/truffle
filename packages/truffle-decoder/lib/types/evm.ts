@@ -1,4 +1,4 @@
-
+import { AstReferences, EvmVariableReferenceMapping } from "../interface/contract-decoder";
 
 export interface EvmState {
   stack: Uint8Array[];
@@ -12,4 +12,6 @@ export interface EvmInfo {
   scopes: any;
   state: EvmState;
   mappingKeys?: any;
+  referenceDeclarations?: AstReferences;
+  variables: EvmVariableReferenceMapping
 }

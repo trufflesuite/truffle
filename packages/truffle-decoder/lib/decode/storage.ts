@@ -8,6 +8,7 @@ import { EvmInfo } from "../types/evm";
 import { Allocation } from "../utils";
 import BN from "bn.js";
 import Web3 from "web3";
+import { EvmStruct } from "../interface/contract-decoder";
 
 export default async function decodeStorageReference(definition: AstDefinition, pointer: StoragePointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<any> {
   var data;
@@ -130,25 +131,54 @@ export default async function decodeStorageReference(definition: AstDefinition, 
         ? definition.typeName.referencedDeclaration
         : definition.referencedDeclaration;
 
-      const variables = (scopes[referencedDeclaration] || {}).variables || [];
+      // TODO: this is ugly, this should be one conformed method, will fix at some later point
+      if (typeof scopes[referencedDeclaration] !== "undefined") {
+        // debugger way
+        const variables = (scopes[referencedDeclaration] || {}).variables || [];
 
-      let slot: utils.Allocation.Slot;
-      if (pointer.storage != undefined) {
-        slot = pointer.storage.from.slot;
-      } else {
-        slot = utils.Allocation.normalizeSlot(utils.Conversion.toBN(await read(pointer, state, web3, contractAddress)));
+        let slot: utils.Allocation.Slot;
+        if (pointer.storage != undefined) {
+          slot = pointer.storage.from.slot;
+        } else {
+          slot = utils.Allocation.normalizeSlot(utils.Conversion.toBN(await read(pointer, state, web3, contractAddress)));
+        }
+
+        const allocation = utils.Allocation.allocateDeclarations(variables, scopes, slot);
+
+        return Object.assign(
+          {}, ...Object.entries(allocation.children)
+            .map( ([id, childPointer]) => ({
+              [childPointer.name]: decode(
+                scopes[id].definition, { storage: childPointer }, info, web3, contractAddress
+              )
+            }))
+        );
       }
+      else {
+        // seese's way
+        let result: EvmStruct = {
+          name: definition.name,
+          type: info.referenceDeclarations[referencedDeclaration].name,
+          members: {}
+        };
 
-      const allocation = utils.Allocation.allocateDeclarations(variables, scopes, slot);
+        const members: AstDefinition[] = info.referenceDeclarations[referencedDeclaration].members;
+        for (let i = 0; i < members.length; i++) {
+          const variableRef = info.variables[members[i].id];
+          const val = await decode(
+            variableRef.definition,
+            variableRef.pointer, info, web3, contractAddress
+          );
 
-      return undefined; /*Object.assign( // TODO:
-        {}, ...Object.entries(allocation.children)
-          .map( ([id, childPointer: Datapoint]) => ({
-            [childPointer.name]: decode(
-              scopes[id].definition, { storage: childPointer }, info, web3, contractAddress
-            )
-          }))
-      );*/
+          result.members[variableRef.definition.name] = {
+            name: variableRef.definition.name,
+            type: utils.Definition.typeClass(variableRef.definition),
+            value: val
+          };
+        }
+
+        return result;
+      }
 
     default:
       // debug("Unknown storage reference type: %s", utils.typeIdentifier(definition));
