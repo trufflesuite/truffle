@@ -55,7 +55,8 @@ function Config(truffle_directory, working_directory, network) {
           },
           evmVersion: "byzantium"
         }
-      }
+      },
+      vyper: {}
     },
     logger: {
       log: function() {},
