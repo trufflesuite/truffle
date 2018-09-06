@@ -80,7 +80,7 @@ module.exports = {
 
                 // In case there are artifacts from other source locations.
                 if (sourceFilesArtifacts[data.sourcePath] == null) {
-                  sourceFilesArtifacts[data.sourcePath] = [];
+                  continue;
                 }
 
                 sourceFilesArtifacts[data.sourcePath].push(data);
