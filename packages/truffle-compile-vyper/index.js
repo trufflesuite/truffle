@@ -3,6 +3,7 @@ const exec = require('child_process').exec;
 
 const async = require('async');
 const colors = require('colors');
+const minimatch = require('minimatch');
 
 const find_contracts = require("truffle-contract-sources");
 const Profiler = require("truffle-compile/profiler");
@@ -138,6 +139,11 @@ function compileAll(options, callback) {
 
 // Check that vyper is available then forward to internal compile function
 function compileVyper(options, callback) {
+  // filter out non-vyper paths
+  options.paths = options.paths.filter(function (path) {
+    return minimatch(path, VYPER_PATTERN);
+  });
+
   // no vyper files found, no need to check vyper
   if (options.paths.length === 0) return callback(null, {}, []);
 
