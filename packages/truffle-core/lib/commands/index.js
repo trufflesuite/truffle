@@ -9,6 +9,7 @@ module.exports = {
   console: require("./console"),
   develop: require("./develop"),
   create: require("./create"),
+  help: require("./help"),
   install: require("./install"),
   publish: require("./publish"),
   //digest: require("./digest"),
