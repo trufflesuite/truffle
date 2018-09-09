@@ -20,7 +20,19 @@ var command = {
       default: "false"
     }
   },
-
+  userHelp: {
+    commandName: "compile",
+    usage: "truffle compile [--all] [--network <name>]",
+    options: [
+      {
+        name: "--all",
+        description: "Compile all contracts instead of only the contracts changed since last compile."
+      },{
+        name: "--network <name>",
+        description:  "Specify the network to use, saving artifacts specific to that network. Network name must exist in the configuration."
+      },
+    ]
+  },
   run: function (options, done) {
     var Config = require("truffle-config");
     var Contracts = require("truffle-workflow-compile");
