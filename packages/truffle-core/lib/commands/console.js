@@ -5,13 +5,13 @@ var command = {
   userHelp: {
     commandName: "console",
     usage: "truffle console [--network <name>] [--verbose-rpc]",
-    options: [
+    parameters: [
       {
-        option: "--network <name>",
-        description: "Specify the network to use. Network name must exist in the configuration.",
+        parameter: "--network <name>",
+        description: "Specify the network to use. Network name must exist in the configuration.(optional)",
       },{
-        option: "--verbose-rpc",
-        description: "Log communication between Truffle and the Ethereum client.",
+        parameter: "--verbose-rpc",
+        description: "Log communication between Truffle and the Ethereum client.(optional)",
       },
     ]
   },

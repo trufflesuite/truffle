@@ -23,13 +23,13 @@ var command = {
   userHelp: {
     commandName: "compile",
     usage: "truffle compile [--all] [--network <name>]",
-    options: [
+    parameters: [
       {
-        option: "--all",
-        description: "Compile all contracts instead of only the contracts changed since last compile."
+        parameter: "--all",
+        description: "Compile all contracts instead of only the contracts changed since last compile.(optional)"
       },{
-        option: "--network <name>",
-        description:  "Specify the network to use, saving artifacts specific to that network. Network name must exist in the configuration."
+        parameter: "--network <name>",
+        description:  "Specify the network to use, saving artifacts specific to that network. Network name must exist in the configuration.(optional)"
       },
     ]
   },

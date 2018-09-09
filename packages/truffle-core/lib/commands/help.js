@@ -4,7 +4,7 @@ var command = {
   userHelp: {
     commandName: "help",
     usage: "truffle help <command>",
-    options: null,
+    parameters: [],
   },
   builder: {},
   run: function (options, callback) {
@@ -30,9 +30,9 @@ var command = {
     console.log(`\n  COMMAND NAME: ${commandHelp.commandName}`);
     console.log(`  USAGE:        ${commandHelp.usage}`);
 
-    if (commandHelp.options) {
-      console.log(`  OPTIONS: `);
-      commandHelp.options.forEach((option) => console.log(`                ${option.option}: ${option.description}`));
+    if (commandHelp.parameters.length > 0) {
+      console.log(`  PARAMETERS: `);
+      commandHelp.parameters.forEach((parameter) => console.log(`                ${parameter.parameter}: ${parameter.description}`));
     }
     console.log("");
   }
