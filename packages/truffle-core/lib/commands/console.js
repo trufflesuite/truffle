@@ -2,6 +2,19 @@ var command = {
   command: 'console',
   description: 'Run a console with contract abstractions and commands available',
   builder: {},
+  userHelp: {
+    commandName: "console",
+    usage: "truffle console [--network <name>] [--verbose-rpc]",
+    options: [
+      {
+        option: "--network <name>",
+        description: "Specify the network to use. Network name must exist in the configuration.",
+      },{
+        option: "--verbose-rpc",
+        description: "Log communication between Truffle and the Ethereum client.",
+      },
+    ]
+  },
   run: function (options, done) {
     var Config = require("truffle-config");
     var Console = require("../console");

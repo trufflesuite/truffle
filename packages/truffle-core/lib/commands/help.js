@@ -32,7 +32,7 @@ var command = {
 
     if (commandHelp.options) {
       console.log(`  OPTIONS: `);
-      commandHelp.options.forEach((option) => console.log(`                ${option.name}: ${option.description}`));
+      commandHelp.options.forEach((option) => console.log(`                ${option.option}: ${option.description}`));
     }
     console.log("");
   }
