@@ -55,26 +55,29 @@ export default async function decodeStorageReference(definition: AstDefinition, 
       };
 
       // debug("pointer: %o", pointer);
-      return [...Array(length).keys()]
-        .map( (i) => {
-          let childFrom: Allocation.StorageReference = {
-            slot: {
-              path: from.slot.path || undefined,
-              offset: new BN(offset(i)),
-            },
-            index: index(i)
-          };
-          return childFrom;
-        })
-        .map( (childFrom, idx) => {
-          // debug("childFrom %d, %o", idx, childFrom);
-          return decode(utils.Definition.baseDefinition(definition), <StoragePointer>{
-            storage: {
-              from: childFrom,
-              length: baseSize
-            }
-          }, info, web3, contractAddress);
-        });
+      const fromSlots = [...Array(length).keys()]
+      .map( (i) => {
+        let childFrom: Allocation.StorageReference = {
+          slot: {
+            path: from.slot.path || undefined,
+            offset: new BN(offset(i)),
+          },
+          index: index(i)
+        };
+        return childFrom;
+      });
+
+      const decodePromises = fromSlots.map( (childFrom, idx) => {
+        // debug("childFrom %d, %o", idx, childFrom);
+        return decode(utils.Definition.baseDefinition(definition), <StoragePointer>{
+          storage: {
+            from: childFrom,
+            length: baseSize
+          }
+        }, info, web3, contractAddress);
+      });
+
+      return await Promise.all(decodePromises);
 
     case "bytes":
     case "string":
