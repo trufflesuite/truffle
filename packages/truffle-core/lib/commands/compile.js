@@ -21,14 +21,20 @@ var command = {
     }
   },
   userHelp: {
-    usage: "truffle compile [--all] [--network <name>]",
+    usage: "truffle compile [--list <prereleases|releases|docker>] [--all] [--network <name>]",
     parameters: [
       {
         parameter: "--all",
         description: "Compile all contracts instead of only the contracts changed since last compile. (optional)"
       },{
         parameter: "--network <name>",
-        description:  "Specify the network to use, saving artifacts specific to that network.\n                                  Network name must exist in the configuration. (optional)"
+        description:  "Specify the network to use, saving artifacts specific to that network. " +
+          " Network name\n                        must exist in the configuration. (optional)"
+      },{
+        parameter: "--list <prereleases|releases|docker>",
+        description:  "List all recent stable releases from solc-bin.  If prereleases, releases\n" +
+          "                        or docker is included it displays only prereleases, releases " +
+          "from solc-bin or docker tags from\n                        hub.docker.com respectively. (optional)"
       },
     ]
   },

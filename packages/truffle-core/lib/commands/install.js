@@ -10,7 +10,8 @@ var command = {
         description: "Name of the package as listed in the Ethereum Package Registry.",
       },{
         parameter: "<@version>",
-        description: "When specified, will install a specific version of the package, otherwise will install the latest version. (optional)",
+        description: "When specified, will install a specific version of the package, otherwise" +
+          "will install the\n                        latest version. (optional)",
       },
     ]
   },
