@@ -12,7 +12,6 @@ module.exports = {
   help: require("./help"),
   install: require("./install"),
   publish: require("./publish"),
-  //digest: require("./digest"),
   networks: require("./networks"),
   exec: require("./exec"),
   unbox: require("./unbox"),
