@@ -62,11 +62,11 @@ module.exports = function (source, map, meta) {
   this.addDependency(this.resource)
 
   if (this.debug) {
-    Logger.debugger(`this.resourcePath = ${this.resourcePath}`)
-    Logger.debugger(`contract Name = ${contractName}`)
-    Logger.debugger(`migrations Directory = ${migrationsDirectory}`)
-    Logger.debugger(`contracts Build Directory = ${contractsBuildDirectory}`)
-    Logger.debugger(`contract Json Path = ${contractJsonPath}`)
+    Logger.debug(`this.resourcePath = ${this.resourcePath}`)
+    Logger.debug(`contract Name = ${contractName}`)
+    Logger.debug(`migrations Directory = ${migrationsDirectory}`)
+    Logger.debug(`contracts Build Directory = ${contractsBuildDirectory}`)
+    Logger.debug(`contract Json Path = ${contractJsonPath}`)
   }
 
   let callback = this.async()
@@ -83,7 +83,7 @@ module.exports = function (source, map, meta) {
   }
 
   if (isCompilingContracts) {
-    // Logger.debugger(`Currently compiling = ${this.resourcePath}`)
+    // Logger.debug(`Currently compiling = ${this.resourcePath}`)
     waitForContractCompilation()
   } else {
     isCompilingContracts = true
