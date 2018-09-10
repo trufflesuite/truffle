@@ -3,3 +3,4 @@ packages/truffle/build
 packages/truffle-debugger/.tmp
 node_modules
 yarn-error.log
+.DS_Store
