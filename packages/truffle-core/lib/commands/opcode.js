@@ -8,7 +8,6 @@ var command = {
     }
   },
   userHelp: {
-    commandName: "opcode",
     usage: "truffle opcode <contract_name>",
     parameters: [
       {

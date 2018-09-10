@@ -2,7 +2,6 @@ var command = {
   command: "help",
   description: "Display information about a given command",
   userHelp: {
-    commandName: "help",
     usage: "truffle help <command>",
     parameters: [],
   },
@@ -27,7 +26,7 @@ var command = {
   displayHelpInformation: function (selectedCommand) {
     var commands = require("./index");
     var commandHelp = commands[selectedCommand].userHelp;
-    console.log(`\n  COMMAND NAME: ${commandHelp.commandName}`);
+    console.log(`\n  COMMAND NAME: ${commands[selectedCommand].command}`);
     console.log(`  DESCRIPTION:  ${commands[selectedCommand].description}`);
     console.log(`  USAGE:        ${commandHelp.usage}`);
 

@@ -3,7 +3,6 @@ var command = {
   description: 'Initialize new and empty Ethereum project',
   builder: {},
   userHelp: {
-    commandName: "init",
     usage: "truffle init",
     parameters: [],
   },

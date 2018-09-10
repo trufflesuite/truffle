@@ -3,7 +3,6 @@ var command = {
   description: 'Install a package from the Ethereum Package Registry',
   builder: {},
   userHelp: {
-    commandName: "install",
     usage: "truffle install [package_name]<@version>",
     parameters: [
       {

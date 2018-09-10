@@ -15,7 +15,6 @@ var command = {
     }
   },
   userHelp: {
-    commandName: "exec",
     usage: "truffle exec <script.js> [--network <name>]",
     parameters: [
       {

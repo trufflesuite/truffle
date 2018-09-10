@@ -27,7 +27,6 @@ var command = {
     },
   },
   userHelp: {
-    commandName: "migrate",
     usage: "truffle migrate [--reset] [-f <number>] [--network <name>] [--compile-all] [--verbose-rpc]",
     parameters: [
       {

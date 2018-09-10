@@ -12,7 +12,6 @@ var command = {
     }
   },
   userHelp: {
-    commandName: "create",
     usage: "truffle create (contract|migration|test) <ArtifactName>",
     parameters: [
       {

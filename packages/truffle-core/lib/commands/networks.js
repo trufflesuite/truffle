@@ -9,7 +9,6 @@ var command = {
     }
   },
   userHelp: {
-    commandName: "networks",
     usage: "truffle networks [--clean]",
     parameters: [
       {

@@ -7,7 +7,6 @@ var command = {
     }
   },
   userHelp: {
-    commandName: "debug",
     usage: "truffle debug <transaction_hash>",
     parameters: [
       {

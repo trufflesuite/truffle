@@ -3,7 +3,6 @@ var command = {
   description: 'Run a console with contract abstractions and commands available',
   builder: {},
   userHelp: {
-    commandName: "console",
     usage: "truffle console [--network <name>] [--verbose-rpc]",
     parameters: [
       {

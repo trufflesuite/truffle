@@ -21,7 +21,6 @@ var command = {
     }
   },
   userHelp: {
-    commandName: "compile",
     usage: "truffle compile [--all] [--network <name>]",
     parameters: [
       {

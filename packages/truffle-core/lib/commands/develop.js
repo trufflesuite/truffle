@@ -10,7 +10,6 @@ var command = {
     }
   },
   userHelp: {
-    commandName: "develop",
     usage: "truffle develop",
     parameters: [],
   },
