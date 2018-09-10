@@ -26,6 +26,28 @@ var command = {
       default: false
     },
   },
+  userHelp: {
+    commandName: "migrate",
+    usage: "truffle migrate [--reset] [-f <number>] [--network <name>] [--compile-all] [--verbose-rpc]",
+    parameters: [
+      {
+        parameter: "--reset",
+        description: "Run all migrations from the beginning, instead of running from the last completed migration.",
+      },{
+        parameter: "-f <number>",
+        description: "Run contracts from a specific migration. The number refers to the prefix of the migration file.",
+      },{
+        parameter: "--network <name>",
+        description: "Specify the network to use, saving artifacts specific to that network. Network name must exist in the configuration.",
+      },{
+        parameter: "--compile-all",
+        description: "Compile all contracts instead of intelligently choosing which contracts need to be compiled.",
+      },{
+        parameter: "--verbose-rpc",
+        description: "Log communication between Truffle and the Ethereum client."
+      },
+    ]
+  },
   run: function (options, done) {
     var OS = require("os");
     var Config = require("truffle-config");

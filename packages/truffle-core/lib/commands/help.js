@@ -28,6 +28,7 @@ var command = {
     var commands = require("./index");
     var commandHelp = commands[selectedCommand].userHelp;
     console.log(`\n  COMMAND NAME: ${commandHelp.commandName}`);
+    console.log(`  DESCRIPTION:  ${commands[selectedCommand].description}`);
     console.log(`  USAGE:        ${commandHelp.usage}`);
 
     if (commandHelp.parameters.length > 0) {

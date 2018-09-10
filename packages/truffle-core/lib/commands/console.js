@@ -8,10 +8,10 @@ var command = {
     parameters: [
       {
         parameter: "--network <name>",
-        description: "Specify the network to use. Network name must exist in the configuration.(optional)",
+        description: "Specify the network to use. Network name must exist in the configuration. (optional)",
       },{
         parameter: "--verbose-rpc",
-        description: "Log communication between Truffle and the Ethereum client.(optional)",
+        description: "Log communication between Truffle and the Ethereum client. (optional)",
       },
     ]
   },

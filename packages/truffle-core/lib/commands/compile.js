@@ -26,10 +26,10 @@ var command = {
     parameters: [
       {
         parameter: "--all",
-        description: "Compile all contracts instead of only the contracts changed since last compile.(optional)"
+        description: "Compile all contracts instead of only the contracts changed since last compile. (optional)"
       },{
         parameter: "--network <name>",
-        description:  "Specify the network to use, saving artifacts specific to that network.\n                                  Network name must exist in the configuration.(optional)"
+        description:  "Specify the network to use, saving artifacts specific to that network.\n                                  Network name must exist in the configuration. (optional)"
       },
     ]
   },
