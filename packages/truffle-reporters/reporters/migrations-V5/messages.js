@@ -1,3 +1,5 @@
+const emoji = require('node-emoji')
+
 /**
  *  A module that formats output for the Migrations reporter.
  *  This is where all the strings go.
@@ -7,6 +9,7 @@ class MigrationsMessages{
   constructor(reporter){
     this.reporter = reporter;
   }
+
 
   // ----------------------------------- Utilities -------------------------------------------------
 
@@ -19,6 +22,11 @@ class MigrationsMessages{
   doubleline(msg){
     const ul = '='.repeat(msg.length);
     return `\n${msg}\n${ul}`;
+  }
+
+  // Emoji alternative
+  onMissing(name){
+    return "**";
   }
 
   // ----------------------------------- Interactions ----------------------------------------------
@@ -243,10 +251,16 @@ class MigrationsMessages{
         `\n   * Saving migration`,
 
       firstMigrate: () => {
-        let output;
+        let output = emoji.emojify(
+          `:warning:  Important :warning:\nIf you're using an HDWalletProvider, ` +
+          `it must be Web3 1.0 enabled or your migration will hang.\n` +
+          `Try: npm install --save truffle-hdwallet-provider@web3-one\n\n`,
+          this.onMissing
+        );
+
         (reporter.migration.dryRun)
-          ? output = self.doubleline(`Migrations dry-run (simulation)`) + '\n'
-          : output = self.doubleline(`Starting migrations...`) + '\n';
+          ? output += self.doubleline(`Migrations dry-run (simulation)`) + '\n'
+          : output += self.doubleline(`Starting migrations...`) + '\n';
 
         output +=
           `> Network name:    '${data.network}'\n` +
