@@ -143,6 +143,10 @@ CompilerSupplier.prototype.getLocal = function(localPath){
   const self = this;
   let compiler;
 
+  if (!path.isAbsolute(localPath)){
+    localPath = path.resolve(process.cwd(), localPath);
+  }
+
   try {
     compiler = originalRequire(localPath)
     self.removeListener();
