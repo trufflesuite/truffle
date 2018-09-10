@@ -31,7 +31,7 @@ export default async function decode(definition: AstDefinition, pointer: DataPoi
 
   if (utils.Definition.isMapping(definition) && isStoragePointer(pointer)) {
     // debug("decoding mapping, type: %s", identifier);
-    return await decodeMapping(definition, pointer, info, web3, contractAddress);
+    return await decodeStorageReference(definition, pointer, info, web3, contractAddress);
   }
 
   // debug("decoding value, type: %s", identifier);

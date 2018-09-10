@@ -1,5 +1,6 @@
 import { EVM as EVMUtils } from "./evm";
 import { AstDefinition } from "../types/ast";
+import cloneDeep from "lodash.clonedeep";
 
 export namespace Definition {
   export function typeIdentifier(definition: AstDefinition): string {
@@ -91,7 +92,7 @@ export namespace Definition {
     }
 
     // another HACK - we get away with it becausewe're only using that one property
-    let result: AstDefinition;
+    let result: AstDefinition = cloneDeep(definition);
     result.typeDescriptions.typeIdentifier = baseIdentifier;
     return result;
   }

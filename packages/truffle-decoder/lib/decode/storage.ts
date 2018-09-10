@@ -8,7 +8,7 @@ import { EvmInfo } from "../types/evm";
 import { Allocation } from "../utils";
 import BN from "bn.js";
 import Web3 from "web3";
-import { EvmStruct } from "../interface/contract-decoder";
+import { EvmStruct, EvmMapping } from "../interface/contract-decoder";
 
 export default async function decodeStorageReference(definition: AstDefinition, pointer: StoragePointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<any> {
   var data;
@@ -179,6 +179,17 @@ export default async function decodeStorageReference(definition: AstDefinition, 
 
         return result;
       }
+
+    case "mapping":
+
+      return <EvmMapping>{
+        name: definition.name,
+        type: "mapping",
+        id: definition.id,
+        keyType: utils.Definition.typeClass(definition.typeName.keyType),
+        valueType: utils.Definition.typeClass(definition.typeName.valueType),
+        members: {}
+      };
 
     default:
       // debug("Unknown storage reference type: %s", utils.typeIdentifier(definition));

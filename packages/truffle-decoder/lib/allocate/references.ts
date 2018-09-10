@@ -11,7 +11,7 @@ interface SlotAllocation {
   index: number;
 };
 
-interface ContractStateInfo {
+export interface ContractStateInfo {
   variables: EvmVariableReferenceMapping;
   slot: SlotAllocation;
 }
@@ -39,8 +39,7 @@ export function getReferenceDeclarations(contracts: ContractObject[]): AstRefere
   return result;
 }
 
-function allocateDefinition(node: any, state: ContractStateInfo, referenceDeclarations: AstReferences, path?: Allocation.Slot): void {
-  let isChildVariable: boolean = false;
+export function allocateDefinition(node: any, state: ContractStateInfo, referenceDeclarations: AstReferences, path?: Allocation.Slot, isChildVariable: boolean = false): void {
   let slot: Allocation.Slot = {
     offset: state.slot.offset.clone()
   };
@@ -48,7 +47,6 @@ function allocateDefinition(node: any, state: ContractStateInfo, referenceDeclar
   if (typeof path !== "undefined") {
     slot.path = cloneDeep(path);
     slot.offset = new BN(0);
-    isChildVariable = true;
   }
 
   if (Definition.typeClass(node) != "struct") {
@@ -95,7 +93,7 @@ function allocateDefinition(node: any, state: ContractStateInfo, referenceDeclar
             }
           }
         };
-        allocateDefinition(memberNode, structContractState, referenceDeclarations, slot);
+        allocateDefinition(memberNode, structContractState, referenceDeclarations, slot, true);
       }
 
       state.slot.offset = state.slot.offset.add(structContractState.slot.offset);

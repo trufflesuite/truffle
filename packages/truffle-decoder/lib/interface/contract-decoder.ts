@@ -8,7 +8,7 @@ import cloneDeep from "lodash.clonedeep";
 import * as references from "../allocate/references";
 import { StoragePointer } from "../types/pointer";
 import decode from "../decode";
-import { Definition as DefinitionUtils } from "../utils";
+import { Definition as DefinitionUtils, EVM, Allocation } from "../utils";
 
 type BlockReference = number | "latest";
 
@@ -52,7 +52,9 @@ interface DecodedVariable {
 interface ContractState {
   name: string;
   balance: BN;
-  variables: DecodedVariable[];
+  variables: {
+    [name: string]: DecodedVariable
+  };
 };
 
 interface ContractEvent {
@@ -128,7 +130,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     let result: ContractState = {
       name: this.contract.contractName,
       balance: new BN(await this.web3.eth.getBalance(contractAddress)),
-      variables: []
+      variables: {}
     };
 
     const nodeIds = Object.keys(this.stateVariableReferences);
@@ -151,11 +153,11 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
         const val = await decode(variable.definition, variable.pointer, info, this.web3, contractAddress);
 
-        result.variables.push(<DecodedVariable>{
+        result.variables[variable.definition.name] = <DecodedVariable>{
           name: variable.definition.name,
           type: DefinitionUtils.typeClass(variable.definition),
           value: val
-        });
+        };
       }
     }
 
@@ -166,8 +168,64 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     return undefined;
   }
 
-  public async mapping(mappingId: number, key: number | BN | string): Promise<EvmVariable | undefined> {
-    return undefined;
+  public async mapping(mappingId: number, keys: (number | BN | string)[]): Promise<EvmVariable[] | undefined> {
+    const contractAddress = this.contract.networks[this.contractNetwork].address;
+    const mappingReference = this.stateVariableReferences[mappingId];
+    const definition = mappingReference.definition.typeName.valueType;
+
+    let result: EvmVariable[] = [];
+
+    for (let i = 0; i < keys.length; i++) {
+      let state = <references.ContractStateInfo>{
+        variables: {},
+        slot: {
+          offset: new BN(0),
+          index: EVM.WORD_SIZE - 1
+        }
+      };
+
+      const path: Allocation.Slot = {
+        key: keys[i],
+        path: mappingReference.pointer.storage.from.slot,
+        offset: new BN(0)
+      };
+
+      references.allocateDefinition(definition, state, this.referenceDeclarations, path);
+
+      const nodeIds = Object.keys(state.variables);
+  
+      for(let i = 0; i < nodeIds.length; i++) {
+        const variable = state.variables[parseInt(nodeIds[i])];
+  
+        if (!variable.isChildVariable) {
+          const info: EvmInfo = {
+            scopes: {},
+            state: {
+              stack: [],
+              storage: {},
+              memory: new Uint8Array(0)
+            },
+            mappingKeys: {},
+            referenceDeclarations: this.referenceDeclarations,
+            variables: this.stateVariableReferences
+          };
+  
+          const val = await decode(variable.definition, variable.pointer, info, this.web3, contractAddress);
+  
+          result.push(val);
+        }
+      }
+    }
+
+    return result;
+  }
+
+  public watchMappingKeys(mappingId: number, keys: (number | BN | string)[]): void {
+    //
+  }
+
+  public unwatchMappingKeys(mappingId: number, keys: (number | BN | string)[]): void {
+    //
   }
 
   public async events(name: string | null = null, block: BlockReference = "latest"): Promise<ContractEvent[]> {
