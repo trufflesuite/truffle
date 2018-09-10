@@ -19,7 +19,7 @@ var command = {
     } else {
       console.log(`\n  Cannot find the given command '${selectedCommand}'`);
       console.log("  Please ensure your command is one of the following: ");
-      Object.keys(commands).sort().forEach((command) => console.log(`      ${command}`))
+      Object.keys(commands).sort().forEach((command) => console.log(`      ${command}`));
       console.log("");
     }
   },
@@ -32,7 +32,9 @@ var command = {
 
     if (commandHelp.parameters.length > 0) {
       console.log(`  PARAMETERS: `);
-      commandHelp.parameters.forEach((parameter) => console.log(`                ${parameter.parameter}: ${parameter.description}`));
+      commandHelp.parameters.forEach((parameter) => {
+        console.log(`                ${parameter.parameter}: ${parameter.description}`);
+      });
     }
     console.log("");
   }
