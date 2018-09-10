@@ -10,13 +10,13 @@ var command = {
   run: function (options, callback) {
     var commands = require("./index");
     if (options._.length === 0) {
-      this.printHelpInformation("help");
+      this.displayHelpInformation("help");
       return;
     }
     var selectedCommand = options._[0];
 
     if (commands[selectedCommand]) {
-      this.printHelpInformation(selectedCommand);
+      this.displayHelpInformation(selectedCommand);
     } else {
       console.log(`\n  Cannot find the given command '${selectedCommand}'`);
       console.log("  Please ensure your command is one of the following: ");
@@ -24,7 +24,7 @@ var command = {
       console.log("");
     }
   },
-  printHelpInformation: function (selectedCommand) {
+  displayHelpInformation: function (selectedCommand) {
     var commands = require("./index");
     var commandHelp = commands[selectedCommand].userHelp;
     console.log(`\n  COMMAND NAME: ${commandHelp.commandName}`);
