@@ -2,6 +2,10 @@ var command = {
   command: 'version',
   description: 'Show version number and exit',
   builder: {},
+  userHelp: {
+    usage: "truffle version",
+    parameters: [],
+  },
   run: function (options, done) {
     var version = require("../version");
 

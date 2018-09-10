@@ -8,6 +8,24 @@ var command = {
       default: false
     },
   },
+  userHelp: {
+    usage: "truffle test <test_file> [--compile-all] [--network <name>] [--verbose-rpc]",
+    parameters: [
+      {
+        parameter: "<test_file>",
+        description: "Name of the test file to be run. Can include path information if the file does not exist in the current directory.",
+      },{
+        parameter: "--compile-all",
+        description: "Compile all contracts instead of intelligently choosing which contracts need to be compiled. (optional)",
+      },{
+        parameter: "--network <name>",
+        description: "Specify the network to use, using artifacts specific to that network.\n                                  Network name must exist in the configuration. (optional)",
+      },{
+        parameter: "--verbose-rpc",
+        description: "Log communication between Truffle and the Ethereum client. (optional)",
+      },
+    ]
+  },
   run: function (options, done) {
     var OS = require("os");
     var dir = require("node-dir");
