@@ -22,12 +22,12 @@ const inputArguments = process.argv.slice(2);
 const userWantsGeneralHelp = inputArguments[0] === 'help' &&  inputArguments.length === 1;
 
 if (userWantsGeneralHelp) {
-  command.runCommandHelp();
+  command.displayGeneralHelp();
 } else {
   command.run(inputArguments, options, function(err) {
     if (err) {
       if (err instanceof TaskError) {
-        command.runCommandHelp();
+        command.displayGeneralHelp();
       } else {
         if (err instanceof TruffleError) {
           console.log(err.message);
@@ -41,7 +41,6 @@ if (userWantsGeneralHelp) {
       }
       process.exit(1);
     }
-
     process.exit(0);
   });
 }

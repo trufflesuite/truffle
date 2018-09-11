@@ -105,11 +105,11 @@ Command.prototype.run = function(command, options, callback) {
   }
 };
 
-Command.prototype.runCommandHelp = function() {
+Command.prototype.displayGeneralHelp = function() {
   this.args
     .usage("Truffle v" + (version.bundle || version.core) + " - a development framework for Ethereum"
     + OS.EOL + OS.EOL
-    + 'Usage: truffle <command> [options]')
+    + "Usage: truffle <command> [options]")
     .epilog("See more at http://truffleframework.com/docs")
     .showHelp();
 }
