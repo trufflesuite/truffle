@@ -43,7 +43,8 @@ var command = {
           "Network name must exist in\n                        the configuration. (optional)",
       },{
         parameter: "--compile-all",
-        description: "Compile all contracts instead of intelligently choosing which contracts need to " + "be compiled. (optional)",
+        description: "Compile all contracts instead of intelligently choosing which contracts need to " +
+          "be compiled. (optional)",
       },{
         parameter: "--verbose-rpc",
         description: "Log communication between Truffle and the Ethereum client. (optional)"
