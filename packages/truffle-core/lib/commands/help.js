@@ -26,13 +26,14 @@ var command = {
   displayCommandHelp: function (selectedCommand) {
     var commands = require("./index");
     var commandHelp = commands[selectedCommand].userHelp;
-    console.log(`  USAGE:        ${commandHelp.usage}`);
-    console.log(`  DESCRIPTION:  ${commands[selectedCommand].description}`);
+    console.log(`\n  Usage:        ${commandHelp.usage}`);
+    console.log(`  Description:  ${commands[selectedCommand].description}`);
 
     if (commandHelp.parameters.length > 0) {
-      console.log(`  PARAMETERS: `);
+      console.log(`  Parameters: `);
       commandHelp.parameters.forEach((parameter) => {
-        console.log(`                ${parameter.parameter}: ${parameter.description}`);
+        console.log(`                ${parameter.parameter}`);
+        console.log(`                    ${parameter.description}`);
       });
     }
     console.log("");

@@ -20,11 +20,11 @@ var command = {
       {
         parameter: "<script.js>",
         description: "JavaScript file to be executed. Can include path information if the script" +
-          " does not exist in\n                             the current directory.",
+          " does not exist in the current\n                    directory.",
       },{
         parameter: "--network <name>",
         description: "Specify the network to use, using artifacts specific to that network." +
-          " Network name must \n                                  exist in the configuration. (optional)",
+          " Network name must exist in the\n                    configuration. (optional)",
       },
     ]
   },

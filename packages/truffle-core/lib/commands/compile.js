@@ -29,12 +29,12 @@ var command = {
       },{
         parameter: "--network <name>",
         description:  "Specify the network to use, saving artifacts specific to that network. " +
-          " Network name\n                        must exist in the configuration. (optional)"
+          " Network name must exist in the\n                    configuration. (optional)"
       },{
         parameter: "--list <prereleases|releases|docker>",
-        description:  "List all recent stable releases from solc-bin.  If prereleases, releases\n" +
-          "                        or docker is included it displays only prereleases, releases " +
-          "from solc-bin or docker tags from\n                        hub.docker.com respectively. (optional)"
+        description:  "List all recent stable releases from solc-bin.  If prereleases, releases" +
+          "or docker is included it\n                    displays only prereleases, releases " +
+          "from solc-bin or docker tags from hub.docker.com respectively. (optional)"
       },
     ]
   },

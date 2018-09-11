@@ -14,7 +14,7 @@ var command = {
       {
         parameter: "<test_file>",
         description: "Name of the test file to be run. Can include path information if the file " +
-          "does not exist in the\n                        current directory.",
+          "does not exist in the\n                    current directory.",
       },{
         parameter: "--compile-all",
         description: "Compile all contracts instead of intelligently choosing which contracts need " +
@@ -22,7 +22,7 @@ var command = {
       },{
         parameter: "--network <name>",
         description: "Specify the network to use, using artifacts specific to that network. Network " +
-          "name must exist\n                        in the configuration. (optional)",
+          "name must exist\n                    in the configuration. (optional)",
       },{
         parameter: "--verbose-rpc",
         description: "Log communication between Truffle and the Ethereum client. (optional)",

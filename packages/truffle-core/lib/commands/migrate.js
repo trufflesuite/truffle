@@ -40,7 +40,7 @@ var command = {
       },{
         parameter: "--network <name>",
         description: "Specify the network to use, saving artifacts specific to that network. " +
-          "Network name must exist in\n                        the configuration. (optional)",
+          "Network name must exist in the\n                    configuration. (optional)",
       },{
         parameter: "--compile-all",
         description: "Compile all contracts instead of intelligently choosing which contracts need to " +
