@@ -26,30 +26,30 @@ var command = {
       default: false
     },
   },
-  userHelp: {
+  help: {
     usage: "truffle migrate [--reset] [-f <number>] [--network <name>] [--compile-all] [--verbose-rpc]",
-    parameters: [
+    options: [
       {
-        parameter: "--reset",
+        option: "--reset",
         description: "Run all migrations from the beginning, instead of running from the last " +
           "completed migration. (optional)",
       },{
-        parameter: "-f <number>",
+        option: "-f <number>",
         description: "Run contracts from a specific migration. The number refers to the prefix of " +
           "the migration file. (optional)",
       },{
-        parameter: "--network <name>",
+        option: "--network <name>",
         description: "Specify the network to use, saving artifacts specific to that network. " +
           "Network name must exist in the\n                    configuration. (optional)",
       },{
-        parameter: "--compile-all",
+        option: "--compile-all",
         description: "Compile all contracts instead of intelligently choosing which contracts need to " +
           "be compiled. (optional)",
       },{
-        parameter: "--verbose-rpc",
+        option: "--verbose-rpc",
         description: "Log communication between Truffle and the Ethereum client. (optional)"
       },{
-        parameter: "--interactive",
+        option: "--interactive",
         description: "Prompt to confirm that the user wants to proceed after the dry run. (optional)",
       },
     ]

@@ -7,11 +7,11 @@ var command = {
       default: false
     }
   },
-  userHelp: {
+  help: {
     usage: "truffle opcode <contract_name>",
-    parameters: [
+    options: [
       {
-        parameter: "<contract_name>",
+        option: "<contract_name>",
         description: "Name of the contract to print opcodes for. Must be a contract name, not a file name.",
       }
     ]

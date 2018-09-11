@@ -8,11 +8,11 @@ var command = {
       default: false
     }
   },
-  userHelp: {
+  help: {
     usage: "truffle networks [--clean]",
-    parameters: [
+    options: [
       {
-        parameter: "--clean",
+        option: "--clean",
         description: "Remove all network artifacts that aren't associated with a named network. (optional)",
       }
     ]

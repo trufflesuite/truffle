@@ -14,15 +14,15 @@ var command = {
       default: false
     }
   },
-  userHelp: {
+  help: {
     usage: "truffle exec <script.js> [--network <name>]",
-    parameters: [
+    options: [
       {
-        parameter: "<script.js>",
+        option: "<script.js>",
         description: "JavaScript file to be executed. Can include path information if the script" +
           " does not exist in the current\n                    directory.",
       },{
-        parameter: "--network <name>",
+        option: "--network <name>",
         description: "Specify the network to use, using artifacts specific to that network." +
           " Network name must exist in the\n                    configuration. (optional)",
       },

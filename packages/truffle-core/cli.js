@@ -23,7 +23,7 @@ const userWantsGeneralHelp = inputArguments[0] === 'help' &&  inputArguments.len
 
 if (userWantsGeneralHelp) {
   command.displayGeneralHelp();
-  return;
+  process.exit(0);
 }
 
 command.run(inputArguments, options, function(err) {

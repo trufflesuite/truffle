@@ -4,7 +4,7 @@ var command = {
   builder: {},
   userHelp: {
     usage: "truffle publish",
-    parameters: [],
+    options: [],
   },
   run: function (options, done) {
     var Config = require("truffle-config");

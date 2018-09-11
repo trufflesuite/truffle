@@ -2,14 +2,14 @@ var command = {
   command: 'console',
   description: 'Run a console with contract abstractions and commands available',
   builder: {},
-  userHelp: {
+  help: {
     usage: "truffle console [--network <name>] [--verbose-rpc]",
-    parameters: [
+    options: [
       {
-        parameter: "--network <name>",
+        option: "--network <name>",
         description: "Specify the network to use. Network name must exist in the configuration. (optional)",
       },{
-        parameter: "--verbose-rpc",
+        option: "--verbose-rpc",
         description: "Log communication between Truffle and the Ethereum client. (optional)",
       },
     ]

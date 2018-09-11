@@ -20,18 +20,18 @@ var command = {
       default: "false"
     }
   },
-  userHelp: {
+  help: {
     usage: "truffle compile [--list <prereleases|releases|docker>] [--all] [--network <name>]",
-    parameters: [
+    options: [
       {
-        parameter: "--all",
+        option: "--all",
         description: "Compile all contracts instead of only the contracts changed since last compile. (optional)"
       },{
-        parameter: "--network <name>",
+        option: "--network <name>",
         description:  "Specify the network to use, saving artifacts specific to that network. " +
           " Network name must exist in the\n                    configuration. (optional)"
       },{
-        parameter: "--list <prereleases|releases|docker>",
+        option: "--list <prereleases|releases|docker>",
         description:  "List all recent stable releases from solc-bin.  If prereleases, releases" +
           "or docker is included it\n                    displays only prereleases, releases " +
           "from solc-bin or docker tags from hub.docker.com respectively. (optional)"
@@ -98,18 +98,6 @@ var command = {
 
     return val;
   },
-
-  help: "\n" +
-        "See available solc versions. (Default: solcjs stable releases)\n\n" +
-
-        "USAGE:\n" +
-        "   --list [option] [--all]\n\n" +
-
-        "OPTIONS:\n" +
-        " `docker`         recently published docker tags\n" +
-        " `releases`       solcjs stable releases\n" +
-        " `prereleases`    solcjs nightly builds\n" +
-        " `latestRelease`  solcjs latest\n\n",
 }
 
 module.exports = command;

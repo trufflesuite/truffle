@@ -9,9 +9,9 @@ var command = {
       default: false
     }
   },
-  userHelp: {
+  help: {
     usage: "truffle develop",
-    parameters: [],
+    options: [],
   },
   runConsole: function(config, testrpcOptions, done) {
     var Console = require("../console");

@@ -4,9 +4,9 @@ var command = {
   command: 'deploy',
   description: '(alias for migrate)',
   builder: migrate.builder,
-  userHelp: {
+  help: {
     usage: "truffle deploy [--reset] [-f <number>] [--network <name>] [--compile-all] [--verbose-rpc]",
-    parameters: migrate.userHelp.parameters,
+    options: migrate.help.options,
   },
   run: migrate.run
 }

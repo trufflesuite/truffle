@@ -51,11 +51,11 @@ var command = {
   command: 'unbox',
   description: 'Download a Truffle Box, a pre-built Truffle project',
   builder: {},
-  userHelp: {
+  help: {
     usage: "truffle unbox <box_name>",
-    parameters: [
+    options: [
       {
-        parameter: "<box_name>",
+        option: "<box_name>",
         description: "Name of the truffle box.",
       }
     ],

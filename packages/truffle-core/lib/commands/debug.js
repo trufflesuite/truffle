@@ -6,11 +6,11 @@ var command = {
       type: "string"
     }
   },
-  userHelp: {
+  help: {
     usage: "truffle debug <transaction_hash>",
-    parameters: [
+    options: [
       {
-        parameter: "<transaction_hash>",
+        option: "<transaction_hash>",
         description: "Transaction ID to use for debugging.",
       }
     ]

@@ -11,20 +11,20 @@ var command = {
       default: false
     }
   },
-  userHelp: {
+  help: {
     usage: "truffle create (contract|migration|test) <ArtifactName>",
-    parameters: [
+    options: [
       {
-        parameter: "contract",
+        option: "contract",
         description: "Create a new contract definition and file contracts/ArtifactName.sol.",
       },{
-        parameter: "migration",
+        option: "migration",
         description: "Create a new migration and file migrations/###########_artifact_name.js.",
       },{
-        parameter: "test",
+        option: "test",
         description: "Create a new test and file tests/artifact_name.js.",
       },{
-        parameter: "<ArtifactName>",
+        option: "<ArtifactName>",
         description: "Name of new artifact.",
       },
     ]

@@ -1,9 +1,9 @@
 var command = {
   command: "help",
   description: "Display information about a given command",
-  userHelp: {
+  help: {
     usage: "truffle help <command>",
-    parameters: [],
+    options: [],
   },
   builder: {},
   run: function (options, callback) {
@@ -25,15 +25,15 @@ var command = {
   },
   displayCommandHelp: function (selectedCommand) {
     var commands = require("./index");
-    var commandHelp = commands[selectedCommand].userHelp;
+    var commandHelp = commands[selectedCommand].help;
     console.log(`\n  Usage:        ${commandHelp.usage}`);
     console.log(`  Description:  ${commands[selectedCommand].description}`);
 
-    if (commandHelp.parameters.length > 0) {
-      console.log(`  Parameters: `);
-      commandHelp.parameters.forEach((parameter) => {
-        console.log(`                ${parameter.parameter}`);
-        console.log(`                    ${parameter.description}`);
+    if (commandHelp.options.length > 0) {
+      console.log(`  Options: `);
+      commandHelp.options.forEach((option) => {
+        console.log(`                ${option.option}`);
+        console.log(`                    ${option.description}`);
       });
     }
     console.log("");
