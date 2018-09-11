@@ -48,6 +48,9 @@ var command = {
       },{
         parameter: "--verbose-rpc",
         description: "Log communication between Truffle and the Ethereum client. (optional)"
+      },{
+        parameter: "--interactive",
+        description: "Get a prompt between the dry run and the real deployment. (optional)",
       },
     ]
   },
