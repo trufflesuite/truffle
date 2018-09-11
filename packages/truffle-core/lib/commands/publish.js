@@ -2,7 +2,7 @@ var command = {
   command: 'publish',
   description: 'Publish a package to the Ethereum Package Registry',
   builder: {},
-  userHelp: {
+  help: {
     usage: "truffle publish",
     options: [],
   },
