@@ -23,24 +23,25 @@ const userWantsGeneralHelp = inputArguments[0] === 'help' &&  inputArguments.len
 
 if (userWantsGeneralHelp) {
   command.displayGeneralHelp();
-} else {
-  command.run(inputArguments, options, function(err) {
-    if (err) {
-      if (err instanceof TaskError) {
-        command.displayGeneralHelp();
-      } else {
-        if (err instanceof TruffleError) {
-          console.log(err.message);
-        } else if (typeof err == "number") {
-          // If a number is returned, exit with that number.
-          process.exit(err);
-        } else {
-          // Bubble up all other unexpected errors.
-          console.log(err.stack || err.toString());
-        }
-      }
-      process.exit(1);
-    }
-    process.exit(0);
-  });
+  return;
 }
+
+command.run(inputArguments, options, function(err) {
+  if (err) {
+    if (err instanceof TaskError) {
+      command.displayGeneralHelp();
+    } else {
+      if (err instanceof TruffleError) {
+        console.log(err.message);
+      } else if (typeof err == "number") {
+        // If a number is returned, exit with that number.
+        process.exit(err);
+      } else {
+        // Bubble up all other unexpected errors.
+        console.log(err.stack || err.toString());
+      }
+    }
+    process.exit(1);
+  }
+  process.exit(0);
+});
