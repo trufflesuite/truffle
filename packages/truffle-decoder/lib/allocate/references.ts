@@ -16,12 +16,8 @@ export interface ContractStateInfo {
   slot: SlotAllocation;
 }
 
-export function getReferenceDeclarations(contracts: ContractObject[]): AstReferences {
+function getDeclarationsForTypes(contracts: ContractObject[], types: string[]): AstReferences {
   let result: AstReferences = {};
-  const ReferenceDeclarationTypes = [
-    "EnumDefinition",
-    "StructDefinition"
-  ];
 
   for (let i = 0; i < contracts.length; i++) {
     const contract = contracts[i];
@@ -29,7 +25,7 @@ export function getReferenceDeclarations(contracts: ContractObject[]): AstRefere
     if (contractNode) {
       for (let k = 0; k < contractNode.nodes.length; k++) {
         const node = contractNode.nodes[k];
-        if (ReferenceDeclarationTypes.indexOf(node.nodeType) >= 0) {
+        if (types.indexOf(node.nodeType) >= 0) {
           result[node.id] = node;
         }
       }
@@ -37,6 +33,23 @@ export function getReferenceDeclarations(contracts: ContractObject[]): AstRefere
   }
 
   return result;
+}
+
+export function getReferenceDeclarations(contracts: ContractObject[]): AstReferences {
+  const types = [
+    "EnumDefinition",
+    "StructDefinition"
+  ];
+
+  return getDeclarationsForTypes(contracts, types);
+}
+
+export function getEventDefinitions(contracts: ContractObject[]): AstReferences {
+  const types = [
+    "EventDefinition"
+  ];
+
+  return getDeclarationsForTypes(contracts, types);
 }
 
 export function allocateDefinition(node: any, state: ContractStateInfo, referenceDeclarations: AstReferences, path?: Allocation.Slot, isChildVariable: boolean = false): void {

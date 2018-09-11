@@ -9,8 +9,7 @@ import * as references from "../allocate/references";
 import { StoragePointer } from "../types/pointer";
 import decode from "../decode";
 import { Definition as DefinitionUtils, EVM, Allocation } from "../utils";
-
-type BlockReference = number | "latest";
+import { BlockType } from "web3/types";
 
 export interface ContractStateVariable {
   isChildVariable: boolean;
@@ -58,7 +57,16 @@ interface ContractState {
 };
 
 interface ContractEvent {
-  // TODO:
+  id: string;
+  logIndex: number;
+  name: string;
+  blockHash: string;
+  blockNumber: number;
+  transactionHash: string;
+  transactionIndex: number;
+  variables: {
+    [name: string]: DecodedVariable
+  }
 };
 
 export interface AstReferences {
@@ -90,11 +98,17 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   private contract: ContractObject;
   private contractNetwork: string;
+  private contractAddress: string;
   private inheritedContracts: ContractObject[];
 
   private contracts: ContractMapping = {};
 
   private referenceDeclarations: AstReferences;
+
+  private eventDefinitions: AstReferences;
+  private eventDefinitionIdsByName: {
+    [name: string]: number
+  };
 
   private stateVariableReferences: EvmVariableReferenceMapping;
 
@@ -112,6 +126,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.inheritedContracts = inheritedContracts; //cloneDeep(inheritedContracts);
 
     this.contractNetwork = Object.keys(this.contract.networks)[0];
+    this.contractAddress = this.contract.networks[this.contractNetwork].address;
 
     this.contracts[getContractNodeId(this.contract)] = this.contract;
     this.inheritedContracts.forEach((inheritedContract) => {
@@ -121,15 +136,22 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   public async init(): Promise<void> {
     this.referenceDeclarations = references.getReferenceDeclarations([this.contract, ...this.inheritedContracts]);
+
+    this.eventDefinitions = references.getEventDefinitions([this.contract, ...this.inheritedContracts]);
+    const ids = Object.keys(this.eventDefinitions);
+    this.eventDefinitionIdsByName = {};
+    for (let i = 0; i < ids.length; i++) {
+      const id = parseInt(ids[i]);
+      this.eventDefinitionIdsByName[this.eventDefinitions[id].name] = id;
+    }
+
     this.stateVariableReferences = references.getContractStateVariables(this.contract, this.contracts, this.referenceDeclarations);
   }
 
-  public async state(block: BlockReference = "latest"): Promise<ContractState | undefined> {
-    const contractAddress = this.contract.networks[this.contractNetwork].address;
-
+  public async state(block: BlockType = "latest"): Promise<ContractState | undefined> {
     let result: ContractState = {
       name: this.contract.contractName,
-      balance: new BN(await this.web3.eth.getBalance(contractAddress)),
+      balance: new BN(await this.web3.eth.getBalance(this.contractAddress)),
       variables: {}
     };
 
@@ -151,7 +173,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
           variables: this.stateVariableReferences
         };
 
-        const val = await decode(variable.definition, variable.pointer, info, this.web3, contractAddress);
+        const val = await decode(variable.definition, variable.pointer, info, this.web3, this.contractAddress);
 
         result.variables[variable.definition.name] = <DecodedVariable>{
           name: variable.definition.name,
@@ -164,7 +186,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     return result;
   }
 
-  public async variable(name: string, block: BlockReference = "latest"): Promise<DecodedVariable | undefined> {
+  public async variable(name: string, block: BlockType = "latest"): Promise<DecodedVariable | undefined> {
     return undefined;
   }
 
@@ -228,8 +250,49 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     //
   }
 
-  public async events(name: string | null = null, block: BlockReference = "latest"): Promise<ContractEvent[]> {
-    return [];
+  public async events(name: string | null = null, block: BlockType = "latest"): Promise<ContractEvent[]> {
+    const web3Contract = new this.web3.eth.Contract(this.contract.abi, this.contractAddress);
+    const events = await web3Contract.getPastEvents(name, {
+      fromBlock: block,
+      toBlock: block
+    });
+
+    let contractEvents: ContractEvent[] = [];
+
+    for (let i = 0; i < events.length; i++) {
+      const event: ContractEvent = {
+        id: events[i].id,
+        logIndex: events[i].logIndex,
+        name: events[i].event,
+        blockHash: events[i].blockHash,
+        blockNumber: events[i].blockNumber,
+        transactionHash: events[i].transactionHash,
+        transactionIndex: events[i].transactionIndex,
+        variables: {}
+      };
+
+      const eventDefinition = this.eventDefinitions[this.eventDefinitionIdsByName[event.name]];
+
+      if (typeof eventDefinition.parameters !== "undefined" && typeof eventDefinition.parameters.parameters !== "undefined") {
+        const argumentDefinitions = eventDefinition.parameters.parameters;
+
+        for (let j = 0; j < argumentDefinitions.length; j++) {
+          const definition = argumentDefinitions[j];
+
+          if (definition.nodeType === "VariableDeclaration") {
+            event.variables[definition.name] = <DecodedVariable>{
+              name: definition.name,
+              type: DefinitionUtils.typeClass(definition),
+              value: events[i].returnValues[definition.name] // TODO: this should be a decoded value, it currently is a string always
+            };
+          }
+        }
+      }
+
+      contractEvents.push(event);
+    }
+
+    return contractEvents;
   }
 
   public onEvent(name: string, callback: Function): void {
