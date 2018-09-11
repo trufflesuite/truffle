@@ -94,6 +94,23 @@ describe("Error cases", function() {
     }
   });
 
+  it('unlinked library', async function(){
+    const migrate = function(){
+      deployer.deploy(UsesLibrary);
+    };
+
+    migrate();
+
+    try {
+      await deployer.start();
+      assert.fail();
+    } catch( err ) {
+      assert(err.message.includes('Deployment Failed'));
+      assert(err.message.includes('UsesLibrary'));
+      assert(err.message.includes('unresolved libraries'));
+    }
+  })
+
   it('contract has no bytecode', async function(){
     const migrate = function(){
       deployer.deploy(Abstract);

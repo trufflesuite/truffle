@@ -1,6 +1,6 @@
 {
   "name": "truffle-provider",
-  "version": "0.0.6",
+  "version": "0.1.0-beta.0",
   "description": "Beefed up provider module for Truffle",
   "main": "index.js",
   "scripts": {
@@ -24,13 +24,14 @@
   "homepage": "https://github.com/trufflesuite/truffle-provider#readme",
   "dependencies": {
     "truffle-error": "^0.0.3",
-    "web3": "1.0.0-beta.33"
+    "web3": "1.0.0-beta.35"
   },
   "devDependencies": {
-    "ganache-cli": "6.1.6",
+    "ganache-cli": "6.1.8",
     "mocha": "5.2.0"
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "gitHead": "07967b472112f1c771ebbc90319781454cf9331b"
 }

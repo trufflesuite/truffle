@@ -48,7 +48,6 @@ describe('production', function() {
       this.timeout(70000);
 
       CommandRunner.run("migrate --network ropsten", config, err => {
-
         const output = logger.contents();
         processErr(err, output);
 
@@ -63,11 +62,11 @@ describe('production', function() {
 
         assert(output.includes(network.transactionHash));
         assert(output.includes(network.address));
-        assert(output.includes('2 confirmations'));
 
         // Geth automines too quickly for the 4 sec resolution we set
         // to trigger the output.
         if (!process.env.GETH){
+          assert(output.includes('2 confirmations'));
           assert(output.includes('confirmation number: 1'));
           assert(output.includes('confirmation number: 2'));
         }

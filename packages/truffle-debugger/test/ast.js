@@ -31,7 +31,7 @@ contract Variables {
 
     qux = baz;
 
-    Result(baz);
+    emit Result(baz);
 
     return baz;
   }

@@ -246,25 +246,21 @@ describe("Methods", function() {
     it("should fire the confirmations event handler repeatedly", function(done){
       let example;
 
-      async function keepTransacting(){
-        await example.setValue(5);
-        await example.setValue(10);
-        await example.setValue(15);
-      };
+      Example.new(5).then(example => {
 
-      function handler(number, receipt){
-        assert.equal(parseInt(receipt.status), 1, 'should have a receipt');
-        if(number === 3) {
-          this.removeAllListeners();
-          done();
-        }
-      }
-
-      Example.new(5).then(instance => {
-        example = instance;
         example.setValue(25)
-          .on('confirmation', handler)
-          .then(keepTransacting);
+          .on('confirmation', function(number, receipt){
+            if(number === 3) {
+              assert(receipt.status === true);
+              this.removeAllListeners();
+              done();
+            }
+          })
+          .then(async receipt => {
+            await example.setValue(5);
+            await example.setValue(10);
+            await example.setValue(15);
+          });
       });
     });
 
@@ -366,7 +362,7 @@ describe("Methods", function() {
         assert.fail();
       } catch(e){
         assert(e.message.includes('revert'));
-        assert(parseInt(e.receipt.status, 16) == 0)
+        assert(e.receipt.status === false);
       };
     });
 
@@ -377,7 +373,7 @@ describe("Methods", function() {
         assert.fail();
       } catch(e){
         assert(e.message.includes('invalid opcode'));
-        assert(parseInt(e.receipt.status, 16) == 0)
+        assert(e.receipt.status === false);
       }
     });
 
@@ -388,7 +384,7 @@ describe("Methods", function() {
         assert.fail();
       } catch(e){
         assert(e.message.includes('invalid opcode'));
-        assert(parseInt(e.receipt.status, 16) == 0)
+        assert(e.receipt.status === false);
       }
     });
 
@@ -401,7 +397,7 @@ describe("Methods", function() {
         assert.fail();
       } catch(e){
         assert(e.message.includes('invalid opcode'));
-        assert(parseInt(e.receipt.status, 16) == 0)
+        assert(e.receipt.status === false);
       }
     });
 
@@ -427,7 +423,7 @@ describe("Methods", function() {
         assert(e.reason === 'reasonstring');
         assert(e.message.includes('reasonstring'));
         assert(e.message.includes('revert'));
-        assert(parseInt(e.receipt.status, 16) == 0)
+        assert(e.receipt.status === false);
       };
     });
   })

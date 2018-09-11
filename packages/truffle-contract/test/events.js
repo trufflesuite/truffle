@@ -1,7 +1,7 @@
 var assert = require("chai").assert;
 var util = require('./util');
 
-describe("Events [ @geth ]", function() {
+describe("Events", function() {
   var Example;
   var accounts;
   var network_id;
@@ -141,4 +141,40 @@ describe("Events [ @geth ]", function() {
     assert(specialEvent[0].event === signatures[1]);
     assert(specialEvent[1].event === signatures[1]);
   });
+
+  // Event signature is:
+  // NumberEvent(int numA, int indexed numB, address addrC, uint numD, uint);
+  it('should reformat numbers in events to BN by default', function(done){
+    Example.new(1).then(example => {
+
+      const event = example.NumberEvent()
+
+      event.once('data', function(data){
+        const args = data.args;
+
+        assert(web3.utils.isBN(args[0]));  // int named
+        assert(web3.utils.isBN(args[1]));  // int named, indexed
+
+        assert(!web3.utils.isBN(args[2])); // Address
+
+        assert(web3.utils.isBN(args[3]));  // uint named
+        assert(web3.utils.isBN(args[4]));  // uint unnamed
+
+        assert(web3.utils.isBN(args.numA));
+        assert(web3.utils.isBN(args.numB));
+
+        assert(!web3.utils.isBN(args.addressC));
+
+        assert(web3.utils.isBN(args.numD));
+
+        assert(args.numA.toNumber() === 5);
+        assert(args.numD.toNumber() === 55);
+
+        this.removeAllListeners();
+        done();
+      });
+
+      example.triggerNumberEvent(5,7,accounts[0],55,77);
+    });
+  })
 });

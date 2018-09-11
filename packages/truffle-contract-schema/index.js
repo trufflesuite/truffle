@@ -1,6 +1,7 @@
 var sha3 = require("crypto-js/sha3");
 var pkgVersion = require("./package.json").version;
 var Ajv = require("ajv");
+var util = require("util");
 
 var contractObjectSchema = require("./spec/contract-object.spec.json");
 var networkObjectSchema = require("./spec/network-object.spec.json");
@@ -162,14 +163,39 @@ var TruffleContractSchema = {
   // - Resolves as validated `contractObj`
   // - Rejects with list of errors from schema validator
   validate: function(contractObj) {
-    var ajv = new Ajv({ useDefaults: true });
+    var ajv = new Ajv({ verbose: true });
     ajv.addSchema(abiSchema);
     ajv.addSchema(networkObjectSchema);
     ajv.addSchema(contractObjectSchema);
     if (ajv.validate("contract-object.spec.json", contractObj)) {
       return contractObj;
     } else {
-      throw ajv.errors;
+      const message = `Schema validation failed. Errors:\n\n${
+        ajv.errors
+          .map( ({
+            keyword,
+            dataPath,
+            schemaPath,
+            params,
+            message,
+            data,
+            schema,
+            parentSchema
+          }) => util.format(
+            "%s (%s):\n%s\n",
+            message, keyword, util.inspect({
+              dataPath,
+              schemaPath,
+              params,
+              data,
+              parentSchema
+            }, { depth: 5 })
+          ))
+          .join("\n")
+      }`;
+      const error = new Error(message);
+      error.errors = ajv.errors;
+      throw error;
     }
   },
 

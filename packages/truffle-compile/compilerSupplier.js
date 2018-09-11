@@ -118,7 +118,7 @@ CompilerSupplier.prototype.getDockerTags = function(){
         .results
         .map(item => item.name)
     )
-    .catch(err => {throw self.errors('noRequest', url, err)});
+    .catch(err => {throw self.errors('noRequest', self.config.dockerTagsUrl, err)});
 }
 
 
@@ -143,6 +143,10 @@ CompilerSupplier.prototype.getLocal = function(localPath){
   const self = this;
   let compiler;
 
+  if (!path.isAbsolute(localPath)){
+    localPath = path.resolve(process.cwd(), localPath);
+  }
+
   try {
     compiler = originalRequire(localPath)
     self.removeListener();
@@ -166,7 +170,7 @@ CompilerSupplier.prototype.getVersions = function(){
 
   return request(self.config.versionsUrl)
     .then(list => JSON.parse(list))
-    .catch(err => {throw self.errors('noRequest', url, err)});
+    .catch(err => {throw self.errors('noRequest', self.config.versionsUrl, err)});
 }
 
 
@@ -436,7 +440,7 @@ CompilerSupplier.prototype.errors = function(kind, input, err){
 
     noPath:    "Could not find compiler at: " + input,
     noVersion: "Could not find compiler version:\n" + input + ".\n" + info,
-    noRequest: "Failed to complete request to: " + input + ".\n\n" + err,
+    noRequest: "Failed to complete request to: " + input + ". Are you connected to the internet?\n\n" + err,
     noDocker:  "You are trying to run dockerized solc, but docker is not installed.",
     noImage:   "Please pull " + input + " from docker before trying to compile with it.",
     noNative:  "Could not execute local solc binary: " + err,

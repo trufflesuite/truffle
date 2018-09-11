@@ -37,7 +37,7 @@ describe("artifactor + require", function() {
 
     // Clean up after solidity. Only remove solidity's listener,
     // which happens to be the first.
-    process.removeListener("uncaughtException", process.listeners("uncaughtException")[0]);
+    process.removeListener("uncaughtException", process.listeners("uncaughtException")[0] || function(){});
 
     var compiled = Schema.normalize(result.contracts[":Example"]);
     abi = compiled.abi;

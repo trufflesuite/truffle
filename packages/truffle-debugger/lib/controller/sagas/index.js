@@ -69,10 +69,15 @@ function* stepNext () {
     yield* advance();
 
     // and check the next source range
-    upcoming = yield select(controller.current.location);
+    try {
+      upcoming = yield select(controller.current.location);
+    } catch (e) {
+      upcoming = null;
+    }
 
     // if the next step's source range is still the same, keep going
   } while (
+    !upcoming ||
     !upcoming.node ||
     SKIPPED_TYPES.has(upcoming.node.nodeType) ||
 

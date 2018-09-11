@@ -18,6 +18,6 @@ docker run \
     --wsorigins '*' \
     --nodiscover \
     --dev \
-    --dev.period 1 \
+    --dev.period 0 \
     --targetgaslimit '7000000' \
     js ./scripts/geth-accounts.js

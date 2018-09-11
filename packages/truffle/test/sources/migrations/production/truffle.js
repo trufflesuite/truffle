@@ -6,7 +6,7 @@ module.exports = {
       network_id: "*",
       gas: 4700000,
       gasPrice: 20000000000,
-      confirmations: 2,
+      confirmations: (process.env.GETH) ? 0 : 2,
       production: true,
       timeoutBlocks: 70,
     },
@@ -16,7 +16,7 @@ module.exports = {
       network_id: "*",
       gas: 4700000,
       gasPrice: 20000000000,
-      confirmations: 2,
+      confirmations: (process.env.GETH) ? 0 : 2,
       production: true,
       timeoutBlocks: 70,
       skipDryRun: true

@@ -78,8 +78,9 @@ describe("migrate", function() {
     Contracts.compile(config.with({
       all: false,
       quiet: true
-    }), function(err, contracts) {
+    }), function(err, result) {
       if (err) return done(err);
+      let { contracts } = result;
 
       Migrate.run(config.with({
         quiet: true

@@ -77,8 +77,9 @@ describe('NPM integration', function() {
 
     Contracts.compile(config.with({
       quiet: true
-    }), function(err, contracts) {
+    }), function(err, result) {
       if (err) return done(err);
+      let { contracts } = result;
 
       var contractNames = Object.keys(contracts);
 

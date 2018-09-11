@@ -1,6 +1,6 @@
 {
   "name": "truffle-debugger",
-  "version": "4.0.2",
+  "version": "4.1.0-beta.0",
   "description": "Core functionality for debugging Solidity files built with Truffle",
   "main": "dist/debugger.js",
   "scripts": {
@@ -32,8 +32,8 @@
     "truffle-code-utils": "^1.1.1",
     "truffle-expect": "^0.0.4",
     "truffle-solidity-utils": "^1.1.2",
-    "web3": "1.0.0-beta.33",
-    "web3-eth-abi": "^1.0.0-beta.29"
+    "web3": "1.0.0-beta.35",
+    "web3-eth-abi": "1.0.0-beta.35"
   },
   "devDependencies": {
     "async": "2.6.1",
@@ -51,17 +51,17 @@
     "express": "^4.16.2",
     "faker": "^4.1.0",
     "fs-extra": "6.0.1",
-    "ganache-cli": "6.1.6",
+    "ganache-cli": "6.1.8",
     "mocha": "5.2.0",
     "mocha-webpack": "^1.1.0",
     "node-interval-tree": "^1.3.3",
     "remotedev-server": "^0.2.4",
-    "truffle-artifactor": "^3.0.7",
-    "truffle-box": "^1.0.7",
+    "truffle-artifactor": "^4.0.0-beta.0",
+    "truffle-box": "^1.0.8-beta.0",
     "truffle-debug-utils": "^1.0.6",
-    "truffle-migrate": "^2.0.8",
-    "truffle-resolver": "^4.0.4",
-    "truffle-workflow-compile": "^1.0.6",
+    "truffle-migrate": "^3.0.0-beta.0",
+    "truffle-resolver": "^5.0.0-beta.0",
+    "truffle-workflow-compile": "^2.0.0-beta.0",
     "webpack": "^3.8.1",
     "webpack-dev-middleware": "^2.0.4",
     "webpack-merge": "^4.1.1",
@@ -78,5 +78,6 @@
   "homepage": "https://github.com/trufflesuite/truffle-debugger#readme",
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "gitHead": "07967b472112f1c771ebbc90319781454cf9331b"
 }
