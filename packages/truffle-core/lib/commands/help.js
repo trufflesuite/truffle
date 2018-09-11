@@ -9,13 +9,13 @@ var command = {
   run: function (options, callback) {
     var commands = require("./index");
     if (options._.length === 0) {
-      this.displayHelpInformation("help");
+      this.displayCommandHelp("help");
       return;
     }
     var selectedCommand = options._[0];
 
     if (commands[selectedCommand]) {
-      this.displayHelpInformation(selectedCommand);
+      this.displayCommandHelp(selectedCommand);
     } else {
       console.log(`\n  Cannot find the given command '${selectedCommand}'`);
       console.log("  Please ensure your command is one of the following: ");
@@ -23,12 +23,11 @@ var command = {
       console.log("");
     }
   },
-  displayHelpInformation: function (selectedCommand) {
+  displayCommandHelp: function (selectedCommand) {
     var commands = require("./index");
     var commandHelp = commands[selectedCommand].userHelp;
-    console.log(`\n  COMMAND NAME: ${commands[selectedCommand].command}`);
-    console.log(`  DESCRIPTION:  ${commands[selectedCommand].description}`);
     console.log(`  USAGE:        ${commandHelp.usage}`);
+    console.log(`  DESCRIPTION:  ${commands[selectedCommand].description}`);
 
     if (commandHelp.parameters.length > 0) {
       console.log(`  PARAMETERS: `);
