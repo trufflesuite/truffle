@@ -5,10 +5,18 @@ import decode from "../decode";
 import TruffleDecoder from "./contract-decoder";
 import { ContractObject } from "truffle-contract-schema/spec";
 
-export function forContract(contract: ContractObject, inheritedContracts: ContractObject[], providerUrl: string): TruffleDecoder {
+import * as utils from "../utils";
+
+function forContract(contract: ContractObject, inheritedContracts: ContractObject[], providerUrl: string): TruffleDecoder {
   return new TruffleDecoder(contract, inheritedContracts, providerUrl);
 }
 
-export function forEvmState(definition: AstDefinition, pointer: DataPointer, info: EvmInfo, providerUrl?: string): any {
+function forEvmState(definition: AstDefinition, pointer: DataPointer, info: EvmInfo, providerUrl?: string): any {
   return decode(definition, pointer, info);
 }
+
+export default {
+  forContract,
+  forEvmState,
+  utils
+};

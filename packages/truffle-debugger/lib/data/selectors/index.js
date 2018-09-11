@@ -8,10 +8,8 @@ import ast from "lib/ast/selectors";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
-import decode from "../decode";
-import * as decodeUtils from "../decode/utils";
-
-import { BigNumber } from "bignumber.js";
+import TruffleDecoder from "../../../../truffle-decoder/dist/interface"; // TODO: use npm package
+const ConversionUtils = TruffleDecoder.utils.Conversion;
 
 function createStateSelectors({ stack, memory, storage }) {
   return {
@@ -22,7 +20,7 @@ function createStateSelectors({ stack, memory, storage }) {
       [stack],
 
       (words) => (words || []).map(
-        (word) => decodeUtils.toBytes(decodeUtils.toBigNumber(word, decodeUtils.WORD_SIZE))
+        (word) => ConversionUtils.toBytes(ConversionUtils.toBN(word, TruffleDecoder.utils.EVM.WORD_SIZE))
       )
     ),
 
@@ -109,7 +107,7 @@ const data = createSelectorTree({
       ["/views/scopes/inlined", "/next/state", "/proc/mappingKeys"],
 
       (scopes, state, mappingKeys) =>
-        (definition, ref) => decode(definition, ref, {
+        (definition, ref) => TruffleDecoder.forEvmState(definition, ref, {
           scopes, state, mappingKeys
         })
     )
@@ -266,7 +264,7 @@ const data = createSelectorTree({
         )
       ),
 
-      native: createLeaf(['./decoded'], decodeUtils.cleanBigNumbers)
+      native: createLeaf(['./decoded'], ConversionUtils.cleanBNs)
     }
   },
 

@@ -125,4 +125,25 @@ export namespace Conversion {
 
     return bytes;
   }
+
+  /**
+   * recursively converts big numbers into something nicer to look at
+   */
+  export function cleanBNs(value: any): any {
+    if (BN.isBN(value)) {
+      return value.toString();
+
+    } else if (value && value.map != undefined) {
+      return value.map( (inner: any) => cleanBNs(inner) );
+
+    } else if (value && typeof value == "object") {
+      return Object.assign(
+        {}, ...Object.entries(value)
+          .map( ([key, inner]) => ({ [key]: cleanBNs(inner) }) )
+      );
+
+    } else {
+      return value;
+    }
+  }
 }

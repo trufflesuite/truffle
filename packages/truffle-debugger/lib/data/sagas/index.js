@@ -11,8 +11,7 @@ import * as actions from "../actions";
 
 import data from "../selectors";
 
-import { WORD_SIZE } from "lib/data/decode/utils";
-import * as utils from "lib/data/decode/utils";
+import { utils } from "../../../../truffle-decoder/dist/interface"; // TODO: use npm package
 
 export function *scope(nodeId, pointer, parentId, sourceId) {
   yield put(actions.scope(nodeId, pointer, parentId, sourceId));
@@ -81,7 +80,7 @@ function *tickSaga() {
       let index = WORD_SIZE - 1;  // cause lower-order
       debug("storage vars %o", storageVars);
 
-      let allocation = utils.allocateDeclarations(storageVars, definitions);
+      let allocation = utils.Allocation.allocateDeclarations(storageVars, definitions);
       assignments = Object.assign(
         {}, ...Object.entries(allocation.children)
           .map( ([id, storage]) => ({
@@ -129,9 +128,9 @@ function *tickSaga() {
       let indexValue;
       if (indexAssignment) {
         indexValue = decode(node.indexExpression, indexAssignment)
-      } else if (utils.typeClass(node.indexExpression) == "stringliteral") {
+      } else if (utils.Definition.typeClass(node.indexExpression) == "stringliteral") {
         indexValue = decode(node.indexExpression, {
-          "literal": utils.toBytes(node.indexExpression.hexValue)
+          "literal": utils.Conversion.toBytes(node.indexExpression.hexValue)
         })
       }
 

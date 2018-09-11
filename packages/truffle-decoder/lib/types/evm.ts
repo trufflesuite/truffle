@@ -13,5 +13,5 @@ export interface EvmInfo {
   state: EvmState;
   mappingKeys?: any;
   referenceDeclarations?: AstReferences;
-  variables: EvmVariableReferenceMapping
+  variables?: EvmVariableReferenceMapping
 }

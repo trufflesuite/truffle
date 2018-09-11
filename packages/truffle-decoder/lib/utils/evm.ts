@@ -6,28 +6,6 @@ export namespace EVM {
   export const WORD_SIZE = 0x20;
   export const MAX_WORD = new BN(2).pow(new BN(256)).subn(1);
 
-  /**
-   * recursively converts big numbers into something nicer to look at
-   */
-  // TODO:
-  /*export function cleanBNs(value: BN | ) {
-    if (BN.isBN(value)) {
-      return value.toNumber();
-
-    } else if (value && value.map != undefined) {
-      return value.map( (inner) => cleanBigNumbers(inner) );
-
-    } else if (value && typeof value == "object") {
-      return Object.assign(
-        {}, ...Object.entries(value)
-          .map( ([key, inner]) => ({ [key]: cleanBigNumbers(inner) }) )
-      );
-
-    } else {
-      return value;
-    }
-  }*/
-
   export function keccak256(...args: any[]): BN {
     let web3 = new Web3();
 
