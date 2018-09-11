@@ -148,10 +148,10 @@ class Reporter {
     data.reason = (data.error) ? data.error.reason : null;
 
     const errors = {
-      OOG: error.message.includes('out of gas') || (data.gas === data.blockLimit),
+      ETH: error.message.includes('funds'),
+      OOG: error.message.includes('out of gas'),
       INT: error.message.includes('base fee') || error.message.includes('intrinsic'),
       RVT: error.message.includes('revert'),
-      ETH: error.message.includes('funds'),
       BLK: error.message.includes('block gas limit'),
       NCE: error.message.includes('nonce'),
       INV: error.message.includes('invalid opcode'),

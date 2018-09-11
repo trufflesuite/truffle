@@ -1,5 +1,6 @@
 var Web3 = require('web3');
 var abi = require("web3-eth-abi");
+var reformat = require('./reformat');
 
 var web3 = new Web3();
 
@@ -28,7 +29,9 @@ var Utils = {
 
       copy.event = logABI.name;
       copy.topics = logABI.anonymous ? copy.topics : copy.topics.slice(1);
-      copy.args = abi.decodeLog(logABI.inputs, copy.data, copy.topics);
+
+      const logArgs = abi.decodeLog(logABI.inputs, copy.data, copy.topics);
+      copy.args = reformat.numbers.call(constructor, logArgs, logABI.inputs);
 
       delete copy.data;
       delete copy.topics;

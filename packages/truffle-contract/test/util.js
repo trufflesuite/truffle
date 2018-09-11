@@ -49,7 +49,7 @@ var util = {
       var web3 = new Web3();
 
       (process.env.GETH)
-        ? provider = new Web3.providers.WebsocketProvider('ws://localhost:8546')
+        ? provider = new Web3.providers.HttpProvider('http://localhost:8545')
         : provider = ganache.provider(options);
 
       web3.setProvider(provider);

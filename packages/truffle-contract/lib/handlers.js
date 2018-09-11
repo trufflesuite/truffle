@@ -102,8 +102,7 @@ var handlers = {
     }
 
     // .method(): resolve/reject receipt in handler
-    if (parseInt(receipt.status) == 0 && !context.onlyEmitReceipt){
-
+    if (receipt.status !== undefined && !receipt.status){
       var reason = await Reason.get(context.params, context.contract.web3);
 
       var error = new StatusError(

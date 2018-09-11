@@ -1,10 +1,31 @@
 var Reason = require('./reason');
+var handlers = require('./handlers');
 
 var override = {
 
   timeoutMessage: 'not mined within', // Substring of timeout err fired by web3
   defaultMaxBlocks: 50,               // Max # of blocks web3 will wait for a tx
   pollingInterval: 1000,
+
+  /**
+   * Attempts to extract receipt object from Web3 error message
+   * @param  {Object} message       web3 error
+   * @return {Object|undefined} receipt
+   */
+  extractReceipt(message){
+    const hasReceipt = message &&
+                       message.includes('{')
+                       message.includes('}');
+
+    if (hasReceipt){
+      const receiptString =  '{' + message.split('{')[1].trim();
+      try {
+        return JSON.parse(receiptString)
+      } catch (err){
+        // ignore
+      }
+    }
+  },
 
   /**
    * Fired after web3 ceases to support subscriptions if user has specified
@@ -26,11 +47,24 @@ var override = {
 
     // Reject after attempting to get reason string if we shouldn't be waiting.
     if (!timedOut || !shouldWait){
+
+      // We might have been routed here in web3 >= beta.34 by their own status check
+      // error. We want to extract the receipt, emit a receipt event
+      // and reject it ourselves.
+      var receipt = override.extractReceipt(web3Error.message);
+      if (receipt){
+        await handlers.receipt(context, receipt);
+        return;
+      }
+
+      // This will run if there's a reason and no status field
+      // e.g: revert with reason ganache-cli --vmErrorsOnRPCResponse=true
       var reason = await Reason.get(context.params, constructor.web3);
       if (reason) {
         web3Error.reason = reason;
         web3Error.message += ` -- Reason given: ${reason}.`;
       }
+
       return context.promiEvent.reject(web3Error);
     }
 

@@ -11,7 +11,6 @@ var TestResolver = require("./testing/testresolver");
 var TestSource = require("./testing/testsource");
 var SolidityTest = require("./testing/soliditytest");
 var expect = require("truffle-expect");
-var find_contracts = require("truffle-contract-sources");
 var Migrate = require("truffle-migrate");
 var Profiler = require("truffle-compile/profiler.js");
 var async = require("async");
@@ -88,10 +87,6 @@ var Test = {
     web3.eth.getAccounts().then(function(accs) {
       accounts = accs;
 
-      if (!config.from) {
-        config.from = accounts[0];
-      }
-
       if (!config.resolver) {
         config.resolver = new Resolver(config);
       }
@@ -165,8 +160,9 @@ var Test = {
           resolver: test_resolver,
           quiet: false,
           quietWrite: true
-        }), function(err, abstractions, paths) {
+        }), function(err, result) {
           if (err) return reject(err);
+          const paths = result.outputs.solc;
           accept(paths);
         });
       });

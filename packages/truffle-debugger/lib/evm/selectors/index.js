@@ -207,6 +207,9 @@ const evm = createSelectorTree({
         let record;
         if (address) {
           record = instances[address];
+          if (!record) {
+            return { address };
+          }
           binary = record.binary
         } else {
           record = search(binary);

@@ -304,7 +304,7 @@ module.exports = {
           try {
             imports = self.getImports(result.file, result, solc);
           } catch (err) {
-            err.message = "Error parsing " + result[file] + ": " + err.message;
+            err.message = "Error parsing " + result.file + ": " + err.message;
             return finished(err);
           }
 

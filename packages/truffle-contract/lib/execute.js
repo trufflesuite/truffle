@@ -117,7 +117,7 @@ var execute = {
 
           await constructor.detectNetwork();
           result = await fn(...args).call(params, defaultBlock);
-          result = reformat.callOutput.call(constructor, result, methodABI.outputs);
+          result = reformat.numbers.call(constructor, result, methodABI.outputs);
           resolve(result);
 
         } catch (err) {
@@ -203,7 +203,7 @@ var execute = {
         handlers.setup(deferred, context);
 
         deferred.then(async (receipt) => {
-          if (parseInt(receipt.status) == 0){
+          if (receipt.status !== undefined && !receipt.status){
             var reason = await Reason.get(params, web3);
 
             var error = new StatusError(

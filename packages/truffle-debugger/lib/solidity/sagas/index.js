@@ -17,24 +17,26 @@ export function *addSourceMap(binary, sourceMap) {
   yield put(actions.addSourceMap(binary, sourceMap));
 }
 
-function* functionDepthSaga () {
+function *tickSaga() {
   while (true) {
     yield take(TICK);
     debug("got TICK");
-    let instruction = yield select(solidity.current.instruction);
-    debug("instruction: %o", instruction);
 
-    if (yield select(solidity.current.willJump)) {
-      let jumpDirection = yield select(solidity.current.jumpDirection);
+    yield *functionDepthSaga();
+  }
+}
+
+function* functionDepthSaga () {
+  if (yield select(solidity.current.willJump)) {
+    let jumpDirection = yield select(solidity.current.jumpDirection);
 
 
-      yield put(actions.jump(jumpDirection));
-    }
+    yield put(actions.jump(jumpDirection));
   }
 }
 
 export function* saga () {
-  yield call(functionDepthSaga);
+  yield call(tickSaga);
 }
 
 export default prefixName("solidity", saga);

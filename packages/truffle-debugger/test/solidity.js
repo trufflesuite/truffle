@@ -19,7 +19,7 @@ contract SingleCall {
   event Called();
 
   function run() public {
-    Called();
+    emit Called();
   }
 }
 `;
@@ -49,11 +49,11 @@ contract NestedCall {
   }
 
   function inner() public {
-    First();
+    emit First();
   }
 
   function second() public {
-    Second();
+    emit Second();
   }
 
 }

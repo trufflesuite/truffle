@@ -9,8 +9,9 @@ contract Example {
   event ExampleEvent(address indexed _from, uint num);
   event ContractAddressEvent(address _contract);
   event SpecialEvent();
+  event NumberEvent(int numA, int indexed numB, address addrC, uint numD, uint);
 
-  constructor(uint val) {
+  constructor(uint val) public {
     // Constructor revert
     require(val != 13);
     require(val != 2001, 'reasonstring');
@@ -27,122 +28,126 @@ contract Example {
     fallbackTriggered = false;
   }
 
-  function setValue(uint val) {
+  function setValue(uint val) public {
     value = val;
   }
 
-  function isDeployed() constant returns (address){
+  function isDeployed() public view returns (address){
     return address(this);
   }
 
-  function viewSender() view returns(address){
+  function viewSender() public view returns(address){
     return msg.sender;
   }
 
-  function getValue() constant returns(uint) {
+  function getValue() public view returns(uint) {
     return value;
   }
 
-  function getValuePlus(uint toAdd) constant returns(uint) {
+  function getValuePlus(uint toAdd) public view returns(uint) {
     return value + toAdd;
   }
 
-  function overloadedGet() constant returns(uint){
+  function overloadedGet() public view returns(uint){
     return value;
   }
 
-  function overloadedGet(uint multiplier) constant returns(uint){
+  function overloadedGet(uint multiplier) public view returns(uint){
     return value * multiplier;
   }
 
-  function overloadedSet(bytes32 h, uint val) {
+  function overloadedSet(bytes32 h, uint val) public {
     hash = h;
     value = val;
   }
 
-  function overloadedSet(bytes32 h, uint val, uint multiplier) {
+  function overloadedSet(bytes32 h, uint val, uint multiplier) public {
     hash = h;
     value = val * multiplier;
   }
 
-  function parrot(uint val) returns(uint) {
+  function parrot(uint val) public returns(uint) {
     return val;
   }
 
-  function triggerEvent() {
-    ExampleEvent(msg.sender, 8);
+  function triggerEvent() public {
+    emit ExampleEvent(msg.sender, 8);
   }
 
-  function triggerEventWithArgument(uint arg) {
-    ExampleEvent(msg.sender, arg);
+  function triggerEventWithArgument(uint arg) public {
+    emit ExampleEvent(msg.sender, arg);
   }
 
-  function triggerSpecialEvent() {
-    SpecialEvent();
+  function triggerSpecialEvent() public {
+    emit SpecialEvent();
   }
 
-  function triggerContractAddressEvent(){
-    ContractAddressEvent(address(this));
+  function triggerContractAddressEvent() public {
+    emit ContractAddressEvent(address(this));
   }
 
-  function triggerRequireError() {
+  function triggerNumberEvent(int a, int b, address c, uint d, uint e){
+    NumberEvent(a,b,c,d,e);
+  }
+
+  function triggerRequireError() public {
     require(false);
   }
 
-  function triggerAssertError() {
+  function triggerAssertError() public {
     assert(false);
   }
 
-  function triggerRequireWithReasonError(){
+  function triggerRequireWithReasonError() public {
     require(false, 'reasonstring');
   }
 
-  function runsOutOfGas() {
+  function runsOutOfGas() public {
     consumesGas();
   }
 
-  function isExpensive(uint val){
+  function isExpensive(uint val) public {
     for(uint i = 0; i < val; i++){
       counter = i;
     }
   }
 
-  function consumesGas() {
+  function consumesGas() public {
     for(uint i = 0; i < 10000; i++){
       counter = i;
     }
   }
 
-  function returnsNamedTuple () view returns (uint256 hello, string black, uint8 goodbye){
+  function returnsNamedTuple () public view returns (uint256 hello, string black, uint8 goodbye){
     return (5, 'black', 5);
   }
 
-  function returnsUnnamedTuple() view returns (string, uint, uint[2]){
-    uint[2] arr;
+  function returnsUnnamedTuple() public view returns (string, uint, uint[2]){
+    uint[2] memory arr;
     arr[0] = 5;
     arr[1] = 5;
     return ('hello', 5, arr);
   }
 
-  function returnsInt() view returns (int){
+  function returnsInt() public view returns (int){
     return 5;
   }
 
-  function returnsNamedStaticArray() view returns (uint[2] named ){
-    uint[2] arr;
+  function returnsNamedStaticArray() public view returns (uint[2] named ){
+    uint[2] memory arr;
     arr[0] = 5;
     arr[1] = 5;
     return arr;
   }
 
-  function returnsUnnamedStaticArray () view returns (uint[2]){
-    uint[2] arr;
+  function returnsUnnamedStaticArray () public view returns (uint[2]){
+    uint[2] memory arr;
     arr[0] = 5;
     arr[1] = 5;
     return arr;
   }
 
-  function() payable {
+  function() external payable {
     fallbackTriggered = true;
   }
 }

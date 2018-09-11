@@ -1,7 +1,7 @@
 {
   "name": "truffle",
   "namespace": "consensys",
-  "version": "5.0.0-next.6",
+  "version": "5.0.0-next.11",
   "description": "Truffle - Simple development framework for Ethereum",
   "dependencies": {
     "mocha": "^4.1.0",
@@ -12,7 +12,7 @@
     "clean-webpack-plugin": "^0.1.16",
     "copy-webpack-plugin": "^4.0.1",
     "fs-extra": "6.0.1",
-    "ganache-cli": "6.1.6",
+    "ganache-cli": "6.1.8",
     "glob": "^7.1.2",
     "js-scrypt": "^0.2.0",
     "meta-npm": "^0.0.22",
@@ -23,10 +23,9 @@
     "shebang-loader": "0.0.1",
     "stream-buffers": "^3.0.1",
     "tmp": "0.0.33",
-    "truffle-box": "^1.0.7",
-    "truffle-contract": "^3.0.6",
-    "truffle-core": "^4.1.13",
-    "web3": "1.0.0-beta.33",
+    "truffle-box": "^1.0.8-beta.0",
+    "truffle-contract": "^4.0.0-beta.0",
+    "web3": "1.0.0-beta.35",
     "webpack": "^2.5.1",
     "yargs": "^8.0.2"
   },
@@ -39,6 +38,7 @@
     "build-cli": "webpack --config ./cli.webpack.config.js",
     "test": "./scripts/test.sh",
     "publish:byoc": "node ./scripts/prereleaseVersion.js byoc-safe byoc",
+    "publish:external-compiler": "node ./scripts/prereleaseVersion.js external-compiler external-compiler",
     "publish:next": "node ./scripts/prereleaseVersion.js next next",
     "test:raw": "NO_BUILD=true mocha"
   },
@@ -60,5 +60,6 @@
   ],
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "gitHead": "07967b472112f1c771ebbc90319781454cf9331b"
 }
