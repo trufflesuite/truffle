@@ -1,4 +1,4 @@
-import { utils } from "../../../../truffle-decoder/dist/interface"; // TODO: use npm package
+import { utils } from "truffle-decoder";
 
 export function prefixName(prefix, fn) {
   Object.defineProperty(fn, 'name', {
