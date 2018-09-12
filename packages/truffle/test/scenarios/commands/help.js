@@ -34,7 +34,7 @@ describe("truffle help", () => {
       CommandRunner.run("help compile", config, (error) => {
         const output = logger.contents();
 
-        assert(output.includes("truffle compile [--list <prereleases|releases|docker>] [--all] [--network <name>]"));
+        assert(output.includes("Description:  Compile contract source files"));
         done();
       });
     });
