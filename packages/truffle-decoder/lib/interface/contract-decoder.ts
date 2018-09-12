@@ -4,12 +4,12 @@ import { ContractObject, Ast } from "truffle-contract-schema/spec";
 import BN from "bn.js";
 import { AstDefinition } from "../types/ast";
 import { EvmInfo } from "../types/evm";
-import cloneDeep from "lodash.clonedeep";
 import * as references from "../allocate/references";
 import { StoragePointer } from "../types/pointer";
 import decode from "../decode";
 import { Definition as DefinitionUtils, EVM, Allocation } from "../utils";
-import { BlockType } from "web3/types";
+import { BlockType } from "web3/eth/types";
+import { EventLog } from "web3/types";
 
 export interface ContractStateVariable {
   isChildVariable: boolean;
@@ -57,7 +57,6 @@ interface ContractState {
 };
 
 interface ContractEvent {
-  id: string;
   logIndex: number;
   name: string;
   blockHash: string;
@@ -250,6 +249,38 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     //
   }
 
+  private decodeEvent(event: EventLog): ContractEvent {
+    let contractEvent: ContractEvent = {
+      logIndex: event.logIndex,
+      name: event.event,
+      blockHash: event.blockHash,
+      blockNumber: event.blockNumber,
+      transactionHash: event.transactionHash,
+      transactionIndex: event.transactionIndex,
+      variables: {}
+    };
+
+    const eventDefinition = this.eventDefinitions[this.eventDefinitionIdsByName[contractEvent.name]];
+
+    if (typeof eventDefinition.parameters !== "undefined" && typeof eventDefinition.parameters.parameters !== "undefined") {
+      const argumentDefinitions = eventDefinition.parameters.parameters;
+
+      for (let i = 0; i < argumentDefinitions.length; i++) {
+        const definition = argumentDefinitions[i];
+
+        if (definition.nodeType === "VariableDeclaration") {
+          contractEvent.variables[definition.name] = <DecodedVariable>{
+            name: definition.name,
+            type: DefinitionUtils.typeClass(definition),
+            value: event.returnValues[definition.name] // TODO: this should be a decoded value, it currently is a string always
+          };
+        }
+      }
+    }
+
+    return contractEvent;
+  }
+
   public async events(name: string | null = null, block: BlockType = "latest"): Promise<ContractEvent[]> {
     const web3Contract = new this.web3.eth.Contract(this.contract.abi, this.contractAddress);
     const events = await web3Contract.getPastEvents(name, {
@@ -260,36 +291,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     let contractEvents: ContractEvent[] = [];
 
     for (let i = 0; i < events.length; i++) {
-      const event: ContractEvent = {
-        id: events[i].id,
-        logIndex: events[i].logIndex,
-        name: events[i].event,
-        blockHash: events[i].blockHash,
-        blockNumber: events[i].blockNumber,
-        transactionHash: events[i].transactionHash,
-        transactionIndex: events[i].transactionIndex,
-        variables: {}
-      };
-
-      const eventDefinition = this.eventDefinitions[this.eventDefinitionIdsByName[event.name]];
-
-      if (typeof eventDefinition.parameters !== "undefined" && typeof eventDefinition.parameters.parameters !== "undefined") {
-        const argumentDefinitions = eventDefinition.parameters.parameters;
-
-        for (let j = 0; j < argumentDefinitions.length; j++) {
-          const definition = argumentDefinitions[j];
-
-          if (definition.nodeType === "VariableDeclaration") {
-            event.variables[definition.name] = <DecodedVariable>{
-              name: definition.name,
-              type: DefinitionUtils.typeClass(definition),
-              value: events[i].returnValues[definition.name] // TODO: this should be a decoded value, it currently is a string always
-            };
-          }
-        }
-      }
-
-      contractEvents.push(event);
+      contractEvents.push(this.decodeEvent(events[i]));
     }
 
     return contractEvents;
