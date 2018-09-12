@@ -19,7 +19,8 @@ var options = {
 };
 
 const inputArguments = process.argv.slice(2);
-const userWantsGeneralHelp = inputArguments[0] === 'help' &&  inputArguments.length === 1;
+const userWantsGeneralHelp = (inputArguments[0] === "help" || inputArguments[0] === "--help") &&
+                             inputArguments.length === 1;
 
 if (userWantsGeneralHelp) {
   command.displayGeneralHelp();
