@@ -55,12 +55,6 @@ var command = {
     const log = options.logger.log;
     options.list = (options.list.length) ? options.list : "releases";
 
-    // Help
-    if (options.list && options.help){
-      log(command.help);
-      return done();
-    }
-
     // Docker tags
     if (options.list === 'docker'){
       return supplier
