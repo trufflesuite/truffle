@@ -31,7 +31,7 @@
     "@types/lodash": "^4.14.116",
     "@types/lodash.clonedeep": "^4.5.4",
     "@types/lodash.merge": "^4.6.4",
-    "@types/web3": "^1.0.3",
+    "@types/web3": "^1.0.4",
     "json-schema-to-typescript": "^5.5.0",
     "truffle-contract-schema": "file:../truffle-contract-schema",
     "typescript": "^3.0.1"
