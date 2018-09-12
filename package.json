@@ -2,8 +2,9 @@
   "private": true,
   "scripts": {
     "build:debugger": "cd packages/truffle-debugger && npm run build",
+    "build:decoder": "cd packages/truffle-decoder && npm run build",
     "lerna:bootstrap": "lerna bootstrap",
-    "bootstrap": "npm run lerna:bootstrap && npm run build:debugger",
+    "bootstrap": "npm run lerna:bootstrap && npm run build:decoder && npm run build:debugger",
     "test": "lerna run test --stream --concurrency=1 -- --colors",
     "ci": "./scripts/ci.sh",
     "geth": "./scripts/geth.sh"
