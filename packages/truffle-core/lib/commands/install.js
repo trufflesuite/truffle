@@ -2,6 +2,19 @@ var command = {
   command: 'install',
   description: 'Install a package from the Ethereum Package Registry',
   builder: {},
+  help: {
+    usage: "truffle install [package_name]<@version>",
+    options: [
+      {
+        option: "package_name",
+        description: "Name of the package as listed in the Ethereum Package Registry.",
+      },{
+        option: "<@version>",
+        description: "When specified, will install a specific version of the package, otherwise " +
+          "will install the latest version. (optional)",
+      },
+    ]
+  },
   run: function (options, done) {
     var Config = require("truffle-config");
     var Package = require("../package");

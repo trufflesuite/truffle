@@ -51,6 +51,15 @@ var command = {
   command: 'unbox',
   description: 'Download a Truffle Box, a pre-built Truffle project',
   builder: {},
+  help: {
+    usage: "truffle unbox <box_name>",
+    options: [
+      {
+        option: "<box_name>",
+        description: "Name of the truffle box.",
+      }
+    ],
+  },
   run: function(options, done) {
     var Config = require("truffle-config");
     var Box = require("truffle-box");

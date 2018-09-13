@@ -5,8 +5,6 @@ var Config = require("truffle-config");
 var Command = require("./lib/command");
 var TaskError = require("./lib/errors/taskerror");
 var TruffleError = require("truffle-error");
-var version = require("./lib/version");
-var OS = require("os");
 
 var command = new Command(require("./lib/commands"));
 
@@ -20,15 +18,19 @@ var options = {
   logger: console
 };
 
-command.run(process.argv.slice(2), options, function(err) {
+const inputArguments = process.argv.slice(2);
+const userWantsGeneralHelp = (inputArguments[0] === "help" || inputArguments[0] === "--help") &&
+                             inputArguments.length === 1;
+
+if (userWantsGeneralHelp) {
+  command.displayGeneralHelp();
+  process.exit(0);
+}
+
+command.run(inputArguments, options, function(err) {
   if (err) {
     if (err instanceof TaskError) {
-      command.args
-        .usage("Truffle v" + (version.bundle || version.core) + " - a development framework for Ethereum"
-        + OS.EOL + OS.EOL
-        + 'Usage: truffle <command> [options]')
-        .epilog("See more at http://truffleframework.com/docs")
-        .showHelp();
+      command.displayGeneralHelp();
     } else {
       if (err instanceof TruffleError) {
         console.log(err.message);
@@ -42,6 +44,5 @@ command.run(process.argv.slice(2), options, function(err) {
     }
     process.exit(1);
   }
-
   process.exit(0);
 });

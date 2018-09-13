@@ -11,6 +11,24 @@ var command = {
       default: false
     }
   },
+  help: {
+    usage: "truffle create (contract|migration|test) <ArtifactName>",
+    options: [
+      {
+        option: "contract",
+        description: "Create a new contract definition and file contracts/ArtifactName.sol.",
+      },{
+        option: "migration",
+        description: "Create a new migration and file migrations/###########_artifact_name.js.",
+      },{
+        option: "test",
+        description: "Create a new test and file tests/artifact_name.js.",
+      },{
+        option: "<ArtifactName>",
+        description: "Name of new artifact.",
+      },
+    ]
+  },
   run: function (options, done) {
     var Config = require("truffle-config");
     var ConfigurationError = require("../errors/configurationerror");

@@ -2,6 +2,10 @@ var command = {
   command: 'init',
   description: 'Initialize new and empty Ethereum project',
   builder: {},
+  help: {
+    usage: "truffle init",
+    options: [],
+  },
   run: function (options, done) {
     var Config = require("truffle-config");
     var OS = require("os");

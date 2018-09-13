@@ -6,6 +6,15 @@ var command = {
       type: "string"
     }
   },
+  help: {
+    usage: "truffle debug <transaction_hash>",
+    options: [
+      {
+        option: "<transaction_hash>",
+        description: "Transaction ID to use for debugging.",
+      }
+    ]
+  },
   run: function (options, done) {
     var OS = require("os");
     var path = require("path");
