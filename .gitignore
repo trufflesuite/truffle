@@ -6,3 +6,4 @@ node_modules
 yarn-error.log
 .vscode
 bin
+.DS_Store
