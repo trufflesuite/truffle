@@ -1,5 +1,5 @@
 import { EVM as EVMUtils } from "./evm";
-import { AstDefinition } from "../types/ast";
+import { AstDefinition } from "./ast";
 import cloneDeep from "lodash.clonedeep";
 
 export namespace Definition {
