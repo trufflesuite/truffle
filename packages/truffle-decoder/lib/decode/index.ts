@@ -1,5 +1,5 @@
 
-import * as utils from "../utils";
+import * as DecodeUtils from "truffle-decode-utils";
 import decodeValue from "./value";
 import decodeMemoryReference from "./memory";
 import decodeStorageReference from "./storage";
@@ -14,9 +14,9 @@ export default async function decode(definition: AstDefinition, pointer: DataPoi
     return await decodeValue(definition, pointer, info, web3, contractAddress);
   }
 
-  const identifier = utils.Definition.typeIdentifier(definition);
-  if (utils.Definition.isReference(definition)) {
-    switch (utils.Definition.referenceType(definition)) {
+  const identifier = DecodeUtils.Definition.typeIdentifier(definition);
+  if (DecodeUtils.Definition.isReference(definition)) {
+    switch (DecodeUtils.Definition.referenceType(definition)) {
       case "memory":
         // debug("decoding memory reference, type: %s", identifier);
         return isMemoryPointer(pointer) ? await decodeMemoryReference(definition, pointer, info) : undefined;
@@ -24,12 +24,12 @@ export default async function decode(definition: AstDefinition, pointer: DataPoi
         // debug("decoding storage reference, type: %s", identifier);
         return isStoragePointer(pointer) ? await decodeStorageReference(definition, pointer, info, web3, contractAddress) : undefined;
       default:
-        // debug("Unknown reference category: %s", utils.typeIdentifier(definition));
+        // debug("Unknown reference category: %s", DecodeUtils.typeIdentifier(definition));
         return undefined;
     }
   }
 
-  if (utils.Definition.isMapping(definition) && isStoragePointer(pointer)) {
+  if (DecodeUtils.Definition.isMapping(definition) && isStoragePointer(pointer)) {
     // debug("decoding mapping, type: %s", identifier);
     return await decodeStorageReference(definition, pointer, info, web3, contractAddress);
   }

@@ -1,7 +1,6 @@
-import * as utils from "../utils";
+import * as DecodeUtils from "truffle-decode-utils";
 import BN from "bn.js";
 import Web3 from "web3";
-import { Conversion } from "../utils";
 
 /**
  * convert a slot to a word corresponding to actual storage address
@@ -11,13 +10,13 @@ import { Conversion } from "../utils";
  *
  * @param slot - number or possibly-nested array of numbers
  */
-export function slotAddress(slot: utils.Allocation.Slot): BN {
+export function slotAddress(slot: DecodeUtils.Allocation.Slot): BN {
   if (typeof slot.key !== "undefined" && typeof slot.path !== "undefined") {
     // mapping reference
-    return utils.EVM.keccak256(slot.key, slotAddress(slot.path)).add(slot.offset);
+    return DecodeUtils.EVM.keccak256(slot.key, slotAddress(slot.path)).add(slot.offset);
   }
   else if (slot.hashOffset === true) {
-    return utils.EVM.keccak256(slot.offset);
+    return DecodeUtils.EVM.keccak256(slot.offset);
   }
   else if (typeof slot.path !== "undefined") {
     return slotAddress(slot.path).add(slot.offset);
@@ -33,17 +32,17 @@ export function slotAddress(slot: utils.Allocation.Slot): BN {
  * @param slot - big number or array of regular numbers
  * @param offset - for array, offset from the keccak determined location
  */
-export async function read(storage: any, slot: utils.Allocation.Slot, web3?: Web3, contractAddress?: string): Promise<Uint8Array> {
+export async function read(storage: any, slot: DecodeUtils.Allocation.Slot, web3?: Web3, contractAddress?: string): Promise<Uint8Array> {
   const address = slotAddress(slot);
 
-  // debug("reading slot: %o", utils.toHexString(address));
+  // debug("reading slot: %o", DecodeUtils.toHexString(address));
 
-  const hexAddress = utils.Conversion.toHexString(address, utils.EVM.WORD_SIZE);
+  const hexAddress = DecodeUtils.Conversion.toHexString(address, DecodeUtils.EVM.WORD_SIZE);
   let word = storage[hexAddress];
 
   if (typeof word === "undefined" && web3 && contractAddress) {
     // fallback
-    word = Conversion.toBytes(await web3.eth.getStorageAt(contractAddress, address), 32);
+    word = DecodeUtils.Conversion.toBytes(await web3.eth.getStorageAt(contractAddress, address), 32);
   }
 
   // debug("word %o", word);
@@ -74,7 +73,7 @@ export async function read(storage: any, slot: utils.Allocation.Slot, web3?: Web
  * @param to - location (see ^). inclusive.
  * @param length - instead of `to`, number of bytes after `from`
  */
-export async function readRange(storage: any, range: utils.Allocation.Range, web3?: Web3, contractAddress?: string): Promise<Uint8Array> {
+export async function readRange(storage: any, range: DecodeUtils.Allocation.Range, web3?: Web3, contractAddress?: string): Promise<Uint8Array> {
   // debug("readRange %o", range);
 
   let { from, to, length } = range;
@@ -92,10 +91,10 @@ export async function readRange(storage: any, range: utils.Allocation.Range, web
       slot: {
         path: from.slot.path || undefined,
         offset: from.slot.offset.addn(
-          Math.floor((from.index + length - 1) / utils.EVM.WORD_SIZE)
+          Math.floor((from.index + length - 1) / DecodeUtils.EVM.WORD_SIZE)
         )
       },
-      index: (from.index + length - 1) % utils.EVM.WORD_SIZE
+      index: (from.index + length - 1) % DecodeUtils.EVM.WORD_SIZE
     };
   } else {
     to = {
@@ -113,16 +112,16 @@ export async function readRange(storage: any, range: utils.Allocation.Range, web
   totalWords = totalWords.toNumber();
   // debug("totalWords %o", totalWords);
 
-  let data = new Uint8Array(totalWords * utils.EVM.WORD_SIZE);
+  let data = new Uint8Array(totalWords * DecodeUtils.EVM.WORD_SIZE);
 
   for (let i = 0; i < totalWords; i++) {
     let offset = from.slot.offset.addn(i);
     const word = await read(storage, { ...from.slot, offset }, web3, contractAddress);
-    data.set(word, i * utils.EVM.WORD_SIZE);
+    data.set(word, i * DecodeUtils.EVM.WORD_SIZE);
   }
   // debug("words %o", data);
 
-  data = data.slice(from.index, (totalWords - 1) * utils.EVM.WORD_SIZE + to.index + 1);
+  data = data.slice(from.index, (totalWords - 1) * DecodeUtils.EVM.WORD_SIZE + to.index + 1);
 
   // debug("data: %o", data);
 

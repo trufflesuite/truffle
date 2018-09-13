@@ -1,11 +1,11 @@
 import read from "../read";
-import * as utils from "../utils";
+import * as DecodeUtils from "truffle-decode-utils";
 import decode from "./index";
 import decodeValue from "./value";
 import { AstDefinition } from "../types/ast";
 import { StoragePointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
-import { Allocation } from "../utils";
+import { Allocation } from "truffle-decode-utils";
 import BN from "bn.js";
 import Web3 from "web3";
 import { EvmStruct, EvmMapping } from "../interface/contract-decoder";
@@ -16,7 +16,7 @@ export default async function decodeStorageReference(definition: AstDefinition, 
 
   const { state } = info;
 
-  switch (utils.Definition.typeClass(definition)) {
+  switch (DecodeUtils.Definition.typeClass(definition)) {
     case "array":
       // debug("storage array! %o", pointer);
       data = await read(pointer, state, web3, contractAddress);
@@ -24,11 +24,11 @@ export default async function decodeStorageReference(definition: AstDefinition, 
         return undefined;
       }
 
-      length = utils.Conversion.toBN(data).toNumber();
+      length = DecodeUtils.Conversion.toBN(data).toNumber();
       // debug("length %o", length);
 
-      const baseSize = utils.Definition.storageSize(utils.Definition.baseDefinition(definition));
-      const perWord = Math.floor(utils.EVM.WORD_SIZE / baseSize);
+      const baseSize = DecodeUtils.Definition.storageSize(DecodeUtils.Definition.baseDefinition(definition));
+      const perWord = Math.floor(DecodeUtils.EVM.WORD_SIZE / baseSize);
       // debug("baseSize %o", baseSize);
       // debug("perWord %d", perWord);
 
@@ -37,12 +37,12 @@ export default async function decodeStorageReference(definition: AstDefinition, 
           return i;
         }
 
-        return Math.floor(i * baseSize / utils.EVM.WORD_SIZE);
+        return Math.floor(i * baseSize / DecodeUtils.EVM.WORD_SIZE);
       }
 
       const index = (i: number) => {
         if (perWord == 1) {
-          return utils.EVM.WORD_SIZE - baseSize;
+          return DecodeUtils.EVM.WORD_SIZE - baseSize;
         }
 
         const position = perWord - i % perWord - 1;
@@ -69,7 +69,7 @@ export default async function decodeStorageReference(definition: AstDefinition, 
 
       const decodePromises = fromSlots.map( (childFrom, idx) => {
         // debug("childFrom %d, %o", idx, childFrom);
-        return decode(utils.Definition.baseDefinition(definition), <StoragePointer>{
+        return decode(DecodeUtils.Definition.baseDefinition(definition), <StoragePointer>{
           storage: {
             from: childFrom,
             length: baseSize
@@ -87,7 +87,7 @@ export default async function decodeStorageReference(definition: AstDefinition, 
       }
 
       // debug("data %O", data);
-      let lengthByte = data[utils.EVM.WORD_SIZE - 1];
+      let lengthByte = data[DecodeUtils.EVM.WORD_SIZE - 1];
       if (!lengthByte) {
         lengthByte = 0;
       }
@@ -106,7 +106,7 @@ export default async function decodeStorageReference(definition: AstDefinition, 
         }}, info, web3, contractAddress);
 
       } else {
-        length = utils.Conversion.toBN(data).subn(1).divn(2).toNumber();
+        length = DecodeUtils.Conversion.toBN(data).subn(1).divn(2).toNumber();
         // debug("new-word, length %o", length);
 
         return decodeValue(definition, <StoragePointer>{
@@ -139,14 +139,14 @@ export default async function decodeStorageReference(definition: AstDefinition, 
         // debugger way
         const variables = (scopes[referencedDeclaration] || {}).variables || [];
 
-        let slot: utils.Allocation.Slot;
+        let slot: DecodeUtils.Allocation.Slot;
         if (pointer.storage != undefined) {
           slot = pointer.storage.from.slot;
         } else {
-          slot = utils.Allocation.normalizeSlot(utils.Conversion.toBN(await read(pointer, state, web3, contractAddress)));
+          slot = DecodeUtils.Allocation.normalizeSlot(DecodeUtils.Conversion.toBN(await read(pointer, state, web3, contractAddress)));
         }
 
-        const allocation = utils.Allocation.allocateDeclarations(variables, scopes, slot);
+        const allocation = DecodeUtils.Allocation.allocateDeclarations(variables, scopes, slot);
 
         return Object.assign(
           {}, ...Object.entries(allocation.children)
@@ -175,7 +175,7 @@ export default async function decodeStorageReference(definition: AstDefinition, 
 
           result.members[variableRef.definition.name] = {
             name: variableRef.definition.name,
-            type: utils.Definition.typeClass(variableRef.definition),
+            type: DecodeUtils.Definition.typeClass(variableRef.definition),
             value: val
           };
         }
@@ -189,13 +189,13 @@ export default async function decodeStorageReference(definition: AstDefinition, 
         name: definition.name,
         type: "mapping",
         id: definition.id,
-        keyType: utils.Definition.typeClass(definition.typeName.keyType),
-        valueType: utils.Definition.typeClass(definition.typeName.valueType),
+        keyType: DecodeUtils.Definition.typeClass(definition.typeName.keyType),
+        valueType: DecodeUtils.Definition.typeClass(definition.typeName.valueType),
         members: {}
       };
 
     default:
-      // debug("Unknown storage reference type: %s", utils.typeIdentifier(definition));
+      // debug("Unknown storage reference type: %s", DecodeUtils.typeIdentifier(definition));
       return undefined;
   }
 }

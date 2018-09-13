@@ -2,7 +2,7 @@ import decode from "./index";
 import { AstDefinition } from "../types/ast";
 import { StoragePointer, LiteralPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
-import { Allocation } from "../utils";
+import { Allocation } from "truffle-decode-utils";
 import Web3 from "web3";
 
 export default function decodeMapping(definition: AstDefinition, pointer: StoragePointer, info: EvmInfo, web3?: Web3, contractAddress?: string) {

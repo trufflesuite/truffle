@@ -3,7 +3,7 @@ import { ContractObject } from "truffle-contract-schema/spec";
 import { StoragePointer } from "../types/pointer";
 import merge from "lodash.merge";
 import cloneDeep from "lodash.clonedeep";
-import { Allocation, Definition, EVM } from "../utils";
+import * as DecodeUtils from "truffle-decode-utils";
 import BN from "bn.js";
 
 interface SlotAllocation {
@@ -52,8 +52,8 @@ export function getEventDefinitions(contracts: ContractObject[]): AstReferences 
   return getDeclarationsForTypes(contracts, types);
 }
 
-export function allocateDefinition(node: any, state: ContractStateInfo, referenceDeclarations: AstReferences, path?: Allocation.Slot, isChildVariable: boolean = false): void {
-  let slot: Allocation.Slot = {
+export function allocateDefinition(node: any, state: ContractStateInfo, referenceDeclarations: AstReferences, path?: DecodeUtils.Allocation.Slot, isChildVariable: boolean = false): void {
+  let slot: DecodeUtils.Allocation.Slot = {
     offset: state.slot.offset.clone()
   };
 
@@ -62,8 +62,8 @@ export function allocateDefinition(node: any, state: ContractStateInfo, referenc
     slot.offset = new BN(0);
   }
 
-  if (Definition.typeClass(node) != "struct") {
-    const range = Allocation.allocateValue(slot, state.slot.index, Definition.storageSize(node));
+  if (DecodeUtils.Definition.typeClass(node) != "struct") {
+    const range = DecodeUtils.Allocation.allocateValue(slot, state.slot.index, DecodeUtils.Definition.storageSize(node));
 
     state.variables[node.id] = <ContractStateVariable>{
       isChildVariable,
@@ -81,7 +81,7 @@ export function allocateDefinition(node: any, state: ContractStateInfo, referenc
     if (structDefinition) {
       let structSlotAllocation: SlotAllocation = {
         offset: new BN(0),
-        index: EVM.WORD_SIZE - 1
+        index: DecodeUtils.EVM.WORD_SIZE - 1
       };
       let structContractState: ContractStateInfo = {
         variables: state.variables,
@@ -110,8 +110,8 @@ export function allocateDefinition(node: any, state: ContractStateInfo, referenc
       }
 
       state.slot.offset = state.slot.offset.add(structContractState.slot.offset);
-      state.slot.index = EVM.WORD_SIZE - 1;
-      if (structContractState.slot.index < EVM.WORD_SIZE - 1) {
+      state.slot.index = DecodeUtils.EVM.WORD_SIZE - 1;
+      if (structContractState.slot.index < DecodeUtils.EVM.WORD_SIZE - 1) {
         state.slot.offset = state.slot.offset.addn(1);
       }
     }
@@ -153,7 +153,7 @@ export function getContractStateVariables(contract: ContractObject, contracts: C
     // process inheritance
     let slotAllocation: SlotAllocation = {
       offset: new BN(0),
-      index: EVM.WORD_SIZE - 1
+      index: DecodeUtils.EVM.WORD_SIZE - 1
     };
 
     for (let i = contractNode.linearizedBaseContracts.length - 1; i >= 0; i--) {

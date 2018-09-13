@@ -1,6 +1,6 @@
 import BN from "bn.js";
 
-import * as utils from "../utils";
+import * as DecodeUtils from "truffle-decode-utils";
 
 /**
  * read word from memory
@@ -12,7 +12,7 @@ import * as utils from "../utils";
  * @return {BN}
  */
 export function read(memory: Uint8Array, offset: number) {
-  return readBytes(memory, offset, utils.EVM.WORD_SIZE);
+  return readBytes(memory, offset, DecodeUtils.EVM.WORD_SIZE);
 }
 
 /**
@@ -23,8 +23,8 @@ export function read(memory: Uint8Array, offset: number) {
  * @param length - number
  */
 export function readBytes(memory: Uint8Array, offset: number, length: number) {
-  const offsetBN = utils.Conversion.toBN(offset);
-  let lengthBN = utils.Conversion.toBN(length);
+  const offsetBN = DecodeUtils.Conversion.toBN(offset);
+  let lengthBN = DecodeUtils.Conversion.toBN(length);
 
   if (offsetBN.toNumber() >= memory.length) {
     return new Uint8Array(lengthBN ? lengthBN.toNumber() : 0);
@@ -53,7 +53,7 @@ export function readBytes(memory: Uint8Array, offset: number, length: number) {
 /**
  * Split memory into chunks
  */
-export function chunk(memory: Uint8Array, size = utils.EVM.WORD_SIZE): Uint8Array[] {
+export function chunk(memory: Uint8Array, size = DecodeUtils.EVM.WORD_SIZE): Uint8Array[] {
   let chunks: Uint8Array[] = [];
 
   for (let i = 0; i < memory.length; i += size) {

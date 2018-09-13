@@ -1,5 +1,5 @@
 import read from "../read";
-import * as utils from "../utils";
+import * as DecodeUtils from "truffle-decode-utils";
 import BN from "bn.js";
 import { AstDefinition } from "../types/ast";
 import { DataPointer } from "../types/pointer";
@@ -15,42 +15,42 @@ export default async function decodeValue(definition: AstDefinition, pointer: Da
     return undefined;
   }
 
-  switch (utils.Definition.typeClass(definition)) {
+  switch (DecodeUtils.Definition.typeClass(definition)) {
     case "bool":
-      return !utils.Conversion.toBN(bytes).isZero();
+      return !DecodeUtils.Conversion.toBN(bytes).isZero();
 
     case "uint":
-      return utils.Conversion.toBN(bytes);
+      return DecodeUtils.Conversion.toBN(bytes);
 
     case "int":
-      return utils.Conversion.toSignedBN(bytes);
+      return DecodeUtils.Conversion.toSignedBN(bytes);
 
     case "address":
-      return utils.Conversion.toHexString(bytes, true);
+      return DecodeUtils.Conversion.toHexString(bytes, true);
 
     case "bytes":
-      // debug("typeIdentifier %s %o", utils.typeIdentifier(definition), bytes);
+      // debug("typeIdentifier %s %o", DecodeUtils.typeIdentifier(definition), bytes);
       // HACK bytes may be getting passed in as a literal hexstring
       if (typeof bytes == "string") {
         return bytes;
       }
-      let length = utils.Definition.specifiedSize(definition);
-      return utils.Conversion.toHexString(bytes, length);
+      let length = DecodeUtils.Definition.specifiedSize(definition);
+      return DecodeUtils.Conversion.toHexString(bytes, length);
 
     case "string":
     case "stringliteral":
-      // debug("typeIdentifier %s %o", utils.typeIdentifier(definition), bytes);
+      // debug("typeIdentifier %s %o", DecodeUtils.typeIdentifier(definition), bytes);
       if (typeof bytes == "string") {
         return bytes;
       }
       return String.fromCharCode.apply(undefined, bytes);
 
     case "rational":
-      // debug("typeIdentifier %s %o", utils.typeIdentifier(definition), bytes);
-      return utils.Conversion.toBN(bytes);
+      // debug("typeIdentifier %s %o", DecodeUtils.typeIdentifier(definition), bytes);
+      return DecodeUtils.Conversion.toBN(bytes);
 
     default:
-      // debug("Unknown value type: %s", utils.typeIdentifier(definition));
+      // debug("Unknown value type: %s", DecodeUtils.typeIdentifier(definition));
       return undefined;
   }
 }

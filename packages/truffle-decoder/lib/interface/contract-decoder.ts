@@ -7,7 +7,7 @@ import { EvmInfo } from "../types/evm";
 import * as references from "../allocate/references";
 import { StoragePointer } from "../types/pointer";
 import decode from "../decode";
-import { Definition as DefinitionUtils, EVM, Allocation } from "../utils";
+import { Definition as DefinitionUtils, EVM, Allocation } from "truffle-decode-utils";
 import { BlockType } from "web3/eth/types";
 import { EventLog } from "web3/types";
 

@@ -2,7 +2,7 @@
   "name": "truffle-decoder",
   "version": "0.1.0",
   "description": "A library that provides both high and low level decoding of Ethereum contract variables",
-  "main": "dist/lib/interface/index.js",
+  "main": "dist/interface/index.js",
   "directories": {
     "lib": "lib"
   },
@@ -41,6 +41,7 @@
     "bn.js": "^4.11.8",
     "lodash.clonedeep": "^4.5.0",
     "lodash.merge": "^4.6.1",
-    "web3": "^1.0.0-beta.35"
+    "truffle-decode-utils": "file:../truffle-decode-utils",
+    "web3": "^1.0.0-beta.36"
   }
 }
