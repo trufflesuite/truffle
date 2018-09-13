@@ -21,7 +21,7 @@ var command = {
     }
   },
   help: {
-    usage: "truffle compile [--list <prereleases|releases|docker>] [--all] [--network <name>]",
+    usage: "truffle compile [--list <filter>] [--all] [--network <name>]",
     options: [
       {
         option: "--all",
@@ -31,10 +31,10 @@ var command = {
         description:  "Specify the network to use, saving artifacts specific to that network. " +
           " Network name must exist in the\n                    configuration. (optional)"
       },{
-        option: "--list <prereleases|releases|docker>",
-        description:  "List all recent stable releases from solc-bin.  If prereleases, releases" +
-          "or docker is included it\n                    displays only prereleases, releases " +
-          "from solc-bin or docker tags from hub.docker.com respectively. (optional)"
+        option: "--list <filter>",
+        description:  "List all recent stable releases from solc-bin.  If filter is specified then it will display only " +
+          "that\n                    type of release or docker tags. The filter parameter must be one of the following: " +
+          "prereleases,\n                    releases, latestRelease or docker. (optional)"
       },
     ]
   },
