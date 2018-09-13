@@ -1,12 +1,11 @@
 import read from "../read";
 import * as DecodeUtils from "truffle-decode-utils";
 import BN from "bn.js";
-import { AstDefinition } from "../types/ast";
 import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import Web3 from "web3";
 
-export default async function decodeValue(definition: AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<undefined | boolean | BN | string> {
+export default async function decodeValue(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<undefined | boolean | BN | string> {
   const { state } = info;
 
   let bytes = await read(pointer, state, web3, contractAddress);

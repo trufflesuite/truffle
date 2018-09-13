@@ -4,7 +4,7 @@ import decodeValue from "./value";
 import decodeMemoryReference from "./memory";
 import decodeStorageReference from "./storage";
 import decodeMapping from "./mapping";
-import { AstDefinition } from "../types/ast";
+import { AstDefinition } from "truffle-decode-utils";
 import { DataPointer, isLiteralPointer, isStoragePointer, isMemoryPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import Web3 from "web3";

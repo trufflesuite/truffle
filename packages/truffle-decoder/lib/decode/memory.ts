@@ -3,11 +3,10 @@ import * as DecodeUtils from "truffle-decode-utils";
 import decodeValue from "./value";
 import decode from "./index";
 import { chunk } from "../read/memory";
-import { AstDefinition } from "../types/ast";
 import { MemoryPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 
-export default async function decodeMemoryReference(definition: AstDefinition, pointer: MemoryPointer, info: EvmInfo): Promise<any> {
+export default async function decodeMemoryReference(definition: DecodeUtils.AstDefinition, pointer: MemoryPointer, info: EvmInfo): Promise<any> {
   const { state } = info
   // debug("pointer %o", pointer);
   let rawValue: Uint8Array = await read(pointer, state);

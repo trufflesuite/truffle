@@ -2,7 +2,6 @@ import read from "../read";
 import * as DecodeUtils from "truffle-decode-utils";
 import decode from "./index";
 import decodeValue from "./value";
-import { AstDefinition } from "../types/ast";
 import { StoragePointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { Allocation } from "truffle-decode-utils";
@@ -10,7 +9,7 @@ import BN from "bn.js";
 import Web3 from "web3";
 import { EvmStruct, EvmMapping } from "../interface/contract-decoder";
 
-export default async function decodeStorageReference(definition: AstDefinition, pointer: StoragePointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<any> {
+export default async function decodeStorageReference(definition: DecodeUtils.AstDefinition, pointer: StoragePointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<any> {
   var data;
   var length;
 
@@ -165,7 +164,7 @@ export default async function decodeStorageReference(definition: AstDefinition, 
           members: {}
         };
 
-        const members: AstDefinition[] = info.referenceDeclarations[referencedDeclaration].members;
+        const members: DecodeUtils.AstDefinition[] = info.referenceDeclarations[referencedDeclaration].members;
         for (let i = 0; i < members.length; i++) {
           const variableRef = info.variables[members[i].id];
           const val = await decode(
