@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "node_modules/.bin/tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"No test specified\" && exit 0;"
   },
   "repository": {
     "type": "git",
