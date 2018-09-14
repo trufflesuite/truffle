@@ -241,7 +241,17 @@ const data = createSelectorTree({
         (assignments, identifiers) => Object.assign({},
           ...Object.entries(identifiers)
             .map( ([identifier, id]) => {
-              let { ref } = (assignments[id] || {})
+              let matchIds = Object.keys(assignments).filter(
+                  (longId) => longId.endsWith(":"+id) //get cases of that var
+                  ).map(
+                  (longId) => longId.split(":")[0] //get just the stack frame
+                  );
+              let maxMatch; //default undefined; if nothing found value irrel
+              if( matchIds.length > 0)
+              {
+                maxMatch=Math.max(...matchIds); //want innermost
+              }
+              let { ref } = (assignments[maxMatch+":"+id] || {});
               if (!ref) { return undefined };
 
               return {

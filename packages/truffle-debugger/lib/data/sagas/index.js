@@ -10,6 +10,7 @@ import { TICK } from "lib/trace/actions";
 import * as actions from "../actions";
 
 import data from "../selectors";
+import solidity from "../../solidity/selectors";
 
 import { WORD_SIZE } from "lib/data/decode/utils";
 import * as utils from "lib/data/decode/utils";
@@ -34,6 +35,7 @@ function *tickSaga() {
   let scopes = yield select(data.info.scopes);
   let definitions = yield select(data.views.scopes.inlined);
   let currentAssignments = yield select(data.proc.assignments);
+  let curDepth = yield select(solidity.current.functionDepth); //for pairing with ids
 
   let stack = yield select(data.next.state.stack);
   if (!stack) {
@@ -69,8 +71,10 @@ function *tickSaga() {
 
       assignments = returnParameters.concat(parameters).reverse()
         .map( (pointer) => jsonpointer.get(tree, pointer).id )
-        .map( (id, i) => ({ [id]: {"stack": top - i} }) )
+        .map( (id, i) => ({ [curDepth ":" + id]: {"stack": top - i} }) )
+		//depth may be off by 1 but it doesn't matter
         .reduce( (acc, assignment) => Object.assign(acc, assignment), {} );
+	//Q: what's the difference between top and curDepth?
 
       yield put(actions.assign(treeId, assignments));
       break;
@@ -85,7 +89,7 @@ function *tickSaga() {
       assignments = Object.assign(
         {}, ...Object.entries(allocation.children)
           .map( ([id, storage]) => ({
-            [id]: {
+            ["0:" + id]: { //using depth 0 to indicate storage
               ...(currentAssignments[id] || { ref: {} }).ref,
               storage
             }
@@ -98,7 +102,7 @@ function *tickSaga() {
 
     case "VariableDeclaration":
       yield put(actions.assign(treeId, {
-        [jsonpointer.get(tree, pointer).id]: {"stack": top}
+        [curDepth + ":" + jsonpointer.get(tree, pointer).id]: {"stack": top}
       }));
       break;
 
@@ -154,7 +158,7 @@ function *tickSaga() {
       let literal = stack[top];
 
       yield put(actions.assign(treeId, {
-        [node.id]: { literal }
+        [curDepth + ":" + node.id]: { literal }
       }));
       break;
   }
