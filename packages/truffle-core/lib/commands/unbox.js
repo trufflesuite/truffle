@@ -60,18 +60,24 @@ var command = {
       }
     ],
   },
-  run: function(options, done) {
-    var Config = require("truffle-config");
-    var Box = require("truffle-box");
-    var OS = require("os");
+  run: function (options, done) {
+    const Config = require("truffle-config");
+    const Box = require("truffle-box");
+    const OS = require("os");
 
-    var config = Config.default().with({
+    const config = Config.default().with({
       logger: console
     });
 
-    var url = normalizeURL(options._[0]);
+    const url = normalizeURL(options._[0]);
 
-    Box.unbox(url, config.working_directory, {logger: config.logger})
+    const unboxOptions = Object.assign(
+      {},
+      options,
+      { logger: config.logger },
+    )
+
+    Box.unbox(url, config.working_directory, unboxOptions)
       .then(function(boxConfig) {
         config.logger.log("Unbox successful. Sweet!" + OS.EOL);
 
