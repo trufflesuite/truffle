@@ -10,7 +10,7 @@ import { prepareContracts } from "test/helpers";
 
 import Debugger from "lib/debugger";
 
-import TruffleDecoder from "@seesemichaelj/truffle-decoder";
+import TruffleDecoder from "truffle-decoder";
 const ConversionUtils = TruffleDecoder.utils.Conversion;
 
 import data from "lib/data/selectors";

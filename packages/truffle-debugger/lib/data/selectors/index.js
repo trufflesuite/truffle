@@ -8,7 +8,7 @@ import ast from "lib/ast/selectors";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
-import TruffleDecoder from "@seesemichaelj/truffle-decoder";
+import TruffleDecoder from "truffle-decoder";
 const ConversionUtils = TruffleDecoder.utils.Conversion;
 
 function createStateSelectors({ stack, memory, storage }) {

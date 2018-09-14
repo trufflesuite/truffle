@@ -1,9 +1,9 @@
 import { EvmVariableReferenceMapping, AstReferences, ContractMapping, getContractNode, ContractStateVariable } from "../interface/contract-decoder";
-import { ContractObject } from "@seesemichaelj/truffle-contract-schema/spec";
+import { ContractObject } from "truffle-contract-schema/spec";
 import { StoragePointer } from "../types/pointer";
 import merge from "lodash.merge";
 import cloneDeep from "lodash.clonedeep";
-import * as DecodeUtils from "@seesemichaelj/truffle-decode-utils";
+import * as DecodeUtils from "truffle-decode-utils";
 import BN from "bn.js";
 
 interface SlotAllocation {

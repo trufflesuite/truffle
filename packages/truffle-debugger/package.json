@@ -30,7 +30,7 @@
     "remote-redux-devtools": "^0.5.12",
     "reselect-tree": "^1.2.0",
     "truffle-code-utils": "^1.1.1",
-    "@seesemichaelj/truffle-decoder": "^0.1.0",
+    "truffle-decoder": "^0.1.0",
     "truffle-expect": "^0.0.4",
     "truffle-solidity-utils": "^1.1.2",
     "web3": "1.0.0-beta.35",

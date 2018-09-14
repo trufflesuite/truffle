@@ -1,9 +1,9 @@
-import { AstDefinition } from "@seesemichaelj/truffle-decode-utils";
+import { AstDefinition } from "truffle-decode-utils";
 import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import decode from "../decode";
 import TruffleDecoder from "./contract-decoder";
-import { ContractObject } from "@seesemichaelj/truffle-contract-schema/spec";
+import { ContractObject } from "truffle-contract-schema/spec";
 
 export function forContract(contract: ContractObject, inheritedContracts: ContractObject[], providerUrl: string): TruffleDecoder {
   return new TruffleDecoder(contract, inheritedContracts, providerUrl);

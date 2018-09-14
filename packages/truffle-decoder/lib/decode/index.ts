@@ -1,10 +1,10 @@
 
-import * as DecodeUtils from "@seesemichaelj/truffle-decode-utils";
+import * as DecodeUtils from "truffle-decode-utils";
 import decodeValue from "./value";
 import decodeMemoryReference from "./memory";
 import decodeStorageReference from "./storage";
 import decodeMapping from "./mapping";
-import { AstDefinition } from "@seesemichaelj/truffle-decode-utils";
+import { AstDefinition } from "truffle-decode-utils";
 import { DataPointer, isLiteralPointer, isStoragePointer, isMemoryPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import Web3 from "web3";

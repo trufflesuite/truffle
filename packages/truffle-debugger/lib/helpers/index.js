@@ -1,4 +1,4 @@
-import { utils } from "@seesemichaelj/truffle-decoder";
+import { utils } from "truffle-decoder";
 
 export function prefixName(prefix, fn) {
   Object.defineProperty(fn, 'name', {

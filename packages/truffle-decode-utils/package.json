@@ -1,5 +1,5 @@
 {
-  "name": "@seesemichaelj/truffle-decode-utils",
+  "name": "truffle-decode-utils",
   "version": "1.0.1",
   "description": "Utilities for decoding data from the EVM",
   "dependencies": {
@@ -8,6 +8,7 @@
     "web3": "^1.0.0-beta.36"
   },
   "main": "dist/index.js",
+  "types": "src/index.ts",
   "scripts": {
     "build": "node_modules/.bin/tsc",
     "test": "echo \"No test specified\" && exit 0;"

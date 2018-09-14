@@ -1,4 +1,4 @@
-import * as DecodeUtils from "@seesemichaelj/truffle-decode-utils";
+import * as DecodeUtils from "truffle-decode-utils";
 import BN from "bn.js";
 import Web3 from "web3";
 

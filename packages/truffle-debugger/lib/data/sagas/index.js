@@ -11,7 +11,7 @@ import * as actions from "../actions";
 
 import data from "../selectors";
 
-import { utils } from "@seesemichaelj/truffle-decoder";
+import { utils } from "truffle-decoder";
 
 export function *scope(nodeId, pointer, parentId, sourceId) {
   yield put(actions.scope(nodeId, pointer, parentId, sourceId));
