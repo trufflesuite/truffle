@@ -52,11 +52,16 @@ var command = {
   description: 'Download a Truffle Box, a pre-built Truffle project',
   builder: {},
   help: {
-    usage: "truffle unbox <box_name>",
+    usage: "truffle unbox <box_name> [--force]",
     options: [
       {
         option: "<box_name>",
         description: "Name of the truffle box.",
+      },{
+        option: "--force",
+        description: "Unbox project in the current directory regardless of its " +
+          "state. Be careful, this\n                    will potentially overwrite files " +
+          "that exist in the directory. (optional)",
       }
     ],
   },
@@ -78,7 +83,7 @@ var command = {
     )
 
     Box.unbox(url, config.working_directory, unboxOptions)
-      .then(function(boxConfig) {
+      .then((boxConfig) => {
         config.logger.log("Unbox successful. Sweet!" + OS.EOL);
 
         var commandMessages = formatCommands(boxConfig.commands);
