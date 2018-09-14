@@ -71,7 +71,7 @@ compile.display = function(paths, options){
 
 // -------- End of common with truffle-compile --------
 
-// Check that vyper is available, save it's version
+// Check that vyper is available, save its version
 function checkVyper(callback) {
   exec('vyper --version', function (err, stdout, stderr) {
     if (err) return callback(`${colors.red('Error executing vyper:')}\n${stderr}`);
