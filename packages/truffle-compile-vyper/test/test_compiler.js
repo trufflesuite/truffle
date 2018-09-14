@@ -5,6 +5,7 @@ const Config = require('truffle-config');
 const compile = require('../index');
 
 describe('vyper compiler', function () {
+  this.timeout(10000);
 
   const config = new Config().merge({
     contracts_directory: path.join(__dirname, './sources/'),
