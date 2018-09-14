@@ -10,7 +10,8 @@ import { prepareContracts } from "test/helpers";
 
 import Debugger from "lib/debugger";
 
-import { cleanBigNumbers } from "lib/data/decode/utils";
+import TruffleDecoder from "truffle-decoder";
+const ConversionUtils = TruffleDecoder.utils.Conversion;
 
 import data from "lib/data/selectors";
 
@@ -80,7 +81,7 @@ async function getDecode(session) {
   const refs = session.view(data.current.identifiers.refs);
 
   const decode = session.view(data.views.decoder);
-  return (name) => cleanBigNumbers(
+  return (name) => ConversionUtils.cleanBNs(
     decode(definitions[name], refs[name])
   );
 }
