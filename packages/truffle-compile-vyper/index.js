@@ -5,15 +5,15 @@ const async = require('async');
 const colors = require('colors');
 const minimatch = require('minimatch');
 
-const find_contracts = require("truffle-contract-sources");
-const Profiler = require("truffle-compile/profiler");
+const find_contracts = require('truffle-contract-sources');
+const Profiler = require('truffle-compile/profiler');
 
 const compiler = {
   name: 'vyper',
   version: null,
-}
+};
 
-const VYPER_PATTERN = "**/*.vy";
+const VYPER_PATTERN = '**/*.vy';
 
 // -------- TODO: Common with truffle-compile --------
 
@@ -133,7 +133,7 @@ function compileAll(options, callback) {
       return result;
     }, {});
 
-    callback(null, result, []);
+    callback(null, result, options.paths);
   });
 }
 
