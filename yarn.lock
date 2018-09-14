@@ -9664,8 +9664,9 @@ truffle-contract-schema@^2.0.1:
     crypto-js "^3.1.9-1"
     debug "^3.1.0"
 
-"truffle-contract-schema@file:packages/truffle-contract-schema":
+truffle-contract-schema@^3.0.0-beta.0:
   version "3.0.0-beta.0"
+  resolved "https://registry.yarnpkg.com/truffle-contract-schema/-/truffle-contract-schema-3.0.0-beta.0.tgz#1751d10106b8985dba7901f35593656ea6146854"
   dependencies:
     ajv "^5.1.1"
     crypto-js "^3.1.9-1"
@@ -9694,23 +9695,6 @@ truffle-contract@^2.0.3:
     truffle-blockchain-utils "^0.0.3"
     truffle-contract-schema "^0.0.5"
     web3 "^0.20.1"
-
-"truffle-decode-utils@file:packages/truffle-decode-utils":
-  version "1.0.0"
-  dependencies:
-    bn.js "^4.11.8"
-    lodash.clonedeep "^4.5.0"
-    web3 "^1.0.0-beta.36"
-
-"truffle-decoder@file:packages/truffle-decoder":
-  version "0.1.0"
-  dependencies:
-    async-eventemitter "^0.2.4"
-    bn.js "^4.11.8"
-    lodash.clonedeep "^4.5.0"
-    lodash.merge "^4.6.1"
-    truffle-decode-utils "file:../../../.cache/yarn/v2/truffle-decode-utils"
-    web3 "^1.0.0-beta.36"
 
 truffle-init@^1.0.7:
   version "1.0.7"

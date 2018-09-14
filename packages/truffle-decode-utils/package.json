@@ -1,6 +1,6 @@
 {
-  "name": "truffle-decode-utils",
-  "version": "1.0.0",
+  "name": "@seesemichaelj/truffle-decode-utils",
+  "version": "1.0.1",
   "description": "Utilities for decoding data from the EVM",
   "dependencies": {
     "bn.js": "^4.11.8",

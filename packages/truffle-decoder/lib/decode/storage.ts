@@ -1,10 +1,10 @@
 import read from "../read";
-import * as DecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "@seesemichaelj/truffle-decode-utils";
 import decode from "./index";
 import decodeValue from "./value";
 import { StoragePointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
-import { Allocation } from "truffle-decode-utils";
+import { Allocation } from "@seesemichaelj/truffle-decode-utils";
 import BN from "bn.js";
 import Web3 from "web3";
 import { EvmStruct, EvmMapping } from "../interface/contract-decoder";

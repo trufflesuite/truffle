@@ -5,7 +5,7 @@ import { assert } from "chai";
 
 import BN from "bn.js";
 
-import TruffleDecoder from "truffle-decoder";
+import TruffleDecoder from "@seesemichaelj/truffle-decoder";
 const DecoderUtils = TruffleDecoder.utils;
 
 describe("Utils", function() {

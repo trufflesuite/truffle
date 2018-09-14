@@ -1,5 +1,5 @@
 import read from "../read";
-import * as DecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "@seesemichaelj/truffle-decode-utils";
 import decodeValue from "./value";
 import decode from "./index";
 import { chunk } from "../read/memory";

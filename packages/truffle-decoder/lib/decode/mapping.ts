@@ -1,5 +1,5 @@
 import decode from "./index";
-import { AstDefinition, Allocation } from "truffle-decode-utils";
+import { AstDefinition, Allocation } from "@seesemichaelj/truffle-decode-utils";
 import { StoragePointer, LiteralPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import Web3 from "web3";

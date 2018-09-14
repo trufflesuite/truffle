@@ -1,5 +1,5 @@
 import read from "../read";
-import * as DecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "@seesemichaelj/truffle-decode-utils";
 import BN from "bn.js";
 import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";

@@ -1,12 +1,12 @@
 import AsyncEventEmitter from "async-eventemitter";
 import Web3 from "web3";
-import { ContractObject, Ast } from "truffle-contract-schema/spec";
+import { ContractObject, Ast } from "@seesemichaelj/truffle-contract-schema/spec";
 import BN from "bn.js";
 import { EvmInfo } from "../types/evm";
 import * as references from "../allocate/references";
 import { StoragePointer } from "../types/pointer";
 import decode from "../decode";
-import { Definition as DefinitionUtils, EVM, Allocation, AstDefinition } from "truffle-decode-utils";
+import { Definition as DefinitionUtils, EVM, Allocation, AstDefinition } from "@seesemichaelj/truffle-decode-utils";
 import { BlockType } from "web3/eth/types";
 import { EventLog } from "web3/types";
 

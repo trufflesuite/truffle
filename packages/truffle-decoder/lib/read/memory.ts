@@ -1,6 +1,6 @@
 import BN from "bn.js";
 
-import * as DecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "@seesemichaelj/truffle-decode-utils";
 
 /**
  * read word from memory
