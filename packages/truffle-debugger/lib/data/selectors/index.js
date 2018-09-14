@@ -9,7 +9,7 @@ import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
 import * as TruffleDecodeUtils from "truffle-decode-utils";
-import TruffleDecoder from "truffle-decoder";
+import { forEvmState } from "truffle-decoder";
 
 function createStateSelectors({ stack, memory, storage }) {
   return {
@@ -107,7 +107,7 @@ const data = createSelectorTree({
       ["/views/scopes/inlined", "/next/state", "/proc/mappingKeys"],
 
       (scopes, state, mappingKeys) =>
-        (definition, ref) => TruffleDecoder.forEvmState(definition, ref, {
+        (definition, ref) => forEvmState(definition, ref, {
           scopes, state, mappingKeys
         })
     )
