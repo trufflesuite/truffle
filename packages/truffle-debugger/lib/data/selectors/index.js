@@ -8,8 +8,8 @@ import ast from "lib/ast/selectors";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
+import * as TruffleDecodeUtils from "truffle-decode-utils";
 import TruffleDecoder from "truffle-decoder";
-const ConversionUtils = TruffleDecoder.utils.Conversion;
 
 function createStateSelectors({ stack, memory, storage }) {
   return {
@@ -20,7 +20,7 @@ function createStateSelectors({ stack, memory, storage }) {
       [stack],
 
       (words) => (words || []).map(
-        (word) => ConversionUtils.toBytes(ConversionUtils.toBN(word, TruffleDecoder.utils.EVM.WORD_SIZE))
+        (word) => TruffleDecodeUtils.Conversion.toBytes(TruffleDecodeUtils.Conversion.toBN(word, TruffleDecodeUtils.EVM.WORD_SIZE))
       )
     ),
 
@@ -264,7 +264,7 @@ const data = createSelectorTree({
         )
       ),
 
-      native: createLeaf(['./decoded'], ConversionUtils.cleanBNs)
+      native: createLeaf(['./decoded'], TruffleDecodeUtils.Conversion.cleanBNs)
     }
   },
 

@@ -1,4 +1,4 @@
-import { utils } from "truffle-decoder";
+import * as utils from "truffle-decode-utils";
 
 export function prefixName(prefix, fn) {
   Object.defineProperty(fn, 'name', {
@@ -13,5 +13,5 @@ export function prefixName(prefix, fn) {
  * @return 0x-prefix string of keccak256 hash
  */
 export function keccak256(...args) {
-  return utils.EVM.toHexString(utils.EVM.keccak256(...args));
+  return utils.Conversion.toHexString(utils.EVM.keccak256(...args));
 }

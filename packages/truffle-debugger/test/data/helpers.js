@@ -10,8 +10,7 @@ import { prepareContracts } from "test/helpers";
 
 import Debugger from "lib/debugger";
 
-import TruffleDecoder from "truffle-decoder";
-const ConversionUtils = TruffleDecoder.utils.Conversion;
+import * as TruffleDecodeUtils from "truffle-decode-utils";
 
 import data from "lib/data/selectors";
 
@@ -81,7 +80,7 @@ async function getDecode(session) {
   const refs = session.view(data.current.identifiers.refs);
 
   const decode = session.view(data.views.decoder);
-  return (name) => ConversionUtils.cleanBNs(
+  return (name) => TruffleDecodeUtils.Conversion.cleanBNs(
     decode(definitions[name], refs[name])
   );
 }
