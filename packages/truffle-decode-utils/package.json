@@ -28,7 +28,7 @@
   "devDependencies": {
     "@types/bn.js": "^4.11.1",
     "@types/lodash.clonedeep": "^4.5.4",
-    "@types/web3": "^1.0.4",
+    "@types/web3": "^1.0.5",
     "typescript": "^3.0.3"
   }
 }
