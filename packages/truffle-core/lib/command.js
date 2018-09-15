@@ -39,7 +39,7 @@ Command.prototype.getCommand = function(inputStrings, noAliases) {
     while (currentLength <= firstInputString.length) {
       // Gather all possible commands that match with the current length
       var possibleCommands = availableCommandNames.filter(function(possibleCommand) {
-        return possibleCommand.substring(0, currentLength) == input.substring(0, currentLength);
+        return possibleCommand.substring(0, currentLength) == firstInputString.substring(0, currentLength);
       });
 
       // Did we find only one command that matches? If so, use that one.
