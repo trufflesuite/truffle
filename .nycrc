@@ -1,7 +1,7 @@
 {
   "cache": true,
   "all": true,
-  "report": "lcov-only",
+  "report": "lcovonly",
   "exclude": [
     "**/node_modules/**",
     "**/.tmp",
