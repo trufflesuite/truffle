@@ -6,10 +6,12 @@
     "bootstrap": "npm run lerna:bootstrap && npm run build:debugger",
     "test": "lerna run test --stream --concurrency=1 -- --colors",
     "ci": "./scripts/ci.sh",
-    "geth": "./scripts/geth.sh"
+    "geth": "./scripts/geth.sh",
+    "test:coverage": "nyc lerna run test"
   },
   "devDependencies": {
-    "lerna": "^2.11.0"
+    "lerna": "^2.11.0",
+    "nyc": "^13.0.1"
   },
   "workspaces": {
     "packages": [

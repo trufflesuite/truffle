@@ -1,0 +1,15 @@
+{
+  "cache": true,
+  "all": true,
+  "report": "lcov-only",
+  "exclude": [
+    "**/node_modules/**",
+    "**/.tmp",
+    "**/scripts/**",
+    "**/test",
+    "**/build",
+    "**/dist",
+    "**/webpack",
+    "**/*webpack.config*"
+  ]
+}
