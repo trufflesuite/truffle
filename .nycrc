@@ -7,7 +7,7 @@
     "**/.tmp",
     "**/scripts/**",
     "**/test",
-    "**/build",
+    "packages/truffle/build",
     "**/webpack",
     "**/*webpack.config*",
     "packages/truffle/nil.js"
