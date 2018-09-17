@@ -6,8 +6,7 @@
     "bootstrap": "npm run lerna:bootstrap && npm run build:debugger",
     "test": "lerna run test --stream --concurrency=1 -- --colors",
     "ci": "./scripts/ci.sh",
-    "geth": "./scripts/geth.sh",
-    "test:coverage": "nyc lerna run test"
+    "geth": "./scripts/geth.sh"
   },
   "devDependencies": {
     "coveralls": "^3.0.2",
