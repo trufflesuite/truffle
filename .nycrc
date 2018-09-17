@@ -1,5 +1,4 @@
 {
-  "cache": true,
   "all": true,
   "reporter": "lcovonly",
   "exclude": [
