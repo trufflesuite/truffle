@@ -1,30 +1,23 @@
 var unbox = require('./unbox');
 
 module.exports = {
-  downloadBox: function(url, destination) {
+  downloadBox: function(url, destination, options) {
     var tmpDir;
     var tmpCleanup;
 
     return Promise.resolve()
-      .then(function() {
-        return unbox.checkDestination(destination);
+      .then(() => {
+        return options.force ? Promise.resolve() : unbox.checkDestination(destination);
       })
-      .then(function() {
-        return unbox.verifyURL(url);
-      })
-      .then(function() {
-        return unbox.setupTempDirectory();
-      }).then(function(dir, func) {
+      .then(() => unbox.verifyURL(url))
+      .then(() => unbox.setupTempDirectory())
+      .then((dir, func) => {
         // save tmpDir result
         tmpDir = dir;
         tmpCleanup = func;
       })
-      .then(function() {
-        return unbox.fetchRepository(url, tmpDir);
-      })
-      .then(function() {
-        return unbox.copyTempIntoDestination(tmpDir, destination);
-      })
+      .then(() => unbox.fetchRepository(url, tmpDir))
+      .then(() => unbox.copyTempIntoDestination(tmpDir, destination))
       .then(tmpCleanup);
   },
 
