@@ -1,6 +1,7 @@
 {
   "all": true,
   "reporter": "lcovonly",
+  "exclude-after-remap": false,
   "exclude": [
     "**/node_modules/**",
     "**/.tmp",
@@ -9,6 +10,7 @@
     "**/build",
     "**/dist",
     "**/webpack",
-    "**/*webpack.config*"
+    "**/*webpack.config*",
+    "packages/truffle/nil.js"
   ]
 }

@@ -36,8 +36,12 @@ elif [ "$GETH" = true ]; then
   lerna run --scope truffle test --stream -- --exit
   lerna run --scope truffle-contract test --stream -- --exit
 
-else
+elif [ "$PACKAGES" = true ]; then
 
-  nyc lerna run --scope truffle-* test && cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage ./.nyc_output
+  lerna run --scope truffle-* test --stream
+
+elif [ "$COVERAGE" = true ]; then
+
+  nyc lerna run test && cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage ./.nyc_output
 
 fi
