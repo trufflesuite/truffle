@@ -38,6 +38,6 @@ elif [ "$GETH" = true ]; then
 
 else
 
-  nyc lerna run --scope truffle-* && cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage ./.nyc_output
+  nyc lerna run --scope truffle-* test && cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage ./.nyc_output
 
 fi
