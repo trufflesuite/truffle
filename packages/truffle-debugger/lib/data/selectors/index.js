@@ -235,10 +235,11 @@ const data = createSelectorTree({
       refs: createLeaf(
         [
           "/proc/assignments",
-          "./_"
+          "./_",
+          solidity.current.functionDepth //for pruning things too deep on stack
         ],
 
-        (assignments, identifiers) => Object.assign({},
+        (assignments, identifiers, curDepth) => Object.assign({},
           ...Object.entries(identifiers)
             .map( ([identifier, id]) => {
               let matchIds = Object.keys(assignments).filter(
@@ -246,9 +247,10 @@ const data = createSelectorTree({
                   ).map(
                   (longId) => longId.split(":")[0] //get just the stack frame
                   );
-              let maxMatch=Math.max(...matchIds); //want innermost
-		    //note: if no matches, will return -Infinity
-		    //however the return value in this case is irrelevant
+              //want innermost but not beyond current depth
+              let maxMatch=Math.min(curDepth,Math.max(...matchIds));
+                  //note: if no matches, will return -Infinity
+                  //however the return value in this case is irrelevant
               let { ref } = (assignments[maxMatch+":"+id] || {});
               if (!ref) { return undefined };
 
