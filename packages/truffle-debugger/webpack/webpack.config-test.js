@@ -8,11 +8,11 @@ const commonConfig = require('./webpack.config-common.js');
 module.exports = merge(commonConfig, {
   module: {
     rules: [
-      {
-        test: /\.(js|ts)/,
-        include: path.resolve('lib'),
-        loader: 'istanbul-instrumenter-loader'
-      },
+      // {
+      //   test: /\.(js|ts)/,
+      //   include: path.resolve('lib'),
+      //   loader: 'istanbul-instrumenter-loader'
+      // },
       {
         test: /\.js$/,
         loader: "babel-loader",
