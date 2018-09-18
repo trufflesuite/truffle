@@ -41,9 +41,7 @@ elif [ "$PACKAGES" = true ]; then
   lerna run --scope truffle-* test --stream
 
 elif [ "$COVERAGE" = true ]; then
-  echo "******************"
-  echo $PWD
-  echo "******************"
-  nyc lerna run --scope truffle* test --stream && echo $PWD && cat ./coverage/lcov.info && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
+
+  nyc lerna run test && cat ./coverage/lcov.info && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
 
 fi
