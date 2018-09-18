@@ -13,7 +13,7 @@ const compiler = {
   version: null,
 };
 
-const VYPER_PATTERN = '**/*.vy';
+const VYPER_PATTERN = '**/*.{vy,v.py,vyper.py}';
 
 // -------- TODO: Common with truffle-compile --------
 
@@ -111,8 +111,15 @@ function compileAll(options, callback) {
     execVyper(source_path, function (err, compiled_contract) {
       if (err) return c(err);
 
+      // remove first extension from filename
+      const extension = path.extname(source_path);
+      const basename = path.basename(source_path, extension);
+
+      // if extension is .py, remove second extension from filename
+      const contract_name = extension !== '.py' ? basename : path.basename(basename, path.extname(basename));
+
       const contract_definition = {
-        contract_name: path.basename(source_path, path.extname(source_path)),
+        contract_name: contract_name,
         sourcePath: source_path,
 
         abi: compiled_contract.abi,

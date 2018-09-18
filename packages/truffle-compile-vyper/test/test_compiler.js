@@ -18,23 +18,26 @@ describe('vyper compiler', function () {
       assert.equal(err, null, 'Compiles without error');
 
       paths.forEach(function (path) {
-        assert.notEqual(path.indexOf('.vy'), -1, 'Paths have only .vy files');
+        assert(['.vy', '.v.py', '.vyper.py'].some(extension => path.indexOf(extension) !== -1), 'Paths have only vyper files');
       });
-
-      assert.notEqual(contracts.VyperContract, undefined, 'Compiled contracts have VyperContract');
-
-      const contract = contracts.VyperContract;
-
-      assert.equal(contract.contract_name, 'VyperContract', 'Contract name is set correctly');
-
-      assert.notEqual(contract.abi.indexOf('vyper_action'), -1, 'ABI has function from contract present');
 
       const hex_regex = /^[x0-9a-fA-F]+$/;
 
-      assert(hex_regex.test(contract.bytecode), 'Bytecode has only hex characters');
-      assert(hex_regex.test(contract.deployedBytecode), 'Deployed bytecode has only hex characters');
+      [
+        contracts.VyperContract1,
+        contracts.VyperContract2,
+        contracts.VyperContract3,
+      ].forEach((contract, index) => {
+        assert.notEqual(contract, undefined, `Compiled contracts have VyperContract${index + 1}`);
+        assert.equal(contract.contract_name, `VyperContract${index + 1}`, 'Contract name is set correctly');
 
-      assert.equal(contract.compiler.name, 'vyper', 'Compiler name set correctly');
+        assert.notEqual(contract.abi.indexOf('vyper_action'), -1, 'ABI has function from contract present');
+
+        assert(hex_regex.test(contract.bytecode), 'Bytecode has only hex characters');
+        assert(hex_regex.test(contract.deployedBytecode), 'Deployed bytecode has only hex characters');
+
+        assert.equal(contract.compiler.name, 'vyper', 'Compiler name set correctly');
+      });
 
       done();
     });
