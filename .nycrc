@@ -2,6 +2,7 @@
   "all": true,
   "reporter": [ "lcov", "text" ],
   "instrument": false,
+  "exclude-after-remap": false,
   "exclude": [
     "**/node_modules/**",
     "**/.tmp",

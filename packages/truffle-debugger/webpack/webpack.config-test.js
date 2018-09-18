@@ -10,6 +10,7 @@ module.exports = merge(commonConfig, {
     rules: [
       {
         test: /\.(js)/,
+        include: path.resolve('lib'),
         loader: 'istanbul-instrumenter-loader'
       },
       {
