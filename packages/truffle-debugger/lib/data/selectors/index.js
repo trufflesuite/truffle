@@ -246,11 +246,9 @@ const data = createSelectorTree({
                   ).map(
                   (longId) => longId.split(":")[0] //get just the stack frame
                   );
-              let maxMatch; //default undefined; if nothing found value irrel
-              if( matchIds.length > 0)
-              {
-                maxMatch=Math.max(...matchIds); //want innermost
-              }
+              let maxMatch=Math.max(...matchIds); //want innermost
+		    //note: if no matches, will return -Infinity
+		    //however the return value in this case is irrelevant
               let { ref } = (assignments[maxMatch+":"+id] || {});
               if (!ref) { return undefined };
 

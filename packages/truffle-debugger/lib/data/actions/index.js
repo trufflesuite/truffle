@@ -26,6 +26,6 @@ export const MAP_KEY = "MAP_KEY";
 export function mapKey(id, key) {
   return {
     type: MAP_KEY,
-    id, key //mappings are never local to a function
+    id, key
   };
 }
