@@ -35,7 +35,6 @@ function *tickSaga() {
   let scopes = yield select(data.info.scopes);
   let definitions = yield select(data.views.scopes.inlined);
   let currentAssignments = yield select(data.proc.assignments);
-  let mappingKeys = yield select(data.proc.mappingKeys); //just for debugging
   let curDepth = yield select(solidity.current.functionDepth); //for pairing with ids
 
   let stack = yield select(data.next.state.stack);
@@ -77,7 +76,6 @@ function *tickSaga() {
         .reduce( (acc, assignment) => Object.assign(acc, assignment), {} );
       debug("Function definition case");
       debug("currentAssignments %O", currentAssignments);
-      debug("mappingKeys %O", mappingKeys);
       debug("assignments %O", assignments);
 
       yield put(actions.assign(treeId, assignments));
@@ -90,6 +88,8 @@ function *tickSaga() {
       debug("storage vars %o", storageVars);
 
       let allocation = utils.allocateDeclarations(storageVars, definitions);
+      debug("Contract definition case");
+      debug("allocation %O",allocation);
       assignments = Object.assign(
         {}, ...Object.entries(allocation.children)
           .map( ([id, storage]) => ({
@@ -99,9 +99,7 @@ function *tickSaga() {
             }
           }) )
       );
-      debug("Contract definition case");
       debug("currentAssignments %O", currentAssignments);
-      debug("mappingKeys %O", mappingKeys);
       debug("assignments %O", assignments);
 
       yield put(actions.assign(treeId, assignments));
@@ -111,7 +109,6 @@ function *tickSaga() {
       let varId = jsonpointer.get(tree, pointer).id;
       debug("Variable declaration case");
       debug("currentAssignments %O", currentAssignments);
-      debug("mappingKeys %O", mappingKeys);
       debug("curDepth %d varId %d",curDepth,varId);
       yield put(actions.assign(treeId, {
         [curDepth + ":" + varId]: {"stack": top}
@@ -122,7 +119,6 @@ function *tickSaga() {
       // to track `mapping` types known indexes
       let {
         baseExpression: {
-          id: baseId, //not currently used
           referencedDeclaration: baseDeclarationId,
         },
         indexExpression: {
@@ -134,7 +130,6 @@ function *tickSaga() {
       let augIndexId = curDepth + ":" + indexId;//for indices use depth as usual
       debug("Index access case");
       debug("currentAssignments %O", currentAssignments);
-      debug("mappingKeys %O", mappingKeys);
       debug("augDeclarationId %s",augDeclarationId)
       debug("augIndexId %s",augIndexId)
 
@@ -180,7 +175,6 @@ function *tickSaga() {
 
       debug("default case");
       debug("currentAssignments %O", currentAssignments);
-      debug("mappingKeys %O", mappingKeys);
       debug("curDepth %d node.id %d",curDepth,node.id);
       yield put(actions.assign(treeId, {
         [curDepth + ":" + node.id]: { literal }
