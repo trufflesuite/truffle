@@ -1,6 +1,7 @@
 {
   "all": true,
   "reporter": [ "lcov", "text" ],
+  "instrument": false,
   "exclude": [
     "**/node_modules/**",
     "**/.tmp",
