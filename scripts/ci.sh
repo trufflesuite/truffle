@@ -42,6 +42,6 @@ elif [ "$PACKAGES" = true ]; then
 
 elif [ "$COVERAGE" = true ]; then
 
-  nyc lerna run test && cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage ./.nyc_output
+  nyc lerna run test && cat ./coverage/lcov.info && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage ./.nyc_output
 
 fi
