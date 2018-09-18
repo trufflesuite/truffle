@@ -52,6 +52,7 @@
     "faker": "^4.1.0",
     "fs-extra": "6.0.1",
     "ganache-cli": "6.1.8",
+    "istanbul-instrumenter-loader": "^3.0.1",
     "mocha": "5.2.0",
     "mocha-webpack": "^1.1.0",
     "node-interval-tree": "^1.3.3",

@@ -1,12 +1,14 @@
 {
   "all": true,
   "reporter": "lcovonly",
+  "instrument": false,
   "exclude": [
     "**/node_modules/**",
     "**/.tmp",
     "**/scripts/**",
     "**/test",
-    "packages/truffle/build",
+    "**/build",
+    "**/dist",
     "**/webpack",
     "**/*webpack.config*",
     "packages/truffle/nil.js"
