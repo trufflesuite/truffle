@@ -1,0 +1,12 @@
+{
+  "reporter": "text",
+  "instrument": false,
+  "exclude": [
+    "test",
+    "webpack",
+    ".tmp",
+    ".nyc_output",
+    "coverage",
+    "node_modules"
+  ]
+}

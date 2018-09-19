@@ -10,7 +10,7 @@
     "start": "node ./webpack/dev-server.js",
     "test": "mocha-webpack --webpack-config webpack/webpack.config-test.js --recursive",
     "test:debug": "node --inspect ./node_modules/.bin/mocha-webpack --webpack-config webpack/webpack.config-test.js",
-    "test:coverage": "nyc --reporter=lcovonly --instrument=false --exclude=['test','webpack','.tmp','.nyc_output','coverage','node_modules'] mocha-webpack --webpack-config webpack/webpack.config-test.js --recursive"
+    "test:coverage": "nyc mocha-webpack --webpack-config webpack/webpack.config-test.js --recursive"
   },
   "keywords": [
     "ethereum",
