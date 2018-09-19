@@ -352,9 +352,9 @@ export function augmentWithDepth(id, depth = 0) {
 }
 
 export function idFromAugmented(augmentedId) {
-    return augmentedId.split(":")[1];
+    return Number(augmentedId.split(":")[1]);
 }
 
 export function depthFromAugmented(augmentedId) {
-    return augmentedId.split(":")[0];
+    return Number(augmentedId.split(":")[0]);
 }

@@ -113,7 +113,7 @@ function *tickSaga() {
       debug("currentAssignments %O", currentAssignments);
       debug("currentDepth %d varId %d", currentDepth, varId);
       yield put(actions.assign(treeId, {
-        [utils.augmentWithDepth(currentDepth,  varId)]: {"stack": top}
+        [utils.augmentWithDepth(varId, currentDepth)]: {"stack": top}
       }));
       break;
 
@@ -130,7 +130,7 @@ function *tickSaga() {
       //augment declaration Id w/0 to indicate storage
       let augmentedDeclarationId = utils.augmentWithDepth(baseDeclarationId);
       //indices, meanwhile, use depth as usual
-      let augmentedIndexId = utils.augmentWithDepth(currentDepth, indexId);
+      let augmentedIndexId = utils.augmentWithDepth(indexId, currentDepth);
       debug("Index access case");
       debug("currentAssignments %O", currentAssignments);
       debug("augmentedDeclarationId %s", augmentedDeclarationId)
@@ -180,7 +180,7 @@ function *tickSaga() {
       debug("currentAssignments %O", currentAssignments);
       debug("currentDepth %d node.id %d", currentDepth, node.id);
       yield put(actions.assign(treeId, {
-        [utils.augmentWithDepth(currentDepth, node.id)]: { literal }
+        [utils.augmentWithDepth(node.id, currentDepth)]: { literal }
       }));
       break;
   }
