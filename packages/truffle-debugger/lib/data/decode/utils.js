@@ -344,3 +344,17 @@ export function keccak256(...args) {
   debug("sha %o", sha);
   return toBigNumber(sha);
 }
+
+export function augmentWithDepth(id, depth = 0) {
+    //depth 0 indicates not a local variable; real depths start from 1
+    //both arguments are numeric, so a colon should occur in neither
+    return `${depth}:${id}`;
+}
+
+export function idFromAugmented(augmentedId) {
+    return Number(augmentedId.split(":")[1]);
+}
+
+export function depthFromAugmented(augmentedId) {
+    return Number(augmentedId.split(":")[0]);
+}
