@@ -1,17 +1,16 @@
 {
   "all": true,
-  "reporter": [ "lcov", "text" ],
-  "instrument": false,
-  "exclude-after-remap": false,
+  "reporter": "lcovonly",
   "exclude": [
     "**/node_modules/**",
-    "**/.tmp",
-    "**/scripts/**",
-    "**/test",
-    "**/build",
-    "**/dist",
+    "**/.tmp"
+    ,"**/scripts/**",
+    "**/test/**",
+    "**/build/**",
+    "**/dist/**",
     "**/webpack",
     "**/*webpack.config*",
-    "packages/truffle/nil.js"
+    "packages/truffle/nil.js",
+    "packages/truffle-debugger"
   ]
 }
