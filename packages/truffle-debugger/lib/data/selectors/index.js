@@ -239,19 +239,22 @@ const data = createSelectorTree({
           solidity.current.functionDepth //for pruning things too deep on stack
         ],
 
-        (assignments, identifiers, curDepth) => Object.assign({},
+        (assignments, identifiers, currentDepth) => Object.assign({},
           ...Object.entries(identifiers)
             .map( ([identifier, id]) => {
-              let matchIds = Object.keys(assignments).filter(
-                  (longId) => longId.endsWith(":"+id) //get cases of that var
-                  ).map(
-                  (longId) => longId.split(":")[0] //get just the stack frame
-                  );
+              let matchIds = Object.keys(assignments)
+                //first restrict to the appropriate variable
+                .filter((augmentedId) =>
+                  decodeUtils.idFromAugmented(augmentedId) === id)
+                //then get just the stack frame corresponding to that variable
+                .map(decodeUtils.depthFromAugmented);
+
               //want innermost but not beyond current depth
-              let maxMatch=Math.min(curDepth,Math.max(...matchIds));
-                  //note: if no matches, will return -Infinity
-                  //however the return value in this case is irrelevant
-              let { ref } = (assignments[maxMatch+":"+id] || {});
+              //note: if no matches, will return -Infinity
+              //however the return value in this case is irrelevant
+              let maxMatch=Math.min(currentDepth, Math.max(...matchIds));
+              let { ref } = (
+                assignments[decodeUtils.augmentWithDepth(id, maxMatch)] || {});
               if (!ref) { return undefined };
 
               return {

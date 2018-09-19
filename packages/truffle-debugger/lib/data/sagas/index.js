@@ -10,7 +10,7 @@ import { TICK } from "lib/trace/actions";
 import * as actions from "../actions";
 
 import data from "../selectors";
-import solidity from "../../solidity/selectors";
+import solidity from "lib/solidity/selectors";
 
 import { WORD_SIZE } from "lib/data/decode/utils";
 import * as utils from "lib/data/decode/utils";
@@ -35,7 +35,7 @@ function *tickSaga() {
   let scopes = yield select(data.info.scopes);
   let definitions = yield select(data.views.scopes.inlined);
   let currentAssignments = yield select(data.proc.assignments);
-  let curDepth = yield select(solidity.current.functionDepth); //for pairing with ids
+  let currentDepth = yield select(solidity.current.functionDepth);
 
   let stack = yield select(data.next.state.stack);
   if (!stack) {
@@ -71,8 +71,9 @@ function *tickSaga() {
 
       assignments = returnParameters.concat(parameters).reverse()
         .map( (pointer) => jsonpointer.get(tree, pointer).id )
-        .map( (id, i) => ({ [curDepth + ":" + id]: {"stack": top - i} }) )
-		//depth may be off by 1 but it doesn't matter
+        //note: depth may be off by 1 but it doesn't matter
+        .map( (id, i) => ({ [utils.augmentWithDepth(id, currentDepth)]:
+                {"stack": top - i} }) )
         .reduce( (acc, assignment) => Object.assign(acc, assignment), {} );
       debug("Function definition case");
       debug("currentAssignments %O", currentAssignments);
@@ -89,12 +90,13 @@ function *tickSaga() {
 
       let allocation = utils.allocateDeclarations(storageVars, definitions);
       debug("Contract definition case");
-      debug("allocation %O",allocation);
+      debug("allocation %O", allocation);
       assignments = Object.assign(
         {}, ...Object.entries(allocation.children)
           .map( ([id, storage]) => ({
-            ["0:" + id]: { //using depth 0 to indicate storage
-              ...(currentAssignments["0:" + id] || { ref: {} }).ref,
+            [utils.augmentWithDepth(id)]: {
+              ...(currentAssignments[utils.augmentWithDepth(id)] || 
+                { ref: {} }).ref,
               storage
             }
           }) )
@@ -109,9 +111,9 @@ function *tickSaga() {
       let varId = jsonpointer.get(tree, pointer).id;
       debug("Variable declaration case");
       debug("currentAssignments %O", currentAssignments);
-      debug("curDepth %d varId %d",curDepth,varId);
+      debug("currentDepth %d varId %d", currentDepth, varId);
       yield put(actions.assign(treeId, {
-        [curDepth + ":" + varId]: {"stack": top}
+        [utils.augmentWithDepth(currentDepth,  varId)]: {"stack": top}
       }));
       break;
 
@@ -125,15 +127,16 @@ function *tickSaga() {
           id: indexId,
         }
       } = node;
-
-      let augDeclarationId = "0:" + baseDeclarationId; //augment w/0 for storage
-      let augIndexId = curDepth + ":" + indexId;//for indices use depth as usual
+      //augment declaration Id w/0 to indicate storage
+      let augmentedDeclarationId = utils.augmentWithDepth(baseDeclarationId);
+      //indices, meanwhile, use depth as usual
+      let augmentedIndexId = utils.augmentWithDepth(currentDepth, indexId);
       debug("Index access case");
       debug("currentAssignments %O", currentAssignments);
-      debug("augDeclarationId %s",augDeclarationId)
-      debug("augIndexId %s",augIndexId)
+      debug("augmentedDeclarationId %s", augmentedDeclarationId)
+      debug("augmentedIndexId %s", augmentedIndexId)
 
-      let baseAssignment = (currentAssignments[augDeclarationId] || {
+      let baseAssignment = (currentAssignments[augmentedDeclarationId] || {
         //mappings are always global
         ref: {}
       }).ref;
@@ -141,7 +144,7 @@ function *tickSaga() {
 
       let baseDefinition = definitions[baseDeclarationId].definition;
 
-      const indexAssignment = (currentAssignments[augIndexId] || {}).ref;
+      const indexAssignment = (currentAssignments[augmentedIndexId] || {}).ref;
       debug("indexAssignment %O", indexAssignment);
       // HACK because string literal AST nodes are not sourcemapped to directly
       // value appears to be available in `node.indexExpression.hexValue`
@@ -157,7 +160,7 @@ function *tickSaga() {
 
       debug("index value %O", indexValue);
       if (indexValue != undefined) {
-        yield put(actions.mapKey(augDeclarationId, indexValue));
+        yield put(actions.mapKey(augmentedDeclarationId, indexValue));
       }
 
       break;
@@ -175,9 +178,9 @@ function *tickSaga() {
 
       debug("default case");
       debug("currentAssignments %O", currentAssignments);
-      debug("curDepth %d node.id %d",curDepth,node.id);
+      debug("currentDepth %d node.id %d", currentDepth, node.id);
       yield put(actions.assign(treeId, {
-        [curDepth + ":" + node.id]: { literal }
+        [utils.augmentWithDepth(currentDepth, node.id)]: { literal }
       }));
       break;
   }

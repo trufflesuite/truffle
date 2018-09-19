@@ -314,7 +314,7 @@ export function decodeMapping(definition, pointer, info) {
 
   debug("mapping %O", pointer);
   debug("mapping definition %O", definition);
-  let keys = mappingKeys["0:"+definition.id] || [];
+  let keys = mappingKeys[utils.augmentWithDepth(definition.id)] || [];
   debug("known keys %o", keys);
 
   let keyDefinition = definition.typeName.keyType;
