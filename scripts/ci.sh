@@ -42,10 +42,7 @@ elif [ "$PACKAGES" = true ]; then
 
 elif [ "$COVERAGE" = true ]; then
 
-  cd packages/truffle-debugger && \
-  nyc --reporter=lcovonly --instrument=false \
-  --exclude=["test","webpack",".tmp",".nyc_output","coverage","node_modules"] \
-  mocha-webpack --webpack-config webpack/webpack.config-test.js --recursive && \
+  cd packages/truffle-debugger && npm run test:coverage && \
   cd ../../ && nyc lerna run --ignore truffle-debugger test && \
   cat ./packages/truffle-debugger/coverage/lcov.info >> ./coverage/lcov.info && \
   cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
