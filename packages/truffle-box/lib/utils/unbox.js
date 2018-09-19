@@ -11,17 +11,19 @@ var cwd = require('process').cwd();
 var config = require('../config');
 
 function checkDestination(destination) {
-  return Promise.resolve().then(function() {
-
-    var contents = fs.readdirSync(destination);
-    if (contents.length) {
-      var err = "Something already exists at the destination. " +
-                "`truffle init` and `truffle unbox` must be executed in an empty folder. " +
-                "Stopping to prevent overwriting data."
-
-      throw new Error(err);
-    }
-  })
+  return Promise.resolve()
+    .then(() => {
+      const contents = fs.readdirSync(destination);
+      if (contents.length) {
+        const err = "Something already exists at the destination. " +
+                  "`truffle init` and `truffle unbox` must be executed in an empty folder. " +
+                  "If you are absolutely sure you want to proceed, add " +
+                  "the `--force` parameter to the init or unbox command. Be careful though, " +
+                  "adding `--force` will cause truffle to ignore existing files in the current " +
+                  "directory and potentially overwrite them. Stopping to prevent overwriting data."
+        throw new Error(err);
+      }
+  });
 }
 
 function verifyURL(url) {

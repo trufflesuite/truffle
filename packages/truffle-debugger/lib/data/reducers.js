@@ -77,7 +77,7 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
             ...Object.entries(action.assignments).map(
               ([id, ref]) => ({
                 [id]: {
-                  ...state.byId[id],
+                  ...state.byId[id], //note: id here includes depth
                   ref
                 }
               })
