@@ -9,7 +9,9 @@
     "geth": "./scripts/geth.sh"
   },
   "devDependencies": {
-    "lerna": "^2.11.0"
+    "coveralls": "^3.0.2",
+    "lerna": "^2.11.0",
+    "nyc": "^13.0.1"
   },
   "workspaces": {
     "packages": [
