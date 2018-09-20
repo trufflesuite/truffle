@@ -22,7 +22,7 @@ const command = new Command(require("./lib/commands"));
 const listeners = process.listeners('warning');
 listeners.forEach(listener => process.removeListener('warning', listener));
 
-const options = {
+let options = {
   logger: console
 };
 
