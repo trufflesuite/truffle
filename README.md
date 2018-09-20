@@ -19,6 +19,13 @@ Truffle is a development environment, testing framework and asset pipeline for E
 * Instant rebuilding of assets during development.
 * External script runner that executes scripts within a Truffle environment.
 
+### A Note To Developers
+
+The current active and stable version of Truffle can be found on the `master` branch.  There are two branches that are designated for developers to make pull requests against: the `develop` and `next` branches.
+
++   `develop`: Make your pull requests against the `develop` branch if you would like to make a change for the current major version.
++   `next`: Make your pull requests against the `next` branch if you would like to make a change for the next major version.
+
 ### Install
 
 ```
@@ -59,7 +66,7 @@ npm run bootstrap
 npm test
 
 # Adding dependencies to a package
-cd packages/<truffle-package> 
+cd packages/<truffle-package>
 yarn add <npm-package> [--dev] # Use yarn
 ```
 
