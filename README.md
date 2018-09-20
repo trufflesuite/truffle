@@ -1,4 +1,4 @@
-<img src="http://truffleframework.com/docs/img/logo.png" width="200">
+<img src="https://truffleframework.com/img/truffle-logo-dark.svg" width="200">
 
 [![npm](https://img.shields.io/npm/v/truffle.svg)](https://www.npmjs.com/package/truffle)
 [![npm](https://img.shields.io/npm/dm/truffle.svg)](https://www.npmjs.com/package/truffle)
