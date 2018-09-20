@@ -3,7 +3,7 @@
   "reporter": "lcovonly",
   "exclude": [
     "**/node_modules/**",
-    "**/.tmp"
+    "**/.tmp",
     ,"**/scripts/**",
     "**/test/**",
     "**/build/**",

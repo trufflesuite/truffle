@@ -38,7 +38,7 @@ elif [ "$GETH" = true ]; then
 
 elif [ "$PACKAGES" = true ]; then
 
-  lerna run --scope truffle-* test --stream
+  lerna run --scope truffle-* test --stream --concurrency=1
 
 elif [ "$COVERAGE" = true ]; then
 
