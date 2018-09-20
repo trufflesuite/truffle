@@ -1,20 +1,28 @@
 #!/usr/bin/env node
 require('source-map-support/register')
 
-var Config = require("truffle-config");
-var Command = require("./lib/command");
-var TaskError = require("./lib/errors/taskerror");
-var TruffleError = require("truffle-error");
+const TaskError = require("./lib/errors/taskerror");
+const TruffleError = require("truffle-error");
 
-var command = new Command(require("./lib/commands"));
+const nodeVersion = process.version;
+if (parseInt(nodeVersion.slice(1)) < 8) {
+  console.log(`You are currently using version ${nodeVersion.slice(1)} of Node.`);
+  console.log("You must user version 8 or newer.");
+  process.exit(1);
+}
+
+const Config = require("truffle-config");
+const Command = require("./lib/command");
+
+const command = new Command(require("./lib/commands"));
 
 // Hack to suppress web3 MaxListenersExceededWarning
 // This should be removed when issue is resolved upstream:
 // https://github.com/ethereum/web3.js/issues/1648
-var listeners = process.listeners('warning');
+const listeners = process.listeners('warning');
 listeners.forEach(listener => process.removeListener('warning', listener));
 
-var options = {
+const options = {
   logger: console
 };
 
