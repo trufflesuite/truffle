@@ -4,9 +4,9 @@ require('source-map-support/register')
 const TaskError = require("./lib/errors/taskerror");
 const TruffleError = require("truffle-error");
 
-const nodeVersion = process.version;
-if (parseInt(nodeVersion.slice(1)) < 8) {
-  console.log(`You are currently using version ${nodeVersion.slice(1)} of Node.`);
+const nodeMajorVersion = parseInt(process.version.slice(1));
+if (nodeMajorVersion < 8) {
+  console.log(`You are currently using version ${process.version.slice(1)} of Node.`);
   console.log("You must user version 8 or newer.");
   process.exit(1);
 }
