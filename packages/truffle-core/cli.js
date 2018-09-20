@@ -7,7 +7,7 @@ const TruffleError = require("truffle-error");
 const nodeMajorVersion = parseInt(process.version.slice(1));
 if (nodeMajorVersion < 8) {
   console.log(`You are currently using version ${process.version.slice(1)} of Node.`);
-  console.log("You must user version 8 or newer.");
+  console.log("You must use version 8 or newer.");
   process.exit(1);
 }
 
