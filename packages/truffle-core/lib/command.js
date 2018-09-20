@@ -74,7 +74,7 @@ Command.prototype.run = function(inputStrings, options, callback) {
   const result = this.getCommand(inputStrings, options.noAliases);
 
   if (result == null) {
-    return callback(new TaskError("Cannot find command based on input: " + JSON.stringify(userInput)));
+    return callback(new TaskError("Cannot find command based on input: " + JSON.stringify(inputStrings)));
   }
 
   var argv = result.argv;
