@@ -22,7 +22,7 @@ var command = {
           "`migrations/####_artifact_name.js` or\n                    `tests/artifact_name.js`. (required)",
       },{
         option: "<ArtifactName>",
-        description: "Name of new artifact.",
+        description: "Name of new artifact. (required)",
       },
     ]
   },

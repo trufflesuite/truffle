@@ -52,16 +52,17 @@ var command = {
   description: 'Download a Truffle Box, a pre-built Truffle project',
   builder: {},
   help: {
-    usage: "truffle unbox <box_name> [--force]",
+    usage: "truffle unbox [<box_name>] [--force]",
     options: [
       {
         option: "<box_name>",
-        description: "Name of the truffle box.",
+        description: "Name of the truffle box. If no box_name is specified, a default " +
+          "truffle box will be downloaded.",
       },{
         option: "--force",
         description: "Unbox project in the current directory regardless of its " +
           "state. Be careful, this\n                    will potentially overwrite files " +
-          "that exist in the directory. (optional)",
+          "that exist in the directory.",
       }
     ],
   },

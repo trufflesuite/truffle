@@ -7,10 +7,10 @@ var command = {
     options: [
       {
         option: "--network <name>",
-        description: "Specify the network to use. Network name must exist in the configuration. (optional)",
+        description: "Specify the network to use. Network name must exist in the configuration.",
       },{
         option: "--verbose-rpc",
-        description: "Log communication between Truffle and the Ethereum client. (optional)",
+        description: "Log communication between Truffle and the Ethereum client.",
       },
     ]
   },
