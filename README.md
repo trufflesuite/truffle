@@ -19,12 +19,8 @@ Truffle is a development environment, testing framework and asset pipeline for E
 * Instant rebuilding of assets during development.
 * External script runner that executes scripts within a Truffle environment.
 
-### A Note To Developers
-
-The current active and stable version of Truffle can be found on the `master` branch.  There are two branches that are designated for developers to make pull requests against: the `develop` and `next` branches.
-
-+   `develop`: Make your pull requests against the `develop` branch if you would like to make a change for the current major version.
-+   `next`: Make your pull requests against the `next` branch if you would like to make a change for the next major version.
+| ℹ️ **Contributors**: Please see the [Development](#development) section of this README. |
+| --- |
 
 ### Install
 
@@ -70,7 +66,16 @@ cd packages/<truffle-package>
 yarn add <npm-package> [--dev] # Use yarn
 ```
 
-If you'd like to update a dependency to the same version across all packages, you might find [this utility](https://www.npmjs.com/package/lerna-update-wizard) helpful.   
+If you'd like to update a dependency to the same version across all packages, you might find [this utility](https://www.npmjs.com/package/lerna-update-wizard) helpful.
+
+*Notes on project branches:*
++    `master`: Stable, released version (v4)
++    `beta`: Released beta version (v5.0.0-beta.x)
++    `develop`: Work targeting stable release (v4)
++    `next`: Upcoming feature development and most new work (v5)
+
+Please make pull requests against `next` for any substantial changes. Small changes and bugfixes can be considered for `develop`.
+
 ### License
 
 MIT
