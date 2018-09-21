@@ -7,6 +7,7 @@ var parseURL = require('url').parse;
 var tmp = require('tmp');
 var exec = require('child_process').exec;
 var cwd = require('process').cwd();
+var inquirer = require('inquirer');
 
 var config = require('../config');
 
@@ -15,13 +16,7 @@ function checkDestination(destination) {
     .then(() => {
       const contents = fs.readdirSync(destination);
       if (contents.length) {
-        const err = "Something already exists at the destination. " +
-                  "`truffle init` and `truffle unbox` must be executed in an empty folder. " +
-                  "If you are absolutely sure you want to proceed, add " +
-                  "the `--force` parameter to the init or unbox command. Be careful though, " +
-                  "adding `--force` will cause truffle to ignore existing files in the current " +
-                  "directory and potentially overwrite them. Stopping to prevent overwriting data."
-        throw new Error(err);
+        console.log("Something already exists in this folder...");
       }
   });
 }
@@ -81,13 +76,45 @@ function fetchRepository(url, dir) {
   });
 }
 
-function copyTempIntoDestination(tmpDir, destination) {
-  return new Promise(function(accept, reject) {
-    fs.copy(tmpDir, destination, function(err) {
-      if (err) return reject(err);
-      accept();
-    });
-  });
+async function copyTempIntoDestination(tmpDir, destination) {
+    const currentContent = fs.readdirSync(destination);
+      if (currentContent.length > 1) {
+        const tmpContent = fs.readdirSync(tmpDir);
+        for (let file of tmpContent) {
+           if (currentContent.includes(file)) {
+             var overwriting = [
+  		{
+    		type: 'confirm',
+    		name: 'overwrite',
+    		message: `Overwrite ${file}?`,
+    		default: false
+  		}]
+             await inquirer.prompt(overwriting)
+               .then(async answer => {
+                 if (answer.overwrite) {
+                   try {
+                     await fs.remove(file);
+                     await fs.copy(tmpDir+"/"+file, destination+"/"+file);
+ 		    } catch (err) {
+                      console.error(err); 
+                    }
+                 }
+               });
+            } else {
+              try {
+                await fs.copy(tmpDir+"/"+file, destination+"/"+file);
+              } catch (err) {
+                console.error(err);
+              }
+            }
+        }
+      } else {
+        try {
+          await fs.copy(tmpDir, destination);
+        } catch (err) {
+          console.error(err);
+        }
+      }
 }
 
 function readBoxConfig(destination) {
