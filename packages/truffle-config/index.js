@@ -21,7 +21,7 @@ function Config(truffle_directory, working_directory, network) {
     from: null,
   };
 
-  const default_user_config = new Configstore(DEFAULT_USER_CONFIG, {}, {globalConfigPath: true});
+  const defaultUserConfig = new Configstore(DEFAULT_USER_CONFIG, {}, { globalConfigPath: true });
 
   // This is a list of multi-level keys with defaults
   // we need to _.merge. Using this list for safety
