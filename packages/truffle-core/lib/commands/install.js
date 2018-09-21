@@ -11,7 +11,7 @@ var command = {
       },{
         option: "<@version>",
         description: "When specified, will install a specific version of the package, otherwise " +
-          "will install the latest version.",
+          "will install\n                    the latest version.",
       },
     ]
   },
