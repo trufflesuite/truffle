@@ -27,6 +27,9 @@ if (userWantsGeneralHelp) {
   process.exit(0);
 }
 
+/** TEST check for interactivity in Travis */
+console.debug("stdin.isTTY %o", process.stdin.isTTY);
+
 command.run(inputArguments, options, function(err) {
   if (err) {
     if (err instanceof TaskError) {
