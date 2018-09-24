@@ -11,15 +11,6 @@ const inquirer = require('inquirer');
 
 const config = require('../config');
 
-function checkDestination(destination) {
-  return Promise.resolve()
-    .then(() => {
-      const contents = fs.readdirSync(destination);
-      if (contents.length) {
-      }
-  });
-}
-
 function verifyURL(url) {
   // Next let's see if the expected repository exists. If it doesn't, ghdownload
   // will fail spectacularly in a way we can't catch, so we have to do it ourselves.
@@ -75,9 +66,9 @@ function fetchRepository(url, dir) {
   });
 }
 
-async function copyTempIntoDestination(tmpDir, destination) {
+async function copyTempIntoDestination(tmpDir, destination, force) {
   const currentContent = fs.readdirSync(destination);
- //if (currentContent.length > 1) {
+  if (!force) {
     const tmpContent = fs.readdirSync(tmpDir);
     for (let file of tmpContent) {
       if (currentContent.includes(file)) {
@@ -89,7 +80,7 @@ async function copyTempIntoDestination(tmpDir, destination) {
             message: `Overwrite ${file}?`,
             default: false
           }
-        ]
+        ];
 
         await inquirer.prompt(overwriting)
           .then(answer => {
@@ -102,10 +93,9 @@ async function copyTempIntoDestination(tmpDir, destination) {
         fs.copySync(`${tmpDir}/${file}`, `${destination}/${file}`);
       }
     }
- /** }
-  else {
+  } else {
     fs.copySync(tmpDir, destination);
-  }**/
+  }
 }
 
 function readBoxConfig(destination) {
@@ -158,7 +148,6 @@ function installBoxDependencies(boxConfig, destination) {
 }
 
 module.exports = {
-  checkDestination: checkDestination,
   verifyURL: verifyURL,
   setupTempDirectory: setupTempDirectory,
   fetchRepository: fetchRepository,
