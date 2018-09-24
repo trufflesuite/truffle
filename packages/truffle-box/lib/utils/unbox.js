@@ -1,15 +1,15 @@
-var fs = require("fs-extra");
-var path = require("path");
-var ghdownload = require('github-download');
-var request = require('request');
-var vcsurl = require('vcsurl');
-var parseURL = require('url').parse;
-var tmp = require('tmp');
-var exec = require('child_process').exec;
-var cwd = require('process').cwd();
-var inquirer = require('inquirer');
+const fs = require("fs-extra");
+const path = require("path");
+const ghdownload = require('github-download');
+const request = require('request');
+const vcsurl = require('vcsurl');
+const parseURL = require('url').parse;
+const tmp = require('tmp');
+const exec = require('child_process').exec;
+const cwd = require('process').cwd();
+const inquirer = require('inquirer');
 
-var config = require('../config');
+const config = require('../config');
 
 function checkDestination(destination) {
   return Promise.resolve()
@@ -77,44 +77,46 @@ function fetchRepository(url, dir) {
 }
 
 async function copyTempIntoDestination(tmpDir, destination) {
-    const currentContent = fs.readdirSync(destination);
-      if (currentContent.length > 1) {
-        const tmpContent = fs.readdirSync(tmpDir);
-        for (let file of tmpContent) {
-           if (currentContent.includes(file)) {
-             var overwriting = [
-  		{
-    		type: 'confirm',
-    		name: 'overwrite',
-    		message: `Overwrite ${file}?`,
-    		default: false
-  		}]
-             await inquirer.prompt(overwriting)
-               .then(async answer => {
-                 if (answer.overwrite) {
-                   try {
-                     await fs.remove(file);
-                     await fs.copy(tmpDir+"/"+file, destination+"/"+file);
- 		    } catch (err) {
-                      console.error(err); 
-                    }
-                 }
-               });
-            } else {
+  const currentContent = fs.readdirSync(destination);
+  if (currentContent.length > 1) {
+    const tmpContent = fs.readdirSync(tmpDir);
+    for (let file of tmpContent) {
+      if (currentContent.includes(file)) {
+        var overwriting = [
+          {
+            type: 'confirm',
+            name: 'overwrite',
+            message: `Overwrite ${file}?`,
+            default: false
+          }
+        ]
+
+        await inquirer.prompt(overwriting)
+          .then(async answer => {
+            if (answer.overwrite) {
               try {
+                await fs.remove(file);
                 await fs.copy(tmpDir+"/"+file, destination+"/"+file);
               } catch (err) {
                 console.error(err);
               }
             }
-        }
+          });
       } else {
         try {
-          await fs.copy(tmpDir, destination);
+          await fs.copy(tmpDir+"/"+file, destination+"/"+file);
         } catch (err) {
           console.error(err);
         }
       }
+    }
+  } else {
+    try {
+      await fs.copy(tmpDir, destination);
+    } catch (err) {
+      console.error(err);
+    }
+  }
 }
 
 function readBoxConfig(destination) {
