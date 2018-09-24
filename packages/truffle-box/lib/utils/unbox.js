@@ -16,7 +16,6 @@ function checkDestination(destination) {
     .then(() => {
       const contents = fs.readdirSync(destination);
       if (contents.length) {
-        console.log("Something already exists in this folder...");
       }
   });
 }
@@ -78,10 +77,11 @@ function fetchRepository(url, dir) {
 
 async function copyTempIntoDestination(tmpDir, destination) {
   const currentContent = fs.readdirSync(destination);
-  if (currentContent.length > 1) {
+ //if (currentContent.length > 1) {
     const tmpContent = fs.readdirSync(tmpDir);
     for (let file of tmpContent) {
       if (currentContent.includes(file)) {
+        console.log(`${file} already exists in this directory...`);
         var overwriting = [
           {
             type: 'confirm',
@@ -92,31 +92,20 @@ async function copyTempIntoDestination(tmpDir, destination) {
         ]
 
         await inquirer.prompt(overwriting)
-          .then(async answer => {
+          .then(answer => {
             if (answer.overwrite) {
-              try {
-                await fs.remove(file);
-                await fs.copy(tmpDir+"/"+file, destination+"/"+file);
-              } catch (err) {
-                console.error(err);
-              }
+              fs.removeSync(file);
+              fs.copySync(`${tmpDir}/${file}`, `${destination}/${file}`);
             }
           });
       } else {
-        try {
-          await fs.copy(tmpDir+"/"+file, destination+"/"+file);
-        } catch (err) {
-          console.error(err);
-        }
+        fs.copySync(`${tmpDir}/${file}`, `${destination}/${file}`);
       }
     }
-  } else {
-    try {
-      await fs.copy(tmpDir, destination);
-    } catch (err) {
-      console.error(err);
-    }
-  }
+ /** }
+  else {
+    fs.copySync(tmpDir, destination);
+  }**/
 }
 
 function readBoxConfig(destination) {
