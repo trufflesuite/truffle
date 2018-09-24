@@ -29,6 +29,7 @@ if (userWantsGeneralHelp) {
 
 /** TEST check for interactivity in Travis */
 console.debug("stdin.isTTY %o", process.stdin.isTTY);
+process.exit(1);
 
 command.run(inputArguments, options, function(err) {
   if (err) {
