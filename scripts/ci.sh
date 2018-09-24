@@ -3,6 +3,9 @@
 # Exit script as soon as a command fails.
 set -o errexit
 
+# check for ttyness
+node -e 'console.debug("stdin.isTTY %o", process.stdin.isTTY)'
+
 run_geth() {
   docker run \
     -v /$PWD/scripts:/scripts \
