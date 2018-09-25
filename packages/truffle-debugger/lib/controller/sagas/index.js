@@ -17,7 +17,7 @@ const CONTROL_SAGAS = {
   [actions.STEP_OVER]: stepOver,
   [actions.STEP_INTO]: stepInto,
   [actions.STEP_OUT]: stepOut,
-  [actions.CONTINUE_UNTIL]: continueUntil
+  [actions.CONTINUE]: continueUntilBreakpoint
 };
 
 /** AST node types that are skipped to filter out some noise */
@@ -191,33 +191,59 @@ function* stepOver () {
 }
 
 /**
- * continueUntil - step through execution until a breakpoint
- *
- * @param breakpoints - array of breakpoints ({ ...call, line })
+ * continueUntilBreakpoint - step through execution until a breakpoint
  */
-function *continueUntil ({breakpoints}) {
-  var currentCall;
-  var currentLocation;
+function *continueUntilBreakpoint () {
+  var currentLocation, currentNode, currentLine, currentSource;
+  var previousLine, previousSource;
+
+  let breakpoints = yield select(controller.breakpoints);
 
   let breakpointHit = false;
+
+  currentLocation = yield select(controller.current.location);
+  currentLine = currentLocation.sourceRange.lines.start.line;
+  currentSource = currentLocation.source.id;
 
   do {
     yield* stepNext();
 
-    currentCall = yield select(controller.current.executionContext);
+    previousLine = currentLine;
+    previousSource = currentSource;
+
     currentLocation = yield select(controller.current.location);
+    currentLine = currentLocation.sourceRange.lines.start.line;
+    currentSource = currentLocation.source.id;
 
     breakpointHit = breakpoints
-      .filter( ({address, binary, line, node}) =>
-        (
-          address == currentCall.address ||
-          binary == currentCall.binary
-        ) && (
-          line == currentLocation.sourceRange.lines.start.line ||
-          node == currentLocation.node.id
-        )
+      .filter( ({source, line, node}) =>
+        {
+          if(node !== undefined)
+          {
+            return source === currentSource && node === currentNode;
+          }
+          //otherwise, we have a line-style breakpoint; we want to stop at the
+          //*first* point on the line
+          return source === currentSource && line === currentLine
+          && (currentSource !== previousSource || currentLine !== previousLine);
+        }
       )
       .length > 0;
+    
+  } while(!breakpointHit);
 
-  } while (!breakpointHit);
+  debug("breakpoints %O",breakpoints);
+  debug("currentCall %O",currentCall);
+  debug("currentCall.address %s",currentCall.address);
+  debug("address %s",breakpoints[0].address);
+  debug("address == currentCall.address %s",
+    breakpoints[0].address == currentCall.address ? 'true' : 'false');
+  debug("address === currentCall.address %s",
+    breakpoints[0].address === currentCall.address ? 'true' : 'false');
+  debug("currentCall.binary %s",currentCall.binary);
+  debug("binary %s",breakpoints[0].binary);
+  debug("binary == currentCall.binary %s",
+    breakpoints[0].binary == currentCall.binary ? 'true' : 'false');
+  debug("binary === currentCall.binary %s",
+    breakpoints[0].binary === currentCall.binary ? 'true' : 'false');
 }

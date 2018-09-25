@@ -18,6 +18,10 @@ const identity = (x) => x
 const controller = createSelectorTree({
 
   /**
+   * controller.state
+   */
+  state: ((state) => state.controller),
+  /**
    * controller.current
    */
   current: {
@@ -46,6 +50,11 @@ const controller = createSelectorTree({
       sourceRange: createLeaf([solidity.current.sourceRange], identity),
 
       /**
+       * controller.current.location.source
+       */
+      source: createLeaf([solidity.current.source], identity),
+
+      /**
        * controller.current.location.node
        */
       node: createLeaf([ast.current.node], identity),
@@ -55,7 +64,11 @@ const controller = createSelectorTree({
        */
       isMultiline: createLeaf([solidity.current.isMultiline], identity),
     }
-  }
+  },
+  /**
+   * controller.breakpoints
+   */
+  breakpoints: createLeaf(["./state"], (state) => state.breakpoints)
 });
 
 export default controller;
