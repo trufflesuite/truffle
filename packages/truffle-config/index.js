@@ -6,9 +6,11 @@ var TruffleError = require("truffle-error");
 var Module = require('module');
 var findUp = require("find-up");
 var originalrequire = require("original-require");
+const Configstore = require('configstore');
 
 var DEFAULT_CONFIG_FILENAME = "truffle.js";
 var BACKUP_CONFIG_FILENAME = "truffle-config.js"; // For Windows + Command Prompt
+const DEFAULT_USER_CONFIG = "truffle";
 
 function Config(truffle_directory, working_directory, network) {
   var self = this;
@@ -18,6 +20,8 @@ function Config(truffle_directory, working_directory, network) {
     gasPrice: 20000000000, // 20 gwei,
     from: null,
   };
+
+  const defaultUserConfig = new Configstore(DEFAULT_USER_CONFIG, {}, { globalConfigPath: true });
 
   // This is a list of multi-level keys with defaults
   // we need to _.merge. Using this list for safety
