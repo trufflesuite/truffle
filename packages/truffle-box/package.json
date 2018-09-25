@@ -21,6 +21,7 @@
     "truffle-config": "^1.1.0-beta.0"
   },
   "dependencies": {
+    "configstore": "^4.0.0",
     "fs-extra": "6.0.1",
     "github-download": "^0.5.0",
     "request": "^2.83.0",
