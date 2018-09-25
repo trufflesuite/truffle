@@ -16,4 +16,5 @@ module.exports = {
   exec: require("./exec"),
   unbox: require("./unbox"),
   version: require("./version"),
+  config: require("./config")
 };
