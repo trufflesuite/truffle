@@ -66,35 +66,54 @@ function fetchRepository(url, dir) {
   });
 }
 
-async function copyTempIntoDestination(tmpDir, destination, force) {
-  const currentContent = fs.readdirSync(destination);
-  if (!force) {
-    const tmpContent = fs.readdirSync(tmpDir);
-    for (let file of tmpContent) {
-      if (currentContent.includes(file)) {
-        console.log(`${file} already exists in this directory...`);
-        var overwriting = [
-          {
-            type: 'confirm',
-            name: 'overwrite',
-            message: `Overwrite ${file}?`,
-            default: false
-          }
-        ];
+async function promptOverwrites(contentCollisions) {
+  let overwriteContents = [];
 
-        await inquirer.prompt(overwriting)
-          .then(answer => {
-            if (answer.overwrite) {
-              fs.removeSync(file);
-              fs.copySync(`${tmpDir}/${file}`, `${destination}/${file}`);
-            }
-          });
-      } else {
-        fs.copySync(`${tmpDir}/${file}`, `${destination}/${file}`);
+  for (let file of contentCollisions) {
+    console.log(`${file} already exists in this directory...`);
+    const overwriting = [
+      {
+        type: 'confirm',
+        name: 'overwrite',
+        message: `Overwrite ${file}?`,
+        default: false
       }
-    }
+    ];
+
+    await inquirer.prompt(overwriting)
+      .then(answer => {
+        if (answer.overwrite) {
+          fs.removeSync(file);
+          overwriteContents.push(file);
+        }
+      });
+  }
+
+  return overwriteContents;
+}
+
+async function copyTempIntoDestination(tmpDir, destination, force) {
+  const boxContents = fs.readdirSync(tmpDir);
+  const destinationContents = fs.readdirSync(destination);
+
+  const newContents = boxContents.filter(
+    (filename) => !destinationContents.includes(filename)
+  );
+
+  const contentCollisions = boxContents.filter(
+    (filename) => destinationContents.includes(filename)
+  );
+
+  let shouldCopy;
+  if (force) {
+    shouldCopy = boxContents;
   } else {
-    fs.copySync(tmpDir, destination);
+    const overwriteContents = await promptOverwrites(contentCollisions);
+    shouldCopy = [...newContents, ...overwriteContents];
+  }
+
+  for (let file of shouldCopy) {
+    fs.copySync(`${tmpDir}/${file}`, `${destination}/${file}`);
   }
 }
 
