@@ -13,7 +13,7 @@ var command = {
     options: [
       {
         option: "--clean",
-        description: "Remove all network artifacts that aren't associated with a named network. (optional)",
+        description: "Remove all network artifacts that aren't associated with a named network.",
       }
     ]
   },

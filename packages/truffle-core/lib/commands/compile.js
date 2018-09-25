@@ -25,16 +25,16 @@ var command = {
     options: [
       {
         option: "--all",
-        description: "Compile all contracts instead of only the contracts changed since last compile. (optional)"
+        description: "Compile all contracts instead of only the contracts changed since last compile."
       },{
         option: "--network <name>",
         description:  "Specify the network to use, saving artifacts specific to that network. " +
-          " Network name must exist in the\n                    configuration. (optional)"
+          " Network name must exist in the\n                    configuration."
       },{
         option: "--list <filter>",
         description:  "List all recent stable releases from solc-bin.  If filter is specified then it will display only " +
           "that\n                    type of release or docker tags. The filter parameter must be one of the following: " +
-          "prereleases,\n                    releases, latestRelease or docker. (optional)"
+          "prereleases,\n                    releases, latestRelease or docker."
       },
     ]
   },
