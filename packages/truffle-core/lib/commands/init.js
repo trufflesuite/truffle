@@ -9,7 +9,7 @@ var command = {
         option: "--force",
         description: "Initialize project in the current directory regardless of its " +
           "state. Be careful, this\n                    will potentially overwrite files " +
-          "that exist in the directory. (optional)",
+          "that exist in the directory.",
       }
     ],
   },

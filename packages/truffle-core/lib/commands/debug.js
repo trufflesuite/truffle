@@ -11,7 +11,7 @@ var command = {
     options: [
       {
         option: "<transaction_hash>",
-        description: "Transaction ID to use for debugging.",
+        description: "Transaction ID to use for debugging. (required)",
       }
     ]
   },

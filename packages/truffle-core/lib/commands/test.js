@@ -9,7 +9,7 @@ var command = {
     },
   },
   help: {
-    usage: "truffle test <test_file> [--compile-all] [--network <name>] [--verbose-rpc]",
+    usage: "truffle test [<test_file>] [--compile-all] [--network <name>] [--verbose-rpc]",
     options: [
       {
         option: "<test_file>",
@@ -18,14 +18,14 @@ var command = {
       },{
         option: "--compile-all",
         description: "Compile all contracts instead of intelligently choosing which contracts need " +
-          "to be compiled. (optional)",
+          "to be compiled.",
       },{
         option: "--network <name>",
         description: "Specify the network to use, using artifacts specific to that network. Network " +
-          "name must exist\n                    in the configuration. (optional)",
+          "name must exist\n                    in the configuration.",
       },{
         option: "--verbose-rpc",
-        description: "Log communication between Truffle and the Ethereum client. (optional)",
+        description: "Log communication between Truffle and the Ethereum client.",
       },
     ]
   },
