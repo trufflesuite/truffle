@@ -82,27 +82,27 @@ CompilerSupplier.prototype.load = function(){
  * ```
  * @return {Object} See above
  */
- CompilerSupplier.prototype.getReleases = function(){
-   return this
-     .getVersions()
-     .then(list => {
+CompilerSupplier.prototype.getReleases = function() {
+  return this
+    .getVersions()
+    .then(list => {
 
-       // Prereleases
-       const prereleases = list
-           .builds
-           .filter(build => build['prerelease'])
-           .map(build => build['longVersion']);
+      // Prereleases
+      const prereleases = list
+          .builds
+          .filter(build => build['prerelease'])
+          .map(build => build['longVersion']);
 
-       // Releases
-       const releases = Object.keys(list.releases);
+      // Releases
+      const releases = Object.keys(list.releases);
 
-       return {
-         prereleases: prereleases,
-         releases: releases,
-         latestRelease: list.latestRelease,
-       }
-     });
- }
+      return {
+        prereleases: prereleases,
+        releases: releases,
+        latestRelease: list.latestRelease,
+      }
+    });
+}
 
 /**
  * Fetches the first page of docker tags for the the ethereum/solc image
