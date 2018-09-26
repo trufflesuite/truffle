@@ -4,6 +4,7 @@
 * @requires module:random
 * @requires module:bip39
 * @requires module:ethereumjs-wallet/hdkey
+* @requires module:crypto
 */
 
 const Config = require('truffle-config');
