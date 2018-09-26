@@ -6,7 +6,7 @@ const requireFromString = require('require-from-string');
 const findCacheDir = require('find-cache-dir');
 const originalRequire = require('original-require');
 const solcWrap = require('./solcWrap.js');
-
+const ora = require('ora');
 
 //------------------------------ Constructor/Config ------------------------------------------------
 
@@ -82,7 +82,7 @@ CompilerSupplier.prototype.load = function(){
  * ```
  * @return {Object} See above
  */
-CompilerSupplier.prototype.getReleases = function(){
+CompilerSupplier.prototype.getReleases = function() {
   return this
     .getVersions()
     .then(list => {
@@ -165,14 +165,23 @@ CompilerSupplier.prototype.getLocal = function(localPath){
  * same.
  * @return {Object} versions
  */
-CompilerSupplier.prototype.getVersions = function(){
+CompilerSupplier.prototype.getVersions = function() {
   const self = this;
+  const spinner = ora({
+    text: 'Fetching solc version list from solc-bin',
+    color: 'yellow'
+  }).start();
 
   return request(self.config.versionsUrl)
-    .then(list => JSON.parse(list))
-    .catch(err => {throw self.errors('noRequest', self.config.versionsUrl, err)});
+    .then(list => {
+      spinner.stop();
+      return JSON.parse(list);
+    })
+    .catch(err => {
+      spinner.stop();
+      throw self.errors('noRequest', self.config.versionsUrl, err);
+    });
 }
-
 
 /**
  * Returns terminal url segment for `version` from the versions object
@@ -218,14 +227,22 @@ CompilerSupplier.prototype.getByUrl = function(version){
       if (self.isCached(file)) return self.getFromCache(file);
 
       const url = self.config.compilerUrlRoot + file;
+      const spinner = ora({
+        text: 'Downloading compiler',
+        color: 'red',
+      }).start();
 
       return request
         .get(url)
         .then(response => {
+          spinner.stop();
           self.addToCache(response, file);
           return self.compilerFromString(response);
         })
-        .catch(err => { throw self.errors('noRequest', url, err)});
+        .catch(err => {
+          spinner.stop();
+          throw self.errors('noRequest', url, err);
+        });
     });
 }
 

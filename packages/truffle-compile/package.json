@@ -8,6 +8,7 @@
     "colors": "^1.1.2",
     "debug": "^3.1.0",
     "find-cache-dir": "^1.0.0",
+    "ora": "^3.0.0",
     "original-require": "^1.0.1",
     "request": "^2.85.0",
     "request-promise": "^4.2.2",
