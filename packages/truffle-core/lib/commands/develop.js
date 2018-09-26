@@ -53,11 +53,6 @@ var command = {
 
     var config = Config.detect(options);
 
-    // const mnemonicAndAccounts = mnemonicInfo.getAccountsInfo();
-    // const mnemonic = mnemonicAndAccounts.mnemonic;
-    // const accounts = mnemonicAndAccounts.accounts;
-    // const privateKeys = mnemonicAndAccounts.privateKeys;
-
     const { mnemonic, accounts, privateKeys } = mnemonicInfo.getAccountsInfo();
 
 

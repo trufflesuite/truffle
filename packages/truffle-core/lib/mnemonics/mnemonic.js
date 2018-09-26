@@ -50,7 +50,6 @@ const getOrGenerateMnemonic = {
     let numAddresses = 10;
     let walletHdpath = "m/44'/60'/0'/0/";
 
-
     for (let i = addressIndex; i < addressIndex + numAddresses; i++) {
       let wallet = hdwallet.derivePath(walletHdpath + i).getWallet();
       let addr = '0x' + wallet.getAddress().toString('hex');
@@ -59,16 +58,12 @@ const getOrGenerateMnemonic = {
       privateKeys.push(privKey);
     }
 
-    
-    
     return {
       mnemonic,
       accounts,
       privateKeys,
     };
-
   }
-
 }
 
 module.exports = getOrGenerateMnemonic;
