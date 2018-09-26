@@ -14,6 +14,7 @@ module.exports = {
   install: require("./install"),
   publish: require("./publish"),
   networks: require("./networks"),
+  watch: require("./watch"),
   exec: require("./exec"),
   unbox: require("./unbox"),
   version: require("./version"),

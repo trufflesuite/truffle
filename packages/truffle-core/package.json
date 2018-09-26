@@ -6,6 +6,7 @@
   "dependencies": {
     "async": "2.6.1",
     "chai": "4.1.2",
+    "chokidar": "^1.4.2",
     "colors": "^1.1.2",
     "configstore": "^4.0.0",
     "cpr": "^0.4.3",
