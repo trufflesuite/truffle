@@ -1,4 +1,4 @@
-var command = {
+const command = {
   command: 'watch',
   description: 'Watch filesystem for changes and rebuild the project automatically',
   builder: {},
@@ -7,34 +7,21 @@ var command = {
     options: [],
   },
   run: function (options, done) {
-    var Build = require("../build");
-    var Config = require("truffle-config");
-    var chokidar = require("chokidar");
-    var path = require("path");
-    var colors = require("colors");
-    var Contracts = require("truffle-workflow-compile");
-    var TruffleError = require("truffle-error");
+    const Build = require("../build");
+    const colors = require("colors");
+    const Config = require("truffle-config");
+    const chokidar = require("chokidar");
+    const path = require("path");
+    const Contracts = require("truffle-workflow-compile");
+    const TruffleError = require("truffle-error");
 
-    var config = Config.detect(options);
+    const config = Config.detect(options);
 
-    var printSuccess = function() {
-      config.logger.log(colors.green("Completed without errors on " + new Date().toString()));
-    };
+    let working = false;
+    let needsRebuild = true;
+    let needsRecompile = true;
 
-    var printFailure = function(err) {
-      if (err instanceof TruffleError) {
-        console.log(err.message);
-      } else {
-        // Bubble up all other unexpected errors.
-        console.log(err.stack || err.toString());
-      }
-    };
-
-    var working = false;
-    var needs_rebuild = true;
-    var needs_recompile = true;
-
-    var watchPaths = [
+    const watchPaths = [
       path.join(config.working_directory, "app/**/*"),
       path.join(config.contracts_build_directory, "/**/*"),
       path.join(config.contracts_directory, "/**/*"),
@@ -46,57 +33,68 @@ var command = {
       ignored: /[\/\\]\./, // Ignore files prefixed with "."
       cwd: config.working_directory,
       ignoreInitial: true
-    }).on('all', function(event, filePath) {
-      // On changed/added/deleted
-      var display_path = path.join("./", filePath.replace(config.working_directory, ""));
-      config.logger.log(colors.cyan(">> File " + display_path + " changed."));
+    })
+    .on('all', (event, filePath) => {
+      const displayPath = path.join("./", filePath.replace(config.working_directory, ""));
+      config.logger.log(colors.cyan(">> File " + displayPath + " changed."));
 
-      needs_rebuild = true;
+      needsRebuild = true;
 
-      if (path.join(config.working_directory, filePath).indexOf(config.contracts_directory) >= 0) {
-        needs_recompile = true;
+      const contractsDirectoryChanged = path.join(config.working_directory, filePath)
+                                          .indexOf(config.contracts_directory) >= 0;
+      if (contractsDirectoryChanged) {
+        needsRecompile = true;
       }
     });
 
-    var check_rebuild = function() {
+    const checkIfBuildOrCompileNecessary = () => {
       if (working) {
-        setTimeout(check_rebuild, 200);
+        setTimeout(checkIfBuildOrCompileNecessary, 200);
         return;
       }
 
-      if (needs_rebuild == true) {
-        needs_rebuild = false;
+      if (needsRebuild) {
+        needsRebuild = false;
 
         if (config.build != null) {
           config.logger.log("Rebuilding...");
           working = true;
 
-          Build.build(config, function(err) {
-            if (err) {
-              printFailure(err);
+          Build.build(config, function(error) {
+            if (error) {
+              printFailure(error);
             } else {
-              printSuccess();
+              config.logger.log(colors.green("Completed without errors on " + new Date().toString()));
             }
             working = false;
           });
         }
-      } else if (needs_recompile == true) {
-        needs_recompile = false;
+      } else if (needsRecompile) {
+        needsRecompile = false;
         working = true;
 
-        Contracts.compile(config, function(err) {
-          if (err) {
-            printFailure(err);
+        Contracts.compile(config, function(error) {
+          if (error) {
+            printFailure(error);
           }
           working = false;
         });
       }
 
-      setTimeout(check_rebuild, 200);
+      setTimeout(checkIfBuildOrCompileNecessary, 200);
     };
 
-    check_rebuild();
+    checkIfBuildOrCompileNecessary();
   }
 }
+
+const printFailure = (error) => {
+  if (error instanceof TruffleError) {
+    console.log(error.message);
+  } else {
+    // Bubble up all other unexpected errors.
+    console.log(error.stack || error.toString());
+  }
+};
 
 module.exports = command;
