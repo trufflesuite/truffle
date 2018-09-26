@@ -2,6 +2,10 @@ var command = {
   command: 'watch',
   description: 'Watch filesystem for changes and rebuild the project automatically',
   builder: {},
+  help: {
+    usage: "truffle watch",
+    options: [],
+  },
   run: function (options, done) {
     var Build = require("../build");
     var Config = require("truffle-config");
