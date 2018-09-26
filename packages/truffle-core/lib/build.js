@@ -1,14 +1,14 @@
-var async = require("async");
-var mkdirp = require("mkdirp");
-var del = require("del");
-var fs = require("fs");
-var Contracts = require("truffle-workflow-compile");
-var BuildError = require("./errors/builderror");
-var child_process = require("child_process");
-var spawnargs = require("spawn-args");
-var _ = require("lodash");
-var expect = require("truffle-expect");
-var contract = require("truffle-contract");
+const async = require("async");
+const mkdirp = require("mkdirp");
+const del = require("del");
+const fs = require("fs");
+const Contracts = require("truffle-workflow-compile");
+const BuildError = require("./errors/builderror");
+const child_process = require("child_process");
+const spawnargs = require("spawn-args");
+const _ = require("lodash");
+const expect = require("truffle-expect");
+const contract = require("truffle-contract");
 
 function CommandBuilder(command) {
   this.command = command;
@@ -17,10 +17,10 @@ function CommandBuilder(command) {
 CommandBuilder.prototype.build = function(options, callback) {
   console.log("Running `" + this.command + "`...")
 
-  var args = spawnargs(this.command);
-  var ps = args.shift();
+  const args = spawnargs(this.command);
+  const ps = args.shift();
 
-  var cmd = child_process.spawn(ps, args, {
+  const cmd = child_process.spawn(ps, args, {
     detached: false,
     cwd: options.working_directory,
     env: _.merge(process.env, {
@@ -35,11 +35,11 @@ CommandBuilder.prototype.build = function(options, callback) {
   });
 
   cmd.stderr.on('data', function(data) {
-    console.log("build error: " + data);
+    console.error(data);
   });
 
   cmd.on('close', function(code) {
-    var error = null;
+    let error = null;
     if (code !== 0) {
       error = "Command exited with code " + code;
     }
@@ -47,16 +47,17 @@ CommandBuilder.prototype.build = function(options, callback) {
   });
 };
 
-var Build = {
+const Build = {
   clean: function(options, callback) {
 
-    var destination = options.build_directory;
-    var contracts_build_directory = options.contracts_build_directory;
+    const destination = options.build_directory;
+    const contracts_build_directory = options.contracts_build_directory;
 
     // Clean first.
-    del([destination + '/*', "!" + contracts_build_directory]).then(function() {
-      mkdirp(destination, callback);
-    });
+    del([destination + '/*', "!" + contracts_build_directory])
+      .then(() => {
+        mkdirp(destination, callback);
+      });
   },
 
   // Note: key is a legacy parameter that will eventually be removed.
@@ -69,14 +70,14 @@ var Build = {
       "networks"
     ]);
 
-    var key = "build";
+    let key = "build";
 
     if (options.dist) {
       key = "dist";
     }
 
-    var logger = options.logger || console;
-    var builder = options.build;
+    const logger = options.logger || console;
+    let builder = options.build;
 
     // Duplicate build directory for legacy purposes
     options.destination_directory = options.build_directory;
@@ -103,7 +104,7 @@ var Build = {
     }
 
     // Use our own clean method unless the builder supplies one.
-    var clean = this.clean;
+    let clean = this.clean;
     if (builder.hasOwnProperty("clean")) {
       clean = builder.clean;
     }
