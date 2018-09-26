@@ -9,8 +9,9 @@
 const Configstore = require('configstore');
 const random = require('./random');
 const seedrandom = require('seedrandom');
-const bip39 = require('bip39');
+const bip39 = require('bip39');	
 const hdkey = require('ethereumjs-wallet/hdkey');
+const crypto = require('crypto');
 
 const mnemonic = {
 
@@ -24,9 +25,7 @@ const mnemonic = {
 		const defaultUserConfig = new Configstore('truffle', {}, { globalConfigPath: true });
 		const userMnemonicExists = defaultUserConfig.get("mnemonic");
 		if(!userMnemonicExists) {
-			let seed = random.randomAlphaNumericString(10, seedrandom());
-			let randomBytes = random.randomBytes(16, seedrandom(seed));
-			mnemonic = bip39.entropyToMnemonic(randomBytes.toString("hex"));
+			mnemonic = bip39.entropyToMnemonic(crypto.randomBytes(16).toString('hex'));
 			defaultUserConfig.set({"mnemonic": mnemonic});
 		} else {
 			mnemonic = defaultUserConfig.get("mnemonic");
