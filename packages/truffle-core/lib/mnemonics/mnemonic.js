@@ -7,7 +7,6 @@
 */
 
 const Configstore = require('configstore');
-const random = require('./random');
 const seedrandom = require('seedrandom');
 const bip39 = require('bip39'); 
 const hdkey = require('ethereumjs-wallet/hdkey');
