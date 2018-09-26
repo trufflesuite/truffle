@@ -1,12 +1,13 @@
 /**
 * @module mnemonic;
-* @requires module:Configstore
+* @requires module:truffle-config
 * @requires module:random
 * @requires module:bip39
 * @requires module:ethereumjs-wallet/hdkey
 */
 
-const Configstore = require('configstore');
+const Config = require('truffle-config');
+const defaultUserConfig = Config.getUserConfig();
 const seedrandom = require('seedrandom');
 const bip39 = require('bip39'); 
 const hdkey = require('ethereumjs-wallet/hdkey');
@@ -20,8 +21,6 @@ const getOrGenerateMnemonic = {
   */
   mnemonic: function () {
     let mnemonic;
-    
-    const defaultUserConfig = new Configstore('truffle', {}, { globalConfigPath: true });
     const userMnemonicExists = defaultUserConfig.get("mnemonic");
     if(!userMnemonicExists) {
       mnemonic = bip39.entropyToMnemonic(crypto.randomBytes(16).toString('hex'));
