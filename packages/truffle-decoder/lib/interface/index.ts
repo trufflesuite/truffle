@@ -9,6 +9,6 @@ export function forContract(contract: ContractObject, inheritedContracts: Contra
   return new TruffleDecoder(contract, inheritedContracts, providerUrl);
 }
 
-export function forEvmState(definition: AstDefinition, pointer: DataPointer, info: EvmInfo, providerUrl?: string): any {
-  return decode(definition, pointer, info);
+export async function forEvmState(definition: AstDefinition, pointer: DataPointer, info: EvmInfo, providerUrl?: string): Promise<any> {
+  return await decode(definition, pointer, info);
 }
