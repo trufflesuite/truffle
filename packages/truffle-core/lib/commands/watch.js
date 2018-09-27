@@ -47,9 +47,18 @@ const command = {
       }
     });
 
-    const checkIfBuildOrCompileNecessary = () => {
+    const printFailure = (error) => {
+      if (error instanceof TruffleError) {
+        console.log(error.message);
+      } else {
+        // Bubble up all other unexpected errors.
+        console.log(error.stack || error.toString());
+      }
+    };
+
+    const continuouslyCheckIfBuildOrCompileNecessary = () => {
       if (working) {
-        setTimeout(checkIfBuildOrCompileNecessary, 200);
+        setTimeout(continuouslyCheckIfBuildOrCompileNecessary, 200);
         return;
       }
 
@@ -81,20 +90,11 @@ const command = {
         });
       }
 
-      setTimeout(checkIfBuildOrCompileNecessary, 200);
+      setTimeout(continuouslyCheckIfBuildOrCompileNecessary, 200);
     };
 
-    checkIfBuildOrCompileNecessary();
+    continuouslyCheckIfBuildOrCompileNecessary();
   }
 }
-
-const printFailure = (error) => {
-  if (error instanceof TruffleError) {
-    console.log(error.message);
-  } else {
-    // Bubble up all other unexpected errors.
-    console.log(error.stack || error.toString());
-  }
-};
 
 module.exports = command;
