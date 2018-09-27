@@ -40,7 +40,7 @@
     "lodash": "4.17.10",
     "mocha": "5.2.0",
     "require-nocache": "^1.0.0",
-    "solc": "0.4.24",
+    "solc": "0.4.25",
     "temp": "^0.8.3",
     "uglify": "^0.1.5",
     "uglify-js": "^2.7.5"
