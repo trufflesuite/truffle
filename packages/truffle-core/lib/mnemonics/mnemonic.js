@@ -43,7 +43,6 @@ const mnemonic = {
     let mnemonic = this.getOrGenerateMnemonic();
     let accounts = [];
     let privateKeys = [];
-    let mnemonicObject = {};
 
     let hdwallet = hdkey.fromMasterSeed(bip39.mnemonicToSeed(mnemonic));
     let addressIndex = 0;
