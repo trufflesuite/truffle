@@ -248,7 +248,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     //
   }
 
-  private decodeEvent(event: EventLog): ContractEvent {
+  public decodeEvent(event: EventLog): ContractEvent {
     let contractEvent: ContractEvent = {
       logIndex: event.logIndex,
       name: event.event,
