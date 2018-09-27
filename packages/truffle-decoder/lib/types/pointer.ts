@@ -26,17 +26,17 @@ export interface LiteralPointer extends GenericPointer {
 }
 
 export function isStackPointer(pointer: DataPointer): pointer is StackPointer {
-  return "stack" in pointer;
+  return typeof pointer !== "undefined" && "stack" in pointer;
 }
 
 export function isMemoryPointer(pointer: DataPointer): pointer is MemoryPointer {
-  return "memory" in pointer;
+  return typeof pointer !== "undefined" && "memory" in pointer;
 }
 
 export function isStoragePointer(pointer: DataPointer): pointer is StoragePointer {
-  return "storage" in pointer;
+  return typeof pointer !== "undefined" && "storage" in pointer;
 }
 
 export function isLiteralPointer(pointer: DataPointer): pointer is LiteralPointer {
-  return "literal" in pointer;
+  return typeof pointer !== "undefined" && "literal" in pointer;
 }
