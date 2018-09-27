@@ -10,32 +10,29 @@ describe("truffle help", () => {
   });
 
   describe("when run without arguments", () => {
-    it("displays general help", function(done) {
+    it("displays general help", function() {
       CommandRunner.run("help", config, (error) => {
         const output = logger.contents();
 
         assert(output.includes("Usage: truffle <command> [options]"));
-        done();
       });
     });
   })
 
   describe("when run with an argument", () => {
-    it("tells the user if it doesn't recognize the given command", function(done) {
+    it("tells the user if it doesn't recognize the given command", function() {
       CommandRunner.run("help eggplant", config, (error) => {
         const output = logger.contents();
 
         assert(output.includes("Cannot find the given command 'eggplant'"));
-        done();
       });
     });
 
-    it("displays help for the given command when valid", function(done) {
+    it("displays help for the given command when valid", function() {
       CommandRunner.run("help compile", config, (error) => {
         const output = logger.contents();
 
         assert(output.includes("Description:  Compile contract source files"));
-        done();
       });
     });
   });
