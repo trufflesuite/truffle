@@ -14,6 +14,7 @@
     "fs-extra": "6.0.1",
     "ganache-cli": "6.1.8",
     "glob": "^7.1.2",
+    "imports-loader": "^0.8.0",
     "js-scrypt": "^0.2.0",
     "meta-npm": "^0.0.22",
     "meta-pkgs": "^0.2.0",
