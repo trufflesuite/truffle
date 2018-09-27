@@ -18,13 +18,13 @@
   "devDependencies": {
     "eslint": "^4.0.0",
     "mocha": "5.2.0",
+    "sinon": "^6.3.4",
     "truffle-config": "^1.1.0-beta.0"
   },
   "dependencies": {
     "fs-extra": "6.0.1",
     "github-download": "^0.5.0",
     "request": "^2.83.0",
-    "sinon": "^6.3.4",
     "tmp": "0.0.33",
     "vcsurl": "^0.1.1"
   },
