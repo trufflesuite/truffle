@@ -14,13 +14,13 @@ const bip39 = require('bip39');
 const hdkey = require('ethereumjs-wallet/hdkey');
 const crypto = require('crypto');
 
-const getOrGenerateMnemonic = {
+const mnemonic = {
 
   /**
   * gets user-level mnemonic from user config, and if missing generates a new mnemonic
   * @returns {String} mnemonic
   */
-  mnemonic: function () {
+  getOrGenerateMnemonic: function () {
     let mnemonic;
     const userMnemonicExists = defaultUserConfig.get("mnemonic");
     if(!userMnemonicExists) {
@@ -40,7 +40,7 @@ const getOrGenerateMnemonic = {
   */
   getAccountsInfo: function () {
 
-    let mnemonic = this.mnemonic();
+    let mnemonic = this.getOrGenerateMnemonic();
     let accounts = [];
     let privateKeys = [];
     let mnemonicObject = {};
@@ -66,4 +66,4 @@ const getOrGenerateMnemonic = {
   }
 }
 
-module.exports = getOrGenerateMnemonic;
+module.exports = mnemonic;
