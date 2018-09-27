@@ -312,7 +312,9 @@ var command = {
 
           var currentNode = currentLocation.node.id;
           var currentLine = currentLocation.sourceRange.lines.start.line;
-          var currentSource = currentLocation.source;
+          var currentSourceId = currentLocation.source.id;
+
+          var sourceName; //to be used if a source is entered
 
           var breakpoint = {};
 
@@ -323,7 +325,7 @@ var command = {
             debug("node case");
             breakpoint.node = currentNode;
             breakpoint.line = currentLine;
-            breakpoint.source = currentSource;
+            breakpoint.sourceId = currentSourceId;
           }
 
           //if the argument starts with a "+" or "-", we have a relative
@@ -340,7 +342,7 @@ var command = {
               return;
             }
 
-            breakpoint.source = currentSource;
+            breakpoint.sourceId = currentSourceId;
             breakpoint.line = currentLine + delta;
           }
 
@@ -364,9 +366,9 @@ var command = {
             //search sources for given string
             let sources = session.view(solidity.info.sources);
 
-            let matchingSources = sources.filter(
-              (source) => source.sourcePath.includes(sourceArg)
-            );
+            //we will indeed need the sources here, not just IDs
+            let matchingSources = Object.values(sources)
+              .filter((source) => source.sourcePath.includes(sourceArg));
 
             if(matchingSources.length === 0)
             {
@@ -382,8 +384,9 @@ var command = {
             }
 
             //otherwise, we found it!
-            breakpoint.source = matchingSources[0];
-            breakpoint.line = line;
+            sourceName = path.basename(matchingSources[0].sourcePath);
+            breakpoint.sourceId = matchingSources[0].id;
+            breakpoint.line = line-1; //adjust for zero-indexing!
           }
 
           //otherwise, it's a simple line number
@@ -399,8 +402,8 @@ var command = {
               return;
             }
 
-            breakpoint.source = currentSource;
-            breakpoint.line = line;
+            breakpoint.sourceId = currentSourceId;
+            breakpoint.line = line-1; //adjust for zero-indexing!
           }
 
           //having constructed the breakpoint, here's now a usable-readable
@@ -408,21 +411,27 @@ var command = {
           let locationMessage;
           if(breakpoint.node !== undefined)
           {
-            locationMessage = `this point in line ${breakpoint.line}`;
+            locationMessage = `this point in line ${breakpoint.line+1}`;
+            //+1 to adjust for zero-indexing
           }
-          else if(breakpoint.source !== currentSource)
+          else if(breakpoint.sourceId !== currentSourceId)
           {
-            locationMessage = `line ${breakpoint.line} in source ${sourceArg}`;
+            //name the source as the user entered it
+            //note: we should only be in this case if a source was entered!
+            //if no source as entered and we are here, something is wrong
+            locationMessage = `line ${breakpoint.line+1} in ${sourceName}`;
+            //+1 to adjust for zero-indexing
           }
           else
           {
-            locationMessage = `line ${breakpoint.line}`
+            locationMessage = `line ${breakpoint.line+1}`
+            //+1 to adjust for zero-indexing
           }
 
           //one last check -- does this breakpoint already exist?
           let alreadyExists = breakpoints.filter(
               (existingBreakpoint) =>
-              existingBreakpoint.source === breakpoint.source &&
+              existingBreakpoint.sourceId === breakpoint.sourceId &&
               existingBreakpoint.line === breakpoint.line &&
               existingBreakpoint.node === breakpoint.node //may be undefined
           ).length > 0;

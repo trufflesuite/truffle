@@ -13,6 +13,7 @@ import Debugger from "lib/debugger";
 import { cleanBigNumbers } from "lib/data/decode/utils";
 
 import data from "lib/data/selectors";
+import solidity from "lib/solidity/selectors";
 
 export function *generateUints() {
   let x = 0;
@@ -65,12 +66,23 @@ async function prepareDebugger(testName, sources) {
 
   let session = bugger.connect();
 
+  let source = sources[fileName(testName)];
+  
+  //we'll need the debugger-internal ID of this source
+  let debuggerSources = session.view(solidity.info.sources);
+  let matchingSources = Object.values(debuggerSources)
+    .filter((sourceObject) =>
+      sourceObject.sourcePath.includes(contractName(testName)));
+  let sourceId = matchingSources[0].id;
+
   let breakpoint = {
-    address: instance.address,
-    line: lastStatementLine(sources[fileName(testName)])
+    sourceId,
+    line: lastStatementLine(source)
   };
 
-  session.continueUntil(breakpoint);
+  session.setOrClearBreakpoint(breakpoint,true);
+
+  session.continueUntilBreakpoint();
 
   return session;
 }

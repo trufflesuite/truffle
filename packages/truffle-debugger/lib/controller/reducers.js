@@ -7,10 +7,11 @@ import * as actions from "./actions";
 
 function breakpoints(state = [], action) {
   switch (action.type) {
+
     case actions.ADD_BREAKPOINT:
       //check for any existing identical breakpoints to avoid redundancy
       if(state.filter((breakpoint)=>
-        breakpoint.source===action.breakpoint.source &&
+        breakpoint.sourceId===action.breakpoint.sourceId &&
         breakpoint.line===action.breakpoint.line &&
         breakpoint.node===action.breakpoint.node //may be undefined
       ).length>0)
@@ -24,13 +25,15 @@ function breakpoints(state = [], action) {
         return state.concat([action.breakpoint]);
       }
       break;
+
     case actions.REMOVE_BREAKPOINT:
       return state.filter((breakpoint)=>
-        breakpoint.source===action.breakpoint.source &&
-        breakpoint.line===action.breakpoint.line &&
-        breakpoint.node===action.breakpoint.node //may be undefined
+        breakpoint.sourceId!==action.breakpoint.sourceId ||
+        breakpoint.line!==action.breakpoint.line ||
+        breakpoint.node!==action.breakpoint.node //may be undefined
       );
       break;
+
     default:
       return state;
   }

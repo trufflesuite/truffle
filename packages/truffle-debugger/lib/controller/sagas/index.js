@@ -194,56 +194,44 @@ function* stepOver () {
  * continueUntilBreakpoint - step through execution until a breakpoint
  */
 function *continueUntilBreakpoint () {
-  var currentLocation, currentNode, currentLine, currentSource;
-  var previousLine, previousSource;
+  var currentLocation, currentNode, currentLine, currentSourceId;
+  var previousLine, previousSourceId;
 
   let breakpoints = yield select(controller.breakpoints);
 
   let breakpointHit = false;
 
   currentLocation = yield select(controller.current.location);
+  currentNode = currentLocation.node.id;
   currentLine = currentLocation.sourceRange.lines.start.line;
-  currentSource = currentLocation.source.id;
+  currentSourceId = currentLocation.source.id;
 
   do {
     yield* stepNext();
 
     previousLine = currentLine;
-    previousSource = currentSource;
+    previousSourceId = currentSourceId;
 
     currentLocation = yield select(controller.current.location);
+    currentNode = currentLocation.node.id;
     currentLine = currentLocation.sourceRange.lines.start.line;
-    currentSource = currentLocation.source.id;
+    currentSourceId = currentLocation.source.id;
 
     breakpointHit = breakpoints
-      .filter( ({source, line, node}) =>
+      .filter( ({sourceId, line, node}) =>
         {
           if(node !== undefined)
           {
-            return source === currentSource && node === currentNode;
+            debug("node %d currentNode %d",node,currentNode);
+            return sourceId === currentSourceId && node === currentNode;
           }
           //otherwise, we have a line-style breakpoint; we want to stop at the
           //*first* point on the line
-          return source === currentSource && line === currentLine
-          && (currentSource !== previousSource || currentLine !== previousLine);
+          return sourceId === currentSourceId && line === currentLine
+          && (currentSourceId !== previousSourceId || currentLine !== previousLine);
         }
       )
       .length > 0;
     
   } while(!breakpointHit);
-
-  debug("breakpoints %O",breakpoints);
-  debug("currentCall %O",currentCall);
-  debug("currentCall.address %s",currentCall.address);
-  debug("address %s",breakpoints[0].address);
-  debug("address == currentCall.address %s",
-    breakpoints[0].address == currentCall.address ? 'true' : 'false');
-  debug("address === currentCall.address %s",
-    breakpoints[0].address === currentCall.address ? 'true' : 'false');
-  debug("currentCall.binary %s",currentCall.binary);
-  debug("binary %s",breakpoints[0].binary);
-  debug("binary == currentCall.binary %s",
-    breakpoints[0].binary == currentCall.binary ? 'true' : 'false');
-  debug("binary === currentCall.binary %s",
-    breakpoints[0].binary === currentCall.binary ? 'true' : 'false');
 }
