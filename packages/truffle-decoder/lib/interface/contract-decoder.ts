@@ -8,7 +8,8 @@ import { StoragePointer } from "../types/pointer";
 import decode from "../decode";
 import { Definition as DefinitionUtils, EVM, Allocation, AstDefinition } from "truffle-decode-utils";
 import { BlockType } from "web3/eth/types";
-import { EventLog } from "web3/types";
+import { EventLog, Log } from "web3/types";
+import abiDecoder from "abi-decoder";
 
 export interface ContractStateVariable {
   isChildVariable: boolean;
@@ -127,8 +128,10 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.contractAddress = this.contract.networks[this.contractNetwork].address;
 
     this.contracts[getContractNodeId(this.contract)] = this.contract;
+    abiDecoder.addABI(this.contract.abi);
     this.inheritedContracts.forEach((inheritedContract) => {
       this.contracts[getContractNodeId(inheritedContract)] = inheritedContract;
+      abiDecoder.addABI(inheritedContract.abi);
     });
   }
 
@@ -248,7 +251,19 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     //
   }
 
-  public decodeEvent(event: EventLog): ContractEvent {
+  public decodeLog(log: Log): any {
+    const decodedLogs = this.decodeLogs([log]);
+
+    return decodedLogs[0];
+  }
+
+  public decodeLogs(logs: Log[]): any[] {
+    const decodedLogs = abiDecoder.decodeLogs(logs);
+
+    return decodedLogs;
+  }
+
+  private decodeEvent(event: EventLog): ContractEvent {
     let contractEvent: ContractEvent = {
       logIndex: event.logIndex,
       name: event.event,
