@@ -329,4 +329,8 @@ Config.load = function(file, options) {
   return config;
 };
 
+Config.getUserConfig = function() {
+  return new Configstore('truffle', {}, { globalConfigPath: true });
+}
+
 module.exports = Config;
