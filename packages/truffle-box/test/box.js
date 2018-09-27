@@ -1,10 +1,20 @@
 const path = require("path");
 const fs = require("fs-extra");
 const assert = require("assert");
+const inquirer = require('inquirer');
+const sinon = require('sinon');
 const Box = require("../");
 const TRUFFLE_BOX_DEFAULT = "git@github.com:trufflesuite/truffle-init-default.git";
 
 describe("truffle-box Box", () => {
+
+  beforeEach(() => {
+    sinon.stub(inquirer, "prompt").returns({ then: () => console.log('Overwrite file?') });
+  });
+  afterEach(() => {
+    inquirer.prompt.restore();
+  });
+
   describe(".unbox()", () => {
     const destination = path.join(__dirname, ".truffle_test_tmp");
 
@@ -32,26 +42,44 @@ describe("truffle-box Box", () => {
       assert(fs.existsSync(path.join(destination, ".gitignore")) == false, ".gitignore didn't get removed!");
     });
 
-    it("prompts if init/unbox used and redundant files/folders exist in the target directory", (done) => {
-      var EXPECTED_TIMEOUT = 5000;
-      var timeout = setTimeout(done, EXPECTED_TIMEOUT);
+    it("prompts if init/unbox used and redundant files/folders exist in target directory", (done) => {
 
       Box.unbox(TRUFFLE_BOX_DEFAULT, destination)
         .then(function(boxConfig) {
-          clearTimeout(timeout);
-          done(new Error('Unexpected response'));
+          assert.strictEqual(inquirer.prompt.called, true);
+          assert.strictEqual(inquirer.prompt.callCount, 4);
+          done();
         });
-    }).timeout(6000);
+    }).timeout(5000);
 
-    it("allows init/unbox if force flag used and redundant files/folders exist in the target directory", (done) => {
+    it("allows init/unbox if force flag used", (done) => {
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true })
+        .then((boxConfig) => {
+          done();
+        });
+    }).timeout(5000);
+
+    it("doesn't prompt if init/unbox force flag used", (done) => {
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true })
+        .then((boxConfig) => {
+          assert.strictEqual(inquirer.prompt.called, false);
+          done();
+        });
+    }).timeout(5000);
+
+    it("overwrites redundant files if init/unbox force flag used", (done) => {
       const truffleConfigPath = path.join(destination, "truffle.js");
 
-      // Assert our precondition
-      assert(fs.existsSync(truffleConfigPath), "truffle.js should exist for this test to be meaningful");
+      // preconditions
+      fs.writeFileSync(truffleConfigPath, "this truffle.js file is different than the default box file", "utf8");
+      assert(fs.existsSync(truffleConfigPath), "mock truffle.js wasn't created!");
+      const mockConfig = fs.readFileSync(truffleConfigPath, "utf8");
 
       Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true })
         .then((boxConfig) => {
-          assert(fs.existsSync(truffleConfigPath) === true, "truffle.js got recreated");
+          assert(fs.existsSync(truffleConfigPath), "truffle.js wasn't recreated!");
+          const newConfig = fs.readFileSync(truffleConfigPath, "utf8");
+          assert(newConfig !== mockConfig, "truffle.js wasn't overwritten!");
           done();
         });
     }).timeout(5000);
