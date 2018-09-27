@@ -47,7 +47,7 @@ command.run(inputArguments, options, function(err) {
         process.exit(err);
       } else {
         // Bubble up all other unexpected errors.
-        console.log(err.stack || err.toString());
+        console.log(err.stack || err.message || err.toString());
       }
     }
     process.exit(1);
