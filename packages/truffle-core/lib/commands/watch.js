@@ -42,7 +42,6 @@ const command = {
 const build = (config) => {
   const Build = require("../build");
   const Contracts = require("truffle-workflow-compile");
-  const userBuildScriptExists = config != null;
 
   config.logger.log("Rebuilding...");
 
