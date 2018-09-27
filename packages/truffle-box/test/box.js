@@ -1,29 +1,30 @@
 const path = require("path");
 const fs = require("fs-extra");
 const assert = require("assert");
-const inquirer = require('inquirer');
-const sinon = require('sinon');
+const inquirer = require("inquirer");
+const sinon = require("sinon");
 const Box = require("../");
 const TRUFFLE_BOX_DEFAULT = "git@github.com:trufflesuite/truffle-init-default.git";
 
 describe("truffle-box Box", () => {
 
-  beforeEach(() => {
-    sinon.stub(inquirer, "prompt").returns({ then: () => console.log('Overwrite file?') });
+  const destination = path.join(__dirname, ".truffle_test_tmp");
+
+  before("mkdir", async() => fs.ensureDir(destination));
+  after("remove tmp dir", async() => fs.remove(destination));
+
+  before(() => {
+    sinon.stub(inquirer, "prompt").returns({ then: () => 1 });
   });
-  afterEach(() => {
-    inquirer.prompt.restore();
+  after(() => {
+    sinon.restore();
   });
 
   describe(".unbox()", () => {
-    const destination = path.join(__dirname, ".truffle_test_tmp");
-
-    before("mkdir", async() => fs.ensureDir(destination));
-    after("remove tmp dir", async() => fs.remove(destination));
 
     it("unboxes truffle box from github", () => {
       return Box.unbox(TRUFFLE_BOX_DEFAULT, destination)
-        .then(function (truffleConfig) {
+        .then((truffleConfig) => {
           assert.ok(truffleConfig);
 
           assert(
@@ -41,27 +42,20 @@ describe("truffle-box Box", () => {
       assert(fs.existsSync(path.join(destination, "README.md")) == false, "README.md didn't get removed!");
       assert(fs.existsSync(path.join(destination, ".gitignore")) == false, ".gitignore didn't get removed!");
     });
+  });
 
-    it("prompts if init/unbox used and redundant files/folders exist in target directory", (done) => {
+  describe("--force", () => {
 
-      Box.unbox(TRUFFLE_BOX_DEFAULT, destination)
-        .then(function(boxConfig) {
-          assert.strictEqual(inquirer.prompt.called, true);
-          assert.strictEqual(inquirer.prompt.callCount, 4);
+    it("unboxes truffle box when used", (done) => {
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true })
+        .then(() => {
           done();
         });
     }).timeout(5000);
 
-    it("allows init/unbox if force flag used", (done) => {
+    it("runs without a prompt", (done) => {
       Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true })
-        .then((boxConfig) => {
-          done();
-        });
-    }).timeout(5000);
-
-    it("doesn't prompt if init/unbox force flag used", (done) => {
-      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true })
-        .then((boxConfig) => {
+        .then(() => {
           assert.strictEqual(inquirer.prompt.called, false);
           done();
         });
@@ -76,12 +70,35 @@ describe("truffle-box Box", () => {
       const mockConfig = fs.readFileSync(truffleConfigPath, "utf8");
 
       Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true })
-        .then((boxConfig) => {
+        .then(() => {
           assert(fs.existsSync(truffleConfigPath), "truffle.js wasn't recreated!");
           const newConfig = fs.readFileSync(truffleConfigPath, "utf8");
           assert(newConfig !== mockConfig, "truffle.js wasn't overwritten!");
           done();
         });
     }).timeout(5000);
+
+  });
+
+  describe("init/unbox prompt", () => {
+
+    it("prompts if init/unbox used and redundant files/folders exist in target directory", (done) => {
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination)
+        .then(() => {
+          assert.strictEqual(inquirer.prompt.called, true);
+          assert.strictEqual(inquirer.prompt.callCount, 4);
+          done();
+        });
+    }).timeout(5000);
+
+    it('prompt questions call correctly', () => {
+          assert(inquirer.prompt.getCall(0).args[0], "Prompt questions weren't called!");
+    });
+
+    it('default response is false (do not overwrite)', () => {
+      const expectedDefault = false;
+
+      assert.strictEqual(inquirer.prompt.getCall(0).args[0][0].default, expectedDefault);
+    });
   });
 });
