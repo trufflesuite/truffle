@@ -1,3 +1,5 @@
+const colors = require("colors");
+
 const command = {
   command: 'watch',
   description: 'Watch filesystem for changes and rebuild the project automatically',
@@ -7,19 +9,11 @@ const command = {
     options: [],
   },
   run: function (options, done) {
-    const Build = require("../build");
-    const colors = require("colors");
     const Config = require("truffle-config");
     const chokidar = require("chokidar");
     const path = require("path");
-    const Contracts = require("truffle-workflow-compile");
-    const TruffleError = require("truffle-error");
 
     const config = Config.detect(options);
-
-    let working = false;
-    let needsRebuild = true;
-    let needsRecompile = true;
 
     const watchPaths = [
       path.join(config.working_directory, "app/**/*"),
@@ -38,62 +32,36 @@ const command = {
       const displayPath = path.join("./", filePath.replace(config.working_directory, ""));
       config.logger.log(colors.cyan(">> File " + displayPath + " changed."));
 
-      needsRebuild = true;
-
-      const contractsDirectoryChanged = path.join(config.working_directory, filePath)
-                                          .indexOf(config.contracts_directory) >= 0;
-      if (contractsDirectoryChanged) {
-        needsRecompile = true;
-      }
+      build(config);
     });
 
-    const printFailure = (error) => {
-      if (error instanceof TruffleError) {
-        console.log(error.message);
-      } else {
-        // Bubble up all other unexpected errors.
-        console.log(error.stack || error.toString());
-      }
-    };
+    config.logger.log(colors.green("Watching for a change in project files..."));
+  }
+}
 
-    const continuouslyCheckIfBuildOrCompileNecessary = () => {
-      if (working) {
-        setTimeout(continuouslyCheckIfBuildOrCompileNecessary, 200);
-        return;
-      }
+const build = (config) => {
+  const Build = require("../build");
+  const Contracts = require("truffle-workflow-compile");
+  const userBuildScriptExists = config != null;
 
-      if (needsRebuild) {
-        needsRebuild = false;
+  config.logger.log("Rebuilding...");
 
-        if (config.build != null) {
-          config.logger.log("Rebuilding...");
-          working = true;
+  Build.build(config, function(error) {
+    printSummary(config, error);
+  });
+};
 
-          Build.build(config, function(error) {
-            if (error) {
-              printFailure(error);
-            } else {
-              config.logger.log(colors.green("Completed without errors on " + new Date().toString()));
-            }
-            working = false;
-          });
-        }
-      } else if (needsRecompile) {
-        needsRecompile = false;
-        working = true;
-
-        Contracts.compile(config, function(error) {
-          if (error) {
-            printFailure(error);
-          }
-          working = false;
-        });
-      }
-
-      setTimeout(continuouslyCheckIfBuildOrCompileNecessary, 200);
-    };
-
-    continuouslyCheckIfBuildOrCompileNecessary();
+const printSummary = (config, error) => {
+  if (error) {
+    const TruffleError = require("truffle-error");
+    if (error instanceof TruffleError) {
+      console.log(error.message);
+    } else {
+      // Bubble up all other unexpected errors.
+      console.log(error.stack || error.toString());
+    }
+  } else {
+    config.logger.log(colors.green("Completed without errors on " + new Date().toString()));
   }
 }
 

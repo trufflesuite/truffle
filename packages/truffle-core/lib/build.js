@@ -75,22 +75,16 @@ const Build = {
     if (options.dist) {
       key = "dist";
     }
-
+    
     const logger = options.logger || console;
     let builder = options.build;
 
     // Duplicate build directory for legacy purposes
     options.destination_directory = options.build_directory;
 
-    // No builder specified. Ignore the build then.
-    if (typeof builder == "undefined") {
-      if (options.quiet != true) {
-        return callback(new BuildError("No build configuration specified. Can't build."));
-      }
-      return callback();
-    }
-
-    if (typeof builder == "string") {
+    if (typeof builder === "undefined") {
+      logger.log("No build configuration found. Preparing to compile contracts.");
+    } else if (typeof builder === "string") {
       builder = new CommandBuilder(builder);
     } else if (typeof builder !== "function") {
       if (builder.build == null) {
@@ -116,15 +110,14 @@ const Build = {
       Contracts.compile(options, function(err) {
         if (err) return callback(err);
 
-        builder.build(options, function(err) {
-          if (!err) return callback();
-
-          if (typeof err == "string") {
-            err = new BuildError(err);
-          }
-
-          callback(err);
-        });
+        if (builder) {
+          builder.build(options, function(err) {
+            if (typeof err === "string") {
+              return callback(new BuildError(err));
+            }
+            return callback(err);
+          });
+        }
       });
     });
   },
