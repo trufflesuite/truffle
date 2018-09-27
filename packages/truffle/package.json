@@ -1,7 +1,7 @@
 {
   "name": "truffle",
   "namespace": "consensys",
-  "version": "5.0.0-next.12",
+  "version": "5.0.0-user-level-mnemonic.0",
   "description": "Truffle - Simple development framework for Ethereum",
   "dependencies": {
     "mocha": "^4.1.0",
