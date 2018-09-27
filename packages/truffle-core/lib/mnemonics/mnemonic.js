@@ -1,7 +1,7 @@
 /**
 * @module mnemonic;
 * @requires module:truffle-config
-* @requires module:random
+* @requires module:seedrandom
 * @requires module:bip39
 * @requires module:ethereumjs-wallet/hdkey
 * @requires module:crypto
