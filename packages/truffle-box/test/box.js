@@ -3,6 +3,7 @@ const fs = require("fs-extra");
 const assert = require("assert");
 const inquirer = require("inquirer");
 const sinon = require("sinon");
+const stdin = require("mock-stdin").stdin();
 const Box = require("../");
 const TRUFFLE_BOX_DEFAULT = "git@github.com:trufflesuite/truffle-init-default.git";
 
@@ -10,14 +11,13 @@ describe("truffle-box Box", () => {
 
   const destination = path.join(__dirname, ".truffle_test_tmp");
 
-  before("mkdir", async() => fs.ensureDir(destination));
-  after("remove tmp dir", async() => fs.remove(destination));
-
-  before(() => {
+  beforeEach(() => {
     sinon.stub(inquirer, "prompt").returns({ then: () => 1 });
+    fs.ensureDirSync(destination);
   });
-  after(() => {
-    sinon.restore();
+  afterEach(() => {
+    inquirer.prompt.restore();
+    fs.removeSync(destination);
   });
 
   describe(".unbox()", () => {
@@ -32,7 +32,7 @@ describe("truffle-box Box", () => {
             "Unboxed project should have truffle config."
           );
         });
-    }).timeout(5000);
+    });
 
     it("ignores files listed in the truffle-init.json file, and removes the truffle-init.json file", () => {
       // Assert the file is not there first.
@@ -48,10 +48,16 @@ describe("truffle-box Box", () => {
 
     it("unboxes truffle box when used", (done) => {
       Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true })
-        .then(() => {
+        .then((truffleConfig) => {
+          assert.ok(truffleConfig);
+
+          assert(
+            fs.existsSync(path.join(destination, "truffle.js")),
+            "Unboxed project should have truffle config."
+          );
           done();
         });
-    }).timeout(5000);
+    });
 
     it("runs without a prompt", (done) => {
       Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true })
@@ -59,7 +65,7 @@ describe("truffle-box Box", () => {
           assert.strictEqual(inquirer.prompt.called, false);
           done();
         });
-    }).timeout(5000);
+    });
 
     it("overwrites redundant files if init/unbox force flag used", (done) => {
       const truffleConfigPath = path.join(destination, "truffle.js");
@@ -76,29 +82,47 @@ describe("truffle-box Box", () => {
           assert(newConfig !== mockConfig, "truffle.js wasn't overwritten!");
           done();
         });
-    }).timeout(5000);
-
+    });
   });
 
   describe("init/unbox prompt", () => {
 
-    it("prompts if init/unbox used and redundant files/folders exist in target directory", (done) => {
+    const contractDirPath = path.join(destination, "contracts");
+
+    beforeEach(() => {
+      // preconditions
+      fs.ensureDirSync(contractDirPath);
+      assert(fs.existsSync(contractDirPath), "contracts folder wasn't created!");
+    });
+    afterEach(() => {
+      fs.removeSync(contractDirPath);
+    });
+
+    it("prompts when redundant files/folders exist in target directory", (done) => {
       Box.unbox(TRUFFLE_BOX_DEFAULT, destination)
         .then(() => {
           assert.strictEqual(inquirer.prompt.called, true);
-          assert.strictEqual(inquirer.prompt.callCount, 4);
+          assert.strictEqual(inquirer.prompt.callCount, 1);
           done();
         });
-    }).timeout(5000);
-
-    it('prompt questions call correctly', () => {
-          assert(inquirer.prompt.getCall(0).args[0], "Prompt questions weren't called!");
     });
 
-    it('default response is false (do not overwrite)', () => {
+    it('prompt questions call correctly', (done) => {
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination)
+        .then(() => {
+          assert(inquirer.prompt.getCall(0).args[0], "Prompt questions weren't called!");
+          done();
+        });
+    });
+
+    it('default response is false (do not overwrite)', (done) => {
       const expectedDefault = false;
 
-      assert.strictEqual(inquirer.prompt.getCall(0).args[0][0].default, expectedDefault);
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination)
+        .then(() => {
+          assert.strictEqual(inquirer.prompt.getCall(0).args[0][0].default, expectedDefault);
+          done();
+        });
     });
   });
 });
