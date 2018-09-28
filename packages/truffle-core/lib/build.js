@@ -62,8 +62,6 @@ var Build = {
   // Note: key is a legacy parameter that will eventually be removed.
   // It's specific to the default builder and we should phase it out.
   build: function(options, callback) {
-    var self = this;
-
     expect.options(options, [
       "build_directory",
       "working_directory",
