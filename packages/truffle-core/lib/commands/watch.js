@@ -32,33 +32,21 @@ const command = {
       const displayPath = path.join("./", filePath.replace(config.working_directory, ""));
       config.logger.log(colors.cyan(">> File " + displayPath + " changed."));
 
-      const contractsDirectoryChanged = path.join(config.working_directory, filePath)
-                                          .indexOf(config.contracts_directory) >= 0;
-      build(config, contractsDirectoryChanged);
+      build(config);
     });
 
     config.logger.log(colors.green("Watching for a change in project files..."));
   }
 }
 
-const build = (config, contractsDirectoryChanged) => {
+const build = (config) => {
   const Build = require("../build");
-  const Contracts = require("truffle-workflow-compile");
 
-  const buildScriptExists = typeof config.build !== "undefined";
-  if (buildScriptExists) {
-    config.logger.log("Rebuilding...");
+  config.logger.log("Rebuilding...");
 
-    Build.build(config, function(error) {
-      printSummary(config, error);
-    });
-  } else if (contractsDirectoryChanged) {
-    config.logger.log("Recompiling contracts...");
-
-    Contracts.compile(config, function(error) {
-      printSummary(config, error);
-    });
-  }
+  Build.build(config, function(error) {
+    printSummary(config, error);
+  });
 };
 
 const printSummary = (config, error) => {

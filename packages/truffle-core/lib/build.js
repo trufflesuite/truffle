@@ -111,15 +111,12 @@ var Build = {
 
         if (builder) {
           builder.build(options, function(err) {
-            if (!err) {
-              return callback();
-            } else if (typeof err === "string") {
-              err = new BuildError(err);
+            if (typeof err === "string") {
+              return callback(new BuildError(err));
             }
             return callback(err);
           });
         }
-        return callback();
       });
     });
   },
