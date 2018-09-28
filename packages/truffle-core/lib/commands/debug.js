@@ -338,7 +338,7 @@ var command = {
 
             if(isNaN(delta))
             {
-              config.logger.log("Offset must be an integer");
+              config.logger.log("Offset must be an integer.\n");
               return;
             }
 
@@ -359,7 +359,7 @@ var command = {
             let line = parseInt(lineArg,10); //want an integer
             if(isNaN(line))
             {
-              config.logger.log("Line number must be an integer");
+              config.logger.log("Line number must be an integer.\n");
               return;
             }
 
@@ -372,7 +372,7 @@ var command = {
 
             if(matchingSources.length === 0)
             {
-              config.logger.log(`No source file found matching ${sourceArg}.`)
+              config.logger.log(`No source file found matching ${sourceArg}.\n`)
               return;
             }
             else if(matchingSources.length > 1)
@@ -380,6 +380,7 @@ var command = {
               config.logger.log(`Multiple source files found matching ${sourceArg}.  Which did you mean?`)
               matchingSources.forEach(
                 (source) => config.logger.log(source.sourcePath));
+              config.logger.log("");
               return;
             }
 
@@ -398,7 +399,7 @@ var command = {
 
             if(isNaN(line))
             {
-              config.logger.log("Line number must be an integer");
+              config.logger.log("Line number must be an integer.\n");
               return;
             }
 
@@ -406,7 +407,7 @@ var command = {
             breakpoint.line = line-1; //adjust for zero-indexing!
           }
 
-          //having constructed the breakpoint, here's now a usable-readable
+          //having constructed the breakpoint, here's now a user-readable
           //message describing its location
           let locationMessage;
           if(breakpoint.node !== undefined)
@@ -416,7 +417,6 @@ var command = {
           }
           else if(breakpoint.sourceId !== currentSourceId)
           {
-            //name the source as the user entered it
             //note: we should only be in this case if a source was entered!
             //if no source as entered and we are here, something is wrong
             locationMessage = `line ${breakpoint.line+1} in ${sourceName}`;
@@ -448,27 +448,27 @@ var command = {
           {
             if(setOrClear)
             {
-              config.logger.log(`Breakpoint at ${locationMessage} already exists.`);
+              config.logger.log(`Breakpoint at ${locationMessage} already exists.\n`);
               return;
             }
             else
             {
-              config.logger.log(`No breakpoint at ${locationMessage} to remove.`);
+              config.logger.log(`No breakpoint at ${locationMessage} to remove.\n`);
               return;
             }
           }
          
           //finally, if we've reached this point, do it!
-          session.setOrClearBreakpoint(breakpoint,setOrClear);
-
-          //finally, report back to the user on what happened
+          //also report back to the user on what happened
           if(setOrClear)
           {
-            config.logger.log(`Breakpoint added at ${locationMessage}.`);
+            session.addBreakpoint(breakpoint);
+            config.logger.log(`Breakpoint added at ${locationMessage}.\n`);
           }
           else
           {
-            config.logger.log(`Breakpoint removed at ${locationMessage}.`);
+            session.removeBreakpoint(breakpoint);
+            config.logger.log(`Breakpoint removed at ${locationMessage}.\n`);
           }
           return;
         }

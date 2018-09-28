@@ -164,14 +164,12 @@ export default class Session {
     return this.dispatch(controller.continueUntilBreakpoint());
   }
 
-  setOrClearBreakpoint(breakpoint,setOrClear){
-    if(setOrClear)
-    {
-      return this.dispatch(controller.addBreakpoint(breakpoint));
-    }
-    else
-    {
-      return this.dispatch(controller.removeBreakpoint(breakpoint));
-    }
+  addBreakpoint(breakpoint)
+  {
+    return this.dispatch(controller.addBreakpoint(breakpoint));
+  }
+
+  removeBreakpoint(breakpoint){
+    return this.dispatch(controller.removeBreakpoint(breakpoint));
   }
 }

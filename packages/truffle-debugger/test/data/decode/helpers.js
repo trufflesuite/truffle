@@ -80,7 +80,7 @@ async function prepareDebugger(testName, sources) {
     line: lastStatementLine(source)
   };
 
-  session.setOrClearBreakpoint(breakpoint,true);
+  session.addBreakpoint(breakpoint,true);
 
   session.continueUntilBreakpoint();
 

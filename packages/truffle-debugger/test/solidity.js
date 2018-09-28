@@ -107,7 +107,7 @@ describe("Solidity Debugging", function() {
     let breakpoint = { sourceId: source.id, line: 16 }
     let breakpointStopped = false;
 
-    session.setOrClearBreakpoint(breakpoint,true);
+    session.addBreakpoint(breakpoint);
 
     do {
       session.continueUntilBreakpoint();
