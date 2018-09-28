@@ -536,7 +536,7 @@ var command = {
               case "n":
               case ";":
               case "c":
-                config.logger.log("Transaction has finished; cannot advance.");
+                config.logger.log("Transaction has halted; cannot advance.");
             }
           }
 
