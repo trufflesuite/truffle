@@ -6,9 +6,6 @@ module.exports = {
     var tmpCleanup;
 
     return Promise.resolve()
-      .then(() => {
-        return options.force ? Promise.resolve() : unbox.checkDestination(destination);
-      })
       .then(() => unbox.verifyURL(url))
       .then(() => unbox.setupTempDirectory())
       .then((dir, func) => {
@@ -17,7 +14,7 @@ module.exports = {
         tmpCleanup = func;
       })
       .then(() => unbox.fetchRepository(url, tmpDir))
-      .then(() => unbox.copyTempIntoDestination(tmpDir, destination))
+      .then(() => unbox.copyTempIntoDestination(tmpDir, destination, options.force))
       .then(tmpCleanup);
   },
 

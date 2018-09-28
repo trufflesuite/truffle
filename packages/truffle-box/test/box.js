@@ -1,21 +1,29 @@
 const path = require("path");
 const fs = require("fs-extra");
 const assert = require("assert");
+const inquirer = require("inquirer");
+const sinon = require("sinon");
 const Box = require("../");
-var TRUFFLE_BOX_DEFAULT = "git@github.com:trufflesuite/truffle-init-default.git";
+const TRUFFLE_BOX_DEFAULT = "git@github.com:trufflesuite/truffle-init-default.git";
 
-describe("truffle-box Box", function() {
-  describe(".unbox()", function() {
-    const destination = path.join(__dirname, ".truffle_test_tmp");
+describe("truffle-box Box", () => {
 
-    before("mkdir", async() => fs.ensureDir(destination));
-    after("remove tmp dir", async() => fs.remove(destination));
+  const destination = path.join(__dirname, ".truffle_test_tmp");
 
-    it("unboxes truffle box from github", function() {
-      this.timeout(5000);
+  beforeEach(() => {
+    sinon.stub(inquirer, "prompt").returns({ then: () => 1 });
+    fs.ensureDirSync(destination);
+  });
+  afterEach(() => {
+    inquirer.prompt.restore();
+    fs.removeSync(destination);
+  });
 
+  describe(".unbox()", () => {
+
+    it("unboxes truffle box from github", () => {
       return Box.unbox(TRUFFLE_BOX_DEFAULT, destination)
-        .then(function (truffleConfig) {
+        .then((truffleConfig) => {
           assert.ok(truffleConfig);
 
           assert(
@@ -25,7 +33,7 @@ describe("truffle-box Box", function() {
         });
     });
 
-    it("ignores files listed in the truffle-init.json file, and removes the truffle-init.json file", function() {
+    it("ignores files listed in the truffle-init.json file, and removes the truffle-init.json file", () => {
       // Assert the file is not there first.
       assert(fs.existsSync(path.join(destination, "truffle-init.json")) == false, "truffle-init.json shouldn't be available to the user!");
 
@@ -33,49 +41,87 @@ describe("truffle-box Box", function() {
       assert(fs.existsSync(path.join(destination, "README.md")) == false, "README.md didn't get removed!");
       assert(fs.existsSync(path.join(destination, ".gitignore")) == false, ".gitignore didn't get removed!");
     });
+  });
 
-    it("won't re-init if anything exists in the destination folder", function(done) {
-      this.timeout(5000);
+  describe("--force", () => {
 
-      const contracts_directory = path.join(destination, "contracts");
+    it("unboxes truffle box when used", (done) => {
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true })
+        .then((truffleConfig) => {
+          assert.ok(truffleConfig);
 
-      // Assert our precondition
-      assert(fs.existsSync(contracts_directory), "contracts directory should exist for this test to be meaningful");
-
-      fs.remove(contracts_directory).then(() => {
-        Box.unbox(TRUFFLE_BOX_DEFAULT, destination)
-          .then(function(boxConfig) {
-            assert(
-              fs.existsSync(contracts_directory) == false,
-              "Contracts directory got recreated when it shouldn't have"
-            );
-            done();
-          })
-          .catch(function(e) {
-            if (e.message.indexOf("Something already exists at the destination.") >= 0) {
-              done();
-            } else {
-              done(new Error("Unknown error received: " + e.stack));
-            }
-          });
-      });
+          assert(
+            fs.existsSync(path.join(destination, "truffle.js")),
+            "Unboxed project should have truffle config."
+          );
+          done();
+        });
     });
 
-    it("will re-init if force is true in the options and files exist", function(done) {
-      this.timeout(5000);
+    it("runs without a prompt", (done) => {
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true })
+        .then(() => {
+          assert.strictEqual(inquirer.prompt.called, false);
+          done();
+        });
+    });
 
+    it("overwrites redundant files if init/unbox force flag used", (done) => {
       const truffleConfigPath = path.join(destination, "truffle.js");
 
-      // Assert our precondition
-      assert(fs.existsSync(truffleConfigPath), "truffle.js should exist for this test to be meaningful");
+      // preconditions
+      fs.writeFileSync(truffleConfigPath, "this truffle.js file is different than the default box file", "utf8");
+      assert(fs.existsSync(truffleConfigPath), "mock truffle.js wasn't created!");
+      const mockConfig = fs.readFileSync(truffleConfigPath, "utf8");
 
-      fs.remove(truffleConfigPath).then(() => {
-        Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true })
-          .then((boxConfig) => {
-            assert(fs.existsSync(truffleConfigPath) === true, "truffle.js got recreated");
-            done();
-          });
-      });
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true })
+        .then(() => {
+          assert(fs.existsSync(truffleConfigPath), "truffle.js wasn't recreated!");
+          const newConfig = fs.readFileSync(truffleConfigPath, "utf8");
+          assert(newConfig !== mockConfig, "truffle.js wasn't overwritten!");
+          done();
+        });
+    });
+  });
+
+  describe("init/unbox prompt", () => {
+
+    const contractDirPath = path.join(destination, "contracts");
+
+    beforeEach(() => {
+      // preconditions
+      fs.ensureDirSync(contractDirPath);
+      assert(fs.existsSync(contractDirPath), "contracts folder wasn't created!");
+    });
+    afterEach(() => {
+      fs.removeSync(contractDirPath);
+    });
+
+    it("prompts when redundant files/folders exist in target directory", (done) => {
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination)
+        .then(() => {
+          assert.strictEqual(inquirer.prompt.called, true);
+          assert.strictEqual(inquirer.prompt.callCount, 1);
+          done();
+        });
+    });
+
+    it('prompt questions call correctly', (done) => {
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination)
+        .then(() => {
+          assert(inquirer.prompt.getCall(0).args[0], "Prompt questions weren't called!");
+          done();
+        });
+    });
+
+    it('default response is false (do not overwrite)', (done) => {
+      const expectedDefault = false;
+
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination)
+        .then(() => {
+          assert.strictEqual(inquirer.prompt.getCall(0).args[0][0].default, expectedDefault);
+          done();
+        });
     });
   });
 });

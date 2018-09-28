@@ -17,7 +17,8 @@ var commandReference = {
   "+": "add watch expression (`+:<expr>`)",
   "-": "remove watch expression (-:<expr>)",
   "?": "list existing watch expressions",
-  "b": "toggle breakpoint",
+  "b": "add breakpoint",
+  "B": "remove breakpoint",
   "c": "continue until breakpoint",
   "q": "quit"
 };
@@ -115,7 +116,7 @@ var DebugUtils = {
     var commandSections = [
       ["o", "i", "u", "n"],
       [";", "p", "h", "q"],
-      ["b", "c"],
+      ["b", "B", "c"],
       ["+", "-"],
       ["?"],
       ["v", ":"]
