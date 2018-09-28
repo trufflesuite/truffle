@@ -1,30 +1,15 @@
-var fs = require("fs-extra");
-var path = require("path");
-var ghdownload = require('github-download');
-var request = require('request');
-var vcsurl = require('vcsurl');
-var parseURL = require('url').parse;
-var tmp = require('tmp');
-var exec = require('child_process').exec;
-var cwd = require('process').cwd();
+const fs = require("fs-extra");
+const path = require("path");
+const ghdownload = require('github-download');
+const request = require('request');
+const vcsurl = require('vcsurl');
+const parseURL = require('url').parse;
+const tmp = require('tmp');
+const exec = require('child_process').exec;
+const cwd = require('process').cwd();
+const inquirer = require('inquirer');
 
-var config = require('../config');
-
-function checkDestination(destination) {
-  return Promise.resolve()
-    .then(() => {
-      const contents = fs.readdirSync(destination);
-      if (contents.length) {
-        const err = "Something already exists at the destination. " +
-                  "`truffle init` and `truffle unbox` must be executed in an empty folder. " +
-                  "If you are absolutely sure you want to proceed, add " +
-                  "the `--force` parameter to the init or unbox command. Be careful though, " +
-                  "adding `--force` will cause truffle to ignore existing files in the current " +
-                  "directory and potentially overwrite them. Stopping to prevent overwriting data."
-        throw new Error(err);
-      }
-  });
-}
+const config = require('../config');
 
 function verifyURL(url) {
   // Next let's see if the expected repository exists. If it doesn't, ghdownload
@@ -81,13 +66,55 @@ function fetchRepository(url, dir) {
   });
 }
 
-function copyTempIntoDestination(tmpDir, destination) {
-  return new Promise(function(accept, reject) {
-    fs.copy(tmpDir, destination, function(err) {
-      if (err) return reject(err);
-      accept();
-    });
-  });
+async function promptOverwrites(contentCollisions) {
+  let overwriteContents = [];
+
+  for (let file of contentCollisions) {
+    console.log(`${file} already exists in this directory...`);
+    const overwriting = [
+      {
+        type: 'confirm',
+        name: 'overwrite',
+        message: `Overwrite ${file}?`,
+        default: false
+      }
+    ];
+
+    await inquirer.prompt(overwriting)
+      .then(answer => {
+        if (answer.overwrite) {
+          fs.removeSync(file);
+          overwriteContents.push(file);
+        }
+      });
+  }
+
+  return overwriteContents;
+}
+
+async function copyTempIntoDestination(tmpDir, destination, force) {
+  const boxContents = fs.readdirSync(tmpDir);
+  const destinationContents = fs.readdirSync(destination);
+
+  const newContents = boxContents.filter(
+    (filename) => !destinationContents.includes(filename)
+  );
+
+  const contentCollisions = boxContents.filter(
+    (filename) => destinationContents.includes(filename)
+  );
+
+  let shouldCopy;
+  if (force) {
+    shouldCopy = boxContents;
+  } else {
+    const overwriteContents = await promptOverwrites(contentCollisions);
+    shouldCopy = [...newContents, ...overwriteContents];
+  }
+
+  for (let file of shouldCopy) {
+    fs.copySync(`${tmpDir}/${file}`, `${destination}/${file}`);
+  }
 }
 
 function readBoxConfig(destination) {
@@ -140,7 +167,6 @@ function installBoxDependencies(boxConfig, destination) {
 }
 
 module.exports = {
-  checkDestination: checkDestination,
   verifyURL: verifyURL,
   setupTempDirectory: setupTempDirectory,
   fetchRepository: fetchRepository,

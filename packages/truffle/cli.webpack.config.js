@@ -30,7 +30,8 @@ module.exports = {
   devtool: 'source-map',
   module: {
     rules: [
-      { test: /\.js$/, use: "shebang-loader" }
+      { test: /\.js$/, use: "shebang-loader" },
+      { test: /rx\.lite\.aggregates\.js/, use: 'imports-loader?define=>false' }
     ]
   },
   externals: [
