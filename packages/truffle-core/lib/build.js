@@ -81,15 +81,9 @@ var Build = {
     // Duplicate build directory for legacy purposes
     options.destination_directory = options.build_directory;
 
-    // No builder specified. Ignore the build then.
     if (typeof builder == "undefined") {
-      if (options.quiet != true) {
-        return callback(new BuildError("No build configuration specified. Can't build."));
-      }
-      return callback();
-    }
-
-    if (typeof builder == "string") {
+      logger.log("No build configuration specified.")
+    } else if (typeof builder == "string") {
       builder = new CommandBuilder(builder);
     } else if (typeof builder !== "function") {
       if (builder.build == null) {
@@ -115,15 +109,17 @@ var Build = {
       Contracts.compile(options, function(err) {
         if (err) return callback(err);
 
-        builder.build(options, function(err) {
-          if (!err) return callback();
-
-          if (typeof err == "string") {
-            err = new BuildError(err);
-          }
-
-          callback(err);
-        });
+        if (builder) {
+          builder.build(options, function(err) {
+            if (!err) {
+              return callback();
+            } else if (typeof err === "string") {
+              err = new BuildError(err);
+            }
+            return callback(err);
+          });
+        }
+        return callback();
       });
     });
   },
