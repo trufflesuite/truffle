@@ -13,7 +13,7 @@
     "request": "^2.85.0",
     "request-promise": "^4.2.2",
     "require-from-string": "^2.0.2",
-    "solc": "0.4.24",
+    "solc": "0.4.25",
     "truffle-config": "^1.1.0-beta.0",
     "truffle-contract-sources": "^0.1.0-beta.0",
     "truffle-error": "^0.0.3",
