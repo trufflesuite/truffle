@@ -21,7 +21,7 @@ describe("truffle build", () => {
     it("whines about having no build config", function(done) {
       CommandRunner.run("build", config, (error) => {
         const output = logger.contents();
-        assert(output.includes("No build configuration specified."));
+        assert(output.includes("No build configuration found."));
         done();
       });
     });

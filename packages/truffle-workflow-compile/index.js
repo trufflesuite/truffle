@@ -70,7 +70,7 @@ var Contracts = {
     const compilers = (config.compiler)
       ? [config.compiler]
       : Object.keys(config.compilers);
-
+      
     // convert to promise to compile+write
     const compilations = compilers.map(async (compiler) => {
       const compile = SUPPORTED_COMPILERS[compiler];
