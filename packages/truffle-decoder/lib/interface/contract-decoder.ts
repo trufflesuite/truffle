@@ -252,7 +252,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   public decodeTransaction(transaction: Transaction): any {
-    const decodedData = abiDecoder.decodeData(transaction.input);
+    const decodedData = abiDecoder.decodeMethod(transaction.input);
 
     return decodedData;
   }
