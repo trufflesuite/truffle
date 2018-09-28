@@ -123,6 +123,7 @@ var command = {
         function printFile() {
           var message = "";
 
+          debug("about to determine sourcePath");
           var sourcePath = session.view(solidity.current.source).sourcePath;
 
           if (sourcePath) {
@@ -496,28 +497,47 @@ var command = {
             cmd = lastCommand;
           }
 
-          // Perform commands that require state changes.
-          switch (cmd) {
-            case "o":
-              session.stepOver();
-              break;
-            case "i":
-              session.stepInto();
-              break;
-            case "u":
-              session.stepOut();
-              break;
-            case "n":
-              session.stepNext();
-              break;
-            case ";":
-              session.advance();
-              break;
-            case "c":
-              session.continueUntilBreakpoint();
-              break;
-            case "q":
+          //quit if that's what we were given
+          if(cmd === "q")
+          {
               return repl.stop(callback);
+          }
+
+          // If not finished, perform commands that require state changes
+          // (other than quitting)
+          if(!session.finished)
+          {
+            switch (cmd) {
+              case "o":
+                session.stepOver();
+                break;
+              case "i":
+                session.stepInto();
+                break;
+              case "u":
+                session.stepOut();
+                break;
+              case "n":
+                session.stepNext();
+                break;
+              case ";":
+                session.advance();
+                break;
+              case "c":
+                session.continueUntilBreakpoint();
+                break;
+            }
+          }
+          else //otherwise, inform the user we can't do that
+          {  switch (cmd) {
+              case "o":
+              case "i":
+              case "u":
+              case "n":
+              case ";":
+              case "c":
+                config.logger.log("Transaction has finished; cannot advance.");
+            }
           }
 
           // Check if execution has stopped.
@@ -530,7 +550,6 @@ var command = {
             } else {
               config.logger.log("Transaction completed successfully.");
             }
-            return repl.stop(callback);
           }
 
           // Perform post printing
@@ -597,8 +616,11 @@ var command = {
 
         printAddressesAffected();
         printHelp();
+        debug("Help printed");
         printFile();
+        debug("File printed");
         printState();
+        debug("State printed");
 
         var repl = options.repl || new ReplManager(config);
 

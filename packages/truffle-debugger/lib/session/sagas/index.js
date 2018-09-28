@@ -49,14 +49,6 @@ export function *saga () {
     debug("readying");
     // signal that stepping can begin
     yield *ready();
-
-    debug("waiting for trace EOT");
-    // wait until trace hits EOT
-    yield *trace.wait();
-
-    debug("finishing");
-    // finish
-    yield put(actions.finish());
   }
 
   debug("stopping listeners");
