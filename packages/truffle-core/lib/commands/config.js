@@ -1,7 +1,8 @@
-
 const Configstore = require('configstore');
 const userConfig = new Configstore('truffle', {}, { globalConfigPath: true });
 const inquirer = require('inquirer');
+const nanoid = require('nanoid');
+
 const analyticsInquiry = [
   {
     type : "list",
@@ -59,45 +60,59 @@ const command = {
   },
   setAnalytics: function (analyticsBool) {
     if(analyticsBool === true) {
-      // userConfig.set({
-        // 'uniqueId': 1,
-      //   'analyticsMessageShown': true, 
-      //   'analyticsMessageDateTime': Date.now(),
-      //   'enableAnalytics': true
-      // });
+      if(!userConfig.get('uniqueId')) {
+        let userId = nanoid.nanoid();
+        userConfig.set({ 'uniqueId': userId });
+      } 
       userConfig.set({ 'enableAnalytics': true });
       userConfig.set({ 'analyticsSet': true });
+      userConfig.set({ 'analyticsMessageDateTime': Date.now() });
     } else {
       userConfig.set({ 'enableAnalytics': false });
       userConfig.set({ 'analyticsSet': true });
+      userConfig.set({ 'analyticsMessageDateTime': Date.now() });
     }
   },
   setUserConfigViaPrompt: async function(){
-    // make sure this is general enough so additional config options can be set
-    // do we need isTTY check since the user affirmatively got here?
       if(!userConfig.get('analyticsSet') && process.stdin.isTTY === true) {
         await inquirer.prompt(analyticsInquiry)
         .then(async answer => {
           if(answer.analyticsInquiry === analyticsInquiry[0].choices[0]) {
-            userConfig.set({'enableAnalytics': true});
-            userConfig.set({'analyticsSet': true});
+            userConfig.set({ 'enableAnalytics': true });
+            userConfig.set({ 'analyticsSet': true });
+            userConfig.set({ 'analyticsMessageDateTime': Date.now() });
           } else {
-            userConfig.set({'enableAnalytics': false});
-            userConfig.set({'analyticsSet': true});
+            userConfig.set({ 'enableAnalytics': false });
+            userConfig.set({ 'analyticsSet': true });
+            userConfig.set({ 'analyticsMessageDateTime': Date.now() });
           }
         });
-      } else if (userConfig.get('analyticsSet') && userConfig.get(enableAnalytics)) {
+      } else if (userConfig.get('analyticsSet') && userConfig.get('enableAnalytics')) {
         await inquirer.prompt(analyticsDisable)
         .then(async answer => {
           if(answer.analyticsDisable) {
-            userConfig.set({'enableAnalytics': false});
-            userConfig.set({'analyticsSet': true});
+            userConfig.set({ 'enableAnalytics': false });
+            userConfig.set({ 'analyticsSet': true });
+            userConfig.set({ 'analyticsMessageDateTime': Date.now() });  
           } else {
-            userConfig.set({'enableAnalytics': true});
-            userConfig.set({'analyticsSet': true});
+            userConfig.set({ 'enableAnalytics': true });
+            userConfig.set({ 'analyticsSet': true });
+            userConfig.set({ 'analyticsMessageDateTime': Date.now() });
           }
         });
-        // add prompt here for changing current setting
+      } else if(userConfig.get('analyticsSet') && !userConfig.get('enableAnalytics')) {
+        await inquirer.prompt(analyticsEnable)
+        .then(async answer => {
+          if(answer.analyticsEnable) {
+            userConfig.set({ 'enableAnalytics': false });
+            userConfig.set({ 'analyticsSet': true });
+            userConfig.set({ 'analyticsMessageDateTime': Date.now() });
+          } else {
+            userConfig.set({ 'enableAnalytics': true });
+            userConfig.set({ 'analyticsSet': true });
+            userConfig.set({ 'analyticsMessageDateTime': Date.now() });
+          }
+        });
       }
   }
 }
