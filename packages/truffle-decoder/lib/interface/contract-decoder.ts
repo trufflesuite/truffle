@@ -7,7 +7,7 @@ import * as references from "../allocate/references";
 import { StoragePointer } from "../types/pointer";
 import decode from "../decode";
 import { Definition as DefinitionUtils, EVM, Allocation, AstDefinition } from "truffle-decode-utils";
-import { BlockType } from "web3/eth/types";
+import { BlockType, Transaction } from "web3/eth/types";
 import { EventLog, Log } from "web3/types";
 import abiDecoder from "abi-decoder";
 
@@ -249,6 +249,12 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   public unwatchMappingKeys(mappingId: number, keys: (number | BN | string)[]): void {
     //
+  }
+
+  public decodeTransaction(transaction: Transaction): any {
+    const decodedData = abiDecoder.decodeData(transaction.input);
+
+    return decodedData;
   }
 
   public decodeLog(log: Log): any {
