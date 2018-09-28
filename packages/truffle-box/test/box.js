@@ -3,7 +3,6 @@ const fs = require("fs-extra");
 const assert = require("assert");
 const inquirer = require("inquirer");
 const sinon = require("sinon");
-const stdin = require("mock-stdin").stdin();
 const Box = require("../");
 const TRUFFLE_BOX_DEFAULT = "git@github.com:trufflesuite/truffle-init-default.git";
 
