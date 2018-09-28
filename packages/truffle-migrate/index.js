@@ -224,6 +224,19 @@ var Migrate = {
 
           callback(err, result);
         });
+      },
+      getAddress: function() {
+        var result = "";
+
+        if (provider.getAddress === undefined) return result;
+
+        if (arguments.length === 1) {
+          result = provider.getAddress(arguments[0]);
+        } else {
+          result = provider.getAddress();
+        }
+
+        return result;
       }
     };
   },
