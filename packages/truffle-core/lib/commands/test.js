@@ -133,6 +133,8 @@ var command = {
           if (err) return done(err);
 
           async.eachSeries(depConfigs, function(config, callback) {
+            // HACK: Copy network_id from rootConfig since config is a vanilla object here?
+            config.network_id = rootConfig.network_id;
 
             // Copy all the built files over to a temporary directory, because we
             // don't want to save any tests artifacts. Only do this if the build directory
