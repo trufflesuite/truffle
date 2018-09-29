@@ -34,7 +34,7 @@ describe("NPM dependencies", function() {
   before(async function() {
     this.timeout(10000);
     config = await sandbox.create(project)
-    config.network = "development";
+    config.network = "testchain";
     config.logger = logger;
     config.mocha = {
       reporter: new Reporter(logger)
@@ -62,7 +62,7 @@ describe("NPM dependencies", function() {
   it("will do a dry run migration", function(done) {
     this.timeout(50000);
 
-    CommandRunner.run("migrate --dry-run", config, function(err) {
+    CommandRunner.run("migrate --network testchain --dry-run", config, function(err) {
       var output = logger.contents();
       processErr(err, output);
 
@@ -118,7 +118,7 @@ describe("NPM dependencies", function() {
   it("will migrate", function(done) {
     this.timeout(70000);
 
-    CommandRunner.run("migrate", config, function(err) {
+    CommandRunner.run("migrate --network testchain", config, function(err) {
       var output = logger.contents();
       processErr(err, output);
 
