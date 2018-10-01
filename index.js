@@ -17,7 +17,7 @@ var singletonNonceSubProvider = new NonceSubProvider();
 
 function HDWalletProvider(
   mnemonic,
-  provider_url,
+  provider,
   address_index=0,
   num_addresses=1,
   shareNonce=true
@@ -61,7 +61,11 @@ function HDWalletProvider(
     : this.engine.addProvider(singletonNonceSubProvider);
 
   this.engine.addProvider(new FiltersSubprovider());
-  this.engine.addProvider(new ProviderSubprovider(new Web3.providers.HttpProvider(provider_url)));
+  if (typeof provider === 'string') {
+    this.engine.addProvider(new ProviderSubprovider(new Web3.providers.HttpProvider(provider)));
+  } else {
+    this.engine.addProvider(new ProviderSubprovider(provider));
+  }
   this.engine.start(); // Required by the provider engine.
 };
 

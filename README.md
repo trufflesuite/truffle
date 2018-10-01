@@ -32,7 +32,7 @@ Parameters:
 | Parameter | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
 | mnemonic | *string* | null | <required> 12 word mnemonic which addresses are created from. |
-| provider_uri | *string* | null | <required> URI of Ethereum client to send all other non-transaction-related Web3 requests |
+| provider | *string* / *object* | null | <required> URI or Ethereum client to send all other non-transaction-related Web3 requests |
 | address_index | *number* | 0 | <optional> If specified, will tell the provider to manage the address at the index specified |
 | num_addresses | *number* | 1 | <optional> If specified, will create `number` addresses when instantiated |
 | shareNonce | *boolean* | true | <optional> If false, a new WalletProvider will track its own nonce-state |
