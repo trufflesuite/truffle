@@ -1,6 +1,6 @@
 require('./src/monkeyPatches.js');
 
-const debug = require('debug')('SethProvider')
+const rpcDebug = require('debug')('SethProvider:RPC')
 const ProviderEngine = require('web3-provider-engine');
 const VmSubprovider = require('./src/subproviders/vm');
 const RpcSubprovider = require('web3-provider-engine/subproviders/rpc.js');
@@ -28,9 +28,9 @@ class SethProvider {
   send(req, callback) {
     req = this._cleanUpHex(req);
 
-    debug('> ' + JSON.stringify(req, null, 2).split('\n').join('\n> '));
+    rpcDebug('> ' + JSON.stringify(req, null, 2).split('\n').join('\n> '));
     this.engine.sendAsync(req, (err, res) => {
-      debug('< ' + JSON.stringify(res, null, 2).split('\n').join('\n< '));
+      rpcDebug('< ' + JSON.stringify(res, null, 2).split('\n').join('\n< '));
       callback(err, res);
     });
   }

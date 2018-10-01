@@ -65,3 +65,14 @@ node: {
    fs: "empty"
 }
 ```
+
+### Troubleshooting
+
+#### Printing RPC requests and responses
+This module makes use of the `debug` module to print RPC requests and responses. The debug module key for this module is `SethProvider`.
+
+To enable RPC request/response output on the command line, ensure your `DEBUG` environment variable contains `SethProvider:RPC`.
+
+To enable RPC request/response output in the browser, open your debugging console and run `localStorage.debug = 'SethProvider:RPC'` and refresh the page.
+
+For more on how to use the `debug` module, see the [Usage section in the debug module's README](https://github.com/visionmedia/debug/blob/master/README.md#usage).
