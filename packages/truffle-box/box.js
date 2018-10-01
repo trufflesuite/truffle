@@ -2,7 +2,9 @@ var utils = require("./lib/utils");
 var tmp = require("tmp");
 var path = require("path");
 
-var Config = require("truffle-config");
+const Config = require("truffle-config");
+const ua = require('universal-analytics');
+const userConfig = Config.getUserConfig();
 
 var Box = {
   unbox: function(url, destination, options) {
@@ -14,6 +16,14 @@ var Box = {
     }
 
     return Promise.resolve()
+      .then(()=> {
+        if(userConfig.get("enableAnalytics")) {
+          let visitor = ua("UA-83874933-6");
+          let userId = userConfig.get("uniqueId");
+          visitor.set("uid", userId);
+          visitor.event({ec:"Usage", ea: "Initialized truffle", el: "New Project"}).send();
+        }
+      })  
       .then(() => {
         options.logger.log("Downloading...");
         return utils.downloadBox(url, destination, downloadBoxOptions)
