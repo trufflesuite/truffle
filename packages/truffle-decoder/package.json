@@ -43,7 +43,7 @@
     "bn.js": "^4.11.8",
     "lodash.clonedeep": "^4.5.0",
     "lodash.merge": "^4.6.1",
-    "truffle-decode-utils": "^1.0.0-beta.1",
+    "truffle-decode-utils": "^1.0.0-beta.2",
     "web3": "^1.0.0-beta.36"
   }
 }
