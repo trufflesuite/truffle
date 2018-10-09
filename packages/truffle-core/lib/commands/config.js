@@ -48,10 +48,9 @@ const command = {
   },
   builder: {},
   run: function (options, callback) {
-    const selectedOption = JSON.stringify(options);
-    if(selectedOption.enableAnalytics) {
+    if(options.enableAnalytics) {
       this.setAnalytics(true);
-    } else if (selectedOption.disableAnalytics){
+    } else if (options.disableAnalytics){
       this.setAnalytics(false);
     } else {
       this.setUserConfigViaPrompt();
@@ -61,7 +60,7 @@ const command = {
   setAnalytics: function (analyticsBool) {
     if(analyticsBool === true) {
       if(!userConfig.get('uniqueId')) {
-        let userId = nanoid.nanoid();
+        let userId = nanoid();
         userConfig.set({ 'uniqueId': userId });
       } 
       userConfig.set({ 'enableAnalytics': true });
