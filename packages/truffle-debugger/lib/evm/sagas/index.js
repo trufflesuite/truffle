@@ -14,26 +14,37 @@ import evm from "../selectors";
  *
  * @return {string} ID (0x-prefixed keccak of binary)
  */
-export function *addContext(contractName, binary) {
-  yield put(actions.addContext(contractName, binary));
+export function *addContext(contractName, { address, binary }) {
+  const raw = binary || address;
+  const context = keccak256(raw);
 
-  return keccak256(binary);
+  yield put(actions.addContext(contractName, raw));
+
+  if (binary) {
+    yield put(actions.addBinary(context, binary));
+  }
+
+  return context;
 }
 
 /**
  * Adds known deployed instance of binary at address
  *
+ * @param {string} binary - may be undefined (e.g. precompiles)
  * @return {string} ID (0x-prefixed keccak of binary)
  */
 export function *addInstance(address, binary) {
   let search = yield select(evm.info.binaries.search);
-  if (binary != "0x0") {
-    let { context } = search(binary);
+  let { context } = search(binary);
 
-    yield put(actions.addInstance(address, context, binary));
-
-    return context;
+  // in case binary is unknown, add context for address
+  if (!context) {
+    context = yield *addContext(undefined, { address });
   }
+
+  yield put(actions.addInstance(address, context, binary));
+
+  return context;
 }
 
 export function* begin({ address, binary }) {
