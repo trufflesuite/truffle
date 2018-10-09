@@ -56,13 +56,32 @@ export function* begin({ address, binary }) {
 }
 
 export function* callstackSaga () {
+  let contexts;
+  let instances;
+
   while (true) {
     yield take(TICK);
-    debug("got TICK");
+
+    // HACK contexts and instances won't be available until after first TICK
+    if (!contexts) {
+      contexts = yield select(evm.info.contexts);
+      instances = yield select(evm.info.instances);
+    }
 
     if (yield select(evm.current.step.isCall)) {
       debug("got call");
       let address = yield select(evm.current.step.callAddress);
+
+      // HACK
+      // if there is no binary (e.g. in the case of precompiled contracts),
+      // then there will be no trace steps for the called code, and so we
+      // shouldn't tell the debugger that we're entering another execution
+      // context
+      let { context } = instances[address] || {};
+      let { binary } = contexts[context] || {};
+      if (!binary) {
+        continue;
+      }
 
       yield put(actions.call(address));
 
