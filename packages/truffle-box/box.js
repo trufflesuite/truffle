@@ -2,11 +2,13 @@ var utils = require("./lib/utils");
 var tmp = require("tmp");
 var path = require("path");
 
+var Config = require("truffle-config");
 const googleAnalytics = require("truffle-core/lib/services/google-analytics");
 
 var Box = {
   unbox: function(url, destination, options) {
     options = options || {};
+    options.logger = options.logger || { log: () => {} };
   
     const downloadBoxOptions = {
       force: options.force,
