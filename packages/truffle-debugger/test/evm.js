@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("test:solidity");
+const debug = debugModule("test:evm");
 
 import { assert } from "chai";
 
