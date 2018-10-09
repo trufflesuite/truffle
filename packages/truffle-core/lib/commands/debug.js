@@ -46,7 +46,7 @@ var command = {
       if (err) return done(err);
 
       if (config._.length == 0) {
-        return callback(new Error(
+        return done(new Error(
           "Please specify a transaction hash as the first parameter in order to " +
           "debug that transaction. i.e., truffle debug 0x1234..."
         ));
