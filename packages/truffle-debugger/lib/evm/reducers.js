@@ -14,27 +14,55 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
      * Adding a new context
      */
     case actions.ADD_CONTEXT:
-      let { contractName, binary } = action;
+      const addContext = ({ contractName, raw }) => {
+        let context = keccak256(raw);
 
-      if (state.byBinary[binary]) {
-        return state;
+        return {
+          ...state,
+
+          byContext: {
+            ...state.byContext,
+
+            [context]: {
+              ...(state.byContext[context] || {}),
+
+              contractName, context
+            }
+          },
+        };
       }
 
-      let context = keccak256(binary);
+      return addContext(action);
 
-      return {
-        byContext: {
-          ...state.byContext,
-
-          [context]: { context, binary, contractName }
-        },
-
-        byBinary: {
-          ...state.byBinary,
-
-          [binary]: { context: context }
+    /*
+     * Adding binary for a context
+     */
+    case actions.ADD_BINARY:
+      const addBinary = ({ context, binary }) => {
+        if (state.byBinary[binary]) {
+          return state;
         }
-      };
+
+        return {
+          byContext: {
+            ...state.byContext,
+
+            [context]: {
+              ...state.byContext[context],
+
+              binary
+            }
+          },
+
+          byBinary: {
+            ...state.byBinary,
+
+            [binary]: { context: context }
+          }
+        };
+      }
+
+      return addBinary(action);
 
     /*
      * Default case
