@@ -2,27 +2,19 @@ var utils = require("./lib/utils");
 var tmp = require("tmp");
 var path = require("path");
 
-const Config = require("truffle-config");
-const ua = require('universal-analytics');
-const userConfig = Config.getUserConfig();
+const googleAnalytics = require("truffle-core/lib/services/google-analytics");
 
 var Box = {
   unbox: function(url, destination, options) {
     options = options || {};
-    options.logger = options.logger || { log: () => {} };
-
+  
     const downloadBoxOptions = {
       force: options.force,
     }
 
     return Promise.resolve()
       .then(()=> {
-        if(userConfig.get("enableAnalytics")) {
-          let visitor = ua("UA-83874933-6");
-          let userId = userConfig.get("uniqueId");
-          visitor.set("uid", userId);
-          visitor.event({ec:"Usage", ea: "Initialized truffle", el: "New Project"}).send();
-        }
+        googleAnalytics.sendAnalyticsEvent("initialization", "initialize project", "box or bare installation", 0);
       })  
       .then(() => {
         options.logger.log("Downloading...");
