@@ -1,35 +1,3 @@
-const Configstore = require('configstore');
-const userConfig = new Configstore('truffle', {}, { globalConfigPath: true });
-const inquirer = require('inquirer');
-const nanoid = require('nanoid');
-
-const analyticsInquiry = [
-  {
-    type : "list",
-    name : "analyticsInquiry",
-    message : "Would you like to enable analytics for your Truffle projects? Doing so will allow us to make sure Truffle is working as expected and address any bugs more efficiently.",
-    choices: ["Yes, enable analytics",
-     "No, do not enable analytics"],
-  }
-];
-const analyticsDisable = [
-  {
-    type: "confirm",
-    name: "analyticsDisable",
-    message: "Analytics are currently enabled. Would you like to disable them?",
-    default: false
-  }
-];
-const analyticsEnable = [
-   {
-    type: 'confirm',
-    name: 'analyticsEnable',
-    message: "Analytics are currently disabled. Would you like to enable them?",
-    default: false
-  }
-];
-
-
 const command = {
   command: "config",
   description: "set user-level configuration options",
@@ -47,17 +15,12 @@ const command = {
     ]
   },
   builder: {},
-  run: function (options, callback) {
-    if(options.enableAnalytics) {
-      this.setAnalytics(true);
-    } else if (options.disableAnalytics){
-      this.setAnalytics(false);
-    } else {
-      this.setUserConfigViaPrompt();
-    }
-   
-  },
-  setAnalytics: function (analyticsBool) {
+  /**
+  * set user-level options for analytics
+  * @param {bool} analyticsBool
+  * @param {Object} userConfig
+  */
+  setAnalytics: function (analyticsBool, userConfig) {
     if(analyticsBool === true) {
       if(!userConfig.get('uniqueId')) {
         let userId = nanoid();
@@ -72,7 +35,11 @@ const command = {
       userConfig.set({ 'analyticsMessageDateTime': Date.now() });
     }
   },
-  setUserConfigViaPrompt: async function(){
+  /**
+  * prompt user to determine values for user-level analytics config options
+  * @param {Object} userConfig
+  */
+  setUserConfigViaPrompt: async function(userConfig){
       if(!userConfig.get('analyticsSet') && process.stdin.isTTY === true) {
         await inquirer.prompt(analyticsInquiry)
         .then(async answer => {
@@ -113,6 +80,53 @@ const command = {
           }
         });
       }
+  },
+  /**
+  * run config commands to set user-level config settings
+  * @param {Object} options
+  * @param {Func} callback
+  */
+  run: function (options, callback) {
+    const Configstore = require('configstore');
+    const userConfig = new Configstore('truffle', {}, { globalConfigPath: true });
+    const inquirer = require('inquirer');
+    const nanoid = require('nanoid');
+
+    const analyticsInquiry = [
+      {
+        type : "list",
+        name : "analyticsInquiry",
+        message : "Would you like to enable analytics for your Truffle projects? Doing so will allow us to make sure Truffle is working as expected and address any bugs more efficiently.",
+        choices: ["Yes, enable analytics",
+         "No, do not enable analytics"],
+      }
+    ];
+    const analyticsDisable = [
+      {
+        type: "confirm",
+        name: "analyticsDisable",
+        message: "Analytics are currently enabled. Would you like to disable them?",
+        default: false
+      }
+    ];
+    const analyticsEnable = [
+       {
+        type: 'confirm',
+        name: 'analyticsEnable',
+        message: "Analytics are currently disabled. Would you like to enable them?",
+        default: false
+      }
+    ];
+
+
+    if(options.enableAnalytics) {
+      this.setAnalytics(true, userConfig);
+    } else if (options.disableAnalytics){
+      this.setAnalytics(false, userConfig);
+    } else {
+      this.setUserConfigViaPrompt();
+    }
+   
   }
 }
 

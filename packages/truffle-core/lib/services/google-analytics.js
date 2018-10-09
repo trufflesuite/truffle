@@ -1,13 +1,14 @@
-// import ua from 'universal-analytics'
 const Config = require("truffle-config");
-// const Command = require("./lib/command");
 const userConfig = Config.getUserConfig();
 const ua = require('universal-analytics');
 
 const truffleAnalyticsId = "UA-83874933-6"
-
+  
 const googleAnalytics = {
-
+  /**
+  * check user-level config to see if user has enabled analytics
+  * @returns {bool}
+  */
   checkIfAnalyticsEnabled: function() {
     if(userConfig.get("enableAnalytics")) {
       return true;
@@ -16,6 +17,10 @@ const googleAnalytics = {
     }
   },
 
+  /**
+  * set data that will be the same in future calls
+  * @returns {Object} visitor
+  */
   setPersistentAnalyticsData: function() {
     let visitor = false;
     if(this.checkIfAnalyticsEnabled() === true) {
@@ -26,10 +31,15 @@ const googleAnalytics = {
     }
   },
 
+  /**
+  * send event to Google Analytics
+  * @param {Object}
+  */
   sendAnalyticsEvent: function(eventObject) {
+    console.log('attempting');
     let visitor = this.setPersistentAnalyticsData();
     if(visitor) {
-      visitor.event({ec: category, ea: action, el: label}).send();
+      visitor.event(eventObject).send();
     }
   }
 }
