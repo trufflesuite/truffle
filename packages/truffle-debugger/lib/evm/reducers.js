@@ -93,7 +93,7 @@ function instances(state = DEFAULT_INSTANCES, action) {
         byAddress: {
           ...state.byAddress,
 
-          [address]: { context, binary }
+          [address]: { address, context, binary }
         },
 
         byContext: {
