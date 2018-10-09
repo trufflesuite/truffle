@@ -173,6 +173,8 @@ const evm = createSelectorTree({
             const { context } = results[0];
             return { context };
           }
+
+          return {};
         }
       )
     }
