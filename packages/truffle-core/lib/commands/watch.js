@@ -17,7 +17,6 @@ const command = {
 
     const watchPaths = [
       path.join(config.working_directory, "app/**/*"),
-      path.join(config.contracts_build_directory, "/**/*"),
       path.join(config.contracts_directory, "/**/*"),
       path.join(config.working_directory, "truffle-config.js"),
       path.join(config.working_directory, "truffle.js")
@@ -31,7 +30,7 @@ const command = {
     .on('all', (event, filePath) => {
       const displayPath = path.join("./", filePath.replace(config.working_directory, ""));
       config.logger.log(colors.cyan(">> File " + displayPath + " changed."));
-
+      
       build(config);
     });
 
