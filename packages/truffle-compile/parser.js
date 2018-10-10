@@ -78,7 +78,7 @@ module.exports = {
     var imports = errors.filter(function(solidity_error) {
       return solidity_error.message.indexOf(failingImportFileName) < 0;
     }).map(function(solidity_error) {
-      var matches = solidity_error.formattedMessage.match(/import[^'"]+("|')([^'"]+)("|');/);
+      var matches = solidity_error.formattedMessage.match(/import[^'"]+("|')([^'"]+)("|')/);
 
       // Return the item between the quotes.
       return matches[2];
