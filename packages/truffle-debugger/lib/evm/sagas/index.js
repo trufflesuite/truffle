@@ -62,7 +62,11 @@ export function* callstackSaga () {
   while (true) {
     yield take(TICK);
 
-    // HACK contexts and instances won't be available until after first TICK
+    // contexts and instances never change, so only capture them the first time
+    //
+    // HACK these selectors are available before TICK, i.e., they're available
+    // after session.READY, but there's no existing hookup for other sagas to
+    // wait for READY.
     if (!contexts) {
       contexts = yield select(evm.info.contexts);
       instances = yield select(evm.info.instances);
