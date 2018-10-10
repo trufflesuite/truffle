@@ -26,6 +26,22 @@ export function slotAddress(slot: DecodeUtils.Allocation.Slot): BN {
   }
 }
 
+export function slotAddressPrintout(slot: DecodeUtils.Allocation.Slot): string {
+  if (typeof slot.key !== "undefined" && typeof slot.path !== "undefined") {
+    // mapping reference
+    return "keccak(" + slot.key + ", " + slotAddressPrintout(slot.path) + ") + " + slot.offset.toString();
+  }
+  else if (typeof slot.path !== "undefined") {
+    return slotAddressPrintout(slot.path) + " + " + slot.offset.toString();
+  }
+  else if (slot.hashOffset === true) {
+    return "keccak(" + slot.offset.toString() + ")";
+  }
+  else {
+    return slot.offset.toString();
+  }
+}
+
 /**
  * read slot from storage
  *
@@ -34,6 +50,7 @@ export function slotAddress(slot: DecodeUtils.Allocation.Slot): BN {
  */
 export async function read(storage: any, slot: DecodeUtils.Allocation.Slot, web3?: Web3, contractAddress?: string): Promise<Uint8Array> {
   const address = slotAddress(slot);
+  console.log("Slot printout: " + slotAddressPrintout(slot));
 
   // debug("reading slot: %o", DecodeUtils.toHexString(address));
 

@@ -10,6 +10,8 @@ import { EvmInfo } from "../types/evm";
 import Web3 from "web3";
 
 export default async function decode(definition: AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<any> {
+  console.log("Decoding " + definition.name);
+
   if (isLiteralPointer(pointer)) {
     return await decodeValue(definition, pointer, info, web3, contractAddress);
   }
