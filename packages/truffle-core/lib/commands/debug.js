@@ -38,6 +38,7 @@ var command = {
     var trace = selectors.trace;
     var solidity = selectors.solidity;
     var evm = selectors.evm;
+    var controller = selectors.controller;
 
     var config = Config.detect(options);
 
@@ -45,7 +46,7 @@ var command = {
       if (err) return done(err);
 
       if (config._.length == 0) {
-        return callback(new Error(
+        return done(new Error(
           "Please specify a transaction hash as the first parameter in order to " +
           "debug that transaction. i.e., truffle debug 0x1234..."
         ));
@@ -187,7 +188,9 @@ var command = {
         };
 
         function printWatchExpressions() {
-          if (enabledExpressions.size == 0) {
+          let source = session.view(solidity.current.source);
+
+          if (enabledExpressions.size === 0) {
             config.logger.log("No watch expressions added.");
             return;
           }
@@ -196,7 +199,6 @@ var command = {
           enabledExpressions.forEach(function(expression) {
             config.logger.log("  " + expression);
           });
-          config.logger.log("");
         }
 
         function printWatchExpressionsResults() {
@@ -303,46 +305,188 @@ var command = {
           }
         }
 
-        function toggleBreakpoint() {
-          var currentCall = session.view(evm.current.call);
-          var currentNode = session.view(ast.current.node).id;
+        function setOrClearBreakpoint(args,setOrClear) {
+          //setOrClear: true for set, false for clear
+          var currentLocation = session.view(controller.current.location);
+          var breakpoints = session.view(controller.breakpoints);
 
-          // Try to find the breakpoint in the list
-          var found = false;
-          for (var index = 0; index < breakpoints.length; index++) {
-            var breakpoint = breakpoints[index];
+          var currentNode = currentLocation.node.id;
+          var currentLine = currentLocation.sourceRange.lines.start.line;
+          var currentSourceId = currentLocation.source.id;
 
-            if (_.isEqual(currentCall, breakpoint.call) && currentNode == breakpoint.node) {
-              found = true;
-              // Remove the breakpoint
-              breakpoints.splice(index, 1);
-              break;
+          var sourceName; //to be used if a source is entered
+
+          var breakpoint = {};
+
+          debug("args %O",args);
+
+          if(args.length === 0) //no arguments, want currrent node
+          {
+            debug("node case");
+            breakpoint.node = currentNode;
+            breakpoint.line = currentLine;
+            breakpoint.sourceId = currentSourceId;
+          }
+
+          //if the argument starts with a "+" or "-", we have a relative
+          //line number
+          else if(args[0][0] === "+" || args[0][0] === "-")
+          {
+            debug("relative case");
+            let delta = parseInt(args[0],10); //want an integer
+            debug("delta %d",delta);
+
+            if(isNaN(delta))
+            {
+              config.logger.log("Offset must be an integer.\n");
+              return;
+            }
+
+            breakpoint.sourceId = currentSourceId;
+            breakpoint.line = currentLine + delta;
+          }
+
+          //if it contains a colon, it's in the form source:line
+          else if(args[0].includes(":"))
+          {
+            debug("source case")
+            let sourceArgs = args[0].split(":");
+            let sourceArg = sourceArgs[0];
+            let lineArg = sourceArgs[1];
+            debug("sourceArgs %O",sourceArgs);
+
+            //first let's get the line number as usual
+            let line = parseInt(lineArg,10); //want an integer
+            if(isNaN(line))
+            {
+              config.logger.log("Line number must be an integer.\n");
+              return;
+            }
+
+            //search sources for given string
+            let sources = session.view(solidity.info.sources);
+
+            //we will indeed need the sources here, not just IDs
+            let matchingSources = Object.values(sources)
+              .filter((source) => source.sourcePath.includes(sourceArg));
+
+            if(matchingSources.length === 0)
+            {
+              config.logger.log(`No source file found matching ${sourceArg}.\n`)
+              return;
+            }
+            else if(matchingSources.length > 1)
+            {
+              config.logger.log(`Multiple source files found matching ${sourceArg}.  Which did you mean?`)
+              matchingSources.forEach(
+                (source) => config.logger.log(source.sourcePath));
+              config.logger.log("");
+              return;
+            }
+
+            //otherwise, we found it!
+            sourceName = path.basename(matchingSources[0].sourcePath);
+            breakpoint.sourceId = matchingSources[0].id;
+            breakpoint.line = line-1; //adjust for zero-indexing!
+          }
+
+          //otherwise, it's a simple line number
+          else
+          {
+            debug("absolute case");
+            let line = parseInt(args[0],10); //want an integer
+            debug("line %d",line);
+
+            if(isNaN(line))
+            {
+              config.logger.log("Line number must be an integer.\n");
+              return;
+            }
+
+            breakpoint.sourceId = currentSourceId;
+            breakpoint.line = line-1; //adjust for zero-indexing!
+          }
+
+          //having constructed the breakpoint, here's now a user-readable
+          //message describing its location
+          let locationMessage;
+          if(breakpoint.node !== undefined)
+          {
+            locationMessage = `this point in line ${breakpoint.line+1}`;
+            //+1 to adjust for zero-indexing
+          }
+          else if(breakpoint.sourceId !== currentSourceId)
+          {
+            //note: we should only be in this case if a source was entered!
+            //if no source as entered and we are here, something is wrong
+            locationMessage = `line ${breakpoint.line+1} in ${sourceName}`;
+            //+1 to adjust for zero-indexing
+          }
+          else
+          {
+            locationMessage = `line ${breakpoint.line+1}`
+            //+1 to adjust for zero-indexing
+          }
+
+          //one last check -- does this breakpoint already exist?
+          let alreadyExists = breakpoints.filter(
+              (existingBreakpoint) =>
+              existingBreakpoint.sourceId === breakpoint.sourceId &&
+              existingBreakpoint.line === breakpoint.line &&
+              existingBreakpoint.node === breakpoint.node //may be undefined
+          ).length > 0;
+
+          //NOTE: in the "set breakpoint" case, the above check is somewhat
+          //redundant, as we're going to check again when we actually make the
+          //call to add or remove the breakpoint!  But we need to check here so
+          //that we can display the appropriate message.  Hopefully we can find
+          //some way to avoid this redundant check in the future.
+
+          //if it already exists and is being set, or doesn't and is being
+          //cleared, report back that we can't do that
+          if(setOrClear === alreadyExists)
+          {
+            if(setOrClear)
+            {
+              config.logger.log(`Breakpoint at ${locationMessage} already exists.\n`);
+              return;
+            }
+            else
+            {
+              config.logger.log(`No breakpoint at ${locationMessage} to remove.\n`);
+              return;
             }
           }
-
-          if (found) {
-            config.logger.log("Breakpoint removed.");
-            return;
+         
+          //finally, if we've reached this point, do it!
+          //also report back to the user on what happened
+          if(setOrClear)
+          {
+            session.addBreakpoint(breakpoint);
+            config.logger.log(`Breakpoint added at ${locationMessage}.\n`);
           }
-
-          // No breakpoint? Add it.
-          breakpoints.push({
-            call: currentCall,
-            node: currentNode
-          });
-
-          config.logger.log("Breakpoint added.");
+          else
+          {
+            session.removeBreakpoint(breakpoint);
+            config.logger.log(`Breakpoint removed at ${locationMessage}.\n`);
+          }
+          return;
         }
 
         function interpreter(cmd, replContext, filename, callback) {
           cmd = cmd.trim();
-          var cmdArgs;
+          var cmdArgs, splitArgs;
           debug("cmd %s", cmd);
 
           if (cmd == ".exit") {
             cmd = "q";
           }
 
+          //split arguments for commands that want that; split on runs of spaces
+          splitArgs=cmd.trim().split(/ +/).slice(1);
+          debug("splitArgs %O",splitArgs);
+
+          //warning: this bit *alters* cmd!
           if (cmd.length > 0) {
             cmdArgs = cmd.slice(1).trim();
             cmd = cmd[0];
@@ -370,7 +514,7 @@ var command = {
               session.advance();
               break;
             case "c":
-              session.continueUntil.apply(session, breakpoints);
+              session.continueUntilBreakpoint();
               break;
             case "q":
               return repl.stop(callback);
@@ -412,7 +556,10 @@ var command = {
               evalAndPrintExpression(cmdArgs);
               break;
             case "b":
-              toggleBreakpoint();
+              setOrClearBreakpoint(splitArgs,true);
+              break;
+            case "B":
+              setOrClearBreakpoint(splitArgs,false);
               break;
             case ";":
             case "p":

@@ -17,7 +17,7 @@ const CONTROL_SAGAS = {
   [actions.STEP_OVER]: stepOver,
   [actions.STEP_INTO]: stepInto,
   [actions.STEP_OUT]: stepOut,
-  [actions.CONTINUE_UNTIL]: continueUntil
+  [actions.CONTINUE]: continueUntilBreakpoint
 };
 
 /** AST node types that are skipped to filter out some noise */
@@ -191,33 +191,47 @@ function* stepOver () {
 }
 
 /**
- * continueUntil - step through execution until a breakpoint
- *
- * @param breakpoints - array of breakpoints ({ ...call, line })
+ * continueUntilBreakpoint - step through execution until a breakpoint
  */
-function *continueUntil ({breakpoints}) {
-  var currentCall;
-  var currentLocation;
+function *continueUntilBreakpoint () {
+  var currentLocation, currentNode, currentLine, currentSourceId;
+  var previousLine, previousSourceId;
+
+  let breakpoints = yield select(controller.breakpoints);
 
   let breakpointHit = false;
+
+  currentLocation = yield select(controller.current.location);
+  currentNode = currentLocation.node.id;
+  currentLine = currentLocation.sourceRange.lines.start.line;
+  currentSourceId = currentLocation.source.id;
 
   do {
     yield* stepNext();
 
-    currentCall = yield select(controller.current.executionContext);
+    previousLine = currentLine;
+    previousSourceId = currentSourceId;
+
     currentLocation = yield select(controller.current.location);
+    currentNode = currentLocation.node.id;
+    currentLine = currentLocation.sourceRange.lines.start.line;
+    currentSourceId = currentLocation.source.id;
 
     breakpointHit = breakpoints
-      .filter( ({address, binary, line, node}) =>
-        (
-          address == currentCall.address ||
-          binary == currentCall.binary
-        ) && (
-          line == currentLocation.sourceRange.lines.start.line ||
-          node == currentLocation.node.id
-        )
+      .filter( ({sourceId, line, node}) =>
+        {
+          if(node !== undefined)
+          {
+            debug("node %d currentNode %d",node,currentNode);
+            return sourceId === currentSourceId && node === currentNode;
+          }
+          //otherwise, we have a line-style breakpoint; we want to stop at the
+          //*first* point on the line
+          return sourceId === currentSourceId && line === currentLine
+          && (currentSourceId !== previousSourceId || currentLine !== previousLine);
+        }
       )
       .length > 0;
-
-  } while (!breakpointHit);
+    
+  } while(!breakpointHit);
 }
