@@ -4,7 +4,7 @@ const del = require("del");
 const fs = require("fs");
 const Contracts = require("truffle-workflow-compile");
 const BuildError = require("./errors/builderror");
-const child_process = require("child_process");
+const { spawn } = require("child_process");
 const spawnargs = require("spawn-args");
 const _ = require("lodash");
 const expect = require("truffle-expect");
@@ -20,7 +20,7 @@ CommandBuilder.prototype.build = function(options, callback) {
   const args = spawnargs(this.command);
   const ps = args.shift();
 
-  const cmd = child_process.spawn(ps, args, {
+  const cmd = spawn(ps, args, {
     detached: false,
     cwd: options.working_directory,
     env: _.merge(process.env, {

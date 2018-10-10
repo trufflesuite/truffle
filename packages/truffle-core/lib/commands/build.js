@@ -10,7 +10,7 @@ const command = {
     const Config = require("truffle-config");
     const Build = require("../build");
     const config = Config.detect(options);
-    
+
     Build.build(config, done);
   }
 }
