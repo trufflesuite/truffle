@@ -15,11 +15,11 @@ export function slotAddress(slot: DecodeUtils.Allocation.Slot): BN {
     // mapping reference
     return DecodeUtils.EVM.keccak256(slot.key, slotAddress(slot.path)).add(slot.offset);
   }
-  else if (slot.hashOffset === true) {
-    return DecodeUtils.EVM.keccak256(slot.offset);
-  }
   else if (typeof slot.path !== "undefined") {
     return slotAddress(slot.path).add(slot.offset);
+  }
+  else if (slot.hashOffset === true) {
+    return DecodeUtils.EVM.keccak256(slot.offset);
   }
   else {
     return slot.offset;

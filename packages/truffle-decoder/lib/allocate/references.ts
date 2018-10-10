@@ -59,7 +59,6 @@ export function allocateDefinition(node: any, state: ContractStateInfo, referenc
 
   if (typeof path !== "undefined") {
     slot.path = cloneDeep(path);
-    slot.offset = new BN(0);
   }
 
   if (DecodeUtils.Definition.typeClass(node) != "struct") {
@@ -88,24 +87,32 @@ export function allocateDefinition(node: any, state: ContractStateInfo, referenc
         slot: structSlotAllocation
       };
 
-      for (let l = 0; l < structDefinition.members.length; l++) {
-        const memberNode = structDefinition.members[l];
-        state.variables[node.id] = <ContractStateVariable>{
-          isChildVariable,
-          definition: node,
-          pointer: <StoragePointer>{
-            storage: {
-              from: {
-                slot: slot,
-                index: 0
-              },
-              to: {
-                slot: slot,
-                index: 0
-              }
+      if (state.slot.index > 0) {
+        // structs need to start on their own  slowt
+        state.slot.index = 0;
+        state.slot.offset = state.slot.offset.addn(1);
+        slot.offset = slot.offset.addn(1);
+      }
+
+      state.variables[node.id] = <ContractStateVariable>{
+        isChildVariable,
+        definition: node,
+        pointer: <StoragePointer>{
+          storage: {
+            from: {
+              slot: slot,
+              index: 0
+            },
+            to: {
+              slot: slot,
+              index: 0
             }
           }
-        };
+        }
+      };
+
+      for (let l = 0; l < structDefinition.members.length; l++) {
+        const memberNode = structDefinition.members[l];
         allocateDefinition(memberNode, structContractState, referenceDeclarations, slot, true);
       }
 

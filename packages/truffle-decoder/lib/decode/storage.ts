@@ -49,7 +49,10 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       }
 
       let from = {
-        slot: pointer.storage.from.slot,
+        slot: {
+          ...pointer.storage.from.slot,
+          hashOffset: true
+        },
         index: pointer.storage.from.index
       };
 
@@ -58,8 +61,8 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       .map( (i) => {
         let childFrom: Allocation.StorageReference = {
           slot: {
-            path: from.slot.path || undefined,
-            offset: new BN(offset(i)),
+            path: from.slot || undefined,
+            offset: new BN(offset(i))
           },
           index: index(i)
         };
