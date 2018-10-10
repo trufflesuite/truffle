@@ -13,56 +13,53 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
     /*
      * Adding a new context
      */
-    case actions.ADD_CONTEXT:
-      const addContext = ({ contractName, raw }) => {
-        let context = keccak256(raw);
+    case actions.ADD_CONTEXT: {
+      const { contractName, raw } = action;
+      const context = keccak256(raw);
 
-        return {
-          ...state,
+      return {
+        ...state,
 
-          byContext: {
-            ...state.byContext,
+        byContext: {
+          ...state.byContext,
 
-            [context]: {
-              ...(state.byContext[context] || {}),
+          [context]: {
+            ...(state.byContext[context] || {}),
 
-              contractName, context
-            }
-          },
-        };
-      }
-
-      return addContext(action);
+            contractName, context
+          }
+        },
+      };
+    }
 
     /*
      * Adding binary for a context
      */
-    case actions.ADD_BINARY:
-      const addBinary = ({ context, binary }) => {
-        if (state.byBinary[binary]) {
-          return state;
-        }
+    case actions.ADD_BINARY: {
+      const { context, binary } = action;
 
-        return {
-          byContext: {
-            ...state.byContext,
-
-            [context]: {
-              ...state.byContext[context],
-
-              binary
-            }
-          },
-
-          byBinary: {
-            ...state.byBinary,
-
-            [binary]: { context: context }
-          }
-        };
+      if (state.byBinary[binary]) {
+        return state;
       }
 
-      return addBinary(action);
+      return {
+        byContext: {
+          ...state.byContext,
+
+          [context]: {
+            ...state.byContext[context],
+
+            binary
+          }
+        },
+
+        byBinary: {
+          ...state.byBinary,
+
+          [binary]: { context: context }
+        }
+      };
+    }
 
     /*
      * Default case
