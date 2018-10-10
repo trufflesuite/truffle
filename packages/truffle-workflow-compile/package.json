@@ -9,6 +9,7 @@
     "mkdirp": "^0.5.1",
     "truffle-artifactor": "^4.0.0-beta.1",
     "truffle-compile": "^4.0.0-beta.1",
+    "truffle-compile-vyper": "^1.0.0-beta.0",
     "truffle-config": "^1.1.0-beta.1",
     "truffle-expect": "^0.0.4",
     "truffle-external-compile": "^1.0.0-beta.1",
