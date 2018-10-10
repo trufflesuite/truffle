@@ -84,21 +84,23 @@ function checkVyper(callback) {
 
 // Execute vyper for single source file
 function execVyper(source_path, callback) {
-  // we need to execute compile with separate calls,
-  // as vyper does not guarantee output order
-  const commands = {
-    abi: `vyper -f abi ${source_path}`,
-    bytecode: `vyper -f bytecode ${source_path}`,
-    bytecode_runtime: `vyper -f bytecode_runtime ${source_path}`
-  };
+  const formats = ['abi', 'bytecode', 'bytecode_runtime'];
+  const command = `vyper -f${formats.join(',')} ${source_path}`;
 
-  async.mapValues(commands, function (command, key, c) {
-    exec(command, function (err, stdout, stderr) {
-      if (err) return c(`${stderr}\n${colors.red(`Compilation of ${source_path} failed. See above.`)}`);
+  exec(command, function (err, stdout, stderr) {
+    if (err) return callback(`${stderr}\n${colors.red(`Compilation of ${source_path} failed. See above.`)}`);
 
-      c(null, stdout.trim());
-    });
-  }, callback);
+    outputs = stdout.split(/\n/);
+
+    const compiled_contract = outputs.reduce(
+      function (contract, output, index) {
+        return Object.assign(contract, { [formats[index]]: output });
+      },
+      {}
+    );
+
+    callback(null, compiled_contract);
+  });
 }
 
 // compile all options.paths
