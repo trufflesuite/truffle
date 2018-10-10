@@ -18,7 +18,7 @@ module.exports = {
     code.splice(-43);
 
     // Convert to Buffer
-    code = new Buffer(code.join("").replace("0x", ""), "hex");
+    code = Buffer.from(code.join("").replace("0x", ""), "hex");
 
     var instructions = []
     for (var pc = 0; pc < code.length; pc++) {

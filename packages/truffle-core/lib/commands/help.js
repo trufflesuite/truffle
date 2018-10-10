@@ -1,9 +1,14 @@
 var command = {
   command: "help",
-  description: "Display information about a given command",
+  description: "Display a list of all commands or information about a specific command",
   help: {
-    usage: "truffle help <command>",
-    options: [],
+    usage: "truffle help [<command>]",
+    options: [
+      {
+        option: "<command>",
+        description: "Name of the command to display information for.",
+      }
+    ],
   },
   builder: {},
   run: function (options, callback) {

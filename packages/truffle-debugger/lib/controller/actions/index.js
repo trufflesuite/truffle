@@ -32,15 +32,23 @@ export function stepOut() {
 }
 
 export const INTERRUPT = "INTERRUPT";
-export function interrupt () {
+export function interrupt() {
   return {type: INTERRUPT};
 }
 
+export const CONTINUE = "CONTINUE";
+export function continueUntilBreakpoint() { //"continue" is not a legal name
+  return { type: CONTINUE};
+}
 
-export const CONTINUE_UNTIL = "CONTINUE_UNTIL";
-export function continueUntil(...breakpoints) {
-  return {
-    type: CONTINUE_UNTIL,
-    breakpoints
-  };
+export const ADD_BREAKPOINT = "ADD_BREAKPOINT";
+export function addBreakpoint(breakpoint) {
+  return { type: ADD_BREAKPOINT,
+    breakpoint};
+}
+
+export const REMOVE_BREAKPOINT = "REMOVE_BREAKPOINT";
+export function removeBreakpoint(breakpoint) {
+  return { type: REMOVE_BREAKPOINT,
+    breakpoint};
 }

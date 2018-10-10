@@ -160,7 +160,16 @@ export default class Session {
     return this.dispatch(controller.stepOut());
   }
 
-  continueUntil(...breakpoints) {
-    return this.dispatch(controller.continueUntil(...breakpoints));
+  continueUntilBreakpoint() {
+    return this.dispatch(controller.continueUntilBreakpoint());
+  }
+
+  addBreakpoint(breakpoint)
+  {
+    return this.dispatch(controller.addBreakpoint(breakpoint));
+  }
+
+  removeBreakpoint(breakpoint){
+    return this.dispatch(controller.removeBreakpoint(breakpoint));
   }
 }

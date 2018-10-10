@@ -1,12 +1,12 @@
 {
   "name": "truffle",
   "namespace": "consensys",
-  "version": "5.0.0-next.11",
+  "version": "5.0.0-beta.1",
   "description": "Truffle - Simple development framework for Ethereum",
   "dependencies": {
     "mocha": "^4.1.0",
     "original-require": "1.0.1",
-    "solc": "0.4.24"
+    "solc": "0.4.25"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^0.1.16",
@@ -14,6 +14,7 @@
     "fs-extra": "6.0.1",
     "ganache-cli": "6.1.8",
     "glob": "^7.1.2",
+    "imports-loader": "^0.8.0",
     "js-scrypt": "^0.2.0",
     "meta-npm": "^0.0.22",
     "meta-pkgs": "^0.2.0",
@@ -23,8 +24,8 @@
     "shebang-loader": "0.0.1",
     "stream-buffers": "^3.0.1",
     "tmp": "0.0.33",
-    "truffle-box": "^1.0.8-beta.0",
-    "truffle-contract": "^4.0.0-beta.0",
+    "truffle-box": "^1.0.8-beta.1",
+    "truffle-contract": "^4.0.0-beta.1",
     "web3": "1.0.0-beta.35",
     "webpack": "^2.5.1",
     "yargs": "^8.0.2"
@@ -40,6 +41,7 @@
     "publish:byoc": "node ./scripts/prereleaseVersion.js byoc-safe byoc",
     "publish:external-compiler": "node ./scripts/prereleaseVersion.js external-compiler external-compiler",
     "publish:next": "node ./scripts/prereleaseVersion.js next next",
+    "publish:user-level-mnemonic": "node ./scripts/prereleaseVersion.js user-level-mnemonic user-level-mnemonic",
     "test:raw": "NO_BUILD=true mocha"
   },
   "repository": {
