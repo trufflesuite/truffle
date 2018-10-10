@@ -60,8 +60,6 @@ const Build = {
       });
   },
 
-  // Note: key is a legacy parameter that will eventually be removed.
-  // It's specific to the default builder and we should phase it out.
   build: function(options, callback) {
     expect.options(options, [
       "build_directory",
@@ -69,12 +67,6 @@ const Build = {
       "contracts_build_directory",
       "networks"
     ]);
-
-    let key = "build";
-
-    if (options.dist) {
-      key = "dist";
-    }
 
     const logger = options.logger || console;
     let builder = options.build;
@@ -121,13 +113,6 @@ const Build = {
       });
     });
   },
-
-  // Deprecated: Specific to default builder.
-  dist: function(config, callback) {
-    this.build(config.with({
-      key: "dist"
-    }), callback);
-  }
 }
 
 module.exports = Build;
