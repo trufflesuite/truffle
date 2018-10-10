@@ -25,7 +25,9 @@ function *waitForTrace() {
 export function *advance() {
   yield put(actions.next());
 
-  yield take(actions.TOCK);
+  debug("TOCK to take");
+  yield take([actions.TOCK,actions.END_OF_TRACE]);
+  debug("TOCK taken");
 }
 
 function* next() {
@@ -51,12 +53,10 @@ function* next() {
 
   } else {
 
+    debug("putting END_OF_TRACE");
     yield put(actions.endTrace());
+    debug("put END_OF_TRACE");
   }
-}
-
-export function* wait() {
-  yield take(actions.END_OF_TRACE);
 }
 
 export function *processTrace(trace) {

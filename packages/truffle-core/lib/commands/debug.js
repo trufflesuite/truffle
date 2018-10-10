@@ -503,9 +503,11 @@ var command = {
               return repl.stop(callback);
           }
 
+          let alreadyFinished = session.view(trace.finished);
+
           // If not finished, perform commands that require state changes
           // (other than quitting)
-          if(!session.finished)
+          if(!alreadyFinished)
           {
             switch (cmd) {
               case "o":
@@ -540,8 +542,8 @@ var command = {
             }
           }
 
-          // Check if execution has stopped.
-          if (session.finished) {
+          // Check if execution has (just now) stopped.
+          if (session.view(trace.finished) && !alreadyFinished) {
             config.logger.log("");
             if (session.failed) {
               config.logger.log("Transaction halted with a RUNTIME ERROR.")

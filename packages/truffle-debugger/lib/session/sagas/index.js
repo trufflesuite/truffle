@@ -50,11 +50,6 @@ export function *saga () {
     // signal that stepping can begin
     yield *ready();
   }
-
-  debug("stopping listeners");
-  yield all(
-    listeners.map(task => cancel(task))
-  );
 }
 
 export default prefixName("session", saga);
