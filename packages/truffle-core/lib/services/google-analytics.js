@@ -36,7 +36,6 @@ const googleAnalytics = {
   * @param {Object}
   */
   sendAnalyticsEvent: function(eventObject) {
-    console.log('attempting');
     let visitor = this.setPersistentAnalyticsData();
     if(visitor) {
       visitor.event(eventObject).send();
