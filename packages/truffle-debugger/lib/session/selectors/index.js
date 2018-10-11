@@ -21,8 +21,10 @@ const session = createSelectorTree({
       (instances, contexts, sources, sourceMaps) => Object.assign({},
         ...Object.entries(instances).map(
           ([address, {context}]) => {
+            debug("instances %O", instances);
+            debug("contexts %O", contexts);
             let { contractName, binary } = contexts[context];
-            let { sourceMap } = sourceMaps[context];
+            let { sourceMap } = sourceMaps[context] || {};
 
             let { source } = sourceMap ?
               // look for source ID between second and third colons (HACK)
