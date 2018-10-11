@@ -251,33 +251,33 @@ function Config(truffle_directory, working_directory, network) {
   });
 };
 
-Config.prototype.addProp = function(key, obj) {
+Config.prototype.addProp = function(propertyName, descriptor) {
   // possible property descriptors
   //
   // supports `default` and `transform` in addition to `get` and `set`
   //
   // default: specify function to retrieve default value (used by get)
   // transform: specify function to transform value when (used by set)
-  Object.defineProperty(this, key, {
+  Object.defineProperty(this, propertyName, {
     // retrieve config property value
-    get: obj.get || function() {
+    get: descriptor.get || function() {
       // value is specified
-      if (key in this._values) {
-        return this._values[key];
+      if (propertyName in this._values) {
+        return this._values[propertyName];
       }
 
       // default getter is specified
-      if (obj.default) {
-        return obj.default()
+      if (descriptor.default) {
+        return descriptor.default()
       };
 
-      // obj is a function
-      return obj();
+      // descriptor is a function
+      return descriptor();
     },
-    set: obj.set || function(val) {
-      this._values[key] = (obj.transform)
-        ? obj.transform(val)
-        : val;
+    set: descriptor.set || function(value) {
+      this._values[propertyName] = (descriptor.transform)
+        ? descriptor.transform(value)
+        : value;
     },
     configurable: true,
     enumerable: true
