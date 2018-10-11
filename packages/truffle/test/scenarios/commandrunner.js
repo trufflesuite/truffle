@@ -4,7 +4,15 @@ var path = require("path");
 
 module.exports = {
   run: function(command, config, callback) {
-    var execString = "node " +
+    var execString;
+
+    (process.env.NO_BUILD)
+      ? execString = "node " +
+                     path.join(__dirname, "../", "../", "../",
+                               "truffle-core", "cli.js") +
+                     " " + command
+
+      : execString = "node " +
                      path.join(__dirname, "../", "../", "build", "cli.bundled.js") +
                      " " + command;
 

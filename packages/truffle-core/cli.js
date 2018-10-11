@@ -1,34 +1,44 @@
 #!/usr/bin/env node
 require('source-map-support/register')
 
-var Config = require("truffle-config");
-var Command = require("./lib/command");
-var TaskError = require("./lib/errors/taskerror");
-var TruffleError = require("truffle-error");
-var version = require("./lib/version");
-var OS = require("os");
+const TaskError = require("./lib/errors/taskerror");
+const TruffleError = require("truffle-error");
 
-var command = new Command(require("./lib/commands"));
+const nodeMajorVersion = parseInt(process.version.slice(1));
+if (nodeMajorVersion < 8) {
+  console.log(`You are currently using version ${process.version.slice(1)} of Node.`);
+  console.log("You must use version 8 or newer.");
+  process.exit(1);
+}
+
+const Config = require("truffle-config");
+const Command = require("./lib/command");
+
+const command = new Command(require("./lib/commands"));
 
 // Hack to suppress web3 MaxListenersExceededWarning
 // This should be removed when issue is resolved upstream:
 // https://github.com/ethereum/web3.js/issues/1648
-var listeners = process.listeners('warning');
+const listeners = process.listeners('warning');
 listeners.forEach(listener => process.removeListener('warning', listener));
 
-var options = {
+let options = {
   logger: console
 };
 
-command.run(process.argv.slice(2), options, function(err) {
+const inputArguments = process.argv.slice(2);
+const userWantsGeneralHelp = (inputArguments[0] === "help" || inputArguments[0] === "--help") &&
+                             inputArguments.length === 1;
+
+if (userWantsGeneralHelp) {
+  command.displayGeneralHelp();
+  process.exit(0);
+}
+
+command.run(inputArguments, options, function(err) {
   if (err) {
     if (err instanceof TaskError) {
-      command.args
-        .usage("Truffle v" + (version.bundle || version.core) + " - a development framework for Ethereum"
-        + OS.EOL + OS.EOL
-        + 'Usage: truffle <command> [options]')
-        .epilog("See more at http://truffleframework.com/docs")
-        .showHelp();
+      command.displayGeneralHelp();
     } else {
       if (err instanceof TruffleError) {
         console.log(err.message);
@@ -37,11 +47,10 @@ command.run(process.argv.slice(2), options, function(err) {
         process.exit(err);
       } else {
         // Bubble up all other unexpected errors.
-        console.log(err.stack || err.toString());
+        console.log(err.stack || err.message || err.toString());
       }
     }
     process.exit(1);
   }
-
   process.exit(0);
 });

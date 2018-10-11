@@ -7,6 +7,15 @@ var command = {
       default: false
     }
   },
+  help: {
+    usage: "truffle opcode <contract_name>",
+    options: [
+      {
+        option: "<contract_name>",
+        description: "Name of the contract to print opcodes for. Must be a contract name, not a file name. (required)",
+      }
+    ]
+  },
   run: function (options, done) {
     var Config = require("truffle-config");
     var TruffleError = require("truffle-error");

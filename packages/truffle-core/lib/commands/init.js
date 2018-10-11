@@ -2,6 +2,17 @@ var command = {
   command: 'init',
   description: 'Initialize new and empty Ethereum project',
   builder: {},
+  help: {
+    usage: "truffle init [--force]",
+    options: [
+      {
+        option: "--force",
+        description: "Initialize project in the current directory regardless of its " +
+          "state. Be careful, this\n                    will potentially overwrite files " +
+          "that exist in the directory.",
+      }
+    ],
+  },
   run: function (options, done) {
     var Config = require("truffle-config");
     var OS = require("os");
@@ -25,7 +36,7 @@ var command = {
     }
 
     // defer to `truffle unbox` command with "bare" box as arg
-    var url = "https://github.com/truffle-box/bare-box.git";
+    var url = "https://github.com/truffle-box/bare-box.git#web3-one";
     options._ = [url];
 
     UnboxCommand.run(options, done);

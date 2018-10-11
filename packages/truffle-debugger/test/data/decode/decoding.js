@@ -1,11 +1,14 @@
 import debugModule from "debug";
 const debug = debugModule("test:data:decode");
 
+import faker from "faker";
+
 import evm from "lib/evm/selectors";
 
 import {
   generateUints, describeDecoding
 } from "./helpers";
+
 
 const uints = generateUints();
 
@@ -14,7 +17,7 @@ function generateArray(length) {
     .map(() => uints.next().value)
 }
 
-const fixtures = [{
+const commonFixtures = [{
   name: "multipleFullWordArray",
   type: "uint[]",
   value: generateArray(3)  // takes up 3 whole words
@@ -40,6 +43,42 @@ const fixtures = [{
   value: "solidity allocation is a fun lesson in endianness"
 }];
 
+const mappingFixtures = [{
+  name: "simpleMapping",
+  type: {
+    from: "uint256",
+    to: "uint256"
+  },
+  value: {
+    ...Object.assign({}, ...generateArray(5).map(
+      (value, idx) => ({ [idx]: value })
+    ))
+  }
+}, {
+  name: "numberedStrings",
+  type: {
+    from: "uint256",
+    to: "string"
+  },
+  value: {
+    ...Object.assign({}, ...generateArray(7).map(
+      (value, idx) => ({ [value]: faker.lorem.slug(idx) })
+    ))
+  }
+}, {
+  name: "stringsToStrings",
+  type: {
+    from: "string",
+    to: "string"
+  },
+  value: {
+    ...Object.assign({}, ...[0,1,2,3,4].map(
+      (idx) => ({ [faker.lorem.slug(idx)]: faker.lorem.slug(idx) })
+    ))
+  }
+}];
+
+debug("mappingFixtures %O", mappingFixtures);
 
 describe("Decoding", function() {
 
@@ -47,9 +86,9 @@ describe("Decoding", function() {
    * Storage Tests
    */
   describeDecoding(
-    "Storage Variables", fixtures, evm.current.state.storage,
+    "Storage Variables", commonFixtures, evm.current.state.storage,
 
-    (contractName) => {
+    (contractName, fixtures) => {
       return `pragma solidity ^0.4.23;
 
 contract ${contractName} {
@@ -72,13 +111,47 @@ contract ${contractName} {
 `   }
   );
 
+  describeDecoding(
+    "Mapping Variables", mappingFixtures, evm.current.state.storage,
+
+    (contractName, fixtures) => {
+      return `pragma solidity ^0.4.24;
+
+contract ${contractName} {
+  event Done();
+
+  // declarations
+  ${fixtures
+    .map( ({name, type: {from, to}}) => `mapping (${from} => ${to}) ${name};` )
+    .join("\n  ")}
+
+  function run() public {
+    ${fixtures
+      .map(
+        ({name, type: {from}, value}) =>
+          Object.entries(value)
+            .map( ([k, v]) => (from === "string")
+              ? `${name}["${k}"] = ${JSON.stringify(v)};`
+              : `${name}[${k}] = ${JSON.stringify(v)};`
+            )
+            .join("\n    ")
+      )
+      .join("\n\n    ")}
+
+    emit Done();
+  }
+}
+`
+    }
+  );
+
   /*
    * Memory Tests
    */
   describeDecoding(
-    "Memory Variables", fixtures, evm.current.state.memory,
+    "Memory Variables", commonFixtures, evm.current.state.memory,
 
-    (contractName) => {
+    (contractName, fixtures) => {
       const separator = ";\n    ";
 
       function declareAssign({name, type, value}) {

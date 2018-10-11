@@ -4,7 +4,21 @@ var Schema = require("../");
 var debug = require("debug")("test:solc");
 
 describe("solc", function() {
-  var exampleSolidity = "contract A { function doStuff() {} } \n\n contract B { function somethingElse() {} }";
+  var exampleSolidity = `pragma solidity ^0.4.24;
+pragma experimental "v0.5.0";
+
+contract A {
+  uint x;
+
+  function doStuff() public {
+    x = 5;
+  }
+}
+
+contract B {
+  function somethingElse() public pure {}
+}
+`;
 
   it("processes solc compile output correctly", function(done) {
     this.timeout(10000);

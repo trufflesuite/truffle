@@ -25,11 +25,9 @@ describe("Library linking", function() {
   var web3 = new Web3();
   web3.setProvider(provider)
 
-  before(function(done) {
-    web3.version.getNetwork(function(err, id) {
-      if (err) return done(err);
+  before(function() {
+    return web3.eth.net.getId().then(function(id){
       network_id = id;
-      done();
     });
   });
 
@@ -82,15 +80,14 @@ describe("Library linking with contract objects", function() {
   var exampleConsumer;
   var accounts;
   var web3;
+  var network_id;
   var provider = TestRPC.provider({logger: log});
   var web3 = new Web3();
   web3.setProvider(provider)
 
-  before(function(done) {
-    web3.version.getNetwork(function(err, id) {
-      if (err) return done(err);
+  before(function() {
+    return web3.eth.net.getId().then(function(id){
       network_id = id;
-      done();
     });
   });
 
@@ -98,8 +95,8 @@ describe("Library linking with contract objects", function() {
     this.timeout(10000);
 
     var sources = {
-      "ExampleLibrary.sol": fs.readFileSync("./test/ExampleLibrary.sol", {encoding: "utf8"}),
-      "ExampleLibraryConsumer.sol": fs.readFileSync("./test/ExampleLibraryConsumer.sol", {encoding: "utf8"})
+      "ExampleLibrary.sol": fs.readFileSync("./test/sources/ExampleLibrary.sol", {encoding: "utf8"}),
+      "ExampleLibraryConsumer.sol": fs.readFileSync("./test/sources/ExampleLibraryConsumer.sol", {encoding: "utf8"})
     };
 
     // Compile first
@@ -170,6 +167,8 @@ describe("Library linking with contract objects", function() {
       assert.equal(result.logs.length, 1);
       var log = result.logs[0];
       assert.equal(log.event, "LibraryEvent");
+      assert.equal(accounts[0], log.args._from);
+      assert.equal(8, log.args.num); // 8 is a magic number inside ExampleLibrary.sol
     }).then(done).catch(done);
 
   });

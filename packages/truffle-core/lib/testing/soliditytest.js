@@ -5,9 +5,9 @@ var find_contracts = require("truffle-contract-sources");
 var compile = require("truffle-compile");
 var artifactor = require("truffle-artifactor");
 var contract = require("truffle-contract");
+var abi = require("web3-eth-abi");
 var series = require("async").series;
 var path = require("path");
-var SolidityCoder = require("web3/lib/solidity/coder.js");
 
 var SolidityTest = {
   define: function(abstraction, dependency_paths, runner, mocha) {
@@ -35,15 +35,15 @@ var SolidityTest = {
       if (result.logs.length) return result.logs;
 
       var logs = [];
-      var signature = web3.sha3('TestEvent(bool,string)');
+      var signature = web3.utils.sha3('TestEvent(bool,string)');
 
       result.receipt.logs.forEach(function(log) {
         if (log.topics.length === 2 && log.topics[0] === signature){
           var decoded = {
             event: 'TestEvent',
             args: {
-              result: SolidityCoder.decodeParams(['bool'], log.topics[1].replace("0x", ""))[0],
-              message: SolidityCoder.decodeParams(['string'], log.data.replace("0x", ""))[0]
+              result: abi.decodeLog(['bool'], log.topics[1], log.topics)[0],
+              message: abi.decodeLog(['string'], log.data, log.topics)[0]
             }
           };
           logs.push(decoded);
@@ -57,7 +57,7 @@ var SolidityTest = {
       result.logs = decodeTestEvents(result);
 
       result.logs.forEach(function(log) {
-        if (log.event == "TestEvent" && log.args.result == false) {
+        if (log.event == "TestEvent" && !log.args.result) {
           throw new Error(log.args.message);
         }
       })
@@ -104,6 +104,7 @@ var SolidityTest = {
 
       compile.with_dependencies(runner.config.with({
         paths: [
+          "truffle/Assert.sol",
           "truffle/DeployedAddresses.sol",
           path.join(__dirname, "SafeSend.sol")
         ],
@@ -133,18 +134,17 @@ var SolidityTest = {
     var DeployedAddresses = runner.config.resolver.require("truffle/DeployedAddresses.sol");
     var SafeSend = runner.config.resolver.require("SafeSend.sol");
 
-    deployer.deploy([
-      Assert,
-      DeployedAddresses
-    ]).then(function() {
-      dependency_paths.forEach(function(dependency_path) {
-        var dependency = runner.config.resolver.require(dependency_path);
+    deployer.deploy(Assert)
+      .then(() => deployer.deploy(DeployedAddresses))
+      .then(() => {
+        return dependency_paths.forEach(function(dependency_path) {
+          var dependency = runner.config.resolver.require(dependency_path);
 
-        if (dependency.isDeployed()) {
-          deployer.link(dependency, abstraction);
-        }
+          if (dependency.isDeployed()) {
+            deployer.link(dependency, abstraction);
+          }
+        });
       });
-    });
 
     var deployed;
     deployer.deploy(abstraction).then(function() {

@@ -2,7 +2,6 @@
   "contractName": "MetaCoin",
   "abi": [
     {
-      "constant": false,
       "inputs": [
         {
           "name": "addr",
@@ -16,11 +15,10 @@
           "type": "uint256"
         }
       ],
-      "payable": false,
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
-      "constant": false,
       "inputs": [
         {
           "name": "receiver",
@@ -38,11 +36,10 @@
           "type": "bool"
         }
       ],
-      "payable": false,
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
-      "constant": false,
       "inputs": [
         {
           "name": "addr",
@@ -56,12 +53,12 @@
           "type": "uint256"
         }
       ],
-      "payable": false,
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "inputs": [],
-      "payable": false,
+      "stateMutability": "nonpayable",
       "type": "constructor"
     },
     {

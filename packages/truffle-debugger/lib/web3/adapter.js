@@ -11,7 +11,7 @@ export default class Web3Adapter {
 
   async getTrace(txHash) {
     return new Promise( (accept, reject) => {
-      this.web3.currentProvider.sendAsync({
+      this.web3.currentProvider.send({
         jsonrpc: "2.0",
         method: "debug_traceTransaction",
         params: [txHash, {}],

@@ -1,6 +1,6 @@
 {
   "name": "truffle-contract-sources",
-  "version": "0.0.2",
+  "version": "0.1.0-beta.1",
   "description": "Utility for finding all contracts within a directory",
   "main": "index.js",
   "scripts": {},
@@ -21,9 +21,11 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle-contract-sources#readme",
   "dependencies": {
-    "node-dir": "0.1.17"
+    "debug": "^3.1.0",
+    "glob": "^7.1.2"
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "gitHead": "07967b472112f1c771ebbc90319781454cf9331b"
 }

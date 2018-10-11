@@ -9,7 +9,7 @@ describe("Deprecated json keys", function() {
   var MetaCoin;
 
   before("read json data", function() {
-    var data = fs.readFileSync(path.join(__dirname, "./lib/MetaCoin.json"), "utf8");
+    var data = fs.readFileSync(path.join(__dirname, "./sources/MetaCoin.json"), "utf8");
     MetaCoin_data = JSON.parse(data);
   });
 

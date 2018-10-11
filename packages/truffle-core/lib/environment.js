@@ -52,12 +52,13 @@ var Environment = {
 
       // We have a "*" network. Get the current network and replace it with the real one.
       // TODO: Should we replace this with the blockchain uri?
-      web3.version.getNetwork(function(err, id) {
-        if (err) return callback(err);
+      web3.eth.net.getId().then(id => {
+
         network_id = id;
         config.networks[config.network].network_id = network_id;
         done(null, network_id);
-      });
+
+      }).catch(callback);
     }
 
     function detectFromAddress(done) {
@@ -65,11 +66,12 @@ var Environment = {
         return done();
       }
 
-      web3.eth.getAccounts(function(err, accounts) {
-        if (err) return done(err);
+      web3.eth.getAccounts().then(accounts => {
+
         config.networks[config.network].from = accounts[0];
         done();
-      });
+
+      }).catch(done);
     }
 
     detectNetworkId(function(err) {
@@ -79,15 +81,16 @@ var Environment = {
   },
 
   // Ensure you call Environment.detect() first.
-  fork: function(config, callback) {
+  fork: async function(config, callback) {
     expect.options(config, [
       "from"
     ]);
 
     var web3 = new Web3(config.provider);
 
-    web3.eth.getAccounts(function(err, accounts) {
-      if (err) return callback(err);
+    try {
+      var accounts = await web3.eth.getAccounts()
+      var block = await web3.eth.getBlock('latest');
 
       var upstreamNetwork = config.network;
       var upstreamConfig = config.networks[upstreamNetwork];
@@ -97,14 +100,20 @@ var Environment = {
         network_id: config.network_id,
         provider: TestRPC.provider({
           fork: config.provider,
-          unlocked_accounts: accounts
+          unlocked_accounts: accounts,
+          gasLimit: block.gasLimit
         }),
-        from: config.from
+        from: config.from,
+        gas: upstreamConfig.gas,
+        gasPrice: upstreamConfig.gasPrice
       }
       config.network = forkedNetwork;
 
       callback();
-    });
+
+    } catch(err){
+      callback(err)
+    };
   },
 
   develop: function(config, testrpcOptions, callback) {

@@ -206,7 +206,7 @@ contract MyContract {
     value = val;
     ValueSet(value);
   }
-  function getValue() constant returns (uint) {
+  function getValue() view returns (uint) {
     return value;
   }
 }
@@ -277,7 +277,7 @@ instance.getValue.call().then(function(val) {
 });
 ```
 
-Even more helpful, however is we *don't even need* to use `.call` when a function is marked as `constant`, because `truffle-contract` will automatically know that that function can only be interacted with via a call:
+Even more helpful, however is we *don't even need* to use `.call` when a function is marked as `view` or `pure`, because `truffle-contract` will automatically know that that function can only be interacted with via a call:
 
 ```javascript
 instance.getValue().then(function(val) {

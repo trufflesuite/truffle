@@ -7,43 +7,29 @@
   "type": "object",
   "properties": {
     "contractName": {
-      "allOf": [
-        { "$ref": "#/definitions/ContractName" },
-        {
-          "description": "Name used to identify the contract",
-          "default": "Contract"
-        }
-      ]
+      "allOf": [{ "$ref": "#/definitions/ContractName" }],
+      "description": "Name used to identify the contract",
+      "default": "Contract"
     },
     "abi": {
-      "allOf": [
-        { "$ref": "abi.spec.json#" },
-        { "description": "Interface description returned by compiler for source" }
-      ]
+      "allOf": [{ "$ref": "abi.spec.json#" }],
+      "description": "Interface description returned by compiler for source"
     },
     "bytecode": {
-      "allOf": [
-        { "$ref": "#/definitions/Bytecode" },
-        { "description": "Bytecode sent as contract-creation transaction data, with unresolved link references" }
-      ]
+      "allOf": [{ "$ref": "#/definitions/Bytecode" }],
+      "description": "Bytecode sent as contract-creation transaction data, with unresolved link references"
     },
     "deployedBytecode": {
-      "allOf": [
-        { "$ref": "#/definitions/Bytecode" },
-        { "description": "On-chain deployed contract bytecode, with unresolved link references" }
-      ]
+      "allOf": [{ "$ref": "#/definitions/Bytecode" }],
+      "description": "On-chain deployed contract bytecode, with unresolved link references" 
     },
     "sourceMap": {
-      "allOf": [
-        { "$ref": "#/definitions/SourceMap" },
-        { "description": "Source mapping for contract-creation transaction data bytecode" }
-      ]
+      "allOf": [{ "$ref": "#/definitions/SourceMap" }],
+      "description": "Source mapping for contract-creation transaction data bytecode"
     },
     "deployedSourceMap": {
-      "allOf": [
-        { "$ref": "#/definitions/SourceMap" },
-        { "description": "Source mapping for contract bytecode" }
-      ]
+      "allOf": [{ "$ref": "#/definitions/SourceMap" }],
+      "description": "Source mapping for contract bytecode"
     },
     "source": { "$ref": "#/definitions/Source" },
     "sourcePath": { "$ref": "#/definitions/SourcePath" },

@@ -1,7 +1,7 @@
 library ExampleLibrary {
   event LibraryEvent();
 
-  function triggerLibraryEvent() {
-    LibraryEvent();
+  function triggerLibraryEvent() public {
+    emit LibraryEvent();
   }
 }

@@ -30,7 +30,8 @@ module.exports = {
   devtool: 'source-map',
   module: {
     rules: [
-      { test: /\.js$/, use: "shebang-loader" }
+      { test: /\.js$/, use: "shebang-loader" },
+      { test: /rx\.lite\.aggregates\.js/, use: 'imports-loader?define=>false' }
     ]
   },
   externals: [
@@ -80,6 +81,9 @@ module.exports = {
     ]),
 
     new CleanWebpackPlugin(["build"]),
+
+    // Make web3 1.0 packable
+    new webpack.IgnorePlugin(/^electron$/),
   ],
   resolve: {
     alias: {
@@ -88,8 +92,7 @@ module.exports = {
       "fsevents": path.join(__dirname, "./nil.js"),
       "ws": path.join(__dirname, "./nil.js"),
       "original-fs": path.join(__dirname, "./nil.js"),
-      "scrypt": "js-scrypt",
-      "secp256k1": path.join(__dirname, "node_modules", "secp256k1", "elliptic.js")
+      "scrypt": "js-scrypt"
     }
   },
   stats: {

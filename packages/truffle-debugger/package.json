@@ -1,6 +1,6 @@
 {
   "name": "truffle-debugger",
-  "version": "4.0.3",
+  "version": "4.1.0-beta.1",
   "description": "Core functionality for debugging Solidity files built with Truffle",
   "main": "dist/debugger.js",
   "scripts": {
@@ -9,7 +9,8 @@
     "build": "webpack --config webpack/webpack.config.js",
     "start": "node ./webpack/dev-server.js",
     "test": "mocha-webpack --webpack-config webpack/webpack.config-test.js --recursive",
-    "test:debug": "node --inspect ./node_modules/.bin/mocha-webpack --webpack-config webpack/webpack.config-test.js"
+    "test:debug": "node --inspect ./node_modules/.bin/mocha-webpack --webpack-config webpack/webpack.config-test.js",
+    "test:coverage": "nyc mocha-webpack --webpack-config webpack/webpack.config-test.js --recursive"
   },
   "keywords": [
     "ethereum",
@@ -22,17 +23,18 @@
   "dependencies": {
     "bignumber.js": "^7.2.1",
     "debug": "^3.1.0",
+    "fast-levenshtein": "^2.0.6",
     "json-pointer": "^0.6.0",
     "redux": "^3.7.2",
     "redux-cli-logger": "^2.0.1",
     "redux-saga": "^0.16.0",
     "remote-redux-devtools": "^0.5.12",
     "reselect-tree": "^1.2.0",
-    "truffle-code-utils": "^1.1.1",
+    "truffle-code-utils": "^1.1.2-beta.0",
     "truffle-expect": "^0.0.4",
     "truffle-solidity-utils": "^1.1.2",
-    "web3": "0.20.6",
-    "web3-eth-abi": "^1.0.0-beta.29"
+    "web3": "1.0.0-beta.35",
+    "web3-eth-abi": "1.0.0-beta.35"
   },
   "devDependencies": {
     "async": "2.6.1",
@@ -42,22 +44,27 @@
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.6.1",
     "babel-runtime": "^6.26.0",
+    "chai": "^4.1.2",
+    "change-case": "^3.0.2",
     "esdoc": "^1.0.4",
     "esdoc-ecmascript-proposal-plugin": "^1.0.0",
     "esdoc-standard-plugin": "^1.0.0",
     "express": "^4.16.2",
+    "faker": "^4.1.0",
     "fs-extra": "6.0.1",
-    "ganache-cli": "6.1.0-beta.4",
+    "ganache-cli": "6.1.8",
+    "istanbul-instrumenter-loader": "^3.0.1",
     "mocha": "5.2.0",
     "mocha-webpack": "^1.1.0",
     "node-interval-tree": "^1.3.3",
+    "nyc": "^13.0.1",
     "remotedev-server": "^0.2.4",
-    "truffle-artifactor": "^3.0.7",
-    "truffle-box": "^1.0.7",
-    "truffle-debug-utils": "^1.0.6",
-    "truffle-migrate": "^2.0.8",
-    "truffle-resolver": "^4.0.4",
-    "truffle-workflow-compile": "^1.0.6",
+    "truffle-artifactor": "^4.0.0-beta.1",
+    "truffle-box": "^1.0.8-beta.1",
+    "truffle-debug-utils": "^1.0.7-beta.0",
+    "truffle-migrate": "^3.0.0-beta.1",
+    "truffle-resolver": "^5.0.0-beta.1",
+    "truffle-workflow-compile": "^2.0.0-beta.1",
     "webpack": "^3.8.1",
     "webpack-dev-middleware": "^2.0.4",
     "webpack-merge": "^4.1.1",
@@ -74,5 +81,6 @@
   "homepage": "https://github.com/trufflesuite/truffle-debugger#readme",
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "gitHead": "07967b472112f1c771ebbc90319781454cf9331b"
 }

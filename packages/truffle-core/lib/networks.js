@@ -253,9 +253,7 @@ var Networks = {
     }
 
     var web3 = new Web3(provider);
-    web3.version.getNetwork(function(err, current_network_id) {
-      if (err) return callback(err);
-
+    web3.eth.net.getId(current_network_id => {
       if (first == current_network_id) {
         return callback(null, true);
       }
@@ -266,7 +264,7 @@ var Networks = {
         // Nothing else to compare.
         return callback(null, false);
       }
-    });
+    }).catch(callback);
   }
 };
 

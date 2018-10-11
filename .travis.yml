@@ -7,6 +7,12 @@ services:
 
 before_install:
   - docker pull ethereum/client-go:latest
+  - docker pull ethereum/solc:0.4.22
+  - sudo add-apt-repository --yes ppa:ethereum/ethereum
+  - sudo apt-get update
+  - sudo apt-get install solc jq snapd
+  - export PATH=$PATH:/snap/bin
+  - sudo snap install vyper --edge --devmode
 
 matrix:
   fast_finish: true
@@ -19,11 +25,15 @@ matrix:
       env: INTEGRATION=true
     - node_js: 6
       env: INTEGRATION=true
+    - node_js: 8
+      env: COVERAGE=true
   allow_failures:
     - node_js: 8
       env: GETH=true
     - node_js: 6
       env: INTEGRATION=true
+    - node_js: 8
+      env: COVERAGE=true
 
 
 install:

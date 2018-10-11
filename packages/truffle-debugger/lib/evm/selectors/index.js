@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("debugger:evm:selectors");
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
+import levenshtein from "fast-levenshtein";
 
 import trace from "lib/trace/selectors";
 
@@ -149,26 +150,38 @@ const evm = createSelectorTree({
        *
        * returns function (binary) => context
        */
-      search: createLeaf(['./_'], (binaries) => {
-        // HACK ignore link references for search
-        // link references come in two forms: with underscores or all zeroes
-        // the underscore format is used by Truffle to reference links by name
-        // zeroes are used by solc directly, as libraries inject their own
-        // address at CREATE-time
-        const toRegExp = (binary) =>
-          new RegExp(`^${binary.replace(/__.{38}|0{40}/g, ".{40}")}`)
+      search: createLeaf(['./_'], (binaries) =>
+        (binary) => {
+          // search for a given binary based on levenshtein distances to
+          // existing (known) context binaries.
+          //
+          // levenshtein distance is the number of textual modifications
+          // (insert, change, delete) required to convert string a to b
+          //
+          // filter by a percentage threshold
+          const threshold = 0.25;
 
-        let matchers = Object.entries(binaries)
-          .map( ([binary, {context}]) => ({
-            context,
-            regex: toRegExp(binary)
-          }))
+          // skip levenshtein check for undefined binaries
+          if (!binary || binary == "0x0") {
+            return {};
+          }
 
-        return (binary) => matchers
-          .filter( ({ context, regex }) => binary.match(regex) )
-          .map( ({ context }) => ({ context }) )
-          [0] || null;
-      })
+          const results = Object.entries(binaries)
+            .map( ([ knownBinary, { context }]) => ({
+              context,
+              distance: levenshtein.get(knownBinary, binary)
+            }))
+            .filter( ({ distance }) => distance <= binary.length * threshold )
+            .sort( ({distance: a}, {distance: b}) => a - b );
+
+          if (results[0]) {
+            const { context } = results[0];
+            return { context };
+          }
+
+          return {};
+        }
+      )
     }
   },
 

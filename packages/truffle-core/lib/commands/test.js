@@ -1,7 +1,34 @@
 var command = {
   command: 'test',
   description: 'Run JavaScript and Solidity tests',
-  builder: {},
+  builder: {
+    "show-events": {
+      describe: "Show all test logs",
+      type: "boolean",
+      default: false
+    },
+  },
+  help: {
+    usage: "truffle test [<test_file>] [--compile-all] [--network <name>] [--verbose-rpc]",
+    options: [
+      {
+        option: "<test_file>",
+        description: "Name of the test file to be run. Can include path information if the file " +
+          "does not exist in the\n                    current directory.",
+      },{
+        option: "--compile-all",
+        description: "Compile all contracts instead of intelligently choosing which contracts need " +
+          "to be compiled.",
+      },{
+        option: "--network <name>",
+        description: "Specify the network to use, using artifacts specific to that network. Network " +
+          "name must exist\n                    in the configuration.",
+      },{
+        option: "--verbose-rpc",
+        description: "Log communication between Truffle and the Ethereum client.",
+      },
+    ]
+  },
   run: function (options, done) {
     var OS = require("os");
     var dir = require("node-dir");
@@ -106,7 +133,8 @@ var command = {
             port: 7545,
             network_id: 4447,
             mnemonic: "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
-            gasLimit: config.gas
+            gasLimit: config.gas,
+            noVMErrorsOnRPCResponse: true,
           };
 
           Develop.connectOrStart(ipcOptions, testrpcOptions, function(started, disconnect) {

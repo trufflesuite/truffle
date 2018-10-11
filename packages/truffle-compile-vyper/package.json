@@ -1,0 +1,31 @@
+{
+  "name": "truffle-compile-vyper",
+  "version": "1.0.0-beta.0",
+  "description": "Vyper compiler support",
+  "main": "index.js",
+  "dependencies": {
+    "async": "2.6.1",
+    "colors": "^1.1.2",
+    "eslint": "^5.5.0",
+    "minimatch": "^3.0.4",
+    "truffle-compile": "^4.0.0-beta.0"
+  },
+  "devDependencies": {
+    "truffle-config": "^1.1.0-beta.0",
+    "mocha": "^5.2.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "ethereum",
+    "truffle",
+    "compile",
+    "vyper"
+  ],
+  "author": "Evgeniy Filatov <evgeniyfilatov@gmail.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
+}

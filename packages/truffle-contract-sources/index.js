@@ -1,15 +1,20 @@
-var dir = require("node-dir");
-var path = require("path");
+const debug = require("debug")("contract-sources");
 
-module.exports = function(directory, callback) {
-  dir.files(directory, function(err, files) {
-    if (err) return callback(err);
+const path = require("path");
+const glob = require("glob");
 
-    files = files.filter(function(file) {
-      // Ignore any files that aren't solidity files.
-      return path.extname(file) == ".sol" && path.basename(file)[0] != ".";
-    });
+const DEFAULT_PATTERN = "**/*.sol";
 
-    callback(null, files);
-  })
+module.exports = function(pattern, callback) {
+  // pattern is either a directory (contracts directory), or an absolute path
+  // with a glob expression
+  if (!glob.hasMagic(pattern)) {
+    pattern = path.join(pattern, DEFAULT_PATTERN);
+  }
+
+  const globOptions = {
+    follow: true  // follow symlinks
+  };
+
+  glob(pattern, globOptions, callback);
 };

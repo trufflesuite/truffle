@@ -19,7 +19,7 @@ contract SingleCall {
   event Called();
 
   function run() public {
-    Called();
+    emit Called();
   }
 }
 `;
@@ -49,11 +49,11 @@ contract NestedCall {
   }
 
   function inner() public {
-    First();
+    emit First();
   }
 
   function second() public {
-    Second();
+    emit Second();
   }
 
 }
@@ -103,11 +103,14 @@ describe("Solidity Debugging", function() {
     let session = bugger.connect();
 
     // at `second();`
-    let breakpoint = { "address": instance.address, line: 16 }
+    let source = await session.view(solidity.current.source);
+    let breakpoint = { sourceId: source.id, line: 16 }
     let breakpointStopped = false;
 
+    session.addBreakpoint(breakpoint);
+
     do {
-      session.continueUntil(breakpoint);
+      session.continueUntilBreakpoint();
 
       if (!session.finished) {
         let range = await session.view(solidity.current.sourceRange);

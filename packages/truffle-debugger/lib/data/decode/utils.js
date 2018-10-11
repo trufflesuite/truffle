@@ -52,10 +52,14 @@ export function allocateDeclarations(
   refs,
   slot = 0,
   index = WORD_SIZE - 1,
-  path = []
 ) {
+  slot = normalizeSlot(slot);
+
   if (index < WORD_SIZE - 1) {  // starts a new slot
-    slot++;
+    slot = {
+      path: slot,
+      offset: 1
+    };
     index = WORD_SIZE - 1;
   }
 
@@ -79,7 +83,10 @@ export function allocateDeclarations(
   }
 
   if (index < WORD_SIZE - 1) {
-    slot++;
+    slot = {
+      path: slot,
+      offset: 1
+    };
     index = WORD_SIZE - 1;
   }
 
@@ -92,15 +99,27 @@ export function allocateDeclarations(
 }
 
 function allocateValue(slot, index, bytes) {
-  let from = index - bytes + 1 >= 0 ?
-    { slot, index: index - bytes + 1 } :
-    { slot: slot + 1, index: WORD_SIZE - bytes };
+  let from = (index - bytes + 1 >= 0)
+    ? { slot, index: index - bytes + 1 }
+    : {
+        slot: {
+          path: slot.path,
+          offset: slot.offset + 1
+        },
+        index: WORD_SIZE - bytes
+      };
 
   let to = { slot: from.slot, index: from.index + bytes - 1 };
 
-  let next = from.index == 0 ?
-    { slot: from.slot + 1, index: WORD_SIZE - 1 } :
-    { slot: from.slot, index: from.index - 1 };
+  let next = (from.index == 0)
+    ? {
+        slot: {
+          path: from.slot.path,
+          offset: from.slot.offset + 1
+        },
+        index: WORD_SIZE - 1
+      }
+    : { slot: from.slot, index: from.index - 1 };
 
   return { from, to, next };
 }
@@ -120,6 +139,24 @@ function allocateDeclaration(declaration, refs, slot, index) {
   debug("struct result %o", result);
   return result;
 }
+
+/**
+ * Convert polymorphic slot value into canonical { path, offset } pair.
+ */
+export function normalizeSlot(slot) {
+  if (typeof slot == "object" && slot.path != undefined) {
+    return {
+      path: slot.path,
+      offset: slot.offset || 0
+    };
+  }
+
+  return {
+    path: slot,
+    offset: 0
+  };
+}
+
 
 /**
  * e.g. uint48 -> 6
@@ -164,7 +201,15 @@ export function storageSize(definition) {
     case "bytes":
     case "array":
       return WORD_SIZE;
+
+    case "mapping":
+      // HACK just to reserve slot. mappings have no size as such
+      return WORD_SIZE;
   }
+}
+
+export function isMapping(definition) {
+  return typeIdentifier(definition).match(/^t_mapping/) != null;
 }
 
 export function isReference(definition) {
@@ -267,7 +312,7 @@ export function toHexString(bytes, length = 0, trim = false) {
 }
 
 export function toBytes(number, length = 0) {
-  if (number < 0) {
+  if (number < 0 || number === "") {
     return [];
   }
 
@@ -293,17 +338,23 @@ export function toBytes(number, length = 0) {
 export function keccak256(...args) {
   let web3 = new Web3();
 
-  args = args.map( (arg) => {
-    if (typeof arg == "number" || BigNumber.isBigNumber(arg)) {
-      return toHexString(toBytes(arg, WORD_SIZE)).slice(2)
-    } else if (typeof arg == "string") {
-      return web3.toHex(arg).slice(2);
-    } else {
-      return "";
-    }
-  });
+  debug("args %o", args);
 
-  let sha = web3.sha3(args.join(''), { encoding: 'hex' });
+  let sha = web3.utils.soliditySha3(...args);
   debug("sha %o", sha);
   return toBigNumber(sha);
+}
+
+export function augmentWithDepth(id, depth = 0) {
+    //depth 0 indicates not a local variable; real depths start from 1
+    //both arguments are numeric, so a colon should occur in neither
+    return `${depth}:${id}`;
+}
+
+export function idFromAugmented(augmentedId) {
+    return Number(augmentedId.split(":")[1]);
+}
+
+export function depthFromAugmented(augmentedId) {
+    return Number(augmentedId.split(":")[0]);
 }

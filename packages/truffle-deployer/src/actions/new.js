@@ -1,9 +1,8 @@
 module.exports = function(contract, args, deployer) {
-  return function() {
+  return async function() {
     deployer.logger.log("Creating new instance of " + contract.contract_name);
     // Evaluate any arguments if they're promises
-    return Promise.all(args).then(function(new_args) {
-      return contract.new.apply(contract, args)
-    });
+    const newArgs = await Promise.all(args)
+    return contract.new.apply(contract, args);
   };
 };

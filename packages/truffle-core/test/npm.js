@@ -1,6 +1,7 @@
 var assert = require("chai").assert;
 var Box = require("truffle-box");
-var fs = require("fs");
+var fs = require("fs-extra");
+var glob = require("glob");
 var path = require('path');
 var mkdirp = require("mkdirp");
 var async = require("async");
@@ -15,7 +16,7 @@ describe('NPM integration', function() {
   var parentContractSource = "pragma solidity ^0.4.2; import 'fake_source/contracts/Module.sol'; contract Parent {}";
 
   before("Create a sandbox", function(done) {
-    this.timeout(10000);
+    this.timeout(15000);
     Box.sandbox(function(err, result) {
       if (err) return done(err);
       config = result;
@@ -43,6 +44,14 @@ describe('NPM integration', function() {
     ], done)
   });
 
+  after("Cleanup tmp files", function(done){
+    glob('tmp-*', (err, files) => {
+      if(err) done(err);
+      files.forEach(file => fs.removeSync(file));
+      done();
+    })
+  })
+
   it('successfully finds the correct source via Sources lookup', function(done) {
     config.resolver.resolve("fake_source/contracts/Module.sol", config.sources, function(err, body) {
       if (err) return done(err);
@@ -68,8 +77,9 @@ describe('NPM integration', function() {
 
     Contracts.compile(config.with({
       quiet: true
-    }), function(err, contracts) {
+    }), function(err, result) {
       if (err) return done(err);
+      let { contracts } = result;
 
       var contractNames = Object.keys(contracts);
 
