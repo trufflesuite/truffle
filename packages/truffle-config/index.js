@@ -84,26 +84,32 @@ function Config(truffle_directory, working_directory, network) {
     logger: function() {},
     compilers: function() {},
 
-    build_directory: function() {
-      return path.join(self.working_directory, "build");
+    build_directory: {
+      default: () => path.join(self.working_directory, "build"),
+      transform: resolveDirectory
     },
-    contracts_directory: function() {
-      return path.join(self.working_directory, "contracts");
+    contracts_directory: {
+      default: () => path.join(self.working_directory, "contracts"),
+      transform: resolveDirectory
     },
-    contracts_build_directory: function() {
-      return path.join(self.build_directory, "contracts");
+    contracts_build_directory: {
+      default: () => path.join(self.build_directory, "contracts"),
+      transform: resolveDirectory
     },
-    migrations_directory: function() {
-      return path.join(self.working_directory, "migrations");
+    migrations_directory: {
+      default: () => path.join(self.working_directory, "migrations"),
+      transform: resolveDirectory
     },
-    test_directory: function() {
-      return path.join(self.working_directory, "test");
+    test_directory: {
+      default: () => path.join(self.working_directory, "test"),
+      transform: resolveDirectory
     },
     test_file_extension_regexp: function() {
       return /.*\.(js|es|es6|jsx|sol)$/
     },
-    example_project_directory: function() {
-      return path.join(self.truffle_directory, "example");
+    example_project_directory: {
+      default: () => path.join(self.truffle_directory, "example"),
+      transform: resolveDirectory
     },
     network_id: {
       get: function() {
