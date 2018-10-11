@@ -1,5 +1,5 @@
 import { EvmVariableReferenceMapping, AstReferences, ContractMapping, getContractNode, ContractStateVariable } from "../interface/contract-decoder";
-import { ContractObject } from "truffle-contract-schema/spec";
+import { ContractObject } from "@seesemichaelj/truffle-contract-schema/spec";
 import { StoragePointer } from "../types/pointer";
 import merge from "lodash.merge";
 import cloneDeep from "lodash.clonedeep";

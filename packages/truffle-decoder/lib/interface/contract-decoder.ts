@@ -1,6 +1,6 @@
 import AsyncEventEmitter from "async-eventemitter";
 import Web3 from "web3";
-import { ContractObject, Ast } from "truffle-contract-schema/spec";
+import { ContractObject, Ast } from "@seesemichaelj/truffle-contract-schema/spec";
 import BN from "bn.js";
 import { EvmInfo } from "../types/evm";
 import * as references from "../allocate/references";
