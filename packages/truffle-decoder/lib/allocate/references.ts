@@ -61,8 +61,16 @@ export function allocateDefinition(node: any, state: ContractStateInfo, referenc
     slot.path = cloneDeep(path);
   }
 
-  if (DecodeUtils.Definition.typeClass(node) != "struct") {
-    const range = DecodeUtils.Allocation.allocateValue(slot, state.slot.index, DecodeUtils.Definition.storageSize(node));
+  const nodeTypeClass = DecodeUtils.Definition.typeClass(node);
+
+  if (nodeTypeClass != "struct") {
+    const referenceDeclaration: undefined | DecodeUtils.AstDefinition =
+      nodeTypeClass === "enum" ?
+        referenceDeclarations[node.typeName.referencedDeclaration]
+      :
+        undefined;
+    const storageSize = DecodeUtils.Definition.storageSize(node, referenceDeclaration);
+    const range = DecodeUtils.Allocation.allocateValue(slot, state.slot.index, storageSize);
 
     state.variables[node.id] = <ContractStateVariable>{
       isChildVariable,

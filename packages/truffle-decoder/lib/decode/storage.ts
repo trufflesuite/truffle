@@ -7,7 +7,7 @@ import { EvmInfo } from "../types/evm";
 import { Allocation } from "truffle-decode-utils";
 import BN from "bn.js";
 import Web3 from "web3";
-import { EvmStruct, EvmMapping } from "../interface/contract-decoder";
+import { EvmStruct, EvmMapping, EvmEnum } from "../interface/contract-decoder";
 
 export default async function decodeStorageReference(definition: DecodeUtils.AstDefinition, pointer: StoragePointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<any> {
   var data;
@@ -26,7 +26,13 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       length = DecodeUtils.Conversion.toBN(data).toNumber();
       // debug("length %o", length);
 
-      const baseSize = DecodeUtils.Definition.storageSize(DecodeUtils.Definition.baseDefinition(definition));
+      const baseDefinition = DecodeUtils.Definition.baseDefinition(definition);
+      const referenceDeclaration: undefined | DecodeUtils.AstDefinition =
+        DecodeUtils.Definition.typeClass(baseDefinition) === "enum" ?
+          info.referenceDeclarations[baseDefinition.typeName.referencedDeclaration]
+        :
+          undefined;
+      const baseSize = DecodeUtils.Definition.storageSize(baseDefinition, referenceDeclaration);
       const perWord = Math.floor(DecodeUtils.EVM.WORD_SIZE / baseSize);
       // debug("baseSize %o", baseSize);
       // debug("perWord %d", perWord);
@@ -184,6 +190,23 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
 
         return result;
       }
+
+    case "enum": {
+      data = await read(pointer, state, web3, contractAddress);
+      if (data == undefined) {
+        return undefined;
+      }
+
+      const numRepresentation = DecodeUtils.Conversion.toBN(data).toNumber();
+      const enumDeclaration = info.referenceDeclarations[definition.typeName.referencedDeclaration];
+      const decodedValue = enumDeclaration.members[numRepresentation].name;
+
+      return <EvmEnum>{
+        name: definition.name,
+        type: definition.typeName.name,
+        value: definition.typeName.name + "." + decodedValue
+      }
+    }
 
     case "mapping":
 

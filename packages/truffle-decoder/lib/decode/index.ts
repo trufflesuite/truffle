@@ -31,6 +31,11 @@ export default async function decode(definition: AstDefinition, pointer: DataPoi
     }
   }
 
+  if (DecodeUtils.Definition.isEnum(definition) && isStoragePointer(pointer)) {
+    // debug("decoding mapping, type: %s", identifier);
+    return await decodeStorageReference(definition, pointer, info, web3, contractAddress);
+  }
+
   if (DecodeUtils.Definition.isMapping(definition) && isStoragePointer(pointer)) {
     // debug("decoding mapping, type: %s", identifier);
     return await decodeStorageReference(definition, pointer, info, web3, contractAddress);

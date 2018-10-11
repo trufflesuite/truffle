@@ -40,7 +40,13 @@ export interface EvmStruct {
   };
 };
 
-type EvmVariable = BN | string | EvmMapping | EvmStruct;
+export interface EvmEnum {
+  name: string;
+  type: string;
+  value: string;
+};
+
+type EvmVariable = BN | string | EvmMapping | EvmStruct | EvmEnum;
 
 interface DecodedVariable {
   name: string;

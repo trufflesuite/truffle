@@ -44,7 +44,7 @@ export namespace Definition {
     }
   }
 
-  export function storageSize(definition: AstDefinition): number {
+  export function storageSize(definition: AstDefinition, referenceDeclaration?: AstDefinition): number {
     switch (typeClass(definition)) {
       case "bool":
         return 1;
@@ -55,6 +55,19 @@ export namespace Definition {
       case "int":
       case "uint":
         return parseInt(typeIdentifier(definition).match(/t_[a-z]+([0-9]+)/)[1]) / 8;
+
+      case "enum": {
+        if (referenceDeclaration) {
+          const numValues = referenceDeclaration.members.length;
+          // numValues <= 2^n - 1
+          // numValues + 1 <= 2^n
+          // log(numValues + 1) <= n (n is bits)
+          return Math.ceil(Math.log2(numValues + 1) / 8);
+        }
+        else {
+          return 0;
+        }
+      }
 
       case "string":
       case "bytes":
@@ -69,6 +82,10 @@ export namespace Definition {
 
   export function isMapping(definition: AstDefinition): boolean {
     return typeIdentifier(definition).match(/^t_mapping/) != null;
+  }
+
+  export function isEnum(definition: AstDefinition): boolean {
+    return typeIdentifier(definition).match(/^t_enum/) != null;
   }
 
   export function isReference(definition: AstDefinition): boolean {
