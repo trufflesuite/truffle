@@ -594,12 +594,14 @@ var command = {
             case "u":
             case "n":
             case "c":
-              if(!session.view(solidity.current.source).source) {
-                printInstruction();
-              }
+              if(!session.view(trace.finished)) {
+                if(!session.view(solidity.current.source).source) {
+                 printInstruction();
+                }
 
-              printFile();
-              printState();
+                printFile();
+                printState();
+              }
               printWatchExpressionsResults();
               break;
             default:

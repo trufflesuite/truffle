@@ -43,11 +43,13 @@ let trace = createSelectorTree({
   /**
    * trace.next
    *
-   * next trace step or {}
+   * next trace step
+   * NOTE: if at the end,
+   * we will return the *same* trace step
    */
   next: createLeaf(
     ["./steps", "./index"], (steps, index) =>
-      index < steps.length - 1 ? steps[index + 1] : {}
+      index < steps.length - 1 ? steps[index + 1] : steps[index]
   )
 });
 
