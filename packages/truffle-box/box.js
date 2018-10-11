@@ -16,7 +16,7 @@ var Box = {
 
     return Promise.resolve()
       .then(()=> {
-        googleAnalytics.sendAnalyticsEvent("initialization", "initialize project", "box or bare installation", 0);
+        googleAnalytics.sendAnalyticsEvent({ec: "initialization", ea: "initialize project", el: "box or bare installation"});
       })  
       .then(() => {
         options.logger.log("Downloading...");
