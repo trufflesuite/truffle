@@ -35,10 +35,15 @@ const googleAnalytics = {
   * send event to Google Analytics
   * @param {Object}
   */
-  sendAnalyticsEvent: function(eventObject) {
+  sendAnalyticsEvent: function(eventObject, callback) {
     let visitor = this.setPersistentAnalyticsData();
+    //console.logs added for testing, remove before merge!!!
     if(visitor) {
-      visitor.event(eventObject).send();
+      console.log('sending event' + JSON.stringify(eventObject));
+      visitor.event(eventObject, function(err) {
+        console.log(err);
+        console.log('hello it worked!');
+      }).send();
     }
   }
 }

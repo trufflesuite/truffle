@@ -5,6 +5,9 @@ const TaskError = require("./lib/errors/taskerror");
 const TruffleError = require("truffle-error");
 
 const googleAnalytics = require("truffle-core/lib/services/google-analytics");
+//just here for testing easily -- remove before merging
+googleAnalytics.sendAnalyticsEvent({ec: "error", ea: "testing8", el: "wrong node version"});
+console.log(process);
 
 const nodeMajorVersion = parseInt(process.version.slice(1));
 if (nodeMajorVersion < 8) {
