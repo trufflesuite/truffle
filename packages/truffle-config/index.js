@@ -67,6 +67,9 @@ function Config(truffle_directory, working_directory, network) {
     }
   };
 
+  const resolveDirectory = (value) =>
+    path.resolve(self.working_directory, value);
+
   var props = {
     // These are already set.
     truffle_directory: function() {},
