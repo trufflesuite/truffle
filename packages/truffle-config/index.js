@@ -243,12 +243,32 @@ function Config(truffle_directory, working_directory, network) {
 };
 
 Config.prototype.addProp = function(key, obj) {
+  // possible property descriptors
+  //
+  // supports `default` and `transform` in addition to `get` and `set`
+  //
+  // default: specify function to retrieve default value (used by get)
+  // transform: specify function to transform value when (used by set)
   Object.defineProperty(this, key, {
+    // retrieve config property value
     get: obj.get || function() {
-      return this._values[key] || obj();
+      // value is specified
+      if (key in this._values) {
+        return this._values[key];
+      }
+
+      // default getter is specified
+      if (obj.default) {
+        return obj.default()
+      };
+
+      // obj is a function
+      return obj();
     },
     set: obj.set || function(val) {
-      this._values[key] = val;
+      this._values[key] = (obj.transform)
+        ? obj.transform(val)
+        : val;
     },
     configurable: true,
     enumerable: true
