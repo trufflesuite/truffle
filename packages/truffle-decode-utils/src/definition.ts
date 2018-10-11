@@ -53,8 +53,14 @@ export namespace Definition {
         return 20;
 
       case "int":
-      case "uint":
-        return parseInt(typeIdentifier(definition).match(/t_[a-z]+([0-9]+)/)[1]) / 8;
+      case "uint": {
+        const regexMatch = typeIdentifier(definition).match(/t_[a-z]+([0-9]+)/);
+        let bitSize = 256; // default of 256 bits
+        if (regexMatch.length > 1) {
+          bitSize = parseInt(regexMatch[1]);
+        }
+        return bitSize / 8;
+      }
 
       case "enum": {
         if (referenceDeclaration) {
@@ -66,6 +72,16 @@ export namespace Definition {
         }
         else {
           return 0;
+        }
+      }
+
+      case "bytes": {
+        const regexMatch = typeIdentifier(definition).match(/t_[a-z]+([0-9]+)/);
+        if (regexMatch && regexMatch.length > 1) {
+          return parseInt(regexMatch[1]);
+        }
+        else {
+          return EVMUtils.WORD_SIZE;
         }
       }
 
