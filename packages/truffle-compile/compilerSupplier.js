@@ -287,7 +287,7 @@ CompilerSupplier.prototype.getBuilt = function(buildType){
 //------------------------------------ Utils -------------------------------------------------------
 
 /**
- * Returns true if compiler file is cached
+ * Returns a valid version name if compiler file is cached
  * @param  {String}  localPath
  * @return {Boolean}
  */
