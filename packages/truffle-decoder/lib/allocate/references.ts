@@ -71,11 +71,12 @@ export function allocateDefinition(node: any, state: ContractStateInfo, referenc
   }
 
   if (nodeTypeClass != "struct") {
-    const referenceDeclaration: undefined | DecodeUtils.AstDefinition =
-      nodeTypeClass === "enum" ?
-        referenceDeclarations[node.typeName.referencedDeclaration]
-      :
-        undefined;
+    let referenceDeclaration: undefined | DecodeUtils.AstDefinition = undefined;
+    if (nodeTypeClass === "enum") {
+      const referenceId = node.referencedDeclaration ||
+        (node.typeName ? node.typeName.referencedDeclaration : undefined);
+      referenceDeclaration = referenceDeclarations[referenceId];
+    }
     const storageSize = DecodeUtils.Definition.storageSize(node, referenceDeclaration);
 
     let range = DecodeUtils.Allocation.allocateValue(slot, state.slot.index, storageSize);
@@ -98,7 +99,8 @@ export function allocateDefinition(node: any, state: ContractStateInfo, referenc
     state.slot.index = range.next.index;
   }
   else {
-    const structDefinition = referenceDeclarations[node.typeName.referencedDeclaration]; // ast node of StructDefinition
+    const referenceId = node.referencedDeclaration || (node.typeName && node.typeName.referencedDeclaration);
+    const structDefinition = referenceDeclarations[referenceId]; // ast node of StructDefinition
     if (structDefinition) {
       let structSlotAllocation: SlotAllocation = {
         offset: new BN(0),

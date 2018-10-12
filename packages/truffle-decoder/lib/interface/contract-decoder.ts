@@ -41,7 +41,6 @@ export interface EvmStruct {
 };
 
 export interface EvmEnum {
-  name: string;
   type: string;
   value: string;
 };

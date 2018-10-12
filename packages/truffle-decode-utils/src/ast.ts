@@ -24,6 +24,7 @@ export interface AstDefinition {
     valueType?: any;
     length?: any;
     referencedDeclaration?: any;
+    baseType?: any;
   };
   expression: {
     referencedDeclaration?: any;

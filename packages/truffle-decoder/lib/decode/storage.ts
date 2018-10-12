@@ -16,7 +16,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
   const { state } = info;
 
   switch (DecodeUtils.Definition.typeClass(definition)) {
-    case "array":
+    case "array": {
       // debug("storage array! %o", pointer);
       if (definition.typeName.length === null) {
         data = await read(pointer, state, web3, contractAddress);
@@ -32,11 +32,9 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       // debug("length %o", length);
 
       const baseDefinition = DecodeUtils.Definition.baseDefinition(definition);
-      const referenceDeclaration: undefined | DecodeUtils.AstDefinition =
-        DecodeUtils.Definition.typeClass(baseDefinition) === "enum" ?
-          info.referenceDeclarations[baseDefinition.typeName.referencedDeclaration]
-        :
-          undefined;
+      const referenceId = baseDefinition.referencedDeclaration ||
+        (baseDefinition.typeName ? baseDefinition.typeName.referencedDeclaration : undefined);
+      const referenceDeclaration: undefined | DecodeUtils.AstDefinition = info.referenceDeclarations[referenceId];
       const baseSize = DecodeUtils.Definition.storageSize(baseDefinition, referenceDeclaration);
       const perWord = Math.floor(DecodeUtils.EVM.WORD_SIZE / baseSize);
       // debug("baseSize %o", baseSize);
@@ -109,9 +107,10 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       });
 
       return await Promise.all(decodePromises);
+    }
 
     case "bytes":
-    case "string":
+    case "string": {
       data = await read(pointer, state, web3, contractAddress);
       if (data == undefined) {
         return undefined;
@@ -156,8 +155,9 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
           }
         }, info, web3, contractAddress);
       }
+    }
 
-    case "struct":
+    case "struct": {
       const { scopes } = info;
 
       const referencedDeclaration = (definition.typeName)
@@ -212,6 +212,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
 
         return result;
       }
+    }
 
     case "enum": {
       data = await read(pointer, state, web3, contractAddress);
@@ -220,18 +221,18 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       }
 
       const numRepresentation = DecodeUtils.Conversion.toBN(data).toNumber();
-      const enumDeclaration = info.referenceDeclarations[definition.typeName.referencedDeclaration];
+      const referenceId = definition.referencedDeclaration ||
+        (definition.typeName ? definition.typeName.referencedDeclaration : undefined);
+      const enumDeclaration = info.referenceDeclarations[referenceId];
       const decodedValue = enumDeclaration.members[numRepresentation].name;
 
       return <EvmEnum>{
-        name: definition.name,
-        type: definition.typeName.name,
-        value: definition.typeName.name + "." + decodedValue
+        type: enumDeclaration.name,
+        value: enumDeclaration.name + "." + decodedValue
       }
     }
 
-    case "mapping":
-
+    case "mapping": {
       return <EvmMapping>{
         name: definition.name,
         type: "mapping",
@@ -240,9 +241,11 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
         valueType: DecodeUtils.Definition.typeClass(definition.typeName.valueType),
         members: {}
       };
+    }
 
-    default:
+    default: {
       // debug("Unknown storage reference type: %s", DecodeUtils.typeIdentifier(definition));
       return undefined;
+    }
   }
 }

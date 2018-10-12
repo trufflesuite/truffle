@@ -118,6 +118,10 @@ export namespace Definition {
   }
 
   export function baseDefinition(definition: AstDefinition): AstDefinition {
+    if (definition.typeName && typeof definition.typeName.baseType === "object") {
+      return definition.typeName.baseType;
+    }
+
     let baseIdentifier = typeIdentifier(definition)
       // first dollar sign     last dollar sign
       //   `---------.       ,---'
