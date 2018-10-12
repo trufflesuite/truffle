@@ -22,6 +22,7 @@ export interface AstDefinition {
     typeDescriptions: AstTypeDescriptions;
     keyType?: any;
     valueType?: any;
+    length?: any;
     referencedDeclaration?: any;
   };
   expression: {

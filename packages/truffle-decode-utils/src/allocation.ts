@@ -23,7 +23,7 @@ export namespace Allocation {
   export interface Slot {
     key?: any; // TODO:
     path?: Slot;
-    hashOffset?: boolean;
+    hashPath?: boolean;
     offset: BN;
   };
 

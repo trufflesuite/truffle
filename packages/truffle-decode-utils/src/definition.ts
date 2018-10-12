@@ -54,12 +54,7 @@ export namespace Definition {
 
       case "int":
       case "uint": {
-        const regexMatch = typeIdentifier(definition).match(/t_[a-z]+([0-9]+)/);
-        let bitSize = 256; // default of 256 bits
-        if (regexMatch.length > 1) {
-          bitSize = parseInt(regexMatch[1]);
-        }
-        return bitSize / 8;
+        return specifiedSize(definition) || 32; // default of 256 bits
       }
 
       case "enum": {
@@ -76,13 +71,7 @@ export namespace Definition {
       }
 
       case "bytes": {
-        const regexMatch = typeIdentifier(definition).match(/t_[a-z]+([0-9]+)/);
-        if (regexMatch && regexMatch.length > 1) {
-          return parseInt(regexMatch[1]);
-        }
-        else {
-          return EVMUtils.WORD_SIZE;
-        }
+        return specifiedSize(definition) || EVMUtils.WORD_SIZE;
       }
 
       case "string":
@@ -94,6 +83,22 @@ export namespace Definition {
         // HACK just to reserve slot. mappings have no size as such
         return EVMUtils.WORD_SIZE;
     }
+  }
+
+  export function requireStartOfSlot(definition: AstDefinition): boolean {
+    return isArray(definition) || isStruct(definition) || isMapping(definition);
+  }
+
+  export function isArray(definition: AstDefinition): boolean {
+    return typeIdentifier(definition).match(/^t_array/) != null;
+  }
+
+  export function isDynamicArray(definition: AstDefinition): boolean {
+    return isArray(definition) && definition.typeName.length === null;
+  }
+
+  export function isStruct(definition: AstDefinition): boolean {
+    return typeIdentifier(definition).match(/^t_struct/) != null;
   }
 
   export function isMapping(definition: AstDefinition): boolean {

@@ -63,6 +63,13 @@ export function allocateDefinition(node: any, state: ContractStateInfo, referenc
 
   const nodeTypeClass = DecodeUtils.Definition.typeClass(node);
 
+  if (DecodeUtils.Definition.requireStartOfSlot(node) && state.slot.index < DecodeUtils.EVM.WORD_SIZE - 1) {
+    // structs, mappings, and arrays need to start on their own slot
+    state.slot.index = DecodeUtils.EVM.WORD_SIZE - 1;
+    state.slot.offset = state.slot.offset.addn(1);
+    slot.offset = slot.offset.addn(1);
+  }
+
   if (nodeTypeClass != "struct") {
     const referenceDeclaration: undefined | DecodeUtils.AstDefinition =
       nodeTypeClass === "enum" ?
@@ -70,7 +77,25 @@ export function allocateDefinition(node: any, state: ContractStateInfo, referenc
       :
         undefined;
     const storageSize = DecodeUtils.Definition.storageSize(node, referenceDeclaration);
-    const range = DecodeUtils.Allocation.allocateValue(slot, state.slot.index, storageSize);
+
+    let range: DecodeUtils.Allocation.Range;
+    if (nodeTypeClass === "array" && !DecodeUtils.Definition.isDynamicArray(node)) {
+      const length = parseInt(node.typeName.length.value);
+      const baseDefinitionStorageSize = DecodeUtils.Definition.storageSize(DecodeUtils.Definition.baseDefinition(node));
+      for (let i = 0; i < length; i++) {
+        if (range) {
+          const newRange = DecodeUtils.Allocation.allocateValue(range.next.slot, range.next.index, baseDefinitionStorageSize);
+          range.to = newRange.to;
+          range.next = newRange.next;
+        }
+        else {
+          range = DecodeUtils.Allocation.allocateValue(slot, state.slot.index, baseDefinitionStorageSize);
+        }
+      }
+    }
+    else {
+      range = DecodeUtils.Allocation.allocateValue(slot, state.slot.index, storageSize);
+    }
 
     state.variables[node.id] = <ContractStateVariable>{
       isChildVariable,
@@ -94,13 +119,6 @@ export function allocateDefinition(node: any, state: ContractStateInfo, referenc
         variables: state.variables,
         slot: structSlotAllocation
       };
-
-      if (state.slot.index > 0) {
-        // structs need to start on their own  slowt
-        state.slot.index = 0;
-        state.slot.offset = state.slot.offset.addn(1);
-        slot.offset = slot.offset.addn(1);
-      }
 
       state.variables[node.id] = <ContractStateVariable>{
         isChildVariable,

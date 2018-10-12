@@ -18,12 +18,17 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
   switch (DecodeUtils.Definition.typeClass(definition)) {
     case "array":
       // debug("storage array! %o", pointer);
-      data = await read(pointer, state, web3, contractAddress);
-      if (!data) {
-        return undefined;
-      }
+      if (definition.typeName.length === null) {
+        data = await read(pointer, state, web3, contractAddress);
+        if (!data) {
+          return undefined;
+        }
 
-      length = DecodeUtils.Conversion.toBN(data).toNumber();
+        length = DecodeUtils.Conversion.toBN(data).toNumber();
+      }
+      else {
+        length = parseInt(definition.typeName.length.value);
+      }
       // debug("length %o", length);
 
       const baseDefinition = DecodeUtils.Definition.baseDefinition(definition);
@@ -56,8 +61,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
 
       let from = {
         slot: {
-          ...pointer.storage.from.slot,
-          hashOffset: true
+          ...pointer.storage.from.slot
         },
         index: pointer.storage.from.index
       };
@@ -68,10 +72,18 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
         let childFrom: Allocation.StorageReference = {
           slot: {
             path: from.slot || undefined,
-            offset: new BN(offset(i))
+            offset: new BN(offset(i)),
+            hashPath: DecodeUtils.Definition.isDynamicArray(definition)
           },
           index: index(i)
         };
+        if (DecodeUtils.Definition.isDynamicArray(definition)) {
+          /*childFrom.slot = {
+            path: childFrom.slot,
+            offset: new BN(0),
+            hashPath: true
+          };*/
+        }
         return childFrom;
       });
 
@@ -123,8 +135,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
               slot: {
                 path: {
                   path: pointer.storage.from.slot.path || undefined,
-                  offset: pointer.storage.from.slot.offset,
-                  hashOffset: true
+                  offset: pointer.storage.from.slot.offset
                 },
                 offset: new BN(0)
               },

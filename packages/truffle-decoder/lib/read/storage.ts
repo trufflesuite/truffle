@@ -16,10 +16,9 @@ export function slotAddress(slot: DecodeUtils.Allocation.Slot): BN {
     return DecodeUtils.EVM.keccak256(slot.key, slotAddress(slot.path)).add(slot.offset);
   }
   else if (typeof slot.path !== "undefined") {
-    return slotAddress(slot.path).add(slot.offset);
-  }
-  else if (slot.hashOffset === true) {
-    return DecodeUtils.EVM.keccak256(slot.offset);
+    const pathAddress = slotAddress(slot.path);
+    const path: BN = slot.hashPath ? DecodeUtils.EVM.keccak256(pathAddress) : pathAddress;
+    return path.add(slot.offset);
   }
   else {
     return slot.offset;
@@ -33,9 +32,9 @@ export function slotAddressPrintout(slot: DecodeUtils.Allocation.Slot): string {
   }
   else if (typeof slot.path !== "undefined") {
     return slotAddressPrintout(slot.path) + " + " + slot.offset.toString();
-  }
-  else if (slot.hashOffset === true) {
-    return "keccak(" + slot.offset.toString() + ")";
+    const pathAddressPrintout = slotAddressPrintout(slot.path);
+    const pathPrintout: string = slot.hashPath ? "keccak(" + pathAddressPrintout + ")" : pathAddressPrintout;
+    return pathPrintout;
   }
   else {
     return slot.offset.toString();
