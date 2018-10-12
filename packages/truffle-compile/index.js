@@ -1,4 +1,3 @@
-var Profiler = require("./profiler");
 var OS = require("os");
 
 var path = require("path");
