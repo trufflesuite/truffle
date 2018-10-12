@@ -29,15 +29,16 @@ export function status(state = WAITING, action) {
 export function transaction(state = {}, action) {
   switch(action.type) {
     case actions.SAVE_TRANSACTION:
-      return {
-        ...state,
-        ...action.transaction
-      }
+      return action.transaction;
+    default:
+      return state;
+  }
+}
+
+export function receipt(state = {}, action) {
+  switch(action.type) {
     case actions.SAVE_RECEIPT:
-      return {
-        ...state,
-        ...action.receipt
-      }
+      return action.receipt;
     default:
       return state;
   }
@@ -45,7 +46,8 @@ export function transaction(state = {}, action) {
 
 const session = combineReducers({
   status,
-  transaction
+  transaction,
+  receipt
 });
 
 const reduceState = combineReducers({

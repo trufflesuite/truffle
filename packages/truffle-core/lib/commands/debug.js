@@ -547,7 +547,7 @@ var command = {
           if (session.view(trace.finished) && !alreadyFinished) {
             config.logger.log("");
             //check if transaction failed
-            if (!session.view(selectors.session.info.transaction).status) {
+            if (!session.view(selectors.session.transaction.receipt).status) {
               config.logger.log("Transaction halted with a RUNTIME ERROR.")
               config.logger.log("");
               config.logger.log("This is likely due to an intentional halting expression, like assert(), require() or revert(). It can also be due to out-of-gas exceptions. Please inspect your transaction parameters and contract code to determine the meaning of this error.");

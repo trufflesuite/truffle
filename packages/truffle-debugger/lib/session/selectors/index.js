@@ -39,16 +39,30 @@ const session = createSelectorTree({
           }
         )
       )
-    ),
+    )
+
+  },
+
+
+  /**
+   * session.transaction (namespace)
+   */
+  transaction: {
 
     /**
-     * session.info.transaction
-     * contains info on both the transaction & receipt
-     * note: yes this means it has the redundant properties "hash" and
-     * "transactionHash"
+     * session.transaction (selector)
+     * contains the web3 transaction object
      */
-    transaction: (state) => state.session.transaction
+    _: (state) => state.session.transaction,
+
+    /**
+     * session.transaction.receipt
+     * contains the web3 receipt object
+     */
+    receipt: (state) => state.session.receipt,
+
   }
+  
 });
 
 export default session;
