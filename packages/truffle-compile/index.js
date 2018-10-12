@@ -86,7 +86,9 @@ var compile = function(sources, options, callback) {
       "evm.bytecode.object",
       "evm.bytecode.sourceMap",
       "evm.deployedBytecode.object",
-      "evm.deployedBytecode.sourceMap"
+      "evm.deployedBytecode.sourceMap",
+      "userdoc",
+      "devdoc"
     ]
   }
 
@@ -106,23 +108,7 @@ var compile = function(sources, options, callback) {
     settings: {
       evmVersion: options.compilers.solc.settings.evmVersion,
       optimizer: options.compilers.solc.settings.optimizer,
-      outputSelection: {
-        "*": {
-          "": [
-            "legacyAST",
-            "ast"
-          ],
-          "*": [
-            "abi",
-            "evm.bytecode.object",
-            "evm.bytecode.sourceMap",
-            "evm.deployedBytecode.object",
-            "evm.deployedBytecode.sourceMap",
-            "devdoc",
-            "userdoc"
-          ]
-        },
-      }
+      outputSelection
     }
   };
 
