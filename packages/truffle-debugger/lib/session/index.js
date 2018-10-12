@@ -42,10 +42,10 @@ export default class Session {
   ready() {
     return new Promise( (accept, reject) => {
       this._store.subscribe( () => {
-        if (this.state.session == "ACTIVE") {
+        if (this.state.session.status == "ACTIVE") {
           accept()
-        } else if (typeof this.state.session == "object") {
-          reject(this.state.session.error);
+        } else if (typeof this.state.session.status == "object") {
+          reject(this.state.session.status.error);
         }
       });
     });
@@ -117,7 +117,7 @@ export default class Session {
   }
 
   get finished() {
-    return this.state.session == "FINISHED";
+    return this.state.session.status == "FINISHED";
   }
 
   get failed() {

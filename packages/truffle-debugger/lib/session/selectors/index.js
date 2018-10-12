@@ -39,7 +39,15 @@ const session = createSelectorTree({
           }
         )
       )
-    )
+    ),
+
+    /**
+     * session.info.transaction
+     * contains info on both the transaction & receipt
+     * note: yes this means it has the redundant properties "hash" and
+     * "transactionHash"
+     */
+    transaction: (state) => state.session.transaction
   }
 });
 

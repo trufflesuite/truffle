@@ -13,7 +13,8 @@ export const ACTIVE = "ACTIVE";
 export const ERROR = "ERROR";
 export const FINISHED = "FINISHED";
 
-export function session(state = WAITING, action) {
+export function status(state = WAITING, action) {
+  //theState to avoid name collision
   switch (action.type) {
     case actions.READY:
       return ACTIVE;
@@ -28,6 +29,28 @@ export function session(state = WAITING, action) {
       return state;
   }
 }
+
+export function transaction(state = {}, action) {
+  switch(action.type) {
+    case actions.SAVE_TRANSACTION:
+      return {
+        ...state,
+        ...action.transaction
+      }
+    case actions.SAVE_RECEIPT:
+      return {
+        ...state,
+        ...action.receipt
+      }
+    default:
+      return state;
+  }
+}
+
+const session = combineReducers({
+  status,
+  transaction
+});
 
 const reduceState = combineReducers({
   session,
