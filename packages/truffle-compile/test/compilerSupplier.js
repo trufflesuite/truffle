@@ -2,7 +2,7 @@ const CompilerSupplier = require("../compilerSupplier");
 const assert = require("assert");
 const sinon = require("sinon");
 const fs = require("fs");
-let expectedResult;
+let expectedResult, expectedFileName;
 
 describe("CompilerSupplier", () => {
   describe("prototype.versionIsCached(version)", () => {
@@ -37,7 +37,53 @@ describe("CompilerSupplier", () => {
       });
     });
   });
-  describe(".getLocal(version)", () => {
+  describe("prototype.getCached(version)", () => {
+    beforeEach(() => {
+      const compilerFileNames = [
+        "soljson-v0.4.22+commit.124ca40d.js",
+        "soljson-v0.4.23+commit.1534a40d.js",
+        "soljson-v0.4.11+commit.124234rd.js",
+      ];
+      sinon.stub(fs, "readdirSync").returns(compilerFileNames);
+    });
+    afterEach(() => {
+      fs.readdirSync.restore();
+    });
 
+    describe("when there is only one valid compiler file", () => {
+      beforeEach(() => {
+        expectedFileName = "soljson-v0.4.11+commit.124234rd.js";
+        sinon.stub(CompilerSupplier.prototype, "getFromCache").withArgs(expectedFileName).returns("correct return");
+      });
+      afterEach(() => {
+        CompilerSupplier.prototype.getFromCache.restore();
+      });
+
+      it("it calls getFromCache", () => {
+        CompilerSupplier.prototype.getCached("0.4.11");
+        assert(CompilerSupplier.prototype.getFromCache.called);
+      });
+      it("returns the result of the call to getFromCache", () => {
+        assert(CompilerSupplier.prototype.getCached("0.4.11"), "correct return");
+      });
+    });
+
+    describe("when there are multiple valid compiler files", () => {
+      beforeEach(() => {
+        expectedFileName = "soljson-v0.4.23+commit.1534a40d.js";
+        sinon.stub(CompilerSupplier.prototype, "getFromCache").withArgs(expectedFileName).returns("correct return");
+      });
+      afterEach(() => {
+        CompilerSupplier.prototype.getFromCache.restore();
+      });
+
+      it("it calls getFromCache", () => {
+        CompilerSupplier.prototype.getCached("^0.4.15");
+        assert(CompilerSupplier.prototype.getFromCache.called);
+      });
+      it("finds the most recent version of the valid versions", () => {
+        assert.equal(CompilerSupplier.prototype.getCached("^0.4.15"), "correct return");
+      });
+    });
   });
 });

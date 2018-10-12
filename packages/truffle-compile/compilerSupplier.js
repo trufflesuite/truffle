@@ -144,7 +144,6 @@ CompilerSupplier.prototype.getDefault = function(){
  */
 CompilerSupplier.prototype.getCached = function(version) {
   const cachedCompilerFileNames = fs.readdirSync(this.cachePath);
-
   const validVersions = cachedCompilerFileNames.filter((fileName) => {
     const compilerVersion = fileName.match(/-v(.*)\+/)[1];
     return semver.satisfies(compilerVersion, version);
@@ -162,7 +161,7 @@ const getMostRecentVersionOfCompiler = (versions) => {
     const fileVersion = fileName.match(/-v(.*)\+/)[1];
     const mostRecentVersion = mostRecentVersionFileName.match(/-v(.*)\+/)[1];
     if (semver.gtr(fileVersion, mostRecentVersion)) return fileName;
-  }, null);
+  }, "-v0.0.0+");
 }
 
 /**
