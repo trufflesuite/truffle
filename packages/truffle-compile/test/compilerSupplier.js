@@ -2,10 +2,10 @@ const CompilerSupplier = require("../compilerSupplier");
 const assert = require("assert");
 const sinon = require("sinon");
 const fs = require("fs");
-let supplier, expectedResult;
+let expectedResult;
 
 describe("CompilerSupplier", () => {
-  describe(".versionIsCached(version)", () => {
+  describe("prototype.versionIsCached(version)", () => {
     beforeEach(() => {
       const compilerFileNames = [
         "soljson-v0.4.22+commit.124ca40d.js",
@@ -20,22 +20,20 @@ describe("CompilerSupplier", () => {
 
     describe("when a cached version of the compiler is present", () => {
       beforeEach(() => {
-        supplier = new CompilerSupplier();
         expectedResult = "0.4.11";
       });
 
       it("returns a valid version name", () => {
-        assert.equal(supplier.versionIsCached("0.4.11"), expectedResult);
+        assert.equal(CompilerSupplier.prototype.versionIsCached("0.4.11"), expectedResult);
       });
     });
     describe("when a cached version of the compiler is not present", () => {
       beforeEach(() => {
-        supplier = new CompilerSupplier();
         expectedResult = undefined;
       });
 
       it("returns undefined", () => {
-        assert.equal(supplier.versionIsCached("0.4.29"), expectedResult);
+        assert.equal(CompilerSupplier.prototype.versionIsCached("0.4.29"), expectedResult);
       });
     });
   });

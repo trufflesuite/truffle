@@ -62,13 +62,15 @@ CompilerSupplier.prototype.load = function(){
   return new Promise((accept, reject) => {
     const useDocker =  self.config.docker;
     const useDefault = !version;
-    const useLocal =   !useDefault && self.versionIsCached(version);
+    const useCached =  !useDefault && self.versionIsCached(version);
+    const useLocal =   !useDefault && self.isLocal(version);
     const useNative =  !useLocal && isNative;
     const useRemote =  !useNative
 
     if (useDocker)  return accept(self.getBuilt("docker"));
     if (useNative)  return accept(self.getBuilt("native"));
     if (useDefault) return accept(self.getDefault());
+    if (useCached)  return accept(self.getCached(version));
     if (useLocal)   return accept(self.getLocal(version));
     if (useRemote)  return accept(self.getByUrl(version)); // Tries cache first, then remote.
   });
@@ -136,11 +138,11 @@ CompilerSupplier.prototype.getDefault = function(){
 }
 
 /**
- * Gets an npm installed solc from specified version.
- * @param  {String} localPath
+ * Gets a cached solc from specified version.
+ * @param  {String} version
  * @return {Module}
  */
-CompilerSupplier.prototype.getLocal = function(version) {
+CompilerSupplier.prototype.getCached = function(version) {
   const cachedCompilerFileNames = fs.readdirSync(this.cachePath);
 
   const validVersions = cachedCompilerFileNames.filter((fileName) => {
@@ -161,6 +163,29 @@ const getMostRecentVersionOfCompiler = (versions) => {
     const mostRecentVersion = mostRecentVersionFileName.match(/-v(.*)\+/)[1];
     if (semver.gtr(fileVersion, mostRecentVersion)) return fileName;
   }, null);
+}
+
+/**
+ * Gets an npm installed solc from specified path.
+ * @param  {String} localPath
+ * @return {Module}
+ */
+CompilerSupplier.prototype.getLocal = function(localPath) {
+  const self = this;
+  let compiler;
+
+  if (!path.isAbsolute(localPath)){
+    localPath = path.resolve(process.cwd(), localPath);
+  }
+
+  try {
+    compiler = originalRequire(localPath)
+    self.removeListener();
+  } catch (err) {
+    throw self.errors('noPath', localPath);
+  }
+
+  return compiler;
 }
 
 /**
@@ -285,6 +310,15 @@ CompilerSupplier.prototype.getBuilt = function(buildType){
 }
 
 //------------------------------------ Utils -------------------------------------------------------
+
+/**
+ * Returns true if file exists or `localPath` is an absolute path.
+ * @param  {String}  localPath
+ * @return {Boolean}
+ */
+CompilerSupplier.prototype.isLocal = function(localPath) {
+  return fs.existsSync(localPath) || path.isAbsolute(localPath);
+}
 
 /**
  * Returns a valid version name if compiler file is cached
