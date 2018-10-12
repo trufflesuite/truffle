@@ -11,7 +11,6 @@ import * as actions from "./actions";
 export const WAITING = "WAITING";
 export const ACTIVE = "ACTIVE";
 export const ERROR = "ERROR";
-export const FINISHED = "FINISHED";
 
 export function status(state = WAITING, action) {
   //theState to avoid name collision
@@ -21,9 +20,6 @@ export function status(state = WAITING, action) {
 
     case actions.ERROR:
       return { error: action.error };
-
-    case actions.FINISH:
-      return FINISHED;
 
     default:
       return state;

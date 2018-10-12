@@ -116,21 +116,7 @@ export default class Session {
     return selector(this.state);
   }
 
-  get finished() {
-    return this.state.session.status == "FINISHED";
-  }
-
-  get failed() {
-    return this.finished && this.view(evm.current.callstack).length
-  }
-
   dispatch(action) {
-    if (this.finished) {
-      debug("finished: intercepting action %o", action);
-
-      return false;
-    }
-
     this._store.dispatch(action);
 
     return true;
