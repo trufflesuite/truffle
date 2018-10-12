@@ -1,12 +1,13 @@
 const path = require('path');
 const fs = require('fs');
-const child = require('child_process');
+const { execSync } = require('child_process');
 const request = require('request-promise');
 const requireFromString = require('require-from-string');
 const findCacheDir = require('find-cache-dir');
 const originalRequire = require('original-require');
 const solcWrap = require('./solcWrap.js');
 const ora = require('ora');
+const semver = require('semver');
 
 //------------------------------ Constructor/Config ------------------------------------------------
 
@@ -61,7 +62,7 @@ CompilerSupplier.prototype.load = function(){
   return new Promise((accept, reject) => {
     const useDocker =  self.config.docker;
     const useDefault = !version;
-    const useLocal =   !useDefault && self.isLocal(version);
+    const useLocal =   !useDefault && self.versionIsCached(version);
     const useNative =  !useLocal && isNative;
     const useRemote =  !useNative
 
@@ -135,28 +136,32 @@ CompilerSupplier.prototype.getDefault = function(){
 }
 
 /**
- * Gets an npm installed solc from specified path.
+ * Gets an npm installed solc from specified version.
  * @param  {String} localPath
  * @return {Module}
  */
-CompilerSupplier.prototype.getLocal = function(localPath){
-  const self = this;
-  let compiler;
+CompilerSupplier.prototype.getLocal = function(version) {
+  const cachedCompilerFileNames = fs.readdirSync(this.cachePath);
 
-  if (!path.isAbsolute(localPath)){
-    localPath = path.resolve(process.cwd(), localPath);
-  }
+  const validVersions = cachedCompilerFileNames.filter((fileName) => {
+    const compilerVersion = fileName.match(/-v(.*)\+/)[1];
+    return semver.satisfies(compilerVersion, version);
+  });
 
-  try {
-    compiler = originalRequire(localPath)
-    self.removeListener();
-  } catch (err) {
-    throw self.errors('noPath', localPath);
-  }
-
-  return compiler;
+  const multipleValidVersions = validVersions.length > 1;
+  const compilerFileName = (multipleValidVersions) ?
+    getMostRecentVersionOfCompiler(validVersions) :
+    validVersions[0];
+  return this.getFromCache(compilerFileName);
 }
 
+const getMostRecentVersionOfCompiler = (versions) => {
+  return versions.reduce((mostRecentVersionFileName, fileName) => {
+    const fileVersion = fileName.match(/-v(.*)\+/)[1];
+    const mostRecentVersion = mostRecentVersionFileName.match(/-v(.*)\+/)[1];
+    if (semver.gtr(fileVersion, mostRecentVersion)) return fileName;
+  }, null);
+}
 
 /**
  * Fetches solc versions object from remote solc-bin. This includes an array of build
@@ -272,7 +277,7 @@ CompilerSupplier.prototype.getBuilt = function(buildType){
     .getByUrl(commit)
     .then(solcjs => {
       return {
-        compileStandard: (options) => String(child.execSync(command, {input: options})),
+        compileStandard: (options) => String(execSync(command, {input: options})),
         version: () => versionString,
         importsParser: solcjs,
       }
@@ -282,12 +287,14 @@ CompilerSupplier.prototype.getBuilt = function(buildType){
 //------------------------------------ Utils -------------------------------------------------------
 
 /**
- * Returns true if file exists or `localPath` is an absolute path.
+ * Returns true if compiler file is cached
  * @param  {String}  localPath
  * @return {Boolean}
  */
-CompilerSupplier.prototype.isLocal = function(localPath){
-  return fs.existsSync(localPath) || path.isAbsolute(localPath);
+CompilerSupplier.prototype.versionIsCached = function(version) {
+  const cachedCompilerFileNames = fs.readdirSync(this.cachePath);
+  const cachedVersions = cachedCompilerFileNames.map((fileName) => fileName.match(/-v(.*)\+/)[1]);
+  return cachedVersions.find((cachedVersion) => semver.satisfies(cachedVersion, version));
 }
 
 /**
@@ -297,7 +304,7 @@ CompilerSupplier.prototype.isLocal = function(localPath){
  * @return {String}  solc version string
  * @throws {Error}
  */
-CompilerSupplier.prototype.validateDocker = function(){
+CompilerSupplier.prototype.validateDocker = function() {
   const image = this.config.version;
   const fileName = image + '.version';
 
@@ -312,20 +319,20 @@ CompilerSupplier.prototype.validateDocker = function(){
 
   // Docker exists locally
   try {
-    child.execSync('docker -v');
+    execSync('docker -v');
   } catch(err){
     throw this.errors('noDocker');
   }
 
   // Image exists locally
   try {
-    child.execSync('docker inspect --type=image ethereum/solc:' + image);
+    execSync('docker inspect --type=image ethereum/solc:' + image);
   } catch(err){
     throw this.errors('noImage', image);
   }
 
   // Get version & cache.
-  const version = child.execSync('docker run ethereum/solc:' + image + ' --version');
+  const version = execSync('docker run ethereum/solc:' + image + ' --version');
   const normalized = this.normalizeVersion(version);
   this.addToCache(normalized, fileName);
   return normalized;
@@ -338,10 +345,10 @@ CompilerSupplier.prototype.validateDocker = function(){
  * @return {String}  solc version string
  * @throws {Error}
  */
-CompilerSupplier.prototype.validateNative = function(){
+CompilerSupplier.prototype.validateNative = function() {
   let version;
   try {
-    version = child.execSync('solc --version');
+    version = execSync('solc --version');
   } catch(err){
     throw this.errors('noNative', null, err);
   }
@@ -356,7 +363,7 @@ CompilerSupplier.prototype.validateNative = function(){
  * @param  {String} versionString   version info from ex: `solc -v`
  * @return {String}                 commit key, ex: commit.4cb486ee
  */
-CompilerSupplier.prototype.getCommitFromVersion = function(versionString){
+CompilerSupplier.prototype.getCommitFromVersion = function(versionString) {
   return 'commit.' + versionString.match(/commit\.(.*?)\./)[1]
 }
 
@@ -366,7 +373,7 @@ CompilerSupplier.prototype.getCommitFromVersion = function(versionString){
  * @param  {Buffer} version result of childprocess
  * @return {String}         normalized version string: e.g 0.4.22+commit.4cb486ee.Linux.g++
  */
-CompilerSupplier.prototype.normalizeVersion = function(version){
+CompilerSupplier.prototype.normalizeVersion = function(version) {
   version = String(version);
   return version.split(':')[1].trim();
 }
@@ -377,7 +384,7 @@ CompilerSupplier.prototype.normalizeVersion = function(version){
  * @param  {String} fileName ex: "soljson-v0.4.21+commit.dfe3193c.js"
  * @return {String}          path
  */
-CompilerSupplier.prototype.resolveCache = function(fileName){
+CompilerSupplier.prototype.resolveCache = function(fileName) {
   const thunk = findCacheDir({name: 'truffle', cwd: __dirname, thunk: true});
   return thunk(fileName);
 }
@@ -387,7 +394,7 @@ CompilerSupplier.prototype.resolveCache = function(fileName){
  * @param  {String}  fileName   ex: "soljson-v0.4.21+commit.dfe3193c.js"
  * @return {Boolean}
  */
-CompilerSupplier.prototype.isCached = function(fileName){
+CompilerSupplier.prototype.isCached = function(fileName) {
   const file = this.resolveCache(fileName);
   return fs.existsSync(file);
 }
@@ -398,7 +405,7 @@ CompilerSupplier.prototype.isCached = function(fileName){
  * @param {String} code       JS code string downloaded from solc-bin
  * @param {String} fileName   ex: "soljson-v0.4.21+commit.dfe3193c.js"
  */
-CompilerSupplier.prototype.addToCache = function(code, fileName){
+CompilerSupplier.prototype.addToCache = function(code, fileName) {
   if (!this.config.cache) return;
 
   const filePath = this.resolveCache(fileName);
@@ -410,7 +417,7 @@ CompilerSupplier.prototype.addToCache = function(code, fileName){
  * @param  {String} file  ex: "soljson-v0.4.21+commit.dfe3193c.js"
  * @return {Module}       solc
  */
-CompilerSupplier.prototype.getFromCache = function(fileName){
+CompilerSupplier.prototype.getFromCache = function(fileName) {
   const filePath = this.resolveCache(fileName);
   const soljson = originalRequire(filePath);
   const wrapped = solcWrap(soljson);
