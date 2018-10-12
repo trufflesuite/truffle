@@ -96,6 +96,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
           length: baseSize
         };
 
+        currentReference.index -= 1;
 
         ranges.push(childRange);
       }
