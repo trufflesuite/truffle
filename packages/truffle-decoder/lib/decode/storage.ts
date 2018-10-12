@@ -67,33 +67,43 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       };
 
       // debug("pointer: %o", pointer);
-      const fromSlots = [...Array(length).keys()]
-      .map( (i) => {
-        let childFrom: Allocation.StorageReference = {
-          slot: {
-            path: from.slot || undefined,
-            offset: new BN(offset(i)),
-            hashPath: DecodeUtils.Definition.isDynamicArray(definition)
-          },
-          index: index(i)
-        };
-        if (DecodeUtils.Definition.isDynamicArray(definition)) {
-          /*childFrom.slot = {
-            path: childFrom.slot,
-            offset: new BN(0),
-            hashPath: true
-          };*/
-        }
-        return childFrom;
-      });
+      let ranges: Allocation.Range[] = [];
+      let currentReference: Allocation.StorageReference = {
+        slot: {
+          path: from.slot || undefined,
+          offset: new BN(0),
+          hashPath: DecodeUtils.Definition.isDynamicArray(definition)
+        },
+        index: DecodeUtils.EVM.WORD_SIZE - 1
+      };
 
-      const decodePromises = fromSlots.map( (childFrom, idx) => {
+      for (let i = 0; i < length; i++) {
+        currentReference.index -= baseSize - 1;
+        if (currentReference.index < 0) {
+          currentReference.slot.offset = currentReference.slot.offset.addn(1);
+          currentReference.index = DecodeUtils.EVM.WORD_SIZE - baseSize;
+        }
+
+        let childRange = <Allocation.Range>{
+          from: {
+            slot: {
+              path: currentReference.slot.path,
+              offset: currentReference.slot.offset.clone(),
+              hashPath: currentReference.slot.hashPath
+            },
+            index: currentReference.index
+          },
+          length: baseSize
+        };
+
+
+        ranges.push(childRange);
+      }
+
+      const decodePromises = ranges.map( (childRange, idx) => {
         // debug("childFrom %d, %o", idx, childFrom);
         return decode(DecodeUtils.Definition.baseDefinition(definition), <StoragePointer>{
-          storage: {
-            from: childFrom,
-            length: baseSize
-          }
+          storage: childRange
         }, info, web3, contractAddress);
       });
 

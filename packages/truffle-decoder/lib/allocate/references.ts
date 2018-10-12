@@ -78,23 +78,12 @@ export function allocateDefinition(node: any, state: ContractStateInfo, referenc
         undefined;
     const storageSize = DecodeUtils.Definition.storageSize(node, referenceDeclaration);
 
-    let range: DecodeUtils.Allocation.Range;
+    let range = DecodeUtils.Allocation.allocateValue(slot, state.slot.index, storageSize);
     if (nodeTypeClass === "array" && !DecodeUtils.Definition.isDynamicArray(node)) {
       const length = parseInt(node.typeName.length.value);
       const baseDefinitionStorageSize = DecodeUtils.Definition.storageSize(DecodeUtils.Definition.baseDefinition(node));
-      for (let i = 0; i < length; i++) {
-        if (range) {
-          const newRange = DecodeUtils.Allocation.allocateValue(range.next.slot, range.next.index, baseDefinitionStorageSize);
-          range.to = newRange.to;
-          range.next = newRange.next;
-        }
-        else {
-          range = DecodeUtils.Allocation.allocateValue(slot, state.slot.index, baseDefinitionStorageSize);
-        }
-      }
-    }
-    else {
-      range = DecodeUtils.Allocation.allocateValue(slot, state.slot.index, storageSize);
+      const totalAdditionalSlotsUsed = Math.ceil(length * baseDefinitionStorageSize / DecodeUtils.EVM.WORD_SIZE) - 1;
+      range.next.slot.offset = range.next.slot.offset.addn(totalAdditionalSlotsUsed);
     }
 
     state.variables[node.id] = <ContractStateVariable>{
