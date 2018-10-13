@@ -62,16 +62,16 @@ CompilerSupplier.prototype.load = function(){
   return new Promise((accept, reject) => {
     const useDocker =  self.config.docker;
     const useDefault = !version;
-    const useCached =  !useDefault && self.versionIsCached(version);
     const useLocal =   !useDefault && self.isLocal(version);
+    const useCached =  !useDefault && self.versionIsCached(version);
     const useNative =  !useLocal && isNative;
     const useRemote =  !useNative
 
     if (useDocker)  return accept(self.getBuilt("docker"));
     if (useNative)  return accept(self.getBuilt("native"));
     if (useDefault) return accept(self.getDefault());
-    if (useCached)  return accept(self.getCached(version));
     if (useLocal)   return accept(self.getLocal(version));
+    if (useCached)  return accept(self.getCached(version));
     if (useRemote)  return accept(self.getByUrl(version)); // Tries cache first, then remote.
   });
 }
