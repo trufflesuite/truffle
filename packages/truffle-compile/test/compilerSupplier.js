@@ -59,11 +59,7 @@ describe("CompilerSupplier", () => {
         CompilerSupplier.prototype.getFromCache.restore();
       });
 
-      it("it calls getFromCache", () => {
-        CompilerSupplier.prototype.getCached("0.4.11");
-        assert(CompilerSupplier.prototype.getFromCache.called);
-      });
-      it("returns the result of the call to getFromCache", () => {
+      it("calls getFromCache and returns the result", () => {
         assert(CompilerSupplier.prototype.getCached("0.4.11"), "correct return");
       });
     });
@@ -77,11 +73,7 @@ describe("CompilerSupplier", () => {
         CompilerSupplier.prototype.getFromCache.restore();
       });
 
-      it("it calls getFromCache", () => {
-        CompilerSupplier.prototype.getCached("^0.4.15");
-        assert(CompilerSupplier.prototype.getFromCache.called);
-      });
-      it("finds the most recent version of the valid versions", () => {
+      it("calls getFromCache with the most recent compiler version and returns the result", () => {
         assert.equal(CompilerSupplier.prototype.getCached("^0.4.15"), "correct return");
       });
     });
