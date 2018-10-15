@@ -5,8 +5,7 @@ import { put, call, race, take, select } from 'redux-saga/effects';
 
 import { prefixName } from "lib/helpers";
 
-import * as traceSagas from "lib/trace/sagas";
-import trace from "lib/trace/selectors";
+import * as trace from "lib/trace/sagas";
 
 import * as actions from "../actions";
 
@@ -50,7 +49,7 @@ export default prefixName("controller", saga);
  */
 function* advance() {
   // send action to advance trace
-  yield *traceSagas.advance();
+  yield *trace.advance();
 }
 
 /**
@@ -76,7 +75,7 @@ function* stepNext () {
       upcoming = null;
     }
 
-    finished = yield select(trace.finished);
+    finished = yield select(controller.finished);
 
     // if the next step's source range is still the same, keep going
   } while (
@@ -219,7 +218,7 @@ function *continueUntilBreakpoint () {
     previousSourceId = currentSourceId;
 
     currentLocation = yield select(controller.current.location);
-    finished = yield select(trace.finished);
+    finished = yield select(controller.finished);
     debug("finished %o",finished);
 
     currentNode = currentLocation.node.id;
