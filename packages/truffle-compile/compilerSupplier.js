@@ -54,7 +54,7 @@ CompilerSupplier.prototype.cachePath = findCacheDir({
  *
  * @return {Module|Object}         solc
  */
-CompilerSupplier.prototype.load = function(){
+CompilerSupplier.prototype.load = function() {
   const self = this;
   const version = self.config.version;
   const isNative = self.config.version === 'native';
@@ -111,7 +111,7 @@ CompilerSupplier.prototype.getReleases = function() {
  * Fetches the first page of docker tags for the the ethereum/solc image
  * @return {Object} tags
  */
-CompilerSupplier.prototype.getDockerTags = function(){
+CompilerSupplier.prototype.getDockerTags = function() {
   const self = this;
 
   return request(self.config.dockerTagsUrl)
@@ -131,7 +131,7 @@ CompilerSupplier.prototype.getDockerTags = function(){
  * Gets solc from `node_modules`.`
  * @return {Module} solc
  */
-CompilerSupplier.prototype.getDefault = function(){
+CompilerSupplier.prototype.getDefault = function() {
   const compiler = require('solc');
   this.removeListener();
   return compiler;
@@ -219,7 +219,7 @@ CompilerSupplier.prototype.getVersions = function() {
  * @param  {Object} allVersions     (see `getVersions`)
  * @return {String} url             ex: "soljson-v0.4.21+commit.dfe3193c.js"
  */
-CompilerSupplier.prototype.getVersionUrlSegment = function(version, allVersions){
+CompilerSupplier.prototype.getVersionUrlSegment = function(version, allVersions) {
 
   if (allVersions.releases[version]) return allVersions.releases[version];
 
@@ -243,7 +243,7 @@ CompilerSupplier.prototype.getVersionUrlSegment = function(version, allVersions)
  * @param  {String} version ex: "0.4.1", "0.4.16-nightly.2017.8.9+commit.81887bc7"
  * @return {Module}         solc
  */
-CompilerSupplier.prototype.getByUrl = function(version){
+CompilerSupplier.prototype.getByUrl = function(version) {
   const self = this;
 
   return self
@@ -280,7 +280,7 @@ CompilerSupplier.prototype.getByUrl = function(version){
  * or natively build solc. Also fetches a companion solcjs for the built js to parse imports
  * @return {Object} solc output
  */
-CompilerSupplier.prototype.getBuilt = function(buildType){
+CompilerSupplier.prototype.getBuilt = function(buildType) {
   let versionString;
   let command;
 
@@ -326,7 +326,10 @@ CompilerSupplier.prototype.isLocal = function(localPath) {
  */
 CompilerSupplier.prototype.versionIsCached = function(version) {
   const cachedCompilerFileNames = fs.readdirSync(this.cachePath);
-  const cachedVersions = cachedCompilerFileNames.map((fileName) => fileName.match(/-v(.*)\+/)[1]);
+  const cachedVersions = cachedCompilerFileNames.map((fileName) => {
+    const match = fileName.match(/-v(.*)\+/);
+    if (match && match.length > 0) return match[1];
+  });
   return cachedVersions.find((cachedVersion) => semver.satisfies(cachedVersion, version));
 }
 
@@ -463,7 +466,7 @@ CompilerSupplier.prototype.getFromCache = function(fileName) {
  * @param  {String} code JS code
  * @return {Module}      solc
  */
-CompilerSupplier.prototype.compilerFromString = function(code){
+CompilerSupplier.prototype.compilerFromString = function(code) {
   const soljson = requireFromString(code);
   const wrapped = solcWrap(soljson);
   this.removeListener();
@@ -474,7 +477,7 @@ CompilerSupplier.prototype.compilerFromString = function(code){
  * Cleans up error listeners set (by solc?) when requiring it. (This code inherited from
  * previous implementation, note to self - ask Tim about this)
  */
-CompilerSupplier.prototype.removeListener = function(){
+CompilerSupplier.prototype.removeListener = function() {
   const listeners = process.listeners("uncaughtException");
   const execeptionHandler = listeners[listeners.length - 1];
 
@@ -490,7 +493,7 @@ CompilerSupplier.prototype.removeListener = function(){
  * @param  {Object} err   [optional] additional error associated with this error
  * @return {Error}
  */
-CompilerSupplier.prototype.errors = function(kind, input, err){
+CompilerSupplier.prototype.errors = function(kind, input, err) {
   const info = 'Run `truffle compile --list` to see available versions.'
 
   const kinds = {
