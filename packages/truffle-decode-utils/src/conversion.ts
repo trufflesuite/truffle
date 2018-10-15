@@ -120,7 +120,7 @@ export namespace Conversion {
         return bytes;
       }
 
-      bytes = new Uint8Array(number.toArrayLike(Buffer))
+      bytes = new Uint8Array(number.toArrayLike(new Buffer(0)))
     }
 
     return bytes;
