@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("test:solidity");
+const debug = debugModule("test:evm");
 
 import { assert } from "chai";
 
@@ -10,7 +10,6 @@ import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
 
 import evm from "lib/evm/selectors";
-
 
 const __OUTER = `
 pragma solidity ^0.4.18;
@@ -49,17 +48,10 @@ const __MIGRATION = `
 let Outer = artifacts.require("Outer");
 let Inner = artifacts.require("Inner");
 
-module.exports = function(deployer) {
-  return deployer
-    .then(function() {
-      return deployer.deploy(Inner);
-    })
-    .then(function() {
-      return Inner.deployed();
-    })
-    .then(function(inner) {
-      return deployer.deploy(Outer, inner.address);
-    });
+module.exports = async function(deployer) {
+  await deployer.deploy(Inner);
+  const inner = await Inner.deployed();
+  await deployer.deploy(Outer, inner.address);
 };
 `;
 

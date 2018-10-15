@@ -1,6 +1,6 @@
 var command = {
   command: "help",
-  description: "Display a list of all commands or information about a specific command",
+  description: "List all commands or provide information about a specific command",
   help: {
     usage: "truffle help [<command>]",
     options: [

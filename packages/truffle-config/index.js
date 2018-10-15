@@ -59,12 +59,16 @@ function Config(truffle_directory, working_directory, network) {
           },
           evmVersion: "byzantium"
         }
-      }
+      },
+      vyper: {}
     },
     logger: {
       log: function() {},
     }
   };
+
+  const resolveDirectory = (value) =>
+    path.resolve(self.working_directory, value);
 
   var props = {
     // These are already set.
@@ -80,26 +84,32 @@ function Config(truffle_directory, working_directory, network) {
     logger: function() {},
     compilers: function() {},
 
-    build_directory: function() {
-      return path.join(self.working_directory, "build");
+    build_directory: {
+      default: () => path.join(self.working_directory, "build"),
+      transform: resolveDirectory
     },
-    contracts_directory: function() {
-      return path.join(self.working_directory, "contracts");
+    contracts_directory: {
+      default: () => path.join(self.working_directory, "contracts"),
+      transform: resolveDirectory
     },
-    contracts_build_directory: function() {
-      return path.join(self.build_directory, "contracts");
+    contracts_build_directory: {
+      default: () => path.join(self.build_directory, "contracts"),
+      transform: resolveDirectory
     },
-    migrations_directory: function() {
-      return path.join(self.working_directory, "migrations");
+    migrations_directory: {
+      default: () => path.join(self.working_directory, "migrations"),
+      transform: resolveDirectory
     },
-    test_directory: function() {
-      return path.join(self.working_directory, "test");
+    test_directory: {
+      default: () => path.join(self.working_directory, "test"),
+      transform: resolveDirectory
     },
     test_file_extension_regexp: function() {
       return /.*\.(js|es|es6|jsx|sol)$/
     },
-    example_project_directory: function() {
-      return path.join(self.truffle_directory, "example");
+    example_project_directory: {
+      default: () => path.join(self.truffle_directory, "example"),
+      transform: resolveDirectory
     },
     network_id: {
       get: function() {
@@ -241,13 +251,33 @@ function Config(truffle_directory, working_directory, network) {
   });
 };
 
-Config.prototype.addProp = function(key, obj) {
-  Object.defineProperty(this, key, {
-    get: obj.get || function() {
-      return this._values[key] || obj();
+Config.prototype.addProp = function(propertyName, descriptor) {
+  // possible property descriptors
+  //
+  // supports `default` and `transform` in addition to `get` and `set`
+  //
+  // default: specify function to retrieve default value (used by get)
+  // transform: specify function to transform value when (used by set)
+  Object.defineProperty(this, propertyName, {
+    // retrieve config property value
+    get: descriptor.get || function() {
+      // value is specified
+      if (propertyName in this._values) {
+        return this._values[propertyName];
+      }
+
+      // default getter is specified
+      if (descriptor.default) {
+        return descriptor.default()
+      };
+
+      // descriptor is a function
+      return descriptor();
     },
-    set: obj.set || function(val) {
-      this._values[key] = val;
+    set: descriptor.set || function(value) {
+      this._values[propertyName] = (descriptor.transform)
+        ? descriptor.transform(value)
+        : value;
     },
     configurable: true,
     enumerable: true

@@ -161,6 +161,11 @@ const evm = createSelectorTree({
           // filter by a percentage threshold
           const threshold = 0.25;
 
+          // skip levenshtein check for undefined binaries
+          if (!binary || binary == "0x0") {
+            return {};
+          }
+
           const results = Object.entries(binaries)
             .map( ([ knownBinary, { context }]) => ({
               context,
@@ -173,6 +178,8 @@ const evm = createSelectorTree({
             const { context } = results[0];
             return { context };
           }
+
+          return {};
         }
       )
     }
