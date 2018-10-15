@@ -86,7 +86,7 @@ const command = {
             setAnalytics(false);
           }
         });
-      } else if (userConfig.get('analyticsSet') && userConfig.get('enableAnalytics')) {
+      } else if (userConfig.get('analyticsSet') && userConfig.get('enableAnalytics') && process.stdin.isTTY === true) {
         await inquirer.prompt(analyticsDisable)
         .then(async answer => {
           if(answer.analyticsDisable) {
@@ -95,7 +95,7 @@ const command = {
             setAnalytics(true);
           }
         });
-      } else if(userConfig.get('analyticsSet') && !userConfig.get('enableAnalytics')) {
+      } else if(userConfig.get('analyticsSet') && !userConfig.get('enableAnalytics') && process.stdin.isTTY === true) {
         await inquirer.prompt(analyticsEnable)
         .then(async answer => {
           if(answer.analyticsEnable) {

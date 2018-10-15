@@ -3,6 +3,7 @@ const userConfig = Config.getUserConfig();
 const ua = require('universal-analytics');
 
 const truffleAnalyticsId = "UA-83874933-6"
+
   
 const googleAnalytics = {
   /**
@@ -37,15 +38,18 @@ const googleAnalytics = {
   */
   sendAnalyticsEvent: function(eventObject, callback) {
     let visitor = this.setPersistentAnalyticsData();
-    //console.logs added for testing, remove before merge!!!
     if(visitor) {
-      console.log('sending event' + JSON.stringify(eventObject));
-      visitor.event(eventObject, function(err) {
-        console.log(err);
-        console.log('hello it worked!');
-      }).send();
+      visitor.event(eventObject).send();
     }
   }
 }
+
+process.on('message', function(eventObject) {
+  googleAnalytics.sendAnalyticsEvent(eventObject);
+  
+  setTimeout(function(){
+    process.exit(0);
+  }, 5000);
+});
 
 module.exports = googleAnalytics;

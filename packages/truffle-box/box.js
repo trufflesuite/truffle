@@ -3,7 +3,6 @@ var tmp = require("tmp");
 var path = require("path");
 
 var Config = require("truffle-config");
-const googleAnalytics = require("truffle-core/lib/services/google-analytics");
 
 var Box = {
   unbox: function(url, destination, options) {
@@ -15,9 +14,6 @@ var Box = {
     }
 
     return Promise.resolve()
-      .then(()=> {
-        googleAnalytics.sendAnalyticsEvent({ec: "initialization", ea: "initialize project", el: "box or bare installation"});
-      })  
       .then(() => {
         options.logger.log("Downloading...");
         return utils.downloadBox(url, destination, downloadBoxOptions)

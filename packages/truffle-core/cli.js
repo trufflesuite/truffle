@@ -4,15 +4,16 @@ require('source-map-support/register')
 const TaskError = require("./lib/errors/taskerror");
 const TruffleError = require("truffle-error");
 
-const googleAnalytics = require("truffle-core/lib/services/google-analytics");
-//just here for testing easily -- remove before merging
-googleAnalytics.sendAnalyticsEvent({ec: "error", ea: "testing8", el: "wrong node version"});
+const googleAnalytics = require("./lib/services/google-analytics");
+
+const cp = require('child_process');
+const child = cp.fork(__dirname + "/lib/services/google-analytics");
 
 const nodeMajorVersion = parseInt(process.version.slice(1));
 if (nodeMajorVersion < 8) {
   console.log(`You are currently using version ${process.version.slice(1)} of Node.`);
   console.log("You must use version 8 or newer.");
-  googleAnalytics.sendAnalyticsEvent({ec: "error", ea: "nonzero exit code", el: "wrong node version"});
+  child.send({ec: "error", ea: "nonzero exit code", el: "wrong node version"});
   process.exit(1);
 }
 
@@ -43,24 +44,24 @@ if (userWantsGeneralHelp) {
 command.run(inputArguments, options, function(err) {
   if (err) {
     if (err instanceof TaskError) {
-      googleAnalytics.sendAnalyticsEvent({ec: "error", ea: "nonzero exit code", el: "TaskError - display general help message"});
+      child.send({ec: "error", ea: "nonzero exit code", el: "TaskError - display general help message"});
       command.displayGeneralHelp();
     } else {
       if (err instanceof TruffleError) {
-        googleAnalytics.sendAnalyticsEvent({ec: "error", ea: "nonzero exit code", el: "TruffleError - missing configuration file"});
+        child.send({ec: "error", ea: "nonzero exit code", el: "TruffleError - missing configuration file"});
         console.log(err.message);
       } else if (typeof err == "number") {
-        googleAnalytics.sendAnalyticsEvent({ec: "error", ea: "nonzero exit code", el: "Numbered Error - " + err});
+        child.send({ec: "error", ea: "nonzero exit code", el: "Numbered Error - " + err});
         // If a number is returned, exit with that number.
         process.exit(err);
       } else {
         let error = err.stack || err.message || err.toString();
-        googleAnalytics.sendAnalyticsEvent({ec: "error", ea: "nonzero exit code", el: "Other Error - " + error});
+        child.send({ec: "error", ea: "nonzero exit code", el: "Other Error - " + error});
         // Bubble up all other unexpected errors.
         console.log(error);
       }
     }
     process.exit(1);
-  }
+  } 
   process.exit(0);
 });

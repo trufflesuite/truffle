@@ -17,6 +17,13 @@ var command = {
     var Config = require("truffle-config");
     var OS = require("os");
     var UnboxCommand = require("./unbox");
+    const path = require('path');
+
+    
+    const cp = require('child_process');
+    const child = cp.fork(path.join(__dirname,  "../services/google-analytics"));
+
+    child.send({ec: "initialization", ea: "truffle init", el: "initialize project"})
 
     var config = Config.default().with({
       logger: console
