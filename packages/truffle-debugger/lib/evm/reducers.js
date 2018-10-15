@@ -127,8 +127,8 @@ export function callstack(state = [], action) {
       return state.concat([ {binary} ]);
 
     case actions.RETURN:
-      //pop the stack, unless that would leave it empty (this will only happen
-      //at the end when we want to keep the last one around)
+      //HACK: pop the stack, UNLESS that would leave it empty (this will only
+      //happen at the end when we want to keep the last one around)
       return state.length > 1 ? state.slice(0, -1) : state;
 
     default:

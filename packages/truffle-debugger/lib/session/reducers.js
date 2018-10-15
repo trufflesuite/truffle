@@ -13,7 +13,6 @@ export const ACTIVE = "ACTIVE";
 export const ERROR = "ERROR";
 
 export function status(state = WAITING, action) {
-  //theState to avoid name collision
   switch (action.type) {
     case actions.READY:
       return ACTIVE;

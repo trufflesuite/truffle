@@ -26,7 +26,7 @@ export function *advance() {
   yield put(actions.next());
 
   debug("TOCK to take");
-  yield take([actions.TOCK,actions.END_OF_TRACE]);
+  yield take([actions.TOCK, actions.END_OF_TRACE]);
   debug("TOCK taken");
 }
 

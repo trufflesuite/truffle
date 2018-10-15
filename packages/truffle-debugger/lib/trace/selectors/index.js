@@ -44,7 +44,7 @@ let trace = createSelectorTree({
    * trace.next
    *
    * next trace step
-   * NOTE: if at the end,
+   * HACK: if at the end,
    * we will return the *same* trace step
    */
   next: createLeaf(
