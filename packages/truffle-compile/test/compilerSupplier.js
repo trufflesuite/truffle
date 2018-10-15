@@ -20,10 +20,10 @@ describe("CompilerSupplier", () => {
 
     describe("when a cached version of the compiler is present", () => {
       beforeEach(() => {
-        expectedResult = "0.4.11";
+        expectedResult = "v0.4.11+commit.124234rd.js";
       });
 
-      it("returns a valid version name", () => {
+      it("returns the file name with the prefix removed", () => {
         assert.equal(CompilerSupplier.prototype.versionIsCached("0.4.11"), expectedResult);
       });
     });
@@ -37,6 +37,7 @@ describe("CompilerSupplier", () => {
       });
     });
   });
+
   describe("prototype.getCached(version)", () => {
     beforeEach(() => {
       const compilerFileNames = [
@@ -77,5 +78,9 @@ describe("CompilerSupplier", () => {
         assert.equal(CompilerSupplier.prototype.getCached("^0.4.15"), "correct return");
       });
     });
+  });
+
+  describe("prototype.versionIsCached(version)", () => {
+
   });
 });

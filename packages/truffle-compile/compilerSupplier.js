@@ -145,8 +145,8 @@ CompilerSupplier.prototype.getDefault = function() {
 CompilerSupplier.prototype.getCached = function(version) {
   const cachedCompilerFileNames = fs.readdirSync(this.cachePath);
   const validVersions = cachedCompilerFileNames.filter((fileName) => {
-    const compilerVersion = fileName.match(/-v(.*)\+/)[1];
-    return semver.satisfies(compilerVersion, version);
+    const match = fileName.match(/v\d+\.\d+\.\d+.*/);
+    return semver.satisfies(match[0], version);
   });
 
   const multipleValidVersions = validVersions.length > 1;
@@ -158,10 +158,10 @@ CompilerSupplier.prototype.getCached = function(version) {
 
 const getMostRecentVersionOfCompiler = (versions) => {
   return versions.reduce((mostRecentVersionFileName, fileName) => {
-    const fileVersion = fileName.match(/-v(.*)\+/)[1];
-    const mostRecentVersion = mostRecentVersionFileName.match(/-v(.*)\+/)[1];
-    if (semver.gtr(fileVersion, mostRecentVersion)) return fileName;
-  }, "-v0.0.0+");
+    const match = fileName.match(/v\d+\.\d+\.\d+.*/);
+    const mostRecentVersionMatch = mostRecentVersionFileName.match(/v\d+\.\d+\.\d+.*/);
+    if (semver.gtr(match[0], mostRecentVersionMatch[0])) return fileName;
+  }, "-v0.0.0+commit");
 }
 
 /**
@@ -327,8 +327,8 @@ CompilerSupplier.prototype.isLocal = function(localPath) {
 CompilerSupplier.prototype.versionIsCached = function(version) {
   const cachedCompilerFileNames = fs.readdirSync(this.cachePath);
   const cachedVersions = cachedCompilerFileNames.map((fileName) => {
-    const match = fileName.match(/-v(.*)\+/);
-    if (match && match.length > 0) return match[1];
+    const match = fileName.match(/v\d+\.\d+\.\d+.*/);
+    if (match) return match[0];
   });
   return cachedVersions.find((cachedVersion) => semver.satisfies(cachedVersion, version));
 }
