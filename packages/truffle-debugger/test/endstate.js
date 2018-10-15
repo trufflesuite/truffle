@@ -10,7 +10,7 @@ import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
 
 import sessionSelector from "lib/session/selectors";
-
+import data from "lib/data/selectors";
 
 
 const __FAILURE = `
@@ -27,8 +27,9 @@ const __SUCCESS = `
 pragma solidity ^0.4.24;
 
 contract SuccessTest {
+uint x;
   function run() {
-    var x = 0;
+    x = 107;
   }
 }
 `;
@@ -81,7 +82,7 @@ describe("Transactions", function () {
     assert.ok(!session.view(sessionSelector.transaction.receipt).status);
   });
 
-  it("correctly marks a successful transaction as successful", async function() {
+  it("Gets vars at end of successful contract (and marks it successful)", async function() {
     let instance = await abstractions.SuccessTest.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
@@ -93,6 +94,9 @@ describe("Transactions", function () {
 
     let session = bugger.connect();
 
+    session.continueUntilBreakpoint(); //no breakpoints set so advances to end
+
     assert.ok(session.view(sessionSelector.transaction.receipt).status);
+    assert.deepEqual(session.view(data.current.identifiers.native), {x: 107});
   });
 });
