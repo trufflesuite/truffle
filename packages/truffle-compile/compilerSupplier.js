@@ -321,7 +321,7 @@ CompilerSupplier.prototype.isLocal = function(localPath) {
 
 /**
  * Returns a valid version name if compiler file is cached
- * @param  {String}  localPath
+ * @param  {String}  version
  * @return {Boolean}
  */
 CompilerSupplier.prototype.versionIsCached = function(version) {
