@@ -34,7 +34,7 @@ function fileName(testName) {
 function generateTests(fixtures) {
   for (let { name, value: expected } of fixtures) {
     it(`correctly decodes ${name}`,
-      () => { assert.deepEqual(this.decode(name), expected); }
+      async () => { assert.deepEqual(await this.decode(name), expected); }
     );
   }
 }
