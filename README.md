@@ -77,6 +77,8 @@ If you'd like to update a dependency to the same version across all packages, yo
 
 Please make pull requests against `next` for any substantial changes. Small changes and bugfixes can be considered for `develop`.
 
+There is a bit more information in the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
+
 ### License
 
 MIT
