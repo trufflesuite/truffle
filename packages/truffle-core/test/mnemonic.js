@@ -15,10 +15,12 @@ describe("mnemonic", function() {
   });
   describe("#getAccountsInfo", function(){
     it("returns public keys, private keys, and mnemonic for default user account", function() {
-      let accounts = accountsInfo.getAccountsInfo();
+      let defaultNumAddresses = 10;
+      let accounts = accountsInfo.getAccountsInfo(defaultNumAddresses);
       assert.exists(accounts);
       assert.isObject(accounts);
       assert.isArray(accounts.accounts);
+      assert.lengthOf(accounts.accounts, defaultNumAddresses);
       assert.isArray(accounts.privateKeys);
       assert.isString(accounts.mnemonic);
     });
