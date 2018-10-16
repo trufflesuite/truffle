@@ -20,7 +20,7 @@ const command = {
   * @param {Object} options
   * @param {Func} callback
   */
-  run: function (options, callback) {
+  run: function (options, done) {
     const nanoid = require('nanoid');
     const Configstore = require('configstore');
     const userConfig = new Configstore('truffle', {}, { globalConfigPath: true });
@@ -71,6 +71,9 @@ const command = {
         userConfig.set({ 'analyticsSet': true });
         userConfig.set({ 'analyticsMessageDateTime': Date.now() });
       }
+      if(userConfig.get('analyticsMessageDateTime')) {
+          return done();
+      }   
     };
     /**
     * prompt user to determine values for user-level analytics config options
@@ -104,6 +107,8 @@ const command = {
             setAnalytics(false);
           }
         });
+      } else {
+        return done();
       }
     };
 
