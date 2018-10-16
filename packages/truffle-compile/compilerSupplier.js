@@ -17,14 +17,14 @@ const semver = require('semver');
  */
 function CompilerSupplier(_config){
   _config = _config || {};
-  this.config = Object.assign(this.config, _config);
+  this.config = Object.assign({}, defaultConfig, _config);
 }
 
 /**
  * Default configuration
  * @type {Object}
  */
-CompilerSupplier.prototype.config = {
+const defaultConfig = {
   version: null,
   versionsUrl: 'https://solc-bin.ethereum.org/bin/list.json',
   compilerUrlRoot: 'https://solc-bin.ethereum.org/bin/',
