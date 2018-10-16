@@ -29,7 +29,7 @@ if (args.length == 2) {
   options = args[0];
 } else {
   ipcNetwork = "develop";
-  options = "{}";
+  options = process.argv || "{}";
 }
 
 try {
@@ -41,6 +41,9 @@ try {
 options.host = options.host || "127.0.0.1";
 options.port = options.port || 9545;
 options.network_id = options.network_id || 4447;
+options.total_accounts = options.total_accounts;
+options.default_ether_balance = options.default_ether_balance;
+options.blockTime = options.blockTime;
 options.mnemonic = options.mnemonic || "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
 options.gasLimit = options.gasLimit || 0x47e7c4;
 
