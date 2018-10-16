@@ -54,6 +54,7 @@ var command = {
 
       var txHash = config._[0];
 
+      var jumpCount = 0;
       var lastCommand = "n";
       var enabledExpressions = new Set();
       var breakpoints = [];
@@ -151,7 +152,7 @@ var command = {
           var lines = splitLines(source);
 
           config.logger.log("");
-
+          config.logger.log("Jump Count #"+jumpCount++);
           config.logger.log(
             DebugUtils.formatRangeLines(lines, range.lines)
           );
