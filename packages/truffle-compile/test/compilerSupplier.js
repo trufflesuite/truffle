@@ -29,7 +29,8 @@ describe("CompilerSupplier", () => {
     });
 
     describe(`when the version is set to a specific word I can't write here`, () => {
-      // Because of how the test script is set up, you can't write native in the strings above and below
+      // HACK: Because of how the test script is set up, the word 'native' cannot be a
+      // part of the it/describe strings above and below
       beforeEach(() => {
         config = { version: "native" };
         supplier = new CompilerSupplier(config);
@@ -89,7 +90,6 @@ describe("CompilerSupplier", () => {
     });
 
 
-
     describe("when a non-cached version is specified in the config", () => {
       beforeEach(() => {
         config = { version: "0.4.17" };
@@ -102,7 +102,7 @@ describe("CompilerSupplier", () => {
          supplier.versionIsCached.restore();
       });
 
-      it("calls getCached with the version number", (done) => {
+      it("calls getUrl with the version number", (done) => {
         supplier.load()
           .then(() => {
             assert(supplier.getByUrl.calledWith("0.4.17"));

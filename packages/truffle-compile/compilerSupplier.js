@@ -20,10 +20,6 @@ function CompilerSupplier(_config){
   this.config = Object.assign({}, defaultConfig, _config);
 }
 
-/**
- * Default configuration
- * @type {Object}
- */
 const defaultConfig = {
   version: null,
   versionsUrl: 'https://solc-bin.ethereum.org/bin/list.json',
@@ -31,7 +27,6 @@ const defaultConfig = {
   dockerTagsUrl: 'https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/',
   cache: true,
 }
-
 
 CompilerSupplier.prototype.cachePath = findCacheDir({
   name: 'truffle',
