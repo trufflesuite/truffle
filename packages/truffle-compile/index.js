@@ -1,4 +1,3 @@
-var Profiler = require("./profiler");
 var OS = require("os");
 
 var path = require("path");
@@ -87,7 +86,9 @@ var compile = function(sources, options, callback) {
       "evm.bytecode.object",
       "evm.bytecode.sourceMap",
       "evm.deployedBytecode.object",
-      "evm.deployedBytecode.sourceMap"
+      "evm.deployedBytecode.sourceMap",
+      "userdoc",
+      "devdoc"
     ]
   }
 
@@ -107,7 +108,7 @@ var compile = function(sources, options, callback) {
     settings: {
       evmVersion: options.compilers.solc.settings.evmVersion,
       optimizer: options.compilers.solc.settings.optimizer,
-      outputSelection: outputSelection,
+      outputSelection
     }
   };
 
@@ -193,8 +194,10 @@ var compile = function(sources, options, callback) {
           compiler: {
             "name": "solc",
             "version": solc.version()
-          }
-        }
+          },
+          devdoc: contract.devdoc,
+          userdoc: contract.userdoc
+        };
 
         // Reorder ABI so functions are listed in the order they appear
         // in the source file. Solidity tests need to execute in their expected sequence.
