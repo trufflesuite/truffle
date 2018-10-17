@@ -1,9 +1,9 @@
-var emoji = require('node-emoji');
-const mnemonicInfo = require('truffle-core/lib/mnemonics/mnemonic');
+var emoji = require("node-emoji");
+const mnemonicInfo = require("truffle-core/lib/mnemonics/mnemonic");
 
 var command = {
-  command: 'develop',
-  description: 'Open a console with a local development blockchain',
+  command: "develop",
+  description: "Open a console with a local development blockchain",
   builder: {
     log: {
       type: "boolean",
@@ -12,19 +12,14 @@ var command = {
   },
   help: {
     usage: "truffle develop",
-    options: [],
+    options: []
   },
   runConsole: function(config, testrpcOptions, done) {
     var Console = require("../console");
     var Environment = require("../environment");
 
-    var commands = require("./index")
-    var excluded = [
-      "console",
-      "init",
-      "watch",
-      "develop"
-    ];
+    var commands = require("./index");
+    var excluded = ["console", "init", "watch", "develop"];
 
     var available_commands = Object.keys(commands).filter(function(name) {
       return excluded.indexOf(name) == -1;
@@ -38,9 +33,12 @@ var command = {
     Environment.develop(config, testrpcOptions, function(err) {
       if (err) return done(err);
 
-      var c = new Console(console_commands, config.with({
-        noAliases: true
-      }));
+      var c = new Console(
+        console_commands,
+        config.with({
+          noAliases: true
+        })
+      );
 
       c.start(done);
       c.on("exit", function() {
@@ -48,16 +46,30 @@ var command = {
       });
     });
   },
-  run: function (options, done) {
+  run: function(options, done) {
     var Config = require("truffle-config");
     var Develop = require("../develop");
 
     var config = Config.detect(options);
+    var customConfig = config.networks.develop;
 
-    const { mnemonic, accounts, privateKeys } = mnemonicInfo.getAccountsInfo();
+    var numAddresses = customConfig.accounts
+      ? customConfig.accounts
+      : 10;
+    var defaultEtherBalance = customConfig.defaultEtherBalance
+      ? customConfig.defaultEtherBalance
+      : 100;
+    var bTime = customConfig.blockTime
+      ? customConfig.blockTime
+      : 0;
 
+    const { mnemonic, accounts, privateKeys } = mnemonicInfo.getAccountsInfo(
+      numAddresses
+    );
 
-    var onMissing = function(name){ return "**"};
+    var onMissing = function(name) {
+      return "**";
+    };
 
     var warning =
       ":warning:  Important :warning:  : " +
@@ -72,9 +84,12 @@ var command = {
       host: "127.0.0.1",
       port: 9545,
       network_id: 4447,
+      total_accounts: numAddresses,
+      default_balance_ether: defaultEtherBalance,
+      blockTime: bTime,
       mnemonic: mnemonic,
       gasLimit: config.gas,
-      noVMErrorsOnRPCResponse: true,
+      noVMErrorsOnRPCResponse: true
     };
 
     Develop.connectOrStart(ipcOptions, testrpcOptions, function(started) {
@@ -103,7 +118,9 @@ var command = {
         config.logger.log(emoji.emojify(warning, onMissing));
         config.logger.log();
       } else {
-        config.logger.log(`Connected to existing Truffle Develop session at ${url}`);
+        config.logger.log(
+          `Connected to existing Truffle Develop session at ${url}`
+        );
         config.logger.log();
       }
 
@@ -112,6 +129,6 @@ var command = {
       }
     });
   }
-}
+};
 
 module.exports = command;
