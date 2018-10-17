@@ -327,6 +327,7 @@ Config.default = function() {
   return new Config();
 };
 
+
 Config.detect = function(options, filename) {
   var search;
 
@@ -344,14 +345,19 @@ Config.detect = function(options, filename) {
 };
 
 Config.load = function(file, options) {
-  var config = new Config();
+  var static_config = originalrequire(file);
+
+  var config = static_config.config
+    ? static_config.config
+    : require("truffle-config");
+
+  config = new config();
 
   config.working_directory = path.dirname(path.resolve(file));
 
   // The require-nocache module used to do this for us, but
   // it doesn't bundle very well. So we've pulled it out ourselves.
   delete require.cache[Module._resolveFilename(file, module)];
-  var static_config = originalrequire(file);
 
   config.merge(static_config);
   config.merge(options);
