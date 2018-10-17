@@ -11,6 +11,7 @@ import Debugger from "lib/debugger";
 
 import ast from "lib/ast/selectors";
 import solidity from "lib/solidity/selectors";
+import trace from "lib/trace/selectors";
 
 import { getRange, findRange, rangeNodes } from "lib/ast/map";
 
@@ -107,7 +108,7 @@ describe("AST", function() {
         );
 
         session.stepNext();
-      } while(!session.finished);
+      } while(!session.view(trace.finished));
 
     });
   });

@@ -10,6 +10,7 @@ import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
 
 import evm from "lib/evm/selectors";
+import trace from "lib/trace/selectors";
 
 const __OUTER = `
 pragma solidity ^0.4.18;
@@ -101,16 +102,17 @@ describe("EVM Debugging", function() {
       });
 
       let session = bugger.connect();
-      var stepped;  // session steppers return false when done
+      var finished;  // is the trace finished?
 
       do {
-        stepped = session.stepNext();
+        session.stepNext();
+        finished = session.view(trace.finished);
 
         let actual = session.view(evm.current.callstack).length;
 
         assert.isAtMost(actual, maxExpected);
 
-      } while(stepped);
+      } while(!finished);
 
     });
 
@@ -130,13 +132,14 @@ describe("EVM Debugging", function() {
 
       // follow callstack length values in list
       // see source above
-      let expectedDepthSequence = [1,2,1,0];
+      let expectedDepthSequence = [1,2,1];
       let actualSequence = [session.view(evm.current.callstack).length];
 
-      var stepped;
+      var finished; // is the trace finished?
 
       do {
-        stepped = session.stepNext();
+        session.stepNext();
+        finished = session.view(trace.finished);
 
         let currentDepth = session.view(evm.current.callstack).length;
         let lastKnown = actualSequence[actualSequence.length - 1];
@@ -144,7 +147,7 @@ describe("EVM Debugging", function() {
         if (currentDepth !== lastKnown) {
           actualSequence.push(currentDepth);
         }
-      } while(stepped);
+      } while(!finished);
 
       assert.deepEqual(actualSequence, expectedDepthSequence);
     });

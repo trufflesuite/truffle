@@ -264,6 +264,9 @@ const data = createSelectorTree({
         )
       ),
 
+      /**
+       * data.current.identifiers.decoded
+       */
       decoded: createLeaf(
         [
           "/views/decoder",
@@ -279,6 +282,9 @@ const data = createSelectorTree({
         )
       ),
 
+      /**
+       * data.current.identifiers.native
+       */
       native: createLeaf(['./decoded'], decodeUtils.cleanBigNumbers)
     }
   },
