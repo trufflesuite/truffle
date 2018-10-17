@@ -747,6 +747,12 @@ var contract = (function(module) {
       } catch (e) {
         return this._json.updatedAt;
       }
+    },
+    userdoc: function() {
+      return this._json.userdoc;
+    },
+    devdoc: function() {
+      return this._json.devdoc;
     }
   };
 
