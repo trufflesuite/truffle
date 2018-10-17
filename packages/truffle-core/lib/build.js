@@ -74,7 +74,7 @@ const Build = {
     // Duplicate build directory for legacy purposes
     options.destination_directory = options.build_directory;
 
-    if (builder === null) {
+    if (builder === null || typeof builder === "undefined") {
       logger.log("No build configuration found. Preparing to compile contracts.");
     } else if (typeof builder === "string") {
       builder = new CommandBuilder(builder);
