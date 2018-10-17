@@ -327,7 +327,6 @@ Config.default = function() {
   return new Config();
 };
 
-
 Config.detect = function(options, filename) {
   var search;
 
@@ -348,10 +347,8 @@ Config.load = function(file, options) {
   var static_config = originalrequire(file);
 
   var config = static_config.config
-    ? static_config.config
-    : require("truffle-config");
-
-  config = new config();
+    ? new static_config.config()
+    : new Config();
 
   config.working_directory = path.dirname(path.resolve(file));
 
