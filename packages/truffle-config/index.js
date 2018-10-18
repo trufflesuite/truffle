@@ -344,7 +344,7 @@ Config.detect = function(options, filename) {
 };
 
 Config.load = function(file, options) {
-  var static_config = originalrequire(file);
+  var staticConfig = originalrequire(file);
 
   var config = static_config.config
     ? new static_config.config()
