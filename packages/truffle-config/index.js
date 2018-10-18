@@ -344,6 +344,10 @@ Config.detect = function(options, filename) {
 };
 
 Config.load = function(file, options) {
+  // The require-nocache module used to do this for us, but
+  // it doesn't bundle very well. So we've pulled it out ourselves.
+  delete require.cache[Module._resolveFilename(file, module)];
+
   var staticConfig = originalrequire(file);
 
   var config = staticConfig.config
@@ -352,11 +356,7 @@ Config.load = function(file, options) {
 
   config.working_directory = path.dirname(path.resolve(file));
 
-  // The require-nocache module used to do this for us, but
-  // it doesn't bundle very well. So we've pulled it out ourselves.
-  delete require.cache[Module._resolveFilename(file, module)];
-
-  config.merge(static_config);
+  config.merge(staticConfig);
   config.merge(options);
 
   return config;
