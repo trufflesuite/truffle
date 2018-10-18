@@ -337,8 +337,10 @@ Config.detect = function(options, filename) {
 
   var file = findUp.sync(search, {cwd: options.working_directory || options.workingDirectory});
 
+  var current = process.cwd();
+
   if (file == null) {
-    throw new TruffleError("Could not find suitable configuration file.");
+    throw new TruffleError("Could not find suitable configuration file at " + current);
   }
 
   return this.load(file, options);
