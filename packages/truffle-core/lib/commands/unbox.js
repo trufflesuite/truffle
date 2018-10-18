@@ -104,7 +104,7 @@ var command = {
           config.logger.log(boxConfig.epilogue.replace("\n", OS.EOL));
         }
 
-        child.send({ec: "initialization", ea: "truffle unbox", el: "initialize project"});
+        child.send({ec: "initialization", ea: "truffle unbox"});
         
         done(); 
       })

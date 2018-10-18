@@ -23,7 +23,7 @@ var command = {
     const cp = require('child_process');
     const child = cp.fork(path.join(__dirname,  "../services/google-analytics"));
 
-    child.send({ec: "initialization", ea: "truffle init", el: "initialize project"})
+    child.send({ec: "initialization", ea: "truffle init"})
 
     var config = Config.default().with({
       logger: console
