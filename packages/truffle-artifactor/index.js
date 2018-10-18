@@ -5,9 +5,15 @@ var path = require("path");
 var async = require("async");
 var _ = require("lodash");
 var debug = require("debug")("artifactor");
+var Config = require("truffle-config");
 
 function Artifactor(destination) {
-  this.destination = destination;
+  var customArtifactor = Config.detect().artifactory;
+
+  // doesn't handle artifactory: require("truffle-artifactor")
+  (customArtifactor)
+    ? customArtifactor(destination)
+    : this.destination = destination;
 };
 
 Artifactor.prototype.save = function(object) {
