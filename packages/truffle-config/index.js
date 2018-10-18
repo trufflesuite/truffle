@@ -347,7 +347,7 @@ Config.load = function(file, options) {
   var staticConfig = originalrequire(file);
 
   var config = staticConfig.config
-    ? new static_config.config()
+    ? new staticConfig.config()
     : new Config();
 
   config.working_directory = path.dirname(path.resolve(file));
