@@ -328,6 +328,7 @@ Config.default = function() {
 };
 
 Config.detect = function(options, filename) {
+  options = options || {};
   var search;
 
   (!filename)
