@@ -7,7 +7,6 @@ const inquirer = require("inquirer");
 const version = require("../version");
 
 //set truffleAnalyticsId depending on whether version is bundled
-let bundle_version;
 let appVersion;
 let truffleAnalyticsId;
 
@@ -76,21 +75,21 @@ const googleAnalytics = {
   */
   setUserConfigViaPrompt: async function() {
     if(!userConfig.get('analyticsSet') && process.stdin.isTTY === true) {
-      let answer = await inquirer.prompt(analyticsInquiry)
+      let answer = await inquirer.prompt(analyticsInquiry);
       if(answer.analyticsInquiry === analyticsInquiry[0].choices[0]) {
         this.setAnalytics(true);
       } else {
         this.setAnalytics(false);
       }
     } else if (userConfig.get('analyticsSet') && userConfig.get('enableAnalytics') && process.stdin.isTTY === true) {
-      let answer = await inquirer.prompt(analyticsDisable)
+      let answer = await inquirer.prompt(analyticsDisable);
       if(answer.analyticsDisable) {
         this.setAnalytics(false); 
       } else {
         this.setAnalytics(true);
       }
     } else if(userConfig.get('analyticsSet') && !userConfig.get('enableAnalytics') && process.stdin.isTTY === true) {
-      let answer = await inquirer.prompt(analyticsEnable)
+      let answer = await inquirer.prompt(analyticsEnable);
       if(answer.analyticsEnable) {
         this.setAnalytics(true);
       } else {
