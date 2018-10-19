@@ -24,7 +24,7 @@ const command = {
     const googleAnalytics = require("../services/google-analytics");
     let setAnalytics;
     if(options.enableAnalytics) {
-      setAnalytics =  googleAnalytics.setAnalytics(true);
+      setAnalytics = googleAnalytics.setAnalytics(true);
     } else if (options.disableAnalytics){
       setAnalytics = googleAnalytics.setAnalytics(false);
     } else {

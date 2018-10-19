@@ -64,13 +64,9 @@ const googleAnalytics = {
   setAnalytics: function(analyticsBool) {
     if(analyticsBool === true) {
       this.setUserId();
-      userConfig.set({ 'enableAnalytics': true });
-      userConfig.set({ 'analyticsSet': true });
-      userConfig.set({ 'analyticsMessageDateTime': Date.now() });
+      userConfig.set({ 'enableAnalytics': true, 'analyticsSet': true, 'analyticsMessageDateTime': Date.now() });
     } else {
-      userConfig.set({ 'enableAnalytics': false });
-      userConfig.set({ 'analyticsSet': true });
-      userConfig.set({ 'analyticsMessageDateTime': Date.now() });
+      userConfig.set({ 'enableAnalytics': false, 'analyticsSet': true, 'analyticsMessageDateTime': Date.now() });
     }
     return true;   
   },
@@ -143,9 +139,10 @@ const googleAnalytics = {
       eventObject["el"] = appVersion;
     }
     if(visitor) {
-      visitor.event(eventObject);
-      visitor.send();
+      visitor.event(eventObject, function(err) {
+      });
     }
+    return true;
   }
 }
 
