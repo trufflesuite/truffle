@@ -7,7 +7,6 @@ const inquirer = require("inquirer");
 const version = require("../version");
 
 //set truffleAnalyticsId depending on whether version is bundled
-let bundle_version;
 let appVersion;
 let truffleAnalyticsId;
 
