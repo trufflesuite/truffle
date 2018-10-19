@@ -82,7 +82,7 @@ const googleAnalytics = {
         this.setAnalytics(false);
       }
     } else if (userConfig.get('analyticsSet') && userConfig.get('enableAnalytics') && process.stdin.isTTY === true) {
-      let answer = await inquirer.prompt(analyticsDisable)
+      let answer = await inquirer.prompt(analyticsDisable);
       if(answer.analyticsDisable) {
         this.setAnalytics(false); 
       } else {
