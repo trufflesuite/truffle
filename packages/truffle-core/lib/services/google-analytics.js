@@ -75,7 +75,7 @@ const googleAnalytics = {
   */
   setUserConfigViaPrompt: async function() {
     if(!userConfig.get('analyticsSet') && process.stdin.isTTY === true) {
-      let answer = await inquirer.prompt(analyticsInquiry)
+      let answer = await inquirer.prompt(analyticsInquiry);
       if(answer.analyticsInquiry === analyticsInquiry[0].choices[0]) {
         this.setAnalytics(true);
       } else {
