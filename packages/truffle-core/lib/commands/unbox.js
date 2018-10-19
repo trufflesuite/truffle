@@ -71,7 +71,6 @@ var command = {
     const Box = require("truffle-box");
     const OS = require("os");
     const googleAnalytics = require('../services/google-analytics');
-
     const path = require('path');
     const cp = require('child_process');
     const child = cp.fork(path.join(__dirname,  "../services/google-analytics"));
@@ -103,7 +102,6 @@ var command = {
         if (boxConfig.epilogue) {
           config.logger.log(boxConfig.epilogue.replace("\n", OS.EOL));
         }
-
         child.send({ec: "initialization", ea: "truffle unbox"});
         
         done(); 

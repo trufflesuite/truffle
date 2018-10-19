@@ -17,9 +17,7 @@ var command = {
     var Config = require("truffle-config");
     var OS = require("os");
     var UnboxCommand = require("./unbox");
-    const path = require('path');
-
-    
+    const path = require('path');    
     const cp = require('child_process');
     const child = cp.fork(path.join(__dirname,  "../services/google-analytics"));
 

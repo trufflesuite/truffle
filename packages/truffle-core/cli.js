@@ -3,9 +3,7 @@ require('source-map-support/register')
 
 const TaskError = require("./lib/errors/taskerror");
 const TruffleError = require("truffle-error");
-
 const googleAnalytics = require("./lib/services/google-analytics");
-
 const cp = require('child_process');
 const child = cp.fork(__dirname + "/lib/services/google-analytics");
 
@@ -62,6 +60,6 @@ command.run(inputArguments, options, function(err) {
       }
     }
     process.exit(1);
-  } 
+  }
   process.exit(0);
 });

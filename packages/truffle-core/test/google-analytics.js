@@ -2,13 +2,11 @@ const Config = require("truffle-config");
 const userConfig = Config.getUserConfig();
 const ua = require('universal-analytics');
 const assert = require("chai").assert;
-const expect = require("chai").expect;
 const sinon = require("sinon");
 const googleAnalytics = require('../lib/services/google-analytics');
 const inquirer = require("inquirer");
 const configCommand = require('../lib/commands/config');
 const Configstore = require('configstore');
-const store = new Configstore('truffle', {}, { globalConfigPath: true });
 
 
 describe("googleAnalytics", function() {
@@ -24,7 +22,7 @@ describe("googleAnalytics", function() {
 			let setConfigStub = sinon.stub(Configstore.prototype, "set");
 			googleAnalytics.setUserId();
 			sinon.assert.calledOnce(checkConfigStub);
-			sinon.assert.calledOnce(setConfigStub);	
+			sinon.assert.calledOnce(setConfigStub); 
 			checkConfigStub.restore();
 			setConfigStub.restore();
 		});
@@ -68,7 +66,7 @@ describe("googleAnalytics", function() {
 			sinon.assert.calledOnce(setConfigStub);
 			setConfigStub.restore();
 		});
-	
+
 	});
 	describe("#checkIfAnalyticsEnabled", function() {
 		it("checks the user-level config to see if analytics are enabled", function() {
