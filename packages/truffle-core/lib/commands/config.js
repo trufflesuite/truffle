@@ -1,8 +1,8 @@
 const command = {
   command: "config",
-  description: "set user-level configuration options",
+  description: "Set user-level configuration options",
   config: {
-    usage: "truffle config --enable-analytics",
+    usage: "truffle config <option>",
     options: [   
       {
         option: "--enable-analytics",
