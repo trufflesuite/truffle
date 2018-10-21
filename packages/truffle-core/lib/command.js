@@ -113,6 +113,6 @@ Command.prototype.displayGeneralHelp = function() {
     + "Usage: truffle <command> [options]")
     .epilog("See more at http://truffleframework.com/docs")
     .showHelp();
-}
+};
 
 module.exports = Command;

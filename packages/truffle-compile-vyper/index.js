@@ -25,7 +25,7 @@ const compile = {};
 compile.all = function(options, callback) {
 
   find_contracts(options.contracts_directory, function(err, files) {
-    if (err) return callback(err)
+    if (err) return callback(err);
 
     options.paths = files;
     compile.with_dependencies(options, callback);
@@ -90,7 +90,7 @@ function execVyper(source_path, callback) {
   exec(command, function (err, stdout, stderr) {
     if (err) return callback(`${stderr}\n${colors.red(`Compilation of ${source_path} failed. See above.`)}`);
 
-    outputs = stdout.split(/\n/);
+    var outputs = stdout.split(/\n/);
 
     const compiled_contract = outputs.reduce(
       function (contract, output, index) {

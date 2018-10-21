@@ -1,4 +1,3 @@
-var Box = require("truffle-box");
 var MemoryLogger = require("../memorylogger");
 var CommandRunner = require("../commandrunner");
 var contract = require("truffle-contract");
@@ -27,12 +26,12 @@ describe("Contract names", function() {
 
   before(async function() {
     this.timeout(10000);
-    config = await sandbox.create(project)
+    config = await sandbox.create(project);
     config.network = "development";
     config.logger = logger;
     config.mocha = {
       reporter: new Reporter(logger)
-    }
+    };
   });
 
   it("will compile if file names do not match contract names", function(done) {
@@ -62,8 +61,8 @@ describe("Contract names", function() {
       const Contract = contract(require(contractPath));
       Contract.setProvider(config.provider);
 
-      const instance = await Contract.deployed()
-      assert.notEqual(instance.address, null, instance.contract_name + " didn't have an address!")
+      const instance = await Contract.deployed();
+      assert.notEqual(instance.address, null, instance.contract_name + " didn't have an address!");
 
       // Now let's interact with our deployed contract JUST to ensure it actually did do
       // the right thing.
@@ -91,8 +90,8 @@ describe("Contract names", function() {
         const RelativeImport = contract(require(contractPath));
         RelativeImport.setProvider(config.provider);
 
-        const instance = await RelativeImport.deployed()
-        assert.notEqual(instance.address, null, instance.contract_name + " didn't have an address!")
+        const instance = await RelativeImport.deployed();
+        assert.notEqual(instance.address, null, instance.contract_name + " didn't have an address!");
 
         // Now let's interact with our deployed contract JUST to ensure it actually did do
         // the right thing.

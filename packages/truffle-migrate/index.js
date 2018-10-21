@@ -2,7 +2,6 @@ const dir = require("node-dir");
 const path = require("path");
 const async = require("async");
 const expect = require("truffle-expect");
-const util = require('util');
 
 const Reporter = require("truffle-reporters").migrationsV5;
 const Migration = require('./migration.js');
@@ -109,7 +108,7 @@ const Migrate = {
     if (options.quiet) {
       clone.logger = {
         log: function() {}
-      }
+      };
     };
 
     clone.provider = this.wrapProvider(options.provider, clone.logger);
@@ -150,7 +149,7 @@ const Migrate = {
         return abstraction;
       },
       resolve: resolver.resolve
-    }
+    };
   },
 
   lastCompletedMigration: function(options, callback) {

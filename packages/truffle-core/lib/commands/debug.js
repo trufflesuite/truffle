@@ -20,9 +20,8 @@ var command = {
     var path = require("path");
     var debugModule = require("debug");
     var debug = debugModule("lib:commands:debug");
-    var safeEval = require('safe-eval')
+    var safeEval = require('safe-eval');
     var util = require("util");
-    var _ = require("lodash");
 
     var compile = require("truffle-compile");
     var Config = require("truffle-config");
@@ -143,7 +142,7 @@ var command = {
           debug("range: %o", range);
 
           if (!source) {
-            config.logger.log()
+            config.logger.log();
             config.logger.log("1: // No source code found.");
             config.logger.log("");
             return;
@@ -175,7 +174,7 @@ var command = {
         function printSelector(specified) {
           var selector = specified
             .split(".")
-            .filter(function(next) { return next.length > 0 })
+            .filter(function(next) { return next.length > 0; })
             .reduce(function(sel, next) {
               debug("next %o, sel %o", next, sel);
               return sel[next];
@@ -256,7 +255,7 @@ var command = {
 
           // Get the length of the longest name.
           var longestNameLength = Math.max.apply(null, (Object.keys(variables).map(function(name) {
-            return name.length
+            return name.length;
           })));
 
           config.logger.log();
@@ -301,7 +300,7 @@ var command = {
             if (!suppress) {
               config.logger.log(e);
             } else {
-              config.logger.log(formatValue(undefined))
+              config.logger.log(formatValue(undefined));
             }
           }
         }
@@ -350,7 +349,7 @@ var command = {
           //if it contains a colon, it's in the form source:line
           else if(args[0].includes(":"))
           {
-            debug("source case")
+            debug("source case");
             let sourceArgs = args[0].split(":");
             let sourceArg = sourceArgs[0];
             let lineArg = sourceArgs[1];
@@ -373,12 +372,12 @@ var command = {
 
             if(matchingSources.length === 0)
             {
-              config.logger.log(`No source file found matching ${sourceArg}.\n`)
+              config.logger.log(`No source file found matching ${sourceArg}.\n`);
               return;
             }
             else if(matchingSources.length > 1)
             {
-              config.logger.log(`Multiple source files found matching ${sourceArg}.  Which did you mean?`)
+              config.logger.log(`Multiple source files found matching ${sourceArg}.  Which did you mean?`);
               matchingSources.forEach(
                 (source) => config.logger.log(source.sourcePath));
               config.logger.log("");
@@ -425,7 +424,7 @@ var command = {
           }
           else
           {
-            locationMessage = `line ${breakpoint.line+1}`
+            locationMessage = `line ${breakpoint.line+1}`;
             //+1 to adjust for zero-indexing
           }
 
@@ -548,7 +547,7 @@ var command = {
             config.logger.log("");
             //check if transaction failed
             if (!session.view(selectors.session.transaction.receipt).status) {
-              config.logger.log("Transaction halted with a RUNTIME ERROR.")
+              config.logger.log("Transaction halted with a RUNTIME ERROR.");
               config.logger.log("");
               config.logger.log("This is likely due to an intentional halting expression, like assert(), require() or revert(). It can also be due to out-of-gas exceptions. Please inspect your transaction parameters and contract code to determine the meaning of this error.");
             } else { //case if transaction succeeded
@@ -638,6 +637,6 @@ var command = {
       }).catch(done);
     });
   }
-}
+};
 
 module.exports = command;

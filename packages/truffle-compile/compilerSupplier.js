@@ -29,14 +29,14 @@ CompilerSupplier.prototype.config = {
   compilerUrlRoot: 'https://solc-bin.ethereum.org/bin/',
   dockerTagsUrl: 'https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/',
   cache: true,
-}
+};
 
 
 CompilerSupplier.prototype.cachePath = findCacheDir({
   name: 'truffle',
   cwd: __dirname,
   create: true,
-})
+});
 
 //----------------------------------- Interface  ---------------------------------------------------
 
@@ -63,7 +63,7 @@ CompilerSupplier.prototype.load = function(){
     const useDefault = !version;
     const useLocal =   !useDefault && self.isLocal(version);
     const useNative =  !useLocal && isNative;
-    const useRemote =  !useNative
+    const useRemote =  !useNative;
 
     if (useDocker)  return accept(self.getBuilt("docker"));
     if (useNative)  return accept(self.getBuilt("native"));
@@ -71,7 +71,7 @@ CompilerSupplier.prototype.load = function(){
     if (useLocal)   return accept(self.getLocal(version));
     if (useRemote)  return accept(self.getByUrl(version)); // Tries cache first, then remote.
   });
-}
+};
 
 /**
  * Returns keys that can be used to specify which remote solc to fetch
@@ -100,9 +100,9 @@ CompilerSupplier.prototype.getReleases = function() {
         prereleases: prereleases,
         releases: releases,
         latestRelease: list.latestRelease,
-      }
+      };
     });
-}
+};
 
 /**
  * Fetches the first page of docker tags for the the ethereum/solc image
@@ -118,8 +118,8 @@ CompilerSupplier.prototype.getDockerTags = function(){
         .results
         .map(item => item.name)
     )
-    .catch(err => {throw self.errors('noRequest', self.config.dockerTagsUrl, err)});
-}
+    .catch(err => { throw self.errors('noRequest', self.config.dockerTagsUrl, err); });
+};
 
 
 //------------------------------------ Getters -----------------------------------------------------
@@ -132,7 +132,7 @@ CompilerSupplier.prototype.getDefault = function(){
   const compiler = require('solc');
   this.removeListener();
   return compiler;
-}
+};
 
 /**
  * Gets an npm installed solc from specified path.
@@ -148,14 +148,14 @@ CompilerSupplier.prototype.getLocal = function(localPath){
   }
 
   try {
-    compiler = originalRequire(localPath)
+    compiler = originalRequire(localPath);
     self.removeListener();
   } catch (err) {
     throw self.errors('noPath', localPath);
   }
 
   return compiler;
-}
+};
 
 
 /**
@@ -181,7 +181,7 @@ CompilerSupplier.prototype.getVersions = function() {
       spinner.stop();
       throw self.errors('noRequest', self.config.versionsUrl, err);
     });
-}
+};
 
 /**
  * Returns terminal url segment for `version` from the versions object
@@ -207,7 +207,7 @@ CompilerSupplier.prototype.getVersionUrlSegment = function(version, allVersions)
   }
 
   return null;
-}
+};
 
 /**
  * Downloads solc specified by `version` after attempting retrieve it from cache on local machine,
@@ -244,7 +244,7 @@ CompilerSupplier.prototype.getByUrl = function(version){
           throw self.errors('noRequest', url, err);
         });
     });
-}
+};
 
 /**
  * Makes solc.compileStandard a wrapper to a child process invocation of dockerized solc
@@ -275,9 +275,9 @@ CompilerSupplier.prototype.getBuilt = function(buildType){
         compileStandard: (options) => String(child.execSync(command, {input: options})),
         version: () => versionString,
         importsParser: solcjs,
-      }
+      };
     });
-}
+};
 
 //------------------------------------ Utils -------------------------------------------------------
 
@@ -288,7 +288,7 @@ CompilerSupplier.prototype.getBuilt = function(buildType){
  */
 CompilerSupplier.prototype.isLocal = function(localPath){
   return fs.existsSync(localPath) || path.isAbsolute(localPath);
-}
+};
 
 /**
  * Checks to make sure image is specified in the config, that docker exists and that
@@ -329,7 +329,7 @@ CompilerSupplier.prototype.validateDocker = function(){
   const normalized = this.normalizeVersion(version);
   this.addToCache(normalized, fileName);
   return normalized;
-}
+};
 
 /**
  * Checks to make sure image is specified in the config, that docker exists and that
@@ -347,7 +347,7 @@ CompilerSupplier.prototype.validateNative = function(){
   }
 
   return this.normalizeVersion(version);
-}
+};
 
 /**
  * Extracts a commit key from the version info returned by native/docker solc.
@@ -357,8 +357,8 @@ CompilerSupplier.prototype.validateNative = function(){
  * @return {String}                 commit key, ex: commit.4cb486ee
  */
 CompilerSupplier.prototype.getCommitFromVersion = function(versionString){
-  return 'commit.' + versionString.match(/commit\.(.*?)\./)[1]
-}
+  return 'commit.' + versionString.match(/commit\.(.*?)\./)[1];
+};
 
 /**
  * Converts shell exec'd solc version from buffer to string and strips out human readable
@@ -369,7 +369,7 @@ CompilerSupplier.prototype.getCommitFromVersion = function(versionString){
 CompilerSupplier.prototype.normalizeVersion = function(version){
   version = String(version);
   return version.split(':')[1].trim();
-}
+};
 
 
 /**
@@ -380,7 +380,7 @@ CompilerSupplier.prototype.normalizeVersion = function(version){
 CompilerSupplier.prototype.resolveCache = function(fileName){
   const thunk = findCacheDir({name: 'truffle', cwd: __dirname, thunk: true});
   return thunk(fileName);
-}
+};
 
 /**
  * Returns true if `fileName` exists in the cache.
@@ -390,7 +390,7 @@ CompilerSupplier.prototype.resolveCache = function(fileName){
 CompilerSupplier.prototype.isCached = function(fileName){
   const file = this.resolveCache(fileName);
   return fs.existsSync(file);
-}
+};
 
 /**
  * Write  to the cache at `config.cachePath`. Creates `cachePath` directory if
@@ -403,7 +403,7 @@ CompilerSupplier.prototype.addToCache = function(code, fileName){
 
   const filePath = this.resolveCache(fileName);
   fs.writeFileSync(filePath, code);
-}
+};
 
 /**
  * Retrieves usable solc module from cache
@@ -416,7 +416,7 @@ CompilerSupplier.prototype.getFromCache = function(fileName){
   const wrapped = solcWrap(soljson);
   this.removeListener();
   return wrapped;
-}
+};
 
 /**
  * Converts the JS code string obtained from solc-bin to usable node module.
@@ -428,7 +428,7 @@ CompilerSupplier.prototype.compilerFromString = function(code){
   const wrapped = solcWrap(soljson);
   this.removeListener();
   return wrapped;
-}
+};
 
 /**
  * Cleans up error listeners set (by solc?) when requiring it. (This code inherited from
@@ -441,7 +441,7 @@ CompilerSupplier.prototype.removeListener = function(){
   if (execeptionHandler) {
     process.removeListener("uncaughtException", execeptionHandler);
   }
-}
+};
 
 /**
  * Error formatter
@@ -451,7 +451,7 @@ CompilerSupplier.prototype.removeListener = function(){
  * @return {Error}
  */
 CompilerSupplier.prototype.errors = function(kind, input, err){
-  const info = 'Run `truffle compile --list` to see available versions.'
+  const info = 'Run `truffle compile --list` to see available versions.';
 
   const kinds = {
 
@@ -468,9 +468,9 @@ CompilerSupplier.prototype.errors = function(kind, input, err){
                "   - a solc version (ex: '0.4.22')\n" +
                "   - a docker image name (ex: 'stable')\n" +
                "Received: " + input + " instead.",
-  }
+  };
 
   return new Error(kinds[kind]);
-}
+};
 
 module.exports = CompilerSupplier;

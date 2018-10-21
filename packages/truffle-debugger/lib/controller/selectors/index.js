@@ -11,7 +11,7 @@ import trace from "lib/trace/selectors";
 /**
  * @private
  */
-const identity = (x) => x
+const identity = (x) => x;
 
 /**
  * controller
