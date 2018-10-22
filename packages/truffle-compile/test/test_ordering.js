@@ -55,7 +55,7 @@ describe("Compile", function() {
         });
         assert.deepEqual(abi, expectedOrder);
         done();
-      })
+      });
     });
 
     // Ordered.sol's methods are ordered semantically.
@@ -106,4 +106,3 @@ describe("Compile", function() {
     })
   })
 });
-
