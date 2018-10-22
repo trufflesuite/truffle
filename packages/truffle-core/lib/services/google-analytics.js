@@ -1,3 +1,11 @@
+/**
+* @module googleAnalytics;
+* @requires module:truffle-config
+* @requires module:universal-analytics
+* @requires module:nanoid
+* @requires module:inquirer
+* @requires module:../version
+*/
 const Config = require("truffle-config");
 const userConfig = Config.getUserConfig();
 const ua = require('universal-analytics');
