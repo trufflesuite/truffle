@@ -123,6 +123,7 @@ var command = {
         function printFile() {
           var message = "";
 
+          debug("about to determine sourcePath");
           var sourcePath = session.view(solidity.current.source).sourcePath;
 
           if (sourcePath) {
@@ -496,41 +497,63 @@ var command = {
             cmd = lastCommand;
           }
 
-          // Perform commands that require state changes.
-          switch (cmd) {
-            case "o":
-              session.stepOver();
-              break;
-            case "i":
-              session.stepInto();
-              break;
-            case "u":
-              session.stepOut();
-              break;
-            case "n":
-              session.stepNext();
-              break;
-            case ";":
-              session.advance();
-              break;
-            case "c":
-              session.continueUntilBreakpoint();
-              break;
-            case "q":
+          //quit if that's what we were given
+          if(cmd === "q")
+          {
               return repl.stop(callback);
           }
 
-          // Check if execution has stopped.
-          if (session.finished) {
+          let alreadyFinished = session.view(trace.finished);
+
+          // If not finished, perform commands that require state changes
+          // (other than quitting)
+          if(!alreadyFinished)
+          {
+            switch (cmd) {
+              case "o":
+                session.stepOver();
+                break;
+              case "i":
+                session.stepInto();
+                break;
+              case "u":
+                session.stepOut();
+                break;
+              case "n":
+                session.stepNext();
+                break;
+              case ";":
+                session.advance();
+                break;
+              case "c":
+                session.continueUntilBreakpoint();
+                break;
+            }
+          }
+          else //otherwise, inform the user we can't do that
+          {  switch (cmd) {
+              case "o":
+              case "i":
+              case "u":
+              case "n":
+              case ";":
+              case "c":
+                config.logger.log("Transaction has halted; cannot advance.");
+                config.logger.log("");
+            }
+          }
+
+          // Check if execution has (just now) stopped.
+          if (session.view(trace.finished) && !alreadyFinished) {
             config.logger.log("");
-            if (session.failed) {
+            //check if transaction failed
+            if (!session.view(selectors.session.transaction.receipt).status) {
               config.logger.log("Transaction halted with a RUNTIME ERROR.")
               config.logger.log("");
               config.logger.log("This is likely due to an intentional halting expression, like assert(), require() or revert(). It can also be due to out-of-gas exceptions. Please inspect your transaction parameters and contract code to determine the meaning of this error.");
-            } else {
+            } else { //case if transaction succeeded
               config.logger.log("Transaction completed successfully.");
             }
-            return repl.stop(callback);
           }
 
           // Perform post printing
@@ -573,12 +596,14 @@ var command = {
             case "u":
             case "n":
             case "c":
-              if(!session.view(solidity.current.source).source) {
-                printInstruction();
-              }
+              if(!session.view(trace.finished)) {
+                if(!session.view(solidity.current.source).source) {
+                 printInstruction();
+                }
 
-              printFile();
-              printState();
+                printFile();
+                printState();
+              }
               printWatchExpressionsResults();
               break;
             default:
@@ -597,8 +622,11 @@ var command = {
 
         printAddressesAffected();
         printHelp();
+        debug("Help printed");
         printFile();
+        debug("File printed");
         printState();
+        debug("State printed");
 
         var repl = options.repl || new ReplManager(config);
 

@@ -10,6 +10,7 @@ import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
 
 import solidity from "lib/solidity/selectors";
+import trace from "lib/trace/selectors";
 
 
 const __SINGLE_CALL = `
@@ -112,14 +113,14 @@ describe("Solidity Debugging", function() {
     do {
       session.continueUntilBreakpoint();
 
-      if (!session.finished) {
+      if (!session.view(trace.finished)) {
         let range = await session.view(solidity.current.sourceRange);
         assert.equal(range.lines.start.line, 16);
 
         breakpointStopped = true;
       }
 
-    } while(!session.finished);
+    } while(!session.view(trace.finished));
   });
 
   describe("Function Depth", function() {
@@ -137,16 +138,17 @@ describe("Solidity Debugging", function() {
       });
 
       let session = bugger.connect();
-      var stepped;  // session steppers return false when done
+      var finished;
 
       do {
-        stepped = session.stepNext();
+        session.stepNext();
+        finished = session.view(trace.finished);
 
         let actual = session.view(solidity.current.functionDepth);
 
         assert.isAtMost(actual, maxExpected);
 
-      } while(stepped);
+      } while(!finished);
 
     });
 
@@ -169,10 +171,11 @@ describe("Solidity Debugging", function() {
       let expectedDepthSequence = [1,2,3,2,1,2,1,0];
       let actualSequence = [session.view(solidity.current.functionDepth)];
 
-      var stepped;
+      var finished;
 
       do {
-        stepped = session.stepNext();
+        session.stepNext();
+        finished = session.view(trace.finished);
 
         let currentDepth = session.view(solidity.current.functionDepth);
         let lastKnown = actualSequence[actualSequence.length - 1];
@@ -180,7 +183,7 @@ describe("Solidity Debugging", function() {
         if (currentDepth !== lastKnown) {
           actualSequence.push(currentDepth);
         }
-      } while(stepped);
+      } while(!finished);
 
       assert.deepEqual(actualSequence, expectedDepthSequence);
     });

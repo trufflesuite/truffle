@@ -40,7 +40,29 @@ const session = createSelectorTree({
         )
       )
     )
+
+  },
+
+
+  /**
+   * session.transaction (namespace)
+   */
+  transaction: {
+
+    /**
+     * session.transaction (selector)
+     * contains the web3 transaction object
+     */
+    _: (state) => state.session.transaction,
+
+    /**
+     * session.transaction.receipt
+     * contains the web3 receipt object
+     */
+    receipt: (state) => state.session.receipt,
+
   }
+  
 });
 
 export default session;

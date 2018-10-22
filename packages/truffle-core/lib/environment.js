@@ -6,7 +6,6 @@ var Artifactor = require("truffle-artifactor");
 var TestRPC = require("ganache-cli");
 var spawn = require("child_process").spawn;
 var path = require("path");
-var Develop = require("./develop");
 
 var Environment = {
   // It's important config is a Config object and not a vanilla object

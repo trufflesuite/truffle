@@ -62,7 +62,7 @@ function* advance() {
 function* stepNext () {
   const startingRange = yield select(controller.current.location.sourceRange);
 
-  var upcoming;
+  var upcoming, finished;
 
   do {
     // advance at least once step
@@ -75,14 +75,18 @@ function* stepNext () {
       upcoming = null;
     }
 
+    finished = yield select(controller.finished);
+
     // if the next step's source range is still the same, keep going
   } while (
+    !finished && (
+
     !upcoming ||
     !upcoming.node ||
     SKIPPED_TYPES.has(upcoming.node.nodeType) ||
 
     upcoming.sourceRange.start == startingRange.start &&
-    upcoming.sourceRange.length == startingRange.length
+    upcoming.sourceRange.length == startingRange.length)
   );
 }
 
@@ -195,6 +199,7 @@ function* stepOver () {
  */
 function *continueUntilBreakpoint () {
   var currentLocation, currentNode, currentLine, currentSourceId;
+  var finished;
   var previousLine, previousSourceId;
 
   let breakpoints = yield select(controller.breakpoints);
@@ -213,6 +218,9 @@ function *continueUntilBreakpoint () {
     previousSourceId = currentSourceId;
 
     currentLocation = yield select(controller.current.location);
+    finished = yield select(controller.finished);
+    debug("finished %o",finished);
+
     currentNode = currentLocation.node.id;
     currentLine = currentLocation.sourceRange.lines.start.line;
     currentSourceId = currentLocation.source.id;
@@ -233,5 +241,5 @@ function *continueUntilBreakpoint () {
       )
       .length > 0;
     
-  } while(!breakpointHit);
+  } while(!breakpointHit && !finished);
 }

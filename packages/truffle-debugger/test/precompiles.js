@@ -86,7 +86,7 @@ describe("Precompiled Contracts", () => {
     });
 
     let session = bugger.connect();
-    var stepped;  // session steppers return false when done
+    var finished;  // is the trace finished?
 
     do {
       for (let { name, selector } of TEST_CASES) {
@@ -101,8 +101,9 @@ describe("Precompiled Contracts", () => {
         results[name].push(stepResult);
       }
 
-      stepped = session.advance();
-    } while(stepped);
+      session.advance();
+      finished = session.view(trace.finished);
+    } while(!finished);
   });
 
   before("remove final step results", () => {

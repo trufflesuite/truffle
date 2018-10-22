@@ -10,7 +10,7 @@
 const Config = require('truffle-config');
 const defaultUserConfig = Config.getUserConfig();
 const seedrandom = require('seedrandom');
-const bip39 = require('bip39'); 
+const bip39 = require('bip39');
 const hdkey = require('ethereumjs-wallet/hdkey');
 const crypto = require('crypto');
 
@@ -34,11 +34,11 @@ const mnemonic = {
   },
 
   /**
-  * gets accounts object using mnemonic 
-  * @param {String}   
+  * gets accounts object using mnemonic
+  * @param {String}
   * @returns {Object} mnemonicObject
   */
-  getAccountsInfo: function () {
+  getAccountsInfo: function (numAddresses) {
 
     let mnemonic = this.getOrGenerateMnemonic();
     let accounts = [];
@@ -46,7 +46,6 @@ const mnemonic = {
 
     let hdwallet = hdkey.fromMasterSeed(bip39.mnemonicToSeed(mnemonic));
     let addressIndex = 0;
-    let numAddresses = 10;
     let walletHdpath = "m/44'/60'/0'/0/";
 
     for (let i = addressIndex; i < addressIndex + numAddresses; i++) {

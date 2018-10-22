@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/truffle.svg)](https://www.npmjs.com/package/truffle)
 [![npm](https://img.shields.io/npm/dm/truffle.svg)](https://www.npmjs.com/package/truffle)
 [![Join the chat at https://gitter.im/consensys/truffle](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/consensys/truffle?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://travis-ci.org/trufflesuite/truffle.svg?branch=develop)](https://travis-ci.org/trufflesuite/truffle)
+[![Build Status](https://travis-ci.org/trufflesuite/truffle.svg?branch=next)](https://travis-ci.org/trufflesuite/truffle)
 [![Coverage Status](https://coveralls.io/repos/github/trufflesuite/truffle/badge.svg?branch=next)](https://coveralls.io/github/trufflesuite/truffle?branch=next)
 
 -----------------------
@@ -76,6 +76,8 @@ If you'd like to update a dependency to the same version across all packages, yo
 +    `next`: Upcoming feature development and most new work (v5)
 
 Please make pull requests against `next` for any substantial changes. Small changes and bugfixes can be considered for `develop`.
+
+There is a bit more information in the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
 
 ### License
 
