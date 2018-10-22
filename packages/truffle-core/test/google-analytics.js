@@ -1,5 +1,4 @@
 const Config = require("truffle-config");
-const userConfig = Config.getUserConfig();
 const ua = require('universal-analytics');
 const assert = require("chai").assert;
 const sinon = require("sinon");
@@ -8,23 +7,30 @@ const inquirer = require("inquirer");
 const configCommand = require('../lib/commands/config');
 const Configstore = require('configstore');
 
-
 describe("googleAnalytics", function() {
   beforeEach(() => {
     sinon.stub(inquirer, "prompt").returns({ then: () => 1 });
+    sinon.stub(Config, "getUserConfig").returns(true);
+    sinon.stub(Configstore.prototype, "get").returns(false);
+    sinon.stub(Configstore.prototype, "set"); 
+    // sinon.stub(googleAnalytics, "checkIfAnalyticsEnabled").returns(true);
+    sinon.stub(googleAnalytics, "setUserConfigViaPrompt").resolves();
+    sinon.stub(ua.Visitor.prototype, "_enqueue");
   });
   afterEach(() => {
     inquirer.prompt.restore();
+    Config.getUserConfig.restore();
+    Configstore.prototype.get.restore();
+    Configstore.prototype.set.restore();
+    googleAnalytics.setUserConfigViaPrompt.restore();
+    ua.Visitor.prototype._enqueue.restore();
+    sinon.restore();
   });
   describe("#setUserId", function(){
     it("sets a userId if one does not exist", function() {
-      let checkConfigStub = sinon.stub(Configstore.prototype, "get").returns(false);
-      let setConfigStub = sinon.stub(Configstore.prototype, "set");
       googleAnalytics.setUserId();
-      sinon.assert.calledOnce(checkConfigStub);
-      sinon.assert.calledOnce(setConfigStub); 
-      checkConfigStub.restore();
-      setConfigStub.restore();
+   		sinon.assert.calledOnce(Configstore.prototype.get);
+   		sinon.assert.calledOnce(Configstore.prototype.set);	
     });
   });
   describe("#setAnalytics", function() {
@@ -43,56 +49,51 @@ describe("googleAnalytics", function() {
       setAnalyticsStub.restore();
     });
     it("sets user-level configuration of enableAnalytics to true if passed true", function() {
-      let setConfigStub = sinon.stub(Configstore.prototype, "set");
       googleAnalytics.setAnalytics(true);
-      let stubArg = setConfigStub.getCall(0).args[0].enableAnalytics;
+      sinon.assert.calledTwice(Configstore.prototype.set);
+      let stubArg = Configstore.prototype.set.getCall(1).args[0].enableAnalytics;
       assert.equal(stubArg, true);
-      setConfigStub.restore();
     });
     it("sets user-level configuration of enableAnalytics to false if passed false", function() {
-      let setConfigStub = sinon.stub(Configstore.prototype, "set");
       googleAnalytics.setAnalytics(false);
-      let stubArg = setConfigStub.getCall(0).args[0].enableAnalytics;
+      sinon.assert.calledOnce(Configstore.prototype.set);
+      let stubArg = Configstore.prototype.set.getCall(0).args[0].enableAnalytics;
       assert.equal(stubArg, false);
-      setConfigStub.restore();
     });	
   });
   describe("#setUserConfigViaPrompt", function() {
     it("sets user-level configuration variables", function() {
-      let setConfigStub = sinon.stub(googleAnalytics, "setUserConfigViaPrompt").resolves();
       configCommand.run({});
-      sinon.assert.calledOnce(setConfigStub);
-      setConfigStub.restore();
+      sinon.assert.calledOnce(googleAnalytics.setUserConfigViaPrompt);
     });
   });
   describe("#checkIfAnalyticsEnabled", function() {
     it("checks the user-level config to see if analytics are enabled", function() {
-      let checkConfigStub = sinon.stub(Configstore.prototype, "get");
-      let checkIfAnalyticsEnabled = googleAnalytics.checkIfAnalyticsEnabled();
-      sinon.assert.calledOnce(checkConfigStub);
-      checkConfigStub.restore();
+      googleAnalytics.checkIfAnalyticsEnabled();
+      sinon.assert.calledOnce(Configstore.prototype.get);
     });
   });
   describe("#setPersistentAnalyticsData", function() {
     it("checks that analytics are enabled before proceeding", function() {
-      let checkAnalyticsStub = sinon.stub(googleAnalytics, "checkIfAnalyticsEnabled");
+      let checkAnalyticsStub = sinon.stub(googleAnalytics, "checkIfAnalyticsEnabled").returns(true);
       googleAnalytics.setPersistentAnalyticsData();
       sinon.assert.calledOnce(checkAnalyticsStub);
       checkAnalyticsStub.restore();
     });
     it("sets and returns a visitor object for google analytics", function() {
+      let checkAnalyticsStub = sinon.stub(googleAnalytics, "checkIfAnalyticsEnabled").returns(true);
       let visitor = googleAnalytics.setPersistentAnalyticsData();
       assert.exists(visitor);
       assert.isObject(visitor);
+      checkAnalyticsStub.restore();
      }); 
   });
   describe("#sendAnalyticsEvent", function() {
     it("sends an event object to google analytics", function() {
-      let sendStub = sinon.stub(ua.Visitor.prototype, "_enqueue");
+      let checkAnalyticsStub = sinon.stub(googleAnalytics, "checkIfAnalyticsEnabled").returns(true);
       let sendingAnalyticsEvent = googleAnalytics.sendAnalyticsEvent({ec: "initialization", ea: "truffle unbox"});
-      sinon.assert.calledOnce(sendStub);
+      sinon.assert.calledOnce(ua.Visitor.prototype._enqueue);
       assert.equal(sendingAnalyticsEvent, true);
-      sendStub.restore();
     });
   });
 });

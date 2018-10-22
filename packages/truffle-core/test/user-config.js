@@ -8,28 +8,26 @@ describe("config", function() {
   describe("#run", function() {
   	beforeEach(() => {
     	sinon.stub(inquirer, "prompt").returns({ then: () => 1 });
-    	
+    	sinon.stub(googleAnalytics, 'setAnalytics').resolves();
+    	sinon.stub(googleAnalytics, "setUserConfigViaPrompt").resolves();
 	  });
 	  afterEach(() => {
 	    inquirer.prompt.restore();
+	    googleAnalytics.setAnalytics.restore();
+	    googleAnalytics.setUserConfigViaPrompt.restore();
+	    sinon.restore();
 	  });
     it("calls googleAnalytics.setAnalytics() when provided with enableAnalytics option", function() {
-      let setAnalyticsStub = sinon.stub(googleAnalytics, 'setAnalytics').resolves();
       configCommand.run({enableAnalytics: true});
-      sinon.assert.calledOnce(setAnalyticsStub);
-      setAnalyticsStub.restore();
+      sinon.assert.calledOnce(googleAnalytics.setAnalytics);
     });
     it("calls googleAnalytics.setAnalytics() when provided with disableAnalytics option", function() {
-      let setAnalyticsStub = sinon.stub(googleAnalytics, 'setAnalytics').resolves();
       configCommand.run({disableAnalytics: true});
-      sinon.assert.calledOnce(setAnalyticsStub);
-      setAnalyticsStub.restore();
+      sinon.assert.calledOnce(googleAnalytics.setAnalytics);
     });
     it("calls googleAnalytics.setuserConfigViaPrompt() if not provided with options", function() {
-      let setConfigStub = sinon.stub(googleAnalytics, "setUserConfigViaPrompt").resolves();
       configCommand.run({});
-      sinon.assert.calledOnce(setConfigStub);
-      setConfigStub.restore();
+      sinon.assert.calledOnce(googleAnalytics.setUserConfigViaPrompt);
     });
   });
 }); 
