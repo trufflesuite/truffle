@@ -1,7 +1,2 @@
 node_modules
 packages/truffle/build
-packages/truffle-box/lib/utils/unbox.js
-packages/truffle-box/box.js
-packages/truffle-artifactor/templates/class.js
-packages/truffle-box/test/box.js
-packages/truffle/scripts/prereleaseVersion.js

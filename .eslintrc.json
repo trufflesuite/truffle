@@ -1,4 +1,4 @@
-module.exports = {
+{
   "extends": "standard",
   "rules": {
     "array-element-newline": 0,
@@ -96,7 +96,7 @@ module.exports = {
     "no-undef-init": 0,
     "no-undef": 0,
     "no-undefined": 0,
-    "no-unused-vars": 1,
+    "no-unused-vars": 2,
     "no-use-before-define": 0,
     "callback-return": 0,
     "handle-callback-err": 0,
@@ -147,11 +147,11 @@ module.exports = {
     "operator-linebreak": 0,
     "padded-blocks": 0,
     "promise/param-names": 0,
-    "quote-props": 0,
+    "quote-props": ["error", "consistent"],
     "quotes": 0,
     "id-match": 0,
     "semi-spacing": 0,
-    "semi": [2,"always"],
+    "semi": [2, "always"],
     "sort-vars": 0,
     "space-after-keywords": 0,
     "space-before-blocks": 0,
@@ -194,4 +194,4 @@ module.exports = {
     "newline-before-return": 0,
     "no-useless-escape": 1
   }
-};
+}
