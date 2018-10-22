@@ -13,7 +13,6 @@ describe("googleAnalytics", function() {
     sinon.stub(Config, "getUserConfig").returns(true);
     sinon.stub(Configstore.prototype, "get").returns(false);
     sinon.stub(Configstore.prototype, "set"); 
-    // sinon.stub(googleAnalytics, "checkIfAnalyticsEnabled").returns(true);
     sinon.stub(googleAnalytics, "setUserConfigViaPrompt").resolves();
     sinon.stub(ua.Visitor.prototype, "_enqueue");
   });
