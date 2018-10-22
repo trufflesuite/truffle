@@ -68,7 +68,7 @@ const googleAnalytics = {
   * @param {bool} analyticsBool
   * @param {Object} userConfig
   */
-  setAnalytics: function(analyticsBool) {
+  setAnalytics: function(analyticsBool, done) {
     if(analyticsBool === true) {
       this.setUserId();
       userConfig.set({ 'enableAnalytics': true, 'analyticsSet': true, 'analyticsMessageDateTime': Date.now() });

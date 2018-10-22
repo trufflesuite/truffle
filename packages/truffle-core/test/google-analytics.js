@@ -35,14 +35,14 @@ describe("googleAnalytics", function() {
   describe("#setAnalytics", function() {
     it("sets user-level analytics preferences when passed enableAnalytics option", function(){
       let setAnalyticsStub = sinon.stub(googleAnalytics, 'setAnalytics').resolves();
-      configCommand.run({enableAnalytics: true});
+      configCommand.run({enableAnalytics: true}, ()=> {});
       let stubArg = setAnalyticsStub.getCall(0).args[0];
       assert.equal(stubArg, true);
       setAnalyticsStub.restore();
     });
     it("sets user-level analytics preferences when passed disableAnalytics option", function(){
       let setAnalyticsStub = sinon.stub(googleAnalytics, 'setAnalytics').resolves();
-      configCommand.run({disableAnalytics: true});
+      configCommand.run({disableAnalytics: true}, ()=> {});
       let stubArg = setAnalyticsStub.getCall(0).args[0];
       assert.equal(stubArg, false);
       setAnalyticsStub.restore();
@@ -62,7 +62,7 @@ describe("googleAnalytics", function() {
   });
   describe("#setUserConfigViaPrompt", function() {
     it("sets user-level configuration variables", function() {
-      configCommand.run({});
+      configCommand.run({}, ()=> {});
       sinon.assert.calledOnce(googleAnalytics.setUserConfigViaPrompt);
     });
   });

@@ -25,15 +25,13 @@ const command = {
     let setAnalytics;
     if(options.enableAnalytics) {
       setAnalytics = googleAnalytics.setAnalytics(true);
+      done();
     } else if (options.disableAnalytics){
       setAnalytics = googleAnalytics.setAnalytics(false);
+      done();
     } else {
       setAnalytics = googleAnalytics.setUserConfigViaPrompt();
       setAnalytics.then(() => done()).catch((err)=> err);
-    }
-
-    if(setAnalytics === true) { 
-      return done();
     }
   }
 }

@@ -18,11 +18,11 @@ describe("config", function() {
 	    sinon.restore();
 	  });
     it("calls googleAnalytics.setAnalytics() when provided with enableAnalytics option", function() {
-      configCommand.run({enableAnalytics: true});
+      configCommand.run({enableAnalytics: true}, ()=> {});
       sinon.assert.calledOnce(googleAnalytics.setAnalytics);
     });
     it("calls googleAnalytics.setAnalytics() when provided with disableAnalytics option", function() {
-      configCommand.run({disableAnalytics: true});
+      configCommand.run({disableAnalytics: true}, ()=> {});
       sinon.assert.calledOnce(googleAnalytics.setAnalytics);
     });
     it("calls googleAnalytics.setuserConfigViaPrompt() if not provided with options", function() {
