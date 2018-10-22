@@ -15,7 +15,7 @@ module.exports = {
   entry: {
     cli: path.join(__dirname, "../..", "node_modules", "truffle-core", "cli.js"),
     chain: path.join(__dirname, "../..", "node_modules", "truffle-core", "chain.js"),
-    googleanalytics: path.join(__dirname, "../..", "node_modules", "truffle-core", "services", "google-analytics.js")
+    analytics: path.join(__dirname, "../..", "node_modules", "truffle-core", "services", "google-analytics.js")
   },
   target: 'node',
   node: {
@@ -65,6 +65,11 @@ module.exports = {
     new webpack.DefinePlugin({
       "BUNDLE_VERSION": JSON.stringify(pkg.version),
       "BUNDLE_CHAIN_FILENAME": JSON.stringify("chain.bundled.js")
+    }),
+
+    new webpack.DefinePlugin({
+      "BUNDLE_VERSION": JSON.stringify(pkg.version),
+      "BUNDLE_ANALYTICS_FILENAME": JSON.stringify("analytics.bundled.js")
     }),
 
     // Put the shebang back on.

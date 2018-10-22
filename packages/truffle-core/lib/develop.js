@@ -20,6 +20,12 @@ var Develop = {
       chainPath = path.join(__dirname, "../", "chain.js");
     }
 
+    if (typeof BUNDLE_ANALYTICS_FILENAME != "undefined") {
+      analyticsPath = path.join(__dirname, BUNDLE_ANALYTICS_FILENAME);
+    } else {
+      analyticsPath = path.join(__dirname, "services", "google-analytics.js");
+    }
+
     var cmd = spawn("node", [chainPath, ipcNetwork, JSON.stringify(options)], {
       detached: true,
       stdio: 'ignore'
