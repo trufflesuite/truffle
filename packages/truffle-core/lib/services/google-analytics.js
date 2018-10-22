@@ -31,7 +31,7 @@ const analyticsInquiry = [
   {
     type : "list",
     name : "analyticsInquiry",
-    message : "Would you like to enable analytics for your Truffle projects? Doing so will allow us to make sure Truffle is working as expected and address any bugs more efficiently.",
+    message : "Would you like to enable analytics for your Truffle projects? Doing so will allow us to make sure Truffle is working as expected and help us address any bugs more efficiently.",
     choices: ["Yes, enable analytics",
      "No, do not enable analytics"],
   }
@@ -71,9 +71,17 @@ const googleAnalytics = {
   setAnalytics: function(analyticsBool, done) {
     if(analyticsBool === true) {
       this.setUserId();
-      userConfig.set({ 'enableAnalytics': true, 'analyticsSet': true, 'analyticsMessageDateTime': Date.now() });
+      userConfig.set({ 
+        'enableAnalytics': true,
+        'analyticsSet': true,
+        'analyticsMessageDateTime': Date.now()
+      });
     } else {
-      userConfig.set({ 'enableAnalytics': false, 'analyticsSet': true, 'analyticsMessageDateTime': Date.now() });
+      userConfig.set({
+        'enableAnalytics': false,
+        'analyticsSet': true, 
+        'analyticsMessageDateTime': Date.now()
+      });
     }
     return true;   
   },
@@ -103,9 +111,7 @@ const googleAnalytics = {
       } else {
         this.setAnalytics(false);
       }
-    } else {
-      return true;
-    }
+    } 
     return true;
   },
   /**
