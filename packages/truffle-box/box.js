@@ -8,7 +8,6 @@ var Box = {
   unbox: function(url, destination, options) {
     options = options || {};
     options.logger = options.logger || { log: () => {} };
- 
     const downloadBoxOptions = {
       force: options.force,
     }
