@@ -3,9 +3,9 @@ export function scope(id, pointer, parentId, sourceId) {
   return {
     type: SCOPE,
     id,
-pointer,
-parentId,
-sourceId
+    pointer,
+    parentId,
+    sourceId
   };
 }
 
@@ -22,7 +22,7 @@ export function assign(context, assignments) {
   return {
     type: ASSIGN,
     context,
-assignments
+    assignments
   };
 }
 
@@ -31,6 +31,6 @@ export function mapKey(id, key) {
   return {
     type: MAP_KEY,
     id,
-key
+    key
   };
 }
