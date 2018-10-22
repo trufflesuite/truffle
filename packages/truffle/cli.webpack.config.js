@@ -14,8 +14,8 @@ var outputFilename = 'cli.bundled.js';
 module.exports = {
   entry: {
     cli: path.join(__dirname, "../..", "node_modules", "truffle-core", "cli.js"),
-    chain: path.join(__dirname, "../..", "node_modules", "truffle-core", "chain.js")
-    google-analytics: path.join(__dirname, "../..", "node_modules", "truffle-core", "services", "google-analytics.js")
+    chain: path.join(__dirname, "../..", "node_modules", "truffle-core", "chain.js"),
+    googleanalytics: path.join(__dirname, "../..", "node_modules", "truffle-core", "services", "google-analytics.js")
   },
   target: 'node',
   node: {
