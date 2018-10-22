@@ -23,7 +23,7 @@ var Develop = {
     if (typeof BUNDLE_ANALYTICS_FILENAME != "undefined") {
       analyticsPath = path.join(__dirname, BUNDLE_ANALYTICS_FILENAME);
     } else {
-      analyticsPath = path.join(__dirname, "services", "google-analytics.js");
+      analyticsPath = path.join(__dirname, "lib", "services", "google-analytics.js");
     }
 
     var cmd = spawn("node", [chainPath, ipcNetwork, JSON.stringify(options)], {
