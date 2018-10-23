@@ -32,14 +32,14 @@ By default, the `HDWalletProvider` will use the address of the first address tha
 
 Parameters:
 
-| Parameter | Type | Default | Description |
-| ------ | ---- | ------- | ----------- |
-| mnemonic | *string* | null | <required> 12 word mnemonic which addresses are created from. |
-| provider | *string* / *object* | null | <required> URI or Ethereum client to send all other non-transaction-related Web3 requests |
-| address_index | *number* | 0 | <optional> If specified, will tell the provider to manage the address at the index specified |
-| num_addresses | *number* | 1 | <optional> If specified, will create `number` addresses when instantiated |
-| shareNonce | *boolean* | true | <optional> If false, a new WalletProvider will track its own nonce-state |
-| wallet_hdpath | string | "m/44'/60'/0'/0/" | <optional> If specified, will tell the wallet engine what derivation path should use to derive addresses. |
+| Parameter | Type | Default | Required | Description |
+| ------ | ---- | ------- | ----------- | ----------- |
+| `mnemonic` | *`string*` | null | [x] | 12 word mnemonic which addresses are created from. |
+| `provider` | `string\|object` | `null` | [x] | URI or Ethereum client to send all other non-transaction-related Web3 requests |
+| `address_index` | `number` | `0` | [ ] | If specified, will tell the provider to manage the address at the index specified |
+| `num_addresses` | `number` | `1` | [ ] | If specified, will create `number` addresses when instantiated |
+| `shareNonce` | `boolean` | `true` | [ ] | If false, a new WalletProvider will track its own nonce-state |
+| `wallet_hdpath` | `string` | `"m/44'/60'/0'/0/"` | [ ] | If specified, will tell the wallet engine what derivation path should use to derive addresses. |
 
 ## Truffle Usage
 
