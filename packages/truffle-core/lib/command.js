@@ -1,8 +1,8 @@
-var TaskError = require("./errors/taskerror");
-var yargs = require("yargs/yargs");
-var _ = require("lodash");
-var version = require("../lib/version");
-var OS = require("os");
+const TaskError = require("./errors/taskerror");
+const yargs = require("yargs/yargs");
+const _ = require("lodash");
+const version = require("../lib/version");
+const OS = require("os");
 
 function Command(commands) {
   this.commands = commands;
@@ -14,9 +14,13 @@ function Command(commands) {
   });
 
   this.args = args;
-};
+}
 
-Command.prototype.getCommand = function(inputStrings, noAliases) {
+Command.prototype.getCommand = function(inputStrings, config, noAliases) {
+  if (config.commands) {
+    this.commands = { ...this.commands, ...config.commands };
+  }
+
   var argv = this.args.parse(inputStrings);
 
   if (argv._.length == 0) {
@@ -38,8 +42,13 @@ Command.prototype.getCommand = function(inputStrings, noAliases) {
     // that uniquely matches.
     while (currentLength <= firstInputString.length) {
       // Gather all possible commands that match with the current length
-      var possibleCommands = availableCommandNames.filter(function(possibleCommand) {
-        return possibleCommand.substring(0, currentLength) == firstInputString.substring(0, currentLength);
+      var possibleCommands = availableCommandNames.filter(function(
+        possibleCommand
+      ) {
+        return (
+          possibleCommand.substring(0, currentLength) ==
+          firstInputString.substring(0, currentLength)
+        );
       });
 
       // Did we find only one command that matches? If so, use that one.
@@ -70,11 +79,17 @@ Command.prototype.run = function(inputStrings, options, callback) {
     callback = options;
     options = {};
   }
+  var Config = require("truffle-config");
+  var config = Config.detect(options);
 
-  const result = this.getCommand(inputStrings, options.noAliases);
+  const result = this.getCommand(inputStrings, config, options.noAliases);
 
   if (result == null) {
-    return callback(new TaskError("Cannot find command based on input: " + JSON.stringify(inputStrings)));
+    return callback(
+      new TaskError(
+        "Cannot find command based on input: " + JSON.stringify(inputStrings)
+      )
+    );
   }
 
   var argv = result.argv;
@@ -108,9 +123,14 @@ Command.prototype.run = function(inputStrings, options, callback) {
 
 Command.prototype.displayGeneralHelp = function() {
   this.args
-    .usage("Truffle v" + (version.bundle || version.core) + " - a development framework for Ethereum"
-    + OS.EOL + OS.EOL
-    + "Usage: truffle <command> [options]")
+    .usage(
+      "Truffle v" +
+        (version.bundle || version.core) +
+        " - a development framework for Ethereum" +
+        OS.EOL +
+        OS.EOL +
+        "Usage: truffle <command> [options]"
+    )
     .epilog("See more at http://truffleframework.com/docs")
     .showHelp();
 };
