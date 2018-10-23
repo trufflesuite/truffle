@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-require('source-map-support/register');
+require('source-map-support/register')
 
 const TaskError = require("./lib/errors/taskerror");
 const TruffleError = require("truffle-error");
@@ -11,6 +11,7 @@ if (nodeMajorVersion < 8) {
   process.exit(1);
 }
 
+const Config = require("truffle-config");
 const Command = require("./lib/command");
 
 const command = new Command(require("./lib/commands"));
@@ -39,14 +40,17 @@ command.run(inputArguments, options, function(err) {
     if (err instanceof TaskError) {
       command.displayGeneralHelp();
     } else {
+      const { logVersionInformation } = require("./lib/version");
       if (err instanceof TruffleError) {
         console.log(err.message);
+        logVersionInformation(options.logger);
       } else if (typeof err == "number") {
         // If a number is returned, exit with that number.
         process.exit(err);
       } else {
         // Bubble up all other unexpected errors.
         console.log(err.stack || err.message || err.toString());
+        logVersionInformation(options.logger);
       }
     }
     process.exit(1);
