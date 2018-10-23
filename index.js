@@ -1,21 +1,22 @@
-var bip39 = require("bip39");
-var hdkey = require('ethereumjs-wallet/hdkey');
-var debug = require('debug')('truffle-hdwallet-provider')
-var ProviderEngine = require("web3-provider-engine");
-var FiltersSubprovider = require('web3-provider-engine/subproviders/filters.js');
-var NonceSubProvider = require('web3-provider-engine/subproviders/nonce-tracker.js');
-var HookedSubprovider = require('web3-provider-engine/subproviders/hooked-wallet.js');
-var ProviderSubprovider = require("web3-provider-engine/subproviders/provider.js");
-var Web3 = require("web3");
-var Transaction = require('ethereumjs-tx');
-var ethUtil = require('ethereumjs-util');
+const bip39 = require("bip39");
+const ethJSWallet = require('ethereumjs-wallet');
+const hdkey = require('ethereumjs-wallet/hdkey');
+const debug = require('debug')('truffle-hdwallet-provider')
+const ProviderEngine = require("web3-provider-engine");
+const FiltersSubprovider = require('web3-provider-engine/subproviders/filters.js');
+const NonceSubProvider = require('web3-provider-engine/subproviders/nonce-tracker.js');
+const HookedSubprovider = require('web3-provider-engine/subproviders/hooked-wallet.js');
+const ProviderSubprovider = require("web3-provider-engine/subproviders/provider.js");
+const Web3 = require("web3");
+const Transaction = require('ethereumjs-tx');
+const ethUtil = require('ethereumjs-util');
 
 // This line shares nonce state across multiple provider instances. Necessary
 // because within truffle the wallet is repeatedly newed if it's declared in the config within a
 // function, resetting nonce from tx to tx. An instance can opt out
 // of this behavior by passing `shareNonce=false` to the constructor.
 // See issue #65 for more
-var singletonNonceSubProvider = new NonceSubProvider();
+const singletonNonceSubProvider = new NonceSubProvider();
 
 function HDWalletProvider(
   mnemonic,
@@ -25,17 +26,35 @@ function HDWalletProvider(
   shareNonce=true,
   wallet_hdpath="m/44'/60'/0'/0/"
 ) {
-  this.mnemonic = mnemonic;
-  this.hdwallet = hdkey.fromMasterSeed(bip39.mnemonicToSeed(mnemonic));
-  this.wallet_hdpath = wallet_hdpath;
-  this.wallets = {};
-  this.addresses = [];
 
-  for (let i = address_index; i < address_index + num_addresses; i++){
-    var wallet = this.hdwallet.derivePath(this.wallet_hdpath + i).getWallet();
-    var addr = '0x' + wallet.getAddress().toString('hex');
-    this.addresses.push(addr);
-    this.wallets[addr] = wallet;
+  if (mnemonic.indexOf(' ') === -1 || Array.isArray(mnemonic)) {
+
+    const privateKeys = Array.isArray(mnemonic) ? mnemonic : [mnemonic];
+    this.wallets = {};
+    this.addresses = [];
+
+    for (let i = address_index; i < address_index + num_addresses; i++){
+      const privateKey = Buffer.from(privateKeys[i].replace('0x', ''), 'hex');
+      if (ethUtil.isValidPrivate(privateKey)) {
+        const wallet = ethJSWallet.fromPrivateKey(privateKey);
+        const address = wallet.getAddressString();
+        this.addresses.push(address);
+        this.wallets[address] = wallet;
+      }
+    }
+  } else {
+    this.mnemonic = mnemonic;
+    this.hdwallet = hdkey.fromMasterSeed(bip39.mnemonicToSeed(mnemonic));
+    this.wallet_hdpath = wallet_hdpath;
+    this.wallets = {};
+    this.addresses = [];
+
+    for (let i = address_index; i < address_index + num_addresses; i++){
+      const wallet = this.hdwallet.derivePath(this.wallet_hdpath + i).getWallet();
+      const addr = '0x' + wallet.getAddress().toString('hex');
+      this.addresses.push(addr);
+      this.wallets[addr] = wallet;
+    }
   }
 
   const tmp_accounts = this.addresses;
@@ -53,9 +72,9 @@ function HDWalletProvider(
       const from = txParams.from.toLowerCase()
       if (tmp_wallets[from]) { pkey = tmp_wallets[from].getPrivateKey(); }
       else { cb('Account not found'); }
-      var tx = new Transaction(txParams);
+      const tx = new Transaction(txParams);
       tx.sign(pkey);
-      var rawTx = '0x' + tx.serialize().toString('hex');
+      const rawTx = '0x' + tx.serialize().toString('hex');
       cb(null, rawTx);
     },
     signMessage(message, cb) {
@@ -67,10 +86,10 @@ function HDWalletProvider(
         cb('Account not found');
       }
       let pkey = tmp_wallets[message.from].getPrivateKey();
-      var dataBuff = ethUtil.toBuffer(dataIfExists);
-      var msgHashBuff = ethUtil.hashPersonalMessage(dataBuff);
-      var sig = ethUtil.ecsign(msgHashBuff, pkey);
-      var rpcSig = ethUtil.toRpcSig(sig.v, sig.r, sig.s);
+      const dataBuff = ethUtil.toBuffer(dataIfExists);
+      const msgHashBuff = ethUtil.hashPersonalMessage(dataBuff);
+      const sig = ethUtil.ecsign(msgHashBuff, pkey);
+      const rpcSig = ethUtil.toRpcSig(sig.v, sig.r, sig.s);
       cb(null, rpcSig);
       }		     
   }));
