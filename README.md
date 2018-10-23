@@ -35,7 +35,7 @@ var provider = new HDWalletProvider(mnemonic, "http://localhost:8545", 5, 1, "m/
 provider.engine.stop();
 ```
 
-By default, the `HDWalletProvider` will use the address of the first address that's generated from the mnemonic. If you pass in a specific index, it'll use that address instead. Currently, the `HDWalletProvider` manages only one address at a time, but it can be easily upgraded to manage (i.e., "unlock") multiple addresses.
+By default, the `HDWalletProvider` will use the address of the first address that's generated from the mnemonic. If you pass in a specific index, it'll use that address instead.
 
 Parameters:
 
@@ -49,6 +49,23 @@ Parameters:
 | `wallet_hdpath` | `string` | `"m/44'/60'/0'/0/"` | [ ] | If specified, will tell the wallet engine what derivation path should use to derive addresses. |
 
 
+### Private Keys
+
+Instead of a mnemonic, you can alternatively provide a private key or array of private keys as the first parameter. When providing an array, `address_index` and `num_addresses` are fully supported.
+
+```javascript
+var HDWalletProvider = require("truffle-hdwallet-provider");
+//load single private key as string
+var provider = new HDWalletProvider("3f841bf589fdf83a521e55d51afddc34fa65351161eead24f064855fc29c9580", "http://localhost:8545");
+
+// Or, pass an array of private keys, and optionally use a certain subset of addresses
+var privateKeys = [
+  "3f841bf589fdf83a521e55d51afddc34fa65351161eead24f064855fc29c9580",
+  "9549f39decea7b7504e15572b2c6a72766df0281cea22bd1a3bc87166b1ca290",
+];
+var provider = new HDWalletProvider(privateKeys, "http://localhost:8545", 0, 2); //start at address_index 0 and load both addresses
+```
+**NOTE: This is just an example. NEVER hard code production/mainnet private keys in your code or commit them to git. They should always be loaded from environment variables or a secure secret management system.**
 
 ## Truffle Usage
 
