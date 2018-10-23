@@ -49,7 +49,8 @@ function HDWalletProvider(
     },
     signTransaction: function(txParams, cb) {
       let pkey;
-      if (tmp_wallets[txParams.from]) { pkey = tmp_wallets[txParams.from].getPrivateKey(); }
+      const from = txParams.from.toLowerCase()
+      if (tmp_wallets[from]) { pkey = tmp_wallets[from].getPrivateKey(); }
       else { cb('Account not found'); }
       var tx = new Transaction(txParams);
       tx.sign(pkey);
