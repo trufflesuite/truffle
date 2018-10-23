@@ -33,3 +33,9 @@ export const END_OF_TRACE = "EOT";
 export function endTrace() {
   return {type: END_OF_TRACE};
 }
+
+
+export const RESET_TRACE = "RESET_TRACE";
+export function resetTrace() {
+  return {type: RESET_TRACE};
+}

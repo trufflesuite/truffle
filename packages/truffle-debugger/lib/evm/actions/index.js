@@ -44,3 +44,8 @@ export function returnCall() {
     type: RETURN
   }
 }
+
+export const RESET_EVM = "RESET_EVM";
+export function resetEvm() {
+  return {type: RESET_EVM};
+}

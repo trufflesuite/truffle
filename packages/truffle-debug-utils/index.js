@@ -20,7 +20,8 @@ var commandReference = {
   "b": "add breakpoint",
   "B": "remove breakpoint",
   "c": "continue until breakpoint",
-  "q": "quit"
+  "q": "quit",
+  "r": "reset"
 };
 
 var DebugUtils = {

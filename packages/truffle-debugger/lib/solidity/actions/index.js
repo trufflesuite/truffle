@@ -22,3 +22,8 @@ export function jump(jumpDirection) {
     jumpDirection
   };
 }
+
+export const RESET_SOLIDITY = "RESET_SOLIDITY";
+export function resetSolidity() {
+  return {type: RESET_SOLIDITY};
+}

@@ -11,13 +11,19 @@ import * as actions from "../actions";
 
 import controller from "../selectors";
 
+import * as data from "lib/data/actions";
+import * as evm from "lib/evm/actions";
+import * as solidity from "lib/solidity/actions";
+import * as traceActions from "lib/trace/actions";
+
 const CONTROL_SAGAS = {
   [actions.ADVANCE]: advance,
   [actions.STEP_NEXT]: stepNext,
   [actions.STEP_OVER]: stepOver,
   [actions.STEP_INTO]: stepInto,
   [actions.STEP_OUT]: stepOut,
-  [actions.CONTINUE]: continueUntilBreakpoint
+  [actions.CONTINUE]: continueUntilBreakpoint,
+  [actions.RESET]: reset
 };
 
 /** AST node types that are skipped to filter out some noise */
@@ -242,4 +248,14 @@ function *continueUntilBreakpoint () {
       .length > 0;
     
   } while(!breakpointHit && !finished);
+}
+
+/**
+ * reset -- reset the state of the debugger
+ */
+function *reset() {
+  yield put(data.resetData());
+  yield put(evm.resetEvm());
+  yield put(solidity.resetSolidity());
+  yield put(traceActions.resetTrace());
 }

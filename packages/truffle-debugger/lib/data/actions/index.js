@@ -29,3 +29,8 @@ export function mapKey(id, key) {
     id, key
   };
 }
+
+export const RESET_DATA = "RESET_DATA";
+export function resetData() {
+  return {type: RESET_DATA};
+}
