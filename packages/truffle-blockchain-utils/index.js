@@ -7,7 +7,7 @@ var Blockchain = {
       method: 'eth_getBlockByNumber',
       params: params,
       id: Date.now(),
-    }, callback)
+    }, callback);
   },
 
   getBlockByHash: function(blockHash, provider, callback){
@@ -17,7 +17,7 @@ var Blockchain = {
       method: 'eth_getBlockByHash',
       params: params,
       id: Date.now(),
-    }, callback)
+    }, callback);
   },
 
   parse: function(uri) {

@@ -1,4 +1,3 @@
-var OS = require("os");
 var streamBuffers = require('stream-buffers');
 var Console = require("console").Console;
 

@@ -18,7 +18,6 @@ var command = {
     var Config = require("truffle-config");
     var Console = require("../console");
     var Environment = require("../environment");
-    var Develop = require("./develop");
     var TruffleError = require("truffle-error");
 
     var config = Config.detect(options);
@@ -31,7 +30,7 @@ var command = {
     }
 
     // This require a smell?
-    var commands = require("./index")
+    var commands = require("./index");
     var excluded = [
       "console",
       "init",
@@ -57,6 +56,6 @@ var command = {
       c.start(done);
     });
   }
-}
+};
 
 module.exports = command;

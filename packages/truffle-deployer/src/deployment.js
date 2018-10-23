@@ -1,5 +1,3 @@
-const util = require('util')
-
 /**
  * @class  Deployment
  */
@@ -28,7 +26,7 @@ class Deployment {
    * @return {Number}      code to exit
    */
   _errors(name){
-    return `Migrations failure`
+    return `Migrations failure`;
   }
 
   /**
@@ -144,7 +142,7 @@ class Deployment {
         }
 
         if (blocksHeard >= blocksToWait){
-          clearInterval(poll)
+          clearInterval(poll);
           accept();
         }
       }, self.pollingInterval);
@@ -166,7 +164,7 @@ class Deployment {
       const message = await this.emitter.emit('error', {
         type: 'noBatches',
         contract: null,
-      })
+      });
 
       throw new Error(message);
     }
@@ -176,7 +174,7 @@ class Deployment {
       const message = await this.emitter.emit('error', {
         type: 'noBytecode',
         contract: contract,
-      })
+      });
 
       throw new Error(message);
     }
@@ -195,7 +193,7 @@ class Deployment {
     const eventArgs = {
       contractName: state.contractName,
       transactionHash: hash
-    }
+    };
     state.transactionHash = hash;
     await parent.emitter.emit('transactionHash', eventArgs);
     this.removeListener('transactionHash', parent._hashCb);
@@ -212,7 +210,7 @@ class Deployment {
     const eventArgs = {
       contractName: state.contractName,
       receipt: receipt
-    }
+    };
 
     // We want this receipt available for the post-deploy event
     // so gas reporting is at hand there.
@@ -246,7 +244,7 @@ class Deployment {
           accept();
         }
       }, self.pollingInterval);
-    })
+    });
   }
 
   /**
@@ -316,7 +314,7 @@ class Deployment {
           gas: self._extractFromArgs(newArgs, 'gas') || contract.defaults().gas,
           gasPrice: self._extractFromArgs(newArgs, 'gasPrice') || contract.defaults().gasPrice,
           from: self._extractFromArgs(newArgs, 'from')  || contract.defaults().from,
-        }
+        };
 
         // Get an estimate for previews / detect constructor revert
         // NB: web3 does not strip the revert msg here like it does for `deploy`
@@ -336,7 +334,7 @@ class Deployment {
         // Subscribe to contract events / rebroadcast them to any reporters
         promiEvent
           .on('transactionHash', self._hashCb.bind(promiEvent, self, state))
-          .on('receipt',         self._receiptCb.bind(promiEvent, self, state))
+          .on('receipt',         self._receiptCb.bind(promiEvent, self, state));
 
         await self._startBlockPolling(contract.web3);
 
@@ -354,7 +352,7 @@ class Deployment {
           // Reporter might not be enabled (via Migrate.launchReporter) so
           // message is a (potentially empty) array of results from the emitter
           if (!message.length){
-            message = `while migrating ${contract.contractName}: ${eventArgs.error.message}`
+            message = `while migrating ${contract.contractName}: ${eventArgs.error.message}`;
           }
 
           self.close();
@@ -372,7 +370,7 @@ class Deployment {
         instance: instance,
         deployed: shouldDeploy,
         receipt: state.receipt
-      }
+      };
 
       await self.emitter.emit('postDeploy', eventArgs);
 

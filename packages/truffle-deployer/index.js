@@ -34,11 +34,11 @@ class Deployer extends Deployment {
   // Note: In all code below we overwrite this.chain every time .then() is used
   // in order to ensure proper error processing.
   start() {
-    return this.chain.start()
+    return this.chain.start();
   }
 
   link(library, destinations){
-    return this.queueOrExec(link(library, destinations, this))
+    return this.queueOrExec(link(library, destinations, this));
   }
 
 

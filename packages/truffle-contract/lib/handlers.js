@@ -37,9 +37,9 @@ var handlers = {
    * @param {PromiEvent}   emitter  promiEvent returned by a web3 method call
    */
   setup: function(emitter, context){
-    emitter.on('error',           handlers.error.bind(emitter, context))
-    emitter.on('transactionHash', handlers.hash.bind(emitter, context))
-    emitter.on('confirmation',    handlers.confirmation.bind(emitter, context))
+    emitter.on('error',           handlers.error.bind(emitter, context));
+    emitter.on('transactionHash', handlers.hash.bind(emitter, context));
+    emitter.on('confirmation',    handlers.confirmation.bind(emitter, context));
     emitter.on('receipt',         handlers.receipt.bind(emitter, context));
   },
 
@@ -70,7 +70,7 @@ var handlers = {
   },
 
   confirmation: function(context, number, receipt){
-    context.promiEvent.eventEmitter.emit('confirmation', number, receipt)
+    context.promiEvent.eventEmitter.emit('confirmation', number, receipt);
 
     // Per web3: initial confirmation index is 0
     if (number === handlers.maxConfirmations + 1) {
@@ -93,7 +93,7 @@ var handlers = {
       : logs = [];
 
     // Emit receipt
-    context.promiEvent.eventEmitter.emit('receipt', receipt)
+    context.promiEvent.eventEmitter.emit('receipt', receipt);
 
     // .new(): Exit early. We need the promiEvent to resolve a contract instance.
     if(context.onlyEmitReceipt){
@@ -112,7 +112,7 @@ var handlers = {
         reason
       );
 
-      return context.promiEvent.reject(error)
+      return context.promiEvent.reject(error);
     }
 
     // This object has some duplicate data but is backward compatible.
@@ -124,6 +124,6 @@ var handlers = {
 
     this.removeListener('receipt', handlers.receipt);
   },
-}
+};
 
 module.exports = handlers;

@@ -59,7 +59,7 @@ module.exports = async function(deployer) {
 let sources = {
   "Inner.sol": __INNER,
   "Outer.sol": __OUTER,
-}
+};
 
 let migrations = {
   "2_deploy_contracts.js": __MIGRATION,
@@ -81,7 +81,7 @@ describe("EVM Debugging", function() {
   before("Prepare contracts and artifacts", async function() {
     this.timeout(30000);
 
-    let prepared = await prepareContracts(provider, sources, migrations)
+    let prepared = await prepareContracts(provider, sources, migrations);
     abstractions = prepared.abstractions;
     artifacts = prepared.artifacts;
     files = prepared.files;

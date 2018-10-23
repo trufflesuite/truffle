@@ -18,11 +18,11 @@ const utils = {
      const config = {
       contracts_build_directory: utils.buildDir,
       contracts_directory: utils.sourcesDir
-    }
+    };
 
     return new Promise((accept, reject) => {
       workflow.compile(config, err => err ? reject(err) : accept());
-    })
+    });
   },
 
   evm_mine: function(web3){
@@ -51,7 +51,7 @@ const utils = {
 
   getContract: function(name, provider, networkId, account){
     const json = require(`../build/${name}`);
-    const contract = TruffleContract(json)
+    const contract = TruffleContract(json);
     contract.setProvider(provider);
     contract.setNetwork(networkId);
     contract.defaults({ from: account });

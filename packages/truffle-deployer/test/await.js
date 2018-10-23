@@ -1,5 +1,4 @@
 const ganache = require("ganache-cli");
-const contract = require("truffle-contract");
 const Web3 = require("web3");
 const assert = require("assert");
 
@@ -7,7 +6,7 @@ const Deployer = require("../index");
 const utils = require('./helpers/utils');
 
 describe("Deployer (async / await)", function() {
-  let owner
+  let owner;
   let options;
   let networkId;
   const provider = ganache.provider();
@@ -23,7 +22,7 @@ describe("Deployer (async / await)", function() {
       network: 'test',
       network_id: networkId,
       provider: provider
-    }
+    };
 
     await utils.compile();
   });
@@ -41,7 +40,7 @@ describe("Deployer (async / await)", function() {
       await deployer.deploy(Example);
     };
 
-    await deployer.start()
+    await deployer.start();
     await deployer.then(migrate);
 
     assert(Example.address !== null);
@@ -60,7 +59,7 @@ describe("Deployer (async / await)", function() {
     deployer = new Deployer(options);
 
     const migrate = async function(){
-      await deployer.deploy(Example)
+      await deployer.deploy(Example);
       await deployer.deploy(UsesExample, Example.address);
     };
 

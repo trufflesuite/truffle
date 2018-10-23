@@ -1,13 +1,10 @@
 var expect = require("truffle-expect");
 var TruffleError = require("truffle-error");
-var Provider = require("truffle-provider");
-var Profiler = require("truffle-compile/profiler");
 var Networks = require("./networks");
 var EthPM = require("ethpm");
 var EthPMRegistry = require("ethpm-registry");
 var Web3 = require("web3");
 var async = require("async");
-var dir = require("node-dir");
 var path = require("path");
 var fs = require('fs');
 var OS = require("os");
@@ -182,7 +179,7 @@ var Package = {
         return callback(new Error("Could not connect to the following networks: " + result.failed.join(", ") + ". These networks have deployed artifacts that can't be published as a package without an active and accessible connection. Please ensure clients for each network are up and running prior to publishing, or use the -n option to specify specific networks you'd like published."));
       }
 
-      var files = fs.readdirSync(options.contracts_build_directory)
+      var files = fs.readdirSync(options.contracts_build_directory);
       files = files.filter(file => file.includes('.json'));
 
       if(!files.length){

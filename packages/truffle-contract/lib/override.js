@@ -14,13 +14,13 @@ var override = {
    */
   extractReceipt(message){
     const hasReceipt = message &&
-                       message.includes('{')
+                       message.includes('{');
                        message.includes('}');
 
     if (hasReceipt){
       const receiptString =  '{' + message.split('{')[1].trim();
       try {
-        return JSON.parse(receiptString)
+        return JSON.parse(receiptString);
       } catch (err){
         // ignore
       }
@@ -74,7 +74,7 @@ var override = {
       currentBlock++;
 
       if (currentBlock > constructor.timeoutBlocks){
-        clearInterval(pollID)
+        clearInterval(pollID);
         return;
       }
 
@@ -92,7 +92,7 @@ var override = {
 
         })
         .catch(err => {
-          clearInterval(pollID)
+          clearInterval(pollID);
           context.promiEvent.reject(err);
         });
     };
@@ -109,6 +109,6 @@ var override = {
       }
     }, override.pollingInterval);
   },
-}
+};
 
 module.exports = override;

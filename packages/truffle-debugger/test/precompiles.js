@@ -29,7 +29,7 @@ contract HasPrecompile {
 
 let sources = {
   "HasPrecompile.sol": __PRECOMPILE,
-}
+};
 
 const TEST_CASES = [{
   name: "trace.step",
@@ -61,7 +61,7 @@ describe("Precompiled Contracts", () => {
   before("Prepare contracts and artifacts", async function() {
     this.timeout(30000);
 
-    let prepared = await prepareContracts(provider, sources)
+    let prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;
     artifacts = prepared.artifacts;
     files = prepared.files;

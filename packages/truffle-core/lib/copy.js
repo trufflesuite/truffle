@@ -36,7 +36,7 @@ var copy = function(from, to, extra_options, callback) {
 
     callback(err, new_files);
   });
-}
+};
 
 copy.file = function(from, to, callback) {
   var readStream = fs.createReadStream(from, "utf8");

@@ -17,7 +17,6 @@ var fn = function* () {
 };
 
 var done = false;
-var value = null;
 let iterator = fn();
 let loop = function(result) {
   return result.value.then(function(res) {

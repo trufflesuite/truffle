@@ -23,7 +23,7 @@ module.exports = {
 
     return Promise.resolve()
       .then(function() {
-        return unbox.readBoxConfig(destination)
+        return unbox.readBoxConfig(destination);
       })
       .then(function(cfg) {
         boxConfig = cfg;
@@ -39,10 +39,10 @@ module.exports = {
   setupBox: function(boxConfig, destination) {
     return Promise.resolve()
       .then(function() {
-        return unbox.installBoxDependencies(boxConfig, destination)
+        return unbox.installBoxDependencies(boxConfig, destination);
       })
       .then(function() {
         return boxConfig;
       });
   }
-}
+};

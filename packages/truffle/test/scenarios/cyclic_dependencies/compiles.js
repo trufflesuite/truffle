@@ -1,7 +1,6 @@
 var Box = require("truffle-box");
 var MemoryLogger = require("../memorylogger");
 var CommandRunner = require("../commandrunner");
-var contract = require("truffle-contract");
 var fs = require("fs-extra");
 var path = require("path");
 var assert = require("assert");
@@ -21,7 +20,7 @@ describe("Cyclic Dependencies", function() {
       config.networks.development.provider = TestRPC.provider({gasLimit: config.gas});
       config.mocha = {
         reporter: new Reporter(logger)
-      }
+      };
       done();
     });
   });
@@ -40,8 +39,8 @@ describe("Cyclic Dependencies", function() {
       // If it gets this far, it worked. The compiler shouldn't throw an error.
       // Lets check artifacts are there though.
 
-      assert(fs.existsSync(path.join(config.contracts_build_directory, "Ping.json")))
-      assert(fs.existsSync(path.join(config.contracts_build_directory, "Pong.json")))
+      assert(fs.existsSync(path.join(config.contracts_build_directory, "Ping.json")));
+      assert(fs.existsSync(path.join(config.contracts_build_directory, "Pong.json")));
 
       done();
     });

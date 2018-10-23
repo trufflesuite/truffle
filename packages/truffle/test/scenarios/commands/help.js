@@ -18,7 +18,7 @@ describe("truffle help", () => {
         done();
       });
     });
-  })
+  });
 
   describe("when run with an argument", () => {
     it("tells the user if it doesn't recognize the given command", function(done) {

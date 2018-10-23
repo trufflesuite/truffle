@@ -13,10 +13,6 @@ var Web3 = require("web3");
 
 describe("migrate", function() {
   var config;
-  var accounts;
-  var network_id_one;
-  var network_id_two;
-  var from_addresses = [];
 
   before("Create a sandbox", function(done) {
     this.timeout(30000);
@@ -40,8 +36,8 @@ describe("migrate", function() {
           network_id: network_id + "",
           from: accs[0]
         };
-      })
-    })
+      });
+    });
   };
 
   before("Get accounts and network id of network one", function() {
@@ -57,8 +53,8 @@ describe("migrate", function() {
       if(err) done(err);
       files.forEach(file => fs.removeSync(file));
       done();
-    })
-  })
+    });
+  });
 
   it('profiles a new project as not having any contracts deployed', function(done) {
     Networks.deployed(config, function(err, networks) {
@@ -67,7 +63,7 @@ describe("migrate", function() {
       assert.equal(Object.keys(networks["primary"]), 0, "Primary network should not have been deployed to");
       assert.equal(Object.keys(networks["secondary"]), 0, "Secondary network should not have been deployed to");
       done();
-    })
+    });
   });
 
   it('links libraries in initial project, and runs all migrations', function(done) {
@@ -80,7 +76,6 @@ describe("migrate", function() {
       quiet: true
     }), function(err, result) {
       if (err) return done(err);
-      let { contracts } = result;
 
       Migrate.run(config.with({
         quiet: true
@@ -134,7 +129,7 @@ describe("migrate", function() {
           assert.isNotNull(networks["secondary"]["Migrations"], "Migrations contract should have an address on secondary network");
 
           Object.keys(networks["primary"]).forEach(function(contract_name) {
-            assert.notEqual(networks["secondary"][contract_name], networks["primary"][contract_name], "Contract " + contract_name + " has the same address on both networks")
+            assert.notEqual(networks["secondary"][contract_name], networks["primary"][contract_name], "Contract " + contract_name + " has the same address on both networks");
           });
 
           done();
