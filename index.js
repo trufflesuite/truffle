@@ -1,5 +1,6 @@
 var bip39 = require("bip39");
 var hdkey = require('ethereumjs-wallet/hdkey');
+var debug = require('debug')('truffle-hdwallet-provider')
 var ProviderEngine = require("web3-provider-engine");
 var FiltersSubprovider = require('web3-provider-engine/subproviders/filters.js');
 var NonceSubProvider = require('web3-provider-engine/subproviders/nonce-tracker.js');
@@ -79,7 +80,7 @@ HDWalletProvider.prototype.send = function() {
 
 // returns the address of the given address_index, first checking the cache
 HDWalletProvider.prototype.getAddress = function(idx) {
-  console.log('getting addresses', this.addresses[0], idx)
+  debug('getting addresses', this.addresses[0], idx)
   if (!idx) { return this.addresses[0]; }
   else { return this.addresses[idx]; }
 }
