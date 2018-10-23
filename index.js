@@ -8,6 +8,7 @@ var HookedSubprovider = require('web3-provider-engine/subproviders/hooked-wallet
 var ProviderSubprovider = require("web3-provider-engine/subproviders/provider.js");
 var Web3 = require("web3");
 var Transaction = require('ethereumjs-tx');
+var ethUtil = require('ethereumjs-util');
 
 // This line shares nonce state across multiple provider instances. Necessary
 // because within truffle the wallet is repeatedly newed if it's declared in the config within a
@@ -56,7 +57,22 @@ function HDWalletProvider(
       tx.sign(pkey);
       var rawTx = '0x' + tx.serialize().toString('hex');
       cb(null, rawTx);
-    }
+    },
+    signMessage(message, cb) {
+      const dataIfExists = message.data;
+      if (!dataIfExists) {
+        cb('No data to sign');
+      }
+      if (!tmp_wallets[message.from]) {
+        cb('Account not found');
+      }
+      let pkey = tmp_wallets[message.from].getPrivateKey();
+      var dataBuff = ethUtil.toBuffer(dataIfExists);
+      var msgHashBuff = ethUtil.hashPersonalMessage(dataBuff);
+      var sig = ethUtil.ecsign(msgHashBuff, pkey);
+      var rpcSig = ethUtil.toRpcSig(sig.v, sig.r, sig.s);
+      cb(null, rpcSig);
+      }		     
   }));
 
   (!shareNonce)
