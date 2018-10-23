@@ -1,21 +1,21 @@
-const findUp = require('find-up')
-const Logger = require('./logDecorator')
+const findUp = require('find-up');
+const Logger = require('./logDecorator');
 
 const getTruffleConfig = function () {
-  const isWin = /^win/.test(process.platform)
-  let file
+  const isWin = /^win/.test(process.platform);
+  let file;
 
   if (isWin) {
-    file = findUp.sync('truffle-config.js')
+    file = findUp.sync('truffle-config.js');
   } else {
-    file = findUp.sync('truffle.js')
+    file = findUp.sync('truffle.js');
   }
 
   if (file) {
-    return file
+    return file;
   }
 
-  Logger.log('No Truffle config file found.')
-}
+  Logger.log('No Truffle config file found.');
+};
 
-module.exports = getTruffleConfig
+module.exports = getTruffleConfig;

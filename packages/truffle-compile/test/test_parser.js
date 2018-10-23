@@ -1,7 +1,7 @@
 var fs = require("fs");
 var path = require("path");
 var Parser = require("../parser");
-var CompilerSupplier = require("../compilerSupplier")
+var CompilerSupplier = require("../compilerSupplier");
 var assert = require("assert");
 
 describe("Parser", function() {
@@ -30,7 +30,7 @@ describe("Parser", function() {
       'ethpmpackage/Contract.sol'
     ];
 
-    assert.deepEqual(imports, expected)
+    assert.deepEqual(imports, expected);
   });
 
   it("should throw an error when parsing imports if there's an actual parse error", function() {

@@ -2,10 +2,8 @@ var BlockchainUtils = require("truffle-blockchain-utils");
 var Web3 = require("web3");
 var Web3PromiEvent = require('web3-core-promievent');
 var webUtils = require('web3-utils');
-var StatusError = require("./statuserror");
 var utils = require("./utils");
 var execute = require("./execute");
-var handle = require("./handlers");
 
 // For browserified version. If browserify gave us an empty version,
 // look for the one provided by the user.
@@ -57,7 +55,7 @@ var contract = (function(module) {
             fn.request = execute.request.call(constructor, web3Method, instance.address);
 
             return fn;
-          }
+          };
 
           // Only define methods once. Any overloaded methods will have all their
           // accessors available by ABI signature available on the `methods` key below.
@@ -73,7 +71,7 @@ var contract = (function(module) {
           instance[item.name] = execute.event.call(constructor, contract.events[item.name]);
           break;
       }
-    })
+    });
 
     // sendTransaction / send
     instance.sendTransaction = execute.send.call(constructor, null, instance.address);
@@ -82,7 +80,7 @@ var contract = (function(module) {
     if (!instance.send){
       instance.send = (value, txParams={}) => {
         const packet = Object.assign({value: value}, txParams);
-        return instance.sendTransaction(packet)
+        return instance.sendTransaction(packet);
       };
     }
 
@@ -106,7 +104,7 @@ var contract = (function(module) {
       var promiEvent = new Web3PromiEvent();
 
       if (!constructor.currentProvider) {
-        var err = constructor.contractName + " error: Please call setProvider() first before calling new()."
+        var err = constructor.contractName + " error: Please call setProvider() first before calling new().";
         throw new Error(err);
       }
 
@@ -125,12 +123,12 @@ var contract = (function(module) {
         contract: constructor,
         promiEvent: promiEvent,
         onlyEmitReceipt: true
-      }
+      };
 
       constructor.detectNetwork().then(network => {
         utils.checkLibraries.apply(constructor);
         return execute.deploy.call(constructor, args, context, network.blockLimit);
-      }).catch(promiEvent.reject)
+      }).catch(promiEvent.reject);
 
       return promiEvent.eventEmitter;
     },
@@ -158,7 +156,7 @@ var contract = (function(module) {
             accept(instance);
           });
         });
-      })
+      });
     },
 
     deployed: function() {
@@ -168,7 +166,7 @@ var contract = (function(module) {
         if (constructor._json.networks[constructor.network_id] == null) {
           var error = constructor.contractName +
                       " has not been deployed to detected network" +
-                      " (network/artifact mismatch)"
+                      " (network/artifact mismatch)";
           throw new Error(error);
         }
 
@@ -386,7 +384,8 @@ var contract = (function(module) {
         }
 
         return constructor._property_values[key] || fn.call(constructor);
-      }
+      };
+
       var setter = function(val) {
         if (fn.set != null) {
           fn.set.call(constructor, val);
@@ -533,7 +532,7 @@ var contract = (function(module) {
 
         if (address == null) {
           var error = "Cannot find deployed address: " +
-                      this.contractName + " not deployed or address not set."
+                      this.contractName + " not deployed or address not set.";
           throw new Error(error);
         }
 
@@ -553,7 +552,7 @@ var contract = (function(module) {
                       " or use new(), at() or deployed() as a thenable which will" +
                       " detect the network automatically.";
 
-          throw new Error(error)
+          throw new Error(error);
         }
 
         // Create a network if we don't have one.
@@ -583,7 +582,7 @@ var contract = (function(module) {
                     " run " + this.contractName + ".detectNetwork(), or use new(), at()" +
                     " or deployed() as a thenable which will detect the network automatically.";
 
-        throw new Error(error)
+        throw new Error(error);
       }
 
       if (this._json.networks[this.network_id] == null) {

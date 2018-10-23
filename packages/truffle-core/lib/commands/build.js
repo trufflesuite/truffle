@@ -13,6 +13,6 @@ const command = {
 
     Build.build(config, done);
   }
-}
+};
 
 module.exports = command;

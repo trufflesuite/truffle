@@ -74,9 +74,9 @@ export function decodeValue(definition, pointer, info) {
 }
 
 export function decodeMemoryReference(definition, pointer, info) {
-  const { state } = info
+  const { state } = info;
   debug("pointer %o", pointer);
-  let rawValue = read(pointer, state)
+  let rawValue = read(pointer, state);
   if (rawValue == undefined) {
     return undefined;
   }
@@ -94,7 +94,7 @@ export function decodeMemoryReference(definition, pointer, info) {
 
       let childPointer = {
         memory: { start: rawValue + WORD_SIZE, length: bytes }
-      }
+      };
 
       return decodeValue(definition, childPointer, info);
 
@@ -112,7 +112,7 @@ export function decodeMemoryReference(definition, pointer, info) {
           (chunk) => decode(utils.baseDefinition(definition), {
             literal: chunk
           }, info)
-        )
+        );
 
     case "struct":
       const { scopes } = info;
@@ -197,7 +197,7 @@ export function decodeStorageReference(definition, pointer, info) {
         }
 
         return Math.floor(i * baseSize / WORD_SIZE);
-      }
+      };
 
       const index = (i) => {
         if (perWord == 1) {
@@ -206,7 +206,7 @@ export function decodeStorageReference(definition, pointer, info) {
 
         const position = perWord - i % perWord - 1;
         return position * baseSize;
-      }
+      };
 
       let from = {
         slot: utils.normalizeSlot(pointer.storage.from.slot),

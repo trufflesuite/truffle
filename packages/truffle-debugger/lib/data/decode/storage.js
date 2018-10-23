@@ -40,7 +40,7 @@ export function read(storage, slot) {
     new Uint8Array(WORD_SIZE);
 
   debug("word %o", word);
-  return word
+  return word;
 }
 
 /**
@@ -93,7 +93,7 @@ export function readRange(storage, range) {
     to = {
       slot: utils.normalizeSlot(to.slot),
       index: to.index
-    }
+    };
   }
 
   debug("normalized readRange %o", {from,to});

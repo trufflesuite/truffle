@@ -53,7 +53,7 @@ TestRunner.prototype.initialize = function(callback) {
       if (err) return callback(err);
 
       files = _.filter(files, function(file) {
-        return path.extname(file) === ".json"
+        return path.extname(file) === ".json";
       });
 
       async.map(files, function(file, finished) {
@@ -207,7 +207,7 @@ TestRunner.prototype.snapshot = function(callback) {
 
 TestRunner.prototype.revert = function(snapshot_id, callback) {
   this.rpc("evm_revert", [snapshot_id], callback);
-}
+};
 
 TestRunner.prototype.rpc = function(method, arg, cb) {
   var req = {

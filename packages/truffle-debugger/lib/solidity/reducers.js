@@ -29,7 +29,7 @@ function sources(state = DEFAULT_SOURCES, action) {
             sourcePath
           }
         }
-      }
+      };
 
     /*
      * Default case
@@ -79,7 +79,7 @@ const info = combineReducers({
 
 export function functionDepth(state = 1, action) {
   if (action.type === actions.JUMP) {
-    const delta = spelunk(action.jumpDirection)
+    const delta = spelunk(action.jumpDirection);
     return state + delta;
   } else {
     return state;

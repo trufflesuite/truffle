@@ -1,5 +1,4 @@
 var assert = require("assert");
-var Web3 = require("web3");
 var Ganache = require("ganache-cli");
 var Provider = require("../index");
 
@@ -51,7 +50,7 @@ describe("Provider", function() {
 
   it("accepts a function that returns a provider instance", function(done) {
     var provider = Provider.create({
-      provider: function() { return new Ganache.provider()}
+      provider: function() { return new Ganache.provider(); }
     });
 
     assert(provider);

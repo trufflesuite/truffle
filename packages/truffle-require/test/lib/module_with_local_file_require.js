@@ -3,4 +3,4 @@ var module_with_global_require = require(path.join(__dirname, "module_with_globa
 
 module.exports = function() {
   return module_with_global_require;
-}
+};

@@ -67,7 +67,7 @@ export function *visitAll(idx) {
     Object.entries(sources)
       .filter( ([id, {ast}]) => !!ast )
       .map( ([id, {ast}]) => fork( () => put(actions.visit(id, ast))) )
-  )
+  );
 
   if (tasks.length > 0) {
     yield join(...tasks);

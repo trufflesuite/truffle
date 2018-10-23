@@ -36,7 +36,7 @@ var command = {
     var type = config.type;
 
     if (type == null && config._.length > 0) {
-      type = config._[0]
+      type = config._[0];
     }
 
     var name = config.name;
@@ -69,6 +69,6 @@ var command = {
 
     create[type](destinations[type], name, options, done);
   }
-}
+};
 
 module.exports = command;

@@ -1,4 +1,3 @@
-var fs = require("fs");
 var _ = require("lodash");
 var path = require("path");
 var Provider = require("truffle-provider");
@@ -105,7 +104,7 @@ function Config(truffle_directory, working_directory, network) {
       transform: resolveDirectory
     },
     test_file_extension_regexp: function() {
-      return /.*\.(js|es|es6|jsx|sol)$/
+      return /.*\.(js|es|es6|jsx|sol)$/;
     },
     example_project_directory: {
       default: () => path.join(self.truffle_directory, "example"),
@@ -154,7 +153,7 @@ function Config(truffle_directory, working_directory, network) {
         }
       },
       set: function(val) {
-        throw new Error("Don't set config.from directly. Instead, set config.networks and then config.networks[<network name>].from")
+        throw new Error("Don't set config.from directly. Instead, set config.networks and then config.networks[<network name>].from");
       }
     },
     gas: {
@@ -166,7 +165,7 @@ function Config(truffle_directory, working_directory, network) {
         }
       },
       set: function(val) {
-        throw new Error("Don't set config.gas directly. Instead, set config.networks and then config.networks[<network name>].gas")
+        throw new Error("Don't set config.gas directly. Instead, set config.networks and then config.networks[<network name>].gas");
       }
     },
     gasPrice: {
@@ -178,7 +177,7 @@ function Config(truffle_directory, working_directory, network) {
         }
       },
       set: function(val) {
-        throw new Error("Don't set config.gasPrice directly. Instead, set config.networks and then config.networks[<network name>].gasPrice")
+        throw new Error("Don't set config.gasPrice directly. Instead, set config.networks and then config.networks[<network name>].gasPrice");
       }
     },
     provider: {
@@ -192,7 +191,7 @@ function Config(truffle_directory, working_directory, network) {
         return Provider.create(options);
       },
       set: function(val) {
-        throw new Error("Don't set config.provider directly. Instead, set config.networks and then set config.networks[<network name>].provider")
+        throw new Error("Don't set config.provider directly. Instead, set config.networks and then set config.networks[<network name>].provider");
       }
     },
     confirmations: {
@@ -204,7 +203,7 @@ function Config(truffle_directory, working_directory, network) {
         }
       },
       set: function(val) {
-        throw new Error("Don't set config.confirmations directly. Instead, set config.networks and then config.networks[<network name>].confirmations")
+        throw new Error("Don't set config.confirmations directly. Instead, set config.networks and then config.networks[<network name>].confirmations");
       }
     },
     production: {
@@ -216,7 +215,7 @@ function Config(truffle_directory, working_directory, network) {
         }
       },
       set: function(val) {
-        throw new Error("Don't set config.production directly. Instead, set config.networks and then config.networks[<network name>].production")
+        throw new Error("Don't set config.production directly. Instead, set config.networks and then config.networks[<network name>].production");
       }
     },
     timeoutBlocks: {
@@ -228,7 +227,7 @@ function Config(truffle_directory, working_directory, network) {
         }
       },
       set: function(val) {
-        throw new Error("Don't set config.timeoutBlocks directly. Instead, set config.networks and then config.networks[<network name>].timeoutBlocks")
+        throw new Error("Don't set config.timeoutBlocks directly. Instead, set config.networks and then config.networks[<network name>].timeoutBlocks");
       }
     },
     skipDryRun: {
@@ -240,7 +239,7 @@ function Config(truffle_directory, working_directory, network) {
         }
       },
       set: function(val) {
-        throw new Error("Don't set config.skipDryRun directly. Instead, set config.networks and then config.networks[<network name>].skipDryRun")
+        throw new Error("Don't set config.skipDryRun directly. Instead, set config.networks and then config.networks[<network name>].skipDryRun");
       }
     }
 
@@ -268,7 +267,7 @@ Config.prototype.addProp = function(propertyName, descriptor) {
 
       // default getter is specified
       if (descriptor.default) {
-        return descriptor.default()
+        return descriptor.default();
       };
 
       // descriptor is a function
@@ -294,7 +293,7 @@ Config.prototype.normalize = function(obj) {
     }
   });
   return clone;
-}
+};
 
 Config.prototype.with = function(obj) {
   var normalized = this.normalize(obj);
@@ -311,7 +310,7 @@ Config.prototype.merge = function(obj) {
   Object.keys(obj).forEach(function(key) {
     try {
       if (typeof clone[key] === 'object' && self._deepCopy.includes(key)){
-        self[key] = _.merge(self[key], clone[key])
+        self[key] = _.merge(self[key], clone[key]);
       } else {
         self[key] = clone[key];
       }
@@ -364,6 +363,6 @@ Config.load = function(file, options) {
 
 Config.getUserConfig = function() {
   return new Configstore('truffle', {}, { globalConfigPath: true });
-}
+};
 
 module.exports = Config;

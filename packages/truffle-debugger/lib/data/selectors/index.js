@@ -255,7 +255,7 @@ const data = createSelectorTree({
               let maxMatch=Math.min(currentDepth, Math.max(...matchIds));
               let { ref } = (
                 assignments[decodeUtils.augmentWithDepth(id, maxMatch)] || {});
-              if (!ref) { return undefined };
+              if (!ref) { return undefined; };
 
               return {
                 [identifier]: ref

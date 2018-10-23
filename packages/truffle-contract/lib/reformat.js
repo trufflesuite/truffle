@@ -19,7 +19,7 @@ const _convertNumber = function(val, format){
     case 'String':    return val;
     default:          throw new Error(badFormatMsg);
   }
-}
+};
 
 /**
  * Converts arrays of number strings to other number formats
@@ -29,7 +29,7 @@ const _convertNumber = function(val, format){
  */
 const _convertNumberArray = function(arr, format){
   return arr.map((item => _convertNumber(item, format)));
-}
+};
 
 /**
  * Reformats numbers in the result/result-object of a web3 call.
@@ -77,14 +77,14 @@ const numbers = function(result, abiSegment){
           result[i] = _convertNumber(result[i], format);
 
       } else {
-        result = _convertNumber(result, format)
+        result = _convertNumber(result, format);
       }
     }
   });
   return result;
-}
+};
 
 module.exports = {
   numbers: numbers
-}
+};
 

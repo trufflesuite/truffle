@@ -89,6 +89,6 @@ TestSource.prototype.resolve = function(import_path, callback) {
 
 TestSource.prototype.resolve_dependency_path = function(import_path, dependency_path) {
   return dependency_path;
-}
+};
 
 module.exports = TestSource;

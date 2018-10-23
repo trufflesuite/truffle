@@ -1,34 +1,34 @@
-const path = require('path')
-const fs = require('fs')
-const { getOptions } = require('loader-utils')
-const validateOptions = require('schema-utils')
-const truffleMigrator = require('truffle-core/lib/commands/migrate')
+const path = require('path');
+const fs = require('fs');
+const { getOptions } = require('loader-utils');
+const validateOptions = require('schema-utils');
+const truffleMigrator = require('truffle-core/lib/commands/migrate');
 
-const Logger = require('./lib/logDecorator')
-const genBuildOptions = require('./lib/genBuildOptions')
+const Logger = require('./lib/logDecorator');
+const genBuildOptions = require('./lib/genBuildOptions');
 
 function parseContractName (resourcePath) {
-  var contractFileName = path.basename(resourcePath)
-  return contractFileName.charAt(0).toUpperCase() + contractFileName.slice(1, contractFileName.length - 4)
+  var contractFileName = path.basename(resourcePath);
+  return contractFileName.charAt(0).toUpperCase() + contractFileName.slice(1, contractFileName.length - 4);
 }
 
 function returnContractAsSource (filePath, callback) {
   return fs.readFile(filePath, 'utf8', function (err, solJSON) {
     if (err) {
-      Logger.error(err)
-      return callback(err, null)
+      Logger.error(err);
+      return callback(err, null);
     }
-    callback(null, solJSON)
-  })
+    callback(null, solJSON);
+  });
 }
 
 function compiledContractExists (filePath) {
   try {
-    fs.statSync(filePath)
+    fs.statSync(filePath);
   } catch (err) {
-    if (err.code === 'ENOENT') return false
+    if (err.code === 'ENOENT') return false;
   }
-  return true
+  return true;
 }
 
 const schema = {
@@ -46,54 +46,54 @@ const schema = {
     }
   },
   'additionalProperties': false
-}
+};
 
-var isCompilingContracts = false // Global mutex variable
+var isCompilingContracts = false; // Global mutex variable
 module.exports = function (source, map, meta) {
-  let WebpackOptions = getOptions(this) || {}
-  validateOptions(schema, WebpackOptions, 'truffle-solidity-loader')
+  let WebpackOptions = getOptions(this) || {};
+  validateOptions(schema, WebpackOptions, 'truffle-solidity-loader');
 
-  let buildOpts = genBuildOptions(WebpackOptions)
-  let migrationsDirectory = WebpackOptions.migrations_directory || `${buildOpts.working_directory}/migrations`
-  let contractsBuildDirectory = WebpackOptions.contracts_build_directory || `${buildOpts.working_directory}/build/contracts`
-  let contractName = parseContractName(this.resourcePath) // this.resourcePath will be the path to the .sol file
-  let contractJsonPath = path.resolve(buildOpts.contracts_build_directory, contractName + '.json')
+  let buildOpts = genBuildOptions(WebpackOptions);
+  let migrationsDirectory = WebpackOptions.migrations_directory || `${buildOpts.working_directory}/migrations`;
+  let contractsBuildDirectory = WebpackOptions.contracts_build_directory || `${buildOpts.working_directory}/build/contracts`;
+  let contractName = parseContractName(this.resourcePath); // this.resourcePath will be the path to the .sol file
+  let contractJsonPath = path.resolve(buildOpts.contracts_build_directory, contractName + '.json');
 
-  this.addDependency(this.resource)
+  this.addDependency(this.resource);
 
   if (this.debug) {
-    Logger.debug(`this.resourcePath = ${this.resourcePath}`)
-    Logger.debug(`contract Name = ${contractName}`)
-    Logger.debug(`migrations Directory = ${migrationsDirectory}`)
-    Logger.debug(`contracts Build Directory = ${contractsBuildDirectory}`)
-    Logger.debug(`contract Json Path = ${contractJsonPath}`)
+    Logger.debug(`this.resourcePath = ${this.resourcePath}`);
+    Logger.debug(`contract Name = ${contractName}`);
+    Logger.debug(`migrations Directory = ${migrationsDirectory}`);
+    Logger.debug(`contracts Build Directory = ${contractsBuildDirectory}`);
+    Logger.debug(`contract Json Path = ${contractJsonPath}`);
   }
 
-  let callback = this.async()
+  let callback = this.async();
 
   function waitForContractCompilation () {
     setTimeout(function () {
       if (compiledContractExists(contractJsonPath)) {
-        isCompilingContracts = false
-        returnContractAsSource(contractJsonPath, callback)
+        isCompilingContracts = false;
+        returnContractAsSource(contractJsonPath, callback);
       } else {
-        waitForContractCompilation()
+        waitForContractCompilation();
       }
-    }, 500)
+    }, 500);
   }
 
   if (isCompilingContracts) {
     // Logger.debug(`Currently compiling = ${this.resourcePath}`)
-    waitForContractCompilation()
+    waitForContractCompilation();
   } else {
-    isCompilingContracts = true
+    isCompilingContracts = true;
     truffleMigrator.run(buildOpts, function (err) {
-      isCompilingContracts = false
+      isCompilingContracts = false;
       if (err) {
-        return callback(err)
+        return callback(err);
       } else {
-        return returnContractAsSource(contractJsonPath, callback)
+        return returnContractAsSource(contractJsonPath, callback);
       }
-    })
+    });
   }
-}
+};

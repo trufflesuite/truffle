@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-require('source-map-support/register')
+require('source-map-support/register');
 
 const TaskError = require("./lib/errors/taskerror");
 const TruffleError = require("truffle-error");

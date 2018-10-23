@@ -2,8 +2,9 @@ export const VISIT = "VISIT";
 export function visit(sourceId, ast) {
   return {
     type: VISIT,
-    sourceId, ast
-  }
+    sourceId,
+ast
+  };
 }
 
 export const DONE_VISITING = "DONE_VISITING";

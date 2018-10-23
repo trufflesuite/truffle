@@ -29,6 +29,6 @@ var command = {
       Networks.display(config, done);
     }
   }
-}
+};
 
 module.exports = command;

@@ -41,7 +41,7 @@ describe('NPM integration', function() {
       mkdirp.bind(mkdirp, fake_source_path),
       fs.writeFile.bind(fs, path.join(fake_source_path, "Module.sol"), moduleSource, {encoding: "utf8"}),
       fs.writeFile.bind(fs, path.join(fake_source_path, "ModuleDependency.sol"), moduleDependencySource, {encoding: "utf8"})
-    ], done)
+    ], done);
   });
 
   after("Cleanup tmp files", function(done){
@@ -49,8 +49,8 @@ describe('NPM integration', function() {
       if(err) done(err);
       files.forEach(file => fs.removeSync(file));
       done();
-    })
-  })
+    });
+  });
 
   it('successfully finds the correct source via Sources lookup', function(done) {
     config.resolver.resolve("fake_source/contracts/Module.sol", config.sources, function(err, body) {
@@ -88,6 +88,6 @@ describe('NPM integration', function() {
       assert.include(contractNames, "ModuleDependency");
 
       done();
-    })
+    });
   });
 });

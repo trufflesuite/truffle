@@ -81,6 +81,6 @@ var command = {
       }), done);
     });
   }
-}
+};
 
 module.exports = command;

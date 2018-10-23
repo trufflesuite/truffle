@@ -28,6 +28,6 @@ var Expect = {
 
     throw new Error("Expected one of the following parameters, but found none: " + expected_keys.join(", "));
   }
-}
+};
 
 module.exports = Expect;

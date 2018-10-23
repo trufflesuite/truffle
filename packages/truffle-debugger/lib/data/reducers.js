@@ -31,7 +31,7 @@ function scopes(state = DEFAULT_SCOPES, action) {
             pointer: action.pointer
           }
         }
-      }
+      };
 
     case actions.DECLARE:
       scope = state.byId[action.node.scope] || {};
@@ -51,7 +51,7 @@ function scopes(state = DEFAULT_SCOPES, action) {
             ]
           }
         }
-      }
+      };
 
     default:
       return state;
@@ -93,7 +93,7 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
 
 const DEFAULT_MAPPING_KEYS = {
   byId: {}
-}
+};
 
 function mappingKeys(state = DEFAULT_MAPPING_KEYS, action) {
   switch (action.type) {

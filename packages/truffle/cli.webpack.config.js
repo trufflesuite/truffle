@@ -1,7 +1,4 @@
 var path = require("path");
-var fs = require("fs");
-var OS = require("os");
-var prependFile = require('prepend-file');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var CleanWebpackPlugin = require('clean-webpack-plugin');
 var webpack = require('webpack');
@@ -98,4 +95,4 @@ module.exports = {
   stats: {
     warnings: false
   }
-}
+};

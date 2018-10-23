@@ -22,7 +22,7 @@ export async function prepareContracts(provider, sources = {}, migrations) {
     provider: provider,
     network_id: "*",
     from: accounts[0]
-  }
+  };
   config.network = "debugger";
 
   await addContracts(config, sources);
@@ -121,7 +121,7 @@ export async function defaultMigrations(contractNames) {
       };
     `;
 
-    migrations[filename] = source
+    migrations[filename] = source;
   });
 
   return migrations;
