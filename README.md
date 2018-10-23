@@ -24,8 +24,15 @@ var provider = new HDWalletProvider(mnemonic, "http://localhost:8545");
 // Or, alternatively pass in a zero-based address index.
 var provider = new HDWalletProvider(mnemonic, "http://localhost:8545", 5);
 
-//Or, use your own hierarchical derivation path
+// Or, use your own hierarchical derivation path
 var provider = new HDWalletProvider(mnemonic, "http://localhost:8545", 5, 1, "m/44'/137'/0'/0/");
+
+// ...
+// Write your code here.
+// ...
+
+// At termination, `provider.engine.stop()' should be called to finish the process elegantly.
+provider.engine.stop();
 ```
 
 By default, the `HDWalletProvider` will use the address of the first address that's generated from the mnemonic. If you pass in a specific index, it'll use that address instead. Currently, the `HDWalletProvider` manages only one address at a time, but it can be easily upgraded to manage (i.e., "unlock") multiple addresses.
@@ -40,6 +47,8 @@ Parameters:
 | `num_addresses` | `number` | `1` | [ ] | If specified, will create `number` addresses when instantiated |
 | `shareNonce` | `boolean` | `true` | [ ] | If false, a new WalletProvider will track its own nonce-state |
 | `wallet_hdpath` | `string` | `"m/44'/60'/0'/0/"` | [ ] | If specified, will tell the wallet engine what derivation path should use to derive addresses. |
+
+
 
 ## Truffle Usage
 
