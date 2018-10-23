@@ -27,7 +27,7 @@ function HDWalletProvider(
   wallet_hdpath="m/44'/60'/0'/0/"
 ) {
 
-  if (mnemonic.indexOf(' ') === -1 || Array.isArray(mnemonic)) {
+  if (mnemonic && mnemonic.indexOf(' ') === -1 || Array.isArray(mnemonic)) {
 
     const privateKeys = Array.isArray(mnemonic) ? mnemonic : [mnemonic];
     this.wallets = {};
@@ -48,6 +48,10 @@ function HDWalletProvider(
     this.wallet_hdpath = wallet_hdpath;
     this.wallets = {};
     this.addresses = [];
+
+    if (!bip39.validateMnemonic(mnemonic)) {
+      throw new Error("Mnemonic invalid or undefined")
+    }
 
     for (let i = address_index; i < address_index + num_addresses; i++){
       const wallet = this.hdwallet.derivePath(this.wallet_hdpath + i).getWallet();
