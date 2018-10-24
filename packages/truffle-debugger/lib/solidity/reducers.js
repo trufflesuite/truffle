@@ -81,7 +81,7 @@ export function functionDepth(state = 1, action) {
   switch(action.type)
   {
     case actions.JUMP:
-      const delta = spelunk(action.jumpDirection)
+      const delta = spelunk(action.jumpDirection);
       return state + delta;
 
     case actions.RESET_SOLIDITY:
