@@ -18,7 +18,7 @@ function Command(commands) {
 
 Command.prototype.getCommand = function(inputStrings, config, noAliases) {
   if (config.commands) {
-    this.commands = { ...this.commands, ...config.commands };
+    this.commands = Object.assign(this.commands, config.commands);
   }
 
   var argv = this.args.parse(inputStrings);
