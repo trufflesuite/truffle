@@ -1,17 +1,27 @@
 const assert = require("assert");
 const CommandRunner = require("../commandrunner");
 const MemoryLogger = require("../memorylogger");
-let config = {};
+const sandbox = require("../sandbox");
+const path = require("path");
 
-describe("truffle help", () => {
+describe.only("truffle help", () => {
   const logger = new MemoryLogger();
-  beforeEach("set up config for logger", () => {
-    config.logger = logger;
+  let config, project;
+
+  beforeEach("set up sandbox & config for logger", () => {
+    project = path.join(
+      __dirname,
+      "../../sources/build/projectWithBuildScript"
+    );
+    return sandbox.create(project).then(conf => {
+      config = conf;
+      config.logger = logger;
+    });
   });
 
   describe("when run without arguments", () => {
     it("displays general help", function(done) {
-      CommandRunner.run("help", config, (error) => {
+      CommandRunner.run("help", config, () => {
         const output = logger.contents();
 
         assert(output.includes("Usage: truffle <command> [options]"));
@@ -22,7 +32,7 @@ describe("truffle help", () => {
 
   describe("when run with an argument", () => {
     it("tells the user if it doesn't recognize the given command", function(done) {
-      CommandRunner.run("help eggplant", config, (error) => {
+      CommandRunner.run("help eggplant", config, () => {
         const output = logger.contents();
 
         assert(output.includes("Cannot find the given command 'eggplant'"));
@@ -31,7 +41,7 @@ describe("truffle help", () => {
     });
 
     it("displays help for the given command when valid", function(done) {
-      CommandRunner.run("help compile", config, (error) => {
+      CommandRunner.run("help compile", config, () => {
         const output = logger.contents();
 
         assert(output.includes("Description:  Compile contract source files"));
