@@ -1,11 +1,11 @@
 const version = require("../../lib/version");
 const sinon = require("sinon");
 const assert = require("assert");
-const { core, solc } = version.getVersionInformation();
+const { core, solc } = version.info();
 let logger;
 
 describe("truffle-core/lib/version", () => {
-  describe("logVersionInformation()", () => {
+  describe("log()", () => {
     beforeEach(() => {
       logger = {
         log: function (stringToLog) {
@@ -16,7 +16,7 @@ describe("truffle-core/lib/version", () => {
     });
 
     it("logs some version information", () => {
-      version.logVersionInformation(logger);
+      version.log(logger);
       assert(logger.loggedStuff.includes(core));
       assert(logger.loggedStuff.includes(solc));
     });
