@@ -88,7 +88,7 @@ const Build = {
 
     // Use our own clean method unless the builder supplies one.
     let clean = this.clean;
-    if (builder.hasOwnProperty("clean")) {
+    if (builder && builder.hasOwnProperty("clean")) {
       clean = builder.clean;
     }
 
