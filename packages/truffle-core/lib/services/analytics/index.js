@@ -9,7 +9,7 @@ const analytics = {
     }
 
     const cp = require("child_process");
-    const child = cp.fork(analyticsPath);
+    const child = cp.fork(analyticsPath, { silent: true });
     child.send(eventObject);
   }
 };
