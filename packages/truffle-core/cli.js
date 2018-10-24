@@ -11,7 +11,6 @@ if (nodeMajorVersion < 8) {
   process.exit(1);
 }
 
-const Config = require("truffle-config");
 const Command = require("./lib/command");
 
 const command = new Command(require("./lib/commands"));

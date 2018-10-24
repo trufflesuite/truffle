@@ -1,7 +1,7 @@
 const pkg = require("../package.json");
 const solcpkg = require("solc/package.json");
 
-const getVersionInformation = () => {
+const info = () => {
   let bundleVersion;
   // NOTE: Webpack will replace BUNDLE_VERSION with a string.
   if (typeof BUNDLE_VERSION != "undefined") {
@@ -15,8 +15,10 @@ const getVersionInformation = () => {
   };
 }
 
-const logVersionInformation = (logger) => {
-  const versionInformation = getVersionInformation();
+const log = (optionalLogger) => {
+  const logger = optionalLogger || console;
+
+  const versionInformation = info();
 
   const bundle = versionInformation.bundle ? `v${versionInformation.bundle}` : "(unbundled)";
 
@@ -26,6 +28,6 @@ const logVersionInformation = (logger) => {
 }
 
 module.exports = {
-  logVersionInformation,
-  getVersionInformation,
+  log,
+  info,
 };
