@@ -22,6 +22,7 @@ const logVersionInformation = (logger) => {
 
   logger.log(`Truffle ${bundle} (core: ${versionInformation.core})`);
   logger.log(`Solidity v${versionInformation.solc} (solc-js)`);
+  logger.log(`Node ${process.version}`);
 }
 
 module.exports = {
