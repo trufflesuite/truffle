@@ -38,7 +38,7 @@ function formatCommands(commands) {
   var names = Object.keys(commands);
 
   var maxLength = Math.max.apply(
-    null, names.map(function(name) { return name.length })
+    null, names.map(function(name) { return name.length; })
   );
 
   return names.map(function(name) {
@@ -82,8 +82,8 @@ var command = {
     const unboxOptions = Object.assign(
       {},
       options,
-      { logger: config.logger },
-    )
+      { logger: config.logger }
+    );
 
     Box.unbox(url, config.working_directory, unboxOptions)
       .then((boxConfig) => {
@@ -106,6 +106,6 @@ var command = {
       })
       .catch(done);
   }
-}
+};
 
 module.exports = command;

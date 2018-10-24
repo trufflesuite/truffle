@@ -28,8 +28,8 @@ describe('profiler', function() {
       if(err) done(err);
       files.forEach(file => fs.removeSync(file));
       done();
-    })
-  })
+    });
+  });
 
   it('profiles example project successfully', function(done) {
     Profiler.required_sources(config.with({

@@ -1,23 +1,11 @@
 const MemoryLogger = require("../memorylogger");
 const CommandRunner = require("../commandrunner");
-const fs = require("fs");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require('web3');
-
-const log = console.log;
-
-const util = require('util');
-
-function processErr(err, output){
-  if (err){
-    log(output);
-    throw new Error(err);
-  }
-}
 
 describe("migration errors", function() {
   let config;
@@ -31,14 +19,14 @@ describe("migration errors", function() {
 
   before(async function() {
     this.timeout(10000);
-    config = await sandbox.create(project)
+    config = await sandbox.create(project);
     config.network = "development";
     config.logger = logger;
     config.mocha = {
       reporter: new Reporter(logger)
-    }
+    };
 
-    const provider = new Web3.providers.HttpProvider('http://localhost:8545')
+    const provider = new Web3.providers.HttpProvider('http://localhost:8545');
     web3 = new Web3(provider);
     networkId = await web3.eth.net.getId();
   });
@@ -48,15 +36,15 @@ describe("migration errors", function() {
 
     CommandRunner.run("migrate", config, err => {
       const output = logger.contents();
-      console.log(output)
+      console.log(output);
       assert(err);
 
       assert(output.includes('2_migrations_revert.js'));
-      assert(output.includes("Deploying 'Example'"))
+      assert(output.includes("Deploying 'Example'"));
       assert(output.includes("Deploying 'ExampleRevert'"));
       assert(output.includes("Error"));
       assert(output.includes('require or revert') || output.includes('gas required exceeds'));
-      assert(!output.includes("Deploying 'UsesExample'"))
+      assert(!output.includes("Deploying 'UsesExample'"));
       assert(!output.includes('3_migrations_ok.js'));
 
       const location = path.join(config.contracts_build_directory, "UsesExample.json");
@@ -64,7 +52,7 @@ describe("migration errors", function() {
       const network = artifact.networks[networkId];
       assert(network === undefined);
       done();
-    })
+    });
   });
 
   it("should run from the last successfully completely migration", function(done) {
@@ -72,13 +60,13 @@ describe("migration errors", function() {
 
     CommandRunner.run("migrate", config, err => {
       const output = logger.contents();
-      console.log(output)
+      console.log(output);
       assert(err);
 
-      assert(!output.includes('1_initial_migration.js'))
+      assert(!output.includes('1_initial_migration.js'));
       assert(output.includes('2_migrations_revert.js'));
       done();
-    })
+    });
   });
 
   it("should run out of gas correctly", function(done){
@@ -87,14 +75,14 @@ describe("migration errors", function() {
     CommandRunner.run("migrate -f 4", config, err => {
       const output = logger.contents();
       assert(err);
-      console.log(output)
+      console.log(output);
       assert(output.includes('4_migrations_oog.js'));
       assert(output.includes("Deploying 'Loops'"));
       assert(output.includes('Error'));
       assert(output.includes('out of gas') || output.includes('gas required exceeds'));
       done();
     });
-  })
+  });
 
   it("should expose the reason string if available [ @ganache ]", function(done){
     this.timeout(70000);
@@ -138,7 +126,7 @@ describe("migration errors", function() {
       assert(output.includes("deprecated"));
       done();
     });
-  })
+  });
 
   it("should error if there are js errors in the migrations script (sync)", function(done){
     this.timeout(70000);
@@ -151,7 +139,7 @@ describe("migration errors", function() {
       assert(output.includes("ReferenceError"));
       done();
     });
-  })
+  });
 
   it("should error if there are js errors in the migrations script (async)", function(done){
     this.timeout(70000);
@@ -164,6 +152,6 @@ describe("migration errors", function() {
       assert(output.includes("ReferenceError"));
       done();
     });
-  })
+  });
 });
 

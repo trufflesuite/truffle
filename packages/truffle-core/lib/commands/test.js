@@ -119,7 +119,7 @@ var command = {
               run();
             });
           });
-        }
+        };
 
         if (config.networks[config.network]) {
           Environment.detect(config, environmentCallback);
@@ -145,6 +145,6 @@ var command = {
       });
     });
   }
-}
+};
 
 module.exports = command;

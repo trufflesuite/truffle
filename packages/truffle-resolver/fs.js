@@ -50,7 +50,7 @@ FS.prototype.getContractName = function(sourcePath, searchPath) {
 
   // fallback
   return path.basename(sourcePath, ".sol");
-}
+};
 
 FS.prototype.resolve = function(import_path, imported_from, callback) {
   imported_from = imported_from || "";

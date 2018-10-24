@@ -4,7 +4,6 @@ var util = require('./util');
 describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
   var Example;
   var accounts;
-  var network_id;
   var web3;
   var providerOptions = {vmErrorsOnRPCResponse: true}; // <--- TRUE
 
@@ -43,8 +42,8 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
 
     it("should error w/gas limit error if constructor reverts", async function(){
       try {
-        await Example.new(13) // 13 fails a constructor require gate
-        assert.fail()
+        await Example.new(13); // 13 fails a constructor require gate
+        assert.fail();
       } catch(e){
         assert(!e.reason, 'Error should not include reason property');
         assert(!e.message.includes('Reason'), 'Should not include reason message');
@@ -54,8 +53,8 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
 
     it("should error w/reason string if constructor reverts", async function(){
       try {
-        await Example.new(2001) // 2001 fails a constructor require gate w/ a reason
-        assert.fail()
+        await Example.new(2001); // 2001 fails a constructor require gate w/ a reason
+        assert.fail();
       } catch(e){
         assert(e.reason === 'reasonstring', 'Error should include reason property');
         assert(e.message.includes('reasonstring'), 'Error message should include reason');
@@ -120,7 +119,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
     });
 
     it("errors with revert message", async function(){
-      const example = await Example.new(1)
+      const example = await Example.new(1);
       try {
         await example.triggerRequireError();
         assert.fail();
@@ -132,7 +131,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
     });
 
     it("errors with reason string on revert", async function(){
-      const example = await Example.new(1)
+      const example = await Example.new(1);
       try {
         await example.triggerRequireWithReasonError();
         assert.fail();
@@ -144,7 +143,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
     });
 
     it("errors with reason string on revert (gas specified)", async function(){
-      const example = await Example.new(1)
+      const example = await Example.new(1);
       try {
         await example.triggerRequireWithReasonError({gas: 200000});
         assert.fail();
@@ -156,7 +155,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
     });
 
     it("errors with invalid opcode when gas specified", async function(){
-      const example = await Example.new(1)
+      const example = await Example.new(1);
       try {
         await example.triggerAssertError({gas: 200000});
         assert.fail();
@@ -168,7 +167,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
     });
 
     it("errors with invalid opcode when gas not specified", async function(){
-      const example = await Example.new(1)
+      const example = await Example.new(1);
       try {
         await example.triggerAssertError();
         assert.fail();
@@ -182,7 +181,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
     it("errors with OOG on internal OOG", async function(){
       this.timeout(5000);
 
-      const example = await Example.new(1)
+      const example = await Example.new(1);
       try {
         await example.runsOutOfGas();
         assert.fail();

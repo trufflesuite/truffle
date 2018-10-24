@@ -1,8 +1,5 @@
 var OS = require("os");
-
 var path = require("path");
-var fs = require("fs");
-var async = require("async");
 var Profiler = require("./profiler");
 var CompileError = require("./compileerror");
 var CompilerSupplier = require("./compilerSupplier");
@@ -90,7 +87,7 @@ var compile = function(sources, options, callback) {
       "userdoc",
       "devdoc"
     ]
-  }
+  };
 
   // Specify compilation targets
   // Each target uses defaultSelectors, defaulting to single target `*` if targets are unspecified
@@ -120,7 +117,7 @@ var compile = function(sources, options, callback) {
   Object.keys(operatingSystemIndependentSources).forEach(function(file_path) {
     solcStandardInput.sources[file_path] = {
       content: operatingSystemIndependentSources[file_path]
-    }
+    };
   });
 
   // Load solc module only when compilation is actually required.
@@ -323,7 +320,7 @@ function orderABI(contract){
 compile.all = function(options, callback) {
 
   find_contracts(options.contracts_directory, function(err, files) {
-    if (err) return callback(err)
+    if (err) return callback(err);
 
     options.paths = files;
     compile.with_dependencies(options, callback);

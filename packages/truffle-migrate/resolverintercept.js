@@ -1,5 +1,3 @@
-const path = require("path");
-
 function ResolverIntercept(resolver) {
   this.resolver = resolver;
   this.cache = {};

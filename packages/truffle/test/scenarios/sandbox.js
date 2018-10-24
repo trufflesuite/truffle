@@ -31,7 +31,7 @@ module.exports = {
             resolve(conf);
           })
           .catch(reject);
-      })
+      });
     });
   }
-}
+};

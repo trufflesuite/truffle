@@ -1,5 +1,4 @@
 var assert = require("chai").assert;
-var path = require("path");
 var fs = require("fs-extra");
 var glob = require("glob");
 var Box = require("truffle-box");
@@ -51,7 +50,7 @@ describe('config', function() {
       if(err) done(err);
       files.forEach(file => fs.removeSync(file));
       done();
-    })
+    });
   });
 
   it('Provisioning contracts should set proper RPC values', function() {

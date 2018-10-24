@@ -1,6 +1,5 @@
 var MemoryLogger = require("../memorylogger");
 var CommandRunner = require("../commandrunner");
-var fs = require("fs");
 var path = require("path");
 var assert = require("assert");
 var Server = require("../server");
@@ -52,7 +51,7 @@ describe("Solidity Imports", function() {
         config.logger = logger;
         config.mocha = {
           reporter: new Reporter(logger)
-        }
+        };
       });
     });
 
@@ -86,7 +85,7 @@ describe("Solidity Imports", function() {
         config.logger = logger;
         config.mocha = {
           reporter: new Reporter(logger)
-        }
+        };
       });
     });
 
@@ -102,5 +101,5 @@ describe("Solidity Imports", function() {
         done();
       });
     });
-  })
+  });
 });

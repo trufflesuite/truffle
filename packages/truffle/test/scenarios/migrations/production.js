@@ -1,16 +1,12 @@
 const MemoryLogger = require("../memorylogger");
 const CommandRunner = require("../commandrunner");
-const fs = require("fs");
 const path = require("path");
 const assert = require("assert");
-const Server = require("../server");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require('web3');
 
 const log = console.log;
-
-const util = require('util');
 
 function processErr(err, output){
   if (err){
@@ -32,14 +28,14 @@ describe('production', function() {
 
     before(async function() {
       this.timeout(10000);
-      config = await sandbox.create(project)
+      config = await sandbox.create(project);
       config.network = "ropsten";
       config.logger = logger;
       config.mocha = {
         reporter: new Reporter(logger)
-      }
+      };
 
-      const provider = new Web3.providers.HttpProvider('http://localhost:8545')
+      const provider = new Web3.providers.HttpProvider('http://localhost:8545');
       web3 = new Web3(provider);
       networkId = await web3.eth.net.getId();
     });
@@ -54,7 +50,7 @@ describe('production', function() {
         assert(output.includes('dry-run'));
 
         assert(output.includes('2_migrations_conf.js'));
-        assert(output.includes("Deploying 'Example'"))
+        assert(output.includes("Deploying 'Example'"));
 
         const location = path.join(config.contracts_build_directory, "Example.json");
         const artifact = require(location);
@@ -71,9 +67,9 @@ describe('production', function() {
           assert(output.includes('confirmation number: 2'));
         }
 
-        console.log(output)
+        console.log(output);
         done();
-      })
+      });
     });
   });
 
@@ -88,14 +84,14 @@ describe('production', function() {
 
     before(async function() {
       this.timeout(10000);
-      config = await sandbox.create(project)
+      config = await sandbox.create(project);
       config.network = "fakeRopsten";
       config.logger = logger;
       config.mocha = {
         reporter: new Reporter(logger)
-      }
+      };
 
-      const provider = new Web3.providers.HttpProvider('http://localhost:8545')
+      const provider = new Web3.providers.HttpProvider('http://localhost:8545');
       web3 = new Web3(provider);
       networkId = await web3.eth.net.getId();
     });
@@ -111,7 +107,7 @@ describe('production', function() {
         assert(!output.includes('dry-run'));
 
         assert(output.includes('2_migrations_conf.js'));
-        assert(output.includes("Deploying 'Example'"))
+        assert(output.includes("Deploying 'Example'"));
 
         const location = path.join(config.contracts_build_directory, "Example.json");
         const artifact = require(location);
@@ -120,9 +116,9 @@ describe('production', function() {
         assert(output.includes(network.transactionHash));
         assert(output.includes(network.address));
 
-        console.log(output)
+        console.log(output);
         done();
-      })
+      });
     });
-  })
+  });
 });

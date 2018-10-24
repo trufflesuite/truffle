@@ -1,7 +1,6 @@
 var assert = require("chai").assert;
 var Schema = require("truffle-contract-schema");
 var temp = require("temp").track();
-var path = require("path");
 var solc = require("solc");
 
 // Clean up after solidity. Only remove solidity's listener,
@@ -9,7 +8,6 @@ var solc = require("solc");
 process.removeListener("uncaughtException", process.listeners("uncaughtException")[0] || function() {});
 
 var fs = require("fs");
-var requireNoCache = require("require-nocache")(module);
 var debug = require("debug")("ganache-core");
 var TestRPC = require("ganache-core");
 var BlockchainUtils = require("truffle-blockchain-utils");
@@ -19,7 +17,7 @@ var times = require("async/times");
 
 var log = {
   log: debug
-}
+};
 
 function getNetworkId(provider) {
   return new Promise(function(accept, reject){
@@ -42,7 +40,6 @@ function getAndSetAccounts(contract, done) {
 describe("Different networks: ", function() {
   var binary;
   var abi;
-  var temp_dir;
   var network_one;
   var network_two;
   var network_one_id;
@@ -124,8 +121,8 @@ describe("Different networks: ", function() {
         assert.equal(code, 0, "ExampleOne's address must not exist on ExampleTwo's network");
         done();
       });
-    })
-  })
+    });
+  });
 
   it("has no network if none set", function() {
     var AnotherExample = contract({
@@ -325,7 +322,7 @@ describe("Different networks: ", function() {
 
       json.networks[uri] = {
         address: "0x1234567890123456789012345678901234567890" // fake
-      }
+      };
 
       var NetworkExample = contract(json);
 
@@ -356,7 +353,7 @@ describe("Different networks: ", function() {
 
       json.networks[uri] = {
         address: "0x1234567890123456789012345678901234567890" // fake
-      }
+      };
 
       var NetworkExample = contract(json);
 
@@ -394,7 +391,7 @@ describe("Different networks: ", function() {
 
       json.networks[uri] = {
         address: "0x1234567890123456789012345678901234567890" // fake
-      }
+      };
 
       var NetworkExample = contract(json);
 

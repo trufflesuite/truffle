@@ -16,7 +16,8 @@ describe("Compile", function() {
       solc: {
         settings: {},
       }
-    }, quiet: true
+    },
+quiet: true
   };
 
   describe("ABI Ordering", function(){
@@ -89,7 +90,7 @@ describe("Compile", function() {
         });
         assert.deepEqual(abi, expectedOrder);
         done();
-      })
+      });
     });
 
     // Ported from `truffle-solidity-utils`
@@ -102,7 +103,7 @@ describe("Compile", function() {
       Compile(sources, compileOptions, function(err, result){
         assert.equal(result["Empty"].abi.length, 0);
         done();
-      })
-    })
-  })
+      });
+    });
+  });
 });

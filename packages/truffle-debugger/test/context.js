@@ -10,7 +10,6 @@ import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
 
 import sessionSelector from "lib/session/selectors";
-import trace from "lib/trace/selectors";
 
 const __OUTER = `
 pragma solidity ^0.4.18;

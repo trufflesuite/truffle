@@ -60,7 +60,7 @@ var command = {
       return supplier
         .getDockerTags()
         .then(tags => {
-          tags.push('See more at: hub.docker.com/r/ethereum/solc/tags/')
+          tags.push('See more at: hub.docker.com/r/ethereum/solc/tags/');
           log(format(tags, null, ' '));
           done();
         })
@@ -92,6 +92,6 @@ var command = {
 
     return val;
   },
-}
+};
 
 module.exports = command;

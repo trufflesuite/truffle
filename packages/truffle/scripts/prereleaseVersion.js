@@ -16,8 +16,7 @@
  *   npm run publish:next
  */
 const fs = require('fs');
-const path = require('path');
-const exec = require('child_process').execSync
+const exec = require('child_process').execSync;
 const semver = require('semver');
 const readline = require('readline');
 
@@ -67,7 +66,7 @@ const warn = `You are about to:\n` +
              `  ------------------------------------------\n` +
              '  Version'.padEnd(25) + '| Tag\n' +
              `  ------------------------------------------\n` +
-             `  truffle@${version}`.padEnd(25) + `| truffle@${tag}\n\n`
+             `  truffle@${version}`.padEnd(25) + `| truffle@${tag}\n\n`;
 
 const quest = `Are you sure you want to publish: (y/n) >> `;
 
@@ -85,7 +84,7 @@ input.question(warn + quest, (answer) => {
     'y', 'yes', 'YES', 'Yes', 'OK', 'Ok', 'ok', 'peace', 'almost'
   ];
 
-  const exit = `Exiting without publishing.`
+  const exit = `Exiting without publishing.`;
 
   // npm version updates the package and commits
   if (affirmations.includes(answer.trim())){

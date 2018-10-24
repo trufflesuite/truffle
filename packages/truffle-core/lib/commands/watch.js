@@ -37,7 +37,7 @@ const command = {
 
     config.logger.log(colors.green("Watching for a change in project files..."));
   }
-}
+};
 
 const build = (config) => {
   const Build = require("../build");
@@ -61,6 +61,6 @@ const printSummary = (config, error) => {
   } else {
     config.logger.log(colors.green("Completed without errors on " + new Date().toString()));
   }
-}
+};
 
 module.exports = command;

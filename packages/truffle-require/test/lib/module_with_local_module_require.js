@@ -3,4 +3,4 @@ var mocha = require("mocha");
 
 module.exports = function() {
   return mocha;
-}
+};

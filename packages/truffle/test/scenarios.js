@@ -6,7 +6,7 @@ describe("Scenarios", function() {
   var folders = fs.readdirSync(scenarios_diractory);
 
   folders.forEach(function(folder) {
-    var scenario_directory = path.join(scenarios_diractory, folder)
+    var scenario_directory = path.join(scenarios_diractory, folder);
     var files;
 
     try {
@@ -23,5 +23,5 @@ describe("Scenarios", function() {
     files.forEach(function(file) {
       require(path.join(scenario_directory, file));
     });
-  })
+  });
 });

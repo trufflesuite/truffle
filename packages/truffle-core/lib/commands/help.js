@@ -43,6 +43,6 @@ var command = {
     }
     console.log("");
   }
-}
+};
 
 module.exports = command;

@@ -47,7 +47,7 @@ contract Variables {
 
 let sources = {
   "Variables.sol": __VARIABLES
-}
+};
 
 describe("AST", function() {
   var provider;
@@ -65,7 +65,7 @@ describe("AST", function() {
   before("Prepare contracts and artifacts", async function() {
     this.timeout(30000);
 
-    let prepared = await prepareContracts(provider, sources)
+    let prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;
     artifacts = prepared.artifacts;
     files = prepared.files;

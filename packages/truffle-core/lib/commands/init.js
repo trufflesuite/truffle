@@ -45,6 +45,6 @@ var command = {
 
     UnboxCommand.run(options, done);
   }
-}
+};
 
 module.exports = command;

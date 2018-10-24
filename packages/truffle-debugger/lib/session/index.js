@@ -43,7 +43,7 @@ export default class Session {
     return new Promise( (accept, reject) => {
       this._store.subscribe( () => {
         if (this.state.session.status == "ACTIVE") {
-          accept()
+          accept();
         } else if (typeof this.state.session.status == "object") {
           reject(this.state.session.status.error);
         }

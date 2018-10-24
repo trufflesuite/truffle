@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-require('source-map-support/register')
+require('source-map-support/register');
 
 const TaskError = require("./lib/errors/taskerror");
 const TruffleError = require("truffle-error");
@@ -14,7 +14,6 @@ if (nodeMajorVersion < 8) {
   process.exit(1);
 }
 
-const Config = require("truffle-config");
 const Command = require("./lib/command");
 
 const command = new Command(require("./lib/commands"));

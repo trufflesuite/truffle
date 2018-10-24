@@ -1,12 +1,10 @@
 var assert = require("chai").assert;
 var BigNumber = require("bignumber.js");
 var util = require('./util');
-var contract = require("../");
 
 describe("Methods", function() {
   var Example;
   var accounts;
-  var network_id;
   var web3;
   var providerOptions = {vmErrorsOnRPCResponse: false};
 
@@ -27,7 +25,7 @@ describe("Methods", function() {
 
     it("should get and set values via methods and get values via .call", async function() {
       let value;
-      const example = await Example.new(1)
+      const example = await Example.new(1);
       value = await example.value.call();
 
       assert.equal(value.valueOf(), 1, "Starting value should be 1");
@@ -39,20 +37,20 @@ describe("Methods", function() {
     });
 
     it("should execute constant functions as calls", async function() {
-      const example = await Example.new(5)
+      const example = await Example.new(5);
       const value = await example.getValue();
 
       assert.equal(parseInt(value), 5, "Should not need to explicitly use .call()");
     });
 
     it("should execute overloaded solidity function calls", async function() {
-      const example = await Example.new(5)
+      const example = await Example.new(5);
       const valueA = await example.methods['overloadedGet()']();
       const valueB = await example.methods['overloadedGet(uint256)'](5);
 
       assert.equal(parseInt(valueA), 5, "Value should have been retrieved");
       assert.equal(parseInt(valueB), 25, "Multiplied should have been retrieved");
-    })
+    });
 
     it("should honor the defaultBlock parameter when called", async function(){
       const expectedInitialValue = 5;
@@ -106,7 +104,7 @@ describe("Methods", function() {
 
     it("should allow BigNumbers as input params, not treat them as tx objects", async function() {
       let value;
-      const example = await Example.new( new BigNumber(30))
+      const example = await Example.new( new BigNumber(30));
 
       value = await example.value.call();
       assert.equal(value.valueOf(), 30, "Starting value should be 30");
@@ -117,12 +115,12 @@ describe("Methods", function() {
       assert.equal(value.valueOf(), 25, "Ending value should be twenty-five");
 
       value = await example.parrot.call(new BigNumber(865));
-      assert.equal(parseInt(value), 865, "Parrotted value should equal 865")
+      assert.equal(parseInt(value), 865, "Parrotted value should equal 865");
     });
 
     it("should allow BN's as input paramss, not treat them as tx objects", async function() {
       let value;
-      const example = await Example.new( new web3.utils.BN(30))
+      const example = await Example.new( new web3.utils.BN(30));
 
       value = await example.value.call();
       assert.equal(value.valueOf(), 30, "Starting value should be 30");
@@ -133,12 +131,12 @@ describe("Methods", function() {
       assert.equal(value.valueOf(), 25, "Ending value should be twenty-five");
 
       value = await example.parrot.call(new web3.utils.BN(865));
-      assert.equal(parseInt(value), 865, "Parrotted value should equal 865")
+      assert.equal(parseInt(value), 865, "Parrotted value should equal 865");
     });
 
     it("should output uint tuples as BN by default (call)", async function(){
       let value;
-      const example = await Example.new(1)
+      const example = await Example.new(1);
 
       value = await example.returnsNamedTuple();
 
@@ -163,7 +161,7 @@ describe("Methods", function() {
 
     it("should output uint array values as BN by default (call)", async function(){
       let value;
-      const example = await Example.new(1)
+      const example = await Example.new(1);
 
       value = await example.returnsNamedStaticArray();
       assert(Array.isArray(value));
@@ -179,7 +177,7 @@ describe("Methods", function() {
 
     it("should output int values as BN by default (call)", async function(){
       let value;
-      const example = await Example.new(1)
+      const example = await Example.new(1);
 
       value = await example.returnsInt();
       assert(web3.utils.isBN(value));
@@ -188,7 +186,7 @@ describe("Methods", function() {
     it("should output uint tuples as BigNumber when set to 'BigNumber' (call)", async function(){
       let value;
       Example.numberFormat = 'BigNumber';
-      const example = await Example.new(1)
+      const example = await Example.new(1);
 
       value = await example.returnsNamedTuple();
 
@@ -216,7 +214,7 @@ describe("Methods", function() {
     it("should output int values as string when set to 'String' (call)", async function(){
       let value;
       Example.numberFormat = 'String';
-      const example = await Example.new(1)
+      const example = await Example.new(1);
 
       value = await example.returnsInt();
       assert(typeof value === 'string');
@@ -230,7 +228,7 @@ describe("Methods", function() {
           assert.isOk(hash.length > 42, "Unexpected transaction hash");
           done();
         });
-      })
+      });
     });
 
     it("should emit a receipt", function(done){
@@ -240,7 +238,7 @@ describe("Methods", function() {
           assert.isDefined(receipt.transactionHash, "receipt should have transaction hash");
           done();
         });
-      })
+      });
     });
 
     it("should fire the confirmations event handler repeatedly", function(done){
@@ -278,7 +276,7 @@ describe("Methods", function() {
       hash = await example.hash.call();
       value = await example.value.call();
 
-      assert.equal(hash, helloHash)
+      assert.equal(hash, helloHash);
       assert.equal(parseInt(value), 5, "Ending value should be five");
 
       goodbyeHash = web3.utils.soliditySha3('goodbye');
@@ -356,7 +354,7 @@ describe("Methods", function() {
     });
 
     it("errors with receipt and revert message", async function(){
-      const example = await Example.new(1)
+      const example = await Example.new(1);
       try {
         await example.triggerRequireError();
         assert.fail();
@@ -367,7 +365,7 @@ describe("Methods", function() {
     });
 
     it("errors with receipt & assert message when gas specified", async function(){
-      const example = await Example.new(1)
+      const example = await Example.new(1);
       try {
         await example.triggerAssertError({gas: 200000});
         assert.fail();
@@ -378,7 +376,7 @@ describe("Methods", function() {
     });
 
     it("errors with receipt & assert message when gas not specified", async function(){
-      const example = await Example.new(1)
+      const example = await Example.new(1);
       try {
         await example.triggerAssertError();
         assert.fail();
@@ -391,7 +389,7 @@ describe("Methods", function() {
     it("errors with receipt & assert message on internal OOG", async function(){
       this.timeout(25000);
 
-      const example = await Example.new(1)
+      const example = await Example.new(1);
       try {
         await example.runsOutOfGas();
         assert.fail();
@@ -404,7 +402,7 @@ describe("Methods", function() {
     it("errors when setting `numberFormat` to invalid value", async function(){
       try {
         Example.numberFormat = 'bigNumber';
-        assert.fail()
+        assert.fail();
       } catch(err){
         assert(err.message.includes('Invalid number format'));
         assert(err.message.includes('BigNumber'));
@@ -415,7 +413,7 @@ describe("Methods", function() {
 
   describe('revert with reason (ganache only)', function(){
     it("errors with receipt and revert message", async function(){
-      const example = await Example.new(1)
+      const example = await Example.new(1);
       try {
         await example.triggerRequireWithReasonError();
         assert.fail();
@@ -426,7 +424,7 @@ describe("Methods", function() {
         assert(e.receipt.status === false);
       };
     });
-  })
+  });
 
   // This doesn't work on geth --dev because chainId is too high: 1337? Apparently
   // not configurable. Might work on a sub 100 id.
@@ -447,12 +445,12 @@ describe("Methods", function() {
       assert.equal(balance, web3.utils.toWei("1", 'ether'));
 
       Example.setWallet(wallet);
-      const example = await Example.new(1, {from: wallet["0"].address })
+      const example = await Example.new(1, {from: wallet["0"].address });
 
       value = await example.value.call();
       assert.equal(parseInt(value), 1, "Starting value should be 1");
 
-      await example.setValue(5, {from: wallet["0"].address})
+      await example.setValue(5, {from: wallet["0"].address});
 
       value = await example.value.call();
       assert.equal(parseInt(value), 5, "Ending value should be 5");
@@ -461,7 +459,7 @@ describe("Methods", function() {
 
   describe('sendTransaction() / send() [ @geth ]', function(){
     it("should trigger the fallback function when calling sendTransaction()", async function() {
-      const example = await Example.new(1)
+      const example = await Example.new(1);
       const triggered = await example.fallbackTriggered();
 
       assert(triggered == false, "Fallback should not have been triggered yet");
@@ -505,6 +503,6 @@ describe("Methods", function() {
       const expectedBN = initialBN.sub(ethBN);
       assert(finalBN.lte(expectedBN), 'send should send from the specified address');
     });
-  })
+  });
 });
 
