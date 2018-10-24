@@ -3,15 +3,14 @@ require('source-map-support/register')
 
 const TaskError = require("./lib/errors/taskerror");
 const TruffleError = require("truffle-error");
-const googleAnalytics = require("./lib/services/google-analytics");
-const cp = require('child_process');
-const child = cp.fork(__dirname + "/lib/services/google-analytics");
+
+const googleAnalytics = require("./lib/services/analytics");
 
 const nodeMajorVersion = parseInt(process.version.slice(1));
 if (nodeMajorVersion < 8) {
   console.log(`You are currently using version ${process.version.slice(1)} of Node.`);
   console.log("You must use version 8 or newer.");
-  child.send({ec: "error", ea: "nonzero exit code", el: "wrong node version"});
+  googleAnalytics.send({ec: "error", ea: "nonzero exit code", el: "wrong node version"});
   process.exit(1);
 }
 
@@ -42,19 +41,19 @@ if (userWantsGeneralHelp) {
 command.run(inputArguments, options, function(err) {
   if (err) {
     if (err instanceof TaskError) {
-      child.send({ec: "error", ea: "nonzero exit code", el: "TaskError - display general help message"});
+      googleAnalytics.send({ec: "error", ea: "nonzero exit code", el: "TaskError - display general help message"});
       command.displayGeneralHelp();
     } else {
       if (err instanceof TruffleError) {
-        child.send({ec: "error", ea: "nonzero exit code", el: "TruffleError - missing configuration file"});
+        googleAnalytics.send({ec: "error", ea: "nonzero exit code", el: "TruffleError - missing configuration file"});
         console.log(err.message);
       } else if (typeof err == "number") {
-        child.send({ec: "error", ea: "nonzero exit code", el: "Numbered Error - " + err});
+        googleAnalytics.send({ec: "error", ea: "nonzero exit code", el: "Numbered Error - " + err});
         // If a number is returned, exit with that number.
         process.exit(err);
       } else {
         let error = err.stack || err.message || err.toString();
-        child.send({ec: "error", ea: "nonzero exit code", el: "Other Error - " + error});
+        googleAnalytics.send({ec: "error", ea: "nonzero exit code", el: "Other Error - " + error});
         // Bubble up all other unexpected errors.
         console.log(error);
       }

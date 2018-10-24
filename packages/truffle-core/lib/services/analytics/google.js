@@ -12,7 +12,7 @@ const ua = require('universal-analytics');
 const nanoid = require('nanoid');
 const inquirer = require("inquirer");
 
-const version = require("../version");
+const version = require("../../version");
 
 //set truffleAnalyticsId depending on whether version is bundled
 let appVersion;
@@ -158,13 +158,5 @@ const googleAnalytics = {
     return true;
   }
 }
-
-process.on('message', function(eventObject) {
-  googleAnalytics.sendAnalyticsEvent(eventObject);
-  
-  setTimeout(function(){
-    process.exit(0);
-  }, 5000);
-});
 
 module.exports = googleAnalytics;
