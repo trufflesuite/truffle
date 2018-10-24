@@ -3,6 +3,7 @@ const yargs = require("yargs/yargs");
 const _ = require("lodash");
 const version = require("../lib/version");
 const OS = require("os");
+const Config = require("truffle-config");
 
 function Command(commands) {
   this.commands = commands;
@@ -16,14 +17,10 @@ function Command(commands) {
   this.args = args;
 }
 
-Command.prototype.getCommand = function(inputStrings, config, noAliases) {
-  if (config.commands) {
-    this.commands = Object.assign(this.commands, config.commands);
-  }
-
+Command.prototype.getCommand = function(inputStrings, options) {
   var argv = this.args.parse(inputStrings);
 
-  if (argv._.length == 0) {
+  if (argv._.length === 0) {
     return null;
   }
 
@@ -34,7 +31,16 @@ Command.prototype.getCommand = function(inputStrings, config, noAliases) {
   // for inferring the command.
   if (this.commands[firstInputString]) {
     chosenCommand = firstInputString;
-  } else if (noAliases !== true) {
+  } else if (options.noAliases !== true) {
+    let config = Config.search(options);
+
+    if (config) {
+      config = Config.detect(options);
+      if (config.commands) {
+        this.commands = Object.assign(this.commands, config.commands);
+      }
+    }
+
     var currentLength = 1;
     var availableCommandNames = Object.keys(this.commands);
 
@@ -46,13 +52,13 @@ Command.prototype.getCommand = function(inputStrings, config, noAliases) {
         possibleCommand
       ) {
         return (
-          possibleCommand.substring(0, currentLength) ==
+          possibleCommand.substring(0, currentLength) ===
           firstInputString.substring(0, currentLength)
         );
       });
 
       // Did we find only one command that matches? If so, use that one.
-      if (possibleCommands.length == 1) {
+      if (possibleCommands.length === 1) {
         chosenCommand = possibleCommands[0];
         break;
       }
@@ -61,7 +67,7 @@ Command.prototype.getCommand = function(inputStrings, config, noAliases) {
     }
   }
 
-  if (chosenCommand == null) {
+  if (chosenCommand === null) {
     return null;
   }
 
@@ -75,16 +81,14 @@ Command.prototype.getCommand = function(inputStrings, config, noAliases) {
 };
 
 Command.prototype.run = function(inputStrings, options, callback) {
-  if (typeof options == "function") {
+  if (typeof options === "function") {
     callback = options;
     options = {};
   }
-  var Config = require("truffle-config");
-  var config = Config.detect(options);
 
-  const result = this.getCommand(inputStrings, config, options.noAliases);
+  const result = this.getCommand(inputStrings, options);
 
-  if (result == null) {
+  if (result === null) {
     return callback(
       new TaskError(
         "Cannot find command based on input: " + JSON.stringify(inputStrings)
