@@ -1,8 +1,6 @@
 # ALPHA - UNPUBLISHED - EXPERIMENTAL USE ONLY
 
-This module is totally unsupported and should only be used in an experimental context.
-
-This repository will likely move or be integrated into the main [Truffle monorepo](https://github.com/trufflesuite/truffle) before this module is released.
+This module is an early work in progress. For the moment it is totally unsupported and should only be used in an experimental context.
 
 # truffle-sawtooth-seth-provider
 
@@ -14,7 +12,7 @@ We intend to add support for all operations listed below, but items with a ❌ a
 
  - `truffle migrate` ✔️
  - Use with `truffle-contract` in browser ✔️
- - `truffle test` ❌
+ - `truffle test` ✔️ (if running against seth build which includes hyperledger/sawtooth-seth#77)
  - `truffle debug` ❌
 
 ## Important differences between Sawtooth Seth and Core Ethereum
