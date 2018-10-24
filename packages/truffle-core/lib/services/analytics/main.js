@@ -1,9 +1,21 @@
 const googleAnalytics = require("./google.js");
 
-process.on('message', function(eventObject) {
-	googleAnalytics.sendAnalyticsEvent(eventObject);
+const PROCESS_TIMEOUT = 5000; // ms
 
-	setTimeout(function(){
-		process.exit(0);
-	}, 5000);
+console.debug("starting truffle analytics process");
+
+const done = new Promise(accept => {
+  setTimeout(accept, PROCESS_TIMEOUT);
+  console.debug("timeout set");
+});
+
+process.on("message", async eventObject => {
+  console.debug("sending event %o", eventObject);
+  googleAnalytics.sendAnalyticsEvent(eventObject);
+  console.debug("(maybe) sent event %o", eventObject);
+});
+
+done.then(() => {
+  console.debug("timeout reached");
+  process.exit(0);
 });
