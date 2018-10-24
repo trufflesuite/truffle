@@ -197,7 +197,7 @@ function* stepOver () {
     // line.
     (currentDepth > startingDepth ||
       currentRange.lines.start.line == startingRange.lines.start.line)
-  )
+  );
 }
 
 /**

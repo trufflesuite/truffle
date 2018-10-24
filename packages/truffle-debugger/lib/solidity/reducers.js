@@ -29,7 +29,7 @@ function sources(state = DEFAULT_SOURCES, action) {
             sourcePath
           }
         }
-      }
+      };
 
     /*
      * Default case

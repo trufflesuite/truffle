@@ -90,7 +90,7 @@ Logger.prototype.subscribe = function(callback) {
 Logger.prototype.log = function(message) {
   var self = this;
 
-  var subscriberIDs = Object.keys(this.subscribers)
+  var subscriberIDs = Object.keys(this.subscribers);
   if (subscriberIDs.length == 0) {
     this.messages.push(message);
 
@@ -165,7 +165,7 @@ Supervisor.prototype.start = function() {
   });
 
   ipc.server.start();
-}
+};
 
 // external interface for mixin to emit socket events
 Supervisor.prototype.emit = function(socket, message, data, options) {
@@ -188,7 +188,7 @@ Supervisor.prototype.emit = function(socket, message, data, options) {
 Supervisor.prototype.exit = function() {
   this.ipc.server.stop();
   this.handle('exit', arguments);
-}
+};
 
 
 /*
@@ -249,7 +249,7 @@ TestRPCMixin.prototype.connect = function(supervisor, socket) {
   this.ready.then(function() {
     supervisor.emit(socket, 'truffle.ready');
   });
-}
+};
 
 // cleanup TestRPC process on exit
 TestRPCMixin.prototype.exit = function(supervisor) {
@@ -292,7 +292,7 @@ LoggerMixin.prototype.connect = function(supervisor, socket) {
 process.on('uncaughtException', function(e) {
   console.error(e.stack);
   process.exit(1);
-})
+});
 
 
 /*

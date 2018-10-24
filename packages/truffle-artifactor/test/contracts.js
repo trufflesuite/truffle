@@ -19,7 +19,7 @@ describe("artifactor + require", function() {
   var artifactor;
   var provider = TestRPC.provider();
   var web3 = new Web3();
-  web3.setProvider(provider)
+  web3.setProvider(provider);
 
   before(function() {
     return web3
@@ -132,7 +132,7 @@ describe("artifactor + require", function() {
       // BigNumber passed in a call.
       return example.parrot.call(865);
     }).then(function(parrot_value) {
-      assert.equal(parseInt(parrot_value), 865, "Parrotted value should equal 865")
+      assert.equal(parseInt(parrot_value), 865, "Parrotted value should equal 865");
     }).then(done).catch(done);
   });
 

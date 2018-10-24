@@ -1,6 +1,5 @@
 const fs = require("fs");
 const path = require("path");
-const solc = require("solc");
 const assert = require("assert");
 const findCacheDir = require('find-cache-dir');
 const Resolver = require('truffle-resolver');
@@ -49,13 +48,13 @@ describe('CompilerSupplier', function(){
       expected = null;
 
       fileName = await supplier.getVersionUrlSegment(input, list);
-      assert(fileName === null, 'Should return null if not found')
+      assert(fileName === null, 'Should return null if not found');
     });
 
     it('getReleases: should return a `releases` object', async function(){
       const list = await supplier.getVersions();
       const releases = await supplier.getReleases();
-      const firstSolc = "0.1.3-nightly.2015.9.25+commit.4457170"
+      const firstSolc = "0.1.3-nightly.2015.9.25+commit.4457170";
 
       assert(releases.prereleases[0] === firstSolc, 'Should return prereleases');
       assert(releases.releases[0] === releases.latestRelease, 'Should return releases/latestRelease');
@@ -65,7 +64,7 @@ describe('CompilerSupplier', function(){
       const list = await supplier.getDockerTags();
       assert(Array.isArray(list));
       assert(typeof list[0] === 'string');
-    })
+    });
   });
 
   describe('integration', function(){
@@ -217,7 +216,7 @@ describe('CompilerSupplier', function(){
         assert(fs.existsSync(expectedCache), 'Should have cached compiler');
 
         // Get cached solc access time
-        initialAccessTime = fs.statSync(expectedCache).atime.getTime()
+        initialAccessTime = fs.statSync(expectedCache).atime.getTime();
 
         // Wait a second and recompile, verifying that the cached solc
         // got accessed / ran ok.
@@ -226,7 +225,7 @@ describe('CompilerSupplier', function(){
           compile(newPragmaSource, options, (err, result) => {
             if (err) return done(err);
 
-            finalAccessTime = fs.statSync(expectedCache).atime.getTime()
+            finalAccessTime = fs.statSync(expectedCache).atime.getTime();
 
             assert(result['NewPragma'].contract_name === 'NewPragma', 'Should have compiled');
 
@@ -299,7 +298,7 @@ describe('CompilerSupplier', function(){
           contracts_directory: path.join(__dirname, "./sources"),
           working_directory: __dirname,
           paths: paths
-        }
+        };
 
         options.resolver = new Resolver(options);
 
@@ -310,7 +309,7 @@ describe('CompilerSupplier', function(){
           assert(result['ComplexOrdered'].contract_name === 'ComplexOrdered', 'Should have compiled');
           done();
         });
-      })
+      });
 
       it('errors if running dockerized solc without specifying an image', function(done){
         options.compilers = {
@@ -325,7 +324,7 @@ describe('CompilerSupplier', function(){
           assert(err.message.includes('option must be'));
           done();
         });
-      })
+      });
 
       it('errors if running dockerized solc when image does not exist locally', function(done){
         const imageName = 'fantasySolc.7777555';
@@ -342,7 +341,7 @@ describe('CompilerSupplier', function(){
           assert(err.message.includes(imageName));
           done();
         });
-      })
+      });
     });
   });
 });

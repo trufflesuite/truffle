@@ -7,7 +7,6 @@ var handlers = require("./handlers");
 var override = require("./override");
 var reformat = require("./reformat");
 
-var util = require('util');
 var execute = {
 
   // -----------------------------------  Helpers --------------------------------------------------
@@ -39,7 +38,7 @@ var execute = {
         // We need to let txs that revert through.
         // Often that's exactly what you are testing.
         }).catch(err => accept());
-    })
+    });
   },
 
   /**
@@ -55,7 +54,7 @@ var execute = {
 
     return constructor
       .detectNetwork()
-      .then(() => {return {args: args, params: params}});
+      .then(() => { return {args: args, params: params}; });
   },
 
   /**
@@ -148,7 +147,7 @@ var execute = {
         contract: constructor,   // Can't name this field `constructor` or `_constructor`
         promiEvent: promiEvent,
         params: params
-      }
+      };
 
       constructor.detectNetwork().then(network => {
         params.to = address;
@@ -158,13 +157,13 @@ var execute = {
           .getGasEstimate
           .call(constructor, params, network.blockLimit)
           .then(gas => {
-            params.gas = gas
+            params.gas = gas;
             deferred = web3.eth.sendTransaction(params);
             deferred.catch(override.start.bind(constructor, context));
             handlers.setup(deferred, context);
           })
-          .catch(promiEvent.reject)
-      }).catch(promiEvent.reject)
+          .catch(promiEvent.reject);
+      }).catch(promiEvent.reject);
 
       return promiEvent.eventEmitter;
     };
@@ -213,7 +212,7 @@ var execute = {
               reason
             );
 
-            return context.promiEvent.reject(error)
+            return context.promiEvent.reject(error);
           }
 
           var web3Instance = new web3.eth.Contract(abi, receipt.contractAddress);
@@ -223,7 +222,7 @@ var execute = {
 
         // Manage web3's 50 blocks' timeout error.
         // Web3's own subscriptions go dead here.
-        }).catch(override.start.bind(constructor, context))
+        }).catch(override.start.bind(constructor, context));
       }).catch(context.promiEvent.reject);
   },
 
@@ -256,7 +255,7 @@ var execute = {
           if (err) callback(err);
           var event = dedupe(e.id) && decode.call(constructor, e, true)[0];
           callback(null, event);
-        }
+        };
 
         return constructor.detectNetwork()
           .then(() => fn.call(constructor.events, params, intermediary));
@@ -319,8 +318,8 @@ var execute = {
     return function(event, options){
       return web3Instance
         .getPastEvents(event, options)
-        .then(events => decode.call(constructor, events, false))
-    }
+        .then(events => decode.call(constructor, events, false));
+    };
   },
 
   /**

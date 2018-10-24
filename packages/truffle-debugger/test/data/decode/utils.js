@@ -27,7 +27,7 @@ describe("Utils", function() {
       let result = utils.toBigNumber(bytes);
 
       assert.equal(result.toString(), expectedValue.toString());
-    })
+    });
   });
 
   describe("toSignedBigNumber()", function() {
@@ -57,7 +57,7 @@ describe("Utils", function() {
       let result = utils.toSignedBigNumber(bytes);
 
       assert.equal(result.toString(), expectedValue.toString());
-    })
+    });
   });
 
   describe("toHexString()", function() {

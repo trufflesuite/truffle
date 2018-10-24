@@ -1,4 +1,4 @@
-const emoji = require('node-emoji')
+const emoji = require('node-emoji');
 
 /**
  *  A module that formats output for the Migrations reporter.
@@ -32,11 +32,11 @@ class MigrationsMessages{
   // ----------------------------------- Interactions ----------------------------------------------
 
   questions(kind){
-    const prompt = " >> (y/n): "
+    const prompt = " >> (y/n): ";
     const kinds = {
       "acceptDryRun": `Dry-run successful. ` +
                       `Do you want to proceed with real deployment? ${prompt}`
-    }
+    };
 
     return kinds[kind];
   }
@@ -44,7 +44,7 @@ class MigrationsMessages{
   exitLines(kind){
     const kinds = {
       "acceptDryRun": "\nExiting without migrating...\n\n",
-    }
+    };
 
     return kinds[kind];
   }
@@ -164,7 +164,7 @@ class MigrationsMessages{
 
       default: () =>
         `${prefix}"${data.contract.contractName}" -- ${data.error.message}.\n`,
-    }
+    };
 
     return kinds[kind]();
   }
@@ -296,7 +296,7 @@ class MigrationsMessages{
       listMany: () =>
         `   * ${data.contractName}`,
 
-    }
+    };
 
     return kinds[kind]();
   }

@@ -224,7 +224,7 @@ export function baseDefinition(definition) {
   let baseIdentifier = typeIdentifier(definition)
     // first dollar sign     last dollar sign
     //   `---------.       ,---'
-    .match(/^[^$]+\$_(.+)_\$[^$]+$/)[1]
+    .match(/^[^$]+\$_(.+)_\$[^$]+$/)[1];
     //              `----' greedy match
 
   // HACK - internal types for memory or storage also seem to be pointers
@@ -279,7 +279,7 @@ export function toHexString(bytes, length = 0, trim = false) {
     bytes = toBytes(bytes);
   }
 
-  const pad = (s) => `${"00".slice(0, 2 - s.length)}${s}`
+  const pad = (s) => `${"00".slice(0, 2 - s.length)}${s}`;
 
   //                                          0  1  2  3  4
   //                                 0  1  2  3  4  5  6  7

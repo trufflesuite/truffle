@@ -4,8 +4,6 @@ var expect = require("truffle-expect");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
 var TestRPC = require("ganache-cli");
-var spawn = require("child_process").spawn;
-var path = require("path");
 
 var Environment = {
   // It's important config is a Config object and not a vanilla object
@@ -19,7 +17,7 @@ var Environment = {
     }
 
     if (!config.artifactor) {
-      config.artifactor = new Artifactor(config.contracts_build_directory)
+      config.artifactor = new Artifactor(config.contracts_build_directory);
     }
 
     if (!config.network && config.networks["development"]) {
@@ -88,7 +86,7 @@ var Environment = {
     var web3 = new Web3(config.provider);
 
     try {
-      var accounts = await web3.eth.getAccounts()
+      var accounts = await web3.eth.getAccounts();
       var block = await web3.eth.getBlock('latest');
 
       var upstreamNetwork = config.network;
@@ -105,13 +103,13 @@ var Environment = {
         from: config.from,
         gas: upstreamConfig.gas,
         gasPrice: upstreamConfig.gasPrice
-      }
+      };
       config.network = forkedNetwork;
 
       callback();
 
     } catch(err){
-      callback(err)
+      callback(err);
     };
   },
 

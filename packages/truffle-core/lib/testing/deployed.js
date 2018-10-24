@@ -20,7 +20,7 @@ var Deployed = {
         body = "return " + address + ";";
       }
 
-      source += "  function " + name + "() public pure returns (address) { " + body + " }"
+      source += "  function " + name + "() public pure returns (address) { " + body + " }";
       source += "\n";
     });
 
@@ -34,17 +34,17 @@ var Deployed = {
     var web3 = new Web3();
     address = address.toLowerCase().replace("0x", "");
     var hash = web3.utils.sha3(address).replace("0x", "");
-    var ret = '0x'
+    var ret = '0x';
 
     for (var i = 0; i < address.length; i++) {
       if (parseInt(hash[i], 16) >= 8) {
-        ret += address[i].toUpperCase()
+        ret += address[i].toUpperCase();
       } else {
-        ret += address[i]
+        ret += address[i];
       }
     }
 
-    return ret
+    return ret;
   }
 };
 

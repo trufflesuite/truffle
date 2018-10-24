@@ -1,4 +1,3 @@
-const dir = require("node-dir");
 const path = require("path");
 const Deployer = require("truffle-deployer");
 const Require = require("truffle-require");
@@ -7,8 +6,6 @@ const async = require("async");
 const Web3 = require("web3");
 
 const ResolverIntercept = require("./resolverintercept");
-
-const util = require('util');
 
 class Migration {
 
@@ -44,7 +41,7 @@ class Migration {
         context: context,
         resolver: resolver,
         args: [deployer],
-      }
+      };
 
       Require.file(requireOptions, async (err, fn) => {
         if (err) return callback(err);
@@ -67,7 +64,7 @@ class Migration {
       });
 
     } catch(err){
-      callback(err)
+      callback(err);
     }
   }
 
@@ -101,7 +98,7 @@ class Migration {
         const message = `Saving migration to chain.`;
 
         if (!this.dryRun){
-          const data = { message: message }
+          const data = { message: message };
           await self.emitter.emit('startTransaction', data);
         }
 
@@ -185,7 +182,7 @@ class Migration {
     }
 
     // Get file path and emit pre-migration event
-    const file = path.relative(options.migrations_directory, self.file)
+    const file = path.relative(options.migrations_directory, self.file);
     const block = await web3.eth.getBlock('latest');
 
     const preMigrationsData = {
@@ -194,7 +191,7 @@ class Migration {
       network: options.network,
       networkId: options.network_id,
       blockLimit: block.gasLimit
-    }
+    };
 
     await self.emitter.emit('preMigrate', preMigrationsData);
     await self._load(options, context, deployer, resolver, callback);

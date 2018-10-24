@@ -1,6 +1,4 @@
 var CompileError = require("./compileerror");
-var fs = require("fs");
-var path = require("path");
 
 // Warning issued by a pre-release compiler version, ignored by this component.
 var preReleaseCompilerWarning = "This is a pre-release compiler version, please do not use it in production.";
@@ -86,4 +84,4 @@ module.exports = {
 
     return imports;
   }
-}
+};

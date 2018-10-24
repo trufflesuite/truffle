@@ -20,21 +20,21 @@ module.exports = {
     // Convert to Buffer
     code = Buffer.from(code.join("").replace("0x", ""), "hex");
 
-    var instructions = []
+    var instructions = [];
     for (var pc = 0; pc < code.length; pc++) {
-      var opcode = opcodes(code[pc], true)
+      var opcode = opcodes(code[pc], true);
       opcode.pc = pc;
       if (opcode.name.slice(0, 4) === 'PUSH') {
-        var length = code[pc] - 0x5f
-        opcode.pushData = code.slice(pc + 1, pc + length + 1)
+        var length = code[pc] - 0x5f;
+        opcode.pushData = code.slice(pc + 1, pc + length + 1);
 
         // convert pushData to hex
         opcode.pushData = "0x" + opcode.pushData.toString("hex");
 
-        pc += length
+        pc += length;
       }
-      instructions.push(opcode)
+      instructions.push(opcode);
     }
-    return instructions
+    return instructions;
   }
-}
+};

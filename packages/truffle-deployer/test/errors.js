@@ -1,5 +1,4 @@
 const ganache = require("ganache-cli");
-const contract = require("truffle-contract");
 const Web3 = require("web3");
 const assert = require("assert");
 const Reporter = require("truffle-reporters").migrationsV5;
@@ -26,7 +25,7 @@ describe("Error cases", function() {
 
   const mockMigration = {
     emitter: new EventEmitter()
-  }
+  };
 
   const web3 = new Web3(provider);
 
@@ -44,7 +43,7 @@ describe("Error cases", function() {
     UsesLibrary =   utils.getContract('UsesLibrary', provider, networkId, owner);
     IsLibrary =     utils.getContract('IsLibrary', provider, networkId, owner);
     Abstract =      utils.getContract('Abstract', provider, networkId, owner);
-    Loops =         utils.getContract('Loops', provider, networkId, owner)
+    Loops =         utils.getContract('Loops', provider, networkId, owner);
 
     options = {
       contracts: [
@@ -64,7 +63,7 @@ describe("Error cases", function() {
         log:   (val) => {},
         error: (val) => {}
       }
-    }
+    };
     deployer = new Deployer(options);
     reporter = new Reporter();
     reporter.setDeployer(deployer);
@@ -109,12 +108,12 @@ describe("Error cases", function() {
       assert(err.message.includes('UsesLibrary'));
       assert(err.message.includes('unresolved libraries'));
     }
-  })
+  });
 
   it('contract has no bytecode', async function(){
     const migrate = function(){
       deployer.deploy(Abstract);
-    }
+    };
 
     migrate();
 
@@ -209,7 +208,7 @@ describe("Error cases", function() {
   it('revert', async function(){
     migrate = function(){
       deployer.deploy(ExampleRevert);
-    }
+    };
 
     migrate();
 
@@ -224,7 +223,7 @@ describe("Error cases", function() {
   it('assert', async function(){
     migrate = function(){
       deployer.deploy(ExampleAssert);
-    }
+    };
 
     migrate();
 
@@ -242,7 +241,7 @@ describe("Error cases", function() {
 
     migrate = function(){
       deployer.deploy(Example, {gas: gas});
-    }
+    };
 
     migrate();
 
@@ -252,13 +251,13 @@ describe("Error cases", function() {
     } catch(err){
       assert(err.message.includes('Example'));
       assert(err.message.includes('Block limit'));
-      assert(err.message.includes('Gas sent'))
+      assert(err.message.includes('Gas sent'));
       assert(err.message.includes('less gas'));
     }
-  })
+  });
 
   it('insufficient funds', async function(){
-    const emptyAccount = accounts[7]
+    const emptyAccount = accounts[7];
     let balance = await web3.eth.getBalance(emptyAccount);
     await web3.eth.sendTransaction({
       to: accounts[0],
@@ -272,7 +271,7 @@ describe("Error cases", function() {
 
     migrate = function(){
       deployer.deploy(Example, {from: emptyAccount});
-    }
+    };
 
     migrate();
 
@@ -282,8 +281,8 @@ describe("Error cases", function() {
     } catch(err){
       assert(err.message.includes('Example'));
       assert(err.message.includes('insufficient funds'));
-      assert(err.message.includes('Account'))
+      assert(err.message.includes('Account'));
       assert(err.message.includes('Balance'));
     }
-  })
+  });
 });

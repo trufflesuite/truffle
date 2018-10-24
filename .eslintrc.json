@@ -1,0 +1,18 @@
+{
+  "env": {
+    "es6": true,
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 9,
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-unused-vars": 2,
+    "quote-props": ["error", "consistent"],
+    "semi": [2, "always"],
+    "no-mixed-operators": 1,
+    "no-tabs": 1,
+    "no-useless-escape": 1
+  }
+}

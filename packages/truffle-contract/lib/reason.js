@@ -22,11 +22,11 @@ const reason = {
       const hash = Object.keys(data)[0];
 
       if (data[hash].return && data[hash].return.includes(errorStringHash)){
-        return web3.eth.abi.decodeParameter('string', data[hash].return.slice(10))
+        return web3.eth.abi.decodeParameter('string', data[hash].return.slice(10));
       }
 
     } else if (isString && res.result.includes(errorStringHash)){
-      return web3.eth.abi.decodeParameter('string', res.result.slice(10))
+      return web3.eth.abi.decodeParameter('string', res.result.slice(10));
     }
   },
 
@@ -41,14 +41,14 @@ const reason = {
       method: "eth_call",
       params: [params],
       id: new Date().getTime(),
-    }
+    };
 
     return new Promise(resolve => {
       web3.currentProvider.send(packet, (err, response) => {
         const reasonString = reason._extract(response, web3);
         resolve(reasonString);
-      })
-    })
+      });
+    });
   },
 };
 

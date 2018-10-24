@@ -39,12 +39,12 @@ export function steps(state = null, action) {
 
 const info = combineReducers({
   steps
-})
+});
 
 const proc = combineReducers({
   index,
   finished
-})
+});
 
 const reducer = combineReducers({
   info,

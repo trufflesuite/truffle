@@ -29,7 +29,7 @@ describe("truffle exec", function() {
       config.logger = logger;
       config.mocha = {
         reporter: new Reporter(logger)
-      }
+      };
     });
   });
 
@@ -53,7 +53,7 @@ describe("truffle exec", function() {
         processErr(err, output);
         assert(output.includes('5'));
         done();
-      })
+      });
     });
   });
 

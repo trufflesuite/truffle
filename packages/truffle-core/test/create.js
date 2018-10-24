@@ -27,8 +27,8 @@ describe('create', function() {
       if(err) done(err);
       files.forEach(file => fs.removeSync(file));
       done();
-    })
-  })
+    });
+  });
 
   it('creates a new contract', function(done) {
     Create.contract(config.contracts_directory, "MyNewContract", function(err) {

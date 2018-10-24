@@ -64,7 +64,7 @@ contract NestedCall {
 let sources = {
   "SingleCall.sol": __SINGLE_CALL,
   "NestedCall.sol": __NESTED_CALL,
-}
+};
 
 
 describe("Solidity Debugging", function() {
@@ -83,7 +83,7 @@ describe("Solidity Debugging", function() {
   before("Prepare contracts and artifacts", async function() {
     this.timeout(30000);
 
-    let prepared = await prepareContracts(provider, sources)
+    let prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;
     artifacts = prepared.artifacts;
     files = prepared.files;
@@ -105,7 +105,7 @@ describe("Solidity Debugging", function() {
 
     // at `second();`
     let source = await session.view(solidity.current.source);
-    let breakpoint = { sourceId: source.id, line: 16 }
+    let breakpoint = { sourceId: source.id, line: 16 };
     let breakpointStopped = false;
 
     session.addBreakpoint(breakpoint);

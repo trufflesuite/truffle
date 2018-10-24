@@ -1,5 +1,4 @@
 const ganache = require("ganache-cli");
-const contract = require("truffle-contract");
 const Web3 = require("web3");
 const assert = require("assert");
 const Reporter = require("truffle-reporters").migrationsV5;
@@ -7,10 +6,9 @@ const EventEmitter = require('events');
 
 const Deployer = require("../index");
 const utils = require('./helpers/utils');
-const util = require('util');
 
 describe("Deployer (sync)", function() {
-  let owner
+  let owner;
   let options;
   let networkId;
   let deployer;
@@ -27,7 +25,7 @@ describe("Deployer (sync)", function() {
 
   const mockMigration = {
     emitter: new EventEmitter()
-  }
+  };
 
   const web3 = new Web3(provider);
 
@@ -51,10 +49,10 @@ describe("Deployer (sync)", function() {
       network_id: networkId,
       provider: provider,
       logger: {
-        log:   (val) => { if (val) output += `${val}\n`},
-        error: (val) => { if (val) output += `${val}\n`}
+        log:   (val) => { if (val) output += `${val}\n`; },
+        error: (val) => { if (val) output += `${val}\n`; }
       }
-    }
+    };
     deployer = new Deployer(options);
     reporter = new Reporter();
     reporter.setDeployer(deployer);
@@ -65,7 +63,7 @@ describe("Deployer (sync)", function() {
   afterEach(() => {
     output = '';
     utils.cleanUp();
-    deployer.finish()
+    deployer.finish();
   });
 
   it("deploy()", async function() {
@@ -123,7 +121,7 @@ describe("Deployer (sync)", function() {
       deployer.then(async function(){
         const example = await deployer.deploy(Example);
         await deployer.deploy(UsesExample, example.address);
-      })
+      });
     };
 
     migrate();
@@ -140,7 +138,7 @@ describe("Deployer (sync)", function() {
     assert(usesExampleId === 'UsesExample' );
     assert(other === Example.address);
 
-    assert(output.includes('Replacing'))
+    assert(output.includes('Replacing'));
     assert(output.includes('Example'));
     assert(output.includes('UsesExample'));
   });
@@ -189,15 +187,15 @@ describe("Deployer (sync)", function() {
           })
           .then(function(usesExample) {
             return usesExample.id();
-          })
-      })
-    }
+          });
+      });
+    };
     migrate();
 
     await deployer.start();
     assert(output.includes('Example'));
     assert(output.includes('UsesExample'));
-  })
+  });
 
   it('waits for confirmations', async function(){
     this.timeout(15000);
@@ -226,7 +224,7 @@ describe("Deployer (sync)", function() {
     // The first confirmation is the block that accepts the tx. Then we wait two more.
     // Then Example is deployed in the consequent block.
     assert(libReceipt.blockNumber === startBlock + 1);
-    assert(exampleReceipt.blockNumber === (libReceipt.blockNumber + 3))
+    assert(exampleReceipt.blockNumber === (libReceipt.blockNumber + 3));
 
     deployer.confirmationsRequired = 0;
   });

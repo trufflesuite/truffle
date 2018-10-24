@@ -1,7 +1,6 @@
 var Mocha = require("mocha");
 var chai = require("chai");
 var path = require("path");
-var fs = require("fs");
 var Web3 = require("web3");
 var Config = require("truffle-config");
 var Contracts = require("truffle-workflow-compile");
@@ -13,7 +12,6 @@ var SolidityTest = require("./testing/soliditytest");
 var expect = require("truffle-expect");
 var Migrate = require("truffle-migrate");
 var Profiler = require("truffle-compile/profiler.js");
-var async = require("async");
 var originalrequire = require("original-require");
 
 chai.use(require("./assertions"));
@@ -220,19 +218,19 @@ var Test = {
         });
 
         tests(accounts);
-      }
+      };
 
       global.contract = function(name, tests) {
-        Mocha.describe("Contract: " + name, function() { template.bind(this, tests)() });
+        Mocha.describe("Contract: " + name, function() { template.bind(this, tests)(); });
       };
 
       global.contract.only = function(name, tests){
-        Mocha.describe.only("Contract: " + name, function() { template.bind(this, tests)() });
-      }
+        Mocha.describe.only("Contract: " + name, function() { template.bind(this, tests)(); });
+      };
 
       global.contract.skip = function(name, tests){
-        Mocha.describe.skip("Contract: " + name, function() { template.bind(this, tests)() });
-      }
+        Mocha.describe.skip("Contract: " + name, function() { template.bind(this, tests)(); });
+      };
 
       accept();
     });

@@ -1,11 +1,9 @@
-var fs = require("fs");
-
 var SolidityUtils = {
 
   getCharacterOffsetToLineAndColumnMapping: function(source) {
     var mapping = [];
 
-    source = source.split("")
+    source = source.split("");
 
     var line = 0;
     var column = 0;
@@ -48,16 +46,16 @@ var SolidityUtils = {
       current = current.split(':');
 
       if (current[0] && current[0] !== '-1' && current[0].length) {
-        ret.start = parseInt(current[0])
+        ret.start = parseInt(current[0]);
       }
       if (current[1] && current[1] !== '-1' && current[1].length) {
-        ret.length = parseInt(current[1])
+        ret.length = parseInt(current[1]);
       }
       if (current[2] /*&& current[2] !== '-1'*/ && current[2].length) {
-        ret.file = parseInt(current[2])
+        ret.file = parseInt(current[2]);
       }
       if (current[3] && current[3].length) {
-        ret.jump = current[3]
+        ret.jump = current[3];
       }
 
       last = ret;

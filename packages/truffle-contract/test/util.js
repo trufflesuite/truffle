@@ -8,7 +8,7 @@ var contract = require("../");
 
 var log = {
   log: debug
-}
+};
 
 var util = {
   // Persistent state
@@ -42,7 +42,7 @@ var util = {
   // binds web3 & a contract instance to it.
   setUpProvider: function(instance, options){
     options = options || {};
-    Object.assign(options, {logger: log, ws: true})
+    Object.assign(options, {logger: log, ws: true});
 
     return new Promise(function(accept, reject){
       var provider;
@@ -67,7 +67,7 @@ var util = {
           accounts: accs
         });
       });
-    })
+    });
   },
 
   // RPC Methods
@@ -86,16 +86,16 @@ var util = {
   // Mocks for delayed tx resolution to simulate real clients
   fakeSendTransaction: function(params){
     util.fakePromiEvent = new Web3PromiEvent();
-    var real = util.web3.eth.sendTransaction(params)
+    var real = util.web3.eth.sendTransaction(params);
 
     real.on('transactionHash', hash => {
       util.realHash = hash;
-      util.fakePromiEvent.eventEmitter.emit('transactionHash', hash)
+      util.fakePromiEvent.eventEmitter.emit('transactionHash', hash);
     });
 
     real.on('receipt', function(receipt) {
       util.realReceipt = receipt;
-      this.removeAllListeners()
+      this.removeAllListeners();
     });
 
     return util.fakePromiEvent.eventEmitter;
@@ -113,12 +113,12 @@ var util = {
   fakeGotReceipt: function(transactionHash){
     // Verify we are polling for the right hash
     if (transactionHash === util.realHash)
-      return Promise.resolve(util.realReceipt)
+      return Promise.resolve(util.realReceipt);
   },
 
   waitMS: async function(ms){
     return new Promise(resolve => setTimeout(resolve, ms));
   }
-}
+};
 
 module.exports = util;

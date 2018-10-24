@@ -152,7 +152,7 @@ function cleanupUnpack(boxConfig, destination) {
 }
 
 function installBoxDependencies(boxConfig, destination) {
-  var postUnpack = boxConfig.hooks['post-unpack']
+  var postUnpack = boxConfig.hooks['post-unpack'];
 
   return new Promise(function(accept, reject) {
     if (postUnpack.length === 0) {
@@ -174,4 +174,4 @@ module.exports = {
   readBoxConfig: readBoxConfig,
   cleanupUnpack: cleanupUnpack,
   installBoxDependencies: installBoxDependencies
-}
+};

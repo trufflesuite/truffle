@@ -59,6 +59,6 @@ var command = {
       });
     });
   }
-}
+};
 
 module.exports = command;
