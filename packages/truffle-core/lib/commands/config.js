@@ -21,7 +21,7 @@ const command = {
   * @param {Func} callback
   */
   run: function (options, done) {
-    const googleAnalytics = require("../services/google-analytics");
+    const googleAnalytics = require("../services/analytics/google.js");
     let setAnalytics;
     if(options.enableAnalytics) {
       setAnalytics = googleAnalytics.setAnalytics(true);
