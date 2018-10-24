@@ -6,7 +6,7 @@ const analytics = {
 		if (typeof BUNDLE_ANALYTICS_FILENAME != "undefined") {
 		  analyticsPath = path.join(__dirname, BUNDLE_ANALYTICS_FILENAME);
 		} else {
-		  analyticsPath = path.join(__dirname, "./lib/services/analytics/main.js");
+		  analyticsPath = path.join(__dirname, "main.js");
 		}
 
 		const cp = require("child_process");
