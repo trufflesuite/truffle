@@ -1,6 +1,6 @@
 const assert = require("chai").assert;
 const sinon = require("sinon");
-const googleAnalytics = require('../lib/services/google-analytics');
+const googleAnalytics = require('../lib/services/analytics/google');
 const configCommand = require('../lib/commands/config');
 const inquirer = require("inquirer");
 
