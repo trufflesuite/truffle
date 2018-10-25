@@ -141,6 +141,9 @@ var command = {
         const hasNetworkConfig = config.networks[config.network];
 
         if (hasNetworkConfig) {
+          if (config.networks[config.network].network_id === "*") {
+            config.networks[config.network].network_id = 4447;
+          }
           testrpcOptions = config.networks[config.network];
         } else {
           testrpcOptions = {
@@ -159,11 +162,7 @@ var command = {
           disconnect
         ) {
           ipcDisconnect = disconnect;
-          if (hasNetworkConfig) {
-            Environment.detect(config, environmentCallback);
-          } else {
-            Environment.develop(config, testrpcOptions, environmentCallback);
-          }
+          Environment.develop(config, testrpcOptions, environmentCallback);
         });
       });
     });
