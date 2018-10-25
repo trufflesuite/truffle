@@ -57,7 +57,7 @@
     "truffle-exec": "./exec.js"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha ./test/**"
   },
   "repository": {
     "type": "git",
