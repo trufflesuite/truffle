@@ -1,0 +1,42 @@
+{
+  "name": "truffle-hdwallet-provider",
+  "version": "1.0.0-web3one.1",
+  "description": "HD Wallet-enabled Web3 provider",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --timeout 5000",
+    "publish:web3-one": "npm publish --tag web3-one"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trufflesuite/truffle-hdwallet-provider.git"
+  },
+  "keywords": [
+    "etheruem",
+    "hd",
+    "wallet",
+    "mnemonic",
+    "provider"
+  ],
+  "author": "Tim Coulter <tim.coulter@consensys.net>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle-hdwallet-provider/issues"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle-hdwallet-provider#readme",
+  "dependencies": {
+    "bip39": "^2.2.0",
+    "ethereumjs-wallet": "0.6.0",
+    "ethereumjs-util": "^5.1.1",
+    "ethereumjs-tx": "^1.3.7",
+    "web3": "1.0.0-beta.33",
+    "web3-provider-engine": "git+https://github.com/cgewecke/provider-engine.git#web3-one"
+  },
+  "devDependencies": {
+    "ganache-core": "^2.1.0",
+    "mocha": "^5.1.1"
+  },
+  "peerDependencies": {
+    "truffle": "4.x"
+  }
+}
