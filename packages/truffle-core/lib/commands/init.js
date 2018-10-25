@@ -1,26 +1,26 @@
 var command = {
-  command: 'init',
-  description: 'Initialize new and empty Ethereum project',
+  command: "init",
+  description: "Initialize new and empty Ethereum project",
   builder: {},
   help: {
     usage: "truffle init [--force]",
     options: [
       {
         option: "--force",
-        description: "Initialize project in the current directory regardless of its " +
+        description:
+          "Initialize project in the current directory regardless of its " +
           "state. Be careful, this\n                    will potentially overwrite files " +
-          "that exist in the directory.",
+          "that exist in the directory."
       }
-    ],
+    ]
   },
-  run: function (options, done) {
+  run: function(options, done) {
     var Config = require("truffle-config");
     var OS = require("os");
     var UnboxCommand = require("./unbox");
-    const path = require('path');    
-    const googleAnalytics = require("../services/analytics");
+    const analytics = require("../services/analytics");
 
-    googleAnalytics.send({ec: "initialization", ea: "truffle init"});
+    analytics.send({ ec: "initialization", ea: "truffle init" });
 
     var config = Config.default().with({
       logger: console
@@ -33,8 +33,8 @@ var command = {
       config.logger.log();
       config.logger.log(
         " - For an empty project, use `truffle init` with no arguments" +
-        OS.EOL +
-        " - Or, browse the Truffle Boxes at <http://truffleframework.com/boxes>!"
+          OS.EOL +
+          " - Or, browse the Truffle Boxes at <http://truffleframework.com/boxes>!"
       );
       process.exit(1);
     }

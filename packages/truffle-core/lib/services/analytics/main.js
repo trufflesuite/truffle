@@ -1,4 +1,4 @@
-const googleAnalytics = require("./google.js");
+const analytics = require("./google.js");
 
 const PROCESS_TIMEOUT = 5000; // ms
 
@@ -11,7 +11,7 @@ const done = new Promise(accept => {
 
 process.on("message", async eventObject => {
   console.debug("sending event %o", eventObject);
-  googleAnalytics.sendAnalyticsEvent(eventObject);
+  analytics.sendAnalyticsEvent(eventObject);
   console.debug("(maybe) sent event %o", eventObject);
 });
 
