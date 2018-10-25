@@ -54,6 +54,7 @@ command.run(inputArguments, options, function(err) {
       });
       command.displayGeneralHelp();
     } else {
+      const version = require("./lib/version");
       if (err instanceof TruffleError) {
         analytics.send({
           ec: "error",
@@ -61,6 +62,7 @@ command.run(inputArguments, options, function(err) {
           el: "TruffleError - missing configuration file"
         });
         console.log(err.message);
+        version.log(options.logger);
       } else if (typeof err == "number") {
         analytics.send({
           ec: "error",
@@ -77,7 +79,8 @@ command.run(inputArguments, options, function(err) {
           el: "Other Error - " + error
         });
         // Bubble up all other unexpected errors.
-        console.log(error);
+        console.log(err.stack || err.message || err.toString());
+        version.log(options.logger);
       }
     }
     process.exit(1);
