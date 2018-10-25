@@ -18,6 +18,7 @@ function Command(commands) {
 }
 
 Command.prototype.getCommand = function(inputStrings, options) {
+  options = options || {};
   var argv = this.args.parse(inputStrings);
 
   if (argv._.length === 0) {
