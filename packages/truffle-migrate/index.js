@@ -23,6 +23,7 @@ const Migrate = {
   },
 
   assemble: function(options, callback) {
+    var config = Config.detect(options);
     dir.files(options.migrations_directory, function(err, files) {
       if (err) return callback(err);
 
