@@ -13,7 +13,7 @@ const ua = require("universal-analytics");
 const nanoid = require("nanoid");
 const inquirer = require("inquirer");
 
-const version = require("../../version");
+const version = require("../../version").info();
 
 //set truffleAnalyticsId depending on whether version is bundled
 let appVersion;
@@ -23,7 +23,7 @@ if (version.bundle) {
   appVersion = "v " + version.bundle;
   truffleAnalyticsId = "UA-83874933-6";
 } else {
-  appVersion = "(unbundled) " + "version " + version.core;
+  appVersion = "(unbundled) " + "v " + version.core;
   truffleAnalyticsId = "UA-83874933-7";
 }
 
