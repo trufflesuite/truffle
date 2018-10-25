@@ -10,7 +10,8 @@
 const Config = require("truffle-config");
 const userConfig = Config.getUserConfig();
 const ua = require("universal-analytics");
-const nanoid = require("nanoid");
+const uuid = require('uuid/v4');
+
 const inquirer = require("inquirer");
 
 const version = require("../../version").info();
@@ -59,7 +60,7 @@ const googleAnalytics = {
    */
   setUserId: function() {
     if (!userConfig.get("uniqueId")) {
-      let userId = nanoid();
+      let userId = uuid();
       userConfig.set({ uniqueId: userId });
     }
   },
@@ -141,7 +142,7 @@ const googleAnalytics = {
   setPersistentAnalyticsData: function() {
     if (this.checkIfAnalyticsEnabled() === true) {
       let userId = userConfig.get("uniqueId");
-      let visitor = ua(truffleAnalyticsId, { uid: userId });
+      let visitor = ua(truffleAnalyticsId, { cid: userId });
       return visitor;
     }
   },
