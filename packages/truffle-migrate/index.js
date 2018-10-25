@@ -26,7 +26,10 @@ const Migrate = {
     dir.files(options.migrations_directory, function(err, files) {
       if (err) return callback(err);
 
-      options.allowed_extensions = options.allowed_extensions || /^\.(js|es6?)$/;
+      options.allowed_extensions =
+        options.allowed_extensions ||
+        config.migrations_file_extension_regexp ||
+        /^\.(js|es6?)$/;
 
       let migrations = files
         .filter(file => isNaN(parseInt(path.basename(file))) == false)
