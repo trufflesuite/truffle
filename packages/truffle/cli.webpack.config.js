@@ -12,7 +12,7 @@ module.exports = {
   entry: {
     cli: path.join(__dirname, "../..", "node_modules", "truffle-core", "cli.js"),
     chain: path.join(__dirname, "../..", "node_modules", "truffle-core", "chain.js"),
-    analytics: path.join(__dirname, "../..", "node_modules", "truffle-core", "lib", "services", "analytics", "index.js")
+    analytics: path.join(__dirname, "../..", "node_modules", "truffle-core", "lib", "services", "analytics", "main.js")
   },
   target: 'node',
   node: {

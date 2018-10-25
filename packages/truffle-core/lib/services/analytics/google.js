@@ -139,12 +139,12 @@ const googleAnalytics = {
    * @returns {Object} visitor
    */
   setPersistentAnalyticsData: function() {
-    let visitor = false;
+    // let visitor = false;
     if (this.checkIfAnalyticsEnabled() === true) {
       let userId = userConfig.get("uniqueId");
       let visitor = ua(truffleAnalyticsId, { uid: userId });
+      return visitor;
     }
-    return visitor;
   },
 
   /**
