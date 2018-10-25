@@ -17,7 +17,14 @@ describe("truffle build", () => {
         config.logger = logger;
       });
     });
-    it("whines about having no build config", function(done) {
+
+    it("should not error", (done) => {
+      CommandRunner.run("build", config, (error) => {
+        assert(typeof error === "undefined");
+        done();
+      });
+    });
+    it("whines about having no build config", (done) => {
       CommandRunner.run("build", config, (error) => {
         const output = logger.contents();
         assert(output.includes("No build configuration found."));
