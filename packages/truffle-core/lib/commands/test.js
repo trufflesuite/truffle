@@ -51,13 +51,14 @@ var command = {
 
     var config = Config.detect(options);
 
-    // if "development" exists, default to using that for testing
-    if (!config.network && config.networks.development) {
-      config.network = "development";
-    }
-
+    // if "test" or "development" exists, default to use for testing
+    // otherwise run a default "test" network
     if (!config.network) {
-      config.network = "test";
+      config.networks.test
+        ? (config.network = "test")
+        : config.networks.development
+          ? (config.network = "development")
+          : (config.network = "test");
     }
 
     var ipcDisconnect;
