@@ -186,6 +186,10 @@ function *tickSaga() {
   }
 }
 
+export function* reset() {
+  yield put(actions.reset());
+}
+
 export function* saga () {
   yield takeEvery(TICK, function* () {
     try {

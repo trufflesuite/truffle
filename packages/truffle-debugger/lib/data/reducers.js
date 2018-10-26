@@ -86,6 +86,9 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
         }
       };
 
+    case actions.RESET:
+      return DEFAULT_ASSIGNMENTS;
+
     default:
       return state;
   }
@@ -110,6 +113,9 @@ function mappingKeys(state = DEFAULT_MAPPING_KEYS, action) {
           ])]
         }
       };
+
+    case actions.RESET:
+      return DEFAULT_MAPPING_KEYS;
 
     default:
       return state;
