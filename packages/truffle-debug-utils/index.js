@@ -125,7 +125,7 @@ var DebugUtils = {
       return shortcuts
         .map(DebugUtils.formatCommandDescription)
         .join(", ");
-    })
+    });
 
     var suffix = [
       ""
@@ -204,11 +204,11 @@ var DebugUtils = {
 
     var beforeLines = source
       .filter(function (line, index) {
-        return index >= startBeforeIndex && index < range.start.line
+        return index >= startBeforeIndex && index < range.start.line;
       })
       .map(function (line, index) {
         var number = startBeforeIndex + index + 1;  // 1 to account for 0-index
-        return DebugUtils.formatLineNumberPrefix(line, number, prefixLength)
+        return DebugUtils.formatLineNumberPrefix(line, number, prefixLength);
       });
 
     var line = source[range.start.line];

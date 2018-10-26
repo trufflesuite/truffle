@@ -1,5 +1,4 @@
 var exec = require('child_process').exec;
-var yargs = require("yargs/yargs");
 var path = require("path");
 
 module.exports = {

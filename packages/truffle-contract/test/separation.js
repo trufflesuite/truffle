@@ -6,7 +6,6 @@ describe("instance-instance / instance-constructor separation", function() {
   var exampleA;
   var exampleB;
   var accounts;
-  var network_id;
   var web3;
   var providerOptions = {vmErrorsOnRPCResponse: false};
 
@@ -26,7 +25,7 @@ describe("instance-instance / instance-constructor separation", function() {
   beforeEach(async () => {
     exampleA = await Example.new(1);
     exampleB = await Example.new(2);
-  })
+  });
 
   it('instances should not hear each others events', function(done){
     const events = [];
@@ -38,7 +37,7 @@ describe("instance-instance / instance-constructor separation", function() {
         assert(events.length === 1);
         done();
       }
-    })
+    });
 
     exampleB
       .triggerContractAddressEvent()

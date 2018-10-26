@@ -133,8 +133,8 @@ function *tickSaga() {
       let augmentedIndexId = utils.augmentWithDepth(indexId, currentDepth);
       debug("Index access case");
       debug("currentAssignments %O", currentAssignments);
-      debug("augmentedDeclarationId %s", augmentedDeclarationId)
-      debug("augmentedIndexId %s", augmentedIndexId)
+      debug("augmentedDeclarationId %s", augmentedDeclarationId);
+      debug("augmentedIndexId %s", augmentedIndexId);
 
       let baseAssignment = (currentAssignments[augmentedDeclarationId] || {
         //mappings are always global
@@ -151,11 +151,11 @@ function *tickSaga() {
       // [observed with solc v0.4.24]
       let indexValue;
       if (indexAssignment) {
-        indexValue = decode(node.indexExpression, indexAssignment)
+        indexValue = decode(node.indexExpression, indexAssignment);
       } else if (utils.typeClass(node.indexExpression) == "stringliteral") {
         indexValue = decode(node.indexExpression, {
           "literal": utils.toBytes(node.indexExpression.hexValue)
-        })
+        });
       }
 
       debug("index value %O", indexValue);

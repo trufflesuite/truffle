@@ -19,7 +19,11 @@ var command = {
     var Environment = require("../environment");
 
     var commands = require("./index");
-    var excluded = ["console", "init", "watch", "develop"];
+    var excluded = [
+      "console",
+      "init",
+      "develop"
+    ];
 
     var available_commands = Object.keys(commands).filter(function(name) {
       return excluded.indexOf(name) == -1;

@@ -34,7 +34,7 @@ describe("`truffle compile` as external", function() {
       config.logger = logger;
       config.mocha = {
         reporter: new Reporter(logger)
-      }
+      };
     });
   });
 
@@ -78,7 +78,7 @@ describe("`truffle compile` as external", function() {
         abstraction.setProvider(config.provider);
 
         promises.push(abstraction.deployed().then(function(instance) {
-          assert.notEqual(instance.address, null, instance.contract_name + " didn't have an address!")
+          assert.notEqual(instance.address, null, instance.contract_name + " didn't have an address!");
         }));
       });
 

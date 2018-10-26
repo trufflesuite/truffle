@@ -5,7 +5,6 @@ var path = require("path");
 var async = require("async");
 var fs = require("fs");
 var Parser = require("./parser");
-var CompileError = require("./compileerror");
 var CompilerSupplier = require("./compilerSupplier");
 var expect = require("truffle-expect");
 var find_contracts = require("truffle-contract-sources");
@@ -47,7 +46,7 @@ module.exports = {
           });
 
           c();
-        })
+        });
       },
       // Get all the artifact files, and read them, parsing them as JSON
       function(c) {
@@ -178,18 +177,18 @@ module.exports = {
       // Solidity test files might have been injected. Include them in the known set.
       options.paths.forEach(_path => {
         if (!allPaths.includes(_path)) {
-          allPaths.push(_path)
+          allPaths.push(_path);
         }
       });
 
       var updates = self.convert_to_absolute_paths(options.paths, options.base_path).sort();
-      var allPaths = self.convert_to_absolute_paths(allPaths, options.base_path).sort();
+      allPaths = self.convert_to_absolute_paths(allPaths, options.base_path).sort();
 
       var allSources = {};
       var compilationTargets = [];
 
       // Load compiler
-      var supplier = new CompilerSupplier(options.compilers.solc)
+      var supplier = new CompilerSupplier(options.compilers.solc);
       supplier.load().then(solc => {
 
         // Get all the source code
@@ -198,7 +197,7 @@ module.exports = {
 
           // Generate hash of all sources including external packages - passed to solc inputs.
           var resolvedPaths = Object.keys(resolved);
-          resolvedPaths.forEach(file => allSources[file] = resolved[file].body)
+          resolvedPaths.forEach(file => allSources[file] = resolved[file].body);
 
           // Exit w/out minimizing if we've been asked to compile everything, or nothing.
           if (self.listsEqual(options.paths, allPaths)){
@@ -246,10 +245,10 @@ module.exports = {
               fileFinished();
 
             }, err => updateFinished(err));
-          }, err => (err) ? callback(err) : callback(null, allSources, compilationTargets))
-        })
-      }).catch(callback)
-    })
+          }, err => (err) ? callback(err) : callback(null, allSources, compilationTargets));
+        });
+      }).catch(callback);
+    });
   },
 
   // Resolves sources in several async passes. For each resolved set it detects unknown
@@ -314,9 +313,9 @@ module.exports = {
             if (!mapping[item])
               allPaths.push({file: item, parent: result.file});
           });
-        };
-        finished()
-      }).catch(err => { finished(err) });
+        }
+        finished();
+      }).catch(err => { finished(err); });
     }
 
     async.whilst(

@@ -26,7 +26,8 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
           [context]: {
             ...(state.byContext[context] || {}),
 
-            contractName, context
+            contractName,
+context
           }
         },
       };
@@ -72,7 +73,7 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
 const DEFAULT_INSTANCES = {
   byAddress: {},
   byContext: {}
-}
+};
 
 function instances(state = DEFAULT_INSTANCES, action) {
   switch (action.type) {

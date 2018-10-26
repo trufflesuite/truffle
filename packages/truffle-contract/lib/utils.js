@@ -47,12 +47,12 @@ var Utils = {
     // object we find on the receipt
     if (isSingle && typeof isSingle === 'boolean'){
       var temp = [];
-      temp.push(events)
+      temp.push(events);
       return temp.map(function(log){
         log.data = log.raw.data;
         log.topics = log.raw.topics;
         return log;
-      })
+      });
     }
 
     // Or reformat items in the existing array
@@ -61,7 +61,7 @@ var Utils = {
         event.data = event.raw.data;
         event.topics = event.raw.topics;
       }
-    })
+    });
 
     return events;
   },

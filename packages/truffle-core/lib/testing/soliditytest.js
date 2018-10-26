@@ -3,8 +3,6 @@ var Suite = require("mocha/lib/suite.js");
 var Deployer = require("truffle-deployer");
 var find_contracts = require("truffle-contract-sources");
 var compile = require("truffle-compile");
-var artifactor = require("truffle-artifactor");
-var contract = require("truffle-contract");
 var abi = require("web3-eth-abi");
 var series = require("async").series;
 var path = require("path");
@@ -60,7 +58,7 @@ var SolidityTest = {
         if (log.event == "TestEvent" && !log.args.result) {
           throw new Error(log.args.message);
         }
-      })
+      });
     };
 
     // Add functions from test file.

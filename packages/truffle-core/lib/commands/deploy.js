@@ -9,6 +9,6 @@ var command = {
     options: migrate.help.options,
   },
   run: migrate.run
-}
+};
 
 module.exports = command;

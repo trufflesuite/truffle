@@ -9,8 +9,7 @@
 
 const Config = require('truffle-config');
 const defaultUserConfig = Config.getUserConfig();
-const seedrandom = require('seedrandom');
-const bip39 = require('bip39');
+const bip39 = require('bip39'); 
 const hdkey = require('ethereumjs-wallet/hdkey');
 const crypto = require('crypto');
 
@@ -62,6 +61,6 @@ const mnemonic = {
       privateKeys,
     };
   }
-}
+};
 
 module.exports = mnemonic;

@@ -2,7 +2,6 @@ const assert = require("assert");
 const CommandRunner = require("../commandrunner");
 const MemoryLogger = require("../memorylogger");
 const sandbox = require("../sandbox");
-const fs = require("fs");
 const path = require("path");
 
 describe("truffle build", () => {

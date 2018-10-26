@@ -101,7 +101,7 @@ const runCommand = promisify(function (command, options, callback) {
       for (let line of lines) {
         func(line);
       }
-    }
+    };
   };
 
   const log = buffer(logger.log);

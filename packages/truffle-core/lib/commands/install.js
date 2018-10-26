@@ -26,6 +26,6 @@ var command = {
     var config = Config.detect(options);
     Package.install(config, done);
   }
-}
+};
 
 module.exports = command;

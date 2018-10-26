@@ -11,12 +11,12 @@ var Box = {
 
     const downloadBoxOptions = {
       force: options.force,
-    }
+    };
 
     return Promise.resolve()
       .then(() => {
         options.logger.log("Downloading...");
-        return utils.downloadBox(url, destination, downloadBoxOptions)
+        return utils.downloadBox(url, destination, downloadBoxOptions);
       })
       .then(() => {
         options.logger.log("Unpacking...");
@@ -24,7 +24,7 @@ var Box = {
       })
       .then((boxConfig) => {
         options.logger.log("Setting up...");
-        return utils.setupBox(boxConfig, destination)
+        return utils.setupBox(boxConfig, destination);
       })
       .then((boxConfig) => boxConfig);
   },

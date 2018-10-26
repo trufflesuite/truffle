@@ -3,12 +3,9 @@ var Box = require("truffle-box");
 var fs = require("fs-extra");
 var glob = require("glob");
 var path = require('path');
-var mkdirp = require("mkdirp");
-var async = require("async");
 var Contracts = require("truffle-workflow-compile");
 var Package = require("../lib/package.js");
 var Blockchain = require("truffle-blockchain-utils");
-var EthPM = require("ethpm");
 var GithubExamples = require("ethpm/lib/indexes/github-examples");
 var TestRPC = require("ganache-cli");
 var Resolver = require("truffle-resolver");
@@ -83,8 +80,8 @@ describe.skip('EthPM integration', function() {
       if(err) done(err);
       files.forEach(file => fs.removeSync(file));
       done();
-    })
-  })
+    });
+  });
 
   // afterEach("stop ipfs server", function(done) {
   //   this.timeout(10000);
@@ -220,7 +217,7 @@ describe.skip('EthPM integration', function() {
         assert.fail("Expected SafeMathLib.json not to exist");
       }
 
-      var expected_lockfile_path = path.join(config.working_directory, "installed_contracts", "safe-math-lib", "lock.json")
+      var expected_lockfile_path = path.join(config.working_directory, "installed_contracts", "safe-math-lib", "lock.json");
 
       var lockfile = fs.readFileSync(expected_lockfile_path, "utf8");
       lockfile = JSON.parse(lockfile);

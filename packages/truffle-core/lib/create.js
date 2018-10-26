@@ -18,8 +18,6 @@ var templates = {
 };
 
 var processFile = function(file_path, processfn, callback) {
-  var stat = fs.statSync(file_path);
-
   fs.readFile(file_path, {encoding: "utf8"}, function(err, data) {
     if (err != null) {
       callback(err);
@@ -118,6 +116,6 @@ var Create = {
 
     copy.file(from, to, callback);
   }
-}
+};
 
-module.exports = Create
+module.exports = Create;

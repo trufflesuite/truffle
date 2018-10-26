@@ -1,4 +1,3 @@
-const util = require('util');
 const web3Utils = require('web3-utils');
 const readline = require('readline');
 const ora = require('ora');
@@ -54,7 +53,7 @@ class Reporter {
    * @param {Deployer} deployer
    */
   setDeployer(deployer){
-    this.deployer = deployer
+    this.deployer = deployer;
   }
 
   /**
@@ -99,7 +98,7 @@ class Reporter {
       cost: cost,
       finalCost: web3Utils.fromWei(this.finalCostTotal, "ether"),
       deployments: this.deployments.toString()
-    }
+    };
   }
 
   /**
@@ -132,7 +131,7 @@ class Reporter {
         input.close();
         self.deployer && self.deployer.logger.log(exitLine);
         resolve(false);
-      })
+      });
     });
   }
 
@@ -142,7 +141,6 @@ class Reporter {
    * @param  {Object} data info collected during deployment attempt
    */
   async processDeploymentError(data){
-    let message;
     const error = data.estimateError || data.error;
 
     data.reason = (data.error) ? data.error.reason : null;
@@ -156,7 +154,7 @@ class Reporter {
       NCE: error.message.includes('nonce'),
       INV: error.message.includes('invalid opcode'),
       GTH: error.message.includes('always failing transaction')
-    }
+    };
 
     let type = Object.keys(errors).find(key => errors[key]);
 
@@ -189,7 +187,7 @@ class Reporter {
       case 'BLK':
         return (data.gas)
           ? this.messages.errors('blockWithGas', data)
-          : this.messages.errors('blockNoGas', data)
+          : this.messages.errors('blockNoGas', data);
 
       // `Insufficient funds`
       case 'ETH':
@@ -318,7 +316,7 @@ class Reporter {
       data.balance = web3Utils.fromWei(balance, 'ether');
 
       this.currentGasTotal += data.gas;
-      this.currentCostTotal = this.currentCostTotal.add(cost)
+      this.currentCostTotal = this.currentCostTotal.add(cost);
       this.currentAddress = this.from;
       this.deployments++;
 
@@ -438,4 +436,3 @@ class Reporter {
 }
 
 module.exports = Reporter;
-

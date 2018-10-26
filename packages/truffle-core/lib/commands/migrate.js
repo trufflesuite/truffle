@@ -55,7 +55,6 @@ var command = {
     ]
   },
   run: function (options, done) {
-    var OS = require("os");
     var Config = require("truffle-config");
     var Contracts = require("truffle-workflow-compile");
     var Resolver = require("truffle-resolver");
@@ -78,7 +77,7 @@ var command = {
 
      7762959, // Musiccoin
      61717561 // Aquachain
-    ]
+    ];
 
 
     function setupDryRunEnvironmentThenRunMigrations(config) {
@@ -131,7 +130,7 @@ var command = {
           if (needsMigrating) {
             Migrate.run(config, callback);
           } else {
-            config.logger.log("Network up to date.")
+            config.logger.log("Network up to date.");
             callback();
           }
         });
@@ -157,7 +156,7 @@ var command = {
         environment.detect(config, function(err) {
           config.dryRun = false;
           runMigrations(config, done);
-        })
+        });
       } else {
         done();
       }
@@ -181,7 +180,7 @@ var command = {
             await setupDryRunEnvironmentThenRunMigrations(conf);
             done();
           } catch(err){
-            done(err)
+            done(err);
           };
 
         // Production: dry-run then real run
@@ -191,9 +190,9 @@ var command = {
           conf.dryRun = true;
 
           try {
-            await setupDryRunEnvironmentThenRunMigrations(conf)
+            await setupDryRunEnvironmentThenRunMigrations(conf);
           } catch(err){
-            return done(err)
+            return done(err);
           };
 
           executePostDryRunMigration(currentBuild);
@@ -205,6 +204,6 @@ var command = {
       });
     });
   }
-}
+};
 
 module.exports = command;

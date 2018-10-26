@@ -1,7 +1,7 @@
 const Example = artifacts.require("Example");
 
 module.exports = async function(deployer, network, accounts) {
-  const emptyAccount = accounts[7]
+  const emptyAccount = accounts[7];
   let balance = await web3.eth.getBalance(emptyAccount);
 
   await web3.eth.sendTransaction({

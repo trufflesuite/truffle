@@ -1,21 +1,18 @@
-const async = require("async");
 const mkdirp = require("mkdirp");
 const del = require("del");
-const fs = require("fs");
 const Contracts = require("truffle-workflow-compile");
 const BuildError = require("./errors/builderror");
 const { spawn } = require("child_process");
 const spawnargs = require("spawn-args");
 const _ = require("lodash");
 const expect = require("truffle-expect");
-const contract = require("truffle-contract");
 
 function CommandBuilder(command) {
   this.command = command;
 };
 
 CommandBuilder.prototype.build = function(options, callback) {
-  console.log("Running `" + this.command + "`...")
+  console.log("Running `" + this.command + "`...");
 
   const args = spawnargs(this.command);
   const ps = args.shift();
@@ -113,6 +110,6 @@ const Build = {
       });
     });
   },
-}
+};
 
 module.exports = Build;
