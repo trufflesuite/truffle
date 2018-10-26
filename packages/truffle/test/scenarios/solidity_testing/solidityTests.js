@@ -1,15 +1,14 @@
-var Box = require("truffle-box");
-var MemoryLogger = require("../memorylogger");
-var CommandRunner = require("../commandrunner");
-var fs = require("fs-extra");
-var path = require("path");
-var assert = require("assert");
-var Server = require("../server");
-var Reporter = require("../reporter");
+const Box = require("truffle-box");
+const MemoryLogger = require("../memorylogger");
+const CommandRunner = require("../commandrunner");
+const fs = require("fs-extra");
+const path = require("path");
+const assert = require("assert");
+const Reporter = require("../reporter");
 
 describe("Solidity Tests", function() {
-  var logger = new MemoryLogger();
-  var config;
+  const logger = new MemoryLogger();
+  let config;
 
   /**
    * Installs a bare truffle project and deposits a solidity test target
@@ -28,28 +27,24 @@ describe("Solidity Tests", function() {
       };
       const from = path.join(__dirname, file);
 
-      fs.ensureDir(config.test_directory)
-        .then(() => {
-          fs.copy(from, config.test_directory + `/${file}`);
-          done();
-        });
+      fs.ensureDir(config.test_directory).then(() => {
+        fs.copy(from, config.test_directory + `/${file}`);
+        done();
+      });
     });
-  };
+  }
 
-  function processErr(err, output){
-    if (err){
+  function processErr(err, output) {
+    if (err) {
       console.log(output);
       throw new Error(err);
     }
   }
 
-  before(done => Server.start(done));
-  after(done => Server.stop(done));
-
-  describe('test with balance', function(){
-    before(function(done){
+  describe("test with balance", function() {
+    before(function(done) {
       this.timeout(5000);
-      initSandbox(done, 'TestWithBalance.sol');
+      initSandbox(done, "TestWithBalance.sol");
     });
 
     it("will run the test and have the correct balance", function(done) {
@@ -64,10 +59,10 @@ describe("Solidity Tests", function() {
     });
   });
 
-  describe('tests failing', function(){
+  describe("tests failing", function() {
     before(function(done) {
       this.timeout(5000);
-      initSandbox(done, 'TestFailures.sol');
+      initSandbox(done, "TestFailures.sol");
     });
 
     it("will throw errors correctly", function(done) {
