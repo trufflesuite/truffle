@@ -151,7 +151,7 @@ const googleAnalytics = {
    * send event to Google Analytics
    * @param {Object}
    */
-  sendAnalyticsEvent: function(eventObject) {
+  sendAnalyticsAsync: async function(eventObject, callback) {
     let visitor = this.setPersistentAnalyticsData();
     if (eventObject["el"]) {
       eventObject["el"] = eventObject["el"] + " (" + appVersion + ")";
@@ -159,9 +159,19 @@ const googleAnalytics = {
       eventObject["el"] = appVersion;
     }
     if (visitor) {
-      visitor.event(eventObject, function(err) {});
+      await visitor.event(eventObject, function(err) {
+        if(err === null) {
+          callback(true);
+        } else {
+          callback(false);
+        }
+      });
     }
-    return true;
+  }, 
+  sendAnalyticsEvent: async function(eventObject) {
+    this.sendAnalyticsAsync(eventObject, function(response) {
+      return response;
+    });
   }
 };
 

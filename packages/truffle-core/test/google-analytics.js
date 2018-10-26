@@ -103,7 +103,6 @@ describe("analytics", function() {
         ea: "truffle unbox"
       });
       sinon.assert.calledOnce(ua.Visitor.prototype._enqueue);
-      assert.equal(sendingAnalyticsEvent, true);
     });
   });
 });
