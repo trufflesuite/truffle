@@ -10,7 +10,6 @@ var debug = require("debug");
  */
 var ipcDebug = debug("chain:ipc");
 
-
 /*
  * Options
  */
@@ -35,7 +34,9 @@ if (args.length == 2) {
 try {
   options = JSON.parse(options);
 } catch (e) {
-  throw new Error("Fatal: Error parsing arguments; please contact the Truffle developers for help.");
+  throw new Error(
+    "Fatal: Error parsing arguments; please contact the Truffle developers for help."
+  );
 }
 
 options.host = options.host || "127.0.0.1";
@@ -44,9 +45,10 @@ options.network_id = options.network_id || 4447;
 options.total_accounts = options.total_accounts || 10;
 options.default_ether_balance = options.default_ether_balance || 100;
 options.blockTime = options.blockTime || 0;
-options.mnemonic = options.mnemonic || "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
-options.gasLimit = options.gasLimit || 0x47e7c4;
-
+options.mnemonic =
+  options.mnemonic ||
+  "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
+options.gasLimit = options.gasLimit || 0x6691b7;
 
 /*
  * Logging
@@ -104,7 +106,6 @@ Logger.prototype.log = function(message) {
   });
 };
 
-
 /*
  * Supervisor
  */
@@ -153,14 +154,14 @@ Supervisor.prototype.start = function() {
   var servePath = path.join(dirname, basename);
 
   ipc.serve(servePath, function() {
-    self.handle('start', arguments);
+    self.handle("start", arguments);
 
-    ipc.server.on('connect', function() {
-      self.handle('connect', arguments);
+    ipc.server.on("connect", function() {
+      self.handle("connect", arguments);
     });
 
-    ipc.server.on('socket.disconnected', function() {
-      self.handle('disconnect', arguments);
+    ipc.server.on("socket.disconnected", function() {
+      self.handle("disconnect", arguments);
     });
   });
 
@@ -187,82 +188,80 @@ Supervisor.prototype.emit = function(socket, message, data, options) {
 // external interface for mixin to exit
 Supervisor.prototype.exit = function() {
   this.ipc.server.stop();
-  this.handle('exit', arguments);
+  this.handle("exit", arguments);
 };
-
 
 /*
  * Lifecycle
  * (quit on last connection)
  */
-function LifecycleMixin() {
-  var self = this;
-}
+class LifecycleMixin {
+  constructor() {}
 
-// start counting active connections
-LifecycleMixin.prototype.start = function(supervisor) {
-  this.connections = 0;
-};
-
-// increment
-LifecycleMixin.prototype.connect = function(supervisor) {
-  this.connections++;
-};
-
-// decrement - invoke supervisor exit if no connections remain
-LifecycleMixin.prototype.disconnect = function(supervisor) {
-  this.connections--;
-
-  if (this.connections <= 0) {
-    supervisor.exit();
+  // start counting active connections
+  start() {
+    this.connections = 0;
   }
-};
 
+  // increment
+  connect() {
+    this.connections++;
+  }
+
+  // decrement - invoke supervisor exit if no connections remain
+  disconnect(supervisor) {
+    this.connections--;
+
+    if (this.connections <= 0) {
+      supervisor.exit();
+    }
+  }
+}
 
 /*
  * TestRPC Server
  */
 
 // constructor - accepts options for TestRPC
-function TestRPCMixin(options) {
-  this.testrpc = TestRPC.server(options);
-}
+class TestRPCMixin {
+  constructor(options) {
+    this.testrpc = TestRPC.server(options);
+  }
 
-// start TestRPC and capture promise that resolves when ready
-TestRPCMixin.prototype.start = function(supervisor) {
-  var self = this;
+  // start TestRPC and capture promise that resolves when ready
+  start() {
+    const self = this;
 
-  this.ready = new Promise(function(accept, reject) {
-    self.testrpc.listen(options.port, options.hostname, function(err, state) {
-      if (err) {
-        reject(err);
-      }
+    this.ready = new Promise((accept, reject) => {
+      self.testrpc.listen(options.port, options.hostname, (err, state) => {
+        if (err) {
+          reject(err);
+        }
 
-      accept(state);
+        accept(state);
+      });
     });
-  });
-};
+  }
 
-// wait for TestRPC to be ready then emit signal to client socket
-TestRPCMixin.prototype.connect = function(supervisor, socket) {
-  var self = this;
-  this.ready.then(function() {
-    supervisor.emit(socket, 'truffle.ready');
-  });
-};
+  // wait for TestRPC to be ready then emit signal to client socket
+  connect(supervisor, socket) {
+    this.ready.then(() => {
+      supervisor.emit(socket, "truffle.ready");
+    });
+  }
 
-// cleanup TestRPC process on exit
-TestRPCMixin.prototype.exit = function(supervisor) {
-  this.testrpc.close(function(err) {
-    if (err) {
-      console.error(err.stack || err);
-      process.exit(1);
-    } else {
-      process.exit();
-    }
-  });
-};
-
+  // cleanup TestRPC process on exit
+  exit() {
+    this.testrpc.close(err => {
+      if (err) {
+        console.error(err.stack || err);
+        process.exit(1);
+      } else {
+        process.exit();
+      }
+    });
+  }
+}
 
 /*
  * Logging over IPC
@@ -279,21 +278,19 @@ LoggerMixin.prototype.connect = function(supervisor, socket) {
   var self = this;
 
   var unsubscribe = this.logger.subscribe(function(data) {
-    supervisor.emit(socket, self.message, data, {silent: true});
+    supervisor.emit(socket, self.message, data, { silent: true });
   });
 
-  socket.on('close', unsubscribe);
+  socket.on("close", unsubscribe);
 };
-
 
 /*
  * Process event handling
  */
-process.on('uncaughtException', function(e) {
+process.on("uncaughtException", function(e) {
   console.error(e.stack);
   process.exit(1);
 });
-
 
 /*
  * Main
@@ -310,10 +307,10 @@ var supervisor = new Supervisor({
 
 ipcLogger.subscribe(ipcDebug);
 
-options.logger = {log: testrpcLogger.log.bind(testrpcLogger)};
+options.logger = { log: testrpcLogger.log.bind(testrpcLogger) };
 
 supervisor.use(new LifecycleMixin());
 supervisor.use(new TestRPCMixin(options));
-supervisor.use(new LoggerMixin(ipcLogger, 'truffle.ipc.log'));
-supervisor.use(new LoggerMixin(testrpcLogger, 'truffle.testrpc.log'));
+supervisor.use(new LoggerMixin(ipcLogger, "truffle.ipc.log"));
+supervisor.use(new LoggerMixin(testrpcLogger, "truffle.testrpc.log"));
 supervisor.start();
