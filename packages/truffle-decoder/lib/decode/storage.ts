@@ -8,6 +8,27 @@ import { Allocation } from "truffle-decode-utils";
 import BN from "bn.js";
 import Web3 from "web3";
 import { EvmStruct, EvmMapping, EvmEnum } from "../interface/contract-decoder";
+import clonedeep from "lodash.clonedeep";
+
+function prefixPointer(child: StoragePointer, parentSlot: Allocation.Slot): StoragePointer {
+  let result: StoragePointer = clonedeep(child);
+
+  let obj = result.storage.from.slot;
+  while (obj.path && typeof obj.path.path !== "undefined") {
+    obj = obj.path;
+  }
+
+  obj.path = clonedeep(parentSlot);
+
+  /*let obj2 = result.storage.to.slot;
+  while (typeof obj2.path !== "undefined") {
+    obj2 = obj2.path;
+  }
+
+  obj2.path = clonedeep(parentSlot);*/
+
+  return result;
+}
 
 export default async function decodeStorageReference(definition: DecodeUtils.AstDefinition, pointer: StoragePointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<any> {
   var data;
@@ -196,16 +217,18 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
         };
 
         const members: DecodeUtils.AstDefinition[] = info.referenceDeclarations[referencedDeclaration].members;
+        const referenceVariable = info.referenceVariables[referencedDeclaration];
         for (let i = 0; i < members.length; i++) {
-          const variableRef = info.variables[members[i].id];
+          const variableRef = referenceVariable.members[members[i].id];
+          const pointer = prefixPointer(variableRef.pointer, info.variables[definition.id].pointer.storage.from.slot);
           const val = await decode(
-            variableRef.definition,
-            variableRef.pointer, info, web3, contractAddress
+            members[i],
+            pointer, info, web3, contractAddress
           );
 
-          result.members[variableRef.definition.name] = {
-            name: variableRef.definition.name,
-            type: DecodeUtils.Definition.typeClass(variableRef.definition),
+          result.members[members[i].name] = {
+            name: members[i].name,
+            type: DecodeUtils.Definition.typeClass(members[i]),
             value: val
           };
         }

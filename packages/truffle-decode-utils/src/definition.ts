@@ -79,6 +79,9 @@ export namespace Definition {
       case "array":
         return EVMUtils.WORD_SIZE;
 
+      case "struct":
+        //
+
       case "mapping":
         // HACK just to reserve slot. mappings have no size as such
         return EVMUtils.WORD_SIZE;

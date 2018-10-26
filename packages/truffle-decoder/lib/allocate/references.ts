@@ -35,13 +35,39 @@ function getDeclarationsForTypes(contracts: ContractObject[], types: string[]): 
   return result;
 }
 
-export function getReferenceDeclarations(contracts: ContractObject[]): AstReferences {
+export function getReferenceDeclarations(contracts: ContractObject[]): [AstReferences, EvmVariableReferenceMapping] {
+  let result: EvmVariableReferenceMapping = {};
   const types = [
     "EnumDefinition",
     "StructDefinition"
   ];
 
-  return getDeclarationsForTypes(contracts, types);
+  const referenceDeclarations = getDeclarationsForTypes(contracts, types);
+
+  Object.entries(referenceDeclarations).forEach((entry) => {
+    const id = parseInt(entry[0]);
+    const definition: DecodeUtils.AstDefinition = entry[1];
+
+    result[id] = <ContractStateVariable>{
+      definition: definition,
+      isChildVariable: false
+    };
+
+    switch (definition.nodeType) {
+      case "EnumDefinition": {
+        // do nothing, doesn't need a pointer
+        break;
+      }
+      case "StructDefinition": {
+        const stateInfo = allocateStruct(definition, referenceDeclarations, <DecodeUtils.Allocation.Slot>{
+          offset: new BN(0)
+        });
+        result[id].members = stateInfo.variables;
+      }
+    }
+  });
+
+  return [referenceDeclarations, result];
 }
 
 export function getEventDefinitions(contracts: ContractObject[]): AstReferences {
@@ -50,6 +76,26 @@ export function getEventDefinitions(contracts: ContractObject[]): AstReferences 
   ];
 
   return getDeclarationsForTypes(contracts, types);
+}
+
+function allocateStruct(structDefinition: any, referenceDeclarations: AstReferences, slot: DecodeUtils.Allocation.Slot, isChildVariable: boolean = false): ContractStateInfo {
+  let structSlotAllocation: SlotAllocation = {
+    offset: new BN(0),
+    index: DecodeUtils.EVM.WORD_SIZE - 1
+  };
+  let structContractState: ContractStateInfo = {
+    variables: {},
+    slot: structSlotAllocation
+  };
+
+  if (structDefinition) {
+    for (let l = 0; l < structDefinition.members.length; l++) {
+      const memberNode = structDefinition.members[l];
+      allocateDefinition(memberNode, structContractState, referenceDeclarations, slot, true);
+    }
+  }
+
+  return structContractState;
 }
 
 export function allocateDefinition(node: any, state: ContractStateInfo, referenceDeclarations: AstReferences, path?: DecodeUtils.Allocation.Slot, isChildVariable: boolean = false): void {
@@ -82,9 +128,27 @@ export function allocateDefinition(node: any, state: ContractStateInfo, referenc
     let range = DecodeUtils.Allocation.allocateValue(slot, state.slot.index, storageSize);
     if (nodeTypeClass === "array" && !DecodeUtils.Definition.isDynamicArray(node)) {
       const length = parseInt(node.typeName.length.value);
-      const baseDefinitionStorageSize = DecodeUtils.Definition.storageSize(DecodeUtils.Definition.baseDefinition(node));
-      const totalAdditionalSlotsUsed = Math.ceil(length * baseDefinitionStorageSize / DecodeUtils.EVM.WORD_SIZE) - 1;
-      range.next.slot.offset = range.next.slot.offset.addn(totalAdditionalSlotsUsed);
+      const baseDefinition = DecodeUtils.Definition.baseDefinition(node);
+
+      if (DecodeUtils.Definition.typeClass(baseDefinition) === "struct") {
+        const referenceId = baseDefinition.referencedDeclaration ||
+          (baseDefinition.typeName ? baseDefinition.typeName.referencedDeclaration : undefined);
+        const structDefinition = referenceDeclarations[referenceId];
+        const structContractState = allocateStruct(structDefinition, referenceDeclarations, <DecodeUtils.Allocation.Slot>{
+          path: slot,
+          offset: new BN(0)
+        }, true);
+
+        range.next.slot.offset = range.next.slot.offset.add(structContractState.slot.offset);
+        if (structContractState.slot.index === DecodeUtils.EVM.WORD_SIZE - 1) {
+          range.next.slot.offset = range.next.slot.offset.subn(1);
+        }
+      }
+      else {
+        const baseDefinitionStorageSize = DecodeUtils.Definition.storageSize(baseDefinition);
+        const totalAdditionalSlotsUsed = Math.ceil(length * baseDefinitionStorageSize / DecodeUtils.EVM.WORD_SIZE) - 1;
+        range.next.slot.offset = range.next.slot.offset.addn(totalAdditionalSlotsUsed);
+      }
     }
 
     state.variables[node.id] = <ContractStateVariable>{
@@ -101,43 +165,29 @@ export function allocateDefinition(node: any, state: ContractStateInfo, referenc
   else {
     const referenceId = node.referencedDeclaration || (node.typeName && node.typeName.referencedDeclaration);
     const structDefinition = referenceDeclarations[referenceId]; // ast node of StructDefinition
-    if (structDefinition) {
-      let structSlotAllocation: SlotAllocation = {
-        offset: new BN(0),
-        index: DecodeUtils.EVM.WORD_SIZE - 1
-      };
-      let structContractState: ContractStateInfo = {
-        variables: state.variables,
-        slot: structSlotAllocation
-      };
+    const structContractState = allocateStruct(structDefinition, referenceDeclarations, slot);
 
-      state.variables[node.id] = <ContractStateVariable>{
-        isChildVariable,
-        definition: node,
-        pointer: <StoragePointer>{
-          storage: {
-            from: {
-              slot: slot,
-              index: 0
-            },
-            to: {
-              slot: slot,
-              index: 0
-            }
+    state.variables[node.id] = <ContractStateVariable>{
+      isChildVariable,
+      definition: node,
+      pointer: <StoragePointer>{
+        storage: {
+          from: {
+            slot: slot,
+            index: 0
+          },
+          to: {
+            slot: slot,
+            index: DecodeUtils.EVM.WORD_SIZE - 1
           }
         }
-      };
-
-      for (let l = 0; l < structDefinition.members.length; l++) {
-        const memberNode = structDefinition.members[l];
-        allocateDefinition(memberNode, structContractState, referenceDeclarations, slot, true);
       }
+    };
 
-      state.slot.offset = state.slot.offset.add(structContractState.slot.offset);
-      state.slot.index = DecodeUtils.EVM.WORD_SIZE - 1;
-      if (structContractState.slot.index < DecodeUtils.EVM.WORD_SIZE - 1) {
-        state.slot.offset = state.slot.offset.addn(1);
-      }
+    state.slot.offset = state.slot.offset.add(structContractState.slot.offset);
+    state.slot.index = DecodeUtils.EVM.WORD_SIZE - 1;
+    if (structContractState.slot.index < DecodeUtils.EVM.WORD_SIZE - 1) {
+      state.slot.offset = state.slot.offset.addn(1);
     }
   }
 }

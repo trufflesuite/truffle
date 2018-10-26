@@ -15,6 +15,7 @@ export interface ContractStateVariable {
   isChildVariable: boolean;
   definition: AstDefinition;
   pointer?: StoragePointer;
+  members?: EvmVariableReferenceMapping;
 }
 
 export interface EvmVariableReferenceMapping {
@@ -108,6 +109,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   private contracts: ContractMapping = {};
 
   private referenceDeclarations: AstReferences;
+  private referenceVariables: EvmVariableReferenceMapping;
 
   private eventDefinitions: AstReferences;
   private eventDefinitionIdsByName: {
@@ -141,7 +143,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   public async init(): Promise<void> {
-    this.referenceDeclarations = references.getReferenceDeclarations([this.contract, ...this.inheritedContracts]);
+    [this.referenceDeclarations, this.referenceVariables] = references.getReferenceDeclarations([this.contract, ...this.inheritedContracts]);
 
     this.eventDefinitions = references.getEventDefinitions([this.contract, ...this.inheritedContracts]);
     const ids = Object.keys(this.eventDefinitions);
@@ -176,6 +178,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
           },
           mappingKeys: {},
           referenceDeclarations: this.referenceDeclarations,
+          referenceVariables: this.referenceVariables,
           variables: this.stateVariableReferences
         };
 
