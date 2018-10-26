@@ -12,14 +12,6 @@ describe("Happy path (truffle unbox)", function() {
   var config;
   var logger = new MemoryLogger();
 
-  before("set up the server", function(done) {
-    Server.start(done);
-  });
-
-  after("stop server", function(done) {
-    Server.stop(done);
-  });
-
   before("set up sandbox", function(done) {
     this.timeout(10000);
     Box.sandbox("default#web3-one", function(err, conf) {
@@ -44,9 +36,21 @@ describe("Happy path (truffle unbox)", function() {
         return done(err);
       }
 
-      assert(fs.existsSync(path.join(config.contracts_build_directory, "MetaCoin.json")));
-      assert(fs.existsSync(path.join(config.contracts_build_directory, "ConvertLib.json")));
-      assert(fs.existsSync(path.join(config.contracts_build_directory, "Migrations.json")));
+      assert(
+        fs.existsSync(
+          path.join(config.contracts_build_directory, "MetaCoin.json")
+        )
+      );
+      assert(
+        fs.existsSync(
+          path.join(config.contracts_build_directory, "ConvertLib.json")
+        )
+      );
+      assert(
+        fs.existsSync(
+          path.join(config.contracts_build_directory, "Migrations.json")
+        )
+      );
 
       done();
     });
@@ -54,6 +58,7 @@ describe("Happy path (truffle unbox)", function() {
 
   it("will migrate", function(done) {
     this.timeout(50000);
+    Server.start();
 
     CommandRunner.run("migrate", config, function(err) {
       var output = logger.contents();
@@ -62,23 +67,37 @@ describe("Happy path (truffle unbox)", function() {
         return done(err);
       }
 
-      var MetaCoin = contract(require(path.join(config.contracts_build_directory, "MetaCoin.json")));
-      var ConvertLib = contract(require(path.join(config.contracts_build_directory, "ConvertLib.json")));
-      var Migrations = contract(require(path.join(config.contracts_build_directory, "Migrations.json")));
+      var MetaCoin = contract(
+        require(path.join(config.contracts_build_directory, "MetaCoin.json"))
+      );
+      var ConvertLib = contract(
+        require(path.join(config.contracts_build_directory, "ConvertLib.json"))
+      );
+      var Migrations = contract(
+        require(path.join(config.contracts_build_directory, "Migrations.json"))
+      );
 
       var promises = [];
 
       [MetaCoin, ConvertLib, Migrations].forEach(function(abstraction) {
         abstraction.setProvider(config.provider);
 
-        promises.push(abstraction.deployed().then(function(instance) {
-          assert.notEqual(instance.address, null, instance.contract_name + " didn't have an address!");
-        }));
+        promises.push(
+          abstraction.deployed().then(function(instance) {
+            assert.notEqual(
+              instance.address,
+              null,
+              instance.contract_name + " didn't have an address!"
+            );
+          })
+        );
       });
 
-      Promise.all(promises).then(function() {
-        done();
-      }).catch(done);
+      Promise.all(promises)
+        .then(function() {
+          Server.stop(done);
+        })
+        .catch(done);
     });
   });
 
@@ -95,5 +114,4 @@ describe("Happy path (truffle unbox)", function() {
       done();
     });
   });
-
 });
