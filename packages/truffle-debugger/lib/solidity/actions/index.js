@@ -23,7 +23,7 @@ export function jump(jumpDirection) {
   };
 }
 
-export const RESET_SOLIDITY = "RESET_SOLIDITY";
-export function resetSolidity() {
-  return {type: RESET_SOLIDITY};
+export const RESET = "SOLIDITY_RESET";
+export function reset() {
+  return {type: RESET};
 }

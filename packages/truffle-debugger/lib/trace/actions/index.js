@@ -35,7 +35,7 @@ export function endTrace() {
 }
 
 
-export const RESET_TRACE = "RESET_TRACE";
-export function resetTrace() {
-  return {type: RESET_TRACE};
+export const RESET = "TRACE_RESET";
+export function reset() {
+  return {type: RESET};
 }

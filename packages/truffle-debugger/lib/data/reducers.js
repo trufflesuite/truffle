@@ -86,7 +86,7 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
         }
       };
 
-    case actions.RESET_DATA:
+    case actions.RESET:
       return DEFAULT_ASSIGNMENTS;
 
     default:
@@ -114,7 +114,7 @@ function mappingKeys(state = DEFAULT_MAPPING_KEYS, action) {
         }
       };
 
-    case actions.RESET_DATA:
+    case actions.RESET:
       return DEFAULT_MAPPING_KEYS;
 
     default:

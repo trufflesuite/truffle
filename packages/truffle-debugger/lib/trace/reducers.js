@@ -7,7 +7,7 @@ export function index(state = 0, action) {
   case actions.TOCK:
     return state + 1;
 
-  case actions.RESET_TRACE:
+  case actions.RESET:
     return 0;
 
   default:
@@ -21,7 +21,7 @@ export function finished(state = false, action)
   case actions.END_OF_TRACE:
     return true;
 
-  case actions.RESET_TRACE:
+  case actions.RESET:
     return false;
 
   default:

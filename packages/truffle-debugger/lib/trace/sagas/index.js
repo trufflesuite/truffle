@@ -68,6 +68,10 @@ export function *processTrace(trace) {
   return addresses;
 }
 
+export function* reset() {
+  yield put(actions.reset());
+}
+
 export function* saga() {
   // wait for trace to be defined
   yield *waitForTrace();

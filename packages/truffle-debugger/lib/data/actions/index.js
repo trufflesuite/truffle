@@ -30,7 +30,7 @@ export function mapKey(id, key) {
   };
 }
 
-export const RESET_DATA = "RESET_DATA";
-export function resetData() {
-  return {type: RESET_DATA};
+export const RESET = "DATA_RESET";
+export function reset() {
+  return {type: RESET};
 }

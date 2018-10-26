@@ -6,15 +6,13 @@ import { put, call, race, take, select } from 'redux-saga/effects';
 import { prefixName } from "lib/helpers";
 
 import * as trace from "lib/trace/sagas";
+import * as data from "lib/data/sagas";
+import * as evm from "lib/evm/sagas";
+import * as solidity from "lib/solidity/sagas";
 
 import * as actions from "../actions";
 
 import controller from "../selectors";
-
-import * as data from "lib/data/actions";
-import * as evm from "lib/evm/actions";
-import * as solidity from "lib/solidity/actions";
-import * as traceActions from "lib/trace/actions";
 
 const CONTROL_SAGAS = {
   [actions.ADVANCE]: advance,
@@ -254,8 +252,8 @@ function *continueUntilBreakpoint () {
  * reset -- reset the state of the debugger
  */
 function *reset() {
-  yield put(data.resetData());
-  yield put(evm.resetEvm());
-  yield put(solidity.resetSolidity());
-  yield put(traceActions.resetTrace());
+  yield *data.reset();
+  yield *evm.reset();
+  yield *solidity.reset();
+  yield *trace.reset();
 }
