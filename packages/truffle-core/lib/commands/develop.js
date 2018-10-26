@@ -19,11 +19,7 @@ var command = {
     var Environment = require("../environment");
 
     var commands = require("./index");
-    var excluded = [
-      "console",
-      "init",
-      "develop"
-    ];
+    var excluded = ["console", "init", "develop"];
 
     var available_commands = Object.keys(commands).filter(function(name) {
       return excluded.indexOf(name) == -1;
@@ -56,16 +52,17 @@ var command = {
 
     var config = Config.detect(options);
     var customConfig = config.networks.develop;
+    let numAddresses = 10;
+    let defaultEtherBalance = 100;
+    let bTime = 0;
 
-    var numAddresses = customConfig.accounts
-      ? customConfig.accounts
-      : 10;
-    var defaultEtherBalance = customConfig.defaultEtherBalance
-      ? customConfig.defaultEtherBalance
-      : 100;
-    var bTime = customConfig.blockTime
-      ? customConfig.blockTime
-      : 0;
+    if (customConfig) {
+      numAddresses = customConfig.accounts ? customConfig.accounts : 10;
+      defaultEtherBalance = customConfig.defaultEtherBalance
+        ? customConfig.defaultEtherBalance
+        : 100;
+      bTime = customConfig.blockTime ? customConfig.blockTime : 0;
+    }
 
     const { mnemonic, accounts, privateKeys } = mnemonicInfo.getAccountsInfo(
       numAddresses
