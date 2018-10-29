@@ -4,14 +4,14 @@ const command = {
   builder: {},
   help: {
     usage: "truffle version",
-    options: [],
+    options: []
   },
-  run: function (options, done) {
-    const { logVersionInformation } = require("../version");
+  run: function(options, done) {
+    const version = require("../version");
     const { logger } = options;
-    logVersionInformation(logger);
+    version.log(logger);
     done();
   }
-}
+};
 
 module.exports = command;
