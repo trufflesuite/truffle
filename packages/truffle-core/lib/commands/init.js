@@ -18,9 +18,6 @@ var command = {
     var Config = require("truffle-config");
     var OS = require("os");
     var UnboxCommand = require("./unbox");
-    const analytics = require("../services/analytics");
-
-    analytics.send({ ec: "initialization", ea: "truffle init" });
 
     var config = Config.default().with({
       logger: console

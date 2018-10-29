@@ -78,7 +78,6 @@ var command = {
     const Config = require("truffle-config");
     const Box = require("truffle-box");
     const OS = require("os");
-    const analytics = require("../services/analytics");
 
     const config = Config.default().with({
       logger: console
@@ -103,7 +102,6 @@ var command = {
         if (boxConfig.epilogue) {
           config.logger.log(boxConfig.epilogue.replace("\n", OS.EOL));
         }
-        analytics.send({ ec: "initialization", ea: "truffle unbox" });
 
         done();
       })

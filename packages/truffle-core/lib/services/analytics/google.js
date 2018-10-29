@@ -2,7 +2,7 @@
  * @module googleAnalytics;
  * @requires module:truffle-config
  * @requires module:universal-analytics
- * @requires module:nanoid
+ * @requires module:uuid
  * @requires module:inquirer
  * @requires module:../version
  */
@@ -17,16 +17,7 @@ const inquirer = require("inquirer");
 const version = require("../../version").info();
 
 //set truffleAnalyticsId depending on whether version is bundled
-let appVersion;
-let truffleAnalyticsId;
-
-if (version.bundle) {
-  appVersion = "v " + version.bundle;
-  truffleAnalyticsId = "UA-83874933-6";
-} else {
-  appVersion = "(unbundled) " + "v " + version.core;
-  truffleAnalyticsId = "UA-83874933-7";
-}
+const truffleAnalyticsId = version.bundle ? "UA-83874933-6" : "UA-83874933-7";
 
 const analyticsInquiry = [
   {
@@ -153,21 +144,30 @@ const googleAnalytics = {
    */
   sendAnalyticsAsync: async function(eventObject, callback) {
     let visitor = this.setPersistentAnalyticsData();
-    if (eventObject["el"]) {
-      eventObject["el"] = eventObject["el"] + " (" + appVersion + ")";
+    let sendObject = {};
+    if (eventObject["command"]) {
+      sendObject["ec"] = "Truffle Command";
+      sendObject["ea"] = eventObject["command"];
+      sendObject["el"] = eventObject["version"];
+      sendObject["dp"] = "/" + eventObject["command"];
     } else {
-      eventObject["el"] = appVersion;
+      sendObject["ec"] = "Error";
+      sendObject["ea"] = "nonzero exit code";
+      sendObject["el"] =
+        eventObject["version"] + " " + eventObject["exception"];
+      sendObject["dp"] = "/error";
     }
+
     if (visitor) {
-      await visitor.event(eventObject, function(err) {
-        if(err === null) {
+      await visitor.event(sendObject, function(err) {
+        if (err === null) {
           callback(true);
         } else {
           callback(false);
         }
       });
     }
-  }, 
+  },
   sendAnalyticsEvent: async function(eventObject) {
     this.sendAnalyticsAsync(eventObject, function(response) {
       return response;

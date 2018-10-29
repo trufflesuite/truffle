@@ -5,6 +5,8 @@ const TaskError = require("./lib/errors/taskerror");
 const TruffleError = require("truffle-error");
 
 const analytics = require("./lib/services/analytics");
+const version = require("./lib/version");
+const versionInfo = version.info();
 
 const nodeMajorVersion = parseInt(process.version.slice(1));
 if (nodeMajorVersion < 8) {
@@ -13,9 +15,8 @@ if (nodeMajorVersion < 8) {
   );
   console.log("You must use version 8 or newer.");
   analytics.send({
-    ec: "error",
-    ea: "nonzero exit code",
-    el: "wrong node version"
+    exception: "wrong node version",
+    version: versionInfo.bundle || "(unbundled) " + versionInfo.core
   });
   process.exit(1);
 }
@@ -48,35 +49,38 @@ command.run(inputArguments, options, function(err) {
   if (err) {
     if (err instanceof TaskError) {
       analytics.send({
-        ec: "error",
-        ea: "nonzero exit code",
-        el: "TaskError - display general help message"
+        exception: "TaskError - display general help message",
+        version: versionInfo.bundle
+          ? versionInfo.bundle
+          : "(unbundled) " + versionInfo.core
       });
       command.displayGeneralHelp();
     } else {
-      const version = require("./lib/version");
       if (err instanceof TruffleError) {
         analytics.send({
-          ec: "error",
-          ea: "nonzero exit code",
-          el: "TruffleError - missing configuration file"
+          exception: "TruffleError - missing configuration file",
+          version: versionInfo.bundle
+            ? versionInfo.bundle
+            : "(unbundled) " + versionInfo.core
         });
         console.log(err.message);
         version.log(options.logger);
       } else if (typeof err == "number") {
         analytics.send({
-          ec: "error",
-          ea: "nonzero exit code",
-          el: "Numbered Error - " + err
+          exception: "Numbered Error - " + err,
+          version: versionInfo.bundle
+            ? versionInfo.bundle
+            : "(unbundled) " + versionInfo.core
         });
         // If a number is returned, exit with that number.
         process.exit(err);
       } else {
         let error = err.stack || err.message || err.toString();
         analytics.send({
-          ec: "error",
-          ea: "nonzero exit code",
-          el: "Other Error - " + error
+          exception: "Other Error - " + error,
+          version: versionInfo.bundle
+            ? versionInfo.bundle
+            : "(unbundled) " + versionInfo.core
         });
         // Bubble up all other unexpected errors.
         console.log(err.stack || err.message || err.toString());
