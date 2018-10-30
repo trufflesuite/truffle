@@ -10,8 +10,10 @@ describe("truffle build", function() {
 
   describe("when there is no build script in config", function() {
     beforeEach("set up sandbox", function() {
-      this.timeout(10000);
-      project = path.join(__dirname, '../../sources/build/projectWithoutBuildScript');
+      project = path.join(
+        __dirname,
+        "../../sources/build/projectWithoutBuildScript"
+      );
       return sandbox.create(project).then(conf => {
         config = conf;
         config.logger = logger;
@@ -19,13 +21,15 @@ describe("truffle build", function() {
     });
 
     it("should not error", function(done) {
-      CommandRunner.run("build", config, (error) => {
+      this.timeout(10000);
+      CommandRunner.run("build", config, error => {
         assert(typeof error === "undefined");
         done();
       });
     });
     it("whines about having no build config", function(done) {
-      CommandRunner.run("build", config, (error) => {
+      this.timeout(10000);
+      CommandRunner.run("build", config, error => {
         const output = logger.contents();
         assert(output.includes("No build configuration found."));
         done();
@@ -35,15 +39,18 @@ describe("truffle build", function() {
 
   describe("when there is a proper build config", function() {
     beforeEach("set up sandbox", function() {
-      this.timeout(10000);
-      project = path.join(__dirname, '../../sources/build/projectWithBuildScript');
+      project = path.join(
+        __dirname,
+        "../../sources/build/projectWithBuildScript"
+      );
       return sandbox.create(project).then(conf => {
         config = conf;
         config.logger = logger;
       });
     });
     it("runs the build script", function(done) {
-      CommandRunner.run("build", config, (error) => {
+      this.timeout(10000);
+      CommandRunner.run("build", config, error => {
         const output = logger.contents();
         assert(output.includes("'this is the build script'"));
         done();
@@ -53,17 +60,24 @@ describe("truffle build", function() {
 
   describe("when there is an object in the build config", function() {
     beforeEach("set up sandbox", function() {
-      this.timeout(10000);
-      project = path.join(__dirname, '../../sources/build/projectWithObjectInBuildScript');
+      project = path.join(
+        __dirname,
+        "../../sources/build/projectWithObjectInBuildScript"
+      );
       return sandbox.create(project).then(conf => {
         config = conf;
         config.logger = logger;
       });
     });
     it("tells the user it shouldn't use an object", function(done) {
-      CommandRunner.run("build", config, (error) => {
+      this.timeout(10000);
+      CommandRunner.run("build", config, error => {
         const output = logger.contents();
-        assert(output.includes("Build configuration can no longer be specified as an object."));
+        assert(
+          output.includes(
+            "Build configuration can no longer be specified as an object."
+          )
+        );
         done();
       });
     });
