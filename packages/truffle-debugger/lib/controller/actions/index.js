@@ -31,6 +31,11 @@ export function stepOut() {
   return {type: STEP_OUT};
 }
 
+export const RESET = "RESET";
+export function reset() {
+  return {type: RESET};
+}
+
 export const INTERRUPT = "INTERRUPT";
 export function interrupt() {
   return {type: INTERRUPT};

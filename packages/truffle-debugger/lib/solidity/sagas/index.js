@@ -35,6 +35,10 @@ function* functionDepthSaga () {
   }
 }
 
+export function* reset() {
+  yield put(actions.reset());
+}
+
 export function* saga () {
   yield call(tickSaga);
 }

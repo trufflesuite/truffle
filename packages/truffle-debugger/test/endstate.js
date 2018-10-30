@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("test:transaction");
+const debug = debugModule("test:endstate");
 
 import { assert } from "chai";
 
@@ -39,7 +39,7 @@ let sources = {
   "SuccessTest.sol": __SUCCESS,
 };
 
-describe("Transactions", function () {
+describe("End State", function () {
   var provider;
   var web3;
 

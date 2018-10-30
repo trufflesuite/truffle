@@ -505,7 +505,7 @@ var command = {
           let alreadyFinished = session.view(trace.finished);
 
           // If not finished, perform commands that require state changes
-          // (other than quitting)
+          // (other than quitting or resetting)
           if(!alreadyFinished)
           {
             switch (cmd) {
@@ -540,6 +540,10 @@ var command = {
                 config.logger.log("Transaction has halted; cannot advance.");
                 config.logger.log("");
             }
+          }
+          if(cmd === "r") //reset if given the reset command
+          {
+            session.reset();
           }
 
           // Check if execution has (just now) stopped.
@@ -604,6 +608,11 @@ var command = {
                 printState();
               }
               printWatchExpressionsResults();
+              break;
+            case "r":
+              printAddressesAffected();
+              printFile();
+              printState();
               break;
             default:
               printHelp();

@@ -127,10 +127,11 @@ Command.prototype.run = function(inputStrings, options, callback) {
 };
 
 Command.prototype.displayGeneralHelp = function() {
+  const { bundled, core } = version.info();
   this.args
     .usage(
       "Truffle v" +
-        (version.bundle || version.core) +
+        (bundled || core) +
         " - a development framework for Ethereum" +
         OS.EOL +
         OS.EOL +
