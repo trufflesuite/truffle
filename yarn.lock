@@ -11387,31 +11387,7 @@ web3-net@1.0.0-beta.35:
     web3-core-method "1.0.0-beta.35"
     web3-utils "1.0.0-beta.35"
 
-web3-provider-engine@^13.3.2:
-  version "13.8.0"
-  resolved "https://registry.yarnpkg.com/web3-provider-engine/-/web3-provider-engine-13.8.0.tgz#4c7c1ad2af5f1fe10343b8a65495879a2f9c00df"
-  dependencies:
-    async "^2.5.0"
-    clone "^2.0.0"
-    eth-block-tracker "^2.2.2"
-    eth-sig-util "^1.4.2"
-    ethereumjs-block "^1.2.2"
-    ethereumjs-tx "^1.2.0"
-    ethereumjs-util "^5.1.1"
-    ethereumjs-vm "^2.0.2"
-    fetch-ponyfill "^4.0.0"
-    json-rpc-error "^2.0.0"
-    json-stable-stringify "^1.0.1"
-    promise-to-callback "^1.0.0"
-    readable-stream "^2.2.9"
-    request "^2.67.0"
-    semaphore "^1.0.3"
-    solc "^0.4.2"
-    tape "^4.4.0"
-    xhr "^2.2.0"
-    xtend "^4.0.1"
-
-web3-provider-engine@^14.0.6, "web3-provider-engine@git+https://github.com/cgewecke/provider-engine.git#web3-one":
+web3-provider-engine@14.0.6, web3-provider-engine@^14.0.6, "web3-provider-engine@git+https://github.com/cgewecke/provider-engine.git#web3-one":
   version "14.0.6"
   resolved "git+https://github.com/cgewecke/provider-engine.git#be7d1e895918eb05c7893fc00a7053fe4abb4233"
   dependencies:
@@ -11434,6 +11410,30 @@ web3-provider-engine@^14.0.6, "web3-provider-engine@git+https://github.com/cgewe
     semaphore "^1.0.3"
     tape "^4.4.0"
     ws "^5.1.1"
+    xhr "^2.2.0"
+    xtend "^4.0.1"
+
+web3-provider-engine@^13.3.2:
+  version "13.8.0"
+  resolved "https://registry.yarnpkg.com/web3-provider-engine/-/web3-provider-engine-13.8.0.tgz#4c7c1ad2af5f1fe10343b8a65495879a2f9c00df"
+  dependencies:
+    async "^2.5.0"
+    clone "^2.0.0"
+    eth-block-tracker "^2.2.2"
+    eth-sig-util "^1.4.2"
+    ethereumjs-block "^1.2.2"
+    ethereumjs-tx "^1.2.0"
+    ethereumjs-util "^5.1.1"
+    ethereumjs-vm "^2.0.2"
+    fetch-ponyfill "^4.0.0"
+    json-rpc-error "^2.0.0"
+    json-stable-stringify "^1.0.1"
+    promise-to-callback "^1.0.0"
+    readable-stream "^2.2.9"
+    request "^2.67.0"
+    semaphore "^1.0.3"
+    solc "^0.4.2"
+    tape "^4.4.0"
     xhr "^2.2.0"
     xtend "^4.0.1"
 
