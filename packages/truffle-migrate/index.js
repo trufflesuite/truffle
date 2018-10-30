@@ -4,7 +4,7 @@ const async = require("async");
 const expect = require("truffle-expect");
 const Config = require("truffle-config");
 const Reporter = require("truffle-reporters").migrationsV5;
-const Migration = require('./migration.js');
+const Migration = require("./migration.js");
 
 /**
  *  This API is consumed by `truffle-core` at the `migrate` and `test` commands via
@@ -14,11 +14,11 @@ const Migrate = {
   Migration: Migration,
   reporter: null,
 
-  launchReporter: function(){
+  launchReporter: function() {
     Migrate.reporter = new Reporter();
   },
 
-  acceptDryRun: async function(){
+  acceptDryRun: async function() {
     return Migrate.reporter.acceptDryRun();
   },
 
@@ -31,7 +31,9 @@ const Migrate = {
 
       let migrations = files
         .filter(file => isNaN(parseInt(path.basename(file))) == false)
-        .filter(file => path.extname(file).match(options.allowed_extensions) != null)
+        .filter(
+          file => path.extname(file).match(options.allowed_extensions) != null
+        )
         .map(file => new Migration(file, Migrate.reporter, options));
 
       // Make sure to sort the prefixes as numbers and not strings.
@@ -58,7 +60,7 @@ const Migrate = {
       "network",
       "network_id",
       "logger",
-      "from", // address doing deployment
+      "from" // address doing deployment
     ]);
 
     if (options.reset == true) {
@@ -85,7 +87,9 @@ const Migrate = {
       }
 
       if (options.to) {
-        migrations = migrations.filter(migration => migration.number <= options.to);
+        migrations = migrations.filter(
+          migration => migration.number <= options.to
+        );
       }
 
       self.runMigrations(migrations, options, callback);
@@ -110,33 +114,35 @@ const Migrate = {
       clone.logger = {
         log: function() {}
       };
-    };
+    }
 
     clone.provider = this.wrapProvider(options.provider, clone.logger);
     clone.resolver = this.wrapResolver(options.resolver, clone.provider);
 
     // Make migrations aware of their position in sequence
     const total = migrations.length;
-    if(total){
+    if (total) {
       migrations[0].isFirst = true;
       migrations[total - 1].isLast = true;
     }
 
-    async.eachSeries(migrations, function(migration, finished) {
-      migration.run(clone, function(err) {
-        if (err) return finished(err);
-        finished();
-      });
-    }, callback);
+    async.eachSeries(
+      migrations,
+      function(migration, finished) {
+        migration.run(clone, function(err) {
+          if (err) return finished(err);
+          finished();
+        });
+      },
+      callback
+    );
   },
 
   wrapProvider: function(provider) {
     return {
       send: function(payload, callback) {
         provider.send(payload, function(err, result) {
-          (err)
-            ? callback(err)
-            : callback(err, result);
+          err ? callback(err) : callback(err, result);
         });
       }
     };
@@ -160,24 +166,24 @@ const Migrate = {
       Migrations = options.resolver.require("Migrations");
     } catch (e) {
       const message = `Could not find built Migrations contract: ${e.message}`;
-      return callback(new Error());
+      return callback(new Error(message));
     }
 
     if (Migrations.isDeployed() == false) {
       return callback(null, 0);
     }
 
-    const migrations = Migrations.deployed();
-
-    Migrations.deployed().then(function(migrations) {
-      // Two possible Migrations.sol's (lintable/unlintable)
-      return (migrations.last_completed_migration)
-        ? migrations.last_completed_migration.call()
-        : migrations.lastCompletedMigration.call();
-
-    }).then(function(completed_migration) {
-      callback(null, parseInt(completed_migration));
-    }).catch(callback);
+    Migrations.deployed()
+      .then(function(migrations) {
+        // Two possible Migrations.sol's (lintable/unlintable)
+        return migrations.last_completed_migration
+          ? migrations.last_completed_migration.call()
+          : migrations.lastCompletedMigration.call();
+      })
+      .then(function(completed_migration) {
+        callback(null, parseInt(completed_migration));
+      })
+      .catch(callback);
   },
 
   needsMigrating: function(options, callback) {
@@ -198,11 +204,13 @@ const Migrate = {
           migrations.shift();
         }
 
-        callback(null, migrations.length > 1 || (migrations.length && number === 0));
+        callback(
+          null,
+          migrations.length > 1 || (migrations.length && number === 0)
+        );
       });
     });
   }
 };
-
 
 module.exports = Migrate;
