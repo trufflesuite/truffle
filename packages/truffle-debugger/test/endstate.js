@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("test:transaction");
+const debug = debugModule("test:endstate");
 
 import { assert } from "chai";
 
@@ -11,7 +11,6 @@ import Debugger from "lib/debugger";
 
 import sessionSelector from "lib/session/selectors";
 import data from "lib/data/selectors";
-
 
 const __FAILURE = `
 pragma solidity ^0.4.24;
@@ -36,10 +35,10 @@ uint x;
 
 let sources = {
   "FailureTest.sol": __FAILURE,
-  "SuccessTest.sol": __SUCCESS,
+  "SuccessTest.sol": __SUCCESS
 };
 
-describe("Transactions", function () {
+describe("End State", function() {
   var provider;
   var web3;
 
@@ -47,7 +46,7 @@ describe("Transactions", function () {
   var artifacts;
 
   before("Create Provider", async function() {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
     web3 = new Web3(provider);
   });
 
@@ -67,8 +66,7 @@ describe("Transactions", function () {
     let txHash;
     try {
       await instance.run(); //this will throw because of the revert
-    }
-    catch(error) {
+    } catch (error) {
       txHash = error.hashes[0]; //it's the only hash involved
     }
 
@@ -97,6 +95,6 @@ describe("Transactions", function () {
     session.continueUntilBreakpoint(); //no breakpoints set so advances to end
 
     assert.ok(session.view(sessionSelector.transaction.receipt).status);
-    assert.deepEqual(session.view(data.current.identifiers.native), {x: 107});
+    assert.deepEqual(session.view(data.current.identifiers.native), { x: 107 });
   });
 });

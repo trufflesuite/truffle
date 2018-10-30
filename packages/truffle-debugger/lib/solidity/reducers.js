@@ -39,7 +39,6 @@ function sources(state = DEFAULT_SOURCES, action) {
   }
 }
 
-
 const DEFAULT_SOURCEMAPS = {
   byContext: {}
 };
@@ -78,11 +77,16 @@ const info = combineReducers({
 });
 
 export function functionDepth(state = 1, action) {
-  if (action.type === actions.JUMP) {
-    const delta = spelunk(action.jumpDirection);
-    return state + delta;
-  } else {
-    return state;
+  switch (action.type) {
+    case actions.JUMP:
+      const delta = spelunk(action.jumpDirection);
+      return state + delta;
+
+    case actions.RESET:
+      return 1;
+
+    default:
+      return state;
   }
 }
 

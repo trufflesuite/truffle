@@ -3,7 +3,7 @@ export function addContext(contractName, raw) {
   return {
     type: ADD_CONTEXT,
     contractName,
-raw
+    raw
   };
 }
 
@@ -12,7 +12,7 @@ export function addBinary(context, binary) {
   return {
     type: ADD_BINARY,
     context,
-binary
+    binary
   };
 }
 
@@ -21,8 +21,8 @@ export function addInstance(address, context, binary) {
   return {
     type: ADD_INSTANCE,
     address,
-context,
-binary
+    context,
+    binary
   };
 }
 
@@ -47,4 +47,9 @@ export function returnCall() {
   return {
     type: RETURN
   };
+}
+
+export const RESET = "EVM_RESET";
+export function reset() {
+  return { type: RESET };
 }

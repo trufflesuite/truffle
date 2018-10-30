@@ -1,7 +1,7 @@
 var TaskError = require("./errors/taskerror");
 var yargs = require("yargs/yargs");
 var _ = require("lodash");
-const version = require("../lib/version").info();
+const { bundled, core } = require("../lib/version").info();
 var OS = require("os");
 const analytics = require("../lib/services/analytics");
 
@@ -114,7 +114,7 @@ Command.prototype.run = function(inputStrings, options, callback) {
     analytics.send({
       command: result.name ? result.name : "other",
       args: result.argv._,
-      version: version.bundle || "(unbundled) " + version.core
+      version: bundled || "(unbundled) " + core
     });
   } catch (err) {
     callback(err);
@@ -125,7 +125,7 @@ Command.prototype.displayGeneralHelp = function() {
   this.args
     .usage(
       "Truffle v" +
-        (version.bundle || version.core) +
+        (bundled || core) +
         " - a development framework for Ethereum" +
         OS.EOL +
         OS.EOL +

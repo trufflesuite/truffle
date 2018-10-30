@@ -20,7 +20,8 @@ var commandReference = {
   "b": "add breakpoint",
   "B": "remove breakpoint",
   "c": "continue until breakpoint",
-  "q": "quit"
+  "q": "quit",
+  "r": "reset"
 };
 
 var DebugUtils = {
@@ -30,45 +31,53 @@ var DebugUtils = {
       dir.files(config.contracts_build_directory, (err, files) => {
         if (err) return reject(err);
 
-        var contracts = files.filter((file_path) => {
-          return path.extname(file_path) == ".json";
-        }).map((file_path) => {
-          return path.basename(file_path, ".json");
-        }).map((contract_name) => {
-          return config.resolver.require(contract_name);
-        });
+        var contracts = files
+          .filter(file_path => {
+            return path.extname(file_path) == ".json";
+          })
+          .map(file_path => {
+            return path.basename(file_path, ".json");
+          })
+          .map(contract_name => {
+            return config.resolver.require(contract_name);
+          });
 
-        async.each(contracts, (abstraction, finished) => {
-          abstraction.detectNetwork().then(() => {
-            finished();
-          }).catch(finished);
-        }, (err) => {
-          if (err) return reject(err);
-          accept(contracts.map( (contract) => {
-            debug("contract.sourcePath: %o", contract.sourcePath);
+        async.each(
+          contracts,
+          (abstraction, finished) => {
+            abstraction
+              .detectNetwork()
+              .then(() => {
+                finished();
+              })
+              .catch(finished);
+          },
+          err => {
+            if (err) return reject(err);
+            accept(
+              contracts.map(contract => {
+                debug("contract.sourcePath: %o", contract.sourcePath);
 
-            return {
-              contractName: contract.contractName,
-              source: contract.source,
-              sourceMap: contract.sourceMap,
-              sourcePath: contract.sourcePath,
-              binary: contract.binary,
-              ast: contract.ast,
-              deployedBinary: contract.deployedBinary,
-              deployedSourceMap: contract.deployedSourceMap
-            };
-          }));
-        });
+                return {
+                  contractName: contract.contractName,
+                  source: contract.source,
+                  sourceMap: contract.sourceMap,
+                  sourcePath: contract.sourcePath,
+                  binary: contract.binary,
+                  ast: contract.ast,
+                  deployedBinary: contract.deployedBinary,
+                  deployedSourceMap: contract.deployedSourceMap
+                };
+              })
+            );
+          }
+        );
       });
     });
   },
 
   formatStartMessage: function() {
-    var lines = [
-      "",
-      "Gathering transaction data...",
-      ""
-    ];
+    var lines = ["", "Gathering transaction data...", ""];
 
     return lines.join(OS.EOL);
   },
@@ -94,10 +103,11 @@ var DebugUtils = {
       return " " + address + "(UNKNOWN)";
     });
 
-
     if (!hasAllSource) {
       lines.push("");
-      lines.push("Warning: The source code for one or more contracts could not be found.");
+      lines.push(
+        "Warning: The source code for one or more contracts could not be found."
+      );
     }
 
     return lines.join(OS.EOL);
@@ -114,28 +124,24 @@ var DebugUtils = {
     ];
 
     var commandSections = [
-      ["o", "i", "u", "n"],
-      [";", "p", "h", "q"],
+      ["o", "i", "u", "n", ";"],
+      ["p", "h", "q", "r"],
       ["b", "B", "c"],
       ["+", "-"],
       ["?"],
       ["v", ":"]
-    ].map(function (shortcuts) {
-      return shortcuts
-        .map(DebugUtils.formatCommandDescription)
-        .join(", ");
+    ].map(function(shortcuts) {
+      return shortcuts.map(DebugUtils.formatCommandDescription).join(", ");
     });
 
-    var suffix = [
-      ""
-    ];
+    var suffix = [""];
 
     var lines = prefix.concat(commandSections).concat(suffix);
 
     return lines.join(OS.EOL);
   },
 
-  formatLineNumberPrefix: function (line, number, cols, tab) {
+  formatLineNumberPrefix: function(line, number, cols, tab) {
     if (!tab) {
       tab = "  ";
     }
@@ -162,8 +168,8 @@ var DebugUtils = {
 
     var output = "";
     for (var i = 0; i < line.length; i++) {
-      var pointedAt = (i >= startCol && i < endCol);
-      var isTab = (line[i] == "\t");
+      var pointedAt = i >= startCol && i < endCol;
+      var isTab = line[i] == "\t";
 
       var additional;
       if (isTab) {
@@ -193,20 +199,18 @@ var DebugUtils = {
 
     if (contextBefore == undefined) {
       contextBefore = 2;
-    };
+    }
 
-    var startBeforeIndex = Math.max(
-      range.start.line - contextBefore, 0
-    );
+    var startBeforeIndex = Math.max(range.start.line - contextBefore, 0);
 
-    var prefixLength = ((range.start.line + 1) + "").length;
+    var prefixLength = (range.start.line + 1 + "").length;
 
     var beforeLines = source
-      .filter(function (line, index) {
+      .filter(function(line, index) {
         return index >= startBeforeIndex && index < range.start.line;
       })
-      .map(function (line, index) {
-        var number = startBeforeIndex + index + 1;  // 1 to account for 0-index
+      .map(function(line, index) {
+        var number = startBeforeIndex + index + 1; // 1 to account for 0-index
         return DebugUtils.formatLineNumberPrefix(line, number, prefixLength);
       });
 
@@ -233,16 +237,19 @@ var DebugUtils = {
     return allLines.join(OS.EOL);
   },
 
-  formatInstruction: function (traceIndex, instruction) {
+  formatInstruction: function(traceIndex, instruction) {
     return (
-      "(" + traceIndex + ") " +
-        instruction.name + " " +
-        (instruction.pushData || "")
+      "(" +
+      traceIndex +
+      ") " +
+      instruction.name +
+      " " +
+      (instruction.pushData || "")
     );
   },
 
-  formatStack: function (stack) {
-    var formatted = stack.map(function (item, index) {
+  formatStack: function(stack) {
+    var formatted = stack.map(function(item, index) {
       item = "  " + item;
       if (index == stack.length - 1) {
         item += " (top)";

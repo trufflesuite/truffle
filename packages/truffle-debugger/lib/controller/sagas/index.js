@@ -1,11 +1,14 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:controller:sagas");
 
-import { put, call, race, take, select } from 'redux-saga/effects';
+import { put, call, race, take, select } from "redux-saga/effects";
 
 import { prefixName } from "lib/helpers";
 
 import * as trace from "lib/trace/sagas";
+import * as data from "lib/data/sagas";
+import * as evm from "lib/evm/sagas";
+import * as solidity from "lib/solidity/sagas";
 
 import * as actions from "../actions";
 
@@ -17,14 +20,12 @@ const CONTROL_SAGAS = {
   [actions.STEP_OVER]: stepOver,
   [actions.STEP_INTO]: stepInto,
   [actions.STEP_OUT]: stepOut,
-  [actions.CONTINUE]: continueUntilBreakpoint
+  [actions.CONTINUE]: continueUntilBreakpoint,
+  [actions.RESET]: reset
 };
 
 /** AST node types that are skipped to filter out some noise */
-const SKIPPED_TYPES = new Set([
-  "ContractDefinition",
-  "VariableDeclaration",
-]);
+const SKIPPED_TYPES = new Set(["ContractDefinition", "VariableDeclaration"]);
 
 export function* saga() {
   while (true) {
@@ -49,7 +50,7 @@ export default prefixName("controller", saga);
  */
 function* advance() {
   // send action to advance trace
-  yield *trace.advance();
+  yield* trace.advance();
 }
 
 /**
@@ -59,7 +60,7 @@ function* advance() {
  * "Stepping", then, is stepping to the next logical item, not stepping to the next
  * instruction. See advance() if you'd like to advance by one instruction.
  */
-function* stepNext () {
+function* stepNext() {
   const startingRange = yield select(controller.current.location.sourceRange);
 
   var upcoming, finished;
@@ -79,14 +80,12 @@ function* stepNext () {
 
     // if the next step's source range is still the same, keep going
   } while (
-    !finished && (
-
-    !upcoming ||
-    !upcoming.node ||
-    SKIPPED_TYPES.has(upcoming.node.nodeType) ||
-
-    upcoming.sourceRange.start == startingRange.start &&
-    upcoming.sourceRange.length == startingRange.length)
+    !finished &&
+    (!upcoming ||
+      !upcoming.node ||
+      SKIPPED_TYPES.has(upcoming.node.nodeType) ||
+      (upcoming.sourceRange.start == startingRange.start &&
+        upcoming.sourceRange.length == startingRange.length))
   );
 }
 
@@ -102,7 +101,7 @@ function* stepNext () {
  * that exists outside of the range, then stepInto will only execute until that
  * step.
  */
-function* stepInto () {
+function* stepInto() {
   if (yield select(controller.current.willJump)) {
     yield* stepNext();
 
@@ -125,17 +124,14 @@ function* stepInto () {
 
     currentDepth = yield select(controller.current.functionDepth);
     currentRange = yield select(controller.current.location.sourceRange);
-
   } while (
     // the function stack has not increased,
     currentDepth <= startingDepth &&
-
     // the current source range begins on or after the starting range
     currentRange.start >= startingRange.start &&
-
     // and the current range ends on or before the starting range ends
-    (currentRange.start + currentRange.length) <=
-      (startingRange.start + startingRange.length)
+    currentRange.start + currentRange.length <=
+      startingRange.start + startingRange.length
   );
 }
 
@@ -144,9 +140,9 @@ function* stepInto () {
  *
  * This will run until the debugger encounters a decrease in function depth.
  */
-function* stepOut () {
+function* stepOut() {
   if (yield select(controller.current.location.isMultiline)) {
-    yield *stepOver();
+    yield* stepOver();
 
     return;
   }
@@ -158,8 +154,7 @@ function* stepOut () {
     yield* stepNext();
 
     currentDepth = yield select(controller.current.functionDepth);
-
-  } while(currentDepth >= startingDepth);
+  } while (currentDepth >= startingDepth);
 }
 
 /**
@@ -168,7 +163,7 @@ function* stepOut () {
  * Step over the current line. This will step to the next instruction that
  * exists on a different line of code within the same function depth.
  */
-function* stepOver () {
+function* stepOver() {
   const startingDepth = yield select(controller.current.functionDepth);
   const startingRange = yield select(controller.current.location.sourceRange);
   var currentDepth;
@@ -179,13 +174,11 @@ function* stepOver () {
 
     currentDepth = yield select(controller.current.functionDepth);
     currentRange = yield select(controller.current.location.sourceRange);
-
   } while (
     // keep stepping provided:
     //
     // we haven't jumped out
     !(currentDepth < startingDepth) &&
-
     // either: function depth is greater than starting (ignore function calls)
     // or, if we're at the same depth, keep stepping until we're on a new
     // line.
@@ -197,7 +190,7 @@ function* stepOver () {
 /**
  * continueUntilBreakpoint - step through execution until a breakpoint
  */
-function *continueUntilBreakpoint () {
+function* continueUntilBreakpoint() {
   var currentLocation, currentNode, currentLine, currentSourceId;
   var finished;
   var previousLine, previousSourceId;
@@ -219,27 +212,35 @@ function *continueUntilBreakpoint () {
 
     currentLocation = yield select(controller.current.location);
     finished = yield select(controller.finished);
-    debug("finished %o",finished);
+    debug("finished %o", finished);
 
     currentNode = currentLocation.node.id;
     currentLine = currentLocation.sourceRange.lines.start.line;
     currentSourceId = currentLocation.source.id;
 
-    breakpointHit = breakpoints
-      .filter( ({sourceId, line, node}) =>
-        {
-          if(node !== undefined)
-          {
-            debug("node %d currentNode %d",node,currentNode);
-            return sourceId === currentSourceId && node === currentNode;
-          }
-          //otherwise, we have a line-style breakpoint; we want to stop at the
-          //*first* point on the line
-          return sourceId === currentSourceId && line === currentLine
-          && (currentSourceId !== previousSourceId || currentLine !== previousLine);
+    breakpointHit =
+      breakpoints.filter(({ sourceId, line, node }) => {
+        if (node !== undefined) {
+          debug("node %d currentNode %d", node, currentNode);
+          return sourceId === currentSourceId && node === currentNode;
         }
-      )
-      .length > 0;
-    
-  } while(!breakpointHit && !finished);
+        //otherwise, we have a line-style breakpoint; we want to stop at the
+        //*first* point on the line
+        return (
+          sourceId === currentSourceId &&
+          line === currentLine &&
+          (currentSourceId !== previousSourceId || currentLine !== previousLine)
+        );
+      }).length > 0;
+  } while (!breakpointHit && !finished);
+}
+
+/**
+ * reset -- reset the state of the debugger
+ */
+function* reset() {
+  yield* data.reset();
+  yield* evm.reset();
+  yield* solidity.reset();
+  yield* trace.reset();
 }

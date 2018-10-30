@@ -34,3 +34,8 @@ export function mapKey(id, key) {
     key
   };
 }
+
+export const RESET = "DATA_RESET";
+export function reset() {
+  return { type: RESET };
+}
