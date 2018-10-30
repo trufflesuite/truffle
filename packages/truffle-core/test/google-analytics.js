@@ -94,15 +94,16 @@ describe("analytics", function() {
     });
   });
   describe("#sendAnalyticsEvent", function() {
-    it("sends an event object to google analytics", function() {
+    it("sends an event object to google analytics", async function() {
       let checkAnalyticsStub = sinon
         .stub(analytics, "checkIfAnalyticsEnabled")
         .returns(true);
-      let sendingAnalyticsEvent = analytics.sendAnalyticsEvent({
+      let sendingAnalyticsEvent = await analytics.sendAnalyticsEvent({
         ec: "initialization",
         ea: "truffle unbox"
+      }).then((resp) => {
+        sinon.assert.calledOnce(ua.Visitor.prototype._enqueue);
       });
-      sinon.assert.calledOnce(ua.Visitor.prototype._enqueue);
     });
   });
 });
