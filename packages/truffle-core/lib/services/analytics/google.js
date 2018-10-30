@@ -142,7 +142,7 @@ const googleAnalytics = {
    * send event to Google Analytics
    * @param {Object}
    */
-  sendAnalyticsAsync: async function(eventObject, callback) {
+  sendAnalyticsEvent: function(eventObject, callback) {
     let visitor = this.setPersistentAnalyticsData();
     let sendObject = {};
     if (eventObject["command"]) {
@@ -159,19 +159,10 @@ const googleAnalytics = {
     }
 
     if (visitor) {
-      await visitor.event(sendObject, function(err) {
-        if (err === null) {
-          callback(true);
-        } else {
-          callback(false);
-        }
-      });
+      visitor.event(sendObject, function(err) {});
     }
-  },
-  sendAnalyticsEvent: async function(eventObject) {
-    this.sendAnalyticsAsync(eventObject, function(response) {
-      return response;
-    });
+
+    return true;
   }
 };
 
