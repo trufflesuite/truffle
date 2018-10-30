@@ -11,6 +11,7 @@ describe("truffle help", () => {
 
   describe("when run without arguments", () => {
     it("displays general help", function(done) {
+      this.timeout(10000);
       CommandRunner.run("help", config, (error) => {
         const output = logger.contents();
 
@@ -21,6 +22,7 @@ describe("truffle help", () => {
   });
 
   describe("when run with an argument", () => {
+    this.timeout(10000);
     it("tells the user if it doesn't recognize the given command", function(done) {
       CommandRunner.run("help eggplant", config, (error) => {
         const output = logger.contents();
@@ -31,6 +33,7 @@ describe("truffle help", () => {
     });
 
     it("displays help for the given command when valid", function(done) {
+      this.timeout(10000);
       CommandRunner.run("help compile", config, (error) => {
         const output = logger.contents();
 
