@@ -142,7 +142,9 @@ const data = createSelectorTree({
      * data.proc.assignments
      */
     assignments: createLeaf(
-      ["/state"], (state) => state.proc.assignments.byId
+      ["/state"], (state) => state.proc.assignments
+      //note: this no longer fetches just the byId, but rather the whole
+      //assignments object
     ),
 
     /**
@@ -279,7 +281,7 @@ const data = createSelectorTree({
 
                 //first, check if it's a contract var
                 if(address !== undefined) {
-                  let matchIds = assignments.byAstId[astId].filter(
+                  let matchIds = (assignments.byAstId[astId] || []).filter(
                     (idHash) => assignments.byId[idHash].address === address
                   )
                   if(matchIds.length > 0) {
@@ -287,7 +289,7 @@ const data = createSelectorTree({
                   }
                 }
                 else {
-                  let matchIds = assignments.byAstId[astId].filter(
+                  let matchIds = (assignments.byAstId[astId] || []).filter(
                     (idHash) => assignments.byId[idHash].dummyAddress
                       === dummyAddress
                   )
@@ -299,8 +301,8 @@ const data = createSelectorTree({
                 //if not contract, it's local, so find the innermost
                 //(but not beyond current depth)
                 if(id === undefined){
-                  let matchFrames = assignments.byAstId[astId].map(
-                    (assignment) => assignment.stackFrame
+                  let matchFrames = (assignments.byAstId[astId] || []).map(
+                    (assignment) => assignment.stackframe
                   ).filter(
                     (stackframe) => stackframe !== undefined
                   );

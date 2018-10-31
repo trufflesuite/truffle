@@ -4,10 +4,9 @@ const debug = debugModule("debugger:evm:selectors");
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import levenshtein from "fast-levenshtein";
 
-import { toHexString } from "lib/data/decode/utils";
+import decodeUtils from "lib/data/decode/utils";
 
 import trace from "lib/trace/selectors";
-import data from "lib/data/selectors";
 
 const WORD_SIZE = 0x20;
 
@@ -214,7 +213,7 @@ const evm = createSelectorTree({
     creationDepth: createLeaf(
       ["./callstack"],
 
-      (stack) => stack.filter((call) => call.address === undefined).length;
+      (stack) => stack.filter((call) => call.address === undefined).length
     ),
 
     /**
@@ -223,11 +222,17 @@ const evm = createSelectorTree({
      * Otherwise the result will be nonsense!
      * To enforce this, I am having this return undefined unless
      * evm.current.state.isHalting holds
+     * (similarly if we're just about to quit)
      */
     createdAddress: createLeaf(
-      [data.next.state.stack, evm.current.state.isHalting],
-      (stack, isHalting) => isHalting ?
-        toHexString(stack[stack.length-1],true) :
+      ["/next/state/stack", "./state/isHalting", "./callstack"],
+      (stack, isHalting, callstack) =>
+        isHalting && callstack.length > 1 ?
+        //note: I'm just copying how data.next.state.stack
+        //does things here!
+        decodeUtils.toHexString(
+          decodeUtils.toBytes(decodeUtils.toBigNumber(
+            stack[stack.length - 1], decodeUtils.WORD_SIZE)), true) :
         undefined),
 
     /**

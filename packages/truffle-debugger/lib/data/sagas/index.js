@@ -107,7 +107,7 @@ function *tickSaga() {
           { [fullId]: {
               ...(currentAssignments.byId[fullId].ref || 
                 { ref: {} }).ref,
-              storage: allocation.children[id];
+              storage: allocation.children[id]
             }
           }
         )

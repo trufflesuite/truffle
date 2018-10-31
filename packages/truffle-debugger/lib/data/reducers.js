@@ -79,7 +79,7 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
             byId: {
               ...acc.byId,
               [id]: assignment
-            }
+            },
             byAstId: {
               ...acc.byAstId,
               [astId]: [...new Set([...acc.byAstId[astId], id])]
@@ -117,7 +117,7 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
  * unlike addssignment in sagas, this assumes we're adding an already-formed
  * assignment object; it doesn't need to make it itself
  */
-function addAssignment(acc, assignment]) {
+function addAssignment(acc, assignment) {
 
   let {astId} = assignment; //we don't need the other components
 
@@ -125,7 +125,7 @@ function addAssignment(acc, assignment]) {
     byId: {
       ...acc.byId,
       [id]: assignment
-    }
+    },
     byAstId: {
       ...acc.byAstId,
       [astId]: [...new Set([...acc.byAstId[astId], id])]

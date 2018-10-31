@@ -22,6 +22,6 @@ export function keccak256(...args) {
  * Given an object, return a stable hash by first running it through a stable
  * stringify operation before hashing
  */
-export function stableKeccak56(obj) {
+export function stableKeccak256(obj) {
   return keccak256(stringify(obj));
 }

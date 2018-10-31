@@ -46,5 +46,5 @@ export function learnAddress(dummyAddress, address)
   return {
     type: LEARN_ADDRESS,
     dummyAddress, address
-  }
+  };
 }
