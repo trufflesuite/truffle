@@ -4,7 +4,10 @@ const debug = debugModule("debugger:evm:selectors");
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import levenshtein from "fast-levenshtein";
 
+import { toHexString } from "lib/data/decode/utils";
+
 import trace from "lib/trace/selectors";
+import data from "lib/data/selectors";
 
 const WORD_SIZE = 0x20;
 
@@ -203,6 +206,29 @@ const evm = createSelectorTree({
 
       (stack) => stack.length ? stack[stack.length - 1] : {}
     ),
+
+    /**
+     * evm.current.creationDepth
+     * how many creation calls are currently on the call stack?
+     */
+    creationDepth: createLeaf(
+      ["./callstack"],
+
+      (stack) => stack.filter((call) => call.address === undefined).length;
+    ),
+
+    /**
+     * evm.current.createdAddress
+     * NOTE: Only use this when evm.current.state.isHalting is true!
+     * Otherwise the result will be nonsense!
+     * To enforce this, I am having this return undefined unless
+     * evm.current.state.isHalting holds
+     */
+    createdAddress: createLeaf(
+      [data.next.state.stack, evm.current.state.isHalting],
+      (stack, isHalting) => isHalting ?
+        toHexString(stack[stack.length-1],true) :
+        undefined),
 
     /**
      * evm.current.context

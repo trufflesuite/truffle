@@ -4,6 +4,8 @@ const debug = debugModule("debugger:data:selectors");
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import jsonpointer from "json-pointer";
 
+import { stableKeccak256 } from "lib/helpers";
+
 import ast from "lib/ast/selectors";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
@@ -12,6 +14,11 @@ import decode from "../decode";
 import * as decodeUtils from "../decode/utils";
 
 import { BigNumber } from "bignumber.js";
+
+/**
+ * @private
+ */
+const identity = (x) => x
 
 function createStateSelectors({ stack, memory, storage }) {
   return {
@@ -172,6 +179,28 @@ const data = createSelectorTree({
     state: createStateSelectors(evm.current.state),
 
     /**
+     * data.current.functionDepth
+     */
+
+    functionDepth: createLeaf(
+      [solidity.current.functionDepth], identity),
+
+    /**
+     * data.current.address
+     * Note: May be undefined (if in an initializer)
+     */
+
+    address: createLeaf(
+      [evm.current.call], (call) => call.address),
+
+    /**
+     * data.current.dummyAddress
+     */
+
+    dummyAddress: createLeaf(
+      [evm.current.creationDepth], identity),
+
+    /**
      * data.current.identifiers (namespace)
      */
     identifiers: {
@@ -236,31 +265,62 @@ const data = createSelectorTree({
         [
           "/proc/assignments",
           "./_",
-          solidity.current.functionDepth //for pruning things too deep on stack
+          solidity.current.functionDepth, //for pruning things too deep on stack
+          "/current/address", //for contract variables
+          "/current/dummyAddress" //for contract vars when in creation call
         ],
 
-        (assignments, identifiers, currentDepth) => Object.assign({},
-          ...Object.entries(identifiers)
-            .map( ([identifier, id]) => {
-              let matchIds = Object.keys(assignments)
-                //first restrict to the appropriate variable
-                .filter((augmentedId) =>
-                  decodeUtils.idFromAugmented(augmentedId) === id)
-                //then get just the stack frame corresponding to that variable
-                .map(decodeUtils.depthFromAugmented);
+        (assignments, identifiers, currentDepth, address, dummyAddress) =>
+          Object.assign({},
+            ...Object.entries(identifiers)
+              .map( ([identifier, astId]) => {
+                //note: this needs tweaking for specials later
+                let id;
 
-              //want innermost but not beyond current depth
-              //note: if no matches, will return -Infinity
-              //however the return value in this case is irrelevant
-              let maxMatch=Math.min(currentDepth, Math.max(...matchIds));
-              let { ref } = (
-                assignments[decodeUtils.augmentWithDepth(id, maxMatch)] || {});
-              if (!ref) { return undefined; };
+                //first, check if it's a contract var
+                if(address !== undefined) {
+                  let matchIds = assignments.byAstId[astId].filter(
+                    (idHash) => assignments.byId[idHash].address === address
+                  )
+                  if(matchIds.length > 0) {
+                    id = matchIds[0]; //there should only be one!
+                  }
+                }
+                else {
+                  let matchIds = assignments.byAstId[astId].filter(
+                    (idHash) => assignments.byId[idHash].dummyAddress
+                      === dummyAddress
+                  )
+                  if(matchIds.length > 0) {
+                    id = matchIds[0]; //again, there should only be one!
+                  }
+                }
+              
+                //if not contract, it's local, so find the innermost
+                //(but not beyond current depth)
+                if(id === undefined){
+                  let matchFrames = assignments.byAstId[astId].map(
+                    (assignment) => assignment.stackFrame
+                  ).filter(
+                    (stackframe) => stackframe !== undefined
+                  );
+                  let maxMatch = Math.min(currentDepth, Math.max(...matchFrames));
+                  //Note: If no matches, returns -Infinity, but that's OK, since the
+                  //return value in this case is irrelevant
 
-              return {
-                [identifier]: ref
-              };
-            })
+                  id = stableKeccak256({astId, stackframe: maxMatch});
+                }
+
+                //if we still didn't find it, oh well
+
+
+                let { ref } = (assignments[id] || {});
+                if (!ref) { return undefined };
+  
+                return {
+                  [identifier]: ref
+                };
+              })
         )
       ),
 

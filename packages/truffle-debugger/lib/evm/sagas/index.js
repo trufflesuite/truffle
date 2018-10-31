@@ -9,6 +9,8 @@ import * as actions from "../actions";
 
 import evm from "../selectors";
 
+import data from "lib/data/sagas";
+
 /**
  * Adds EVM bytecode context
  *
@@ -97,6 +99,12 @@ export function* callstackSaga () {
 
     } else if (yield select(evm.current.step.isHalting)) {
       debug("got return");
+
+      let dummyAddress = yield select(evm.current.creationDepth);
+      let createdAddress = yield select(evm.current.createdAddress);
+
+      yield data.learnAddress(dummyAddress, createdAddress);
+
       yield put(actions.returnCall());
     }
   }
