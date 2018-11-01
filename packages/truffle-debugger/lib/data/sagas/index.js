@@ -99,6 +99,7 @@ function *tickSaga() {
       debug("allocation %O", allocation);
       assignments = {byId: {}};
       for(let id in allocation.children){
+        id = Number(id); //not sure why we're getting them as strings, but...
         let idObj;
         if(address !== undefined) {
           idObj = {astId: id, address};
@@ -112,14 +113,12 @@ function *tickSaga() {
           ...idObj,
           id: fullId,
           ref: {
-              ...((currentAssignments.byId[fullId] !== undefined) ?
-                currentAssignments.byId[fullId].ref || {} : {}),
+              ...((currentAssignments.byId[fullId] || {}).ref || {}),
               storage: allocation.children[id]
           }
         }
         assignments.byId[fullId] = assignment;
       }
-      debug("currentAssignments %O", currentAssignments);
       debug("assignments %O", assignments);
 
       yield put(actions.assign(treeId, assignments));
@@ -128,7 +127,6 @@ function *tickSaga() {
     case "VariableDeclaration":
       let varId = jsonpointer.get(tree, pointer).id;
       debug("Variable declaration case");
-      debug("currentAssignments %O", currentAssignments);
       debug("currentDepth %d varId %d", currentDepth, varId);
       assignment = makeAssignment(
         {astId: varId, stackframe: currentDepth},
@@ -153,7 +151,6 @@ function *tickSaga() {
       let fullIndexId = stableKeccak256(indexIdObj);
 
       debug("Index access case");
-      debug("currentAssignments %O", currentAssignments);
 
       const indexAssignment = (currentAssignments.byId[fullIndexId] || {}).ref;
       debug("indexAssignment %O", indexAssignment);
@@ -171,7 +168,7 @@ function *tickSaga() {
 
       debug("index value %O", indexValue);
       if (indexValue !== undefined) {
-        yield put(actions.mapKey(baseDeclearationId, indexValue));
+        yield put(actions.mapKey(baseDeclarationId, indexValue));
       }
 
       break;
@@ -188,7 +185,6 @@ function *tickSaga() {
       let literal = stack[top];
 
       debug("default case");
-      debug("currentAssignments %O", currentAssignments);
       debug("currentDepth %d node.id %d", currentDepth, node.id);
       assignment = makeAssignment({astId: node.id, stackframe: currentDepth},
         {literal});
@@ -202,10 +198,10 @@ export function* reset() {
   yield put(actions.reset());
 }
 
-export function *learnAddressSaga(address, creationDepth)
+export function *learnAddressSaga(dummyAddress, address)
 {
   debug("about to learn an address");
-  yield put(actions.learnAddress(address, creationDepth));
+  yield put(actions.learnAddress(dummyAddress, address));
   debug("address learnt");
 }
 

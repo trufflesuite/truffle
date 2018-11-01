@@ -9,7 +9,7 @@ import * as actions from "../actions";
 
 import evm from "../selectors";
 
-import data from "lib/data/sagas";
+import * as data from "lib/data/sagas";
 
 /**
  * Adds EVM bytecode context
@@ -109,8 +109,9 @@ export function* callstackSaga () {
         callstack[callstack.length - 1].address === undefined)
       {
         let dummyAddress = yield select(evm.current.creationDepth);
+        debug("dummyAddress %d", dummyAddress);
         let createdAddress = yield select(evm.current.createdAddress);
-        debug("about to learn an address");
+        debug("createdAddress %s", createdAddress);
         yield *data.learnAddressSaga(dummyAddress, createdAddress);
         debug("address learnt");
       }

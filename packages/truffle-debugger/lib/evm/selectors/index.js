@@ -218,22 +218,30 @@ const evm = createSelectorTree({
 
     /**
      * evm.current.createdAddress
-     * NOTE: Only use this just before returning from an intializer (and not
-     * when about to quit)!
-     * Otherwise the result will be nonsense!
-     * To enforce this, I am having this return undefined these conditions hold
+     * NOTE: Only use this just before returning from a constructor (and not
+     * when about to quit)!  Otherwise the result will be nonsense!
+     * To enforce this, I am having this return undefined when these conditions
+     * don't hold
      */
     createdAddress: createLeaf(
       ["/next/state/stack", "./state/isHalting", "./callstack"],
-      (stack, isHalting, callstack) =>
-        isHalting && callstack.length > 1 
-          && callstack[callstack.length - 1].address === undefined ?
-        //note: I'm just copying how data.next.state.stack
-        //does things here!
-        decodeUtils.toHexString(
-          decodeUtils.toBytes(decodeUtils.toBigNumber(
-            stack[stack.length - 1], decodeUtils.WORD_SIZE)), true) :
-        undefined),
+
+      (stack, isHalting, callstack) => {
+        let callDepth = callstack.length;
+        if( isHalting && callDepth > 1 
+          && callstack[callDepth - 1].address === undefined) {
+            debug("attempting to decode address");
+            return decodeUtils.toHexString(
+              decodeUtils.toBytes(decodeUtils.toBigNumber(
+                stack[stack.length - 1], decodeUtils.WORD_SIZE)), true);
+            //note: I'm just copying how data.next.state.stack
+            //does things here!
+        }
+        else {
+          return undefined;
+        }
+      }
+    ),
 
     /**
      * evm.current.context

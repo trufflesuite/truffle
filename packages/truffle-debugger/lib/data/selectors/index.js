@@ -302,21 +302,24 @@ const data = createSelectorTree({
                 //(but not beyond current depth)
                 if(id === undefined){
                   let matchFrames = (assignments.byAstId[astId] || []).map(
-                    (assignment) => assignment.stackframe
+                    (id) => assignments.byId[id].stackframe
                   ).filter(
                     (stackframe) => stackframe !== undefined
                   );
-                  let maxMatch = Math.min(currentDepth, Math.max(...matchFrames));
-                  //Note: If no matches, returns -Infinity, but that's OK, since the
-                  //return value in this case is irrelevant
 
-                  id = stableKeccak256({astId, stackframe: maxMatch});
+                  if(matchFrames.length > 0) //this check isn't *really*
+                    //necessary, but may as well prevent stupid stuff
+                  {
+                    let maxMatch = Math.min(currentDepth,
+                      Math.max(...matchFrames));
+                    id = stableKeccak256({astId, stackframe: maxMatch});
+                  }
                 }
 
                 //if we still didn't find it, oh well
 
 
-                let { ref } = (assignments[id] || {});
+                let { ref } = (assignments.byId[id] || {});
                 if (!ref) { return undefined };
   
                 return {
