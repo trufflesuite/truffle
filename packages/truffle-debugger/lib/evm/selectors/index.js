@@ -218,16 +218,16 @@ const evm = createSelectorTree({
 
     /**
      * evm.current.createdAddress
-     * NOTE: Only use this when evm.current.state.isHalting is true!
+     * NOTE: Only use this just before returning from an intializer (and not
+     * when about to quit)!
      * Otherwise the result will be nonsense!
-     * To enforce this, I am having this return undefined unless
-     * evm.current.state.isHalting holds
-     * (similarly if we're just about to quit)
+     * To enforce this, I am having this return undefined these conditions hold
      */
     createdAddress: createLeaf(
       ["/next/state/stack", "./state/isHalting", "./callstack"],
       (stack, isHalting, callstack) =>
-        isHalting && callstack.length > 1 ?
+        isHalting && callstack.length > 1 
+          && callstack[callstack.length - 1].address === undefined ?
         //note: I'm just copying how data.next.state.stack
         //does things here!
         decodeUtils.toHexString(

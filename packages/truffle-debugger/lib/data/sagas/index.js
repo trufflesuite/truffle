@@ -131,7 +131,8 @@ function *tickSaga() {
       debug("currentAssignments %O", currentAssignments);
       debug("currentDepth %d varId %d", currentDepth, varId);
       assignment = makeAssignment(
-        {astId: varId, stackframe: currentDepth}, {"stack": top});
+        {astId: varId, stackframe: currentDepth},
+        {"stack": top});
       assignments = {byId : {[assignment.id]: assignment}};
       yield put(actions.assign(treeId, assignments));
       break;
@@ -154,7 +155,7 @@ function *tickSaga() {
       debug("Index access case");
       debug("currentAssignments %O", currentAssignments);
 
-      const indexAssignment = (currentAssignments[fullIndexId] || {}).ref;
+      const indexAssignment = (currentAssignments.byId[fullIndexId] || {}).ref;
       debug("indexAssignment %O", indexAssignment);
       // HACK because string literal AST nodes are not sourcemapped to directly
       // value appears to be available in `node.indexExpression.hexValue`
@@ -201,9 +202,11 @@ export function* reset() {
   yield put(actions.reset());
 }
 
-export function *learnAddress(address, creationDepth)
+export function *learnAddressSaga(address, creationDepth)
 {
+  debug("about to learn an address");
   yield put(actions.learnAddress(address, creationDepth));
+  debug("address learnt");
 }
 
 function makeAssignment(idObj, ref) {

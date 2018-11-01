@@ -100,13 +100,19 @@ export function* callstackSaga () {
     } else if (yield select(evm.current.step.isHalting)) {
       debug("got return");
 
-      //if the program's not ending, do a LEARN_ADDRESS
       let callstack = yield select(evm.current.callstack);
-      if(callstack.length>1)
+      
+      //if the program's not ending, and we just returned from an initializer,
+      //learn the address of what we just initialized
+      //(do this before we put the return action to avoid off-by-one error)
+      if(callstack.length>1 &&
+        callstack[callstack.length - 1].address === undefined)
       {
         let dummyAddress = yield select(evm.current.creationDepth);
         let createdAddress = yield select(evm.current.createdAddress);
-        yield *data.learnAddress(dummyAddress, createdAddress);
+        debug("about to learn an address");
+        yield *data.learnAddressSaga(dummyAddress, createdAddress);
+        debug("address learnt");
       }
 
       yield put(actions.returnCall());
