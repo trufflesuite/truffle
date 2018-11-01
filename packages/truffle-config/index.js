@@ -354,6 +354,7 @@ Config.default = function() {
 };
 
 Config.search = function(options, filename) {
+  options = options || {};
   let search;
 
   !filename
@@ -366,6 +367,7 @@ Config.search = function(options, filename) {
 };
 
 Config.detect = function(options, filename) {
+  options = options || {};
   var file = this.search(options, filename);
 
   if (file === null) {
