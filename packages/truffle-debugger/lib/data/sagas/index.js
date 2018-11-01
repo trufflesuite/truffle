@@ -44,7 +44,7 @@ function *tickSaga() {
   }
 
   let top = stack.length - 1;
-  var parameters, returnParameters, assignments, storageVars;
+  var parameters, returnParameters, assignment, assignments, storageVars;
 
   if (!node) {
     return;
@@ -70,13 +70,18 @@ function *tickSaga() {
       returnParameters = node.returnParameters.parameters
         .map( (p, i) => `${pointer}/returnParameters/parameters/${i}` );
 
-      assignments = returnParameters.concat(parameters).reverse()
+      assignments = { byId: Object.assign({},
+        ...returnParameters.concat(parameters).reverse()
         .map( (pointer) => jsonpointer.get(tree, pointer).id )
         //note: depth may be off by 1 but it doesn't matter
-        .map( (id, i) => (
-          [{astId: id, stackframe: currentDepth}, {"stack": top - i}]))
-        .reduce( (acc, [idObj, ref]) =>
-          addAssignment(acc, idObj, ref), blankAssigments() );
+        .map( (id, i) => 
+          makeAssignment({astId: id, stackframe: currentDepth},
+            {"stack": top - i}))
+        .map( (assignment) => {
+          return {[assignment.id]: assignment};
+          //awkward, but seems to be only way to return an object literal
+        })
+      )};
       debug("Function definition case");
       debug("assignments %O", assignments);
 
@@ -92,7 +97,7 @@ function *tickSaga() {
       let allocation = utils.allocateDeclarations(storageVars, definitions);
       debug("Contract definition case");
       debug("allocation %O", allocation);
-      assignments = blankAssignments();
+      assignments = {byId: {}};
       for(let id in allocation.children){
         let idObj;
         if(address !== undefined) {
@@ -102,15 +107,17 @@ function *tickSaga() {
           idObj = {astId: id, dummyAddress};
         }
         let fullId = stableKeccak256(idObj);
-        addAssignment(assignments,
-          idObj,
-          { [fullId]: {
-              ...(currentAssignments.byId[fullId].ref || 
-                { ref: {} }).ref,
+        //we don't use makeAssignment here as we had to compute the ID anyway
+        assignment = {
+          ...idObj,
+          id: fullId,
+          ref: {
+              ...((currentAssignments.byId[fullId] !== undefined) ?
+                currentAssignments.byId[fullId].ref || {} : {}),
               storage: allocation.children[id]
-            }
           }
-        )
+        }
+        assignments.byId[fullId] = assignment;
       }
       debug("currentAssignments %O", currentAssignments);
       debug("assignments %O", assignments);
@@ -123,9 +130,10 @@ function *tickSaga() {
       debug("Variable declaration case");
       debug("currentAssignments %O", currentAssignments);
       debug("currentDepth %d varId %d", currentDepth, varId);
-      yield put(actions.assign(treeId, addAssignments(blankAssignments(),
-        {astId: varId, stackframe: currentDepth}, {"stack": top})
-      ));
+      assignment = makeAssignment(
+        {astId: varId, stackframe: currentDepth}, {"stack": top});
+      assignments = {byId : {[assignment.id]: assignment}};
+      yield put(actions.assign(treeId, assignments));
       break;
 
     case "IndexAccess":
@@ -181,9 +189,10 @@ function *tickSaga() {
       debug("default case");
       debug("currentAssignments %O", currentAssignments);
       debug("currentDepth %d node.id %d", currentDepth, node.id);
-      yield put(actions.assign(treeId, addAssignments(blankAssignments(),
-        {astId: node.id, stackframe: currentDepth}, { literal })
-      ));
+      assignment = makeAssignment({astId: node.id, stackframe: currentDepth},
+        {literal});
+      assignments = {byId : {[assignment.id]: assignment}};
+      yield put(actions.assign(treeId, assignments));
       break;
   }
 }
@@ -197,26 +206,9 @@ export function *learnAddress(address, creationDepth)
   yield put(actions.learnAddress(address, creationDepth));
 }
 
-/*
- * addAssignment -- adds the given assignment to the assignments object.
- * NOTE: This mutates the assignments object!
- * The other parameters are ref, which is the reference for the new assignment,
- * and idObj, which is an ID object that will be hashed to produce the new ID.
- * Note that this hashed value is then added to the ID object as an overall ID;
- * however the hash is based on the ID object *without* the id (hash) field.
- * (The function also returns the new assignments object.)
- */
-function addAssignment(assignments, idObj, ref) {
-  let {astId, stackframe, address, dummyAddress, special} = idObj;
+function makeAssignment(idObj, ref) {
   let id = stableKeccak256(idObj);
-  let assignment = { ...idObj, id, ref };
-  assignments.byId[id] = assignment;
-  return assignments;
-}
-
-function blankAssignments()
-{
-  return {byId: {}};
+  return { ...idObj, id, ref };
 }
 
 export function* saga () {

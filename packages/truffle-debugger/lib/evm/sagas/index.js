@@ -106,7 +106,7 @@ export function* callstackSaga () {
       {
         let dummyAddress = yield select(evm.current.creationDepth);
         let createdAddress = yield select(evm.current.createdAddress);
-        yield data.learnAddress(dummyAddress, createdAddress);
+        yield *data.learnAddress(dummyAddress, createdAddress);
       }
 
       yield put(actions.returnCall());

@@ -72,7 +72,8 @@ const DEFAULT_ASSIGNMENTS = {
 function assignments(state = DEFAULT_ASSIGNMENTS, action) {
   switch (action.type) {
     case actions.ASSIGN:
-      return action.assignments.byId.values().reduce(
+      debug("action.assignments %O",action.assignments);
+      return Object.values(action.assignments.byId).reduce(
         (acc, assignment) => {
           let {id, astId} = assignment; //we don't need the rest
           return {
@@ -82,7 +83,7 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
             },
             byAstId: {
               ...acc.byAstId,
-              [astId]: [...new Set([...acc.byAstId[astId], id])]
+              [astId]: [...new Set([...(acc.byAstId[astId] || []), id])]
               //we use a set for uniqueness
             }
           }
@@ -92,10 +93,13 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
     case(actions.LEARN_ADDRESS):
       let { dummyAddress, address } = action;
       return {
-        byId: Object.fromEntries(
-          state.byId.entries().map(
-            ([id, assignment]) => [id,
-              learnAddress(assignment, dummyAddress, address)]
+        byId: Object.assign({},
+          ...Object.entries(state.byId).map(
+            ([id, assignment]) => {
+              return {
+                [id]: learnAddress(assignment, dummyAddress, address)
+              }; //awkward, but seems to be only way to return an object literal
+            }
           )
         ),
         byAstId: state.byAstId, //may be undefined
@@ -109,30 +113,6 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
       return state;
   }
 };
-
-/*
- * addAssignment -- adds the given assignment to the assignments object and
- * returns the result; does NOT mutate the assignment object
- *
- * unlike addssignment in sagas, this assumes we're adding an already-formed
- * assignment object; it doesn't need to make it itself
- */
-function addAssignment(acc, assignment) {
-
-  let {astId} = assignment; //we don't need the other components
-
-  return {
-    byId: {
-      ...acc.byId,
-      [id]: assignment
-    },
-    byAstId: {
-      ...acc.byAstId,
-      [astId]: [...new Set([...acc.byAstId[astId], id])]
-    }
-  }
-}
-
 
 function learnAddress(assignment, dummyAddress, address)
 {
