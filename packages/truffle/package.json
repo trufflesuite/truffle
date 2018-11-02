@@ -4,7 +4,11 @@
   "version": "5.0.0-next.14",
   "description": "Truffle - Simple development framework for Ethereum",
   "dependencies": {
+    "eslint": "^5.7.0",
+    "go-ipfs-dep": "^0.4.17",
+    "husky": "^1.1.2",
     "mocha": "^4.1.0",
+    "nyc": "^13.0.1",
     "original-require": "1.0.1",
     "solc": "0.4.25"
   },
