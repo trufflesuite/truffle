@@ -4,7 +4,7 @@ const debug = debugModule("debugger:evm:selectors");
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import levenshtein from "fast-levenshtein";
 
-import decodeUtils from "lib/data/decode/utils";
+import * as decodeUtils from "lib/data/decode/utils";
 
 import trace from "lib/trace/selectors";
 
