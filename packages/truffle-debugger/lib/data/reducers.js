@@ -96,14 +96,27 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
         byId: Object.assign({},
           ...Object.entries(state.byId).map(
             ([id, assignment]) => {
+              let newAssignment =
+                learnAddress(assignment, dummyAddress, address);
               return {
-                [id]: learnAddress(assignment, dummyAddress, address)
-              }; //awkward, but seems to be only way to return an object literal
+                [newAssignment.id]: newAssignment
+              };
             }
           )
         ),
-        byAstId: state.byAstId, //may be undefined
-        bySpecial: state.bySpecial //may be undefined
+        byAstId: Object.assign({},
+          ...Object.entries(state.byAstId).map(
+            ([astId, ids]) => {
+              return {
+                [astId]: state.byAstId[astId].map(
+                  (id) =>
+                    learnAddress(state.byId[id], dummyAddress, address).id
+                    //this above involves some recomputation but oh well
+                )
+              }
+            }
+          )
+        )
       }
 
     case actions.RESET:
@@ -117,8 +130,15 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
 function learnAddress(assignment, dummyAddress, address)
 {
   if(assignment.dummyAddress === dummyAddress) {
-    return { //can assume has the correct form
-      id: assignment.id,
+    //we can assume here that the object being
+    //transformed has a very particular form
+    let newIdObj = {
+      astId: assignment.astId,
+      address
+    };
+    let newId = stableKeccak256(newIdObj);
+    return {
+      id: newId,
       ref: assignment.ref,
       astId: assignment.astId,
       address
