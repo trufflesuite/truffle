@@ -3,7 +3,9 @@
   "version": "0.0.6-beta.0",
   "description": "Utilities for identifying and managing blockchains",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "mocha"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/trufflesuite/truffle-blockchain-utils.git"
@@ -18,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle-blockchain-utils/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-blockchain-utils#readme"
+  "homepage": "https://github.com/trufflesuite/truffle-blockchain-utils#readme",
+  "devDependencies": {
+    "mocha": "^5.2.0"
+  }
 }
