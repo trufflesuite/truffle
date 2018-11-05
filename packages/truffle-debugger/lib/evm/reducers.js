@@ -83,6 +83,8 @@ function instances(state = DEFAULT_INSTANCES, action) {
     case actions.ADD_INSTANCE:
       let { address, context, binary } = action;
 
+      address = address.toLowerCase();
+
       // get known addresses for this context
       let otherInstances = state.byContext[context] || [];
       let otherAddresses = otherInstances.map(({address}) => address);
