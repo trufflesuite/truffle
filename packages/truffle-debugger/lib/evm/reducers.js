@@ -120,7 +120,9 @@ const info = combineReducers({
 export function callstack(state = [], action) {
   switch(action.type) {
     case actions.CALL:
-      let address = action.address;
+      let address = action.address.toLowerCase();
+        //we get some addresses in lowercase, some in checksum case,
+        //so I'm lowercasing them all for consistency
       return state.concat([ {address} ]);
 
     case actions.CREATE:
