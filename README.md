@@ -55,7 +55,7 @@ We welcome pull requests. To get started, just fork this repo, clone it locally,
 
 ```shell
 # Install
-npm install -g lerna
+npm install -g lerna@3.4.3
 npm install -g yarn
 npm run bootstrap
 

@@ -4,12 +4,13 @@ const MemoryLogger = require("../memorylogger");
 const sandbox = require("../sandbox");
 const path = require("path");
 
-describe("truffle build", function() {
+describe("truffle build", () => {
   const logger = new MemoryLogger();
   let config, project;
 
-  describe("when there is no build script in config", function() {
+  describe("when there is no build script in config", () => {
     beforeEach("set up sandbox", function() {
+      this.timeout(10000);
       project = path.join(
         __dirname,
         "../../sources/build/projectWithoutBuildScript"
@@ -20,25 +21,25 @@ describe("truffle build", function() {
       });
     });
 
-    it("should not error", function(done) {
-      this.timeout(10000);
+    it("should not error", done => {
       CommandRunner.run("build", config, error => {
         assert(typeof error === "undefined");
         done();
       });
-    });
-    it("whines about having no build config", function(done) {
-      this.timeout(10000);
-      CommandRunner.run("build", config, error => {
+    }).timeout(20000);
+
+    it("whines about having no build config", done => {
+      CommandRunner.run("build", config, () => {
         const output = logger.contents();
         assert(output.includes("No build configuration found."));
         done();
       });
-    });
+    }).timeout(10000);
   });
 
-  describe("when there is a proper build config", function() {
+  describe("when there is a proper build config", () => {
     beforeEach("set up sandbox", function() {
+      this.timeout(10000);
       project = path.join(
         __dirname,
         "../../sources/build/projectWithBuildScript"
@@ -49,8 +50,7 @@ describe("truffle build", function() {
       });
     });
     it("runs the build script", function(done) {
-      this.timeout(10000);
-      CommandRunner.run("build", config, error => {
+      CommandRunner.run("build", config, () => {
         const output = logger.contents();
         assert(output.includes("'this is the build script'"));
         done();
@@ -58,8 +58,9 @@ describe("truffle build", function() {
     });
   });
 
-  describe("when there is an object in the build config", function() {
+  describe("when there is an object in the build config", () => {
     beforeEach("set up sandbox", function() {
+      this.timeout(10000);
       project = path.join(
         __dirname,
         "../../sources/build/projectWithObjectInBuildScript"
@@ -70,8 +71,7 @@ describe("truffle build", function() {
       });
     });
     it("tells the user it shouldn't use an object", function(done) {
-      this.timeout(10000);
-      CommandRunner.run("build", config, error => {
+      CommandRunner.run("build", config, () => {
         const output = logger.contents();
         assert(
           output.includes(
