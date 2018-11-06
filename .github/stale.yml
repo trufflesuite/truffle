@@ -29,7 +29,7 @@ markComment: >
 
 # Comment to post when removing the stale label.
 unmarkComment: >
-  Thanks for your response! This issue is no longer considered stale and someone from the Truffle team will try to respond as soon as we can.
+  Thanks for your response! This issue is no longer considered stale and someone from the Truffle team will try to respond as soon as they can.
 
 # Comment to post when closing a stale Issue or Pull Request.
 closeComment: >
