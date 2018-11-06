@@ -6,6 +6,9 @@ import { put, call, race, take, select } from 'redux-saga/effects';
 import { prefixName } from "lib/helpers";
 
 import * as trace from "lib/trace/sagas";
+import * as data from "lib/data/sagas";
+import * as evm from "lib/evm/sagas";
+import * as solidity from "lib/solidity/sagas";
 
 import * as actions from "../actions";
 
@@ -17,7 +20,8 @@ const CONTROL_SAGAS = {
   [actions.STEP_OVER]: stepOver,
   [actions.STEP_INTO]: stepInto,
   [actions.STEP_OUT]: stepOut,
-  [actions.CONTINUE]: continueUntilBreakpoint
+  [actions.CONTINUE]: continueUntilBreakpoint,
+  [actions.RESET]: reset
 };
 
 /** AST node types that are skipped to filter out some noise */
@@ -242,4 +246,14 @@ function *continueUntilBreakpoint () {
       .length > 0;
     
   } while(!breakpointHit && !finished);
+}
+
+/**
+ * reset -- reset the state of the debugger
+ */
+function *reset() {
+  yield *data.reset();
+  yield *evm.reset();
+  yield *solidity.reset();
+  yield *trace.reset();
 }

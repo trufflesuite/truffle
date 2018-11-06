@@ -1,25 +1,15 @@
-var command = {
-  command: 'version',
-  description: 'Show version number and exit',
+const command = {
+  command: "version",
+  description: "Show version number and exit",
   builder: {},
   help: {
     usage: "truffle version",
-    options: [],
+    options: []
   },
-  run: function (options, done) {
-    var version = require("../version");
-
-    var bundle_version;
-
-    if (version.bundle) {
-      bundle_version = "v" + version.bundle;
-    } else {
-      bundle_version = "(unbundled)";
-    }
-
-    options.logger.log("Truffle " + bundle_version + " (core: " + version.core + ")");
-    options.logger.log("Solidity v" + version.solc + " (solc-js)");
-
+  run: function(options, done) {
+    const version = require("../version");
+    const { logger } = options;
+    version.log(logger);
     done();
   }
 };

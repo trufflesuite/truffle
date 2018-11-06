@@ -159,7 +159,7 @@ const Migrate = {
       Migrations = options.resolver.require("Migrations");
     } catch (e) {
       const message = `Could not find built Migrations contract: ${e.message}`;
-      return callback(new Error());
+      return callback(new Error(message));
     }
 
     if (Migrations.isDeployed() == false) {

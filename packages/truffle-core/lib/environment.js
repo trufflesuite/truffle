@@ -18,14 +18,17 @@ var Environment = {
       config.artifactor = new Artifactor(config.contracts_build_directory);
     }
 
-    if (!config.network && config.networks["development"]) {
-      config.network = "development";
-    }
-
     if (!config.network) {
-      return callback(
-        new Error("No network specified. Cannot determine current network.")
-      );
+      if (config.networks["development"]) {
+        config.network = "development";
+      } else {
+        config.network = "ganache";
+        config.networks[config.network] = {
+          host: "127.0.0.1",
+          port: 7545,
+          network_id: 5777
+        };
+      }
     }
 
     var network_config = config.networks[config.network];

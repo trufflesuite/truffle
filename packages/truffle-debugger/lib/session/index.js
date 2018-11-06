@@ -146,6 +146,10 @@ export default class Session {
     return this.dispatch(controller.stepOut());
   }
 
+  reset() {
+    return this.dispatch(controller.reset());
+  }
+
   continueUntilBreakpoint() {
     return this.dispatch(controller.continueUntilBreakpoint());
   }
