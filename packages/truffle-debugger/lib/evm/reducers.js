@@ -132,6 +132,9 @@ export function callstack(state = [], action) {
       //happen at the end when we want to keep the last one around)
       return state.length > 1 ? state.slice(0, -1) : state;
 
+    case action.RESET:
+      return [state[0]]; //leave the initial call still on the stack
+
     default:
       return state;
   };

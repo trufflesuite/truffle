@@ -102,6 +102,10 @@ export function* callstackSaga () {
   }
 }
 
+export function* reset() {
+  yield put(actions.reset());
+}
+
 export function* saga () {
   yield call(callstackSaga);
 }

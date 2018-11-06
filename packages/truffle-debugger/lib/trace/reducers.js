@@ -3,22 +3,28 @@ import { combineReducers } from "redux";
 import * as actions from "./actions";
 
 export function index(state = 0, action) {
-  if (action.type === actions.TOCK) {
+  switch(action.type) {
+  case actions.TOCK:
     return state + 1;
-  }
-  else {
+
+  case actions.RESET:
+    return 0;
+
+  default:
     return state;
   }
 }
 
 export function finished(state = false, action)
 {
-  if(action.type === actions.END_OF_TRACE)
-  {
+  switch(action.type) {
+  case actions.END_OF_TRACE:
     return true;
-  }
-  else
-  {
+
+  case actions.RESET:
+    return false;
+
+  default:
     return state;
   }
 }
