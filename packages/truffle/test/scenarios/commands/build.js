@@ -26,7 +26,7 @@ describe("truffle build", () => {
         assert(typeof error === "undefined");
         done();
       });
-    }).timeout(20000);
+    }).timeout(30000);
 
     it("whines about having no build config", done => {
       CommandRunner.run("build", config, () => {
