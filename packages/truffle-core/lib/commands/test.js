@@ -145,6 +145,14 @@ var command = {
             config.networks[config.network].network_id = 4447;
           }
           testrpcOptions = config.networks[config.network];
+          Develop.connectOrStart(
+            config,
+            testrpcOptions,
+            (started, disconnect) => {
+              ipcDisconnect = disconnect;
+              Environment.detect(config, environmentCallback);
+            }
+          );
         } else {
           testrpcOptions = {
             host: "127.0.0.1",
@@ -155,15 +163,15 @@ var command = {
             gasLimit: config.gas,
             noVMErrorsOnRPCResponse: true
           };
+          Develop.connectOrStart(
+            config,
+            testrpcOptions,
+            (started, disconnect) => {
+              ipcDisconnect = disconnect;
+              Environment.develop(config, testrpcOptions, environmentCallback);
+            }
+          );
         }
-
-        Develop.connectOrStart(config, testrpcOptions, function(
-          started,
-          disconnect
-        ) {
-          ipcDisconnect = disconnect;
-          Environment.develop(config, testrpcOptions, environmentCallback);
-        });
       });
     });
   }
