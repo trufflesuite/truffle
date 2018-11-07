@@ -27,9 +27,9 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
             ...(state.byContext[context] || {}),
 
             contractName,
-context
+            context
           }
-        },
+        }
       };
     }
 
@@ -85,7 +85,7 @@ function instances(state = DEFAULT_INSTANCES, action) {
 
       // get known addresses for this context
       let otherInstances = state.byContext[context] || [];
-      let otherAddresses = otherInstances.map(({address}) => address);
+      let otherAddresses = otherInstances.map(({ address }) => address);
 
       return {
         byAddress: {
@@ -98,8 +98,9 @@ function instances(state = DEFAULT_INSTANCES, action) {
           ...state.byContext,
 
           // reconstruct context instances to include new address
-          [context]: Array.from(new Set(otherAddresses).add(address))
-            .map((address) => ({address}))
+          [context]: Array.from(new Set(otherAddresses).add(address)).map(
+            address => ({ address })
+          )
         }
       };
 
@@ -109,7 +110,6 @@ function instances(state = DEFAULT_INSTANCES, action) {
     default:
       return state;
   }
-
 }
 
 const info = combineReducers({
@@ -118,14 +118,14 @@ const info = combineReducers({
 });
 
 export function callstack(state = [], action) {
-  switch(action.type) {
+  switch (action.type) {
     case actions.CALL:
       let address = action.address;
-      return state.concat([ {address} ]);
+      return state.concat([{ address }]);
 
     case actions.CREATE:
       const binary = action.binary;
-      return state.concat([ {binary} ]);
+      return state.concat([{ binary }]);
 
     case actions.RETURN:
       //HACK: pop the stack, UNLESS that would leave it empty (this will only
@@ -137,7 +137,7 @@ export function callstack(state = [], action) {
 
     default:
       return state;
-  };
+  }
 }
 
 const proc = combineReducers({

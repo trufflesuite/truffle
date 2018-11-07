@@ -40,8 +40,8 @@ export default class Session {
   }
 
   ready() {
-    return new Promise( (accept, reject) => {
-      this._store.subscribe( () => {
+    return new Promise((accept, reject) => {
+      this._store.subscribe(() => {
         if (this.state.session.status == "ACTIVE") {
           accept();
         } else if (typeof this.state.session.status == "object") {
@@ -154,12 +154,11 @@ export default class Session {
     return this.dispatch(controller.continueUntilBreakpoint());
   }
 
-  addBreakpoint(breakpoint)
-  {
+  addBreakpoint(breakpoint) {
     return this.dispatch(controller.addBreakpoint(breakpoint));
   }
 
-  removeBreakpoint(breakpoint){
+  removeBreakpoint(breakpoint) {
     return this.dispatch(controller.removeBreakpoint(breakpoint));
   }
 }
