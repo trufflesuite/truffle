@@ -34,7 +34,7 @@ describe("truffle build", () => {
         assert(output.includes("No build configuration found."));
         done();
       });
-    }).timeout(10000);
+    }).timeout(20000);
   });
 
   describe("when there is a proper build config", () => {
