@@ -64,56 +64,71 @@ describe("`truffle compile` as external", function() {
     });
   });
 
-  it("will migrate", function(done) {
-    this.timeout(50000);
-    Server.start();
+  describe("", () => {
+    before("start server", done => {
+      Server.start(done);
+    });
 
-    CommandRunner.run("migrate", config, function(err) {
-      var output = logger.contents();
-      if (err) {
-        console.log(output);
-        return done(err);
-      }
+    after("stop server", done => {
+      Server.stop(done);
+    });
 
-      var MetaCoin = contract(
-        require(path.join(config.contracts_build_directory, "MetaCoin.json"))
-      );
-      var ConvertLib = contract(
-        require(path.join(config.contracts_build_directory, "ConvertLib.json"))
-      );
-      var Migrations = contract(
-        require(path.join(config.contracts_build_directory, "Migrations.json"))
-      );
-      var ExtraMetaCoin = contract(
-        require(path.join(
-          config.contracts_build_directory,
-          "ExtraMetaCoin.json"
-        ))
-      );
+    it("will migrate", function(done) {
+      this.timeout(50000);
 
-      var promises = [];
+      CommandRunner.run("migrate", config, function(err) {
+        var output = logger.contents();
+        if (err) {
+          console.log(output);
+          return done(err);
+        }
 
-      [MetaCoin, ConvertLib, Migrations, ExtraMetaCoin].forEach(function(
-        abstraction
-      ) {
-        abstraction.setProvider(config.provider);
-
-        promises.push(
-          abstraction.deployed().then(function(instance) {
-            assert.notEqual(
-              instance.address,
-              null,
-              instance.contract_name + " didn't have an address!"
-            );
-          })
+        var MetaCoin = contract(
+          require(path.join(config.contracts_build_directory, "MetaCoin.json"))
         );
-      });
+        var ConvertLib = contract(
+          require(path.join(
+            config.contracts_build_directory,
+            "ConvertLib.json"
+          ))
+        );
+        var Migrations = contract(
+          require(path.join(
+            config.contracts_build_directory,
+            "Migrations.json"
+          ))
+        );
+        var ExtraMetaCoin = contract(
+          require(path.join(
+            config.contracts_build_directory,
+            "ExtraMetaCoin.json"
+          ))
+        );
 
-      Promise.all(promises)
-        .then(function() {
-          Server.stop(done);
-        })
-        .catch(done);
+        var promises = [];
+
+        [MetaCoin, ConvertLib, Migrations, ExtraMetaCoin].forEach(function(
+          abstraction
+        ) {
+          abstraction.setProvider(config.provider);
+
+          promises.push(
+            abstraction.deployed().then(function(instance) {
+              assert.notEqual(
+                instance.address,
+                null,
+                instance.contract_name + " didn't have an address!"
+              );
+            })
+          );
+        });
+
+        Promise.all(promises)
+          .then(function() {
+            done();
+          })
+          .catch(done);
+      });
     });
   });
 
