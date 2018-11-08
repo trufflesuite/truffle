@@ -2,10 +2,10 @@ var _ = require("lodash");
 var path = require("path");
 var Provider = require("truffle-provider");
 var TruffleError = require("truffle-error");
-var Module = require('module');
+var Module = require("module");
 var findUp = require("find-up");
 var originalrequire = require("original-require");
-const Configstore = require('configstore');
+const Configstore = require("configstore");
 
 var DEFAULT_CONFIG_FILENAME = "truffle.js";
 var BACKUP_CONFIG_FILENAME = "truffle-config.js"; // For Windows + Command Prompt
@@ -17,18 +17,23 @@ function Config(truffle_directory, working_directory, network) {
   var default_tx_values = {
     gas: 6721975,
     gasPrice: 20000000000, // 20 gwei,
-    from: null,
+    from: null
   };
 
-  const defaultUserConfig = new Configstore(DEFAULT_USER_CONFIG, {}, { globalConfigPath: true });
+  const defaultUserConfig = new Configstore(
+    DEFAULT_USER_CONFIG,
+    {},
+    { globalConfigPath: true }
+  );
 
   // This is a list of multi-level keys with defaults
   // we need to _.merge. Using this list for safety
   // vs. just merging all objects.
-  this._deepCopy = ['compilers'];
+  this._deepCopy = ["compilers"];
 
   this._values = {
-    truffle_directory: truffle_directory || path.resolve(path.join(__dirname, "../")),
+    truffle_directory:
+      truffle_directory || path.resolve(path.join(__dirname, "../")),
     working_directory: working_directory || process.cwd(),
     network: network,
     networks: {},
@@ -62,12 +67,11 @@ function Config(truffle_directory, working_directory, network) {
       vyper: {}
     },
     logger: {
-      log: function() {},
+      log: function() {}
     }
   };
 
-  const resolveDirectory = (value) =>
-    path.resolve(self.working_directory, value);
+  const resolveDirectory = value => path.resolve(self.working_directory, value);
 
   var props = {
     // These are already set.
@@ -107,7 +111,7 @@ function Config(truffle_directory, working_directory, network) {
       transform: resolveDirectory
     },
     test_file_extension_regexp: function() {
-      return /.*\.(js|es|es6|jsx|sol)$/;
+      return /.*\.(js|ts|es|es6|jsx|sol)$/;
     },
     example_project_directory: {
       default: () => path.join(self.truffle_directory, "example"),
@@ -122,7 +126,9 @@ function Config(truffle_directory, working_directory, network) {
         }
       },
       set: function(val) {
-        throw new Error("Do not set config.network_id. Instead, set config.networks and then config.networks[<network name>].network_id");
+        throw new Error(
+          "Do not set config.network_id. Instead, set config.networks and then config.networks[<network name>].network_id"
+        );
       }
     },
     network_config: {
@@ -144,7 +150,9 @@ function Config(truffle_directory, working_directory, network) {
         return conf;
       },
       set: function(val) {
-        throw new Error("Don't set config.network_config. Instead, set config.networks with the desired values.");
+        throw new Error(
+          "Don't set config.network_config. Instead, set config.networks with the desired values."
+        );
       }
     },
     from: {
@@ -156,7 +164,9 @@ function Config(truffle_directory, working_directory, network) {
         }
       },
       set: function(val) {
-        throw new Error("Don't set config.from directly. Instead, set config.networks and then config.networks[<network name>].from");
+        throw new Error(
+          "Don't set config.from directly. Instead, set config.networks and then config.networks[<network name>].from"
+        );
       }
     },
     gas: {
@@ -168,7 +178,9 @@ function Config(truffle_directory, working_directory, network) {
         }
       },
       set: function(val) {
-        throw new Error("Don't set config.gas directly. Instead, set config.networks and then config.networks[<network name>].gas");
+        throw new Error(
+          "Don't set config.gas directly. Instead, set config.networks and then config.networks[<network name>].gas"
+        );
       }
     },
     gasPrice: {
@@ -180,7 +192,9 @@ function Config(truffle_directory, working_directory, network) {
         }
       },
       set: function(val) {
-        throw new Error("Don't set config.gasPrice directly. Instead, set config.networks and then config.networks[<network name>].gasPrice");
+        throw new Error(
+          "Don't set config.gasPrice directly. Instead, set config.networks and then config.networks[<network name>].gasPrice"
+        );
       }
     },
     provider: {
@@ -194,7 +208,9 @@ function Config(truffle_directory, working_directory, network) {
         return Provider.create(options);
       },
       set: function(val) {
-        throw new Error("Don't set config.provider directly. Instead, set config.networks and then set config.networks[<network name>].provider");
+        throw new Error(
+          "Don't set config.provider directly. Instead, set config.networks and then set config.networks[<network name>].provider"
+        );
       }
     },
     confirmations: {
@@ -206,7 +222,9 @@ function Config(truffle_directory, working_directory, network) {
         }
       },
       set: function(val) {
-        throw new Error("Don't set config.confirmations directly. Instead, set config.networks and then config.networks[<network name>].confirmations");
+        throw new Error(
+          "Don't set config.confirmations directly. Instead, set config.networks and then config.networks[<network name>].confirmations"
+        );
       }
     },
     production: {
@@ -218,11 +236,13 @@ function Config(truffle_directory, working_directory, network) {
         }
       },
       set: function(val) {
-        throw new Error("Don't set config.production directly. Instead, set config.networks and then config.networks[<network name>].production");
+        throw new Error(
+          "Don't set config.production directly. Instead, set config.networks and then config.networks[<network name>].production"
+        );
       }
     },
     timeoutBlocks: {
-      get: function(){
+      get: function() {
         try {
           return self.network_config.timeoutBlocks;
         } catch (e) {
@@ -230,11 +250,13 @@ function Config(truffle_directory, working_directory, network) {
         }
       },
       set: function(val) {
-        throw new Error("Don't set config.timeoutBlocks directly. Instead, set config.networks and then config.networks[<network name>].timeoutBlocks");
+        throw new Error(
+          "Don't set config.timeoutBlocks directly. Instead, set config.networks and then config.networks[<network name>].timeoutBlocks"
+        );
       }
     },
     skipDryRun: {
-      get: function(){
+      get: function() {
         try {
           return self.network_config.skipDryRun;
         } catch (e) {
@@ -242,16 +264,17 @@ function Config(truffle_directory, working_directory, network) {
         }
       },
       set: function(val) {
-        throw new Error("Don't set config.skipDryRun directly. Instead, set config.networks and then config.networks[<network name>].skipDryRun");
+        throw new Error(
+          "Don't set config.skipDryRun directly. Instead, set config.networks and then config.networks[<network name>].skipDryRun"
+        );
       }
     }
-
   };
 
   Object.keys(props).forEach(function(prop) {
     self.addProp(prop, props[prop]);
   });
-};
+}
 
 Config.prototype.addProp = function(propertyName, descriptor) {
   // possible property descriptors
@@ -262,25 +285,29 @@ Config.prototype.addProp = function(propertyName, descriptor) {
   // transform: specify function to transform value when (used by set)
   Object.defineProperty(this, propertyName, {
     // retrieve config property value
-    get: descriptor.get || function() {
-      // value is specified
-      if (propertyName in this._values) {
-        return this._values[propertyName];
-      }
+    get:
+      descriptor.get ||
+      function() {
+        // value is specified
+        if (propertyName in this._values) {
+          return this._values[propertyName];
+        }
 
-      // default getter is specified
-      if (descriptor.default) {
-        return descriptor.default();
-      };
+        // default getter is specified
+        if (descriptor.default) {
+          return descriptor.default();
+        }
 
-      // descriptor is a function
-      return descriptor();
-    },
-    set: descriptor.set || function(value) {
-      this._values[propertyName] = (descriptor.transform)
-        ? descriptor.transform(value)
-        : value;
-    },
+        // descriptor is a function
+        return descriptor();
+      },
+    set:
+      descriptor.set ||
+      function(value) {
+        this._values[propertyName] = descriptor.transform
+          ? descriptor.transform(value)
+          : value;
+      },
     configurable: true,
     enumerable: true
   });
@@ -312,7 +339,7 @@ Config.prototype.merge = function(obj) {
   // Only set keys for values that don't throw.
   Object.keys(obj).forEach(function(key) {
     try {
-      if (typeof clone[key] === 'object' && self._deepCopy.includes(key)){
+      if (typeof clone[key] === "object" && self._deepCopy.includes(key)) {
         self[key] = _.merge(self[key], clone[key]);
       } else {
         self[key] = clone[key];
@@ -332,11 +359,13 @@ Config.default = function() {
 Config.detect = function(options, filename) {
   var search;
 
-  (!filename)
-    ? search = [DEFAULT_CONFIG_FILENAME, BACKUP_CONFIG_FILENAME]
-    : search = filename;
+  !filename
+    ? (search = [DEFAULT_CONFIG_FILENAME, BACKUP_CONFIG_FILENAME])
+    : (search = filename);
 
-  var file = findUp.sync(search, {cwd: options.working_directory || options.workingDirectory});
+  var file = findUp.sync(search, {
+    cwd: options.working_directory || options.workingDirectory
+  });
 
   if (file == null) {
     throw new TruffleError("Could not find suitable configuration file.");
@@ -362,7 +391,7 @@ Config.load = function(file, options) {
 };
 
 Config.getUserConfig = function() {
-  return new Configstore('truffle', {}, { globalConfigPath: true });
+  return new Configstore("truffle", {}, { globalConfigPath: true });
 };
 
 module.exports = Config;
