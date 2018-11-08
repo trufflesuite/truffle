@@ -19,4 +19,5 @@ module.exports = {
   version: require("./version"),
   config: require("./config"),
   watch: require("./watch"),
+  slither_analyze: require("./slither-analyze")
 };
