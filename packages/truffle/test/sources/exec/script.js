@@ -9,6 +9,6 @@ const exec = function(){
       process.exit(0);
     })
     .catch(err => process.exit(1));
-}
+};
 
 module.exports = exec;

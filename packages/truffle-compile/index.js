@@ -1,9 +1,5 @@
-var Profiler = require("./profiler");
 var OS = require("os");
-
 var path = require("path");
-var fs = require("fs");
-var async = require("async");
 var Profiler = require("./profiler");
 var CompileError = require("./compileerror");
 var CompilerSupplier = require("./compilerSupplier");
@@ -87,9 +83,11 @@ var compile = function(sources, options, callback) {
       "evm.bytecode.object",
       "evm.bytecode.sourceMap",
       "evm.deployedBytecode.object",
-      "evm.deployedBytecode.sourceMap"
+      "evm.deployedBytecode.sourceMap",
+      "userdoc",
+      "devdoc"
     ]
-  }
+  };
 
   // Specify compilation targets
   // Each target uses defaultSelectors, defaulting to single target `*` if targets are unspecified
@@ -107,7 +105,7 @@ var compile = function(sources, options, callback) {
     settings: {
       evmVersion: options.compilers.solc.settings.evmVersion,
       optimizer: options.compilers.solc.settings.optimizer,
-      outputSelection: outputSelection,
+      outputSelection
     }
   };
 
@@ -119,7 +117,7 @@ var compile = function(sources, options, callback) {
   Object.keys(operatingSystemIndependentSources).forEach(function(file_path) {
     solcStandardInput.sources[file_path] = {
       content: operatingSystemIndependentSources[file_path]
-    }
+    };
   });
 
   // Load solc module only when compilation is actually required.
@@ -193,8 +191,10 @@ var compile = function(sources, options, callback) {
           compiler: {
             "name": "solc",
             "version": solc.version()
-          }
-        }
+          },
+          devdoc: contract.devdoc,
+          userdoc: contract.userdoc
+        };
 
         // Reorder ABI so functions are listed in the order they appear
         // in the source file. Solidity tests need to execute in their expected sequence.
@@ -320,7 +320,7 @@ function orderABI(contract){
 compile.all = function(options, callback) {
 
   find_contracts(options.contracts_directory, function(err, files) {
-    if (err) return callback(err)
+    if (err) return callback(err);
 
     options.paths = files;
     compile.with_dependencies(options, callback);

@@ -2,7 +2,9 @@ export const ADD_SOURCE = "SOLIDITY_ADD_SOURCE";
 export function addSource(source, sourcePath, ast) {
   return {
     type: ADD_SOURCE,
-    source, sourcePath, ast
+    source,
+    sourcePath,
+    ast
   };
 }
 
@@ -10,10 +12,10 @@ export const ADD_SOURCEMAP = "SOLIDITY_ADD_SOURCEMAP";
 export function addSourceMap(binary, sourceMap) {
   return {
     type: ADD_SOURCEMAP,
-    binary, sourceMap
+    binary,
+    sourceMap
   };
 }
-
 
 export const JUMP = "JUMP";
 export function jump(jumpDirection) {
@@ -21,4 +23,9 @@ export function jump(jumpDirection) {
     type: JUMP,
     jumpDirection
   };
+}
+
+export const RESET = "SOLIDITY_RESET";
+export function reset() {
+  return { type: RESET };
 }

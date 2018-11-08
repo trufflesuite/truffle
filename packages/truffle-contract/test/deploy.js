@@ -36,7 +36,7 @@ describe("Deployments", function() {
       // Retrieve set value from copy
       value = await copy.value.call();
       assert.equal(parseInt(value), 5, "Ending value should be five");
-    })
+    });
   });
 
   describe(".new(): success [ @geth ]", function(){
@@ -58,7 +58,7 @@ describe("Deployments", function() {
       let txHash;
       const example = await Example.new(1).on('transactionHash', hash => txHash = hash);
 
-      assert.equal(example.transactionHash, txHash, "contract tx hash should be emitted tx hash")
+      assert.equal(example.transactionHash, txHash, "contract tx hash should be emitted tx hash");
     });
 
 
@@ -107,14 +107,14 @@ describe("Deployments", function() {
 
     it("Errors with gas limit error if constructor reverts", async function(){
       try {
-        await Example.new(13) // 13 fails a require gate
-        assert.fail()
+        await Example.new(13); // 13 fails a require gate
+        assert.fail();
       } catch(e){
         const errorCorrect = e.message.includes('exceeds gas limit') ||
                              e.message.includes('intrinsic gas too low');
 
         assert(errorCorrect, 'Expected gas limit error');
-        assert(e.receipt === undefined, 'Expected no receipt')
+        assert(e.receipt === undefined, 'Expected no receipt');
       }
     });
 
@@ -123,8 +123,8 @@ describe("Deployments", function() {
     it("Handles absence of reason string gracefully", async function(){
 
       try {
-        await Example.new(2001) // 2001 fails a require gate
-        assert.fail()
+        await Example.new(2001); // 2001 fails a require gate
+        assert.fail();
       } catch(e){
         const errorCorrect = e.message.includes('exceeds gas limit') ||
                              e.message.includes('intrinsic gas too low');
@@ -154,7 +154,7 @@ describe("Deployments", function() {
       } catch(error) {
         assert(error.message.includes('exceeds gas limit'));
         assert(error.message.includes('reasonstring'));
-        assert(error.receipt === undefined, 'Expected no receipt')
+        assert(error.receipt === undefined, 'Expected no receipt');
         assert(error.reason === 'reasonstring');
       }
     });
@@ -166,11 +166,11 @@ describe("Deployments", function() {
       } catch(error) {
         assert(error.message.includes('exceeds gas limit'));
         assert(error.message.includes('solidity storage is a fun lesson in endianness'));
-        assert(error.receipt === undefined, 'Expected no receipt')
+        assert(error.receipt === undefined, 'Expected no receipt');
         assert(error.reason === 'solidity storage is a fun lesson in endianness');
       }
     });
-  })
+  });
 
   describe('pre-flight gas estimation', function(){
 
@@ -189,7 +189,7 @@ describe("Deployments", function() {
 
       try {
         await Example.new(1);
-        assert.fail()
+        assert.fail();
       } catch(err) {
         assert(err.message.includes('exceeds gas limit'), 'Should OOG');
       }
@@ -220,7 +220,7 @@ describe("Deployments", function() {
 
       await Example.new(iterations);
     });
-  })
+  });
 
   describe('web3 timeout overrides', function(){
     it('should override 50 blocks err / return a usable instance', async function(){

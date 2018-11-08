@@ -34,7 +34,7 @@ module.exports = {
 
         files.forEach(file => fs.removeSync(file));
         resolve();
-      })
-    })
+      });
+    });
   },
-}
+};

@@ -74,7 +74,7 @@ var Develop = {
         }
 
         debugRPC.apply(undefined, args);
-      }
+      };
     }
 
     if (!options.retry) {
@@ -83,7 +83,7 @@ var Develop = {
 
     var disconnect = function() {
       ipc.disconnect(ipcNetwork);
-    }
+    };
 
     ipc.connectTo(ipcNetwork, connectPath, function() {
       ipc.of[ipcNetwork].on('destroy', function() {

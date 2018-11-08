@@ -36,8 +36,15 @@ elif [ "$GETH" = true ]; then
   lerna run --scope truffle test --stream -- --exit
   lerna run --scope truffle-contract test --stream -- --exit
 
-else
+elif [ "$PACKAGES" = true ]; then
 
   lerna run --scope truffle-* test --stream --concurrency=1
+
+elif [ "$COVERAGE" = true ]; then
+
+  cd packages/truffle-debugger && npm run test:coverage && \
+  cd ../../ && nyc lerna run --ignore truffle-debugger test && \
+  cat ./packages/truffle-debugger/coverage/lcov.info >> ./coverage/lcov.info && \
+  cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
 
 fi

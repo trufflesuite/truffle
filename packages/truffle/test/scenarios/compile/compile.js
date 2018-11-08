@@ -75,7 +75,7 @@ describe("Repeated compilation of contracts with inheritance", function() {
       config.logger = logger;
       config.mocha = {
         reporter: new Reporter(logger),
-      }
+      };
 
       sources = names.map(name => name + '.sol');
       artifactPaths = names.map(name => path.join(config.contracts_build_directory, name + '.json'));
@@ -86,7 +86,7 @@ describe("Repeated compilation of contracts with inheritance", function() {
         mapping[name].source = sources[i];
         mapping[name].artifactPath = artifactPaths[i];
         mapping[name].sourcePath = sourcePaths[i];
-      })
+      });
 
       CommandRunner.run("compile", config, function(err) {
         output = logger.contents();
@@ -96,7 +96,7 @@ describe("Repeated compilation of contracts with inheritance", function() {
 
         // mTime resolution on 6.9.1 is 1 sec.
         waitSecond().then(done);
-      })
+      });
     });
   });
 

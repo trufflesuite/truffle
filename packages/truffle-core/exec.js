@@ -23,7 +23,7 @@ cmd.stderr.on('data', (data) => {
 
 cmd.on('close', (code) => {
   process.exit(code);
-})
+});
 
 cmd.on('error', function(err) {
   throw err;

@@ -1,6 +1,4 @@
 var CompileError = require("./compileerror");
-var fs = require("fs");
-var path = require("path");
 
 // Warning issued by a pre-release compiler version, ignored by this component.
 var preReleaseCompilerWarning = "This is a pre-release compiler version, please do not use it in production.";
@@ -78,7 +76,7 @@ module.exports = {
     var imports = errors.filter(function(solidity_error) {
       return solidity_error.message.indexOf(failingImportFileName) < 0;
     }).map(function(solidity_error) {
-      var matches = solidity_error.formattedMessage.match(/import[^'"]+("|')([^'"]+)("|');/);
+      var matches = solidity_error.formattedMessage.match(/import[^'"]+("|')([^'"]+)("|')/);
 
       // Return the item between the quotes.
       return matches[2];
@@ -86,4 +84,4 @@ module.exports = {
 
     return imports;
   }
-}
+};

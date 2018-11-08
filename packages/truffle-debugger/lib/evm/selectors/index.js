@@ -88,7 +88,7 @@ function createStepSelectors(step, state = null) {
         (matches, step, {stack}) => {
           if (!matches) return null;
 
-          let address = stack[stack.length - 2]
+          let address = stack[stack.length - 2];
           address = "0x" + address.substring(24);
           return address;
         }
@@ -161,8 +161,13 @@ const evm = createSelectorTree({
           // filter by a percentage threshold
           const threshold = 0.25;
 
+          // skip levenshtein check for undefined binaries
+          if (!binary || binary == "0x0") {
+            return {};
+          }
+
           const results = Object.entries(binaries)
-            .map( ([ knownBinary, { context }]) => ({
+            .map( ([ knownBinary, { context } ]) => ({
               context,
               distance: levenshtein.get(knownBinary, binary)
             }))
@@ -173,6 +178,8 @@ const evm = createSelectorTree({
             const { context } = results[0];
             return { context };
           }
+
+          return {};
         }
       )
     }
@@ -210,7 +217,7 @@ const evm = createSelectorTree({
           if (!record) {
             return { address };
           }
-          binary = record.binary
+          binary = record.binary;
         } else {
           record = search(binary);
         }
@@ -220,7 +227,7 @@ const evm = createSelectorTree({
         return {
           ...context,
           binary
-        }
+        };
       }
     ),
 

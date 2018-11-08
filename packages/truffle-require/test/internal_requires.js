@@ -60,4 +60,4 @@ describe("Require", function() {
       done();
     });
   });
-})
+});

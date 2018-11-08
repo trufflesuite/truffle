@@ -1,21 +1,20 @@
 var debug = require("debug")("workflow-compile");
-
 var async = require("async");
-var fs = require("fs");
 var mkdirp = require("mkdirp");
 var path = require("path");
 var { callbackify, promisify } = require("util");
 var Config = require("truffle-config");
 var solcCompile = require("truffle-compile");
+var vyperCompile = require("truffle-compile-vyper");
 var externalCompile = require("truffle-external-compile");
 var expect = require("truffle-expect");
-var _ = require("lodash");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
 var OS = require("os");
 
 const SUPPORTED_COMPILERS = {
   "solc": solcCompile,
+  "vyper": vyperCompile,
   "external": externalCompile,
 };
 
@@ -83,7 +82,7 @@ var Contracts = {
       let [contracts, output] = await multiPromisify(compileFunc)(config);
 
       if (contracts && Object.keys(contracts).length > 0) {
-        await this.writeContracts(contracts, config)
+        await this.writeContracts(contracts, config);
       }
 
       return { compiler, contracts, output };
@@ -93,7 +92,7 @@ var Contracts = {
       let result = {
         outputs: {},
         contracts: {}
-      }
+      };
 
       for (let compilation of await Promise.all(compilations)) {
         let { compiler, output, contracts } = compilation;
@@ -107,7 +106,7 @@ var Contracts = {
       }
 
       return result;
-    }
+    };
 
     return await collect(compilations);
   }),

@@ -5,10 +5,8 @@ var contract = require("truffle-contract");
 var Web3 = require("web3");
 var vm = require("vm");
 var expect = require("truffle-expect");
-var _ = require("lodash");
 var TruffleError = require("truffle-error");
 var fs = require("fs");
-var os = require("os");
 var path = require("path");
 var EventEmitter = require("events");
 var inherits = require("util").inherits;
@@ -102,8 +100,8 @@ Console.prototype.provision = function(callback) {
           }
 
           accept(body);
-        })
-      }))
+        });
+      }));
     });
 
     Promise.all(promises).then(function(json_blobs) {
@@ -123,7 +121,7 @@ Console.prototype.provision = function(callback) {
 Console.prototype.resetContractsInConsoleContext = function(abstractions) {
   var self = this;
 
-  abstractions = abstractions || []
+  abstractions = abstractions || [];
 
   var contextVars = {};
 
@@ -132,7 +130,7 @@ Console.prototype.resetContractsInConsoleContext = function(abstractions) {
   });
 
   self.repl.setContextVars(contextVars);
-}
+};
 
 Console.prototype.interpret = function(cmd, context, filename, callback) {
   var self = this;
@@ -223,6 +221,6 @@ ${expression.trim()}
     // All good? Return the value (e.g., eval'd script or assignment)
     callback(null, value);
   }).catch(callback);
-}
+};
 
 module.exports = Console;

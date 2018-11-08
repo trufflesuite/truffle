@@ -1,4 +1,3 @@
-var sha3 = require("crypto-js/sha3");
 var pkgVersion = require("./package.json").version;
 var Ajv = require("ajv");
 var util = require("util");
@@ -39,7 +38,7 @@ var properties = {
     "transform": function(value) {
       if (typeof value === "string") {
         try {
-          value = JSON.parse(value)
+          value = JSON.parse(value);
         } catch (e) {
           value = undefined;
         }
@@ -86,7 +85,7 @@ var properties = {
       if (schemaVersion[0] < 2) {
         return obj.ast;
       } else {
-        return value
+        return value;
       }
     }
   },
@@ -94,7 +93,7 @@ var properties = {
   "networks": {
     "transform": function(value) {
       if (value === undefined) {
-        value = {}
+        value = {};
       }
       return value;
     }
@@ -110,7 +109,9 @@ var properties = {
       }
       return value;
     }
-  }
+  },
+  "devdoc": {},
+  "userdoc": {},
 };
 
 
@@ -122,7 +123,7 @@ var properties = {
  */
 function getter(key, transform) {
   if (transform === undefined) {
-    transform = function(x) { return x };
+    transform = function(x) { return x; };
   }
 
   return function(obj) {
@@ -131,7 +132,7 @@ function getter(key, transform) {
     } catch (e) {
       return undefined;
     }
-  }
+  };
 }
 
 
@@ -151,7 +152,7 @@ function chain() {
     return getters.reduce(function (cur, get) {
       return get(cur);
     }, obj);
-  }
+  };
 }
 
 
@@ -221,7 +222,7 @@ var TruffleContractSchema = {
         // getters
         if (typeof source === "string") {
           var traversals = source.split(".")
-            .map(function(k) { return getter(k) });
+            .map(function(k) { return getter(k); });
           source = chain.apply(null, traversals);
         }
 
@@ -254,7 +255,7 @@ var TruffleContractSchema = {
       this.validate(normalized);
     }
 
-    return normalized
+    return normalized;
   }
 };
 

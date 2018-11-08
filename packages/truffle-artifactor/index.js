@@ -1,8 +1,6 @@
 var Schema = require("truffle-contract-schema");
-var expect = require("truffle-expect");
 var fs = require("fs-extra");
 var path = require("path");
-var async = require("async");
 var _ = require("lodash");
 var debug = require("debug")("artifactor");
 
@@ -76,7 +74,7 @@ Artifactor.prototype.saveAll = function(objects) {
 
     array.forEach(function(item) {
       objects[item.contract_name] = item;
-    })
+    });
   }
 
   return new Promise(function(accept, reject) {

@@ -139,7 +139,7 @@ let solidity = createSelectorTree({
               length,
               file,
               range
-            }
+            };
           });
       }
     ),

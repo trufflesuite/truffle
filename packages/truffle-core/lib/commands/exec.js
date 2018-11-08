@@ -14,6 +14,23 @@ var command = {
       default: false
     }
   },
+  help: {
+    usage: "truffle exec <script.js> [--network <name>]",
+    options: [
+      {
+        option: "<script.js>",
+        description: "JavaScript file to be executed. Can include path information if the script" +
+          " does not exist in the current\n                    directory. (required)",
+      },{
+        option: "--network <name>",
+        description: "Specify the network to use, using artifacts specific to that network." +
+          " Network name must exist in the\n                    configuration.",
+      },{
+        option: "--compile",
+        description: "Compile contracts before executing the script."
+      },
+    ]
+  },
   run: function (options, done) {
     var Config = require("truffle-config");
     var Contracts = require("truffle-workflow-compile");
@@ -64,6 +81,6 @@ var command = {
       }), done);
     });
   }
-}
+};
 
 module.exports = command;

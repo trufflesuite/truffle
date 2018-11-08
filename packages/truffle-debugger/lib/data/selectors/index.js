@@ -233,14 +233,27 @@ const data = createSelectorTree({
       refs: createLeaf(
         [
           "/proc/assignments",
-          "./_"
+          "./_",
+          solidity.current.functionDepth //for pruning things too deep on stack
         ],
 
-        (assignments, identifiers) => Object.assign({},
+        (assignments, identifiers, currentDepth) => Object.assign({},
           ...Object.entries(identifiers)
             .map( ([identifier, id]) => {
-              let { ref } = (assignments[id] || {})
-              if (!ref) { return undefined };
+              let matchIds = Object.keys(assignments)
+                //first restrict to the appropriate variable
+                .filter((augmentedId) =>
+                  decodeUtils.idFromAugmented(augmentedId) === id)
+                //then get just the stack frame corresponding to that variable
+                .map(decodeUtils.depthFromAugmented);
+
+              //want innermost but not beyond current depth
+              //note: if no matches, will return -Infinity
+              //however the return value in this case is irrelevant
+              let maxMatch=Math.min(currentDepth, Math.max(...matchIds));
+              let { ref } = (
+                assignments[decodeUtils.augmentWithDepth(id, maxMatch)] || {});
+              if (!ref) { return undefined; };
 
               return {
                 [identifier]: ref
@@ -249,6 +262,9 @@ const data = createSelectorTree({
         )
       ),
 
+      /**
+       * data.current.identifiers.decoded
+       */
       decoded: createLeaf(
         [
           "/views/decoder",
@@ -264,6 +280,9 @@ const data = createSelectorTree({
         )
       ),
 
+      /**
+       * data.current.identifiers.native
+       */
       native: createLeaf(['./decoded'], TruffleDecodeUtils.Conversion.cleanBNs)
     }
   },

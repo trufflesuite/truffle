@@ -31,7 +31,7 @@ function scopes(state = DEFAULT_SCOPES, action) {
             pointer: action.pointer
           }
         }
-      }
+      };
 
     case actions.DECLARE:
       scope = state.byId[action.node.scope] || {};
@@ -47,11 +47,11 @@ function scopes(state = DEFAULT_SCOPES, action) {
             variables: [
               ...variables,
 
-              {name: action.node.name, id: action.node.id}
+              { name: action.node.name, id: action.node.id }
             ]
           }
         }
-      }
+      };
 
     default:
       return state;
@@ -73,27 +73,29 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
         byId: {
           ...state.byId,
 
-          ...Object.assign({},
-            ...Object.entries(action.assignments).map(
-              ([id, ref]) => ({
-                [id]: {
-                  ...state.byId[id],
-                  ref
-                }
-              })
-            )
+          ...Object.assign(
+            {},
+            ...Object.entries(action.assignments).map(([id, ref]) => ({
+              [id]: {
+                ...state.byId[id], //note: id here includes depth
+                ref
+              }
+            }))
           )
         }
       };
 
+    case actions.RESET:
+      return DEFAULT_ASSIGNMENTS;
+
     default:
       return state;
   }
-};
+}
 
 const DEFAULT_MAPPING_KEYS = {
   byId: {}
-}
+};
 
 function mappingKeys(state = DEFAULT_MAPPING_KEYS, action) {
   switch (action.type) {
@@ -104,12 +106,12 @@ function mappingKeys(state = DEFAULT_MAPPING_KEYS, action) {
           ...state.byId,
 
           // add new key to set of keys already defined
-          [id]: [...new Set([
-            ...(state.byId[id] || []),
-            key
-          ])]
+          [id]: [...new Set([...(state.byId[id] || []), key])]
         }
       };
+
+    case actions.RESET:
+      return DEFAULT_MAPPING_KEYS;
 
     default:
       return state;

@@ -29,7 +29,7 @@ describe("truffle exec", function() {
       config.logger = logger;
       config.mocha = {
         reporter: new Reporter(logger)
-      }
+      };
     });
   });
 
@@ -41,7 +41,7 @@ describe("truffle exec", function() {
   }
 
   it("runs script after compiling", function(done) {
-    this.timeout(20000);
+    this.timeout(30000);
 
     CommandRunner.run("compile", config, function(err) {
       processErr(err);
@@ -53,7 +53,7 @@ describe("truffle exec", function() {
         processErr(err, output);
         assert(output.includes('5'));
         done();
-      })
+      });
     });
   });
 

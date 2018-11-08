@@ -41,8 +41,8 @@ describe("compile", function() {
       if(err) done(err);
       files.forEach(file => fs.removeSync(file));
       done();
-    })
-  })
+    });
+  });
 
   afterEach("Clear MemoryStream", () => output = '');
 
@@ -111,8 +111,8 @@ describe("compile", function() {
 
     beforeEach(() => {
       memStream = new MemoryStream();
-      memStream.on('data', function(data){ output += data.toString()});
-    })
+      memStream.on('data', function(data){ output += data.toString(); });
+    });
 
     it("prints a truncated list of solcjs versions", function(done){
       this.timeout(5000);
@@ -131,8 +131,8 @@ describe("compile", function() {
         });
 
         memStream.end('');
-      })
-    })
+      });
+    });
 
     it("prints a list of docker tags", function(done){
       this.timeout(5000);
@@ -152,8 +152,8 @@ describe("compile", function() {
         });
 
         memStream.end('');
-      })
-    })
+      });
+    });
 
     it("prints a full list of releases when --all is set", function(done){
       this.timeout(5000);
@@ -174,31 +174,9 @@ describe("compile", function() {
         });
 
         memStream.end('');
-      })
+      });
     });
-
-    it("prints a help when list and help are set", function(done){
-      this.timeout(5000);
-
-      const options = {
-        list: "releases",
-        help: true
-      };
-
-      command.run(config.with(options), (err, result) => {
-        if(err) return done(err);
-
-        memStream.on('end', function() {
-          assert(output.includes('USAGE'));
-          done();
-        });
-
-        memStream.end('');
-      })
-    })
   });
-
-
 
   // TODO: Kept this as a comment because I'm confused if it applies.
   // Since the binary and abi are updated with every compile, and they're not within

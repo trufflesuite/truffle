@@ -41,6 +41,9 @@ try {
 options.host = options.host || "127.0.0.1";
 options.port = options.port || 9545;
 options.network_id = options.network_id || 4447;
+options.total_accounts = options.total_accounts || 10;
+options.default_ether_balance = options.default_ether_balance || 100;
+options.blockTime = options.blockTime || 0;
 options.mnemonic = options.mnemonic || "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
 options.gasLimit = options.gasLimit || 0x47e7c4;
 
@@ -87,7 +90,7 @@ Logger.prototype.subscribe = function(callback) {
 Logger.prototype.log = function(message) {
   var self = this;
 
-  var subscriberIDs = Object.keys(this.subscribers)
+  var subscriberIDs = Object.keys(this.subscribers);
   if (subscriberIDs.length == 0) {
     this.messages.push(message);
 
@@ -162,7 +165,7 @@ Supervisor.prototype.start = function() {
   });
 
   ipc.server.start();
-}
+};
 
 // external interface for mixin to emit socket events
 Supervisor.prototype.emit = function(socket, message, data, options) {
@@ -185,7 +188,7 @@ Supervisor.prototype.emit = function(socket, message, data, options) {
 Supervisor.prototype.exit = function() {
   this.ipc.server.stop();
   this.handle('exit', arguments);
-}
+};
 
 
 /*
@@ -246,7 +249,7 @@ TestRPCMixin.prototype.connect = function(supervisor, socket) {
   this.ready.then(function() {
     supervisor.emit(socket, 'truffle.ready');
   });
-}
+};
 
 // cleanup TestRPC process on exit
 TestRPCMixin.prototype.exit = function(supervisor) {
@@ -289,7 +292,7 @@ LoggerMixin.prototype.connect = function(supervisor, socket) {
 process.on('uncaughtException', function(e) {
   console.error(e.stack);
   process.exit(1);
-})
+});
 
 
 /*

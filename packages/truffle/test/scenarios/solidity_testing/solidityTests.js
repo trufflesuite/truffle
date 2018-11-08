@@ -25,13 +25,13 @@ describe("Solidity Tests", function() {
       config.network = "development";
       config.mocha = {
         reporter: new Reporter(logger)
-      }
+      };
       const from = path.join(__dirname, file);
 
       fs.ensureDir(config.test_directory)
         .then(() => {
           fs.copy(from, config.test_directory + `/${file}`);
-          done()
+          done();
         });
     });
   };
@@ -75,7 +75,7 @@ describe("Solidity Tests", function() {
 
       CommandRunner.run("test", config, function(err) {
         const output = logger.contents();
-        assert(err, `Tests should error. Output: ${output}`)
+        assert(err, `Tests should error. Output: ${output}`);
         assert(output.includes("2 failing"));
         done();
       });

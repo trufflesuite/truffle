@@ -4,7 +4,6 @@ var util = require('./util');
 describe("Events", function() {
   var Example;
   var accounts;
-  var network_id;
   var web3;
   var providerOptions = {vmErrorsOnRPCResponse: false};
 
@@ -23,7 +22,7 @@ describe("Events", function() {
 
   it('should expose the "on" handler / format event correctly', function(done){
     Example.new(1).then(example => {
-      const event = example.ExampleEvent()
+      const event = example.ExampleEvent();
 
       event.on('data', function(data){
         assert.equal("ExampleEvent", data.event);
@@ -39,7 +38,7 @@ describe("Events", function() {
 
   it('should expose the "once" handler', function(done){
     Example.new(1).then(example => {
-      const event = example.ExampleEvent()
+      const event = example.ExampleEvent();
 
       event.once('data', function(data){
         assert.equal("ExampleEvent", data.event);
@@ -51,7 +50,7 @@ describe("Events", function() {
 
       example.triggerEvent();
     });
-  })
+  });
 
   it('should be possible to listen for events with a callback', function(done){
     const callback = (err, data) => {
@@ -59,24 +58,24 @@ describe("Events", function() {
       assert.equal(accounts[0], data.args._from);
       assert.equal(8, data.args.num);
       done();
-    }
+    };
 
     Example.new(1).then(example => {
       example.ExampleEvent(callback);
       example.triggerEvent();
-    })
+    });
   });
 
   it('should fire repeatedly (without duplicates)', async function(){
     let emitter;
     let counter = 0;
-    const example = await Example.new(1)
+    const example = await Example.new(1);
 
     example
       .ExampleEvent()
       .on('data', function(data){
         emitter = this;
-        counter++
+        counter++;
       });
 
     await example.triggerEventWithArgument(1);
@@ -92,7 +91,7 @@ describe("Events", function() {
     const events = [];
     const eventNames = [];
     const signatures = ['ExampleEvent', 'SpecialEvent'];
-    const example = await Example.new(1)
+    const example = await Example.new(1);
 
     example
       .allEvents()
@@ -117,7 +116,7 @@ describe("Events", function() {
 
   it('should `getPastEvents`', async function(){
     const signatures = ['ExampleEvent', 'SpecialEvent'];
-    const example = await Example.new(1)
+    const example = await Example.new(1);
     const options = {fromBlock: 0, toBlock: "latest"};
 
     await example.triggerEvent();
@@ -147,7 +146,7 @@ describe("Events", function() {
   it('should reformat numbers in events to BN by default', function(done){
     Example.new(1).then(example => {
 
-      const event = example.NumberEvent()
+      const event = example.NumberEvent();
 
       event.once('data', function(data){
         const args = data.args;
@@ -176,5 +175,5 @@ describe("Events", function() {
 
       example.triggerNumberEvent(5,7,accounts[0],55,77);
     });
-  })
+  });
 });

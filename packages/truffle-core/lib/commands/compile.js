@@ -20,7 +20,24 @@ var command = {
       default: "false"
     }
   },
-
+  help: {
+    usage: "truffle compile [--list <filter>] [--all] [--network <name>]",
+    options: [
+      {
+        option: "--all",
+        description: "Compile all contracts instead of only the contracts changed since last compile."
+      },{
+        option: "--network <name>",
+        description:  "Specify the network to use, saving artifacts specific to that network. " +
+          " Network name must exist in the\n                    configuration."
+      },{
+        option: "--list <filter>",
+        description:  "List all recent stable releases from solc-bin.  If filter is specified then it will display only " +
+          "that\n                    type of release or docker tags. The filter parameter must be one of the following: " +
+          "prereleases,\n                    releases, latestRelease or docker."
+      },
+    ]
+  },
   run: function (options, done) {
     var Config = require("truffle-config");
     var Contracts = require("truffle-workflow-compile");
@@ -38,18 +55,12 @@ var command = {
     const log = options.logger.log;
     options.list = (options.list.length) ? options.list : "releases";
 
-    // Help
-    if (options.list && options.help){
-      log(command.help);
-      return done();
-    }
-
     // Docker tags
     if (options.list === 'docker'){
       return supplier
         .getDockerTags()
         .then(tags => {
-          tags.push('See more at: hub.docker.com/r/ethereum/solc/tags/')
+          tags.push('See more at: hub.docker.com/r/ethereum/solc/tags/');
           log(format(tags, null, ' '));
           done();
         })
@@ -81,18 +92,6 @@ var command = {
 
     return val;
   },
-
-  help: "\n" +
-        "See available solc versions. (Default: solcjs stable releases)\n\n" +
-
-        "USAGE:\n" +
-        "   --list [option] [--all]\n\n" +
-
-        "OPTIONS:\n" +
-        " `docker`         recently published docker tags\n" +
-        " `releases`       solcjs stable releases\n" +
-        " `prereleases`    solcjs nightly builds\n" +
-        " `latestRelease`  solcjs latest\n\n",
-}
+};
 
 module.exports = command;

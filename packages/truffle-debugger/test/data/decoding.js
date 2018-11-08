@@ -14,7 +14,7 @@ const uints = generateUints();
 
 function generateArray(length) {
   return [...Array(length)]
-    .map(() => uints.next().value)
+    .map(() => uints.next().value);
 }
 
 const commonFixtures = [{
@@ -108,7 +108,7 @@ contract ${contractName} {
     emit Done();
   }
 }
-`   }
+`;   }
   );
 
   describeDecoding(
@@ -141,7 +141,7 @@ contract ${contractName} {
     emit Done();
   }
 }
-`
+`;
     }
   );
 
@@ -157,11 +157,11 @@ contract ${contractName} {
       function declareAssign({name, type, value}) {
         if (type.indexOf("[]") != -1) {
           // array, must `new`
-          let declare = `${type} memory ${name} = new ${type}(${value.length})`
+          let declare = `${type} memory ${name} = new ${type}(${value.length})`;
           let assigns = value.map((k, i) => `${name}[${i}] = ${k}`);
-          return `${declare}${separator}${assigns.join(separator)}`
+          return `${declare}${separator}${assigns.join(separator)}`;
         } else {
-          return `${type} memory ${name} = ${JSON.stringify(value)}`
+          return `${type} memory ${name} = ${JSON.stringify(value)}`;
         }
       }
 
@@ -179,7 +179,7 @@ contract ${contractName} {
     emit Done();
   }
 }
-`
+`;
     }
   );
 });

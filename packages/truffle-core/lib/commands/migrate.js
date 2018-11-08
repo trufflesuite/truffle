@@ -26,8 +26,35 @@ var command = {
       default: false
     },
   },
+  help: {
+    usage: "truffle migrate [--reset] [-f <number>] [--network <name>] [--compile-all] [--verbose-rpc] [--interactive]",
+    options: [
+      {
+        option: "--reset",
+        description: "Run all migrations from the beginning, instead of running from the last " +
+          "completed migration.",
+      },{
+        option: "-f <number>",
+        description: "Run contracts from a specific migration. The number refers to the prefix of " +
+          "the migration file.",
+      },{
+        option: "--network <name>",
+        description: "Specify the network to use, saving artifacts specific to that network. " +
+          "Network name must exist\n                    in the configuration.",
+      },{
+        option: "--compile-all",
+        description: "Compile all contracts instead of intelligently choosing which contracts need to " +
+          "be compiled.",
+      },{
+        option: "--verbose-rpc",
+        description: "Log communication between Truffle and the Ethereum client."
+      },{
+        option: "--interactive",
+        description: "Prompt to confirm that the user wants to proceed after the dry run.",
+      },
+    ]
+  },
   run: function (options, done) {
-    var OS = require("os");
     var Config = require("truffle-config");
     var Contracts = require("truffle-workflow-compile");
     var Resolver = require("truffle-resolver");
@@ -50,7 +77,7 @@ var command = {
 
      7762959, // Musiccoin
      61717561 // Aquachain
-    ]
+    ];
 
 
     function setupDryRunEnvironmentThenRunMigrations(config) {
@@ -103,7 +130,7 @@ var command = {
           if (needsMigrating) {
             Migrate.run(config, callback);
           } else {
-            config.logger.log("Network up to date.")
+            config.logger.log("Network up to date.");
             callback();
           }
         });
@@ -129,7 +156,7 @@ var command = {
         environment.detect(config, function(err) {
           config.dryRun = false;
           runMigrations(config, done);
-        })
+        });
       } else {
         done();
       }
@@ -153,7 +180,7 @@ var command = {
             await setupDryRunEnvironmentThenRunMigrations(conf);
             done();
           } catch(err){
-            done(err)
+            done(err);
           };
 
         // Production: dry-run then real run
@@ -163,9 +190,9 @@ var command = {
           conf.dryRun = true;
 
           try {
-            await setupDryRunEnvironmentThenRunMigrations(conf)
+            await setupDryRunEnvironmentThenRunMigrations(conf);
           } catch(err){
-            return done(err)
+            return done(err);
           };
 
           executePostDryRunMigration(currentBuild);
@@ -177,6 +204,6 @@ var command = {
       });
     });
   }
-}
+};
 
 module.exports = command;

@@ -6,17 +6,22 @@ import { createSelectorTree, createLeaf } from "reselect-tree";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 import ast from "lib/ast/selectors";
+import trace from "lib/trace/selectors";
 
 /**
  * @private
  */
-const identity = (x) => x
+const identity = (x) => x;
 
 /**
  * controller
  */
 const controller = createSelectorTree({
 
+  /**
+   * controller.state
+   */
+  state: ((state) => state.controller),
   /**
    * controller.current
    */
@@ -46,6 +51,11 @@ const controller = createSelectorTree({
       sourceRange: createLeaf([solidity.current.sourceRange], identity),
 
       /**
+       * controller.current.location.source
+       */
+      source: createLeaf([solidity.current.source], identity),
+
+      /**
        * controller.current.location.node
        */
       node: createLeaf([ast.current.node], identity),
@@ -55,7 +65,18 @@ const controller = createSelectorTree({
        */
       isMultiline: createLeaf([solidity.current.isMultiline], identity),
     }
-  }
+  },
+
+  /**
+   * controller.breakpoints
+   */
+  breakpoints: createLeaf(["./state"], (state) => state.breakpoints),
+
+  /**
+   * controller.finished
+   */
+  finished: createLeaf([trace.finished], identity),
+
 });
 
 export default controller;

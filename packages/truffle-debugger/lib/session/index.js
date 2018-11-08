@@ -40,12 +40,12 @@ export default class Session {
   }
 
   ready() {
-    return new Promise( (accept, reject) => {
-      this._store.subscribe( () => {
-        if (this.state.session == "ACTIVE") {
-          accept()
-        } else if (typeof this.state.session == "object") {
-          reject(this.state.session.error);
+    return new Promise((accept, reject) => {
+      this._store.subscribe(() => {
+        if (this.state.session.status == "ACTIVE") {
+          accept();
+        } else if (typeof this.state.session.status == "object") {
+          reject(this.state.session.status.error);
         }
       });
     });
@@ -116,21 +116,7 @@ export default class Session {
     return selector(this.state);
   }
 
-  get finished() {
-    return this.state.session == "FINISHED";
-  }
-
-  get failed() {
-    return this.finished && this.view(evm.current.callstack).length
-  }
-
   dispatch(action) {
-    if (this.finished) {
-      debug("finished: intercepting action %o", action);
-
-      return false;
-    }
-
     this._store.dispatch(action);
 
     return true;
@@ -160,7 +146,19 @@ export default class Session {
     return this.dispatch(controller.stepOut());
   }
 
-  continueUntil(...breakpoints) {
-    return this.dispatch(controller.continueUntil(...breakpoints));
+  reset() {
+    return this.dispatch(controller.reset());
+  }
+
+  continueUntilBreakpoint() {
+    return this.dispatch(controller.continueUntilBreakpoint());
+  }
+
+  addBreakpoint(breakpoint) {
+    return this.dispatch(controller.addBreakpoint(breakpoint));
+  }
+
+  removeBreakpoint(breakpoint) {
+    return this.dispatch(controller.removeBreakpoint(breakpoint));
   }
 }

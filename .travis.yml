@@ -10,7 +10,9 @@ before_install:
   - docker pull ethereum/solc:0.4.22
   - sudo add-apt-repository --yes ppa:ethereum/ethereum
   - sudo apt-get update
-  - sudo apt-get install solc jq
+  - sudo apt-get install solc jq snapd
+  - export PATH=$PATH:/snap/bin
+  - sudo snap install vyper --edge --devmode
 
 matrix:
   fast_finish: true
@@ -23,11 +25,15 @@ matrix:
       env: INTEGRATION=true
     - node_js: 6
       env: INTEGRATION=true
+    - node_js: 8
+      env: COVERAGE=true
   allow_failures:
     - node_js: 8
       env: GETH=true
     - node_js: 6
       env: INTEGRATION=true
+    - node_js: 8
+      env: COVERAGE=true
 
 
 install:
@@ -40,7 +46,6 @@ script:
 
 notifications:
   slack:
-    secure: HtQp66mJVCHPREUWwKCtR6w4uh+lA2N6/Erv+Ea4kObX0XMn13FYE+UsR1dwjF/VB+jNJt9N9nKz0E14zuYl7jsQIyD/vZyZ3nWGeWKfQyVwz79NnYBiwpYo/Y6G6Nb42Aq9Sy5byP5qBbrn+7Yvqs0DiYDy3QhDhC9D5gOXkFVlmAb0RVl+b125YL9SQR0u6GRTFG19kyH1pb2hwGKvKmntKbkmzYztzli/k44Rfoq8y9GPFu8ZXYD9TfxXxDxO7xu6oE+lYZZX1mos2vdRXrgR9J6DtHu4kq9dh+50cn0EOOcG/O4yM0wEP3NZkMsmxsU31w1ezbhYNGHO09sij2di+8k2r6a1QMEMRzTC2ikoUxEf9y+aTrMtRlUacM/vTkOwgYzsYpzdietfQ17VkTpa9k3D1tuVEwNUAsCl5sDpi09QivcLULoWNfsLFXmAxs2Oz71i3BAYIlOnkMmA9rJfat8u1jKWxylQYlPt7aXrhvb7dQkmdv82Nrhk7Oo+nEzaGyfB1GRo598S+o6oSTqnPYCegyrhQSVmlml7afwvA/yahSB6k0Rz5O+JDcK8g6Vn18L9jeNzcHsCUJYyYks+v57hJtCnjBVHJD8JsR996FEkOjcL1/d5xz7NN/iO9ZTIOXl9GfimxCq3Ao7NhinzwLf2tqi2hEGVhYaLL8g=
-
+    secure: cm12Kcc8YmtZ0TZ7T6t+kZqKNrpKG7D4MyaJLWf0llHeGTUqldIaSkLTasqCnBEUhg2/uqQ1dbG8nuqhnov9rHhRFUQmZPVUqiCE90wLDo2qIC9l98sXQRT/yrRgr1W7d3Jfauq53B2WBUpS5LBzcfYgzj13PBcmKtX2+wBZTLddmfcqZUwqzXRL9TPWUQrecAVSQZBVutZ6tQaxTAdBUbyobf6kXYHYRVOJQp7xtHUAIFULitpvCG6cH2F6L+G4gSqDykx74V8bScCvBe0TW8ue5zxbSoM5UmgSMIXzYMBCWa+/WzNjwvCAYScKkqoWt0mk5nzUOQZgndyyO/nA7Ylo7Za1b/LzChgYHB/TybxmF2Jul/MkHy614l/W4Z3dRRXMuPNmY3JIkuYej/9m/uqoLHqEyka8h6YJfZ7IPQ11Kg0r6XZiy+G2sZTg6BW5TIy1GvwDWhZ8hyLk/ka+4JMUK7/gOtAzUUiMIUFwXpgyLnTHzbCF547mx5yJbkeGzJ1Faiq50LcnI8SswP+VQrwgJr2pMfcCXyPyJmZZmRXxOP3qvaYBbfEtSHuIp00DSNITa9dDxZUKiBuzbCJuZ2ChYY12rV4/6EZsu1FhXKPfN735uVqz+HJD/YsvpfAoZ4jTGikMNrIRKfAYLCewkWpsDN51mgO4TBPcbrQ8FbI=
     on_success: change
     on_failure: always

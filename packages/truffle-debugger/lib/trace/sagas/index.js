@@ -8,24 +8,26 @@ import * as actions from "../actions";
 
 import trace from "../selectors";
 
-function *waitForTrace() {
-  let {steps} = yield take(actions.SAVE_STEPS);
+function* waitForTrace() {
+  let { steps } = yield take(actions.SAVE_STEPS);
 
   let addresses = [
     ...new Set(
       steps
-        .filter( ({op}) => op == "CALL" || op == "DELEGATECALL" )
-        .map( ({stack}) => "0x" + stack[stack.length - 2].substring(24) )
+        .filter(({ op }) => op == "CALL" || op == "DELEGATECALL")
+        .map(({ stack }) => "0x" + stack[stack.length - 2].substring(24))
     )
   ];
 
   yield put(actions.receiveAddresses(addresses));
 }
 
-export function *advance() {
+export function* advance() {
   yield put(actions.next());
 
-  yield take(actions.TOCK);
+  debug("TOCK to take");
+  yield take([actions.TOCK, actions.END_OF_TRACE]);
+  debug("TOCK taken");
 }
 
 function* next() {
@@ -48,29 +50,29 @@ function* next() {
     // updates step to next step in trace
     yield put(actions.tock());
     debug("put TOCK");
-
   } else {
-
+    debug("putting END_OF_TRACE");
     yield put(actions.endTrace());
+    debug("put END_OF_TRACE");
   }
 }
 
-export function* wait() {
-  yield take(actions.END_OF_TRACE);
-}
-
-export function *processTrace(trace) {
+export function* processTrace(trace) {
   yield put(actions.saveSteps(trace));
 
-  let {addresses} = yield take(actions.RECEIVE_ADDRESSES);
+  let { addresses } = yield take(actions.RECEIVE_ADDRESSES);
   debug("received addresses");
 
   return addresses;
 }
 
+export function* reset() {
+  yield put(actions.reset());
+}
+
 export function* saga() {
   // wait for trace to be defined
-  yield *waitForTrace();
+  yield* waitForTrace();
 
   yield takeEvery(actions.NEXT, next);
 }

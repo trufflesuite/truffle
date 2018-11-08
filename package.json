@@ -12,12 +12,30 @@
     "geth": "./scripts/geth.sh"
   },
   "devDependencies": {
-    "lerna": "^2.11.0"
+    "coveralls": "^3.0.2",
+    "eslint": "^5.7.0",
+    "husky": "^1.1.2",
+    "lerna": "^3.4.3",
+    "lint-staged": "^7.3.0",
+    "nyc": "^13.0.1",
+    "prettier": "1.14.3"
   },
   "workspaces": {
     "packages": [
       "packages/*"
     ]
   },
-  "dependencies": {}
+  "dependencies": {},
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "prettier --write",
+      "eslint --fix",
+      "git add"
+    ]
+  }
 }

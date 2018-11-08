@@ -8,6 +8,27 @@ var command = {
       default: false
     },
   },
+  help: {
+    usage: "truffle test [<test_file>] [--compile-all] [--network <name>] [--verbose-rpc]",
+    options: [
+      {
+        option: "<test_file>",
+        description: "Name of the test file to be run. Can include path information if the file " +
+          "does not exist in the\n                    current directory.",
+      },{
+        option: "--compile-all",
+        description: "Compile all contracts instead of intelligently choosing which contracts need " +
+          "to be compiled.",
+      },{
+        option: "--network <name>",
+        description: "Specify the network to use, using artifacts specific to that network. Network " +
+          "name must exist\n                    in the configuration.",
+      },{
+        option: "--verbose-rpc",
+        description: "Log communication between Truffle and the Ethereum client.",
+      },
+    ]
+  },
   run: function (options, done) {
     var OS = require("os");
     var dir = require("node-dir");
@@ -98,7 +119,7 @@ var command = {
               run();
             });
           });
-        }
+        };
 
         if (config.networks[config.network]) {
           Environment.detect(config, environmentCallback);
@@ -124,6 +145,6 @@ var command = {
       });
     });
   }
-}
+};
 
 module.exports = command;

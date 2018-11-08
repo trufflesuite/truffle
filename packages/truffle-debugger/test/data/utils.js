@@ -28,7 +28,7 @@ describe("Utils", function() {
       let result = TruffleDecodeUtils.Conversion.toBN(bytes);
 
       assert.equal(result.toString(), expectedValue.toString());
-    })
+    });
   });
 
   describe("toSignedBN()", function() {
@@ -58,7 +58,7 @@ describe("Utils", function() {
       let result = TruffleDecodeUtils.Conversion.toSignedBN(bytes);
 
       assert.equal(result.toString(), expectedValue.toString());
-    })
+    });
   });
 
   describe("toHexString()", function() {

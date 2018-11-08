@@ -11,6 +11,7 @@ import Debugger from "lib/debugger";
 
 import ast from "lib/ast/selectors";
 import solidity from "lib/solidity/selectors";
+import trace from "lib/trace/selectors";
 
 import { getRange, findRange, rangeNodes } from "lib/ast/map";
 
@@ -46,7 +47,7 @@ contract Variables {
 
 let sources = {
   "Variables.sol": __VARIABLES
-}
+};
 
 describe("AST", function() {
   var provider;
@@ -64,7 +65,7 @@ describe("AST", function() {
   before("Prepare contracts and artifacts", async function() {
     this.timeout(30000);
 
-    let prepared = await prepareContracts(provider, sources)
+    let prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;
     artifacts = prepared.artifacts;
     files = prepared.files;
@@ -107,7 +108,7 @@ describe("AST", function() {
         );
 
         session.stepNext();
-      } while(!session.finished);
+      } while(!session.view(trace.finished));
 
     });
   });

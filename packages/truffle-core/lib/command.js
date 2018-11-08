@@ -1,6 +1,9 @@
 var TaskError = require("./errors/taskerror");
 var yargs = require("yargs/yargs");
 var _ = require("lodash");
+const { bundled, core } = require("../lib/version").info();
+var OS = require("os");
+const analytics = require("../lib/services/analytics");
 
 function Command(commands) {
   this.commands = commands;
@@ -12,32 +15,37 @@ function Command(commands) {
   });
 
   this.args = args;
-};
+}
 
-Command.prototype.getCommand = function(str, noAliases) {
-  var argv = this.args.parse(str);
+Command.prototype.getCommand = function(inputStrings, noAliases) {
+  var argv = this.args.parse(inputStrings);
 
   if (argv._.length == 0) {
     return null;
   }
 
-  var input = argv._[0];
+  var firstInputString = argv._[0];
   var chosenCommand = null;
 
   // If the command wasn't specified directly, go through a process
   // for inferring the command.
-  if (this.commands[input]) {
-    chosenCommand = input;
+  if (this.commands[firstInputString]) {
+    chosenCommand = firstInputString;
   } else if (noAliases !== true) {
     var currentLength = 1;
     var availableCommandNames = Object.keys(this.commands);
 
     // Loop through each letter of the input until we find a command
     // that uniquely matches.
-    while (currentLength <= input.length) {
+    while (currentLength <= firstInputString.length) {
       // Gather all possible commands that match with the current length
-      var possibleCommands = availableCommandNames.filter(function(possibleCommand) {
-        return possibleCommand.substring(0, currentLength) == input.substring(0, currentLength);
+      var possibleCommands = availableCommandNames.filter(function(
+        possibleCommand
+      ) {
+        return (
+          possibleCommand.substring(0, currentLength) ==
+          firstInputString.substring(0, currentLength)
+        );
       });
 
       // Did we find only one command that matches? If so, use that one.
@@ -63,16 +71,20 @@ Command.prototype.getCommand = function(str, noAliases) {
   };
 };
 
-Command.prototype.run = function(command, options, callback) {
+Command.prototype.run = function(inputStrings, options, callback) {
   if (typeof options == "function") {
     callback = options;
     options = {};
   }
 
-  var result = this.getCommand(command, options.noAliases);
+  const result = this.getCommand(inputStrings, options.noAliases);
 
   if (result == null) {
-    return callback(new TaskError("Cannot find command: " + command));
+    return callback(
+      new TaskError(
+        "Cannot find command based on input: " + JSON.stringify(inputStrings)
+      )
+    );
   }
 
   var argv = result.argv;
@@ -99,9 +111,28 @@ Command.prototype.run = function(command, options, callback) {
 
   try {
     result.command.run(options, callback);
+    analytics.send({
+      command: result.name ? result.name : "other",
+      args: result.argv._,
+      version: bundled || "(unbundled) " + core
+    });
   } catch (err) {
     callback(err);
   }
+};
+
+Command.prototype.displayGeneralHelp = function() {
+  this.args
+    .usage(
+      "Truffle v" +
+        (bundled || core) +
+        " - a development framework for Ethereum" +
+        OS.EOL +
+        OS.EOL +
+        "Usage: truffle <command> [options]"
+    )
+    .epilog("See more at http://truffleframework.com/docs")
+    .showHelp();
 };
 
 module.exports = Command;

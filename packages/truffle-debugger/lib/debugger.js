@@ -11,6 +11,7 @@ import traceSelector from "./trace/selectors";
 import evmSelector from "./evm/selectors";
 import soliditySelector from "./solidity/selectors";
 import sessionSelector from "./session/selectors";
+import controllerSelector from "./controller/selectors";
 
 const debug = debugModule("debugger");
 
@@ -94,6 +95,7 @@ export default class Debugger {
       evm: evmSelector,
       solidity: soliditySelector,
       session: sessionSelector,
+      controller: controllerSelector,
     });
   }
 }

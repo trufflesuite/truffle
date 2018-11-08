@@ -6,7 +6,7 @@ module.exports = {
     if (library.contract_name == null) {
       eventArgs = {
         type: 'noLibName'
-      }
+      };
 
       const message = await deployer.emitter.emit('error', eventArgs);
       throw new Error(message);
@@ -23,7 +23,7 @@ module.exports = {
       eventArgs = {
         type: 'noLibAddress',
         contract: library,
-      }
+      };
 
       const message = await deployer.emitter.emit('error', eventArgs);
       throw new Error(message);
@@ -46,7 +46,7 @@ module.exports = {
         libraryAddress: library.address,
         contractName: destination.contractName,
         contractAddress: destination.contractAddress,
-      }
+      };
 
       await deployer.emitter.emit('linking', eventArgs);
       destination.link(library);
