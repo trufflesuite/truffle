@@ -97,12 +97,12 @@ describe("Happy path (truffle unbox)", function() {
         .then(function() {
           Server.stop(done);
         })
-        .catch(done);
+        .catch(Server.stop(done));
     });
   });
 
   it("will run tests", function(done) {
-    this.timeout(70000);
+    this.timeout(140000);
     CommandRunner.run("test", config, function(err) {
       var output = logger.contents();
       if (err) {

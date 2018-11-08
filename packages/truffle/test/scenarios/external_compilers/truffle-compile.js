@@ -118,7 +118,7 @@ describe("`truffle compile` as external", function() {
   });
 
   it("will run tests", function(done) {
-    this.timeout(70000);
+    this.timeout(140000);
     CommandRunner.run("test", config, function(err) {
       var output = logger.contents();
       if (err) {

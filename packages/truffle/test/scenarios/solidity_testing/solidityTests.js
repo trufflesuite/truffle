@@ -48,7 +48,7 @@ describe("Solidity Tests", function() {
     });
 
     it("will run the test and have the correct balance", function(done) {
-      this.timeout(70000);
+      this.timeout(140000);
 
       CommandRunner.run("test", config, function(err) {
         const output = logger.contents();
@@ -66,7 +66,7 @@ describe("Solidity Tests", function() {
     });
 
     it("will throw errors correctly", function(done) {
-      this.timeout(70000);
+      this.timeout(140000);
 
       CommandRunner.run("test", config, function(err) {
         const output = logger.contents();
