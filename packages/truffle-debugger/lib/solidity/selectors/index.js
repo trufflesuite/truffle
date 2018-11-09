@@ -237,7 +237,23 @@ let solidity = createSelectorTree({
      */
     jumpDirection: createLeaf(
       ["./instruction"], (i = {}) => (i.jump || "-")
-    )
+    ),
+
+    /**
+     * solidity.current.willCallOrCreate
+     * NOTE: this includes creations
+     */
+    willCall: createLeaf(
+      [evm.current.step.isCall, evm.current.step.isCreate],
+      (isCall, isCreate) => isCall || isCreate
+    ),
+
+    /**
+     * solidity.current.willReturn
+     */
+    willReturn: createLeaf(
+      [evm.current.step.isHalting], (isHalting) => isHalting),
+
   }
 });
 

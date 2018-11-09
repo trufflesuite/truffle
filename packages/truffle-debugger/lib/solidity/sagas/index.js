@@ -33,6 +33,13 @@ function* functionDepthSaga () {
 
     yield put(actions.jump(jumpDirection));
   }
+
+ else if (yield select(solidity.current.willCall)) {
+   yield put(actions.jump("i"));
+ }
+ else if (yield select(solidity.current.willReturn)) {
+   yield put(actions.jump("o"));
+ }
 }
 
 export function* reset() {
