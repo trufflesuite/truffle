@@ -9,10 +9,31 @@ var Utils = {
   is_object: function(val) {
     return typeof val == "object" && !Array.isArray(val);
   },
+
   is_big_number: function(val) {
     if (typeof val != "object") return false;
 
     return web3.utils.isBN(val) || web3.utils.isBigNumber(val);
+  },
+
+  is_tx_params: function(val) {
+    if (!Utils.is_object(val)) return false;
+    if (Utils.is_big_number(val)) return false;
+    const allowed_fields = {
+      from: true,
+      to: true,
+      gas: true,
+      gasPrice: true,
+      value: true,
+      data: true,
+      nonce: true
+    };
+
+    for (field_name of Object.keys(val)) {
+      if (!allowed_fields[field_name]) return false;
+    }
+
+    return true;
   },
 
   decodeLogs: function(_logs, isSingle) {
@@ -120,18 +141,22 @@ var Utils = {
   },
 
   // Extracts optional tx params from a list of fn arguments
-  getTxParams: function(args) {
+  getTxParams: function(methodABI, args) {
     var constructor = this;
 
-    var tx_params = {};
+    var expected_arg_count = methodABI ? methodABI.inputs.length : 0;
+
+    tx_params = {};
     var last_arg = args[args.length - 1];
 
-    // It's only tx_params if it's an object and not a BigNumber.
-    if (Utils.is_object(last_arg) && !Utils.is_big_number(last_arg)) {
+    if (
+      args.length === expected_arg_count + 1 &&
+      Utils.is_tx_params(last_arg)
+    ) {
       tx_params = args.pop();
     }
-    tx_params = Utils.merge(constructor.class_defaults, tx_params);
-    return tx_params;
+
+    return Utils.merge(constructor.class_defaults, tx_params);
   },
 
   // Verifies that a contracts libraries have been linked correctly.

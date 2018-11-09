@@ -45,12 +45,13 @@ var execute = {
    * Prepares simple wrapped calls by checking network and organizing the method inputs into
    * objects web3 can consume.
    * @param  {Object} constructor   TruffleContract constructor
+   * @param  {Object} methodABI     Function ABI segment w/ inputs & outputs keys.
    * @param  {Array}  _arguments    Arguments passed to method invocation
    * @return {Promise}              Resolves object w/ tx params disambiguated from arguments
    */
-  prepareCall: function(constructor, _arguments) {
+  prepareCall: function(constructor, methodABI, _arguments) {
     var args = Array.prototype.slice.call(_arguments);
-    var params = utils.getTxParams.call(constructor, args);
+    var params = utils.getTxParams.call(constructor, methodABI, args);
 
     args = utils.convertToEthersBN(args);
 
@@ -89,7 +90,7 @@ var execute = {
   /**
    * Executes method as .call and processes optional `defaultBlock` argument.
    * @param  {Function} fn         method
-   * @param  {Object}   methodABI  function ABI segment w/ inputs & outputs keys.
+   * @param  {Object}   methodABI  Function ABI segment w/ inputs & outputs keys.
    * @return {Promise}             Return value of the call.
    */
   call: function(fn, methodABI, address) {
@@ -135,18 +136,19 @@ var execute = {
 
   /**
    * Executes method as .send
-   * @param  {Function}   fn       Method to invoke
-   * @param  {String}     address  Deployed address of the targeted instance
+   * @param  {Function} fn         Method to invoke
+   * @param  {Object}   methodABI  Function ABI segment w/ inputs & outputs keys.
+   * @param  {String}   address    Deployed address of the targeted instance
    * @return {PromiEvent}          Resolves a transaction receipt (via the receipt handler)
    */
-  send: function(fn, address) {
+  send: function(fn, methodABI, address) {
     var constructor = this;
     var web3 = constructor.web3;
 
     return function() {
       var deferred;
       var args = Array.prototype.slice.call(arguments);
-      var params = utils.getTxParams.call(constructor, args);
+      var params = utils.getTxParams.call(constructor, methodABI, args);
       var promiEvent = new Web3PromiEvent();
 
       var context = {
@@ -181,16 +183,21 @@ var execute = {
   /**
    * Deploys an instance. Network detection for `.new` happens before invocation at `contract.js`
    * where we check the libraries.
-   * @param  {Object} args        Deployment options;
-   * @param  {Object} context     Context object that exposes execution state to event handlers.
-   * @param  {Number} blockLimit  `block.gasLimit`
-   * @return {PromiEvent}         Resolves a TruffleContract instance
+   * @param  {Object} args            Deployment options;
+   * @param  {Object} context         Context object that exposes execution state to event handlers.
+   * @param  {Number} blockLimit      `block.gasLimit`
+   * @return {PromiEvent}             Resolves a TruffleContract instance
    */
   deploy: function(args, context, blockLimit) {
     var constructor = this;
+
     var abi = constructor.abi;
+    var constructorABI = constructor.abi.filter(
+      i => i.type === "constructor"
+    )[0];
+
     var web3 = constructor.web3;
-    var params = utils.getTxParams.call(constructor, args);
+    var params = utils.getTxParams.call(constructor, constructorABI, args);
     var deferred;
 
     var options = {
@@ -356,22 +363,29 @@ var execute = {
   /**
    * Estimates gas cost of a method invocation
    * @param  {Function} fn  Method to target
+   * @param  {Object}   methodABI  Function ABI segment w/ inputs & outputs keys.
    * @return {Promise}
    */
-  estimate: function(fn) {
+  estimate: function(fn, methodABI) {
     var constructor = this;
     return function() {
       return execute
-        .prepareCall(constructor, arguments)
+        .prepareCall(constructor, methodABI, arguments)
         .then(res => fn(...res.args).estimateGas(res.params));
     };
   },
 
-  request: function(fn) {
+  /**
+   *
+   * @param  {Function} fn  Method to target
+   * @param  {Object}   methodABI  Function ABI segment w/ inputs & outputs keys.
+   * @return {Promise}
+   */
+  request: function(fn, methodABI) {
     var constructor = this;
     return function() {
       return execute
-        .prepareCall(constructor, arguments)
+        .prepareCall(constructor, methodABI, arguments)
         .then(res => fn(...res.args).request(res.params));
     };
   },
@@ -380,20 +394,27 @@ var execute = {
   // during bootstrapping as `estimate`
   estimateDeployment: function() {
     var constructor = this;
-    return execute.prepareCall(constructor, arguments).then(res => {
-      var options = {
-        data: constructor.binary,
-        arguments: res.args
-      };
 
-      delete res.params["data"]; // Is this necessary?
+    var constructorABI = constructor.abi.filter(
+      i => i.type === "constructor"
+    )[0];
 
-      var instance = new constructor.web3.eth.Contract(
-        constructor.abi,
-        res.params
-      );
-      return instance.deploy(options).estimateGas(res.params);
-    });
+    return execute
+      .prepareCall(constructor, constructorABI, arguments)
+      .then(res => {
+        var options = {
+          data: constructor.binary,
+          arguments: res.args
+        };
+
+        delete res.params["data"]; // Is this necessary?
+
+        var instance = new constructor.web3.eth.Contract(
+          constructor.abi,
+          res.params
+        );
+        return instance.deploy(options).estimateGas(res.params);
+      });
   }
 };
 
