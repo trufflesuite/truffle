@@ -14,7 +14,7 @@ import evm from "../selectors";
  *
  * @return {string} ID (0x-prefixed keccak of binary)
  */
-export function *addContext(contractName, { address, binary }) {
+export function* addContext(contractName, { address, binary }) {
   const raw = binary || address;
   const context = keccak256(raw);
 
@@ -33,13 +33,13 @@ export function *addContext(contractName, { address, binary }) {
  * @param {string} binary - may be undefined (e.g. precompiles)
  * @return {string} ID (0x-prefixed keccak of binary)
  */
-export function *addInstance(address, binary) {
+export function* addInstance(address, binary) {
   let search = yield select(evm.info.binaries.search);
   let { context } = search(binary);
 
   // in case binary is unknown, add context for address
   if (!context) {
-    context = yield *addContext(undefined, { address });
+    context = yield* addContext(undefined, { address });
   }
 
   yield put(actions.addInstance(address, context, binary));
@@ -55,7 +55,7 @@ export function* begin({ address, binary }) {
   }
 }
 
-export function* callstackSaga () {
+export function* callstackSaga() {
   let contexts;
   let instances;
 
@@ -88,13 +88,11 @@ export function* callstackSaga () {
       }
 
       yield put(actions.call(address));
-
     } else if (yield select(evm.current.step.isCreate)) {
       debug("got create");
       let binary = yield select(evm.current.step.createBinary);
 
       yield put(actions.create(binary));
-
     } else if (yield select(evm.current.step.isHalting)) {
       debug("got return");
       yield put(actions.returnCall());
@@ -106,7 +104,7 @@ export function* reset() {
   yield put(actions.reset());
 }
 
-export function* saga () {
+export function* saga() {
   yield call(callstackSaga);
 }
 

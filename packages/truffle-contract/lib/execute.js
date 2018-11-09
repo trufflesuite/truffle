@@ -1,5 +1,5 @@
-var Web3PromiEvent = require('web3-core-promievent');
-var EventEmitter = require('events');
+var Web3PromiEvent = require("web3-core-promievent");
+var EventEmitter = require("events");
 var utils = require("./utils");
 var StatusError = require("./statuserror");
 var Reason = require("./reason");
@@ -8,7 +8,6 @@ var override = require("./override");
 var reformat = require("./reformat");
 
 var execute = {
-
   // -----------------------------------  Helpers --------------------------------------------------
   /**
    * Retrieves gas estimate multiplied by the set gas multiplier for a `sendTransaction` call.
@@ -16,13 +15,13 @@ var execute = {
    * @param  {Number} blockLimit  most recent network block.blockLimit
    * @return {Number}             gas estimate
    */
-  getGasEstimate: function(params, blockLimit){
+  getGasEstimate: function(params, blockLimit) {
     var constructor = this;
     var web3 = this.web3;
 
-    return new Promise(function(accept, reject){
+    return new Promise(function(accept, reject) {
       // Always prefer specified gas - this includes gas set by class_defaults
-      if (params.gas)           return accept(params.gas);
+      if (params.gas) return accept(params.gas);
       if (!constructor.autoGas) return accept();
 
       web3.eth
@@ -31,13 +30,14 @@ var execute = {
           var bestEstimate = Math.floor(constructor.gasMultiplier * gas);
 
           // Don't go over blockLimit
-          (bestEstimate >= blockLimit)
+          bestEstimate >= blockLimit
             ? accept(blockLimit - 1)
             : accept(bestEstimate);
 
-        // We need to let txs that revert through.
-        // Often that's exactly what you are testing.
-        }).catch(err => accept());
+          // We need to let txs that revert through.
+          // Often that's exactly what you are testing.
+        })
+        .catch(err => accept());
     });
   },
 
@@ -48,13 +48,13 @@ var execute = {
    * @param  {Array}  _arguments    Arguments passed to method invocation
    * @return {Promise}              Resolves object w/ tx params disambiguated from arguments
    */
-  prepareCall: function(constructor, _arguments){
+  prepareCall: function(constructor, _arguments) {
     var args = Array.prototype.slice.call(_arguments);
     var params = utils.getTxParams.call(constructor, args);
 
-    return constructor
-      .detectNetwork()
-      .then(() => { return {args: args, params: params}; });
+    return constructor.detectNetwork().then(() => {
+      return { args: args, params: params };
+    });
   },
 
   /**
@@ -62,7 +62,7 @@ var execute = {
    * @param  {Any}  arg
    * @return {Boolean}
    */
-  hasTxParams: function(arg){
+  hasTxParams: function(arg) {
     return utils.is_object(arg) && !utils.is_big_number(arg);
   },
 
@@ -74,9 +74,11 @@ var execute = {
    * @param  {Array}  inputs     ABI segment defining method arguments
    * @return {Boolean}           true if final argument is `defaultBlock`
    */
-  hasDefaultBlock:  function(args, lastArg, inputs){
-    var hasDefaultBlock = !execute.hasTxParams(lastArg) && (args.length > inputs.length);
-    var hasDefaultBlockWithParams = execute.hasTxParams(lastArg) && (args.length - 1 > inputs.length);
+  hasDefaultBlock: function(args, lastArg, inputs) {
+    var hasDefaultBlock =
+      !execute.hasTxParams(lastArg) && args.length > inputs.length;
+    var hasDefaultBlockWithParams =
+      execute.hasTxParams(lastArg) && args.length - 1 > inputs.length;
     return hasDefaultBlock || hasDefaultBlockWithParams;
   },
 
@@ -93,13 +95,13 @@ var execute = {
 
     return function() {
       var params = {};
-      var defaultBlock = 'latest';
+      var defaultBlock = "latest";
       var args = Array.prototype.slice.call(arguments);
       var lastArg = args[args.length - 1];
 
       // Extract defaultBlock parameter
-      if (execute.hasDefaultBlock(args, lastArg, methodABI.inputs)){
-          defaultBlock = args.pop();
+      if (execute.hasDefaultBlock(args, lastArg, methodABI.inputs)) {
+        defaultBlock = args.pop();
       }
 
       // Extract tx params
@@ -113,19 +115,20 @@ var execute = {
       return new Promise(async (resolve, reject) => {
         let result;
         try {
-
           await constructor.detectNetwork();
           result = await fn(...args).call(params, defaultBlock);
-          result = reformat.numbers.call(constructor, result, methodABI.outputs);
+          result = reformat.numbers.call(
+            constructor,
+            result,
+            methodABI.outputs
+          );
           resolve(result);
-
         } catch (err) {
           reject(err);
         }
       });
     };
   },
-
 
   /**
    * Executes method as .send
@@ -144,26 +147,28 @@ var execute = {
       var promiEvent = new Web3PromiEvent();
 
       var context = {
-        contract: constructor,   // Can't name this field `constructor` or `_constructor`
+        contract: constructor, // Can't name this field `constructor` or `_constructor`
         promiEvent: promiEvent,
         params: params
       };
 
-      constructor.detectNetwork().then(network => {
-        params.to = address;
-        params.data = fn ? fn(...args).encodeABI() : undefined;
+      constructor
+        .detectNetwork()
+        .then(network => {
+          params.to = address;
+          params.data = fn ? fn(...args).encodeABI() : undefined;
 
-        execute
-          .getGasEstimate
-          .call(constructor, params, network.blockLimit)
-          .then(gas => {
-            params.gas = gas;
-            deferred = web3.eth.sendTransaction(params);
-            deferred.catch(override.start.bind(constructor, context));
-            handlers.setup(deferred, context);
-          })
-          .catch(promiEvent.reject);
-      }).catch(promiEvent.reject);
+          execute.getGasEstimate
+            .call(constructor, params, network.blockLimit)
+            .then(gas => {
+              params.gas = gas;
+              deferred = web3.eth.sendTransaction(params);
+              deferred.catch(override.start.bind(constructor, context));
+              handlers.setup(deferred, context);
+            })
+            .catch(promiEvent.reject);
+        })
+        .catch(promiEvent.reject);
 
       return promiEvent.eventEmitter;
     };
@@ -176,7 +181,7 @@ var execute = {
    * @param  {Object} context     Context object that exposes execution state to event handlers.
    * @param  {Number} blockLimit  `block.gasLimit`
    * @return {PromiEvent}         Resolves a TruffleContract instance
-  */
+   */
   deploy: function(args, context, blockLimit) {
     var constructor = this;
     var abi = constructor.abi;
@@ -192,8 +197,7 @@ var execute = {
     var contract = new web3.eth.Contract(abi);
     params.data = contract.deploy(options).encodeABI();
 
-    execute
-      .getGasEstimate
+    execute.getGasEstimate
       .call(constructor, params, blockLimit)
       .then(gas => {
         params.gas = gas;
@@ -201,29 +205,35 @@ var execute = {
         deferred = web3.eth.sendTransaction(params);
         handlers.setup(deferred, context);
 
-        deferred.then(async (receipt) => {
-          if (receipt.status !== undefined && !receipt.status){
-            var reason = await Reason.get(params, web3);
+        deferred
+          .then(async receipt => {
+            if (receipt.status !== undefined && !receipt.status) {
+              var reason = await Reason.get(params, web3);
 
-            var error = new StatusError(
-              params,
-              context.transactionHash,
-              receipt,
-              reason
+              var error = new StatusError(
+                params,
+                context.transactionHash,
+                receipt,
+                reason
+              );
+
+              return context.promiEvent.reject(error);
+            }
+
+            var web3Instance = new web3.eth.Contract(
+              abi,
+              receipt.contractAddress
             );
+            web3Instance.transactionHash = context.transactionHash;
 
-            return context.promiEvent.reject(error);
-          }
+            context.promiEvent.resolve(new constructor(web3Instance));
 
-          var web3Instance = new web3.eth.Contract(abi, receipt.contractAddress);
-          web3Instance.transactionHash = context.transactionHash;
-
-          context.promiEvent.resolve(new constructor(web3Instance));
-
-        // Manage web3's 50 blocks' timeout error.
-        // Web3's own subscriptions go dead here.
-        }).catch(override.start.bind(constructor, context));
-      }).catch(context.promiEvent.reject);
+            // Manage web3's 50 blocks' timeout error.
+            // Web3's own subscriptions go dead here.
+          })
+          .catch(override.start.bind(constructor, context));
+      })
+      .catch(context.promiEvent.reject);
   },
 
   /**
@@ -231,33 +241,32 @@ var execute = {
    * @param  {Function} fn  Solidity event method
    * @return {Emitter}      Event emitter
    */
-  event: function(fn){
+  event: function(fn) {
     var constructor = this;
     var decode = utils.decodeLogs;
     var currentLogID = null;
 
     // Someone upstream is firing duplicates :/
-    function dedupe(id){
-      return (id === currentLogID)
-        ? false
-        : currentLogID = id;
+    function dedupe(id) {
+      return id === currentLogID ? false : (currentLogID = id);
     }
 
-    return function(params, callback){
+    return function(params, callback) {
       if (typeof params == "function") {
         callback = params;
         params = {};
       }
 
       // As callback
-      if (callback !== undefined){
-        var intermediary = function(err, e){
-          if (err) callback(err);
-          var event = dedupe(e.id) && decode.call(constructor, e, true)[0];
-          callback(null, event);
+      if (callback !== undefined) {
+        var intermediary = function(err, e) {
+          if (err) return callback(err);
+          if (!dedupe(e.id)) return;
+          callback(null, decode.call(constructor, e, true)[0]);
         };
 
-        return constructor.detectNetwork()
+        return constructor
+          .detectNetwork()
           .then(() => fn.call(constructor.events, params, intermediary));
       }
 
@@ -267,9 +276,19 @@ var execute = {
       constructor.detectNetwork().then(() => {
         var event = fn(params);
 
-        event.on('data', e => dedupe(e.id) && emitter.emit('data', decode.call(constructor, e, true)[0]));
-        event.on('changed', e => dedupe(e.id) && emitter.emit('changed', decode.call(constructor, e, true)[0]));
-        event.on('error', e => emitter.emit('error', e));
+        event.on(
+          "data",
+          e =>
+            dedupe(e.id) &&
+            emitter.emit("data", decode.call(constructor, e, true)[0])
+        );
+        event.on(
+          "changed",
+          e =>
+            dedupe(e.id) &&
+            emitter.emit("changed", decode.call(constructor, e, true)[0])
+        );
+        event.on("error", e => emitter.emit("error", e));
       });
 
       return emitter;
@@ -280,27 +299,35 @@ var execute = {
    * Wraps web3 `allEvents`, with additional log decoding
    * @return {PromiEvent}  EventEmitter
    */
-  allEvents: function(web3Instance){
+  allEvents: function(web3Instance) {
     var constructor = this;
     var decode = utils.decodeLogs;
     var currentLogID = null;
 
     // Someone upstream is firing duplicates :/
-    function dedupe(id){
-      return (id === currentLogID)
-        ? false
-        : currentLogID = id;
+    function dedupe(id) {
+      return id === currentLogID ? false : (currentLogID = id);
     }
 
-    return function(params){
+    return function(params) {
       var emitter = new EventEmitter();
 
       constructor.detectNetwork().then(() => {
         var event = web3Instance.events.allEvents(params);
 
-        event.on('data', e => dedupe(e.id) && emitter.emit('data', decode.call(constructor, e, true)[0]));
-        event.on('changed', e => dedupe(e.id) && emitter.emit('changed', decode.call(constructor, e, true)[0]));
-        event.on('error', e => emitter.emit('error', e));
+        event.on(
+          "data",
+          e =>
+            dedupe(e.id) &&
+            emitter.emit("data", decode.call(constructor, e, true)[0])
+        );
+        event.on(
+          "changed",
+          e =>
+            dedupe(e.id) &&
+            emitter.emit("changed", decode.call(constructor, e, true)[0])
+        );
+        event.on("error", e => emitter.emit("error", e));
       });
 
       return emitter;
@@ -311,11 +338,11 @@ var execute = {
    * Wraps web3 `getPastEvents`, with additional log decoding
    * @return {Promise}  Resolves array of event objects
    */
-  getPastEvents: function(web3Instance){
+  getPastEvents: function(web3Instance) {
     var constructor = this;
     var decode = utils.decodeLogs;
 
-    return function(event, options){
+    return function(event, options) {
       return web3Instance
         .getPastEvents(event, options)
         .then(events => decode.call(constructor, events, false));
@@ -327,20 +354,18 @@ var execute = {
    * @param  {Function} fn  Method to target
    * @return {Promise}
    */
-  estimate : function(fn){
+  estimate: function(fn) {
     var constructor = this;
     return function() {
-
       return execute
         .prepareCall(constructor, arguments)
         .then(res => fn(...res.args).estimateGas(res.params));
     };
   },
 
-  request : function(fn){
+  request: function(fn) {
     var constructor = this;
     return function() {
-
       return execute
         .prepareCall(constructor, arguments)
         .then(res => fn(...res.args).request(res.params));
@@ -349,23 +374,23 @@ var execute = {
 
   // This gets attached to `.new` (declared as a static_method in `contract`)
   // during bootstrapping as `estimate`
-  estimateDeployment : function(){
+  estimateDeployment: function() {
     var constructor = this;
-    return execute
-      .prepareCall(constructor, arguments)
-      .then(res => {
-        var options = {
-          data: constructor.binary,
-          arguments: res.args
-        };
+    return execute.prepareCall(constructor, arguments).then(res => {
+      var options = {
+        data: constructor.binary,
+        arguments: res.args
+      };
 
-        delete res.params['data'];  // Is this necessary?
+      delete res.params["data"]; // Is this necessary?
 
-        var instance = new constructor.web3.eth.Contract(constructor.abi, res.params);
-        return instance.deploy(options).estimateGas(res.params);
-      });
-  },
+      var instance = new constructor.web3.eth.Contract(
+        constructor.abi,
+        res.params
+      );
+      return instance.deploy(options).estimateGas(res.params);
+    });
+  }
 };
 
 module.exports = execute;
-
