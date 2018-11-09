@@ -86,6 +86,11 @@ var handlers = {
    * @param  {Object} receipt   transaction receipt
    */
   receipt: async function(context, receipt) {
+    // keep around the raw (not decoded) logs in the raw logs field as a
+    // stopgap until we can get the ABI for all events, not just the current
+    // contract
+    receipt.rawLogs = receipt.logs;
+
     // Decode logs
     var logs;
 
@@ -93,8 +98,10 @@ var handlers = {
       ? (logs = Utils.decodeLogs.call(context.contract, receipt.logs))
       : (logs = []);
 
-    // Emit receipt
+    // make default logs field be decoded logs for ease of use.
     receipt.logs = logs;
+
+    // Emit receipt
     context.promiEvent.eventEmitter.emit("receipt", receipt);
 
     // .new(): Exit early. We need the promiEvent to resolve a contract instance.
