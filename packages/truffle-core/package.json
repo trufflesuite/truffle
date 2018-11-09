@@ -15,7 +15,7 @@
     "diff": "1.4.0",
     "ethereumjs-wallet": "^0.6.2",
     "ethpm": "0.0.16",
-    "ethpm-registry": "0.1.0-next.1",
+    "ethpm-registry": "0.1.0-next.2",
     "fs-extra": "6.0.1",
     "ganache-cli": "6.1.8",
     "hdkey": "^1.1.0",
