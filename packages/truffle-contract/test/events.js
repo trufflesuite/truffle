@@ -66,7 +66,7 @@ describe("Events", function() {
     });
   });
 
-  it('should fire repeatedly (without duplicates)', async function(){
+  it('event emitter should fire repeatedly (without duplicates)', async function(){
     let emitter;
     let counter = 0;
     const example = await Example.new(1);
@@ -84,6 +84,23 @@ describe("Events", function() {
 
     assert(counter === 3, 'emitter should have fired repeatedly');
     emitter.removeAllListeners();
+  });
+
+  it('event callback should fire repeatedly (without duplicates)', async function(){
+    let counter = 0;
+    let duplicate = false;
+    const example = await Example.new(1);
+
+    example.ExampleEvent(function(err, res){
+        if (res === false) duplicate = true;
+        counter++;
+    });
+    await example.triggerEventWithArgument(1);
+    await example.triggerEventWithArgument(2);
+    await example.triggerEventWithArgument(3);
+
+    assert(counter === 3, 'callback should have been called repeatedly');
+    assert(duplicate === false, 'must not fire duplicates as false result');
   });
 
   it('should listen for `allEvents`', async function(){
