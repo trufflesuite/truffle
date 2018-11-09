@@ -499,7 +499,9 @@ if (typeof Web3 == "object" && Object.keys(Web3).length == 0) {
 
     toJSON: function() {
       return this._json;
-    }
+    },
+
+    decodeLogs: utils.decodeLogs
   };
 
   // Getter functions are scoped to Contract object.
