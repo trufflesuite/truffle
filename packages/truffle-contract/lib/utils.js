@@ -19,6 +19,7 @@ var Utils = {
   is_tx_params: function(val) {
     if (!Utils.is_object(val)) return false;
     if (Utils.is_big_number(val)) return false;
+
     const allowed_fields = {
       from: true,
       to: true,
@@ -30,10 +31,10 @@ var Utils = {
     };
 
     for (field_name of Object.keys(val)) {
-      if (!allowed_fields[field_name]) return false;
+      if (allowed_fields[field_name]) return true;
     }
 
-    return true;
+    return false;
   },
 
   decodeLogs: function(_logs, isSingle) {
