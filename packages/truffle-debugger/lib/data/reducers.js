@@ -47,7 +47,7 @@ function scopes(state = DEFAULT_SCOPES, action) {
             variables: [
               ...variables,
 
-              {name: action.node.name, id: action.node.id}
+              { name: action.node.name, id: action.node.id }
             ]
           }
         }
@@ -73,15 +73,14 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
         byId: {
           ...state.byId,
 
-          ...Object.assign({},
-            ...Object.entries(action.assignments).map(
-              ([id, ref]) => ({
-                [id]: {
-                  ...state.byId[id], //note: id here includes depth
-                  ref
-                }
-              })
-            )
+          ...Object.assign(
+            {},
+            ...Object.entries(action.assignments).map(([id, ref]) => ({
+              [id]: {
+                ...state.byId[id], //note: id here includes depth
+                ref
+              }
+            }))
           )
         }
       };
@@ -92,7 +91,7 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
     default:
       return state;
   }
-};
+}
 
 const DEFAULT_MAPPING_KEYS = {
   byId: {}
@@ -107,10 +106,7 @@ function mappingKeys(state = DEFAULT_MAPPING_KEYS, action) {
           ...state.byId,
 
           // add new key to set of keys already defined
-          [id]: [...new Set([
-            ...(state.byId[id] || []),
-            key
-          ])]
+          [id]: [...new Set([...(state.byId[id] || []), key])]
         }
       };
 

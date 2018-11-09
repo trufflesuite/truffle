@@ -1,18 +1,30 @@
-let rlp = require('rlp');
-let util = require('ethereumjs-util');
+let rlp = require("rlp");
+let util = require("ethereumjs-util");
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof =
+  typeof Symbol === "function" && typeof Symbol.iterator === "symbol"
+    ? function(obj) {
+        return typeof obj;
+      }
+    : function(obj) {
+        return obj &&
+          typeof Symbol === "function" &&
+          obj.constructor === Symbol &&
+          obj !== Symbol.prototype
+          ? "symbol"
+          : typeof obj;
+      };
 
-util.defineProperties = function (self, fields, data) {
+util.defineProperties = function(self, fields, data) {
   self.raw = [];
   self._fields = [];
 
   // attach the `toJSON`
-  self.toJSON = function (label) {
+  self.toJSON = function(label) {
     if (label) {
       var obj = {};
-      self._fields.forEach(function (field) {
-        obj[field] = '0x' + self[field].toString('hex');
+      self._fields.forEach(function(field) {
+        obj[field] = "0x" + self[field].toString("hex");
       });
       return obj;
     }
@@ -23,7 +35,7 @@ util.defineProperties = function (self, fields, data) {
     return rlp.encode(self.raw);
   };
 
-  fields.forEach(function (field, i) {
+  fields.forEach(function(field, i) {
     self._fields.push(field.name);
     function getter() {
       return self.raw[i];
@@ -31,7 +43,7 @@ util.defineProperties = function (self, fields, data) {
     function setter(v) {
       v = util.toBuffer(v);
 
-      if (v.toString('hex') === '00' && !field.allowZero) {
+      if (v.toString("hex") === "00" && !field.allowZero) {
         v = Buffer.allocUnsafe(0);
       }
 
@@ -69,8 +81,8 @@ util.defineProperties = function (self, fields, data) {
 
   // if the constuctor is passed data
   if (data) {
-    if (typeof data === 'string') {
-      data = Buffer.from(util.stripHexPrefix(data), 'hex');
+    if (typeof data === "string") {
+      data = Buffer.from(util.stripHexPrefix(data), "hex");
     }
 
     if (Buffer.isBuffer(data)) {
@@ -79,42 +91,50 @@ util.defineProperties = function (self, fields, data) {
 
     if (Array.isArray(data)) {
       if (data.length > self._fields.length) {
-        throw new Error('wrong number of fields in data');
+        throw new Error("wrong number of fields in data");
       }
 
       // make sure all the items are buffers
-      data.forEach(function (d, i) {
+      data.forEach(function(d, i) {
         self[self._fields[i]] = util.toBuffer(d);
       });
-    } else if ((typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object') {
+    } else if (
+      (typeof data === "undefined" ? "undefined" : _typeof(data)) === "object"
+    ) {
       var keys = Object.keys(data);
-      fields.forEach(function (field) {
-        if (keys.indexOf(field.name) !== -1) self[field.name] = data[field.name];
-        if (keys.indexOf(field.alias) !== -1) self[field.alias] = data[field.alias];
+      fields.forEach(function(field) {
+        if (keys.indexOf(field.name) !== -1)
+          self[field.name] = data[field.name];
+        if (keys.indexOf(field.alias) !== -1)
+          self[field.alias] = data[field.alias];
       });
     } else {
-      throw new Error('invalid data');
+      throw new Error("invalid data");
     }
   }
 };
 
-const async = require('async')
-let Cache = require('ethereumjs-vm/dist/cache')
+const async = require("async");
+let Cache = require("ethereumjs-vm/dist/cache");
 
-Cache.prototype.warm = function (addresses, cb) {
+Cache.prototype.warm = function(addresses, cb) {
   var self = this;
   // shim till async supports iterators
   var accountArr = [];
-  addresses.forEach(function (val) {
+  addresses.forEach(function(val) {
     if (val) accountArr.push(val);
   });
 
-  async.eachSeries(accountArr, function (addressHex, done) {
-    var address = Buffer.from(addressHex.replace('0x', ''), 'hex');
-    self._lookupAccount(address, function (err, account) {
-      if (err) return done(err);
-      self._update(address, account, false, account.exists);
-      done();
-    });
-  }, cb);
+  async.eachSeries(
+    accountArr,
+    function(addressHex, done) {
+      var address = Buffer.from(addressHex.replace("0x", ""), "hex");
+      self._lookupAccount(address, function(err, account) {
+        if (err) return done(err);
+        self._update(address, account, false, account.exists);
+        done();
+      });
+    },
+    cb
+  );
 };
