@@ -1,7 +1,7 @@
 var BlockchainUtils = require("truffle-blockchain-utils");
 var Web3 = require("web3");
-var Web3PromiEvent = require('web3-core-promievent');
-var webUtils = require('web3-utils');
+var Web3PromiEvent = require("web3-core-promievent");
+var webUtils = require("web3-utils");
 var utils = require("./utils");
 var execute = require("./execute");
 
@@ -11,7 +11,7 @@ if (typeof Web3 == "object" && Object.keys(Web3).length == 0) {
   Web3 = global.Web3;
 }
 
-var contract = (function(module) {
+(function(module) {
   // Accepts a contract object created with web3.eth.Contract or an address.
   function Contract(contract) {
     var instance = this;
@@ -32,54 +32,96 @@ var contract = (function(module) {
     instance.contract = contract;
 
     // User defined methods, overloaded methods, events
-    instance.abi.forEach(function(item){
-
-      switch(item.type) {
+    instance.abi.forEach(function(item) {
+      switch (item.type) {
         case "function":
           var isConstant =
-            ["pure", "view"].includes(item.stateMutability) ||  // new form
-            item.constant;  // deprecated case
+            ["pure", "view"].includes(item.stateMutability) || item.constant; // new form // deprecated case
 
           var signature = webUtils._jsonInterfaceMethodToString(item);
 
-          var method = function(constant, web3Method){
+          var method = function(constant, web3Method) {
             var fn;
 
-            (constant)
-              ? fn = execute.call.call(constructor, web3Method, item, instance.address)
-              : fn = execute.send.call(constructor, web3Method, instance.address);
+            constant
+              ? (fn = execute.call.call(
+                  constructor,
+                  web3Method,
+                  item,
+                  instance.address
+                ))
+              : (fn = execute.send.call(
+                  constructor,
+                  web3Method,
+                  item,
+                  instance.address
+                ));
 
-            fn.call = execute.call.call(constructor, web3Method, item, instance.address);
-            fn.sendTransaction = execute.send.call(constructor, web3Method, instance.address);
-            fn.estimateGas = execute.estimate.call(constructor, web3Method, instance.address);
-            fn.request = execute.request.call(constructor, web3Method, instance.address);
+            fn.call = execute.call.call(
+              constructor,
+              web3Method,
+              item,
+              instance.address
+            );
+            fn.sendTransaction = execute.send.call(
+              constructor,
+              web3Method,
+              item,
+              instance.address
+            );
+            fn.estimateGas = execute.estimate.call(
+              constructor,
+              web3Method,
+              item,
+              instance.address
+            );
+            fn.request = execute.request.call(
+              constructor,
+              web3Method,
+              item,
+              instance.address
+            );
 
             return fn;
           };
 
           // Only define methods once. Any overloaded methods will have all their
           // accessors available by ABI signature available on the `methods` key below.
-          if(instance[item.name] === undefined ){
-            instance[item.name] = method(isConstant, contract.methods[item.name]);
+          if (instance[item.name] === undefined) {
+            instance[item.name] = method(
+              isConstant,
+              contract.methods[item.name]
+            );
           }
 
           // Overloaded methods should be invoked via the .methods property
-          instance.methods[signature] = method(isConstant, contract.methods[signature]);
+          instance.methods[signature] = method(
+            isConstant,
+            contract.methods[signature]
+          );
           break;
 
         case "event":
-          instance[item.name] = execute.event.call(constructor, contract.events[item.name]);
+          instance[item.name] = execute.event.call(
+            constructor,
+            contract.events[item.name]
+          );
           break;
       }
     });
 
     // sendTransaction / send
-    instance.sendTransaction = execute.send.call(constructor, null, instance.address);
+    instance.sendTransaction = execute.send.call(
+      constructor,
+      null,
+      null,
+      instance.address
+    );
 
     // Prefer user defined `send`
-    if (!instance.send){
-      instance.send = (value, txParams={}) => {
-        const packet = Object.assign({value: value}, txParams);
+    if (!instance.send) {
+      instance.send = (value, txParams = {}) => {
+        const packet = Object.assign({ value: value }, txParams);
         return instance.sendTransaction(packet);
       };
     }
@@ -87,12 +129,14 @@ var contract = (function(module) {
     // Other events
     instance.allEvents = execute.allEvents.call(constructor, contract);
     instance.getPastEvents = execute.getPastEvents.call(constructor, contract);
-  };
+  }
 
   Contract._constructorMethods = {
     setProvider: function(provider) {
       if (!provider) {
-        throw new Error("Invalid provider passed to setProvider(); provider is " + provider);
+        throw new Error(
+          "Invalid provider passed to setProvider(); provider is " + provider
+        );
       }
 
       this.web3.setProvider(provider);
@@ -104,14 +148,19 @@ var contract = (function(module) {
       var promiEvent = new Web3PromiEvent();
 
       if (!constructor.currentProvider) {
-        var err = constructor.contractName + " error: Please call setProvider() first before calling new().";
+        var err =
+          constructor.contractName +
+          " error: Please call setProvider() first before calling new().";
         throw new Error(err);
       }
 
       if (!constructor.bytecode || constructor.bytecode === "0x") {
-        var err = `${constructor.contractName} error: contract binary not set. Can't deploy new instance.\n` +
-                  `This contract may be abstract, not implement an abstract parent's methods completely\n` +
-                  `or not invoke an inherited contract's constructor correctly\n`;
+        var err =
+          `${
+            constructor.contractName
+          } error: contract binary not set. Can't deploy new instance.\n` +
+          `This contract may be abstract, not implement an abstract parent's methods completely\n` +
+          `or not invoke an inherited contract's constructor correctly\n`;
 
         throw new Error(err);
       }
@@ -125,10 +174,18 @@ var contract = (function(module) {
         onlyEmitReceipt: true
       };
 
-      constructor.detectNetwork().then(network => {
-        utils.checkLibraries.apply(constructor);
-        return execute.deploy.call(constructor, args, context, network.blockLimit);
-      }).catch(promiEvent.reject);
+      constructor
+        .detectNetwork()
+        .then(network => {
+          utils.checkLibraries.apply(constructor);
+          return execute.deploy.call(
+            constructor,
+            args,
+            context,
+            network.blockLimit
+          );
+        })
+        .catch(promiEvent.reject);
 
       return promiEvent.eventEmitter;
     },
@@ -136,20 +193,30 @@ var contract = (function(module) {
     at: function(address) {
       var constructor = this;
 
-      return new Promise(function(accept, reject){
-        if (address == null || typeof address != "string" || address.length != 42) {
-          var err = "Invalid address passed to " + constructor.contractName + ".at(): " + address;
+      return new Promise(function(accept, reject) {
+        if (
+          address == null ||
+          typeof address != "string" ||
+          address.length != 42
+        ) {
+          var err =
+            "Invalid address passed to " +
+            constructor.contractName +
+            ".at(): " +
+            address;
           reject(new Error(err));
         }
 
-        return constructor.detectNetwork().then(function(network_id) {
+        return constructor.detectNetwork().then(function() {
           var instance = new constructor(address);
 
-          return constructor.web3.eth.getCode(address).then(function(code){
-
-            if (!code || code.replace("0x", "").replace(/0/g, "") === '') {
-              var err = "Cannot create instance of " + constructor.contractName +
-                        "; no code at address " + address;
+          return constructor.web3.eth.getCode(address).then(function(code) {
+            if (!code || code.replace("0x", "").replace(/0/g, "") === "") {
+              var err =
+                "Cannot create instance of " +
+                constructor.contractName +
+                "; no code at address " +
+                address;
               reject(new Error(err));
             }
 
@@ -164,17 +231,20 @@ var contract = (function(module) {
       return constructor.detectNetwork().then(function() {
         // We don't have a network config for the one we found
         if (constructor._json.networks[constructor.network_id] == null) {
-          var error = constructor.contractName +
-                      " has not been deployed to detected network" +
-                      " (network/artifact mismatch)";
+          var error =
+            constructor.contractName +
+            " has not been deployed to detected network" +
+            " (network/artifact mismatch)";
           throw new Error(error);
         }
 
         // If we found the network but it's not deployed
         if (!constructor.isDeployed()) {
-          var error = constructor.contractName +
-                      " has not been deployed to detected network (" +
-                      constructor.network_id + ")";
+          var error =
+            constructor.contractName +
+            " has not been deployed to detected network (" +
+            constructor.network_id +
+            ")";
 
           throw new Error(error);
         }
@@ -222,50 +292,72 @@ var contract = (function(module) {
 
       return new Promise(function(accept, reject) {
         // Try to get the current blockLimit
-        constructor.web3.eth.getBlock('latest').then(function(block){
-          // Try to detect the network we have artifacts for.
-          if (constructor.network_id) {
-            // We have a network id and a configuration, let's go with it.
-            if (constructor.networks[constructor.network_id] != null) {
-              return accept({id: constructor.network_id, blockLimit: block.gasLimit});
-            }
-          }
-
-          constructor.web3.eth.net.getId().then(function(network_id){
-            // If we found the network via a number, let's use that.
-            if (constructor.hasNetwork(network_id)) {
-
-              constructor.setNetwork(network_id);
-              return accept({id: constructor.network_id, blockLimit: block.gasLimit});
-            }
-
-            // Otherwise, go through all the networks that are listed as
-            // blockchain uris and see if they match.
-            var uris = Object.keys(constructor._json.networks).filter(function(network) {
-              return network.indexOf("blockchain://") == 0;
-            });
-
-            var matches = uris.map(function(uri) {
-              return BlockchainUtils.matches.bind(BlockchainUtils, uri, constructor.web3.currentProvider);
-            });
-
-            utils.parallel(matches, function(err, results) {
-              if (err) return reject(err);
-
-              for (var i = 0; i < results.length; i++) {
-                if (results[i]) {
-                  constructor.setNetwork(uris[i]);
-                  return accept({id: constructor.network_id, blockLimit: block.gasLimit});
-                }
+        constructor.web3.eth
+          .getBlock("latest")
+          .then(function(block) {
+            // Try to detect the network we have artifacts for.
+            if (constructor.network_id) {
+              // We have a network id and a configuration, let's go with it.
+              if (constructor.networks[constructor.network_id] != null) {
+                return accept({
+                  id: constructor.network_id,
+                  blockLimit: block.gasLimit
+                });
               }
+            }
 
-              // We found nothing. Set the network id to whatever the provider states.
-              constructor.setNetwork(network_id);
-              return accept({id: constructor.network_id, blockLimit: block.gasLimit});
-            });
+            constructor.web3.eth.net
+              .getId()
+              .then(function(network_id) {
+                // If we found the network via a number, let's use that.
+                if (constructor.hasNetwork(network_id)) {
+                  constructor.setNetwork(network_id);
+                  return accept({
+                    id: constructor.network_id,
+                    blockLimit: block.gasLimit
+                  });
+                }
 
-          }).catch(reject);
-        }).catch(reject);
+                // Otherwise, go through all the networks that are listed as
+                // blockchain uris and see if they match.
+                var uris = Object.keys(constructor._json.networks).filter(
+                  function(network) {
+                    return network.indexOf("blockchain://") == 0;
+                  }
+                );
+
+                var matches = uris.map(function(uri) {
+                  return BlockchainUtils.matches.bind(
+                    BlockchainUtils,
+                    uri,
+                    constructor.web3.currentProvider
+                  );
+                });
+
+                utils.parallel(matches, function(err, results) {
+                  if (err) return reject(err);
+
+                  for (var i = 0; i < results.length; i++) {
+                    if (results[i]) {
+                      constructor.setNetwork(uris[i]);
+                      return accept({
+                        id: constructor.network_id,
+                        blockLimit: block.gasLimit
+                      });
+                    }
+                  }
+
+                  // We found nothing. Set the network id to whatever the provider states.
+                  constructor.setNetwork(network_id);
+                  return accept({
+                    id: constructor.network_id,
+                    blockLimit: block.gasLimit
+                  });
+                });
+              })
+              .catch(reject);
+          })
+          .catch(reject);
       });
     },
 
@@ -408,8 +500,9 @@ var contract = (function(module) {
     toJSON: function() {
       return this._json;
     },
-  };
 
+    decodeLogs: utils.decodeLogs
+  };
 
   // Getter functions are scoped to Contract object.
   Contract._properties = {
@@ -432,7 +525,7 @@ var contract = (function(module) {
 
     gasMultiplier: {
       get: function() {
-        if (this._json.gasMultiplier === undefined){
+        if (this._json.gasMultiplier === undefined) {
           this._json.gasMultiplier = 1.25;
         }
         return this._json.gasMultiplier;
@@ -451,7 +544,7 @@ var contract = (function(module) {
     },
     autoGas: {
       get: function() {
-        if (this._json.autoGas === undefined){
+        if (this._json.autoGas === undefined) {
           this._json.autoGas = true;
         }
         return this._json.autoGas;
@@ -462,20 +555,17 @@ var contract = (function(module) {
     },
     numberFormat: {
       get: function() {
-        if (this._json.numberFormat === undefined){
-          this._json.numberFormat = 'BN';
+        if (this._json.numberFormat === undefined) {
+          this._json.numberFormat = "BN";
         }
         return this._json.numberFormat;
       },
       set: function(val) {
-        const allowedFormats = [
-          'BigNumber',
-          'BN',
-          'String'
-        ];
+        const allowedFormats = ["BigNumber", "BN", "String"];
 
-        const msg = `Invalid number format setting: "${val}": ` +
-                    `valid formats are: ${JSON.stringify(allowedFormats)}.`;
+        const msg =
+          `Invalid number format setting: "${val}": ` +
+          `valid formats are: ${JSON.stringify(allowedFormats)}.`;
 
         if (!allowedFormats.includes(val)) throw new Error(msg);
 
@@ -494,18 +584,27 @@ var contract = (function(module) {
       var network_id = this.network_id;
 
       if (network_id == null) {
-        var error = this.contractName + " has no network id set, cannot lookup artifact data." +
-                    " Either set the network manually using " + this.contractName +
-                    ".setNetwork(), run " + this.contractName + ".detectNetwork(), or use new()," +
-                    " at() or deployed() as a thenable which will detect the network automatically.";
+        var error =
+          this.contractName +
+          " has no network id set, cannot lookup artifact data." +
+          " Either set the network manually using " +
+          this.contractName +
+          ".setNetwork(), run " +
+          this.contractName +
+          ".detectNetwork(), or use new()," +
+          " at() or deployed() as a thenable which will detect the network automatically.";
 
         throw new Error(error);
       }
 
       // TODO: this might be bad; setting a value on a get.
       if (this._json.networks[network_id] == null) {
-        var error = this.contractName + " has no network configuration" +
-                    " for its current network id (" + network_id + ").";
+        var error =
+          this.contractName +
+          " has no network configuration" +
+          " for its current network id (" +
+          network_id +
+          ").";
 
         throw new Error(error);
       }
@@ -531,8 +630,10 @@ var contract = (function(module) {
         var address = this.network.address;
 
         if (address == null) {
-          var error = "Cannot find deployed address: " +
-                      this.contractName + " not deployed or address not set.";
+          var error =
+            "Cannot find deployed address: " +
+            this.contractName +
+            " not deployed or address not set.";
           throw new Error(error);
         }
 
@@ -540,17 +641,24 @@ var contract = (function(module) {
       },
       set: function(val) {
         if (val == null) {
-          throw new Error("Cannot set deployed address; malformed value: " + val);
+          throw new Error(
+            "Cannot set deployed address; malformed value: " + val
+          );
         }
 
         var network_id = this.network_id;
 
         if (network_id == null) {
-          var error = this.contractName + " has no network id set, cannot lookup artifact data." +
-                      " Either set the network manually using " + this.contractName +
-                      ".setNetwork(), run " + this.contractName + ".detectNetwork()," +
-                      " or use new(), at() or deployed() as a thenable which will" +
-                      " detect the network automatically.";
+          var error =
+            this.contractName +
+            " has no network id set, cannot lookup artifact data." +
+            " Either set the network manually using " +
+            this.contractName +
+            ".setNetwork(), run " +
+            this.contractName +
+            ".detectNetwork()," +
+            " or use new(), at() or deployed() as a thenable which will" +
+            " detect the network automatically.";
 
           throw new Error(error);
         }
@@ -577,10 +685,16 @@ var contract = (function(module) {
     },
     links: function() {
       if (!this.network_id) {
-        var error = this.contractName + " has no network id set, cannot lookup artifact data." +
-                    " Either set the network manually using " + this.contractName + ".setNetwork()," +
-                    " run " + this.contractName + ".detectNetwork(), or use new(), at()" +
-                    " or deployed() as a thenable which will detect the network automatically.";
+        var error =
+          this.contractName +
+          " has no network id set, cannot lookup artifact data." +
+          " Either set the network manually using " +
+          this.contractName +
+          ".setNetwork()," +
+          " run " +
+          this.contractName +
+          ".detectNetwork(), or use new(), at()" +
+          " or deployed() as a thenable which will detect the network automatically.";
 
         throw new Error(error);
       }
@@ -609,21 +723,25 @@ var contract = (function(module) {
       abi.forEach(function(item) {
         if (item.type != "event") return;
 
-        var signature = item.name + "(";
+        if (item.signature) {
+          events[item.signature] = item;
+        } else {
+          var signature = item.name + "(";
 
-        item.inputs.forEach(function(input, index) {
-          signature += input.type;
+          item.inputs.forEach(function(input, index) {
+            signature += input.type;
 
-          if (index < item.inputs.length - 1) {
-            signature += ",";
-          }
-        });
+            if (index < item.inputs.length - 1) {
+              signature += ",";
+            }
+          });
 
-        signature += ")";
+          signature += ")";
 
-        var topic = web3.utils.keccak256(signature);
+          var topic = web3.utils.keccak256(signature);
 
-        events[topic] = item;
+          events[topic] = item;
+        }
       });
 
       return events;
@@ -768,10 +886,10 @@ var contract = (function(module) {
     });
 
     // estimateGas as sub-property of new
-    fn['new'].estimateGas = execute.estimateDeployment.bind(fn);
+    fn["new"].estimateGas = execute.estimateDeployment.bind(fn);
 
     return fn;
-  };
+  }
 
   bootstrap(Contract);
   module.exports = Contract;
