@@ -97,6 +97,8 @@ function spelunk(jump) {
     return 1;
   } else if (jump == "o") {
     return -1;
+  } else if (jump == "2") {
+    return 2; //HACK WORKAROUND
   } else {
     return 0;
   }

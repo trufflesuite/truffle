@@ -212,6 +212,10 @@ export function isMapping(definition) {
   return typeIdentifier(definition).match(/^t_mapping/) != null;
 }
 
+export function isContract(definition) {
+  return typeIdentifier(definition).match(/^t_contract/) != null;
+}
+
 export function isReference(definition) {
   return typeIdentifier(definition).match(/_(memory|storage)(_ptr)?$/) != null;
 }
