@@ -7,23 +7,25 @@ var Config = require("truffle-config");
 var Box = {
   unbox: function(url, destination, options) {
     options = options || {};
-    options.logger = options.logger || { log: () => {} };
-
+    options.logger = options.logger || {log: () => {}};
     const downloadBoxOptions = {
-      force: options.force,
+      force: options.force
     };
 
     return Promise.resolve()
       .then(() => {
         options.logger.log("Downloading...");
+
         return utils.downloadBox(url, destination, downloadBoxOptions);
       })
       .then(() => {
         options.logger.log("Unpacking...");
+
         return utils.unpackBox(destination);
       })
       .then((boxConfig) => {
         options.logger.log("Setting up...");
+
         return utils.setupBox(boxConfig, destination);
       })
       .then((boxConfig) => boxConfig);
@@ -41,7 +43,8 @@ var Box = {
         return callback(err);
       }
 
-      self.unbox("https://github.com/trufflesuite/truffle-init-" + name, dir)
+      self
+        .unbox("https://github.com/trufflesuite/truffle-init-" + name, dir)
         .then(function() {
           var config = Config.load(path.join(dir, "truffle.js"), {});
           callback(null, config);

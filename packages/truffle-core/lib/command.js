@@ -1,8 +1,9 @@
 const TaskError = require("./errors/taskerror");
 const yargs = require("yargs/yargs");
 const _ = require("lodash");
-const version = require("../lib/version");
+const { bundled, core } = require("../lib/version").info();
 const OS = require("os");
+const analytics = require("../lib/services/analytics");
 const Config = require("truffle-config");
 
 function Command(commands) {
@@ -121,13 +122,17 @@ Command.prototype.run = function(inputStrings, options, callback) {
 
   try {
     result.command.run(options, callback);
+    analytics.send({
+      command: result.name ? result.name : "other",
+      args: result.argv._,
+      version: bundled || "(unbundled) " + core
+    });
   } catch (err) {
     callback(err);
   }
 };
 
 Command.prototype.displayGeneralHelp = function() {
-  const { bundled, core } = version.info();
   this.args
     .usage(
       "Truffle v" +

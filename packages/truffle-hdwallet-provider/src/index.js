@@ -123,8 +123,12 @@ function HDWalletProvider(
   this.engine.start(); // Required by the provider engine.
 }
 
+HDWalletProvider.prototype.sendAsync = function() {
+  this.engine.sendAsync.apply(this.engine, arguments);
+};
+
 HDWalletProvider.prototype.send = function() {
-  this.engine.send.apply(this.engine, arguments);
+  return this.engine.send.apply(this.engine, arguments);
 };
 
 // returns the address of the given address_index, first checking the cache

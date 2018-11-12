@@ -103,12 +103,15 @@ function Config(truffle_directory, working_directory, network) {
       default: () => path.join(self.working_directory, "migrations"),
       transform: resolveDirectory
     },
+    migrations_file_extension_regexp: function() {
+      return /^\.(js|es6?)$/;
+    },
     test_directory: {
       default: () => path.join(self.working_directory, "test"),
       transform: resolveDirectory
     },
     test_file_extension_regexp: function() {
-      return /.*\.(js|es|es6|jsx|sol)$/;
+      return /.*\.(js|ts|es|es6|jsx|sol)$/;
     },
     example_project_directory: {
       default: () => path.join(self.truffle_directory, "example"),
@@ -353,8 +356,7 @@ Config.default = function() {
   return new Config();
 };
 
-Config.search = function(options, filename) {
-  options = options || {};
+Config.search = function(options = {}, filename) {
   let search;
 
   !filename
@@ -366,8 +368,7 @@ Config.search = function(options, filename) {
   });
 };
 
-Config.detect = function(options, filename) {
-  options = options || {};
+Config.detect = function(options = {}, filename) {
   var file = this.search(options, filename);
 
   if (file === null) {
