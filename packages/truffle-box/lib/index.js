@@ -1,13 +1,12 @@
-var utils = require("./lib/utils");
-var tmp = require("tmp");
-var path = require("path");
+const utils = require("./utils");
+const tmp = require("tmp");
+const path = require("path");
+const Config = require("truffle-config");
 
-var Config = require("truffle-config");
+const BoxManager = {
+  unbox(url, destination, options = {}) {
+    options.logger = options.logger || { log: () => {} };
 
-var Box = {
-  unbox: function(url, destination, options) {
-    options = options || {};
-    options.logger = options.logger || {log: () => {}};
     const downloadBoxOptions = {
       force: options.force
     };
@@ -23,30 +22,30 @@ var Box = {
 
         return utils.unpackBox(destination);
       })
-      .then((boxConfig) => {
+      .then(boxConfig => {
         options.logger.log("Setting up...");
 
         return utils.setupBox(boxConfig, destination);
       })
-      .then((boxConfig) => boxConfig);
+      .then(boxConfig => boxConfig);
   },
 
-  sandbox: function(name, callback) {
-    var self = this;
+  sandbox(name, callback) {
+    const self = this;
     if (typeof name === "function") {
       callback = name;
       name = "default";
     }
 
-    tmp.dir(function(err, dir, cleanupCallback) {
+    tmp.dir((err, dir) => {
       if (err) {
         return callback(err);
       }
 
       self
-        .unbox("https://github.com/trufflesuite/truffle-init-" + name, dir)
-        .then(function() {
-          var config = Config.load(path.join(dir, "truffle.js"), {});
+        .unbox(`https://github.com/trufflesuite/truffle-init-${name}`, dir)
+        .then(() => {
+          const config = Config.load(path.join(dir, "truffle.js"), {});
           callback(null, config);
         })
         .catch(callback);
@@ -54,4 +53,4 @@ var Box = {
   }
 };
 
-module.exports = Box;
+module.exports = BoxManager;
