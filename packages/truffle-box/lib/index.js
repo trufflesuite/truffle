@@ -14,14 +14,17 @@ const BoxManager = {
     return Promise.resolve()
       .then(() => {
         options.logger.log("Downloading...");
+
         return utils.downloadBox(url, destination, downloadBoxOptions);
       })
       .then(() => {
         options.logger.log("Unpacking...");
+
         return utils.unpackBox(destination);
       })
       .then(boxConfig => {
         options.logger.log("Setting up...");
+
         return utils.setupBox(boxConfig, destination);
       })
       .then(boxConfig => boxConfig);
