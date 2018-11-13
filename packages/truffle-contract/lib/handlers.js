@@ -6,12 +6,11 @@ var Reason = require("./reason");
   Handlers for events emitted by `send` / `call` etc.
  */
 var handlers = {
-
   // ----------------------------------- Constants -------------------------------------------------
 
-  maxConfirmations: 24,          // Maximum number of confirmation web3 emits
-  defaultTimeoutBlocks: 50,      // Maximum number of blocks web3 will wait before abandoning tx
-  timeoutMessage: '50 blocks',   // Substring of web3 timeout error.
+  maxConfirmations: 24, // Maximum number of confirmation web3 emits
+  defaultTimeoutBlocks: 50, // Maximum number of blocks web3 will wait before abandoning tx
+  timeoutMessage: "50 blocks", // Substring of web3 timeout error.
 
   // -----------------------------------  Helpers --------------------------------------------------
 
@@ -21,12 +20,14 @@ var handlers = {
    * @param  {Object} error   error
    * @return {Boolean}
    */
-  ignoreTimeoutError: function(context, error){
-    var timedOut = error.message && error.message.includes(handlers.timeoutMessage);
+  ignoreTimeoutError: function(context, error) {
+    var timedOut =
+      error.message && error.message.includes(handlers.timeoutMessage);
 
-    var shouldWait = context.contract &&
-                     context.contract.timeoutBlocks &&
-                     context.contract.timeoutBlocks > handlers.defaultTimeoutBlocks;
+    var shouldWait =
+      context.contract &&
+      context.contract.timeoutBlocks &&
+      context.contract.timeoutBlocks > handlers.defaultTimeoutBlocks;
 
     return timedOut && shouldWait;
   },
@@ -36,11 +37,11 @@ var handlers = {
    * @param {Object}       context  execution state
    * @param {PromiEvent}   emitter  promiEvent returned by a web3 method call
    */
-  setup: function(emitter, context){
-    emitter.on('error',           handlers.error.bind(emitter, context));
-    emitter.on('transactionHash', handlers.hash.bind(emitter, context));
-    emitter.on('confirmation',    handlers.confirmation.bind(emitter, context));
-    emitter.on('receipt',         handlers.receipt.bind(emitter, context));
+  setup: function(emitter, context) {
+    emitter.on("error", handlers.error.bind(emitter, context));
+    emitter.on("transactionHash", handlers.hash.bind(emitter, context));
+    emitter.on("confirmation", handlers.confirmation.bind(emitter, context));
+    emitter.on("receipt", handlers.receipt.bind(emitter, context));
   },
 
   // -----------------------------------  Handlers -------------------------------------------------
@@ -50,10 +51,10 @@ var handlers = {
    * @param  {Object} context   execution state
    * @param  {Object} error     error
    */
-  error: function(context, error){
-    if (!handlers.ignoreTimeoutError(context, error)){
-      context.promiEvent.eventEmitter.emit('error', error);
-      this.removeListener('error', handlers.error);
+  error: function(context, error) {
+    if (!handlers.ignoreTimeoutError(context, error)) {
+      context.promiEvent.eventEmitter.emit("error", error);
+      this.removeListener("error", handlers.error);
     }
   },
 
@@ -63,18 +64,18 @@ var handlers = {
    * @param  {Object} context   execution state
    * @param  {String} hash      transaction hash
    */
-  hash: function(context, hash){
+  hash: function(context, hash) {
     context.transactionHash = hash;
-    context.promiEvent.eventEmitter.emit('transactionHash', hash);
-    this.removeListener('transactionHash', handlers.hash);
+    context.promiEvent.eventEmitter.emit("transactionHash", hash);
+    this.removeListener("transactionHash", handlers.hash);
   },
 
-  confirmation: function(context, number, receipt){
-    context.promiEvent.eventEmitter.emit('confirmation', number, receipt);
+  confirmation: function(context, number, receipt) {
+    context.promiEvent.eventEmitter.emit("confirmation", number, receipt);
 
     // Per web3: initial confirmation index is 0
     if (number === handlers.maxConfirmations + 1) {
-      this.removeListener('confirmation', handlers.confirmation);
+      this.removeListener("confirmation", handlers.confirmation);
     }
   },
 
@@ -84,25 +85,33 @@ var handlers = {
    * @param  {Object} context   execution state
    * @param  {Object} receipt   transaction receipt
    */
-  receipt: async function(context, receipt){
+  receipt: async function(context, receipt) {
+    // keep around the raw (not decoded) logs in the raw logs field as a
+    // stopgap until we can get the ABI for all events, not just the current
+    // contract
+    receipt.rawLogs = receipt.logs;
+
     // Decode logs
     var logs;
 
-    (receipt.logs)
-      ? logs = Utils.decodeLogs.call(context.contract, receipt.logs)
-      : logs = [];
+    receipt.logs
+      ? (logs = Utils.decodeLogs.call(context.contract, receipt.logs))
+      : (logs = []);
+
+    // make default logs field be decoded logs for ease of use.
+    receipt.logs = logs;
 
     // Emit receipt
-    context.promiEvent.eventEmitter.emit('receipt', receipt);
+    context.promiEvent.eventEmitter.emit("receipt", receipt);
 
     // .new(): Exit early. We need the promiEvent to resolve a contract instance.
-    if(context.onlyEmitReceipt){
+    if (context.onlyEmitReceipt) {
       context.receipt = receipt;
       return;
     }
 
     // .method(): resolve/reject receipt in handler
-    if (receipt.status !== undefined && !receipt.status){
+    if (receipt.status !== undefined && !receipt.status) {
       var reason = await Reason.get(context.params, context.contract.web3);
 
       var error = new StatusError(
@@ -122,8 +131,8 @@ var handlers = {
       logs: logs
     });
 
-    this.removeListener('receipt', handlers.receipt);
-  },
+    this.removeListener("receipt", handlers.receipt);
+  }
 };
 
 module.exports = handlers;
