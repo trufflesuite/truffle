@@ -1,3 +1,5 @@
 module.exports = {
-  constructorMethods: require("./constructorMethods")
+  constructorMethods: require("./constructorMethods"),
+  bootstrap: require("./bootstrap"),
+  properties: require("./properties")
 };
