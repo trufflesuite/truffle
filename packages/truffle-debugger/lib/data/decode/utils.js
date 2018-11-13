@@ -215,10 +215,16 @@ export function isMapping(definition) {
 export function isContract(definition) {
   return typeIdentifier(definition).match(/^t_contract/) != null;
 }
-
 export function isReference(definition) {
   return typeIdentifier(definition).match(/_(memory|storage)(_ptr)?$/) != null;
 }
+
+export function isContractType(definition) {
+  //checks whether the given node is a contract *type*, rather than whether
+  //it's a contract
+  return typeIdentifier(definition).match(/^t_type\$_t_contract/) != null;
+}
+
 
 export function referenceType(definition) {
   return typeIdentifier(definition).match(/_([^_]+)(_ptr)?$/)[1];

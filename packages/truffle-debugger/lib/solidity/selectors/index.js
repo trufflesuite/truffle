@@ -5,7 +5,7 @@ import { createSelectorTree, createLeaf } from "reselect-tree";
 import SolidityUtils from "truffle-solidity-utils";
 import CodeUtils from "truffle-code-utils";
 
-import { isContract } from "lib/data/decode/utils";
+import { isContract, isContractType } from "lib/data/decode/utils";
 import { findRange } from "lib/ast/map";
 import jsonpointer from "json-pointer";
 
@@ -289,8 +289,9 @@ let solidity = createSelectorTree({
      * HACK WORKAROUND
      * this selector exists to work around a problem in solc
      * it attempts to detect whether the current node is a contract method call
-     * it will not successfully detect this if the contract method was first
-     * placed in a function variable, only if it is being called directly
+     * (or library method call)
+     * it will not successfully detect this if the method was first placed in a
+     * function variable, only if it is being called directly
      */
     isContractCall: createLeaf(
       ["./node"], (node) =>
@@ -299,7 +300,8 @@ let solidity = createSelectorTree({
         node.expression !== undefined &&
         node.expression.nodeType === "MemberAccess" &&
         node.expression.expression !== undefined &&
-        isContract(node.expression.expression)
+        (isContract(node.expression.expression) ||
+          isContractType(node.expression.expression))
     )
 
   }
