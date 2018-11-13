@@ -141,4 +141,18 @@ export namespace Definition {
     result.typeDescriptions.typeIdentifier = baseIdentifier;
     return result;
   }
+
+  export function augmentWithDepth(id: number, depth: number = 0): string {
+    //depth 0 indicates not a local variable; real depths start from 1
+    //both arguments are numeric, so a colon should occur in neither
+    return `${depth}:${id}`;
+  }
+
+  export function idFromAugmented(augmentedId: string): number {
+    return Number(augmentedId.split(":")[1]);
+  }
+
+  export function depthFromAugmented(augmentedId: string): number {
+    return Number(augmentedId.split(":")[0]);
+  }
 }

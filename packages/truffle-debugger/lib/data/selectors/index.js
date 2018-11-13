@@ -1,6 +1,3 @@
-import debugModule from "debug";
-const debug = debugModule("debugger:data:selectors");
-
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import jsonpointer from "json-pointer";
 
@@ -19,9 +16,15 @@ function createStateSelectors({ stack, memory, storage }) {
     stack: createLeaf(
       [stack],
 
-      (words) => (words || []).map(
-        (word) => TruffleDecodeUtils.Conversion.toBytes(TruffleDecodeUtils.Conversion.toBN(word, TruffleDecodeUtils.EVM.WORD_SIZE))
-      )
+      words =>
+        (words || []).map(word =>
+          TruffleDecodeUtils.Conversion.toBytes(
+            TruffleDecodeUtils.Conversion.toBN(
+              word,
+              TruffleDecodeUtils.EVM.WORD_SIZE
+            )
+          )
+        )
     ),
 
     /**
@@ -30,10 +33,12 @@ function createStateSelectors({ stack, memory, storage }) {
     memory: createLeaf(
       [memory],
 
-      (words) => new Uint8Array(
-        (words.join("").match(/.{1,2}/g) || [])
-          .map( (byte) => parseInt(byte, 16) )
-      )
+      words =>
+        new Uint8Array(
+          (words.join("").match(/.{1,2}/g) || []).map(byte =>
+            parseInt(byte, 16)
+          )
+        )
     ),
 
     /**
@@ -42,59 +47,57 @@ function createStateSelectors({ stack, memory, storage }) {
     storage: createLeaf(
       [storage],
 
-      (mapping) => Object.assign(
-        {}, ...Object.entries(mapping).map( ([ address, word ]) =>
-          ({
+      mapping =>
+        Object.assign(
+          {},
+          ...Object.entries(mapping).map(([address, word]) => ({
             [`0x${address}`]: new Uint8Array(
-              (word.match(/.{1,2}/g) || [])
-                .map( (byte) => parseInt(byte, 16) )
+              (word.match(/.{1,2}/g) || []).map(byte => parseInt(byte, 16))
             )
-          })
+          }))
         )
-      )
     )
   };
 }
 
 const data = createSelectorTree({
-  state: (state) => state.data,
+  state: state => state.data,
 
   /**
    * data.views
    */
   views: {
-    ast: createLeaf(
-      [ast.current], (tree) => tree
-    ),
+    ast: createLeaf([ast.current], tree => tree),
 
     atLastInstructionForSourceRange: createLeaf(
-      [solidity.current.isSourceRangeFinal], (final) => final
+      [solidity.current.isSourceRangeFinal],
+      final => final
     ),
 
     /**
      * data.views.scopes
      */
     scopes: {
-
       /**
        * data.views.scopes.inlined
        */
       inlined: createLeaf(
         ["/info/scopes", solidity.info.sources],
 
-        (scopes, sources) => Object.assign({},
-          ...Object.entries(scopes).map(
-            ([id, entry]) => ({
+        (scopes, sources) =>
+          Object.assign(
+            {},
+            ...Object.entries(scopes).map(([id, entry]) => ({
               [id]: {
                 ...entry,
 
                 definition: jsonpointer.get(
-                  sources[entry.sourceId].ast, entry.pointer
+                  sources[entry.sourceId].ast,
+                  entry.pointer
                 )
               }
-            })
+            }))
           )
-        )
       )
     },
 
@@ -106,9 +109,11 @@ const data = createSelectorTree({
     decoder: createLeaf(
       ["/views/scopes/inlined", "/next/state", "/proc/mappingKeys"],
 
-      (scopes, state, mappingKeys) =>
-        (definition, ref) => forEvmState(definition, ref, {
-          scopes, state, mappingKeys
+      (scopes, state, mappingKeys) => (definition, ref) =>
+        forEvmState(definition, ref, {
+          scopes,
+          state,
+          mappingKeys
         })
     )
   },
@@ -117,33 +122,27 @@ const data = createSelectorTree({
    * data.info
    */
   info: {
-
     /**
      * data.info.scopes
      */
-    scopes: createLeaf(["/state"], (state) => state.info.scopes.byId)
+    scopes: createLeaf(["/state"], state => state.info.scopes.byId)
   },
 
   /**
    * data.proc
    */
   proc: {
-
     /**
      * data.proc.assignments
      */
-    assignments: createLeaf(
-      ["/state"], (state) => state.proc.assignments.byId
-    ),
+    assignments: createLeaf(["/state"], state => state.proc.assignments.byId),
 
     /**
      * data.proc.mappingKeys
      *
      * known keys for each mapping (identified by node ID)
      */
-    mappingKeys: createLeaf(
-      ["/state"], (state) => state.proc.mappingKeys.byId
-    )
+    mappingKeys: createLeaf(["/state"], state => state.proc.mappingKeys.byId)
   },
 
   /**
@@ -155,13 +154,10 @@ const data = createSelectorTree({
      * data.current.scope
      */
     scope: {
-
       /**
        * data.current.scope.id
        */
-      id: createLeaf(
-        [ast.current.node], (node) => node.id
-      )
+      id: createLeaf([ast.current.node], node => node.id)
     },
 
     /**
@@ -173,17 +169,13 @@ const data = createSelectorTree({
      * data.current.identifiers (namespace)
      */
     identifiers: {
-
       /**
        * data.current.identifiers (selector)
        *
        * returns identifers and corresponding definition node ID
        */
       _: createLeaf(
-        [
-          "/views/scopes/inlined",
-          "/current/scope",
-        ],
+        ["/views/scopes/inlined", "/current/scope"],
 
         (scopes, scope) => {
           let cur = scope.id;
@@ -193,8 +185,8 @@ const data = createSelectorTree({
             variables = Object.assign(
               variables,
               ...(scopes[cur].variables || [])
-                .filter( (v) => variables[v.name] == undefined )
-                .map( (v) => ({ [v.name]: v.id }) )
+                .filter(v => variables[v.name] == undefined)
+                .map(v => ({ [v.name]: v.id }))
             );
 
             cur = scopes[cur].parentId;
@@ -210,19 +202,17 @@ const data = createSelectorTree({
        * current variable definitions
        */
       definitions: createLeaf(
-        [
-          "/views/scopes/inlined",
-          "./_"
-        ],
+        ["/views/scopes/inlined", "./_"],
 
-        (scopes, identifiers) => Object.assign({},
-          ...Object.entries(identifiers)
-            .map( ([identifier, id]) => {
+        (scopes, identifiers) =>
+          Object.assign(
+            {},
+            ...Object.entries(identifiers).map(([identifier, id]) => {
               let { definition } = scopes[id];
 
               return { [identifier]: definition };
             })
-        )
+          )
       ),
 
       /**
@@ -237,53 +227,59 @@ const data = createSelectorTree({
           solidity.current.functionDepth //for pruning things too deep on stack
         ],
 
-        (assignments, identifiers, currentDepth) => Object.assign({},
-          ...Object.entries(identifiers)
-            .map( ([identifier, id]) => {
+        (assignments, identifiers, currentDepth) =>
+          Object.assign(
+            {},
+            ...Object.entries(identifiers).map(([identifier, id]) => {
               let matchIds = Object.keys(assignments)
                 //first restrict to the appropriate variable
-                .filter((augmentedId) =>
-                  decodeUtils.idFromAugmented(augmentedId) === id)
+                .filter(
+                  augmentedId =>
+                    TruffleDecodeUtils.Definition.idFromAugmented(
+                      augmentedId
+                    ) === id
+                )
                 //then get just the stack frame corresponding to that variable
-                .map(decodeUtils.depthFromAugmented);
+                .map(TruffleDecodeUtils.Definition.depthFromAugmented);
 
               //want innermost but not beyond current depth
               //note: if no matches, will return -Infinity
               //however the return value in this case is irrelevant
-              let maxMatch=Math.min(currentDepth, Math.max(...matchIds));
-              let { ref } = (
-                assignments[decodeUtils.augmentWithDepth(id, maxMatch)] || {});
-              if (!ref) { return undefined; };
+              let maxMatch = Math.min(currentDepth, Math.max(...matchIds));
+              let { ref } =
+                assignments[
+                  TruffleDecodeUtils.Definition.augmentWithDepth(id, maxMatch)
+                ] || {};
+              if (!ref) {
+                return undefined;
+              }
 
               return {
                 [identifier]: ref
               };
             })
-        )
+          )
       ),
 
       /**
        * data.current.identifiers.decoded
        */
       decoded: createLeaf(
-        [
-          "/views/decoder",
-          "./definitions",
-          "./refs",
-        ],
+        ["/views/decoder", "./definitions", "./refs"],
 
-        (decode, definitions, refs) => Object.assign({},
-          ...Object.entries(refs)
-            .map( ([identifier, ref]) => ({
+        (decode, definitions, refs) =>
+          Object.assign(
+            {},
+            ...Object.entries(refs).map(([identifier, ref]) => ({
               [identifier]: decode(definitions[identifier], ref)
-            }) )
-        )
+            }))
+          )
       ),
 
       /**
        * data.current.identifiers.native
        */
-      native: createLeaf(['./decoded'], TruffleDecodeUtils.Conversion.cleanBNs)
+      native: createLeaf(["./decoded"], TruffleDecodeUtils.Conversion.cleanBNs)
     }
   },
 
@@ -291,7 +287,6 @@ const data = createSelectorTree({
    * data.next
    */
   next: {
-
     /**
      * data.next.state
      */
