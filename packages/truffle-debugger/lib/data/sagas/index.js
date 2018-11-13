@@ -137,9 +137,10 @@ function *tickSaga() {
       //just going to check for it here, by not adding a local variable if said
       //variable is already a contract variable.
 
-      if(currentAssignments.byAstId[varId].some(
-        (id) => currentAssignments.byId[id].address !== undefined ||
-          currentAssignments.byId[id].dummyAddress !== undefined
+      if(currentAssignments.byAstId[varId] !== undefined &&
+	   currentAssignments.byAstId[varId].some(
+             (id) => currentAssignments.byId[id].address !== undefined ||
+               currentAssignments.byId[id].dummyAddress !== undefined
         ))
       {
         break;
