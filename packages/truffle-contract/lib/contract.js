@@ -1,11 +1,11 @@
-var Web3 = require("web3");
-var webUtils = require("web3-utils");
-var execute = require("./execute");
+let Web3 = require("web3");
+const webUtils = require("web3-utils");
+const execute = require("./execute");
 const {
   bootstrap,
   constructorMethods,
   properties
-} = require("./contractHelpers");
+} = require("./contract/index");
 
 // For browserified version. If browserify gave us an empty version,
 // look for the one provided by the user.
