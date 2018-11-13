@@ -1,7 +1,11 @@
-var Web3 = require("web3");
-var webUtils = require("web3-utils");
-var execute = require("./execute");
-const { constructorMethods, properties, bootstrap } = require("./contract");
+const Web3 = require("web3");
+const webUtils = require("web3-utils");
+const execute = require("./execute");
+const {
+  constructorMethods,
+  properties,
+  bootstrap
+} = require("./contract/index");
 
 // For browserified version. If browserify gave us an empty version,
 // look for the one provided by the user.
@@ -124,7 +128,7 @@ if (typeof Web3 == "object" && Object.keys(Web3).length == 0) {
     instance.getPastEvents = execute.getPastEvents.call(constructor, contract);
   }
 
-  Contract._constructorMethods = constructorMethods;
+  Contract._constructorMethods = constructorMethods(Contract);
 
   // Getter functions are scoped to Contract object.
   Contract._properties = properties;
