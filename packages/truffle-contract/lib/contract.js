@@ -55,6 +55,7 @@ if (typeof Web3 == "object" && Object.keys(Web3).length == 0) {
               : (fn = execute.send.call(
                   constructor,
                   web3Method,
+                  item,
                   instance.address
                 ));
 
@@ -67,16 +68,19 @@ if (typeof Web3 == "object" && Object.keys(Web3).length == 0) {
             fn.sendTransaction = execute.send.call(
               constructor,
               web3Method,
+              item,
               instance.address
             );
             fn.estimateGas = execute.estimate.call(
               constructor,
               web3Method,
+              item,
               instance.address
             );
             fn.request = execute.request.call(
               constructor,
               web3Method,
+              item,
               instance.address
             );
 
@@ -111,6 +115,7 @@ if (typeof Web3 == "object" && Object.keys(Web3).length == 0) {
     // sendTransaction / send
     instance.sendTransaction = execute.send.call(
       constructor,
+      null,
       null,
       instance.address
     );

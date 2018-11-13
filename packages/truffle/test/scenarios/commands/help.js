@@ -11,8 +11,7 @@ describe("truffle help", function() {
 
   describe("when run without arguments", function() {
     it("displays general help", function(done) {
-      this.timeout(10000);
-      CommandRunner.run("help", config, error => {
+      CommandRunner.run("help", config, () => {
         const output = logger.contents();
 
         assert(output.includes("Usage: truffle <command> [options]"));
@@ -23,23 +22,21 @@ describe("truffle help", function() {
 
   describe("when run with an argument", function() {
     it("tells the user if it doesn't recognize the given command", function(done) {
-      this.timeout(10000);
-      CommandRunner.run("help eggplant", config, error => {
+      CommandRunner.run("help eggplant", config, () => {
         const output = logger.contents();
 
         assert(output.includes("Cannot find the given command 'eggplant'"));
         done();
       });
-    });
+    }).timeout(20000);
 
     it("displays help for the given command when valid", function(done) {
-      this.timeout(10000);
-      CommandRunner.run("help compile", config, error => {
+      CommandRunner.run("help compile", config, () => {
         const output = logger.contents();
 
         assert(output.includes("Description:  Compile contract source files"));
         done();
       });
-    });
+    }).timeout(20000);
   });
 });
