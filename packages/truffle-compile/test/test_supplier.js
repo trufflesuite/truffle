@@ -85,7 +85,7 @@ describe("CompilerSupplier", function() {
 
     before("get code", function() {
       const newPragma = fs.readFileSync(
-        path.join(__dirname, "./sources/NewPragma.sol"),
+        path.join(__dirname, "./sources/version4Pragma/NewPragma.sol"),
         "utf-8"
       );
       const oldPragmaPin = fs.readFileSync(
@@ -93,11 +93,11 @@ describe("CompilerSupplier", function() {
         "utf-8"
       );
       const oldPragmaFloat = fs.readFileSync(
-        path.join(__dirname, "./sources/OldPragmaFloat.sol"),
+        path.join(__dirname, "./sources/version4Pragma/OldPragmaFloat.sol"),
         "utf-8"
       );
       const version5Pragma = fs.readFileSync(
-        path.join(__dirname, "./sources/Version5Pragma.sol"),
+        path.join(__dirname, "./sources/version5Pragma/Version5Pragma.sol"),
         "utf-8"
       );
 
@@ -284,9 +284,9 @@ describe("CompilerSupplier", function() {
         compile(version5PragmaSource, options, (err, result) => {
           if (err) return done(err);
 
-          assert(result["NewPragma"].compiler.version.includes("Linux.g++"));
+          assert(result["Version5Pragma"].compiler.version.includes("0.5."));
           assert(
-            result["NewPragma"].contract_name === "NewPragma",
+            result["Version5Pragma"].contract_name === "Version5Pragma",
             "Should have compiled"
           );
           done();
@@ -318,8 +318,12 @@ describe("CompilerSupplier", function() {
 
       it("resolves imports correctly when using built solc", function(done) {
         const paths = [];
-        paths.push(path.join(__dirname, "./sources/ComplexOrdered.sol"));
-        paths.push(path.join(__dirname, "./sources/InheritB.sol"));
+        paths.push(
+          path.join(__dirname, "./sources/version4Pragma/ComplexOrdered.sol")
+        );
+        paths.push(
+          path.join(__dirname, "./sources/version4Pragma/InheritB.sol")
+        );
 
         let options = {
           compilers: {
@@ -332,7 +336,7 @@ describe("CompilerSupplier", function() {
           quiet: true,
           solc: "",
           contracts_build_directory: path.join(__dirname, "./build"),
-          contracts_directory: path.join(__dirname, "./sources"),
+          contracts_directory: path.join(__dirname, "./sources/version4Pragma"),
           working_directory: __dirname,
           paths: paths
         };

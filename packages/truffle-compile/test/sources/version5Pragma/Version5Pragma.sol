@@ -1,6 +1,6 @@
 pragma solidity ^0.5.0;
 
-contract NewPragma {
+contract Version5Pragma {
   uint x;
 
   constructor() public {
