@@ -1,9 +1,9 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.4.21;
 
 contract NewPragma {
   uint x;
 
-  constructor() public {
+  function NewPragma() public {
     x = 5;
   }
 }

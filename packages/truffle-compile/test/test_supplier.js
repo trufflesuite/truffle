@@ -265,7 +265,7 @@ describe("CompilerSupplier", function() {
     });
 
     // The word 'native' cannot be part of the strings for the describe and it
-    // blocks as the script will filter these tests out
+    // blocks as the script will filter these tests out so I added parens
     describe("nativ(e) / docker [ @nativ(e) ]", function() {
       it("compiles with nativ(e) solc", function(done) {
         options.compilers = {
