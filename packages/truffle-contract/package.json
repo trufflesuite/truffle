@@ -9,7 +9,7 @@
     "test": "./scripts/test.sh",
     "test:debug": "$(npm bin)/mocha --inspect-brk",
     "test:trace": "$(npm bin)/mocha --trace-warnings",
-    "compile": "mkdir -p dist && browserify ./index.js -i web3 -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js"
+    "compile": "mkdir -p dist && browserify ./index.js -i ethers -i web3 -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js"
   },
   "repository": {
     "type": "git",
