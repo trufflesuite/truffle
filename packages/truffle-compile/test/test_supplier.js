@@ -75,6 +75,7 @@ describe("CompilerSupplier", function() {
     let newPragmaSource; // ^0.4.21
     let oldPragmaPinSource; //  0.4.15
     let oldPragmaFloatSource; // ^0.4.15
+    let version5PragmaSource; // ^0.5.0
 
     const options = {
       contracts_directory: "",
@@ -95,10 +96,15 @@ describe("CompilerSupplier", function() {
         path.join(__dirname, "./sources/OldPragmaFloat.sol"),
         "utf-8"
       );
+      const version5Pragma = fs.readFileSync(
+        path.join(__dirname, "./sources/Version5Pragma.sol"),
+        "utf-8"
+      );
 
       newPragmaSource = { "NewPragma.sol": newPragma };
       oldPragmaPinSource = { "OldPragmaPin.sol": oldPragmaPin };
       oldPragmaFloatSource = { "OldPragmaFloat.sol": oldPragmaFloat };
+      version5PragmaSource = { "Version5Pragma.sol": version5Pragma };
     });
 
     it("compiles w/ default solc if no compiler specified (float)", function(done) {
@@ -275,7 +281,7 @@ describe("CompilerSupplier", function() {
           }
         };
 
-        compile(newPragmaSource, options, (err, result) => {
+        compile(version5PragmaSource, options, (err, result) => {
           if (err) return done(err);
 
           assert(result["NewPragma"].compiler.version.includes("Linux.g++"));
