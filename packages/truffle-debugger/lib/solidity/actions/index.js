@@ -3,8 +3,8 @@ export function addSource(source, sourcePath, ast) {
   return {
     type: ADD_SOURCE,
     source,
-sourcePath,
-ast
+    sourcePath,
+    ast
   };
 }
 
@@ -13,10 +13,9 @@ export function addSourceMap(binary, sourceMap) {
   return {
     type: ADD_SOURCEMAP,
     binary,
-sourceMap
+    sourceMap
   };
 }
-
 
 export const JUMP = "JUMP";
 export function jump(jumpDirection) {
@@ -28,5 +27,5 @@ export function jump(jumpDirection) {
 
 export const RESET = "SOLIDITY_RESET";
 export function reset() {
-  return {type: RESET};
+  return { type: RESET };
 }

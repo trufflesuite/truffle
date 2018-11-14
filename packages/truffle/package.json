@@ -1,7 +1,7 @@
 {
   "name": "truffle",
   "namespace": "consensys",
-  "version": "5.0.0-next.14",
+  "version": "5.0.0-next.15",
   "description": "Truffle - Simple development framework for Ethereum",
   "dependencies": {
     "mocha": "^4.1.0",
@@ -9,6 +9,10 @@
     "solc": "0.4.25"
   },
   "devDependencies": {
+    "eslint": "^5.7.0",
+    "go-ipfs-dep": "^0.4.17",
+    "husky": "^1.1.2",
+    "nyc": "^13.0.1",
     "clean-webpack-plugin": "^0.1.16",
     "copy-webpack-plugin": "^4.0.1",
     "fs-extra": "6.0.1",
@@ -26,7 +30,7 @@
     "tmp": "0.0.33",
     "truffle-box": "^1.0.8-beta.1",
     "truffle-contract": "^4.0.0-beta.1",
-    "web3": "1.0.0-beta.35",
+    "web3": "1.0.0-beta.36",
     "webpack": "^2.5.1",
     "yargs": "^8.0.2"
   },

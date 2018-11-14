@@ -1,41 +1,21 @@
 var assert = require("assert");
-var solc = require("solc");
+var util = require("./util");
 
 // Clean up after solidity. Only remove solidity's listener,
 // which happens to be the first.
-process.removeListener("uncaughtException", process.listeners("uncaughtException")[0] || function() {});
-
-var fs = require("fs");
-var debug = require("debug")("ganache-core");
-var TestRPC = require("ganache-core");
-var contract = require("../");
-
-var log = {
-  log: debug
-};
+process.removeListener(
+  "uncaughtException",
+  process.listeners("uncaughtException")[0] || function() {}
+);
 
 describe("Cloning", function() {
-  var network_one_id;
-  var network_two_id;
-  var network_one;
-  var network_two;
   var ExampleOne;
   var ExampleTwo;
 
   before("Compile and set up contracts", function(done) {
     this.timeout(10000);
 
-    // Compile first
-    var result = solc.compile(fs.readFileSync("./test/sources/Example.sol", {encoding: "utf8"}), 1);
-
-    var compiled = result.contracts["Example"];
-
-    network_one_id = 1000;
-    network_two_id = 1001;
-    network_one = TestRPC.provider({network_id: network_one_id, seed: network_one_id, logger: log});
-    network_two = TestRPC.provider({network_id: network_two_id, seed: network_two_id, logger: log});
-
-    ExampleOne = contract(compiled);
+    ExampleOne = util.createExample();
     ExampleTwo = ExampleOne.clone();
 
     done();
@@ -47,5 +27,4 @@ describe("Cloning", function() {
     assert.notEqual(ExampleTwo._json, ExampleOne._json);
     assert.deepEqual(ExampleTwo._json, ExampleOne._json);
   });
-
 });

@@ -37,7 +37,7 @@ export function mapKey(id, key) {
 
 export const RESET = "DATA_RESET";
 export function reset() {
-  return {type: RESET};
+  return { type: RESET };
 }
 
 export const LEARN_ADDRESS = "LEARN_ADDRESS";

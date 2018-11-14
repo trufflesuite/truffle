@@ -49,7 +49,7 @@ function scopes(state = DEFAULT_SCOPES, action) {
             variables: [
               ...variables,
 
-              {name: action.node.name, id: action.node.id}
+              { name: action.node.name, id: action.node.id }
             ]
           }
         }
@@ -90,7 +90,7 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
         }
         , state);
 
-    case(actions.LEARN_ADDRESS):
+    case actions.LEARN_ADDRESS:
       let { dummyAddress, address } = action;
       return {
         byId: Object.assign({},
@@ -125,7 +125,7 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
     default:
       return state;
   }
-};
+}
 
 function learnAddress(assignment, dummyAddress, address)
 {

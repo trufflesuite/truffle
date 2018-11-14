@@ -14,21 +14,16 @@ import data from "../selectors";
 import { WORD_SIZE } from "lib/data/decode/utils";
 import * as utils from "lib/data/decode/utils";
 
-export function *scope(nodeId, pointer, parentId, sourceId) {
+export function* scope(nodeId, pointer, parentId, sourceId) {
   yield put(actions.scope(nodeId, pointer, parentId, sourceId));
 }
 
-export function *declare(node) {
+export function* declare(node) {
   yield put(actions.declare(node));
 }
 
-function *tickSaga() {
-  let {
-    tree,
-    id: treeId,
-    node,
-    pointer
-  } = yield select(data.views.ast);
+function* tickSaga() {
+  let { tree, id: treeId, node, pointer } = yield select(data.views.ast);
 
   let decode = yield select(data.views.decoder);
   let scopes = yield select(data.info.scopes);
@@ -62,13 +57,14 @@ function *tickSaga() {
   }
 
   switch (node.nodeType) {
-
     case "FunctionDefinition":
-      parameters = node.parameters.parameters
-        .map( (p, i) => `${pointer}/parameters/parameters/${i}` );
+      parameters = node.parameters.parameters.map(
+        (p, i) => `${pointer}/parameters/parameters/${i}`
+      );
 
-      returnParameters = node.returnParameters.parameters
-        .map( (p, i) => `${pointer}/returnParameters/parameters/${i}` );
+      returnParameters = node.returnParameters.parameters.map(
+        (p, i) => `${pointer}/returnParameters/parameters/${i}`
+      );
 
       assignments = { byId: Object.assign({},
         ...returnParameters.concat(parameters).reverse()
@@ -91,7 +87,7 @@ function *tickSaga() {
     case "ContractDefinition":
       let storageVars = scopes[node.id].variables || [];
       let slot = 0;
-      let index = WORD_SIZE - 1;  // cause lower-order
+      let index = WORD_SIZE - 1; // cause lower-order
       debug("storage vars %o", storageVars);
 
       let allocation = utils.allocateDeclarations(storageVars, definitions);
@@ -157,12 +153,8 @@ function *tickSaga() {
     case "IndexAccess":
       // to track `mapping` types known indexes
       let {
-        baseExpression: {
-          referencedDeclaration: baseDeclarationId,
-        },
-        indexExpression: {
-          id: indexId,
-        }
+        baseExpression: { referencedDeclaration: baseDeclarationId },
+        indexExpression: { id: indexId }
       } = node;
 
       //indices need to be identified by stackframe
@@ -181,7 +173,7 @@ function *tickSaga() {
         indexValue = decode(node.indexExpression, indexAssignment);
       } else if (utils.typeClass(node.indexExpression) == "stringliteral") {
         indexValue = decode(node.indexExpression, {
-          "literal": utils.toBytes(node.indexExpression.hexValue)
+          literal: utils.toBytes(node.indexExpression.hexValue)
         });
       }
 
@@ -232,7 +224,7 @@ function makeAssignment(idObj, ref) {
 export function* saga () {
   yield takeEvery(TICK, function* () {
     try {
-      yield *tickSaga();
+      yield* tickSaga();
     } catch (e) {
       debug(e);
     }

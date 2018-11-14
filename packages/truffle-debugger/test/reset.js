@@ -12,7 +12,6 @@ import Debugger from "lib/debugger";
 import sessionSelector from "lib/session/selectors";
 import data from "lib/data/selectors";
 
-
 const __SETSTHINGS = `
 pragma solidity ^0.4.24;
 
@@ -31,10 +30,10 @@ contract SetsThings {
 `;
 
 let sources = {
-  "SetsThings.sol": __SETSTHINGS,
+  "SetsThings.sol": __SETSTHINGS
 };
 
-describe("Reset Button", function () {
+describe("Reset Button", function() {
   var provider;
   var web3;
 
@@ -42,7 +41,7 @@ describe("Reset Button", function () {
   var artifacts;
 
   before("Create Provider", async function() {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
     web3 = new Web3(provider);
   });
 
@@ -71,7 +70,7 @@ describe("Reset Button", function () {
     variables[1] = []; //collected during 2nd run
 
     variables[0].push(session.view(data.current.identifiers.native));
-    session.addBreakpoint({sourceId: 0, line: 10});
+    session.addBreakpoint({ sourceId: 0, line: 10 });
     session.continueUntilBreakpoint(); //advance to line 10
     variables[0].push(session.view(data.current.identifiers.native));
     session.continueUntilBreakpoint(); //advance to the end
@@ -81,12 +80,12 @@ describe("Reset Button", function () {
     session.reset();
 
     variables[1].push(session.view(data.current.identifiers.native));
-    session.addBreakpoint({sourceId: 0, line: 10});
+    session.addBreakpoint({ sourceId: 0, line: 10 });
     session.continueUntilBreakpoint(); //advance to line 10
     variables[1].push(session.view(data.current.identifiers.native));
     session.continueUntilBreakpoint(); //advance to the end
     variables[1].push(session.view(data.current.identifiers.native));
 
-    assert.deepEqual(variables[1],variables[0]);
+    assert.deepEqual(variables[1], variables[0]);
   });
 });
