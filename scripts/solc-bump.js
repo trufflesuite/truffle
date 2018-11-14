@@ -2,17 +2,22 @@ const fs = require('fs');
 const { execSync } = require('child_process');
 const readline = require('readline');
 
+const PACKAGES_DIR = `${__dirname}/../packages`;
+
 /**
  * Load packages depending on `solc`
  **/
 function loadSolcDependentPackages() {
-  const packages = fs.readdirSync(`${__dirname}/../packages`);
+  const packages = fs.readdirSync(PACKAGES_DIR);
   return packages.filter(packageName => {
     // parse the package.json file for `packageName`
-    const _package = JSON.parse(fs.readFileSync(`${__dirname}/../packages/${packageName}/package.json`, 'utf8'));
+    const packagePath = `${PACKAGES_DIR}/${packageName}/package.json`;
+    const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
 
     // operate if the solc dependency exists
-    return _package && _package.dependencies && !!_package.dependencies['solc'];
+    return packageJson
+      && packageJson.dependencies
+      && !!packageJson.dependencies['solc'];
   });
 }
 
@@ -23,7 +28,7 @@ function updatePackages(packageNames) {
   packageNames.forEach(packageName => {
     console.log(`Updating ${packageName}`);
     execSync('npm install solc@latest', {
-      cwd: `${__dirname}/../packages/${packageName}`
+      cwd: `${PACKAGES_DIR}/${packageName}`
     });
   });
 }
