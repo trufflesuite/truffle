@@ -1,12 +1,10 @@
-var path = require("path");
-var CopyWebpackPlugin = require("copy-webpack-plugin");
-var CleanWebpackPlugin = require("clean-webpack-plugin");
-var webpack = require("webpack");
-var pkg = require("./package.json");
-
-var rootDir = path.join(__dirname, "../..");
-var outputDir = path.join(__dirname, "build");
-var outputFilename = "cli.bundled.js";
+const path = require("path");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
+const CleanWebpackPlugin = require("clean-webpack-plugin");
+const webpack = require("webpack");
+const pkg = require("./package.json");
+const rootDir = path.join(__dirname, "../..");
+const outputDir = path.join(__dirname, "build");
 
 module.exports = {
   entry: {
@@ -133,9 +131,6 @@ module.exports = {
   ],
   resolve: {
     alias: {
-      // fsevents is used by chokidar and is an optional requirement
-      // It doesn't pack well, and is OS X specific, so let's get rid of it.
-      "fsevents": path.join(__dirname, "./nil.js"),
       "ws": path.join(__dirname, "./nil.js"),
       "original-fs": path.join(__dirname, "./nil.js"),
       "scrypt": "js-scrypt"
