@@ -70,7 +70,7 @@ function* tickSaga() {
         .map(pointer => jsonpointer.get(tree, pointer).id)
         //note: depth may be off by 1 but it doesn't matter
         .map((id, i) => ({
-          [utils.augmentWithDepth(id, currentDepth)]: { stack: top - i }
+          [TruffleDecodeUtils.Definition.augmentWithDepth(id, currentDepth)]: { stack: top - i }
         }))
         .reduce((acc, assignment) => Object.assign(acc, assignment), {});
       debug("Function definition case");
@@ -83,7 +83,7 @@ function* tickSaga() {
     case "ContractDefinition":
       let storageVars = scopes[node.id].variables || [];
       let slot = 0;
-      let index = WORD_SIZE - 1; // cause lower-order
+      let index = TruffleDecodeUtils.EVM.WORD_SIZE - 1; // cause lower-order
       debug("storage vars %o", storageVars);
 
       let allocation = TruffleDecodeUtils.Allocation.allocateDeclarations(storageVars, definitions);
@@ -92,8 +92,8 @@ function* tickSaga() {
       assignments = Object.assign(
         {},
         ...Object.entries(allocation.children).map(([id, storage]) => ({
-          [utils.augmentWithDepth(id)]: {
-            ...(currentAssignments[utils.augmentWithDepth(id)] || { ref: {} })
+          [TruffleDecodeUtils.Definition.augmentWithDepth(id)]: {
+            ...(currentAssignments[TruffleDecodeUtils.Definition.augmentWithDepth(id)] || { ref: {} })
               .ref,
             storage
           }
@@ -112,7 +112,7 @@ function* tickSaga() {
       debug("currentDepth %d varId %d", currentDepth, varId);
       yield put(
         actions.assign(treeId, {
-          [utils.augmentWithDepth(varId, currentDepth)]: { stack: top }
+          [TruffleDecodeUtils.Definition.augmentWithDepth(varId, currentDepth)]: { stack: top }
         })
       );
       break;
@@ -124,9 +124,9 @@ function* tickSaga() {
         indexExpression: { id: indexId }
       } = node;
       //augment declaration Id w/0 to indicate storage
-      let augmentedDeclarationId = utils.augmentWithDepth(baseDeclarationId);
+      let augmentedDeclarationId = TruffleDecodeUtils.Definition.augmentWithDepth(baseDeclarationId);
       //indices, meanwhile, use depth as usual
-      let augmentedIndexId = utils.augmentWithDepth(indexId, currentDepth);
+      let augmentedIndexId = TruffleDecodeUtils.Definition.augmentWithDepth(indexId, currentDepth);
       debug("Index access case");
       debug("currentAssignments %O", currentAssignments);
       debug("augmentedDeclarationId %s", augmentedDeclarationId);
@@ -179,7 +179,7 @@ function* tickSaga() {
       debug("currentDepth %d node.id %d", currentDepth, node.id);
       yield put(
         actions.assign(treeId, {
-          [utils.augmentWithDepth(node.id, currentDepth)]: { literal }
+          [TruffleDecodeUtils.Definition.augmentWithDepth(node.id, currentDepth)]: { literal }
         })
       );
       break;

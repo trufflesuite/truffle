@@ -5,6 +5,7 @@ import Ganache from "ganache-cli";
 import Web3 from "web3";
 import { assert } from "chai";
 import changeCase from "change-case";
+import BN from "bn.js";
 
 import { prepareContracts } from "test/helpers";
 
@@ -34,9 +35,10 @@ function fileName(testName) {
 
 function generateTests(fixtures) {
   for (let { name, value: expected } of fixtures) {
-    it(`correctly decodes ${name}`,
-      async () => { assert.deepEqual(await this.decode(name), expected); }
-    );
+    it(`correctly decodes ${name}`, async () => {
+      const response = await this.decode(name);
+      assert.deepEqual(response, expected);
+    });
   }
 }
 
@@ -87,14 +89,29 @@ async function prepareDebugger(testName, sources) {
   return session;
 }
 
-async function getDecode(session) {
+function getDecode(session) {
   const definitions = session.view(data.current.identifiers.definitions);
   const refs = session.view(data.current.identifiers.refs);
 
   const decode = session.view(data.views.decoder);
-  return (name) => TruffleDecodeUtils.Conversion.cleanBNs(
-    decode(definitions[name], refs[name])
-  );
+  return async (name) => {
+    let result = await decode(definitions[name], refs[name]);
+
+    if (Array.isArray(result)) {
+      result = result.map((element) => {
+        if (BN.isBN(element)) {
+          // We're assuming these tests have small numbers
+          return element.toNumber();
+        } else if (typeof element.toString === "function") {
+          return element.toString();
+        } else {
+          return element;
+        }
+      });
+    }
+
+    return result;
+  }
 }
 
 export function describeDecoding(testName, fixtures, selector, generateSource) {

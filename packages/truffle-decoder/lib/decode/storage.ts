@@ -55,8 +55,16 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       const baseDefinition = DecodeUtils.Definition.baseDefinition(definition);
       const referenceId = baseDefinition.referencedDeclaration ||
         (baseDefinition.typeName ? baseDefinition.typeName.referencedDeclaration : undefined);
-      const referenceDeclaration: undefined | DecodeUtils.AstDefinition = info.referenceDeclarations[referenceId];
-      const baseSize = DecodeUtils.Definition.storageSize(baseDefinition, referenceDeclaration);
+
+      let baseSize: number;
+      if (typeof referenceId !== "undefined" && typeof info.referenceDeclarations !== "undefined") {
+        const referenceDeclaration: undefined | DecodeUtils.AstDefinition = info.referenceDeclarations[referenceId];
+        baseSize = DecodeUtils.Definition.storageSize(baseDefinition, referenceDeclaration);
+      }
+      else {
+        baseSize = DecodeUtils.Definition.storageSize(baseDefinition);
+      }
+
       const perWord = Math.floor(DecodeUtils.EVM.WORD_SIZE / baseSize);
       // debug("baseSize %o", baseSize);
       // debug("perWord %d", perWord);
@@ -168,7 +176,8 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
                   path: pointer.storage.from.slot.path || undefined,
                   offset: pointer.storage.from.slot.offset
                 },
-                offset: new BN(0)
+                offset: new BN(0),
+                hashPath: true
               },
               index: 0
             },

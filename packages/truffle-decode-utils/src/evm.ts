@@ -7,11 +7,11 @@ export namespace EVM {
   export const MAX_WORD = new BN(2).pow(new BN(256)).subn(1);
 
   export function keccak256(...args: any[]): BN {
-    let web3 = new Web3();
+    const web3 = new Web3();
 
     // debug("args %o", args);
 
-    let sha = web3.utils.soliditySha3(...args);
+    const sha: string = web3.utils.soliditySha3(...args).replace(/0x/, "");
     // debug("sha %o", sha);
     return ConversionUtils.toBN(sha);
   }
