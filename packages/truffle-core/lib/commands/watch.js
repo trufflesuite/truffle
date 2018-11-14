@@ -1,45 +1,49 @@
 const colors = require("colors");
 
 const command = {
-  command: 'watch',
-  description: 'Watch filesystem for changes and rebuild the project automatically',
+  command: "watch",
+  description:
+    "Watch filesystem for changes and rebuild the project automatically",
   builder: {},
   help: {
     usage: "truffle watch",
-    options: [],
+    options: []
   },
-  run: function (options, done) {
+  run: function(options) {
     const Config = require("truffle-config");
-    const chokidar = require("chokidar");
+    const sane = require("sane");
     const path = require("path");
 
     const config = Config.detect(options);
 
-    const watchPaths = [
-      path.join(config.working_directory, "app/**/*"),
-      path.join(config.working_directory, "test/**/*"),
-      path.join(config.contracts_directory, "/**/*"),
-      path.join(config.working_directory, "truffle-config.js"),
-      path.join(config.working_directory, "truffle.js")
-    ];
-
-    chokidar.watch(watchPaths, {
-      ignored: /[\/\\]\./, // Ignore files prefixed with "."
-      cwd: config.working_directory,
-      ignoreInitial: true
-    })
-    .on('all', (event, filePath) => {
-      const displayPath = path.join("./", filePath.replace(config.working_directory, ""));
+    const watchOptions = {
+      ignored: [
+        "build/**/**",
+        /[\/\\]\./ // Ignore files prefixed with .
+      ]
+    };
+    const watchCallback = filePath => {
+      const displayPath = path.join(
+        "./",
+        filePath.replace(config.working_directory, "")
+      );
       config.logger.log(colors.cyan(">> File " + displayPath + " changed."));
 
       build(config);
-    });
+    };
 
-    config.logger.log(colors.green("Watching for a change in project files..."));
+    const watcher = sane(config.working_directory, watchOptions);
+    watcher.on("change", watchCallback);
+    watcher.on("add", watchCallback);
+    watcher.on("delete", watchCallback);
+
+    config.logger.log(
+      colors.green("Watching for a change in project files...")
+    );
   }
 };
 
-const build = (config) => {
+const build = config => {
   const Build = require("../build");
 
   config.logger.log("Rebuilding...");
@@ -59,7 +63,9 @@ const printSummary = (config, error) => {
       console.log(error.stack || error.toString());
     }
   } else {
-    config.logger.log(colors.green("Completed without errors on " + new Date().toString()));
+    config.logger.log(
+      colors.green("Completed without errors on " + new Date().toString())
+    );
   }
 };
 

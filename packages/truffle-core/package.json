@@ -6,7 +6,6 @@
   "dependencies": {
     "async": "2.6.1",
     "chai": "4.1.2",
-    "chokidar": "^1.4.2",
     "colors": "^1.1.2",
     "configstore": "^4.0.0",
     "cpr": "^0.4.3",
@@ -27,6 +26,7 @@
     "node-ipc": "^9.1.1",
     "original-require": "1.0.1",
     "safe-eval": "^0.3.0",
+    "sane": "^4.0.2",
     "source-map-support": "^0.5.3",
     "spawn-args": "^0.1.0",
     "temp": "^0.8.3",
