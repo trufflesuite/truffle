@@ -4,7 +4,6 @@ const debug = debugModule("test:data:ids");
 import { assert } from "chai";
 
 import Ganache from "ganache-cli";
-import Web3 from "web3";
 
 import { prepareContracts } from "../helpers";
 import Debugger from "lib/debugger";
@@ -13,8 +12,7 @@ import data from "lib/data/selectors";
 import trace from "lib/trace/selectors";
 import solidity from "lib/solidity/selectors";
 
-const __FACTORIAL =
-`
+const __FACTORIAL = `
 pragma solidity ^0.4.24;
 
 contract FactorialTest {
@@ -41,9 +39,7 @@ contract FactorialTest {
 }
 `;
 
-
-const __ADDRESS = 
-`
+const __ADDRESS = `
 pragma solidity ^0.4.25;
 
 contract AddressTest {
@@ -81,8 +77,7 @@ contract SecretByte {
 }
 `;
 
-const __INTERVENING =
-`
+const __INTERVENING = `
 pragma solidity ^0.4.25;
 
 import "./InterveningLib.sol";
@@ -130,8 +125,7 @@ contract Inner {
 
 `;
 
-const __INTERVENINGLIB =
-`
+const __INTERVENINGLIB = `
 pragma solidity ^0.4.25;
 
 library InterveningLib {
@@ -142,8 +136,7 @@ library InterveningLib {
 }
 `;
 
-const __MIGRATION =
-`
+const __MIGRATION = `
 let Intervening = artifacts.require("Intervening");
 let Inner = artifacts.require("Inner");
 let AddressTest = artifacts.require("AddressTest");
@@ -169,20 +162,18 @@ let sources = {
 };
 
 let migrations = {
-  "2_deploy_contracts.js": __MIGRATION,
+  "2_deploy_contracts.js": __MIGRATION
 };
 
-describe("Variable IDs", function () {
+describe("Variable IDs", function() {
   var provider;
-  var web3;
 
   var abstractions;
   var artifacts;
   var files;
 
   before("Create Provider", async function() {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
-    web3 = new Web3(provider);
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function() {
@@ -206,15 +197,14 @@ describe("Variable IDs", function () {
 
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
-    
-    session.addBreakpoint({sourceId: 1, line: 12});
-    session.addBreakpoint({sourceId: 1, line: 22});
+
+    session.addBreakpoint({ sourceId: 1, line: 12 });
+    session.addBreakpoint({ sourceId: 1, line: 22 });
 
     var values = [];
 
     session.continueUntilBreakpoint();
-    while(!session.view(trace.finished))
-    {
+    while (!session.view(trace.finished)) {
       values.push(session.view(data.current.identifiers.native)["nbang"]);
       session.continueUntilBreakpoint();
     }
@@ -223,6 +213,7 @@ describe("Variable IDs", function () {
   });
 
   it("Learns contract addresses and distinguishes the results", async function() {
+    this.timeout(4000);
     let instance = await abstractions.AddressTest.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
@@ -235,7 +226,7 @@ describe("Variable IDs", function () {
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
 
-    session.addBreakpoint({sourceId: 0, line: 32});
+    session.addBreakpoint({ sourceId: 0, line: 32 });
     session.continueUntilBreakpoint();
     debug("node %o", session.view(solidity.current.node));
     assert.equal(session.view(data.current.identifiers.native)["secret"], 107);
@@ -257,7 +248,7 @@ describe("Variable IDs", function () {
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
 
-    session.addBreakpoint({sourceId: 2, line: 18});
+    session.addBreakpoint({ sourceId: 2, line: 18 });
     session.continueUntilBreakpoint();
     assert.property(session.view(data.current.identifiers.native), "flag");
   });
@@ -276,7 +267,7 @@ describe("Variable IDs", function () {
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
 
-    session.addBreakpoint({sourceId: 2, line: 27});
+    session.addBreakpoint({ sourceId: 2, line: 27 });
     session.continueUntilBreakpoint();
     assert.property(session.view(data.current.identifiers.native), "flag");
   });
