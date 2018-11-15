@@ -373,7 +373,7 @@ Config.detect = (options = {}, filename) => {
     throw new TruffleError("Could not find suitable configuration file.");
   }
 
-  return this.load(file, options);
+  return Config.load(file, options);
 };
 
 Config.load = function(file, options) {
