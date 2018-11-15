@@ -13553,6 +13553,15 @@ truffle-provider@^0.0.6:
     truffle-error "^0.0.3"
     web3 "0.20.6"
 
+truffle@^5.0.0-next.16:
+  version "5.0.0-next.16"
+  resolved "https://registry.yarnpkg.com/truffle/-/truffle-5.0.0-next.16.tgz#c79640776cdffa03f8c215c2960865d7aa5370bd"
+  integrity sha512-q1PsMc7kXhuaEX3s5aC2q0V1uJjJWWQGEKCYHoUggnjc3zHr0q83gpwXLj6U6G/vbQUYlsNBeZpe4Q3spAKqGw==
+  dependencies:
+    mocha "^4.1.0"
+    original-require "1.0.1"
+    solc "0.4.25"
+
 tslib@^1.9.0:
   version "1.9.3"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.9.3.tgz#d7e4dd79245d85428c4d7e4822a79917954ca286"
