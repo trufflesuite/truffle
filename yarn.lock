@@ -669,15 +669,6 @@
   dependencies:
     any-observable "^0.3.0"
 
-"@seesemichaelj/truffle-contract-schema@3.0.0-beta.2":
-  version "3.0.0-beta.2"
-  resolved "https://registry.yarnpkg.com/@seesemichaelj/truffle-contract-schema/-/truffle-contract-schema-3.0.0-beta.2.tgz#5c6c66c171f9fb9e61fe8dbf46848dbab26d3ea7"
-  integrity sha512-KGDPUhFSSlTh0d17u1iNajV7Cx/N1WFEdxJvR7/Wd1ckt27caqCidqtnJs3roDZl7cT85p1LJnYAcyTGPdMn2w==
-  dependencies:
-    ajv "^5.1.1"
-    crypto-js "^3.1.9-1"
-    debug "^3.1.0"
-
 "@sinonjs/commons@^1.0.2":
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/@sinonjs/commons/-/commons-1.3.0.tgz#50a2754016b6f30a994ceda6d9a0a8c36adda849"
