@@ -1,10 +1,6 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:session");
 
-import trace from "lib/trace/selectors";
-import evm from "lib/evm/selectors";
-import ast from "lib/ast/selectors";
-import solidity from "lib/solidity/selectors";
 import data from "lib/data/selectors";
 
 import configureStore from "lib/store";
@@ -164,25 +160,29 @@ export default class Session {
   }
 
   async decodeReady() {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
+      const haveResolved = false;
+      const unsubscribe = this._store.subscribe(() => {
+        const subscriptionDecodingStarted = this.view(
+          data.proc.decodingMappingKeys
+        );
+
+        debug("following decoding started: %d", subscriptionDecodingStarted);
+
+        if (subscriptionDecodingStarted <= 0 && !haveResolved) {
+          haveResolved = true;
+          unsubscribe();
+          resolve();
+        }
+      });
+
       const decodingStarted = this.view(data.proc.decodingMappingKeys);
 
       debug("initial decoding started: %d", decodingStarted);
 
-      if (decodingStarted > 0) {
-        const unsubscribe = this._store.subscribe(() => {
-          const subscriptionDecodingStarted = this.view(
-            data.proc.decodingMappingKeys
-          );
-
-          debug("following decoding started: %d", subscriptionDecodingStarted);
-
-          if (subscriptionDecodingStarted <= 0) {
-            unsubscribe();
-            resolve();
-          }
-        });
-      } else {
+      if (decodingStarted <= 0) {
+        haveResolved = true;
+        unsubscribe();
         resolve();
       }
     });
