@@ -1,4 +1,6 @@
+const debug = require("debug")("lib:run");
 const TruffleError = require("Truffle-Error");
+const originalRequire = require("original-require");
 const flow = require("lodash/fp/flow");
 const path = require("path");
 
@@ -6,26 +8,39 @@ const Run = {
   // helpers
   checkPluginConfig(options) {
     let plugins = options.plugins;
-    if (!Array.isArray(plugins) || plugins.length === 0)
+    if (!Array.isArray(plugins) || plugins.length === 0) {
       throw new TruffleError("\nError: Plugins configured incorrectly.\n");
+    }
 
-    console.log(plugins);
+    debug("plugins %o", plugins);
     return plugins;
   },
 
   checkPluginModules(plugins) {
+    // TODO will need to replace with actual config path
+    originalRequire("app-module-path").addPath(
+      path.resolve(process.cwd(), "node_modules")
+    );
+
+    // possible TODO: add app-module-path as dependency of originalRequire
+    // external interface something like:
+    //
+    //   originalRequire.addPath("<path-to-truffle-config>")
+    //
+    // and then make originalRequire handle `path.resolve(..., "node_modules")`
+
     plugins.forEach(plugin => {
       try {
-        require.resolve(plugin);
-      } catch {
-        console.log(require.main.paths);
-        console.log(process.cwd());
+        originalRequire.resolve(plugin);
+      } catch (_) {
+        debug("require.main.paths %o", originalRequire.main.paths);
+        debug("process.cwd %o", process.cwd());
         throw new TruffleError(
           `\nError: ${plugin} listed as a plugin, but not found in global or local node modules!\n`
         );
       }
     });
-    console.log(plugins);
+    debug("plugins %o", plugins);
     return plugins;
   },
 
@@ -33,18 +48,18 @@ const Run = {
     let pluginConfigs = {};
     plugins.forEach(plugin => {
       try {
-        pluginConfigs[plugin] = require(`${plugin}/package.json`);
-      } catch {
+        pluginConfigs[plugin] = originalRequire(`${plugin}/package.json`);
+      } catch (_) {
         throw new TruffleError(
           `\nError: truffle-config.json not found in the ${plugin} plugin package!\n`
         );
       }
     });
-    console.log(pluginConfigs);
+    debug("pluginConfigs %o", pluginConfigs);
     return pluginConfigs;
   },
 
-  load(options, callback) {
+  load(options) {
     let loadPlugins = flow(
       this.checkPluginConfig,
       this.checkPluginModules,
@@ -62,7 +77,7 @@ const Run = {
         if (pluginConfigs[plugin].commands[customCommand])
           pluginCommandObj[plugin] =
             pluginConfigs[plugin].commands[customCommand];
-      } catch {
+      } catch (_) {
         // TODO comment
       }
     }
@@ -81,15 +96,19 @@ const Run = {
       );
     }
 
-    console.log(pluginModule, relativeCommandPath);
-    let pluginPath = require.resolve(pluginModule);
+    debug(
+      "pluginModule %o, relativeCommandPath %o",
+      pluginModule,
+      relativeCommandPath
+    );
+    let pluginPath = originalRequire.resolve(pluginModule);
     pluginPath = path.dirname(pluginPath);
-    console.log(pluginPath);
+    debug("pluginPath %o", pluginPath);
     pluginPath = path.resolve(pluginPath, relativeCommandPath);
-    console.log(pluginPath);
+    debug("pluginPath %o", pluginPath);
 
-    const commandModule = require(pluginPath);
-    console.log(commandModule);
+    const commandModule = originalRequire(pluginPath);
+    debug("commandModule %o", commandModule);
     return commandModule;
   },
 
