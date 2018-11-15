@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("decoder:read:storage");
+
 import * as DecodeUtils from "truffle-decode-utils";
 import BN from "bn.js";
 import Web3 from "web3";
@@ -48,7 +51,7 @@ export function slotAddressPrintout(slot: DecodeUtils.Allocation.Slot): string {
  */
 export async function read(storage: any, slot: DecodeUtils.Allocation.Slot, web3?: Web3, contractAddress?: string): Promise<undefined | Uint8Array> {
   const address = slotAddress(slot);
-  console.log("Slot printout: " + slotAddressPrintout(slot));
+  debug("Slot printout: %s", slotAddressPrintout(slot));
 
   // debug("reading slot: %o", DecodeUtils.toHexString(address));
 

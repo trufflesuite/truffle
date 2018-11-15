@@ -1,3 +1,5 @@
+import debugModule from "debug";
+const debug = debugModule("decoder:decode");
 
 import * as DecodeUtils from "truffle-decode-utils";
 import decodeValue from "./value";
@@ -10,7 +12,7 @@ import { EvmInfo } from "../types/evm";
 import Web3 from "web3";
 
 export default async function decode(definition: AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<any> {
-  console.log("Decoding " + definition.name);
+  debug("Decoding %s", definition.name);
 
   if (isLiteralPointer(pointer)) {
     return await decodeValue(definition, pointer, info, web3, contractAddress);
