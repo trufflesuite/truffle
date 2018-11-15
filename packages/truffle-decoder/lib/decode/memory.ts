@@ -3,10 +3,10 @@ import * as DecodeUtils from "truffle-decode-utils";
 import decodeValue from "./value";
 import decode from "./index";
 import { chunk } from "../read/memory";
-import { MemoryPointer } from "../types/pointer";
+import { MemoryPointer, DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 
-export default async function decodeMemoryReference(definition: DecodeUtils.AstDefinition, pointer: MemoryPointer, info: EvmInfo): Promise<any> {
+export default async function decodeMemoryReference(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo): Promise<any> {
   const { state } = info
   // debug("pointer %o", pointer);
   let rawValue: Uint8Array = await read(pointer, state);
@@ -29,7 +29,7 @@ export default async function decodeMemoryReference(definition: DecodeUtils.AstD
         memory: { start: rawValueNumber + DecodeUtils.EVM.WORD_SIZE, length: bytes.length }
       }
 
-      return decodeValue(definition, childPointer, info);
+      return await decodeValue(definition, childPointer, info);
 
     case "array":
       bytes = DecodeUtils.Conversion.toBN(await read({
@@ -40,12 +40,12 @@ export default async function decodeMemoryReference(definition: DecodeUtils.AstD
         start: rawValueNumber + DecodeUtils.EVM.WORD_SIZE, length: bytes * DecodeUtils.EVM.WORD_SIZE
       }}, state); // now bytes contain items
 
-      return chunk(bytes, DecodeUtils.EVM.WORD_SIZE)
+      return await Promise.all(chunk(bytes, DecodeUtils.EVM.WORD_SIZE)
         .map(
           (chunk) => decode(DecodeUtils.Definition.baseDefinition(definition), {
             literal: chunk
           }, info)
-        )
+        ));
 
     case "struct":
       const { scopes } = info;
@@ -59,7 +59,7 @@ export default async function decodeMemoryReference(definition: DecodeUtils.AstD
 
       let variables = (scopes[referencedDeclaration] || {}).variables;
 
-      return Object.assign(
+      return await Promise.all(Object.assign(
         {}, ...(variables || [])
           .map(
             ({name, id}: any, i: number) => {
@@ -89,7 +89,7 @@ export default async function decodeMemoryReference(definition: DecodeUtils.AstD
               };
             }
           )
-      );
+      ));
 
 
     default:

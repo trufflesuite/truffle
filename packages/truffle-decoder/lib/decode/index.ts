@@ -21,7 +21,7 @@ export default async function decode(definition: AstDefinition, pointer: DataPoi
     switch (DecodeUtils.Definition.referenceType(definition)) {
       case "memory":
         // debug("decoding memory reference, type: %s", identifier);
-        return isMemoryPointer(pointer) ? await decodeMemoryReference(definition, pointer, info) : undefined;
+        return await decodeMemoryReference(definition, pointer, info);
       case "storage":
         // debug("decoding storage reference, type: %s", identifier);
         return isStoragePointer(pointer) ? await decodeStorageReference(definition, pointer, info, web3, contractAddress) : undefined;
