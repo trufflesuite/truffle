@@ -279,13 +279,15 @@ const data = createSelectorTree({
       decoded: createLeaf(
         ["/views/decoder", "./definitions", "./refs"],
 
-        (decode, definitions, refs) =>
-          Object.assign(
-            {},
-            ...Object.entries(refs).map(([identifier, ref]) => ({
-              [identifier]: decode(definitions[identifier], ref)
-            }))
-          )
+        async (decode, definitions, refs) => {
+          const keyedPromises = Object.entries(refs).map(
+            async ([identifier, ref]) => ({
+              [identifier]: await decode(definitions[identifier], ref)
+            })
+          );
+          const keyedResults = await Promise.all(keyedPromises);
+          return Object.assign({}, ...keyedResults);
+        }
       ),
 
       /**
@@ -293,7 +295,9 @@ const data = createSelectorTree({
        *
        * Returns an object with values as Promises
        */
-      native: createLeaf(["./decoded"], TruffleDecodeUtils.Conversion.cleanBNs)
+      native: createLeaf(["./decoded"], async decoded => {
+        return TruffleDecodeUtils.Conversion.cleanBNs(await decoded);
+      })
     }
   },
 

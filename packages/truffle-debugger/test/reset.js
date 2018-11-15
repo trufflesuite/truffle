@@ -1,16 +1,9 @@
-import debugModule from "debug";
-const debug = debugModule("test:reset");
-
 import { assert } from "chai";
 
 import Ganache from "ganache-cli";
-import Web3 from "web3";
 
 import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
-
-import sessionSelector from "lib/session/selectors";
-import data from "lib/data/selectors";
 
 const __SETSTHINGS = `
 pragma solidity ^0.4.24;
@@ -35,14 +28,12 @@ let sources = {
 
 describe("Reset Button", function() {
   var provider;
-  var web3;
 
   var abstractions;
   var artifacts;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
-    web3 = new Web3(provider);
   });
 
   before("Prepare contracts and artifacts", async function() {
@@ -69,22 +60,22 @@ describe("Reset Button", function() {
     variables[0] = []; //collected during 1st run
     variables[1] = []; //collected during 2nd run
 
-    variables[0].push(session.view(data.current.identifiers.native));
+    variables[0].push(await session.variables());
     session.addBreakpoint({ sourceId: 0, line: 10 });
     session.continueUntilBreakpoint(); //advance to line 10
-    variables[0].push(session.view(data.current.identifiers.native));
+    variables[0].push(await session.variables());
     session.continueUntilBreakpoint(); //advance to the end
-    variables[0].push(session.view(data.current.identifiers.native));
+    variables[0].push(await session.variables());
 
     //now, reset and do it again
     session.reset();
 
-    variables[1].push(session.view(data.current.identifiers.native));
+    variables[1].push(await session.variables());
     session.addBreakpoint({ sourceId: 0, line: 10 });
     session.continueUntilBreakpoint(); //advance to line 10
-    variables[1].push(session.view(data.current.identifiers.native));
+    variables[1].push(await session.variables());
     session.continueUntilBreakpoint(); //advance to the end
-    variables[1].push(session.view(data.current.identifiers.native));
+    variables[1].push(await session.variables());
 
     assert.deepEqual(variables[1], variables[0]);
   });

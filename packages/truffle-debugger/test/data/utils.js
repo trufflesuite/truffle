@@ -1,6 +1,3 @@
-import debugModule from "debug";
-const debug = debugModule("test:data:decode:utils");
-
 import { assert } from "chai";
 
 import BN from "bn.js";
@@ -16,7 +13,10 @@ describe("Utils", function() {
         }
       };
 
-      assert.equal(TruffleDecodeUtils.Definition.typeClass(definition), "mapping");
+      assert.equal(
+        TruffleDecodeUtils.Definition.typeClass(definition),
+        "mapping"
+      );
     });
   });
 
@@ -33,17 +33,18 @@ describe("Utils", function() {
 
   describe("toSignedBN()", function() {
     it("returns correct negative value", function() {
-      let bytes = [0xf5, 0xe2, 0xc5, 0x17];  // starts with 0b1
+      let bytes = [0xf5, 0xe2, 0xc5, 0x17]; // starts with 0b1
       let raw = new BN("f5e2c517", 16);
       let bitfipped = new BN(
-        raw.toString(2)
+        raw
+          .toString(2)
           .replace(/0/g, "x")
           .replace(/1/g, "0")
           .replace(/x/g, "1"),
         2
       );
 
-      let expectedValue = bitfipped.plus(1).negated();
+      let expectedValue = bitfipped.addn(1).neg();
 
       let result = TruffleDecodeUtils.Conversion.toSignedBN(bytes);
 
@@ -64,12 +65,21 @@ describe("Utils", function() {
   describe("toHexString()", function() {
     it("returns correct representation with full bytes", function() {
       // ie, 0x00 instead of 0x0
-      assert.equal(TruffleDecodeUtils.Conversion.toHexString([0x05, 0x11]), "0x0511");
-      assert.equal(TruffleDecodeUtils.Conversion.toHexString([0xff, 0x00, 0xff]), "0xff00ff");
+      assert.equal(
+        TruffleDecodeUtils.Conversion.toHexString([0x05, 0x11]),
+        "0x0511"
+      );
+      assert.equal(
+        TruffleDecodeUtils.Conversion.toHexString([0xff, 0x00, 0xff]),
+        "0xff00ff"
+      );
     });
 
     it("allows removing leading zeroes", function() {
-      assert.equal(TruffleDecodeUtils.Conversion.toHexString([0x00, 0x00, 0xcc], true), "0xcc");
+      assert.equal(
+        TruffleDecodeUtils.Conversion.toHexString([0x00, 0x00, 0xcc], true),
+        "0xcc"
+      );
     });
   });
 });

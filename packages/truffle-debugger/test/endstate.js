@@ -1,16 +1,11 @@
-import debugModule from "debug";
-const debug = debugModule("test:endstate");
-
 import { assert } from "chai";
 
 import Ganache from "ganache-cli";
-import Web3 from "web3";
 
 import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
 
 import sessionSelector from "lib/session/selectors";
-import data from "lib/data/selectors";
 
 const __FAILURE = `
 pragma solidity ^0.4.24;
@@ -40,14 +35,12 @@ let sources = {
 
 describe("End State", function() {
   var provider;
-  var web3;
 
   var abstractions;
   var artifacts;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
-    web3 = new Web3(provider);
   });
 
   before("Prepare contracts and artifacts", async function() {
@@ -95,6 +88,7 @@ describe("End State", function() {
     session.continueUntilBreakpoint(); //no breakpoints set so advances to end
 
     assert.ok(session.view(sessionSelector.transaction.receipt).status);
-    assert.deepEqual(session.view(data.current.identifiers.native), { x: 107 });
+    const variables = await session.variables();
+    assert.deepEqual(variables, { x: "107" });
   });
 });
