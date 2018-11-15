@@ -5,36 +5,40 @@ const readline = require('readline');
 const PACKAGES_DIR = `${__dirname}/../packages`;
 
 /**
- * Load packages depending on `solc`
+ * Update packages that depend on solc to the latest version
+ *
+ * @param dryRun {Boolean} Do a dry run and only return the packages that would be updated
+ * @returns packageNames {String[]} Returns the packages names that depend on solc
  **/
-function loadSolcDependentPackages() {
+function updatePackages(dryRun = false) {
   const packages = fs.readdirSync(PACKAGES_DIR);
-  return packages.filter(packageName => {
+  return packages.map(packageName => {
     // parse the package.json file for `packageName`
-    const packagePath = `${PACKAGES_DIR}/${packageName}/package.json`;
-    const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+    const packagePath = `${PACKAGES_DIR}/${packageName}`;
+    const packageJsonPath = `${packagePath}/package.json`;
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
     // operate if the solc dependency exists
-    return packageJson
-      && packageJson.dependencies
-      && !!packageJson.dependencies['solc'];
-  });
+    if (packageJson.dependencies && packageJson.dependencies['solc']) {
+      if (dryRun) return packageName;
+      return updatePackage(packageName, packagePath, false);
+    } else if (packageJson.devDependencies && packageJson.devDependencies['solc']) {
+      if (dryRun) return packageName;
+      return updatePackage(packageName, packagePath, true);
+    }
+  }).filter(arg => !!arg);
 }
 
-/**
- * Use child_process to run `npm install` in `packageName` synchronously
- **/
-function updatePackages(packageNames) {
-  packageNames.forEach(packageName => {
-    console.log(`Updating ${packageName}`);
-    execSync('npm install solc@latest', {
-      cwd: `${PACKAGES_DIR}/${packageName}`
-    });
+function updatePackage(packageName, packagePath, dev){
+  console.log(`Updating ${packageName}${dev ? ' dev ' : ' '}dependency`);
+  execSync(`npm install solc@latest ${dev ? '--save-dev' : '--save'}`, {
+    cwd: packagePath
   });
+  return packageName;
 }
 
 // Get the packages that have a solc dependency
-const solcPackageDeps = loadSolcDependentPackages();
+const solcPackageDeps = updatePackages(true);
 
 console.log('Bumping solidity version for the following packages:');
 console.log(solcPackageDeps);
@@ -50,7 +54,7 @@ rl.question('\nContinue: (Y/n)\n', answer => {
     process.exit(0);
   }
   rl.close();
-  updatePackages(solcPackageDeps);
+  updatePackages();
   console.log(`Updated ${solcPackageDeps.length} packages to solc@latest`);
   process.exit(0);
 });
