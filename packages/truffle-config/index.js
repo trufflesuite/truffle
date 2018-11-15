@@ -1,14 +1,14 @@
-var _ = require("lodash");
-var path = require("path");
-var Provider = require("truffle-provider");
-var TruffleError = require("truffle-error");
-var Module = require("module");
-var findUp = require("find-up");
-var originalrequire = require("original-require");
+const _ = require("lodash");
+const path = require("path");
+const Provider = require("truffle-provider");
+const TruffleError = require("truffle-error");
+const Module = require("module");
+const findUp = require("find-up");
+const originalrequire = require("original-require");
 const Configstore = require("configstore");
 
-var DEFAULT_CONFIG_FILENAME = "truffle.js";
-var BACKUP_CONFIG_FILENAME = "truffle-config.js"; // For Windows + Command Prompt
+const DEFAULT_CONFIG_FILENAME = "truffle.js";
+const BACKUP_CONFIG_FILENAME = "truffle-config.js"; // For Windows + Command Prompt
 const DEFAULT_USER_CONFIG = "truffle";
 
 function Config(truffle_directory, working_directory, network) {
@@ -135,13 +135,13 @@ function Config(truffle_directory, working_directory, network) {
       get: function() {
         var network = self.network;
 
-        if (network == null) {
+        if (network === null) {
           throw new Error("Network not set. Cannot determine network to use.");
         }
 
         var conf = self.networks[network];
 
-        if (conf == null) {
+        if (conf === null) {
           config = {};
         }
 
@@ -352,22 +352,24 @@ Config.prototype.merge = function(obj) {
   return this;
 };
 
-Config.default = function() {
-  return new Config();
-};
+Config.default = () => new Config();
 
-Config.detect = function(options, filename) {
-  var search;
+Config.search = (options = {}, filename) => {
+  let search;
 
   !filename
     ? (search = [DEFAULT_CONFIG_FILENAME, BACKUP_CONFIG_FILENAME])
     : (search = filename);
 
-  var file = findUp.sync(search, {
+  return findUp.sync(search, {
     cwd: options.working_directory || options.workingDirectory
   });
+};
 
-  if (file == null) {
+Config.detect = (options = {}, filename) => {
+  const file = Config.search(options, filename);
+
+  if (file === null) {
     throw new TruffleError("Could not find suitable configuration file.");
   }
 
