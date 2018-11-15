@@ -1,8 +1,9 @@
 const fs = require('fs');
 const { execSync } = require('child_process');
 const readline = require('readline');
+const path = require('path');
 
-const PACKAGES_DIR = `${__dirname}/../packages`;
+const PACKAGES_DIR = path.resolve(__dirname, '..', 'packages');
 
 /**
  * Update packages that depend on solc to the latest version
@@ -14,8 +15,8 @@ function updatePackages(dryRun = false) {
   const packages = fs.readdirSync(PACKAGES_DIR);
   return packages.map(packageName => {
     // parse the package.json file for `packageName`
-    const packagePath = `${PACKAGES_DIR}/${packageName}`;
-    const packageJsonPath = `${packagePath}/package.json`;
+    const packagePath = path.resolve(PACKAGES_DIR, packageName);
+    const packageJsonPath = path.resolve(packagePath, 'package.json');
     const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
     // operate if the solc dependency exists
