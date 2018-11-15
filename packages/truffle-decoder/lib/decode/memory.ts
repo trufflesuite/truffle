@@ -23,10 +23,10 @@ export default async function decodeMemoryReference(definition: DecodeUtils.AstD
     case "string":
       bytes = await read({
         memory: { start: rawValueNumber, length: DecodeUtils.EVM.WORD_SIZE}
-      }, state); // bytes contain length
+      }, state); // bytes contain length in the last byte
 
       let childPointer: MemoryPointer = {
-        memory: { start: rawValueNumber + DecodeUtils.EVM.WORD_SIZE, length: bytes.length }
+        memory: { start: rawValueNumber + DecodeUtils.EVM.WORD_SIZE, length: bytes[DecodeUtils.EVM.WORD_SIZE - 1] }
       }
 
       return await decodeValue(definition, childPointer, info);
