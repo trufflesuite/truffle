@@ -30,7 +30,15 @@ function updatePackages(dryRun = false) {
   }).filter(arg => !!arg);
 }
 
-function updatePackage(packageName, packagePath, dev){
+/**
+ * Update an individual subpackage
+ *
+ * @param packageName {String} The string package name
+ * @param packagePath {String} The full package directory path
+ * @param dev {Boolean} True if solc is a dev dependency
+ * @returns packageName {String} Returns the package name
+ **/
+function updatePackage(packageName, packagePath, dev) {
   console.log(`Updating ${packageName}${dev ? ' dev ' : ' '}dependency`);
   execSync(`npm install solc@latest ${dev ? '--save-dev' : '--save'}`, {
     cwd: packagePath
