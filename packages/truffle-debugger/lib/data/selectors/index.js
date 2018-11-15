@@ -104,7 +104,7 @@ const data = createSelectorTree({
     /**
      * data.views.decoder
      *
-     * selector returns (ast node definition, data reference) => value
+     * selector returns (ast node definition, data reference) => Promise<value>
      */
     decoder: createLeaf(
       ["/views/scopes/inlined", "/next/state", "/proc/mappingKeys"],
@@ -142,7 +142,17 @@ const data = createSelectorTree({
      *
      * known keys for each mapping (identified by node ID)
      */
-    mappingKeys: createLeaf(["/state"], state => state.proc.mappingKeys.byId)
+    mappingKeys: createLeaf(["/state"], state => state.proc.mappingKeys.byId),
+
+    /**
+     * data.proc.decodingMappingKeys
+     *
+     * number of mapping keys that are still decoding
+     */
+    decodingMappingKeys: createLeaf(
+      ["/state"],
+      state => state.proc.mappingKeys.decodingStarted
+    )
   },
 
   /**
@@ -263,6 +273,8 @@ const data = createSelectorTree({
 
       /**
        * data.current.identifiers.decoded
+       *
+       * Returns an object with values as Promises
        */
       decoded: createLeaf(
         ["/views/decoder", "./definitions", "./refs"],
@@ -278,6 +290,8 @@ const data = createSelectorTree({
 
       /**
        * data.current.identifiers.native
+       *
+       * Returns an object with values as Promises
        */
       native: createLeaf(["./decoded"], TruffleDecodeUtils.Conversion.cleanBNs)
     }

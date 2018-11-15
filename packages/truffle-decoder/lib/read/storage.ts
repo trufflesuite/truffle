@@ -31,7 +31,6 @@ export function slotAddressPrintout(slot: DecodeUtils.Allocation.Slot): string {
     return "keccak(" + slot.key + ", " + slotAddressPrintout(slot.path) + ") + " + slot.offset.toString();
   }
   else if (typeof slot.path !== "undefined") {
-    return slotAddressPrintout(slot.path) + " + " + slot.offset.toString();
     const pathAddressPrintout = slotAddressPrintout(slot.path);
     const pathPrintout: string = slot.hashPath ? "keccak(" + pathAddressPrintout + ")" : pathAddressPrintout;
     return pathPrintout;
@@ -47,7 +46,7 @@ export function slotAddressPrintout(slot: DecodeUtils.Allocation.Slot): string {
  * @param slot - big number or array of regular numbers
  * @param offset - for array, offset from the keccak determined location
  */
-export async function read(storage: any, slot: DecodeUtils.Allocation.Slot, web3?: Web3, contractAddress?: string): Promise<Uint8Array> {
+export async function read(storage: any, slot: DecodeUtils.Allocation.Slot, web3?: Web3, contractAddress?: string): Promise<undefined | Uint8Array> {
   const address = slotAddress(slot);
   console.log("Slot printout: " + slotAddressPrintout(slot));
 
@@ -133,7 +132,9 @@ export async function readRange(storage: any, range: DecodeUtils.Allocation.Rang
   for (let i = 0; i < totalWords; i++) {
     let offset = from.slot.offset.addn(i);
     const word = await read(storage, { ...from.slot, offset }, web3, contractAddress);
-    data.set(word, i * DecodeUtils.EVM.WORD_SIZE);
+    if (typeof word !== "undefined") {
+      data.set(word, i * DecodeUtils.EVM.WORD_SIZE);
+    }
   }
   // debug("words %o", data);
 

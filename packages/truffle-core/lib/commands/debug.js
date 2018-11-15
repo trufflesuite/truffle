@@ -104,7 +104,7 @@ var command = {
         .catch(done);
 
       sessionPromise
-        .then(function(session) {
+        .then(async function(session) {
           if (err) return done(err);
 
           function splitLines(str) {
@@ -211,28 +211,30 @@ var command = {
             });
           }
 
-          function printWatchExpressionsResults() {
-            enabledExpressions.forEach(function(expression) {
-              config.logger.log(expression);
-              // Add some padding. Note: This won't work with all loggers,
-              // meaning it's not portable. But doing this now so we can get something
-              // pretty until we can build more architecture around this.
-              // Note: Selector results already have padding, so this isn't needed.
-              if (expression[0] == ":") {
-                process.stdout.write("  ");
-              }
-              printWatchExpressionResult(expression);
-            });
+          async function printWatchExpressionsResults() {
+            await Promise.all(
+              enabledExpressions.forEach(async function(expression) {
+                config.logger.log(expression);
+                // Add some padding. Note: This won't work with all loggers,
+                // meaning it's not portable. But doing this now so we can get something
+                // pretty until we can build more architecture around this.
+                // Note: Selector results already have padding, so this isn't needed.
+                if (expression[0] == ":") {
+                  process.stdout.write("  ");
+                }
+                await printWatchExpressionResult(expression);
+              })
+            );
           }
 
-          function printWatchExpressionResult(expression) {
+          async function printWatchExpressionResult(expression) {
             var type = expression[0];
             var exprArgs = expression.substring(1);
 
             if (type == "!") {
               printSelector(exprArgs);
             } else {
-              evalAndPrintExpression(exprArgs, 2, true);
+              await evalAndPrintExpression(exprArgs, 2, true);
             }
           }
 
@@ -258,8 +260,8 @@ var command = {
               .join(OS.EOL);
           }
 
-          function printVariables() {
-            var variables = session.view(data.current.identifiers.native);
+          async function printVariables() {
+            var variables = await session.variables();
 
             // Get the length of the longest name.
             var longestNameLength = Math.max.apply(
@@ -287,8 +289,8 @@ var command = {
             config.logger.log();
           }
 
-          function evalAndPrintExpression(expr, indent, suppress) {
-            var context = session.view(data.current.identifiers.native);
+          async function evalAndPrintExpression(expr, indent, suppress) {
+            var context = await session.variables();
             try {
               var result = safeEval(expr, context);
               var formatted = formatValue(result, indent);
@@ -474,7 +476,7 @@ var command = {
             return;
           }
 
-          function interpreter(cmd, replContext, filename, callback) {
+          async function interpreter(cmd, replContext, filename, callback) {
             cmd = cmd.trim();
             var cmdArgs, splitArgs;
             debug("cmd %s", cmd);
@@ -569,7 +571,7 @@ var command = {
             switch (cmd) {
               case "+":
                 enabledExpressions.add(cmdArgs);
-                printWatchExpressionResult(cmdArgs);
+                await printWatchExpressionResult(cmdArgs);
                 break;
               case "-":
                 enabledExpressions.delete(cmdArgs);
@@ -581,7 +583,7 @@ var command = {
                 printWatchExpressions();
                 break;
               case "v":
-                printVariables();
+                await printVariables();
                 break;
               case ":":
                 evalAndPrintExpression(cmdArgs);
@@ -597,7 +599,7 @@ var command = {
                 printFile();
                 printInstruction();
                 printState();
-                printWatchExpressionsResults();
+                await printWatchExpressionsResults();
                 break;
               case "o":
               case "i":
@@ -612,7 +614,7 @@ var command = {
                   printFile();
                   printState();
                 }
-                printWatchExpressionsResults();
+                await printWatchExpressionsResults();
                 break;
               case "r":
                 printAddressesAffected();

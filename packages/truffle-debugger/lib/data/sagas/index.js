@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:data:sagas");
 
-import { put, takeEvery, select } from "redux-saga/effects";
+import { put, takeEvery, select, call } from "redux-saga/effects";
 import jsonpointer from "json-pointer";
 
 import { prefixName } from "lib/helpers";
@@ -70,7 +70,9 @@ function* tickSaga() {
         .map(pointer => jsonpointer.get(tree, pointer).id)
         //note: depth may be off by 1 but it doesn't matter
         .map((id, i) => ({
-          [TruffleDecodeUtils.Definition.augmentWithDepth(id, currentDepth)]: { stack: top - i }
+          [TruffleDecodeUtils.Definition.augmentWithDepth(id, currentDepth)]: {
+            stack: top - i
+          }
         }))
         .reduce((acc, assignment) => Object.assign(acc, assignment), {});
       debug("Function definition case");
@@ -86,15 +88,21 @@ function* tickSaga() {
       let index = TruffleDecodeUtils.EVM.WORD_SIZE - 1; // cause lower-order
       debug("storage vars %o", storageVars);
 
-      let allocation = TruffleDecodeUtils.Allocation.allocateDeclarations(storageVars, definitions);
+      let allocation = TruffleDecodeUtils.Allocation.allocateDeclarations(
+        storageVars,
+        definitions
+      );
       debug("Contract definition case");
       debug("allocation %O", allocation);
       assignments = Object.assign(
         {},
         ...Object.entries(allocation.children).map(([id, storage]) => ({
           [TruffleDecodeUtils.Definition.augmentWithDepth(id)]: {
-            ...(currentAssignments[TruffleDecodeUtils.Definition.augmentWithDepth(id)] || { ref: {} })
-              .ref,
+            ...(
+              currentAssignments[
+                TruffleDecodeUtils.Definition.augmentWithDepth(id)
+              ] || { ref: {} }
+            ).ref,
             storage
           }
         }))
@@ -112,21 +120,31 @@ function* tickSaga() {
       debug("currentDepth %d varId %d", currentDepth, varId);
       yield put(
         actions.assign(treeId, {
-          [TruffleDecodeUtils.Definition.augmentWithDepth(varId, currentDepth)]: { stack: top }
+          [TruffleDecodeUtils.Definition.augmentWithDepth(
+            varId,
+            currentDepth
+          )]: { stack: top }
         })
       );
       break;
 
     case "IndexAccess":
       // to track `mapping` types known indexes
+      yield put(actions.mapKeyDecoding(true));
+
       let {
         baseExpression: { referencedDeclaration: baseDeclarationId },
         indexExpression: { id: indexId }
       } = node;
       //augment declaration Id w/0 to indicate storage
-      let augmentedDeclarationId = TruffleDecodeUtils.Definition.augmentWithDepth(baseDeclarationId);
+      let augmentedDeclarationId = TruffleDecodeUtils.Definition.augmentWithDepth(
+        baseDeclarationId
+      );
       //indices, meanwhile, use depth as usual
-      let augmentedIndexId = TruffleDecodeUtils.Definition.augmentWithDepth(indexId, currentDepth);
+      let augmentedIndexId = TruffleDecodeUtils.Definition.augmentWithDepth(
+        indexId,
+        currentDepth
+      );
       debug("Index access case");
       debug("currentAssignments %O", currentAssignments);
       debug("augmentedDeclarationId %s", augmentedDeclarationId);
@@ -149,10 +167,15 @@ function* tickSaga() {
       // [observed with solc v0.4.24]
       let indexValue;
       if (indexAssignment) {
-        indexValue = decode(node.indexExpression, indexAssignment);
-      } else if (TruffleDecodeUtils.Definition.typeClass(node.indexExpression) == "stringliteral") {
-        indexValue = decode(node.indexExpression, {
-          literal: TruffleDecodeUtils.Conversion.toBytes(node.indexExpression.hexValue)
+        indexValue = yield call(decode, node.indexExpression, indexAssignment);
+      } else if (
+        TruffleDecodeUtils.Definition.typeClass(node.indexExpression) ==
+        "stringliteral"
+      ) {
+        indexValue = yield call(decode, node.indexExpression, {
+          literal: TruffleDecodeUtils.Conversion.toBytes(
+            node.indexExpression.hexValue
+          )
         });
       }
 
@@ -160,6 +183,8 @@ function* tickSaga() {
       if (indexValue != undefined) {
         yield put(actions.mapKey(augmentedDeclarationId, indexValue));
       }
+
+      yield put(actions.mapKeyDecoding(false));
 
       break;
 
@@ -179,7 +204,10 @@ function* tickSaga() {
       debug("currentDepth %d node.id %d", currentDepth, node.id);
       yield put(
         actions.assign(treeId, {
-          [TruffleDecodeUtils.Definition.augmentWithDepth(node.id, currentDepth)]: { literal }
+          [TruffleDecodeUtils.Definition.augmentWithDepth(
+            node.id,
+            currentDepth
+          )]: { literal }
         })
       );
       break;
@@ -195,7 +223,7 @@ export function* saga() {
     try {
       yield* tickSaga();
     } catch (e) {
-      debug(e);
+      debug("ERROR: %O", e);
     }
   });
 }

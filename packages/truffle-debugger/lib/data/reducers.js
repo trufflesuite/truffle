@@ -94,14 +94,26 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
 }
 
 const DEFAULT_MAPPING_KEYS = {
+  decodingStarted: 0,
   byId: {}
 };
 
 function mappingKeys(state = DEFAULT_MAPPING_KEYS, action) {
   switch (action.type) {
+    case actions.MAP_KEY_DECODING:
+      debug(
+        "decoding started: %d",
+        state.decodingStarted + (action.started ? 1 : -1)
+      );
+      return {
+        decodingStarted: state.decodingStarted + (action.started ? 1 : -1),
+        byId: { ...state.byId }
+      };
     case actions.MAP_KEY:
       let { id, key } = action;
+      debug("mapping id and key: %s, %o", id, key);
       return {
+        decodingStarted: state.decodingStarted,
         byId: {
           ...state.byId,
 

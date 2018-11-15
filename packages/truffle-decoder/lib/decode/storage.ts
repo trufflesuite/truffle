@@ -172,10 +172,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
           storage: {
             from: {
               slot: {
-                path: {
-                  path: pointer.storage.from.slot.path || undefined,
-                  offset: pointer.storage.from.slot.offset
-                },
+                path: pointer.storage.from.slot,
                 offset: new BN(0),
                 hashPath: true
               },
@@ -265,7 +262,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
     }
 
     case "mapping": {
-      return <EvmMapping>{
+      const result = <EvmMapping>{
         name: definition.name,
         type: "mapping",
         id: definition.id,
@@ -273,6 +270,51 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
         valueType: DecodeUtils.Definition.typeClass(definition.typeName.valueType),
         members: {}
       };
+
+      const augmentedId = DecodeUtils.Definition.augmentWithDepth(definition.id);
+      const baseSlot: Allocation.Slot = pointer.storage.from.slot;
+
+      if (info.mappingKeys && typeof info.mappingKeys[augmentedId] !== "undefined") {
+        const keys: any[] = info.mappingKeys[augmentedId];
+        for (const key of keys) {
+          const keyValue = DecodeUtils.Conversion.toBytes(key);
+
+          const valuePointer: StoragePointer = {
+            storage: {
+              from: {
+                slot: <Allocation.Slot>{
+                  key: key,
+                  path: baseSlot || undefined,
+                  offset: new BN(0)
+                },
+                index: 0
+              },
+              to: {
+                slot: <Allocation.Slot>{
+                  key: key,
+                  path: baseSlot || undefined,
+                  offset: new BN(0)
+                },
+                index: 31
+              }
+            }
+          };
+          // debug("keyPointer %o", keyPointer);
+
+          let memberName: string;
+          if (typeof key === "string") {
+            memberName = key;
+          }
+          else {
+            memberName = keyValue.toString();
+          }
+
+          result.members[memberName] =
+            await decode(definition.typeName.valueType, valuePointer, info, web3, contractAddress);
+        }
+      }
+
+      return result;
     }
 
     default: {
