@@ -1,3 +1,4 @@
+var debug = require("debug")("test:cloning"); // eslint-disable-line no-unused-vars
 var assert = require("assert");
 var util = require("./util");
 
@@ -12,13 +13,12 @@ describe("Cloning", function() {
   var ExampleOne;
   var ExampleTwo;
 
-  before("Compile and set up contracts", function(done) {
+  before("Compile and set up contracts", async function() {
     this.timeout(10000);
 
-    ExampleOne = util.createExample();
+    ExampleOne = await util.createExample();
+    debug("ExampleOne %o", ExampleOne);
     ExampleTwo = ExampleOne.clone();
-
-    done();
   });
 
   it("produces two distinct objects", function() {
