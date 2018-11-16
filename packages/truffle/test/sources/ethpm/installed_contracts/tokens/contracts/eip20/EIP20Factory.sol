@@ -1,6 +1,6 @@
 import "./EIP20.sol";
 
-pragma solidity ^0.4.8;
+pragma solidity ^0.5.0;
 
 contract EIP20Factory {
 
