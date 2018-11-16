@@ -161,7 +161,7 @@ export default class Session {
 
   async decodeReady() {
     return new Promise(resolve => {
-      const haveResolved = false;
+      let haveResolved = false;
       const unsubscribe = this._store.subscribe(() => {
         const subscriptionDecodingStarted = this.view(
           data.proc.decodingMappingKeys
@@ -201,6 +201,6 @@ export default class Session {
   async variables() {
     await this.decodeReady();
 
-    return await this.view(data.current.identifiers.native);
+    return await this.view(data.current.identifiers.decoded);
   }
 }

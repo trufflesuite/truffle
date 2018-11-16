@@ -8,9 +8,10 @@ import Ganache from "ganache-cli";
 import { prepareContracts } from "../helpers";
 import Debugger from "lib/debugger";
 
-import data from "lib/data/selectors";
 import trace from "lib/trace/selectors";
 import solidity from "lib/solidity/selectors";
+
+import * as TruffleDecodeUtils from "truffle-decode-utils";
 
 const __FACTORIAL = `
 pragma solidity ^0.4.24;
@@ -205,11 +206,20 @@ describe("Variable IDs", function() {
 
     session.continueUntilBreakpoint();
     while (!session.view(trace.finished)) {
-      values.push(session.view(data.current.identifiers.native)["nbang"]);
+      values.push(await session.variable("nbang"));
       session.continueUntilBreakpoint();
     }
 
-    assert.deepEqual(values, [3, 2, 1, 0, 1, 1, 2, 6]);
+    assert.deepEqual(TruffleDecodeUtils.Conversion.cleanBNs(values), [
+      "3",
+      "2",
+      "1",
+      "0",
+      "1",
+      "1",
+      "2",
+      "6"
+    ]);
   });
 
   it("Learns contract addresses and distinguishes the results", async function() {
@@ -229,10 +239,16 @@ describe("Variable IDs", function() {
     session.addBreakpoint({ sourceId: 0, line: 32 });
     session.continueUntilBreakpoint();
     debug("node %o", session.view(solidity.current.node));
-    assert.equal(session.view(data.current.identifiers.native)["secret"], 107);
+    assert.equal(
+      TruffleDecodeUtils.Conversion.cleanBNs(await session.variable("secret")),
+      "107"
+    );
     session.continueUntilBreakpoint();
     debug("node %o", session.view(solidity.current.node));
-    assert.equal(session.view(data.current.identifiers.native)["secret"], 46);
+    assert.equal(
+      TruffleDecodeUtils.Conversion.cleanBNs(await session.variable("secret")),
+      "46"
+    );
   });
 
   it("Stays at correct stackframe after contract call", async function() {
@@ -250,7 +266,7 @@ describe("Variable IDs", function() {
 
     session.addBreakpoint({ sourceId: 2, line: 18 });
     session.continueUntilBreakpoint();
-    assert.property(session.view(data.current.identifiers.native), "flag");
+    assert.property(await session.variables(), "flag");
   });
 
   it("Stays at correct stackframe after library call", async function() {
@@ -269,6 +285,6 @@ describe("Variable IDs", function() {
 
     session.addBreakpoint({ sourceId: 2, line: 27 });
     session.continueUntilBreakpoint();
-    assert.property(session.view(data.current.identifiers.native), "flag");
+    assert.property(await session.variables(), "flag");
   });
 });
