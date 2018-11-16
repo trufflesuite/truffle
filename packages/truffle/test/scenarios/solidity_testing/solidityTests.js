@@ -18,7 +18,7 @@ describe("Solidity Tests", function() {
    * @param  {String}   file Solidity test target
    */
   function initSandbox(done, file) {
-    Box.sandbox("bare", function(err, conf) {
+    Box.sandbox("default#web3-one", function(err, conf) {
       if (err) return done(err);
       config = conf;
       config.logger = logger;
@@ -28,16 +28,15 @@ describe("Solidity Tests", function() {
       };
       const from = path.join(__dirname, file);
 
-      fs.ensureDir(config.test_directory)
-        .then(() => {
-          fs.copy(from, config.test_directory + `/${file}`);
-          done();
-        });
+      fs.ensureDir(config.test_directory).then(() => {
+        fs.copy(from, config.test_directory + `/${file}`);
+        done();
+      });
     });
-  };
+  }
 
-  function processErr(err, output){
-    if (err){
+  function processErr(err, output) {
+    if (err) {
       console.log(output);
       throw new Error(err);
     }
@@ -46,10 +45,10 @@ describe("Solidity Tests", function() {
   before(done => Server.start(done));
   after(done => Server.stop(done));
 
-  describe('test with balance', function(){
-    before(function(done){
+  describe("test with balance", function() {
+    before(function(done) {
       this.timeout(5000);
-      initSandbox(done, 'TestWithBalance.sol');
+      initSandbox(done, "TestWithBalance.sol");
     });
 
     it("will run the test and have the correct balance", function(done) {
@@ -64,10 +63,10 @@ describe("Solidity Tests", function() {
     });
   });
 
-  describe('tests failing', function(){
+  describe("tests failing", function() {
     before(function(done) {
       this.timeout(5000);
-      initSandbox(done, 'TestFailures.sol');
+      initSandbox(done, "TestFailures.sol");
     });
 
     it("will throw errors correctly", function(done) {
