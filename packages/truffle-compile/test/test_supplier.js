@@ -1,3 +1,4 @@
+const debug = require("debug")("compile:test:test_supplier");
 const fs = require("fs");
 const path = require("path");
 const assert = require("assert");
@@ -72,9 +73,9 @@ describe("CompilerSupplier", function() {
 
   describe("integration", function() {
     this.timeout(40000);
-    let newPragmaSource; // ^0.4.21
     let oldPragmaPinSource; //  0.4.15
     let oldPragmaFloatSource; // ^0.4.15
+    let version4PragmaSource; // ^0.4.21
     let version5PragmaSource; // ^0.5.0
 
     const options = {
@@ -84,26 +85,26 @@ describe("CompilerSupplier", function() {
     };
 
     before("get code", function() {
-      const newPragma = fs.readFileSync(
-        path.join(__dirname, "./sources/version4Pragma/NewPragma.sol"),
-        "utf-8"
-      );
       const oldPragmaPin = fs.readFileSync(
-        path.join(__dirname, "./mock/OldPragmaPin.sol"),
+        path.join(__dirname, "./sources/v0.4.15/OldPragmaPin.sol"),
         "utf-8"
       );
       const oldPragmaFloat = fs.readFileSync(
-        path.join(__dirname, "./sources/version4Pragma/OldPragmaFloat.sol"),
+        path.join(__dirname, "./sources/v0.4.x/OldPragmaFloat.sol"),
+        "utf-8"
+      );
+      const version4Pragma = fs.readFileSync(
+        path.join(__dirname, "./sources/v0.4.x/NewPragma.sol"),
         "utf-8"
       );
       const version5Pragma = fs.readFileSync(
-        path.join(__dirname, "./sources/version5Pragma/Version5Pragma.sol"),
+        path.join(__dirname, "./sources/v0.5.x/Version5Pragma.sol"),
         "utf-8"
       );
 
-      newPragmaSource = { "NewPragma.sol": newPragma };
       oldPragmaPinSource = { "OldPragmaPin.sol": oldPragmaPin };
       oldPragmaFloatSource = { "OldPragmaFloat.sol": oldPragmaFloat };
+      version4PragmaSource = { "NewPragma.sol": version4Pragma };
       version5PragmaSource = { "Version5Pragma.sol": version5Pragma };
     });
 
@@ -115,10 +116,11 @@ describe("CompilerSupplier", function() {
         }
       };
 
-      compile(newPragmaSource, options, (err, result) => {
+      compile(version5PragmaSource, options, (err, result) => {
         if (err) return done(err);
+        debug("result %o", result);
 
-        assert(result["NewPragma"].contract_name === "NewPragma");
+        assert(result["Version5Pragma"].contract_name === "Version5Pragma");
         done();
       });
     });
@@ -167,7 +169,7 @@ describe("CompilerSupplier", function() {
         }
       };
 
-      compile(newPragmaSource, options, err => {
+      compile(version4PragmaSource, options, err => {
         assert(err.message.includes("Could not find compiler version"));
         done();
       });
@@ -187,10 +189,10 @@ describe("CompilerSupplier", function() {
         }
       };
 
-      compile(newPragmaSource, options, (err, result) => {
+      compile(version5PragmaSource, options, (err, result) => {
         if (err) return done(err);
 
-        assert(result["NewPragma"].contract_name === "NewPragma");
+        assert(result["Version5Pragma"].contract_name === "Version5Pragma");
         done();
       });
     });
@@ -208,7 +210,7 @@ describe("CompilerSupplier", function() {
         }
       };
 
-      compile(newPragmaSource, options, err => {
+      compile(version4PragmaSource, options, err => {
         assert(err.message.includes("Could not find compiler at:"));
         done();
       });
@@ -233,7 +235,7 @@ describe("CompilerSupplier", function() {
       };
 
       // Run compiler, expecting solc to be downloaded and cached.
-      compile(newPragmaSource, options, err => {
+      compile(version4PragmaSource, options, err => {
         if (err) return done(err);
 
         assert(fs.existsSync(expectedCache), "Should have cached compiler");
@@ -245,7 +247,7 @@ describe("CompilerSupplier", function() {
         // got accessed / ran ok.
         waitSecond()
           .then(() => {
-            compile(newPragmaSource, options, (err, result) => {
+            compile(version4PragmaSource, options, (err, result) => {
               if (err) return done(err);
 
               finalAccessTime = fs.statSync(expectedCache).atime.getTime();
@@ -302,7 +304,7 @@ describe("CompilerSupplier", function() {
 
         const expectedVersion = "0.4.22+commit.4cb486ee.Linux.g++";
 
-        compile(newPragmaSource, options, (err, result) => {
+        compile(version4PragmaSource, options, (err, result) => {
           if (err) return done(err);
 
           assert(result["NewPragma"].compiler.version === expectedVersion);
@@ -362,7 +364,7 @@ describe("CompilerSupplier", function() {
           }
         };
 
-        compile(newPragmaSource, options, err => {
+        compile(version4PragmaSource, options, err => {
           assert(err.message.includes("option must be"));
           done();
         });
@@ -379,7 +381,7 @@ describe("CompilerSupplier", function() {
           }
         };
 
-        compile(newPragmaSource, options, err => {
+        compile(version4PragmaSource, options, err => {
           assert(err.message.includes(imageName));
           done();
         });
