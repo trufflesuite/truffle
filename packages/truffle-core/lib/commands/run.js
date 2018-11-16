@@ -13,6 +13,7 @@ const command = {
   },
   run(options, done) {
     const Config = require("truffle-config");
+    const Plugin = require("../plugin");
     const Run = require("../run");
     const config = Config.detect(options);
 
@@ -25,8 +26,8 @@ const command = {
     const customCommand = options._[0];
 
     if (config.plugins) {
-      let pluginConfigs = Run.load(config, done);
-      Run.run(pluginConfigs, customCommand);
+      let pluginConfigs = Plugin.load(config, done);
+      Run.run(pluginConfigs, customCommand, config);
       done();
     } else {
       console.error(
