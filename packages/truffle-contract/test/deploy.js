@@ -3,6 +3,7 @@ var util = require("./util");
 
 describe("Deployments", function() {
   var Example;
+  var web3;
   var providerOptions = { vmErrorsOnRPCResponse: false };
 
   before(async function() {
@@ -10,7 +11,8 @@ describe("Deployments", function() {
 
     Example = await util.createExample();
 
-    await util.setUpProvider(Example, providerOptions);
+    const result = await util.setUpProvider(Example, providerOptions);
+    web3 = result.web3;
   });
 
   describe(".at() [ @geth ]", function() {
