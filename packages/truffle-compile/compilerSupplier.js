@@ -1,3 +1,4 @@
+const debug = require("debug")("compile:compilerSupplier");
 const path = require("path");
 const fs = require("fs");
 const { execSync } = require("child_process");
@@ -44,7 +45,7 @@ CompilerSupplier.prototype.cachePath = findCacheDir({
  * - a solc cache                  (config.version = <version-string> && cache contains version)
  * - a remote solc-bin source      (config.version = <version-string> && version not cached)
  *
- * OR specify that solc.compileStandard should wrap:
+ * OR specify that solc.compile should wrap:
  * - dockerized solc               (config.version = "<image-name>" && config.docker: true)
  * - native built solc             (cofing.version = "native")
  *
@@ -268,7 +269,7 @@ CompilerSupplier.prototype.getByUrl = function(version) {
 };
 
 /**
- * Makes solc.compileStandard a wrapper to a child process invocation of dockerized solc
+ * Makes solc.compile a wrapper to a child process invocation of dockerized solc
  * or natively build solc. Also fetches a companion solcjs for the built js to parse imports
  * @return {Object} solc output
  */
@@ -294,7 +295,7 @@ CompilerSupplier.prototype.getBuilt = function(buildType) {
 
   return this.getByUrl(commit).then(solcjs => {
     return {
-      compileStandard: options => String(execSync(command, { input: options })),
+      compile: options => String(execSync(command, { input: options })),
       version: () => versionString,
       importsParser: solcjs
     };
@@ -450,6 +451,7 @@ CompilerSupplier.prototype.addToCache = function(code, fileName) {
 CompilerSupplier.prototype.getFromCache = function(fileName) {
   const filePath = this.resolveCache(fileName);
   const soljson = originalRequire(filePath);
+  debug("soljson %o", soljson);
   const wrapped = solcWrap(soljson);
   this.removeListener();
   return wrapped;
