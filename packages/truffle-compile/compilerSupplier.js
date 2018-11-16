@@ -6,7 +6,7 @@ const request = require("request-promise");
 const requireFromString = require("require-from-string");
 const findCacheDir = require("find-cache-dir");
 const originalRequire = require("original-require");
-const solcWrap = require("./solcWrap.js");
+const solcWrap = require("solc/wrapper");
 const ora = require("ora");
 const semver = require("semver");
 
