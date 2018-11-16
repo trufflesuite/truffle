@@ -4,7 +4,7 @@ const TruffleError = require("truffle-error");
 const originalRequire = require("original-require");
 const path = require("path");
 
-describe.only("plugin loader", () => {
+describe("plugin loader", () => {
   originalRequire("app-module-path").addPath(
     path.resolve(process.cwd(), "test/mockPlugins")
   );
