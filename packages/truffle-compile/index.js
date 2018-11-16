@@ -34,7 +34,8 @@ var compile = function(sources, options, callback) {
   expect.options(options, ["contracts_directory", "compilers"]);
 
   expect.options(options.compilers, ["solc"]);
-  expect.options(options.compilers.solc, ["settings"]);
+
+  options.compilers.solc.settings = options.compilers.solc.settings || {};
 
   // Grandfather in old solc config
   if (options.solc) {
