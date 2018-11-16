@@ -205,6 +205,16 @@ const evm = createSelectorTree({
     ),
 
     /**
+     * evm.current.creationDepth
+     * how many creation calls are currently on the call stack?
+     */
+    creationDepth: createLeaf(
+      ["./callstack"],
+
+      (stack) => stack.filter((call) => call.address === undefined).length
+    ),
+
+    /**
      * evm.current.context
      */
     context: createLeaf(

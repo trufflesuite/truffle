@@ -3,6 +3,8 @@ const debug = debugModule("debugger:data:reducers");
 
 import { combineReducers } from "redux";
 
+import { stableKeccak256 } from "lib/helpers";
+
 import * as actions from "./actions";
 
 const DEFAULT_SCOPES = {
@@ -63,33 +65,87 @@ const info = combineReducers({
 });
 
 const DEFAULT_ASSIGNMENTS = {
-  byId: {}
+  byId: {},
+  byAstId: {}
 };
 
 function assignments(state = DEFAULT_ASSIGNMENTS, action) {
   switch (action.type) {
     case actions.ASSIGN:
-      return {
-        byId: {
-          ...state.byId,
-
-          ...Object.assign(
-            {},
-            ...Object.entries(action.assignments).map(([id, ref]) => ({
-              [id]: {
-                ...state.byId[id], //note: id here includes depth
-                ref
-              }
-            }))
-          )
+      debug("action.assignments %O",action.assignments);
+      return Object.values(action.assignments.byId).reduce(
+        (acc, assignment) => {
+          let {id, astId} = assignment; //we don't need the rest
+          return {
+            byId: {
+              ...acc.byId,
+              [id]: assignment
+            },
+            byAstId: {
+              ...acc.byAstId,
+              [astId]: [...new Set([...(acc.byAstId[astId] || []), id])]
+              //we use a set for uniqueness
+            }
+          }
         }
-      };
+        , state);
+
+    case actions.LEARN_ADDRESS:
+      let { dummyAddress, address } = action;
+      return {
+        byId: Object.assign({},
+          ...Object.entries(state.byId).map(
+            ([id, assignment]) => {
+              let newAssignment =
+                learnAddress(assignment, dummyAddress, address);
+              return {
+                [newAssignment.id]: newAssignment
+              };
+            }
+          )
+        ),
+        byAstId: Object.assign({},
+          ...Object.entries(state.byAstId).map(
+            ([astId, ids]) => {
+              return {
+                [astId]: state.byAstId[astId].map(
+                  (id) =>
+                    learnAddress(state.byId[id], dummyAddress, address).id
+                    //this above involves some recomputation but oh well
+                )
+              }
+            }
+          )
+        )
+      }
 
     case actions.RESET:
       return DEFAULT_ASSIGNMENTS;
 
     default:
       return state;
+  }
+}
+
+function learnAddress(assignment, dummyAddress, address)
+{
+  if(assignment.dummyAddress === dummyAddress) {
+    //we can assume here that the object being
+    //transformed has a very particular form
+    let newIdObj = {
+      astId: assignment.astId,
+      address
+    };
+    let newId = stableKeccak256(newIdObj);
+    return {
+      id: newId,
+      ref: assignment.ref,
+      astId: assignment.astId,
+      address
+    }
+  }
+  else {
+    return assignment;
   }
 }
 
@@ -112,13 +168,17 @@ function mappingKeys(state = DEFAULT_MAPPING_KEYS, action) {
     case actions.MAP_KEY:
       let { id, key } = action;
       debug("mapping id and key: %s, %o", id, key);
+
       return {
         decodingStarted: state.decodingStarted,
         byId: {
           ...state.byId,
 
           // add new key to set of keys already defined
-          [id]: [...new Set([...(state.byId[id] || []), key])]
+          [id]: [...new Set([ //set for uniqueness
+            ...(state.byId[id] || []),
+            key
+          ])]
         }
       };
 

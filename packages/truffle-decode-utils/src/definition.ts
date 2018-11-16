@@ -112,8 +112,18 @@ export namespace Definition {
     return typeIdentifier(definition).match(/^t_enum/) != null;
   }
 
+  export function isContract(definition: AstDefinition): boolean {
+    return typeIdentifier(definition).match(/^t_contract/) != null;
+  }
+
   export function isReference(definition: AstDefinition): boolean {
     return typeIdentifier(definition).match(/_(memory|storage)(_ptr)?$/) != null;
+  }
+
+  export function isContractType(definition: AstDefinition): boolean {
+    // checks whether the given node is a contract *type*, rather than whether
+    // it's a contract
+    return typeIdentifier(definition).match(/^t_type\$_t_contract/) != null;
   }
 
   export function referenceType(definition: AstDefinition): string {
@@ -140,19 +150,5 @@ export namespace Definition {
     let result: AstDefinition = cloneDeep(definition);
     result.typeDescriptions.typeIdentifier = baseIdentifier;
     return result;
-  }
-
-  export function augmentWithDepth(id: number, depth: number = 0): string {
-    //depth 0 indicates not a local variable; real depths start from 1
-    //both arguments are numeric, so a colon should occur in neither
-    return `${depth}:${id}`;
-  }
-
-  export function idFromAugmented(augmentedId: string): number {
-    return Number(augmentedId.split(":")[1]);
-  }
-
-  export function depthFromAugmented(augmentedId: string): number {
-    return Number(augmentedId.split(":")[0]);
   }
 }

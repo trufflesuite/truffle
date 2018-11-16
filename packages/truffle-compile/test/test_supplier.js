@@ -1,202 +1,225 @@
 const fs = require("fs");
 const path = require("path");
 const assert = require("assert");
-const findCacheDir = require('find-cache-dir');
-const Resolver = require('truffle-resolver');
+const findCacheDir = require("find-cache-dir");
+const Resolver = require("truffle-resolver");
 const compile = require("../index");
-const CompilerSupplier = require('../compilerSupplier');
-
+const CompilerSupplier = require("../compilerSupplier");
 
 function waitSecond() {
-  return new Promise((resolve, reject) => setTimeout(() => resolve(), 1250));
+  return new Promise(resolve => setTimeout(() => resolve(), 1250));
 }
 
-describe('CompilerSupplier', function(){
+describe("CompilerSupplier", function() {
   let supplier;
 
-  describe('getters', function(){
+  describe("getters", function() {
+    before(() => (supplier = new CompilerSupplier()));
 
-    before(() => supplier = new CompilerSupplier());
-
-    it('getVersions: should return versions object', async function(){
+    it("getVersions: should return versions object", async function() {
       const list = await supplier.getVersions();
       assert(list.releases !== undefined);
     });
 
-    it('getVersionUrlSegment: should return a JS file name', async function(){
+    it("getVersionUrlSegment: should return a JS file name", async function() {
       const list = await supplier.getVersions();
 
-      let input = '0.4.21';
-      let expected = 'soljson-v0.4.21+commit.dfe3193c.js';
+      let input = "0.4.21";
+      let expected = "soljson-v0.4.21+commit.dfe3193c.js";
 
       let fileName = await supplier.getVersionUrlSegment(input, list);
-      assert(fileName === expected, 'Should locate by version');
+      assert(fileName === expected, "Should locate by version");
 
-      input = 'nightly.2018.4.12';
-      expected = 'soljson-v0.4.22-nightly.2018.4.12+commit.c3dc67d0.js';
-
-      fileName = await supplier.getVersionUrlSegment(input, list);
-      assert(fileName === expected, 'Should locate by nightly');
-
-      input = 'commit.c3dc67d0';
-      expected = 'soljson-v0.4.22-nightly.2018.4.12+commit.c3dc67d0.js';
+      input = "nightly.2018.4.12";
+      expected = "soljson-v0.4.22-nightly.2018.4.12+commit.c3dc67d0.js";
 
       fileName = await supplier.getVersionUrlSegment(input, list);
-      assert(fileName === expected, 'Should locate by commit');
+      assert(fileName === expected, "Should locate by nightly");
 
-      input = '0.4.55.77-fantasy-solc';
+      input = "commit.c3dc67d0";
+      expected = "soljson-v0.4.22-nightly.2018.4.12+commit.c3dc67d0.js";
+
+      fileName = await supplier.getVersionUrlSegment(input, list);
+      assert(fileName === expected, "Should locate by commit");
+
+      input = "0.4.55.77-fantasy-solc";
       expected = null;
 
       fileName = await supplier.getVersionUrlSegment(input, list);
-      assert(fileName === null, 'Should return null if not found');
+      assert(fileName === null, "Should return null if not found");
     });
 
-    it('getReleases: should return a `releases` object', async function(){
-      const list = await supplier.getVersions();
+    it("getReleases: should return a `releases` object", async function() {
       const releases = await supplier.getReleases();
       const firstSolc = "0.1.3-nightly.2015.9.25+commit.4457170";
 
-      assert(releases.prereleases[0] === firstSolc, 'Should return prereleases');
-      assert(releases.releases[0] === releases.latestRelease, 'Should return releases/latestRelease');
+      assert(
+        releases.prereleases[0] === firstSolc,
+        "Should return prereleases"
+      );
+      assert(
+        releases.releases[0] === releases.latestRelease,
+        "Should return releases/latestRelease"
+      );
     });
 
-    it('lists available docker images [ @native ]', async function(){
+    it("lists available docker images [ @native ]", async function() {
       const list = await supplier.getDockerTags();
       assert(Array.isArray(list));
-      assert(typeof list[0] === 'string');
+      assert(typeof list[0] === "string");
     });
   });
 
-  describe('integration', function(){
+  describe("integration", function() {
     this.timeout(40000);
-    let newPragmaSource;       // ^0.4.21
-    let oldPragmaPinSource;    //  0.4.15
-    let oldPragmaFloatSource;  // ^0.4.15
+    let newPragmaSource; // ^0.4.21
+    let oldPragmaPinSource; //  0.4.15
+    let oldPragmaFloatSource; // ^0.4.15
+    let version5PragmaSource; // ^0.5.0
 
     const options = {
-      contracts_directory: '',
-      solc: '',
-      quiet: true,
+      contracts_directory: "",
+      solc: "",
+      quiet: true
     };
 
     before("get code", function() {
-      const newPragma = fs.readFileSync(path.join(__dirname, "./sources/NewPragma.sol"), "utf-8");
-      const oldPragmaPin = fs.readFileSync(path.join(__dirname, "./mock/OldPragmaPin.sol"), "utf-8");
-      const oldPragmaFloat = fs.readFileSync(path.join(__dirname, "./sources/OldPragmaFloat.sol"), "utf-8");
+      const newPragma = fs.readFileSync(
+        path.join(__dirname, "./sources/version4Pragma/NewPragma.sol"),
+        "utf-8"
+      );
+      const oldPragmaPin = fs.readFileSync(
+        path.join(__dirname, "./mock/OldPragmaPin.sol"),
+        "utf-8"
+      );
+      const oldPragmaFloat = fs.readFileSync(
+        path.join(__dirname, "./sources/version4Pragma/OldPragmaFloat.sol"),
+        "utf-8"
+      );
+      const version5Pragma = fs.readFileSync(
+        path.join(__dirname, "./sources/version5Pragma/Version5Pragma.sol"),
+        "utf-8"
+      );
 
-      newPragmaSource = { "NewPragma.sol": newPragma};
-      oldPragmaPinSource = { "OldPragmaPin.sol": oldPragmaPin};
-      oldPragmaFloatSource = { "OldPragmaFloat.sol": oldPragmaFloat};
+      newPragmaSource = { "NewPragma.sol": newPragma };
+      oldPragmaPinSource = { "OldPragmaPin.sol": oldPragmaPin };
+      oldPragmaFloatSource = { "OldPragmaFloat.sol": oldPragmaFloat };
+      version5PragmaSource = { "Version5Pragma.sol": version5Pragma };
     });
 
-
-    it('compiles w/ default solc if no compiler specified (float)', function(done){
+    it("compiles w/ default solc if no compiler specified (float)", function(done) {
       options.compilers = {
         solc: {
           cache: false,
-          settings: {},
+          settings: {}
         }
       };
 
       compile(newPragmaSource, options, (err, result) => {
         if (err) return done(err);
 
-        assert(result['NewPragma'].contract_name === 'NewPragma');
+        assert(result["NewPragma"].contract_name === "NewPragma");
         done();
       });
     });
 
-    it('compiles w/ remote solc when options specify release (pinned)', function(done){
+    it("compiles w/ remote solc when options specify release (pinned)", function(done) {
       options.compilers = {
         solc: {
           cache: false,
           version: "0.4.15",
-          settings: {},
+          settings: {}
         }
       };
 
       compile(oldPragmaPinSource, options, (err, result) => {
         if (err) return done(err);
 
-        assert(result['OldPragmaPin'].contract_name === 'OldPragmaPin');
+        assert(result["OldPragmaPin"].contract_name === "OldPragmaPin");
         done();
       });
     });
 
-    it('compiles w/ remote solc when options specify prerelease (float)', function(done){
+    it("compiles w/ remote solc when options specify prerelease (float)", function(done) {
       // An 0.4.16 prerelease for 0.4.15
       options.compilers = {
         solc: {
           cache: false,
           version: "0.4.16-nightly.2017.8.9+commit.81887bc7",
-          settings: {},
+          settings: {}
         }
       };
 
       compile(oldPragmaFloatSource, options, (err, result) => {
         if (err) return done(err);
 
-        assert(result['OldPragmaFloat'].contract_name === 'OldPragmaFloat');
+        assert(result["OldPragmaFloat"].contract_name === "OldPragmaFloat");
         done();
       });
     });
 
-    it('errors when specified release does not exist', function(done){
+    it("errors when specified release does not exist", function(done) {
       options.compilers = {
         solc: {
           cache: false,
           version: "0.4.55.77-fantasy-solc",
-          settings: {},
+          settings: {}
         }
       };
 
-      compile(newPragmaSource, options, (err, result) => {
-        assert(err.message.includes('Could not find compiler version'));
+      compile(newPragmaSource, options, err => {
+        assert(err.message.includes("Could not find compiler version"));
         done();
       });
     });
 
-    it('compiles w/ local path solc when options specify path', function(done){
-      const pathToSolc = path.join(__dirname, "../../../node_modules/solc/index.js");
+    it("compiles w/ local path solc when options specify path", function(done) {
+      const pathToSolc = path.join(
+        __dirname,
+        "../../../node_modules/solc/index.js"
+      );
 
       options.compilers = {
         solc: {
           cache: false,
           version: pathToSolc,
-          settings: {},
+          settings: {}
         }
       };
 
       compile(newPragmaSource, options, (err, result) => {
         if (err) return done(err);
 
-        assert(result['NewPragma'].contract_name === 'NewPragma');
+        assert(result["NewPragma"].contract_name === "NewPragma");
         done();
       });
     });
 
-    it('errors when specified path does not exist', function(done){
-      const pathToSolc = path.join(__dirname, "../solidity-warehouse/solc/index.js");
+    it("errors when specified path does not exist", function(done) {
+      const pathToSolc = path.join(
+        __dirname,
+        "../solidity-warehouse/solc/index.js"
+      );
       options.compilers = {
         solc: {
           cache: false,
           version: pathToSolc,
-          settings: {},
+          settings: {}
         }
       };
 
-      compile(newPragmaSource, options, (err, result) => {
-        assert(err.message.includes('Could not find compiler at:'));
+      compile(newPragmaSource, options, err => {
+        assert(err.message.includes("Could not find compiler at:"));
         done();
       });
     });
 
-    it('caches releases and uses them if available', function(done){
+    it("caches releases and uses them if available", function(done) {
       let initialAccessTime;
       let finalAccessTime;
 
-      const thunk = findCacheDir({name: 'truffle', thunk: true});
-      const expectedCache = thunk('soljson-v0.4.21+commit.dfe3193c.js');
+      const thunk = findCacheDir({ name: "truffle", thunk: true });
+      const expectedCache = thunk("soljson-v0.4.21+commit.dfe3193c.js");
 
       // Delete if it's already there.
       if (fs.existsSync(expectedCache)) fs.unlinkSync(expectedCache);
@@ -205,97 +228,113 @@ describe('CompilerSupplier', function(){
         solc: {
           cache: true,
           version: "0.4.21",
-          settings: {},
+          settings: {}
         }
       };
 
       // Run compiler, expecting solc to be downloaded and cached.
-      compile(newPragmaSource, options, (err, result) => {
+      compile(newPragmaSource, options, err => {
         if (err) return done(err);
 
-        assert(fs.existsSync(expectedCache), 'Should have cached compiler');
+        assert(fs.existsSync(expectedCache), "Should have cached compiler");
 
         // Get cached solc access time
         initialAccessTime = fs.statSync(expectedCache).atime.getTime();
 
         // Wait a second and recompile, verifying that the cached solc
         // got accessed / ran ok.
-        waitSecond().then(() => {
+        waitSecond()
+          .then(() => {
+            compile(newPragmaSource, options, (err, result) => {
+              if (err) return done(err);
 
-          compile(newPragmaSource, options, (err, result) => {
-            if (err) return done(err);
+              finalAccessTime = fs.statSync(expectedCache).atime.getTime();
 
-            finalAccessTime = fs.statSync(expectedCache).atime.getTime();
+              assert(
+                result["NewPragma"].contract_name === "NewPragma",
+                "Should have compiled"
+              );
 
-            assert(result['NewPragma'].contract_name === 'NewPragma', 'Should have compiled');
+              // atime is not getting updated on read in CI.
+              if (!process.env.TEST) {
+                assert(
+                  initialAccessTime < finalAccessTime,
+                  "Should have used cached compiler"
+                );
+              }
 
-            // atime is not getting updated on read in CI.
-            if (!process.env.TEST){
-              assert(initialAccessTime < finalAccessTime, "Should have used cached compiler");
-            }
-
-            done();
-          });
-        }).catch(done);
+              done();
+            });
+          })
+          .catch(done);
       });
     });
 
-    describe('native / docker [ @native ]', function() {
-
-      it('compiles with native solc', function(done){
+    describe("native / docker [ @native ]", function() {
+      it("compiles with native solc", function(done) {
         options.compilers = {
           solc: {
             version: "native",
-            settings: {},
+            settings: {}
           }
         };
 
-        compile(newPragmaSource, options, (err, result) => {
+        compile(version5PragmaSource, options, (err, result) => {
           if (err) return done(err);
 
-          assert(result['NewPragma'].compiler.version.includes('Linux.g++'));
-          assert(result['NewPragma'].contract_name === 'NewPragma', 'Should have compiled');
+          assert(result["Version5Pragma"].compiler.version.includes("0.5."));
+          assert(
+            result["Version5Pragma"].contract_name === "Version5Pragma",
+            "Should have compiled"
+          );
           done();
         });
       });
 
-      it('compiles with dockerized solc', function(done){
+      it("compiles with dockerized solc", function(done) {
         options.compilers = {
           solc: {
             version: "0.4.22",
             docker: true,
-            settings: {},
+            settings: {}
           }
         };
 
-        const expectedVersion = '0.4.22+commit.4cb486ee.Linux.g++';
+        const expectedVersion = "0.4.22+commit.4cb486ee.Linux.g++";
 
         compile(newPragmaSource, options, (err, result) => {
           if (err) return done(err);
 
-          assert(result['NewPragma'].compiler.version === expectedVersion);
-          assert(result['NewPragma'].contract_name === 'NewPragma', 'Should have compiled');
+          assert(result["NewPragma"].compiler.version === expectedVersion);
+          assert(
+            result["NewPragma"].contract_name === "NewPragma",
+            "Should have compiled"
+          );
           done();
         });
       });
 
-      it('resolves imports correctly when using built solc', function(done){
+      it("resolves imports correctly when using built solc", function(done) {
         const paths = [];
-        paths.push(path.join(__dirname, "./sources/ComplexOrdered.sol"));
-        paths.push(path.join(__dirname, "./sources/InheritB.sol"));
+        paths.push(
+          path.join(__dirname, "./sources/version4Pragma/ComplexOrdered.sol")
+        );
+        paths.push(
+          path.join(__dirname, "./sources/version4Pragma/InheritB.sol")
+        );
 
         let options = {
-          compilers : {
+          compilers: {
             solc: {
               version: "0.4.22",
               docker: true,
-              settings: {},
+              settings: {}
             }
           },
           quiet: true,
-          solc: '',
+          solc: "",
           contracts_build_directory: path.join(__dirname, "./build"),
-          contracts_directory: path.join(__dirname, "./sources"),
+          contracts_directory: path.join(__dirname, "./sources/version4Pragma"),
           working_directory: __dirname,
           paths: paths
         };
@@ -306,38 +345,41 @@ describe('CompilerSupplier', function(){
           if (err) return done(err);
 
           // This contract imports / inherits
-          assert(result['ComplexOrdered'].contract_name === 'ComplexOrdered', 'Should have compiled');
+          assert(
+            result["ComplexOrdered"].contract_name === "ComplexOrdered",
+            "Should have compiled"
+          );
           done();
         });
       });
 
-      it('errors if running dockerized solc without specifying an image', function(done){
+      it("errors if running dockerized solc without specifying an image", function(done) {
         options.compilers = {
           solc: {
             version: undefined,
             docker: true,
-            settings: {},
+            settings: {}
           }
         };
 
-        compile(newPragmaSource, options, (err, result) => {
-          assert(err.message.includes('option must be'));
+        compile(newPragmaSource, options, err => {
+          assert(err.message.includes("option must be"));
           done();
         });
       });
 
-      it('errors if running dockerized solc when image does not exist locally', function(done){
-        const imageName = 'fantasySolc.7777555';
+      it("errors if running dockerized solc when image does not exist locally", function(done) {
+        const imageName = "fantasySolc.7777555";
 
         options.compilers = {
           solc: {
             version: imageName,
             docker: true,
-            settings: {},
+            settings: {}
           }
         };
 
-        compile(newPragmaSource, options, (err, result) => {
+        compile(newPragmaSource, options, err => {
           assert(err.message.includes(imageName));
           done();
         });

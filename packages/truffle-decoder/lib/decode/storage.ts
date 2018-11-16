@@ -271,11 +271,10 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
         members: {}
       };
 
-      const augmentedId = DecodeUtils.Definition.augmentWithDepth(definition.id);
       const baseSlot: Allocation.Slot = pointer.storage.from.slot;
 
-      if (info.mappingKeys && typeof info.mappingKeys[augmentedId] !== "undefined") {
-        const keys: any[] = info.mappingKeys[augmentedId];
+      if (info.mappingKeys && typeof info.mappingKeys[definition.id] !== "undefined") {
+        const keys: any[] = info.mappingKeys[definition.id];
         for (const key of keys) {
           const keyValue = DecodeUtils.Conversion.toBytes(key);
 

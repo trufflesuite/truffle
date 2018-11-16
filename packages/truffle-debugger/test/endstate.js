@@ -87,6 +87,11 @@ describe("End State", function() {
 
     session.continueUntilBreakpoint(); //no breakpoints set so advances to end
 
+    debug("DCI %O",session.view(data.current.identifiers));
+    debug("DCIR %O",session.view(data.current.identifiers.refs));
+    debug("DCIN %O",session.view(data.current.identifiers.native));
+    debug("proc.assignments %O",session.view(data.proc.assignments));
+
     assert.ok(session.view(sessionSelector.transaction.receipt).status);
     const variables = await session.variables();
     assert.deepEqual(variables, { x: "107" });

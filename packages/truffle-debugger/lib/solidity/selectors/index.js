@@ -5,6 +5,10 @@ import { createSelectorTree, createLeaf } from "reselect-tree";
 import SolidityUtils from "truffle-solidity-utils";
 import CodeUtils from "truffle-code-utils";
 
+import TruffleDecodeUtils from "truffle-decode-utils";
+import { findRange } from "lib/ast/map";
+import jsonpointer from "json-pointer";
+
 import evm from "lib/evm/selectors";
 
 function getSourceRange(instruction = {}) {
@@ -237,7 +241,69 @@ let solidity = createSelectorTree({
      */
     jumpDirection: createLeaf(
       ["./instruction"], (i = {}) => (i.jump || "-")
+    ),
+
+    /**
+     * solidity.current.willCall
+     * NOTE: this includes creations
+     */
+    willCall: createLeaf(
+      [evm.current.step.isCall, evm.current.step.isCreate],
+      (isCall, isCreate) => isCall || isCreate
+    ),
+
+    /**
+     * solidity.current.willReturn
+     */
+    willReturn: createLeaf(
+      [evm.current.step.isHalting], (isHalting) => isHalting),
+
+    //HACK: DUPLICATE CODE FOLLOWS
+    //The following code duplicates some selectors in ast.
+    //This exists to suppor the solidity.current.contractCall workaround below.
+    //This should be cleaned up later.
+
+    /**
+     * solidity.current.pointer
+     * HACK duplicates ast.current.pointer
+     */
+    pointer: createLeaf(
+      ["./source", "./sourceRange"],
+
+      ({ast}, range) => findRange(ast, range.start, range.length)
+    ),
+
+    /**
+     * solidity.current.node
+     * HACK duplicates ast.current.node
+     */
+    node: createLeaf(
+      ["./source", "./pointer"], ({ast}, pointer) =>
+        (pointer)
+          ? jsonpointer.get(ast, pointer)
+          : jsonpointer.get(ast, "")
+    ),
+
+    /**
+     * solidity.current.isContractCall
+     * HACK WORKAROUND
+     * this selector exists to work around a problem in solc
+     * it attempts to detect whether the current node is a contract method call
+     * (or library method call)
+     * it will not successfully detect this if the method was first placed in a
+     * function variable, only if it is being called directly
+     */
+    isContractCall: createLeaf(
+      ["./node"], (node) =>
+        node !== undefined &&
+        node.nodeType === "FunctionCall" &&
+        node.expression !== undefined &&
+        node.expression.nodeType === "MemberAccess" &&
+        node.expression.expression !== undefined &&
+        (TruffleDecodeUtils.Definition.isContract(node.expression.expression) ||
+          TruffleDecodeUtils.Definition.isContractType(node.expression.expression))
     )
+
   }
 });
 
