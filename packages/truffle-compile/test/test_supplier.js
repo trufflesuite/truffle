@@ -318,12 +318,8 @@ describe("CompilerSupplier", function() {
 
       it("resolves imports correctly when using built solc", function(done) {
         const paths = [];
-        paths.push(
-          path.join(__dirname, "./sources/version4Pragma/ComplexOrdered.sol")
-        );
-        paths.push(
-          path.join(__dirname, "./sources/version4Pragma/InheritB.sol")
-        );
+        paths.push(path.join(__dirname, "./sources/v0.4.x/ComplexOrdered.sol"));
+        paths.push(path.join(__dirname, "./sources/v0.4.x/InheritB.sol"));
 
         let options = {
           compilers: {
@@ -336,7 +332,7 @@ describe("CompilerSupplier", function() {
           quiet: true,
           solc: "",
           contracts_build_directory: path.join(__dirname, "./build"),
-          contracts_directory: path.join(__dirname, "./sources/version4Pragma"),
+          contracts_directory: path.join(__dirname, "./sources/v0.4.x"),
           working_directory: __dirname,
           paths: paths
         };

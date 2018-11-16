@@ -11,11 +11,11 @@ describe("Parser", function() {
 
   before("get code", async function() {
     source = fs.readFileSync(
-      path.join(__dirname, "./sources/v0.4.x/MyContract.sol"),
+      path.join(__dirname, "./sources/badSources/MyContract.sol"),
       "utf-8"
     );
     erroneousSource = fs.readFileSync(
-      path.join(__dirname, "./sources/v0.4.x/ShouldError.sol"),
+      path.join(__dirname, "./sources/badSources/ShouldError.sol"),
       "utf-8"
     );
 
