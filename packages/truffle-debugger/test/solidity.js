@@ -12,7 +12,7 @@ import solidity from "lib/solidity/selectors";
 import trace from "lib/trace/selectors";
 
 const __SINGLE_CALL = `
-pragma solidity ^0.4.18;
+pragma solidity ~0.5;
 
 contract SingleCall {
   event Called();
@@ -30,7 +30,7 @@ contract SingleCall {
 }
 `;
 
-const __NESTED_CALL = `pragma solidity ^0.4.18;
+const __NESTED_CALL = `pragma solidity ~0.5;
 
 contract NestedCall {
   event First();
