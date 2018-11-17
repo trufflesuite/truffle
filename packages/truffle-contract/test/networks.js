@@ -40,9 +40,9 @@ describe("Different networks: ", function() {
   var ExampleOne;
   var ExampleTwo;
 
-  before("Compile", function(done) {
+  before("Compile", async function() {
     this.timeout(10000);
-    ExampleOne = util.createExample();
+    ExampleOne = await util.createExample();
     ExampleTwo = ExampleOne.clone();
 
     // Setup
@@ -64,8 +64,6 @@ describe("Different networks: ", function() {
 
     ExampleOne.setProvider(network_one);
     ExampleTwo.setProvider(network_two);
-
-    done();
   }),
     before("Get/set first network accounts", function(done) {
       getAndSetAccounts(ExampleOne, done);
@@ -257,7 +255,7 @@ describe("Different networks: ", function() {
       .catch(function(err) {
         if (
           err.message.indexOf(
-            "Cannot create instance of :Example; no code at address 0x1234567890123456789012345678901234567890"
+            "Cannot create instance of Example; no code at address 0x1234567890123456789012345678901234567890"
           ) < 0
         )
           return done(new Error("Unexpected error received: " + err.message));

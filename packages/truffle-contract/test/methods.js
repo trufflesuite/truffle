@@ -8,10 +8,10 @@ describe("Methods", function() {
   var web3;
   var providerOptions = { vmErrorsOnRPCResponse: false };
 
-  before(function() {
+  before(async function() {
     this.timeout(10000);
 
-    Example = util.createExample();
+    Example = await util.createExample();
 
     return util.setUpProvider(Example, providerOptions).then(result => {
       web3 = result.web3;

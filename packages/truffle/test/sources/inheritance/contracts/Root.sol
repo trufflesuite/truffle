@@ -1,4 +1,4 @@
-pragma solidity ^0.4.8;
+pragma solidity ^0.5.0;
 
 import "./Branch.sol";
 import "./LeafC.sol";
@@ -11,4 +11,3 @@ contract Root is Branch {
     root = LibraryA.add(a, b);
   }
 }
-
