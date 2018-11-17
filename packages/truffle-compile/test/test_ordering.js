@@ -1,37 +1,47 @@
+const debug = require("debug")("compile:test:test_ordering");
 var fs = require("fs");
 var path = require("path");
-var solc = require("solc");
 var Compile = require("../index");
+var CompilerSupplier = require("../compilerSupplier");
 var assert = require("assert");
 
-describe("Compile", function() {
+describe("Compile - solidity ^0.4.0", function() {
   this.timeout(5000); // solc
-  var simpleOrderedSource = null;
-  var complexOrderedSource = null;
-  var inheritedSource = null;
+  let simpleOrderedSource = null;
+  let complexOrderedSource = null;
+  let inheritedSource = null;
+  let solc = null; // gets loaded via supplier
 
-  var compileOptions = {
+  const compileOptions = {
     contracts_directory: "",
     compilers: {
       solc: {
+        version: "0.4.25",
         settings: {}
       }
     },
     quiet: true
   };
 
+  before("get solc", async function() {
+    this.timeout(40000);
+
+    const supplier = new CompilerSupplier(compileOptions.compilers.solc);
+    solc = await supplier.load();
+  });
+
   describe("ABI Ordering", function() {
     before("get code", function() {
       simpleOrderedSource = fs.readFileSync(
-        path.join(__dirname, "./sources/version4Pragma/SimpleOrdered.sol"),
+        path.join(__dirname, "./sources/v0.4.x/SimpleOrdered.sol"),
         "utf-8"
       );
       complexOrderedSource = fs.readFileSync(
-        path.join(__dirname, "./sources/version4Pragma/ComplexOrdered.sol"),
+        path.join(__dirname, "./sources/v0.4.x/ComplexOrdered.sol"),
         "utf-8"
       );
       inheritedSource = fs.readFileSync(
-        path.join(__dirname, "./sources/version4Pragma/InheritB.sol"),
+        path.join(__dirname, "./sources/v0.4.x/InheritB.sol"),
         "utf-8"
       );
     });
@@ -46,7 +56,7 @@ describe("Compile", function() {
         settings: { outputSelection: { "*": { "*": ["abi"] } } }
       };
 
-      var result = solc.compileStandard(JSON.stringify(input));
+      var result = solc.compile(JSON.stringify(input));
       result = JSON.parse(result);
       var abi = result.contracts["SimpleOrdered.sol"]["SimpleOrdered"].abi.map(
         function(item) {
@@ -91,8 +101,9 @@ describe("Compile", function() {
         settings: { outputSelection: { "*": { "*": ["abi"] } } }
       };
 
-      var result = solc.compileStandard(JSON.stringify(input));
+      var result = solc.compile(JSON.stringify(input));
       result = JSON.parse(result);
+      debug("result %o", result);
       var abi = result.contracts["ComplexOrdered.sol"][
         "ComplexOrdered"
       ].abi.map(function(item) {

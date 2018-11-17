@@ -1,4 +1,4 @@
-pragma solidity ^0.4.4;
+pragma solidity ^0.5.0;
 
 
 contract ExampleAssert {
@@ -6,4 +6,3 @@ contract ExampleAssert {
     assert(false);
   }
 }
-

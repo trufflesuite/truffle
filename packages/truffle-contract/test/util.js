@@ -1,11 +1,12 @@
-var debug = require("debug")("ganache-core");
+var debug = require("debug")("test:util"); // eslint-disable-line no-unused-vars
 var fs = require("fs");
 var ganache = require("ganache-core");
 var Web3 = require("web3");
 var Web3PromiEvent = require("web3-core-promievent");
-var solc = require("solc");
+var Compile = require("truffle-compile");
 var contract = require("../");
 var path = require("path");
+const { promisify } = require("util");
 
 var log = {
   log: debug
@@ -20,27 +21,36 @@ var util = {
   realReceipt: null,
 
   // Compiles and instantiates (our friend) Example.sol
-  createExample: function() {
-    return util._createContractInstance(
+  createExample: async function() {
+    return await util._createContractInstance(
       path.join(__dirname, "sources", "Example.sol"),
       "Example"
     );
   },
 
-  createABIV2UserDirectory: function() {
-    return util._createContractInstance(
+  createABIV2UserDirectory: async function() {
+    return await util._createContractInstance(
       path.join(__dirname, "sources", "ABIV2UserDirectory.sol"),
       "ABIV2UserDirectory"
     );
   },
 
-  _createContractInstance: function(sourcePath, contractName) {
+  _createContractInstance: async function(sourcePath, contractName) {
     var contractObj;
+    const sources = {
+      [sourcePath]: fs.readFileSync(sourcePath, { encoding: "utf8" })
+    };
+    const options = {
+      contracts_directory: path.join(__dirname, "sources"),
+      compilers: {
+        solc: {
+          version: "0.5.0",
+          settings: {}
+        }
+      }
+    };
 
-    var result = solc.compile(
-      fs.readFileSync(sourcePath, { encoding: "utf8" }),
-      1
-    );
+    const result = await promisify(Compile)(sources, options);
 
     if (process.listeners("uncaughtException").length) {
       process.removeListener(
@@ -49,12 +59,7 @@ var util = {
       );
     }
 
-    contractName = result.contracts[contractName]
-      ? contractName
-      : ":" + contractName;
-
-    contractObj = result.contracts[contractName];
-    contractObj.contractName = contractName;
+    contractObj = result[contractName];
     return contract(contractObj);
   },
 

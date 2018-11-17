@@ -1,7 +1,7 @@
 /*
 Implements EIP20 token standard: https://github.com/ethereum/EIPs/issues/20
 .*/
-pragma solidity ^0.4.8;
+pragma solidity ^0.5.0;
 
 import "./EIP20Interface.sol";
 
