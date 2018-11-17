@@ -18,7 +18,7 @@ describe("Solidity Tests", function() {
    * @param  {String}   file Solidity test target
    */
   function initSandbox(done, file) {
-    Box.sandbox("default#web3-one", function(err, conf) {
+    Box.sandbox("bare", function(err, conf) {
       if (err) return done(err);
       config = conf;
       config.logger = logger;
