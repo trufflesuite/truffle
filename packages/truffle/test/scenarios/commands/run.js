@@ -7,9 +7,9 @@ const path = require("path");
 const logger = new MemoryLogger();
 let config, project;
 
-const setupSandboxLogger = source => {
+const loadSandboxLogger = source => {
   project = path.join(__dirname, source);
-  return sandbox.create(project).then(conf => {
+  return sandbox.load(project).then(conf => {
     config = conf;
     config.logger = logger;
   });
@@ -18,7 +18,7 @@ const setupSandboxLogger = source => {
 describe("truffle run", () => {
   describe("when run without arguments", () => {
     beforeEach(() => {
-      return setupSandboxLogger("../../sources/run/mockProjectWithPlugin");
+      return loadSandboxLogger("../../sources/run/mockProjectWithPlugin");
     });
 
     it("displays general help", done => {
@@ -39,8 +39,8 @@ describe("truffle run", () => {
 
   describe("when run with an argument", () => {
     describe("without plugins configured", () => {
-      beforeEach(() => {
-        return setupSandboxLogger("../../sources/run/mockProjectWithoutPlugin");
+      before(() => {
+        return loadSandboxLogger("../../sources/run/mockProjectWithoutPlugin");
       });
 
       it("whines about having no plugins configured", done => {
@@ -54,82 +54,73 @@ describe("truffle run", () => {
 
     describe("with plugins configured", () => {
       describe("error handling", () => {
-        before(() => {
-          return setupSandboxLogger(
+        it("throws error when plugins formatted incorrectly", done => {
+          loadSandboxLogger(
             "../../sources/run/mockProjectWithBadPluginFormat"
+          ).then(() =>
+            CommandRunner.run("run mock", config, () => {
+              const output = logger.contents();
+              assert(output.includes("Error: Plugins configured incorrectly."));
+              done();
+            })
           );
-        });
-
-        it("throws error when plugins formatted incorrectly", () => {
-          CommandRunner.run("run mock", config, () => {
-            const output = logger.contents();
-            assert(output.includes("Error: Plugins configured incorrectly."));
-            done();
-          });
         }).timeout(10000);
 
-        before(() => {
-          return setupSandboxLogger(
+        it("throws error when plugins configured but not installed", done => {
+          loadSandboxLogger(
             "../../sources/run/mockProjectWithMissingPluginModule"
+          ).then(() =>
+            CommandRunner.run("run mock", config, () => {
+              const output = logger.contents();
+              assert(output.includes("listed as a plugin, but not found"));
+              done();
+            })
           );
-        });
-
-        it("throws error when plugins configured but not installed", () => {
-          CommandRunner.run("run mock", config, () => {
-            const output = logger.contents();
-            assert(output.includes("listed as a plugin, but not found"));
-            done();
-          });
         }).timeout(10000);
 
-        before(() => {
-          return setupSandboxLogger(
+        it("throws error when plugins are missing truffle-plugin.json", done => {
+          loadSandboxLogger(
             "../../sources/run/mockProjectWithMissingPluginConfig"
+          ).then(() =>
+            CommandRunner.run("run mock", config, () => {
+              const output = logger.contents();
+              assert(output.includes("Error: truffle-plugin.json not found"));
+              done();
+            })
           );
-        });
-
-        it("throws error when plugins are missing truffle-plugin.json", () => {
-          CommandRunner.run("run mock", config, () => {
-            const output = logger.contents();
-            assert(output.includes("Error: truffle-plugin.json not found"));
-            done();
-          });
         }).timeout(10000);
 
-        before(() => {
-          return setupSandboxLogger("../../sources/run/mockProjectWithPlugin");
-        });
+        it("throws error when configured/installed plugins don't support the given arg/command", done => {
+          loadSandboxLogger("../../sources/run/mockProjectWithPlugin").then(
+            () =>
+              CommandRunner.run("run mock", config, () => {
+                const output = logger.contents();
+                assert(output.includes("command not supported"));
+                done();
+              })
+          );
+        }).timeout(20000);
 
-        it("throws error when configured/installed plugins don't support the given arg/command", () => {
-          CommandRunner.run("run mock", config, () => {
-            const output = logger.contents();
-            assert(output.includes("command not supported"));
-            done();
-          });
-        }).timeout(10000);
-
-        before(() => {
-          return setupSandboxLogger(
+        it("throws error if command in truffle-plugin.json uses an absolute path", done => {
+          loadSandboxLogger(
             "../../sources/run/mockProjectWithAbsolutePath"
+          ).then(() =>
+            CommandRunner.run("run mock", config, () => {
+              const output = logger.contents();
+              assert(output.includes("Error: Absolute paths not allowed!"));
+              done();
+            })
           );
-        });
-
-        it("throws error if command in truffle-plugin.json uses an absolute path", () => {
-          CommandRunner.run("run mock", config, () => {
-            const output = logger.contents();
-            assert(output.includes("Error: Absolute paths not allowed!"));
-            done();
-          });
         }).timeout(10000);
       });
       describe("when plugins configured and installed that support a given argument", () => {
         before(() => {
-          return setupSandboxLogger(
+          return loadSandboxLogger(
             "../../sources/run/mockProjectWithWorkingPlugin"
           );
         });
 
-        it("runs the command script", () => {
+        it("runs the command script", done => {
           CommandRunner.run("run mock", config, () => {
             const output = logger.contents();
             assert(output.includes("Running truffle-mock!"));
