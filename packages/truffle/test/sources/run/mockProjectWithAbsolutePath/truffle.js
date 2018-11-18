@@ -1,3 +1,3 @@
 module.exports = {
-  plugins: ["truffle-mock", "truffle-other-mock"]
+  plugins: ["truffle-mock"]
 };
