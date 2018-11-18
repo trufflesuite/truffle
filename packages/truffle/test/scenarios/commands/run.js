@@ -27,14 +27,14 @@ describe("truffle run", () => {
         assert(output.includes("Usage:        truffle run [<command>]"));
         done();
       });
-    }).timeout(10000);
+    }).timeout(20000);
 
     it("should not error", done => {
       CommandRunner.run("run", config, error => {
         assert(typeof error === "undefined");
         done();
       });
-    }).timeout(10000);
+    }).timeout(20000);
   });
 
   describe("when run with an argument", () => {
