@@ -39,3 +39,12 @@ export const RESET = "DATA_RESET";
 export function reset() {
   return { type: RESET };
 }
+
+export const LEARN_ADDRESS = "LEARN_ADDRESS";
+export function learnAddress(dummyAddress, address)
+{
+  return {
+    type: LEARN_ADDRESS,
+    dummyAddress, address
+  };
+}

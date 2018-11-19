@@ -4,6 +4,8 @@ const debug = debugModule("debugger:evm:selectors");
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import levenshtein from "fast-levenshtein";
 
+import * as decodeUtils from "lib/data/decode/utils";
+
 import trace from "lib/trace/selectors";
 
 const WORD_SIZE = 0x20;
@@ -202,6 +204,16 @@ const evm = createSelectorTree({
       ["./callstack"],
 
       (stack) => stack.length ? stack[stack.length - 1] : {}
+    ),
+
+    /**
+     * evm.current.creationDepth
+     * how many creation calls are currently on the call stack?
+     */
+    creationDepth: createLeaf(
+      ["./callstack"],
+
+      (stack) => stack.filter((call) => call.address === undefined).length
     ),
 
     /**
