@@ -1,3 +1,4 @@
+const debug = require("debug")("contract:handlers"); // eslint-disable-line no-unused-vars
 var StatusError = require("./statuserror");
 var Utils = require("./utils");
 var Reason = require("./reason");
@@ -91,15 +92,14 @@ var handlers = {
     // contract
     receipt.rawLogs = receipt.logs;
 
-    // Decode logs
-    var logs;
-
-    receipt.logs
-      ? (logs = Utils.decodeLogs.call(context.contract, receipt.logs))
-      : (logs = []);
-
-    // make default logs field be decoded logs for ease of use.
-    receipt.logs = logs;
+    // Decode logs, use as receipt.logs for ease of use.
+    try {
+      receipt.logs = receipt.logs
+        ? Utils.decodeLogs.call(context.contract, receipt.logs)
+        : [];
+    } catch (error) {
+      return context.promiEvent.reject(error);
+    }
 
     // Emit receipt
     context.promiEvent.eventEmitter.emit("receipt", receipt);
@@ -128,7 +128,7 @@ var handlers = {
     context.promiEvent.resolve({
       tx: receipt.transactionHash,
       receipt: receipt,
-      logs: logs
+      logs: receipt.logs
     });
 
     this.removeListener("receipt", handlers.receipt);
