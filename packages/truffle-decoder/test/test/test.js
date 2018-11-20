@@ -6,7 +6,7 @@ const TruffleDecoder = require("../../../truffle-decoder");
 const DecodingSample = artifacts.require("DecodingSample");
 
 // eslint-disable-next-line no-unused-vars
-contract("DecodingSample", accounts => {
+contract.skip("DecodingSample", accounts => {
   it("should get the initial state properly", async () => {
     await DecodingSample.deployed();
     const decoder = TruffleDecoder.forContract(
