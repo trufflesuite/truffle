@@ -20,7 +20,13 @@ function normalizeURL(
   if (!url.includes("/")) {
     // repo name only
     if (!url.includes("-box")) {
-      url = `${url}-box`;
+      // check for branch
+      if (!url.includes("#")) {
+        url = `${url}-box`;
+      } else {
+        const index = url.indexOf("#");
+        url = url.substr(0, index) + "-box" + url.substr(index);
+      }
     }
     return `https://github.com/truffle-box/${url}`;
   }
