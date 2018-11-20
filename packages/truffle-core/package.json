@@ -4,6 +4,7 @@
   "version": "5.0.0-beta.1",
   "description": "Core code for Truffle command line tool",
   "dependencies": {
+    "app-module-path": "^2.2.0",
     "async": "2.6.1",
     "chai": "4.1.2",
     "colors": "^1.1.2",
