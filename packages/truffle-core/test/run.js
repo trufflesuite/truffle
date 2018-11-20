@@ -2,27 +2,25 @@ const assert = require("assert");
 const runHandler = require("../lib/run");
 const pluginLoader = require("../lib/plugin");
 const TruffleError = require("truffle-error");
-const originalRequire = require("original-require");
-const path = require("path");
 
 describe("run handler", () => {
-  originalRequire("app-module-path").addPath(
-    path.resolve(process.cwd(), "test/mockPlugins")
-  );
   let nonCommandPlugins, commandPlugins;
 
   before(() => {
     // plugins that don't support "truffle run stub"
     nonCommandPlugins = pluginLoader.load({
-      plugins: ["truffle-mock", "truffle-other-mock"]
+      plugins: ["truffle-mock", "truffle-other-mock"],
+      working_directory: process.cwd()
     });
     // plugins that do support "truffle run stub"
     commandPlugins = pluginLoader.load({
-      plugins: ["truffle-stub", "truffle-other-stub"]
+      plugins: ["truffle-stub", "truffle-other-stub"],
+      working_directory: process.cwd()
     });
     // plugins with an absolute file path in truffle-plugin.json
     absolutePathPlugins = pluginLoader.load({
-      plugins: ["truffle-other-stub"]
+      plugins: ["truffle-other-stub"],
+      working_directory: process.cwd()
     });
   });
 

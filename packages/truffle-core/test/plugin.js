@@ -55,24 +55,26 @@ describe("plugin loader", () => {
       );
     });
 
-    it("returns a plugin array when passed an options.plugins array value", () => {
+    it("returns options when passed a valid options.plugins array value", () => {
       assert(pluginLoader.checkPluginConfig({ plugins: ["truffle-test"] }));
-      let pluginArray = pluginLoader.checkPluginConfig({
+      let pluginOptions = pluginLoader.checkPluginConfig({
         plugins: ["truffle-test"]
       });
-      assert(pluginArray);
-      assert(Array.isArray(pluginArray) && pluginArray.length === 1);
+      assert(pluginOptions);
+      assert.deepEqual(pluginOptions, { plugins: ["truffle-test"] });
 
       assert(
         pluginLoader.checkPluginConfig({
           plugins: ["truffle-test", "truffle-analyze"]
         })
       );
-      pluginArray = pluginLoader.checkPluginConfig({
+      pluginOptions = pluginLoader.checkPluginConfig({
         plugins: ["truffle-test", "truffle-analyze"]
       });
-      assert(pluginArray);
-      assert(Array.isArray(pluginArray) && pluginArray.length === 2);
+      assert(pluginOptions);
+      assert.deepEqual(pluginOptions, {
+        plugins: ["truffle-test", "truffle-analyze"]
+      });
     });
   });
 
@@ -80,14 +82,20 @@ describe("plugin loader", () => {
     it("throws when options.plugins are specified but not locally or globally installed", () => {
       assert.throws(
         () => {
-          pluginLoader.checkPluginModules(["truffle-analyze"]);
+          pluginLoader.checkPluginModules({
+            plugins: ["truffle-analyze"],
+            working_directory: process.cwd()
+          });
         },
         TruffleError,
         "TruffleError not thrown!"
       );
       assert.throws(
         () => {
-          pluginLoader.checkPluginModules(["truffle-analyze", "truffle-test"]);
+          pluginLoader.checkPluginModules({
+            plugins: ["truffle-analyze", "truffle-test"],
+            working_directory: process.cwd()
+          });
         },
         TruffleError,
         "TruffleError not thrown!"
@@ -95,25 +103,36 @@ describe("plugin loader", () => {
     });
 
     it("returns array of locally or globally installed options.plugins", () => {
-      assert(pluginLoader.checkPluginModules(["truffle-box"]));
-      let pluginArray = pluginLoader.checkPluginModules(["truffle-box"]);
+      assert(
+        pluginLoader.checkPluginModules({
+          plugins: ["truffle-box"],
+          working_directory: process.cwd()
+        })
+      );
+      let pluginArray = pluginLoader.checkPluginModules({
+        plugins: ["truffle-box"],
+        working_directory: process.cwd()
+      });
       assert(pluginArray);
       assert(Array.isArray(pluginArray) && pluginArray.length === 1);
 
       assert(
-        pluginLoader.checkPluginModules(["truffle-box", "truffle-config"])
+        pluginLoader.checkPluginModules({
+          plugins: ["truffle-box", "truffle-config"],
+          working_directory: process.cwd()
+        })
       );
-      pluginArray = pluginLoader.checkPluginModules([
-        "truffle-box",
-        "truffle-config"
-      ]);
+      pluginArray = pluginLoader.checkPluginModules({
+        plugins: ["truffle-box", "truffle-config"],
+        working_directory: process.cwd()
+      });
       assert(pluginArray);
       assert(Array.isArray(pluginArray) && pluginArray.length === 2);
     });
   });
 
   describe("loadPluginModules", () => {
-    it("throws when options.plugins are installed without a truffle-plugin.json configuration file", () => {
+    it("throws when plugins are installed without a truffle-plugin.json configuration file", () => {
       assert.throws(
         () => {
           pluginLoader.loadPluginModules(["truffle-box"]);
@@ -201,24 +220,27 @@ describe("plugin loader", () => {
       it("throws when options.plugins are specified but not locally or globally installed", () => {
         assert.throws(
           () => {
-            pluginLoader.checkPluginModules(["truffle-analyze"]);
+            pluginLoader.checkPluginModules({
+              plugins: ["truffle-analyze"],
+              working_directory: process.cwd()
+            });
           },
           TruffleError,
           "TruffleError not thrown!"
         );
         assert.throws(
           () => {
-            pluginLoader.checkPluginModules([
-              "truffle-analyze",
-              "truffle-test"
-            ]);
+            pluginLoader.checkPluginModules({
+              plugins: ["truffle-analyze", "truffle-test"],
+              working_directory: process.cwd()
+            });
           },
           TruffleError,
           "TruffleError not thrown!"
         );
       });
 
-      it("throws when options.plugins are installed without a truffle-plugin.json configuration file", () => {
+      it("throws when plugins are installed without a truffle-plugin.json configuration file", () => {
         assert.throws(
           () => {
             pluginLoader.loadPluginModules(["truffle-box"]);
@@ -237,18 +259,30 @@ describe("plugin loader", () => {
     });
 
     it("returns object of plugins installed & truffle-plugin.json data when passed a valid options.plugins array", () => {
-      assert(pluginLoader.load({ plugins: ["truffle-mock"] }));
-      let pluginObj = pluginLoader.load({ plugins: ["truffle-mock"] });
+      assert(
+        pluginLoader.load({
+          plugins: ["truffle-mock"],
+          working_directory: process.cwd()
+        })
+      );
+      let pluginObj = pluginLoader.load({
+        plugins: ["truffle-mock"],
+        working_directory: process.cwd()
+      });
       assert(pluginObj);
       assert(typeof pluginObj === "object");
       let pluginConfig = originalRequire("truffle-mock/truffle-plugin.json");
       assert(pluginConfig === pluginObj["truffle-mock"]);
 
       assert(
-        pluginLoader.load({ plugins: ["truffle-mock", "truffle-other-mock"] })
+        pluginLoader.load({
+          plugins: ["truffle-mock", "truffle-other-mock"],
+          working_directory: process.cwd()
+        })
       );
       pluginObj = pluginLoader.load({
-        plugins: ["truffle-mock", "truffle-other-mock"]
+        plugins: ["truffle-mock", "truffle-other-mock"],
+        working_directory: process.cwd()
       });
       assert(pluginObj);
       assert(typeof pluginObj === "object");
