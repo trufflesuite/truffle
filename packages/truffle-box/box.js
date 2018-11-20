@@ -28,9 +28,8 @@ function parseSandboxOptions(options) {
 }
 
 var Box = {
-  unbox: function(url, destination, options) {
-    options = options || {};
-    options.logger = options.logger || {log: () => {}};
+  unbox: function(url, destination, options = {}) {
+    options.logger = options.logger || { log: () => {} };
     const downloadBoxOptions = {
       force: options.force
     };
@@ -46,12 +45,12 @@ var Box = {
 
         return utils.unpackBox(destination);
       })
-      .then((boxConfig) => {
+      .then(boxConfig => {
         options.logger.log("Setting up...");
 
         return utils.setupBox(boxConfig, destination);
       })
-      .then((boxConfig) => boxConfig);
+      .then(boxConfig => boxConfig);
   },
 
   // options.unsafeCleanup
@@ -61,7 +60,7 @@ var Box = {
   sandbox: function(options, callback) {
     var self = this;
 
-    const {name, unsafeCleanup, setGracefulCleanup} = parseSandboxOptions(
+    const { name, unsafeCleanup, setGracefulCleanup } = parseSandboxOptions(
       options
     );
 
@@ -73,7 +72,7 @@ var Box = {
       tmp.setGracefulCleanup();
     }
 
-    tmp.dir({unsafeCleanup}, function(err, dir) {
+    tmp.dir({ unsafeCleanup }, function(err, dir) {
       if (err) {
         return callback(err);
       }
