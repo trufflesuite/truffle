@@ -3,159 +3,187 @@ var Box = require("truffle-box");
 var Contracts = require("truffle-workflow-compile");
 var Artifactor = require("truffle-artifactor");
 var Resolver = require("truffle-resolver");
-var MemoryStream = require('memorystream');
-var command = require('../lib/commands/compile');
+var MemoryStream = require("memorystream");
+var command = require("../lib/commands/compile");
 var path = require("path");
 var fs = require("fs-extra");
 var glob = require("glob");
 
 describe("compile", function() {
   var config;
-  var output = '';
+  var output = "";
   var memStream;
 
   before("Create a sandbox", function(done) {
     this.timeout(20000);
 
-    Box.sandbox(function(err, result) {
+    Box.sandbox("default#web3-one", function(err, result) {
       if (err) return done(err);
       config = result;
       config.resolver = new Resolver(config);
       config.artifactor = new Artifactor(config.contracts_build_directory);
       config.networks = {
-        "default": {
-          "network_id": "1"
+        default: {
+          network_id: "1"
         },
-        "secondary": {
-          "network_id": "12345"
+        secondary: {
+          network_id: "12345"
         }
       };
       config.network = "default";
-      config.logger = {log: (val) => val && memStream.write(val)};
+      config.logger = { log: val => val && memStream.write(val) };
       done();
     });
   });
 
-  after("Cleanup tmp files", function(done){
-    glob('tmp-*', (err, files) => {
-      if(err) done(err);
+  after("Cleanup tmp files", function(done) {
+    glob("tmp-*", (err, files) => {
+      if (err) done(err);
       files.forEach(file => fs.removeSync(file));
       done();
     });
   });
 
-  afterEach("Clear MemoryStream", () => output = '');
+  afterEach("Clear MemoryStream", () => (output = ""));
 
-  it('compiles all initial contracts', function(done) {
+  it("compiles all initial contracts", function(done) {
     this.timeout(10000);
 
-    Contracts.compile(config.with({
-      all: false,
-      quiet: true
-    }), function(err, result) {
-      if (err) return done(err);
-      let { contracts } = result;
+    Contracts.compile(
+      config.with({
+        all: false,
+        quiet: true
+      }),
+      function(err, result) {
+        if (err) return done(err);
+        let { contracts } = result;
 
-      assert.equal(Object.keys(contracts).length, 3, "Didn't compile the expected number of contracts");
-      done();
-    });
+        assert.equal(
+          Object.keys(contracts).length,
+          3,
+          "Didn't compile the expected number of contracts"
+        );
+        done();
+      }
+    );
   });
 
-  it('compiles no contracts after no updates', function(done) {
+  it("compiles no contracts after no updates", function(done) {
     this.timeout(10000);
 
-    Contracts.compile(config.with({
-      all: false,
-      quiet: true
-    }), function(err, result) {
-      if (err) return done(err);
-      let { contracts } = result;
+    Contracts.compile(
+      config.with({
+        all: false,
+        quiet: true
+      }),
+      function(err, result) {
+        if (err) return done(err);
+        let { contracts } = result;
 
-      assert.equal(Object.keys(contracts).length, 0, "Compiled a contract even though we weren't expecting it");
-      done();
-    });
+        assert.equal(
+          Object.keys(contracts).length,
+          0,
+          "Compiled a contract even though we weren't expecting it"
+        );
+        done();
+      }
+    );
   });
 
-  it('compiles updated contract and its ancestors', function(done) {
+  it("compiles updated contract and its ancestors", function(done) {
     this.timeout(10000);
 
-    var file_to_update = path.resolve(path.join(config.contracts_directory, "ConvertLib.sol"));
+    var file_to_update = path.resolve(
+      path.join(config.contracts_directory, "ConvertLib.sol")
+    );
     var stat = fs.statSync(file_to_update);
 
     // Update the modification time to simulate an edit.
     var newTime = new Date().getTime();
     fs.utimesSync(file_to_update, newTime, newTime);
 
-    Contracts.compile(config.with({
-      all: false,
-      quiet: true
-    }), function(err, result) {
-      if (err) return done(err);
-      let { contracts } = result;
+    Contracts.compile(
+      config.with({
+        all: false,
+        quiet: true
+      }),
+      function(err, result) {
+        if (err) return done(err);
+        let { contracts } = result;
 
-      assert.equal(Object.keys(contracts).length, 2, "Expected MetaCoin and ConvertLib to be compiled");
+        assert.equal(
+          Object.keys(contracts).length,
+          2,
+          "Expected MetaCoin and ConvertLib to be compiled"
+        );
 
-      // reset time
-      fs.utimesSync(file_to_update, stat.atime, stat.mtime);
+        // reset time
+        fs.utimesSync(file_to_update, stat.atime, stat.mtime);
 
-      done();
-    });
+        done();
+      }
+    );
   });
 
   it("compiling shouldn't create any network artifacts", function() {
     var contract = config.resolver.require("MetaCoin.sol");
-    assert.equal(Object.keys(contract.networks).length, 0, "Expected the contract to be managing zero networks");
+    assert.equal(
+      Object.keys(contract.networks).length,
+      0,
+      "Expected the contract to be managing zero networks"
+    );
   });
 
-  describe('solc listing options', function(){
-
+  describe("solc listing options", function() {
     beforeEach(() => {
       memStream = new MemoryStream();
-      memStream.on('data', function(data){ output += data.toString(); });
+      memStream.on("data", function(data) {
+        output += data.toString();
+      });
     });
 
-    it("prints a truncated list of solcjs versions", function(done){
+    it("prints a truncated list of solcjs versions", function(done) {
       this.timeout(5000);
 
       const options = {
         list: ""
       };
 
-      command.run(config.with(options), (err, result) => {
-        if(err) return done(err);
+      command.run(config.with(options), err => {
+        if (err) return done(err);
 
-        memStream.on('end', function() {
+        memStream.on("end", function() {
           const arr = JSON.parse(output);
           assert(arr.length === 11);
           done();
         });
 
-        memStream.end('');
+        memStream.end("");
       });
     });
 
-    it("prints a list of docker tags", function(done){
+    it("prints a list of docker tags", function(done) {
       this.timeout(5000);
 
       const options = {
         list: "docker"
       };
 
-      command.run(config.with(options), (err, result) => {
-        if(err) return done(err);
+      command.run(config.with(options), err => {
+        if (err) return done(err);
 
-        memStream.on('end', function() {
+        memStream.on("end", function() {
           const arr = JSON.parse(output);
           assert(arr.length === 11);
-          assert(typeof arr[0] === 'string');
+          assert(typeof arr[0] === "string");
           done();
         });
 
-        memStream.end('');
+        memStream.end("");
       });
     });
 
-    it("prints a full list of releases when --all is set", function(done){
+    it("prints a full list of releases when --all is set", function(done) {
       this.timeout(5000);
 
       const options = {
@@ -163,17 +191,17 @@ describe("compile", function() {
         all: true
       };
 
-      command.run(config.with(options), (err, result) => {
-        if(err) return done(err);
+      command.run(config.with(options), err => {
+        if (err) return done(err);
 
-        memStream.on('end', function() {
+        memStream.on("end", function() {
           const arr = JSON.parse(output);
           assert(arr.length > 11);
-          assert(typeof arr[0] === 'string');
+          assert(typeof arr[0] === "string");
           done();
         });
 
-        memStream.end('');
+        memStream.end("");
       });
     });
   });

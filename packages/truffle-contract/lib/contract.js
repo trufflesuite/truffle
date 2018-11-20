@@ -1,3 +1,4 @@
+const debug = require("debug")("contract:contract"); // eslint-disable-line no-unused-vars
 let Web3 = require("web3");
 const webUtils = require("web3-utils");
 const execute = require("./execute");

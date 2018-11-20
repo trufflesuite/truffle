@@ -1,9 +1,9 @@
 pragma solidity ^0.5.0;
 
-contract Local {
-  uint local;
+contract Version5Pragma {
+  uint x;
 
   constructor() public {
-
+    x = 5;
   }
 }

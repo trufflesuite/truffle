@@ -1,6 +1,6 @@
 var assert = require("chai").assert;
 var temp = require("temp").track();
-var util = require('./util');
+var util = require("./util");
 
 describe("Network Object [ @geth ]", function() {
   var Example;
@@ -19,7 +19,7 @@ describe("Network Object [ @geth ]", function() {
   });
 
   it("creates a network object when an address is set if no network specified", async function() {
-    var NewExample = util.createExample();
+    var NewExample = await util.createExample();
 
     const result = await util.setUpProvider(NewExample);
     network_id = await result.web3.eth.net.getId();
@@ -33,6 +33,9 @@ describe("Network Object [ @geth ]", function() {
     assert.equal(NewExample.toJSON().networks[network_id], null);
 
     NewExample.address = example.address;
-    assert.equal(NewExample.toJSON().networks[network_id].address, example.address);
+    assert.equal(
+      NewExample.toJSON().networks[network_id].address,
+      example.address
+    );
   });
 });

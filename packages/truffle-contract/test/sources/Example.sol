@@ -1,4 +1,4 @@
-pragma solidity ^0.4.22;
+pragma solidity ^0.5.0;
 
 contract Example {
 
@@ -34,11 +34,11 @@ contract Example {
     value = val;
   }
 
-  function setNumbers(uint[] vals) public {
+  function setNumbers(uint[] memory vals) public {
     numbers = vals;
   }
 
-  function getNumbers() public view returns (uint [] vals){
+  function getNumbers() public view returns (uint [] memory vals){
     return numbers;
   }
 
@@ -96,8 +96,8 @@ contract Example {
     emit ContractAddressEvent(address(this));
   }
 
-  function triggerNumberEvent(int a, int b, address c, uint d, uint e){
-    NumberEvent(a,b,c,d,e);
+  function triggerNumberEvent(int a, int b, address c, uint d, uint e) public {
+    emit NumberEvent(a,b,c,d,e);
   }
 
   function triggerRequireError() public {
@@ -128,11 +128,23 @@ contract Example {
     }
   }
 
-  function returnsNamedTuple () public view returns (uint256 hello, string black, uint8 goodbye){
+  function returnsNamedTuple()
+    public
+    view
+    returns (
+      uint256 hello,
+      string memory black,
+      uint8 goodbye
+    )
+  {
     return (5, 'black', 5);
   }
 
-  function returnsUnnamedTuple() public view returns (string, uint, uint[2]){
+  function returnsUnnamedTuple()
+    public
+    view
+    returns (string memory, uint, uint[2] memory)
+  {
     uint[2] memory arr;
     arr[0] = 5;
     arr[1] = 5;
@@ -143,14 +155,22 @@ contract Example {
     return 5;
   }
 
-  function returnsNamedStaticArray() public view returns (uint[2] named ){
+  function returnsNamedStaticArray()
+    public
+    view
+    returns (uint[2] memory named)
+  {
     uint[2] memory arr;
     arr[0] = 5;
     arr[1] = 5;
     return arr;
   }
 
-  function returnsUnnamedStaticArray () public view returns (uint[2]){
+  function returnsUnnamedStaticArray()
+    public
+    view
+    returns (uint[2] memory)
+  {
     uint[2] memory arr;
     arr[0] = 5;
     arr[1] = 5;

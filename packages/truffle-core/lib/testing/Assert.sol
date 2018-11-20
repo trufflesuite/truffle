@@ -1,7 +1,7 @@
 // This file taken from here: https://raw.githubusercontent.com/smartcontractproduction/sol-unit/master/contracts/src/Assertions.sol
 // It was renamed to Assert.sol by Tim Coulter.
 
-pragma solidity ^0.4.17;
+pragma solidity >=0.4.15 <0.6.0;
 
 /*
     File: Assertions.slb
@@ -89,7 +89,7 @@ library Assert {
         Returns:
             result (bool) - false.
     */
-    function fail(string message) public returns (bool result) {
+    function fail(string memory message) public returns (bool result) {
         _report(false, message);
         return false;
     }
@@ -111,7 +111,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function equal(string a, string b, string message) public returns (bool result) {
+    function equal(string memory a, string memory b, string memory message) public returns (bool result) {
         result = _stringsEqual(a, b);
         if (result)
             _report(result, message);
@@ -134,7 +134,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(string a, string b, string message) public returns (bool result) {
+    function notEqual(string memory a, string memory b, string memory message) public returns (bool result) {
         result = !_stringsEqual(a, b);
         if (result)
             _report(result, message);
@@ -156,7 +156,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isEmpty(string str, string message) public returns (bool result) {
+    function isEmpty(string memory str, string memory message) public returns (bool result) {
         result = _stringsEqual(str, STRING_NULL);
         if (result)
             _report(result, message);
@@ -178,7 +178,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isNotEmpty(string str, string message) public returns (bool result) {
+    function isNotEmpty(string memory str, string memory message) public returns (bool result) {
         result = !_stringsEqual(str, STRING_NULL);
         if (result)
             _report(result, message);
@@ -203,7 +203,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function equal(bytes32 a, bytes32 b, string message) public returns (bool result) {
+    function equal(bytes32 a, bytes32 b, string memory message) public returns (bool result) {
         result = (a == b);
         _report(result, message);
     }
@@ -223,7 +223,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(bytes32 a, bytes32 b, string message) public returns (bool result) {
+    function notEqual(bytes32 a, bytes32 b, string memory message) public returns (bool result) {
         result = (a != b);
         _report(result, message);
     }
@@ -242,7 +242,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isZero(bytes32 bts, string message) public returns (bool result) {
+    function isZero(bytes32 bts, string memory message) public returns (bool result) {
         result = (bts == BYTES32_NULL);
         _report(result, message);
     }
@@ -261,7 +261,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isNotZero(bytes32 bts, string message) public returns (bool result) {
+    function isNotZero(bytes32 bts, string memory message) public returns (bool result) {
         result = (bts != BYTES32_NULL);
         _report(result, message);
     }
@@ -283,7 +283,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function equal(address a, address b, string message) public returns (bool result) {
+    function equal(address a, address b, string memory message) public returns (bool result) {
         result = (a == b);
         _report(result, message);
     }
@@ -302,7 +302,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(address a, address b, string message) public returns (bool result) {
+    function notEqual(address a, address b, string memory message) public returns (bool result) {
         result = (a != b);
          _report(result, message);
     }
@@ -321,7 +321,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isZero(address addr, string message) public returns (bool result) {
+    function isZero(address addr, string memory message) public returns (bool result) {
         result = (addr == ADDRESS_NULL);
         _report(result, message);
     }
@@ -340,7 +340,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isNotZero(address addr, string message) public returns (bool result) {
+    function isNotZero(address addr, string memory message) public returns (bool result) {
         result = (addr != ADDRESS_NULL);
         _report(result, message);
     }
@@ -361,7 +361,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isTrue(bool b, string message) public returns (bool result) {
+    function isTrue(bool b, string memory message) public returns (bool result) {
         result = b;
         _report(result, message);
     }
@@ -380,7 +380,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isFalse(bool b, string message) public returns (bool result) {
+    function isFalse(bool b, string memory message) public returns (bool result) {
         result = !b;
         _report(result, message);
     }
@@ -400,7 +400,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function equal(bool a, bool b, string message) public returns (bool result) {
+    function equal(bool a, bool b, string memory message) public returns (bool result) {
         result = (a == b);
         if (result)
             _report(result, message);
@@ -423,7 +423,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(bool a, bool b, string message) public returns (bool result) {
+    function notEqual(bool a, bool b, string memory message) public returns (bool result) {
         result = (a != b);
         if (result)
             _report(result, message);
@@ -448,7 +448,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function equal(uint a, uint b, string message) public returns (bool result) {
+    function equal(uint a, uint b, string memory message) public returns (bool result) {
         result = (a == b);
         if (result)
             _report(result, message);
@@ -471,7 +471,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(uint a, uint b, string message) public returns (bool result) {
+    function notEqual(uint a, uint b, string memory message) public returns (bool result) {
         result = (a != b);
         if (result)
             _report(result, message);
@@ -494,7 +494,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isAbove(uint a, uint b, string message) public returns (bool result) {
+    function isAbove(uint a, uint b, string memory message) public returns (bool result) {
         result = (a > b);
         if (result)
             _report(result, message);
@@ -517,7 +517,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isAtLeast(uint a, uint b, string message) public returns (bool result) {
+    function isAtLeast(uint a, uint b, string memory message) public returns (bool result) {
         result = (a >= b);
         if (result)
             _report(result, message);
@@ -540,7 +540,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isBelow(uint a, uint b, string message) public returns (bool result) {
+    function isBelow(uint a, uint b, string memory message) public returns (bool result) {
         result = (a < b);
         if (result)
             _report(result, message);
@@ -563,7 +563,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isAtMost(uint a, uint b, string message) public returns (bool result) {
+    function isAtMost(uint a, uint b, string memory message) public returns (bool result) {
         result = (a <= b);
         if (result)
             _report(result, message);
@@ -585,7 +585,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isZero(uint number, string message) public returns (bool result) {
+    function isZero(uint number, string memory message) public returns (bool result) {
         result = (number == 0);
         if (result)
             _report(result, message);
@@ -607,7 +607,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isNotZero(uint number, string message) public returns (bool result) {
+    function isNotZero(uint number, string memory message) public returns (bool result) {
         result = (number != 0);
         if (result)
             _report(result, message);
@@ -632,7 +632,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function equal(int a, int b, string message) public returns (bool result) {
+    function equal(int a, int b, string memory message) public returns (bool result) {
         result = (a == b);
         if (result)
             _report(result, message);
@@ -655,7 +655,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(int a, int b, string message) public returns (bool result) {
+    function notEqual(int a, int b, string memory message) public returns (bool result) {
         result = (a != b);
         if (result)
             _report(result, message);
@@ -678,7 +678,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isAbove(int a, int b, string message) public returns (bool result) {
+    function isAbove(int a, int b, string memory message) public returns (bool result) {
         result = (a > b);
         if (result)
             _report(result, message);
@@ -701,7 +701,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isAtLeast(int a, int b, string message) public returns (bool result) {
+    function isAtLeast(int a, int b, string memory message) public returns (bool result) {
         result = (a >= b);
         if (result)
             _report(result, message);
@@ -724,7 +724,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isBelow(int a, int b, string message) public returns (bool result) {
+    function isBelow(int a, int b, string memory message) public returns (bool result) {
         result = (a < b);
         if (result)
             _report(result, message);
@@ -747,7 +747,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isAtMost(int a, int b, string message) public returns (bool result) {
+    function isAtMost(int a, int b, string memory message) public returns (bool result) {
         result = (a <= b);
         if (result)
             _report(result, message);
@@ -769,7 +769,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isZero(int number, string message) public returns (bool result) {
+    function isZero(int number, string memory message) public returns (bool result) {
         result = (number == 0);
         if (result)
             _report(result, message);
@@ -791,7 +791,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function isNotZero(int number, string message) public returns (bool result) {
+    function isNotZero(int number, string memory message) public returns (bool result) {
         result = (number != 0);
         if (result)
             _report(result, message);
@@ -820,7 +820,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function equal(uint[] arrA, uint[] arrB, string message) public returns (bool result) {
+    function equal(uint[] memory arrA, uint[] memory arrB, string memory message) public returns (bool result) {
         result = arrA.length == arrB.length;
         if (result) {
             for (uint i = 0; i < arrA.length; i++) {
@@ -852,7 +852,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(uint[] arrA, uint[] arrB, string message) public returns (bool result) {
+    function notEqual(uint[] memory arrA, uint[] memory arrB, string memory message) public returns (bool result) {
         result = arrA.length == arrB.length;
         if (result) {
             for (uint i = 0; i < arrA.length; i++) {
@@ -881,7 +881,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function lengthEqual(uint[] arr, uint length, string message) public returns (bool result) {
+    function lengthEqual(uint[] memory arr, uint length, string memory message) public returns (bool result) {
         uint arrLength = arr.length;
         if (arrLength == length)
             _report(result, "");
@@ -904,7 +904,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function lengthNotEqual(uint[] arr, uint length, string message) public returns (bool result) {
+    function lengthNotEqual(uint[] memory arr, uint length, string memory message) public returns (bool result) {
         uint arrLength = arr.length;
         if (arrLength != arr.length)
             _report(result, "");
@@ -933,7 +933,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function equal(int[] arrA, int[] arrB, string message) public returns (bool result) {
+    function equal(int[] memory arrA, int[] memory arrB, string memory message) public returns (bool result) {
         result = arrA.length == arrB.length;
         if (result) {
             for (uint i = 0; i < arrA.length; i++) {
@@ -965,7 +965,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(int[] arrA, int[] arrB, string message) public returns (bool result) {
+    function notEqual(int[] memory arrA, int[] memory arrB, string memory message) public returns (bool result) {
         result = arrA.length == arrB.length;
         if (result) {
             for (uint i = 0; i < arrA.length; i++) {
@@ -994,7 +994,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function lengthEqual(int[] arr, uint length, string message) public returns (bool result) {
+    function lengthEqual(int[] memory arr, uint length, string memory message) public returns (bool result) {
         uint arrLength = arr.length;
         if (arrLength == length)
             _report(result, "");
@@ -1017,7 +1017,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function lengthNotEqual(int[] arr, uint length, string message) public returns (bool result) {
+    function lengthNotEqual(int[] memory arr, uint length, string memory message) public returns (bool result) {
         uint arrLength = arr.length;
         if (arrLength != arr.length)
             _report(result, "");
@@ -1046,7 +1046,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function equal(address[] arrA, address[] arrB, string message) public returns (bool result) {
+    function equal(address[] memory arrA, address[] memory arrB, string memory message) public returns (bool result) {
         result = arrA.length == arrB.length;
         if (result) {
             for (uint i = 0; i < arrA.length; i++) {
@@ -1078,7 +1078,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(address[] arrA, address[] arrB, string message) public returns (bool result) {
+    function notEqual(address[] memory arrA, address[] memory arrB, string memory message) public returns (bool result) {
         result = arrA.length == arrB.length;
         if (result) {
             for (uint i = 0; i < arrA.length; i++) {
@@ -1107,7 +1107,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function lengthEqual(address[] arr, uint length, string message) public returns (bool result) {
+    function lengthEqual(address[] memory arr, uint length, string memory message) public returns (bool result) {
         uint arrLength = arr.length;
         if (arrLength == length)
             _report(result, "");
@@ -1130,7 +1130,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function lengthNotEqual(address[] arr, uint length, string message) public returns (bool result) {
+    function lengthNotEqual(address[] memory arr, uint length, string memory message) public returns (bool result) {
         uint arrLength = arr.length;
         if (arrLength != arr.length)
             _report(result, "");
@@ -1159,7 +1159,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function equal(bytes32[] arrA, bytes32[] arrB, string message) public returns (bool result) {
+    function equal(bytes32[] memory arrA, bytes32[] memory arrB, string memory message) public returns (bool result) {
         result = arrA.length == arrB.length;
         if (result) {
             for (uint i = 0; i < arrA.length; i++) {
@@ -1191,7 +1191,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(bytes32[] arrA, bytes32[] arrB, string message) public returns (bool result) {
+    function notEqual(bytes32[] memory arrA, bytes32[] memory arrB, string memory message) public returns (bool result) {
         result = arrA.length == arrB.length;
         if (result) {
             for (uint i = 0; i < arrA.length; i++) {
@@ -1220,7 +1220,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function lengthEqual(bytes32[] arr, uint length, string message) public returns (bool result) {
+    function lengthEqual(bytes32[] memory arr, uint length, string memory message) public returns (bool result) {
         uint arrLength = arr.length;
         if (arrLength == length)
             _report(result, "");
@@ -1243,7 +1243,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function lengthNotEqual(bytes32[] arr, uint length, string message) public returns (bool result) {
+    function lengthNotEqual(bytes32[] memory arr, uint length, string memory message) public returns (bool result) {
         uint arrLength = arr.length;
         if (arrLength != arr.length)
             _report(result, "");
@@ -1268,7 +1268,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function balanceEqual(address a, uint b, string message) public returns (bool result) {
+    function balanceEqual(address a, uint b, string memory message) public returns (bool result) {
         result = (a.balance == b);
         _report(result, message);
     }
@@ -1288,7 +1288,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function balanceNotEqual(address a, uint b, string message) public returns (bool result) {
+    function balanceNotEqual(address a, uint b, string memory message) public returns (bool result) {
         result = (a.balance != b);
         _report(result, message);
     }
@@ -1307,7 +1307,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function balanceIsZero(address a, string message) public returns (bool result) {
+    function balanceIsZero(address a, string memory message) public returns (bool result) {
         result = (a.balance == 0);
         _report(result, message);
     }
@@ -1326,7 +1326,7 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function balanceIsNotZero(address a, string message) public returns (bool result) {
+    function balanceIsNotZero(address a, string memory message) public returns (bool result) {
         result = (a.balance != 0);
         _report(result, message);
     }
@@ -1342,7 +1342,7 @@ library Assert {
                 result (bool) - The test result (true or false).
                 message (string) - The message that is sent if the assertion fails.
         */
-    function _report(bool result, string message) internal {
+    function _report(bool result, string memory message) internal {
         if(result)
             emit TestEvent(true, "");
         else
@@ -1362,7 +1362,7 @@ library Assert {
         Returns:
              result (bool) - 'true' if the strings are equal, otherwise 'false'.
     */
-    function _stringsEqual(string a, string b) internal pure returns (bool result) {
+    function _stringsEqual(string memory a, string memory b) internal pure returns (bool result) {
         bytes memory ba = bytes(a);
         bytes memory bb = bytes(b);
 
@@ -1387,7 +1387,7 @@ library Assert {
         Returns:
             result (string) - The resulting string.
     */
-    function _itoa(int n, uint8 radix) internal pure returns (string) {
+    function _itoa(int n, uint8 radix) internal pure returns (string memory) {
         if (n == 0 || radix < 2 || radix > 16)
             return '0';
         bytes memory bts = new bytes(256);
@@ -1431,7 +1431,7 @@ library Assert {
         Returns:
             result (string) - The resulting string.
     */
-    function _utoa(uint n, uint8 radix) internal pure returns (string) {
+    function _utoa(uint n, uint8 radix) internal pure returns (string memory) {
         if (n == 0 || radix < 2 || radix > 16)
             return '0';
         bytes memory bts = new bytes(256);
@@ -1479,7 +1479,7 @@ library Assert {
         Returns:
             result (string) - "true" if true, "false" if false.
     */
-    function _ltoa(bool val) internal pure returns (string) {
+    function _ltoa(bool val) internal pure returns (string memory) {
         bytes memory b;
         if (val) {
             b = new bytes(4);
@@ -1524,7 +1524,7 @@ library Assert {
         Returns:
             result (string) - "tag: value"
     */
-    function _tag(string value, string tag) internal pure returns (string) {
+    function _tag(string memory value, string memory tag) internal pure returns (string memory) {
 
         bytes memory valueB = bytes(value);
         bytes memory tagB = bytes(tag);
@@ -1559,7 +1559,7 @@ library Assert {
         Returns:
             result (string) - "tag: _itoa(value)"
     */
-    function _tag(int value, string tag) internal pure returns (string) {
+    function _tag(int value, string memory tag) internal pure returns (string memory) {
         string memory nstr = _itoa(value, 10);
         return _tag(nstr, tag);
     }
@@ -1576,7 +1576,7 @@ library Assert {
         Returns:
             result (string) - "tag: _utoa(value)"
     */
-    function _tag(uint value, string tag) internal pure returns (string) {
+    function _tag(uint value, string memory tag) internal pure returns (string memory) {
         string memory nstr = _utoa(value, 10);
         return _tag(nstr, tag);
     }
@@ -1593,7 +1593,7 @@ library Assert {
         Returns:
             result (string) - "tag: _ltoa(value)"
     */
-    function _tag(bool value, string tag) internal pure returns (string) {
+    function _tag(bool value, string memory tag) internal pure returns (string memory) {
         string memory nstr = _ltoa(value);
         return _tag(nstr, tag);
     }
@@ -1610,7 +1610,7 @@ library Assert {
         Returns:
             result (string) - "str (tagged)"
     */
-    function _appendTagged(string tagged, string str) internal pure returns (string) {
+    function _appendTagged(string memory tagged, string memory str) internal pure returns (string memory) {
 
         bytes memory taggedB = bytes(tagged);
         bytes memory strB = bytes(str);
@@ -1647,7 +1647,7 @@ library Assert {
         Returns:
             result (string) - "str (tagged0, tagged1)"
     */
-    function _appendTagged(string tagged0, string tagged1, string str) internal pure returns (string) {
+    function _appendTagged(string memory tagged0, string memory tagged1, string memory str) internal pure returns (string memory) {
 
         bytes memory tagged0B = bytes(tagged0);
         bytes memory tagged1B = bytes(tagged1);

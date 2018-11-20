@@ -1,13 +1,13 @@
+const debug = require("debug")("compile:parser"); // eslint-disable-line no-unused-vars
 var CompileError = require("./compileerror");
 
 // Warning issued by a pre-release compiler version, ignored by this component.
-var preReleaseCompilerWarning = "This is a pre-release compiler version, please do not use it in production.";
+var preReleaseCompilerWarning =
+  "This is a pre-release compiler version, please do not use it in production.";
 
 module.exports = {
   // This needs to be fast! It is fast (as of this writing). Keep it fast!
   parseImports: function(body, solc) {
-    var self = this;
-
     // WARNING: Kind of a hack (an expedient one).
 
     // So we don't have to maintain a separate parser, we'll get all the imports
@@ -44,11 +44,11 @@ module.exports = {
       }
     };
 
-    var output = solc.compileStandard(JSON.stringify(solcStandardInput), function() {
+    var output = solc.compile(JSON.stringify(solcStandardInput), function() {
       // The existence of this function ensures we get a parsable error message.
       // Without this, we'll get an error message we *can* detect, but the key will make it easier.
       // Note: This is not a normal callback. See docs here: https://github.com/ethereum/solc-js#from-version-021
-      return {error: importErrorKey};
+      return { error: importErrorKey };
     });
 
     output = JSON.parse(output);
@@ -73,14 +73,18 @@ module.exports = {
 
     // Now, all errors must be import errors.
     // Filter out our forced import, then get the import paths of the rest.
-    var imports = errors.filter(function(solidity_error) {
-      return solidity_error.message.indexOf(failingImportFileName) < 0;
-    }).map(function(solidity_error) {
-      var matches = solidity_error.formattedMessage.match(/import[^'"]+("|')([^'"]+)("|')/);
+    var imports = errors
+      .filter(function(solidity_error) {
+        return solidity_error.message.indexOf(failingImportFileName) < 0;
+      })
+      .map(function(solidity_error) {
+        var matches = solidity_error.formattedMessage.match(
+          /import[^'"]+("|')([^'"]+)("|')/
+        );
 
-      // Return the item between the quotes.
-      return matches[2];
-    });
+        // Return the item between the quotes.
+        return matches[2];
+      });
 
     return imports;
   }

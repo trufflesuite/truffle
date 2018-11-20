@@ -3,9 +3,6 @@
   "version": "0.0.1-beta.0",
   "description": "A web3 provider which makes it possible to connect Truffle with Sawtooth Seth blockchains.",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"No tests yet\" && exit 0"
-  },
   "author": "Ben Burns",
   "license": "MIT",
   "repository": {

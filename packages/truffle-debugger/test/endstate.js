@@ -40,7 +40,6 @@ let sources = {
 
 describe("End State", function() {
   var provider;
-  var web3;
 
   var abstractions;
   var artifacts;
@@ -93,6 +92,11 @@ describe("End State", function() {
     let session = bugger.connect();
 
     session.continueUntilBreakpoint(); //no breakpoints set so advances to end
+
+    debug("DCI %O", session.view(data.current.identifiers));
+    debug("DCIR %O", session.view(data.current.identifiers.refs));
+    debug("DCIN %O", session.view(data.current.identifiers.native));
+    debug("proc.assignments %O", session.view(data.proc.assignments));
 
     assert.ok(session.view(sessionSelector.transaction.receipt).status);
     assert.deepEqual(session.view(data.current.identifiers.native), { x: 107 });

@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("test:solidity");
+const debug = debugModule("test:solidity"); // eslint-disable-line no-unused-vars
 
 import { assert } from "chai";
 
@@ -12,7 +12,6 @@ import Debugger from "lib/debugger";
 import solidity from "lib/solidity/selectors";
 import trace from "lib/trace/selectors";
 
-
 const __SINGLE_CALL = `
 pragma solidity ^0.4.18;
 
@@ -24,7 +23,6 @@ contract SingleCall {
   }
 }
 `;
-
 
 const __NESTED_CALL = `pragma solidity ^0.4.18;
 
@@ -60,23 +58,20 @@ contract NestedCall {
 }
 `;
 
-
 let sources = {
   "SingleCall.sol": __SINGLE_CALL,
-  "NestedCall.sol": __NESTED_CALL,
+  "NestedCall.sol": __NESTED_CALL
 };
-
 
 describe("Solidity Debugging", function() {
   var provider;
-  var web3;
 
   var abstractions;
   var artifacts;
   var files;
 
   before("Create Provider", async function() {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
     web3 = new Web3(provider);
   });
 
@@ -106,7 +101,6 @@ describe("Solidity Debugging", function() {
     // at `second();`
     let source = await session.view(solidity.current.source);
     let breakpoint = { sourceId: source.id, line: 16 };
-    let breakpointStopped = false;
 
     session.addBreakpoint(breakpoint);
 
@@ -116,11 +110,8 @@ describe("Solidity Debugging", function() {
       if (!session.view(trace.finished)) {
         let range = await session.view(solidity.current.sourceRange);
         assert.equal(range.lines.start.line, 16);
-
-        breakpointStopped = true;
       }
-
-    } while(!session.view(trace.finished));
+    } while (!session.view(trace.finished));
   });
 
   describe("Function Depth", function() {
@@ -147,9 +138,7 @@ describe("Solidity Debugging", function() {
         let actual = session.view(solidity.current.functionDepth);
 
         assert.isAtMost(actual, maxExpected);
-
-      } while(!finished);
-
+      } while (!finished);
     });
 
     it("spelunks correctly", async function() {
@@ -168,7 +157,8 @@ describe("Solidity Debugging", function() {
 
       // follow functionDepth values in list
       // see source above
-      let expectedDepthSequence = [1,2,3,2,1,2,1,0];
+      let expectedDepthSequence = [1, 2, 3, 2, 1, 2, 1, -1];
+      //end at -1 due to losing 2 from contract method return
       let actualSequence = [session.view(solidity.current.functionDepth)];
 
       var finished;
@@ -183,7 +173,7 @@ describe("Solidity Debugging", function() {
         if (currentDepth !== lastKnown) {
           actualSequence.push(currentDepth);
         }
-      } while(!finished);
+      } while (!finished);
 
       assert.deepEqual(actualSequence, expectedDepthSequence);
     });
