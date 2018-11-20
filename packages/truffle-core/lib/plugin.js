@@ -10,14 +10,13 @@ const Plugin = {
     if (!Array.isArray(plugins) || plugins.length === 0)
       throw new TruffleError("\nError: Plugins configured incorrectly.\n");
 
-    return plugins;
+    return options;
   },
 
-  // checks plugins recursively from cwd
-  checkPluginModules(plugins) {
-    // TODO will need to replace with actual config path
+  // checks plugins recursively from options.truffle_directory
+  checkPluginModules(options) {
     originalRequire("app-module-path").addPath(
-      path.resolve(process.cwd(), "node_modules")
+      path.resolve(options.working_directory, "node_modules")
     );
 
     // possible TODO: add app-module-path as dependency of originalRequire
@@ -26,6 +25,8 @@ const Plugin = {
     //   originalRequire.addPath("<path-to-truffle-plugin>")
     //
     // and then make originalRequire handle `path.resolve(..., "node_modules")`
+
+    let plugins = options.plugins;
 
     plugins.forEach(plugin => {
       try {
