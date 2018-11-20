@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:data:sagas");
+const debug = debugModule("debugger:data:sagas"); // eslint-disable-line no-unused-vars
 
 import { put, takeEvery, select } from "redux-saga/effects";
 import jsonpointer from "json-pointer";

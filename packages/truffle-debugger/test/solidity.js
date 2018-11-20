@@ -4,7 +4,6 @@ const debug = debugModule("test:solidity"); // eslint-disable-line no-unused-var
 import { assert } from "chai";
 
 import Ganache from "ganache-cli";
-import Web3 from "web3";
 
 import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
