@@ -13,16 +13,15 @@ export const MAX_WORD = new BigNumber(2).pow(256).minus(1);
 export function cleanBigNumbers(value) {
   if (BigNumber.isBigNumber(value)) {
     return value.toNumber();
-
   } else if (value && value.map != undefined) {
-    return value.map( (inner) => cleanBigNumbers(inner) );
-
+    return value.map(inner => cleanBigNumbers(inner));
   } else if (value && typeof value == "object") {
     return Object.assign(
-      {}, ...Object.entries(value)
-        .map( ([key, inner]) => ({ [key]: cleanBigNumbers(inner) }) )
+      {},
+      ...Object.entries(value).map(([key, inner]) => ({
+        [key]: cleanBigNumbers(inner)
+      }))
     );
-
   } else {
     return value;
   }
@@ -51,11 +50,12 @@ export function allocateDeclarations(
   declarations,
   refs,
   slot = 0,
-  index = WORD_SIZE - 1,
+  index = WORD_SIZE - 1
 ) {
   slot = normalizeSlot(slot);
 
-  if (index < WORD_SIZE - 1) {  // starts a new slot
+  if (index < WORD_SIZE - 1) {
+    // starts a new slot
     slot = {
       path: slot,
       offset: 1
@@ -68,8 +68,12 @@ export function allocateDeclarations(
   let mapping = {};
 
   for (let declaration of declarations) {
-    let { from, to, next, children } =
-      allocateDeclaration(declaration, refs, slot, index);
+    let { from, to, next, children } = allocateDeclaration(
+      declaration,
+      refs,
+      slot,
+      index
+    );
 
     mapping[declaration.id] = { from, to, name: declaration.name };
     if (children !== undefined) {
@@ -99,34 +103,36 @@ export function allocateDeclarations(
 }
 
 function allocateValue(slot, index, bytes) {
-  let from = (index - bytes + 1 >= 0)
-    ? { slot, index: index - bytes + 1 }
-    : {
-        slot: {
-          path: slot.path,
-          offset: slot.offset + 1
-        },
-        index: WORD_SIZE - bytes
-      };
+  let from =
+    index - bytes + 1 >= 0
+      ? { slot, index: index - bytes + 1 }
+      : {
+          slot: {
+            path: slot.path,
+            offset: slot.offset + 1
+          },
+          index: WORD_SIZE - bytes
+        };
 
   let to = { slot: from.slot, index: from.index + bytes - 1 };
 
-  let next = (from.index == 0)
-    ? {
-        slot: {
-          path: from.slot.path,
-          offset: from.slot.offset + 1
-        },
-        index: WORD_SIZE - 1
-      }
-    : { slot: from.slot, index: from.index - 1 };
+  let next =
+    from.index == 0
+      ? {
+          slot: {
+            path: from.slot.path,
+            offset: from.slot.offset + 1
+          },
+          index: WORD_SIZE - 1
+        }
+      : { slot: from.slot, index: from.index - 1 };
 
   return { from, to, next };
 }
 
 function allocateDeclaration(declaration, refs, slot, index) {
   let definition = refs[declaration.id].definition;
-  var byteSize = storageSize(definition);  // yum
+  var byteSize = storageSize(definition); // yum
 
   if (typeClass(definition) != "struct") {
     return allocateValue(slot, index, byteSize);
@@ -135,7 +141,7 @@ function allocateDeclaration(declaration, refs, slot, index) {
   let struct = refs[definition.typeName.referencedDeclaration];
   debug("struct: %O", struct);
 
-  let result =  allocateDeclarations(struct.variables || [], refs, slot, index);
+  let result = allocateDeclarations(struct.variables || [], refs, slot, index);
   debug("struct result %o", result);
   return result;
 }
@@ -156,7 +162,6 @@ export function normalizeSlot(slot) {
     offset: 0
   };
 }
-
 
 /**
  * e.g. uint48 -> 6
@@ -180,7 +185,10 @@ export function specifiedSize(definition) {
       return num;
 
     default:
-      debug("Unknown type for size specification: %s", typeIdentifier(definition));
+      debug(
+        "Unknown type for size specification: %s",
+        typeIdentifier(definition)
+      );
   }
 }
 
@@ -212,8 +220,17 @@ export function isMapping(definition) {
   return typeIdentifier(definition).match(/^t_mapping/) != null;
 }
 
+export function isContract(definition) {
+  return typeIdentifier(definition).match(/^t_contract/) != null;
+}
 export function isReference(definition) {
   return typeIdentifier(definition).match(/_(memory|storage)(_ptr)?$/) != null;
+}
+
+export function isContractType(definition) {
+  //checks whether the given node is a contract *type*, rather than whether
+  //it's a contract
+  return typeIdentifier(definition).match(/^t_type\$_t_contract/) != null;
 }
 
 export function referenceType(definition) {
@@ -225,7 +242,7 @@ export function baseDefinition(definition) {
     // first dollar sign     last dollar sign
     //   `---------.       ,---'
     .match(/^[^$]+\$_(.+)_\$[^$]+$/)[1];
-    //              `----' greedy match
+  //              `----' greedy match
 
   // HACK - internal types for memory or storage also seem to be pointers
   if (baseIdentifier.match(/_(memory|storage)$/) != null) {
@@ -239,7 +256,6 @@ export function baseDefinition(definition) {
     }
   };
 }
-
 
 export function toBigNumber(bytes) {
   if (bytes == undefined) {
@@ -257,10 +273,13 @@ export function toBigNumber(bytes) {
 }
 
 export function toSignedBigNumber(bytes) {
-  if (bytes[0] < 0b10000000) {  // first bit is 0
+  if (bytes[0] < 0b10000000) {
+    // first bit is 0
     return toBigNumber(bytes);
   } else {
-    return toBigNumber(bytes.map( (b) => 0xff - b )).plus(1).negated();
+    return toBigNumber(bytes.map(b => 0xff - b))
+      .plus(1)
+      .negated();
   }
 }
 
@@ -279,7 +298,7 @@ export function toHexString(bytes, length = 0, trim = false) {
     bytes = toBytes(bytes);
   }
 
-  const pad = (s) => `${"00".slice(0, 2 - s.length)}${s}`;
+  const pad = s => `${"00".slice(0, 2 - s.length)}${s}`;
 
   //                                          0  1  2  3  4
   //                                 0  1  2  3  4  5  6  7
@@ -297,7 +316,8 @@ export function toHexString(bytes, length = 0, trim = false) {
   debug("bytes: %o", bytes);
 
   let string = bytes.reduce(
-    (str, byte) => `${str}${pad(byte.toString(16))}`, ""
+    (str, byte) => `${str}${pad(byte.toString(16))}`,
+    ""
   );
 
   if (trim) {
@@ -322,8 +342,7 @@ export function toBytes(number, length = 0) {
   }
 
   let bytes = new Uint8Array(
-    hex.match(/.{2}/g)
-      .map( (byte) => parseInt(byte, 16) )
+    hex.match(/.{2}/g).map(byte => parseInt(byte, 16))
   );
 
   if (bytes.length < length) {
@@ -343,18 +362,4 @@ export function keccak256(...args) {
   let sha = web3.utils.soliditySha3(...args);
   debug("sha %o", sha);
   return toBigNumber(sha);
-}
-
-export function augmentWithDepth(id, depth = 0) {
-    //depth 0 indicates not a local variable; real depths start from 1
-    //both arguments are numeric, so a colon should occur in neither
-    return `${depth}:${id}`;
-}
-
-export function idFromAugmented(augmentedId) {
-    return Number(augmentedId.split(":")[1]);
-}
-
-export function depthFromAugmented(augmentedId) {
-    return Number(augmentedId.split(":")[0]);
 }

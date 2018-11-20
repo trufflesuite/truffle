@@ -2,12 +2,13 @@
 var Web3 = require("web3");
 
 var Deployed = {
-
   makeSolidityDeployedAddressesLibrary: function(mapping) {
     var self = this;
 
     var source = "";
-    source += "pragma solidity ^0.4.17; \n\n library DeployedAddresses {" + "\n";
+    source +=
+      "pragma solidity >=0.4.15 <0.6.0; \n\n library DeployedAddresses {" +
+      "\n";
 
     Object.keys(mapping).forEach(function(name) {
       var address = mapping[name];
@@ -20,7 +21,12 @@ var Deployed = {
         body = "return " + address + ";";
       }
 
-      source += "  function " + name + "() public pure returns (address) { " + body + " }";
+      source +=
+        "  function " +
+        name +
+        "() public pure returns (address) { " +
+        body +
+        " }";
       source += "\n";
     });
 
@@ -30,11 +36,11 @@ var Deployed = {
   },
 
   // Pulled from ethereumjs-util, but I don't want all its dependencies at the moment.
-  toChecksumAddress: function (address) {
+  toChecksumAddress: function(address) {
     var web3 = new Web3();
     address = address.toLowerCase().replace("0x", "");
     var hash = web3.utils.sha3(address).replace("0x", "");
-    var ret = '0x';
+    var ret = "0x";
 
     for (var i = 0; i < address.length; i++) {
       if (parseInt(hash[i], 16) >= 8) {

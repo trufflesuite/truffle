@@ -5,6 +5,10 @@ import { createSelectorTree, createLeaf } from "reselect-tree";
 import SolidityUtils from "truffle-solidity-utils";
 import CodeUtils from "truffle-code-utils";
 
+import { isContract, isContractType } from "lib/data/decode/utils";
+import { findRange } from "lib/ast/map";
+import jsonpointer from "json-pointer";
+
 import evm from "lib/evm/selectors";
 
 function getSourceRange(instruction = {}) {
@@ -13,10 +17,12 @@ function getSourceRange(instruction = {}) {
     length: instruction.length || 0,
     lines: instruction.range || {
       start: {
-        line: 0, column: 0
+        line: 0,
+        column: 0
       },
       end: {
-        line: 0, column: 0
+        line: 0,
+        column: 0
       }
     }
   };
@@ -26,7 +32,7 @@ let solidity = createSelectorTree({
   /**
    * solidity.state
    */
-  state: (state) => state.solidity,
+  state: state => state.solidity,
 
   /**
    * solidity.info
@@ -35,32 +41,31 @@ let solidity = createSelectorTree({
     /**
      * solidity.info.sources
      */
-    sources: createLeaf(['/state'], (state) => state.info.sources.byId),
+    sources: createLeaf(["/state"], state => state.info.sources.byId),
 
     /**
      * solidity.info.sourceMaps
      */
-    sourceMaps: createLeaf(['/state'], (state) => state.info.sourceMaps.byContext)
+    sourceMaps: createLeaf(["/state"], state => state.info.sourceMaps.byContext)
   },
 
   /**
    * solidity.current
    */
   current: {
-
     /**
      * solidity.current.sourceMap
      */
     sourceMap: createLeaf(
       [evm.current.context, "/info/sourceMaps"],
 
-      ({context}, sourceMaps) => sourceMaps[context] || {}
+      ({ context }, sourceMaps) => sourceMaps[context] || {}
     ),
 
     /**
      * solidity.current.functionDepth
      */
-    functionDepth: (state) => state.solidity.proc.functionDepth,
+    functionDepth: state => state.solidity.proc.functionDepth,
 
     /**
      * solidity.current.instructions
@@ -68,7 +73,7 @@ let solidity = createSelectorTree({
     instructions: createLeaf(
       ["/info/sources", evm.current.context, "./sourceMap"],
 
-      (sources, {binary}, {sourceMap}) => {
+      (sources, { binary }, { sourceMap }) => {
         if (!binary) {
           return [];
         }
@@ -89,20 +94,23 @@ let solidity = createSelectorTree({
           }
         }
 
-        var lineAndColumnMappings = Object.assign({},
-          ...Object.entries(sources).map(
-            ([id, {source}]) => ({
-              [id]: SolidityUtils.getCharacterOffsetToLineAndColumnMapping(source || "")
-            })
-          )
+        var lineAndColumnMappings = Object.assign(
+          {},
+          ...Object.entries(sources).map(([id, { source }]) => ({
+            [id]: SolidityUtils.getCharacterOffsetToLineAndColumnMapping(
+              source || ""
+            )
+          }))
         );
-        var humanReadableSourceMap = SolidityUtils.getHumanReadableSourceMap(sourceMap);
+        var humanReadableSourceMap = SolidityUtils.getHumanReadableSourceMap(
+          sourceMap
+        );
 
         let primaryFile = humanReadableSourceMap[0].file;
         debug("primaryFile %o", primaryFile);
 
         return instructions
-          .map( (instruction, index) => {
+          .map((instruction, index) => {
             // lookup source map by index and add `index` property to
             // instruction
             //
@@ -111,20 +119,29 @@ let solidity = createSelectorTree({
 
             return {
               instruction: { ...instruction, index },
-              sourceMap,
+              sourceMap
             };
           })
-          .map( ({ instruction, sourceMap}) => {
+          .map(({ instruction, sourceMap }) => {
             // add source map information to instruction, or defaults
             //
 
-            const { jump, start = 0, length = 0, file = primaryFile } = sourceMap;
+            const {
+              jump,
+              start = 0,
+              length = 0,
+              file = primaryFile
+            } = sourceMap;
             const lineAndColumnMapping = lineAndColumnMappings[file] || {};
             const range = {
-              start: lineAndColumnMapping[start] ||
-                { line: null, column: null },
-              end: lineAndColumnMapping[start + length] ||
-                { line: null, column: null }
+              start: lineAndColumnMapping[start] || {
+                line: null,
+                column: null
+              },
+              end: lineAndColumnMapping[start + length] || {
+                line: null,
+                column: null
+              }
             };
 
             if (range.start.line === null) {
@@ -150,7 +167,7 @@ let solidity = createSelectorTree({
     instructionAtProgramCounter: createLeaf(
       ["./instructions"],
 
-      (instructions) => {
+      instructions => {
         let map = [];
         instructions.forEach(function(instruction) {
           map[instruction.pc] = instruction;
@@ -184,7 +201,7 @@ let solidity = createSelectorTree({
     source: createLeaf(
       ["/info/sources", "./instruction"],
 
-      (sources, {file: id}) => sources[id] || {}
+      (sources, { file: id }) => sources[id] || {}
     ),
 
     /**
@@ -224,19 +241,80 @@ let solidity = createSelectorTree({
     isMultiline: createLeaf(
       ["./sourceRange"],
 
-      ( {lines} ) => lines.start.line != lines.end.line
+      ({ lines }) => lines.start.line != lines.end.line
     ),
 
     /**
      * solidity.current.willJump
      */
-    willJump: createLeaf([evm.current.step.isJump], (isJump) => isJump),
+    willJump: createLeaf([evm.current.step.isJump], isJump => isJump),
 
     /**
      * solidity.current.jumpDirection
      */
-    jumpDirection: createLeaf(
-      ["./instruction"], (i = {}) => (i.jump || "-")
+    jumpDirection: createLeaf(["./instruction"], (i = {}) => i.jump || "-"),
+
+    /**
+     * solidity.current.willCall
+     * NOTE: this includes creations
+     */
+    willCall: createLeaf(
+      [evm.current.step.isCall, evm.current.step.isCreate],
+      (isCall, isCreate) => isCall || isCreate
+    ),
+
+    /**
+     * solidity.current.willReturn
+     */
+    willReturn: createLeaf(
+      [evm.current.step.isHalting],
+      isHalting => isHalting
+    ),
+
+    //HACK: DUPLICATE CODE FOLLOWS
+    //The following code duplicates some selectors in ast.
+    //This exists to suppor the solidity.current.contractCall workaround below.
+    //This should be cleaned up later.
+
+    /**
+     * solidity.current.pointer
+     * HACK duplicates ast.current.pointer
+     */
+    pointer: createLeaf(
+      ["./source", "./sourceRange"],
+
+      ({ ast }, range) => findRange(ast, range.start, range.length)
+    ),
+
+    /**
+     * solidity.current.node
+     * HACK duplicates ast.current.node
+     */
+    node: createLeaf(
+      ["./source", "./pointer"],
+      ({ ast }, pointer) =>
+        pointer ? jsonpointer.get(ast, pointer) : jsonpointer.get(ast, "")
+    ),
+
+    /**
+     * solidity.current.isContractCall
+     * HACK WORKAROUND
+     * this selector exists to work around a problem in solc
+     * it attempts to detect whether the current node is a contract method call
+     * (or library method call)
+     * it will not successfully detect this if the method was first placed in a
+     * function variable, only if it is being called directly
+     */
+    isContractCall: createLeaf(
+      ["./node"],
+      node =>
+        node !== undefined &&
+        node.nodeType === "FunctionCall" &&
+        node.expression !== undefined &&
+        node.expression.nodeType === "MemberAccess" &&
+        node.expression.expression !== undefined &&
+        (isContract(node.expression.expression) ||
+          isContractType(node.expression.expression))
     )
   }
 });

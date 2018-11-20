@@ -1,12 +1,10 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:evm:selectors");
+const debug = debugModule("debugger:evm:selectors"); // eslint-disable-line no-unused-vars
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import levenshtein from "fast-levenshtein";
 
 import trace from "lib/trace/selectors";
-
-const WORD_SIZE = 0x20;
 
 /**
  * create EVM-level selectors for a given trace step selector
@@ -19,24 +17,19 @@ function createStepSelectors(step, state = null) {
      *
      * trace step info related to operation
      */
-    trace: createLeaf(
-      [step], ({gasCost, op, pc}) => ({gasCost, op, pc})
-    ),
+    trace: createLeaf([step], ({ gasCost, op, pc }) => ({ gasCost, op, pc })),
 
     /**
      * .programCounter
      */
-    programCounter: createLeaf(
-      ["./trace"], (step) => step.pc
-    ),
+    programCounter: createLeaf(["./trace"], step => step.pc),
 
     /**
      * .isJump
      */
     isJump: createLeaf(
-      ["./trace"], (step) => (
-        step.op != "JUMPDEST" && step.op.indexOf("JUMP") == 0
-      )
+      ["./trace"],
+      step => step.op != "JUMPDEST" && step.op.indexOf("JUMP") == 0
     ),
 
     /**
@@ -45,15 +38,14 @@ function createStepSelectors(step, state = null) {
      * whether the opcode will switch to another calling context
      */
     isCall: createLeaf(
-      ["./trace"], (step) => step.op == "CALL" || step.op == "DELEGATECALL"
+      ["./trace"],
+      step => step.op == "CALL" || step.op == "DELEGATECALL"
     ),
 
     /**
      * .isCreate
      */
-    isCreate: createLeaf(
-      ["./trace"], (step) => step.op == "CREATE"
-    ),
+    isCreate: createLeaf(["./trace"], step => step.op == "CREATE"),
 
     /**
      * .isHalting
@@ -61,16 +53,15 @@ function createStepSelectors(step, state = null) {
      * whether the instruction halts or returns from a calling context
      */
     isHalting: createLeaf(
-      ["./trace"], (step) => step.op == "STOP" || step.op == "RETURN"
+      ["./trace"],
+      step => step.op == "STOP" || step.op == "RETURN"
     )
   };
 
   if (state) {
-    const isRelative = (path) => (
-      typeof path == "string" && (
-        path.startsWith("./") || path.startsWith("../")
-      )
-    );
+    const isRelative = path =>
+      typeof path == "string" &&
+      (path.startsWith("./") || path.startsWith("../"));
 
     if (isRelative(state)) {
       state = `../${state}`;
@@ -85,7 +76,7 @@ function createStepSelectors(step, state = null) {
       callAddress: createLeaf(
         ["./isCall", "./trace", state],
 
-        (matches, step, {stack}) => {
+        (matches, step, { stack }) => {
           if (!matches) return null;
 
           let address = stack[stack.length - 2];
@@ -102,7 +93,7 @@ function createStepSelectors(step, state = null) {
       createBinary: createLeaf(
         ["./isCreate", "./trace", state],
 
-        (matches, step, {stack, memory}) => {
+        (matches, step, { stack, memory }) => {
           if (!matches) return null;
 
           // Get the code that's going to be created from memory.
@@ -123,7 +114,7 @@ const evm = createSelectorTree({
   /**
    * evm.state
    */
-  state: (state) => state.evm,
+  state: state => state.evm,
 
   /**
    * evm.info
@@ -132,56 +123,54 @@ const evm = createSelectorTree({
     /**
      * evm.info.contexts
      */
-    contexts: createLeaf(['/state'], (state) => state.info.contexts.byContext),
+    contexts: createLeaf(["/state"], state => state.info.contexts.byContext),
 
     /**
      * evm.info.instances
      */
-    instances: createLeaf(['/state'], (state) => state.info.instances.byAddress),
+    instances: createLeaf(["/state"], state => state.info.instances.byAddress),
 
     /**
      * evm.info.binaries
      */
     binaries: {
-      _: createLeaf(['/state'], (state) => state.info.contexts.byBinary),
+      _: createLeaf(["/state"], state => state.info.contexts.byBinary),
 
       /**
        * evm.info.binaries.search
        *
        * returns function (binary) => context
        */
-      search: createLeaf(['./_'], (binaries) =>
-        (binary) => {
-          // search for a given binary based on levenshtein distances to
-          // existing (known) context binaries.
-          //
-          // levenshtein distance is the number of textual modifications
-          // (insert, change, delete) required to convert string a to b
-          //
-          // filter by a percentage threshold
-          const threshold = 0.25;
+      search: createLeaf(["./_"], binaries => binary => {
+        // search for a given binary based on levenshtein distances to
+        // existing (known) context binaries.
+        //
+        // levenshtein distance is the number of textual modifications
+        // (insert, change, delete) required to convert string a to b
+        //
+        // filter by a percentage threshold
+        const threshold = 0.25;
 
-          // skip levenshtein check for undefined binaries
-          if (!binary || binary == "0x0") {
-            return {};
-          }
-
-          const results = Object.entries(binaries)
-            .map( ([ knownBinary, { context } ]) => ({
-              context,
-              distance: levenshtein.get(knownBinary, binary)
-            }))
-            .filter( ({ distance }) => distance <= binary.length * threshold )
-            .sort( ({distance: a}, {distance: b}) => a - b );
-
-          if (results[0]) {
-            const { context } = results[0];
-            return { context };
-          }
-
+        // skip levenshtein check for undefined binaries
+        if (!binary || binary == "0x0") {
           return {};
         }
-      )
+
+        const results = Object.entries(binaries)
+          .map(([knownBinary, { context }]) => ({
+            context,
+            distance: levenshtein.get(knownBinary, binary)
+          }))
+          .filter(({ distance }) => distance <= binary.length * threshold)
+          .sort(({ distance: a }, { distance: b }) => a - b);
+
+        if (results[0]) {
+          const { context } = results[0];
+          return { context };
+        }
+
+        return {};
+      })
     }
   },
 
@@ -189,11 +178,10 @@ const evm = createSelectorTree({
    * evm.current
    */
   current: {
-
     /**
      * evm.current.callstack
      */
-    callstack: (state) => state.evm.proc.callstack,
+    callstack: state => state.evm.proc.callstack,
 
     /**
      * evm.current.call
@@ -201,7 +189,17 @@ const evm = createSelectorTree({
     call: createLeaf(
       ["./callstack"],
 
-      (stack) => stack.length ? stack[stack.length - 1] : {}
+      stack => (stack.length ? stack[stack.length - 1] : {})
+    ),
+
+    /**
+     * evm.current.creationDepth
+     * how many creation calls are currently on the call stack?
+     */
+    creationDepth: createLeaf(
+      ["./callstack"],
+
+      stack => stack.filter(call => call.address === undefined).length
     ),
 
     /**
@@ -210,7 +208,7 @@ const evm = createSelectorTree({
     context: createLeaf(
       ["./call", "/info/instances", "/info/binaries/search", "/info/contexts"],
 
-      ({address, binary}, instances, search, contexts) => {
+      ({ address, binary }, instances, search, contexts) => {
         let record;
         if (address) {
           record = instances[address];
@@ -236,18 +234,12 @@ const evm = createSelectorTree({
      *
      * evm state info: as of last operation, before op defined in step
      */
-    state: Object.assign({}, ...(
-      [
-        "depth",
-        "error",
-        "gas",
-        "memory",
-        "stack",
-        "storage"
-      ].map( (param) => ({
-        [param]: createLeaf([trace.step], (step) => step[param])
+    state: Object.assign(
+      {},
+      ...["depth", "error", "gas", "memory", "stack", "storage"].map(param => ({
+        [param]: createLeaf([trace.step], step => step[param])
       }))
-    )),
+    ),
 
     /**
      * evm.current.step
@@ -259,24 +251,17 @@ const evm = createSelectorTree({
    * evm.next
    */
   next: {
-
     /**
      * evm.next.state
      *
      * evm state as a result of next step operation
      */
-    state: Object.assign({}, ...(
-      [
-        "depth",
-        "error",
-        "gas",
-        "memory",
-        "stack",
-        "storage"
-      ].map( (param) => ({
-        [param]: createLeaf([trace.next], (step) => step[param])
+    state: Object.assign(
+      {},
+      ...["depth", "error", "gas", "memory", "stack", "storage"].map(param => ({
+        [param]: createLeaf([trace.next], step => step[param])
       }))
-    )),
+    ),
 
     step: createStepSelectors(trace.next, "./state")
   }

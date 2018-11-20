@@ -7,7 +7,9 @@ var debug = require("debug")("ganache-core");
 var TestRPC = require("ganache-core");
 var path = require("path");
 var fs = require("fs");
-var solc = require("solc");
+var Compile = require("truffle-compile");
+const { promisify } = require("util");
+
 // Clean up after solidity. Only remove solidity's listener,
 // which happens to be the first.
 process.removeListener(
@@ -117,7 +119,7 @@ describe("Library linking with contract objects", function() {
     });
   });
 
-  before(function() {
+  before(async function() {
     this.timeout(10000);
 
     const exampleLibraryPath = path.join(
@@ -140,28 +142,38 @@ describe("Library linking with contract objects", function() {
       )
     };
 
+    const options = {
+      contracts_directory: path.join(__dirname, "sources"),
+      compilers: {
+        solc: {
+          version: "0.5.0",
+          settings: {}
+        }
+      }
+    };
+
     // Compile first
-    var result = solc.compile({ sources: sources }, 1);
+    var result = await promisify(Compile)(sources, options);
 
     var library, libraryContractName;
-    if (result.contracts["ExampleLibrary"]) {
+    if (result["ExampleLibrary"]) {
       libraryContractName = "ExampleLibrary";
     } else {
       libraryContractName = "ExampleLibrary.sol:ExampleLibrary";
     }
-    library = result.contracts[libraryContractName];
+    library = result[libraryContractName];
     library.contractName = libraryContractName;
     ExampleLibrary = contract(library);
     ExampleLibrary.setProvider(provider);
 
     var consumer, consumerContractName;
-    if (result.contracts["ExampleLibraryConsumer"]) {
+    if (result["ExampleLibraryConsumer"]) {
       consumerContractName = "ExampleLibraryConsumer";
     } else {
       consumerContractName =
         "ExampleLibraryConsumer.sol:ExampleLibraryConsumer";
     }
-    consumer = result.contracts[consumerContractName];
+    consumer = result[consumerContractName];
     consumer.contractName = consumerContractName;
     ExampleLibraryConsumer = contract(consumer);
     ExampleLibraryConsumer.setProvider(provider);

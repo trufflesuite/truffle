@@ -10,8 +10,14 @@ describe("Parser", function() {
   var solc;
 
   before("get code", async function() {
-    source = fs.readFileSync(path.join(__dirname, "./mock/MyContract.sol"), "utf-8");
-    erroneousSource = fs.readFileSync(path.join(__dirname, "./mock/ShouldError.sol"), "utf-8");
+    source = fs.readFileSync(
+      path.join(__dirname, "./sources/badSources/MyContract.sol"),
+      "utf-8"
+    );
+    erroneousSource = fs.readFileSync(
+      path.join(__dirname, "./sources/badSources/ShouldError.sol"),
+      "utf-8"
+    );
 
     const supplier = new CompilerSupplier();
     solc = await supplier.load();
@@ -24,10 +30,10 @@ describe("Parser", function() {
     // output cuts off path prefixes like "./" and "../../../". If we get the
     // imports list incorrectly, we'll have collisions.
     var expected = [
-      './Dependency.sol',
-      './path/to/AnotherDep.sol',
-      '../../../path/to/AnotherDep.sol',
-      'ethpmpackage/Contract.sol'
+      "./Dependency.sol",
+      "./path/to/AnotherDep.sol",
+      "../../../path/to/AnotherDep.sol",
+      "ethpmpackage/Contract.sol"
     ];
 
     assert.deepEqual(imports, expected);
@@ -37,7 +43,7 @@ describe("Parser", function() {
     var error = null;
     try {
       Parser.parseImports(erroneousSource, solc);
-    } catch(e) {
+    } catch (e) {
       error = e;
     }
 
@@ -45,6 +51,9 @@ describe("Parser", function() {
       throw new Error("Expected a parse error but didn't get one!");
     }
 
-    assert(error.message.indexOf("Expected pragma, import directive or contract") >= 0);
+    assert(
+      error.message.indexOf("Expected pragma, import directive or contract") >=
+        0
+    );
   });
 });
