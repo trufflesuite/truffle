@@ -49,7 +49,6 @@ function formatCommands(commands) {
 function normalizeDestination(destination, working_directory) {
   const path = require("path");
   destination = path.join(working_directory, destination);
-  console.log(destination);
   return destination;
 }
 
