@@ -52,10 +52,11 @@ Each instance is tied to a specific address on the Ethereum network, and each in
 
 ### Browser Usage
 
-In your `head` element, include Web3 and then include truffle-contract:
+In your `head` element, include Web3 and Ethers.js and then include truffle-contract:
 
 ```
 <script type="text/javascript" src="./path/to/web3.min.js"></script>
+<script type="text/javascript" src="./path/to/ethers.min.js"></script>
 <script type="text/javascript" src="./dist/truffle-contract.min.js"></script>
 ```
 
