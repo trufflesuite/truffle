@@ -5,7 +5,6 @@ import { assert } from "chai";
 
 import Ganache from "ganache-cli";
 
-import Web3 from "web3";
 import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
 
@@ -72,7 +71,6 @@ describe("Solidity Debugging", function() {
 
   before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
-    web3 = new Web3(provider);
   });
 
   before("Prepare contracts and artifacts", async function() {

@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:data:reducers"); // eslint-disable-line no-unused-vars
+const debug = debugModule("debugger:data:reducers");
 
 import { combineReducers } from "redux";
 
@@ -95,7 +95,7 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
       return {
         byId: Object.assign(
           {},
-          ...Object.entries(state.byId).map(([assignment]) => {
+          ...Object.entries(state.byId).map(([, assignment]) => {
             let newAssignment = learnAddress(assignment, dummyAddress, address);
             return {
               [newAssignment.id]: newAssignment
