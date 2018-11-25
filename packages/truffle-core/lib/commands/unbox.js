@@ -9,7 +9,7 @@ function normalizeURL(
 ) {
   // full URL already
   if (url.includes("://") || url.includes("git@")) {
-    url = url;
+    return url;
   }
 
   if (url.split("/").length === 2) {
@@ -61,19 +61,29 @@ function normalizeDestination(destination, working_directory) {
 function normalizeInput(options) {
   let url = options;
   let subDir;
+
   try {
     url = options.match(/(.*):/)[1]; // attempts to parse url from :path/to/subDir
+    // handles instance where full url is being passed w/o a path
+    if (url.includes("http") && !url.includes("//")) return [options, ""];
+    // handles instance where git@ is being passed w/o a path
+    if (url.includes("git") && !url.includes("/")) return [options, ""];
   } catch (_) {
+    // return url if regex fails (no path specified)
     return [url, ""];
   }
+
   try {
+    // if a path was specified
     subDir = options.match(/:(?!\/)(.*)/)[1]; // enforces relative paths
+    // parses again if passed url git@ with path
+    if (url.includes("git@")) subDir = subDir.match(/:(?!\/)(.*)/)[1];
   } catch (_) {
     throw new Error(
       `${options} not allowed! Please use a relative path (:path/to/subDir)`
     );
   }
-
+  // returns the parsed url & relative path
   return [url, subDir];
 }
 
