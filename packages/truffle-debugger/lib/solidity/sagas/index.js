@@ -31,9 +31,7 @@ function* functionDepthSaga() {
     let jumpDirection = yield select(solidity.current.jumpDirection);
 
     yield put(actions.jump(jumpDirection));
-  }
-
-  else if (yield select(solidity.current.willCall)) {
+  } else if (yield select(solidity.current.willCall)) {
     debug("about to call");
     //HACK WORKAROUND
     //because of the solc problem where contract method calls essentially
@@ -41,20 +39,15 @@ function* functionDepthSaga() {
     //call.  Note that this won't work if the contract method was previously
     //placed in a function variable!  Those will continue to screw things up!
     //But if a contract call is being made directly, we can detect that.
-    if(yield select(solidity.current.isContractCall))
-    {
+    if (yield select(solidity.current.isContractCall)) {
       debug("workaround invoked!");
       yield put(actions.jump("2"));
-    }
-    else
-    {
+    } else {
       yield put(actions.jump("i"));
     }
-  }
-  else if (yield select(solidity.current.willReturn)) {
+  } else if (yield select(solidity.current.willReturn)) {
     yield put(actions.jump("o"));
   }
-
 }
 
 export function* reset() {
