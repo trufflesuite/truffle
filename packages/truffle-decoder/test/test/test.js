@@ -1,12 +1,12 @@
 const assert = require("assert");
-const util = require("util");
+const util = require("util"); // eslint-disable-line no-unused-vars
 
 const TruffleDecoder = require("../../../truffle-decoder");
 
 const DecodingSample = artifacts.require("DecodingSample");
 
 // eslint-disable-next-line no-unused-vars
-contract.skip("DecodingSample", accounts => {
+contract("DecodingSample", accounts => {
   it("should get the initial state properly", async () => {
     await DecodingSample.deployed();
     const decoder = TruffleDecoder.forContract(
@@ -18,13 +18,14 @@ contract.skip("DecodingSample", accounts => {
 
     const initialState = await decoder.state();
 
-    console.log(
-      util.inspect(initialState, {
-        showHidden: false,
-        depth: null,
-        colors: true
-      })
-    );
+    // used for debugging test results
+    // console.log(
+    //   util.inspect(initialState, {
+    //     showHidden: false,
+    //     depth: null,
+    //     colors: true
+    //   })
+    // );
 
     assert(initialState.name === "DecodingSample");
     const variables = initialState.variables;
@@ -52,18 +53,18 @@ contract.skip("DecodingSample", accounts => {
         "0x54321567890abcdeffedcba09876543211337121"
     );
 
-    const s2 = struct.members.structS2.value;
-    assert(typeof s2 === "object");
-    assert(s2.members.structTwoFixedArrayUint.value[0].toString() === "4");
-    assert(s2.members.structTwoFixedArrayUint.value[1].toString() === "2");
-    assert(s2.members.structTwoDynamicArrayUint.value.length === 3);
-    assert(s2.members.structTwoDynamicArrayUint.value[0].toString() === "4");
-    assert(s2.members.structTwoDynamicArrayUint.value[1].toString() === "8");
-    assert(s2.members.structTwoDynamicArrayUint.value[2].toString() === "12");
+    // const s2 = struct.members.structS2.value;
+    // assert(typeof s2 === "object");
+    // assert(s2.members.structTwoFixedArrayUint.value[0].toString() === "4");
+    // assert(s2.members.structTwoFixedArrayUint.value[1].toString() === "2");
+    // assert(s2.members.structTwoDynamicArrayUint.value.length === 3);
+    // assert(s2.members.structTwoDynamicArrayUint.value[0].toString() === "4");
+    // assert(s2.members.structTwoDynamicArrayUint.value[1].toString() === "8");
+    // assert(s2.members.structTwoDynamicArrayUint.value[2].toString() === "12");
 
-    //await instance.generateMagicSquare(1, {from: accounts[0], value: web3.utils.toWei("0.1", "ether")});
-    //await instance.generateMagicSquare(2, {from: accounts[0]});
+    // await instance.generateMagicSquare(1, {from: accounts[0], value: web3.utils.toWei("0.1", "ether")});
+    // await instance.generateMagicSquare(2, {from: accounts[0]});
 
-    //const mappingValue = await decoder.mapping(contractState.variables["myMap"].value.id, [17]);
+    // const mappingValue = await decoder.mapping(contractState.variables["myMap"].value.id, [17]);
   });
 });
