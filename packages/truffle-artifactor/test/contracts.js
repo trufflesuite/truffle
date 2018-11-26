@@ -4,11 +4,12 @@ var contract = require("truffle-contract");
 var Schema = require("truffle-contract-schema");
 var temp = require("temp").track();
 var path = require("path");
-var solc = require("solc");
 var fs = require("fs");
 var requireNoCache = require("require-nocache")(module);
+var Compile = require("truffle-compile");
 var TestRPC = require("ganache-cli");
 var Web3 = require("web3");
+const { promisify } = require("util");
 
 describe("artifactor + require", function() {
   var Example;
@@ -25,14 +26,26 @@ describe("artifactor + require", function() {
     return web3.eth.net.getId().then(id => (network_id = id));
   });
 
-  before(function(done) {
+  before(async function() {
     this.timeout(20000);
 
+    const sourcePath = path.join(__dirname, "Example.sol");
+    const sources = {
+      Example: fs.readFileSync(sourcePath, { encoding: "utf8" })
+    };
+
+    const options = {
+      contracts_directory: path.join(__dirname),
+      compilers: {
+        solc: {
+          version: "0.5.0",
+          settings: {}
+        }
+      }
+    };
+
     // Compile first
-    var result = solc.compile(
-      fs.readFileSync("./test/Example.sol", { encoding: "utf8" }),
-      1
-    );
+    var result = await promisify(Compile)(sources, options);
 
     // Clean up after solidity. Only remove solidity's listener,
     // which happens to be the first.
@@ -41,7 +54,7 @@ describe("artifactor + require", function() {
       process.listeners("uncaughtException")[0] || function() {}
     );
 
-    var compiled = Schema.normalize(result.contracts[":Example"]);
+    var compiled = Schema.normalize(result["Example"]);
     abi = compiled.abi;
     binary = compiled.bytecode;
 
@@ -55,7 +68,7 @@ describe("artifactor + require", function() {
 
     artifactor = new Artifactor(dirPath);
 
-    artifactor
+    await artifactor
       .save({
         contractName: "Example",
         abi: abi,
@@ -67,9 +80,7 @@ describe("artifactor + require", function() {
         var json = requireNoCache(expected_filepath);
         Example = contract(json);
         Example.setProvider(provider);
-      })
-      .then(done)
-      .catch(done);
+      });
   });
 
   before(function() {

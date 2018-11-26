@@ -1,4 +1,4 @@
-pragma solidity ^0.4.8;
+pragma solidity ^0.5.0;
 
 import "./LeafA.sol";
 import "./LeafB.sol";

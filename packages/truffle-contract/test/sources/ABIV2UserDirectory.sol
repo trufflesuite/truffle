@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
 // credit where it's due - this contract was lifted from this gist:
@@ -22,19 +22,19 @@ contract ABIV2UserDirectory {
 
   // User struct in the event
   event UserAdded(address indexed addr, User user);
-  constructor() {
+  constructor() public {
     _admin = msg.sender;
   }
 
   // User struct in the method signature
-  function addUser(User user) public {
+  function addUser(User memory user) public {
     require(msg.sender == _admin);
     _users[user.addr] = user;
     emit UserAdded(user.addr, user);
   }
 
   // User struct in the returns
-  function user(address addr) public view returns (User user) {
+  function user(address addr) public view returns (User memory user) {
     return _users[addr];
   }
 }

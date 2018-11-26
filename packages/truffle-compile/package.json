@@ -1,6 +1,6 @@
 {
   "name": "truffle-compile",
-  "version": "4.0.0-beta.1",
+  "version": "4.0.0-beta.2",
   "description": "Compiler helper and artifact manager",
   "main": "index.js",
   "dependencies": {
@@ -14,11 +14,11 @@
     "request-promise": "^4.2.2",
     "require-from-string": "^2.0.2",
     "semver": "^5.6.0",
-    "solc": "0.4.25",
-    "truffle-config": "^1.1.0-beta.1",
-    "truffle-contract-sources": "^0.1.0-beta.1",
+    "solc": "^0.5.0",
+    "truffle-config": "^1.1.0-beta.2",
+    "truffle-contract-sources": "^0.1.0-beta.2",
     "truffle-error": "^0.0.3",
-    "truffle-expect": "^0.0.4"
+    "truffle-expect": "^0.0.5-beta.0"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
@@ -26,7 +26,7 @@
     "babel-preset-env": "^1.6.1",
     "mocha": "5.2.0",
     "tmp": "0.0.33",
-    "truffle-resolver": "^5.0.0-beta.1"
+    "truffle-resolver": "^5.0.0-beta.2"
   },
   "babel": {
     "presets": [
@@ -55,5 +55,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "07967b472112f1c771ebbc90319781454cf9331b"
+  "gitHead": "f9f25a2d491394ac3df1bab56f9c743d871a1059"
 }

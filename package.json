@@ -9,7 +9,8 @@
     "bootstrap": "./scripts/bootstrap.sh",
     "test": "lerna run test --stream --concurrency=1 -- --colors",
     "ci": "./scripts/ci.sh",
-    "geth": "./scripts/geth.sh"
+    "geth": "./scripts/geth.sh",
+    "solc-bump": "node ./scripts/solc-bump.js"
   },
   "devDependencies": {
     "coveralls": "^3.0.2",

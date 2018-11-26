@@ -23,6 +23,12 @@ export async function prepareContracts(provider, sources = {}, migrations) {
   };
   config.network = "debugger";
 
+  config.compilers = {
+    solc: {
+      version: "0.4.25"
+    }
+  };
+
   await addContracts(config, sources);
   let { contracts, files } = await compile(config);
   let contractNames = Object.keys(contracts);

@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("debugger:trace:sagas");
 
 import { take, takeEvery, put, select } from "redux-saga/effects";
-import { prefixName } from "lib/helpers";
+import { prefixName, isCallMnemonic } from "lib/helpers";
 
 import * as actions from "../actions";
 
@@ -14,7 +14,7 @@ function* waitForTrace() {
   let addresses = [
     ...new Set(
       steps
-        .filter(({ op }) => op == "CALL" || op == "DELEGATECALL")
+        .filter(({ op }) => isCallMnemonic(op))
         .map(({ stack }) => "0x" + stack[stack.length - 2].substring(24))
     )
   ];

@@ -1,6 +1,6 @@
 {
   "name": "truffle-code-utils",
-  "version": "1.1.2-beta.0",
+  "version": "1.1.2-beta.1",
   "description": "",
   "main": "index.js",
   "scripts": {},
@@ -8,5 +8,6 @@
   "license": "MIT",
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "gitHead": "f9f25a2d491394ac3df1bab56f9c743d871a1059"
 }

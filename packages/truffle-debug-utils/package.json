@@ -1,6 +1,6 @@
 {
   "name": "truffle-debug-utils",
-  "version": "1.0.7-beta.0",
+  "version": "1.0.7-beta.1",
   "description": "Integration utils for truffle/truffle-debugger",
   "dependencies": {
     "async": "2.6.1",
@@ -21,5 +21,6 @@
   "homepage": "https://github.com/trufflesuite/truffle-debug-utils#readme",
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "gitHead": "f9f25a2d491394ac3df1bab56f9c743d871a1059"
 }
