@@ -1,6 +1,6 @@
 {
   "name": "truffle-contract-sources",
-  "version": "0.1.0-beta.1",
+  "version": "0.1.0-beta.2",
   "description": "Utility for finding all contracts within a directory",
   "main": "index.js",
   "scripts": {},
@@ -27,5 +27,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "07967b472112f1c771ebbc90319781454cf9331b"
+  "gitHead": "f9f25a2d491394ac3df1bab56f9c743d871a1059"
 }

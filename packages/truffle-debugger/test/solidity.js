@@ -168,7 +168,8 @@ describe("Solidity Debugging", function() {
 
       // follow functionDepth values in list
       // see source above
-      let expectedDepthSequence = [1,2,3,2,1,2,1,0];
+      let expectedDepthSequence = [1,2,3,2,1,2,1,-1];
+        //end at -1 due to losing 2 from contract method return
       let actualSequence = [session.view(solidity.current.functionDepth)];
 
       var finished;

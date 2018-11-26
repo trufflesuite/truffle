@@ -1,3 +1,4 @@
+const debug = require("debug")("contract:utils"); // eslint-disable-line no-unused-vars
 var Web3 = require("web3");
 var ethers = require("ethers");
 var abi = require("web3-eth-abi");
@@ -53,6 +54,10 @@ var Utils = {
 
         copy.event = logABI.name;
         copy.topics = logABI.anonymous ? copy.topics : copy.topics.slice(1);
+
+        if (copy.data === "0x") {
+          copy.data = "";
+        }
 
         const logArgs = abi.decodeLog(logABI.inputs, copy.data, copy.topics);
         copy.args = reformat.numbers.call(constructor, logArgs, logABI.inputs);

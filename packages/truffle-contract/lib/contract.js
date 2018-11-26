@@ -1,3 +1,4 @@
+const debug = require("debug")("contract:contract"); // eslint-disable-line no-unused-vars
 var BlockchainUtils = require("truffle-blockchain-utils");
 var Web3 = require("web3");
 var Web3PromiEvent = require("web3-core-promievent");

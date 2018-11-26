@@ -1,4 +1,5 @@
-var ProviderError = require('./error');
+var debug = require("debug")("provider:wrapper"); // eslint-disable-line no-unused-vars
+var ProviderError = require("./error");
 
 module.exports = {
   /*
@@ -54,7 +55,12 @@ module.exports = {
     return function(payload) {
       if (options.verbose) {
         // for request payload debugging
-        options.logger.log("   > " + JSON.stringify(payload, null, 2).split("\n").join("\n   > "));
+        options.logger.log(
+          "   > " +
+            JSON.stringify(payload, null, 2)
+              .split("\n")
+              .join("\n   > ")
+        );
       }
 
       return payload;
@@ -71,7 +77,12 @@ module.exports = {
       }
 
       if (options.verbose) {
-        options.logger.log(" <   " + JSON.stringify(result, null, 2).split("\n").join("\n <   "));
+        options.logger.log(
+          " <   " +
+            JSON.stringify(result, null, 2)
+              .split("\n")
+              .join("\n <   ")
+        );
       }
 
       return [payload, error, result];
