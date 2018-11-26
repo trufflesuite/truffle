@@ -1,4 +1,5 @@
 const colors = require("colors");
+const commandExistsSync = require("command-exists").sync;
 
 const command = {
   command: "watch",
@@ -20,9 +21,20 @@ const command = {
       ignored: [
         "build/**/**",
         /[\/\\]\./ // Ignore files prefixed with .
-      ],
-      watchman: true
+      ]
     };
+    // Certain large codebases have trouble with the watch command.
+    // Installing watchman resolves some of these issues.
+    if (commandExistsSync("watchman")) {
+      watchOptions.watchman = true;
+    } else {
+      config.logger.log(
+        colors.yellow(
+          "If you have trouble using watch, try installing watchman."
+        )
+      );
+    }
+
     const watchCallback = filePath => {
       const displayPath = path.join(
         "./",
