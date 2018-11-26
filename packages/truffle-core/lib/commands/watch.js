@@ -29,9 +29,7 @@ const command = {
       watchOptions.watchman = true;
     } else {
       config.logger.log(
-        colors.yellow(
-          "If you have trouble using watch, try installing watchman."
-        )
+        "If you have trouble using watch, try installing watchman."
       );
     }
 
