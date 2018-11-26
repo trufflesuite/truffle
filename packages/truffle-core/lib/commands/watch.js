@@ -20,7 +20,8 @@ const command = {
       ignored: [
         "build/**/**",
         /[\/\\]\./ // Ignore files prefixed with .
-      ]
+      ],
+      watchman: true
     };
     const watchCallback = filePath => {
       const displayPath = path.join(
