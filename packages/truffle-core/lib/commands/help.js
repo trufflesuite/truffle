@@ -22,7 +22,7 @@ var command = {
 
     if (commands[selectedCommand]) {
       this.displayCommandHelp(selectedCommand);
-      callback();
+      return callback();
     } else {
       console.log(`\n  Cannot find the given command '${selectedCommand}'`);
       console.log("  Please ensure your command is one of the following: ");
@@ -30,7 +30,7 @@ var command = {
         .sort()
         .forEach(command => console.log(`      ${command}`));
       console.log("");
-      callback();
+      return callback();
     }
   },
   displayCommandHelp: function(selectedCommand) {

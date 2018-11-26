@@ -20,7 +20,7 @@ const command = {
     if (options._.length === 0) {
       const help = require("./help");
       help.displayCommandHelp("run");
-      done();
+      return done();
     }
 
     const customCommand = options._[0];
