@@ -98,6 +98,7 @@ var command = {
         commandMessages.forEach(function(message) {
           config.logger.log(message);
         });
+        config.logger.log("");
 
         if (boxConfig.epilogue) {
           config.logger.log(boxConfig.epilogue.replace("\n", OS.EOL));
