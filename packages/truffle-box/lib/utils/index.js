@@ -48,13 +48,9 @@ module.exports = {
       );
   },
 
-  setupBox: function(boxConfig, destination) {
+  setupBox: (boxConfig, destination) => {
     return Promise.resolve()
-      .then(function() {
-        return unbox.installBoxDependencies(boxConfig, destination);
-      })
-      .then(function() {
-        return boxConfig;
-      });
+      .then(() => unbox.installBoxDependencies(boxConfig, destination))
+      .then(() => boxConfig);
   }
 };
