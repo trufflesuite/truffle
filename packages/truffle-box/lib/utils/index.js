@@ -41,11 +41,11 @@ module.exports = {
     }),
 
   unpackBox: (tempDir, destination, boxConfig, unpackBoxOptions) => {
-    const { force } = unpackBoxOptions;
-
     return Promise.resolve()
       .then(() => unbox.prepareToCopyFiles(tempDir, boxConfig))
-      .then(() => unbox.copyTempIntoDestination(tempDir, destination, force));
+      .then(() =>
+        unbox.copyTempIntoDestination(tempDir, destination, unpackBoxOptions)
+      );
   },
 
   setupBox: function(boxConfig, destination) {

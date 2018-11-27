@@ -87,11 +87,11 @@ function prepareToCopyFiles(tempDir, boxConfig) {
   return Promise.all(promises);
 }
 
-async function promptOverwrites(contentCollisions) {
+async function promptOverwrites(contentCollisions, logger = console) {
   const overwriteContents = [];
 
   for (const file of contentCollisions) {
-    console.log(`${file} already exists in this directory...`);
+    logger.log(`${file} already exists in this directory...`);
     const overwriting = [
       {
         type: "confirm",
@@ -112,7 +112,8 @@ async function promptOverwrites(contentCollisions) {
   return overwriteContents;
 }
 
-async function copyTempIntoDestination(tmpDir, destination, force) {
+async function copyTempIntoDestination(tmpDir, destination, options) {
+  const { force, logger } = options;
   const boxContents = fs.readdirSync(tmpDir);
   const destinationContents = fs.readdirSync(destination);
 
@@ -128,7 +129,7 @@ async function copyTempIntoDestination(tmpDir, destination, force) {
   if (force) {
     shouldCopy = boxContents;
   } else {
-    const overwriteContents = await promptOverwrites(contentCollisions);
+    const overwriteContents = await promptOverwrites(contentCollisions, logger);
     shouldCopy = [...newContents, ...overwriteContents];
   }
 

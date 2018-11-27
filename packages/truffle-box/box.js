@@ -27,36 +27,30 @@ function parseSandboxOptions(options) {
 }
 
 const Box = {
-  unbox: function(url, destination, options) {
+  unbox: (url, destination, options) => {
     let boxConfig, tempCleanupCallback, tempDir;
     options = options || {};
     options.logger = options.logger || { log: () => {} };
     const unpackBoxOptions = {
+      logger: options.logger,
       force: options.force
     };
 
     return Promise.resolve()
-      .then(() => {
-        options.logger.log("Setting up temporary directory...");
-
-        return utils.setUpTempDirectory();
-      })
+      .then(() => utils.setUpTempDirectory())
       .then(({ tempDirPath, cleanupCallback }) => {
         tempCleanupCallback = cleanupCallback;
         tempDir = tempDirPath;
         options.logger.log("Downloading...");
-
         return utils.downloadBox(url, tempDirPath);
       })
       .then(() => {
         options.logger.log("Reading box config...");
-
         return utils.readBoxConfig(tempDir);
       })
       .then(config => {
         boxConfig = config;
         options.logger.log("Unpacking...");
-
         return utils.unpackBox(
           tempDir,
           destination,
@@ -67,7 +61,6 @@ const Box = {
       .then(() => tempCleanupCallback())
       .then(() => {
         options.logger.log("Setting up...");
-
         return utils.setupBox(boxConfig, destination);
       })
       .then(boxConfig => boxConfig)
