@@ -35,7 +35,7 @@ var compile = function(sources, options, callback) {
 
   expect.options(options.compilers, ["solc"]);
 
-  options.compilers.solc.settings = options.compilers.solc.settings || {};
+  options.compilers.solc = options.compilers.solc || {};
 
   // Grandfather in old solc config
   if (options.solc) {
@@ -99,8 +99,8 @@ var compile = function(sources, options, callback) {
     language: "Solidity",
     sources: {},
     settings: {
-      evmVersion: options.compilers.solc.settings.evmVersion,
-      optimizer: options.compilers.solc.settings.optimizer,
+      evmVersion: options.compilers.solc.evmVersion,
+      optimizer: options.compilers.solc.optimizer,
       outputSelection
     }
   };
