@@ -1,8 +1,7 @@
-var utils = require("./lib/utils");
-var tmp = require("tmp");
-var path = require("path");
-
-var Config = require("truffle-config");
+const utils = require("./lib/utils");
+const tmp = require("tmp");
+const path = require("path");
+const Config = require("truffle-config");
 
 function parseSandboxOptions(options) {
   if (typeof options === "function") {
@@ -27,31 +26,55 @@ function parseSandboxOptions(options) {
   }
 }
 
-var Box = {
+const Box = {
   unbox: function(url, destination, options) {
+    let boxConfig, tempCleanupCallback, tempDir;
     options = options || {};
-    options.logger = options.logger || {log: () => {}};
-    const downloadBoxOptions = {
+    options.logger = options.logger || { log: () => {} };
+    const unpackBoxOptions = {
       force: options.force
     };
 
     return Promise.resolve()
       .then(() => {
+        options.logger.log("Setting up temporary directory...");
+
+        return utils.setUpTempDirectory();
+      })
+      .then(({ tempDirPath, cleanupCallback }) => {
+        tempCleanupCallback = cleanupCallback;
+        tempDir = tempDirPath;
         options.logger.log("Downloading...");
 
-        return utils.downloadBox(url, destination, downloadBoxOptions);
+        return utils.downloadBox(url, tempDirPath);
       })
       .then(() => {
+        options.logger.log("Reading box config...");
+
+        return utils.readBoxConfig(tempDir);
+      })
+      .then(config => {
+        boxConfig = config;
         options.logger.log("Unpacking...");
 
-        return utils.unpackBox(destination);
+        return utils.unpackBox(
+          tempDir,
+          destination,
+          boxConfig,
+          unpackBoxOptions
+        );
       })
-      .then((boxConfig) => {
+      .then(() => tempCleanupCallback())
+      .then(() => {
         options.logger.log("Setting up...");
 
         return utils.setupBox(boxConfig, destination);
       })
-      .then((boxConfig) => boxConfig);
+      .then(boxConfig => boxConfig)
+      .catch(error => {
+        if (tempCleanupCallback) tempCleanupCallback();
+        throw new Error(error);
+      });
   },
 
   // options.unsafeCleanup
@@ -61,7 +84,7 @@ var Box = {
   sandbox: function(options, callback) {
     var self = this;
 
-    const {name, unsafeCleanup, setGracefulCleanup} = parseSandboxOptions(
+    const { name, unsafeCleanup, setGracefulCleanup } = parseSandboxOptions(
       options
     );
 
@@ -73,7 +96,7 @@ var Box = {
       tmp.setGracefulCleanup();
     }
 
-    tmp.dir({unsafeCleanup}, function(err, dir) {
+    tmp.dir({ unsafeCleanup }, function(err, dir) {
       if (err) {
         return callback(err);
       }
