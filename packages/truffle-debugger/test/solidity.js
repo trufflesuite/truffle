@@ -16,9 +16,16 @@ pragma solidity ^0.4.18;
 
 contract SingleCall {
   event Called();
+  event Done();
 
   function run() public {
     emit Called();
+  }
+
+  function runSha() public {
+    emit Called();
+    sha256("hello world!");
+    emit Done();
   }
 }
 `;
@@ -53,7 +60,6 @@ contract NestedCall {
   function second() public {
     emit Second();
   }
-
 }
 `;
 
@@ -137,6 +143,29 @@ describe("Solidity Debugging", function() {
 
         assert.isAtMost(actual, maxExpected);
       } while (!finished);
+    });
+
+    it("is unaffected by precompiles", async function() {
+      const numExpected = 1;
+
+      let instance = await abstractions.SingleCall.deployed();
+      let receipt = await instance.runSha();
+      let txHash = receipt.tx;
+
+      let bugger = await Debugger.forTx(txHash, {
+        provider,
+        files,
+        contracts: artifacts
+      });
+
+      let session = bugger.connect();
+
+      while (!session.view(trace.finished)) {
+        let actual = session.view(solidity.current.functionDepth);
+        assert.equal(actual, numExpected);
+
+        session.stepNext();
+      }
     });
 
     it("spelunks correctly", async function() {
