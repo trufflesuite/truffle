@@ -41,10 +41,10 @@ export function reset() {
 }
 
 export const LEARN_ADDRESS = "LEARN_ADDRESS";
-export function learnAddress(dummyAddress, address)
-{
+export function learnAddress(dummyAddress, address) {
   return {
     type: LEARN_ADDRESS,
-    dummyAddress, address
+    dummyAddress,
+    address
   };
 }

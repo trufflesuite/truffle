@@ -4,7 +4,6 @@ const debug = debugModule("test:endstate");
 import { assert } from "chai";
 
 import Ganache from "ganache-cli";
-import Web3 from "web3";
 
 import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
@@ -40,14 +39,12 @@ let sources = {
 
 describe("End State", function() {
   var provider;
-  var web3;
 
   var abstractions;
   var artifacts;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
-    web3 = new Web3(provider);
   });
 
   before("Prepare contracts and artifacts", async function() {
@@ -94,10 +91,10 @@ describe("End State", function() {
 
     session.continueUntilBreakpoint(); //no breakpoints set so advances to end
 
-    debug("DCI %O",session.view(data.current.identifiers));
-    debug("DCIR %O",session.view(data.current.identifiers.refs));
-    debug("DCIN %O",session.view(data.current.identifiers.native));
-    debug("proc.assignments %O",session.view(data.proc.assignments));
+    debug("DCI %O", session.view(data.current.identifiers));
+    debug("DCIR %O", session.view(data.current.identifiers.refs));
+    debug("DCIN %O", session.view(data.current.identifiers.native));
+    debug("proc.assignments %O", session.view(data.proc.assignments));
 
     assert.ok(session.view(sessionSelector.transaction.receipt).status);
     assert.deepEqual(session.view(data.current.identifiers.native), { x: 107 });

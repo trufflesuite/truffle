@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle-config#readme",
   "dependencies": {
+    "configstore": "^4.0.0",
     "find-up": "^2.1.0",
     "lodash": "4.17.10",
     "original-require": "1.0.1",
