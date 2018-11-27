@@ -56,13 +56,11 @@ function Config(truffle_directory, working_directory, network) {
     },
     compilers: {
       solc: {
-        settings: {
-          optimizer: {
-            enabled: false,
-            runs: 200
-          },
-          evmVersion: "byzantium"
-        }
+        optimizer: {
+          enabled: false,
+          runs: 200
+        },
+        evmVersion: "byzantium"
       },
       vyper: {}
     },
