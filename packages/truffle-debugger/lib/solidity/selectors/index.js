@@ -256,12 +256,18 @@ let solidity = createSelectorTree({
 
     /**
      * solidity.current.willCall
-     * NOTE: this includes creations
      */
-    willCall: createLeaf(
-      [evm.current.step.isCall, evm.current.step.isCreate],
-      (isCall, isCreate) => isCall || isCreate
-    ),
+    willCall: createLeaf([evm.current.step.isCall], x => x),
+
+    /**
+     * solidity.current.willCreate
+     */
+    willCreate: createLeaf([evm.current.step.isCreate], x => x),
+
+    /**
+     * solidity.current.callsPrecompile
+     */
+    callsPrecompile: createLeaf([evm.current.step.callsPrecompile], x => x),
 
     /**
      * solidity.current.willReturn
