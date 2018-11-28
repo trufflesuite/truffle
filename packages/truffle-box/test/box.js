@@ -51,15 +51,15 @@ describe("truffle-box Box", () => {
       );
     });
 
-    describe("when an error is thrown in the promise chain", () => {
+    describe("when an error is thrown in the try block", () => {
       beforeEach(() => {
         cleanupCallback = sinon.spy();
         sinon.stub(utils, "downloadBox").throws();
         sinon.stub(utils, "setUpTempDirectory").returns(
           new Promise(resolve => {
             resolve({
-              tempDirPath: destination,
-              cleanupCallback: cleanupCallback
+              path: destination,
+              cleanupCallback
             });
           })
         );

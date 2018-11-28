@@ -4,53 +4,76 @@ const config = require("../config");
 const tmp = require("tmp");
 const cwd = require("process").cwd();
 const path = require("path");
+const ora = require("ora");
 
 module.exports = {
-  downloadBox: (url, destination) =>
-    Promise.resolve()
-      .then(() => unbox.verifyURL(url))
-      .then(() => unbox.fetchRepository(url, destination)),
+  downloadBox: async (url, destination) => {
+    const downloadSpinner = ora("Downloading").start();
+    try {
+      await unbox.verifyURL(url);
+      await unbox.fetchRepository(url, destination);
+      downloadSpinner.succeed();
+    } catch (error) {
+      downloadSpinner.fail();
+      throw new Error(error);
+    }
+  },
 
-  readBoxConfig: destination => {
+  readBoxConfig: async destination => {
+    const readConfigSpinner = ora("Reading config").start();
     const possibleConfigs = [
       path.join(destination, "truffle-box.json"),
       path.join(destination, "truffle-init.json")
     ];
 
-    const configPath = possibleConfigs.reduce(function(path, alt) {
+    const configPath = possibleConfigs.reduce((path, alt) => {
       return path || (fs.existsSync(alt) && alt);
     }, undefined);
 
-    return config.read(configPath);
+    try {
+      const boxConfig = await config.read(configPath);
+      readConfigSpinner.succeed();
+      return boxConfig;
+    } catch (error) {
+      readConfigSpinner.fail();
+      throw new Error(error);
+    }
   },
 
-  setUpTempDirectory: () =>
-    new Promise((resolve, reject) => {
+  setUpTempDirectory: () => {
+    const prepareSpinner = ora("Preparing to download").start();
+    return new Promise((resolve, reject) => {
       const options = {
         dir: cwd,
         unsafeCleanup: true
       };
       tmp.dir(options, (error, dir, cleanupCallback) => {
-        if (error) return reject(error);
+        if (error) {
+          prepareSpinner.fail();
+          return reject(error);
+        }
 
+        prepareSpinner.succeed();
         resolve({
-          tempDirPath: path.join(dir, "box"),
+          path: path.join(dir, "box"),
           cleanupCallback
         });
       });
-    }),
-
-  unpackBox: (tempDir, destination, boxConfig, unpackBoxOptions) => {
-    return Promise.resolve()
-      .then(() => unbox.prepareToCopyFiles(tempDir, boxConfig))
-      .then(() =>
-        unbox.copyTempIntoDestination(tempDir, destination, unpackBoxOptions)
-      );
+    });
   },
 
-  setupBox: (boxConfig, destination) => {
-    return Promise.resolve()
-      .then(() => unbox.installBoxDependencies(boxConfig, destination))
-      .then(() => boxConfig);
+  unpackBox: async (tempDir, destination, boxConfig, unpackBoxOptions) => {
+    await unbox.prepareToCopyFiles(tempDir, boxConfig);
+    await unbox.copyTempIntoDestination(tempDir, destination, unpackBoxOptions);
+  },
+
+  setUpBox: async (boxConfig, destination) => {
+    const setUpSpinner = ora("Setting up box").start();
+    try {
+      await unbox.installBoxDependencies(boxConfig, destination);
+      setUpSpinner.succeed();
+    } catch (error) {
+      setUpSpinner.fail();
+    }
   }
 };
