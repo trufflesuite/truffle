@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("test:reset"); //eslint-disable-line no-unused-vars
+const debug = debugModule("test:reset"); // eslint-disable-line no-unused-vars
 
 import { assert } from "chai";
 
@@ -11,14 +11,14 @@ import Debugger from "lib/debugger";
 import solidity from "lib/solidity/selectors";
 
 const __SETSTHINGS = `
-pragma solidity ^0.4.24;
+pragma solidity ~0.5;
 
 contract SetsThings {
   int x;
   int y;
   int z;
   int w;
-  function run() {
+  function run() public {
     x = 1;
     y = 2;
     z = 3;

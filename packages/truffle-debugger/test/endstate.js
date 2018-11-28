@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("test:endstate");
+const debug = debugModule("test:endstate"); // eslint-disable-line no-unused-vars
 
 import { assert } from "chai";
 
@@ -14,21 +14,21 @@ import data from "lib/data/selectors";
 import * as TruffleDecodeUtils from "truffle-decode-utils";
 
 const __FAILURE = `
-pragma solidity ^0.4.24;
+pragma solidity ~0.5;
 
 contract FailureTest {
-  function run() {
+  function run() public {
     revert();
   }
 }
 `;
 
 const __SUCCESS = `
-pragma solidity ^0.4.24;
+pragma solidity ~0.5;
 
 contract SuccessTest {
 uint x;
-  function run() {
+  function run() public {
     x = 107;
   }
 }

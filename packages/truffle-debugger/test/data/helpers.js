@@ -2,7 +2,6 @@ import debugModule from "debug";
 const debug = debugModule("test:data:decode");
 
 import Ganache from "ganache-cli";
-import Web3 from "web3";
 import { assert } from "chai";
 import changeCase from "change-case";
 import BN from "bn.js";
@@ -11,9 +10,6 @@ import { prepareContracts } from "test/helpers";
 
 import Debugger from "lib/debugger";
 
-import * as TruffleDecodeUtils from "truffle-decode-utils";
-
-import data from "lib/data/selectors";
 import solidity from "lib/solidity/selectors";
 
 export function* generateUints() {
@@ -53,7 +49,6 @@ function lastStatementLine(source) {
 
 async function prepareDebugger(testName, sources) {
   const provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
-  const web3 = new Web3(provider);
 
   let { abstractions, artifacts: contracts, files } = await prepareContracts(
     provider,
@@ -82,7 +77,7 @@ async function prepareDebugger(testName, sources) {
     line: lastStatementLine(source)
   };
 
-  session.addBreakpoint(breakpoint, true);
+  session.addBreakpoint(breakpoint);
 
   session.continueUntilBreakpoint();
 
