@@ -2,6 +2,7 @@ const utils = require("./lib/utils");
 const tmp = require("tmp");
 const path = require("path");
 const Config = require("truffle-config");
+const ora = require("ora");
 
 function parseSandboxOptions(options) {
   if (typeof options === "function") {
@@ -35,22 +36,33 @@ const Box = {
       logger: options.logger,
       force: options.force
     };
+    let downloadSpinner,
+      readConfigSpinner,
+      prepareSpinner,
+      setUpSpinner,
+      cleanUpSpinner;
 
     return Promise.resolve()
-      .then(() => utils.setUpTempDirectory())
+      .then(() => {
+        options.logger.log("");
+        prepareSpinner = ora("Preparing to download").start();
+        return utils.setUpTempDirectory();
+      })
       .then(({ tempDirPath, cleanupCallback }) => {
         tempCleanupCallback = cleanupCallback;
         tempDir = tempDirPath;
-        options.logger.log("Downloading...");
+        prepareSpinner.succeed();
+        downloadSpinner = ora("Downloading").start();
         return utils.downloadBox(url, tempDirPath);
       })
       .then(() => {
-        options.logger.log("Reading box config...");
+        downloadSpinner.succeed();
+        readConfigSpinner = ora("Reading config").start();
         return utils.readBoxConfig(tempDir);
       })
       .then(config => {
+        readConfigSpinner.succeed();
         boxConfig = config;
-        options.logger.log("Unpacking...");
         return utils.unpackBox(
           tempDir,
           destination,
@@ -58,12 +70,19 @@ const Box = {
           unpackBoxOptions
         );
       })
-      .then(() => tempCleanupCallback())
       .then(() => {
-        options.logger.log("Setting up...");
+        cleanUpSpinner = ora("Cleaning up").start();
+        tempCleanupCallback();
+      })
+      .then(() => {
+        cleanUpSpinner.succeed();
+        setUpSpinner = ora("Setting up box").start();
         return utils.setupBox(boxConfig, destination);
       })
-      .then(boxConfig => boxConfig)
+      .then(boxConfig => {
+        setUpSpinner.succeed();
+        return boxConfig;
+      })
       .catch(error => {
         if (tempCleanupCallback) tempCleanupCallback();
         throw new Error(error);

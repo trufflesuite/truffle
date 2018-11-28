@@ -89,7 +89,7 @@ var command = {
 
     Box.unbox(url, config.working_directory, unboxOptions)
       .then(boxConfig => {
-        config.logger.log("Unbox successful. Sweet!" + OS.EOL);
+        config.logger.log("\nUnbox successful. Sweet!" + OS.EOL);
 
         var commandMessages = formatCommands(boxConfig.commands);
         if (commandMessages.length > 0) {
