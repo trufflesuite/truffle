@@ -211,18 +211,24 @@ function Config(truffle_directory, working_directory, network) {
           return null;
         }
 
-        // use memoized provider (NOTE this requires reset if network changes)
-        if (providerMemo) {
-          return providerMemo;
-        }
-
+        // collect provider options from network config + global flags
         var options = self.network_config;
         options.verboseRpc = self.verboseRpc;
 
+        // check explicit `memoize` config value otherwise default enable
+        const shouldMemoize = "memoize" in options ? options.memoize : true;
+
+        // use memoized provider (NOTE this requires reset if network changes)
+        if (shouldMemoize && providerMemo) {
+          return providerMemo;
+        }
+
         const provider = Provider.create(options);
 
-        // set memo
-        providerMemo = provider;
+        if (shouldMemoize) {
+          // set memo
+          providerMemo = provider;
+        }
 
         return provider;
       },
