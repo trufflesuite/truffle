@@ -199,8 +199,9 @@ describe("Variable IDs", function() {
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
 
-    session.addBreakpoint({ sourceId: 1, line: 12 });
-    session.addBreakpoint({ sourceId: 1, line: 22 });
+    let sourceId = session.view(solidity.current.source).id;
+    session.addBreakpoint({ sourceId, line: 12 });
+    session.addBreakpoint({ sourceId, line: 22 });
 
     var values = [];
 
@@ -236,7 +237,8 @@ describe("Variable IDs", function() {
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
 
-    session.addBreakpoint({ sourceId: 0, line: 32 });
+    let sourceId = session.view(solidity.current.source).id;
+    session.addBreakpoint({ sourceId, line: 32 });
     session.continueUntilBreakpoint();
     debug("node %o", session.view(solidity.current.node));
     assert.equal(
@@ -264,7 +266,8 @@ describe("Variable IDs", function() {
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
 
-    session.addBreakpoint({ sourceId: 2, line: 18 });
+    let sourceId = session.view(solidity.current.source).id;
+    session.addBreakpoint({ sourceId, line: 18 });
     session.continueUntilBreakpoint();
     assert.property(await session.variables(), "flag");
   });
@@ -283,7 +286,8 @@ describe("Variable IDs", function() {
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
 
-    session.addBreakpoint({ sourceId: 2, line: 27 });
+    let sourceId = session.view(solidity.current.source).id;
+    session.addBreakpoint({ sourceId, line: 27 });
     session.continueUntilBreakpoint();
     assert.property(await session.variables(), "flag");
   });

@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("debugger:data:selectors"); // eslint-disable-line no-unused-vars
+
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import jsonpointer from "json-pointer";
 
@@ -13,7 +16,7 @@ import { forEvmState } from "truffle-decoder";
 /**
  * @private
  */
-const identity = (x) => x
+const identity = x => x;
 
 function createStateSelectors({ stack, memory, storage }) {
   return {
@@ -143,7 +146,8 @@ const data = createSelectorTree({
      * data.proc.assignments
      */
     assignments: createLeaf(
-      ["/state"], (state) => state.proc.assignments
+      ["/state"],
+      state => state.proc.assignments
       //note: this no longer fetches just the byId, but rather the whole
       //assignments object
     ),
@@ -190,23 +194,20 @@ const data = createSelectorTree({
      * data.current.functionDepth
      */
 
-    functionDepth: createLeaf(
-      [solidity.current.functionDepth], identity),
+    functionDepth: createLeaf([solidity.current.functionDepth], identity),
 
     /**
      * data.current.address
      * Note: May be undefined (if in an initializer)
      */
 
-    address: createLeaf(
-      [evm.current.call], (call) => call.address),
+    address: createLeaf([evm.current.call], call => call.address),
 
     /**
      * data.current.dummyAddress
      */
 
-    dummyAddress: createLeaf(
-      [evm.current.creationDepth], identity),
+    dummyAddress: createLeaf([evm.current.creationDepth], identity),
 
     /**
      * data.current.identifiers (namespace)
@@ -228,6 +229,7 @@ const data = createSelectorTree({
             variables = Object.assign(
               variables,
               ...(scopes[cur].variables || [])
+                .filter(v => v.name !== "") //exclude anonymous output params
                 .filter(v => variables[v.name] == undefined)
                 .map(v => ({ [v.name]: v.id }))
             );
@@ -273,60 +275,60 @@ const data = createSelectorTree({
         ],
 
         (assignments, identifiers, currentDepth, address, dummyAddress) =>
-          Object.assign({},
-            ...Object.entries(identifiers)
-              .map( ([identifier, astId]) => {
-                //note: this needs tweaking for specials later
-                let id;
+          Object.assign(
+            {},
+            ...Object.entries(identifiers).map(([identifier, astId]) => {
+              //note: this needs tweaking for specials later
+              let id;
 
-                //first, check if it's a contract var
-                if(address !== undefined) {
-                  let matchIds = (assignments.byAstId[astId] || []).filter(
-                    (idHash) => assignments.byId[idHash].address === address
-                  )
-                  if(matchIds.length > 0) {
-                    id = matchIds[0]; //there should only be one!
-                  }
+              //first, check if it's a contract var
+              if (address !== undefined) {
+                let matchIds = (assignments.byAstId[astId] || []).filter(
+                  idHash => assignments.byId[idHash].address === address
+                );
+                if (matchIds.length > 0) {
+                  id = matchIds[0]; //there should only be one!
                 }
-                else {
-                  let matchIds = (assignments.byAstId[astId] || []).filter(
-                    (idHash) => assignments.byId[idHash].dummyAddress
-                      === dummyAddress
-                  )
-                  if(matchIds.length > 0) {
-                    id = matchIds[0]; //again, there should only be one!
-                  }
+              } else {
+                let matchIds = (assignments.byAstId[astId] || []).filter(
+                  idHash =>
+                    assignments.byId[idHash].dummyAddress === dummyAddress
+                );
+                if (matchIds.length > 0) {
+                  id = matchIds[0]; //again, there should only be one!
                 }
-              
-                //if not contract, it's local, so find the innermost
-                //(but not beyond current depth)
-                if(id === undefined){
-                  let matchFrames = (assignments.byAstId[astId] || []).map(
-                    (id) => assignments.byId[id].stackframe
-                  ).filter(
-                    (stackframe) => stackframe !== undefined
+              }
+
+              //if not contract, it's local, so find the innermost
+              //(but not beyond current depth)
+              if (id === undefined) {
+                let matchFrames = (assignments.byAstId[astId] || [])
+                  .map(id => assignments.byId[id].stackframe)
+                  .filter(stackframe => stackframe !== undefined);
+
+                if (matchFrames.length > 0) {
+                  //this check isn't *really*
+                  //necessary, but may as well prevent stupid stuff
+                  let maxMatch = Math.min(
+                    currentDepth,
+                    Math.max(...matchFrames)
                   );
-
-                  if(matchFrames.length > 0) //this check isn't *really*
-                    //necessary, but may as well prevent stupid stuff
-                  {
-                    let maxMatch = Math.min(currentDepth,
-                      Math.max(...matchFrames));
-                    id = stableKeccak256({astId, stackframe: maxMatch});
-                  }
+                  id = stableKeccak256({ astId, stackframe: maxMatch });
                 }
+              }
 
-                //if we still didn't find it, oh well
+              //if we still didn't find it, oh well
 
+              let { ref } = assignments.byId[id] || {};
+              if (!ref) {
+                return undefined;
+              }
 
-                let { ref } = (assignments.byId[id] || {});
-                if (!ref) { return undefined };
-  
-                return {
-                  [identifier]: ref
-                };
-              })
-        )
+              return {
+                [identifier]: ref
+              };
+            })
+          )
       ),
 
       /**

@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:data:sagas");
+const debug = debugModule("debugger:data:sagas"); // eslint-disable-line no-unused-vars
 
 import { put, takeEvery, select, call } from "redux-saga/effects";
 import jsonpointer from "json-pointer";
@@ -38,7 +38,7 @@ function* tickSaga() {
   }
 
   let top = stack.length - 1;
-  var parameters, returnParameters, assignment, assignments, storageVars;
+  var parameters, returnParameters, assignment, assignments;
 
   if (!node) {
     return;
@@ -65,18 +65,26 @@ function* tickSaga() {
         (p, i) => `${pointer}/returnParameters/parameters/${i}`
       );
 
-      assignments = { byId: Object.assign({},
-        ...returnParameters.concat(parameters).reverse()
-        .map( (pointer) => jsonpointer.get(tree, pointer).id )
-        //note: depth may be off by 1 but it doesn't matter
-        .map( (id, i) => 
-          makeAssignment({astId: id, stackframe: currentDepth},
-            {"stack": top - i}))
-        .map( (assignment) => {
-          return {[assignment.id]: assignment};
-          //awkward, but seems to be only way to return an object literal
-        })
-      )};
+      assignments = {
+        byId: Object.assign(
+          {},
+          ...returnParameters
+            .concat(parameters)
+            .reverse()
+            .map(pointer => jsonpointer.get(tree, pointer).id)
+            //note: depth may be off by 1 but it doesn't matter
+            .map((id, i) =>
+              makeAssignment(
+                { astId: id, stackframe: currentDepth },
+                { stack: top - i }
+              )
+            )
+            .map(assignment => {
+              return { [assignment.id]: assignment };
+              //awkward, but seems to be only way to return an object literal
+            })
+        )
+      };
       debug("Function definition case");
       debug("assignments %O", assignments);
 
@@ -85,8 +93,6 @@ function* tickSaga() {
 
     case "ContractDefinition":
       let storageVars = scopes[node.id].variables || [];
-      let slot = 0;
-      let index = TruffleDecodeUtils.EVM.WORD_SIZE - 1; // cause lower-order
       debug("storage vars %o", storageVars);
 
       let allocation = TruffleDecodeUtils.Allocation.allocateDeclarations(
@@ -95,15 +101,14 @@ function* tickSaga() {
       );
       debug("Contract definition case");
       debug("allocation %O", allocation);
-      assignments = {byId: {}};
-      for(let id in allocation.children){
+      assignments = { byId: {} };
+      for (let id in allocation.children) {
         id = Number(id); //not sure why we're getting them as strings, but...
         let idObj;
-        if(address !== undefined) {
-          idObj = {astId: id, address};
-        }
-        else {
-          idObj = {astId: id, dummyAddress};
+        if (address !== undefined) {
+          idObj = { astId: id, address };
+        } else {
+          idObj = { astId: id, dummyAddress };
         }
         let fullId = stableKeccak256(idObj);
         //we don't use makeAssignment here as we had to compute the ID anyway
@@ -111,10 +116,10 @@ function* tickSaga() {
           ...idObj,
           id: fullId,
           ref: {
-              ...((currentAssignments.byId[fullId] || {}).ref || {}),
-              storage: allocation.children[id]
+            ...((currentAssignments.byId[fullId] || {}).ref || {}),
+            storage: allocation.children[id]
           }
-        }
+        };
         assignments.byId[fullId] = assignment;
       }
       debug("assignments %O", assignments);
@@ -135,20 +140,23 @@ function* tickSaga() {
       //just going to check for it here, by not adding a local variable if said
       //variable is already a contract variable.
 
-      if(currentAssignments.byAstId[varId] !== undefined &&
-	   currentAssignments.byAstId[varId].some(
-             (id) => currentAssignments.byId[id].address !== undefined ||
-               currentAssignments.byId[id].dummyAddress !== undefined
-        ))
-      {
+      if (
+        currentAssignments.byAstId[varId] !== undefined &&
+        currentAssignments.byAstId[varId].some(
+          id =>
+            currentAssignments.byId[id].address !== undefined ||
+            currentAssignments.byId[id].dummyAddress !== undefined
+        )
+      ) {
         break;
       }
 
       //otherwise, go ahead and make the assignment
       assignment = makeAssignment(
-        {astId: varId, stackframe: currentDepth},
-        {"stack": top});
-      assignments = {byId : {[assignment.id]: assignment}};
+        { astId: varId, stackframe: currentDepth },
+        { stack: top }
+      );
+      assignments = { byId: { [assignment.id]: assignment } };
       yield put(actions.assign(treeId, assignments));
       break;
 
@@ -162,7 +170,7 @@ function* tickSaga() {
       } = node;
 
       //indices need to be identified by stackframe
-      let indexIdObj = {astId: indexId, stackframe: currentDepth};
+      let indexIdObj = { astId: indexId, stackframe: currentDepth };
       let fullIndexId = stableKeccak256(indexIdObj);
 
       debug("Index access case");
@@ -208,9 +216,11 @@ function* tickSaga() {
 
       debug("default case");
       debug("currentDepth %d node.id %d", currentDepth, node.id);
-      assignment = makeAssignment({astId: node.id, stackframe: currentDepth},
-        {literal});
-      assignments = {byId : {[assignment.id]: assignment}};
+      assignment = makeAssignment(
+        { astId: node.id, stackframe: currentDepth },
+        { literal }
+      );
+      assignments = { byId: { [assignment.id]: assignment } };
       yield put(actions.assign(treeId, assignments));
       break;
   }
@@ -220,8 +230,7 @@ export function* reset() {
   yield put(actions.reset());
 }
 
-export function *learnAddressSaga(dummyAddress, address)
-{
+export function* learnAddressSaga(dummyAddress, address) {
   debug("about to learn an address");
   yield put(actions.learnAddress(dummyAddress, address));
   debug("address learnt");
@@ -232,8 +241,8 @@ function makeAssignment(idObj, ref) {
   return { ...idObj, id, ref };
 }
 
-export function* saga () {
-  yield takeEvery(TICK, function* () {
+export function* saga() {
+  yield takeEvery(TICK, function*() {
     try {
       yield* tickSaga();
     } catch (e) {

@@ -1,9 +1,14 @@
+import debugModule from "debug";
+const debug = debugModule("test:reset"); //eslint-disable-line no-unused-vars
+
 import { assert } from "chai";
 
 import Ganache from "ganache-cli";
 
 import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
+
+import solidity from "lib/solidity/selectors";
 
 const __SETSTHINGS = `
 pragma solidity ^0.4.24;
@@ -55,13 +60,14 @@ describe("Reset Button", function() {
     });
 
     let session = bugger.connect();
+    let sourceId = session.view(solidity.current.source).id;
 
     let variables = [];
     variables[0] = []; //collected during 1st run
     variables[1] = []; //collected during 2nd run
 
     variables[0].push(await session.variables());
-    session.addBreakpoint({ sourceId: 0, line: 10 });
+    session.addBreakpoint({ sourceId, line: 10 });
     session.continueUntilBreakpoint(); //advance to line 10
     variables[0].push(await session.variables());
     session.continueUntilBreakpoint(); //advance to the end
@@ -71,7 +77,6 @@ describe("Reset Button", function() {
     session.reset();
 
     variables[1].push(await session.variables());
-    session.addBreakpoint({ sourceId: 0, line: 10 });
     session.continueUntilBreakpoint(); //advance to line 10
     variables[1].push(await session.variables());
     session.continueUntilBreakpoint(); //advance to the end

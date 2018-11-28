@@ -102,6 +102,24 @@ function createStepSelectors(step, state = null) {
 
           return "0x" + memory.join("").substring(offset, offset + length);
         }
+      ),
+
+      /**
+       * .callsPrecompile
+       *
+       * is the call address to a precompiled contract?
+       * HACK
+       */
+      callsPrecompile: createLeaf(
+        ["./callAddress", "/info/contexts", "/info/instances"],
+
+        (address, contexts, instances) => {
+          if (!address) return null;
+
+          let { context } = instances[address] || {};
+          let { binary } = contexts[context] || {};
+          return !binary;
+        }
       )
     });
   }
