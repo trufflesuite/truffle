@@ -20,7 +20,6 @@ module.exports = {
   },
 
   readBoxConfig: async destination => {
-    const readConfigSpinner = ora("Reading config").start();
     const possibleConfigs = [
       path.join(destination, "truffle-box.json"),
       path.join(destination, "truffle-init.json")
@@ -32,10 +31,8 @@ module.exports = {
 
     try {
       const boxConfig = await config.read(configPath);
-      readConfigSpinner.succeed();
       return boxConfig;
     } catch (error) {
-      readConfigSpinner.fail();
       throw new Error(error);
     }
   },

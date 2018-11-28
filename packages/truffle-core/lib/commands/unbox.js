@@ -91,13 +91,10 @@ var command = {
       .then(boxConfig => {
         config.logger.log("\nUnbox successful. Sweet!" + OS.EOL);
 
-        var commandMessages = formatCommands(boxConfig.commands);
-        if (commandMessages.length > 0) {
-          config.logger.log("Commands:" + OS.EOL);
-        }
-        commandMessages.forEach(function(message) {
-          config.logger.log(message);
-        });
+        const commandMessages = formatCommands(boxConfig.commands);
+        if (commandMessages.length > 0) config.logger.log("Commands:" + OS.EOL);
+
+        commandMessages.forEach(message => config.logger.log(message));
         config.logger.log("");
 
         if (boxConfig.epilogue) {

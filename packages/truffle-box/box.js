@@ -2,6 +2,7 @@ const utils = require("./lib/utils");
 const tmp = require("tmp");
 const path = require("path");
 const Config = require("truffle-config");
+const ora = require("ora");
 
 function parseSandboxOptions(options) {
   if (typeof options === "function") {
@@ -53,7 +54,9 @@ const Box = {
         unpackBoxOptions
       );
 
+      const cleanupSpinner = ora("Cleaning up temporary files").start();
       tempDirCleanup();
+      cleanupSpinner.succeed();
 
       await utils.setUpBox(boxConfig, destination);
 
