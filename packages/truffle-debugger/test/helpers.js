@@ -25,7 +25,7 @@ export async function prepareContracts(provider, sources = {}, migrations) {
 
   config.compilers = {
     solc: {
-      version: "0.4.25"
+      version: "0.5.0"
     }
   };
 
