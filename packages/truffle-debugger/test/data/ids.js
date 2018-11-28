@@ -192,6 +192,7 @@ describe("Variable IDs", function() {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
+      files,
       contracts: artifacts
     });
 
@@ -221,6 +222,7 @@ describe("Variable IDs", function() {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
+      files,
       contracts: artifacts
     });
 
@@ -244,6 +246,7 @@ describe("Variable IDs", function() {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
+      files,
       contracts: artifacts
     });
 
