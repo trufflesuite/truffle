@@ -214,7 +214,8 @@ CompilerSupplier.prototype.getVersionUrlSegment = function(
   version,
   allVersions
 ) {
-  if (allVersions.releases[version]) return allVersions.releases[version];
+  const versionToUse = findNewestValidVersion(version, allVersions);
+  if (versionToUse) return allVersions.releases[versionToUse];
 
   const isPrerelease =
     version.includes("nightly") || version.includes("commit");
@@ -233,6 +234,31 @@ CompilerSupplier.prototype.getVersionUrlSegment = function(
   return null;
 };
 
+const findNewestValidVersion = (version, allVersions) => {
+  if (!semver.validRange(version)) {
+    throw new Error(
+      `${version} is not a valid semver or semver constraint. ` +
+        "Please ensure you are specifying a valid semver or semver constraint " +
+        "the truffle config."
+    );
+  }
+  let satisfyingVersions = Object.keys(allVersions.releases).map(
+    solcVersion => {
+      if (semver.satisfies(solcVersion, version)) return solcVersion;
+    }
+  );
+  satisfyingVersions = satisfyingVersions.filter(solcVersion => {
+    if (solcVersion) return solcVersion;
+  });
+  if (satisfyingVersions.length > 0) {
+    return satisfyingVersions.reduce((newestVersion, version) => {
+      if (semver.gtr(version, newestVersion)) return version;
+    }, "0.0.0");
+  } else {
+    return null;
+  }
+};
+
 /**
  * Downloads solc specified by `version` after attempting retrieve it from cache on local machine,
  * @param  {String} version ex: "0.4.1", "0.4.16-nightly.2017.8.9+commit.81887bc7"
@@ -240,10 +266,8 @@ CompilerSupplier.prototype.getVersionUrlSegment = function(
  */
 CompilerSupplier.prototype.getByUrl = function(version) {
   const self = this;
-
   return self.getVersions(self.config.versionsUrl).then(allVersions => {
     const file = self.getVersionUrlSegment(version, allVersions);
-
     if (!file) throw self.errors("noVersion", version);
 
     if (self.isCached(file)) return self.getFromCache(file);
