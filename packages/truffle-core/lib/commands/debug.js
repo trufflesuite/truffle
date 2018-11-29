@@ -33,11 +33,8 @@ var command = {
     var selectors = require("truffle-debugger").selectors;
 
     // Debugger Session properties
-    var ast = selectors.ast;
-    var data = selectors.data;
     var trace = selectors.trace;
     var solidity = selectors.solidity;
-    var evm = selectors.evm;
     var controller = selectors.controller;
 
     var config = Config.detect(options);
@@ -58,7 +55,6 @@ var command = {
 
       var lastCommand = "n";
       var enabledExpressions = new Set();
-      var breakpoints = [];
 
       let compilePromise = new Promise(function(accept, reject) {
         compile.all(config, function(err, contracts, files) {
@@ -198,8 +194,6 @@ var command = {
           }
 
           function printWatchExpressions() {
-            let source = session.view(solidity.current.source);
-
             if (enabledExpressions.size === 0) {
               config.logger.log("No watch expressions added.");
               return;
@@ -212,8 +206,9 @@ var command = {
           }
 
           async function printWatchExpressionsResults() {
+            debug("enabledExpressions %o", enabledExpressions);
             await Promise.all(
-              enabledExpressions.forEach(async function(expression) {
+              [...enabledExpressions].map(async expression => {
                 config.logger.log(expression);
                 // Add some padding. Note: This won't work with all loggers,
                 // meaning it's not portable. But doing this now so we can get something
@@ -262,6 +257,7 @@ var command = {
 
           async function printVariables() {
             var variables = await session.variables();
+            debug("variables %o", variables);
 
             // Get the length of the longest name.
             var longestNameLength = Math.max.apply(
@@ -476,7 +472,7 @@ var command = {
             return;
           }
 
-          async function interpreter(cmd, replContext, filename, callback) {
+          async function interpreter(cmd) {
             cmd = cmd.trim();
             var cmdArgs, splitArgs;
             debug("cmd %s", cmd);
@@ -504,7 +500,7 @@ var command = {
 
             //quit if that's what we were given
             if (cmd === "q") {
-              return repl.stop(callback);
+              return await util.promisify(repl.stop)();
             }
 
             let alreadyFinished = session.view(trace.finished);
@@ -640,8 +636,6 @@ var command = {
             ) {
               lastCommand = cmd;
             }
-
-            callback();
           }
 
           printAddressesAffected();
@@ -661,7 +655,7 @@ var command = {
               ":" +
               txHash.substring(0, 10) +
               "...)> ",
-            interpreter: interpreter,
+            interpreter: util.callbackify(interpreter),
             done: done
           });
         })
