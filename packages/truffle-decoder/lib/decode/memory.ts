@@ -43,9 +43,24 @@ export default async function decodeMemoryReference(definition: DecodeUtils.AstD
         start: rawValueNumber + DecodeUtils.EVM.WORD_SIZE, length: bytes * DecodeUtils.EVM.WORD_SIZE
       }}, state); // now bytes contain items
 
+      let baseDefinition = DecodeUtils.Definition.baseDefinition(definition);
+
+      // HACK replace erroneous `_storage_` type identifiers with `_memory_`
+      baseDefinition = {
+        ...baseDefinition,
+
+        typeDescriptions: {
+          ...baseDefinition.typeDescriptions,
+
+          typeIdentifier:
+            baseDefinition.typeDescriptions.typeIdentifier
+              .replace(/_storage_/g, "_memory_")
+        }
+      };
+
       return await Promise.all(chunk(bytes, DecodeUtils.EVM.WORD_SIZE)
         .map(
-          (chunk) => decode(DecodeUtils.Definition.baseDefinition(definition), {
+          (chunk) => decode(baseDefinition, {
             literal: chunk
           }, info)
         ));
