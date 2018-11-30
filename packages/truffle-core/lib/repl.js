@@ -25,7 +25,7 @@ function ReplManager(options) {
   this.repl = options.repl;
 
   this.contexts = [];
-};
+}
 
 ReplManager.prototype.start = function(options) {
   var self = this;
@@ -33,6 +33,7 @@ ReplManager.prototype.start = function(options) {
   this.contexts.push({
     prompt: options.prompt,
     interpreter: options.interpreter,
+    ignoreUndefined: options.ignoreUndefined || false,
     done: options.done
   });
 
@@ -41,7 +42,7 @@ ReplManager.prototype.start = function(options) {
   if (!this.repl) {
     this.repl = repl.start({
       prompt: currentContext.prompt,
-      eval: this.interpret.bind(this),
+      eval: this.interpret.bind(this)
     });
 
     this.repl.on("exit", function() {
@@ -49,11 +50,13 @@ ReplManager.prototype.start = function(options) {
       // then ensure the process is completely killed. Once the repl exits,
       // the process is in a bad state and can't be recovered (e.g., stdin is closed).
       var doneFunctions = self.contexts.map(function(context) {
-        return context.done ?
-          function() { context.done(); } :
-          function() {};
+        return context.done
+          ? function() {
+              context.done();
+            }
+          : function() {};
       });
-      async.series(doneFunctions, function(err) {
+      async.series(doneFunctions, function() {
         process.exit();
       });
     });
@@ -64,17 +67,23 @@ ReplManager.prototype.start = function(options) {
     self.emit("exit");
   });
 
-  this.repl.setPrompt(options.prompt);
-  this.setContextVars(options.context || {});
+  this.activate(options);
 };
 
 ReplManager.prototype.setContextVars = function(obj) {
   var self = this;
   if (this.repl) {
-    Object.keys(obj).forEach(function(key) {
+    Object.keys(obj || {}).forEach(function(key) {
       self.repl.context[key] = obj[key];
     });
   }
+};
+
+ReplManager.prototype.activate = function(session) {
+  const { prompt, context, ignoreUndefined } = session;
+  this.repl.setPrompt(prompt);
+  this.repl.ignoreUndefined = ignoreUndefined;
+  this.setContextVars(context);
 };
 
 ReplManager.prototype.stop = function(callback) {
@@ -87,7 +96,7 @@ ReplManager.prototype.stop = function(callback) {
   var currentContext = this.contexts[this.contexts.length - 1];
 
   if (currentContext) {
-    this.repl.setPrompt(currentContext.prompt);
+    this.activate(currentContext);
   } else {
     // If there's no new context, stop the process altogether.
     // Though this might seem like an out of place process.exit(),

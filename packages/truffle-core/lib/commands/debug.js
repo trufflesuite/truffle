@@ -662,6 +662,7 @@ var command = {
               txHash.substring(0, 10) +
               "...)> ",
             interpreter: util.callbackify(interpreter),
+            ignoreUndefined: true,
             done: done
           });
         })
