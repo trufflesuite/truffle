@@ -255,14 +255,13 @@ const findNewestValidVersion = (version, allVersions) => {
  * @return {Module}         solc
  */
 CompilerSupplier.prototype.getByUrl = async function(version) {
-  const self = this;
-  const allVersions = await self.getVersions(self.config.versionsUrl);
-  const file = self.getVersionUrlSegment(version, allVersions);
-  if (!file) throw self.errors("noVersion", version);
+  const allVersions = await this.getVersions(this.config.versionsUrl);
+  const file = this.getVersionUrlSegment(version, allVersions);
+  if (!file) throw this.errors("noVersion", version);
 
-  if (self.isCached(file)) return self.getFromCache(file);
+  if (this.isCached(file)) return this.getFromCache(file);
 
-  const url = self.config.compilerUrlRoot + file;
+  const url = this.config.compilerUrlRoot + file;
   const spinner = ora({
     text: "Downloading compiler",
     color: "red"
@@ -271,11 +270,11 @@ CompilerSupplier.prototype.getByUrl = async function(version) {
   try {
     const response = await request.get(url);
     spinner.stop();
-    self.addToCache(response, file);
-    return self.compilerFromString(response);
+    this.addToCache(response, file);
+    return this.compilerFromString(response);
   } catch (error) {
     spinner.stop();
-    throw self.errors("noRequest", url, error);
+    throw this.errors("noRequest", url, error);
   }
 };
 
