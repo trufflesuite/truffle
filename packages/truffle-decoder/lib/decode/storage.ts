@@ -211,12 +211,22 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
         const allocation = DecodeUtils.Allocation.allocateDeclarations(variables, scopes, slot);
 
         return Object.assign(
-          {}, ...Object.entries(allocation.children)
-            .map( ([id, childPointer]) => ({
-              [childPointer.name]: decode(
-                scopes[id].definition, { storage: childPointer }, info, web3, contractAddress
-              )
-            }))
+          {}, ...await Promise.all(Object.entries(allocation.children).map(
+            async ([id, childPointer]) => {
+              let decoded;
+              try {
+                decoded = await decode(
+                  scopes[id].definition, { storage: childPointer }, info, web3, contractAddress
+                );
+              } catch (err) {
+                decoded = err;
+              }
+
+              return {
+                [childPointer.name]: decoded
+              }
+            }
+          ))
         );
       }
       else {
