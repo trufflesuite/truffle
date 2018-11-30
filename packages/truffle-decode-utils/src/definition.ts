@@ -97,7 +97,10 @@ export namespace Definition {
   }
 
   export function isDynamicArray(definition: AstDefinition): boolean {
-    return isArray(definition) && definition.typeName.length === null;
+    return isArray(definition) && (
+      (definition.typeName && definition.typeName.length === null) ||
+        definition.length === null
+    );
   }
 
   export function isStruct(definition: AstDefinition): boolean {
