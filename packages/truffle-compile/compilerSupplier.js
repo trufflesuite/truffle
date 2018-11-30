@@ -235,14 +235,11 @@ CompilerSupplier.prototype.getVersionUrlSegment = (version, allVersions) => {
 
 const findNewestValidVersion = (version, allVersions) => {
   if (!semver.validRange(version)) return null;
-  let satisfyingVersions = Object.keys(allVersions.releases).map(
-    solcVersion => {
+  const satisfyingVersions = Object.keys(allVersions.releases)
+    .map(solcVersion => {
       if (semver.satisfies(solcVersion, version)) return solcVersion;
-    }
-  );
-  satisfyingVersions = satisfyingVersions.filter(solcVersion => {
-    if (solcVersion) return solcVersion;
-  });
+    })
+    .filter(solcVersion => solcVersion);
   if (satisfyingVersions.length > 0) {
     return satisfyingVersions.reduce((newestVersion, version) => {
       if (semver.gtr(version, newestVersion)) return version;
@@ -271,17 +268,15 @@ CompilerSupplier.prototype.getByUrl = async function(version) {
     color: "red"
   }).start();
 
-  return request
-    .get(url)
-    .then(response => {
-      spinner.stop();
-      self.addToCache(response, file);
-      return self.compilerFromString(response);
-    })
-    .catch(err => {
-      spinner.stop();
-      throw self.errors("noRequest", url, err);
-    });
+  try {
+    const response = await request.get(url);
+    spinner.stop();
+    self.addToCache(response, file);
+    return self.compilerFromString(response);
+  } catch (error) {
+    spinner.stop();
+    throw self.errors("noRequest", url, error);
+  }
 };
 
 /**
