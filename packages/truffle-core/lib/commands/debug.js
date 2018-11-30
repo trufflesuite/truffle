@@ -506,7 +506,7 @@ var command = {
 
             //quit if that's what we were given
             if (cmd === "q") {
-              return await util.promisify(repl.stop)();
+              return await util.promisify(repl.stop.bind(repl))();
             }
 
             let alreadyFinished = session.view(trace.finished);
