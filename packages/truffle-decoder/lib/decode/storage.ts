@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("decoder:decode:storage");
+
 import read from "../read";
 import * as DecodeUtils from "truffle-decode-utils";
 import decode from "./index";
