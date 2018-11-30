@@ -318,11 +318,11 @@ var command = {
            *        :!<trace.step.stack>[1]
            */
           async function evalAndPrintExpression(raw, indent, suppress) {
-            var context = {
-              $: select,
+            var context = Object.assign(
+              { $: select },
 
-              ...(await session.variables())
-            };
+              await session.variables()
+            );
 
             const expr = preprocessSelectors(raw);
 
