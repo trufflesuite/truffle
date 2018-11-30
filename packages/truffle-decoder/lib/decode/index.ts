@@ -14,10 +14,6 @@ import Web3 from "web3";
 export default async function decode(definition: AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<any> {
   debug("Decoding %s", definition.name);
 
-  if (isLiteralPointer(pointer)) {
-    return await decodeValue(definition, pointer, info, web3, contractAddress);
-  }
-
   const identifier = DecodeUtils.Definition.typeIdentifier(definition);
   if (DecodeUtils.Definition.isReference(definition)) {
     switch (DecodeUtils.Definition.referenceType(definition)) {
@@ -32,6 +28,11 @@ export default async function decode(definition: AstDefinition, pointer: DataPoi
         return undefined;
     }
   }
+
+  if (isLiteralPointer(pointer)) {
+    return await decodeValue(definition, pointer, info, web3, contractAddress);
+  }
+
 
   if (DecodeUtils.Definition.isEnum(definition) && isStoragePointer(pointer)) {
     // debug("decoding mapping, type: %s", identifier);
