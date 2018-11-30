@@ -77,37 +77,45 @@ export default async function decodeMemoryReference(definition: DecodeUtils.AstD
 
       let variables = (scopes[referencedDeclaration] || {}).variables;
 
-      return await Promise.all(Object.assign(
-        {}, ...(variables || [])
-          .map(
-            ({name, id}: any, i: number) => {
-              let memberDefinition = scopes[id].definition;
-              let memberPointer: MemoryPointer = {
-                memory: { start: rawValueNumber + i * DecodeUtils.EVM.WORD_SIZE, length: DecodeUtils.EVM.WORD_SIZE }
-              };
-              // let memberPointer = memory.read(state.memory, pointer + i * DecodeUtils.EVM.WORD_SIZE);
+      const decodeMember = async ({name, id}: any, i: number) => {
+        let memberDefinition = scopes[id].definition;
+        let memberPointer: MemoryPointer = {
+          memory: {
+            start: rawValueNumber + i * DecodeUtils.EVM.WORD_SIZE,
+            length: DecodeUtils.EVM.WORD_SIZE
+          }
+        };
 
-              // HACK
-              memberDefinition = {
-                ...memberDefinition,
+        // HACK replace erroneous `_storage_` type identifiers with `_memory_`
+        memberDefinition = {
+          ...memberDefinition,
 
-                typeDescriptions: {
-                  ...memberDefinition.typeDescriptions,
+          typeDescriptions: {
+            ...memberDefinition.typeDescriptions,
 
-                  typeIdentifier:
-                    memberDefinition.typeDescriptions.typeIdentifier
-                      .replace(/_storage_/g, "_memory_")
-                }
-              };
+            typeIdentifier:
+              memberDefinition.typeDescriptions.typeIdentifier
+                .replace(/_storage_/g, "_memory_")
+          }
+        };
 
-              return {
-                [name]: decode(
-                  memberDefinition, memberPointer, info
-                )
-              };
-            }
-          )
-      ));
+        let decoded;
+        try {
+          decoded = await decode(
+            memberDefinition, memberPointer, info
+          );
+        } catch (err) {
+          decoded = err;
+        }
+
+        return {
+          [name]: decoded
+        };
+      }
+
+      const decodings = (variables || []).map(decodeMember);
+
+      return Object.assign({}, ...await Promise.all(decodings));
 
 
     default:
