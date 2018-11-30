@@ -79,11 +79,11 @@ function Config(truffle_directory, working_directory, network) {
       get: function() {
         return this._values.network;
       },
-      set: function(val) {
+      set: function(value) {
         // reset provider memo (we changed the network, old provider invalid)
         providerMemo = null;
 
-        this._values.network = val;
+        this._values.network = value;
       }
     },
     networks: function() {},
