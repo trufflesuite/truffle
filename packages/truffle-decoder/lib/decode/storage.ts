@@ -42,7 +42,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
   switch (DecodeUtils.Definition.typeClass(definition)) {
     case "array": {
       // debug("storage array! %o", pointer);
-      if (definition.typeName.length === null) {
+      if (DecodeUtils.Definition.isDynamicArray(definition)) {
         data = await read(pointer, state, web3, contractAddress);
         if (!data) {
           return undefined;
@@ -51,7 +51,9 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
         length = DecodeUtils.Conversion.toBN(data).toNumber();
       }
       else {
-        length = parseInt(definition.typeName.length.value);
+        length = definition.typeName
+          ? parseInt(definition.typeName.length.value)
+          : parseInt(definition.length.value);
       }
       // debug("length %o", length);
 
