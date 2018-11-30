@@ -23,6 +23,12 @@ var command = {
     var debug = debugModule("lib:commands:debug");
     var safeEval = require("safe-eval");
     var util = require("util");
+    const BN = require("bn.js");
+
+    // add custom inspect options for BNs
+    BN.prototype[util.inspect.custom] = function(depth, options) {
+      return options.stylize(this.toString(), "number");
+    };
 
     var compile = require("truffle-compile");
     var Config = require("truffle-config");
