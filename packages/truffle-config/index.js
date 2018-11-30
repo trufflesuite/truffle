@@ -9,7 +9,6 @@ const Configstore = require("configstore");
 
 const DEFAULT_CONFIG_FILENAME = "truffle.js";
 const BACKUP_CONFIG_FILENAME = "truffle-config.js"; // For Windows + Command Prompt
-const DEFAULT_USER_CONFIG = "truffle";
 
 function Config(truffle_directory, working_directory, network) {
   var self = this;
@@ -20,11 +19,10 @@ function Config(truffle_directory, working_directory, network) {
     from: null
   };
 
-  const defaultUserConfig = new Configstore(
-    DEFAULT_USER_CONFIG,
-    {},
-    { globalConfigPath: true }
-  );
+  // declare memoization mechanism for provider
+  // config.provider's getter uses this memoized value if it is set
+  // config.network's setter resets the memo
+  let providerMemo = null;
 
   // This is a list of multi-level keys with defaults
   // we need to _.merge. Using this list for safety
@@ -77,7 +75,17 @@ function Config(truffle_directory, working_directory, network) {
     // These are already set.
     truffle_directory: function() {},
     working_directory: function() {},
-    network: function() {},
+    network: {
+      get: function() {
+        return this._values.network;
+      },
+      set: function(val) {
+        // reset provider memo (we changed the network, old provider invalid)
+        providerMemo = null;
+
+        this._values.network = val;
+      }
+    },
     networks: function() {},
     verboseRpc: function() {},
     build: function() {},
@@ -125,7 +133,7 @@ function Config(truffle_directory, working_directory, network) {
           return null;
         }
       },
-      set: function(val) {
+      set: function() {
         throw new Error(
           "Do not set config.network_id. Instead, set config.networks and then config.networks[<network name>].network_id"
         );
@@ -149,7 +157,7 @@ function Config(truffle_directory, working_directory, network) {
 
         return conf;
       },
-      set: function(val) {
+      set: function() {
         throw new Error(
           "Don't set config.network_config. Instead, set config.networks with the desired values."
         );
@@ -163,7 +171,7 @@ function Config(truffle_directory, working_directory, network) {
           return default_tx_values.from;
         }
       },
-      set: function(val) {
+      set: function() {
         throw new Error(
           "Don't set config.from directly. Instead, set config.networks and then config.networks[<network name>].from"
         );
@@ -177,7 +185,7 @@ function Config(truffle_directory, working_directory, network) {
           return default_tx_values.gas;
         }
       },
-      set: function(val) {
+      set: function() {
         throw new Error(
           "Don't set config.gas directly. Instead, set config.networks and then config.networks[<network name>].gas"
         );
@@ -191,7 +199,7 @@ function Config(truffle_directory, working_directory, network) {
           return default_tx_values.gasPrice;
         }
       },
-      set: function(val) {
+      set: function() {
         throw new Error(
           "Don't set config.gasPrice directly. Instead, set config.networks and then config.networks[<network name>].gasPrice"
         );
@@ -203,11 +211,28 @@ function Config(truffle_directory, working_directory, network) {
           return null;
         }
 
+        // collect provider options from network config + global flags
         var options = self.network_config;
         options.verboseRpc = self.verboseRpc;
-        return Provider.create(options);
+
+        // check explicit `memoize` config value otherwise default enable
+        const shouldMemoize = "memoize" in options ? options.memoize : true;
+
+        // use memoized provider (NOTE this requires reset if network changes)
+        if (shouldMemoize && providerMemo) {
+          return providerMemo;
+        }
+
+        const provider = Provider.create(options);
+
+        if (shouldMemoize) {
+          // set memo
+          providerMemo = provider;
+        }
+
+        return provider;
       },
-      set: function(val) {
+      set: function() {
         throw new Error(
           "Don't set config.provider directly. Instead, set config.networks and then set config.networks[<network name>].provider"
         );
@@ -221,7 +246,7 @@ function Config(truffle_directory, working_directory, network) {
           return 0;
         }
       },
-      set: function(val) {
+      set: function() {
         throw new Error(
           "Don't set config.confirmations directly. Instead, set config.networks and then config.networks[<network name>].confirmations"
         );
@@ -235,7 +260,7 @@ function Config(truffle_directory, working_directory, network) {
           return false;
         }
       },
-      set: function(val) {
+      set: function() {
         throw new Error(
           "Don't set config.production directly. Instead, set config.networks and then config.networks[<network name>].production"
         );
@@ -249,7 +274,7 @@ function Config(truffle_directory, working_directory, network) {
           return 0;
         }
       },
-      set: function(val) {
+      set: function() {
         throw new Error(
           "Don't set config.timeoutBlocks directly. Instead, set config.networks and then config.networks[<network name>].timeoutBlocks"
         );
@@ -263,7 +288,7 @@ function Config(truffle_directory, working_directory, network) {
           return false;
         }
       },
-      set: function(val) {
+      set: function() {
         throw new Error(
           "Don't set config.skipDryRun directly. Instead, set config.networks and then config.networks[<network name>].skipDryRun"
         );
