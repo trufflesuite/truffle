@@ -19,12 +19,12 @@ var debug = require("debug")("compile"); // eslint-disable-line no-unused-vars
 //   logger: console
 // }
 var compile = function(sources, options, callback) {
-  if (typeof options == "function") {
+  if (typeof options === "function") {
     callback = options;
     options = {};
   }
 
-  if (options.logger == null) {
+  if (options.logger === null) {
     options.logger = console;
   }
 
@@ -54,7 +54,7 @@ var compile = function(sources, options, callback) {
     var replacement = source.replace(/\\/g, "/");
 
     // Turn G:/.../ into /G/.../ for Windows
-    if (replacement.length >= 2 && replacement[1] == ":") {
+    if (replacement.length >= 2 && replacement[1] === ":") {
       replacement = "/" + replacement;
       replacement = replacement.replace(":", "");
     }
@@ -106,7 +106,7 @@ var compile = function(sources, options, callback) {
   };
 
   // Nothing to compile? Bail.
-  if (Object.keys(sources).length == 0) {
+  if (Object.keys(sources).length === 0) {
     return callback(null, [], []);
   }
 
@@ -131,11 +131,11 @@ var compile = function(sources, options, callback) {
 
       if (options.strict !== true) {
         warnings = errors.filter(function(error) {
-          return error.severity == "warning";
+          return error.severity === "warning";
         });
 
         errors = errors.filter(function(error) {
-          return error.severity != "warning";
+          return error.severity !== "warning";
         });
 
         if (options.quiet !== true && warnings.length > 0) {
@@ -303,7 +303,7 @@ function orderABI(contract) {
   if (!contract_definition.children) return contract.abi;
 
   contract_definition.children.forEach(function(child) {
-    if (child.name == "FunctionDefinition") {
+    if (child.name === "FunctionDefinition") {
       ordered_function_names.push(child.attributes.name);
     }
   });
@@ -321,7 +321,7 @@ function orderABI(contract) {
 
   // Filter out functions from the abi
   var function_definitions = contract.abi.filter(function(item) {
-    return functions_to_remove[item.name] != null;
+    return functions_to_remove[item.name] !== null;
   });
 
   // Sort removed function defintions
@@ -337,7 +337,7 @@ function orderABI(contract) {
   // Create a new ABI, placing ordered functions at the end.
   var newABI = [];
   contract.abi.forEach(function(item) {
-    if (functions_to_remove[item.name] != null) return;
+    if (functions_to_remove[item.name] !== null) return;
     newABI.push(item);
   });
 
@@ -371,7 +371,7 @@ compile.necessary = function(options, callback) {
   Profiler.updated(options, function(err, updated) {
     if (err) return callback(err);
 
-    if (updated.length == 0 && options.quiet != true) {
+    if (updated.length === 0 && options.quiet !== true) {
       return callback(null, [], {});
     }
 
@@ -417,16 +417,19 @@ compile.with_dependencies = function(options, callback) {
 };
 
 compile.display = function(paths, options) {
-  if (options.quiet != true) {
+  if (options.quiet !== true) {
     if (!Array.isArray(paths)) {
       paths = Object.keys(paths);
     }
+
+    const blacklistRegex = /^truffle\//;
 
     paths.sort().forEach(contract => {
       if (path.isAbsolute(contract)) {
         contract =
           "." + path.sep + path.relative(options.working_directory, contract);
       }
+      if (contract.match(blacklistRegex)) return;
       options.logger.log("Compiling " + contract + "...");
     });
   }
