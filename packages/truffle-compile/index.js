@@ -24,9 +24,7 @@ var compile = function(sources, options, callback) {
     options = {};
   }
 
-  if (options.logger === null) {
-    options.logger = console;
-  }
+  if (options.logger === undefined) options.logger = console;
 
   var hasTargets =
     options.compilationTargets && options.compilationTargets.length;
@@ -321,7 +319,7 @@ function orderABI(contract) {
 
   // Filter out functions from the abi
   var function_definitions = contract.abi.filter(function(item) {
-    return functions_to_remove[item.name] !== null;
+    return functions_to_remove[item.name] !== undefined;
   });
 
   // Sort removed function defintions
@@ -337,7 +335,7 @@ function orderABI(contract) {
   // Create a new ABI, placing ordered functions at the end.
   var newABI = [];
   contract.abi.forEach(function(item) {
-    if (functions_to_remove[item.name] !== null) return;
+    if (functions_to_remove[item.name] !== undefined) return;
     newABI.push(item);
   });
 
