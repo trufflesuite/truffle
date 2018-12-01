@@ -107,7 +107,161 @@ module.exports = {
           "truffle-core",
           "lib",
           "testing",
-          "SafeSend.sol"
+          "AssertAddress.sol"
+        )
+      },
+      {
+        from: path.join(
+          __dirname,
+          "../..",
+          "node_modules",
+          "truffle-core",
+          "lib",
+          "testing",
+          "AssertAddressArray.sol"
+        )
+      },
+      {
+        from: path.join(
+          __dirname,
+          "../..",
+          "node_modules",
+          "truffle-core",
+          "lib",
+          "testing",
+          "AssertAddressPayableArray.sol"
+        )
+      },
+      {
+        from: path.join(
+          __dirname,
+          "../..",
+          "node_modules",
+          "truffle-core",
+          "lib",
+          "testing",
+          "AssertBalance.sol"
+        )
+      },
+      {
+        from: path.join(
+          __dirname,
+          "../..",
+          "node_modules",
+          "truffle-core",
+          "lib",
+          "testing",
+          "AssertBool.sol"
+        )
+      },
+      {
+        from: path.join(
+          __dirname,
+          "../..",
+          "node_modules",
+          "truffle-core",
+          "lib",
+          "testing",
+          "AssertBytes32.sol"
+        )
+      },
+      {
+        from: path.join(
+          __dirname,
+          "../..",
+          "node_modules",
+          "truffle-core",
+          "lib",
+          "testing",
+          "AssertBytes32Array.sol"
+        )
+      },
+      {
+        from: path.join(
+          __dirname,
+          "../..",
+          "node_modules",
+          "truffle-core",
+          "lib",
+          "testing",
+          "AssertGeneral.sol"
+        )
+      },
+      {
+        from: path.join(
+          __dirname,
+          "../..",
+          "node_modules",
+          "truffle-core",
+          "lib",
+          "testing",
+          "AssertInt.sol"
+        )
+      },
+      {
+        from: path.join(
+          __dirname,
+          "../..",
+          "node_modules",
+          "truffle-core",
+          "lib",
+          "testing",
+          "AssertIntArray.sol"
+        )
+      },
+      {
+        from: path.join(
+          __dirname,
+          "../..",
+          "node_modules",
+          "truffle-core",
+          "lib",
+          "testing",
+          "AssertString.sol"
+        )
+      },
+      {
+        from: path.join(
+          __dirname,
+          "../..",
+          "node_modules",
+          "truffle-core",
+          "lib",
+          "testing",
+          "AssertUint.sol"
+        )
+      },
+      {
+        from: path.join(
+          __dirname,
+          "../..",
+          "node_modules",
+          "truffle-core",
+          "lib",
+          "testing",
+          "AssertUintArray.sol"
+        )
+      },
+      {
+        from: path.join(
+          __dirname,
+          "../..",
+          "node_modules",
+          "truffle-core",
+          "lib",
+          "testing",
+          "NewSafeSend.sol"
+        )
+      },
+      {
+        from: path.join(
+          __dirname,
+          "../..",
+          "node_modules",
+          "truffle-core",
+          "lib",
+          "testing",
+          "OldSafeSend.sol"
         )
       },
       {
