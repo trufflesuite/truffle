@@ -123,8 +123,21 @@ const SolidityTest = {
       compile.with_dependencies(
         runner.config.with({
           paths: [
-            "truffle/Assert.sol",
-            "truffle/DeployedAddresses.sol",
+            path.join(__dirname, "truffle/Assert.sol"),
+            path.join(__dirname, "truffle/AssertAddress.sol"),
+            path.join(__dirname, "truffle/AssertAddressArray.sol"),
+            // path.join(__dirname, "truffle/AssertAddressPayableArray.sol"),
+            path.join(__dirname, "truffle/AssertBalance.sol"),
+            path.join(__dirname, "truffle/AssertBool.sol"),
+            path.join(__dirname, "truffle/AssertBytes32.sol"),
+            path.join(__dirname, "truffle/AssertBytes32Array.sol"),
+            path.join(__dirname, "truffle/AssertGeneral.sol"),
+            path.join(__dirname, "truffle/AssertInt.sol"),
+            path.join(__dirname, "truffle/AssertIntArray.sol"),
+            path.join(__dirname, "truffle/AssertString.sol"),
+            path.join(__dirname, "truffle/AssertUint.sol"),
+            path.join(__dirname, "truffle/AssertUintArray.sol"),
+            path.join(__dirname, "truffle/DeployedAddresses.sol"),
             path.join(__dirname, SafeSend)
           ],
           quiet: true
@@ -163,9 +176,9 @@ const SolidityTest = {
     const AssertAddressArray = runner.config.resolver.require(
       "truffle/AssertAddressArray.sol"
     );
-    const AssertAddressPayableArray = runner.config.resolver.require(
-      "truffle/AssertAddressPayableArray.sol"
-    );
+    //const AssertAddressPayableArray = runner.config.resolver.require(
+    // "truffle/AssertAddressPayableArray.sol"
+    //);
     const AssertBalance = runner.config.resolver.require(
       "truffle/AssertBalance.sol"
     );
@@ -199,7 +212,7 @@ const SolidityTest = {
       .deploy(Assert)
       .then(() => deployer.deploy(AssertAddress))
       .then(() => deployer.deploy(AssertAddressArray))
-      .then(() => deployer.deploy(AssertAddressPayableArray))
+      // .then(() => deployer.deploy(AssertAddressPayableArray))
       .then(() => deployer.deploy(AssertBalance))
       .then(() => deployer.deploy(AssertBool))
       .then(() => deployer.deploy(AssertBytes32))
