@@ -12,7 +12,8 @@ import "truffle/AssertInt.sol";
 import "truffle/AssertUintArray.sol";
 import "truffle/AssertIntArray.sol";
 import "truffle/AssertAddressArray.sol";
-import "truffle/AssertAddressPayableArray.sol";
+// import "truffle/AssertAddressPayableArray.sol";
+// ^would require an oldAssert.sol (0.4.0) & a newAssert.sol (0.5.0)
 import "truffle/AssertBytes32Array.sol";
 import "truffle/AssertBalance.sol";
 import "truffle/AssertGeneral.sol";
@@ -969,9 +970,9 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function equal(address payable[] memory arrA, address payable[] memory arrB, string memory message) internal returns (bool result) {
-        return AssertAddressPayableArray.equal(arrA, arrB, message);
-    }
+//    function equal(address payable[] memory arrA, address payable[] memory arrB, string memory message) internal returns (bool result) {
+//        return AssertAddressPayableArray.equal(arrA, arrB, message);
+//    }
 
     /*
         Function: notEqual(address payable[])
@@ -992,9 +993,9 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function notEqual(address payable[] memory arrA, address payable[] memory arrB, string memory message) internal returns (bool result) {
-        return AssertAddressPayableArray.notEqual(arrA, arrB, message);
-    }
+//    function notEqual(address payable[] memory arrA, address payable[] memory arrB, string memory message) internal returns (bool result) {
+//        return AssertAddressPayableArray.notEqual(arrA, arrB, message);
+//    }
 
     /*
         Function: lengthEqual(address payable[])
@@ -1011,9 +1012,9 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function lengthEqual(address payable[] memory arr, uint length, string memory message) internal returns (bool result) {
-        return AssertAddressPayableArray.lengthEqual(arr, length, message);
-    }
+//    function lengthEqual(address payable[] memory arr, uint length, string memory message) internal returns (bool result) {
+//        return AssertAddressPayableArray.lengthEqual(arr, length, message);
+//    }
 
     /*
         Function: lengthNotEqual(address payable[])
@@ -1030,9 +1031,9 @@ library Assert {
         Returns:
             result (bool) - The result.
     */
-    function lengthNotEqual(address payable[] memory arr, uint length, string memory message) internal returns (bool result) {
-        return AssertAddressPayableArray.lengthNotEqual(arr, length, message);
-    }
+//    function lengthNotEqual(address payable[] memory arr, uint length, string memory message) internal returns (bool result) {
+//        return AssertAddressPayableArray.lengthNotEqual(arr, length, message);
+//    }
 
     // ************************************** bytes32[] **************************************
 
