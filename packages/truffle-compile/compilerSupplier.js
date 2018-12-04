@@ -210,10 +210,7 @@ CompilerSupplier.prototype.getVersions = function() {
  * @param  {Object} allVersions     (see `getVersions`)
  * @return {String} url             ex: "soljson-v0.4.21+commit.dfe3193c.js"
  */
-CompilerSupplier.prototype.getVersionUrlSegment = function(
-  version,
-  allVersions
-) {
+CompilerSupplier.prototype.getVersionUrlSegment = (version, allVersions) => {
   if (allVersions.releases[version]) return allVersions.releases[version];
 
   const isPrerelease =
@@ -230,7 +227,26 @@ CompilerSupplier.prototype.getVersionUrlSegment = function(
     }
   }
 
+  const versionToUse = findNewestValidVersion(version, allVersions);
+  if (versionToUse) return allVersions.releases[versionToUse];
+
   return null;
+};
+
+const findNewestValidVersion = (version, allVersions) => {
+  if (!semver.validRange(version)) return null;
+  const satisfyingVersions = Object.keys(allVersions.releases)
+    .map(solcVersion => {
+      if (semver.satisfies(solcVersion, version)) return solcVersion;
+    })
+    .filter(solcVersion => solcVersion);
+  if (satisfyingVersions.length > 0) {
+    return satisfyingVersions.reduce((newestVersion, version) => {
+      if (semver.gtr(version, newestVersion)) return version;
+    }, "0.0.0");
+  } else {
+    return null;
+  }
 };
 
 /**
@@ -238,34 +254,28 @@ CompilerSupplier.prototype.getVersionUrlSegment = function(
  * @param  {String} version ex: "0.4.1", "0.4.16-nightly.2017.8.9+commit.81887bc7"
  * @return {Module}         solc
  */
-CompilerSupplier.prototype.getByUrl = function(version) {
-  const self = this;
+CompilerSupplier.prototype.getByUrl = async function(version) {
+  const allVersions = await this.getVersions(this.config.versionsUrl);
+  const file = this.getVersionUrlSegment(version, allVersions);
+  if (!file) throw this.errors("noVersion", version);
 
-  return self.getVersions(self.config.versionsUrl).then(allVersions => {
-    const file = self.getVersionUrlSegment(version, allVersions);
+  if (this.isCached(file)) return this.getFromCache(file);
 
-    if (!file) throw self.errors("noVersion", version);
+  const url = this.config.compilerUrlRoot + file;
+  const spinner = ora({
+    text: "Downloading compiler",
+    color: "red"
+  }).start();
 
-    if (self.isCached(file)) return self.getFromCache(file);
-
-    const url = self.config.compilerUrlRoot + file;
-    const spinner = ora({
-      text: "Downloading compiler",
-      color: "red"
-    }).start();
-
-    return request
-      .get(url)
-      .then(response => {
-        spinner.stop();
-        self.addToCache(response, file);
-        return self.compilerFromString(response);
-      })
-      .catch(err => {
-        spinner.stop();
-        throw self.errors("noRequest", url, err);
-      });
-  });
+  try {
+    const response = await request.get(url);
+    spinner.stop();
+    this.addToCache(response, file);
+    return this.compilerFromString(response);
+  } catch (error) {
+    spinner.stop();
+    throw this.errors("noRequest", url, error);
+  }
 };
 
 /**
@@ -494,7 +504,10 @@ CompilerSupplier.prototype.errors = function(kind, input, err) {
 
   const kinds = {
     noPath: "Could not find compiler at: " + input,
-    noVersion: "Could not find compiler version:\n" + input + ".\n" + info,
+    noVersion:
+      `Could not find a compiler version matching ${input}. ` +
+      `Please ensure you are specifying a valid version, constraint or ` +
+      `build in the truffle config. ${info}`,
     noRequest:
       "Failed to complete request to: " +
       input +
