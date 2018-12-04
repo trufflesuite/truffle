@@ -89,15 +89,13 @@ var command = {
 
     Box.unbox(url, config.working_directory, unboxOptions)
       .then(boxConfig => {
-        config.logger.log("Unbox successful. Sweet!" + OS.EOL);
+        config.logger.log("\nUnbox successful. Sweet!" + OS.EOL);
 
-        var commandMessages = formatCommands(boxConfig.commands);
-        if (commandMessages.length > 0) {
-          config.logger.log("Commands:" + OS.EOL);
-        }
-        commandMessages.forEach(function(message) {
-          config.logger.log(message);
-        });
+        const commandMessages = formatCommands(boxConfig.commands);
+        if (commandMessages.length > 0) config.logger.log("Commands:" + OS.EOL);
+
+        commandMessages.forEach(message => config.logger.log(message));
+        config.logger.log("");
 
         if (boxConfig.epilogue) {
           config.logger.log(boxConfig.epilogue.replace("\n", OS.EOL));
