@@ -1,14 +1,14 @@
-const _ = require("lodash");
-const path = require("path");
-const Provider = require("truffle-provider");
-const TruffleError = require("truffle-error");
-const Module = require("module");
-const findUp = require("find-up");
-const originalrequire = require("original-require");
+var _ = require("lodash");
+var path = require("path");
+var Provider = require("truffle-provider");
+var TruffleError = require("truffle-error");
+var Module = require("module");
+var findUp = require("find-up");
+var originalrequire = require("original-require");
 const Configstore = require("configstore");
 
-const DEFAULT_CONFIG_FILENAME = "truffle.js";
-const BACKUP_CONFIG_FILENAME = "truffle-config.js"; // For Windows + Command Prompt
+var DEFAULT_CONFIG_FILENAME = "truffle.js";
+var BACKUP_CONFIG_FILENAME = "truffle-config.js"; // For Windows + Command Prompt
 const DEFAULT_USER_CONFIG = "truffle";
 
 function Config(truffle_directory, working_directory, network) {
@@ -135,13 +135,13 @@ function Config(truffle_directory, working_directory, network) {
       get: function() {
         var network = self.network;
 
-        if (network === null) {
+        if (network == null) {
           throw new Error("Network not set. Cannot determine network to use.");
         }
 
         var conf = self.networks[network];
 
-        if (conf === null) {
+        if (conf == null) {
           config = {};
         }
 
@@ -352,41 +352,54 @@ Config.prototype.merge = function(obj) {
   return this;
 };
 
-Config.default = () => new Config();
+Config.default = function() {
+  return new Config();
+};
 
-Config.search = (options = {}, filename) => {
+Config.search = function(options, filename) {
   let search;
 
   !filename
     ? (search = [DEFAULT_CONFIG_FILENAME, BACKUP_CONFIG_FILENAME])
     : (search = filename);
 
+<<<<<<< HEAD
   return findUp.sync(search, {
     cwd: options.working_directory || options.workingDirectory
   });
 };
 
-Config.detect = (options = {}, filename) => {
-  const file = Config.search(options, filename);
+Config.detect = function(options, filename) {
+  var file = this.search(options, filename);
+=======
+  !filename
+    ? (search = [DEFAULT_CONFIG_FILENAME, BACKUP_CONFIG_FILENAME])
+    : (search = filename);
+
+  var file = findUp.sync(search, {
+    cwd: options.working_directory || options.workingDirectory
+  });
+>>>>>>> 5d0db42e336a4bf7f262e2ea06d05e44ac63a066
 
   if (file === null) {
     throw new TruffleError("Could not find suitable configuration file.");
   }
 
-  return Config.load(file, options);
+  return this.load(file, options);
 };
 
 Config.load = function(file, options) {
-  var config = new Config();
-
-  config.working_directory = path.dirname(path.resolve(file));
-
   // The require-nocache module used to do this for us, but
   // it doesn't bundle very well. So we've pulled it out ourselves.
   delete require.cache[Module._resolveFilename(file, module)];
-  var static_config = originalrequire(file);
 
-  config.merge(static_config);
+  var staticConfig = originalrequire(file);
+
+  var config = staticConfig.config ? new staticConfig.config() : new Config();
+
+  config.working_directory = path.dirname(path.resolve(file));
+
+  config.merge(staticConfig);
   config.merge(options);
 
   return config;
