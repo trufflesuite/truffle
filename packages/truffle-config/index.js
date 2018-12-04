@@ -143,13 +143,13 @@ function Config(truffle_directory, working_directory, network) {
       get: function() {
         var network = self.network;
 
-        if (network === null) {
+        if (network === null || network === undefined) {
           throw new Error("Network not set. Cannot determine network to use.");
         }
 
         var conf = self.networks[network];
 
-        if (conf === null) {
+        if (conf === null || conf === undefined) {
           config = {};
         }
 
