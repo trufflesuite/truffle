@@ -79,8 +79,6 @@ var command = {
         .then(function(result) {
           config.logger.log(DebugUtils.formatStartMessage());
 
-          debug("contracts %O", result.contracts);
-
           return Debugger.forTx(txHash, {
             provider: config.provider,
             files: result.files,
@@ -181,20 +179,34 @@ var command = {
             config.logger.log(DebugUtils.formatStack(step.stack));
           }
 
-          function printSelector(specified) {
-            var selector = specified
-              .split(".")
-              .filter(function(next) {
-                return next.length > 0;
-              })
-              .reduce(function(sel, next) {
-                debug("next %o, sel %o", next, sel);
-                return sel[next];
-              }, selectors);
+          function select(expr) {
+            let selector, result;
 
-            debug("selector %o", selector);
-            var result = session.view(selector);
-            var debugSelector = debugModule(specified);
+            try {
+              selector = expr
+                .split(".")
+                .filter(function(next) {
+                  return next.length > 0;
+                })
+                .reduce(function(sel, next) {
+                  return sel[next];
+                }, selectors);
+            } catch (_) {
+              throw new Error("Unknown selector: %s", expr);
+            }
+
+            // throws its own exception
+            result = session.view(selector);
+
+            return result;
+          }
+
+          /**
+           * @param {string} selector
+           */
+          function printSelector(selector) {
+            var result = select(selector);
+            var debugSelector = debugModule(selector);
             debugSelector.enabled = true;
             debugSelector("%O", result);
           }
@@ -291,8 +303,38 @@ var command = {
             config.logger.log();
           }
 
-          async function evalAndPrintExpression(expr, indent, suppress) {
-            var context = await session.variables();
+          /**
+           * Convert all !<...> expressions to JS-valid selector requests
+           */
+          function preprocessSelectors(expr) {
+            const regex = /!<([^>]+)>/g;
+            const select = "$"; // expect repl context to have this func
+            const replacer = (_, selector) => `${select}("${selector}")`;
+
+            return expr.replace(regex, replacer);
+          }
+
+          /**
+           * @param {string} raw - user input for watch expression
+           *
+           * performs pre-processing on `raw`, using !<...> delimeters to refer
+           * to selector expressions.
+           *
+           * e.g., to see a particular part of the current trace step's stack:
+           *
+           *    debug(development:0x4228cdd1...)>
+           *
+           *        :!<trace.step.stack>[1]
+           */
+          async function evalAndPrintExpression(raw, indent, suppress) {
+            var context = Object.assign(
+              { $: select },
+
+              await session.variables()
+            );
+
+            const expr = preprocessSelectors(raw);
+
             try {
               var result = safeEval(expr, context);
               var formatted = formatValue(result, indent);

@@ -1089,7 +1089,6 @@ anymatch@^2.0.0:
 app-module-path@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/app-module-path/-/app-module-path-2.2.0.tgz#641aa55dfb7d6a6f0a8141c4b9c0aa50b6c24dd5"
-  integrity sha1-ZBqlXft9am8KgUHEucCqULbCTdU=
 
 append-transform@^1.0.0:
   version "1.0.0"
@@ -2923,7 +2922,6 @@ combined-stream@^1.0.6, combined-stream@~1.0.5, combined-stream@~1.0.6:
 command-exists@^1.2.8:
   version "1.2.8"
   resolved "https://registry.yarnpkg.com/command-exists/-/command-exists-1.2.8.tgz#715acefdd1223b9c9b37110a149c6392c2852291"
-  integrity sha512-PM54PkseWbiiD/mMsbvW351/u+dafwTJ0ye2qB60G1aGQP9j3xK2gmMDc+R34L3nDtx4qMCitXT75mkbkGJDLw==
 
 commander@2.11.0:
   version "2.11.0"
@@ -3003,7 +3001,6 @@ config-chain@^1.1.11:
 configstore@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/configstore/-/configstore-4.0.0.tgz#5933311e95d3687efb592c528b922d9262d227e7"
-  integrity sha512-CmquAXFBocrzaSM8mtGPMM/HiWmyIpr4CcJl/rgY2uCObZ/S7cKU0silxslqJejl+t/T9HS8E0PUNQD81JGUEQ==
   dependencies:
     dot-prop "^4.1.0"
     graceful-fs "^4.1.2"
@@ -11086,7 +11083,6 @@ solc@^0.4.2:
 solc@^0.5.0:
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/solc/-/solc-0.5.0.tgz#2deb2ae992acac3afb909f85c38d00f01dcb335e"
-  integrity sha512-mdLHDl9WeYrN+FIKcMc9PlPfnA9DG9ur5QpCDKcv6VC4RINAsTF4EMuXMZMKoQTvZhtLyJIVH/BZ+KU830Z8Xg==
   dependencies:
     fs-extra "^0.30.0"
     keccak "^1.0.2"
@@ -11998,15 +11994,6 @@ truffle-provider@^0.0.6:
   dependencies:
     truffle-error "^0.0.3"
     web3 "0.20.6"
-
-truffle@^5.0.0-next.16:
-  version "5.0.0-user-level-mnemonic.0"
-  resolved "https://registry.yarnpkg.com/truffle/-/truffle-5.0.0-user-level-mnemonic.0.tgz#c2c0148278353371e22e7f2e50cc41db9bade16a"
-  integrity sha512-RMbyC+3tA/smP+8A1EFTFLf52Nnc6XPAmy1fcNdUlcjuqQlOdXGonUb8PBI4ZrCFbapWl0f3Jpr2XjlP4sdw7g==
-  dependencies:
-    mocha "^4.1.0"
-    original-require "1.0.1"
-    solc "0.4.24"
 
 tslib@^1.9.0:
   version "1.9.3"
