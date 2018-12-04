@@ -33,11 +33,9 @@ var command = {
     var selectors = require("truffle-debugger").selectors;
 
     // Debugger Session properties
-    var ast = selectors.ast;
     var data = selectors.data;
     var trace = selectors.trace;
     var solidity = selectors.solidity;
-    var evm = selectors.evm;
     var controller = selectors.controller;
 
     var config = Config.detect(options);
@@ -58,7 +56,6 @@ var command = {
 
       var lastCommand = "n";
       var enabledExpressions = new Set();
-      var breakpoints = [];
 
       let compilePromise = new Promise(function(accept, reject) {
         compile.all(config, function(err, contracts, files) {
@@ -93,7 +90,8 @@ var command = {
                 sourceMap: contract.sourceMap,
                 deployedBinary:
                   contract.deployedBinary || contract.deployedBytecode,
-                deployedSourceMap: contract.deployedSourceMap
+                deployedSourceMap: contract.deployedSourceMap,
+                compiler: contract.compiler
               };
             })
           });
@@ -198,8 +196,6 @@ var command = {
           }
 
           function printWatchExpressions() {
-            let source = session.view(solidity.current.source);
-
             if (enabledExpressions.size === 0) {
               config.logger.log("No watch expressions added.");
               return;

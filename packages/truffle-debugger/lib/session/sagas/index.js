@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:session:sagas");
 
-import { cancel, call, all, fork, take, put } from "redux-saga/effects";
+import { call, all, fork, take, put } from "redux-saga/effects";
 
 import { prefixName } from "lib/helpers";
 
@@ -17,7 +17,7 @@ import * as actions from "../actions";
 
 export function* saga() {
   debug("starting listeners");
-  let listeners = yield* forkListeners();
+  yield* forkListeners();
 
   // receiving & saving contracts into state
   debug("waiting for contract information");
@@ -99,7 +99,8 @@ function* recordSources(...sources) {
       yield* solidity.addSource(
         sourceData.source,
         sourceData.sourcePath,
-        sourceData.ast
+        sourceData.ast,
+        sourceData.compiler
       );
     }
   }

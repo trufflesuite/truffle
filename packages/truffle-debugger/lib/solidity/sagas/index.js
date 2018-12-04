@@ -9,8 +9,8 @@ import { TICK } from "lib/trace/actions";
 
 import solidity from "../selectors";
 
-export function* addSource(source, sourcePath, ast) {
-  yield put(actions.addSource(source, sourcePath, ast));
+export function* addSource(source, sourcePath, ast, compiler) {
+  yield put(actions.addSource(source, sourcePath, ast, compiler));
 }
 
 export function* addSourceMap(binary, sourceMap) {
@@ -39,16 +39,25 @@ function* functionDepthSaga() {
     debug("about to call");
     if (yield select(solidity.current.callsPrecompile)) {
       //call to precompile; do nothing
-    } else if (yield select(solidity.current.isContractCall)) {
+    } else if (
+      (yield select(solidity.current.needsFunctionDepthWorkaround)) &&
+      (yield select(solidity.current.isContractCall))
+    ) {
+      //all these parentheses are necessary
       //HACK WORKAROUND
-      //because of the solc problem where contract method calls essentially
-      //return twice, we compensate by putting *two* inward jumps for such a
-      //call.  Note that this won't work if the contract method was previously
-      //placed in a function variable!  Those will continue to screw things up!
-      //But if a contract call is being made directly, we can detect that.
+      //because of the problem in solc <5.0.1 where contract method calls
+      //essentially return twice, we compensate by putting *two* inward jumps
+      //for such a call.
+      //Note that this won't work if the contract method was previously placed
+      //in a function variable!  Those will continue to screw things up!  But
+      //if a contract call is being made directly, we can detect that.
+      //Of course, all of this should work fine as of solidity 0.5.1, with no
+      //workaround necessary; this branch should only get take on old
+      //contracts.
       debug("workaround invoked!");
       yield put(actions.jump("2"));
     } else {
+      //an ordinary call, not to a precompile & with no workaround needed
       yield put(actions.jump("i"));
     }
   } else if (yield select(solidity.current.willCreate)) {

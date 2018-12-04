@@ -11,6 +11,8 @@ import jsonpointer from "json-pointer";
 
 import evm from "lib/evm/selectors";
 
+const semver = require("semver");
+
 function getSourceRange(instruction = {}) {
   return {
     start: instruction.start || 0,
@@ -205,6 +207,15 @@ let solidity = createSelectorTree({
     ),
 
     /**
+     * solidity.current.compiler
+     */
+    compiler: createLeaf(
+      ["./source"],
+
+      source => source.compiler
+    ),
+
+    /**
      * solidity.current.sourceRange
      */
     sourceRange: createLeaf(["./instruction"], getSourceRange),
@@ -304,7 +315,7 @@ let solidity = createSelectorTree({
 
     /**
      * solidity.current.isContractCall
-     * HACK WORKAROUND
+     * HACK WORKAROUND (only applies to solc version <0.5.1)
      * this selector exists to work around a problem in solc
      * it attempts to detect whether the current node is a contract method call
      * (or library method call)
@@ -321,6 +332,18 @@ let solidity = createSelectorTree({
         node.expression.expression !== undefined &&
         (isContract(node.expression.expression) ||
           isContractType(node.expression.expression))
+    ),
+
+    /**
+     * solidity.current.needsFunctionDepthWorkaround
+     * HACK
+     * Determines if the solidity version used was <0.5.1,
+     * to determine whether to use the above workaround
+     */
+    needsFunctionDepthWorkaround: createLeaf(
+      ["./compiler"],
+      compiler =>
+        compiler.name === "solc" && semver.satisfies(compiler.version, "<0.5.1")
     )
   }
 });

@@ -14,7 +14,7 @@ function sources(state = DEFAULT_SOURCES, action) {
      * Adding a new source
      */
     case actions.ADD_SOURCE:
-      let { ast, source, sourcePath } = action;
+      let { ast, source, sourcePath, compiler } = action;
 
       let id = Object.keys(state.byId).length;
 
@@ -26,7 +26,8 @@ function sources(state = DEFAULT_SOURCES, action) {
             id,
             ast,
             source,
-            sourcePath
+            sourcePath,
+            compiler
           }
         }
       };

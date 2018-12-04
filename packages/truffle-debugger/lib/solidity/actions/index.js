@@ -1,10 +1,11 @@
 export const ADD_SOURCE = "SOLIDITY_ADD_SOURCE";
-export function addSource(source, sourcePath, ast) {
+export function addSource(source, sourcePath, ast, compiler) {
   return {
     type: ADD_SOURCE,
     source,
     sourcePath,
-    ast
+    ast,
+    compiler
   };
 }
 
