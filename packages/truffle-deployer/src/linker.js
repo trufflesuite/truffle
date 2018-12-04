@@ -39,7 +39,7 @@ module.exports = {
       const alreadyLinked = (destination.links[library.contract_name] == library.address);
       const noLinkage =     (destination.unlinked_binary.indexOf(library.contract_name) < 0);
 
-      if (alreadyLinked || noLinkage) return;
+      if (alreadyLinked || noLinkage) continue;
 
       eventArgs = {
         libraryName: library.contractName,
