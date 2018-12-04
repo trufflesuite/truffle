@@ -57,21 +57,27 @@ var Environment = {
 
     var web3 = new Web3(config.provider);
 
-    function detectNetworkId(done) {
+    async function detectNetworkId(done) {
+      const providerNetworkId = await web3.eth.net.getId();
       if (network_id != "*") {
+        // Ensure the network id matches the one in the config for safety
+        if (providerNetworkId !== network_id) {
+          const error = {
+            message:
+              `The network id specified in the truffle config ` +
+              `(${network_id}) does not match the one returned by the network ` +
+              `(${providerNetworkId}).  Ensure that both the network and the ` +
+              `provider are properly configured.`
+          };
+          done(error);
+        }
         return done(null, network_id);
+      } else {
+        // We have a "*" network. Get the current network and replace it with the real one.
+        // TODO: Should we replace this with the blockchain uri?
+        config.networks[config.network].network_id = providerNetworkId;
+        done(null, network_id);
       }
-
-      // We have a "*" network. Get the current network and replace it with the real one.
-      // TODO: Should we replace this with the blockchain uri?
-      web3.eth.net
-        .getId()
-        .then(id => {
-          network_id = id;
-          config.networks[config.network].network_id = network_id;
-          done(null, network_id);
-        })
-        .catch(callback);
     }
 
     function detectFromAddress(done) {
