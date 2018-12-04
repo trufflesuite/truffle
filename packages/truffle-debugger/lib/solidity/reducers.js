@@ -77,7 +77,7 @@ const info = combineReducers({
   sourceMaps
 });
 
-export function functionDepth(state = 1, action) {
+export function functionDepth(state = 0, action) {
   switch (action.type) {
     case actions.JUMP:
       const delta = spelunk(action.jumpDirection);
