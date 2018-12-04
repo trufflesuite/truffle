@@ -35,12 +35,12 @@ var compile = function(sources, options, callback) {
 
   expect.options(options.compilers, ["solc"]);
 
-  options.compilers.solc = options.compilers.solc || {};
+  options.compilers.solc.settings =
+    options.compilers.solc.settings || options.compilers.solc || {};
 
   // Grandfather in old solc config
   if (options.solc) {
-    options.compilers.solc.settings.evmVersion = options.solc.evmVersion;
-    options.compilers.solc.settings.optimizer = options.solc.optimizer;
+    options.compilers.solc.settings = options.solc.settings || options.solc;
   }
 
   // Ensure sources have operating system independent paths
@@ -99,8 +99,8 @@ var compile = function(sources, options, callback) {
     language: "Solidity",
     sources: {},
     settings: {
-      evmVersion: options.compilers.solc.evmVersion,
-      optimizer: options.compilers.solc.optimizer,
+      evmVersion: options.compilers.solc.settings.evmVersion,
+      optimizer: options.compilers.solc.settings.optimizer,
       outputSelection
     }
   };
