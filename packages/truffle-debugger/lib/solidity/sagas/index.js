@@ -9,8 +9,8 @@ import { TICK } from "lib/trace/actions";
 
 import solidity from "../selectors";
 
-export function* addSource(source, sourcePath, ast, compiler) {
-  yield put(actions.addSource(source, sourcePath, ast, compiler));
+export function* addSource(source, sourcePath, ast) {
+  yield put(actions.addSource(source, sourcePath, ast));
 }
 
 export function* addSourceMap(binary, sourceMap) {
@@ -40,7 +40,7 @@ function* functionDepthSaga() {
     if (yield select(solidity.current.callsPrecompile)) {
       //call to precompile; do nothing
     } else if (
-      (yield select(solidity.current.needsFunctionDepthWorkaround)) &&
+      (yield select(solidity.next.needsFunctionDepthWorkaround)) &&
       (yield select(solidity.current.isContractCall))
     ) {
       //all these parentheses are necessary

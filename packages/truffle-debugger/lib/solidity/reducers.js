@@ -84,7 +84,7 @@ export function functionDepth(state = 0, action) {
       return state + delta;
 
     case actions.RESET:
-      return 1;
+      return 0;
 
     default:
       return state;

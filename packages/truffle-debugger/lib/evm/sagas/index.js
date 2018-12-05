@@ -17,11 +17,11 @@ import * as data from "lib/data/sagas";
  *
  * @return {string} ID (0x-prefixed keccak of binary)
  */
-export function* addContext(contractName, { address, binary }) {
+export function* addContext(contractName, { address, binary }, compiler) {
   const raw = binary || address;
   const context = keccak256(raw);
 
-  yield put(actions.addContext(contractName, raw));
+  yield put(actions.addContext(contractName, raw, compiler));
 
   if (binary) {
     yield put(actions.addBinary(context, binary));
@@ -42,7 +42,7 @@ export function* addInstance(address, binary) {
 
   // in case binary is unknown, add context for address
   if (!context) {
-    context = yield* addContext(undefined, { address });
+    context = yield* addContext(undefined, { address }, undefined);
   }
 
   yield put(actions.addInstance(address, context, binary));

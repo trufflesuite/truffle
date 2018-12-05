@@ -207,15 +207,6 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.current.compiler
-     */
-    compiler: createLeaf(
-      ["./source"],
-
-      source => source.compiler
-    ),
-
-    /**
      * solidity.current.sourceRange
      */
     sourceRange: createLeaf(["./instruction"], getSourceRange),
@@ -332,10 +323,24 @@ let solidity = createSelectorTree({
         node.expression.expression !== undefined &&
         (isContract(node.expression.expression) ||
           isContractType(node.expression.expression))
+    )
+  },
+
+  /**
+   * solidity.next
+   */
+  next: {
+    /**
+     * solidity.next.compiler
+     */
+    compiler: createLeaf(
+      [evm.current.step.callContext],
+
+      context => context.compiler
     ),
 
     /**
-     * solidity.current.needsFunctionDepthWorkaround
+     * solidity.next.needsFunctionDepthWorkaround
      * HACK
      * Determines if the solidity version used was <0.5.1,
      * to determine whether to use the above workaround
@@ -343,7 +348,9 @@ let solidity = createSelectorTree({
     needsFunctionDepthWorkaround: createLeaf(
       ["./compiler"],
       compiler =>
-        compiler.name === "solc" && semver.satisfies(compiler.version, "<0.5.1")
+        compiler !== undefined && //would be undefined for e.g. a precompile
+        compiler.name === "solc" &&
+        semver.satisfies(compiler.version, "<0.5.1")
     )
   }
 });

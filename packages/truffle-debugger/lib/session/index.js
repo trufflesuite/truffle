@@ -79,7 +79,7 @@ export default class Session {
       debug("sourceMap %o", sourceMap);
       debug("compiler %o", compiler);
 
-      sourcesByPath[sourcePath] = { sourcePath, source, ast, compiler };
+      sourcesByPath[sourcePath] = { sourcePath, source, ast };
 
       if (binary && binary != "0x") {
         contexts.push({
@@ -93,7 +93,8 @@ export default class Session {
         contexts.push({
           contractName,
           binary: deployedBinary,
-          sourceMap: deployedSourceMap
+          sourceMap: deployedSourceMap,
+          compiler
         });
       }
     }
