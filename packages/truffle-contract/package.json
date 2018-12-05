@@ -35,7 +35,7 @@
     "truffle-contract-schema": "^3.0.0-beta.2",
     "truffle-error": "^0.0.3",
     "uglify-es": "^3.3.9",
-    "web3": "1.0.0-beta.36",
+    "web3": "github:trufflesuite/web3.js#master",
     "web3-core-promievent": "1.0.0-beta.36",
     "web3-eth-abi": "1.0.0-beta.36",
     "web3-utils": "1.0.0-beta.36"
