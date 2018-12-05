@@ -12,7 +12,6 @@ const DEFAULT_SCOPES = {
 };
 
 function scopes(state = DEFAULT_SCOPES, action) {
-  var context;
   var scope;
   var variables;
 
@@ -72,10 +71,10 @@ const DEFAULT_ASSIGNMENTS = {
 function assignments(state = DEFAULT_ASSIGNMENTS, action) {
   switch (action.type) {
     case actions.ASSIGN:
-      debug("action.assignments %O",action.assignments);
+      debug("action.assignments %O", action.assignments);
       return Object.values(action.assignments.byId).reduce(
         (acc, assignment) => {
-          let {id, astId} = assignment; //we don't need the rest
+          let { id, astId } = assignment; //we don't need the rest
           return {
             byId: {
               ...acc.byId,
@@ -86,38 +85,35 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
               [astId]: [...new Set([...(acc.byAstId[astId] || []), id])]
               //we use a set for uniqueness
             }
-          }
-        }
-        , state);
+          };
+        },
+        state
+      );
 
     case actions.LEARN_ADDRESS:
       let { dummyAddress, address } = action;
       return {
-        byId: Object.assign({},
-          ...Object.entries(state.byId).map(
-            ([id, assignment]) => {
-              let newAssignment =
-                learnAddress(assignment, dummyAddress, address);
-              return {
-                [newAssignment.id]: newAssignment
-              };
-            }
-          )
+        byId: Object.assign(
+          {},
+          ...Object.entries(state.byId).map(([, assignment]) => {
+            let newAssignment = learnAddress(assignment, dummyAddress, address);
+            return {
+              [newAssignment.id]: newAssignment
+            };
+          })
         ),
-        byAstId: Object.assign({},
-          ...Object.entries(state.byAstId).map(
-            ([astId, ids]) => {
-              return {
-                [astId]: state.byAstId[astId].map(
-                  (id) =>
-                    learnAddress(state.byId[id], dummyAddress, address).id
-                    //this above involves some recomputation but oh well
-                )
-              }
-            }
-          )
+        byAstId: Object.assign(
+          {},
+          ...Object.entries(state.byAstId).map(([astId]) => {
+            return {
+              [astId]: state.byAstId[astId].map(
+                id => learnAddress(state.byId[id], dummyAddress, address).id
+                //this above involves some recomputation but oh well
+              )
+            };
+          })
         )
-      }
+      };
 
     case actions.RESET:
       return DEFAULT_ASSIGNMENTS;
@@ -127,9 +123,8 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
   }
 }
 
-function learnAddress(assignment, dummyAddress, address)
-{
-  if(assignment.dummyAddress === dummyAddress) {
+function learnAddress(assignment, dummyAddress, address) {
+  if (assignment.dummyAddress === dummyAddress) {
     //we can assume here that the object being
     //transformed has a very particular form
     let newIdObj = {
@@ -142,9 +137,8 @@ function learnAddress(assignment, dummyAddress, address)
       ref: assignment.ref,
       astId: assignment.astId,
       address
-    }
-  }
-  else {
+    };
+  } else {
     return assignment;
   }
 }
@@ -163,10 +157,13 @@ function mappingKeys(state = DEFAULT_MAPPING_KEYS, action) {
           ...state.byId,
 
           // add new key to set of keys already defined
-          [id]: [...new Set([ //set for uniqueness
-            ...(state.byId[id] || []),
-            key
-          ])]
+          [id]: [
+            ...new Set([
+              //set for uniqueness
+              ...(state.byId[id] || []),
+              key
+            ])
+          ]
         }
       };
 

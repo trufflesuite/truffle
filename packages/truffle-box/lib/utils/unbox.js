@@ -4,12 +4,8 @@ const ghdownload = require("github-download");
 const request = require("request");
 const vcsurl = require("vcsurl");
 const parseURL = require("url").parse;
-const tmp = require("tmp");
 const exec = require("child_process").exec;
-const cwd = require("process").cwd();
 const inquirer = require("inquirer");
-
-const config = require("../config");
 
 function verifyURL(url) {
   // Next let's see if the expected repository exists. If it doesn't, ghdownload
@@ -56,22 +52,6 @@ function verifyURL(url) {
   });
 }
 
-function setupTempDirectory() {
-  return new Promise(function(accept, reject) {
-    tmp.dir(
-      {
-        dir: cwd,
-        unsafeCleanup: true
-      },
-      function(err, dir, cleanupCallback) {
-        if (err) return reject(err);
-
-        accept(path.join(dir, "box"), cleanupCallback);
-      }
-    );
-  });
-}
-
 function fetchRepository(url, dir) {
   return new Promise(function(accept, reject) {
     // Download the package from github.
@@ -85,11 +65,33 @@ function fetchRepository(url, dir) {
   });
 }
 
-async function promptOverwrites(contentCollisions) {
+function prepareToCopyFiles(tempDir, boxConfig) {
+  const needingRemoval = boxConfig.ignore || [];
+
+  // remove box config file
+  needingRemoval.push("truffle-box.json");
+  needingRemoval.push("truffle-init.json");
+
+  const promises = needingRemoval
+    .map(fileName => path.join(tempDir, fileName))
+    .map(
+      filePath =>
+        new Promise((resolve, reject) => {
+          fs.remove(filePath, error => {
+            if (error) return reject(error);
+            resolve();
+          });
+        })
+    );
+
+  return Promise.all(promises);
+}
+
+async function promptOverwrites(contentCollisions, logger = console) {
   const overwriteContents = [];
 
   for (const file of contentCollisions) {
-    console.log(`${file} already exists in this directory...`);
+    logger.log(`${file} already exists in this directory...`);
     const overwriting = [
       {
         type: "confirm",
@@ -112,6 +114,7 @@ async function promptOverwrites(contentCollisions) {
 
 async function copyTempIntoDestination(tmpDir, destination, force) {
   fs.ensureDirSync(destination);
+  const { force, logger } = options;
   const boxContents = fs.readdirSync(tmpDir);
   const destinationContents = fs.readdirSync(destination);
 
@@ -127,49 +130,13 @@ async function copyTempIntoDestination(tmpDir, destination, force) {
   if (force) {
     shouldCopy = boxContents;
   } else {
-    const overwriteContents = await promptOverwrites(contentCollisions);
+    const overwriteContents = await promptOverwrites(contentCollisions, logger);
     shouldCopy = [...newContents, ...overwriteContents];
   }
 
   for (const file of shouldCopy) {
     fs.copySync(`${tmpDir}/${file}`, `${destination}/${file}`);
   }
-}
-
-function readBoxConfig(destination) {
-  var possibleConfigs = [
-    path.join(destination, "truffle-box.json"),
-    path.join(destination, "truffle-init.json")
-  ];
-
-  var configPath = possibleConfigs.reduce(function(path, alt) {
-    return path || (fs.existsSync(alt) && alt);
-  }, undefined);
-
-  return config.read(configPath);
-}
-
-function cleanupUnpack(boxConfig, destination) {
-  var needingRemoval = boxConfig.ignore || [];
-
-  // remove box config file
-  needingRemoval.push("truffle-box.json");
-  needingRemoval.push("truffle-init.json");
-
-  var promises = needingRemoval
-    .map(function(file_path) {
-      return path.join(destination, file_path);
-    })
-    .map(function(file_path) {
-      return new Promise(function(accept, reject) {
-        fs.remove(file_path, function(err) {
-          if (err) return reject(err);
-          accept();
-        });
-      });
-    });
-
-  return Promise.all(promises);
 }
 
 function installBoxDependencies(boxConfig, destination) {
@@ -188,11 +155,9 @@ function installBoxDependencies(boxConfig, destination) {
 }
 
 module.exports = {
-  verifyURL: verifyURL,
-  setupTempDirectory: setupTempDirectory,
-  fetchRepository: fetchRepository,
-  copyTempIntoDestination: copyTempIntoDestination,
-  readBoxConfig: readBoxConfig,
-  cleanupUnpack: cleanupUnpack,
-  installBoxDependencies: installBoxDependencies
+  copyTempIntoDestination,
+  fetchRepository,
+  installBoxDependencies,
+  prepareToCopyFiles,
+  verifyURL
 };

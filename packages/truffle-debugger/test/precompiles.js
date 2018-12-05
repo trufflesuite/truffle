@@ -1,10 +1,9 @@
 import debugModule from "debug";
-const debug = debugModule("test:precompiles");
+const debug = debugModule("test:precompiles"); // eslint-disable-line no-unused-vars
 
 import { assert } from "chai";
 
 import Ganache from "ganache-cli";
-import Web3 from "web3";
 
 import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
@@ -14,7 +13,7 @@ import trace from "lib/trace/selectors";
 import solidity from "lib/solidity/selectors";
 
 const __PRECOMPILE = `
-pragma solidity ^0.4.18;
+pragma solidity ~0.5;
 
 contract HasPrecompile {
   event Called();
@@ -28,23 +27,26 @@ contract HasPrecompile {
 `;
 
 let sources = {
-  "HasPrecompile.sol": __PRECOMPILE,
+  "HasPrecompile.sol": __PRECOMPILE
 };
 
-const TEST_CASES = [{
-  name: "trace.step",
-  selector: trace.step
-}, {
-  name: "evm.current.context",
-  selector: evm.current.context
-}, {
-  name: "solidity.current.sourceRange",
-  selector: solidity.current.sourceRange
-}];
+const TEST_CASES = [
+  {
+    name: "trace.step",
+    selector: trace.step
+  },
+  {
+    name: "evm.current.context",
+    selector: evm.current.context
+  },
+  {
+    name: "solidity.current.sourceRange",
+    selector: solidity.current.sourceRange
+  }
+];
 
 describe("Precompiled Contracts", () => {
   let provider;
-  let web3;
 
   let abstractions;
   let artifacts;
@@ -54,8 +56,7 @@ describe("Precompiled Contracts", () => {
   let results = {};
 
   before("Create Provider", async function() {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
-    web3 = new Web3(provider);
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function() {
@@ -86,7 +87,7 @@ describe("Precompiled Contracts", () => {
     });
 
     let session = bugger.connect();
-    var finished;  // is the trace finished?
+    var finished; // is the trace finished?
 
     do {
       for (let { name, selector } of TEST_CASES) {
@@ -103,7 +104,7 @@ describe("Precompiled Contracts", () => {
 
       session.advance();
       finished = session.view(trace.finished);
-    } while(!finished);
+    } while (!finished);
   });
 
   before("remove final step results", () => {

@@ -13,7 +13,7 @@ import trace from "lib/trace/selectors";
 import solidity from "lib/solidity/selectors";
 
 const __FACTORIAL = `
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 
 contract FactorialTest {
 
@@ -40,7 +40,7 @@ contract FactorialTest {
 `;
 
 const __ADDRESS = `
-pragma solidity ^0.4.25;
+pragma solidity ^0.5.0;
 
 contract AddressTest {
 
@@ -78,7 +78,7 @@ contract SecretByte {
 `;
 
 const __INTERVENING = `
-pragma solidity ^0.4.25;
+pragma solidity ^0.5.0;
 
 import "./InterveningLib.sol";
 
@@ -110,13 +110,13 @@ contract Intervening {
 }
 
 contract Inner {
-  
+
   uint8 flag;
 
   constructor() public {
     flag = 0;
   }
-  
+
   function run() public returns (uint8) {
     flag = 1;
     return 2;
@@ -126,10 +126,10 @@ contract Inner {
 `;
 
 const __INTERVENINGLIB = `
-pragma solidity ^0.4.25;
+pragma solidity ^0.5.0;
 
 library InterveningLib {
-  
+
   function run() pure external returns (uint8) {
     return 2;
   }
@@ -192,14 +192,16 @@ describe("Variable IDs", function() {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
+      files,
       contracts: artifacts
     });
 
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
 
-    session.addBreakpoint({ sourceId: 1, line: 12 });
-    session.addBreakpoint({ sourceId: 1, line: 22 });
+    let sourceId = session.view(solidity.current.source).id;
+    session.addBreakpoint({ sourceId, line: 12 });
+    session.addBreakpoint({ sourceId, line: 22 });
 
     var values = [];
 
@@ -220,13 +222,15 @@ describe("Variable IDs", function() {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
+      files,
       contracts: artifacts
     });
 
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
 
-    session.addBreakpoint({ sourceId: 0, line: 32 });
+    let sourceId = session.view(solidity.current.source).id;
+    session.addBreakpoint({ sourceId, line: 32 });
     session.continueUntilBreakpoint();
     debug("node %o", session.view(solidity.current.node));
     assert.equal(session.view(data.current.identifiers.native)["secret"], 107);
@@ -242,13 +246,15 @@ describe("Variable IDs", function() {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
+      files,
       contracts: artifacts
     });
 
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
 
-    session.addBreakpoint({ sourceId: 2, line: 18 });
+    let sourceId = session.view(solidity.current.source).id;
+    session.addBreakpoint({ sourceId, line: 18 });
     session.continueUntilBreakpoint();
     assert.property(session.view(data.current.identifiers.native), "flag");
   });
@@ -267,7 +273,8 @@ describe("Variable IDs", function() {
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
 
-    session.addBreakpoint({ sourceId: 2, line: 27 });
+    let sourceId = session.view(solidity.current.source).id;
+    session.addBreakpoint({ sourceId, line: 27 });
     session.continueUntilBreakpoint();
     assert.property(session.view(data.current.identifiers.native), "flag");
   });
