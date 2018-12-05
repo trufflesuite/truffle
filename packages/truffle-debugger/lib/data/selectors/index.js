@@ -346,7 +346,9 @@ const data = createSelectorTree({
             })
           );
           const keyedResults = await Promise.all(keyedPromises);
-          return Object.assign({}, ...keyedResults);
+          return TruffleDecodeUtils.Conversion.cleanMappings(
+            Object.assign({}, ...keyedResults)
+          );
         }
       ),
 
