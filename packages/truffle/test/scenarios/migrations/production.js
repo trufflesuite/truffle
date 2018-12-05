@@ -4,26 +4,25 @@ const path = require("path");
 const assert = require("assert");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
-const Web3 = require('web3');
+const Web3 = require("web3");
 
 const log = console.log;
 
-function processErr(err, output){
-  if (err){
+function processErr(err, output) {
+  if (err) {
     log(output);
     throw new Error(err);
   }
 }
 
-describe('production', function() {
-
+describe("production", function() {
   describe("{production: true, confirmations: 2 } [ @geth ]", function() {
     if (!process.env.GETH) return;
 
     let config;
     let web3;
     let networkId;
-    const project = path.join(__dirname, '../../sources/migrations/production');
+    const project = path.join(__dirname, "../../sources/migrations/production");
     const logger = new MemoryLogger();
 
     before(async function() {
@@ -35,7 +34,10 @@ describe('production', function() {
         reporter: new Reporter(logger)
       };
 
-      const provider = new Web3.providers.HttpProvider('http://localhost:8545');
+      const provider = new Web3.providers.HttpProvider(
+        "http://localhost:8545",
+        { keepAlive: false }
+      );
       web3 = new Web3(provider);
       networkId = await web3.eth.net.getId();
     });
@@ -47,12 +49,15 @@ describe('production', function() {
         const output = logger.contents();
         processErr(err, output);
 
-        assert(output.includes('dry-run'));
+        assert(output.includes("dry-run"));
 
-        assert(output.includes('2_migrations_conf.js'));
+        assert(output.includes("2_migrations_conf.js"));
         assert(output.includes("Deploying 'Example'"));
 
-        const location = path.join(config.contracts_build_directory, "Example.json");
+        const location = path.join(
+          config.contracts_build_directory,
+          "Example.json"
+        );
         const artifact = require(location);
         const network = artifact.networks[networkId];
 
@@ -61,10 +66,10 @@ describe('production', function() {
 
         // Geth automines too quickly for the 4 sec resolution we set
         // to trigger the output.
-        if (!process.env.GETH){
-          assert(output.includes('2 confirmations'));
-          assert(output.includes('confirmation number: 1'));
-          assert(output.includes('confirmation number: 2'));
+        if (!process.env.GETH) {
+          assert(output.includes("2 confirmations"));
+          assert(output.includes("confirmation number: 1"));
+          assert(output.includes("confirmation number: 2"));
         }
 
         console.log(output);
@@ -79,7 +84,7 @@ describe('production', function() {
     let config;
     let web3;
     let networkId;
-    const project = path.join(__dirname, '../../sources/migrations/production');
+    const project = path.join(__dirname, "../../sources/migrations/production");
     const logger = new MemoryLogger();
 
     before(async function() {
@@ -91,7 +96,10 @@ describe('production', function() {
         reporter: new Reporter(logger)
       };
 
-      const provider = new Web3.providers.HttpProvider('http://localhost:8545');
+      const provider = new Web3.providers.HttpProvider(
+        "http://localhost:8545",
+        { keepAlive: false }
+      );
       web3 = new Web3(provider);
       networkId = await web3.eth.net.getId();
     });
@@ -100,16 +108,18 @@ describe('production', function() {
       this.timeout(70000);
 
       CommandRunner.run("migrate --network fakeRopsten", config, err => {
-
         const output = logger.contents();
         processErr(err, output);
 
-        assert(!output.includes('dry-run'));
+        assert(!output.includes("dry-run"));
 
-        assert(output.includes('2_migrations_conf.js'));
+        assert(output.includes("2_migrations_conf.js"));
         assert(output.includes("Deploying 'Example'"));
 
-        const location = path.join(config.contracts_build_directory, "Example.json");
+        const location = path.join(
+          config.contracts_build_directory,
+          "Example.json"
+        );
         const artifact = require(location);
         const network = artifact.networks[networkId];
 
