@@ -18,7 +18,7 @@
     "ethpm": "0.0.16",
     "ethpm-registry": "0.1.0-next.2",
     "fs-extra": "6.0.1",
-    "ganache-cli": "6.1.8",
+    "ganache-cli": "6.2.3",
     "hdkey": "^1.1.0",
     "lodash": "4.17.10",
     "mkdirp": "^0.5.1",

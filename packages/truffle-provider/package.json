@@ -27,7 +27,7 @@
     "web3": "^1.0.0-beta.37"
   },
   "devDependencies": {
-    "ganache-cli": "6.1.8",
+    "ganache-cli": "6.2.3",
     "mocha": "5.2.0"
   },
   "publishConfig": {
