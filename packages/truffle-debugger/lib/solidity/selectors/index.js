@@ -323,34 +323,21 @@ let solidity = createSelectorTree({
         node.expression.expression !== undefined &&
         (isContract(node.expression.expression) ||
           isContractType(node.expression.expression))
-    )
-  },
-
-  /**
-   * solidity.next
-   */
-  next: {
-    /**
-     * solidity.next.compiler
-     */
-    compiler: createLeaf(
-      [evm.current.step.callContext],
-
-      context => context.compiler
     ),
 
     /**
-     * solidity.next.needsFunctionDepthWorkaround
+     * solidity.current.needsFunctionDepthWorkaround
      * HACK
-     * Determines if the solidity version used was <0.5.1,
-     * to determine whether to use the above workaround
+     * Determines if the solidity version used for the contract about to be
+     * called was <0.5.1, to determine whether to use the above workaround
+     * Only call this if the current step is a call or create!
      */
     needsFunctionDepthWorkaround: createLeaf(
-      ["./compiler"],
-      compiler =>
-        compiler !== undefined && //would be undefined for e.g. a precompile
-        compiler.name === "solc" &&
-        semver.satisfies(compiler.version, "<0.5.1")
+      [evm.current.step.callContext],
+      context =>
+        context.compiler !== undefined && //would be undefined for e.g. a precompile
+        context.compiler.name === "solc" &&
+        semver.satisfies(context.compiler.version, "<0.5.1")
     )
   }
 });

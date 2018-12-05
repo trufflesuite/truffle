@@ -40,7 +40,7 @@ function* functionDepthSaga() {
     if (yield select(solidity.current.callsPrecompile)) {
       //call to precompile; do nothing
     } else if (
-      (yield select(solidity.next.needsFunctionDepthWorkaround)) &&
+      (yield select(solidity.current.needsFunctionDepthWorkaround)) &&
       (yield select(solidity.current.isContractCall))
     ) {
       //all these parentheses are necessary
