@@ -45,7 +45,7 @@ function* functionDepthSaga() {
     ) {
       //all these parentheses are necessary
       //HACK WORKAROUND
-      //because of the problem in solc <5.0.1 where contract method calls
+      //because of the problem in solc <0.5.1 where contract method calls
       //essentially return twice, we compensate by putting *two* inward jumps
       //for such a call.
       //Note that this won't work if the contract method was previously placed
