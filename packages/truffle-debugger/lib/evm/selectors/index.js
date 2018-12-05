@@ -8,6 +8,26 @@ import trace from "lib/trace/selectors";
 
 import { isCallMnemonic } from "lib/helpers";
 
+function findContext({ address, binary }, instances, search, contexts) {
+  let record;
+  if (address) {
+    record = instances[address];
+    if (!record) {
+      return { address };
+    }
+    binary = record.binary;
+  } else {
+    record = search(binary);
+  }
+
+  let context = contexts[(record || {}).context];
+
+  return {
+    ...context,
+    binary
+  };
+}
+
 /**
  * create EVM-level selectors for a given trace step selector
  * may specify additional selectors to include
@@ -102,6 +122,23 @@ function createStepSelectors(step, state = null) {
 
           return "0x" + memory.join("").substring(offset, offset + length);
         }
+      ),
+
+      /**
+       * .callContext
+       *
+       * context for what we're about to call into (or create)
+       */
+      callContext: createLeaf(
+        [
+          "./callAddress",
+          "./createBinary",
+          "/info/instances",
+          "/info/binaries/search",
+          "/info/contexts"
+        ],
+        (address, binary, instances, search, contexts) =>
+          findContext({ address, binary }, instances, search, contexts)
       ),
 
       /**
@@ -224,26 +261,7 @@ const evm = createSelectorTree({
      */
     context: createLeaf(
       ["./call", "/info/instances", "/info/binaries/search", "/info/contexts"],
-
-      ({ address, binary }, instances, search, contexts) => {
-        let record;
-        if (address) {
-          record = instances[address];
-          if (!record) {
-            return { address };
-          }
-          binary = record.binary;
-        } else {
-          record = search(binary);
-        }
-
-        let context = contexts[(record || {}).context];
-
-        return {
-          ...context,
-          binary
-        };
-      }
+      findContext
     ),
 
     /**

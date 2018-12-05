@@ -1,10 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:session");
-
-import trace from "lib/trace/selectors";
-import evm from "lib/evm/selectors";
-import ast from "lib/ast/selectors";
-import solidity from "lib/solidity/selectors";
+const debug = debugModule("debugger:session"); //eslint-disable-line no-unused-vars
 
 import configureStore from "lib/store";
 
@@ -77,8 +72,12 @@ export default class Session {
         deployedSourceMap,
         sourcePath,
         source,
-        ast
+        ast,
+        compiler
       } = contract;
+
+      debug("sourceMap %o", sourceMap);
+      debug("compiler %o", compiler);
 
       sourcesByPath[sourcePath] = { sourcePath, source, ast };
 
@@ -94,7 +93,8 @@ export default class Session {
         contexts.push({
           contractName,
           binary: deployedBinary,
-          sourceMap: deployedSourceMap
+          sourceMap: deployedSourceMap,
+          compiler
         });
       }
     }

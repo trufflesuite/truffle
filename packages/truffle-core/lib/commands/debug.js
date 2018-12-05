@@ -88,7 +88,8 @@ var command = {
                 sourceMap: contract.sourceMap,
                 deployedBinary:
                   contract.deployedBinary || contract.deployedBytecode,
-                deployedSourceMap: contract.deployedSourceMap
+                deployedSourceMap: contract.deployedSourceMap,
+                compiler: contract.compiler
               };
             })
           });
