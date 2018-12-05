@@ -103,12 +103,12 @@ export namespace Conversion {
       if (hex.length % 2 == 1) {
         hex = `0${hex}`;
       }
-    
+
       bytes = new Uint8Array(
         hex.match(/.{2}/g)
           .map( (byte) => parseInt(byte, 16) )
       );
-    
+
       if (bytes.length < length) {
         let prior = bytes;
         bytes = new Uint8Array(length);
@@ -143,6 +143,74 @@ export namespace Conversion {
       );
 
     } else {
+      return value;
+    }
+  }
+
+  /**
+   * Convert a mapping representation into a JS Map
+   *
+   * Only converts integer types to BN right now, leaving everything else alone
+   */
+  export function toMap({ keyType, members }: any): Map<any, any> {
+    // convert integer types to BN, unless string representation is hex
+    const convertKey = (key: string) => {
+      if (keyType.match(/int/) && key.slice(0,2) != "0x") {
+        return new BN(key, 10);
+      } else {
+        return key;
+      }
+    }
+
+    // populate Map with members, using converted keys
+    return new Map([
+      ...Object.entries(members)
+        .map( ([key, value]: any) => ([convertKey(key), value]) )
+    ] as any);
+  }
+
+  /**
+   * recursively converts decoder-native mapping values to JS Map objects
+   *
+   * detects int and uint Solidity types and uses BNs as keys in such
+   * situations
+   *
+   * all other keys are just kept as strings right now
+   */
+  export function cleanMappings(value: any): any {
+    // HACK detect mappings as any object with certain *truthy* properties,
+    // where `type` has explicit value `"mapping"`
+    //
+    // note that this means we can't decode a Solidity struct of this form.
+    const isMapping = ({ type, members, keyType }: any) =>
+      type === "mapping" && keyType && members;
+
+    // BNs are treated like primitives; must take precedence over generic obj
+    if (BN.isBN(value)) {
+      return value;
+    }
+
+    // detect mapping
+    else if (value && typeof value === "object" && isMapping(value)) {
+      return toMap(value);
+    }
+
+    // detect arrays or anything with `.map()`, and recurse
+    else if (value && value.map != undefined) {
+      return value.map( (inner: any) => cleanMappings(inner) );
+    }
+
+    // detect objects and recurse
+    else if (value && typeof value == "object") {
+      return Object.assign(
+        {}, ...Object.entries(value).map(
+          ([key, inner]) => ({ [key]: cleanMappings(inner) })
+        )
+      );
+    }
+
+    // catch-all: no-change
+    else {
       return value;
     }
   }
