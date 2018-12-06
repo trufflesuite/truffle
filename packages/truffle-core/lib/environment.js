@@ -136,7 +136,7 @@ var Environment = {
     config.networks[network] = {
       network_id: testrpcOptions.network_id,
       provider: function() {
-        return new Web3.providers.HttpProvider(url);
+        return new Web3.providers.HttpProvider(url, { keepAlive: false });
       }
     };
 

@@ -5,12 +5,12 @@ const assert = require("assert");
 const Server = require("../server");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
-const Web3 = require('web3');
+const Web3 = require("web3");
 
 const log = console.log;
 
-function processErr(err, output){
-  if (err){
+function processErr(err, output) {
+  if (err) {
     log(output);
     throw new Error(err);
   }
@@ -20,7 +20,7 @@ describe("solo migration", function() {
   let config;
   let web3;
   let networkId;
-  const project = path.join(__dirname, '../../sources/migrations/init');
+  const project = path.join(__dirname, "../../sources/migrations/init");
   const logger = new MemoryLogger();
 
   before(done => Server.start(done));
@@ -35,7 +35,9 @@ describe("solo migration", function() {
       reporter: new Reporter(logger)
     };
 
-    const provider = new Web3.providers.HttpProvider('http://localhost:8545');
+    const provider = new Web3.providers.HttpProvider("http://localhost:8545", {
+      keepAlive: false
+    });
     web3 = new Web3(provider);
     networkId = await web3.eth.net.getId();
   });
@@ -47,7 +49,10 @@ describe("solo migration", function() {
       const output = logger.contents();
       processErr(err, output);
 
-      const location = path.join(config.contracts_build_directory, "Migrations.json");
+      const location = path.join(
+        config.contracts_build_directory,
+        "Migrations.json"
+      );
       const artifact = require(location);
       const network = artifact.networks[networkId];
 
@@ -60,7 +65,7 @@ describe("solo migration", function() {
       CommandRunner.run("migrate", config, err => {
         const output = logger.contents();
         processErr(err, output);
-        assert(output.includes('Network up to date.'));
+        assert(output.includes("Network up to date."));
         done();
       });
     });

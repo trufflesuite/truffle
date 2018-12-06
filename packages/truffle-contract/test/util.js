@@ -73,7 +73,9 @@ var util = {
     var web3 = new Web3();
 
     process.env.GETH
-      ? (provider = new Web3.providers.HttpProvider("http://localhost:8545"))
+      ? (provider = new Web3.providers.HttpProvider("http://localhost:8545", {
+          keepAlive: false
+        }))
       : (provider = ganache.provider(options));
 
     web3.setProvider(provider);
