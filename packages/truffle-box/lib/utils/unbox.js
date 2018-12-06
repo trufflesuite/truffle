@@ -112,7 +112,7 @@ async function promptOverwrites(contentCollisions, logger = console) {
   return overwriteContents;
 }
 
-async function copyTempIntoDestination(tmpDir, destination, force) {
+async function copyTempIntoDestination(tmpDir, destination, options) {
   fs.ensureDirSync(destination);
   const { force, logger } = options;
   const boxContents = fs.readdirSync(tmpDir);
