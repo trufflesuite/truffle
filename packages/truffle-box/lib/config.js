@@ -8,9 +8,9 @@ function setDefaults(config) {
   return {
     ignore: config.ignore || [],
     commands: config.commands || {
-      "compile": "truffle compile",
-      "migrate": "truffle migrate",
-      "test": "truffle test"
+      compile: "truffle compile",
+      migrate: "truffle migrate",
+      test: "truffle test"
     },
     hooks: {
       "post-unpack": hooks["post-unpack"] || ""
@@ -19,10 +19,9 @@ function setDefaults(config) {
 }
 
 function read(path) {
-  return fs.readFile(path)
-    .catch(function() {
-      return "{}";
-    })
+  return fs
+    .readFile(path)
+    .catch(() => "{}")
     .then(JSON.parse)
     .then(setDefaults);
 }

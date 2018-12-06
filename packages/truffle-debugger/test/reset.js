@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("test:reset"); //eslint-disable-line no-unused-vars
+const debug = debugModule("test:reset"); // eslint-disable-line no-unused-vars
 
 import { assert } from "chai";
 
@@ -12,14 +12,14 @@ import data from "lib/data/selectors";
 import solidity from "lib/solidity/selectors";
 
 const __SETSTHINGS = `
-pragma solidity ^0.4.24;
+pragma solidity ~0.5;
 
 contract SetsThings {
   int x;
   int y;
   int z;
   int w;
-  function run() {
+  function run() public {
     x = 1;
     y = 2;
     z = 3;
@@ -37,6 +37,7 @@ describe("Reset Button", function() {
 
   var abstractions;
   var artifacts;
+  var files;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
@@ -48,6 +49,7 @@ describe("Reset Button", function() {
     let prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;
     artifacts = prepared.artifacts;
+    files = prepared.files;
   });
 
   it("Correctly resets after finishing", async function() {
@@ -57,6 +59,7 @@ describe("Reset Button", function() {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
+      files,
       contracts: artifacts
     });
 

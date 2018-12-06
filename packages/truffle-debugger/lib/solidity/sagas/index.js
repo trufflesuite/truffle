@@ -29,22 +29,40 @@ function* tickSaga() {
 function* functionDepthSaga() {
   if (yield select(solidity.current.willJump)) {
     let jumpDirection = yield select(solidity.current.jumpDirection);
-
     yield put(actions.jump(jumpDirection));
   } else if (yield select(solidity.current.willCall)) {
+    //we have several cases here:
+    //1. precompile -- *don't* put any jump
+    //2. workaround case -- put a double jump (see below)
+    //3. general case -- put a single jump as expected
+
     debug("about to call");
-    //HACK WORKAROUND
-    //because of the solc problem where contract method calls essentially
-    //return twice, we compensate by putting *two* inward jumps for such a
-    //call.  Note that this won't work if the contract method was previously
-    //placed in a function variable!  Those will continue to screw things up!
-    //But if a contract call is being made directly, we can detect that.
-    if (yield select(solidity.current.isContractCall)) {
+    if (yield select(solidity.current.callsPrecompile)) {
+      //call to precompile; do nothing
+    } else if (
+      (yield select(solidity.current.needsFunctionDepthWorkaround)) &&
+      (yield select(solidity.current.isContractCall))
+    ) {
+      //all these parentheses are necessary
+      //HACK WORKAROUND
+      //because of the problem in solc <0.5.1 where contract method calls
+      //essentially return twice, we compensate by putting *two* inward jumps
+      //for such a call.
+      //Note that this won't work if the contract method was previously placed
+      //in a function variable!  Those will continue to screw things up!  But
+      //if a contract call is being made directly, we can detect that.
+      //Of course, all of this should work fine as of solidity 0.5.1, with no
+      //workaround necessary; this branch should only get take on old
+      //contracts.
       debug("workaround invoked!");
       yield put(actions.jump("2"));
     } else {
+      //an ordinary call, not to a precompile & with no workaround needed
       yield put(actions.jump("i"));
     }
+  } else if (yield select(solidity.current.willCreate)) {
+    //this case, thankfully, needs no further breakdown
+    yield put(actions.jump("i"));
   } else if (yield select(solidity.current.willReturn)) {
     yield put(actions.jump("o"));
   }

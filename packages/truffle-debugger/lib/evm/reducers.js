@@ -14,7 +14,7 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
      * Adding a new context
      */
     case actions.ADD_CONTEXT: {
-      const { contractName, raw } = action;
+      const { contractName, raw, compiler } = action;
       const context = keccak256(raw);
 
       return {
@@ -27,7 +27,8 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
             ...(state.byContext[context] || {}),
 
             contractName,
-            context
+            context,
+            compiler
           }
         }
       };

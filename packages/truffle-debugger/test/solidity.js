@@ -12,18 +12,25 @@ import solidity from "lib/solidity/selectors";
 import trace from "lib/trace/selectors";
 
 const __SINGLE_CALL = `
-pragma solidity ^0.4.18;
+pragma solidity ~0.5;
 
 contract SingleCall {
   event Called();
+  event Done();
 
   function run() public {
     emit Called();
   }
+
+  function runSha() public {
+    emit Called();
+    sha256("hello world!");
+    emit Done();
+  }
 }
 `;
 
-const __NESTED_CALL = `pragma solidity ^0.4.18;
+const __NESTED_CALL = `pragma solidity ~0.5;
 
 contract NestedCall {
   event First();
@@ -53,7 +60,6 @@ contract NestedCall {
   function second() public {
     emit Second();
   }
-
 }
 `;
 
@@ -139,6 +145,39 @@ describe("Solidity Debugging", function() {
       } while (!finished);
     });
 
+    it("is unaffected by precompiles", async function() {
+      const numExpected = 1;
+
+      let instance = await abstractions.SingleCall.deployed();
+      let receipt = await instance.runSha();
+      let txHash = receipt.tx;
+
+      let bugger = await Debugger.forTx(txHash, {
+        provider,
+        files,
+        contracts: artifacts
+      });
+
+      let session = bugger.connect();
+
+      let hasBegun = false; //we don't check until it's nonzero, since it
+      //starts as zero now
+
+      while (!session.view(trace.finished)) {
+        let actual = session.view(solidity.current.functionDepth);
+        if (actual !== 0) {
+          hasBegun = true;
+        }
+        if (hasBegun) {
+          assert.equal(actual, numExpected);
+        }
+
+        session.stepNext();
+      }
+
+      assert(hasBegun); //check for non-vacuity of the above tests
+    });
+
     it("spelunks correctly", async function() {
       // prepare
       let instance = await abstractions.NestedCall.deployed();
@@ -155,7 +194,7 @@ describe("Solidity Debugging", function() {
 
       // follow functionDepth values in list
       // see source above
-      let expectedDepthSequence = [1, 2, 3, 2, 1, 2, 1, -1];
+      let expectedDepthSequence = [0, 1, 2, 3, 2, 1, 2, 1, -1];
       //end at -1 due to losing 2 from contract method return
       let actualSequence = [session.view(solidity.current.functionDepth)];
 

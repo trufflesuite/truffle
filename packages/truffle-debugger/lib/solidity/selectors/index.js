@@ -11,6 +11,8 @@ import jsonpointer from "json-pointer";
 
 import evm from "lib/evm/selectors";
 
+const semver = require("semver");
+
 function getSourceRange(instruction = {}) {
   return {
     start: instruction.start || 0,
@@ -256,12 +258,18 @@ let solidity = createSelectorTree({
 
     /**
      * solidity.current.willCall
-     * NOTE: this includes creations
      */
-    willCall: createLeaf(
-      [evm.current.step.isCall, evm.current.step.isCreate],
-      (isCall, isCreate) => isCall || isCreate
-    ),
+    willCall: createLeaf([evm.current.step.isCall], x => x),
+
+    /**
+     * solidity.current.willCreate
+     */
+    willCreate: createLeaf([evm.current.step.isCreate], x => x),
+
+    /**
+     * solidity.current.callsPrecompile
+     */
+    callsPrecompile: createLeaf([evm.current.step.callsPrecompile], x => x),
 
     /**
      * solidity.current.willReturn
@@ -298,7 +306,7 @@ let solidity = createSelectorTree({
 
     /**
      * solidity.current.isContractCall
-     * HACK WORKAROUND
+     * HACK WORKAROUND (only applies to solc version <0.5.1)
      * this selector exists to work around a problem in solc
      * it attempts to detect whether the current node is a contract method call
      * (or library method call)
@@ -315,6 +323,21 @@ let solidity = createSelectorTree({
         node.expression.expression !== undefined &&
         (isContract(node.expression.expression) ||
           isContractType(node.expression.expression))
+    ),
+
+    /**
+     * solidity.current.needsFunctionDepthWorkaround
+     * HACK
+     * Determines if the solidity version used for the contract about to be
+     * called was <0.5.1, to determine whether to use the above workaround
+     * Only call this if the current step is a call or create!
+     */
+    needsFunctionDepthWorkaround: createLeaf(
+      [evm.current.step.callContext],
+      context =>
+        context.compiler !== undefined && //would be undefined for e.g. a precompile
+        context.compiler.name === "solc" &&
+        semver.satisfies(context.compiler.version, "<0.5.1")
     )
   }
 });

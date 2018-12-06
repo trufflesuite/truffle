@@ -1,10 +1,9 @@
 import debugModule from "debug";
-const debug = debugModule("test:evm");
+const debug = debugModule("test:evm"); // eslint-disable-line no-unused-vars
 
 import { assert } from "chai";
 
 import Ganache from "ganache-cli";
-import Web3 from "web3";
 
 import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
@@ -13,7 +12,7 @@ import evm from "lib/evm/selectors";
 import trace from "lib/trace/selectors";
 
 const __OUTER = `
-pragma solidity ^0.4.18;
+pragma solidity ~0.5;
 
 import "./Inner.sol";
 
@@ -35,9 +34,8 @@ contract Outer {
 }
 `;
 
-
 const __INNER = `
-pragma solidity ^0.4.18;
+pragma solidity ~0.5;
 
 contract Inner {
   function run() public {
@@ -58,24 +56,22 @@ module.exports = async function(deployer) {
 
 let sources = {
   "Inner.sol": __INNER,
-  "Outer.sol": __OUTER,
+  "Outer.sol": __OUTER
 };
 
 let migrations = {
-  "2_deploy_contracts.js": __MIGRATION,
+  "2_deploy_contracts.js": __MIGRATION
 };
 
 describe("EVM Debugging", function() {
   var provider;
-  var web3;
 
   var abstractions;
   var artifacts;
   var files;
 
   before("Create Provider", async function() {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
-    web3 = new Web3(provider);
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function() {
@@ -102,7 +98,7 @@ describe("EVM Debugging", function() {
       });
 
       let session = bugger.connect();
-      var finished;  // is the trace finished?
+      var finished; // is the trace finished?
 
       do {
         session.stepNext();
@@ -111,9 +107,7 @@ describe("EVM Debugging", function() {
         let actual = session.view(evm.current.callstack).length;
 
         assert.isAtMost(actual, maxExpected);
-
-      } while(!finished);
-
+      } while (!finished);
     });
 
     it("tracks callstack correctly", async function() {
@@ -132,7 +126,7 @@ describe("EVM Debugging", function() {
 
       // follow callstack length values in list
       // see source above
-      let expectedDepthSequence = [1,2,1];
+      let expectedDepthSequence = [1, 2, 1];
       let actualSequence = [session.view(evm.current.callstack).length];
 
       var finished; // is the trace finished?
@@ -147,7 +141,7 @@ describe("EVM Debugging", function() {
         if (currentDepth !== lastKnown) {
           actualSequence.push(currentDepth);
         }
-      } while(!finished);
+      } while (!finished);
 
       assert.deepEqual(actualSequence, expectedDepthSequence);
     });

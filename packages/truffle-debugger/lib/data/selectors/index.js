@@ -216,6 +216,7 @@ const data = createSelectorTree({
             variables = Object.assign(
               variables,
               ...(scopes[cur].variables || [])
+                .filter(v => v.name !== "") //exclude anonymous output params
                 .filter(v => variables[v.name] == undefined)
                 .map(v => ({ [v.name]: v.id }))
             );

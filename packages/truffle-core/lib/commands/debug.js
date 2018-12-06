@@ -33,11 +33,9 @@ var command = {
     var selectors = require("truffle-debugger").selectors;
 
     // Debugger Session properties
-    var ast = selectors.ast;
     var data = selectors.data;
     var trace = selectors.trace;
     var solidity = selectors.solidity;
-    var evm = selectors.evm;
     var controller = selectors.controller;
 
     var config = Config.detect(options);
@@ -58,7 +56,6 @@ var command = {
 
       var lastCommand = "n";
       var enabledExpressions = new Set();
-      var breakpoints = [];
 
       let compilePromise = new Promise(function(accept, reject) {
         compile.all(config, function(err, contracts, files) {
@@ -77,8 +74,6 @@ var command = {
         .then(function(result) {
           config.logger.log(DebugUtils.formatStartMessage());
 
-          debug("contracts %O", result.contracts);
-
           return Debugger.forTx(txHash, {
             provider: config.provider,
             files: result.files,
@@ -93,7 +88,8 @@ var command = {
                 sourceMap: contract.sourceMap,
                 deployedBinary:
                   contract.deployedBinary || contract.deployedBytecode,
-                deployedSourceMap: contract.deployedSourceMap
+                deployedSourceMap: contract.deployedSourceMap,
+                compiler: contract.compiler
               };
             })
           });
@@ -179,27 +175,39 @@ var command = {
             config.logger.log(DebugUtils.formatStack(step.stack));
           }
 
-          function printSelector(specified) {
-            var selector = specified
-              .split(".")
-              .filter(function(next) {
-                return next.length > 0;
-              })
-              .reduce(function(sel, next) {
-                debug("next %o, sel %o", next, sel);
-                return sel[next];
-              }, selectors);
+          function select(expr) {
+            let selector, result;
 
-            debug("selector %o", selector);
-            var result = session.view(selector);
-            var debugSelector = debugModule(specified);
+            try {
+              selector = expr
+                .split(".")
+                .filter(function(next) {
+                  return next.length > 0;
+                })
+                .reduce(function(sel, next) {
+                  return sel[next];
+                }, selectors);
+            } catch (_) {
+              throw new Error("Unknown selector: %s", expr);
+            }
+
+            // throws its own exception
+            result = session.view(selector);
+
+            return result;
+          }
+
+          /**
+           * @param {string} selector
+           */
+          function printSelector(selector) {
+            var result = select(selector);
+            var debugSelector = debugModule(selector);
             debugSelector.enabled = true;
             debugSelector("%O", result);
           }
 
           function printWatchExpressions() {
-            let source = session.view(solidity.current.source);
-
             if (enabledExpressions.size === 0) {
               config.logger.log("No watch expressions added.");
               return;
@@ -287,8 +295,38 @@ var command = {
             config.logger.log();
           }
 
-          function evalAndPrintExpression(expr, indent, suppress) {
-            var context = session.view(data.current.identifiers.native);
+          /**
+           * Convert all !<...> expressions to JS-valid selector requests
+           */
+          function preprocessSelectors(expr) {
+            const regex = /!<([^>]+)>/g;
+            const select = "$"; // expect repl context to have this func
+            const replacer = (_, selector) => `${select}("${selector}")`;
+
+            return expr.replace(regex, replacer);
+          }
+
+          /**
+           * @param {string} raw - user input for watch expression
+           *
+           * performs pre-processing on `raw`, using !<...> delimeters to refer
+           * to selector expressions.
+           *
+           * e.g., to see a particular part of the current trace step's stack:
+           *
+           *    debug(development:0x4228cdd1...)>
+           *
+           *        :!<trace.step.stack>[1]
+           */
+          async function evalAndPrintExpression(raw, indent, suppress) {
+            var context = Object.assign(
+              { $: select },
+
+              await session.variables()
+            );
+
+            const expr = preprocessSelectors(raw);
+
             try {
               var result = safeEval(expr, context);
               var formatted = formatValue(result, indent);

@@ -166,7 +166,9 @@ describe("CompilerSupplier", function() {
       };
 
       compile(version4PragmaSource, options, err => {
-        assert(err.message.includes("Could not find compiler version"));
+        assert(
+          err.message.includes("Could not find a compiler version matching")
+        );
         done();
       });
     });

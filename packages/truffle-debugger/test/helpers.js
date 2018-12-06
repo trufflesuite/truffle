@@ -25,7 +25,7 @@ export async function prepareContracts(provider, sources = {}, migrations) {
 
   config.compilers = {
     solc: {
-      version: "0.4.25",
+      version: "0.5.0",
       settings: {
         optimizer: {
           enabled: false,
@@ -75,17 +75,21 @@ export function getAccounts(provider) {
 
 export async function createSandbox() {
   let config = await new Promise(function(accept, reject) {
-    Box.sandbox({ unsafeCleanup: true, setGracefulCleanup: true }, function(
-      err,
-      result
-    ) {
-      if (err) return reject(err);
-      result.resolver = new Resolver(result);
-      result.artifactor = new Artifactor(result.contracts_build_directory);
-      result.networks = {};
+    Box.sandbox(
+      {
+        unsafeCleanup: true,
+        setGracefulCleanup: true,
+        name: "default#web3-one"
+      },
+      function(err, result) {
+        if (err) return reject(err);
+        result.resolver = new Resolver(result);
+        result.artifactor = new Artifactor(result.contracts_build_directory);
+        result.networks = {};
 
-      accept(result);
-    });
+        accept(result);
+      }
+    );
   });
 
   await fs.remove(path.join(config.contracts_directory, "MetaCoin.sol"));

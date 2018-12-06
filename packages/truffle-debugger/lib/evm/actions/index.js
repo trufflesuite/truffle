@@ -1,9 +1,10 @@
 export const ADD_CONTEXT = "EVM_ADD_CONTEXT";
-export function addContext(contractName, raw) {
+export function addContext(contractName, raw, compiler) {
   return {
     type: ADD_CONTEXT,
     contractName,
-    raw
+    raw,
+    compiler
   };
 }
 
