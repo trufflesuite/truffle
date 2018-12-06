@@ -123,7 +123,7 @@ contract Example {
   }
 
   function consumesGas() public {
-    for(uint i = 0; i < 10000; i++){
+    for(uint i = 0; i < 100000; i++){
       counter = i;
     }
   }
