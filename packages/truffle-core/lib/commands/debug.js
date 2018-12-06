@@ -672,6 +672,7 @@ var command = {
               cmd != "!" &&
               cmd != ":" &&
               cmd != "+" &&
+              cmd != "r" &&
               cmd != "-"
             ) {
               lastCommand = cmd;
