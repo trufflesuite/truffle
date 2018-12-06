@@ -28,6 +28,12 @@ contract DecodingSample {
   event EventNameOne(string argString);
   event EventNameTwo(string argString, uint argUint);
 
+  uint[2]    fixedArrayUint;
+  string[2]  fixedArrayString;
+  bool[2]    fixedArrayBool;
+  address[2] fixedArrayAddress;
+  bytes7[2]  fixedArrayBytes7;
+
   uint    varUint;
   string  varString;
   bool    varBool;
@@ -38,12 +44,6 @@ contract DecodingSample {
   S       varStructS;
 
   //mapping(uint => uint) varMapping;
-
-  uint[2]    fixedArrayUint;
-  string[2]  fixedArrayString;
-  bool[2]    fixedArrayBool;
-  address[2] fixedArrayAddress;
-  bytes7[2]  fixedArrayBytes7;
   // byte[2]    fixedArrayByte;
   // E[2]       fixedArrayEnum;
   // S[2]       fixedArrayStructS;
