@@ -147,7 +147,13 @@ describe("Library linking with contract objects", function() {
       compilers: {
         solc: {
           version: "0.5.0",
-          settings: {}
+          settings: {
+            optimizer: {
+              enabled: false,
+              runs: 200
+            },
+            evmVersion: "byzantium"
+          }
         }
       }
     };
