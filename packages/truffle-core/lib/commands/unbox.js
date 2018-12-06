@@ -4,27 +4,32 @@
  * - a github `org/repo` string
  * - a string containing a repo under the `truffle-box` org
  */
-function normalizeURL(url) {
-  url = url || "https://github.com/trufflesuite/truffle-init-default";
-
+function normalizeURL(
+  url = "https://github.com/trufflesuite/truffle-init-default"
+) {
   // full URL already
-  if (url.indexOf("://") != -1 || url.indexOf("git@") != -1) {
+  if (url.includes("://") || url.includes("git@")) {
     return url;
   }
 
-  if (url.split("/").length == 2) {
+  if (url.split("/").length === 2) {
     // `org/repo`
-    return "https://github.com/" + url;
+    return `https://github.com/${url}`;
   }
 
-  if (url.indexOf("/") == -1) {
+  if (!url.includes("/")) {
     // repo name only
-    if (url.indexOf("-box") == -1) {
-      url = url + "-box";
+    if (!url.includes("-box")) {
+      // check for branch
+      if (!url.includes("#")) {
+        url = `${url}-box`;
+      } else {
+        const index = url.indexOf("#");
+        url = url.substr(0, index) + "-box" + url.substr(index);
+      }
     }
-    return "https://github.com/truffle-box/" + url;
+    return `https://github.com/truffle-box/${url}`;
   }
-
   throw new Error("Box specified in invalid format");
 }
 
@@ -37,22 +42,52 @@ function normalizeURL(url) {
  * are aligned
  */
 function formatCommands(commands) {
-  var names = Object.keys(commands);
+  const names = Object.keys(commands);
 
-  var maxLength = Math.max.apply(
-    null,
-    names.map(function(name) {
-      return name.length;
-    })
-  );
+  const maxLength = Math.max.apply(null, names.map(name => name.length));
 
-  return names.map(function(name) {
-    var spacing = Array(maxLength - name.length + 1).join(" ");
-    return "  " + name + ": " + spacing + commands[name];
+  return names.map(name => {
+    const spacing = Array(maxLength - name.length + 1).join(" ");
+    return `  ${name}: ${spacing}${commands[name]}`;
   });
 }
 
-var command = {
+function normalizeDestination(destination, working_directory) {
+  const path = require("path");
+  destination = path.join(working_directory, destination);
+  return destination;
+}
+
+function normalizeInput(options) {
+  let url = options;
+  let subDir;
+
+  try {
+    url = options.match(/(.*):/)[1]; // attempts to parse url from :path/to/subDir
+    // handles instance where full url is being passed w/o a path
+    if (url.includes("http") && !url.includes("//")) return [options, ""];
+    // handles instance where git@ is being passed w/o a path
+    if (url.includes("git") && !url.includes("/")) return [options, ""];
+  } catch (_) {
+    // return url if regex fails (no path specified)
+    return [url, ""];
+  }
+
+  try {
+    // if a path was specified
+    subDir = options.match(/:(?!\/)(.*)/)[1]; // enforces relative paths
+    // parses again if passed url git@ with path
+    if (url.includes("git@")) subDir = subDir.match(/:(?!\/)(.*)/)[1];
+  } catch (_) {
+    throw new Error(
+      `${options} not allowed! Please use a relative path (:path/to/subDir)`
+    );
+  }
+  // returns the parsed url & relative path
+  return [url, subDir];
+}
+
+const command = {
   command: "unbox",
   description: "Download a Truffle Box, a pre-built Truffle project",
   builder: {},
@@ -74,7 +109,7 @@ var command = {
       }
     ]
   },
-  run: function(options, done) {
+  run(options, done) {
     const Config = require("truffle-config");
     const Box = require("truffle-box");
     const OS = require("os");
@@ -83,11 +118,14 @@ var command = {
       logger: console
     });
 
-    const url = normalizeURL(options._[0]);
+    let [url, destination] = normalizeInput(options._[0]);
+
+    url = normalizeURL(url);
+    destination = normalizeDestination(destination, config.working_directory);
 
     const unboxOptions = Object.assign({}, options, { logger: config.logger });
 
-    Box.unbox(url, config.working_directory, unboxOptions)
+    Box.unbox(url, destination, unboxOptions)
       .then(boxConfig => {
         config.logger.log("\nUnbox successful. Sweet!" + OS.EOL);
 
