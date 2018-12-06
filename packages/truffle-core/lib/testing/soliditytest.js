@@ -126,7 +126,7 @@ const SolidityTest = {
             path.join(__dirname, "Assert.sol"),
             path.join(__dirname, "AssertAddress.sol"),
             path.join(__dirname, "AssertAddressArray.sol"),
-            // path.join(__dirname, "AssertAddressPayableArray.sol"),
+            // path.join(__dirname, "AssertAddressPayableArray.sol"), only compatible w/ ^0.5.0
             path.join(__dirname, "AssertBalance.sol"),
             path.join(__dirname, "AssertBool.sol"),
             path.join(__dirname, "AssertBytes32.sol"),
@@ -169,68 +169,42 @@ const SolidityTest = {
       })
     );
 
-    const Assert = runner.config.resolver.require("truffle/Assert.sol");
-    const AssertAddress = runner.config.resolver.require(
-      "truffle/AssertAddress.sol"
+    const assertLibraries = [
+      "Assert",
+      "AssertAddress",
+      "AssertAddressArray",
+      //      "AssertAddressPayableArray", only compatible w/ ^0.5.0
+      "AssertBalance",
+      "AssertBool",
+      "AssertBytes32",
+      "AssertBytes32Array",
+      "AssertGeneral",
+      "AssertInt",
+      "AssertIntArray",
+      "AssertString",
+      "AssertUint",
+      "AssertUintArray"
+    ];
+
+    const assertAbstractions = assertLibraries.map(name =>
+      runner.config.resolver.require(`truffle/${name}.sol`)
     );
-    const AssertAddressArray = runner.config.resolver.require(
-      "truffle/AssertAddressArray.sol"
-    );
-    //const AssertAddressPayableArray = runner.config.resolver.require(
-    // "truffle/AssertAddressPayableArray.sol"
-    //);
-    const AssertBalance = runner.config.resolver.require(
-      "truffle/AssertBalance.sol"
-    );
-    const AssertBool = runner.config.resolver.require("truffle/AssertBool.sol");
-    const AssertBytes32 = runner.config.resolver.require(
-      "truffle/AssertBytes32.sol"
-    );
-    const AssertBytes32Array = runner.config.resolver.require(
-      "truffle/AssertBytes32Array.sol"
-    );
-    const AssertGeneral = runner.config.resolver.require(
-      "truffle/AssertGeneral.sol"
-    );
-    const AssertInt = runner.config.resolver.require("truffle/AssertInt.sol");
-    const AssertIntArray = runner.config.resolver.require(
-      "truffle/AssertIntArray.sol"
-    );
-    const AssertString = runner.config.resolver.require(
-      "truffle/AssertString.sol"
-    );
-    const AssertUint = runner.config.resolver.require("truffle/AssertUint.sol");
-    const AssertUintArray = runner.config.resolver.require(
-      "truffle/AssertUintArray.sol"
-    );
+
     const DeployedAddresses = runner.config.resolver.require(
       "truffle/DeployedAddresses.sol"
     );
     SafeSend = runner.config.resolver.require(SafeSend);
 
-    deployer
-      .deploy(Assert)
-      .then(() => deployer.deploy(AssertAddress))
-      .then(() => deployer.deploy(AssertAddressArray))
-      // .then(() => deployer.deploy(AssertAddressPayableArray))
-      .then(() => deployer.deploy(AssertBalance))
-      .then(() => deployer.deploy(AssertBool))
-      .then(() => deployer.deploy(AssertBytes32))
-      .then(() => deployer.deploy(AssertBytes32Array))
-      .then(() => deployer.deploy(AssertGeneral))
-      .then(() => deployer.deploy(AssertInt))
-      .then(() => deployer.deploy(AssertIntArray))
-      .then(() => deployer.deploy(AssertString))
-      .then(() => deployer.deploy(AssertUint))
-      .then(() => deployer.deploy(AssertUintArray))
-      .then(() => deployer.deploy(DeployedAddresses))
-      .then(() => {
-        return dependency_paths.forEach(dependency_path => {
-          const dependency = runner.config.resolver.require(dependency_path);
+    for (const abstraction of assertAbstractions) {
+      deployer.deploy(abstraction);
+    }
+    deployer.deploy(DeployedAddresses).then(() => {
+      return dependency_paths.forEach(dependency_path => {
+        const dependency = runner.config.resolver.require(dependency_path);
 
-          if (dependency.isDeployed()) deployer.link(dependency, abstraction);
-        });
+        if (dependency.isDeployed()) deployer.link(dependency, abstraction);
       });
+    });
 
     let deployed;
     deployer
