@@ -45,7 +45,13 @@ var util = {
       compilers: {
         solc: {
           version: "0.5.0",
-          settings: {}
+          settings: {
+            optimizer: {
+              enabled: false,
+              runs: 200
+            },
+            evmVersion: "byzantium"
+          }
         }
       }
     };
