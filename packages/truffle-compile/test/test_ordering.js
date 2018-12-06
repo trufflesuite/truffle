@@ -17,7 +17,13 @@ describe("Compile - solidity ^0.4.0", function() {
     compilers: {
       solc: {
         version: "0.4.25",
-        settings: {}
+        settings: {
+          optimizer: {
+            enabled: false,
+            runs: 200
+          },
+          evmVersion: "byzantium"
+        }
       }
     },
     quiet: true
