@@ -274,12 +274,13 @@ describe("CompilerSupplier", function() {
       it("compiles with native solc", function(done) {
         options.compilers = {
           solc: {
-            version: "native",
-            settings: {}
+            version: "native"
           }
         };
 
-        compile(version5PragmaSource, options, (err, result) => {
+        const nativeSolcOptions = Config.default().merge(options);
+
+        compile(version5PragmaSource, nativeSolcOptions, (err, result) => {
           if (err) return done(err);
 
           assert(result["Version5Pragma"].compiler.version.includes("0.5."));
@@ -295,14 +296,15 @@ describe("CompilerSupplier", function() {
         options.compilers = {
           solc: {
             version: "0.4.22",
-            docker: true,
-            settings: {}
+            docker: true
           }
         };
 
+        const dockerizedSolcOptions = Config.default().merge(options);
+
         const expectedVersion = "0.4.22+commit.4cb486ee.Linux.g++";
 
-        compile(version4PragmaSource, options, (err, result) => {
+        compile(version4PragmaSource, dockerizedSolcOptions, (err, result) => {
           if (err) return done(err);
 
           assert(result["NewPragma"].compiler.version === expectedVersion);
@@ -324,7 +326,13 @@ describe("CompilerSupplier", function() {
             solc: {
               version: "0.4.22",
               docker: true,
-              settings: {}
+              settings: {
+                optimizer: {
+                  enabled: false,
+                  runs: 200
+                },
+                evmVersion: "byzantium"
+              }
             }
           },
           quiet: true,
