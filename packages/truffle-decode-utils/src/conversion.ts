@@ -150,9 +150,12 @@ export namespace Conversion {
   /**
    * Convert a mapping representation into a JS Map
    *
-   * Only converts integer types to BN right now, leaving everything else alone
+   * Only converts integer types to BN right now, leaving other keys else alone
    */
-  export function toMap({ keyType, members }: any): Map<any, any> {
+  export function toMap(
+    { keyType, members }: any,
+    convertValue?: (value: any) => any
+  ): Map<any, any> {
     // convert integer types to BN, unless string representation is hex
     const convertKey = (key: string) => {
       if (keyType.match(/int/) && key.slice(0,2) != "0x") {
@@ -162,10 +165,12 @@ export namespace Conversion {
       }
     }
 
-    // populate Map with members, using converted keys
+    convertValue = convertValue || (x => x);
+
+    // populate Map with members, using converted keys/values
     return new Map([
       ...Object.entries(members)
-        .map( ([key, value]: any) => ([convertKey(key), value]) )
+        .map( ([key, value]: any) => ([convertKey(key), convertValue(value)]) )
     ] as any);
   }
 
@@ -192,7 +197,7 @@ export namespace Conversion {
 
     // detect mapping
     else if (value && typeof value === "object" && isMapping(value)) {
-      return toMap(value);
+      return toMap(value, cleanMappings);
     }
 
     // detect arrays or anything with `.map()`, and recurse
