@@ -19,11 +19,6 @@ function Config(truffle_directory, working_directory, network) {
     from: null
   };
 
-  // declare memoization mechanism for provider
-  // config.provider's getter uses this memoized value if it is set
-  // config.network's setter resets the memo
-  let providerMemo = null;
-
   // This is a list of multi-level keys with defaults
   // we need to _.merge. Using this list for safety
   // vs. just merging all objects.
@@ -75,17 +70,7 @@ function Config(truffle_directory, working_directory, network) {
     // These are already set.
     truffle_directory: function() {},
     working_directory: function() {},
-    network: {
-      get: function() {
-        return this._values.network;
-      },
-      set: function(value) {
-        // reset provider memo (we changed the network, old provider invalid)
-        providerMemo = null;
-
-        this._values.network = value;
-      }
-    },
+    network: function() {},
     networks: function() {},
     verboseRpc: function() {},
     build: function() {},
@@ -211,26 +196,10 @@ function Config(truffle_directory, working_directory, network) {
           return null;
         }
 
-        // collect provider options from network config + global flags
         var options = self.network_config;
         options.verboseRpc = self.verboseRpc;
 
-        // check explicit `memoize` config value otherwise default enable
-        const shouldMemoize = "memoize" in options ? options.memoize : true;
-
-        // use memoized provider (NOTE this requires reset if network changes)
-        if (shouldMemoize && providerMemo) {
-          return providerMemo;
-        }
-
-        const provider = Provider.create(options);
-
-        if (shouldMemoize) {
-          // set memo
-          providerMemo = provider;
-        }
-
-        return provider;
+        return Provider.create(options);
       },
       set: function() {
         throw new Error(
