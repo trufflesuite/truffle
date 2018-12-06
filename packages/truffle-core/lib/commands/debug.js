@@ -93,7 +93,8 @@ var command = {
                 sourceMap: contract.sourceMap,
                 deployedBinary:
                   contract.deployedBinary || contract.deployedBytecode,
-                deployedSourceMap: contract.deployedSourceMap
+                deployedSourceMap: contract.deployedSourceMap,
+                compiler: contract.compiler
               };
             })
           });
@@ -680,6 +681,7 @@ var command = {
               cmd != "!" &&
               cmd != ":" &&
               cmd != "+" &&
+              cmd != "r" &&
               cmd != "-"
             ) {
               lastCommand = cmd;

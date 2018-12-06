@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:session:sagas");
 
-import { cancel, call, all, fork, take, put } from "redux-saga/effects";
+import { call, all, fork, take, put } from "redux-saga/effects";
 
 import { prefixName } from "lib/helpers";
 
@@ -17,7 +17,7 @@ import * as actions from "../actions";
 
 export function* saga() {
   debug("starting listeners");
-  let listeners = yield* forkListeners();
+  yield* forkListeners();
 
   // receiving & saving contracts into state
   debug("waiting for contract information");
@@ -83,8 +83,8 @@ function* fetchTx(txHash, provider) {
 }
 
 function* recordContexts(...contexts) {
-  for (let { contractName, binary, sourceMap } of contexts) {
-    yield* evm.addContext(contractName, { binary });
+  for (let { contractName, binary, sourceMap, compiler } of contexts) {
+    yield* evm.addContext(contractName, { binary }, compiler);
 
     if (sourceMap) {
       yield* solidity.addSourceMap(binary, sourceMap);

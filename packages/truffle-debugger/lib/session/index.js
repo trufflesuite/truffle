@@ -1,12 +1,11 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:session");
-
-import data from "lib/data/selectors";
+const debug = debugModule("debugger:session"); //eslint-disable-line no-unused-vars
 
 import configureStore from "lib/store";
 
 import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
+import data from "lib/data/selectors";
 
 import rootSaga from "./sagas";
 import reducer from "./reducers";
@@ -74,8 +73,12 @@ export default class Session {
         deployedSourceMap,
         sourcePath,
         source,
-        ast
+        ast,
+        compiler
       } = contract;
+
+      debug("sourceMap %o", sourceMap);
+      debug("compiler %o", compiler);
 
       sourcesByPath[sourcePath] = { sourcePath, source, ast };
 
@@ -91,7 +94,8 @@ export default class Session {
         contexts.push({
           contractName,
           binary: deployedBinary,
-          sourceMap: deployedSourceMap
+          sourceMap: deployedSourceMap,
+          compiler
         });
       }
     }

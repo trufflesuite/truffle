@@ -66,7 +66,8 @@ var DebugUtils = {
                   binary: contract.binary,
                   ast: contract.ast,
                   deployedBinary: contract.deployedBinary,
-                  deployedSourceMap: contract.deployedSourceMap
+                  deployedSourceMap: contract.deployedSourceMap,
+                  compiler: contract.compiler
                 };
               })
             );
@@ -189,8 +190,6 @@ var DebugUtils = {
   },
 
   formatRangeLines: function(source, range, contextBefore) {
-    var outputLines = [];
-
     // range is {
     //   start: { line, column },
     //   end: { line, column}

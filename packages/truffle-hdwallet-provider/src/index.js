@@ -115,7 +115,9 @@ function HDWalletProvider(
   this.engine.addProvider(new FiltersSubprovider());
   if (typeof provider === "string") {
     this.engine.addProvider(
-      new ProviderSubprovider(new Web3.providers.HttpProvider(provider))
+      new ProviderSubprovider(
+        new Web3.providers.HttpProvider(provider, { keepAlive: false })
+      )
     );
   } else {
     this.engine.addProvider(new ProviderSubprovider(provider));

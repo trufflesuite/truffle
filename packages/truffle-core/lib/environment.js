@@ -1,11 +1,12 @@
-var Web3 = require("web3");
-var TruffleError = require("truffle-error");
-var expect = require("truffle-expect");
-var Resolver = require("truffle-resolver");
-var Artifactor = require("truffle-artifactor");
-var TestRPC = require("ganache-cli");
+const Web3 = require("web3");
+const TruffleError = require("truffle-error");
+const expect = require("truffle-expect");
+const Resolver = require("truffle-resolver");
+const Artifactor = require("truffle-artifactor");
+const TestRPC = require("ganache-cli");
+const { callbackify } = require("util");
 
-var Environment = {
+const Environment = {
   // It's important config is a Config object and not a vanilla object
   detect: function(config, callback) {
     expect.options(config, ["networks"]);
@@ -57,21 +58,27 @@ var Environment = {
 
     var web3 = new Web3(config.provider);
 
-    function detectNetworkId(done) {
+    async function detectNetworkId() {
+      const providerNetworkId = await web3.eth.net.getId();
       if (network_id != "*") {
-        return done(null, network_id);
+        // Ensure the network id matches the one in the config for safety
+        if (providerNetworkId !== network_id) {
+          const error = {
+            message:
+              `The network id specified in the truffle config ` +
+              `(${network_id}) does not match the one returned by the network ` +
+              `(${providerNetworkId}).  Ensure that both the network and the ` +
+              `provider are properly configured.`
+          };
+          throw new Error(error);
+        }
+        return network_id;
+      } else {
+        // We have a "*" network. Get the current network and replace it with the real one.
+        // TODO: Should we replace this with the blockchain uri?
+        config.networks[config.network].network_id = providerNetworkId;
+        return network_id;
       }
-
-      // We have a "*" network. Get the current network and replace it with the real one.
-      // TODO: Should we replace this with the blockchain uri?
-      web3.eth.net
-        .getId()
-        .then(id => {
-          network_id = id;
-          config.networks[config.network].network_id = network_id;
-          done(null, network_id);
-        })
-        .catch(callback);
     }
 
     function detectFromAddress(done) {
@@ -88,7 +95,7 @@ var Environment = {
         .catch(done);
     }
 
-    detectNetworkId(function(err) {
+    callbackify(detectNetworkId)(err => {
       if (err) return callback(err);
       detectFromAddress(callback);
     });
@@ -136,7 +143,7 @@ var Environment = {
     config.networks[network] = {
       network_id: testrpcOptions.network_id,
       provider: function() {
-        return new Web3.providers.HttpProvider(url);
+        return new Web3.providers.HttpProvider(url, { keepAlive: false });
       }
     };
 

@@ -14,7 +14,7 @@ function sources(state = DEFAULT_SOURCES, action) {
      * Adding a new source
      */
     case actions.ADD_SOURCE:
-      let { ast, source, sourcePath } = action;
+      let { ast, source, sourcePath, compiler } = action;
 
       let id = Object.keys(state.byId).length;
 
@@ -26,7 +26,8 @@ function sources(state = DEFAULT_SOURCES, action) {
             id,
             ast,
             source,
-            sourcePath
+            sourcePath,
+            compiler
           }
         }
       };
@@ -76,14 +77,14 @@ const info = combineReducers({
   sourceMaps
 });
 
-export function functionDepth(state = 1, action) {
+export function functionDepth(state = 0, action) {
   switch (action.type) {
     case actions.JUMP:
       const delta = spelunk(action.jumpDirection);
       return state + delta;
 
     case actions.RESET:
-      return 1;
+      return 0;
 
     default:
       return state;

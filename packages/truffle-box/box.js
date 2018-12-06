@@ -28,9 +28,8 @@ function parseSandboxOptions(options) {
 }
 
 const Box = {
-  unbox: async (url, destination, options) => {
+  unbox: async (url, destination, options = {}) => {
     let tempDirCleanup;
-    options = options || {};
     options.logger = options.logger || { log: () => {} };
     const unpackBoxOptions = {
       logger: options.logger,

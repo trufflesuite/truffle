@@ -21,7 +21,8 @@ module.exports = {
       );
     } else {
       provider = new Web3.providers.HttpProvider(
-        "http://" + options.host + ":" + options.port
+        "http://" + options.host + ":" + options.port,
+        { keepAlive: false }
       );
     }
 
