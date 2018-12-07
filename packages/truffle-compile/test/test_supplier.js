@@ -6,6 +6,7 @@ const findCacheDir = require("find-cache-dir");
 const Resolver = require("truffle-resolver");
 const compile = require("../index");
 const CompilerSupplier = require("../compilerSupplier");
+const Config = require("truffle-config");
 
 function waitSecond() {
   return new Promise(resolve => setTimeout(() => resolve(), 1250));
@@ -109,14 +110,9 @@ describe("CompilerSupplier", function() {
     });
 
     it("compiles w/ default solc if no compiler specified (float)", function(done) {
-      options.compilers = {
-        solc: {
-          cache: false,
-          settings: {}
-        }
-      };
+      const defaultOptions = Config.default().merge(options);
 
-      compile(version5PragmaSource, options, (err, result) => {
+      compile(version5PragmaSource, defaultOptions, (err, result) => {
         if (err) return done(err);
         debug("result %o", result);
 
@@ -186,12 +182,13 @@ describe("CompilerSupplier", function() {
       options.compilers = {
         solc: {
           cache: false,
-          version: pathToSolc,
-          settings: {}
+          version: pathToSolc
         }
       };
 
-      compile(version5PragmaSource, options, (err, result) => {
+      const localPathOptions = Config.default().merge(options);
+
+      compile(version5PragmaSource, localPathOptions, (err, result) => {
         if (err) return done(err);
 
         assert(result["Version5Pragma"].contract_name === "Version5Pragma");
@@ -231,13 +228,14 @@ describe("CompilerSupplier", function() {
       options.compilers = {
         solc: {
           cache: true,
-          version: "0.4.21",
-          settings: {}
+          version: "0.4.21"
         }
       };
 
+      const cachedOptions = Config.default().merge(options);
+
       // Run compiler, expecting solc to be downloaded and cached.
-      compile(version4PragmaSource, options, err => {
+      compile(version4PragmaSource, cachedOptions, err => {
         if (err) return done(err);
 
         assert(fs.existsSync(expectedCache), "Should have cached compiler");
@@ -249,7 +247,7 @@ describe("CompilerSupplier", function() {
         // got accessed / ran ok.
         waitSecond()
           .then(() => {
-            compile(version4PragmaSource, options, (err, result) => {
+            compile(version4PragmaSource, cachedOptions, (err, result) => {
               if (err) return done(err);
 
               finalAccessTime = fs.statSync(expectedCache).atime.getTime();
@@ -259,7 +257,7 @@ describe("CompilerSupplier", function() {
                 "Should have compiled"
               );
 
-              // atime is not getting updated on read in CI.
+              // atime is not getting updatd on read in CI.
               if (!process.env.TEST) {
                 assert(
                   initialAccessTime < finalAccessTime,
@@ -278,12 +276,13 @@ describe("CompilerSupplier", function() {
       it("compiles with native solc", function(done) {
         options.compilers = {
           solc: {
-            version: "native",
-            settings: {}
+            version: "native"
           }
         };
 
-        compile(version5PragmaSource, options, (err, result) => {
+        const nativeSolcOptions = Config.default().merge(options);
+
+        compile(version5PragmaSource, nativeSolcOptions, (err, result) => {
           if (err) return done(err);
 
           assert(result["Version5Pragma"].compiler.version.includes("0.5."));
@@ -299,14 +298,15 @@ describe("CompilerSupplier", function() {
         options.compilers = {
           solc: {
             version: "0.4.22",
-            docker: true,
-            settings: {}
+            docker: true
           }
         };
 
+        const dockerizedSolcOptions = Config.default().merge(options);
+
         const expectedVersion = "0.4.22+commit.4cb486ee.Linux.g++";
 
-        compile(version4PragmaSource, options, (err, result) => {
+        compile(version4PragmaSource, dockerizedSolcOptions, (err, result) => {
           if (err) return done(err);
 
           assert(result["NewPragma"].compiler.version === expectedVersion);
@@ -328,7 +328,13 @@ describe("CompilerSupplier", function() {
             solc: {
               version: "0.4.22",
               docker: true,
-              settings: {}
+              settings: {
+                optimizer: {
+                  enabled: false,
+                  runs: 200
+                },
+                evmVersion: "byzantium"
+              }
             }
           },
           quiet: true,

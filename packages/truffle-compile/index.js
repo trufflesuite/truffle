@@ -35,12 +35,21 @@ var compile = function(sources, options, callback) {
 
   expect.options(options.compilers, ["solc"]);
 
-  options.compilers.solc.settings = options.compilers.solc.settings || {};
+  options.compilers.solc.settings.evmVersion =
+    options.compilers.solc.settings.evmVersion ||
+    options.compilers.solc.evmVersion ||
+    {};
+  options.compilers.solc.settings.optimizer =
+    options.compilers.solc.settings.optimizer ||
+    options.compilers.solc.optimizer ||
+    {};
 
   // Grandfather in old solc config
   if (options.solc) {
-    options.compilers.solc.settings.evmVersion = options.solc.evmVersion;
-    options.compilers.solc.settings.optimizer = options.solc.optimizer;
+    options.compilers.solc.settings.evmVersion =
+      options.solc.settings.evmVersion || options.solc.evmVersion;
+    options.compilers.solc.settings.optimizer =
+      options.solc.settings.optimizer || options.solc.optimizer;
   }
 
   // Ensure sources have operating system independent paths
