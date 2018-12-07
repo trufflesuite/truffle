@@ -8,7 +8,6 @@ import Ganache from "ganache-cli";
 import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
 
-import data from "lib/data/selectors";
 import solidity from "lib/solidity/selectors";
 
 const __SETSTHINGS = `
@@ -70,21 +69,21 @@ describe("Reset Button", function() {
     variables[0] = []; //collected during 1st run
     variables[1] = []; //collected during 2nd run
 
-    variables[0].push(session.view(data.current.identifiers.native));
+    variables[0].push(await session.variables());
     session.addBreakpoint({ sourceId, line: 10 });
     session.continueUntilBreakpoint(); //advance to line 10
-    variables[0].push(session.view(data.current.identifiers.native));
+    variables[0].push(await session.variables());
     session.continueUntilBreakpoint(); //advance to the end
-    variables[0].push(session.view(data.current.identifiers.native));
+    variables[0].push(await session.variables());
 
     //now, reset and do it again
     session.reset();
 
-    variables[1].push(session.view(data.current.identifiers.native));
+    variables[1].push(await session.variables());
     session.continueUntilBreakpoint(); //advance to line 10
-    variables[1].push(session.view(data.current.identifiers.native));
+    variables[1].push(await session.variables());
     session.continueUntilBreakpoint(); //advance to the end
-    variables[1].push(session.view(data.current.identifiers.native));
+    variables[1].push(await session.variables());
 
     assert.deepEqual(variables[1], variables[0]);
   });

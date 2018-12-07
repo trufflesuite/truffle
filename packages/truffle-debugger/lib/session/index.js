@@ -5,6 +5,7 @@ import configureStore from "lib/store";
 
 import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
+import data from "lib/data/selectors";
 
 import rootSaga from "./sagas";
 import reducer from "./reducers";
@@ -162,7 +163,52 @@ export default class Session {
     return this.dispatch(controller.removeBreakpoint(breakpoint));
   }
 
+
   removeAllBreakpoints() {
     return this.dispatch(controller.removeAllBreakpoints());
+
+  async decodeReady() {
+    return new Promise(resolve => {
+      let haveResolved = false;
+      const unsubscribe = this._store.subscribe(() => {
+        const subscriptionDecodingStarted = this.view(
+          data.proc.decodingMappingKeys
+        );
+
+        debug("following decoding started: %d", subscriptionDecodingStarted);
+
+        if (subscriptionDecodingStarted <= 0 && !haveResolved) {
+          haveResolved = true;
+          unsubscribe();
+          resolve();
+        }
+      });
+
+      const decodingStarted = this.view(data.proc.decodingMappingKeys);
+
+      debug("initial decoding started: %d", decodingStarted);
+
+      if (decodingStarted <= 0) {
+        haveResolved = true;
+        unsubscribe();
+        resolve();
+      }
+    });
+  }
+
+  async variable(name) {
+    await this.decodeReady();
+
+    const definitions = this.view(data.current.identifiers.definitions);
+    const refs = this.view(data.current.identifiers.refs);
+
+    const decode = this.view(data.views.decoder);
+    return await decode(definitions[name], refs[name]);
+  }
+
+  async variables() {
+    await this.decodeReady();
+
+    return await this.view(data.current.identifiers.decoded);
   }
 }

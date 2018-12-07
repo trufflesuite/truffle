@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:data:sagas"); // eslint-disable-line no-unused-vars
 
-import { put, takeEvery, select } from "redux-saga/effects";
+import { put, takeEvery, select, call } from "redux-saga/effects";
 import jsonpointer from "json-pointer";
 
 import { prefixName, stableKeccak256 } from "lib/helpers";
@@ -11,7 +11,7 @@ import * as actions from "../actions";
 
 import data from "../selectors";
 
-import * as utils from "lib/data/decode/utils";
+import * as TruffleDecodeUtils from "truffle-decode-utils";
 
 export function* scope(nodeId, pointer, parentId, sourceId) {
   yield put(actions.scope(nodeId, pointer, parentId, sourceId));
@@ -95,7 +95,10 @@ function* tickSaga() {
       let storageVars = scopes[node.id].variables || [];
       debug("storage vars %o", storageVars);
 
-      let allocation = utils.allocateDeclarations(storageVars, definitions);
+      let allocation = TruffleDecodeUtils.Allocation.allocateDeclarations(
+        storageVars,
+        definitions
+      );
       debug("Contract definition case");
       debug("allocation %O", allocation);
       assignments = { byId: {} };
@@ -159,6 +162,8 @@ function* tickSaga() {
 
     case "IndexAccess":
       // to track `mapping` types known indexes
+      yield put(actions.mapKeyDecoding(true));
+
       let {
         baseExpression: { referencedDeclaration: baseDeclarationId },
         indexExpression: { id: indexId }
@@ -177,10 +182,15 @@ function* tickSaga() {
       // [observed with solc v0.4.24]
       let indexValue;
       if (indexAssignment) {
-        indexValue = decode(node.indexExpression, indexAssignment);
-      } else if (utils.typeClass(node.indexExpression) == "stringliteral") {
-        indexValue = decode(node.indexExpression, {
-          literal: utils.toBytes(node.indexExpression.hexValue)
+        indexValue = yield call(decode, node.indexExpression, indexAssignment);
+      } else if (
+        TruffleDecodeUtils.Definition.typeClass(node.indexExpression) ==
+        "stringliteral"
+      ) {
+        indexValue = yield call(decode, node.indexExpression, {
+          literal: TruffleDecodeUtils.Conversion.toBytes(
+            node.indexExpression.hexValue
+          )
         });
       }
 
@@ -188,6 +198,8 @@ function* tickSaga() {
       if (indexValue !== undefined) {
         yield put(actions.mapKey(baseDeclarationId, indexValue));
       }
+
+      yield put(actions.mapKeyDecoding(false));
 
       break;
 
@@ -234,7 +246,7 @@ export function* saga() {
     try {
       yield* tickSaga();
     } catch (e) {
-      debug(e);
+      debug("ERROR: %O", e);
     }
   });
 }

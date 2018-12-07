@@ -25,7 +25,11 @@ export async function prepareContracts(provider, sources = {}, migrations) {
 
   config.compilers = {
     solc: {
-      version: "^0.5.0"
+      version: "0.5.1",
+      settings: {
+        optimizer: { enabled: false, runs: 200 },
+        evmVersion: "byzantium"
+      }
     }
   };
 

@@ -23,6 +23,12 @@ var command = {
     var debug = debugModule("lib:commands:debug");
     var safeEval = require("safe-eval");
     var util = require("util");
+    const BN = require("bn.js");
+
+    // add custom inspect options for BNs
+    BN.prototype[util.inspect.custom] = function(depth, options) {
+      return options.stylize(this.toString(), "number");
+    };
 
     var compile = require("truffle-compile");
     var Config = require("truffle-config");
@@ -33,7 +39,6 @@ var command = {
     var selectors = require("truffle-debugger").selectors;
 
     // Debugger Session properties
-    var data = selectors.data;
     var trace = selectors.trace;
     var solidity = selectors.solidity;
     var controller = selectors.controller;
@@ -100,7 +105,7 @@ var command = {
         .catch(done);
 
       sessionPromise
-        .then(function(session) {
+        .then(async function(session) {
           if (err) return done(err);
 
           function splitLines(str) {
@@ -219,28 +224,31 @@ var command = {
             });
           }
 
-          function printWatchExpressionsResults() {
-            enabledExpressions.forEach(function(expression) {
-              config.logger.log(expression);
-              // Add some padding. Note: This won't work with all loggers,
-              // meaning it's not portable. But doing this now so we can get something
-              // pretty until we can build more architecture around this.
-              // Note: Selector results already have padding, so this isn't needed.
-              if (expression[0] == ":") {
-                process.stdout.write("  ");
-              }
-              printWatchExpressionResult(expression);
-            });
+          async function printWatchExpressionsResults() {
+            debug("enabledExpressions %o", enabledExpressions);
+            await Promise.all(
+              [...enabledExpressions].map(async expression => {
+                config.logger.log(expression);
+                // Add some padding. Note: This won't work with all loggers,
+                // meaning it's not portable. But doing this now so we can get something
+                // pretty until we can build more architecture around this.
+                // Note: Selector results already have padding, so this isn't needed.
+                if (expression[0] == ":") {
+                  process.stdout.write("  ");
+                }
+                await printWatchExpressionResult(expression);
+              })
+            );
           }
 
-          function printWatchExpressionResult(expression) {
+          async function printWatchExpressionResult(expression) {
             var type = expression[0];
             var exprArgs = expression.substring(1);
 
             if (type == "!") {
               printSelector(exprArgs);
             } else {
-              evalAndPrintExpression(exprArgs, 2, true);
+              await evalAndPrintExpression(exprArgs, 2, true);
             }
           }
 
@@ -266,8 +274,9 @@ var command = {
               .join(OS.EOL);
           }
 
-          function printVariables() {
-            var variables = session.view(data.current.identifiers.native);
+          async function printVariables() {
+            var variables = await session.variables();
+            debug("variables %o", variables);
 
             // Get the length of the longest name.
             var longestNameLength = Math.max.apply(
@@ -523,7 +532,7 @@ var command = {
             return;
           }
 
-          function interpreter(cmd, replContext, filename, callback) {
+          async function interpreter(cmd) {
             cmd = cmd.trim();
             var cmdArgs, splitArgs;
             debug("cmd %s", cmd);
@@ -551,7 +560,7 @@ var command = {
 
             //quit if that's what we were given
             if (cmd === "q") {
-              return repl.stop(callback);
+              return await util.promisify(repl.stop.bind(repl))();
             }
 
             let alreadyFinished = session.view(trace.finished);
@@ -618,7 +627,7 @@ var command = {
             switch (cmd) {
               case "+":
                 enabledExpressions.add(cmdArgs);
-                printWatchExpressionResult(cmdArgs);
+                await printWatchExpressionResult(cmdArgs);
                 break;
               case "-":
                 enabledExpressions.delete(cmdArgs);
@@ -630,7 +639,7 @@ var command = {
                 printWatchExpressions();
                 break;
               case "v":
-                printVariables();
+                await printVariables();
                 break;
               case ":":
                 evalAndPrintExpression(cmdArgs);
@@ -646,7 +655,7 @@ var command = {
                 printFile();
                 printInstruction();
                 printState();
-                printWatchExpressionsResults();
+                await printWatchExpressionsResults();
                 break;
               case "o":
               case "i":
@@ -661,7 +670,7 @@ var command = {
                   printFile();
                   printState();
                 }
-                printWatchExpressionsResults();
+                await printWatchExpressionsResults();
                 break;
               case "r":
                 printAddressesAffected();
@@ -689,8 +698,6 @@ var command = {
             ) {
               lastCommand = cmd;
             }
-
-            callback();
           }
 
           printAddressesAffected();
@@ -710,7 +717,8 @@ var command = {
               ":" +
               txHash.substring(0, 10) +
               "...)> ",
-            interpreter: interpreter,
+            interpreter: util.callbackify(interpreter),
+            ignoreUndefined: true,
             done: done
           });
         })

@@ -4,14 +4,12 @@ const debug = debugModule("test:data:decode");
 import Ganache from "ganache-cli";
 import { assert } from "chai";
 import changeCase from "change-case";
+import BN from "bn.js";
 
 import { prepareContracts } from "test/helpers";
 
 import Debugger from "lib/debugger";
 
-import { cleanBigNumbers } from "lib/data/decode/utils";
-
-import data from "lib/data/selectors";
 import solidity from "lib/solidity/selectors";
 
 export function* generateUints() {
@@ -32,8 +30,9 @@ function fileName(testName) {
 
 function generateTests(fixtures) {
   for (let { name, value: expected } of fixtures) {
-    it(`correctly decodes ${name}`, () => {
-      assert.deepEqual(this.decode(name), expected);
+    it(`correctly decodes ${name}`, async () => {
+      const response = await this.decode(name);
+      assert.deepEqual(response, expected);
     });
   }
 }
@@ -85,12 +84,44 @@ async function prepareDebugger(testName, sources) {
   return session;
 }
 
-async function getDecode(session) {
-  const definitions = session.view(data.current.identifiers.definitions);
-  const refs = session.view(data.current.identifiers.refs);
+async function decode(name) {
+  let result = await this.session.variable(name);
 
-  const decode = session.view(data.views.decoder);
-  return name => cleanBigNumbers(decode(definitions[name], refs[name]));
+  if (Array.isArray(result)) {
+    result = result.map(element => {
+      if (BN.isBN(element)) {
+        // We're assuming these tests have small numbers
+        return element.toNumber();
+      } else if (typeof element.toString === "function") {
+        return element.toString();
+      } else {
+        return element;
+      }
+    });
+  } else if (typeof result === "object") {
+    switch (result.type) {
+      case "mapping": {
+        result = Object.assign(
+          {},
+          ...Object.entries(result.members).map(([key, value]) => {
+            if (BN.isBN(value)) {
+              // We're assuming these tests have small numbers
+              value = value.toNumber();
+            } else if (typeof value.toString === "function") {
+              value = value.toString();
+            }
+
+            return {
+              [key]: value
+            };
+          })
+        );
+        break;
+      }
+    }
+  }
+
+  return result;
 }
 
 export function describeDecoding(testName, fixtures, selector, generateSource) {
@@ -108,11 +139,11 @@ export function describeDecoding(testName, fixtures, selector, generateSource) {
     this.timeout(30000);
 
     before("runs and observes debugger", async () => {
-      const session = await prepareDebugger(testName, sources);
-      this.decode = await getDecode(session);
+      this.session = await prepareDebugger(testName, sources);
+      this.decode = decode;
 
       if (selector) {
-        debug("selector %O", session.view(selector));
+        debug("selector %O", this.session.view(selector));
       }
     });
 

@@ -9,7 +9,7 @@
     "build": "webpack --config webpack/webpack.config.js",
     "start": "node ./webpack/dev-server.js",
     "test": "mocha-webpack --webpack-config webpack/webpack.config-test.js --recursive",
-    "test:debug": "node --inspect ./node_modules/.bin/mocha-webpack --webpack-config webpack/webpack.config-test.js",
+    "test:debug": "NODE_ENV=testing node --inspect ./node_modules/.bin/mocha-webpack --webpack-config webpack/webpack.config-test.js --recursive",
     "test:coverage": "nyc mocha-webpack --webpack-config webpack/webpack.config-test.js --recursive"
   },
   "keywords": [
@@ -21,7 +21,7 @@
   "author": "Tim Coulter <tim.coulter@consenseys.net>",
   "license": "MIT",
   "dependencies": {
-    "bignumber.js": "^7.2.1",
+    "bn.js": "^4.11.8",
     "debug": "^3.1.0",
     "fast-levenshtein": "^2.0.6",
     "json-pointer": "^0.6.0",
@@ -31,6 +31,8 @@
     "remote-redux-devtools": "^0.5.12",
     "reselect-tree": "^1.2.0",
     "truffle-code-utils": "^1.1.2-beta.1",
+    "truffle-decode-utils": "^1.0.0-beta.5",
+    "truffle-decoder": "^1.0.0-beta.10",
     "truffle-expect": "^0.0.5-beta.0",
     "truffle-solidity-utils": "^1.2.0-beta.0",
     "web3": "github:trufflesuite/web3.js#1.0",
