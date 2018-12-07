@@ -4,7 +4,7 @@ var CommandRunner = require("../commandrunner");
 var fs = require("fs-extra");
 var path = require("path");
 var assert = require("assert");
-var TestRPC = require("ganache-cli");
+var Ganache = require("ganache-core");
 var Reporter = require("../reporter");
 
 describe("Cyclic Dependencies", function() {
@@ -17,7 +17,7 @@ describe("Cyclic Dependencies", function() {
       if (err) return done(err);
       config = conf;
       config.logger = logger;
-      config.networks.development.provider = TestRPC.provider({
+      config.networks.development.provider = Ganache.provider({
         gasLimit: config.gas
       });
       config.mocha = {
