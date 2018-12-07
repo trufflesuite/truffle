@@ -93,145 +93,30 @@ TestSource.prototype.resolve = function(import_path, callback) {
       });
     });
   }
+  const assertLibraries = [
+    "Assert",
+    "AssertAddress",
+    "AssertAddressArray",
+    //      "AssertAddressPayableArray", only compatible w/ ^0.5.0
+    "AssertBalance",
+    "AssertBool",
+    "AssertBytes32",
+    "AssertBytes32Array",
+    "AssertGeneral",
+    "AssertInt",
+    "AssertIntArray",
+    "AssertString",
+    "AssertUint",
+    "AssertUintArray"
+  ];
 
-  if (import_path === "truffle/Assert.sol") {
-    return fs.readFile(
-      path.resolve(path.join(__dirname, "Assert.sol")),
-      { encoding: "utf8" },
-      function(err, body) {
-        callback(err, body, import_path);
-      }
-    );
-  }
-
-  if (import_path === "truffle/AssertString.sol") {
-    return fs.readFile(
-      path.resolve(path.join(__dirname, "AssertString.sol")),
-      { encoding: "utf8" },
-      function(err, body) {
-        callback(err, body, import_path);
-      }
-    );
-  }
-
-  if (import_path === "truffle/AssertBytes32.sol") {
-    return fs.readFile(
-      path.resolve(path.join(__dirname, "AssertBytes32.sol")),
-      { encoding: "utf8" },
-      function(err, body) {
-        callback(err, body, import_path);
-      }
-    );
-  }
-
-  if (import_path === "truffle/AssertBytes32Array.sol") {
-    return fs.readFile(
-      path.resolve(path.join(__dirname, "AssertBytes32Array.sol")),
-      { encoding: "utf8" },
-      function(err, body) {
-        callback(err, body, import_path);
-      }
-    );
-  }
-
-  if (import_path === "truffle/AssertAddress.sol") {
-    return fs.readFile(
-      path.resolve(path.join(__dirname, "AssertAddress.sol")),
-      { encoding: "utf8" },
-      function(err, body) {
-        callback(err, body, import_path);
-      }
-    );
-  }
-
-  if (import_path === "truffle/AssertAddressArray.sol") {
-    return fs.readFile(
-      path.resolve(path.join(__dirname, "AssertAddressArray.sol")),
-      { encoding: "utf8" },
-      function(err, body) {
-        callback(err, body, import_path);
-      }
-    );
-  }
-
-  if (import_path === "truffle/AssertAddressPayableArray.sol") {
-    return fs.readFile(
-      path.resolve(path.join(__dirname, "AssertAddressPayableArray.sol")),
-      { encoding: "utf8" },
-      function(err, body) {
-        callback(err, body, import_path);
-      }
-    );
-  }
-
-  if (import_path === "truffle/AssertBool.sol") {
-    return fs.readFile(
-      path.resolve(path.join(__dirname, "AssertBool.sol")),
-      { encoding: "utf8" },
-      function(err, body) {
-        callback(err, body, import_path);
-      }
-    );
-  }
-
-  if (import_path === "truffle/AssertUint.sol") {
-    return fs.readFile(
-      path.resolve(path.join(__dirname, "AssertUint.sol")),
-      { encoding: "utf8" },
-      function(err, body) {
-        callback(err, body, import_path);
-      }
-    );
-  }
-
-  if (import_path === "truffle/AssertUintArray.sol") {
-    return fs.readFile(
-      path.resolve(path.join(__dirname, "AssertUintArray.sol")),
-      { encoding: "utf8" },
-      function(err, body) {
-        callback(err, body, import_path);
-      }
-    );
-  }
-
-  if (import_path === "truffle/AssertInt.sol") {
-    return fs.readFile(
-      path.resolve(path.join(__dirname, "AssertInt.sol")),
-      { encoding: "utf8" },
-      function(err, body) {
-        callback(err, body, import_path);
-      }
-    );
-  }
-
-  if (import_path === "truffle/AssertIntArray.sol") {
-    return fs.readFile(
-      path.resolve(path.join(__dirname, "AssertIntArray.sol")),
-      { encoding: "utf8" },
-      function(err, body) {
-        callback(err, body, import_path);
-      }
-    );
-  }
-
-  if (import_path === "truffle/AssertBalance.sol") {
-    return fs.readFile(
-      path.resolve(path.join(__dirname, "AssertBalance.sol")),
-      { encoding: "utf8" },
-      function(err, body) {
-        callback(err, body, import_path);
-      }
-    );
-  }
-
-  if (import_path === "truffle/AssertGeneral.sol") {
-    return fs.readFile(
-      path.resolve(path.join(__dirname, "AssertGeneral.sol")),
-      { encoding: "utf8" },
-      function(err, body) {
-        callback(err, body, import_path);
-      }
-    );
+  for (const lib of assertLibraries) {
+    if (import_path === `truffle/${lib}.sol`)
+      return fs.readFile(
+        path.resolve(path.join(__dirname, `${lib}.sol`)),
+        { encoding: "utf8" },
+        (err, body) => callback(err, body, import_path)
+      );
   }
 
   return callback();
