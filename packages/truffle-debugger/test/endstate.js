@@ -3,7 +3,7 @@ const debug = debugModule("test:endstate"); // eslint-disable-line no-unused-var
 
 import { assert } from "chai";
 
-import Ganache from "ganache-cli";
+import Ganache from "ganache-core";
 
 import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
