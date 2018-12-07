@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var IPC = require("node-ipc").IPC;
-var TestRPC = require("ganache-cli");
+var Ganache = require("ganache-core");
 var path = require("path");
 var debug = require("debug");
 
@@ -10,13 +10,12 @@ var debug = require("debug");
  */
 var ipcDebug = debug("chain:ipc");
 
-
 /*
  * Options
  */
 
 // This script takes one argument: A strinified JSON object meant
-// to be parsed and then passed to TestRPC.server().
+// to be parsed and then passed to Ganache.server().
 var ipcNetwork;
 var options;
 
@@ -35,7 +34,9 @@ if (args.length == 2) {
 try {
   options = JSON.parse(options);
 } catch (e) {
-  throw new Error("Fatal: Error parsing arguments; please contact the Truffle developers for help.");
+  throw new Error(
+    "Fatal: Error parsing arguments; please contact the Truffle developers for help."
+  );
 }
 
 options.host = options.host || "127.0.0.1";
@@ -44,9 +45,10 @@ options.network_id = options.network_id || 4447;
 options.total_accounts = options.total_accounts || 10;
 options.default_ether_balance = options.default_ether_balance || 100;
 options.blockTime = options.blockTime || 0;
-options.mnemonic = options.mnemonic || "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
+options.mnemonic =
+  options.mnemonic ||
+  "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
 options.gasLimit = options.gasLimit || 0x47e7c4;
-
 
 /*
  * Logging
@@ -104,7 +106,6 @@ Logger.prototype.log = function(message) {
   });
 };
 
-
 /*
  * Supervisor
  */
@@ -153,14 +154,14 @@ Supervisor.prototype.start = function() {
   var servePath = path.join(dirname, basename);
 
   ipc.serve(servePath, function() {
-    self.handle('start', arguments);
+    self.handle("start", arguments);
 
-    ipc.server.on('connect', function() {
-      self.handle('connect', arguments);
+    ipc.server.on("connect", function() {
+      self.handle("connect", arguments);
     });
 
-    ipc.server.on('socket.disconnected', function() {
-      self.handle('disconnect', arguments);
+    ipc.server.on("socket.disconnected", function() {
+      self.handle("disconnect", arguments);
     });
   });
 
@@ -187,9 +188,8 @@ Supervisor.prototype.emit = function(socket, message, data, options) {
 // external interface for mixin to exit
 Supervisor.prototype.exit = function() {
   this.ipc.server.stop();
-  this.handle('exit', arguments);
+  this.handle("exit", arguments);
 };
-
 
 /*
  * Lifecycle
@@ -218,18 +218,17 @@ LifecycleMixin.prototype.disconnect = function(supervisor) {
   }
 };
 
-
 /*
- * TestRPC Server
+ * Ganache Server
  */
 
-// constructor - accepts options for TestRPC
-function TestRPCMixin(options) {
-  this.testrpc = TestRPC.server(options);
+// constructor - accepts options for Ganache
+function GanacheMixin(options) {
+  this.testrpc = Ganache.server(options);
 }
 
-// start TestRPC and capture promise that resolves when ready
-TestRPCMixin.prototype.start = function(supervisor) {
+// start Ganache and capture promise that resolves when ready
+GanacheMixin.prototype.start = function(supervisor) {
   var self = this;
 
   this.ready = new Promise(function(accept, reject) {
@@ -243,16 +242,16 @@ TestRPCMixin.prototype.start = function(supervisor) {
   });
 };
 
-// wait for TestRPC to be ready then emit signal to client socket
-TestRPCMixin.prototype.connect = function(supervisor, socket) {
+// wait for Ganache to be ready then emit signal to client socket
+GanacheMixin.prototype.connect = function(supervisor, socket) {
   var self = this;
   this.ready.then(function() {
-    supervisor.emit(socket, 'truffle.ready');
+    supervisor.emit(socket, "truffle.ready");
   });
 };
 
-// cleanup TestRPC process on exit
-TestRPCMixin.prototype.exit = function(supervisor) {
+// cleanup Ganache process on exit
+GanacheMixin.prototype.exit = function(supervisor) {
   this.testrpc.close(function(err) {
     if (err) {
       console.error(err.stack || err);
@@ -262,7 +261,6 @@ TestRPCMixin.prototype.exit = function(supervisor) {
     }
   });
 };
-
 
 /*
  * Logging over IPC
@@ -279,21 +277,19 @@ LoggerMixin.prototype.connect = function(supervisor, socket) {
   var self = this;
 
   var unsubscribe = this.logger.subscribe(function(data) {
-    supervisor.emit(socket, self.message, data, {silent: true});
+    supervisor.emit(socket, self.message, data, { silent: true });
   });
 
-  socket.on('close', unsubscribe);
+  socket.on("close", unsubscribe);
 };
-
 
 /*
  * Process event handling
  */
-process.on('uncaughtException', function(e) {
+process.on("uncaughtException", function(e) {
   console.error(e.stack);
   process.exit(1);
 });
-
 
 /*
  * Main
@@ -310,10 +306,10 @@ var supervisor = new Supervisor({
 
 ipcLogger.subscribe(ipcDebug);
 
-options.logger = {log: testrpcLogger.log.bind(testrpcLogger)};
+options.logger = { log: testrpcLogger.log.bind(testrpcLogger) };
 
 supervisor.use(new LifecycleMixin());
-supervisor.use(new TestRPCMixin(options));
-supervisor.use(new LoggerMixin(ipcLogger, 'truffle.ipc.log'));
-supervisor.use(new LoggerMixin(testrpcLogger, 'truffle.testrpc.log'));
+supervisor.use(new GanacheMixin(options));
+supervisor.use(new LoggerMixin(ipcLogger, "truffle.ipc.log"));
+supervisor.use(new LoggerMixin(testrpcLogger, "truffle.testrpc.log"));
 supervisor.start();

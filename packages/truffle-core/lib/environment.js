@@ -3,7 +3,7 @@ const TruffleError = require("truffle-error");
 const expect = require("truffle-expect");
 const Resolver = require("truffle-resolver");
 const Artifactor = require("truffle-artifactor");
-const TestRPC = require("ganache-cli");
+const Ganache = require("ganache-core");
 const { callbackify } = require("util");
 
 const Environment = {
@@ -117,7 +117,7 @@ const Environment = {
 
       config.networks[forkedNetwork] = {
         network_id: config.network_id,
-        provider: TestRPC.provider({
+        provider: Ganache.provider({
           fork: config.provider,
           unlocked_accounts: accounts,
           gasLimit: block.gasLimit
