@@ -148,33 +148,6 @@ export namespace Conversion {
   }
 
   /**
-   * Convert a mapping representation into a JS Map
-   *
-   * Only converts integer types to BN right now, leaving other keys else alone
-   */
-  export function toMap(
-    { keyType, members }: any,
-    convertValue?: (value: any) => any
-  ): Map<any, any> {
-    // convert integer types to BN, unless string representation is hex
-    const convertKey = (key: string) => {
-      if (keyType.match(/int/) && key.slice(0,2) != "0x") {
-        return new BN(key, 10);
-      } else {
-        return key;
-      }
-    }
-
-    convertValue = convertValue || (x => x);
-
-    // populate Map with members, using converted keys/values
-    return new Map([
-      ...Object.entries(members)
-        .map( ([key, value]: any) => ([convertKey(key), convertValue(value)]) )
-    ] as any);
-  }
-
-  /**
    * recursively converts decoder-native mapping values to JS Map objects
    *
    * detects int and uint Solidity types and uses BNs as keys in such
@@ -190,6 +163,24 @@ export namespace Conversion {
     const isMapping = ({ type, members, keyType }: any) =>
       type === "mapping" && keyType && members;
 
+    // converts integer mapping keys to BN, unless string representation is hex
+    const convertKey = (keyType: string, key: string) =>
+      keyType.match(/int/) && key.slice(0,2) != "0x"
+        ? new BN(key, 10)
+        : key;
+
+    // converts a mapping representation into a JS Map
+    // Only converts integer types to BN right now, leaving other keys alone
+    const toMap = ({ keyType, members }: any): Map<any, any> => {
+      return new Map([
+        ...Object.entries(members)
+          .map(
+            ([key, value]: any) =>
+              ([convertKey(keyType, key), cleanMappings(value)])
+          )
+      ] as any);
+    }
+
     // BNs are treated like primitives; must take precedence over generic obj
     if (BN.isBN(value)) {
       return value;
@@ -197,7 +188,7 @@ export namespace Conversion {
 
     // detect mapping
     else if (value && typeof value === "object" && isMapping(value)) {
-      return toMap(value, cleanMappings);
+      return toMap(value);
     }
 
     // detect arrays or anything with `.map()`, and recurse
