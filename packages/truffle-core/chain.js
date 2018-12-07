@@ -224,7 +224,7 @@ LifecycleMixin.prototype.disconnect = function(supervisor) {
 
 // constructor - accepts options for Ganache
 function GanacheMixin(options) {
-  this.testrpc = Ganache.server(options);
+  this.ganache = Ganache.server(options);
 }
 
 // start Ganache and capture promise that resolves when ready
@@ -232,7 +232,7 @@ GanacheMixin.prototype.start = function(supervisor) {
   var self = this;
 
   this.ready = new Promise(function(accept, reject) {
-    self.testrpc.listen(options.port, options.hostname, function(err, state) {
+    self.ganache.listen(options.port, options.hostname, function(err, state) {
       if (err) {
         reject(err);
       }
@@ -252,7 +252,7 @@ GanacheMixin.prototype.connect = function(supervisor, socket) {
 
 // cleanup Ganache process on exit
 GanacheMixin.prototype.exit = function(supervisor) {
-  this.testrpc.close(function(err) {
+  this.ganache.close(function(err) {
     if (err) {
       console.error(err.stack || err);
       process.exit(1);
@@ -295,7 +295,7 @@ process.on("uncaughtException", function(e) {
  * Main
  */
 var ipcLogger = new Logger();
-var testrpcLogger = new Logger();
+var ganacheLogger = new Logger();
 
 var supervisor = new Supervisor({
   appspace: "truffle.",
@@ -306,10 +306,10 @@ var supervisor = new Supervisor({
 
 ipcLogger.subscribe(ipcDebug);
 
-options.logger = { log: testrpcLogger.log.bind(testrpcLogger) };
+options.logger = { log: ganacheLogger.log.bind(ganacheLogger) };
 
 supervisor.use(new LifecycleMixin());
 supervisor.use(new GanacheMixin(options));
 supervisor.use(new LoggerMixin(ipcLogger, "truffle.ipc.log"));
-supervisor.use(new LoggerMixin(testrpcLogger, "truffle.testrpc.log"));
+supervisor.use(new LoggerMixin(ganacheLogger, "truffle.ganache.log"));
 supervisor.start();

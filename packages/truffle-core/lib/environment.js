@@ -134,14 +134,14 @@ const Environment = {
     }
   },
 
-  develop: function(config, testrpcOptions, callback) {
+  develop: function(config, ganacheOptions, callback) {
     expect.options(config, ["networks"]);
 
     var network = config.network || "develop";
-    var url = `http://${testrpcOptions.host}:${testrpcOptions.port}/`;
+    var url = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
 
     config.networks[network] = {
-      network_id: testrpcOptions.network_id,
+      network_id: ganacheOptions.network_id,
       provider: function() {
         return new Web3.providers.HttpProvider(url, { keepAlive: false });
       }

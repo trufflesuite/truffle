@@ -10,7 +10,7 @@ process.removeListener(
 );
 
 var debug = require("debug")("ganache-core");
-var TestRPC = require("ganache-core");
+var Ganache = require("ganache-core");
 var BlockchainUtils = require("truffle-blockchain-utils");
 var contract = require("../");
 var times = require("async/times");
@@ -48,12 +48,12 @@ describe("Different networks: ", function() {
     // Setup
     network_one_id = 1000;
     network_two_id = 1001;
-    network_one = TestRPC.provider({
+    network_one = Ganache.provider({
       network_id: network_one_id,
       seed: network_one_id,
       logger: log
     });
-    network_two = TestRPC.provider({
+    network_two = Ganache.provider({
       network_id: network_two_id,
       seed: network_two_id,
       logger: log
@@ -182,7 +182,7 @@ describe("Different networks: ", function() {
   });
 
   it("deployed() used as a thennable will error if contract hasn't been deployed to the network detected", function(done) {
-    var network_three = TestRPC.provider();
+    var network_three = Ganache.provider();
 
     var Example = contract(ExampleOne.toJSON());
     Example.setProvider(network_three);
