@@ -12833,18 +12833,6 @@ web3@1.0.0-beta.35:
     web3-shh "1.0.0-beta.35"
     web3-utils "1.0.0-beta.35"
 
-web3@1.0.0-beta.36, web3@^1.0.0-beta.34, web3@^1.0.0-beta.36:
-  version "1.0.0-beta.36"
-  resolved "https://registry.yarnpkg.com/web3/-/web3-1.0.0-beta.36.tgz#2954da9e431124c88396025510d840ba731c8373"
-  dependencies:
-    web3-bzz "1.0.0-beta.36"
-    web3-core "1.0.0-beta.36"
-    web3-eth "1.0.0-beta.36"
-    web3-eth-personal "1.0.0-beta.36"
-    web3-net "1.0.0-beta.36"
-    web3-shh "1.0.0-beta.36"
-    web3-utils "1.0.0-beta.36"
-
 web3@^0.16.0:
   version "0.16.0"
   resolved "https://registry.yarnpkg.com/web3/-/web3-0.16.0.tgz#a4554175cd462943035b1f1d39432f741c6b6019"
@@ -12863,6 +12851,22 @@ web3@^0.20.1:
     utf8 "^2.1.1"
     xhr2-cookies "^1.1.0"
     xmlhttprequest "*"
+
+web3@^1.0.0-beta.34, web3@^1.0.0-beta.36:
+  version "1.0.0-beta.36"
+  resolved "https://registry.yarnpkg.com/web3/-/web3-1.0.0-beta.36.tgz#2954da9e431124c88396025510d840ba731c8373"
+  dependencies:
+    web3-bzz "1.0.0-beta.36"
+    web3-core "1.0.0-beta.36"
+    web3-eth "1.0.0-beta.36"
+    web3-eth-personal "1.0.0-beta.36"
+    web3-net "1.0.0-beta.36"
+    web3-shh "1.0.0-beta.36"
+    web3-utils "1.0.0-beta.36"
+
+"web3@github:trufflesuite/web3.js#1.0":
+  version "1.0.0-beta.36"
+  resolved "https://codeload.github.com/trufflesuite/web3.js/tar.gz/35a93affce90b6a970d0ad6e310c82ba87f43c59"
 
 "webcrypto-shim@github:dignifiedquire/webcrypto-shim#master":
   version "0.1.1"
