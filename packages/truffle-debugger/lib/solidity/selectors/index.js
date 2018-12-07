@@ -5,7 +5,7 @@ import { createSelectorTree, createLeaf } from "reselect-tree";
 import SolidityUtils from "truffle-solidity-utils";
 import CodeUtils from "truffle-code-utils";
 
-import { isContract, isContractType } from "lib/data/decode/utils";
+import * as TruffleDecodeUtils from "truffle-decode-utils";
 import { findRange } from "lib/ast/map";
 import jsonpointer from "json-pointer";
 
@@ -321,8 +321,10 @@ let solidity = createSelectorTree({
         node.expression !== undefined &&
         node.expression.nodeType === "MemberAccess" &&
         node.expression.expression !== undefined &&
-        (isContract(node.expression.expression) ||
-          isContractType(node.expression.expression))
+        (TruffleDecodeUtils.Definition.isContract(node.expression.expression) ||
+          TruffleDecodeUtils.Definition.isContractType(
+            node.expression.expression
+          ))
     ),
 
     /**

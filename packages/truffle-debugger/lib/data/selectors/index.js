@@ -10,8 +10,8 @@ import ast from "lib/ast/selectors";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
-import decode from "../decode";
-import * as decodeUtils from "../decode/utils";
+import * as TruffleDecodeUtils from "truffle-decode-utils";
+import { forEvmState } from "truffle-decoder";
 
 /**
  * @private
@@ -28,8 +28,11 @@ function createStateSelectors({ stack, memory, storage }) {
 
       words =>
         (words || []).map(word =>
-          decodeUtils.toBytes(
-            decodeUtils.toBigNumber(word, decodeUtils.WORD_SIZE)
+          TruffleDecodeUtils.Conversion.toBytes(
+            TruffleDecodeUtils.Conversion.toBN(
+              word,
+              TruffleDecodeUtils.EVM.WORD_SIZE
+            )
           )
         )
     ),
@@ -111,13 +114,13 @@ const data = createSelectorTree({
     /**
      * data.views.decoder
      *
-     * selector returns (ast node definition, data reference) => value
+     * selector returns (ast node definition, data reference) => Promise<value>
      */
     decoder: createLeaf(
       ["/views/scopes/inlined", "/next/state", "/proc/mappingKeys"],
 
       (scopes, state, mappingKeys) => (definition, ref) =>
-        decode(definition, ref, {
+        forEvmState(definition, ref, {
           scopes,
           state,
           mappingKeys
@@ -154,7 +157,17 @@ const data = createSelectorTree({
      *
      * known keys for each mapping (identified by node ID)
      */
-    mappingKeys: createLeaf(["/state"], state => state.proc.mappingKeys.byId)
+    mappingKeys: createLeaf(["/state"], state => state.proc.mappingKeys.byId),
+
+    /**
+     * data.proc.decodingMappingKeys
+     *
+     * number of mapping keys that are still decoding
+     */
+    decodingMappingKeys: createLeaf(
+      ["/state"],
+      state => state.proc.mappingKeys.decodingStarted
+    )
   },
 
   /**
@@ -320,23 +333,33 @@ const data = createSelectorTree({
 
       /**
        * data.current.identifiers.decoded
+       *
+       * Returns an object with values as Promises
        */
       decoded: createLeaf(
         ["/views/decoder", "./definitions", "./refs"],
 
-        (decode, definitions, refs) =>
-          Object.assign(
-            {},
-            ...Object.entries(refs).map(([identifier, ref]) => ({
-              [identifier]: decode(definitions[identifier], ref)
-            }))
-          )
+        async (decode, definitions, refs) => {
+          const keyedPromises = Object.entries(refs).map(
+            async ([identifier, ref]) => ({
+              [identifier]: await decode(definitions[identifier], ref)
+            })
+          );
+          const keyedResults = await Promise.all(keyedPromises);
+          return TruffleDecodeUtils.Conversion.cleanMappings(
+            Object.assign({}, ...keyedResults)
+          );
+        }
       ),
 
       /**
        * data.current.identifiers.native
+       *
+       * Returns an object with values as Promises
        */
-      native: createLeaf(["./decoded"], decodeUtils.cleanBigNumbers)
+      native: createLeaf(["./decoded"], async decoded => {
+        return TruffleDecodeUtils.Conversion.cleanBNs(await decoded);
+      })
     }
   },
 

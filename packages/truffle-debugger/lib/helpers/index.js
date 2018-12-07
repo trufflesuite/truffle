@@ -1,4 +1,4 @@
-import { keccak256 as _keccak256, toHexString } from "lib/data/decode/utils";
+import * as utils from "truffle-decode-utils";
 
 const stringify = require("json-stable-stringify");
 
@@ -15,7 +15,7 @@ export function prefixName(prefix, fn) {
  * @return 0x-prefix string of keccak256 hash
  */
 export function keccak256(...args) {
-  return toHexString(_keccak256(...args));
+  return utils.Conversion.toHexString(utils.EVM.keccak256(...args));
 }
 
 /**
