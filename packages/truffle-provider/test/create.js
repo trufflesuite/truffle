@@ -1,5 +1,5 @@
 var assert = require("assert");
-var Ganache = require("ganache-cli");
+var Ganache = require("ganache-core");
 var Provider = require("../index");
 
 describe("Provider", function() {
