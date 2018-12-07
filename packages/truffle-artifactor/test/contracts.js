@@ -7,7 +7,7 @@ var path = require("path");
 var fs = require("fs");
 var requireNoCache = require("require-nocache")(module);
 var Compile = require("truffle-compile");
-var TestRPC = require("ganache-cli");
+var Ganache = require("ganache-core");
 var Web3 = require("web3");
 const { promisify } = require("util");
 
@@ -18,7 +18,7 @@ describe("artifactor + require", function() {
   var binary;
   var network_id;
   var artifactor;
-  var provider = TestRPC.provider();
+  var provider = Ganache.provider();
   var web3 = new Web3();
   web3.setProvider(provider);
 
