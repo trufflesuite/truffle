@@ -1,6 +1,6 @@
 pragma solidity ^0.5.0;
 
-contract SafeSend {
+contract NewSafeSend {
   address payable public recipient;
 
   constructor(address payable _recipient) public payable {
