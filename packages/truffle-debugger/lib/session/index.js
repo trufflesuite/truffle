@@ -163,6 +163,10 @@ export default class Session {
     return this.dispatch(controller.removeBreakpoint(breakpoint));
   }
 
+  removeAllBreakpoints() {
+    return this.dispatch(controller.removeAllBreakpoints());
+  }
+
   async decodeReady() {
     return new Promise(resolve => {
       let haveResolved = false;
