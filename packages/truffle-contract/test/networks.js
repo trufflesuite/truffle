@@ -102,14 +102,14 @@ describe("Different networks: ", function() {
     getCode(ExampleOne, ExampleTwo, function(err, code) {
       assert.equal(
         code,
-        0,
+        "0x",
         "ExampleTwo's address must not exist on ExampleOne's network"
       );
 
       getCode(ExampleTwo, ExampleOne, function(err, code) {
         assert.equal(
           code,
-          0,
+          "0x",
           "ExampleOne's address must not exist on ExampleTwo's network"
         );
         done();
