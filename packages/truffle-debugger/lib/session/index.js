@@ -161,4 +161,8 @@ export default class Session {
   removeBreakpoint(breakpoint) {
     return this.dispatch(controller.removeBreakpoint(breakpoint));
   }
+
+  removeAllBreakpoints() {
+    return this.dispatch(controller.removeAllBreakpoints());
+  }
 }

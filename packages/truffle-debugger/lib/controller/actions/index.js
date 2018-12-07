@@ -62,3 +62,10 @@ export function removeBreakpoint(breakpoint) {
     breakpoint
   };
 }
+
+export const REMOVE_ALL_BREAKPOINTS = "REMOVE_ALL_BREAKPOINTS";
+export function removeAllBreakpoints() {
+  return {
+    type: REMOVE_ALL_BREAKPOINTS
+  };
+}

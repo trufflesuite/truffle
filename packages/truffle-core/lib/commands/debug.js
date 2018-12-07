@@ -377,6 +377,17 @@ var command = {
               breakpoint.sourceId = currentSourceId;
             }
 
+            //the special case of "B all"
+            else if (args[0] === "all") {
+              if (setOrClear) {
+                // only "B all" is legal, not "b all"
+                config.logger.log("Cannot add breakpoint everywhere.\n");
+                return;
+              }
+              session.removeAllBreakpoints();
+              return;
+            }
+
             //if the argument starts with a "+" or "-", we have a relative
             //line number
             else if (args[0][0] === "+" || args[0][0] === "-") {
@@ -665,6 +676,7 @@ var command = {
               cmd != "i" &&
               cmd != "u" &&
               cmd != "b" &&
+              cmd != "B" &&
               cmd != "v" &&
               cmd != "h" &&
               cmd != "p" &&
