@@ -1,11 +1,11 @@
-const ganache = require("ganache-cli");
+const ganache = require("ganache-core");
 const Web3 = require("web3");
 const assert = require("assert");
 const Reporter = require("truffle-reporters").migrationsV5;
-const EventEmitter = require('events');
+const EventEmitter = require("events");
 
 const Deployer = require("../index");
-const utils = require('./helpers/utils');
+const utils = require("./helpers/utils");
 
 describe("Error cases", function() {
   let owner;
@@ -36,14 +36,24 @@ describe("Error cases", function() {
     owner = accounts[0];
     await utils.compile();
 
-    Example =       utils.getContract('Example', provider, networkId, owner);
-    ExampleRevert = utils.getContract('ExampleRevert', provider, networkId, owner);
-    ExampleAssert = utils.getContract('ExampleAssert', provider, networkId, owner);
-    UsesExample =   utils.getContract('UsesExample', provider, networkId, owner);
-    UsesLibrary =   utils.getContract('UsesLibrary', provider, networkId, owner);
-    IsLibrary =     utils.getContract('IsLibrary', provider, networkId, owner);
-    Abstract =      utils.getContract('Abstract', provider, networkId, owner);
-    Loops =         utils.getContract('Loops', provider, networkId, owner);
+    Example = utils.getContract("Example", provider, networkId, owner);
+    ExampleRevert = utils.getContract(
+      "ExampleRevert",
+      provider,
+      networkId,
+      owner
+    );
+    ExampleAssert = utils.getContract(
+      "ExampleAssert",
+      provider,
+      networkId,
+      owner
+    );
+    UsesExample = utils.getContract("UsesExample", provider, networkId, owner);
+    UsesLibrary = utils.getContract("UsesLibrary", provider, networkId, owner);
+    IsLibrary = utils.getContract("IsLibrary", provider, networkId, owner);
+    Abstract = utils.getContract("Abstract", provider, networkId, owner);
+    Loops = utils.getContract("Loops", provider, networkId, owner);
 
     options = {
       contracts: [
@@ -56,12 +66,12 @@ describe("Error cases", function() {
         Abstract,
         Loops
       ],
-      network: 'test',
+      network: "test",
       network_id: networkId,
       provider: provider,
       logger: {
-        log:   (val) => {},
-        error: (val) => {}
+        log: val => {},
+        error: val => {}
       }
     };
     deployer = new Deployer(options);
@@ -76,8 +86,8 @@ describe("Error cases", function() {
     deployer.finish();
   });
 
-  it('library not deployed', async function(){
-    const migrate = function(){
+  it("library not deployed", async function() {
+    const migrate = function() {
       deployer.link(IsLibrary, UsesLibrary);
     };
 
@@ -86,15 +96,15 @@ describe("Error cases", function() {
     try {
       await deployer.start();
       assert.fail();
-    } catch( err ) {
-      assert(err.message.includes('Deployment Failed'));
-      assert(err.message.includes('IsLibrary'));
-      assert(err.message.includes('has no address'));
+    } catch (err) {
+      assert(err.message.includes("Deployment Failed"));
+      assert(err.message.includes("IsLibrary"));
+      assert(err.message.includes("has no address"));
     }
   });
 
-  it('unlinked library', async function(){
-    const migrate = function(){
+  it("unlinked library", async function() {
+    const migrate = function() {
       deployer.deploy(UsesLibrary);
     };
 
@@ -103,15 +113,15 @@ describe("Error cases", function() {
     try {
       await deployer.start();
       assert.fail();
-    } catch( err ) {
-      assert(err.message.includes('Deployment Failed'));
-      assert(err.message.includes('UsesLibrary'));
-      assert(err.message.includes('unresolved libraries'));
+    } catch (err) {
+      assert(err.message.includes("Deployment Failed"));
+      assert(err.message.includes("UsesLibrary"));
+      assert(err.message.includes("unresolved libraries"));
     }
   });
 
-  it('contract has no bytecode', async function(){
-    const migrate = function(){
+  it("contract has no bytecode", async function() {
+    const migrate = function() {
       deployer.deploy(Abstract);
     };
 
@@ -120,17 +130,17 @@ describe("Error cases", function() {
     try {
       await deployer.start();
       assert.fail();
-    } catch(err){
-      assert(err.message.includes('Deployment Failed'));
-      assert(err.message.includes('Abstract'));
-      assert(err.message.includes('interface'));
-      assert(err.message.includes('cannot be deployed'));
+    } catch (err) {
+      assert(err.message.includes("Deployment Failed"));
+      assert(err.message.includes("Abstract"));
+      assert(err.message.includes("interface"));
+      assert(err.message.includes("cannot be deployed"));
     }
   });
 
-  it('OOG (no constructor args)', async function(){
-    const migrate = function(){
-      deployer.deploy(Example, {gas: 10});
+  it("OOG (no constructor args)", async function() {
+    const migrate = function() {
+      deployer.deploy(Example, { gas: 10 });
     };
 
     migrate();
@@ -138,18 +148,18 @@ describe("Error cases", function() {
     try {
       await deployer.start();
       assert.fail();
-    } catch(err){
-      assert(err.message.includes('Example'));
-      assert(err.message.includes('value you set'));
-      assert(err.message.includes('Block limit'));
-      assert(err.message.includes('Gas sent'));
-      assert(err.message.includes('10'));
+    } catch (err) {
+      assert(err.message.includes("Example"));
+      assert(err.message.includes("value you set"));
+      assert(err.message.includes("Block limit"));
+      assert(err.message.includes("Gas sent"));
+      assert(err.message.includes("10"));
     }
   });
 
-  it('OOG (w/ constructor args)', async function(){
-    const migrate = function(){
-      deployer.deploy(UsesExample, utils.zeroAddress, {gas: 10});
+  it("OOG (w/ constructor args)", async function() {
+    const migrate = function() {
+      deployer.deploy(UsesExample, utils.zeroAddress, { gas: 10 });
     };
 
     migrate();
@@ -157,19 +167,19 @@ describe("Error cases", function() {
     try {
       await deployer.start();
       assert.fail();
-    } catch(err){
-      assert(err.message.includes('UsesExample'));
-      assert(err.message.includes('value you set'));
-      assert(err.message.includes('Block limit'));
-      assert(err.message.includes('Gas sent'));
-      assert(err.message.includes('10'));
+    } catch (err) {
+      assert(err.message.includes("UsesExample"));
+      assert(err.message.includes("value you set"));
+      assert(err.message.includes("Block limit"));
+      assert(err.message.includes("Gas sent"));
+      assert(err.message.includes("10"));
     }
   });
 
-  it('OOG (w/ estimate, hits block limit)', async function(){
+  it("OOG (w/ estimate, hits block limit)", async function() {
     this.timeout(20000);
 
-    const migrate = function(){
+    const migrate = function() {
       deployer.deploy(Loops);
     };
 
@@ -178,18 +188,18 @@ describe("Error cases", function() {
     try {
       await deployer.start();
       assert.fail();
-    } catch(err){
-      assert(err.message.includes('Loops'));
-      assert(err.message.includes('out of gas'));
-      assert(err.message.includes('constructor'));
+    } catch (err) {
+      assert(err.message.includes("Loops"));
+      assert(err.message.includes("out of gas"));
+      assert(err.message.includes("constructor"));
     }
   });
 
-  it('OOG (w/ param, hits block limit)', async function(){
+  it("OOG (w/ param, hits block limit)", async function() {
     this.timeout(20000);
 
-    const migrate = function(){
-      deployer.deploy(Loops, {gas: 100000});
+    const migrate = function() {
+      deployer.deploy(Loops, { gas: 100000 });
     };
 
     migrate();
@@ -197,16 +207,16 @@ describe("Error cases", function() {
     try {
       await deployer.start();
       assert.fail();
-    } catch(err){
-      assert(err.message.includes('Loops'));
-      assert(err.message.includes('out of gas'));
-      assert(err.message.includes('Gas sent'));
-      assert(err.message.includes('Block limit'));
+    } catch (err) {
+      assert(err.message.includes("Loops"));
+      assert(err.message.includes("out of gas"));
+      assert(err.message.includes("Gas sent"));
+      assert(err.message.includes("Block limit"));
     }
   });
 
-  it('revert', async function(){
-    migrate = function(){
+  it("revert", async function() {
+    migrate = function() {
       deployer.deploy(ExampleRevert);
     };
 
@@ -215,13 +225,13 @@ describe("Error cases", function() {
     try {
       await deployer.start();
       assert.fail();
-    } catch(err){
-      assert(err.message.includes('revert'));
+    } catch (err) {
+      assert(err.message.includes("revert"));
     }
   });
 
-  it('assert', async function(){
-    migrate = function(){
+  it("assert", async function() {
+    migrate = function() {
       deployer.deploy(ExampleAssert);
     };
 
@@ -230,17 +240,17 @@ describe("Error cases", function() {
     try {
       await deployer.start();
       assert.fail();
-    } catch(err){
-      assert(err.message.includes('invalid opcode'));
+    } catch (err) {
+      assert(err.message.includes("invalid opcode"));
     }
   });
 
-  it('exceeds block limit', async function(){
-    const block = await web3.eth.getBlock('latest');
+  it("exceeds block limit", async function() {
+    const block = await web3.eth.getBlock("latest");
     const gas = block.gasLimit + 1000;
 
-    migrate = function(){
-      deployer.deploy(Example, {gas: gas});
+    migrate = function() {
+      deployer.deploy(Example, { gas: gas });
     };
 
     migrate();
@@ -248,15 +258,15 @@ describe("Error cases", function() {
     try {
       await deployer.start();
       assert.fail();
-    } catch(err){
-      assert(err.message.includes('Example'));
-      assert(err.message.includes('Block limit'));
-      assert(err.message.includes('Gas sent'));
-      assert(err.message.includes('less gas'));
+    } catch (err) {
+      assert(err.message.includes("Example"));
+      assert(err.message.includes("Block limit"));
+      assert(err.message.includes("Gas sent"));
+      assert(err.message.includes("less gas"));
     }
   });
 
-  it('insufficient funds', async function(){
+  it("insufficient funds", async function() {
     const emptyAccount = accounts[7];
     let balance = await web3.eth.getBalance(emptyAccount);
     await web3.eth.sendTransaction({
@@ -269,8 +279,8 @@ describe("Error cases", function() {
     balance = await web3.eth.getBalance(emptyAccount);
     assert(parseInt(balance) === 0);
 
-    migrate = function(){
-      deployer.deploy(Example, {from: emptyAccount});
+    migrate = function() {
+      deployer.deploy(Example, { from: emptyAccount });
     };
 
     migrate();
@@ -278,11 +288,11 @@ describe("Error cases", function() {
     try {
       await deployer.start();
       assert.fail();
-    } catch(err){
-      assert(err.message.includes('Example'));
-      assert(err.message.includes('insufficient funds'));
-      assert(err.message.includes('Account'));
-      assert(err.message.includes('Balance'));
+    } catch (err) {
+      assert(err.message.includes("Example"));
+      assert(err.message.includes("insufficient funds"));
+      assert(err.message.includes("Account"));
+      assert(err.message.includes("Balance"));
     }
   });
 });
