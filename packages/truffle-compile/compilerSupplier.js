@@ -242,7 +242,7 @@ const findNewestValidVersion = (version, allVersions) => {
     .filter(solcVersion => solcVersion);
   if (satisfyingVersions.length > 0) {
     return satisfyingVersions.reduce((newestVersion, version) => {
-      if (semver.gtr(version, newestVersion)) return version;
+      return semver.gtr(version, newestVersion) ? version : newestVersion;
     }, "0.0.0");
   } else {
     return null;
