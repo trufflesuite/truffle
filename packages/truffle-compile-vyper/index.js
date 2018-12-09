@@ -90,7 +90,7 @@ function execVyper(source_path, callback) {
   exec(command, function (err, stdout, stderr) {
     if (err) return callback(`${stderr}\n${colors.red(`Compilation of ${source_path} failed. See above.`)}`);
 
-    var outputs = stdout.split(/\n/);
+    var outputs = stdout.split(/\r?\n/);
 
     const compiled_contract = outputs.reduce(
       function (contract, output, index) {
