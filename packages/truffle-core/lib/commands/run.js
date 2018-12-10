@@ -27,8 +27,7 @@ const command = {
 
     if (config.plugins) {
       let pluginConfigs = Plugin.load(config, done);
-      Run.run(pluginConfigs, customCommand, config);
-      done();
+      Run.run(pluginConfigs, customCommand, config, done);
     } else {
       console.error(
         "\nError: No plugins detected in the configuration file.\n"
