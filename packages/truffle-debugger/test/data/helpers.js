@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("test:data:decode");
 
-import Ganache from "ganache-cli";
+import Ganache from "ganache-core";
 import { assert } from "chai";
 import changeCase from "change-case";
 import BN from "bn.js";

@@ -1,35 +1,43 @@
 var command = {
-  command: 'test',
-  description: 'Run JavaScript and Solidity tests',
+  command: "test",
+  description: "Run JavaScript and Solidity tests",
   builder: {
     "show-events": {
       describe: "Show all test logs",
       type: "boolean",
       default: false
-    },
+    }
   },
   help: {
-    usage: "truffle test [<test_file>] [--compile-all] [--network <name>] [--verbose-rpc]",
+    usage:
+      "truffle test [<test_file>] [--compile-all] [--network <name>] [--verbose-rpc]",
     options: [
       {
         option: "<test_file>",
-        description: "Name of the test file to be run. Can include path information if the file " +
-          "does not exist in the\n                    current directory.",
-      },{
-        option: "--compile-all",
-        description: "Compile all contracts instead of intelligently choosing which contracts need " +
-          "to be compiled.",
-      },{
-        option: "--network <name>",
-        description: "Specify the network to use, using artifacts specific to that network. Network " +
-          "name must exist\n                    in the configuration.",
-      },{
-        option: "--verbose-rpc",
-        description: "Log communication between Truffle and the Ethereum client.",
+        description:
+          "Name of the test file to be run. Can include path information if the file " +
+          "does not exist in the\n                    current directory."
       },
+      {
+        option: "--compile-all",
+        description:
+          "Compile all contracts instead of intelligently choosing which contracts need " +
+          "to be compiled."
+      },
+      {
+        option: "--network <name>",
+        description:
+          "Specify the network to use, using artifacts specific to that network. Network " +
+          "name must exist\n                    in the configuration."
+      },
+      {
+        option: "--verbose-rpc",
+        description:
+          "Log communication between Truffle and the Ethereum client."
+      }
     ]
   },
-  run: function (options, done) {
+  run: function(options, done) {
     var OS = require("os");
     var dir = require("node-dir");
     var temp = require("temp");
@@ -68,7 +76,7 @@ var command = {
       }
 
       dir.files(config.test_directory, callback);
-    };
+    }
 
     getFiles(function(err, files) {
       if (err) return done(err);
@@ -77,7 +85,7 @@ var command = {
         return file.match(config.test_file_extension_regexp) != null;
       });
 
-      temp.mkdir('test-', function(err, temporaryDirectory) {
+      temp.mkdir("test-", function(err, temporaryDirectory) {
         if (err) return done(err);
 
         function cleanup() {
@@ -90,18 +98,21 @@ var command = {
               ipcDisconnect();
             }
           });
-        };
+        }
 
         function run() {
           // Set a new artifactor; don't rely on the one created by Environments.
           // TODO: Make the test artifactor configurable.
           config.artifactor = new Artifactor(temporaryDirectory);
 
-          Test.run(config.with({
-            test_files: files,
-            contracts_build_directory: temporaryDirectory
-          }), cleanup);
-        };
+          Test.run(
+            config.with({
+              test_files: files,
+              contracts_build_directory: temporaryDirectory
+            }),
+            cleanup
+          );
+        }
 
         var environmentCallback = function(err) {
           if (err) return done(err);
@@ -111,10 +122,14 @@ var command = {
           fs.stat(config.contracts_build_directory, function(err, stat) {
             if (err) return run();
 
-            copy(config.contracts_build_directory, temporaryDirectory, function(err) {
+            copy(config.contracts_build_directory, temporaryDirectory, function(
+              err
+            ) {
               if (err) return done(err);
 
-              config.logger.log("Using network '" + config.network + "'." + OS.EOL);
+              config.logger.log(
+                "Using network '" + config.network + "'." + OS.EOL
+              );
 
               run();
             });
@@ -128,18 +143,22 @@ var command = {
             network: "test"
           };
 
-          var testrpcOptions = {
+          var ganacheOptions = {
             host: "127.0.0.1",
             port: 7545,
             network_id: 4447,
-            mnemonic: "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
+            mnemonic:
+              "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
             gasLimit: config.gas,
-            noVMErrorsOnRPCResponse: true,
+            noVMErrorsOnRPCResponse: true
           };
 
-          Develop.connectOrStart(ipcOptions, testrpcOptions, function(started, disconnect) {
+          Develop.connectOrStart(ipcOptions, ganacheOptions, function(
+            started,
+            disconnect
+          ) {
             ipcDisconnect = disconnect;
-            Environment.develop(config, testrpcOptions, environmentCallback);
+            Environment.develop(config, ganacheOptions, environmentCallback);
           });
         }
       });

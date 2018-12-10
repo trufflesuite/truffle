@@ -14,7 +14,7 @@ var command = {
     usage: "truffle develop",
     options: []
   },
-  runConsole: function(config, testrpcOptions, done) {
+  runConsole: function(config, ganacheOptions, done) {
     var Console = require("../console");
     var Environment = require("../environment");
 
@@ -30,7 +30,7 @@ var command = {
       console_commands[name] = commands[name];
     });
 
-    Environment.develop(config, testrpcOptions, function(err) {
+    Environment.develop(config, ganacheOptions, function(err) {
       if (err) return done(err);
 
       var c = new Console(
@@ -81,7 +81,7 @@ var command = {
       log: options.log
     };
 
-    var testrpcOptions = {
+    var ganacheOptions = {
       host: "127.0.0.1",
       port: 9545,
       network_id: 4447,
@@ -93,8 +93,8 @@ var command = {
       noVMErrorsOnRPCResponse: true
     };
 
-    Develop.connectOrStart(ipcOptions, testrpcOptions, function(started) {
-      var url = `http://${testrpcOptions.host}:${testrpcOptions.port}/`;
+    Develop.connectOrStart(ipcOptions, ganacheOptions, function(started) {
+      var url = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
 
       if (started) {
         config.logger.log(`Truffle Develop started at ${url}`);
@@ -126,7 +126,7 @@ var command = {
       }
 
       if (!options.log) {
-        command.runConsole(config, testrpcOptions, done);
+        command.runConsole(config, ganacheOptions, done);
       }
     });
   }

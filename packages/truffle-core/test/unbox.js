@@ -71,14 +71,14 @@ describe("commands/unbox.js", () => {
 
     it("runs when passed valid box input", done => {
       validBoxInput.forEach(val => {
-        unbox.run({ _: [`${val}`], force: true }, _);
+        unbox.run({ _: [`${val}`], force: true }, done => done);
       });
       done();
     });
 
     it("runs when passed a relative unbox path", done => {
       relativePaths.forEach(path => {
-        unbox.run({ _: [`${path}`], force: true }, _);
+        unbox.run({ _: [`${path}`], force: true }, done => done);
       });
       done();
     });

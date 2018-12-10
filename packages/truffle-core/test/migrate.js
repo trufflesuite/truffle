@@ -6,7 +6,7 @@ var Networks = require("../lib/networks");
 var path = require("path");
 var fs = require("fs-extra");
 var glob = require("glob");
-var TestRPC = require("ganache-cli");
+var Ganache = require("ganache-core");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
 var Web3 = require("web3");
@@ -27,7 +27,7 @@ describe("migrate", function() {
   });
 
   function createProviderAndSetNetworkConfig(network) {
-    var provider = TestRPC.provider({ seed: network, gasLimit: config.gas });
+    var provider = Ganache.provider({ seed: network, gasLimit: config.gas });
     var web3 = new Web3(provider);
     return web3.eth.getAccounts().then(accs => {
       return web3.eth.net.getId().then(network_id => {

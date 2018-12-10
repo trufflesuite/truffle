@@ -4,7 +4,7 @@ var temp = require("temp").track();
 var contract = require("../");
 var Web3 = require("web3");
 var debug = require("debug")("ganache-core");
-var TestRPC = require("ganache-core");
+var Ganache = require("ganache-core");
 var path = require("path");
 var fs = require("fs");
 var Compile = require("truffle-compile");
@@ -23,7 +23,7 @@ var log = {
 
 describe("Library linking", function() {
   var LibraryExample;
-  var provider = TestRPC.provider({ logger: log });
+  var provider = Ganache.provider({ logger: log });
   var network_id;
   var web3 = new Web3();
   web3.setProvider(provider);
@@ -109,7 +109,7 @@ describe("Library linking with contract objects", function() {
   var accounts;
   var web3;
   var network_id;
-  var provider = TestRPC.provider({ logger: log });
+  var provider = Ganache.provider({ logger: log });
   web3 = new Web3();
   web3.setProvider(provider);
 

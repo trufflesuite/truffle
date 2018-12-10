@@ -3,7 +3,7 @@ var fs = require("fs-extra");
 var glob = require("glob");
 var Box = require("truffle-box");
 var Contracts = require("truffle-workflow-compile");
-var TestRPC = require("ganache-cli");
+var Ganache = require("ganache-core");
 var provision = require("truffle-provisioner");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
@@ -30,7 +30,7 @@ describe("config", function() {
           gas: customRPCConfig.gas,
           gasPrice: customRPCConfig.gasPrice,
           from: "0x1234567890123456789012345678901234567890",
-          provider: TestRPC.provider()
+          provider: Ganache.provider()
         }
       };
 

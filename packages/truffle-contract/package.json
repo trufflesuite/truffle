@@ -48,7 +48,7 @@
     "browserify": "^14.0.0",
     "chai": "4.1.2",
     "debug": "^3.1.0",
-    "ganache-core": "2.1.2",
+    "ganache-core": "2.3.0",
     "lodash": "4.17.10",
     "mocha": "5.2.0",
     "require-nocache": "^1.0.0",

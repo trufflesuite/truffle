@@ -29,7 +29,7 @@
     "truffle-expect": "^0.0.5-beta.0"
   },
   "devDependencies": {
-    "ganache-cli": "6.1.8",
+    "ganache-core": "^2.3.1",
     "mocha": "5.2.0",
     "truffle-reporters": "^1.0.0-beta.2",
     "truffle-workflow-compile": "^2.0.0-beta.2",
