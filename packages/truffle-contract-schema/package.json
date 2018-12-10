@@ -28,7 +28,7 @@
   "dependencies": {
     "ajv": "^5.1.1",
     "crypto-js": "^3.1.9-1",
-    "debug": "^3.1.0"
+    "debug": "^4.1.0"
   },
   "devDependencies": {
     "json-schema-to-typescript": "^5.5.0",

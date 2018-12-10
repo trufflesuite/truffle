@@ -32,13 +32,13 @@
     "ethereumjs-util": "^5.2.0",
     "ethjs-abi": "0.1.8",
     "truffle-blockchain-utils": "^0.0.6-beta.1",
-    "truffle-contract-schema": "^3.0.0-beta.2",
+    "truffle-contract-schema": "3.0.0-beta.2",
     "truffle-error": "^0.0.3",
     "uglify-es": "^3.3.9",
     "web3": "^1.0.0-beta.37",
     "web3-core-promievent": "^1.0.0-beta.37",
     "web3-eth-abi": "^1.0.0-beta.37",
-    "web3-utils": "^1.0.0-beta.37"
+    "web3-utils": "1.0.0-beta.37"
   },
   "devDependencies": {
     "async": "2.6.1",
@@ -46,9 +46,9 @@
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "browserify": "^14.0.0",
-    "chai": "4.1.2",
-    "debug": "^3.1.0",
-    "ganache-core": "2.3.0",
+    "chai": "4.2.0",
+    "debug": "^4.1.0",
+    "ganache-core": "^2.3.1",
     "lodash": "4.17.10",
     "mocha": "5.2.0",
     "require-nocache": "^1.0.0",

@@ -14,7 +14,7 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "chai": "4.1.2",
+    "chai": "4.2.0",
     "ganache-core": "^2.3.1",
     "mocha": "5.2.0",
     "require-nocache": "^1.0.0",
@@ -25,11 +25,11 @@
   },
   "dependencies": {
     "async": "2.6.1",
-    "debug": "^3.1.0",
+    "debug": "^4.1.0",
     "fs-extra": "6.0.1",
     "lodash": "4.17.10",
     "truffle-contract": "^4.0.0-beta.2",
-    "truffle-contract-schema": "^3.0.0-beta.2",
+    "truffle-contract-schema": "3.0.0-beta.2",
     "truffle-expect": "^0.0.5-beta.0"
   },
   "publishConfig": {

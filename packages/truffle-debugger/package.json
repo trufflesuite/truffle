@@ -22,7 +22,7 @@
   "license": "MIT",
   "dependencies": {
     "bn.js": "^4.11.8",
-    "debug": "^3.1.0",
+    "debug": "^4.1.0",
     "fast-levenshtein": "^2.0.6",
     "json-pointer": "^0.6.0",
     "redux": "^3.7.2",
@@ -46,7 +46,7 @@
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.6.1",
     "babel-runtime": "^6.26.0",
-    "chai": "^4.1.2",
+    "chai": "4.2.0",
     "change-case": "^3.0.2",
     "esdoc": "^1.0.4",
     "esdoc-ecmascript-proposal-plugin": "^1.0.0",

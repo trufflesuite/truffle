@@ -14,7 +14,7 @@
     "url": "https://github.com/benjamincburns/truffle-sawtooth-seth-provider/issues"
   },
   "dependencies": {
-    "debug": "^4.0.1",
+    "debug": "^4.1.0",
     "web3-provider-engine": "14.0.6"
   },
   "gitHead": "f9f25a2d491394ac3df1bab56f9c743d871a1059"
