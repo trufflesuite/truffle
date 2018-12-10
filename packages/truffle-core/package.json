@@ -52,7 +52,7 @@
     "truffle-solidity-utils": "^1.2.0-beta.0",
     "truffle-workflow-compile": "^2.0.0-beta.2",
     "universal-analytics": "^0.4.17",
-    "web3": "github:trufflesuite/web3.js#1.0",
+    "web3": "^1.0.0-beta.37",
     "yargs": "^8.0.2"
   },
   "bin": {
