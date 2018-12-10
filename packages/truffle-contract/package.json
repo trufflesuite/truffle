@@ -47,7 +47,7 @@
     "babel-preset-env": "^1.6.1",
     "browserify": "^14.0.0",
     "chai": "4.1.2",
-    "debug": "^3.1.0",
+    "debug": "^4.1.0",
     "ganache-core": "2.3.0",
     "lodash": "4.17.10",
     "mocha": "5.2.0",

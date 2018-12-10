@@ -22,7 +22,7 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "dependencies": {
-    "debug": "^3.1.0",
+    "debug": "^4.1.0",
     "glob": "^7.1.2",
     "truffle-contract-schema": "3.0.0-beta.2",
     "truffle-expect": "^0.0.5-beta.0",
