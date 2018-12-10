@@ -1,11 +1,12 @@
 var Mocha = require("mocha");
+var async = require("async");
 var chai = require("chai");
 var path = require("path");
 var Web3 = require("web3");
 var Config = require("truffle-config");
 var Contracts = require("truffle-workflow-compile");
 var Resolver = require("truffle-resolver");
-var TestRunner = require('./testing/testrunner');
+var TestRunner = require("./testing/testrunner");
 var TestResolver = require("./testing/testresolver");
 var TestSource = require("./testing/testsource");
 var SolidityTest = require("./testing/soliditytest");
@@ -26,7 +27,7 @@ var Test = {
         "contracts_build_directory",
         "migrations_directory",
         "network",
-        "network_id",
+        "network_id"
       ]);
 
       return Config.default().merge(config);
@@ -35,10 +36,7 @@ var Test = {
     var rootConfig = migrationConfigs[migrationConfigs.length - 1];
     var otherConfigs = migrationConfigs.slice(0, -1);
 
-    expect.options(rootConfig, [
-      "test_files",
-      "provider",
-    ]);
+    expect.options(rootConfig, ["test_files", "provider"]);
 
     rootConfig.test_files = rootConfig.test_files.map(function(test_file) {
       return path.resolve(test_file);
@@ -88,60 +86,89 @@ var Test = {
     var testContracts = [];
     var accounts = [];
     var runner;
-    var test_resolver;
 
-    web3.eth.getAccounts().then(function(accs) {
-      accounts = accs;
+    web3.eth
+      .getAccounts()
+      .then(function(accs) {
+        accounts = accs;
 
-      if (!rootConfig.from) {
-        rootConfig.from = accounts[0];
-      }
-
-      var test_source = new TestSource(rootConfig);
-
-      migrationConfigs.forEach(function(config) {
-        if (!config.resolver) {
-          config.resolver = new Resolver(config);
+        if (!rootConfig.from) {
+          rootConfig.from = accounts[0];
         }
 
-        if(config === rootConfig)
-          config.test_resolver = new TestResolver(config.resolver, test_source, config.contracts_build_directory);
-        else
-          config.test_resolver = new Resolver(config.with({
-            node_modules_directory: path.join(rootConfig.contracts_build_directory, "node_modules")
-          }));
-        config.test_resolver.cache_on = false;
-      });
+        var test_source = new TestSource(rootConfig);
 
-      return self.compileContractsWithTestFilesIfNeeded(sol_tests, rootConfig, otherConfigs);
-    }).then(function(paths) {
-      console.log('paths --> ' + paths)
-      dependency_paths = paths;
+        migrationConfigs.forEach(function(config) {
+          if (!config.resolver) {
+            config.resolver = new Resolver(config);
+          }
 
-      testContracts = sol_tests.map(function(test_file_path) {
-        var built_name = "./" + path.basename(test_file_path);
-        return rootConfig.test_resolver.require(built_name);
-      });
+          if (config === rootConfig)
+            config.test_resolver = new TestResolver(
+              config.resolver,
+              test_source,
+              config.contracts_build_directory
+            );
+          else
+            config.test_resolver = new Resolver(
+              config.with({
+                node_modules_directory: path.join(
+                  rootConfig.contracts_build_directory,
+                  "node_modules"
+                )
+              })
+            );
+          config.test_resolver.cache_on = false;
+        });
 
-      runner = new TestRunner(rootConfig);
+        return self.compileContractsWithTestFilesIfNeeded(
+          sol_tests,
+          rootConfig,
+          otherConfigs
+        );
+      })
+      .then(function(paths) {
+        console.log("paths --> " + paths);
+        dependency_paths = paths;
 
-      return self.performInitialDeploy(migrationConfigs);
-    }).then(function() {
-      return self.defineSolidityTests(mocha, testContracts, dependency_paths, runner);
-    }).then(function() {
-      return self.setJSTestGlobals(web3, accounts, rootConfig.test_resolver, runner);
-    }).then(function() {
-      // Finally, run mocha.
-      process.on('unhandledRejection', function(reason, p) {
-        throw reason;
-      });
+        testContracts = sol_tests.map(function(test_file_path) {
+          var built_name = "./" + path.basename(test_file_path);
+          return rootConfig.test_resolver.require(built_name);
+        });
 
-      mocha.run(function(failures) {
-        rootConfig.logger.warn = warn;
+        runner = new TestRunner(rootConfig);
 
-        callback(failures);
-      });
-    }).catch(callback);
+        return self.performInitialDeploy(migrationConfigs);
+      })
+      .then(function() {
+        return self.defineSolidityTests(
+          mocha,
+          testContracts,
+          dependency_paths,
+          runner
+        );
+      })
+      .then(function() {
+        return self.setJSTestGlobals(
+          web3,
+          accounts,
+          rootConfig.test_resolver,
+          runner
+        );
+      })
+      .then(function() {
+        // Finally, run mocha.
+        process.on("unhandledRejection", function(reason) {
+          throw reason;
+        });
+
+        mocha.run(function(failures) {
+          rootConfig.logger.warn = warn;
+
+          callback(failures);
+        });
+      })
+      .catch(callback);
   },
 
   createMocha: function(config) {
@@ -163,7 +190,7 @@ var Test = {
     return mocha;
   },
 
-  getAccounts: function(web3, config) {
+  getAccounts: function(web3) {
     return new Promise(function(accept, reject) {
       web3.eth.getAccounts(function(err, accs) {
         if (err) return reject(err);
@@ -172,49 +199,70 @@ var Test = {
     });
   },
 
-  compileContractsWithTestFilesIfNeeded: function(solidity_test_files, rootConfig, otherConfigs) {
+  compileContractsWithTestFilesIfNeeded: function(
+    solidity_test_files,
+    rootConfig,
+    otherConfigs
+  ) {
     return new Promise(function(accept, reject) {
-      async.eachSeries(otherConfigs, function(config, callback) {
-        Contracts.compile(config, callback);
-      }, function(err) {
-        if (err) return reject(err);
-
-        Profiler.updated(rootConfig.with({
-          resolver: rootConfig.test_resolver
-        }), function(err, updated) {
+      async.eachSeries(
+        otherConfigs,
+        function(config, callback) {
+          Contracts.compile(config, callback);
+        },
+        function(err) {
           if (err) return reject(err);
 
-          updated = updated || [];
+          Profiler.updated(
+            rootConfig.with({
+              resolver: rootConfig.test_resolver
+            }),
+            function(err, updated) {
+              if (err) return reject(err);
 
-          // Compile project contracts and test contracts
-          Contracts.compile(rootConfig.with({
-            all: rootConfig.compileAll === true,
-            files: updated.concat(solidity_test_files),
-            resolver: rootConfig.test_resolver,
-            quiet: false,
-            quietWrite: true
-          }), function(err, result) {
-            if (err) return reject(err);
-            const paths = result.outputs.solc;
-            accept(paths);
-          });
-        });
-      });
+              updated = updated || [];
+
+              // Compile project contracts and test contracts
+              Contracts.compile(
+                rootConfig.with({
+                  all: rootConfig.compileAll === true,
+                  files: updated.concat(solidity_test_files),
+                  resolver: rootConfig.test_resolver,
+                  quiet: false,
+                  quietWrite: true
+                }),
+                function(err, result) {
+                  if (err) return reject(err);
+                  const paths = result.outputs.solc;
+                  accept(paths);
+                }
+              );
+            }
+          );
+        }
+      );
     });
   },
 
   performInitialDeploy: function(migrationConfigs) {
     return new Promise(function(accept, reject) {
-      async.eachSeries(migrationConfigs, function(config, callback) {
-        Migrate.run(config.with({
-          reset: true,
-          resolver: config.test_resolver,
-          quiet: true
-        }), callback);
-      }, function(err) {
-        if (err) return reject(err);
-        accept();
-      });
+      async.eachSeries(
+        migrationConfigs,
+        function(config, callback) {
+          Migrate.run(
+            config.with({
+              reset: true,
+              resolver: config.test_resolver,
+              quiet: true
+            }),
+            callback
+          );
+        },
+        function(err) {
+          if (err) return reject(err);
+          accept();
+        }
+      );
     });
   },
 
@@ -229,7 +277,7 @@ var Test = {
   },
 
   setJSTestGlobals: function(web3, accounts, test_resolver, runner) {
-    return new Promise(function(accept, reject) {
+    return new Promise(function(accept) {
       global.web3 = web3;
       global.assert = chai.assert;
       global.expect = chai.expect;
@@ -259,15 +307,21 @@ var Test = {
       };
 
       global.contract = function(name, tests) {
-        Mocha.describe("Contract: " + name, function() { template.bind(this, tests)(); });
+        Mocha.describe("Contract: " + name, function() {
+          template.bind(this, tests)();
+        });
       };
 
-      global.contract.only = function(name, tests){
-        Mocha.describe.only("Contract: " + name, function() { template.bind(this, tests)(); });
+      global.contract.only = function(name, tests) {
+        Mocha.describe.only("Contract: " + name, function() {
+          template.bind(this, tests)();
+        });
       };
 
-      global.contract.skip = function(name, tests){
-        Mocha.describe.skip("Contract: " + name, function() { template.bind(this, tests)(); });
+      global.contract.skip = function(name, tests) {
+        Mocha.describe.skip("Contract: " + name, function() {
+          template.bind(this, tests)();
+        });
       };
 
       accept();
