@@ -26,7 +26,7 @@ const command = {
     const customCommand = options._[0];
 
     if (config.plugins) {
-      let pluginConfigs = Plugin.load(config, done);
+      let pluginConfigs = Plugin.load(config);
       Run.run(pluginConfigs, customCommand, config, done);
     } else {
       console.error(
