@@ -32,7 +32,7 @@
     "ethereumjs-util": "^5.2.0",
     "ethjs-abi": "0.1.8",
     "truffle-blockchain-utils": "^0.0.6-beta.1",
-    "truffle-contract-schema": "^3.0.0-beta.2",
+    "truffle-contract-schema": "3.0.0-beta.2",
     "truffle-error": "^0.0.3",
     "uglify-es": "^3.3.9",
     "web3": "^1.0.0-beta.37",
