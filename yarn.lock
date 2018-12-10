@@ -5329,40 +5329,7 @@ functional-red-black-tree@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/functional-red-black-tree/-/functional-red-black-tree-1.0.1.tgz#1b0ab3bd553b2a0d6399d29c0e3ea0b252078327"
 
-ganache-core@2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/ganache-core/-/ganache-core-2.3.0.tgz#f8a58e9bbd75d320580c4eebb12edf1ec30ba324"
-  integrity sha512-euG3kEIQrBLctMGmD/43JhvcK6/TMZzmf3qO4uBFIM8pVc/7P6tY63j094uAhjlx3VqxCawDK41LlJTfQagPkg==
-  dependencies:
-    abstract-leveldown "3.0.0"
-    async "2.6.1"
-    bip39 "2.5.0"
-    bn.js "4.11.8"
-    cachedown "1.0.0"
-    clone "2.1.2"
-    debug "3.1.0"
-    encoding-down "5.0.4"
-    eth-sig-util "2.0.2"
-    ethereumjs-abi "0.6.5"
-    ethereumjs-account "2.0.5"
-    ethereumjs-block "1.2.2"
-    ethereumjs-tx "1.3.7"
-    ethereumjs-util "5.2.0"
-    ethereumjs-vm "2.4.0"
-    heap "0.2.6"
-    level-sublevel "6.6.4"
-    levelup "3.1.1"
-    lodash "4.17.10"
-    merkle-patricia-tree "2.3.1"
-    seedrandom "2.4.4"
-    tmp "0.0.33"
-    web3-provider-engine "14.1.0"
-    websocket "1.0.26"
-  optionalDependencies:
-    ethereumjs-wallet "0.6.2"
-    web3 "1.0.0-beta.35"
-
-ganache-core@^2.3.0, ganache-core@^2.3.1:
+ganache-core@^2.3.1:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/ganache-core/-/ganache-core-2.3.1.tgz#c22a22edfec9c990e530c7a9736dbf09599b99bb"
   integrity sha512-I4t4P+LYUZRnGbxDseqSa5vIJ8C5e35vw5Fr7f2iMMN6jmO5TVjWWgNib60G2iL+XTbYUFmou040hHxrTaNtnA==
