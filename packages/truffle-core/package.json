@@ -35,7 +35,7 @@
     "truffle-artifactor": "^4.0.0-beta.2",
     "truffle-box": "^1.0.8-beta.2",
     "truffle-compile": "^4.0.0-beta.2",
-    "truffle-config": "^1.1.0-beta.2",
+    "truffle-config": "^1.1.0-next.1",
     "truffle-contract": "^4.0.0-beta.2",
     "truffle-contract-sources": "^0.1.0-beta.2",
     "truffle-debug-utils": "^1.0.7-beta.1",
