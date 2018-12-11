@@ -1,10 +1,12 @@
 const { resolve, join } = require("path");
 const { IgnorePlugin } = require("webpack");
+const path = require("path");
 
 const moduleRoot = resolve(__dirname, "..");
 const outputPath = join(moduleRoot, "dist");
 
 module.exports = {
+  mode: "production",
   entry: join(moduleRoot, "src", "index.js"),
   target: "node",
   devtool: "source-map",
@@ -15,7 +17,7 @@ module.exports = {
     libraryTarget: "umd",
     umdNamedDefine: true
   },
-  externals: ["fs"],
+  externals: ["fs", "bindings", "any-promise"],
   resolve: {
     alias: {
       // eth-block-tracker is es6 but automatically builds an es5 version for us on install. thanks eth-block-tracker!
@@ -25,7 +27,10 @@ module.exports = {
       "scrypt": "js-scrypt",
 
       // replace native `secp256k1` with pure js `elliptic.js`
-      "secp256k1": "secp256k1/elliptic.js"
+      "secp256k1": "secp256k1/elliptic.js",
+
+      // fix websocket require path
+      "websocket": path.resolve(__dirname, "../")
     }
   },
   plugins: [
