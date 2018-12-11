@@ -41,7 +41,6 @@ function HDWalletProvider(
       }
     }
   } else {
-    this.mnemonic = mnemonic;
     this.hdwallet = hdkey.fromMasterSeed(bip39.mnemonicToSeed(mnemonic));
     this.wallet_hdpath = wallet_hdpath;
     this.wallets = {};
