@@ -13,21 +13,50 @@ const info = () => {
     bundle: bundleVersion,
     solc: solcpkg.version
   };
-}
+};
 
-const log = (optionalLogger) => {
-  const logger = optionalLogger || console;
-
-  const versionInformation = info();
-
-  const bundle = versionInformation.bundle ? `v${versionInformation.bundle}` : "(unbundled)";
-
+const logTruffle = (logger = console, versionInformation) => {
+  const bundle = versionInformation.bundle
+    ? `v${versionInformation.bundle}`
+    : "(unbundled)";
   logger.log(`Truffle ${bundle} (core: ${versionInformation.core})`);
-  logger.log(`Solidity v${versionInformation.solc} (solc-js)`);
+};
+
+const logNode = (logger = console) => {
   logger.log(`Node ${process.version}`);
-}
+};
+
+const logSolidity = (logger = console, versionInformation, config = {}) => {
+  let solcVersion;
+  if (
+    config.compilers &&
+    config.compilers.solc &&
+    config.compilers.solc.version
+  ) {
+    solcVersion = config.compilers.solc.version;
+    logger.log(`Solidity - ${solcVersion} (solc-js)`);
+  } else {
+    const versionInformation = info();
+    solcVersion = versionInformation.solc;
+    logger.log(`Solidity v${solcVersion} (solc-js)`);
+  }
+};
+
+const logAll = (logger = console, config) => {
+  const versionInformation = info();
+  logTruffle(logger, versionInformation);
+  logSolidity(logger, versionInformation, config);
+  logNode(logger);
+};
+
+const logTruffleAndNode = (logger = console) => {
+  const versionInformation = info();
+  logTruffle(logger, versionInformation);
+  logNode(logger);
+};
 
 module.exports = {
-  log,
+  logAll,
   info,
+  logTruffleAndNode
 };

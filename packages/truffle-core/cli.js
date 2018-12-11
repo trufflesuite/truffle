@@ -64,7 +64,7 @@ command.run(inputArguments, options, function(err) {
             : "(unbundled) " + versionInfo.core
         });
         console.log(err.message);
-        version.log(options.logger);
+        version.logTruffleAndNode(options.logger);
       } else if (typeof err == "number") {
         analytics.send({
           exception: "Numbered Error - " + err,
@@ -84,7 +84,7 @@ command.run(inputArguments, options, function(err) {
         });
         // Bubble up all other unexpected errors.
         console.log(err.stack || err.message || err.toString());
-        version.log(options.logger);
+        version.logTruffleAndNode(options.logger);
       }
     }
     process.exit(1);
