@@ -9,7 +9,9 @@ const command = {
   run: function(options, done) {
     const version = require("../version");
     const { logger } = options;
-    version.log(logger);
+    const Config = require("truffle-config");
+    const config = Config.detect(options);
+    version.logAll(logger, config);
     done();
   }
 };
