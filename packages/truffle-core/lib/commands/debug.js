@@ -394,6 +394,7 @@ var command = {
                 return;
               }
               session.removeAllBreakpoints();
+              config.logger.log("Removed all breakpoints.\n");
               return;
             }
 
