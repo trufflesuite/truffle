@@ -5,6 +5,7 @@ const moduleRoot = resolve(__dirname, "..");
 const outputPath = join(moduleRoot, "dist");
 
 module.exports = {
+  mode: "production",
   entry: join(moduleRoot, "src", "index.js"),
   target: "node",
   devtool: "source-map",
