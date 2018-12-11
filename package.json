@@ -15,7 +15,7 @@
   "devDependencies": {
     "coveralls": "^3.0.2",
     "eslint": "^5.7.0",
-    "husky": "^1.1.2",
+    "husky": "^1.2.0",
     "lerna": "^3.4.3",
     "lint-staged": "^7.3.0",
     "nyc": "^13.0.1",
