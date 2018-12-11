@@ -54,9 +54,12 @@ const Run = {
   },
 
   // executes command or throws user helpful error
-  run(pluginConfigs, customCommand, config) {
-    let runCommand = this.initializeCommand(pluginConfigs, customCommand);
-    runCommand(config);
+  run(pluginConfigs, customCommand, config, done) {
+    const runCommand = this.initializeCommand(pluginConfigs, customCommand);
+    const commandResult = runCommand(config, done);
+    if (commandResult && typeof commandResult.then === "function") {
+      commandResult.then(() => done()).catch(err => done(err));
+    }
   }
 };
 

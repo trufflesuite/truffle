@@ -126,7 +126,7 @@ describe("truffle run", () => {
             assert(output.includes("Running truffle-mock!"));
             done();
           });
-        }).timeout(10000);
+        }).timeout(20000);
       });
     });
   }).timeout(10000);
