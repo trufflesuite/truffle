@@ -1,5 +1,9 @@
 const assert = require("assert");
 const unbox = require("../lib/commands/unbox");
+const Config = require("truffle-config");
+const sinon = require("sinon");
+const temp = require("temp").track();
+let tempDir, mockConfig;
 
 describe("commands/unbox.js", () => {
   const invalidBoxFormats = [
@@ -43,6 +47,18 @@ describe("commands/unbox.js", () => {
   ];
 
   describe("run", () => {
+    beforeEach(() => {
+      tempDir = temp.mkdirSync();
+      mockConfig = {
+        logger: { log: () => {} },
+        working_directory: tempDir
+      };
+      sinon.stub(Config, "default").returns({ with: () => mockConfig });
+    });
+    afterEach(() => {
+      Config.default.restore();
+    });
+
     describe("Error handling", () => {
       it("throws when passed an invalid box format", () => {
         invalidBoxFormats.forEach(val => {
@@ -69,18 +85,30 @@ describe("commands/unbox.js", () => {
       });
     });
 
-    it("runs when passed valid box input", done => {
-      validBoxInput.forEach(val => {
-        unbox.run({ _: [`${val}`], force: true }, done => done);
+    describe("successful unboxes", () => {
+      it("runs when passed valid box input", done => {
+        let promises = [];
+        validBoxInput.forEach(val => {
+          promises.push(
+            new Promise(resolve => {
+              unbox.run({ _: [`${val}`], force: true }, () => resolve());
+            })
+          );
+        });
+        Promise.all(promises).then(() => done());
       });
-      done();
-    });
 
-    it("runs when passed a relative unbox path", done => {
-      relativePaths.forEach(path => {
-        unbox.run({ _: [`${path}`], force: true }, done => done);
+      it("runs when passed a relative unbox path", done => {
+        let promises = [];
+        relativePaths.forEach(path => {
+          promises.push(
+            new Promise(resolve => {
+              unbox.run({ _: [`${path}`], force: true }, () => resolve());
+            })
+          );
+        });
+        Promise.all(promises).then(() => done());
       });
-      done();
     });
   });
 });
