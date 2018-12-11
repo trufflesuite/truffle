@@ -58,7 +58,7 @@ const Run = {
     const runCommand = this.initializeCommand(pluginConfigs, customCommand);
     const commandResult = runCommand(config, done);
     if (commandResult && typeof commandResult.then === "function") {
-      commandResult.then(() => done());
+      commandResult.then(() => done()).catch(err => done(err));
     }
   }
 };
