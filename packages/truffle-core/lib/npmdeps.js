@@ -2,11 +2,13 @@ var fs = require("fs");
 var path = require("path");
 var Config = require("truffle-config");
 var _ = require("lodash");
-var toposort = require('toposort');
+var toposort = require("toposort");
 
 var NPMDependencies = {
   detect: function(rootConfig, options) {
     var logger = rootConfig.logger;
+
+    if (!rootConfig.migrateDependencies) return [rootConfig];
 
     var visitedPackages = {};
     var allDependencies = [];
@@ -34,7 +36,7 @@ var NPMDependencies = {
         // If package is a Truffle project, then the Truffle config
         // will be found in the package root.
         // Otherwise, skip this package.
-        if (path.relative(pkgRoot, config.working_directory) !== '') {
+        if (path.relative(pkgRoot, config.working_directory) !== "") {
           return;
         }
 
@@ -51,17 +53,17 @@ var NPMDependencies = {
 
       try {
         var pkgJsonStr = fs.readFileSync(pkgJsonPath);
-      } catch(e) {
-        if(pkgName !== ".")
-          logger.log(pkgJsonPath + ' could not be read: ' + e);
+      } catch (e) {
+        if (pkgName !== ".")
+          logger.log(pkgJsonPath + " could not be read: " + e);
         return;
       }
 
       try {
         var pkgJson = JSON.parse(pkgJsonStr);
-      } catch(e) {
+      } catch (e) {
         if (e instanceof SyntaxError) {
-          logger.log(pkgJsonPath + ' not valid JSON');
+          logger.log(pkgJsonPath + " not valid JSON");
           return;
         }
         throw e;
@@ -74,7 +76,8 @@ var NPMDependencies = {
 
     getNPMDependenciesOf(".");
 
-    var migrationSequence = allDependencies.length > 0 ? toposort(allDependencies) : ["."];
+    var migrationSequence =
+      allDependencies.length > 0 ? toposort(allDependencies) : ["."];
     var migrationConfigs = migrationSequence.map(function(pkgName) {
       var config = visitedPackages[pkgName];
       if (!(config instanceof Config)) {
