@@ -60,16 +60,14 @@ const Environment = {
 
     async function detectNetworkId() {
       const providerNetworkId = await web3.eth.net.getId();
-      if (network_id != "*") {
+      if (network_id !== "*") {
         // Ensure the network id matches the one in the config for safety
-        if (providerNetworkId !== network_id) {
-          const error = {
-            message:
-              `The network id specified in the truffle config ` +
-              `(${network_id}) does not match the one returned by the network ` +
-              `(${providerNetworkId}).  Ensure that both the network and the ` +
-              `provider are properly configured.`
-          };
+        if (providerNetworkId.toString() !== network_id.toString()) {
+          const error =
+            `The network id specified in the truffle config ` +
+            `(${network_id}) does not match the one returned by the network ` +
+            `(${providerNetworkId}).  Ensure that both the network and the ` +
+            `provider are properly configured.`;
           throw new Error(error);
         }
         return network_id;
