@@ -151,7 +151,9 @@ const getMostRecentVersionOfCompiler = versions => {
     const mostRecentVersionMatch = mostRecentVersionFileName.match(
       /v\d+\.\d+\.\d+.*/
     );
-    if (semver.gtr(match[0], mostRecentVersionMatch[0])) return fileName;
+    return semver.gtr(match[0], mostRecentVersionMatch[0])
+      ? fileName
+      : mostRecentVersionFileName;
   }, "-v0.0.0+commit");
 };
 
