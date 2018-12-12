@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "gitdown": "^2.5.5",
+    "gulp": "^4.0.0"
+  }
+}
