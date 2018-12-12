@@ -14,11 +14,6 @@ some features may benefit from a gif
 #### external compilers
 
 
-### Web3.js 1.0
-
-(we should break this up into actual features)
-
-features enabled by web3 upgrade should pay credit
 
 
 ### Interacting with Contracts
@@ -86,7 +81,10 @@ similarity between truffle-contract / web3.eth.Contract
 
 ### truffle run
 
-
+## Dependency Updates
+### Web3.js 1.0
+### Solidity v0.5.0
+### ganache-core v2.3.1
 
 
 
