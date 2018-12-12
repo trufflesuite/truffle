@@ -62,7 +62,7 @@ const Environment = {
       const providerNetworkId = await web3.eth.net.getId();
       if (network_id !== "*") {
         // Ensure the network id matches the one in the config for safety
-        if (JSON.stringify(providerNetworkId) !== JSON.stringify(network_id)) {
+        if (providerNetworkId.toString() !== network_id.toString()) {
           const error =
             `The network id specified in the truffle config ` +
             `(${network_id}) does not match the one returned by the network ` +
