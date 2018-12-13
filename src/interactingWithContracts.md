@@ -4,9 +4,11 @@ Thanks to the excellent changes in Web3.js 1.0,
 we've implemented the following features.
 
 #### EventEmitter / Promise interface
+Contract objects now have an EventEmitter interface and return a promise.  You can now interact with them very much like you would interact with `web3.eth.Contract` objects!
 
-might be useful to inform the user of interface
-similarity between truffle-contract / web3.eth.Contract
+Events also now have an EventEmitter interface.
+
+See the [usage section](https://truffleframework.com/docs/truffle/reference/contract-abstractions#usage) of the Truffle contract abstraction docs for some examples of working with contract objects and events!
 
 #### REVERT Reason strings
 
