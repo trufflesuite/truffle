@@ -26,9 +26,10 @@ const logNode = (logger = console) => {
   logger.log(`Node ${process.version}`);
 };
 
-const logSolidity = (logger = console, versionInformation, config = {}) => {
+const logSolidity = (logger = console, versionInformation, config) => {
   let solcVersion;
   if (
+    config &&
     config.compilers &&
     config.compilers.solc &&
     config.compilers.solc.version
