@@ -5,7 +5,7 @@ Configuration of external compilers is also now supported!
 #### solc
 To configure solc, insert a `compilers.solc` property in the truffle config.  For example, suppose you want to use version `0.4.22`.
 
-In `truffle-config.js` you would add a `compilers.solc.version` property as follows:
+In the truffle config you would add a `compilers.solc.version` property as follows:
 ```
 module.exports = {
   networks: {
