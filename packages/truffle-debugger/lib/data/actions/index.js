@@ -57,12 +57,12 @@ export function learnAddress(dummyAddress, address) {
   };
 }
 
-export const COMPUTE_OFFSETS = "COMPUTE_OFFSETS";
-export function computeOffsets(userDefinedTypes, variables)
+export const COMPUTE_ALLOCATIONS = "COMPUTE_ALLOCATIONS";
+export function computeAllocations(types, variables)
 {
   return {
     type: COMPUTE_OFFSETS,
-    userDefinedTypes,
+    types,
     refs
   };
 }

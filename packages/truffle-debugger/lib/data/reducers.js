@@ -89,7 +89,7 @@ function allocations(state = {}, action) {
   switch (action.type) {
     case COMPUTE_ALLOCATIONS:
       let allocations = {};
-      for(id of action.userDefinedTypes) {
+      for(id of action.types) {
         let variables = action.refs[id].variables;
         let allocation = Allocation.allocateDeclarations(variables, refs,
           allocations);

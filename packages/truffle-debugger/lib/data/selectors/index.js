@@ -146,14 +146,46 @@ const data = createSelectorTree({
     userDefinedTypes: {
       /*
        * data.info.userDefinedTypes (selector)
+       * Note: Just contains the IDs of the types, not the types themselves!
        */
       _: createLeaf(["/state"], state => state.info.userDefinedTypes),
 
       /*
-       * data.info.userDefinedTypes.withVariables
+       * data.info.userDefinedTypes.containers (namespace)
        */
-      withVariables: createLeaf(["./_"], (types) =>
-        types.filter((type) => type.variables !== undefined))
+      containers: {
+
+        /*
+         * data.info.userDefinedTypes.containers (selector)
+         * restrict to the user defined types that contain variables, i.e.,
+         * structs and contracts
+         */
+        _: createLeaf(["./_", "/info/scopes"], (typeIds, scopes) =>
+          typeIds.filter((id) => scopes[id].variables !== undefined)),
+
+        /*
+         * data.info.userDefinedTypes.containers.ordered
+         * orders the variables to always put children before parents
+         */
+        ordered: createLeaf(["./_", "/info/scopes"],
+          (types, scopes) => {
+            let typesLeft = types;
+            let order = [];
+            while(typesLeft.length > 0)
+            {
+              let children = [].concat(...typesLeft
+                .map(id => scopes[id].variables));
+              let notChildren = typesLeft.filter(id => !children.includes(id));
+              //because we're processing things in order of parents first, then
+              //children, we're going to *prepend* the elements we found, so
+              //that ultimately the children end up first
+              order = notChildren.concat(order);
+              typesLeft = typesLeft.filter(id => !notChildren.includes(id));
+            }
+            return order();
+          }
+        )
+      }
     }
 
     /**

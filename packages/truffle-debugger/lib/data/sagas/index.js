@@ -237,9 +237,9 @@ function makeAssignment(idObj, ref) {
 }
 
 export function* computeOffsets() {
-  let userDefinedTypes = yield select(data.info.userDefinedTypes.withVariables);
+  let types = yield select(data.info.userDefinedTypes.containers.ordered);
   let refs = yield select(data.views.scopes.inlined);
-  yield put(actions.computeOffsets(userDefinedTypes, refs));
+  yield put(actions.computeOffsets(types, refs));
 }
 
 export function* saga() {
