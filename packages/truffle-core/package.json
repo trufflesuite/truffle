@@ -45,6 +45,7 @@
     "truffle-expect": "^0.0.5-beta.0",
     "truffle-init": "^1.0.7",
     "truffle-migrate": "^3.0.0-beta.2",
+    "truffle-migrate-legacy": "^2.0.9",
     "truffle-provider": "^0.1.0-beta.2",
     "truffle-provisioner": "^0.1.1",
     "truffle-require": "^2.0.0-beta.2",
