@@ -23,6 +23,20 @@ await example.setValue(5); // The transaction will retry for 1,000 blocks
 ```
 
 #### websockets
+Truffle now supports a websockets option for networks.  You will need to enable this if you want to use the `confirmations` listener or if you want to hear Events using `.on` or `.once`.
+In the Truffle config...
+```javascript
+module.exports = {
+  networks: {
+    development: {
+      host: "127.0.0.1",
+      port: 8545,
+      network_id: "*",
+      websockets: true
+    }
+  }
+}
+```
 
 #### Automated Fueling
 
