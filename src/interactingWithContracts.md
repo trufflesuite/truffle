@@ -39,6 +39,13 @@ module.exports = {
 ```
 
 #### Automated Fueling
+You can choose whether you want to have Truffle compute gas amounts for your transactions.  If `autoGas` is enabled then Truffle will use web3 to estimate the gas.  Then it will multiply it by a multiplier that is set with `gasMultiplier` and include that gas amount with the transaction.
+```javascript
+Example.autoGas = true;    // Defaults to true
+Example.gasMultiplier(1.5) // Defaults to 1.25
+const instance = await Example.new();
+await instance.callExpensiveMethod();
+```
 
 #### Overloaded Solidity functions
 ```javascript
@@ -63,6 +70,7 @@ To use this, you'll have to include the experimental pragma line near the top of
 
 This allows you to use complex function arguments and return values in Solidity and interact with the resulting contracts via truffle-contract's JS interface.
 
+<details>
 <summary>See example contract</summary>
 
 ```solidity
