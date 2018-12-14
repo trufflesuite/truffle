@@ -11,6 +11,7 @@ Events also now have an EventEmitter interface.
 See the [usage section](https://truffleframework.com/docs/truffle/reference/contract-abstractions#usage) of the Truffle contract abstraction docs for some examples of working with contract objects and events!
 
 #### REVERT Reason strings
+Another super useful change is support for revert reason strings!  Now if a transaction needs to be reverted, you will receive the reason string and know why.
 
 #### Confirmation / block wait timeouts config
 
