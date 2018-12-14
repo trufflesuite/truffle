@@ -1,0 +1,38 @@
+{
+  "name": "truffle-migrate-legacy",
+  "version": "2.0.9",
+  "description": "Legacy on-chain migrations management",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trufflesuite/truffle-migrate-legacy.git"
+  },
+  "keywords": [
+    "ethereum",
+    "truffle",
+    "migrations",
+    "deployment"
+  ],
+  "author": "Tim Coulter <tim.coulter@consensys.net>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle-migrate-legacy/issues"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle-migrate-legacy#readme",
+  "dependencies": {
+    "async": "2.6.1",
+    "node-dir": "0.1.17",
+    "truffle-deployer": "^2.0.7",
+    "truffle-expect": "0.0.4",
+    "truffle-require": "1.0.7",
+    "truffle-workflow-compile": "^1.0.6",
+    "web3": "0.20.6"
+  },
+  "devDependencies": {
+    "mocha": "5.2.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
