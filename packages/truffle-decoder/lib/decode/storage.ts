@@ -233,26 +233,6 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       return result;
     }
 
-    case "enum": {
-      data = await read(pointer, state, web3, contractAddress);
-      if (data == undefined) {
-        return undefined;
-      }
-
-      const numRepresentation = DecodeUtils.Conversion.toBN(data).toNumber();
-      const referenceId = definition.referencedDeclaration ||
-        (definition.typeName ? definition.typeName.referencedDeclaration : undefined);
-      const enumDeclaration = (info.referenceDeclarations)
-        ? info.referenceDeclarations[referenceId]
-        : info.scopes[referenceId].definition;
-      const decodedValue = enumDeclaration.members[numRepresentation].name;
-
-      return <EvmEnum>{
-        type: enumDeclaration.name,
-        value: enumDeclaration.name + "." + decodedValue
-      }
-    }
-
     case "mapping": {
       const result = <EvmMapping>{
         name: definition.name,

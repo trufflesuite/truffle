@@ -5,7 +5,7 @@ import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import Web3 from "web3";
 
-export default async function decodeValue(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<undefined | boolean | BN | string> {
+export default async function decodeValue(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<undefined | boolean | BN | string | EvmEnum> {
   const { state } = info;
 
   let bytes = await read(pointer, state, web3, contractAddress);
@@ -47,6 +47,19 @@ export default async function decodeValue(definition: DecodeUtils.AstDefinition,
     case "rational":
       // debug("typeIdentifier %s %o", DecodeUtils.typeIdentifier(definition), bytes);
       return DecodeUtils.Conversion.toBN(bytes);
+
+    case "enum":
+      const numRepresentation = DecodeUtils.Conversion.toBN(data).toNumber();
+      const referenceId = definition.referencedDeclaration;
+      const enumDeclaration = (info.referenceDeclarations)
+        ? info.referenceDeclarations[referenceId]
+        : info.scopes[referenceId].definition;
+      const decodedValue = enumDeclaration.members[numRepresentation].name;
+
+      return <EvmEnum>{
+        type: enumDeclaration.name,
+        value: enumDeclaration.name + "." + decodedValue
+      }
 
     default:
       // debug("Unknown value type: %s", DecodeUtils.typeIdentifier(definition));

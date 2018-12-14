@@ -25,7 +25,7 @@ function* tickSaga() {
   let { tree, id: treeId, node, pointer } = yield select(data.views.ast);
 
   let decode = yield select(data.views.decoder);
-  let offsets = yield select(data.info.offsets);
+  let allocations = yield select(data.info.allocations);
   let currentAssignments = yield select(data.proc.assignments);
   let currentDepth = yield select(data.current.functionDepth);
   let address = yield select(data.current.address); //may be undefined
@@ -89,7 +89,7 @@ function* tickSaga() {
 
     case "ContractDefinition":
 
-      let allocation = (yield select(data.info.offsets))[node.id];
+      let allocation = allocations[node.id];
 
       debug("Contract definition case");
       debug("allocation %O", allocation);
@@ -233,10 +233,10 @@ function makeAssignment(idObj, ref) {
   return { ...idObj, id, ref };
 }
 
-export function* computeOffsets() {
+export function* computeAllocations() {
   let types = yield select(data.info.userDefinedTypes.containers.ordered);
   let refs = yield select(data.views.scopes.inlined);
-  yield put(actions.computeOffsets(types, refs));
+  yield put(actions.computeAllocations(types, refs));
 }
 
 export function* saga() {
