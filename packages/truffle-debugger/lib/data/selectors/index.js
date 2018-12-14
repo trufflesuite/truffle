@@ -13,6 +13,11 @@ import solidity from "lib/solidity/selectors";
 import * as TruffleDecodeUtils from "truffle-decode-utils";
 import { forEvmState } from "truffle-decoder";
 
+function shallowClone(object) {
+  return Object.assign({}, ...Object.entries(object)
+    .map([key, value] => {[key]: value}));
+}
+
 /**
  * @private
  */
@@ -89,26 +94,43 @@ const data = createSelectorTree({
      */
     scopes: {
       /**
-       * data.views.scopes.inlined
+       * data.views.scopes.inlined (namespace)
        */
-      inlined: createLeaf(
-        ["/info/scopes", solidity.info.sources],
-
-        (scopes, sources) =>
-          Object.assign(
-            {},
-            ...Object.entries(scopes).map(([id, entry]) => ({
-              [id]: {
-                ...entry,
-
-                definition: jsonpointer.get(
-                  sources[entry.sourceId].ast,
-                  entry.pointer
-                )
-              }
+      {
+      /**
+       * data.views.scopes.inlined (selector)
+       */
+        _: createLeaf(["/info/scopes", "./noInheritance"], (scopes, inlined) =>
+          Object.assign({}, ...Object.entries(inlined)
+            .map([id, info] => {
+              let newInfo = shallowClone(info);
+              newInfo.variables = scopes[id].variables;
+              return {[id]: newInfo}
             }))
-          )
-      )
+        ),
+
+      /**
+       * data.views.scopes.inlined.noInheritance
+       */
+        noInheritance: createLeaf(
+          ["/info/scopes", solidity.info.sources],
+
+          (scopes, sources) =>
+            Object.assign(
+              {},
+              ...Object.entries(scopes).map(([id, entry]) => ({
+                [id]: {
+                  ...entry,
+
+                  definition: jsonpointer.get(
+                    sources[entry.sourceId].ast,
+                    entry.pointer
+                  )
+                }
+              }))
+            )
+        )
+      }
     },
 
     /**
@@ -136,9 +158,33 @@ const data = createSelectorTree({
    */
   info: {
     /**
-     * data.info.scopes
+     * data.info.scopes (namespace)
      */
-    scopes: createLeaf(["/state"], state => state.info.scopes.byId),
+    scopes: {
+      /**
+       * data.info.scopes (selector)
+       */
+      _: createLeaf(["./noInheritance", "/views/scopes/inlined/noInheritance"],
+        (scopes, inlined) => Object.assign({}, ...Object.entries(scopes)
+          .map(([id, scope]) => {
+            let definition = inlined[id].definition;
+            if(definition.nodeType !== "ContractDefinition") {
+              return {[id]: scope};
+            }
+            let newScope = shallowClone(scope);
+            //note that Solidity gives us the linearization in order from most
+            //derived to most base, but we want most base to most derived
+            //annoyingly, reverse is in-place, so we clone first
+            let linearizedBaseContractsFromBase =
+              shallowClone(definition.linearizedBaseContracts).reverse();
+            newScope.variables = [].concat(...linearizedBaseContractsFromBase
+              .map( (contractId) => scopes[contractId].variables ));
+            return {[id]: newScope};
+          }))
+        ),
+
+      noInheritance: createLeaf(["/state"], state => state.info.scopes.byId)
+    },
 
     /**
      * data.info.userDefinedTypes (namespace)
@@ -206,22 +252,16 @@ const data = createSelectorTree({
        */
       forDecoder: createLeaf(["./_"], (allocations) =>
         Object.assign({},
-          ...Object.entries(allocations).map([id, allocation] => {
-              return {
-                id: {members: 
-                  Object.assign({},
-                    ...Object.entries(allocation.children).
-			map([memberId, pointer] => {
-                          return {
-                            memberId: {pointer};
-                          }
-                      };
-                    )
-                  )
-                }
-              };
+          ...Object.entries(allocations).map([id, allocation] => ({
+            [id]: {members: 
+              Object.assign({},
+                ...Object.entries(allocation.children).
+                  map([memberId, pointer] => ({
+                    [memberId]: {pointer};
+                  }))
+              )
             }
-          )
+          }))
         )
       )
     }

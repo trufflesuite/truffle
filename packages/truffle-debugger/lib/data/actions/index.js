@@ -61,7 +61,7 @@ export const COMPUTE_ALLOCATIONS = "COMPUTE_ALLOCATIONS";
 export function computeAllocations(types, variables)
 {
   return {
-    type: COMPUTE_OFFSETS,
+    type: COMPUTE_ALLOCATIONS,
     types,
     refs
   };

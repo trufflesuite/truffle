@@ -78,10 +78,7 @@ function* tickSaga() {
                 { stack: top - i }
               )
             )
-            .map(assignment => {
-              return { [assignment.id]: assignment };
-              //awkward, but seems to be only way to return an object literal
-            })
+            .map(assignment => ({ [assignment.id]: assignment }));
         )
       };
       debug("Function definition case");
