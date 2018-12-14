@@ -56,3 +56,13 @@ export function learnAddress(dummyAddress, address) {
     address
   };
 }
+
+export const COMPUTE_OFFSETS = "COMPUTE_OFFSETS";
+export function computeOffsets(userDefinedTypes, variables)
+{
+  return {
+    type: COMPUTE_OFFSETS,
+    userDefinedTypes,
+    refs
+  };
+}

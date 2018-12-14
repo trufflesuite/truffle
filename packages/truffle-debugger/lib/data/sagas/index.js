@@ -25,8 +25,7 @@ function* tickSaga() {
   let { tree, id: treeId, node, pointer } = yield select(data.views.ast);
 
   let decode = yield select(data.views.decoder);
-  let scopes = yield select(data.info.scopes);
-  let definitions = yield select(data.views.scopes.inlined);
+  let offsets = yield select(data.info.offsets);
   let currentAssignments = yield select(data.proc.assignments);
   let currentDepth = yield select(data.current.functionDepth);
   let address = yield select(data.current.address); //may be undefined
@@ -92,13 +91,9 @@ function* tickSaga() {
       break;
 
     case "ContractDefinition":
-      let storageVars = scopes[node.id].variables || [];
-      debug("storage vars %o", storageVars);
 
-      let allocation = TruffleDecodeUtils.Allocation.allocateDeclarations(
-        storageVars,
-        definitions
-      );
+      let allocation = (yield select(data.info.offsets))[node.id];
+
       debug("Contract definition case");
       debug("allocation %O", allocation);
       assignments = { byId: {} };
@@ -239,6 +234,12 @@ export function* learnAddressSaga(dummyAddress, address) {
 function makeAssignment(idObj, ref) {
   let id = stableKeccak256(idObj);
   return { ...idObj, id, ref };
+}
+
+export function* computeOffsets() {
+  let userDefinedTypes = yield select(data.info.userDefinedTypes.withVariables);
+  let refs = yield select(data.views.scopes.inlined);
+  yield put(actions.computeOffsets(userDefinedTypes, refs));
 }
 
 export function* saga() {

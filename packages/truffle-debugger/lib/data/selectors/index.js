@@ -117,14 +117,17 @@ const data = createSelectorTree({
      * selector returns (ast node definition, data reference) => Promise<value>
      */
     decoder: createLeaf(
-      ["/views/scopes/inlined", "/next/state", "/proc/mappingKeys"],
+      ["/views/scopes/inlined", "/next/state", "/proc/mappingKeys",
+        "/info/allocations/forDecoder"],
 
-      (scopes, state, mappingKeys) => (definition, ref) =>
-        forEvmState(definition, ref, {
-          scopes,
-          state,
-          mappingKeys
-        })
+      (scopes, state, mappingKeys, allocations) =>
+        (definition, ref) =>
+          forEvmState(definition, ref, {
+            scopes,
+            state,
+            mappingKeys,
+            referenceVariables: allocations
+          })
     )
   },
 
@@ -135,7 +138,61 @@ const data = createSelectorTree({
     /**
      * data.info.scopes
      */
-    scopes: createLeaf(["/state"], state => state.info.scopes.byId)
+    scopes: createLeaf(["/state"], state => state.info.scopes.byId),
+
+    /**
+     * data.info.userDefinedTypes (namespace)
+     */
+    userDefinedTypes: {
+      /*
+       * data.info.userDefinedTypes (selector)
+       */
+      _: createLeaf(["/state"], state => state.info.userDefinedTypes),
+
+      /*
+       * data.info.userDefinedTypes.withVariables
+       */
+      withVariables: createLeaf(["./_"], (types) =>
+        types.filter((type) => type.variables !== undefined))
+    }
+
+    /**
+     * data.info.allocations (namespace)
+     */
+    allocations: {
+      /*
+       * data.info.allocations (selector)
+       */
+      _: createLeaf(["/state"], state => state.info.allocations),
+
+      /*
+       * data.info.allocations.forDecoder
+       * for compatibility with the decoder, the pointer to member m of struct
+       * s (where both these are AST IDs) will be given as
+       * (yield select(...))[s].members[m].pointer
+       * this just takes allocations and formats it as above
+       */
+      forDecoder: createLeaf(["./_"], (allocations) =>
+        Object.assign({},
+          ...Object.entries(allocations).map([id, allocation] => {
+              return {
+                id: {members: 
+                  Object.assign({},
+                    ...Object.entries(allocation.children).
+			map([memberId, pointer] => {
+                          return {
+                            memberId: {pointer};
+                          }
+                      };
+                    )
+                  )
+                }
+              };
+            }
+          )
+        )
+      )
+    }
   },
 
   /**

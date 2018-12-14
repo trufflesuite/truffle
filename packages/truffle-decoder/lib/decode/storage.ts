@@ -13,26 +13,6 @@ import Web3 from "web3";
 import { EvmStruct, EvmMapping, EvmEnum } from "../interface/contract-decoder";
 import clonedeep from "lodash.clonedeep";
 
-function prefixPointer(child: StoragePointer, parentSlot: Allocation.Slot): StoragePointer {
-  let result: StoragePointer = clonedeep(child);
-
-  let obj = result.storage.from.slot;
-  while (obj.path && typeof obj.path.path !== "undefined") {
-    obj = obj.path;
-  }
-
-  obj.path = clonedeep(parentSlot);
-
-  /*let obj2 = result.storage.to.slot;
-  while (typeof obj2.path !== "undefined") {
-    obj2 = obj2.path;
-  }
-
-  obj2.path = clonedeep(parentSlot);*/
-
-  return result;
-}
-
 export default async function decodeStorageReference(definition: DecodeUtils.AstDefinition, pointer: StoragePointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<any> {
   var data;
   var length;
@@ -62,8 +42,11 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
         (baseDefinition.typeName ? baseDefinition.typeName.referencedDeclaration : undefined);
 
       let baseSize: number;
-      if (typeof referenceId !== "undefined" && typeof info.referenceDeclarations !== "undefined") {
-        const referenceDeclaration: undefined | DecodeUtils.AstDefinition = info.referenceDeclarations[referenceId];
+      if (typeof referenceId !== "undefined") {
+      {
+        const referenceDeclaration: undefined | DecodeUtils.AstDefinition = (info.referenceDeclarations)
+          ? info.referenceDeclarations[referenceId]
+          : info.scopes[referenceId].definition;
         baseSize = DecodeUtils.Definition.storageSize(baseDefinition, referenceDeclaration);
       }
       else {
@@ -196,66 +179,58 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
         ? definition.typeName.referencedDeclaration
         : definition.referencedDeclaration;
 
-      // TODO: this is ugly, this should be one conformed method, will fix at some later point
-      if (typeof scopes[referencedDeclaration] !== "undefined") {
-        // debugger way
-        const variables = (scopes[referencedDeclaration] || {}).variables || [];
+      // seese's way -- now the only way!
+      // however, there is still *one* difference -- the debugger
+      // uses scopes instead of referenceDeclarations, and they work slightly
+      // differently
 
-        let slot: DecodeUtils.Allocation.Slot;
-        if (pointer.storage != undefined) {
-          slot = pointer.storage.from.slot;
-        } else {
-          slot = DecodeUtils.Allocation.normalizeSlot(DecodeUtils.Conversion.toBN(await read(pointer, state, web3, contractAddress)));
-        }
+      const type = (info.referenceDeclarations)
+        ? info.referenceDeclarations[referencedDeclaration].name
+        : info.scopes[referencedDeclaration].definition.name;
 
-        const allocation = DecodeUtils.Allocation.allocateDeclarations(variables, scopes, slot);
+      let result: EvmStruct = {
+        name: definition.name,
+        type,
+        members: {}
+      };
 
-        return Object.assign(
-          {}, ...await Promise.all(Object.entries(allocation.children).map(
-            async ([id, childPointer]) => {
-              let decoded;
-              try {
-                decoded = await decode(
-                  scopes[id].definition, { storage: childPointer }, info, web3, contractAddress
-                );
-              } catch (err) {
-                decoded = err;
-              }
+      const members: DecodeUtils.AstDefinition[] = (info.referenceDeclarations)
+        ? info.referenceDeclarations[referencedDeclaration].members,
+        : info.scopes[referencedDeclaration].definition.members;
 
-              return {
-                [childPointer.name]: decoded
-              }
-            }
-          ))
-        );
-      }
-      else {
-        // seese's way
-        let result: EvmStruct = {
-          name: definition.name,
-          type: info.referenceDeclarations[referencedDeclaration].name,
-          members: {}
+      const referenceVariable = info.referenceVariables[referencedDeclaration];
+      for (let i = 0; i < members.length; i++) {
+        const variableRef = referenceVariable.members[members[i].id];
+        const refPointer = variableRef.pointer;
+        const childRange = <Allocation.Range>{
+          from: {
+            slot: {
+              path: pointer.storage.from.slot,
+              offset: refPointer.storage.from.slot.offset.clone()
+            },
+            index: refPointer.storage.from.index
+          },
+          to: {
+            slot: {
+              path: pointer.storage.from.slot,
+              offset: refPointer.storage.to.slot.offset.clone()
+            },
+            index: refPointer.storage.to.index
+          },
         };
+        const val = await decode(
+          members[i],
+          {storage: childRange}, info, web3, contractAddress
+        );
 
-        const members: DecodeUtils.AstDefinition[] = info.referenceDeclarations[referencedDeclaration].members;
-        const referenceVariable = info.referenceVariables[referencedDeclaration];
-        for (let i = 0; i < members.length; i++) {
-          const variableRef = referenceVariable.members[members[i].id];
-          const pointer = prefixPointer(variableRef.pointer, info.variables[definition.id].pointer.storage.from.slot);
-          const val = await decode(
-            members[i],
-            pointer, info, web3, contractAddress
-          );
-
-          result.members[members[i].name] = {
-            name: members[i].name,
-            type: DecodeUtils.Definition.typeClass(members[i]),
-            value: val
-          };
-        }
-
-        return result;
+        result.members[members[i].name] = {
+          name: members[i].name,
+          type: DecodeUtils.Definition.typeClass(members[i]),
+          value: val
+        };
       }
+
+      return result;
     }
 
     case "enum": {
@@ -267,7 +242,9 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       const numRepresentation = DecodeUtils.Conversion.toBN(data).toNumber();
       const referenceId = definition.referencedDeclaration ||
         (definition.typeName ? definition.typeName.referencedDeclaration : undefined);
-      const enumDeclaration = info.referenceDeclarations[referenceId];
+      const enumDeclaration = (info.referenceDeclarations)
+        ? info.referenceDeclarations[referenceId]
+        : info.scopes[referenceId].definition;
       const decodedValue = enumDeclaration.members[numRepresentation].name;
 
       return <EvmEnum>{
