@@ -15,7 +15,7 @@ var command = {
   },
   help: {
     usage:
-      "truffle test [<test_file>] [--legacy] [--compile-all] [--network <name>] [--verbose-rpc]",
+      "truffle test [<test_file>] [--legacy] [--compile-all] [--network <name>] [--verbose-rpc] [--show-events]",
     options: [
       {
         option: "<test_file>",
@@ -43,6 +43,10 @@ var command = {
         option: "--verbose-rpc",
         description:
           "Log communication between Truffle and the Ethereum client."
+      },
+      {
+        option: "--show-events",
+        description: "Log all contract events."
       }
     ]
   },
