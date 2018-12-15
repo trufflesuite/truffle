@@ -2,11 +2,11 @@ var TestCase = require("mocha/lib/test.js");
 var Suite = require("mocha/lib/suite.js");
 var Deployer = require("truffle-migrate-legacy/node_modules/truffle-deployer");
 var find_contracts = require("truffle-contract-sources");
-var compile = require("truffle-migrate-legacy/node_modules/truffle-compile");
+var compile = require("truffle-compile-legacy");
 var series = require("async").series;
 var path = require("path");
 var SolidityCoder = require("truffle-migrate-legacy/node_modules/web3/lib/solidity/coder.js");
-//const semver = require("semver"); <--- for use when BYOC enabled
+const semver = require("semver");
 
 let SafeSend;
 
@@ -123,15 +123,11 @@ var SolidityTest = {
     find_contracts(runner.config.contracts_directory, function(err) {
       if (err) return callback(err);
 
-      // TODO (make legacy testing work w/ BYOC, compilerSupplier, solc ^0.5.0
-      SafeSend = "OldSafeSend.sol";
-      /*
-        const config = runner.config;
-        if (!config.compilers.solc.version) SafeSend = "NewSafeSend.sol";
-        else if (semver.lt(semver.coerce(config.compilers.solc.version), "0.5.0"))
+      const config = runner.config;
+      if (!config.compilers.solc.version) SafeSend = "NewSafeSend.sol";
+      else if (semver.lt(semver.coerce(config.compilers.solc.version), "0.5.0"))
         SafeSend = "OldSafeSend.sol";
-        else SafeSend = "NewSafeSend.sol";
-      */
+      else SafeSend = "NewSafeSend.sol";
 
       compile.with_dependencies(
         runner.config.with({
