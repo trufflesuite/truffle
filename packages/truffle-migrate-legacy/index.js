@@ -232,7 +232,24 @@ var Migrate = {
 
     return {
       send: function(payload) {
-        var result = provider.send(payload);
+        let result;
+        let gotResult = false;
+
+        // start promise
+        (async () => {
+          try {
+            result = await provider.send(payload);
+          } catch (error) {
+            result = error;
+          } finally {
+            gotResult = true;
+          }
+        })();
+
+        // stall
+        while (!gotResult) {
+          continue;
+        }
 
         if (payload.method == "eth_sendTransaction") {
           printTransaction(result.result);
@@ -241,7 +258,7 @@ var Migrate = {
         return result;
       },
       sendAsync: function(payload, callback) {
-        provider.sendAsync(payload, function(err, result) {
+        provider.send(payload, function(err, result) {
           if (err) return callback(err);
 
           if (payload.method == "eth_sendTransaction") {
