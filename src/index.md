@@ -47,12 +47,6 @@ features enabled by web3 upgrade should pay credit
 
 ### Configurable `truffle develop`
 
-### init / unbox
-
-#### overwrite behavior
-
-#### --force
-
-#### unbox branch/subdirectory
+{"gitdown": "include", "file": "./initUnbox.md"}
 
 ### truffle run
