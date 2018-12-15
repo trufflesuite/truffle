@@ -3,7 +3,7 @@ var chai = require("chai");
 var path = require("path");
 var Web3 = require("truffle-migrate-legacy/node_modules/web3");
 var Config = require("truffle-migrate-legacy/node_modules/truffle-config");
-var Contracts = require("truffle-migrate-legacy/node_modules/truffle-workflow-compile");
+var Contracts = require("truffle-workflow-compile-legacy");
 var Resolver = require("truffle-migrate-legacy/node_modules/truffle-resolver");
 var TestRunner = require("./testing/testrunner-legacy");
 var TestResolver = require("./testing/testresolver");
@@ -11,7 +11,7 @@ var TestSource = require("./testing/testsource-legacy");
 var SolidityTest = require("./testing/soliditytest-legacy");
 var expect = require("truffle-expect");
 var Migrate = require("truffle-migrate-legacy");
-var Profiler = require("truffle-migrate-legacy/node_modules/truffle-compile/profiler.js");
+var Profiler = require("truffle-compile-legacy/profiler.js");
 var originalrequire = require("original-require");
 
 chai.use(require("./assertions"));
@@ -198,8 +198,9 @@ var Test = {
               quiet: false,
               quietWrite: true
             }),
-            function(err, abstractions, paths) {
+            function(err, result) {
               if (err) return reject(err);
+              const paths = result.outputs.solc;
               accept(paths);
             }
           );
