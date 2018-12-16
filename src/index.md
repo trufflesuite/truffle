@@ -1,7 +1,10 @@
 # User Content
 
-{"gitdown": "contents", "maxLevel": 4, "rootId": "user-content-features"}
+{"gitdown": "include", "file": "./intro.md"}
 
+## Contents
+
+{"gitdown": "contents", "maxLevel": 4, "rootId": "user-content"}
 
 ## Features
 
