@@ -6,7 +6,7 @@
 1-3 paragraphs, 1 or maybe 2 examples per feature
 some features may benefit from a gif
 
-{"gitdown": "include", "file": "./compilerConfiguration.md"}
+{"gitdown": "include", "file": "./compiler/config.md"}
 
 ### Web3.js 1.0
 
