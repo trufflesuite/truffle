@@ -10,3 +10,10 @@
 
 {"gitdown": "include", "file": "./features/index.md"}
 
+## Changelog since 5.0.0-beta.2
+
+{"gitdown": "include", "file": "./changelog.md"}
+
+## Acknowledgments
+
+{"gitdown": "include", "file": "./acknowledgments.md"}
