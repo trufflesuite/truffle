@@ -1,52 +1,9 @@
+# User Content
 
-{"gitdown": "contents", "maxLevel": 4}
+{"gitdown": "contents", "maxLevel": 4, "rootId": "user-content-features"}
+
 
 ## Features
 
-1-3 paragraphs, 1 or maybe 2 examples per feature
-some features may benefit from a gif
+{"gitdown": "include", "file": "./features/index.md"}
 
-{"gitdown": "include", "file": "./compiler/config.md"}
-
-### Web3.js 1.0
-
-(we should break this up into actual features)
-
-features enabled by web3 upgrade should pay credit
-
-{"gitdown": "include", "file": "./interactingWithContracts.md"}
-
-### New Migrations
-
-#### Pretty Output
-
-#### Configurability
-
-#### Deployer syntax
-
-### async console
-
-### truffle help
-
-### User configuration
-
-#### Unique `truffle develop` mnemonics
-
-#### Opt-in Analytics
-
-#### More to come!
-
-
-### Debugger Enhancements
-
-#### Breakpoints
-
-#### Reset command
-
-### TypeScript tests
-
-### Configurable `truffle develop`
-
-{"gitdown": "include", "file": "./initUnbox.md"}
-
-### truffle run
