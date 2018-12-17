@@ -1,6 +1,14 @@
-You can now specify/configure compilers in the truffle config! This includes
-being able to specify a particular version or release of solc in addition to
-support for Vyper.  Configuration of external compilers is also now supported!
+Lots of great improvements to `truffle compile`! :gear:
+
+We're really excited by what we've built here, which includes:
+
+- Use your preferred Solidity version, including native and Docker builds
+- Write your contracts in Vyper
+- Hook into arbitrary compilation workflows (e.g. write contracts in Rust + `cargo`!)
+
+Keep reading to learn more. This effort is just the beginning—we have ideas
+for plenty of other potential enhancements, and we can't wait to expand on this
+foundation that Truffle v5 lays out.
 
 #### Solidity
 
