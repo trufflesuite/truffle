@@ -2,11 +2,10 @@
 There is now a different way of specifying compiler configurations.  Now you add a `compilers` property to the config.  You then specify all your configuration for compilers there.
 
 For example in the Truffle config:
-```
+```javascript
 module.exports = {
-  networks: {
-    ......
-  },
+  /* ... rest of config */
+
   compilers: {
     solc: {
       version: "0.5.1",
@@ -24,19 +23,15 @@ module.exports = {
 
 #### Using Docker or native `solc` distributions
 
-Hey, did you know? Now you can use the Solidity Docker image or a natively
-installed distribution instead of the default [solc-js](https://www.npmjs.com/package/solc).
+Truffle also supports using the Solidity Docker image or a natively installed
+`solc` compiler. Using one of these distributions can provide a >3x speed
+improvement over the default [solc-js](https://www.npmjs.com/package/solc).
 
-This can provide a >3x speed improvement!
+##### Speed Comparison
 
-Docker and native binary compilers process large contract sets faster than
-solc-js. If you're just compiling a few contracts at a time, the speedup isn't
-significant relative to the overhead of running a command (see below). The
-first time Truffle uses a Docker version there's a small delay as it caches the
-solc version string and a solcjs companion compiler. All subsequent runs should
-be at full speed.
+Using Docker or native binaries provides a significant speed improvement,
+particularly when compiling a large number of files.
 
-Times to `truffle compile` on a MacBook Air 1.8GHz, Node 8.11.1
 
 | Project              | # files | solcjs | docker | bin |
 |----------------------|---------:| ------:|--------:|-----------:|
@@ -44,6 +39,49 @@ Times to `truffle compile` on a MacBook Air 1.8GHz, Node 8.11.1
 | gnosis/pm-contracts  |      34 |  21.7s |  10.9s |     10.2s |
 | zeppelin-solidity    |     107 |  36.7s |  11.7s |     11.1s |
 
-*Note*: Truffle doesn't auto-pull Docker images right now. You'll need to `docker pull ethereum/solidity:0.5.1` yourself. Sorry for the inconvenience!
+**Figure**: Times to `truffle compile` on a MacBook Air 1.8GHz, Node 8.11.1
 
-For information on installing Solidity, see the [corresponding Solidity docs section](https://solidity.readthedocs.io/en/v0.5.1/installing-solidity.html) to learn more.
+
+<details>
+<summary>See example Docker configuration</summary>
+
+```javascript
+module.exports = {
+  /* ... */
+
+  compilers: {
+    solc: {
+      version: "0.4.25",
+      docker: true
+    }
+  }
+}
+```
+
+
+**Note**: Truffle doesn't auto-pull Docker images right now. You'll need to run
+`docker pull ethereum/solidity:0.5.1` yourself. Sorry for the inconvenience!
+
+</details>
+
+<details>
+<summary>See example native configuration</summary>
+
+
+```javascript
+module.exports = {
+  /* ... */
+
+  compilers: {
+    solc: {
+      version: "native",
+    }
+  }
+}
+```
+
+**Note** This requires `solc` to be installed and available on your PATH.
+For information on installing Solidity, see the [Installing](https://solidity.readthedocs.io/en/v0.5.1/installing-solidity.html)
+section of the Solidity docs.
+</details>
+
