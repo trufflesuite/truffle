@@ -1,5 +1,3 @@
-## 🐦 🐦  New Migrations 🐦 🐦
-
 Deploying contracts to public networks is hard ... 🙂 The topic dominates our 10 most visited GitHub issues.  On the bright side, those discussion threads are a rich trove of advice and brilliant insight from experienced Truffle users. V5 includes a rewrite of the `migrations` command that tries to integrate all their hard won knowledge into an easier to use deployment manager.
 
 #### Features
@@ -47,15 +45,4 @@ module.exports = async function(deployer) {
 ```
 **Deploying to Rinkeby...**
 
-
 ![migrate-rinkeby](https://user-images.githubusercontent.com/7332026/43867960-3499922c-9b20-11e8-8553-589308a6cd61.gif)
-
-**More migrations improvements are coming soon...**.
-+ @cag from Gnosis has written a really nice addition to the Migrations module that will automatically deploy contract dependencies you've installed with `npm` along with your own contracts.
-+ Under the hood, the `migrations` command is now completely evented and managed by a reporter module. Those hooks will be exposed so anyone can write a UI for it and hopefully you'll be plugging into ever more sophisticated deployment script managers soon. Work on the default UI to make it more interactive and colorful is ongoing.
-
-#### Pretty Output
-
-#### Configurability
-
-#### Deployer syntax
