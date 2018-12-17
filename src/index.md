@@ -6,6 +6,10 @@
 
 {"gitdown": "contents", "maxLevel": 3, "rootId": "user-content"}
 
+## Breaking Changes
+
+{"gitdown": "include", "file": "./breaking/index.md"}
+
 ## What's new in Truffle v5
 
 {"gitdown": "include", "file": "./features/index.md"}
