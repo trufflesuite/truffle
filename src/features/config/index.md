@@ -11,3 +11,4 @@ We don't use this anonymous information for anything other than to find out how 
 To toggle this feature you can run `truffle config <--enable-analytics|--disable-analytics>`.
 
 #### More to come!
+In the future we plan on providing more infrastructure to make Truffle even more configurable!  Perhaps you could configure networks that will be used by multiple projects or something similar for plugin installation.  Stay tuned!
