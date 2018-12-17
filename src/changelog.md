@@ -13,6 +13,7 @@ The changes listed below only encompass the changes since v5.0.0-beta.2.  See th
 + [#1471](https://github.com/trufflesuite/truffle/pull/1471) Restructure and fix bug with `truffle unbox`. (@eggplantzzz)
 + [#1476](https://github.com/trufflesuite/truffle/pull/1476) Suppress anonymous output parameters from `data.current.identifiers`. (@haltman-at)
 + [#1479](https://github.com/trufflesuite/truffle/pull/1479) Add an integration test for init command. (@eggplantzzz)
++ [#1480](https://github.com/trufflesuite/truffle/pull/1480) Update compiler supplier to be able to handle solc version constraints. (@eggplantzzz)
 + [#1483](https://github.com/trufflesuite/truffle/pull/1483) Unabbreviate variable name for better style! (@gnidan)
 + [#1488](https://github.com/trufflesuite/truffle/pull/1488) Correct check for `undefined` and `null` in truffle config. (@eggplantzzz)
 + [#1489](https://github.com/trufflesuite/truffle/pull/1489) Fix bug where contracts are incorrectly ignored. (@IIIIllllIIIIllllIIIIllllIIIIllllIIIIll)
@@ -20,8 +21,7 @@ The changes listed below only encompass the changes since v5.0.0-beta.2.  See th
 #### Dependency Updates
 + [#1464](https://github.com/trufflesuite/truffle/pull/1426) Add configstore dependency to truffle-config package.json. (@seesemichaelj)
 
-+ [#1480](https://github.com/trufflesuite/truffle/pull/1480)
-+ [#1481](https://github.com/trufflesuite/truffle/pull/1481)
++ [#1481](https://github.com/trufflesuite/truffle/pull/1481) Add !<...> syntax to debugger watch expressions. (@gnidan)
 + [#1493](https://github.com/trufflesuite/truffle/pull/1493)
 + [#1445](https://github.com/trufflesuite/truffle/pull/1445)
 + [#1495](https://github.com/trufflesuite/truffle/pull/1495)
