@@ -1,3 +1,9 @@
+Besides the usual `truffle-config.js` (the config file formerly known as
+`truffle.js`), Truffle now incorporates a user-level configuration. Expect to
+see more features that take advantage of this!
+
+{"gitdown": "contents", "maxLevel": 5, "rootId": "user-content-what-s-new-in-truffle-v5-new-truffle-config"}
+
 #### Unique `truffle develop` mnemonics
 When you run `truffle develop`, Truffle no longer uses the classic `candy maple...` mnemonic.  Instead, the first time you run the command it will generate a random mnemonic just for you and persist it!
 

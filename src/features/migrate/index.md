@@ -1,5 +1,7 @@
 There have been a whole bunch of changes made to Truffle's migration function.
 
+{"gitdown": "contents", "maxLevel": 5, "rootId": "user-content-what-s-new-in-truffle-v5-truffle-migrate"}
+
 #### Improved error messaging
 Now if Truffle can guess why a deployment failed it tells you and suggests some possible solutions.
 

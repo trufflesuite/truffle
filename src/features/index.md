@@ -1,39 +1,53 @@
-### Compile
-
-{"gitdown": "include", "file": "./features/compile/index.md"}
 
 ### Interacting with your Contracts
+{"gitdown": "scroll-up"}
 
 {"gitdown": "include", "file": "./features/abstractions/index.md"}
 
-### New Migrations
+### `truffle compile`
+{"gitdown": "scroll-up"}
+
+
+{"gitdown": "include", "file": "./features/compile/index.md"}
+
+### `truffle migrate`
+{"gitdown": "scroll-up"}
+
 
 {"gitdown": "include", "file": "./features/migrate/index.md"}
 
-### Console Enhancements
+### `truffle console` / `truffle develop`
+{"gitdown": "scroll-up"}
+
 
 {"gitdown": "include", "file": "./features/console/index.md"}
 
-### truffle help
-
-{"gitdown": "include", "file": "./features/help/index.md"}
-
-### User configuration
-
-{"gitdown": "include", "file": "./features/config/index.md"}
-
-### Debugger Enhancements
+### `truffle debug`
+{"gitdown": "scroll-up"}
 
 {"gitdown": "include", "file": "./features/debug/index.md"}
 
-### Tests now support TypeScript
+### `truffle test`
+{"gitdown": "scroll-up"}
 
 {"gitdown": "include", "file": "./features/test/index.md"}
 
-### Configurable `truffle develop`
+### `truffle init` / `truffle unbox`
+{"gitdown": "scroll-up"}
 
 {"gitdown": "include", "file": "./features/unbox/index.md"}
 
-### truffle run
+### New: `truffle run`
+{"gitdown": "scroll-up"}
 
 {"gitdown": "include", "file": "./features/run/index.md"}
+
+### New: `truffle help`
+{"gitdown": "scroll-up"}
+
+{"gitdown": "include", "file": "./features/help/index.md"}
+
+### New: `truffle config`
+{"gitdown": "scroll-up"}
+
+{"gitdown": "include", "file": "./features/config/index.md"}

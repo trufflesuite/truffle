@@ -12,6 +12,13 @@ task('gitdown', async () => {
   }
 
   const gitdown = Gitdown.readFile(path.join(__dirname, "src", "index.md"));
+
+  gitdown.registerHelper("scroll-up", {
+    compile: (config) => {
+      return "<sup>[ [^](#user-content-contents) _Back to contents_ ]</sup>";
+    }
+  });
+
   await gitdown.writeFile('dist/_merged.md');
 });
 
