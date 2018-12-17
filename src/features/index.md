@@ -26,7 +26,7 @@
 
 {"gitdown": "include", "file": "./features/debug/index.md"}
 
-### Testing your contracts
+### Tests now support TypeScript
 
 {"gitdown": "include", "file": "./features/test/index.md"}
 
