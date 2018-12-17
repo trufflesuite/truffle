@@ -56,13 +56,3 @@ export function learnAddress(dummyAddress, address) {
     address
   };
 }
-
-export const COMPUTE_ALLOCATIONS = "COMPUTE_ALLOCATIONS";
-export function computeAllocations(types, variables)
-{
-  return {
-    type: COMPUTE_ALLOCATIONS,
-    types,
-    refs
-  };
-}

@@ -45,9 +45,6 @@ export function* saga() {
     // visit asts
     yield* ast.visitAll();
 
-    //compute offsets for structs
-    yield* data.computeAllocations();
-
     debug("readying");
     // signal that stepping can begin
     yield* ready();

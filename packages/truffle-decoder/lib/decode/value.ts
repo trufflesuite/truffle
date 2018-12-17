@@ -3,6 +3,7 @@ import * as DecodeUtils from "truffle-decode-utils";
 import BN from "bn.js";
 import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
+import { EvmEnum } from "../interface/contract-decoder";
 import Web3 from "web3";
 
 export default async function decodeValue(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<undefined | boolean | BN | string | EvmEnum> {
@@ -49,7 +50,7 @@ export default async function decodeValue(definition: DecodeUtils.AstDefinition,
       return DecodeUtils.Conversion.toBN(bytes);
 
     case "enum":
-      const numRepresentation = DecodeUtils.Conversion.toBN(data).toNumber();
+      const numRepresentation = DecodeUtils.Conversion.toBN(bytes).toNumber();
       const referenceId = definition.referencedDeclaration;
       const enumDeclaration = (info.referenceDeclarations)
         ? info.referenceDeclarations[referenceId]

@@ -10,7 +10,7 @@ import { EvmInfo } from "../types/evm";
 import { Allocation } from "truffle-decode-utils";
 import BN from "bn.js";
 import Web3 from "web3";
-import { EvmStruct, EvmMapping, EvmEnum } from "../interface/contract-decoder";
+import { EvmStruct, EvmMapping } from "../interface/contract-decoder";
 import clonedeep from "lodash.clonedeep";
 
 export default async function decodeStorageReference(definition: DecodeUtils.AstDefinition, pointer: StoragePointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<any> {
@@ -43,7 +43,6 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
 
       let baseSize: number;
       if (typeof referenceId !== "undefined") {
-      {
         const referenceDeclaration: undefined | DecodeUtils.AstDefinition = (info.referenceDeclarations)
           ? info.referenceDeclarations[referenceId]
           : info.scopes[referenceId].definition;
@@ -195,7 +194,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       };
 
       const members: DecodeUtils.AstDefinition[] = (info.referenceDeclarations)
-        ? info.referenceDeclarations[referencedDeclaration].members,
+        ? info.referenceDeclarations[referencedDeclaration].members
         : info.scopes[referencedDeclaration].definition.members;
 
       const referenceVariable = info.referenceVariables[referencedDeclaration];

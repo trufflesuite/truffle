@@ -61,17 +61,17 @@ function scopes(state = DEFAULT_SCOPES, action) {
   }
 }
 
-//a note on the following two reducers: solidity assigns a unique AST ID to
-//every AST node among all the files being compiled together.  thus, it is, for
-//now, safe to identify user-defined types solely by their AST ID.  In the
-//future, once we eventually support having some files compiled separately from
-//others, this will become a bug you'll have to fix, and you'll have to fix it
-//in the decoder, too.  Sorry, future me! (or whoever's stuck doing this)
+//a note on the following reducer: solidity assigns a unique AST ID to every
+//AST node among all the files being compiled together.  thus, it is, for now,
+//safe to identify user-defined types solely by their AST ID.  In the future,
+//once we eventually support having some files compiled separately from others,
+//this will become a bug you'll have to fix, and you'll have to fix it in the
+//decoder, too.  Sorry, future me! (or whoever's stuck doing this)
 
 function userDefinedTypes(state = [], action) {
   switch (action.type) {
-    case DECLARE:
-      const userDefinedNodeTyes =
+    case actions.DECLARE:
+      const userDefinedNodeTypes =
         ["StructDefinition","NodeDefinition","ContractDefinition"];
          //note that interfaces and libraries are also ContractDefinition
       if(userDefinedNodeTypes.includes(action.node.nodeType)) {
@@ -85,25 +85,9 @@ function userDefinedTypes(state = [], action) {
   }
 }
 
-function allocations(state = {}, action) {
-  switch (action.type) {
-    case COMPUTE_ALLOCATIONS:
-      let allocations = {};
-      for(id of action.types) {
-        let variables = action.refs[id].variables;
-        let allocation = Allocation.allocateDeclarations(variables, refs,
-          allocations);
-        allocations[id] = allocation;
-      }
-      return allocations;
-    default:
-      return state;
-}
-
 const info = combineReducers({
   scopes,
-  userDefinedTypes,
-  allocations
+  userDefinedTypes
 });
 
 const DEFAULT_ASSIGNMENTS = {

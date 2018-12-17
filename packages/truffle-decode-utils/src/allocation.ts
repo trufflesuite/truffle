@@ -120,6 +120,13 @@ export namespace Allocation {
       return allocations[declaration.id];
     }
 
+    //NOTE: due to the way the allocator is now called, we should never reach
+    //this point in the code -- we should *only* be allocating a struct *after*
+    //all any structs it refers to have been allocated.  Nonetheless, I'm going
+    //to leave this case in for now as something of a failsafe.
+
+    //debug("Warning!  Struct failsafe invoked!")
+
     let struct = refs[definition.typeName.referencedDeclaration];
     // debug("struct: %O", struct);
 

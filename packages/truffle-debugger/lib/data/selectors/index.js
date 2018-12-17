@@ -14,8 +14,7 @@ import * as TruffleDecodeUtils from "truffle-decode-utils";
 import { forEvmState } from "truffle-decoder";
 
 function shallowClone(object) {
-  return Object.assign({}, ...Object.entries(object)
-    .map([key, value] => {[key]: value}));
+  return Object.assign({}, object);
 }
 
 /**
@@ -96,13 +95,14 @@ const data = createSelectorTree({
       /**
        * data.views.scopes.inlined (namespace)
        */
-      {
+      inlined: {
       /**
        * data.views.scopes.inlined (selector)
+       * see data.info.scopes for how this differs from the raw version
        */
-        _: createLeaf(["/info/scopes", "./noInheritance"], (scopes, inlined) =>
+        _: createLeaf(["/info/scopes", "./raw"], (scopes, inlined) =>
           Object.assign({}, ...Object.entries(inlined)
-            .map([id, info] => {
+            .map(([id, info]) => {
               let newInfo = shallowClone(info);
               newInfo.variables = scopes[id].variables;
               return {[id]: newInfo}
@@ -110,10 +110,10 @@ const data = createSelectorTree({
         ),
 
       /**
-       * data.views.scopes.inlined.noInheritance
+       * data.views.scopes.inlined.raw
        */
-        noInheritance: createLeaf(
-          ["/info/scopes", solidity.info.sources],
+        raw: createLeaf(
+          ["/info/scopes/raw", solidity.info.sources],
 
           (scopes, sources) =>
             Object.assign(
@@ -163,27 +163,40 @@ const data = createSelectorTree({
     scopes: {
       /**
        * data.info.scopes (selector)
+       * the raw version is below; this version accounts for inheritance and
+       * filters out storage constants
        */
-      _: createLeaf(["./noInheritance", "/views/scopes/inlined/noInheritance"],
+      _: createLeaf(["./raw", "/views/scopes/inlined/raw"],
         (scopes, inlined) => Object.assign({}, ...Object.entries(scopes)
           .map(([id, scope]) => {
             let definition = inlined[id].definition;
-            if(definition.nodeType !== "ContractDefinition") {
-              return {[id]: scope};
+            if(definition.nodeType !== "ContractDefinition"
+              || scope.variables === undefined) {
+                return {[id]: scope};
             }
+            //if we've reached this point, we should be dealing with a
+            //contract, and specifically a contract -- not an interface or
+            //library (those don't get "variables" entries in their scopes)
+            debug("contract id %d", id);
             let newScope = shallowClone(scope);
             //note that Solidity gives us the linearization in order from most
-            //derived to most base, but we want most base to most derived
-            //annoyingly, reverse is in-place, so we clone first
+            //derived to most base, but we want most base to most derived;
+            //annoyingly, reverse() is in-place, so we clone with slice() first
             let linearizedBaseContractsFromBase =
-              shallowClone(definition.linearizedBaseContracts).reverse();
+              definition.linearizedBaseContracts.slice().reverse();
+            //now, we put it all together and also filter out constants
             newScope.variables = [].concat(...linearizedBaseContractsFromBase
-              .map( (contractId) => scopes[contractId].variables ));
+              .map( (contractId) => scopes[contractId].variables ))
+              .filter( (variable) =>
+                !inlined[variable.id].definition.constant);
             return {[id]: newScope};
           }))
         ),
 
-      noInheritance: createLeaf(["/state"], state => state.info.scopes.byId)
+      /*
+       * data.info.scopes.raw
+       */
+      raw: createLeaf(["/state"], state => state.info.scopes.byId)
     },
 
     /**
@@ -206,21 +219,34 @@ const data = createSelectorTree({
          * restrict to the user defined types that contain variables, i.e.,
          * structs and contracts
          */
-        _: createLeaf(["./_", "/info/scopes"], (typeIds, scopes) =>
+        _: createLeaf(["../_", "/info/scopes"], (typeIds, scopes) =>
           typeIds.filter((id) => scopes[id].variables !== undefined)),
 
         /*
          * data.info.userDefinedTypes.containers.ordered
-         * orders the variables to always put children before parents
+         * orders the structs and contracts to always put types-referred-to
+         * before the types that refer to them
          */
-        ordered: createLeaf(["./_", "/info/scopes"],
+        ordered: createLeaf(["./_", "/views/scopes/inlined"],
           (types, scopes) => {
+            //note: I'm using a pretty naive topological sorting algorithm here;
+            //it's probably not the best speedwise.  I was going to use Kahn's
+            //algorithm, but honestly, for that to work like it should, you
+            //basically need to make an explicit graph structure; for the sake
+            //of simplicity, I'm not going to do that.  If performance really
+            //becomes a problem, we can go back and address this.  (How many
+            //different types of structs are people really going to define,
+            //anyway? (file under: comments I am going to regret making))
             let typesLeft = types;
             let order = [];
             while(typesLeft.length > 0)
             {
+              //get all remaining types which are referred to by another
+              //remaining type
               let children = [].concat(...typesLeft
-                .map(id => scopes[id].variables));
+                .map(id => scopes[id].variables
+                  .map(variable =>
+                    scopes[variable.id].definition.referencedDeclaration)));
               let notChildren = typesLeft.filter(id => !children.includes(id));
               //because we're processing things in order of parents first, then
               //children, we're going to *prepend* the elements we found, so
@@ -228,11 +254,11 @@ const data = createSelectorTree({
               order = notChildren.concat(order);
               typesLeft = typesLeft.filter(id => !notChildren.includes(id));
             }
-            return order();
+            return order;
           }
         )
       }
-    }
+    },
 
     /**
      * data.info.allocations (namespace)
@@ -241,7 +267,18 @@ const data = createSelectorTree({
       /*
        * data.info.allocations (selector)
        */
-      _: createLeaf(["/state"], state => state.info.allocations),
+      _: createLeaf(["../userDefinedTypes/containers/ordered",
+        "/views/scopes/inlined"], (types, scopes) => {
+          let allocations = {};
+          for(id of types) {
+            let variables = scopes[id].variables;
+            let allocation = Allocation.allocateDeclarations(variables, scopes,
+              allocations);
+            allocations[id] = allocation;
+          }
+          return allocations;
+        }
+      ),
 
       /*
        * data.info.allocations.forDecoder
@@ -252,12 +289,12 @@ const data = createSelectorTree({
        */
       forDecoder: createLeaf(["./_"], (allocations) =>
         Object.assign({},
-          ...Object.entries(allocations).map([id, allocation] => ({
+          ...Object.entries(allocations).map(([id, allocation]) => ({
             [id]: {members: 
               Object.assign({},
-                ...Object.entries(allocation.children).
-                  map([memberId, pointer] => ({
-                    [memberId]: {pointer};
+                ...Object.entries(allocation.children)
+                  .map(([memberId, pointer]) => ({
+                    [memberId]: {pointer} //note the braces; not a clone!
                   }))
               )
             }

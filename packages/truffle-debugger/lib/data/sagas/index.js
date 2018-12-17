@@ -78,7 +78,7 @@ function* tickSaga() {
                 { stack: top - i }
               )
             )
-            .map(assignment => ({ [assignment.id]: assignment }));
+            .map(assignment => ({ [assignment.id]: assignment }))
         )
       };
       debug("Function definition case");
@@ -231,12 +231,6 @@ export function* learnAddressSaga(dummyAddress, address) {
 function makeAssignment(idObj, ref) {
   let id = stableKeccak256(idObj);
   return { ...idObj, id, ref };
-}
-
-export function* computeAllocations() {
-  let types = yield select(data.info.userDefinedTypes.containers.ordered);
-  let refs = yield select(data.views.scopes.inlined);
-  yield put(actions.computeAllocations(types, refs));
 }
 
 export function* saga() {
