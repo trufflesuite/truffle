@@ -1,6 +1,7 @@
 The changes listed below only encompass the changes since v5.0.0-beta.2.  See the release notes for [v5.0.0-beta.0](https://github.com/trufflesuite/truffle/releases/tag/v5.0.0-beta.0), [v5.0.0-beta.1](https://github.com/trufflesuite/truffle/releases/tag/v5.0.0-beta.1), and [v5.0.0-beta.2](https://github.com/trufflesuite/truffle/releases/tag/v5.0.0-beta.2) for each release's changelog.
 
 #### New Features
++ [#1481](https://github.com/trufflesuite/truffle/pull/1481) Add !<...> syntax to debugger watch expressions. (@gnidan)
 
 #### Bug Fixes / Improvements
 + [#1424](https://github.com/trufflesuite/truffle/pull/1424) Reorganize the truffle-contract package. (@eggplantzzz)
@@ -21,7 +22,6 @@ The changes listed below only encompass the changes since v5.0.0-beta.2.  See th
 #### Dependency Updates
 + [#1464](https://github.com/trufflesuite/truffle/pull/1426) Add configstore dependency to truffle-config package.json. (@seesemichaelj)
 
-+ [#1481](https://github.com/trufflesuite/truffle/pull/1481) Add !<...> syntax to debugger watch expressions. (@gnidan)
 + [#1493](https://github.com/trufflesuite/truffle/pull/1493)
 + [#1445](https://github.com/trufflesuite/truffle/pull/1445)
 + [#1495](https://github.com/trufflesuite/truffle/pull/1495)
