@@ -13,7 +13,7 @@ module.exports = {
       settings: {
         optimizer: {
           enabled: true,
-      runs: 200       // Optimize for how many times you intend to run the code
+          runs: 200   // Optimize for how many times you intend to run the code
         },
         docker: true, // Use a version obtained through docker
                       // Note: Truffle does not automatically pull Docker images automatically.
