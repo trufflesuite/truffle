@@ -18,6 +18,26 @@
     esutils "^2.0.2"
     js-tokens "^4.0.0"
 
+"@gnd/gitdown@2.5.2":
+  version "2.5.2"
+  resolved "https://registry.yarnpkg.com/@gnd/gitdown/-/gitdown-2.5.2.tgz#9f780ad581a5900fd20001d32ec634060f2eaa8f"
+  integrity sha512-L6ASbQBHJp7ap3HqJcDg/Z/2phauBsBVRke7Y7d1OkCocsy4h09pHgSTvrx0tTB1GEc0FtgpCKxgrMi7ZoewBA==
+  dependencies:
+    bluebird "^3.5.2"
+    deadlink "^1.1.3"
+    eslint "^5.7.0"
+    filesize "^3.6.1"
+    gitinfo "^2.2.0"
+    glob "^7.1.3"
+    jsonfile "^5.0.0"
+    lodash "^4.17.11"
+    markdown-contents "^1.0.11"
+    marked "^0.5.1"
+    moment "^2.22.2"
+    stack-trace "^0.0.10"
+    url-extractor "^2.0.2"
+    yargs "^12.0.3-candidate.0"
+
 abbrev@1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
@@ -1391,26 +1411,6 @@ getpass@^0.1.1:
   integrity sha1-Xv+OPmhNVprkyysSgmBOi6YhSfo=
   dependencies:
     assert-plus "^1.0.0"
-
-gitdown@^2.5.5:
-  version "2.5.5"
-  resolved "https://registry.yarnpkg.com/gitdown/-/gitdown-2.5.5.tgz#f0dd0ad0f6a7c19d407d4c8e5523679756eccc57"
-  integrity sha512-2DtEp45z+HXT1nP4XIOi6DFKulon7fcr6/SvumrawL142FG7nLH65xl+kOmqoGkE2iUbks7jh25kVdthOIx2iw==
-  dependencies:
-    bluebird "^3.5.2"
-    deadlink "^1.1.3"
-    eslint "^5.7.0"
-    filesize "^3.6.1"
-    gitinfo "^2.2.0"
-    glob "^7.1.3"
-    jsonfile "^5.0.0"
-    lodash "^4.17.11"
-    markdown-contents "^1.0.11"
-    marked "^0.5.1"
-    moment "^2.22.2"
-    stack-trace "^0.0.10"
-    url-extractor "^2.0.2"
-    yargs "^12.0.3-candidate.0"
 
 gitinfo@^2.2.0:
   version "2.2.0"

@@ -1,6 +1,6 @@
 {
   "devDependencies": {
-    "gitdown": "^2.5.5",
+    "@gnd/gitdown": "2.5.2",
     "gulp": "^4.0.0",
     "gulp-debug": "^4.0.0",
     "gulp-pandoc": "^0.2.2",

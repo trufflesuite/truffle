@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { src, dest, task, watch, series } = require('gulp');
-const Gitdown = require('gitdown');
+const Gitdown = require('@gnd/gitdown');
 const rename = require("gulp-rename");
 const debug = require("gulp-debug");
 const pandoc = require("gulp-pandoc");
@@ -38,9 +38,9 @@ task('pandoc', () => {
 
 task('build', series("gitdown", "pandoc"));
 
-task('watch', () => {
+task('watch', series(["build", () => {
   watch('./src', series(['build']));
-});
+}]));
 
 
 task('default', series('build'));
