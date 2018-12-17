@@ -1,3 +1,7 @@
+Truffle v5 includes a couple handy console enhancements.
+
+{"gitdown": "contents", "maxLevel": 5, "rootId": "user-content-what-s-new-in-truffle-v5-truffle-console-truffle-develop"}
+
 #### `await` in the console
 
 The `await` keyword now works in `truffle console` and `truffle develop`!

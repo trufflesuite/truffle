@@ -1,5 +1,7 @@
 Thanks to the excellent changes in Web3.js 1.0, we've implemented the following features.
 
+{"gitdown": "contents", "maxLevel": 4, "rootId": "user-content-what-s-new-in-truffle-v5-interacting-with-your-contracts"}
+
 #### EventEmitter / Promise interface
 
 Contract objects now have an EventEmitter interface and return a promise.

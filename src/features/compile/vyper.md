@@ -11,7 +11,7 @@ Thank you @evgeniuz for implementing this and thank you @vs77bb for funding the
 [GitCoin bounty](https://gitcoin.co/issue/trufflesuite/truffle/1144/1037) for
 this work.
 
-#### Getting Started with Vyper
+##### Getting started with Vyper
 
 We've published a Truffle Box to help you get started. If you're curious about using Vyper for your smart contracts, or just want to test it out, you can run:
 

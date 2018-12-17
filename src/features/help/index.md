@@ -1,4 +1,5 @@
 Truffle now has a help system on board!  Want to figure out what commands are available?  Simply run `truffle help`.  Want to figure out usage information for a command and what options are available?  Run `truffle help <command>`.
+
 ```
 $ truffle help migrate
   Usage:        truffle migrate [--reset] [-f <number>] [--network <name>] [--compile-all] [--verbose-rpc] [--interactive]

@@ -1,3 +1,11 @@
+We have big plans to support third-party plugins, and here's the start of that
+with the new `truffle run` command. Let us know what you think!
+
+Special thanks to @rocky and @daniyarchambylov for their feedback and fixes in
+helping us bring you the first iteration of this feature.
+
+{"gitdown": "contents", "maxLevel": 5, "rootId": "user-content-what-s-new-in-truffle-v5-new-truffle-run"}
+
 #### Plugin installation / usage
 
 <ol>

@@ -2,11 +2,11 @@
 
 {"gitdown": "include", "file": "./intro.md"}
 
-## Contents
+<a name="contents"></a>
 
-{"gitdown": "contents", "maxLevel": 4, "rootId": "user-content"}
+{"gitdown": "contents", "maxLevel": 3, "rootId": "user-content"}
 
-## Features
+## What's new in Truffle v5
 
 {"gitdown": "include", "file": "./features/index.md"}
 
