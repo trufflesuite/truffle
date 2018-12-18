@@ -1,4 +1,4 @@
-Thanks to the excellent changes in Web3.js 1.0, we've implemented the following features.
+With this new version comes a whole slew of improvements on contract interaction. Syntax has been modernized, working with Events has gotten better, error reporting has gotten clearer, and structured function parameters are now supported! It just feels good...
 
 {"gitdown": "contents", "maxLevel": 4, "rootId": "user-content-what-s-new-in-truffle-v5-interacting-with-your-contracts"}
 
@@ -10,10 +10,8 @@ You can now interact with them very much like you would interact with
 
 Events also now have an EventEmitter interface.
 
-See the [usage section] of the Truffle contract abstraction docs for some
+See the [usage section](https://truffleframework.com/docs/truffle/reference/contract-abstractions#usage) of the Truffle contract abstraction docs for some
 examples of working with contract objects and events!
-
-[usage section]: https://truffleframework.com/docs/truffle/reference/contract-abstractions#usage
 
 #### REVERT Reason strings
 
