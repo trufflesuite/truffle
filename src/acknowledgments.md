@@ -1,11 +1,37 @@
-The Truffle team would like to single out a few groups for acknowledgement...
+This release has been a long time in the making and represents months of hard
+work by many contributors, both internal and external. Without your care and
+service, there would be no Truffle v5, and so we would like to extend our
+gratitude to those of you who have significantly helped to bring us here today.
 
-Thank you to the Solidity team for the recent release of v0.5.0 and all their continued great work.  Their efforts have enabled this ecosystem to thrive!
+First of all, many thanks to Truffle's core engineering team: @eggplantzzz,
+@haltman-at, @CruzMolina, and @fainashalts. You have ignited this project's
+development and fuel this fire every day.
 
-Thanks to Web3.js!  The release of v1.0 allowed for some amazing improvements to Truffle which have contributed to a much better user experience!
+This is not just a one team effort, and Truffle owes thanks to everyone in the
+organization at large. There are too many of you to name here, and your
+contributions are too numerous to list, but the operational support you provide
+is what enables this project to function. A special note of deep admiration
+to Truffle engineer alumnus @cgewecke, whose tireless efforts led to the first
+v5 beta, providing the bedrock of this release. And of course, thank you
+@tcoulter for creating Truffle and bringing us together.
 
-We'd like to also thank the Colony team which has used version 5 since the very beginning.  Their invaluable feedback has helped us to create a much more usable and stable version of Truffle.
+To members of the [Colony](https://colony.io/) team, your support has resonated
+loudly. You are surely already aware of the impact of your
+efforts, but to express our sentiments here: you have been crucial to our
+developing confidence in our work. Thank you @elenadimitrova and the rest of
+the team for being early adoptors and for the countless hours of investigation
+into problems along the way.
 
-And our task would have been a lot more difficult without the help of all of you wonderful Truffle users! Thanks for all of the bug reports and always reminding us about the things we forget.
+Humble thanks to members of the [Solidity](https://solidity.readthedocs.io) and
+[Web3.js](https://web3js.readthedocs.io) teams. You are the giants upon whose
+shoulders we stand. Beyond providing the foundational software that Truffle
+incorporates, special thanks to @axic and @chriseth for the insights you have
+provided, and to @frozeman and @nivida for going above-and-beyond in helping us
+address some last minute issues we discovered.
 
-We also hit a milestone with this release of Truffle: version 5 has included more contributions from external contributors than any other major release!  So thank you to everyone who contributed and helped us make Truffle great!
+Of course, these few names are just a tiny subset of Truffle's community.
+To all of our contributors, to those of you who have raised your hand in our
+[Gitter](https://gitter.im/ConsenSys/truffle) when something was unclear, to
+those of you who have opened issues, or gone a step further and written pull
+requests, to every Truffle user— you are why we build Truffle, and you are whom
+we build Truffle for. Thank you most of all.
