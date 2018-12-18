@@ -7,6 +7,7 @@
 {"gitdown": "contents", "maxLevel": 3, "rootId": "user-content"}
 
 ## Breaking Changes
+{"gitdown": "scroll-up", "downTitle": "Skip to what's new", "downRef": "#user-content-what-s-new-in-truffle-v5"}
 
 {"gitdown": "include", "file": "./breaking/index.md"}
 
