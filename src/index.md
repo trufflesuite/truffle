@@ -2,7 +2,7 @@
 
 {"gitdown": "include", "file": "./intro.md"}
 
-<a name="contents"></a>
+## Contents
 
 {"gitdown": "contents", "maxLevel": 3, "rootId": "user-content"}
 
