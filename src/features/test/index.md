@@ -16,6 +16,7 @@ require("ts-node/register");
 module.exports = {
   // rest of truffle config
   // ...
+}
 ```
 
 
