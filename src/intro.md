@@ -104,8 +104,8 @@ Perhaps most notably, Truffle v5 now features:
 
   To make Truffle the best smart contract development tool it can be, good
   decisions about future updates rely on informed consideration. We promise to
-  limit the data we collect and thank you in advance for helping us adapt to
-  and inform new best practices.
+  [limit the data](#user-content-what-s-new-in-truffle-v5-new-truffle-config-opt-in-analytics)
+  we collect and thank you in advance for helping us adapt to and inform new best practices.
 
 ---
 
