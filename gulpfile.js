@@ -15,7 +15,11 @@ task('gitdown', async () => {
 
   gitdown.registerHelper("scroll-up", {
     compile: (config) => {
-      return "<sup>[ [^](#user-content-contents) _Back to contents_ ]</sup>";
+      if (config.downRef) {
+        return `<sup>[ [&and;](#user-content-contents) _Back to contents_ | _${config.downTitle}_ [&or;](${config.downRef}) ]</sup>`;
+      } else {
+        return "<sup>[ [&and;](#user-content-contents) _Back to contents_ ]</sup>";
+      }
     }
   });
 
