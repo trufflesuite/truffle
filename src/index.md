@@ -23,9 +23,11 @@ npm install -g truffle
 {"gitdown": "include", "file": "./features/index.md"}
 
 ## Changelog since 5.0.0-beta.2
+{"gitdown": "scroll-up"}
 
 {"gitdown": "include", "file": "./changelog.md"}
 
 ## Acknowledgments
+{"gitdown": "scroll-up"}
 
 {"gitdown": "include", "file": "./acknowledgments.md"}
