@@ -30,7 +30,7 @@ module.exports = {
 }
 ```
 
-#### Improved deployer
+#### `async` Migrations
 The deployer interface now works seamlessly with ES6 **async/await** syntax. (Also backward compatible with Truffle V4's then-able pattern.)
 
 *Example Migration using async / await*

@@ -1,5 +1,5 @@
 
-### Interacting with your Contracts
+### Interacting with your contracts
 {"gitdown": "scroll-up"}
 
 {"gitdown": "include", "file": "./features/abstractions/index.md"}
@@ -32,22 +32,22 @@
 
 {"gitdown": "include", "file": "./features/test/index.md"}
 
-### `truffle init` / `truffle unbox`
+### `truffle unbox`
 {"gitdown": "scroll-up"}
 
 {"gitdown": "include", "file": "./features/unbox/index.md"}
 
-### New: `truffle run`
+### **New**: `truffle run`
 {"gitdown": "scroll-up"}
 
 {"gitdown": "include", "file": "./features/run/index.md"}
 
-### New: `truffle help`
+### **New**: `truffle help`
 {"gitdown": "scroll-up"}
 
 {"gitdown": "include", "file": "./features/help/index.md"}
 
-### New: `truffle config`
+### **New**: `truffle config`
 {"gitdown": "scroll-up"}
 
 {"gitdown": "include", "file": "./features/config/index.md"}

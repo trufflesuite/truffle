@@ -1,6 +1,6 @@
 There have been some changes made to the `init` and `unbox` commands.
 
-{"gitdown": "contents", "maxLevel": 5, "rootId": "user-content-what-s-new-in-truffle-v5-truffle-init-truffle-unbox"}
+{"gitdown": "contents", "maxLevel": 5, "rootId": "user-content-what-s-new-in-truffle-v5-truffle-unbox"}
 
 #### Prompt to overwrite files
 
