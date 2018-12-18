@@ -1,81 +1,278 @@
-var TestRPC = require("ganache-cli");
-var contract = require("truffle-contract");
-var Deployer = require("../index");
-var Web3 = require("web3");
-var assert = require("assert");
+const ganache = require("ganache-core");
+const Web3 = require("web3");
+const assert = require("assert");
+const Reporter = require("truffle-reporters").migrationsV5;
+const EventEmitter = require("events");
 
-var exec = require("../src/actions/exec");
+const Deployer = require("../index");
+const utils = require("./helpers/utils");
 
-describe("deployer", function() {
-  var provider = TestRPC.provider();
-  var web3 = new Web3(provider);
+describe("Deployer (sync)", function() {
+  let owner;
+  let options;
+  let networkId;
+  let deployer;
+  let reporter;
+  let output = "";
+  let Example;
+  let UsesExample;
+  let IsLibrary;
+  let UsesLibrary;
 
-  // This is the solidity code for the example below:
-  //
-  // pragma solidity ^0.4.2;
-  //
-  // contract Example {
-  //   uint public value;
-  //   function Example(uint val) {
-  //     value = val;
-  //   }
-  // }
-  var bytecode = "0x6060604052346000576040516020806100a083398101604052515b60008190555b505b6070806100306000396000f300606060405263ffffffff60e060020a6000350416633fa4f24581146022575b6000565b34600057602c603e565b60408051918252519081900360200190f35b600054815600a165627a7a72305820dfffdf45e86020a86e43daa92ec94d27d0aeb23dd72888379769a5a35656dc7d0029";
-  var abi = [{"constant":true,"inputs":[],"name":"value","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"inputs":[{"name":"val","type":"uint256"}],"payable":false,"type":"constructor"}];
-
-  var network_id;
-  var accounts;
-
-  before("get network id", function(done) {
-    web3.version.getNetwork(function(err, id) {
-      if (err) return done(err);
-      network_id = id;
-      done();
-    });
+  const provider = ganache.provider({
+    vmErrorsOnRPCResponse: false
   });
 
-  before("get accounts", function(done) {
-    web3.eth.getAccounts(function(err, accs) {
-      if (err) return done(err);
-      accounts = accs;
-      done();
-    })
-  });
+  const mockMigration = {
+    emitter: new EventEmitter()
+  };
 
-  it("deploys a contract correctly", function() {
-    var Example = contract({
-      contract_name: "Example",
-      unlinked_binary: bytecode,
-      abi: abi
-    });
-    Example.setProvider(provider);
+  const web3 = new Web3(provider);
 
-    var deployer = new Deployer({
-      contracts: [Example],
+  beforeEach(async function() {
+    networkId = await web3.eth.net.getId();
+    const accounts = await web3.eth.getAccounts();
+
+    owner = accounts[0];
+    await utils.compile();
+
+    Example = utils.getContract("Example", provider, networkId, owner);
+    ExampleRevert = utils.getContract(
+      "ExampleRevert",
+      provider,
+      networkId,
+      owner
+    );
+    UsesExample = utils.getContract("UsesExample", provider, networkId, owner);
+    UsesLibrary = utils.getContract("UsesLibrary", provider, networkId, owner);
+    IsLibrary = utils.getContract("IsLibrary", provider, networkId, owner);
+    Abstract = utils.getContract("Abstract", provider, networkId, owner);
+
+    options = {
+      contracts: [
+        Example,
+        ExampleRevert,
+        UsesExample,
+        IsLibrary,
+        UsesLibrary,
+        Abstract
+      ],
       network: "test",
-      network_id: network_id,
-      provider: provider
-    });
+      network_id: networkId,
+      provider: provider,
+      logger: {
+        log: val => {
+          if (val) output += `${val}\n`;
+        },
+        error: val => {
+          if (val) output += `${val}\n`;
+        }
+      }
+    };
+    deployer = new Deployer(options);
+    reporter = new Reporter();
+    reporter.setDeployer(deployer);
+    reporter.setMigration(mockMigration);
+    reporter.listen();
+  });
 
-    var errored = false;
+  afterEach(() => {
+    output = "";
+    utils.cleanUp();
+    deployer.finish();
+  });
 
-    try {
-      var address = Example.address;
-    } catch(e) {
-      errored = true;
+  it("deploy()", async function() {
+    const migrate = function() {
+      deployer.deploy(Example);
+    };
+
+    migrate();
+
+    await deployer.start();
+
+    assert(Example.address !== null);
+    assert(Example.transactionHash !== null);
+
+    const example = await Example.deployed();
+    const id = await example.id();
+
+    assert(id === "Example");
+    assert(output.includes("Example"));
+    assert(output.includes("Deploying"));
+    assert(output.includes("transaction hash"));
+    assert(output.includes("address"));
+    assert(output.includes("gas used"));
+  });
+
+  it("deploy().then", async function() {
+    function migrate() {
+      deployer
+        .deploy(Example)
+        .then(() => deployer.deploy(UsesExample, Example.address));
     }
 
-    assert(errored, "Precondition: Example shouldn't have an address")
+    migrate();
+    await deployer.start();
 
-    Example.defaults({
-      gas: 3141592,
-      from: accounts[0]
-    });
+    const example = await Example.deployed();
+    const usesExample = await UsesExample.deployed();
+    const exampleId = await example.id();
+    const usesExampleId = await usesExample.id();
+    const other = await usesExample.other();
 
-    deployer.deploy(Example, 1);
+    assert(Example.address !== null);
+    assert(exampleId === "Example");
+    assert(usesExampleId === "UsesExample");
+    assert(other === Example.address);
 
-    return deployer.start().then(function() {
-      assert.notEqual(Example.address, null);
-    });
+    assert(output.includes("Replacing"));
+    assert(output.includes("Deploying"));
+    assert(output.includes("Example"));
+    assert(output.includes("UsesExample"));
+  });
+
+  it("deployer.then", async function() {
+    function migrate() {
+      deployer.then(async function() {
+        const example = await deployer.deploy(Example);
+        await deployer.deploy(UsesExample, example.address);
+      });
+    }
+
+    migrate();
+    await deployer.start();
+
+    const example = await Example.deployed();
+    const usesExample = await UsesExample.deployed();
+    const exampleId = await example.id();
+    const usesExampleId = await usesExample.id();
+    const other = await usesExample.other();
+
+    assert(Example.address !== null);
+    assert(exampleId === "Example");
+    assert(usesExampleId === "UsesExample");
+    assert(other === Example.address);
+
+    assert(output.includes("Replacing"));
+    assert(output.includes("Example"));
+    assert(output.includes("UsesExample"));
+  });
+
+  it("deployer.link", async function() {
+    const migrate = function() {
+      deployer.deploy(IsLibrary);
+      deployer.link(IsLibrary, UsesLibrary);
+      deployer.deploy(UsesLibrary);
+    };
+
+    migrate();
+
+    await deployer.start();
+
+    assert(UsesLibrary.address !== null);
+    assert(IsLibrary.address !== null);
+
+    const usesLibrary = await UsesLibrary.deployed();
+    await usesLibrary.fireIsLibraryEvent(5);
+    await usesLibrary.fireUsesLibraryEvent(7);
+
+    eventOptions = { fromBlock: 0, toBlock: "latest" };
+    const events = await usesLibrary.getPastEvents("allEvents", eventOptions);
+
+    assert(events[0].args.eventID.toNumber() === 5);
+    assert(events[1].args.eventID.toNumber() === 7);
+
+    assert(output.includes("Deploying"));
+    assert(output.includes("Linking"));
+    assert(output.includes("IsLibrary"));
+    assert(output.includes("UsesLibrary"));
+  });
+
+  // There's a chain like this in the truffle-core solidity-tests
+  it("deployer.deploy().then()", async function() {
+    const migrate = function() {
+      deployer
+        .deploy(Example)
+        .then(function() {
+          return Example.deployed();
+        })
+        .then(function(instance) {
+          return instance.id();
+        })
+        .then(function() {
+          return deployer
+            .deploy(UsesExample, utils.zeroAddress)
+            .then(function() {
+              return UsesExample.deployed();
+            })
+            .then(function(usesExample) {
+              return usesExample.id();
+            });
+        });
+    };
+    migrate();
+
+    await deployer.start();
+    assert(output.includes("Example"));
+    assert(output.includes("UsesExample"));
+  });
+
+  it("waits for confirmations", async function() {
+    this.timeout(15000);
+    const startBlock = await web3.eth.getBlockNumber();
+
+    utils.startAutoMine(web3, 1500);
+
+    const migrate = function() {
+      deployer.deploy(IsLibrary);
+      deployer.deploy(Example);
+    };
+
+    migrate();
+
+    deployer.confirmations = 2;
+    await deployer.start();
+
+    utils.stopAutoMine();
+
+    const isLibrary = await IsLibrary.deployed();
+    const example = await Example.deployed();
+
+    const libReceipt = await web3.eth.getTransactionReceipt(
+      IsLibrary.transactionHash
+    );
+    const exampleReceipt = await web3.eth.getTransactionReceipt(
+      Example.transactionHash
+    );
+
+    // The first confirmation is the block that accepts the tx. Then we wait two more.
+    // Then Example is deployed in the consequent block.
+    assert(libReceipt.blockNumber === startBlock + 1);
+    assert(exampleReceipt.blockNumber === libReceipt.blockNumber + 3);
+
+    deployer.confirmationsRequired = 0;
+  });
+
+  it("emits block events while waiting for a tx to mine", async function() {
+    this.timeout(15000);
+    const startBlock = await web3.eth.getBlockNumber();
+
+    utils.startAutoMine(web3, 4000);
+
+    const migrate = function() {
+      deployer.then(async function() {
+        await deployer._startBlockPolling(web3);
+        await utils.waitMS(9000);
+        deployer._startBlockPolling();
+      });
+    };
+
+    migrate();
+    await deployer.start();
+    utils.stopAutoMine();
+
+    // We used to test output here but the ora spinner doesn't use the logger
+    // Keeping this test just to run the logic, make sure it's not crashing.
   });
 });

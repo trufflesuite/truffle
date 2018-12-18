@@ -6,12 +6,13 @@
 // https://github.com/mochajs/mocha/blob/master/lib/reporters/spec.js
 
 /**
+var OS = require("os");
  * Module dependencies.
  */
 
 var ms = require('mocha/lib/ms.js');
 var Base = require('mocha/lib/reporters/base.js');
-var utils = require('mocha/lib/utils')
+var utils = require('mocha/lib/utils');
 var inherits = utils.inherits;
 var color = Base.color;
 var diff = require('diff');

@@ -1,7 +1,7 @@
-var IPC = require('node-ipc').IPC;
-var path = require('path');
-var spawn = require('child_process').spawn;
-var debug = require('debug');
+var IPC = require("node-ipc").IPC;
+var path = require("path");
+var spawn = require("child_process").spawn;
+var debug = require("debug");
 
 var Develop = {
   start: function(ipcNetwork, options, callback) {
@@ -22,18 +22,18 @@ var Develop = {
 
     var cmd = spawn("node", [chainPath, ipcNetwork, JSON.stringify(options)], {
       detached: true,
-      stdio: 'ignore'
+      stdio: "ignore"
     });
 
     callback();
   },
 
   connect: function(options, callback) {
-    var debugServer = debug('develop:ipc:server');
-    var debugClient = debug('develop:ipc:client');
-    var debugRPC = debug('develop:testrpc');
+    var debugServer = debug("develop:ipc:server");
+    var debugClient = debug("develop:ipc:client");
+    var debugRPC = debug("develop:ganache");
 
-    if (typeof options === 'function') {
+    if (typeof options === "function") {
       callback = options;
       options = {};
     }
@@ -63,18 +63,19 @@ var Develop = {
     if (options.log) {
       debugRPC.enabled = true;
 
-      loggers.testrpc = function() {
+      loggers.ganache = function() {
         // HACK-y: replace `{}` that is getting logged instead of ""
         var args = Array.prototype.slice.call(arguments);
-        if (args.length === 1 &&
-              typeof args[0] === "object" &&
-              Object.keys(args[0]).length === 0)
-        {
+        if (
+          args.length === 1 &&
+          typeof args[0] === "object" &&
+          Object.keys(args[0]).length === 0
+        ) {
           args[0] = "";
         }
 
         debugRPC.apply(undefined, args);
-      }
+      };
     }
 
     if (!options.retry) {
@@ -83,14 +84,14 @@ var Develop = {
 
     var disconnect = function() {
       ipc.disconnect(ipcNetwork);
-    }
+    };
 
     ipc.connectTo(ipcNetwork, connectPath, function() {
-      ipc.of[ipcNetwork].on('destroy', function() {
+      ipc.of[ipcNetwork].on("destroy", function() {
         callback(new Error("IPC connection destroyed"));
       });
 
-      ipc.of[ipcNetwork].on('truffle.ready', function() {
+      ipc.of[ipcNetwork].on("truffle.ready", function() {
         callback(null, disconnect);
       });
 
@@ -104,7 +105,7 @@ var Develop = {
     });
   },
 
-  connectOrStart: function(options, testrpcOptions, callback) {
+  connectOrStart: function(options, ganacheOptions, callback) {
     var self = this;
 
     options.retry = false;
@@ -113,22 +114,28 @@ var Develop = {
 
     var connectedAlready = false;
 
-    this.connect(options, function(error, disconnect) {
-      if (error) {
-        self.start(ipcNetwork, testrpcOptions, function() {
-          options.retry = true;
-          self.connect(options, function(error, disconnect) {
-            if (connectedAlready) return;
+    this.connect(
+      options,
+      function(error, disconnect) {
+        if (error) {
+          self.start(ipcNetwork, ganacheOptions, function() {
+            options.retry = true;
+            self.connect(
+              options,
+              function(error, disconnect) {
+                if (connectedAlready) return;
 
-            connectedAlready = true;
-            callback(true, disconnect);
+                connectedAlready = true;
+                callback(true, disconnect);
+              }
+            );
           });
-        });
-      } else {
-        connectedAlready = true;
-        callback(false, disconnect);
+        } else {
+          connectedAlready = true;
+          callback(false, disconnect);
+        }
       }
-    });
+    );
   }
 };
 

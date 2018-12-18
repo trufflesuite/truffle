@@ -22,14 +22,14 @@ describe("Happy path (truffle unbox)", function() {
 
   before("set up sandbox", function(done) {
     this.timeout(10000);
-    Box.sandbox("default", function(err, conf) {
+    Box.sandbox("default#web3-one", function(err, conf) {
       if (err) return done(err);
       config = conf;
       config.network = "development";
       config.logger = logger;
       config.mocha = {
         reporter: new Reporter(logger)
-      }
+      };
       done();
     });
   });
@@ -53,7 +53,7 @@ describe("Happy path (truffle unbox)", function() {
   });
 
   it("will migrate", function(done) {
-    this.timeout(20000);
+    this.timeout(50000);
 
     CommandRunner.run("migrate", config, function(err) {
       var output = logger.contents();
@@ -72,7 +72,7 @@ describe("Happy path (truffle unbox)", function() {
         abstraction.setProvider(config.provider);
 
         promises.push(abstraction.deployed().then(function(instance) {
-          assert.notEqual(instance.address, null, instance.contract_name + " didn't have an address!")
+          assert.notEqual(instance.address, null, instance.contract_name + " didn't have an address!");
         }));
       });
 

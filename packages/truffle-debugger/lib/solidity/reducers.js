@@ -14,7 +14,7 @@ function sources(state = DEFAULT_SOURCES, action) {
      * Adding a new source
      */
     case actions.ADD_SOURCE:
-      let { ast, source, sourcePath } = action;
+      let { ast, source, sourcePath, compiler } = action;
 
       let id = Object.keys(state.byId).length;
 
@@ -26,10 +26,11 @@ function sources(state = DEFAULT_SOURCES, action) {
             id,
             ast,
             source,
-            sourcePath
+            sourcePath,
+            compiler
           }
         }
-      }
+      };
 
     /*
      * Default case
@@ -38,7 +39,6 @@ function sources(state = DEFAULT_SOURCES, action) {
       return state;
   }
 }
-
 
 const DEFAULT_SOURCEMAPS = {
   byContext: {}
@@ -77,12 +77,17 @@ const info = combineReducers({
   sourceMaps
 });
 
-export function functionDepth(state = 1, action) {
-  if (action.type === actions.JUMP) {
-    const delta = spelunk(action.jumpDirection)
-    return state + delta;
-  } else {
-    return state;
+export function functionDepth(state = 0, action) {
+  switch (action.type) {
+    case actions.JUMP:
+      const delta = spelunk(action.jumpDirection);
+      return state + delta;
+
+    case actions.RESET:
+      return 0;
+
+    default:
+      return state;
   }
 }
 
@@ -91,6 +96,8 @@ function spelunk(jump) {
     return 1;
   } else if (jump == "o") {
     return -1;
+  } else if (jump == "2") {
+    return 2; //HACK WORKAROUND
   } else {
     return 0;
   }

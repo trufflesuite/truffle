@@ -1,10 +1,9 @@
-pragma solidity ^0.4.8;
+pragma solidity ^0.5.0;
 
 contract Local {
   uint local;
 
-  function Local() public {
+  constructor() public {
 
   }
 }
-

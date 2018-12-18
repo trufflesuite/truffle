@@ -21,8 +21,10 @@ const session = createSelectorTree({
       (instances, contexts, sources, sourceMaps) => Object.assign({},
         ...Object.entries(instances).map(
           ([address, {context}]) => {
+            debug("instances %O", instances);
+            debug("contexts %O", contexts);
             let { contractName, binary } = contexts[context];
-            let { sourceMap } = sourceMaps[context];
+            let { sourceMap } = sourceMaps[context] || {};
 
             let { source } = sourceMap ?
               // look for source ID between second and third colons (HACK)
@@ -38,7 +40,29 @@ const session = createSelectorTree({
         )
       )
     )
+
+  },
+
+
+  /**
+   * session.transaction (namespace)
+   */
+  transaction: {
+
+    /**
+     * session.transaction (selector)
+     * contains the web3 transaction object
+     */
+    _: (state) => state.session.transaction,
+
+    /**
+     * session.transaction.receipt
+     * contains the web3 receipt object
+     */
+    receipt: (state) => state.session.receipt,
+
   }
+  
 });
 
 export default session;

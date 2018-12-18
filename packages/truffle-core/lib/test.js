@@ -1,7 +1,6 @@
 var Mocha = require("mocha");
 var chai = require("chai");
 var path = require("path");
-var fs = require("fs");
 var Web3 = require("web3");
 var Config = require("truffle-config");
 var Contracts = require("truffle-workflow-compile");
@@ -11,10 +10,8 @@ var TestResolver = require("./testing/testresolver");
 var TestSource = require("./testing/testsource");
 var SolidityTest = require("./testing/soliditytest");
 var expect = require("truffle-expect");
-var find_contracts = require("truffle-contract-sources");
 var Migrate = require("truffle-migrate");
 var Profiler = require("truffle-compile/profiler.js");
-var async = require("async");
 var originalrequire = require("original-require");
 
 chai.use(require("./assertions"));
@@ -85,12 +82,8 @@ var Test = {
     var runner;
     var test_resolver;
 
-    this.getAccounts(web3).then(function(accs) {
+    web3.eth.getAccounts().then(function(accs) {
       accounts = accs;
-
-      if (!config.from) {
-        config.from = accounts[0];
-      }
 
       if (!config.resolver) {
         config.resolver = new Resolver(config);
@@ -149,15 +142,6 @@ var Test = {
     return mocha;
   },
 
-  getAccounts: function(web3, config) {
-    return new Promise(function(accept, reject) {
-      web3.eth.getAccounts(function(err, accs) {
-        if (err) return reject(err);
-        accept(accs);
-      });
-    });
-  },
-
   compileContractsWithTestFilesIfNeeded: function(solidity_test_files, config, test_resolver) {
     return new Promise(function(accept, reject) {
       Profiler.updated(config.with({
@@ -174,8 +158,9 @@ var Test = {
           resolver: test_resolver,
           quiet: false,
           quietWrite: true
-        }), function(err, abstractions, paths) {
+        }), function(err, result) {
           if (err) return reject(err);
+          const paths = result.outputs.solc;
           accept(paths);
         });
       });
@@ -233,19 +218,19 @@ var Test = {
         });
 
         tests(accounts);
-      }
+      };
 
       global.contract = function(name, tests) {
-        Mocha.describe("Contract: " + name, function() { template.bind(this, tests)() });
+        Mocha.describe("Contract: " + name, function() { template.bind(this, tests)(); });
       };
 
       global.contract.only = function(name, tests){
-        Mocha.describe.only("Contract: " + name, function() { template.bind(this, tests)() });
-      }
+        Mocha.describe.only("Contract: " + name, function() { template.bind(this, tests)(); });
+      };
 
       global.contract.skip = function(name, tests){
-        Mocha.describe.skip("Contract: " + name, function() { template.bind(this, tests)() });
-      }
+        Mocha.describe.skip("Contract: " + name, function() { template.bind(this, tests)(); });
+      };
 
       accept();
     });

@@ -1,6 +1,6 @@
-var sha3 = require("crypto-js/sha3");
 var pkgVersion = require("./package.json").version;
 var Ajv = require("ajv");
+var util = require("util");
 
 var contractObjectSchema = require("./spec/contract-object.spec.json");
 var networkObjectSchema = require("./spec/network-object.spec.json");
@@ -38,7 +38,7 @@ var properties = {
     "transform": function(value) {
       if (typeof value === "string") {
         try {
-          value = JSON.parse(value)
+          value = JSON.parse(value);
         } catch (e) {
           value = undefined;
         }
@@ -85,7 +85,7 @@ var properties = {
       if (schemaVersion[0] < 2) {
         return obj.ast;
       } else {
-        return value
+        return value;
       }
     }
   },
@@ -93,7 +93,7 @@ var properties = {
   "networks": {
     "transform": function(value) {
       if (value === undefined) {
-        value = {}
+        value = {};
       }
       return value;
     }
@@ -109,7 +109,9 @@ var properties = {
       }
       return value;
     }
-  }
+  },
+  "devdoc": {},
+  "userdoc": {},
 };
 
 
@@ -121,7 +123,7 @@ var properties = {
  */
 function getter(key, transform) {
   if (transform === undefined) {
-    transform = function(x) { return x };
+    transform = function(x) { return x; };
   }
 
   return function(obj) {
@@ -130,7 +132,7 @@ function getter(key, transform) {
     } catch (e) {
       return undefined;
     }
-  }
+  };
 }
 
 
@@ -150,7 +152,7 @@ function chain() {
     return getters.reduce(function (cur, get) {
       return get(cur);
     }, obj);
-  }
+  };
 }
 
 
@@ -162,14 +164,39 @@ var TruffleContractSchema = {
   // - Resolves as validated `contractObj`
   // - Rejects with list of errors from schema validator
   validate: function(contractObj) {
-    var ajv = new Ajv({ useDefaults: true });
+    var ajv = new Ajv({ verbose: true });
     ajv.addSchema(abiSchema);
     ajv.addSchema(networkObjectSchema);
     ajv.addSchema(contractObjectSchema);
     if (ajv.validate("contract-object.spec.json", contractObj)) {
       return contractObj;
     } else {
-      throw ajv.errors;
+      const message = `Schema validation failed. Errors:\n\n${
+        ajv.errors
+          .map( ({
+            keyword,
+            dataPath,
+            schemaPath,
+            params,
+            message,
+            data,
+            schema,
+            parentSchema
+          }) => util.format(
+            "%s (%s):\n%s\n",
+            message, keyword, util.inspect({
+              dataPath,
+              schemaPath,
+              params,
+              data,
+              parentSchema
+            }, { depth: 5 })
+          ))
+          .join("\n")
+      }`;
+      const error = new Error(message);
+      error.errors = ajv.errors;
+      throw error;
     }
   },
 
@@ -195,7 +222,7 @@ var TruffleContractSchema = {
         // getters
         if (typeof source === "string") {
           var traversals = source.split(".")
-            .map(function(k) { return getter(k) });
+            .map(function(k) { return getter(k); });
           source = chain.apply(null, traversals);
         }
 
@@ -228,7 +255,7 @@ var TruffleContractSchema = {
       this.validate(normalized);
     }
 
-    return normalized
+    return normalized;
   }
 };
 

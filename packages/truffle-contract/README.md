@@ -43,19 +43,27 @@ Each instance is tied to a specific address on the Ethereum network, and each in
   ```javascript
   var deployed;
   MyContract.deployed().then(function(instance) {
-    var deployed = instance;
+    deployed = instance;
     return instance.someFunction(5);
   }).then(function(result) {
     // Do something with the result or continue with more transactions.
   });
   ```
+  
+or equivalently in ES6 <sup>(node.js 8 or newer)</sup>:  
+
+  ```javascript
+  const deployed = await MyContract.deployed();
+  const result = await instance.someFunction(5);  
+  ```  
 
 ### Browser Usage
 
-In your `head` element, include Web3 and then include truffle-contract:
+In your `head` element, include Web3 and Ethers.js and then include truffle-contract:
 
 ```
 <script type="text/javascript" src="./path/to/web3.min.js"></script>
+<script type="text/javascript" src="./path/to/ethers.min.js"></script>
 <script type="text/javascript" src="./dist/truffle-contract.min.js"></script>
 ```
 
@@ -206,7 +214,7 @@ contract MyContract {
     value = val;
     ValueSet(value);
   }
-  function getValue() constant returns (uint) {
+  function getValue() view returns (uint) {
     return value;
   }
 }
@@ -277,7 +285,7 @@ instance.getValue.call().then(function(val) {
 });
 ```
 
-Even more helpful, however is we *don't even need* to use `.call` when a function is marked as `constant`, because `truffle-contract` will automatically know that that function can only be interacted with via a call:
+Even more helpful, however is we *don't even need* to use `.call` when a function is marked as `view` or `pure`, because `truffle-contract` will automatically know that that function can only be interacted with via a call:
 
 ```javascript
 instance.getValue().then(function(val) {

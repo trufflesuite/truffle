@@ -8,6 +8,15 @@ var command = {
       default: false
     }
   },
+  help: {
+    usage: "truffle networks [--clean]",
+    options: [
+      {
+        option: "--clean",
+        description: "Remove all network artifacts that aren't associated with a named network.",
+      }
+    ]
+  },
   run: function (options, done) {
     var Config = require("truffle-config");
     var Networks = require("../networks");
@@ -20,6 +29,6 @@ var command = {
       Networks.display(config, done);
     }
   }
-}
+};
 
 module.exports = command;

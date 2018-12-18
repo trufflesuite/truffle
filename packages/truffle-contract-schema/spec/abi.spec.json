@@ -64,7 +64,7 @@
         "constant": { "type": "boolean" },
         "payable": { "type": "boolean", "default": false }
       },
-      "required": ["name", "inputs", "constant"],
+      "required": ["name", "inputs", "stateMutability"],
       "additionalProperties": false
     },
 
@@ -79,9 +79,13 @@
           "type": "array",
           "items": { "$ref": "#/definitions/Parameter" }
         },
+        "stateMutability": {
+          "$ref": "#/definitions/StateMutability"
+        },
+        "constant": { "type": "boolean" },
         "payable": { "type": "boolean", "default": false }
       },
-      "required": ["type", "inputs"],
+      "required": ["type", "inputs", "stateMutability"],
       "additionalProperties": false
     },
 
@@ -92,10 +96,13 @@
           "type": "string",
           "enum": ["fallback"]
         },
+        "stateMutability": {
+          "$ref": "#/definitions/StateMutability"
+        },
         "constant": { "type": "boolean" },
         "payable": { "type": "boolean", "default": false }
       },
-      "required": ["type"],
+      "required": ["type", "stateMutability"],
       "additionalProperties": false
     },
 

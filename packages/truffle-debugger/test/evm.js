@@ -1,19 +1,18 @@
 import debugModule from "debug";
-const debug = debugModule("test:solidity");
+const debug = debugModule("test:evm"); // eslint-disable-line no-unused-vars
 
 import { assert } from "chai";
 
-import Ganache from "ganache-cli";
-import Web3 from "web3";
+import Ganache from "ganache-core";
 
 import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
 
 import evm from "lib/evm/selectors";
-
+import trace from "lib/trace/selectors";
 
 const __OUTER = `
-pragma solidity ^0.4.18;
+pragma solidity ~0.5;
 
 import "./Inner.sol";
 
@@ -22,7 +21,7 @@ contract Outer {
 
   Inner inner;
 
-  function Outer(address _inner) {
+  constructor(address _inner) public {
     inner = Inner(_inner);
   }
 
@@ -35,9 +34,8 @@ contract Outer {
 }
 `;
 
-
 const __INNER = `
-pragma solidity ^0.4.18;
+pragma solidity ~0.5;
 
 contract Inner {
   function run() public {
@@ -49,46 +47,37 @@ const __MIGRATION = `
 let Outer = artifacts.require("Outer");
 let Inner = artifacts.require("Inner");
 
-module.exports = function(deployer) {
-  return deployer
-    .then(function() {
-      return deployer.deploy(Inner);
-    })
-    .then(function() {
-      return Inner.deployed();
-    })
-    .then(function(inner) {
-      return deployer.deploy(Outer, inner.address);
-    });
+module.exports = async function(deployer) {
+  await deployer.deploy(Inner);
+  const inner = await Inner.deployed();
+  await deployer.deploy(Outer, inner.address);
 };
 `;
 
 let sources = {
   "Inner.sol": __INNER,
-  "Outer.sol": __OUTER,
-}
+  "Outer.sol": __OUTER
+};
 
 let migrations = {
-  "2_deploy_contracts.js": __MIGRATION,
+  "2_deploy_contracts.js": __MIGRATION
 };
 
 describe("EVM Debugging", function() {
   var provider;
-  var web3;
 
   var abstractions;
   var artifacts;
   var files;
 
   before("Create Provider", async function() {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
-    web3 = new Web3(provider);
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function() {
     this.timeout(30000);
 
-    let prepared = await prepareContracts(provider, sources, migrations)
+    let prepared = await prepareContracts(provider, sources, migrations);
     abstractions = prepared.abstractions;
     artifacts = prepared.artifacts;
     files = prepared.files;
@@ -109,17 +98,16 @@ describe("EVM Debugging", function() {
       });
 
       let session = bugger.connect();
-      var stepped;  // session steppers return false when done
+      var finished; // is the trace finished?
 
       do {
-        stepped = session.stepNext();
+        session.stepNext();
+        finished = session.view(trace.finished);
 
         let actual = session.view(evm.current.callstack).length;
 
         assert.isAtMost(actual, maxExpected);
-
-      } while(stepped);
-
+      } while (!finished);
     });
 
     it("tracks callstack correctly", async function() {
@@ -138,13 +126,14 @@ describe("EVM Debugging", function() {
 
       // follow callstack length values in list
       // see source above
-      let expectedDepthSequence = [1,2,1,0];
+      let expectedDepthSequence = [1, 2, 1];
       let actualSequence = [session.view(evm.current.callstack).length];
 
-      var stepped;
+      var finished; // is the trace finished?
 
       do {
-        stepped = session.stepNext();
+        session.stepNext();
+        finished = session.view(trace.finished);
 
         let currentDepth = session.view(evm.current.callstack).length;
         let lastKnown = actualSequence[actualSequence.length - 1];
@@ -152,7 +141,7 @@ describe("EVM Debugging", function() {
         if (currentDepth !== lastKnown) {
           actualSequence.push(currentDepth);
         }
-      } while(stepped);
+      } while (!finished);
 
       assert.deepEqual(actualSequence, expectedDepthSequence);
     });

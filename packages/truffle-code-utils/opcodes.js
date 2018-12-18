@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 var codes = {
   // 0x0 range - arithmetic ops
   // name, baseCost, off stack, on stack, dynamic
@@ -154,30 +154,30 @@ var codes = {
 
   // '0x70', range - other
   0xff: ['SUICIDE', 0, 1, 0, false]
-}
+};
 
 module.exports = function (op, full) {
-  var code = codes[op] ? codes[op] : ['INVALID', 0]
+  var code = codes[op] ? codes[op] : ['INVALID', 0];
 
-  var opcode = code[0]
+  var opcode = code[0];
 
   if (full) {
     if (opcode === 'LOG') {
-      opcode += op - 0xa0
+      opcode += op - 0xa0;
     }
 
     if (opcode === 'PUSH') {
-      opcode += op - 0x5f
+      opcode += op - 0x5f;
     }
 
     if (opcode === 'DUP') {
-      opcode += op - 0x7f
+      opcode += op - 0x7f;
     }
 
     if (opcode === 'SWAP') {
-      opcode += op - 0x8f
+      opcode += op - 0x8f;
     }
   }
 
-  return {name: opcode, fee: code[1], in: code[2], out: code[3], dynamic: code[4], async: code[5]}
-}
+  return {name: opcode, fee: code[1], in: code[2], out: code[3], dynamic: code[4], async: code[5]};
+};

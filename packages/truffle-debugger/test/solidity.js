@@ -1,31 +1,36 @@
 import debugModule from "debug";
-const debug = debugModule("test:solidity");
+const debug = debugModule("test:solidity"); // eslint-disable-line no-unused-vars
 
 import { assert } from "chai";
 
-import Ganache from "ganache-cli";
-import Web3 from "web3";
+import Ganache from "ganache-core";
 
 import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
 
 import solidity from "lib/solidity/selectors";
-
+import trace from "lib/trace/selectors";
 
 const __SINGLE_CALL = `
-pragma solidity ^0.4.18;
+pragma solidity ~0.5;
 
 contract SingleCall {
   event Called();
+  event Done();
 
   function run() public {
-    Called();
+    emit Called();
+  }
+
+  function runSha() public {
+    emit Called();
+    sha256("hello world!");
+    emit Done();
   }
 }
 `;
 
-
-const __NESTED_CALL = `pragma solidity ^0.4.18;
+const __NESTED_CALL = `pragma solidity ~0.5;
 
 contract NestedCall {
   event First();
@@ -49,40 +54,35 @@ contract NestedCall {
   }
 
   function inner() public {
-    First();
+    emit First();
   }
 
   function second() public {
-    Second();
+    emit Second();
   }
-
 }
 `;
 
-
 let sources = {
   "SingleCall.sol": __SINGLE_CALL,
-  "NestedCall.sol": __NESTED_CALL,
-}
-
+  "NestedCall.sol": __NESTED_CALL
+};
 
 describe("Solidity Debugging", function() {
   var provider;
-  var web3;
 
   var abstractions;
   var artifacts;
   var files;
 
   before("Create Provider", async function() {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
-    web3 = new Web3(provider);
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function() {
     this.timeout(30000);
 
-    let prepared = await prepareContracts(provider, sources)
+    let prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;
     artifacts = prepared.artifacts;
     files = prepared.files;
@@ -103,20 +103,19 @@ describe("Solidity Debugging", function() {
     let session = bugger.connect();
 
     // at `second();`
-    let breakpoint = { "address": instance.address, line: 16 }
-    let breakpointStopped = false;
+    let source = await session.view(solidity.current.source);
+    let breakpoint = { sourceId: source.id, line: 16 };
+
+    session.addBreakpoint(breakpoint);
 
     do {
-      session.continueUntil(breakpoint);
+      session.continueUntilBreakpoint();
 
-      if (!session.finished) {
+      if (!session.view(trace.finished)) {
         let range = await session.view(solidity.current.sourceRange);
         assert.equal(range.lines.start.line, 16);
-
-        breakpointStopped = true;
       }
-
-    } while(!session.finished);
+    } while (!session.view(trace.finished));
   });
 
   describe("Function Depth", function() {
@@ -134,17 +133,49 @@ describe("Solidity Debugging", function() {
       });
 
       let session = bugger.connect();
-      var stepped;  // session steppers return false when done
+      var finished;
 
       do {
-        stepped = session.stepNext();
+        session.stepNext();
+        finished = session.view(trace.finished);
 
         let actual = session.view(solidity.current.functionDepth);
 
         assert.isAtMost(actual, maxExpected);
+      } while (!finished);
+    });
 
-      } while(stepped);
+    it("is unaffected by precompiles", async function() {
+      const numExpected = 1;
 
+      let instance = await abstractions.SingleCall.deployed();
+      let receipt = await instance.runSha();
+      let txHash = receipt.tx;
+
+      let bugger = await Debugger.forTx(txHash, {
+        provider,
+        files,
+        contracts: artifacts
+      });
+
+      let session = bugger.connect();
+
+      let hasBegun = false; //we don't check until it's nonzero, since it
+      //starts as zero now
+
+      while (!session.view(trace.finished)) {
+        let actual = session.view(solidity.current.functionDepth);
+        if (actual !== 0) {
+          hasBegun = true;
+        }
+        if (hasBegun) {
+          assert.equal(actual, numExpected);
+        }
+
+        session.stepNext();
+      }
+
+      assert(hasBegun); //check for non-vacuity of the above tests
     });
 
     it("spelunks correctly", async function() {
@@ -163,13 +194,15 @@ describe("Solidity Debugging", function() {
 
       // follow functionDepth values in list
       // see source above
-      let expectedDepthSequence = [1,2,3,2,1,2,1,0];
+      let expectedDepthSequence = [0, 1, 2, 3, 2, 1, 2, 1, -1];
+      //end at -1 due to losing 2 from contract method return
       let actualSequence = [session.view(solidity.current.functionDepth)];
 
-      var stepped;
+      var finished;
 
       do {
-        stepped = session.stepNext();
+        session.stepNext();
+        finished = session.view(trace.finished);
 
         let currentDepth = session.view(solidity.current.functionDepth);
         let lastKnown = actualSequence[actualSequence.length - 1];
@@ -177,7 +210,7 @@ describe("Solidity Debugging", function() {
         if (currentDepth !== lastKnown) {
           actualSequence.push(currentDepth);
         }
-      } while(stepped);
+      } while (!finished);
 
       assert.deepEqual(actualSequence, expectedDepthSequence);
     });

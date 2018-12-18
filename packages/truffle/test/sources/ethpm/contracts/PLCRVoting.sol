@@ -1,11 +1,11 @@
-pragma solidity ^0.4.8;
+pragma solidity ^0.5.0;
 
 import "tokens/eip20/EIP20.sol";
 import "./Local.sol";
 
 contract PLCRVoting is EIP20, Local {
 
-    function isExpired(uint _terminationDate) constant public returns (bool expired) {
+    function isExpired(uint _terminationDate) view public returns (bool expired) {
         return (block.timestamp > _terminationDate);
     }
 

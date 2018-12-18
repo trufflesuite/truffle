@@ -29,7 +29,7 @@ describe("truffle publish", function() {
       config.logger = logger;
       config.mocha = {
         reporter: new Reporter(logger)
-      }
+      };
     });
   });
 
@@ -57,7 +57,7 @@ describe("truffle publish", function() {
         }
         assert(output.includes('Uploading sources and publishing'), 'Should have found sources');
         done();
-      })
+      });
     });
   });
 });

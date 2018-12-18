@@ -7,23 +7,30 @@ const commonConfig = require('./webpack.config-common.js');
 
 module.exports = merge(commonConfig, {
   module: {
-    rules: [{
-      test: /\.js$/,
-      loader: "babel-loader",
-      query: {
-        presets: [
-          [
-            'babel-preset-env',
-            { targets: { "node": "6.14" } }
-          ]
-        ],
-        plugins: ['transform-object-rest-spread', 'transform-runtime'],
+    rules: [
+      {
+        test: /\.(js)/,
+        include: path.resolve('lib'),
+        loader: 'istanbul-instrumenter-loader'
       },
-      include: [
-        path.resolve(__dirname, "..", 'lib'),
-        path.resolve(__dirname, "..", 'test')
-      ],
-    }],
+      {
+        test: /\.js$/,
+        loader: "babel-loader",
+        query: {
+          presets: [
+            [
+              'babel-preset-env',
+              { targets: { "node": "6.14" } }
+            ]
+          ],
+          plugins: ['transform-object-rest-spread', 'transform-runtime'],
+        },
+        include: [
+          path.resolve(__dirname, "..", 'lib'),
+          path.resolve(__dirname, "..", 'test')
+        ],
+      }
+    ],
   },
 
   plugins: [
@@ -33,4 +40,6 @@ module.exports = merge(commonConfig, {
 
     new WriteFilePlugin(),
   ],
+
+  devtool: '#inline-cheap-module-source-map'
 });

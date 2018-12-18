@@ -1,6 +1,7 @@
+var debug = require("debug")("provider"); // eslint-disable-line no-unused-vars
 var Web3 = require("web3");
 
-var wrapper = require('./wrapper');
+var wrapper = require("./wrapper");
 
 module.exports = {
   wrap: function(provider, options) {
@@ -14,8 +15,15 @@ module.exports = {
       provider = options.provider();
     } else if (options.provider) {
       provider = options.provider;
+    } else if (options.websockets) {
+      provider = new Web3.providers.WebsocketProvider(
+        "ws://" + options.host + ":" + options.port
+      );
     } else {
-      provider = new Web3.providers.HttpProvider("http://" + options.host + ":" + options.port);
+      provider = new Web3.providers.HttpProvider(
+        "http://" + options.host + ":" + options.port,
+        { keepAlive: false }
+      );
     }
 
     return this.wrap(provider, options);
@@ -23,13 +31,15 @@ module.exports = {
 
   test_connection: function(provider, callback) {
     var web3 = new Web3();
-    web3.setProvider(provider);
-    web3.eth.getCoinbase(function(error, coinbase) {
-      if (error != null) {
-        error = new Error("Could not connect to your RPC client. Please check your RPC configuration.");
-      }
+    var fail = new Error(
+      "Could not connect to your RPC client. Please check your RPC configuration."
+    );
 
-      callback(error, coinbase)
-    });
+    web3.setProvider(provider);
+
+    web3.eth
+      .getCoinbase()
+      .then(coinbase => callback(null, coinbase))
+      .catch(() => callback(fail, null));
   }
 };

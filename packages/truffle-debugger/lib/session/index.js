@@ -1,15 +1,11 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:session");
-
-import trace from "lib/trace/selectors";
-import evm from "lib/evm/selectors";
-import ast from "lib/ast/selectors";
-import solidity from "lib/solidity/selectors";
+const debug = debugModule("debugger:session"); //eslint-disable-line no-unused-vars
 
 import configureStore from "lib/store";
 
 import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
+import data from "lib/data/selectors";
 
 import rootSaga from "./sagas";
 import reducer from "./reducers";
@@ -40,12 +36,12 @@ export default class Session {
   }
 
   ready() {
-    return new Promise( (accept, reject) => {
-      this._store.subscribe( () => {
-        if (this.state.session == "ACTIVE") {
-          accept()
-        } else if (typeof this.state.session == "object") {
-          reject(this.state.session.error);
+    return new Promise((accept, reject) => {
+      this._store.subscribe(() => {
+        if (this.state.session.status == "ACTIVE") {
+          accept();
+        } else if (typeof this.state.session.status == "object") {
+          reject(this.state.session.status.error);
         }
       });
     });
@@ -77,8 +73,12 @@ export default class Session {
         deployedSourceMap,
         sourcePath,
         source,
-        ast
+        ast,
+        compiler
       } = contract;
+
+      debug("sourceMap %o", sourceMap);
+      debug("compiler %o", compiler);
 
       sourcesByPath[sourcePath] = { sourcePath, source, ast };
 
@@ -94,7 +94,8 @@ export default class Session {
         contexts.push({
           contractName,
           binary: deployedBinary,
-          sourceMap: deployedSourceMap
+          sourceMap: deployedSourceMap,
+          compiler
         });
       }
     }
@@ -116,21 +117,7 @@ export default class Session {
     return selector(this.state);
   }
 
-  get finished() {
-    return this.state.session == "FINISHED";
-  }
-
-  get failed() {
-    return this.finished && this.view(evm.current.callstack).length
-  }
-
   dispatch(action) {
-    if (this.finished) {
-      debug("finished: intercepting action %o", action);
-
-      return false;
-    }
-
     this._store.dispatch(action);
 
     return true;
@@ -160,7 +147,68 @@ export default class Session {
     return this.dispatch(controller.stepOut());
   }
 
-  continueUntil(...breakpoints) {
-    return this.dispatch(controller.continueUntil(...breakpoints));
+  reset() {
+    return this.dispatch(controller.reset());
+  }
+
+  continueUntilBreakpoint() {
+    return this.dispatch(controller.continueUntilBreakpoint());
+  }
+
+  addBreakpoint(breakpoint) {
+    return this.dispatch(controller.addBreakpoint(breakpoint));
+  }
+
+  removeBreakpoint(breakpoint) {
+    return this.dispatch(controller.removeBreakpoint(breakpoint));
+  }
+
+  removeAllBreakpoints() {
+    return this.dispatch(controller.removeAllBreakpoints());
+  }
+
+  async decodeReady() {
+    return new Promise(resolve => {
+      let haveResolved = false;
+      const unsubscribe = this._store.subscribe(() => {
+        const subscriptionDecodingStarted = this.view(
+          data.proc.decodingMappingKeys
+        );
+
+        debug("following decoding started: %d", subscriptionDecodingStarted);
+
+        if (subscriptionDecodingStarted <= 0 && !haveResolved) {
+          haveResolved = true;
+          unsubscribe();
+          resolve();
+        }
+      });
+
+      const decodingStarted = this.view(data.proc.decodingMappingKeys);
+
+      debug("initial decoding started: %d", decodingStarted);
+
+      if (decodingStarted <= 0) {
+        haveResolved = true;
+        unsubscribe();
+        resolve();
+      }
+    });
+  }
+
+  async variable(name) {
+    await this.decodeReady();
+
+    const definitions = this.view(data.current.identifiers.definitions);
+    const refs = this.view(data.current.identifiers.refs);
+
+    const decode = this.view(data.views.decoder);
+    return await decode(definitions[name], refs[name]);
+  }
+
+  async variables() {
+    await this.decodeReady();
+
+    return await this.view(data.current.identifiers.decoded);
   }
 }

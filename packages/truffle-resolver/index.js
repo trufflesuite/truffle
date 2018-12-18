@@ -77,7 +77,7 @@ Resolver.prototype.resolve = function(import_path, imported_from, callback) {
     }
 
     callback(null, resolved_body, resolved_path, current_source);
-  })
+  });
 };
 
 module.exports = Resolver;

@@ -1,6 +1,9 @@
 lerna-debug.log
 packages/truffle/build
 packages/truffle-debugger/.tmp
+packages/truffle-contract/dist
 node_modules
 yarn-error.log
+.vscode
+bin
 .DS_Store

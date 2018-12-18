@@ -1,6 +1,7 @@
 var assert = require("chai").assert;
 var path = require("path");
-var fs = require("fs");
+var fs = require("fs-extra");
+var glob = require("glob");
 var Box = require("truffle-box");
 var Create = require("../lib/create");
 var dir = require("node-dir");
@@ -17,6 +18,14 @@ describe('create', function() {
       config = result;
       config.resolver = new Resolver(config);
       config.artifactor = new Artifactor(config.contracts_build_directory);
+      done();
+    });
+  });
+
+  after("Cleanup tmp files", function(done){
+    glob('tmp-*', (err, files) => {
+      if(err) done(err);
+      files.forEach(file => fs.removeSync(file));
       done();
     });
   });
