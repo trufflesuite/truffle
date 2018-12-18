@@ -1,19 +1,21 @@
 This release has been a long time in the making and represents months of hard
 work by many contributors, both internal and external. Without your care and
 service, there would be no Truffle v5, and so we would like to extend our
-gratitude to those of you who have significantly helped to bring us here today.
+gratitude for helping bring us here today.
 
 First of all, many thanks to Truffle's core engineering team: @eggplantzzz,
 @haltman-at, @CruzMolina, and @fainashalts. You have ignited this project's
-development and fuel this fire every day.
+development and fuel this fire every day. We are grateful to receive your
+energy, your intellect, and your adept response to the daily challenges of
+software development.
 
-This is not just a one team effort, and Truffle owes thanks to everyone in the
-organization at large. There are too many of you to name here, and your
-contributions are too numerous to list, but the operational support you provide
-is what enables this project to function. A special note of deep admiration
-to Truffle engineer alumnus @cgewecke, whose tireless efforts led to the first
-v5 beta, providing the bedrock of this release. And of course, thank you
-@tcoulter for creating Truffle and bringing us together.
+Beyond just the core engineering team, Truffle owes its thanks to
+everyone in the broader Truffle organization. The operational support you
+provide is what enables this project to function. A special note of deep
+admiration to Truffle engineer alumnus @cgewecke, whose tireless efforts led to
+the first v5 beta that provide the bedrock of this release. And of course,
+thank you @tcoulter for bringing this project together and leading through
+vision and execution.
 
 To members of the [Colony](https://colony.io/) team, your support has resonated
 loudly. You are surely already aware of the impact of your
@@ -33,5 +35,13 @@ Of course, these few names are just a tiny subset of Truffle's community.
 To all of our contributors, to those of you who have raised your hand in our
 [Gitter](https://gitter.im/ConsenSys/truffle) when something was unclear, to
 those of you who have opened issues, or gone a step further and written pull
-requests, to every Truffle user— you are why we build Truffle, and you are whom
-we build Truffle for. Thank you most of all.
+requests, to every Truffle user— you are why and for whom we build Truffle.
+Thank you.
+
+---
+
+<p align="center">
+:coffee:
+</p>
+
+---
