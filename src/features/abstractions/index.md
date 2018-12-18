@@ -33,11 +33,12 @@ const example = await Example.new(1);
 await example.setValue(5); // The transaction will retry for 1,000 blocks
 ```
 
-#### Websockets
+#### WebSockets
 
-Truffle now supports a websockets option for networks. You will need to enable
-this if you want to use the `confirmations` listener or if you want to hear
-events using `.on` or `.once`.
+Truffle now supports [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
+via the `websockets` network config. You will need to enable this if you want
+to use the `confirmations` listener or if you want to hear events using
+`.on` or `.once`.
 
 In the Truffle config:
 ```javascript
