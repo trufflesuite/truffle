@@ -1,5 +1,7 @@
+##### Specify your compiler version
+
 Specify the version of Solidity you'd like to use, and Truffle will
-automatically download it! :floppy_disk:
+automatically download the correct compiler for you! :floppy_disk:
 
 Use this feature by specifying `compilers.solc.version` in your Truffle config.
 
