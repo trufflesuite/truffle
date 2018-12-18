@@ -21,7 +21,7 @@ To members of the [Colony](https://colony.io/) team, your support has resonated
 loudly. You are surely already aware of the impact of your
 efforts, but to express our sentiments here: you have been crucial to our
 developing confidence in our work. Thank you @elenadimitrova and the rest of
-the team for being early adoptors and for the countless hours of investigation
+the team for being early adopters and for the countless hours of investigation
 into problems along the way.
 
 Humble thanks to members of the [Solidity](https://solidity.readthedocs.io) and
