@@ -3,7 +3,6 @@ The changes listed below only encompass the changes since v5.0.0-beta.2.  See th
 #### New Features
 + [#1445](https://github.com/trufflesuite/truffle/pull/1445) Support unboxing from github branches and into subdirectories. (@CruzMolina)
 + [#1480](https://github.com/trufflesuite/truffle/pull/1480) Update CompilerSupplier to be able to handle solc version constraints. (@eggplantzzz)
-+ [#1481](https://github.com/trufflesuite/truffle/pull/1481) Add !<...> syntax to debugger watch expressions. (@gnidan)
 + [#1490](https://github.com/trufflesuite/truffle/pull/1490) Network id check and verification during migrations. (@eggplantzzz)
 + [#1500](https://github.com/trufflesuite/truffle/pull/1500) Add command to remove all debugger breakpoints. (@haltman-at)
 
@@ -21,6 +20,7 @@ The changes listed below only encompass the changes since v5.0.0-beta.2.  See th
 + [#1471](https://github.com/trufflesuite/truffle/pull/1471) Restructure and fix bug with `truffle unbox`. (@eggplantzzz)
 + [#1476](https://github.com/trufflesuite/truffle/pull/1476) Suppress anonymous output parameters from `data.current.identifiers`. (@haltman-at)
 + [#1479](https://github.com/trufflesuite/truffle/pull/1479) Add an integration test for init command. (@eggplantzzz)
++ [#1481](https://github.com/trufflesuite/truffle/pull/1481) Add !<...> syntax to debugger watch expressions. (@gnidan)
 + [#1483](https://github.com/trufflesuite/truffle/pull/1483) Unabbreviate variable name for better style! (@gnidan)
 + [#1484](https://github.com/trufflesuite/truffle/pull/1484) Compartmentalize Assert.sol & Add Legacy SafeSend.sol. (@CruzMolina)
 + [#1488](https://github.com/trufflesuite/truffle/pull/1488) Correct check for `undefined` and `null` in truffle config. (@eggplantzzz)
