@@ -74,19 +74,6 @@ example.methods['setValue(uint256)'](123);
 example.methods['setValue(uint256,uint256)'](11, 55);
 ```
 
-#### BigNumber/BN return format (compatibility)
-
-As mentioned above - truffle-contract now returns BN. We've made this
-configurable so if you have an existing test suite you'd prefer to gradually
-transition from BigNumber to BN, it's possible to configure a contract's number
-format as below.
-
-```javascript
-// Choices are:  `["BigNumber", "BN", "String"].
-const Example = artifacts.require('Example');
-Example.numberFormat = 'BigNumber';
-```
-
 #### Structured function parameters
 
 There is now support for passing/returning structs in Solidity functions.
