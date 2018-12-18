@@ -1,4 +1,7 @@
-With this new version comes a whole slew of improvements on contract interaction. Syntax has been modernized, working with Events has gotten better, error reporting has gotten clearer, and structured function parameters are now supported! It just feels good...
+With this new version comes a whole slew of improvements on contract
+interaction. Syntax has been modernized, working with events has gotten better,
+error reporting has gotten clearer, and structured function parameters are now
+supported! It just feels good...
 
 {"gitdown": "contents", "maxLevel": 4, "rootId": "user-content-what-s-new-in-truffle-v5-interacting-with-your-contracts"}
 
@@ -13,9 +16,9 @@ Events also now have an EventEmitter interface.
 See the [usage section](https://truffleframework.com/docs/truffle/reference/contract-abstractions#usage) of the Truffle contract abstraction docs for some
 examples of working with contract objects and events!
 
-#### REVERT Reason strings
+#### `REVERT` Reason strings
 
-Another super useful change is support for revert reason strings!  Now if a
+Another super useful change is support for `REVERT` reason strings!  Now if a
 transaction needs to be reverted, you will receive the reason string and know
 why.
 
