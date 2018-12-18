@@ -89,7 +89,8 @@ Perhaps most notably, Truffle v5 now features:
   **`truffle run <external-plugin-command>`**.
 
   It's still early, so we'd love to solicit your feedback on this! This feature
-  is intentionally minimal to start, so thoughts and ideas are appreciated.
+  is intentionally minimal to start, so we'd appreciate your thoughts and
+  ideas for it.
 
   See [`truffle run`](#user-content-what-s-new-in-truffle-v5-truffle-run)
   notes for more.
