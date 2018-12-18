@@ -34,7 +34,7 @@ enjoy as much delicious chocolate for as many years as possible. :yum:
 
 This major release is the **biggest Truffle release yet**, in terms of
 the number of new features, the release notes word-count,
-and most excitingly, number of individual contributors from all around
+and most excitingly, the number of individual contributors from all around
 the world.
 
 To keep this introduction brief, this marks the end of the v5 beta series. We
