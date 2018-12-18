@@ -67,8 +67,8 @@ Perhaps most notably, Truffle v5 now features:
   Skip ahead to read about [Interacting with your contracts](#user-content-what-s-new-in-truffle-v5-interacting-with-your-contracts)
   or about [`async` Migrations](#user-content-what-s-new-in-truffle-v5-truffle-migrate-async-migrations).
 
-- **"Bring your own compiler"**. An old name for a new feature that's been on
-  the roadmap a long time, Truffle v5 offers unprecedented flexibility in its
+- **"Bring your own compiler"** is an old name for a new feature that's been on
+  the roadmap for long time. Truffle v5 offers unprecedented flexibility in its
   support for compiler integrations. Besides the **native `solc` support** that
   the name implies, this includes support for **`solc` in Docker**,
   **automatically downloading `solc`** to match a specified version, an
