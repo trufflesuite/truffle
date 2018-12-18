@@ -107,6 +107,8 @@ Perhaps most notably, Truffle v5 now features:
   limit the data we collect and thank you in advance for helping us adapt to
   and inform new best practices.
 
+  For some more in-depth information about this feature, see the [opt-in analytics section](#user-content-what-s-new-in-truffle-v5-new-truffle-config-opt-in-analytics).
+
 ---
 
 <p align="center">
