@@ -16,5 +16,7 @@ We don't use this anonymous information for anything other than to find out how 
 
 To toggle this feature you can run `truffle config <--enable-analytics|--disable-analytics>`.
 
+<small>_P.S. feel free to go take a peek at the two places in the code where metrics are gathered: [when running a command](https://github.com/trufflesuite/truffle/blob/next/packages/truffle-core/lib/command.js#L114-L118) and [to report version and errors](https://github.com/trufflesuite/truffle/blob/next/packages/truffle-core/cli.js). If you go ahead and do a good ol' [GitHub search for the word `analytics`](https://github.com/search?q=analytics+repo%3Atrufflesuite%2Ftruffle&type=Code) you can verify that these are the only places this code gets invoked._ :tada:</small>
+
 #### More to come!
 In the future we plan on providing more infrastructure to make Truffle even more configurable!  Perhaps you could configure networks that will be used by multiple projects or something similar for plugin installation.  Stay tuned!
