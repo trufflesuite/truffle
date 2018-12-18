@@ -16,20 +16,25 @@ export function receiveAddresses(addresses) {
 
 export const NEXT = "NEXT";
 export function next() {
-  return {type: NEXT};
+  return { type: NEXT };
 }
 
 export const TICK = "TICK";
 export function tick() {
-  return {type: TICK};
+  return { type: TICK };
 }
 
 export const TOCK = "TOCK";
 export function tock() {
-  return {type: TOCK};
+  return { type: TOCK };
 }
 
 export const END_OF_TRACE = "EOT";
 export function endTrace() {
-  return {type: END_OF_TRACE};
+  return { type: END_OF_TRACE };
+}
+
+export const RESET = "TRACE_RESET";
+export function reset() {
+  return { type: RESET };
 }

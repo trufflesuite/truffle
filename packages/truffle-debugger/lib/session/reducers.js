@@ -4,15 +4,15 @@ import data from "lib/data/reducers";
 import evm from "lib/evm/reducers";
 import solidity from "lib/solidity/reducers";
 import trace from "lib/trace/reducers";
+import controller from "lib/controller/reducers";
 
 import * as actions from "./actions";
 
 export const WAITING = "WAITING";
 export const ACTIVE = "ACTIVE";
 export const ERROR = "ERROR";
-export const FINISHED = "FINISHED";
 
-export function session(state = WAITING, action) {
+export function status(state = WAITING, action) {
   switch (action.type) {
     case actions.READY:
       return ACTIVE;
@@ -20,13 +20,34 @@ export function session(state = WAITING, action) {
     case actions.ERROR:
       return { error: action.error };
 
-    case actions.FINISH:
-      return FINISHED;
-
     default:
       return state;
   }
 }
+
+export function transaction(state = {}, action) {
+  switch(action.type) {
+    case actions.SAVE_TRANSACTION:
+      return action.transaction;
+    default:
+      return state;
+  }
+}
+
+export function receipt(state = {}, action) {
+  switch(action.type) {
+    case actions.SAVE_RECEIPT:
+      return action.receipt;
+    default:
+      return state;
+  }
+}
+
+const session = combineReducers({
+  status,
+  transaction,
+  receipt
+});
 
 const reduceState = combineReducers({
   session,
@@ -34,6 +55,7 @@ const reduceState = combineReducers({
   evm,
   solidity,
   trace,
+  controller
 });
 
 export default reduceState;

@@ -3,17 +3,15 @@ const debug = debugModule("test:context");
 
 import { assert } from "chai";
 
-import Ganache from "ganache-cli";
-import Web3 from "web3";
+import Ganache from "ganache-core";
 
 import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
 
 import sessionSelector from "lib/session/selectors";
-import trace from "lib/trace/selectors";
 
 const __OUTER = `
-pragma solidity ^0.4.18;
+pragma solidity ~0.5;
 
 import "./InnerContract.sol";
 
@@ -22,26 +20,26 @@ contract OuterContract {
 
   InnerContract inner;
 
-  function OuterContract(address _inner) public {
+  constructor(address _inner) public {
     inner = InnerContract(_inner);
   }
 
   function run() public {
     inner.run();
 
-    Outer();
+    emit Outer();
   }
 }
 `;
 
 const __INNER = `
-pragma solidity ^0.4.18;
+pragma solidity ~0.5;
 
 contract InnerContract {
   event Inner();
 
   function run() public {
-    Inner();
+    emit Inner();
   }
 }
 `;
@@ -65,25 +63,23 @@ module.exports = function(deployer) {
 `;
 
 let migrations = {
-  "2_deploy_contracts.js": __MIGRATION,
+  "2_deploy_contracts.js": __MIGRATION
 };
 
 let sources = {
   "OuterLibrary.sol": __OUTER,
-  "InnerContract.sol": __INNER,
+  "InnerContract.sol": __INNER
 };
 
-
-describe("Contexts", function () {
+describe("Contexts", function() {
   var provider;
-  var web3;
 
   var abstractions;
   var artifacts;
+  var files;
 
   before("Create Provider", async function() {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
-    web3 = new Web3(provider);
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function() {
@@ -92,41 +88,49 @@ describe("Contexts", function () {
     let prepared = await prepareContracts(provider, sources, migrations);
     abstractions = prepared.abstractions;
     artifacts = prepared.artifacts;
+    files = prepared.files;
   });
 
-  it("returns view of addresses affected", async function () {
+  it("returns view of addresses affected", async function() {
     let outer = await abstractions.OuterContract.deployed();
     let inner = await abstractions.InnerContract.deployed();
 
     // run outer contract method
     let result = await outer.run();
 
-    assert.equal(2, result.receipt.logs.length, "There should be two logs");
+    assert.equal(2, result.receipt.rawLogs.length, "There should be two logs");
 
     let txHash = result.tx;
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
+      files,
       contracts: artifacts
     });
     debug("debugger ready");
 
     let session = bugger.connect();
 
-    let affectedInstances = session.view(sessionSelector.info.affectedInstances);
+    let affectedInstances = session.view(
+      sessionSelector.info.affectedInstances
+    );
     debug("affectedInstances: %o", affectedInstances);
 
-    let affectedAddresses = Object.keys(affectedInstances);
+    let affectedAddresses = Object.keys(affectedInstances).map(address =>
+      address.toLowerCase()
+    );
 
     assert.equal(2, affectedAddresses.length);
 
     assert.include(
-      affectedAddresses, outer.address,
+      affectedAddresses,
+      outer.address.toLowerCase(),
       "OuterContract should be an affected address"
     );
 
     assert.include(
-      affectedAddresses, inner.address,
+      affectedAddresses,
+      inner.address.toLowerCase(),
       "InnerContract should be an affected address"
     );
   });

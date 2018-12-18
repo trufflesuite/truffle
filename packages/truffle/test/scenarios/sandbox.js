@@ -1,37 +1,45 @@
-var tmp = require('tmp');
-var fs = require('fs-extra');
-var config = require('truffle-config');
-var path = require('path');
+const tmp = require("tmp");
+const fs = require("fs-extra");
+const config = require("truffle-config");
+const path = require("path");
 
 module.exports = {
-
-  copyDirectory: function(source, dest) {
-    return new Promise(function(accept, reject) {
-      fs.copy(source, dest, function(err) {
-        (err) ? reject(err) : accept();
+  copyDirectory(source, dest) {
+    return new Promise((accept, reject) => {
+      fs.copy(source, dest, err => {
+        err ? reject(err) : accept();
       });
     });
   },
 
-  create: function(source, subPath){
-    subPath = subPath || '';
-    var self = this;
+  create(source, subPath = "") {
+    const self = this;
 
     return new Promise((resolve, reject) => {
-      if (!fs.existsSync(source)){
-        return reject("Sandbox failed: source: " + source + " does not exist");
-      }
+      if (!fs.existsSync(source))
+        return reject(`Sandbox failed: source: ${source} does not exist`);
 
       tmp.dir((err, dir) => {
-        if(err) return reject(err);
+        if (err) return reject(err);
 
-        self.copyDirectory(source, dir)
+        self
+          .copyDirectory(source, dir)
           .then(() => {
-            var conf = config.load(path.join(dir, subPath, "truffle.js"), {});
+            const conf = config.load(path.join(dir, subPath, "truffle.js"), {});
             resolve(conf);
           })
           .catch(reject);
-      })
+      });
+    });
+  },
+
+  load(source) {
+    return new Promise((resolve, reject) => {
+      if (!fs.existsSync(source))
+        return reject(`Sandbox failed: source: ${source} does not exist`);
+
+      const conf = config.load(path.join(source, "truffle.js"), {});
+      resolve(conf);
     });
   }
-}
+};

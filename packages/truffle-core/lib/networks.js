@@ -108,17 +108,17 @@ var Networks = {
       //   There's a least one network deployed to
       //   And one of those networks deployed to is unknown (i.e., unconfigured).
       if (star_networks.length > 0 && network_names.length > 0 && unknown_networks.length > 0) {
-        config.logger.log(OS.EOL + "The following networks are configured to match any network id ('*'):" + OS.EOL)
+        config.logger.log(OS.EOL + "The following networks are configured to match any network id ('*'):" + OS.EOL);
 
         star_networks.forEach(function(network_name) {
           config.logger.log("    " + network_name);
         });
 
-        config.logger.log(OS.EOL + "Closely inspect the deployed networks below, and use `truffle networks --clean` to remove any networks that don't match your configuration. You should not use the wildcard configuration ('*') for staging and production networks for which you intend to deploy your application.")
+        config.logger.log(OS.EOL + "Closely inspect the deployed networks below, and use `truffle networks --clean` to remove any networks that don't match your configuration. You should not use the wildcard configuration ('*') for staging and production networks for which you intend to deploy your application.");
       }
 
       network_names.forEach(function(network_name) {
-        config.logger.log("")
+        config.logger.log("");
 
         var output = Object.keys(networks[network_name]).sort().map(function(contract_name) {
           var address = networks[network_name][contract_name];
@@ -140,7 +140,7 @@ var Networks = {
         }
 
         config.logger.log(message);
-        config.logger.log("  " + output.join("\n  "))
+        config.logger.log("  " + output.join("\n  "));
       });
 
       if (network_names.length == 0) {
@@ -253,9 +253,7 @@ var Networks = {
     }
 
     var web3 = new Web3(provider);
-    web3.version.getNetwork(function(err, current_network_id) {
-      if (err) return callback(err);
-
+    web3.eth.net.getId(current_network_id => {
       if (first == current_network_id) {
         return callback(null, true);
       }
@@ -266,7 +264,7 @@ var Networks = {
         // Nothing else to compare.
         return callback(null, false);
       }
-    });
+    }).catch(callback);
   }
 };
 

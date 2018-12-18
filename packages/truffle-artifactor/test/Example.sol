@@ -1,30 +1,32 @@
+pragma solidity ^0.5.0;
+
 contract Example {
   uint public value;
   bool public fallbackTriggered;
   event ExampleEvent(address indexed _from, uint num);
 
-  function Example(uint val) {
+  constructor(uint val) public {
     value = val;
     fallbackTriggered = false;
   }
 
-  function setValue(uint val) {
+  function setValue(uint val) public {
     value = val;
   }
 
-  function getValue() constant returns(uint) {
+  function getValue() public view returns(uint) {
     return value;
   }
 
-  function parrot(uint val) returns(uint) {
+  function parrot(uint val) public returns(uint) {
     return val;
   }
 
-  function triggerEvent() {
-    ExampleEvent(msg.sender, 8);
+  function triggerEvent() public {
+    emit ExampleEvent(msg.sender, 8);
   }
 
-  function() payable {
+  function() external payable {
     fallbackTriggered = true;
   }
 }

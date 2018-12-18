@@ -1,45 +1,97 @@
-var utils = require("./lib/utils");
-var tmp = require("tmp");
-var path = require("path");
+const utils = require("./lib/utils");
+const tmp = require("tmp");
+const path = require("path");
+const Config = require("truffle-config");
+const ora = require("ora");
 
-var Config = require("truffle-config");
+function parseSandboxOptions(options) {
+  if (typeof options === "function") {
+    return {
+      name: "default",
+      unsafeCleanup: false,
+      setGracefulCleanup: false
+    };
+  } else if (typeof options === "string") {
+    // back compatibility for when `options` used to be `name`
+    return {
+      name: options,
+      unsafeCleanup: false,
+      setGracefulCleanup: false
+    };
+  } else if (typeof options === "object") {
+    return {
+      name: options.name || "default",
+      unsafeCleanup: options.unsafeCleanup || false,
+      setGracefulCleanup: options.setGracefulCleanup || false
+    };
+  }
+}
 
-var Box = {
-  unbox: function(url, destination, options) {
-    options = options || {};
-    options.logger = options.logger || {log: function() {}}
+const Box = {
+  unbox: async (url, destination, options = {}) => {
+    let tempDirCleanup;
+    options.logger = options.logger || { log: () => {} };
+    const unpackBoxOptions = {
+      logger: options.logger,
+      force: options.force
+    };
 
-    return Promise.resolve()
-      .then(function() {
-        options.logger.log("Downloading...");
-        return utils.downloadBox(url, destination)
-      })
-      .then(function() {
-        options.logger.log("Unpacking...");
-        return utils.unpackBox(destination);
-      })
-      .then(function(boxConfig) {
-        options.logger.log("Setting up...");
-        return utils.setupBox(boxConfig, destination)
-      })
-      .then(function(boxConfig) {
-        return boxConfig;
-      });
+    try {
+      options.logger.log("");
+      const tempDir = await utils.setUpTempDirectory();
+      tempDirPath = tempDir.path;
+      tempDirCleanup = tempDir.cleanupCallback;
+
+      await utils.downloadBox(url, tempDirPath);
+
+      const boxConfig = await utils.readBoxConfig(tempDirPath);
+
+      await utils.unpackBox(
+        tempDirPath,
+        destination,
+        boxConfig,
+        unpackBoxOptions
+      );
+
+      const cleanupSpinner = ora("Cleaning up temporary files").start();
+      tempDirCleanup();
+      cleanupSpinner.succeed();
+
+      await utils.setUpBox(boxConfig, destination);
+
+      return boxConfig;
+    } catch (error) {
+      if (tempDirCleanup) tempDirCleanup();
+      throw new Error(error);
+    }
   },
 
-  sandbox: function(name, callback) {
+  // options.unsafeCleanup
+  //   Recursively removes the created temporary directory, even when it's not empty. default is false
+  // options.setGracefulCleanup
+  //   Cleanup temporary files even when an uncaught exception occurs
+  sandbox: function(options, callback) {
     var self = this;
-    if (typeof name === "function") {
-      callback = name;
-      name = "default";
+
+    const { name, unsafeCleanup, setGracefulCleanup } = parseSandboxOptions(
+      options
+    );
+
+    if (typeof options === "function") {
+      callback = options;
     }
 
-    tmp.dir(function(err, dir, cleanupCallback) {
+    if (setGracefulCleanup) {
+      tmp.setGracefulCleanup();
+    }
+
+    tmp.dir({ unsafeCleanup }, function(err, dir) {
       if (err) {
         return callback(err);
       }
 
-      self.unbox("https://github.com/trufflesuite/truffle-init-" + name, dir)
+      self
+        .unbox("https://github.com/trufflesuite/truffle-init-" + name, dir)
         .then(function() {
           var config = Config.load(path.join(dir, "truffle.js"), {});
           callback(null, config);

@@ -5,6 +5,7 @@ import { all, takeEvery, apply, fork, join, take, put, select } from 'redux-saga
 import { prefixName } from "lib/helpers";
 
 import * as actions from "../actions";
+import * as session from "lib/session/actions";
 
 import Web3Adapter from "../adapter";
 
@@ -23,12 +24,16 @@ function* fetchTransactionInfo(adapter, {txHash}) {
   yield put(actions.receiveTrace(trace));
 
   let tx = yield apply(adapter, adapter.getTransaction, [txHash]);
+  let receipt = yield apply(adapter, adapter.getReceipt, [txHash]);
+
+  yield put(session.saveTransaction(tx));
+  yield put(session.saveReceipt(receipt));
+
   if (tx.to && tx.to != "0x0") {
     yield put(actions.receiveCall({address: tx.to}));
     return;
   }
 
-  let receipt = yield apply(adapter, adapter.getReceipt, [txHash]);
   if (receipt.contractAddress) {
     yield put(actions.receiveCall({binary: tx.input}));
     return;

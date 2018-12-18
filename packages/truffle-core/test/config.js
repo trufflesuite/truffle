@@ -1,14 +1,14 @@
 var assert = require("chai").assert;
-var path = require("path");
-var fs = require("fs");
+var fs = require("fs-extra");
+var glob = require("glob");
 var Box = require("truffle-box");
 var Contracts = require("truffle-workflow-compile");
-var TestRPC = require("ganache-cli");
+var Ganache = require("ganache-core");
 var provision = require("truffle-provisioner");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
 
-describe('config', function() {
+describe("config", function() {
   var config;
   var customRPCConfig = {
     gas: 90000,
@@ -18,7 +18,7 @@ describe('config', function() {
 
   before("Create a sandbox with extra config values", function(done) {
     this.timeout(10000);
-    Box.sandbox(function(err, result) {
+    Box.sandbox("default#web3-one", function(err, result) {
       if (err) return done(err);
       config = result;
       config.resolver = new Resolver(config);
@@ -30,7 +30,7 @@ describe('config', function() {
           gas: customRPCConfig.gas,
           gasPrice: customRPCConfig.gasPrice,
           from: "0x1234567890123456789012345678901234567890",
-          provider: TestRPC.provider()
+          provider: Ganache.provider()
         }
       };
 
@@ -40,17 +40,27 @@ describe('config', function() {
 
   before("Compile contracts", function(done) {
     this.timeout(5000);
-    Contracts.compile(config.with({
-      quiet: true
-    }), done);
+    Contracts.compile(
+      config.with({
+        quiet: true
+      }),
+      done
+    );
   });
 
-  it('Provisioning contracts should set proper RPC values', function() {
+  after("Cleanup tmp files", function(done) {
+    glob("tmp-*", (err, files) => {
+      if (err) done(err);
+      files.forEach(file => fs.removeSync(file));
+      done();
+    });
+  });
+
+  it("Provisioning contracts should set proper RPC values", function() {
     var contract = config.resolver.require("MetaCoin.sol");
 
     provision(contract, config);
 
     assert.deepEqual(contract.defaults(), customRPCConfig);
   });
-
 });

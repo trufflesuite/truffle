@@ -1,22 +1,25 @@
 {
   "name": "truffle-core",
   "namespace": "consensys",
-  "version": "4.1.14",
+  "version": "5.0.0",
   "description": "Core code for Truffle command line tool",
   "dependencies": {
+    "app-module-path": "^2.2.0",
     "async": "2.6.1",
-    "chai": "4.1.2",
-    "chokidar": "^1.4.2",
+    "chai": "4.2.0",
     "colors": "^1.1.2",
+    "command-exists": "^1.2.8",
+    "configstore": "^4.0.0",
     "cpr": "^0.4.3",
-    "debug": "^3.1.0",
+    "debug": "^4.1.0",
     "del": "^2.2.0",
     "diff": "1.4.0",
+    "ethereumjs-wallet": "^0.6.2",
     "ethpm": "0.0.16",
-    "ethpm-registry": "0.0.10",
-    "finalhandler": "^0.4.0",
+    "ethpm-registry": "0.1.0-next.2",
     "fs-extra": "6.0.1",
-    "ganache-cli": "6.1.0-beta.4",
+    "ganache-core": "^2.3.1",
+    "hdkey": "^1.1.0",
     "lodash": "4.17.10",
     "mkdirp": "^0.5.1",
     "mocha": "5.2.0",
@@ -24,31 +27,32 @@
     "node-emoji": "^1.8.1",
     "node-ipc": "^9.1.1",
     "original-require": "1.0.1",
-    "safe-eval": "^0.3.0",
-    "serve-static": "^1.10.0",
+    "safe-eval": "^0.4.1",
+    "sane": "^4.0.2",
     "source-map-support": "^0.5.3",
     "spawn-args": "^0.1.0",
     "temp": "^0.8.3",
-    "truffle-artifactor": "^3.0.7",
-    "truffle-box": "^1.0.7",
-    "truffle-compile": "^3.0.13",
-    "truffle-config": "^1.0.6",
-    "truffle-contract": "^3.0.6",
-    "truffle-contract-sources": "^0.0.2",
-    "truffle-debug-utils": "^1.0.6",
-    "truffle-debugger": "^4.0.3",
-    "truffle-deployer": "^2.0.7",
+    "truffle-artifactor": "^4.0.0",
+    "truffle-box": "^1.0.8",
+    "truffle-compile": "^4.0.0",
+    "truffle-config": "^1.1.0",
+    "truffle-contract": "^4.0.0",
+    "truffle-contract-sources": "^0.1.0",
+    "truffle-debug-utils": "^1.0.7",
+    "truffle-debugger": "^4.1.0",
+    "truffle-deployer": "^3.0.0",
     "truffle-error": "^0.0.3",
-    "truffle-expect": "^0.0.4",
+    "truffle-expect": "^0.0.5",
     "truffle-init": "^1.0.7",
-    "truffle-migrate": "^2.0.8",
-    "truffle-provider": "^0.0.6",
+    "truffle-migrate": "^3.0.0",
+    "truffle-provider": "^0.1.0",
     "truffle-provisioner": "^0.1.1",
-    "truffle-require": "^1.0.7",
-    "truffle-resolver": "^4.0.4",
-    "truffle-solidity-utils": "^1.1.2",
-    "truffle-workflow-compile": "^1.0.6",
-    "web3": "0.20.6",
+    "truffle-require": "^2.0.0",
+    "truffle-resolver": "^5.0.0",
+    "truffle-solidity-utils": "^1.2.0",
+    "truffle-workflow-compile": "^2.0.0",
+    "universal-analytics": "^0.4.17",
+    "web3": "^1.0.0-beta.37",
     "yargs": "^8.0.2"
   },
   "bin": {
@@ -56,7 +60,7 @@
     "truffle-exec": "./exec.js"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha ./test/**"
   },
   "repository": {
     "type": "git",
@@ -75,10 +79,13 @@
     }
   ],
   "devDependencies": {
+    "glob": "^7.1.2",
     "ipfsd-ctl": "^0.21.0",
-    "truffle-blockchain-utils": "^0.0.5"
+    "memorystream": "^0.3.1",
+    "truffle-blockchain-utils": "^0.0.6"
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
 }

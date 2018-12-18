@@ -3,19 +3,19 @@ const debug = debugModule("test:ast");
 
 import { assert } from "chai";
 
-import Ganache from "ganache-cli";
-import Web3 from "web3";
+import Ganache from "ganache-core";
 
 import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
 
 import ast from "lib/ast/selectors";
 import solidity from "lib/solidity/selectors";
+import trace from "lib/trace/selectors";
 
-import { getRange, findRange, rangeNodes } from "lib/ast/map";
+import { getRange } from "lib/ast/map";
 
 const __VARIABLES = `
-pragma solidity ^0.4.18;
+pragma solidity ~0.5;
 
 contract Variables {
   event Result(uint256 result);
@@ -31,7 +31,7 @@ contract Variables {
 
     qux = baz;
 
-    Result(baz);
+    emit Result(baz);
 
     return baz;
   }
@@ -43,28 +43,25 @@ contract Variables {
 }
 `;
 
-
 let sources = {
   "Variables.sol": __VARIABLES
-}
+};
 
 describe("AST", function() {
   var provider;
-  var web3;
 
   var abstractions;
   var artifacts;
   var files;
 
   before("Create Provider", async function() {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
-    web3 = new Web3(provider);
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function() {
     this.timeout(30000);
 
-    let prepared = await prepareContracts(provider, sources)
+    let prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;
     artifacts = prepared.artifacts;
     files = prepared.files;
@@ -92,23 +89,24 @@ describe("AST", function() {
 
         let node = session.view(ast.current.node);
 
-        let [ nodeStart, nodeLength ] = getRange(node);
+        let [nodeStart, nodeLength] = getRange(node);
         let nodeEnd = nodeStart + nodeLength;
 
         let pointer = session.view(ast.current.pointer);
 
         assert.isAtMost(
-          nodeStart, start,
+          nodeStart,
+          start,
           `Node ${pointer} at should not begin after instruction source range`
         );
         assert.isAtLeast(
-          nodeEnd, end,
+          nodeEnd,
+          end,
           `Node ${pointer} should not end after source`
         );
 
         session.stepNext();
-      } while(!session.finished);
-
+      } while (!session.view(trace.finished));
     });
   });
 });
