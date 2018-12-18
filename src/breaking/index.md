@@ -77,11 +77,11 @@ please let us know so that we can include it!
 
 ### Note for Quorum users
 
-- Recently, a couple users brought to our attention that Truffle v5 may break
-  support for [Quorum](https://www.jpmorgan.com/global/Quorum). After
-  investigating some potential quick solutions to this issue, we have concluded
-  that further development effort is required to ensure we do not incur
-  additional risk at the end of this release cycle.
+- Recently, one user (thanks @EdsonAlcala!) brought to our attention that
+  Truffle v5 may break support for [Quorum](https://www.jpmorgan.com/global/Quorum).
+  After investigating some potential quick solutions to this issue, we have
+  concluded that further development effort is required to ensure we do not
+  incur additional risk at the end of this release cycle.
 
   We consider maintaining Quorum support to be a top priority and intend to
   re-establish this support in early January. In the meantime, if you are using
