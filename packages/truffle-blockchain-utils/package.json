@@ -1,6 +1,6 @@
 {
   "name": "truffle-blockchain-utils",
-  "version": "0.0.6-beta.1",
+  "version": "0.0.6",
   "description": "Utilities for identifying and managing blockchains",
   "main": "index.js",
   "scripts": {},
@@ -19,5 +19,5 @@
     "url": "https://github.com/trufflesuite/truffle-blockchain-utils/issues"
   },
   "homepage": "https://github.com/trufflesuite/truffle-blockchain-utils#readme",
-  "gitHead": "f9f25a2d491394ac3df1bab56f9c743d871a1059"
+  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
 }

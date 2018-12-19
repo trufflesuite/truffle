@@ -1,6 +1,6 @@
 {
   "name": "truffle-require",
-  "version": "2.0.0-beta.2",
+  "version": "2.0.0",
   "description": "Require and execute a Javascript module within a Truffle context",
   "main": "require.js",
   "scripts": {
@@ -27,12 +27,12 @@
   },
   "dependencies": {
     "original-require": "1.0.1",
-    "truffle-config": "^1.1.0-next.1",
-    "truffle-expect": "^0.0.5-beta.0",
+    "truffle-config": "^1.1.0",
+    "truffle-expect": "^0.0.5",
     "web3": "^1.0.0-beta.37"
   },
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "f9f25a2d491394ac3df1bab56f9c743d871a1059"
+  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
 }

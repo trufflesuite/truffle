@@ -188,7 +188,7 @@ TestRunner.prototype.endTest = function(mocha, callback) {
         }
         index += 1;
 
-        return input.name + ": " + value.toString();
+        return input.name + ": " + `${value}`
       }).join(", ");
       line += ")";
       self.logger.log(line);

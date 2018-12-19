@@ -10,7 +10,7 @@ var command = {
   },
   help: {
     usage:
-      "truffle test [<test_file>] [--compile-all] [--network <name>] [--verbose-rpc]",
+      "truffle test [<test_file>] [--compile-all] [--network <name>] [--verbose-rpc] [--show-events]",
     options: [
       {
         option: "<test_file>",
@@ -34,6 +34,10 @@ var command = {
         option: "--verbose-rpc",
         description:
           "Log communication between Truffle and the Ethereum client."
+      },
+      {
+        option: "--show-events",
+        description: "Log all contract events."
       }
     ]
   },
@@ -91,7 +95,7 @@ var command = {
         function cleanup() {
           var args = arguments;
           // Ensure directory cleanup.
-          temp.cleanup(function(err) {
+          temp.cleanup(function() {
             // Ignore cleanup errors.
             done.apply(null, args);
             if (ipcDisconnect) {
@@ -119,7 +123,7 @@ var command = {
           // Copy all the built files over to a temporary directory, because we
           // don't want to save any tests artifacts. Only do this if the build directory
           // exists.
-          fs.stat(config.contracts_build_directory, function(err, stat) {
+          fs.stat(config.contracts_build_directory, function(err) {
             if (err) return run();
 
             copy(config.contracts_build_directory, temporaryDirectory, function(
