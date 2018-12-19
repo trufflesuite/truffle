@@ -16,7 +16,7 @@ describe("migrate", function() {
 
   before("Create a sandbox", function(done) {
     this.timeout(30000);
-    Box.sandbox("default#web3-one", function(err, result) {
+    Box.sandbox("default", function(err, result) {
       if (err) return done(err);
       config = result;
       config.resolver = new Resolver(config);

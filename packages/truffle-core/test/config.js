@@ -18,7 +18,7 @@ describe("config", function() {
 
   before("Create a sandbox with extra config values", function(done) {
     this.timeout(10000);
-    Box.sandbox("default#web3-one", function(err, result) {
+    Box.sandbox("default", function(err, result) {
       if (err) return done(err);
       config = result;
       config.resolver = new Resolver(config);
