@@ -2,7 +2,6 @@ const emoji = require("node-emoji");
 
 /**
  *  A module that formats output for the Migrations reporter.
- *  This is where all the strings go.
  */
 class MigrationsMessages {
   constructor(reporter) {
@@ -269,8 +268,7 @@ class MigrationsMessages {
       firstMigrate: () => {
         let output = emoji.emojify(
           `:warning:  Important :warning:\nIf you're using an HDWalletProvider, ` +
-            `it must be Web3 1.0 enabled or your migration will hang.\n` +
-            `Try: npm install --save truffle-hdwallet-provider\n\n`,
+            `it must be Web3 1.0 enabled or your migration will hang.\n\n`,
           this.onMissing
         );
 
