@@ -43,6 +43,7 @@ contract("DecodingSample", accounts => {
     assert.equal(variables.varBytes.value, "0x01030307");
     assert.equal(typeof variables.varEnum.value, "object");
     assert.equal(variables.varEnum.value.value, "E.EnumValTwo");
+
     assert.equal(typeof variables.varStructS.value, "object");
     const struct = variables.varStructS.value;
     assert.equal(struct.members.structInt.value.toString(), "-2");
@@ -53,8 +54,6 @@ contract("DecodingSample", accounts => {
       "0x54321567890abcdeffedcba09876543211337121"
     );
 
-    assert.equal(variables.fixedArrayUint.value.toString(), "16,17");
-
     // const s2 = struct.members.structS2.value;
     // assert.equal(typeof s2, "object");
     // assert.equal(s2.members.structTwoFixedArrayUint.value[0].toString(), "4");
@@ -63,6 +62,12 @@ contract("DecodingSample", accounts => {
     // assert.equal(s2.members.structTwoDynamicArrayUint.value[0].toString(), "4");
     // assert.equal(s2.members.structTwoDynamicArrayUint.value[1].toString(), "8");
     // assert.equal(s2.members.structTwoDynamicArrayUint.value[2].toString(), "12");
+
+    assert.equal(variables.fixedArrayUint.value.toString(), "16,17");
+    assert.equal(variables.fixedArrayString.value.toString(), "hello,world");
+    assert.equal(variables.fixedArrayBool.value.toString(), "true,false");
+    assert.equal(variables.fixedArrayAddress.value.toString(), "0x98761567890abcdeffedcba09876543211337121,0xfedc1567890abcdeffedcba09876543211337121");
+    assert.equal(variables.fixedArrayBytes7.value.toString(), "0x75754477331122,0xe7d14477331122");
 
     // await instance.generateMagicSquare(1, {from: accounts[0], value: web3.utils.toWei("0.1", "ether")});
     // await instance.generateMagicSquare(2, {from: accounts[0]});
