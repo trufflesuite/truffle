@@ -9,11 +9,11 @@ describe("commands/unbox.js", () => {
   const invalidBoxFormats = [
     "//",
     "/truffle-box/bare-box",
-    "//truffle-box/bare-box#web3-one",
-    "//truffle-box/bare-box#web3-one:path/SubDir",
+    "//truffle-box/bare-box#truffle-test-branch",
+    "//truffle-box/bare-box#truffle-test-branch:path/SubDir",
     "/bare/",
-    "//bare#web3-one",
-    "//bare#web3-one:path/SubDir"
+    "//bare#truffle-test-branch",
+    "//bare#truffle-test-branch:path/SubDir"
   ];
   const absolutePaths = [
     "https://github.com/truffle-box/bare-box:/path/SubDir",
