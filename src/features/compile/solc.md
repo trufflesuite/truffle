@@ -59,7 +59,7 @@ module.exports = {
 
 
 **Note**: Truffle doesn't auto-pull Docker images right now. You'll need to run
-`docker pull ethereum/solidity:0.5.1` yourself. Sorry for the inconvenience!
+`docker pull ethereum/solc:0.5.1` yourself. Sorry for the inconvenience!
 
 </details>
 
@@ -114,4 +114,3 @@ module.exports = {
 ```
 
 </details>
-
