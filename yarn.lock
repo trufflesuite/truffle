@@ -11790,14 +11790,16 @@ truffle-blockchain-utils@^0.0.5:
   resolved "https://registry.yarnpkg.com/truffle-blockchain-utils/-/truffle-blockchain-utils-0.0.5.tgz#a4e5c064dadd69f782a137f3d276d21095da7a47"
 
 truffle-config@^1.0.1:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/truffle-config/-/truffle-config-1.0.6.tgz#181da7d319c0c55eb2781d5c1886a9c7f32fa470"
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/truffle-config/-/truffle-config-1.1.0.tgz#0f607116b9904fa07825c31beb83bec29bee1732"
+  integrity sha512-KKCfDitKwSyHbB88K/usnV/mMawgFeKG/oVGv6bu0+CS2afwk9+Lgk0zPe8IityjcRQNPUH1wxvU7XN06q3N2Q==
   dependencies:
+    configstore "^4.0.0"
     find-up "^2.1.0"
     lodash "4.17.10"
     original-require "1.0.1"
     truffle-error "^0.0.3"
-    truffle-provider "^0.0.6"
+    truffle-provider "^0.1.0"
 
 truffle-contract-schema@^0.0.5:
   version "0.0.5"
@@ -11848,12 +11850,13 @@ truffle-init@^1.0.7:
     temp "^0.8.3"
     truffle-config "^1.0.1"
 
-truffle-provider@^0.0.6:
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/truffle-provider/-/truffle-provider-0.0.6.tgz#71a92ed67636ada5e78905690d72ea922ad4a613"
+truffle-provider@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/truffle-provider/-/truffle-provider-0.1.0.tgz#2de3f8b8daf8cb4bfd50ce7fd9eb6547dd783175"
+  integrity sha512-3jphFU3WmgIj9/Na83pvDcR+kv1pytD2HbhK6L9ImJrzUQUHTFMZeF02NfahrdEe/ptbiwGo+OXgE0akTCPc5Q==
   dependencies:
     truffle-error "^0.0.3"
-    web3 "0.20.6"
+    web3 "^1.0.0-beta.37"
 
 tslib@^1.9.0:
   version "1.9.3"
@@ -12956,16 +12959,6 @@ web3-utils@1.0.0-beta.37:
     randomhex "0.1.5"
     underscore "1.8.3"
     utf8 "2.1.1"
-
-web3@0.20.6:
-  version "0.20.6"
-  resolved "https://registry.yarnpkg.com/web3/-/web3-0.20.6.tgz#3e97306ae024fb24e10a3d75c884302562215120"
-  dependencies:
-    bignumber.js "git+https://github.com/frozeman/bignumber.js-nolookahead.git"
-    crypto-js "^3.1.4"
-    utf8 "^2.1.1"
-    xhr2 "*"
-    xmlhttprequest "*"
 
 web3@1.0.0-beta.35:
   version "1.0.0-beta.35"
