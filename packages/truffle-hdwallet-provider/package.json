@@ -5,7 +5,6 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "mocha --timeout 5000",
-    "publish": "npm publish",
     "prepare": "npx webpack --config webpack/webpack.config.js"
   },
   "repository": {
