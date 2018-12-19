@@ -145,7 +145,14 @@ export function allocateDefinition(node: any, state: ContractStateInfo, referenc
         }
       }
       else {
-        const baseDefinitionStorageSize = DecodeUtils.Definition.storageSize(baseDefinition);
+        let baseReferenceDeclaration: undefined | DecodeUtils.AstDefinition = undefined;
+        if (DecodeUtils.Definition.typeClass(baseDefinition) === "enum") {
+          const baseReferenceId = baseDefinition.referencedDeclaration ||
+            (baseDefinition.typeName ? baseDefinition.typeName.referencedDeclaration : undefined);
+          baseReferenceDeclaration = referenceDeclarations[baseReferenceId];
+        }
+
+        const baseDefinitionStorageSize = DecodeUtils.Definition.storageSize(baseDefinition, baseReferenceDeclaration);
         const totalAdditionalSlotsUsed = Math.ceil(length * baseDefinitionStorageSize / DecodeUtils.EVM.WORD_SIZE) - 1;
         range.next.slot.offset = range.next.slot.offset.addn(totalAdditionalSlotsUsed);
       }
