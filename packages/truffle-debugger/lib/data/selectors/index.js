@@ -270,10 +270,13 @@ const data = createSelectorTree({
       _: createLeaf(["../userDefinedTypes/containers/ordered",
         "/views/scopes/inlined"], (types, scopes) => {
           let allocations = {};
-          for(id of types) {
+          debug("types %o", types);
+          for(let id of types) {
+            debug("in the allocation loop");
+            debug("id %d", id);
             let variables = scopes[id].variables;
-            let allocation = Allocation.allocateDeclarations(variables, scopes,
-              allocations);
+            let allocation = TruffleDecodeUtils.Allocation.allocateDeclarations(
+              variables, scopes, allocations);
             allocations[id] = allocation;
           }
           return allocations;

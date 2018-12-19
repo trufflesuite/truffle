@@ -92,6 +92,7 @@ function* tickSaga() {
       let allocation = allocations[node.id];
 
       debug("Contract definition case");
+      debug("allocations %O", allocations);
       debug("allocation %O", allocation);
       assignments = { byId: {} };
       for (let id in allocation.children) {
@@ -220,6 +221,10 @@ function* tickSaga() {
 
 export function* reset() {
   yield put(actions.reset());
+}
+
+export function* defineType(node) {
+  yield put(actions.defineType(node));
 }
 
 export function* learnAddressSaga(dummyAddress, address) {

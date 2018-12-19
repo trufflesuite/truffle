@@ -5,8 +5,6 @@ import { combineReducers } from "redux";
 
 import { stableKeccak256 } from "lib/helpers";
 
-import { Allocation } from "truffle-decode-utils";
-
 import * as actions from "./actions";
 
 const DEFAULT_SCOPES = {
@@ -70,16 +68,8 @@ function scopes(state = DEFAULT_SCOPES, action) {
 
 function userDefinedTypes(state = [], action) {
   switch (action.type) {
-    case actions.DECLARE:
-      const userDefinedNodeTypes =
-        ["StructDefinition","NodeDefinition","ContractDefinition"];
-         //note that interfaces and libraries are also ContractDefinition
-      if(userDefinedNodeTypes.includes(action.node.nodeType)) {
-        return [...state, action.node.id];
-      }
-      else {
-        return state;
-      }
+    case actions.DEFINE_TYPE:
+      return [...state, action.node.id];
     default:
       return state;
   }
