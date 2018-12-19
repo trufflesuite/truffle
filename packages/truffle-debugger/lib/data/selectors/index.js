@@ -518,7 +518,7 @@ const data = createSelectorTree({
             })
           );
           const keyedResults = await Promise.all(keyedPromises);
-          return TruffleDecodeUtils.Conversion.cleanMappings(
+          return TruffleDecodeUtils.Conversion.cleanContainers(
             Object.assign({}, ...keyedResults)
           );
         }

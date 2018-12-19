@@ -149,19 +149,29 @@ export namespace Conversion {
 
   /**
    * recursively converts decoder-native mapping values to JS Map objects
+   * and struct values to JS ordinary objects, respecitvely
+   *
+   * (eventually it will probably also have to clean arrays, but currently
+   * those don't require cleaning)
    *
    * detects int and uint Solidity types and uses BNs as keys in such
    * situations
    *
    * all other keys are just kept as strings right now
    */
-  export function cleanMappings(value: any): any {
+  export function cleanContainers(value: any): any {
     // HACK detect mappings as any object with certain *truthy* properties,
     // where `type` has explicit value `"mapping"`
-    //
-    // note that this means we can't decode a Solidity struct of this form.
+    // FURTHER HACK detect other things wth members as a struct
+    // in the latter case we'll also require that each of the members of
+    // members has members name, type, and value
     const isMapping = ({ type, members, keyType }: any) =>
       type === "mapping" && keyType && members;
+    const isStruct = ({ type, members, keyType }: any) =>
+      type !== "mapping" && keyType === undefined &&
+        typeof members === "object" &&
+        Object.values(members).every(
+          (member: any) => member.name && member.type && member.value);
 
     // converts integer mapping keys to BN, unless string representation is hex
     const convertKey = (keyType: string, key: string) =>
@@ -176,10 +186,16 @@ export namespace Conversion {
         ...Object.entries(members)
           .map(
             ([key, value]: any) =>
-              ([convertKey(keyType, key), cleanMappings(value)])
+              ([convertKey(keyType, key), cleanContainers(value)])
           )
       ] as any);
     }
+
+    // converts a struct representation into a JS object
+    const toStruct = ({ members }: any): any =>
+      Object.assign({}, ...Object.entries(members).map(
+        ([key, value]: any) =>
+          ({[key]: cleanContainers(value.value)})));
 
     // BNs are treated like primitives; must take precedence over generic obj
     if (BN.isBN(value)) {
@@ -191,16 +207,21 @@ export namespace Conversion {
       return toMap(value);
     }
 
+    // detect struct
+    else if (value && typeof value === "object" && isStruct(value)) {
+      return toStruct(value);
+    }
+
     // detect arrays or anything with `.map()`, and recurse
     else if (value && value.map != undefined) {
-      return value.map( (inner: any) => cleanMappings(inner) );
+      return value.map( (inner: any) => cleanContainers(inner) );
     }
 
     // detect objects and recurse
     else if (value && typeof value == "object") {
       return Object.assign(
         {}, ...Object.entries(value).map(
-          ([key, inner]) => ({ [key]: cleanMappings(inner) })
+          ([key, inner]) => ({ [key]: cleanContainers(inner) })
         )
       );
     }
