@@ -201,6 +201,8 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       for (let i = 0; i < members.length; i++) {
         const variableRef = referenceVariable.members[members[i].id];
         const refPointer = variableRef.pointer;
+        //debug("pointer %o", pointer);
+        //debug("refPointer %o", refPointer);
         const childRange = <Allocation.Range>{
           from: {
             slot: {

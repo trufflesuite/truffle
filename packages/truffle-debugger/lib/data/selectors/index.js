@@ -289,6 +289,9 @@ const data = createSelectorTree({
        * s (where both these are AST IDs) will be given as
        * (yield select(...))[s].members[m].pointer
        * this just takes allocations and formats it as above
+       * NOTE: allocations are not yet formatted as a pointer, so in addition
+       * to the above, it also has to reformat the allocation into a pointer
+       * by setting pointer = {storage : allocation}
        */
       forDecoder: createLeaf(["./_"], (allocations) =>
         Object.assign({},
@@ -296,8 +299,8 @@ const data = createSelectorTree({
             [id]: {members: 
               Object.assign({},
                 ...Object.entries(allocation.children)
-                  .map(([memberId, pointer]) => ({
-                    [memberId]: {pointer} //note the braces; not a clone!
+                  .map(([memberId, allocation]) => ({
+                    [memberId]: {pointer: {storage: allocation}}
                   }))
               )
             }
