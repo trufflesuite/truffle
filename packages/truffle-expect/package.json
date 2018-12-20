@@ -1,6 +1,6 @@
 {
   "name": "truffle-expect",
-  "version": "0.0.5-beta.0",
+  "version": "0.0.5",
   "description": "Simple module for ensuring specific options are passed to a function",
   "main": "index.js",
   "scripts": {},
@@ -22,5 +22,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "f9f25a2d491394ac3df1bab56f9c743d871a1059"
+  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
 }

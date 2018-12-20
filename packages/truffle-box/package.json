@@ -1,6 +1,6 @@
 {
   "name": "truffle-box",
-  "version": "1.0.8-beta.2",
+  "version": "1.0.8",
   "description": "Truffle project boilerplate utility",
   "main": "box.js",
   "scripts": {
@@ -19,7 +19,7 @@
     "eslint": "^4.0.0",
     "mocha": "5.2.0",
     "sinon": "^6.3.4",
-    "truffle-config": "^1.1.0-next.1"
+    "truffle-config": "^1.1.0"
   },
   "dependencies": {
     "fs-extra": "6.0.1",
@@ -32,5 +32,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "f9f25a2d491394ac3df1bab56f9c743d871a1059"
+  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
 }

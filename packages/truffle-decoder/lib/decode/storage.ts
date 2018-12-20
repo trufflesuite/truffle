@@ -21,7 +21,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
 
   switch (DecodeUtils.Definition.typeClass(definition)) {
     case "array": {
-      // debug("storage array! %o", pointer);
+      debug("storage array! %o", pointer);
       if (DecodeUtils.Definition.isDynamicArray(definition)) {
         data = await read(pointer, state, web3, contractAddress);
         if (!data) {
@@ -35,7 +35,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
           ? parseInt(definition.typeName.length.value)
           : parseInt(definition.length.value);
       }
-      // debug("length %o", length);
+      debug("length %o", length);
 
       const baseDefinition = DecodeUtils.Definition.baseDefinition(definition);
       const referenceId = baseDefinition.referencedDeclaration ||
@@ -53,8 +53,8 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       }
 
       const perWord = Math.floor(DecodeUtils.EVM.WORD_SIZE / baseSize);
-      // debug("baseSize %o", baseSize);
-      // debug("perWord %d", perWord);
+      debug("baseSize %o", baseSize);
+      debug("perWord %d", perWord);
 
       const offset = (i: number): number => {
         if (perWord == 1) {
@@ -80,7 +80,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
         index: pointer.storage.from.index
       };
 
-      // debug("pointer: %o", pointer);
+      debug("pointer: %o", pointer);
       let ranges: Allocation.Range[] = [];
       let currentReference: Allocation.StorageReference = {
         slot: {
@@ -116,7 +116,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       }
 
       const decodePromises = ranges.map( (childRange, idx) => {
-        // debug("childFrom %d, %o", idx, childFrom);
+        debug("childFrom %d, %o", idx, childRange.from);
         return decode(DecodeUtils.Definition.baseDefinition(definition), <StoragePointer>{
           storage: childRange
         }, info, web3, contractAddress);
@@ -132,7 +132,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
         return undefined;
       }
 
-      // debug("data %O", data);
+      debug("data %O", data);
       let lengthByte = data[DecodeUtils.EVM.WORD_SIZE - 1];
       if (!lengthByte) {
         lengthByte = 0;
@@ -141,7 +141,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       if (lengthByte % 2 == 0) {
         // string lives in word, length is last byte / 2
         length = lengthByte / 2;
-        // debug("in-word; length %o", length);
+        debug("in-word; length %o", length);
         if (length == 0) {
           return "";
         }
@@ -153,7 +153,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
 
       } else {
         length = DecodeUtils.Conversion.toBN(data).subn(1).divn(2).toNumber();
-        // debug("new-word, length %o", length);
+        debug("new-word, length %o", length);
 
         return decodeValue(definition, <StoragePointer>{
           storage: {
@@ -271,7 +271,6 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
               }
             }
           };
-          // debug("keyPointer %o", keyPointer);
 
           let memberName: string;
           if (typeof key === "string") {
@@ -290,7 +289,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
     }
 
     default: {
-      // debug("Unknown storage reference type: %s", DecodeUtils.typeIdentifier(definition));
+      debug("Unknown storage reference type: %s", DecodeUtils.Definition.typeIdentifier(definition));
       return undefined;
     }
   }

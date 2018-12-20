@@ -1,6 +1,6 @@
 {
   "name": "truffle-deployer",
-  "version": "3.0.0-beta.2",
+  "version": "3.0.0",
   "description": "Light deployment module for easily deploying Ethereum contracts",
   "main": "index.js",
   "scripts": {
@@ -25,18 +25,18 @@
   "homepage": "https://github.com/trufflesuite/truffle-deployer#readme",
   "dependencies": {
     "emittery": "^0.4.0",
-    "truffle-contract": "^4.0.0-beta.2",
-    "truffle-expect": "^0.0.5-beta.0"
+    "truffle-contract": "^4.0.0",
+    "truffle-expect": "^0.0.5"
   },
   "devDependencies": {
     "ganache-core": "^2.3.1",
     "mocha": "5.2.0",
-    "truffle-reporters": "^1.0.0-beta.2",
-    "truffle-workflow-compile": "^2.0.0-beta.2",
+    "truffle-reporters": "^1.0.0",
+    "truffle-workflow-compile": "^2.0.0",
     "web3": "^1.0.0-beta.37"
   },
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "f9f25a2d491394ac3df1bab56f9c743d871a1059"
+  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
 }
