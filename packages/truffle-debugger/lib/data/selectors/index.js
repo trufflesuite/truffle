@@ -246,7 +246,8 @@ const data = createSelectorTree({
               let children = [].concat(...typesLeft
                 .map(id => scopes[id].variables
                   .map(variable =>
-                    scopes[variable.id].definition.referencedDeclaration)));
+                    scopes[variable.id].definition
+                     .typeName.referencedDeclaration)));
               let notChildren = typesLeft.filter(id => !children.includes(id));
               //because we're processing things in order of parents first, then
               //children, we're going to *prepend* the elements we found, so
