@@ -44,10 +44,8 @@ var compile = function(sources, options, callback) {
 
   // Grandfather in old solc config
   if (options.solc) {
-    options.compilers.solc.settings.evmVersion =
-      options.solc.settings.evmVersion || options.solc.evmVersion;
-    options.compilers.solc.settings.optimizer =
-      options.solc.settings.optimizer || options.solc.optimizer;
+    options.compilers.solc.settings.evmVersion = options.solc.evmVersion;
+    options.compilers.solc.settings.optimizer = options.solc.optimizer;
   }
 
   // Ensure sources have operating system independent paths
