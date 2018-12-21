@@ -33,7 +33,7 @@ function verifyURL(url) {
       vcsurl(url)
         .replace("github.com", "raw.githubusercontent.com")
         .replace(/#.*/, "") +
-        "/master/truffle.js"
+        "/master/truffle-box.json"
     );
 
     var options = {

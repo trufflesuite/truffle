@@ -22,7 +22,7 @@ describe("Contract names", function() {
 
   before("set up sandbox", function(done) {
     this.timeout(10000);
-    Box.sandbox("bare", function(err, conf) {
+    Box.sandbox("default", function(err, conf) {
       if (err) return done(err);
       config = conf;
       config.network = "development";

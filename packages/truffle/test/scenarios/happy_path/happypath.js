@@ -81,19 +81,4 @@ describe("Happy path (truffle unbox)", function() {
       }).catch(done);
     });
   });
-
-  it("will run tests", function(done) {
-    this.timeout(70000);
-    CommandRunner.run("test", config, function(err) {
-      var output = logger.contents();
-      if (err) {
-        console.log(output);
-        return done(err);
-      }
-
-      assert(output.indexOf("5 passing") >= 0);
-      done();
-    });
-  });
-
 });
