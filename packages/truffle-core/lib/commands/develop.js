@@ -68,7 +68,7 @@ var command = {
       numAddresses
     );
 
-    var onMissing = function(name) {
+    var onMissing = function() {
       return "**";
     };
 
@@ -83,7 +83,7 @@ var command = {
 
     var ganacheOptions = {
       host: "127.0.0.1",
-      port: 9545,
+      port: 8545,
       network_id: 4447,
       total_accounts: numAddresses,
       default_balance_ether: defaultEtherBalance,
