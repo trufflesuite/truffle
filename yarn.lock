@@ -2,9 +2,39 @@
 # yarn lockfile v1
 
 
+"@types/cli-color@^0.3.29":
+  version "0.3.29"
+  resolved "http://registry.npmjs.org/@types/cli-color/-/cli-color-0.3.29.tgz#c83a71fe02c8c7e1ccec048dd6a2458d1f6c96ea"
+
+"@types/json-schema@^7.0.0":
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.1.tgz#fcaa655260285b8061850789f8268c51a4ec8ee1"
+
+"@types/lodash@^4.14.116":
+  version "4.14.119"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.119.tgz#be847e5f4bc3e35e46d041c394ead8b603ad8b39"
+
+"@types/minimist@^1.2.0":
+  version "1.2.0"
+  resolved "http://registry.npmjs.org/@types/minimist/-/minimist-1.2.0.tgz#69a23a3ad29caf0097f06eda59b361ee2f0639f6"
+
+"@types/mz@0.0.32":
+  version "0.0.32"
+  resolved "https://registry.yarnpkg.com/@types/mz/-/mz-0.0.32.tgz#e8248b4e41424c052edc1725dd33650c313a3659"
+  dependencies:
+    "@types/node" "*"
+
 "@types/node@*":
   version "10.3.2"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.3.2.tgz#3840ec6c12556fdda6e0e6d036df853101d732a4"
+
+"@types/node@^10.9.4":
+  version "10.12.18"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-10.12.18.tgz#1d3ca764718915584fcd9f6344621b7672665c67"
+
+"@types/prettier@^1.13.2":
+  version "1.15.2"
+  resolved "https://registry.yarnpkg.com/@types/prettier/-/prettier-1.15.2.tgz#91594ea7cb6f3b1f7ea69f32621246654c7cc231"
 
 JSONStream@^1.0.3, JSONStream@^1.0.4:
   version "1.3.3"
@@ -172,7 +202,7 @@ ansi-escapes@^3.0.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/ansi-escapes/-/ansi-escapes-3.1.0.tgz#f73207bb81207d75fd6c83f125af26eea378ca30"
 
-ansi-regex@^2.0.0:
+ansi-regex@^2.0.0, ansi-regex@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/ansi-regex/-/ansi-regex-2.1.1.tgz#c3b33ab5ee360d86e0e628f0468ae7ef27d654df"
 
@@ -1506,6 +1536,10 @@ cachedown@^1.0.0:
     abstract-leveldown "^2.4.1"
     lru-cache "^3.2.0"
 
+call-me-maybe@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/call-me-maybe/-/call-me-maybe-1.0.1.tgz#26d208ea89e37b5cbde60250a15f031c16a4d66b"
+
 caller-path@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/caller-path/-/caller-path-0.1.0.tgz#94085ef63581ecd3daa92444a8fe94e82577751f"
@@ -1747,6 +1781,17 @@ clean-webpack-plugin@^0.1.16:
   resolved "https://registry.yarnpkg.com/clean-webpack-plugin/-/clean-webpack-plugin-0.1.19.tgz#ceda8bb96b00fe168e9b080272960d20fdcadd6d"
   dependencies:
     rimraf "^2.6.1"
+
+cli-color@^1.3.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/cli-color/-/cli-color-1.4.0.tgz#7d10738f48526824f8fe7da51857cb0f572fe01f"
+  dependencies:
+    ansi-regex "^2.1.1"
+    d "1"
+    es5-ext "^0.10.46"
+    es6-iterator "^2.0.3"
+    memoizee "^0.4.14"
+    timers-ext "^0.1.5"
 
 cli-cursor@^1.0.1:
   version "1.0.2"
@@ -2849,7 +2894,15 @@ es5-ext@^0.10.14, es5-ext@^0.10.35, es5-ext@^0.10.9, es5-ext@~0.10.14:
     es6-symbol "~3.1.1"
     next-tick "1"
 
-es6-iterator@^2.0.1, es6-iterator@~2.0.1, es6-iterator@~2.0.3:
+es5-ext@^0.10.45, es5-ext@^0.10.46, es5-ext@~0.10.2, es5-ext@~0.10.46:
+  version "0.10.46"
+  resolved "https://registry.yarnpkg.com/es5-ext/-/es5-ext-0.10.46.tgz#efd99f67c5a7ec789baa3daa7f79870388f7f572"
+  dependencies:
+    es6-iterator "~2.0.3"
+    es6-symbol "~3.1.1"
+    next-tick "1"
+
+es6-iterator@^2.0.1, es6-iterator@^2.0.3, es6-iterator@~2.0.1, es6-iterator@~2.0.3:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/es6-iterator/-/es6-iterator-2.0.3.tgz#a7de889141a05a94b0854403b2d0a0fbfa98f3b7"
   dependencies:
@@ -2885,7 +2938,7 @@ es6-symbol@3.1.1, es6-symbol@^3.1.1, es6-symbol@~3.1.1:
     d "1"
     es5-ext "~0.10.14"
 
-es6-weak-map@^2.0.1:
+es6-weak-map@^2.0.1, es6-weak-map@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/es6-weak-map/-/es6-weak-map-2.0.2.tgz#5e3ab32251ffd1538a1f8e5ffa1357772f92d96f"
   dependencies:
@@ -3450,7 +3503,7 @@ ethpm@0.0.16:
     semver "^5.3.0"
     wget-improved "^1.4.0"
 
-event-emitter@~0.3.5:
+event-emitter@^0.3.5, event-emitter@~0.3.5:
   version "0.3.5"
   resolved "https://registry.yarnpkg.com/event-emitter/-/event-emitter-0.3.5.tgz#df8c69eef1647923c7157b9ce83840610b02cc39"
   dependencies:
@@ -3862,6 +3915,10 @@ form-data@~2.3.1:
     asynckit "^0.4.0"
     combined-stream "1.0.6"
     mime-types "^2.1.12"
+
+format-util@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/format-util/-/format-util-1.0.3.tgz#032dca4a116262a12c43f4c3ec8566416c5b2d95"
 
 forwarded@~0.1.2:
   version "0.1.2"
@@ -5261,7 +5318,7 @@ is-primitive@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/is-primitive/-/is-primitive-2.0.0.tgz#207bab91638499c07b2adf240a41a87210034575"
 
-is-promise@^2.1.0:
+is-promise@^2.1, is-promise@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/is-promise/-/is-promise-2.1.0.tgz#79a2a9ece7f096e80f36d2b2f3bc16c1ff4bf3fa"
 
@@ -5415,7 +5472,7 @@ js-tokens@^3.0.0, js-tokens@^3.0.2:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
 
-js-yaml@^3.9.1:
+js-yaml@^3.12.0, js-yaml@^3.9.1:
   version "3.12.0"
   resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.12.0.tgz#eaed656ec8344f10f527c6bfa1b6e2244de167d1"
   dependencies:
@@ -5500,9 +5557,38 @@ json-rpc-random-id@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/json-rpc-random-id/-/json-rpc-random-id-1.0.1.tgz#ba49d96aded1444dbb8da3d203748acbbcdec8c8"
 
+json-schema-ref-parser@^5.1.3:
+  version "5.1.3"
+  resolved "https://registry.yarnpkg.com/json-schema-ref-parser/-/json-schema-ref-parser-5.1.3.tgz#f86c5868f40898e69169e1bbc854725a4fd0e1ad"
+  dependencies:
+    call-me-maybe "^1.0.1"
+    debug "^3.1.0"
+    js-yaml "^3.12.0"
+    ono "^4.0.6"
+
 json-schema-to-markdown@^1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/json-schema-to-markdown/-/json-schema-to-markdown-1.0.3.tgz#4411ca222b2b6760e616663f0bb2bd76bb26ebb8"
+
+json-schema-to-typescript@^5.5.0:
+  version "5.7.0"
+  resolved "https://registry.yarnpkg.com/json-schema-to-typescript/-/json-schema-to-typescript-5.7.0.tgz#8a22356896abcf6148a4e99bacd93f0d8792befe"
+  dependencies:
+    "@types/cli-color" "^0.3.29"
+    "@types/json-schema" "^7.0.0"
+    "@types/lodash" "^4.14.116"
+    "@types/minimist" "^1.2.0"
+    "@types/mz" "0.0.32"
+    "@types/node" "^10.9.4"
+    "@types/prettier" "^1.13.2"
+    cli-color "^1.3.0"
+    json-schema-ref-parser "^5.1.3"
+    json-stringify-safe "^5.0.1"
+    lodash "^4.17.11"
+    minimist "^1.2.0"
+    mz "^2.7.0"
+    prettier "^1.14.2"
+    stdin "0.0.1"
 
 json-schema-traverse@^0.3.0:
   version "0.3.1"
@@ -6058,6 +6144,10 @@ lodash@4.17.10, lodash@^4.0.0, lodash@^4.1.0, lodash@^4.11.1, lodash@^4.11.2, lo
   version "4.17.10"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
 
+lodash@^4.17.11:
+  version "4.17.11"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
+
 lodash@~0.9.2:
   version "0.9.2"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-0.9.2.tgz#8f3499c5245d346d682e5b0d3b40767e09f1a92c"
@@ -6144,6 +6234,12 @@ lru-cache@^4.0.1, lru-cache@^4.1.1:
     pseudomap "^1.0.2"
     yallist "^2.1.2"
 
+lru-queue@0.1:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/lru-queue/-/lru-queue-0.1.0.tgz#2738bd9f0d3cf4f84490c5736c48699ac632cda3"
+  dependencies:
+    es5-ext "~0.10.2"
+
 ltgt@^2.1.2, ltgt@~2.2.0:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/ltgt/-/ltgt-2.2.1.tgz#f35ca91c493f7b73da0e07495304f17b31f87ee5"
@@ -6218,6 +6314,19 @@ memdown@^1.0.0:
     inherits "~2.0.1"
     ltgt "~2.2.0"
     safe-buffer "~5.1.1"
+
+memoizee@^0.4.14:
+  version "0.4.14"
+  resolved "https://registry.yarnpkg.com/memoizee/-/memoizee-0.4.14.tgz#07a00f204699f9a95c2d9e77218271c7cd610d57"
+  dependencies:
+    d "1"
+    es5-ext "^0.10.45"
+    es6-weak-map "^2.0.2"
+    event-emitter "^0.3.5"
+    is-promise "^2.1"
+    lru-queue "0.1"
+    next-tick "1"
+    timers-ext "^0.1.5"
 
 memory-fs@^0.4.0, memory-fs@^0.4.1, memory-fs@~0.4.1:
   version "0.4.1"
@@ -6732,7 +6841,7 @@ mute-stream@0.0.7:
   version "0.0.7"
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-0.0.7.tgz#3075ce93bc21b8fab43e1bc4da7e8115ed1e7bab"
 
-mz@^2.6.0:
+mz@^2.6.0, mz@^2.7.0:
   version "2.7.0"
   resolved "https://registry.yarnpkg.com/mz/-/mz-2.7.0.tgz#95008057a56cafadc2bc63dde7f9ff6955948e32"
   dependencies:
@@ -7079,6 +7188,12 @@ onetime@^2.0.0:
   resolved "https://registry.yarnpkg.com/onetime/-/onetime-2.0.1.tgz#067428230fd67443b2794b22bba528b6867962d4"
   dependencies:
     mimic-fn "^1.0.0"
+
+ono@^4.0.6:
+  version "4.0.11"
+  resolved "https://registry.yarnpkg.com/ono/-/ono-4.0.11.tgz#c7f4209b3e396e8a44ef43b9cedc7f5d791d221d"
+  dependencies:
+    format-util "^1.0.3"
 
 optimist@^0.6.1:
   version "0.6.1"
@@ -7468,6 +7583,10 @@ prepend-http@^1.0.1:
 preserve@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/preserve/-/preserve-0.2.0.tgz#815ed1f6ebc65926f865b310c0713bcb3315ce4b"
+
+prettier@^1.14.2:
+  version "1.15.3"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.15.3.tgz#1feaac5bdd181237b54dbe65d874e02a1472786a"
 
 private@^0.1.6, private@^0.1.8:
   version "0.1.8"
@@ -8725,7 +8844,17 @@ solc@0.4.18:
     semver "^5.3.0"
     yargs "^4.7.1"
 
-solc@0.4.24, solc@^0.4.2:
+solc@0.4.25:
+  version "0.4.25"
+  resolved "https://registry.yarnpkg.com/solc/-/solc-0.4.25.tgz#06b8321f7112d95b4b903639b1138a4d292f5faa"
+  dependencies:
+    fs-extra "^0.30.0"
+    memorystream "^0.3.1"
+    require-from-string "^1.1.0"
+    semver "^5.3.0"
+    yargs "^4.7.1"
+
+solc@^0.4.2:
   version "0.4.24"
   resolved "https://registry.yarnpkg.com/solc/-/solc-0.4.24.tgz#354f14b269b38cbaa82a47d1ff151723502b954e"
   dependencies:
@@ -8919,6 +9048,10 @@ static-extend@^0.1.1:
 statuses@~1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/statuses/-/statuses-1.4.0.tgz#bb73d446da2796106efcc1b601a253d6c46bd087"
+
+stdin@0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/stdin/-/stdin-0.0.1.tgz#d3041981aaec3dfdbc77a1b38d6372e38f5fb71e"
 
 stream-browserify@^2.0.0, stream-browserify@^2.0.1:
   version "2.0.1"
@@ -9342,6 +9475,13 @@ timers-browserify@^2.0.4:
   resolved "https://registry.yarnpkg.com/timers-browserify/-/timers-browserify-2.0.10.tgz#1d28e3d2aadf1d5a5996c4e9f95601cd053480ae"
   dependencies:
     setimmediate "^1.0.4"
+
+timers-ext@^0.1.5:
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/timers-ext/-/timers-ext-0.1.7.tgz#6f57ad8578e07a3fb9f91d9387d65647555e25c6"
+  dependencies:
+    es5-ext "~0.10.46"
+    next-tick "1"
 
 tiny-queue@0.2.0:
   version "0.2.0"
