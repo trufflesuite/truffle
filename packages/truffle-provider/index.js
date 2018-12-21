@@ -1,5 +1,6 @@
 var debug = require("debug")("provider"); // eslint-disable-line no-unused-vars
 var Web3 = require("web3");
+var LegacyWeb3 = require("legacy-web3");
 
 var wrapper = require("./wrapper");
 
@@ -20,10 +21,14 @@ module.exports = {
         "ws://" + options.host + ":" + options.port
       );
     } else {
-      provider = new Web3.providers.HttpProvider(
-        "http://" + options.host + ":" + options.port,
-        { keepAlive: false }
-      );
+      options.legacy
+        ? (provider = new LegacyWeb3.providers.HttpProvider(
+            `http://${options.host}:${options.port}`
+          ))
+        : (provider = new Web3.providers.HttpProvider(
+            `http://${options.host}:${options.port}`,
+            { keepAlive: false }
+          ));
     }
 
     return this.wrap(provider, options);
