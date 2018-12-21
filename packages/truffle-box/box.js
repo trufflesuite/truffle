@@ -29,6 +29,7 @@ var Box = {
 
   sandbox: function(name, callback) {
     var self = this;
+    let urlSuffix;
     if (typeof name === "function") {
       callback = name;
       name = "default";
@@ -38,8 +39,12 @@ var Box = {
       if (err) {
         return callback(err);
       }
-
-      self.unbox("https://github.com/trufflesuite/truffle-init-" + name, dir)
+      if (name === "default") {
+        urlSuffix = "default#truffle-4-test-box";
+      } else {
+        urlSuffix = name;
+      }
+      self.unbox("https://github.com/trufflesuite/truffle-init-" + urlSuffix, dir)
         .then(function() {
           var config = Config.load(path.join(dir, "truffle-config.js"), {});
           callback(null, config);
