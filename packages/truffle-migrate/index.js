@@ -116,7 +116,12 @@ const Migrate = {
       };
     }
 
-    clone.provider = this.wrapProvider(options.provider, clone.logger);
+    options.legacy
+      ? (clone.provider = this.wrapLegacyProvider(
+          options.provider,
+          clone.logger
+        ))
+      : (clone.provider = this.wrapProvider(options.provider, clone.logger));
     clone.resolver = this.wrapResolver(options.resolver, clone.provider);
 
     // Make migrations aware of their position in sequence
@@ -143,6 +148,35 @@ const Migrate = {
       send: function(payload, callback) {
         provider.send(payload, function(err, result) {
           err ? callback(err) : callback(err, result);
+        });
+      }
+    };
+  },
+
+  wrapLegacyProvider: function(provider, logger) {
+    var printTransaction = function(tx_hash) {
+      logger.log("  ... " + tx_hash);
+    };
+
+    return {
+      send: function(payload) {
+        var result = provider.send(payload);
+
+        if (payload.method == "eth_sendTransaction") {
+          printTransaction(result.result);
+        }
+
+        return result;
+      },
+      sendAsync: function(payload, callback) {
+        provider.sendAsync(payload, function(err, result) {
+          if (err) return callback(err);
+
+          if (payload.method == "eth_sendTransaction") {
+            printTransaction(result.result);
+          }
+
+          callback(err, result);
         });
       }
     };
