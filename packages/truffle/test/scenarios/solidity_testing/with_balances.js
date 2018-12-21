@@ -21,7 +21,7 @@ describe("Solidity Tests with balances", function() {
 
   before("set up sandbox", function(done) {
     this.timeout(5000);
-    Box.sandbox("bare", function(err, conf) {
+    Box.sandbox("default", function(err, conf) {
       if (err) return done(err);
       config = conf;
       config.logger = logger;
