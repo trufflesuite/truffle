@@ -23,6 +23,7 @@
   "dependencies": {
     "async": "2.6.1",
     "emittery": "^0.4.0",
+    "legacy-web3": "^0.20.6",
     "node-dir": "0.1.17",
     "truffle-deployer": "^3.0.0-beta.2",
     "truffle-expect": "^0.0.5-beta.0",
