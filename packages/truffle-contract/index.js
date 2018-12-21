@@ -1,12 +1,14 @@
 var Schema = require("truffle-contract-schema");
-var Contract = require("./lib/contract.js");
+var Contract = require("./lib/contract");
+var LegacyContract = require("./lib/legacy");
 
-var contract = function(options) {
-  var binary = Schema.normalize(options || {});
+var contract = function(options = {}) {
+  var binary = Schema.normalize(options);
 
   // Note we don't use `new` here at all. This will cause the class to
   // "mutate" instead of instantiate an instance.
-  return Contract.clone(binary);
+  if (options.legacy) return LegacyContract.clone(binary);
+  else return Contract.clone(binary);
 };
 
 module.exports = contract;
