@@ -198,6 +198,7 @@ function Config(truffle_directory, working_directory, network) {
 
         var options = self.network_config;
         options.verboseRpc = self.verboseRpc;
+        options.legacy = self.legacy;
 
         return Provider.create(options);
       },
