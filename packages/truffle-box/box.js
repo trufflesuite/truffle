@@ -93,7 +93,7 @@ const Box = {
       self
         .unbox("https://github.com/trufflesuite/truffle-init-" + name, dir)
         .then(function() {
-          var config = Config.load(path.join(dir, "truffle.js"), {});
+          var config = Config.load(path.join(dir, "truffle-config.js"), {});
           callback(null, config);
         })
         .catch(callback);
