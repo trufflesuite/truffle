@@ -27,7 +27,7 @@ describe("truffle-box Box", () => {
         assert.ok(truffleConfig);
 
         assert(
-          fs.existsSync(path.join(destination, "truffle.js")),
+          fs.existsSync(path.join(destination, "truffle-config.js")),
           "Unboxed project should have truffle config."
         );
       });
@@ -85,7 +85,7 @@ describe("truffle-box Box", () => {
           assert.ok(truffleConfig);
 
           assert(
-            fs.existsSync(path.join(destination, "truffle.js")),
+            fs.existsSync(path.join(destination, "truffle-config.js")),
             "Unboxed project should have truffle config."
           );
           done();
@@ -101,27 +101,27 @@ describe("truffle-box Box", () => {
     });
 
     it("overwrites redundant files if init/unbox force flag used", done => {
-      const truffleConfigPath = path.join(destination, "truffle.js");
+      const truffleConfigPath = path.join(destination, "truffle-config.js");
 
       // preconditions
       fs.writeFileSync(
         truffleConfigPath,
-        "this truffle.js file is different than the default box file",
+        "this truffle-config.js file is different than the default box file",
         "utf8"
       );
       assert(
         fs.existsSync(truffleConfigPath),
-        "mock truffle.js wasn't created!"
+        "mock truffle-config.js wasn't created!"
       );
       const mockConfig = fs.readFileSync(truffleConfigPath, "utf8");
 
       Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true }).then(() => {
         assert(
           fs.existsSync(truffleConfigPath),
-          "truffle.js wasn't recreated!"
+          "truffle-config.js wasn't recreated!"
         );
         const newConfig = fs.readFileSync(truffleConfigPath, "utf8");
-        assert(newConfig !== mockConfig, "truffle.js wasn't overwritten!");
+        assert(newConfig !== mockConfig, "truffle-config.js wasn't overwritten!");
         done();
       });
     });
