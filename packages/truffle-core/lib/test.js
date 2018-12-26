@@ -46,7 +46,7 @@ var Test = {
     // Output looks like this during tests: https://gist.github.com/tcoulter/1988349d1ec65ce6b958
     var warn = config.logger.warn;
     config.logger.warn = function(message) {
-      if (message == "cannot find event for log") {
+      if (message === "cannot find event for log") {
         return;
       } else {
         if (warn) {
@@ -58,11 +58,11 @@ var Test = {
     var mocha = this.createMocha(config);
 
     var js_tests = config.test_files.filter(function(file) {
-      return path.extname(file) != ".sol";
+      return path.extname(file) !== ".sol";
     });
 
     var sol_tests = config.test_files.filter(function(file) {
-      return path.extname(file) == ".sol";
+      return path.extname(file) === ".sol";
     });
 
     // Add Javascript tests because there's nothing we need to do with them.
