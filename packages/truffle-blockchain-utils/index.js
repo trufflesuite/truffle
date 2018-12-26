@@ -22,7 +22,7 @@ var Blockchain = {
 
   parse: function(uri) {
     var parsed = {};
-    if (uri.indexOf("blockchain://") != 0) return parsed;
+    if (uri.indexOf("blockchain://") !== 0) return parsed;
 
     uri = uri.replace("blockchain://", "");
 
@@ -61,7 +61,7 @@ var Blockchain = {
     self.getBlockByNumber("0x0", provider, function(err, response) {
       if (err) return callback(err);
       var block = response.result;
-      if (block.hash != expected_genesis) return callback(null, false);
+      if (block.hash !== expected_genesis) return callback(null, false);
 
       self.getBlockByHash(expected_block, provider, function(err, response) {
         // Treat an error as if the block didn't exist. This is because
