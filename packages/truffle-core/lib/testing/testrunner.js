@@ -65,7 +65,7 @@ TestRunner.prototype.initialize = function(callback) {
         var abis = _.flatMap(contracts, "abi");
 
         abis.map(function(abi) {
-          if (abi.type == "event") {
+          if (abi.type === "event") {
             var signature = abi.name + "(" + _.map(abi.inputs, "type").join(",") + ")";
             self.known_events[self.web3.utils.sha3(signature)] = {
               signature: signature,
@@ -139,7 +139,7 @@ TestRunner.prototype.endTest = function(mocha, callback) {
   var self = this;
   
   // Skip logging if test passes and `show-events` option is not true
-  if (mocha.currentTest.state != "failed" && !self.config["show-events"]) {
+  if (mocha.currentTest.state !== "failed" && !self.config["show-events"]) {
     return callback();
   }
 
@@ -153,7 +153,7 @@ TestRunner.prototype.endTest = function(mocha, callback) {
 
     var logs = result.result;
 
-    if (logs.length == 0) {
+    if (logs.length === 0) {
       self.logger.log("    > No events were emitted");
       return callback();
     }
@@ -170,7 +170,7 @@ TestRunner.prototype.endTest = function(mocha, callback) {
       }
 
       var types = event.abi_entry.inputs.map(function(input) {
-        return input.indexed == true ? null : input.type;
+        return input.indexed === true ? null : input.type;
       }).filter(function(type) {
         return type != null;
       });
@@ -181,7 +181,7 @@ TestRunner.prototype.endTest = function(mocha, callback) {
       var line = "    " + event.abi_entry.name + "(";
       line += event.abi_entry.inputs.map(function(input) {
         var value;
-        if (input.indexed == true) {
+        if (input.indexed === true) {
           value = "<indexed>";
         } else {
           value = values[index];
@@ -215,7 +215,7 @@ TestRunner.prototype.rpc = function(method, arg, cb) {
     method: method,
     id: new Date().getTime()
   };
-  if (arguments.length == 3) {
+  if (arguments.length === 3) {
     req.params = arg;
   } else {
     cb = arg;
