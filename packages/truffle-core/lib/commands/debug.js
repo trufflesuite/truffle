@@ -48,7 +48,7 @@ var command = {
     Environment.detect(config, function(err) {
       if (err) return done(err);
 
-      if (config._.length == 0) {
+      if (config._.length === 0) {
         return done(
           new Error(
             "Please specify a transaction hash as the first parameter in order to " +
@@ -233,7 +233,7 @@ var command = {
                 // meaning it's not portable. But doing this now so we can get something
                 // pretty until we can build more architecture around this.
                 // Note: Selector results already have padding, so this isn't needed.
-                if (expression[0] == ":") {
+                if (expression[0] === ":") {
                   process.stdout.write("  ");
                 }
                 await printWatchExpressionResult(expression);
@@ -245,7 +245,7 @@ var command = {
             var type = expression[0];
             var exprArgs = expression.substring(1);
 
-            if (type == "!") {
+            if (type === "!") {
               printSelector(exprArgs);
             } else {
               await evalAndPrintExpression(exprArgs, 2, true);
@@ -538,7 +538,7 @@ var command = {
             var cmdArgs, splitArgs;
             debug("cmd %s", cmd);
 
-            if (cmd == ".exit") {
+            if (cmd === ".exit") {
               cmd = "q";
             }
 
@@ -555,7 +555,7 @@ var command = {
               cmd = cmd[0];
             }
 
-            if (cmd == "") {
+            if (cmd === "") {
               cmd = lastCommand;
             }
 
@@ -683,19 +683,19 @@ var command = {
             }
 
             if (
-              cmd != "i" &&
-              cmd != "u" &&
-              cmd != "b" &&
-              cmd != "B" &&
-              cmd != "v" &&
-              cmd != "h" &&
-              cmd != "p" &&
-              cmd != "?" &&
-              cmd != "!" &&
-              cmd != ":" &&
-              cmd != "+" &&
-              cmd != "r" &&
-              cmd != "-"
+              cmd !== "i" &&
+              cmd !== "u" &&
+              cmd !== "b" &&
+              cmd !== "B" &&
+              cmd !== "v" &&
+              cmd !== "h" &&
+              cmd !== "p" &&
+              cmd !== "?" &&
+              cmd !== "!" &&
+              cmd !== ":" &&
+              cmd !== "+" &&
+              cmd !== "r" &&
+              cmd !== "-"
             ) {
               lastCommand = cmd;
             }
