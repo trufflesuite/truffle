@@ -80,7 +80,7 @@ var Networks = {
       var network_names = Object.keys(networks).sort();
 
       var star_networks = network_names.filter(function(network_name) {
-        return config.networks[network_name] != null && config.networks[network_name].network_id == "*";
+        return config.networks[network_name] != null && config.networks[network_name].network_id === "*";
       });
 
       // Remove * networks from network names.
@@ -93,7 +93,7 @@ var Networks = {
         var found = false;
         for (var i = 0; i < configured_networks.length; i++) {
           var configured_network_name = configured_networks[i];
-          if (network_name == configured_network_name) {
+          if (network_name === configured_network_name) {
             found = true;
             break;
           }
@@ -125,7 +125,7 @@ var Networks = {
           return contract_name + ": " + address;
         });
 
-        if (output.length == 0) {
+        if (output.length === 0) {
           output = ["No contracts deployed."];
         }
 
@@ -143,7 +143,7 @@ var Networks = {
         config.logger.log("  " + output.join("\n  "));
       });
 
-      if (network_names.length == 0) {
+      if (network_names.length === 0) {
         config.logger.log(OS.EOL + "Contracts have not been deployed to any network.");
       }
 
@@ -178,14 +178,14 @@ var Networks = {
                 var configured_network = configured_networks[i];
 
                 // If an installed network id matches a configured id, then we can ignore this one.
-                if (installed_network_id == config.networks[configured_network].network_id) {
+                if (installed_network_id === config.networks[configured_network].network_id) {
                   found = true;
                   break;
                 }
               }
 
               // If we didn't find a suitable configuration, delete this network.
-              if (found == false) {
+              if (found === false) {
                 delete body.networks[installed_network_id];
               }
             });
@@ -208,7 +208,7 @@ var Networks = {
 
   // Try to connect to every named network except for "test" and "development"
   asURIs: function(options, networks, callback) {
-    if (typeof networks == "function") {
+    if (typeof networks === "function") {
       callback = networks;
       networks = Object.keys(options.networks);
     }
@@ -240,7 +240,7 @@ var Networks = {
     var first = network_id + "";
     var second = network_options.network_id + "";
 
-    if (first == second) {
+    if (first === second) {
       return callback(null, true);
     }
 
@@ -254,11 +254,11 @@ var Networks = {
 
     var web3 = new Web3(provider);
     web3.eth.net.getId(current_network_id => {
-      if (first == current_network_id) {
+      if (first === current_network_id) {
         return callback(null, true);
       }
 
-      if (isFirstANumber == false) {
+      if (isFirstANumber === false) {
         BlockchainUtils.matches(first, provider, callback);
       } else {
         // Nothing else to compare.
