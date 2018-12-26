@@ -26,7 +26,7 @@ var Package = {
       });
     var host = options.ethpm.ipfs_host;
 
-    if (host instanceof EthPM.hosts.IPFS == false) {
+    if (host instanceof EthPM.hosts.IPFS === false) {
       host = new EthPM.hosts.IPFSWithLocalReader(
         options.ethpm.ipfs_host,
         options.ethpm.ipfs_port,
@@ -41,7 +41,7 @@ var Package = {
 
     var registry = options.ethpm.registry;
 
-    if (typeof registry == "string") {
+    if (typeof registry === "string") {
       registry = await EthPMRegistry.use(
         options.ethpm.registry,
         fakeAddress,
@@ -128,7 +128,7 @@ var Package = {
     var web3 = new Web3(provider);
     var host = options.ethpm.ipfs_host;
 
-    if (host instanceof EthPM.hosts.IPFS == false) {
+    if (host instanceof EthPM.hosts.IPFS === false) {
       host = new EthPM.hosts.IPFS(
         options.ethpm.ipfs_host,
         options.ethpm.ipfs_port,
@@ -210,7 +210,7 @@ var Package = {
     var deployed_networks = Object.keys(options.networks).filter(function(
       network_name
     ) {
-      return network_name != "test" && network_name != "development";
+      return network_name !== "test" && network_name !== "development";
     });
 
     // Now get the URIs of each network that's been deployed to.
@@ -312,7 +312,7 @@ var Package = {
                       );
                     },
                     function(err) {
-                      if (err && err != "bail early") {
+                      if (err && err !== "bail early") {
                         return reject(err);
                       }
 
