@@ -52,7 +52,7 @@ var Require = {
           }
 
           // If relative, it's relative to the file.
-          if (pkgPath[0] == ".") {
+          if (pkgPath[0] === ".") {
             return originalrequire(path.join(path.dirname(file), pkgPath));
           } else {
             // Not absolute, not relative, must be a globally or locally installed module.
