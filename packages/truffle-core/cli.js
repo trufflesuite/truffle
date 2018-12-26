@@ -65,7 +65,7 @@ command.run(inputArguments, options, function(err) {
         });
         console.log(err.message);
         version.logTruffleAndNode(options.logger);
-      } else if (typeof err == "number") {
+      } else if (typeof err === "number") {
         analytics.send({
           exception: "Numbered Error - " + err,
           version: versionInfo.bundle
