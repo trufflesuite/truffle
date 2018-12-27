@@ -84,7 +84,7 @@ module.exports = {
                     var data = JSON.parse(jsonData[i]);
 
                     // In case there are artifacts from other source locations.
-                    if (sourceFilesArtifacts[data.sourcePath] === null) {
+                    if (sourceFilesArtifacts[data.sourcePath] == null) {
                       sourceFilesArtifacts[data.sourcePath] = [];
                     }
 
