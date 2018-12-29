@@ -85,7 +85,10 @@ export interface ContractMapping {
 export function getContractNode(contract: ContractObject): Ast {
   for (let j = 0; j < contract.ast.nodes.length; j++) {
     const contractNode = contract.ast.nodes[j];
-    if (contractNode.nodeType === "ContractDefinition" && contractNode.name === contract.contractName) {
+    const nodeMatchesContract =
+      contractNode.name === contract.contractName ||
+      contractNode.name === contract.contract_name;
+    if (contractNode.nodeType === "ContractDefinition" && nodeMatchesContract) {
       return contractNode;
     }
   }
