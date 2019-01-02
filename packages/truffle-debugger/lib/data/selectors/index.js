@@ -13,10 +13,6 @@ import solidity from "lib/solidity/selectors";
 import * as TruffleDecodeUtils from "truffle-decode-utils";
 import { forEvmState } from "truffle-decoder";
 
-function shallowClone(object) {
-  return Object.assign({}, object);
-}
-
 /**
  * @private
  */
@@ -109,7 +105,7 @@ const data = createSelectorTree({
         _: createLeaf(["/info/scopes", "./raw"], (scopes, inlined) =>
           Object.assign({}, ...Object.entries(inlined)
             .map(([id, info]) => {
-              let newInfo = shallowClone(info);
+              let newInfo = { ...info };
               newInfo.variables = scopes[id].variables;
               return {[id]: newInfo}
             }))
@@ -294,7 +290,7 @@ const data = createSelectorTree({
             //contract, and specifically a contract -- not an interface or
             //library (those don't get "variables" entries in their scopes)
             debug("contract id %d", id);
-            let newScope = shallowClone(scope);
+            let newScope = { ...scope };
             //note that Solidity gives us the linearization in order from most
             //derived to most base, but we want most base to most derived;
             //annoyingly, reverse() is in-place, so we clone with slice() first

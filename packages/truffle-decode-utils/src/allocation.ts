@@ -116,23 +116,11 @@ export namespace Allocation {
       return allocateValue(slot, index, byteSize);
     }
     
-    if (allocations[declaration.id] !== undefined) {
-      return allocations[declaration.id];
+    if (allocations[declaration.id] === undefined) {
+      throw new Error("Allocation for member not found");
     }
 
-    //NOTE: due to the way the allocator is now called, we should never reach
-    //this point in the code -- we should *only* be allocating a struct *after*
-    //all any structs it refers to have been allocated.  Nonetheless, I'm going
-    //to leave this case in for now as something of a failsafe.
-
-    //debug("Warning!  Struct failsafe invoked!")
-
-    let struct = refs[definition.typeName.referencedDeclaration];
-    // debug("struct: %O", struct);
-
-    let result = allocateDeclarations(struct.variables || [], refs, allocations, slot, index);
-    // debug("struct result %o", result);
-    return result;
+    return allocations[declaration.id];
   }
 
   export function normalizeSlot(inputSlot: any): Slot {
