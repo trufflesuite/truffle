@@ -36,7 +36,7 @@ contract("DecodingSample", accounts => {
     const decoder = TruffleDecoder.forContract(
       DecodingSample,
       [],
-      web3.currentProvider.host
+      web3.currentProvider
     );
     decoder.init();
 
