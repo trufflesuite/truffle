@@ -8,11 +8,11 @@ var web3 = new Web3();
 
 var Utils = {
   is_object: function(val) {
-    return typeof val == "object" && !Array.isArray(val);
+    return typeof val === "object" && !Array.isArray(val);
   },
 
   is_big_number: function(val) {
-    if (typeof val != "object") return false;
+    if (typeof val !== "object") return false;
 
     return web3.utils.isBN(val) || web3.utils.isBigNumber(val);
   },
@@ -172,7 +172,7 @@ var Utils = {
     var regex = /__[^_]+_+/g;
     var unlinked_libraries = constructor.binary.match(regex);
 
-    if (unlinked_libraries != null) {
+    if (unlinked_libraries !== null) {
       unlinked_libraries = unlinked_libraries
         .map(function(name) {
           // Remove underscores
@@ -185,7 +185,7 @@ var Utils = {
             return true;
           }
 
-          return name != arr[index + 1];
+          return name !== arr[index + 1];
         })
         .join(", ");
 

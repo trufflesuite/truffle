@@ -18,7 +18,7 @@ FS.prototype.require = function(import_path, search_path) {
 
   // If we have an absoulte path, only check the file if it's a child of the working_directory.
   if (path.isAbsolute(import_path)) {
-    if (import_path.indexOf(this.working_directory) != 0) {
+    if (import_path.indexOf(this.working_directory) !== 0) {
       return null;
     }
     import_path = "./" + import_path.replace(this.working_directory);
@@ -43,7 +43,7 @@ FS.prototype.getContractName = function(sourcePath, searchPath) {
       fs.readFileSync(path.resolve(searchPath, filename))
     );
 
-    if (artifact.sourcePath == sourcePath) {
+    if (artifact.sourcePath === sourcePath) {
       return artifact.contractName;
     }
   };

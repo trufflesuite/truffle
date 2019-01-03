@@ -5,7 +5,7 @@ function NPM(working_directory) {
 };
 
 NPM.prototype.require = function(import_path, search_path) {
-  if (import_path.indexOf(".") == 0 || import_path.indexOf("/") == 0) {
+  if (import_path.indexOf(".") === 0 || import_path.indexOf("/") === 0) {
     return null;
   }
   var contract_name = path.basename(import_path, ".sol");

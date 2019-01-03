@@ -123,7 +123,7 @@ export async function addMigrations(config, migrations = {}) {
 }
 
 export async function defaultMigrations(contractNames) {
-  contractNames = contractNames.filter(name => name != "Migrations");
+  contractNames = contractNames.filter(name => name !== "Migrations");
 
   let migrations = {};
 

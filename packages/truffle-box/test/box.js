@@ -36,17 +36,17 @@ describe("truffle-box Box", () => {
     it("does not copy the config files or ignored files in the config", () => {
       // Assert the file is not there first.
       assert(
-        fs.existsSync(path.join(destination, "truffle-init.json")) == false,
+        fs.existsSync(path.join(destination, "truffle-init.json")) === false,
         "truffle-init.json shouldn't be available to the user!"
       );
 
       // Now assert the README.md and the .gitignore file were removed.
       assert(
-        fs.existsSync(path.join(destination, "README.md")) == false,
+        fs.existsSync(path.join(destination, "README.md")) === false,
         "README.md didn't get removed!"
       );
       assert(
-        fs.existsSync(path.join(destination, ".gitignore")) == false,
+        fs.existsSync(path.join(destination, ".gitignore")) === false,
         ".gitignore didn't get removed!"
       );
     });
