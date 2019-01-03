@@ -173,7 +173,9 @@ var command = {
         config.artifactor = new Artifactor(buildDir);
         config.resolver = new Resolver(config);
 
-        environment.detect(config, () => {
+        environment.detect(config, err => {
+          if (err) return done(err);
+
           config.dryRun = false;
           runMigrations(config, done);
         });
