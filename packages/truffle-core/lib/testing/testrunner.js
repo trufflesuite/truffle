@@ -246,15 +246,16 @@ TestRunner.prototype.endTest = function(mocha, callback) {
   );
 };
 
-(TestRunner.prototype.snapshot = function(callback) {
+TestRunner.prototype.snapshot = function(callback) {
   this.rpc("evm_snapshot", function(err, result) {
     if (err) return callback(err);
     callback(null, result.result);
   });
-}),
-  (TestRunner.prototype.revert = function(snapshot_id, callback) {
-    this.rpc("evm_revert", [snapshot_id], callback);
-  });
+};
+
+TestRunner.prototype.revert = function(snapshot_id, callback) {
+  this.rpc("evm_revert", [snapshot_id], callback);
+};
 
 TestRunner.prototype.rpc = function(method, arg, cb) {
   var req = {
