@@ -1,3 +1,5 @@
+const path = require("path");
+
 function TestResolver(resolver, source, search_path) {
   this.resolver = resolver;
   this.source = source;
@@ -13,6 +15,10 @@ TestResolver.prototype.require = function(import_path) {
     return this.require_cache[import_path];
   }
 
+  // For Windows: Allow import paths to be either path separator ('\' or '/')
+  // by converting all '/' to the default (path.sep);
+  import_path = import_path.replace(/\//g, path.sep);
+
   // Remember: This throws if not found.
   var result = this.resolver.require(import_path, this.search_path);
 
@@ -21,7 +27,11 @@ TestResolver.prototype.require = function(import_path) {
   return result;
 };
 
-TestResolver.prototype.resolve = function(import_path, imported_from, callback) {
+TestResolver.prototype.resolve = function(
+  import_path,
+  imported_from,
+  callback
+) {
   var self = this;
   this.source.resolve(import_path, function(err, result, resolved_path) {
     if (err) return callback(err);

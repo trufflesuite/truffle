@@ -14,7 +14,7 @@
     "copy-webpack-plugin": "^4.0.1",
     "eslint": "^5.7.0",
     "fs-extra": "6.0.1",
-    "ganache-core": "^2.3.1",
+    "ganache-core": "2.3.3",
     "glob": "^7.1.2",
     "go-ipfs-dep": "^0.4.17",
     "husky": "^1.1.2",

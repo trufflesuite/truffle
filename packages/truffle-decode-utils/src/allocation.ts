@@ -35,8 +35,9 @@ export namespace Allocation {
   export function allocateDeclarations(
     declarations: any[],
     refs: any[],
+    allocations: any, //sorry
     slot: Slot = <Slot>{ offset: new BN(0) },
-    index: number = EVMUtils.WORD_SIZE - 1,
+    index: number = EVMUtils.WORD_SIZE - 1
   ): Range {
     if (index < EVMUtils.WORD_SIZE - 1) {  // starts a new slot
       slot = {
@@ -52,7 +53,7 @@ export namespace Allocation {
 
     for (let declaration of declarations) {
       let { from, to, next, children } =
-        allocateDeclaration(declaration, refs, slot, index);
+        allocateDeclaration(declaration, refs, slot, index, allocations);
 
       mapping[declaration.id] = { from, to, name: declaration.name };
       if (children !== undefined) {
@@ -107,20 +108,19 @@ export namespace Allocation {
     return { from, to, next, children: {} };
   }
 
-  function allocateDeclaration(declaration: any, refs: any[], slot: Slot, index: number): Range {
+  function allocateDeclaration(declaration: any, refs: any[], slot: Slot, index: number, allocations: any): Range {
     let definition = refs[declaration.id].definition;
     var byteSize = DefinitionUtils.storageSize(definition);  // yum
 
     if (DefinitionUtils.typeClass(definition) != "struct") {
       return allocateValue(slot, index, byteSize);
     }
+    
+    if (allocations[declaration.id] === undefined) {
+      throw new Error("Allocation for member not found");
+    }
 
-    let struct = refs[definition.typeName.referencedDeclaration];
-    // debug("struct: %O", struct);
-
-    let result =  allocateDeclarations(struct.variables || [], refs, slot, index);
-    // debug("struct result %o", result);
-    return result;
+    return allocations[declaration.id];
   }
 
   export function normalizeSlot(inputSlot: any): Slot {

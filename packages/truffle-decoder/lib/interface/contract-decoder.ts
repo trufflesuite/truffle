@@ -9,6 +9,7 @@ import decode from "../decode";
 import { Definition as DefinitionUtils, EVM, Allocation, AstDefinition } from "truffle-decode-utils";
 import { BlockType, Transaction } from "web3/eth/types";
 import { EventLog, Log } from "web3/types";
+import { Provider } from "web3/providers";
 import abiDecoder from "abi-decoder";
 
 export interface ContractStateVariable {
@@ -85,7 +86,10 @@ export interface ContractMapping {
 export function getContractNode(contract: ContractObject): Ast {
   for (let j = 0; j < contract.ast.nodes.length; j++) {
     const contractNode = contract.ast.nodes[j];
-    if (contractNode.nodeType === "ContractDefinition" && contractNode.name === contract.contractName) {
+    const nodeMatchesContract =
+      contractNode.name === contract.contractName ||
+      contractNode.name === contract.contract_name;
+    if (contractNode.nodeType === "ContractDefinition" && nodeMatchesContract) {
       return contractNode;
     }
   }
@@ -118,15 +122,10 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   private stateVariableReferences: EvmVariableReferenceMapping;
 
-  constructor(contract: ContractObject, inheritedContracts: ContractObject[], provider: string) {
+  constructor(contract: ContractObject, inheritedContracts: ContractObject[], provider: Provider) {
     super();
 
-    if (provider.startsWith("http:\/\/") || provider.startsWith("https:\/\/")) {
-      this.web3 = new Web3(new Web3.providers.HttpProvider(provider));
-    }
-    else if (provider.startsWith("ws:\/\/")) {
-      this.web3 = new Web3(new Web3.providers.WebsocketProvider(provider));
-    }
+    this.web3 = new Web3(provider);
 
     this.contract = contract; //cloneDeep(contract);
     this.inheritedContracts = inheritedContracts; //cloneDeep(inheritedContracts);

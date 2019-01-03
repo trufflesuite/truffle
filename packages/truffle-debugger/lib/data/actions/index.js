@@ -56,3 +56,11 @@ export function learnAddress(dummyAddress, address) {
     address
   };
 }
+
+export const DEFINE_TYPE = "DEFINE_TYPE";
+export function defineType(node) {
+  return {
+    type: DEFINE_TYPE,
+    node
+  };
+}

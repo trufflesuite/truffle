@@ -47,6 +47,11 @@ function *handleEnter(sourceId, node, pointer, parentId) {
       debug("%s recording variable %o", pointer, node);
       yield *data.declare(node);
       break;
+    case "ContractDefinition":
+    case "StructDefinition":
+    case "EnumDefinition":
+      yield *data.defineType(node);
+      break;
   }
 }
 
