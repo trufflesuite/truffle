@@ -189,7 +189,7 @@ TestRunner.prototype.endTest = function(mocha, callback) {
     ],
     function(err, result) {
       if (err) return callback(err);
-      
+
       var logs = result.result;
 
       if (logs.length === 0) {
@@ -198,9 +198,9 @@ TestRunner.prototype.endTest = function(mocha, callback) {
       }
 
       self.logger.log("\n    Events emitted during test:");
-      self.logger.log(  "    ---------------------------");
+      self.logger.log("    ---------------------------");
       self.logger.log("");
-      
+
       logs.forEach(function(log) {
         var event = self.known_events[log.topics[0]];
 
@@ -222,7 +222,7 @@ TestRunner.prototype.endTest = function(mocha, callback) {
           log.topics
         );
         var index = 0;
-        
+
         var line = "    " + event.abi_entry.name + "(";
         line += event.abi_entry.inputs
           .map(function(input) {
