@@ -516,7 +516,7 @@ describe("Methods", function() {
       const example = await Example.new(1);
       const triggered = await example.fallbackTriggered();
 
-      assert(triggered == false, "Fallback should not have been triggered yet");
+      assert(triggered === false, "Fallback should not have been triggered yet");
 
       await example.sendTransaction({
         value: web3.utils.toWei("1", "ether")
@@ -524,7 +524,7 @@ describe("Methods", function() {
 
       const balance = await web3.eth.getBalance(example.address);
       assert(
-        balance == web3.utils.toWei("1", "ether"),
+        balance === web3.utils.toWei("1", "ether"),
         "Balance should be 1 ether"
       );
     });
@@ -533,12 +533,12 @@ describe("Methods", function() {
       const example = await Example.new(1);
       const triggered = await example.fallbackTriggered();
 
-      assert(triggered == false, "Fallback should not have been triggered yet");
+      assert(triggered === false, "Fallback should not have been triggered yet");
 
       await example.send(web3.utils.toWei("1", "ether"));
 
       const balance = await web3.eth.getBalance(example.address);
-      assert(balance == web3.utils.toWei("1", "ether"));
+      assert(balance === web3.utils.toWei("1", "ether"));
     });
 
     it("should accept tx params (send)", async function() {

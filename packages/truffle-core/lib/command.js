@@ -20,7 +20,7 @@ function Command(commands) {
 Command.prototype.getCommand = function(inputStrings, noAliases) {
   var argv = this.args.parse(inputStrings);
 
-  if (argv._.length == 0) {
+  if (argv._.length === 0) {
     return null;
   }
 
@@ -43,13 +43,13 @@ Command.prototype.getCommand = function(inputStrings, noAliases) {
         possibleCommand
       ) {
         return (
-          possibleCommand.substring(0, currentLength) ==
+          possibleCommand.substring(0, currentLength) ===
           firstInputString.substring(0, currentLength)
         );
       });
 
       // Did we find only one command that matches? If so, use that one.
-      if (possibleCommands.length == 1) {
+      if (possibleCommands.length === 1) {
         chosenCommand = possibleCommands[0];
         break;
       }
@@ -72,7 +72,7 @@ Command.prototype.getCommand = function(inputStrings, noAliases) {
 };
 
 Command.prototype.run = function(inputStrings, options, callback) {
-  if (typeof options == "function") {
+  if (typeof options === "function") {
     callback = options;
     options = {};
   }

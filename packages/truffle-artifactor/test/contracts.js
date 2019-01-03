@@ -225,7 +225,7 @@ describe("artifactor + require", function() {
       })
       .then(function(triggered) {
         assert(
-          triggered == false,
+          triggered === false,
           "Fallback should not have been triggered yet"
         );
         return example.sendTransaction({
@@ -241,7 +241,7 @@ describe("artifactor + require", function() {
         });
       })
       .then(function(balance) {
-        assert(balance == web3.utils.toWei("1", "ether"));
+        assert(balance === web3.utils.toWei("1", "ether"));
       });
   });
 
@@ -254,7 +254,7 @@ describe("artifactor + require", function() {
       })
       .then(function(triggered) {
         assert(
-          triggered == false,
+          triggered === false,
           "Fallback should not have been triggered yet"
         );
         return example.send(web3.utils.toWei("1", "ether"));
@@ -268,7 +268,7 @@ describe("artifactor + require", function() {
         });
       })
       .then(function(balance) {
-        assert(balance == web3.utils.toWei("1", "ether"));
+        assert(balance === web3.utils.toWei("1", "ether"));
       });
   });
 

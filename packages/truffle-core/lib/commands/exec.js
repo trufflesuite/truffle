@@ -53,7 +53,7 @@ var command = {
       return;
     }
 
-    if (path.isAbsolute(file) == false) {
+    if (path.isAbsolute(file) === false) {
       file = path.join(process.cwd(), file);
     }
 

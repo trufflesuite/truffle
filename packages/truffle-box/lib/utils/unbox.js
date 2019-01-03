@@ -32,7 +32,7 @@ function verifyURL(url) {
               ". Please check the format of the requested resource."
           )
         );
-      } else if (r.statusCode == 404) {
+      } else if (r.statusCode === 404) {
         return reject(
           new Error(
             "Truffle Box at URL " +
@@ -40,7 +40,7 @@ function verifyURL(url) {
               " doesn't exist. If you believe this is an error, please contact Truffle support."
           )
         );
-      } else if (r.statusCode != 200) {
+      } else if (r.statusCode !== 200) {
         return reject(
           new Error(
             "Error connecting to github.com. Please check your internet connection and try again."

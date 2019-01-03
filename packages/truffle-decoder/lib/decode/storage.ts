@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("decoder:decode:storage");
 
 import read from "../read";
+import { slotAddress } from "../read/storage";
 import * as DecodeUtils from "truffle-decode-utils";
 import decode from "./index";
 import decodeValue from "./value";
@@ -10,28 +11,8 @@ import { EvmInfo } from "../types/evm";
 import { Allocation } from "truffle-decode-utils";
 import BN from "bn.js";
 import Web3 from "web3";
-import { EvmStruct, EvmMapping, EvmEnum } from "../interface/contract-decoder";
+import { EvmStruct, EvmMapping } from "../interface/contract-decoder";
 import clonedeep from "lodash.clonedeep";
-
-function prefixPointer(child: StoragePointer, parentSlot: Allocation.Slot): StoragePointer {
-  let result: StoragePointer = clonedeep(child);
-
-  let obj = result.storage.from.slot;
-  while (obj.path && typeof obj.path.path !== "undefined") {
-    obj = obj.path;
-  }
-
-  obj.path = clonedeep(parentSlot);
-
-  /*let obj2 = result.storage.to.slot;
-  while (typeof obj2.path !== "undefined") {
-    obj2 = obj2.path;
-  }
-
-  obj2.path = clonedeep(parentSlot);*/
-
-  return result;
-}
 
 export default async function decodeStorageReference(definition: DecodeUtils.AstDefinition, pointer: StoragePointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<any> {
   var data;
@@ -41,7 +22,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
 
   switch (DecodeUtils.Definition.typeClass(definition)) {
     case "array": {
-      // debug("storage array! %o", pointer);
+      debug("storage array! %o", pointer);
       if (DecodeUtils.Definition.isDynamicArray(definition)) {
         data = await read(pointer, state, web3, contractAddress);
         if (!data) {
@@ -55,15 +36,17 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
           ? parseInt(definition.typeName.length.value)
           : parseInt(definition.length.value);
       }
-      // debug("length %o", length);
+      debug("length %o", length);
 
       const baseDefinition = DecodeUtils.Definition.baseDefinition(definition);
       const referenceId = baseDefinition.referencedDeclaration ||
         (baseDefinition.typeName ? baseDefinition.typeName.referencedDeclaration : undefined);
 
       let baseSize: number;
-      if (typeof referenceId !== "undefined" && typeof info.referenceDeclarations !== "undefined") {
-        const referenceDeclaration: undefined | DecodeUtils.AstDefinition = info.referenceDeclarations[referenceId];
+      if (typeof referenceId !== "undefined") {
+        const referenceDeclaration: undefined | DecodeUtils.AstDefinition = (info.referenceDeclarations)
+          ? info.referenceDeclarations[referenceId]
+          : info.scopes[referenceId].definition;
         baseSize = DecodeUtils.Definition.storageSize(baseDefinition, referenceDeclaration);
       }
       else {
@@ -71,8 +54,8 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       }
 
       const perWord = Math.floor(DecodeUtils.EVM.WORD_SIZE / baseSize);
-      // debug("baseSize %o", baseSize);
-      // debug("perWord %d", perWord);
+      debug("baseSize %o", baseSize);
+      debug("perWord %d", perWord);
 
       const offset = (i: number): number => {
         if (perWord == 1) {
@@ -98,7 +81,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
         index: pointer.storage.from.index
       };
 
-      // debug("pointer: %o", pointer);
+      debug("pointer: %o", pointer);
       let ranges: Allocation.Range[] = [];
       let currentReference: Allocation.StorageReference = {
         slot: {
@@ -134,7 +117,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       }
 
       const decodePromises = ranges.map( (childRange, idx) => {
-        // debug("childFrom %d, %o", idx, childFrom);
+        debug("childFrom %d, %o", idx, childRange.from);
         return decode(DecodeUtils.Definition.baseDefinition(definition), <StoragePointer>{
           storage: childRange
         }, info, web3, contractAddress);
@@ -150,7 +133,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
         return undefined;
       }
 
-      // debug("data %O", data);
+      debug("data %O", data);
       let lengthByte = data[DecodeUtils.EVM.WORD_SIZE - 1];
       if (!lengthByte) {
         lengthByte = 0;
@@ -159,7 +142,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       if (lengthByte % 2 == 0) {
         // string lives in word, length is last byte / 2
         length = lengthByte / 2;
-        // debug("in-word; length %o", length);
+        debug("in-word; length %o", length);
         if (length == 0) {
           return "";
         }
@@ -171,7 +154,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
 
       } else {
         length = DecodeUtils.Conversion.toBN(data).subn(1).divn(2).toNumber();
-        // debug("new-word, length %o", length);
+        debug("new-word, length %o", length);
 
         return decodeValue(definition, <StoragePointer>{
           storage: {
@@ -196,84 +179,60 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
         ? definition.typeName.referencedDeclaration
         : definition.referencedDeclaration;
 
-      // TODO: this is ugly, this should be one conformed method, will fix at some later point
-      if (typeof scopes[referencedDeclaration] !== "undefined") {
-        // debugger way
-        const variables = (scopes[referencedDeclaration] || {}).variables || [];
+      // seese's way -- now the only way!
+      // however, there is still *one* difference -- the debugger
+      // uses scopes instead of referenceDeclarations, and they work slightly
+      // differently
 
-        let slot: DecodeUtils.Allocation.Slot;
-        if (pointer.storage != undefined) {
-          slot = pointer.storage.from.slot;
-        } else {
-          slot = DecodeUtils.Allocation.normalizeSlot(DecodeUtils.Conversion.toBN(await read(pointer, state, web3, contractAddress)));
-        }
+      const type = (info.referenceDeclarations)
+        ? info.referenceDeclarations[referencedDeclaration].name
+        : info.scopes[referencedDeclaration].definition.name;
 
-        const allocation = DecodeUtils.Allocation.allocateDeclarations(variables, scopes, slot);
+      let result: EvmStruct = {
+        name: definition.name,
+        type,
+        members: {}
+      };
 
-        return Object.assign(
-          {}, ...await Promise.all(Object.entries(allocation.children).map(
-            async ([id, childPointer]) => {
-              let decoded;
-              try {
-                decoded = await decode(
-                  scopes[id].definition, { storage: childPointer }, info, web3, contractAddress
-                );
-              } catch (err) {
-                decoded = err;
-              }
+      const members: DecodeUtils.AstDefinition[] = (info.referenceDeclarations)
+        ? info.referenceDeclarations[referencedDeclaration].members
+        : info.scopes[referencedDeclaration].definition.members;
 
-              return {
-                [childPointer.name]: decoded
-              }
-            }
-          ))
-        );
-      }
-      else {
-        // seese's way
-        let result: EvmStruct = {
-          name: definition.name,
-          type: info.referenceDeclarations[referencedDeclaration].name,
-          members: {}
+      const referenceVariable = info.referenceVariables[referencedDeclaration];
+      for (let i = 0; i < members.length; i++) {
+        const variableRef = referenceVariable.members[members[i].id];
+        const refPointer = variableRef.pointer;
+        debug("pointer %O", pointer);
+        debug("refPointer %O", refPointer);
+        const childRange = <Allocation.Range>{
+          from: {
+            slot: {
+              path: pointer.storage.from.slot,
+              offset: slotAddress(refPointer.storage.from.slot)
+            },
+            index: refPointer.storage.from.index
+          },
+          to: {
+            slot: {
+              path: pointer.storage.from.slot,
+              offset: slotAddress(refPointer.storage.to.slot)
+            },
+            index: refPointer.storage.to.index
+          },
         };
+        const val = await decode(
+          members[i],
+          {storage: childRange}, info, web3, contractAddress
+        );
 
-        const members: DecodeUtils.AstDefinition[] = info.referenceDeclarations[referencedDeclaration].members;
-        const referenceVariable = info.referenceVariables[referencedDeclaration];
-        for (let i = 0; i < members.length; i++) {
-          const variableRef = referenceVariable.members[members[i].id];
-          const pointer = prefixPointer(variableRef.pointer, info.variables[definition.id].pointer.storage.from.slot);
-          const val = await decode(
-            members[i],
-            pointer, info, web3, contractAddress
-          );
-
-          result.members[members[i].name] = {
-            name: members[i].name,
-            type: DecodeUtils.Definition.typeClass(members[i]),
-            value: val
-          };
-        }
-
-        return result;
-      }
-    }
-
-    case "enum": {
-      data = await read(pointer, state, web3, contractAddress);
-      if (data == undefined) {
-        return undefined;
+        result.members[members[i].name] = {
+          name: members[i].name,
+          type: DecodeUtils.Definition.typeClass(members[i]),
+          value: val
+        };
       }
 
-      const numRepresentation = DecodeUtils.Conversion.toBN(data).toNumber();
-      const referenceId = definition.referencedDeclaration ||
-        (definition.typeName ? definition.typeName.referencedDeclaration : undefined);
-      const enumDeclaration = info.referenceDeclarations[referenceId];
-      const decodedValue = enumDeclaration.members[numRepresentation].name;
-
-      return <EvmEnum>{
-        type: enumDeclaration.name,
-        value: enumDeclaration.name + "." + decodedValue
-      }
+      return result;
     }
 
     case "mapping": {
@@ -313,7 +272,6 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
               }
             }
           };
-          // debug("keyPointer %o", keyPointer);
 
           let memberName: string;
           if (typeof key === "string") {
@@ -332,7 +290,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
     }
 
     default: {
-      // debug("Unknown storage reference type: %s", DecodeUtils.typeIdentifier(definition));
+      debug("Unknown storage reference type: %s", DecodeUtils.Definition.typeIdentifier(definition));
       return undefined;
     }
   }

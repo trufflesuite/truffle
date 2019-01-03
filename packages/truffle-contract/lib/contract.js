@@ -10,7 +10,7 @@ const {
 
 // For browserified version. If browserify gave us an empty version,
 // look for the one provided by the user.
-if (typeof Web3 == "object" && Object.keys(Web3).length == 0) {
+if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
   Web3 = global.Web3;
 }
 
@@ -21,7 +21,7 @@ if (typeof Web3 == "object" && Object.keys(Web3).length == 0) {
     var constructor = instance.constructor;
 
     // Disambiguate between .at() and .new()
-    if (typeof contract == "string") {
+    if (typeof contract === "string") {
       var web3Instance = new constructor.web3.eth.Contract(constructor.abi);
       web3Instance.options.address = contract;
       contract = web3Instance;

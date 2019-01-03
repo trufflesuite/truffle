@@ -25,8 +25,7 @@ function* tickSaga() {
   let { tree, id: treeId, node, pointer } = yield select(data.views.ast);
 
   let decode = yield select(data.views.decoder);
-  let scopes = yield select(data.info.scopes);
-  let definitions = yield select(data.views.scopes.inlined);
+  let allocations = yield select(data.views.allocations);
   let currentAssignments = yield select(data.proc.assignments);
   let currentDepth = yield select(data.current.functionDepth);
   let address = yield select(data.current.address); //may be undefined
@@ -79,10 +78,7 @@ function* tickSaga() {
                 { stack: top - i }
               )
             )
-            .map(assignment => {
-              return { [assignment.id]: assignment };
-              //awkward, but seems to be only way to return an object literal
-            })
+            .map(assignment => ({ [assignment.id]: assignment }))
         )
       };
       debug("Function definition case");
@@ -92,14 +88,11 @@ function* tickSaga() {
       break;
 
     case "ContractDefinition":
-      let storageVars = scopes[node.id].variables || [];
-      debug("storage vars %o", storageVars);
 
-      let allocation = TruffleDecodeUtils.Allocation.allocateDeclarations(
-        storageVars,
-        definitions
-      );
+      let allocation = allocations[node.id];
+
       debug("Contract definition case");
+      debug("allocations %O", allocations);
       debug("allocation %O", allocation);
       assignments = { byId: {} };
       for (let id in allocation.children) {
@@ -228,6 +221,10 @@ function* tickSaga() {
 
 export function* reset() {
   yield put(actions.reset());
+}
+
+export function* defineType(node) {
+  yield put(actions.defineType(node));
 }
 
 export function* learnAddressSaga(dummyAddress, address) {

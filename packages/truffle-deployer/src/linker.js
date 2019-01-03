@@ -37,7 +37,7 @@ module.exports = {
     for (let destination of destinations) {
       // Don't link if result will have no effect.
       const alreadyLinked =
-        destination.links[library.contract_name] == library.address;
+        destination.links[library.contract_name] === library.address;
       const noLinkage =
         destination.unlinked_binary.indexOf(library.contract_name) < 0;
 

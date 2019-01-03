@@ -188,7 +188,7 @@ function blockFromBlockData(blockData) {
   block.header.difficulty = blockData.difficulty;
   block.header.number = blockData.number;
   block.header.gasLimit =
-    parseInt(blockData.gasLimit.toString("hex")) == 0
+    parseInt(blockData.gasLimit.toString("hex")) === 0
       ? Buffer.from(Number.MAX_SAFE_INTEGER.toString(16))
       : blockData.gasLimit;
   block.header.gasUsed = blockData.gasUsed;

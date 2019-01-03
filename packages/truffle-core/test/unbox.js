@@ -9,41 +9,29 @@ describe("commands/unbox.js", () => {
   const invalidBoxFormats = [
     "//",
     "/truffle-box/bare-box",
-    "//truffle-box/bare-box#web3-one",
-    "//truffle-box/bare-box#web3-one:path/SubDir",
+    "//truffle-box/bare-box#truffle-test-branch",
+    "//truffle-box/bare-box#truffle-test-branch:path/SubDir",
     "/bare/",
-    "//bare#web3-one",
-    "//bare#web3-one:path/SubDir"
+    "//bare#truffle-test-branch",
+    "//bare#truffle-test-branch:path/SubDir"
   ];
   const absolutePaths = [
     "https://github.com/truffle-box/bare-box:/path/SubDir",
-    "https://github.com/truffle-box/bare-box#web3-one:/path/subDir",
     "truffle-box/bare-box:/path/subDir",
-    "truffle-box/bare-box#web3-one:/path/subDir",
     "bare:/path/subDir",
-    "bare#web3-one:/path/subDir",
-    "git@github.com:truffle-box/bare-box:/path/subDir",
-    "git@github.com:truffle-box/bare-box#web3-one:/path/subDir"
+    "git@github.com:truffle-box/bare-box:/path/subDir"
   ];
   const validBoxInput = [
     "https://github.com/truffle-box/bare-box",
-    "https://github.com/truffle-box/bare-box#web3-one",
     "truffle-box/bare-box",
-    "truffle-box/bare-box#web3-one",
     "bare",
-    "bare#web3-one",
-    "git@github.com:truffle-box/bare-box",
-    "git@github.com:truffle-box/bare-box#web3-one"
+    "git@github.com:truffle-box/bare-box"
   ];
   const relativePaths = [
     "https://github.com/truffle-box/bare-box:path/SubDir",
-    "https://github.com/truffle-box/bare-box#web3-one:path/subDir",
     "truffle-box/bare-box:path/subDir",
-    "truffle-box/bare-box#web3-one:path/subDir",
     "bare:path/subDir",
-    "bare#web3-one:path/subDir",
-    "git@github.com:truffle-box/bare-box:path/subDir",
-    "git@github.com:truffle-box/bare-box#web3-one:path/subDir"
+    "git@github.com:truffle-box/bare-box:path/subDir"
   ];
 
   describe("run", () => {
