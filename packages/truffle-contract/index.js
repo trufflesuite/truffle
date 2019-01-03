@@ -7,8 +7,11 @@ var contract = function(options = {}) {
 
   // Note we don't use `new` here at all. This will cause the class to
   // "mutate" instead of instantiate an instance.
-  if (options.legacy) return LegacyContract.clone(binary);
-  else return Contract.clone(binary);
+  if (options.legacy) {
+    return LegacyContract.clone(binary);
+  }
+
+  return Contract.clone(binary);
 };
 
 module.exports = contract;
