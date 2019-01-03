@@ -1,6 +1,6 @@
 {
   "name": "truffle-blockchain-utils",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Utilities for identifying and managing blockchains",
   "main": "index.js",
   "scripts": {},
