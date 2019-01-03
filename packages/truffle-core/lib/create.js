@@ -31,7 +31,7 @@ var processFile = function(file_path, processfn, callback) {
 
 var replaceContents = function(file_path, find, replacement, callback) {
   processFile(file_path, function(data) {
-    if (typeof find == "string") {
+    if (typeof find === "string") {
       find = new RegExp(find, "g");
     }
     return data.replace(find, replacement);
@@ -43,7 +43,7 @@ var toUnderscoreFromCamel = function(string) {
     return "_" + $1.toLowerCase();
   });
 
-  if (string[0] == "_") {
+  if (string[0] === "_") {
     string = string.substring(1);
   }
 
@@ -52,7 +52,7 @@ var toUnderscoreFromCamel = function(string) {
 
 var Create = {
   contract: function(directory, name, options, callback) {
-    if(typeof options == "function") {
+    if(typeof options === "function") {
       callback = options;
     }
 
@@ -71,7 +71,7 @@ var Create = {
   },
 
   test: function(directory, name, options, callback) {
-    if(typeof options == "function") {
+    if(typeof options === "function") {
       callback = options;
     }
 
@@ -94,7 +94,7 @@ var Create = {
     });
   },
   migration: function(directory, name, options, callback) {
-    if(typeof options == "function") {
+    if(typeof options === "function") {
       callback = options;
     }
 
@@ -103,7 +103,7 @@ var Create = {
     var from = templates.migration.filename;
     var filename = new Date().getTime() / 1000 | 0; // Only do seconds.
 
-    if (name != null && name != "") {
+    if (name != null && name !== "") {
       filename += "_" + underscored;
     }
 

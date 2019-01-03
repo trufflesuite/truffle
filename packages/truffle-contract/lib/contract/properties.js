@@ -215,7 +215,7 @@ module.exports = {
     var abi = this.abi;
 
     abi.forEach(function(item) {
-      if (item.type != "event") return;
+      if (item.type !== "event") return;
 
       if (item.signature) {
         events[item.signature] = item;
@@ -269,7 +269,7 @@ module.exports = {
     get: function() {
       var code = this._json.deployedBytecode;
 
-      if (code.indexOf("0x") != 0) {
+      if (code.indexOf("0x") !== 0) {
         code = "0x" + code;
       }
 
@@ -278,7 +278,7 @@ module.exports = {
     set: function(val) {
       var code = val;
 
-      if (val.indexOf("0x") != 0) {
+      if (val.indexOf("0x") !== 0) {
         code = "0x" + code;
       }
 

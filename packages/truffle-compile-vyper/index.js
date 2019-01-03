@@ -45,7 +45,7 @@ compile.necessary = function(options, callback) {
   Profiler.updated(options, function(err, updated) {
     if (err) return callback(err);
 
-    if (updated.length == 0 && options.quiet != true) {
+    if (updated.length === 0 && options.quiet !== true) {
       return callback(null, [], {});
     }
 
@@ -55,7 +55,7 @@ compile.necessary = function(options, callback) {
 };
 
 compile.display = function(paths, options){
-  if (options.quiet != true) {
+  if (options.quiet !== true) {
     if (!Array.isArray(paths)){
       paths = Object.keys(paths);
     }

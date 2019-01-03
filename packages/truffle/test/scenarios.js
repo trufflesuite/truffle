@@ -17,7 +17,7 @@ describe("Scenarios", function() {
     }
 
     files = files.filter(function(file) {
-      return path.extname(file) == ".js";
+      return path.extname(file) === ".js";
     });
 
     files.forEach(function(file) {

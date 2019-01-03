@@ -30,7 +30,7 @@ const Migrate = {
       options.allowed_extensions = config.migrations_file_extension_regexp;
 
       let migrations = files
-        .filter(file => isNaN(parseInt(path.basename(file))) == false)
+        .filter(file => isNaN(parseInt(path.basename(file))) === false)
         .filter(
           file => path.extname(file).match(options.allowed_extensions) != null
         )
@@ -63,7 +63,7 @@ const Migrate = {
       "from" // address doing deployment
     ]);
 
-    if (options.reset == true) {
+    if (options.reset === true) {
       return this.runAll(options, callback);
     }
 
@@ -203,7 +203,7 @@ const Migrate = {
       return callback(new Error(message));
     }
 
-    if (Migrations.isDeployed() == false) {
+    if (Migrations.isDeployed() === false) {
       return callback(null, 0);
     }
 
@@ -223,7 +223,7 @@ const Migrate = {
   needsMigrating: function(options, callback) {
     const self = this;
 
-    if (options.reset == true) {
+    if (options.reset === true) {
       return callback(null, true);
     }
 

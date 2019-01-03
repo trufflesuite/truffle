@@ -12,7 +12,7 @@ module.exports = {
   create: function(options) {
     var provider;
 
-    if (options.provider && typeof options.provider == "function") {
+    if (options.provider && typeof options.provider === "function") {
       provider = options.provider();
     } else if (options.provider) {
       provider = options.provider;

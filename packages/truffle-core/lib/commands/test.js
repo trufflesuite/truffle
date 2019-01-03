@@ -84,7 +84,7 @@ var command = {
     }
 
     function getFiles(callback) {
-      if (files.length != 0) {
+      if (files.length !== 0) {
         return callback(null, files);
       }
 

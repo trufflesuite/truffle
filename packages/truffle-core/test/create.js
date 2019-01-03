@@ -102,7 +102,7 @@ describe('create', function() {
         for (var i = 0; i < files.length; i++) {
           var file = files[i];
 
-          if (file.indexOf(expected_suffix) == file.length - expected_suffix.length) {
+          if (file.indexOf(expected_suffix) === file.length - expected_suffix.length) {
             var file_data = fs.readFileSync(file, {encoding: "utf8"});
             assert.isNotNull(file_data, "File's data is null");
             assert.notEqual(file_data, "", "File's data is blank");
@@ -111,7 +111,7 @@ describe('create', function() {
           }
         }
 
-        if (found == false) {
+        if (found === false) {
           assert.fail("Could not find a file that matched expected name");
         }
       });
