@@ -1,6 +1,6 @@
 var Schema = require("truffle-contract-schema");
 var Contract = require("./lib/contract");
-var LegacyContract = require("./lib/legacy");
+var Legacy = require("truffle-legacy-system");
 
 var contract = function(options = {}) {
   var binary = Schema.normalize(options);
@@ -8,7 +8,7 @@ var contract = function(options = {}) {
   // Note we don't use `new` here at all. This will cause the class to
   // "mutate" instead of instantiate an instance.
   if (options.legacy) {
-    return LegacyContract.clone(binary);
+    return Legacy.clone(binary);
   }
 
   return Contract.clone(binary);

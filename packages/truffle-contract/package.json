@@ -31,7 +31,6 @@
     "bignumber.js": "^7.2.1",
     "ethereumjs-util": "^5.2.0",
     "ethjs-abi": "0.1.8",
-    "legacy-web3": "^0.20.6",
     "truffle-blockchain-utils": "^0.0.7",
     "truffle-contract-schema": "^3.0.1",
     "truffle-error": "^0.0.3",
