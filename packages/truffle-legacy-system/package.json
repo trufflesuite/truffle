@@ -1,43 +1,15 @@
 {
-  "_from": "truffle-legacy-system@beta",
-  "_inBundle": false,
-  "_integrity": "sha512-p2BFTfTrV54sQ5jz91Y9XVHqGkfyyYYTuC8jizZqNuwftL57S1AlCpEu8+nTkBUNt0Yiw3FqCiQpO0+5SiX6mQ==",
-  "_location": "/truffle-legacy-system",
-  "_phantomChildren": {},
-  "_requested": {
-    "type": "tag",
-    "registry": true,
-    "raw": "truffle-legacy-system@beta",
-    "name": "truffle-legacy-system",
-    "escapedName": "truffle-legacy-system",
-    "rawSpec": "beta",
-    "saveSpec": null,
-    "fetchSpec": "beta"
-  },
-  "_requiredBy": [
-    "#USER",
-    "/"
-  ],
-  "_resolved": "https://registry.npmjs.org/truffle-legacy-system/-/truffle-legacy-system-1.0.3.tgz",
-  "_shasum": "f781a6482a3799be1c1d26960ed4a3b19bb166a0",
-  "_spec": "truffle-legacy-system@beta",
-  "_where": "/Users/cruzmolina/Code/truffle-projects/legacy-system",
-  "author": "",
-  "bundleDependencies": false,
-  "dependencies": {
-    "web3": "^0.20.6"
-  },
-  "deprecated": false,
-  "description": "Legacy on-chain migrations & testing management library",
-  "license": "ISC",
-  "main": "index.js",
   "name": "truffle-legacy-system",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "version": "1.0.4",
+  "version": "1.0.5",
+  "description": "Legacy on-chain migrations & testing management library",
+  "main": "index.js",
   "directories": {
     "lib": "lib"
   },
-  "devDependencies": {}
+  "dependencies": {
+    "web3": "0.20.6"
+  },
+  "devDependencies": {},
+  "author": "",
+  "license": "ISC"
 }
