@@ -1,10 +1,9 @@
 const path = require("path");
 const Deployer = require("truffle-deployer");
-const LegacyDeployer = require("truffle-deployer/legacy");
 const Require = require("truffle-require");
 const Emittery = require("emittery");
 const Web3 = require("web3");
-const LegacyWeb3 = require("legacy-web3");
+const Legacy = require("truffle-legacy-system");
 
 const ResolverIntercept = require("./resolverintercept");
 
@@ -155,7 +154,7 @@ class Migration {
     const self = this;
     const logger = options.logger;
 
-    const web3 = new LegacyWeb3();
+    const web3 = new Legacy.Web3();
     web3.setProvider(options.provider);
 
     logger.log(
@@ -170,7 +169,7 @@ class Migration {
       web3: web3
     };
 
-    const deployer = new LegacyDeployer({
+    const deployer = new Legacy.Deployer({
       logger: {
         log: msg => {
           logger.log("  " + msg);
