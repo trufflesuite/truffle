@@ -45,10 +45,17 @@ describe("HD Wallet Provider", function() {
     assert.deepEqual(provider.getAddresses(), truffleDevAccounts);
     web3.setProvider(provider);
 
-    web3.eth.getBlockNumber((err, number) => {
-      assert(number === 0);
-      done();
-    });
+    web3.eth
+      .getBlockNumber()
+      .then(number => {
+        assert(number === 0);
+      })
+      .then(() => web3.eth.getAccounts())
+      .then(accounts => {
+        assert.deepEqual(accounts, truffleDevAccounts);
+      })
+      .then(done)
+      .catch(done);
   });
 
   it("throws on invalid mnemonic", function(done) {
