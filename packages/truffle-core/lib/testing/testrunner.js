@@ -1,5 +1,5 @@
 var Web3 = require("web3");
-var LegacyWeb3 = require("legacy-web3");
+var Legacy = require("truffle-legacy-system");
 var Config = require("truffle-config");
 var Migrate = require("truffle-migrate");
 var TestResolver = require("./testresolver");
@@ -29,7 +29,7 @@ function TestRunner(options = {}) {
   this.first_snapshot = true;
   this.initial_snapshot = null;
   this.known_events = {};
-  this.web3 = options.legacy ? new LegacyWeb3() : new Web3();
+  this.web3 = options.legacy ? new Legacy.Web3() : new Web3();
   this.web3.setProvider(options.provider);
 
   // For each test
@@ -42,10 +42,7 @@ function TestRunner(options = {}) {
 TestRunner.prototype.initialize = function(callback) {
   var self = this;
 
-  if (self.web3.sha3) {
-    self.web3.utils = {};
-    self.web3.utils.sha3 = self.web3.sha3;
-  }
+  self.web3 = Legacy.shimWeb3(self.web3);
 
   var test_source = new TestSource(self.config);
   this.config.resolver = new TestResolver(
