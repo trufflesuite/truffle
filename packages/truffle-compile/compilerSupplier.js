@@ -53,24 +53,48 @@ CompilerSupplier.prototype.cachePath = findCacheDir({
  */
 CompilerSupplier.prototype.load = function() {
   const self = this;
-  const version = self.config.version;
-  const isNative = self.config.version === "native";
+  const userSpecification = this.config.version;
 
-  return new Promise(accept => {
+  return new Promise(resolve => {
     const useDocker = self.config.docker;
-    const useDefault = !version;
-    const useLocal = !useDefault && self.isLocal(version);
-    const useCached = !useDefault && self.versionIsCached(version);
-    const useNative = !useLocal && isNative;
-    const useRemote = !useNative;
+    const useNative = userSpecification === "native";
+    const useBundledSolc = !userSpecification;
+    const useSpecifiedLocal =
+      userSpecification && self.fileExists(userSpecification);
+    const isValidVersion = semver.valid(userSpecification);
+    const isValidVersionRange = semver.validRange(userSpecification);
+    // const useCached = userSpecification && self.versionIsCached(userSpecification);
+    // const useRemote = !useNative;
 
-    if (useDocker) return accept(self.getBuilt("docker"));
-    if (useNative) return accept(self.getBuilt("native"));
-    if (useDefault) return accept(self.getDefault());
-    if (useLocal) return accept(self.getLocal(version));
-    if (useCached) return accept(self.getCached(version));
-    if (useRemote) return accept(self.getByUrl(version)); // Tries cache first, then remote.
+    if (useDocker) return resolve(self.getBuilt("docker"));
+    if (useNative) return resolve(self.getBuilt("native"));
+    if (useBundledSolc) return resolve(self.getBundledSolc());
+    if (useSpecifiedLocal)
+      return resolve(self.getLocalCompiler(userSpecification));
+    if (isValidVersion)
+      return resolve(self.getSolcFromVersion(userSpecification));
+    if (isValidVersionRange)
+      return resolve(self.getSolcFromVersionRange(userSpecification));
+    throw this.errors("noVersion", userSpecification);
+    // if (useCached) return accept(this.getCached(userSpecification));
+    // if (useRemote) return accept(this.getByUrl(userSpecification)); // Tries cache first, then remote.
   });
+};
+
+CompilerSupplier.prototype.getSolcFromVersion = function(version) {
+  if (this.versionIsCached(version)) this.getCached(version);
+  return this.getByUrl(version);
+};
+
+CompilerSupplier.prototype.getSolcFromVersionRange = function(versionRange) {
+  try {
+    this.getByUrl(versionRange);
+  } catch (error) {
+    if (error.message.includes("Failed to complete request")) {
+      return console.log("hello hello hello");
+    }
+    throw new Error(error);
+  }
 };
 
 /**
@@ -120,7 +144,7 @@ CompilerSupplier.prototype.getDockerTags = function() {
  * Gets solc from `node_modules`.`
  * @return {Module} solc
  */
-CompilerSupplier.prototype.getDefault = function() {
+CompilerSupplier.prototype.getBundledSolc = function() {
   const compiler = require("solc");
   this.removeListener();
   return compiler;
@@ -162,8 +186,7 @@ const getMostRecentVersionOfCompiler = versions => {
  * @param  {String} localPath
  * @return {Module}
  */
-CompilerSupplier.prototype.getLocal = function(localPath) {
-  const self = this;
+CompilerSupplier.prototype.getLocalCompiler = function(localPath) {
   let compiler;
 
   if (!path.isAbsolute(localPath)) {
@@ -172,9 +195,9 @@ CompilerSupplier.prototype.getLocal = function(localPath) {
 
   try {
     compiler = originalRequire(localPath);
-    self.removeListener();
-  } catch (err) {
-    throw self.errors("noPath", localPath);
+    this.removeListener();
+  } catch (error) {
+    throw this.errors("noPath", localPath, error);
   }
 
   return compiler;
@@ -258,50 +281,56 @@ const findNewestValidVersion = (version, allVersions) => {
  */
 CompilerSupplier.prototype.getByUrl = async function(version) {
   const allVersions = await this.getVersions(this.config.versionsUrl);
-  const file = this.getVersionUrlSegment(version, allVersions);
-  if (!file) throw this.errors("noVersion", version);
+  const fileName = this.getVersionUrlSegment(version, allVersions);
+  if (!fileName) throw this.errors("noVersion", version);
 
-  if (this.isCached(file)) return this.getFromCache(file);
+  if (this.isCached(fileName)) return this.getFromCache(fileName);
 
-  const url = this.config.compilerUrlRoot + file;
+  const url = this.config.compilerUrlRoot + fileName;
   const spinner = ora({
     text: "Downloading compiler",
     color: "red"
   }).start();
 
-  return getSolcByUrlAndCache(url, spinner);
+  return this.getSolcByUrlAndCache(url, fileName, spinner);
 };
 
-CompilerSupplier.prototype.getSolcForNativeOrDockerCompile = async commitString => {
+CompilerSupplier.prototype.getSolcForNativeOrDockerCompile = async function(
+  commitString
+) {
   const solcFileName = this.getCachedSolcFileName(commitString);
-  if (solcFileName) return this.getFromCache(solcFilename);
+  if (solcFileName) return this.getFromCache(solcFileName);
 
   const allVersions = await this.getVersions(this.config.versionsUrl);
-  const file = this.getVersionUrlSegment(commitString, allVersions);
+  const fileName = this.getVersionUrlSegment(commitString, allVersions);
 
-  if (!file) throw this.errors("noVersion", version);
+  if (!fileName) throw this.errors("noVersion", version);
 
-  const url = this.config.compilerUrlRoot + file;
+  const url = this.config.compilerUrlRoot + fileName;
   const spinner = ora({
     text: "Downloading compiler",
     color: "red"
   }).start();
 
-  return getSolcByUrlAndCache(url, spinner);
+  return this.getSolcByUrlAndCache(url, fileName, spinner);
 };
 
-CompilerSupplier.prototype.getCachedSolcFileName = commitString => {
+CompilerSupplier.prototype.getCachedSolcFileName = function(commitString) {
   const cachedCompilerFileNames = fs.readdirSync(this.cachePath);
   return cachedCompilerFileNames.find(fileName => {
     return fileName.includes(commitString);
   });
 };
 
-const getSolcByUrlAndCache = async (url, spinner) => {
+CompilerSupplier.prototype.getSolcByUrlAndCache = async function(
+  url,
+  fileName,
+  spinner
+) {
   try {
     const response = await request.get(url);
     if (spinner) spinner.stop();
-    this.addToCache(response, file);
+    this.addToCache(response, fileName);
     return this.compilerFromString(response);
   } catch (error) {
     if (spinner) spinner.stop();
@@ -349,7 +378,7 @@ CompilerSupplier.prototype.getBuilt = function(buildType) {
  * @param  {String}  localPath
  * @return {Boolean}
  */
-CompilerSupplier.prototype.isLocal = function(localPath) {
+CompilerSupplier.prototype.fileExists = localPath => {
   return fs.existsSync(localPath) || path.isAbsolute(localPath);
 };
 
@@ -529,7 +558,7 @@ CompilerSupplier.prototype.removeListener = function() {
  * @param  {Object} err   [optional] additional error associated with this error
  * @return {Error}
  */
-CompilerSupplier.prototype.errors = function(kind, input, err) {
+CompilerSupplier.prototype.errors = (kind, input, error) => {
   const info = "Run `truffle compile --list` to see available versions.";
 
   const kinds = {
@@ -542,19 +571,20 @@ CompilerSupplier.prototype.errors = function(kind, input, err) {
       "Failed to complete request to: " +
       input +
       ". Are you connected to the internet?\n\n" +
-      err,
+      error,
     noDocker:
       "You are trying to run dockerized solc, but docker is not installed.",
     noImage:
       "Please pull " + input + " from docker before trying to compile with it.",
-    noNative: "Could not execute local solc binary: " + err,
+    noNative: "Could not execute local solc binary: " + error,
 
     // Lists
     noString:
       "`compilers.solc.version` option must be a string specifying:\n" +
       "   - a path to a locally installed solcjs\n" +
-      "   - a solc version (ex: '0.4.22')\n" +
+      "   - a solc version or range (ex: '0.4.22' or '^0.5.0')\n" +
       "   - a docker image name (ex: 'stable')\n" +
+      "   - 'native' to use natively installed solc\n" +
       "Received: " +
       input +
       " instead."

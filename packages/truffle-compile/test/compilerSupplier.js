@@ -19,12 +19,11 @@ describe("CompilerSupplier", () => {
         supplier.getBuilt.restore();
       });
 
-      it("calls getBuilt with 'docker' as an argument", (done) => {
-        supplier.load()
-          .then(() => {
-            assert(supplier.getBuilt.calledWith("docker"));
-            done();
-          });
+      it("calls getBuilt with 'docker' as an argument", done => {
+        supplier.load().then(() => {
+          assert(supplier.getBuilt.calledWith("docker"));
+          done();
+        });
       });
     });
 
@@ -40,30 +39,28 @@ describe("CompilerSupplier", () => {
         supplier.getBuilt.restore();
       });
 
-      it("calls getBuilt with that specific word as an argument", (done) => {
-        supplier.load()
-          .then(() => {
-            assert(supplier.getBuilt.calledWith("native"));
-            done();
-          });
+      it("calls getBuilt with that specific word as an argument", done => {
+        supplier.load().then(() => {
+          assert(supplier.getBuilt.calledWith("native"));
+          done();
+        });
       });
     });
 
     describe("when no version is specified in the config", () => {
       beforeEach(() => {
         supplier = new CompilerSupplier();
-        sinon.stub(supplier, "getDefault");
+        sinon.stub(supplier, "getBundledSolc");
       });
       afterEach(() => {
-        supplier.getDefault.restore();
+        supplier.getBundledSolc.restore();
       });
 
-      it("calls getDefault", (done) => {
-        supplier.load()
-          .then(() => {
-            assert(supplier.getDefault.called);
-            done();
-          });
+      it("calls getBundledSolc", done => {
+        supplier.load().then(() => {
+          assert(supplier.getBundledSolc.called);
+          done();
+        });
       });
     });
 
@@ -72,23 +69,20 @@ describe("CompilerSupplier", () => {
         config = { version: "0.4.11" };
         supplier = new CompilerSupplier(config);
         sinon.stub(supplier, "versionIsCached").returns("0.4.11");
-        sinon.stub(supplier, "getCached");
+        sinon.stub(supplier, "getSolcFromVersion");
       });
       afterEach(() => {
         supplier.versionIsCached.restore();
-        supplier.getCached.restore();
+        supplier.getSolcFromVersion.restore();
       });
 
-      it("calls getCached with the version number", (done) => {
-        assert(true);
-        supplier.load()
-          .then(() => {
-            assert(supplier.getCached.calledWith("0.4.11"));
-            done();
-          });
+      it("calls getSolcFromVersion with the version number", done => {
+        supplier.load().then(() => {
+          assert(supplier.getSolcFromVersion.calledWith("0.4.11"));
+          done();
+        });
       });
     });
-
 
     describe("when a non-cached version is specified in the config", () => {
       beforeEach(() => {
@@ -98,16 +92,15 @@ describe("CompilerSupplier", () => {
         sinon.stub(supplier, "versionIsCached").returns(undefined);
       });
       afterEach(() => {
-         supplier.getByUrl.restore();
-         supplier.versionIsCached.restore();
+        supplier.getByUrl.restore();
+        supplier.versionIsCached.restore();
       });
 
-      it("calls getUrl with the version number", (done) => {
-        supplier.load()
-          .then(() => {
-            assert(supplier.getByUrl.calledWith("0.4.17"));
-            done();
-          });
+      it("calls getUrl with the version number", done => {
+        supplier.load().then(() => {
+          assert(supplier.getByUrl.calledWith("0.4.17"));
+          done();
+        });
       });
     });
   });
@@ -131,7 +124,10 @@ describe("CompilerSupplier", () => {
       });
 
       it("returns the file name with the prefix removed", () => {
-        assert.equal(CompilerSupplier.prototype.versionIsCached("0.4.11"), expectedResult);
+        assert.equal(
+          CompilerSupplier.prototype.versionIsCached("0.4.11"),
+          expectedResult
+        );
       });
     });
     describe("when a cached version of the compiler is not present", () => {
@@ -140,7 +136,10 @@ describe("CompilerSupplier", () => {
       });
 
       it("returns undefined", () => {
-        assert.equal(CompilerSupplier.prototype.versionIsCached("0.4.29"), expectedResult);
+        assert.equal(
+          CompilerSupplier.prototype.versionIsCached("0.4.29"),
+          expectedResult
+        );
       });
     });
   });
@@ -150,7 +149,7 @@ describe("CompilerSupplier", () => {
       const compilerFileNames = [
         "soljson-v0.4.22+commit.124ca40d.js",
         "soljson-v0.4.23+commit.1534a40d.js",
-        "soljson-v0.4.11+commit.124234rd.js",
+        "soljson-v0.4.11+commit.124234rd.js"
       ];
       sinon.stub(fs, "readdirSync").returns(compilerFileNames);
     });
@@ -161,28 +160,40 @@ describe("CompilerSupplier", () => {
     describe("when there is only one valid compiler file", () => {
       beforeEach(() => {
         expectedFileName = "soljson-v0.4.11+commit.124234rd.js";
-        sinon.stub(CompilerSupplier.prototype, "getFromCache").withArgs(expectedFileName).returns("correct return");
+        sinon
+          .stub(CompilerSupplier.prototype, "getFromCache")
+          .withArgs(expectedFileName)
+          .returns("correct return");
       });
       afterEach(() => {
         CompilerSupplier.prototype.getFromCache.restore();
       });
 
       it("calls getFromCache and returns the result", () => {
-        assert(CompilerSupplier.prototype.getCached("0.4.11"), "correct return");
+        assert(
+          CompilerSupplier.prototype.getCached("0.4.11"),
+          "correct return"
+        );
       });
     });
 
     describe("when there are multiple valid compiler files", () => {
       beforeEach(() => {
         expectedFileName = "soljson-v0.4.23+commit.1534a40d.js";
-        sinon.stub(CompilerSupplier.prototype, "getFromCache").withArgs(expectedFileName).returns("correct return");
+        sinon
+          .stub(CompilerSupplier.prototype, "getFromCache")
+          .withArgs(expectedFileName)
+          .returns("correct return");
       });
       afterEach(() => {
         CompilerSupplier.prototype.getFromCache.restore();
       });
 
       it("calls getFromCache with the most recent compiler version and returns the result", () => {
-        assert.equal(CompilerSupplier.prototype.getCached("^0.4.15"), "correct return");
+        assert.equal(
+          CompilerSupplier.prototype.getCached("^0.4.15"),
+          "correct return"
+        );
       });
     });
   });
