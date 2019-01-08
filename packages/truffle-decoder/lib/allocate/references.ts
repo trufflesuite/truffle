@@ -123,7 +123,7 @@ export function allocateDefinition(node: any, state: ContractStateInfo, referenc
         (node.typeName ? node.typeName.referencedDeclaration : undefined);
       referenceDeclaration = referenceDeclarations[referenceId];
     }
-    const storageSize = DecodeUtils.Definition.storageSize(node, referenceDeclaration);
+    const storageSize = DecodeUtils.Definition.storageSize(node, referenceDeclaration).toBytes().toNumber();
 
     let range = DecodeUtils.Allocation.allocateValue(slot, state.slot.index, storageSize);
     if (nodeTypeClass === "array" && !DecodeUtils.Definition.isDynamicArray(node)) {
@@ -152,7 +152,7 @@ export function allocateDefinition(node: any, state: ContractStateInfo, referenc
           baseReferenceDeclaration = referenceDeclarations[baseReferenceId];
         }
 
-        const baseDefinitionStorageSize = DecodeUtils.Definition.storageSize(baseDefinition, baseReferenceDeclaration);
+        const baseDefinitionStorageSize = DecodeUtils.Definition.storageSize(baseDefinition, baseReferenceDeclaration).toBytes().toNumber();
         const totalAdditionalSlotsUsed = Math.ceil(length * baseDefinitionStorageSize / DecodeUtils.EVM.WORD_SIZE) - 1;
         range.next.slot.offset = range.next.slot.offset.addn(totalAdditionalSlotsUsed);
       }

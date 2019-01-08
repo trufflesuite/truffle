@@ -110,7 +110,7 @@ export namespace Allocation {
 
   function allocateDeclaration(declaration: any, refs: any[], slot: Slot, index: number, allocations: any): Range {
     let definition = refs[declaration.id].definition;
-    var byteSize = DefinitionUtils.storageSize(definition);  // yum
+    var byteSize = DefinitionUtils.storageSize(definition).toBytes().toNumber();  // yum
 
     if (DefinitionUtils.typeClass(definition) != "struct") {
       return allocateValue(slot, index, byteSize);

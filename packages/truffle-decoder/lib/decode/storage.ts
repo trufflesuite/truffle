@@ -42,16 +42,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       const referenceId = baseDefinition.referencedDeclaration ||
         (baseDefinition.typeName ? baseDefinition.typeName.referencedDeclaration : undefined);
 
-      let baseSize: number;
-      if (typeof referenceId !== "undefined") {
-        const referenceDeclaration: undefined | DecodeUtils.AstDefinition = (info.referenceDeclarations)
-          ? info.referenceDeclarations[referenceId]
-          : info.scopes[referenceId].definition;
-        baseSize = DecodeUtils.Definition.storageSize(baseDefinition, referenceDeclaration);
-      }
-      else {
-        baseSize = DecodeUtils.Definition.storageSize(baseDefinition);
-      }
+      let baseSize: number = DecodeUtils.Definition.storageSize(baseDefinition, info.referenceDeclarations, info.referenceVariables);
 
       const perWord = Math.floor(DecodeUtils.EVM.WORD_SIZE / baseSize);
       debug("baseSize %o", baseSize);
@@ -173,7 +164,6 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
     }
 
     case "struct": {
-      const { scopes } = info;
 
       const referencedDeclaration = (definition.typeName)
         ? definition.typeName.referencedDeclaration

@@ -1,8 +1,26 @@
 import { EVM as EVMUtils } from "./evm";
 import { AstDefinition } from "./ast";
+import { StoragePointer } from "truffle-decoder/lib/types/pointer";
 import cloneDeep from "lodash.clonedeep";
+import BN from "bn.js";
 
 export namespace Definition {
+
+  export class StorageLength = {
+    bytes?: number;
+    words?: BN;
+    toBytes(): BN {
+      if(this.bytes !== undefined)
+      {
+        return new BN(this.bytes);
+      }
+      else
+      {
+        return this.words.muln(EVMUtils.WORD_SIZE);
+      }
+    }
+  };
+
   export function typeIdentifier(definition: AstDefinition): string {
     return definition.typeDescriptions.typeIdentifier;
   }
@@ -15,6 +33,15 @@ export namespace Definition {
    */
   export function typeClass(definition: AstDefinition): string {
     return typeIdentifier(definition).match(/t_([^$_0-9]+)/)[1];
+  }
+
+  /**
+   * For function types; returns internal or external
+   * (not for use on other types! will cause an error!)
+   * should only return "internal" or "external"
+   */
+  export function visibility(definition: AstDefinition): string {
+    return definition.visibility || definition.typeName.visibility;
   }
 
 
@@ -34,6 +61,8 @@ export namespace Definition {
     switch (typeClass(definition)) {
       case "int":
       case "uint":
+      case "fixed":
+      case "ufixed":
         return num / 8;
 
       case "bytes":
@@ -44,47 +73,95 @@ export namespace Definition {
     }
   }
 
-  export function storageSize(definition: AstDefinition, referenceDeclaration?: AstDefinition): number {
+  //TODO: fix all invocations
+  export function storageSize(definition: AstDefinition, referenceDeclaration?: AstReferences, referenceVariables?: EvmVariableReferenceMapping): StorageLength {
     switch (typeClass(definition)) {
       case "bool":
-        return 1;
+        return {bytes: 1};
 
       case "address":
-        return 20;
+      case "contract":
+        return {bytes: 20};
 
       case "int":
       case "uint": {
-        return specifiedSize(definition) || 32; // default of 256 bits
+        return {bytes: specifiedSize(definition) || 32 }; // default of 256 bits
+        //(should 32 here be WORD_SIZE?  I thought so, but comparing with case
+        //of fixed/ufixed makes the appropriate generalization less clear)
+      }
+
+      case "fixed":
+      case "ufixed": {
+        return {bytes: specifiedSize(definition) || 16 }; // default of 128 bits
       }
 
       case "enum": {
-        if (referenceDeclaration) {
-          const numValues = referenceDeclaration.members.length;
-          // numValues <= 2^n - 1
-          // numValues + 1 <= 2^n
-          // log(numValues + 1) <= n (n is bits)
-          return Math.ceil(Math.log2(numValues + 1) / 8);
-        }
-        else {
-          return 0;
-        }
+        const referenceId: string = definition.referencedDeclaration;
+        const referenceDeclaration: AstDefinition = info.referenceDeclarations[referenceId];
+        const numValues: number = referenceDeclaration.members.length;
+        return {bytes: Math.ceil(Math.log2(numValues) / 8)};
       }
 
       case "bytes": {
-        return specifiedSize(definition) || EVMUtils.WORD_SIZE;
+        //this case is really two different cases!
+        const staticSize: number = specifiedSize(definition);
+        if(staticSize) {
+          return {bytes: staticSize};
+        }
+        else
+        {
+          return {words: new BN(1)};
+        }
       }
 
       case "string":
-      case "bytes":
-      case "array":
-        return EVMUtils.WORD_SIZE;
-
-      case "struct":
-        //
+        return {words: new BN(1)};
 
       case "mapping":
-        // HACK just to reserve slot. mappings have no size as such
-        return EVMUtils.WORD_SIZE;
+        return {words: new BN(1)};
+
+      case "function":
+        //this case is also really two different cases
+        switch (visibility(definition)) {
+          case "internal":
+            return {bytes: 8};
+          case "external":
+            return {bytes: 24};
+        }
+
+      case "array":
+        if(isDynamicArray(definition)) {
+          return {words: new BN(1)};
+        }
+        else {
+          const length: string = definition.length || definition.typeName.length;
+          const baseDefinition: AstDefinition = definition.baseType || definition.typeName.baseType;
+          const baseSize: StorageLength = storageSize(baseDefinition, info);
+          if(baseSize.bytes !== undefined) {
+            const perWord: number = Math.floor(EVMUtils.WORD_SIZE / baseSize.bytes);
+            //bn.js has no ceiling-division, so we'll do a floor-division and then
+            //increment if not a multiple
+            const lengthBN: BN = new BN(length);
+            let numWords: BN = lengthBN.divn(perWord); //floor
+            if(!lengthBN.modn(perWord).isZero()) {
+              numWords.iaddn(1); //increment if not multiple
+            }
+            return {words: numWords};
+          }
+          else { //words
+            return {words: baseSize.words.mul(new BN(length))};
+          }
+        }
+
+      case "struct":
+        const referenceId: string = definition.referencedDeclaration;
+        const allocation: StoragePointer = info.referenceVariables[referenceId].pointer;
+        //the size is equal to the last allocated word, plus one
+        //(we assume the allocation uses "to" rather than "length", because
+        //that's how struct allocations work)
+        let size = allocation.storage.to.slot.offset.clone(); //last allocated word...
+        size.iaddn(1); //...plus one
+        return {words: size};
     }
   }
 
@@ -98,8 +175,8 @@ export namespace Definition {
 
   export function isDynamicArray(definition: AstDefinition): boolean {
     return isArray(definition) && (
-      (definition.typeName && definition.typeName.length === null) ||
-        definition.length === null
+      (definition.typeName && definition.typeName.length == null) ||
+        definition.length == null
     );
   }
 
