@@ -55,7 +55,7 @@ CompilerSupplier.prototype.load = function() {
   const self = this;
   const userSpecification = this.config.version;
 
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     const useDocker = self.config.docker;
     const useNative = userSpecification === "native";
     const useBundledSolc = !userSpecification;
@@ -73,7 +73,7 @@ CompilerSupplier.prototype.load = function() {
       return resolve(self.getSolcFromVersion(userSpecification));
     if (isValidVersionRange)
       return resolve(self.getSolcFromVersionRange(userSpecification));
-    throw this.errors("noVersion", userSpecification);
+    reject(this.errors("noVersion", userSpecification));
   });
 };
 

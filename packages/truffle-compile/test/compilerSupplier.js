@@ -64,15 +64,13 @@ describe("CompilerSupplier", () => {
       });
     });
 
-    describe("when a cached version is specified in the config", () => {
+    describe("when a solc version is specified in the config", () => {
       beforeEach(() => {
         config = { version: "0.4.11" };
         supplier = new CompilerSupplier(config);
-        sinon.stub(supplier, "versionIsCached").returns("0.4.11");
         sinon.stub(supplier, "getSolcFromVersion");
       });
       afterEach(() => {
-        supplier.versionIsCached.restore();
         supplier.getSolcFromVersion.restore();
       });
 
@@ -84,23 +82,42 @@ describe("CompilerSupplier", () => {
       });
     });
 
-    describe("when a non-cached version is specified in the config", () => {
+    describe("when a solc version range is specified", () => {
       beforeEach(() => {
-        config = { version: "0.4.17" };
+        config = { version: "^0.4.11" };
         supplier = new CompilerSupplier(config);
-        sinon.stub(supplier, "getByUrl");
-        sinon.stub(supplier, "versionIsCached").returns(undefined);
+        sinon.stub(supplier, "getSolcFromVersionRange");
       });
       afterEach(() => {
-        supplier.getByUrl.restore();
-        supplier.versionIsCached.restore();
+        supplier.getSolcFromVersionRange.restore();
       });
 
-      it("calls getUrl with the version number", done => {
+      it("calls getSolcFromVersion with the version range", done => {
         supplier.load().then(() => {
-          assert(supplier.getByUrl.calledWith("0.4.17"));
+          assert(supplier.getSolcFromVersionRange.calledWith("^0.4.11"));
           done();
         });
+      });
+    });
+
+    describe("when no valid values are specified", () => {
+      beforeEach(() => {
+        config = { version: "globbity gloop" };
+        supplier = new CompilerSupplier(config);
+      });
+
+      it("throws an error", done => {
+        supplier
+          .load()
+          .then(() => {
+            assert(false);
+            done();
+          })
+          .catch(error => {
+            let expectedMessageSnippet = "version matching globbity gloop";
+            assert(error.message.includes(expectedMessageSnippet));
+            done();
+          });
       });
     });
   });
