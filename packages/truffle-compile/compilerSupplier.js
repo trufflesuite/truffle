@@ -269,13 +269,42 @@ CompilerSupplier.prototype.getByUrl = async function(version) {
     color: "red"
   }).start();
 
+  return getSolcByUrlAndCache(url, spinner);
+};
+
+CompilerSupplier.prototype.getSolcForNativeOrDockerCompile = async commitString => {
+  const solcFileName = this.getCachedSolcFileName(commitString);
+  if (solcFileName) return this.getFromCache(solcFilename);
+
+  const allVersions = await this.getVersions(this.config.versionsUrl);
+  const file = this.getVersionUrlSegment(commitString, allVersions);
+
+  if (!file) throw this.errors("noVersion", version);
+
+  const url = this.config.compilerUrlRoot + file;
+  const spinner = ora({
+    text: "Downloading compiler",
+    color: "red"
+  }).start();
+
+  return getSolcByUrlAndCache(url, spinner);
+};
+
+CompilerSupplier.prototype.getCachedSolcFileName = commitString => {
+  const cachedCompilerFileNames = fs.readdirSync(this.cachePath);
+  return cachedCompilerFileNames.find(fileName => {
+    return fileName.includes(commitString);
+  });
+};
+
+const getSolcByUrlAndCache = async (url, spinner) => {
   try {
     const response = await request.get(url);
-    spinner.stop();
+    if (spinner) spinner.stop();
     this.addToCache(response, file);
     return this.compilerFromString(response);
   } catch (error) {
-    spinner.stop();
+    if (spinner) spinner.stop();
     throw this.errors("noRequest", url, error);
   }
 };
@@ -286,8 +315,7 @@ CompilerSupplier.prototype.getByUrl = async function(version) {
  * @return {Object} solc output
  */
 CompilerSupplier.prototype.getBuilt = function(buildType) {
-  let versionString;
-  let command;
+  let versionString, command;
 
   switch (buildType) {
     case "native":
@@ -305,7 +333,7 @@ CompilerSupplier.prototype.getBuilt = function(buildType) {
 
   const commit = this.getCommitFromVersion(versionString);
 
-  return this.getByUrl(commit).then(solcjs => {
+  return this.getSolcForNativeOrDockerCompile(commit).then(solcjs => {
     return {
       compile: options => String(execSync(command, { input: options })),
       version: () => versionString,
