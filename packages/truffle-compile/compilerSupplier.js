@@ -63,8 +63,6 @@ CompilerSupplier.prototype.load = function() {
       userSpecification && self.fileExists(userSpecification);
     const isValidVersion = semver.valid(userSpecification);
     const isValidVersionRange = semver.validRange(userSpecification);
-    // const useCached = userSpecification && self.versionIsCached(userSpecification);
-    // const useRemote = !useNative;
 
     if (useDocker) return resolve(self.getBuilt("docker"));
     if (useNative) return resolve(self.getBuilt("native"));
@@ -76,8 +74,6 @@ CompilerSupplier.prototype.load = function() {
     if (isValidVersionRange)
       return resolve(self.getSolcFromVersionRange(userSpecification));
     throw this.errors("noVersion", userSpecification);
-    // if (useCached) return accept(this.getCached(userSpecification));
-    // if (useRemote) return accept(this.getByUrl(userSpecification)); // Tries cache first, then remote.
   });
 };
 
@@ -86,15 +82,27 @@ CompilerSupplier.prototype.getSolcFromVersion = function(version) {
   return this.getByUrl(version);
 };
 
-CompilerSupplier.prototype.getSolcFromVersionRange = function(versionRange) {
+CompilerSupplier.prototype.getSolcFromVersionRange = async function(
+  versionRange
+) {
   try {
-    this.getByUrl(versionRange);
+    await this.getByUrl(versionRange);
   } catch (error) {
     if (error.message.includes("Failed to complete request")) {
-      return console.log("hello hello hello");
+      return this.getSatisfyingVersionFromCache(versionRange);
     }
     throw new Error(error);
   }
+};
+
+CompilerSupplier.prototype.getSatisfyingVersionFromCache = function(
+  versionRange
+) {
+  if (this.versionIsCached(versionRange)) {
+    const cachedFileName = this.getCached(versionRange);
+    return this.getFromCache(cachedFileName);
+  }
+  throw this.errors("noVersion", versionRange);
 };
 
 /**
@@ -280,7 +288,12 @@ const findNewestValidVersion = (version, allVersions) => {
  * @return {Module}         solc
  */
 CompilerSupplier.prototype.getByUrl = async function(version) {
-  const allVersions = await this.getVersions(this.config.versionsUrl);
+  let allVersions;
+  try {
+    allVersions = await this.getVersions(this.config.versionsUrl);
+  } catch (error) {
+    throw this.errors("noRequest", version, error);
+  }
   const fileName = this.getVersionUrlSegment(version, allVersions);
   if (!fileName) throw this.errors("noVersion", version);
 
