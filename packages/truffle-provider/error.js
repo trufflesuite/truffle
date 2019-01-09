@@ -12,7 +12,7 @@ function ProviderError(message, error) {
       "    - is running\n" +
       "    - is accepting RPC connections (i.e., \"--rpc\" option is used in geth)\n" +
       "    - is accessible over the network\n" +
-      "    - is properly configured in your Truffle configuration file (truffle.js)\n";
+      "    - is properly configured in your Truffle configuration file (truffle-config.js)\n";
   }
   ProviderError.super_.call(this, message);
   this.message = message;

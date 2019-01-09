@@ -88,7 +88,7 @@ class MigrationsMessages {
         `   * Gas sent:     ${data.estimate}\n` +
         `   * Try:\n` +
         `      + Setting a higher gas estimate multiplier for this contract\n` +
-        `      + Using the solc optimizer settings in 'truffle.js'\n` +
+        `      + Using the solc optimizer settings in 'truffle-config.js'\n` +
         `      + Making your contract smaller\n` +
         `      + Making your contract constructor more efficient\n` +
         `      + Setting a higher network block limit if you are on a\n` +
@@ -101,7 +101,7 @@ class MigrationsMessages {
         `(ex: infinite loop) caused gas estimation to fail. Try:\n` +
         `   * Making your contract constructor more efficient\n` +
         `   * Setting the gas manually in your config or as a deployment parameter\n` +
-        `   * Using the solc optimizer settings in 'truffle.js'\n` +
+        `   * Using the solc optimizer settings in 'truffle-config.js'\n` +
         `   * Setting a higher network block limit if you are on a\n` +
         `     private network or test client (like ganache).\n`,
 
@@ -154,7 +154,7 @@ class MigrationsMessages {
         `(using Truffle's estimate).\n` +
         `   * Block limit: ${data.blockLimit}\n` +
         `   * Report this error in the Truffle issues on Github. It should not happen.\n` +
-        `   * Try: setting gas manually in 'truffle.js' or as parameter to 'deployer.deploy'\n`,
+        `   * Try: setting gas manually in 'truffle-config.js' or as parameter to 'deployer.deploy'\n`,
 
       nonce: () =>
         `${prefix}"${data.contract.contractName}" received: ${
