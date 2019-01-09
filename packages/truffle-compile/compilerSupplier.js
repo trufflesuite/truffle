@@ -79,14 +79,14 @@ CompilerSupplier.prototype.load = function() {
 
 CompilerSupplier.prototype.getSolcFromVersion = function(version) {
   if (this.versionIsCached(version)) this.getCached(version);
-  return this.getByUrl(version);
+  return this.getFromCacheOrByUrl(version);
 };
 
 CompilerSupplier.prototype.getSolcFromVersionRange = async function(
   versionRange
 ) {
   try {
-    await this.getByUrl(versionRange);
+    await this.getFromCacheOrByUrl(versionRange);
   } catch (error) {
     if (error.message.includes("Failed to complete request")) {
       return this.getSatisfyingVersionFromCache(versionRange);
@@ -287,7 +287,7 @@ const findNewestValidVersion = (version, allVersions) => {
  * @param  {String} version ex: "0.4.1", "0.4.16-nightly.2017.8.9+commit.81887bc7"
  * @return {Module}         solc
  */
-CompilerSupplier.prototype.getByUrl = async function(version) {
+CompilerSupplier.prototype.getFromCacheOrByUrl = async function(version) {
   let allVersions;
   try {
     allVersions = await this.getVersions(this.config.versionsUrl);
