@@ -1,8 +1,5 @@
-const debug = require("debug")("compile:compilerSupplier");
 const fs = require("fs");
-const originalRequire = require("original-require");
 const ora = require("ora");
-const solcWrap = require("solc/wrapper");
 const semver = require("semver");
 const LoadingStrategy = require("./LoadingStrategy");
 
@@ -38,16 +35,6 @@ class VersionRange extends LoadingStrategy {
         ? fileName
         : mostRecentVersionFileName;
     }, "-v0.0.0+commit");
-  }
-
-  getFromCache(fileName) {
-    console.log("using from the cache %o", fileName);
-    const filePath = this.resolveCache(fileName);
-    const soljson = originalRequire(filePath);
-    debug("soljson %o", soljson);
-    const wrapped = solcWrap(soljson);
-    this.removeListener();
-    return wrapped;
   }
 
   async getFromCacheOrByUrl(version) {

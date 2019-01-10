@@ -1,7 +1,8 @@
 const requireFromString = require("require-from-string");
+const debug = require("debug")("compile:compilerSupplier");
 const solcWrap = require("solc/wrapper");
-const { execSync } = require("child_process");
 const findCacheDir = require("find-cache-dir");
+const originalRequire = require("original-require");
 const ora = require("ora");
 const request = require("request-promise");
 const fs = require("fs");
@@ -24,13 +25,7 @@ class LoadingStrategy {
     });
   }
 
-  /**
-   * Write  to the cache at `config.cachePath`. Creates `cachePath` directory if
-   * does not exist.
-   * @param {String} code       JS code string downloaded from solc-bin
-   * @param {String} fileName   ex: "soljson-v0.4.21+commit.dfe3193c.js"
-   */
-  addToCache(code, fileName) {
+  addSolcToCache(code, fileName) {
     if (!this.config.cache) return;
 
     const filePath = this.resolveCache(fileName);
@@ -53,39 +48,6 @@ class LoadingStrategy {
     }
   }
 
-  /**
-   * Makes solc.compile a wrapper to a child process invocation of dockerized solc
-   * or natively build solc. Also fetches a companion solcjs for the built js to parse imports
-   * @return {Object} solc output
-   */
-  getBuilt(buildType) {
-    let versionString, command;
-
-    switch (buildType) {
-      case "native":
-        versionString = this.validateNative();
-        command = "solc --standard-json";
-        break;
-      case "docker":
-        versionString = this.validateDocker();
-        command =
-          "docker run -i ethereum/solc:" +
-          this.config.version +
-          " --standard-json";
-        break;
-    }
-
-    const commit = this.getCommitFromVersion(versionString);
-
-    return this.getSolcForNativeOrDockerCompile(commit).then(solcjs => {
-      return {
-        compile: options => String(execSync(command, { input: options })),
-        version: () => versionString,
-        importsParser: solcjs
-      };
-    });
-  }
-
   getCachedSolcFileName(commitString) {
     const cachedCompilerFileNames = fs.readdirSync(this.cachePath);
     return cachedCompilerFileNames.find(fileName => {
@@ -93,15 +55,17 @@ class LoadingStrategy {
     });
   }
 
-  /**
-   * Extracts a commit key from the version info returned by native/docker solc.
-   * We use this to fetch a companion solcjs from solc-bin in order to parse imports
-   * correctly.
-   * @param  {String} versionString   version info from ex: `solc -v`
-   * @return {String}                 commit key, ex: commit.4cb486ee
-   */
   getCommitFromVersion(versionString) {
     return "commit." + versionString.match(/commit\.(.*?)\./)[1];
+  }
+
+  getFromCache(fileName) {
+    const filePath = this.resolveCache(fileName);
+    const soljson = originalRequire(filePath);
+    debug("soljson %o", soljson);
+    const wrapped = solcWrap(soljson);
+    this.removeListener();
+    return wrapped;
   }
 
   async getSolcForNativeOrDockerCompile(commitString) {
@@ -126,7 +90,7 @@ class LoadingStrategy {
     try {
       const response = await request.get(url);
       if (spinner) spinner.stop();
-      this.addToCache(response, fileName);
+      this.addSolcToCache(response, fileName);
       return this.compilerFromString(response);
     } catch (error) {
       if (spinner) spinner.stop();
@@ -198,13 +162,7 @@ class LoadingStrategy {
     return wrapped;
   }
 
-  /**
-   * Converts shell exec'd solc version from buffer to string and strips out human readable
-   * description.
-   * @param  {Buffer} version result of childprocess
-   * @return {String}         normalized version string: e.g 0.4.22+commit.4cb486ee.Linux.g++
-   */
-  normalizeVersion(version) {
+  normalizeSolcVersion(version) {
     version = String(version);
     return version.split(":")[1].trim();
   }
@@ -234,60 +192,6 @@ class LoadingStrategy {
       thunk: true
     });
     return thunk(fileName);
-  }
-
-  validateNative() {
-    let version;
-    try {
-      version = execSync("solc --version");
-    } catch (err) {
-      throw this.errors("noNative", null, err);
-    }
-
-    return this.normalizeVersion(version);
-  }
-
-  /**
-   * Checks to make sure image is specified in the config, that docker exists and that
-   * the image exists locally. If the last condition isn't true, docker will try to pull
-   * it down and this breaks everything.
-   * @return {String}  solc version string
-   * @throws {Error}
-   */
-  validateDocker() {
-    const image = this.config.version;
-    const fileName = image + ".version";
-
-    // Skip validation if they've validated for this image before.
-    if (this.fileIsCached(fileName)) {
-      const cachePath = this.resolveCache(fileName);
-      return fs.readFileSync(cachePath, "utf-8");
-    }
-
-    // Image specified
-    if (!image) throw this.errors("noString", image);
-
-    // Docker exists locally
-    try {
-      execSync("docker -v");
-    } catch (err) {
-      throw this.errors("noDocker");
-    }
-
-    // Image exists locally
-    try {
-      execSync("docker inspect --type=image ethereum/solc:" + image);
-    } catch (err) {
-      throw this.errors("noImage", image);
-    }
-
-    // Get version & cache.
-    const version = execSync(
-      "docker run ethereum/solc:" + image + " --version"
-    );
-    const normalized = this.normalizeVersion(version);
-    this.addToCache(normalized, fileName);
-    return normalized;
   }
 
   errors(kind, input, error) {
