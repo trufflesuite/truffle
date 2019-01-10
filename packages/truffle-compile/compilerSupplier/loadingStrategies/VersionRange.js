@@ -7,11 +7,11 @@ class VersionRange extends LoadingStrategy {
   load(versionRange) {
     const singleVersion = semver.valid(versionRange);
     return singleVersion
-      ? this.getSolcFromSingleVersion(versionRange)
+      ? this.getSolcBySingleVersion(versionRange)
       : this.getSolcFromVersionRange(versionRange);
   }
 
-  getCached(version) {
+  getCachedSolcByVersion(version) {
     const cachedCompilerFileNames = fs.readdirSync(this.cachePath);
     const validVersions = cachedCompilerFileNames.filter(fileName => {
       const match = fileName.match(/v\d+\.\d+\.\d+.*/);
@@ -22,7 +22,7 @@ class VersionRange extends LoadingStrategy {
     const compilerFileName = multipleValidVersions
       ? this.getMostRecentVersionOfCompiler(validVersions)
       : validVersions[0];
-    return this.getFromCache(compilerFileName);
+    return this.getCachedSolcByFileName(compilerFileName);
   }
 
   getMostRecentVersionOfCompiler(versions) {
@@ -48,7 +48,8 @@ class VersionRange extends LoadingStrategy {
 
     if (!fileName) throw this.errors("noVersion", version);
 
-    if (this.fileIsCached(fileName)) return this.getFromCache(fileName);
+    if (this.fileIsCached(fileName))
+      return this.getCachedSolcByFileName(fileName);
 
     const url = this.config.compilerUrlRoot + fileName;
     const spinner = ora({
@@ -61,19 +62,20 @@ class VersionRange extends LoadingStrategy {
 
   getSatisfyingVersionFromCache(versionRange) {
     if (this.versionIsCached(versionRange)) {
-      return this.getCached(versionRange);
+      return this.getCachedSolcByVersion(versionRange);
     }
     throw this.errors("noVersion", versionRange);
   }
 
-  getSolcFromSingleVersion(version) {
-    if (this.versionIsCached(version)) this.getCached(version);
+  getSolcBySingleVersion(version) {
+    if (this.versionIsCached(version))
+      return this.getCachedSolcByVersion(version);
     return this.getFromCacheOrByUrl(version);
   }
 
   async getSolcFromVersionRange(versionRange) {
     try {
-      await this.getFromCacheOrByUrl(versionRange);
+      return await this.getFromCacheOrByUrl(versionRange);
     } catch (error) {
       if (error.message.includes("Failed to complete request")) {
         return this.getSatisfyingVersionFromCache(versionRange);

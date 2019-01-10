@@ -19,10 +19,22 @@ class CompilerSupplier {
     this.strategyOptions = { version: this.config.version };
   }
 
+  badInputError(userSpecification) {
+    const message =
+      `Could not find a compiler version matching ${userSpecification}. ` +
+      `compilers.solc.version option must be a string specifying:\n` +
+      `   - a path to a locally installed solcjs\n` +
+      `   - a solc version or range (ex: '0.4.22' or '^0.5.0')\n` +
+      `   - a docker image name (ex: 'stable')\n` +
+      `   - 'native' to use natively installed solc\n`;
+    return new Error(message);
+  }
+
   load() {
     const userSpecification = this.config.version;
 
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
+      let strategy;
       const useDocker = this.config.docker;
       const useNative = userSpecification === "native";
       const useBundledSolc = !userSpecification;
@@ -30,15 +42,27 @@ class CompilerSupplier {
         userSpecification && this.fileExists(userSpecification);
       const isValidVersionRange = semver.validRange(userSpecification);
 
-      const options = { version: this.config.version };
-      if (useDocker) return resolve(new Docker(options).load());
-      if (useNative) return resolve(new Native(options).load());
-      if (useBundledSolc) return resolve(new Bundled(options).load());
-      if (useSpecifiedLocal)
-        return resolve(new Local(options).load(userSpecification));
-      if (isValidVersionRange)
-        return resolve(new VersionRange(options).load(userSpecification));
-      reject(this.errors("noVersion", userSpecification));
+      if (useDocker) {
+        strategy = new Docker(this.strategyOptions);
+        return resolve(await strategy.load(userSpecification));
+      }
+      if (useNative) {
+        strategy = new Native(this.strategyOptions);
+        return resolve(await strategy.load(userSpecification));
+      }
+      if (useBundledSolc) {
+        strategy = new Bundled(this.strategyOptions);
+        return resolve(await strategy.load(userSpecification));
+      }
+      if (useSpecifiedLocal) {
+        strategy = new Local(this.strategyOptions);
+        return resolve(await strategy.load(userSpecification));
+      }
+      if (isValidVersionRange) {
+        strategy = new VersionRange(this.strategyOptions);
+        return resolve(await strategy.load(userSpecification));
+      }
+      reject(this.badInputError(userSpecification));
     });
   }
 

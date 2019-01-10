@@ -59,7 +59,7 @@ class LoadingStrategy {
     return "commit." + versionString.match(/commit\.(.*?)\./)[1];
   }
 
-  getFromCache(fileName) {
+  getCachedSolcByFileName(fileName) {
     const filePath = this.resolveCache(fileName);
     const soljson = originalRequire(filePath);
     debug("soljson %o", soljson);
@@ -70,7 +70,7 @@ class LoadingStrategy {
 
   async getSolcForNativeOrDockerCompile(commitString) {
     const solcFileName = this.getCachedSolcFileName(commitString);
-    if (solcFileName) return this.getFromCache(solcFileName);
+    if (solcFileName) return this.getCachedSolcByFileName(solcFileName);
 
     const allVersions = await this.getSolcVersions(this.config.versionsUrl);
     const fileName = this.getVersionUrlSegment(commitString, allVersions);
