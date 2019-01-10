@@ -8,7 +8,7 @@ class VersionRange extends LoadingStrategy {
     const singleVersion = semver.valid(versionRange);
     return singleVersion
       ? this.getSolcBySingleVersion(versionRange)
-      : this.getSolcFromVersionRange(versionRange);
+      : this.getSolcByVersionRange(versionRange);
   }
 
   getCachedSolcByVersion(version) {
@@ -73,7 +73,7 @@ class VersionRange extends LoadingStrategy {
     return this.getFromCacheOrByUrl(version);
   }
 
-  async getSolcFromVersionRange(versionRange) {
+  async getSolcByVersionRange(versionRange) {
     try {
       return await this.getFromCacheOrByUrl(versionRange);
     } catch (error) {
