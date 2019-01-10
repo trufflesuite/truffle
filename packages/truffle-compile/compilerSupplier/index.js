@@ -3,11 +3,12 @@ const fs = require("fs");
 const semver = require("semver");
 
 const {
-  Native,
-  Local,
-  VersionRange,
+  Bundled,
   Docker,
-  Bundled
+  LoadingStrategy,
+  Local,
+  Native,
+  VersionRange
 } = require("./loadingStrategies");
 
 class CompilerSupplier {
@@ -53,12 +54,10 @@ class CompilerSupplier {
     return new LoadingStrategy(this.strategyOptions)
       .getSolcVersions()
       .then(list => {
-        // Prereleases
         const prereleases = list.builds
           .filter(build => build["prerelease"])
           .map(build => build["longVersion"]);
 
-        // Releases
         const releases = Object.keys(list.releases);
 
         return {
