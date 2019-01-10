@@ -1,6 +1,7 @@
 import { EvmVariableReferenceMapping, AstReferences, ContractMapping, getContractNode, ContractStateVariable } from "../interface/contract-decoder";
 import { ContractObject } from "truffle-contract-schema/spec";
 import { StoragePointer } from "../types/pointer";
+import { AstDefinition } from "truffle-decode-utils/src/ast";
 import merge from "lodash.merge";
 import cloneDeep from "lodash.clonedeep";
 import * as DecodeUtils from "truffle-decode-utils";
@@ -78,7 +79,7 @@ export function getEventDefinitions(contracts: ContractObject[]): AstReferences 
   return getDeclarationsForTypes(contracts, types);
 }
 
-function allocateStruct(structDefinition: any, referenceDeclarations: AstReferences, slot: DecodeUtils.Allocation.Slot, isChildVariable: boolean = false): ContractStateInfo {
+export function allocateStruct(structDefinition: AstDefinition, referenceDeclarations: AstReferences, slot: DecodeUtils.Allocation.Slot, isChildVariable: boolean = false): ContractStateInfo {
   let structSlotAllocation: SlotAllocation = {
     offset: new BN(0),
     index: DecodeUtils.EVM.WORD_SIZE - 1
@@ -98,7 +99,16 @@ function allocateStruct(structDefinition: any, referenceDeclarations: AstReferen
   return structContractState;
 }
 
-export function allocateDefinition(node: any, state: ContractStateInfo, referenceDeclarations: AstReferences, path?: DecodeUtils.Allocation.Slot, isChildVariable: boolean = false): void {
+export function allocateDefinitions(id: string, definitions: [AstDefinition], referenceDeclarations: AstReferences, existingAllocations: EvmVariableReferenceMapping) {
+  let offset = new BN(0);
+  let index = DecodeUtils.EVM.WORD_SIZE - 1;
+
+  for(node of definitions)
+  {
+  }
+}
+
+export function allocateDefinition(node: AstDefinition, referenceDeclarations: AstReferences, path?: DecodeUtils.Allocation.Slot, isChildVariable: boolean = false): void {
   let slot: DecodeUtils.Allocation.Slot = {
     offset: state.slot.offset.clone()
   };
@@ -107,96 +117,64 @@ export function allocateDefinition(node: any, state: ContractStateInfo, referenc
     slot.path = cloneDeep(path);
   }
 
-  const nodeTypeClass = DecodeUtils.Definition.typeClass(node);
+  //TODO: need existingAllocations argument
+  let [size, suballocations] = storageSizeAndAllocation(node, referenceDeclarations, existingAllocations);
+  let allocations = {...existingAllocations, ...suballocations};
 
-  if (DecodeUtils.Definition.requireStartOfSlot(node) && state.slot.index < DecodeUtils.EVM.WORD_SIZE - 1) {
-    // structs, mappings, and arrays need to start on their own slot
-    state.slot.index = DecodeUtils.EVM.WORD_SIZE - 1;
-    state.slot.offset = state.slot.offset.addn(1);
+  if (size.words !== undefined) {
+    //if it's sized in words, we need to start on a new slot
+    slot.index = DecodeUtils.EVM.WORD_SIZE - 1;
+    slot.offset.iaddn(1);
+  }
+  else if (size.bytes < slot.index + 1) {
+    //if it's sized in bytes but there's not enough room, we also need a new slot
+    slot.index = DecodeUtils.EVM.WORD_SIZE - 1;
     slot.offset = slot.offset.addn(1);
   }
+  //otherwise, we remain in place
 
-  if (nodeTypeClass != "struct") {
-    let referenceDeclaration: undefined | DecodeUtils.AstDefinition = undefined;
-    if (nodeTypeClass === "enum") {
-      const referenceId = node.referencedDeclaration ||
-        (node.typeName ? node.typeName.referencedDeclaration : undefined);
-      referenceDeclaration = referenceDeclarations[referenceId];
-    }
-    const storageSize = DecodeUtils.Definition.storageSize(node, referenceDeclaration).toBytes().toNumber();
+  //declare range somewhere here TODO
 
-    let range = DecodeUtils.Allocation.allocateValue(slot, state.slot.index, storageSize);
-    if (nodeTypeClass === "array" && !DecodeUtils.Definition.isDynamicArray(node)) {
-      const length = parseInt(node.typeName.length.value);
-      const baseDefinition = DecodeUtils.Definition.baseDefinition(node);
-
-      if (DecodeUtils.Definition.typeClass(baseDefinition) === "struct") {
-        const referenceId = baseDefinition.referencedDeclaration ||
-          (baseDefinition.typeName ? baseDefinition.typeName.referencedDeclaration : undefined);
-        const structDefinition = referenceDeclarations[referenceId];
-        const structContractState = allocateStruct(structDefinition, referenceDeclarations, <DecodeUtils.Allocation.Slot>{
-          path: slot,
-          offset: new BN(0)
-        }, true);
-
-        range.next.slot.offset = range.next.slot.offset.add(structContractState.slot.offset);
-        if (structContractState.slot.index === DecodeUtils.EVM.WORD_SIZE - 1) {
-          range.next.slot.offset = range.next.slot.offset.subn(1);
-        }
-      }
-      else {
-        let baseReferenceDeclaration: undefined | DecodeUtils.AstDefinition = undefined;
-        if (DecodeUtils.Definition.typeClass(baseDefinition) === "enum") {
-          const baseReferenceId = baseDefinition.referencedDeclaration ||
-            (baseDefinition.typeName ? baseDefinition.typeName.referencedDeclaration : undefined);
-          baseReferenceDeclaration = referenceDeclarations[baseReferenceId];
-        }
-
-        const baseDefinitionStorageSize = DecodeUtils.Definition.storageSize(baseDefinition, baseReferenceDeclaration).toBytes().toNumber();
-        const totalAdditionalSlotsUsed = Math.ceil(length * baseDefinitionStorageSize / DecodeUtils.EVM.WORD_SIZE) - 1;
-        range.next.slot.offset = range.next.slot.offset.addn(totalAdditionalSlotsUsed);
-      }
-    }
-
-    state.variables[node.id] = <ContractStateVariable>{
-      isChildVariable,
-      definition: node,
-      pointer: <StoragePointer>{
-        storage: cloneDeep(range)
-      }
-    };
-
-    state.slot.offset = range.next.slot.offset.clone();
-    state.slot.index = range.next.index;
+  if(size.words !== undefined) {
+    //words case
+    range.from.slot = cloneDeep(slot); //start at the current slot...
+    range.from.index = 0; //...at the beginning fo the word.
+    range.to.slot = cloneDeep(slot); //end at the current slot...
+    range.to.slot.offset.iadd(size.words).isubn(1); //...plus # of words minus 1...
+    range.to.index = DecodeUtils.EVM.WORD_SIZE - 1; //...at the end of the word.
   }
   else {
-    const referenceId = node.referencedDeclaration || (node.typeName && node.typeName.referencedDeclaration);
-    const structDefinition = referenceDeclarations[referenceId]; // ast node of StructDefinition
-    const structContractState = allocateStruct(structDefinition, referenceDeclarations, slot);
+    //bytes case
+    range.from.slot = cloneDeep(slot); //start at the current slot...
+    range.to.slot = cloneDeep(slot); //...and end in the current slot.
+    range.to.index = slot.index; //end at the current index...
+    range.from.index = slot.index - size.bytes; //...and start appropriately earlier in the slot.
+  }
 
-    state.variables[node.id] = <ContractStateVariable>{
-      isChildVariable,
-      definition: node,
-      pointer: <StoragePointer>{
-        storage: {
-          from: {
-            slot: slot,
-            index: 0
-          },
-          to: {
-            slot: slot,
-            index: DecodeUtils.EVM.WORD_SIZE - 1
-          }
-        }
-      }
-    };
+  state.variables[node.id] = <ContractStateVariable>{
+    isChildVariable,
+    definition: node,
+    pointer: <StoragePointer>{
+      storage: cloneDeep(range)
+    }
+  };
 
-    state.slot.offset = state.slot.offset.add(structContractState.slot.offset);
-    state.slot.index = DecodeUtils.EVM.WORD_SIZE - 1;
-    if (structContractState.slot.index < DecodeUtils.EVM.WORD_SIZE - 1) {
-      state.slot.offset = state.slot.offset.addn(1);
+  //finally, adjust the current position.
+  //if it was sized in words, move down that many slots and reset position w/in slot
+  if(size.words !== undefined) {
+    slot.offset.iadd(size.words);
+    slot.index = DecodeUtils.EVM.WORD_SIZE - 1;
+  }
+  //if it was sized in bytes, move down an appropriate number of bytes.
+  else {
+    slot.index -= size.bytes;
+    //but if this puts us into the next word, move to the next word.
+    if(slot.index < 0) {
+      slot.index = DecodeUtils.EVM.WORD_SIZE - 1;
+      slot.offset.iaddn(1);
     }
   }
+
 }
 
 function getStateVariables(contract: ContractObject, initialSlotInfo: SlotAllocation, referenceDeclarations: AstReferences): ContractStateInfo {
@@ -221,6 +199,7 @@ function getStateVariables(contract: ContractObject, initialSlotInfo: SlotAlloca
   return state;
 }
 
+//TODO: filter out constants
 export function getContractStateVariables(contract: ContractObject, contracts: ContractMapping, referenceDeclarations: AstReferences): EvmVariableReferenceMapping {
   let result: EvmVariableReferenceMapping = {};
 
