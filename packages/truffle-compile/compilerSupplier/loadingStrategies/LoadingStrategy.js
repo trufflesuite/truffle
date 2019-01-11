@@ -32,166 +32,11 @@ class LoadingStrategy {
     fs.writeFileSync(filePath, code);
   }
 
-  findNewestValidVersion(version, allVersions) {
-    if (!semver.validRange(version)) return null;
-    const satisfyingVersions = Object.keys(allVersions.releases)
-      .map(solcVersion => {
-        if (semver.satisfies(solcVersion, version)) return solcVersion;
-      })
-      .filter(solcVersion => solcVersion);
-    if (satisfyingVersions.length > 0) {
-      return satisfyingVersions.reduce((newestVersion, version) => {
-        return semver.gtr(version, newestVersion) ? version : newestVersion;
-      }, "0.0.0");
-    } else {
-      return null;
-    }
-  }
-
-  getCachedSolcFileName(commitString) {
-    const cachedCompilerFileNames = fs.readdirSync(this.cachePath);
-    return cachedCompilerFileNames.find(fileName => {
-      return fileName.includes(commitString);
-    });
-  }
-
-  getCommitFromVersion(versionString) {
-    return "commit." + versionString.match(/commit\.(.*?)\./)[1];
-  }
-
-  getCachedSolcByFileName(fileName) {
-    const filePath = this.resolveCache(fileName);
-    const soljson = originalRequire(filePath);
-    debug("soljson %o", soljson);
-    const wrapped = solcWrap(soljson);
-    this.removeListener();
-    return wrapped;
-  }
-
-  async getSolcForNativeOrDockerCompile(commitString) {
-    const solcFileName = this.getCachedSolcFileName(commitString);
-    if (solcFileName) return this.getCachedSolcByFileName(solcFileName);
-
-    const allVersions = await this.getSolcVersions(this.config.versionsUrl);
-    const fileName = this.getVersionUrlSegment(commitString, allVersions);
-
-    if (!fileName) throw this.errors("noVersion", version);
-
-    const url = this.config.compilerUrlRoot + fileName;
-    const spinner = ora({
-      text: "Downloading compiler",
-      color: "red"
-    }).start();
-
-    return this.getSolcByUrlAndCache(url, fileName, spinner);
-  }
-
-  async getSolcByUrlAndCache(url, fileName, spinner) {
-    try {
-      const response = await request.get(url);
-      if (spinner) spinner.stop();
-      this.addSolcToCache(response, fileName);
-      return this.compilerFromString(response);
-    } catch (error) {
-      if (spinner) spinner.stop();
-      throw this.errors("noRequest", url, error);
-    }
-  }
-
-  getSolcVersions() {
-    const spinner = ora({
-      text: "Fetching solc version list from solc-bin",
-      color: "yellow"
-    }).start();
-
-    return request(this.config.versionsUrl)
-      .then(list => {
-        spinner.stop();
-        return JSON.parse(list);
-      })
-      .catch(err => {
-        spinner.stop();
-        throw self.errors("noRequest", this.config.versionsUrl, err);
-      });
-  }
-
-  /**
-   * Returns terminal url segment for `version` from the versions object
-   * generated  by `getSolcVersions`.
-   * @param  {String} version         ex: "0.4.1", "0.4.16-nightly.2017.8.9+commit.81887bc7"
-   * @param  {Object} allVersions     (see `getSolcVersions`)
-   * @return {String} url             ex: "soljson-v0.4.21+commit.dfe3193c.js"
-   */
-  getVersionUrlSegment(version, allVersions) {
-    if (allVersions.releases[version]) return allVersions.releases[version];
-
-    const isPrerelease =
-      version.includes("nightly") || version.includes("commit");
-
-    if (isPrerelease) {
-      for (let build of allVersions.builds) {
-        const exists =
-          build["prerelease"] === version ||
-          build["build"] === version ||
-          build["longVersion"] === version;
-
-        if (exists) return build["path"];
-      }
-    }
-
-    const versionToUse = this.findNewestValidVersion(version, allVersions);
-    if (versionToUse) return allVersions.releases[versionToUse];
-
-    return null;
-  }
-
-  /**
-   * Returns true if `fileName` exists in the cache.
-   * @param  {String}  fileName   ex: "soljson-v0.4.21+commit.dfe3193c.js"
-   * @return {Boolean}
-   */
-  fileIsCached(fileName) {
-    const file = this.resolveCache(fileName);
-    return fs.existsSync(file);
-  }
-
   compilerFromString(code) {
     const soljson = requireFromString(code);
     const wrapped = solcWrap(soljson);
     this.removeListener();
     return wrapped;
-  }
-
-  normalizeSolcVersion(version) {
-    version = String(version);
-    return version.split(":")[1].trim();
-  }
-
-  /**
-   * Cleans up error listeners set (by solc?) when requiring it. (This code inherited from
-   * previous implementation, note to self - ask Tim about this)
-   */
-  removeListener() {
-    const listeners = process.listeners("uncaughtException");
-    const execeptionHandler = listeners[listeners.length - 1];
-
-    if (execeptionHandler) {
-      process.removeListener("uncaughtException", execeptionHandler);
-    }
-  }
-
-  /**
-   * Returns path to cached solc version
-   * @param  {String} fileName ex: "soljson-v0.4.21+commit.dfe3193c.js"
-   * @return {String}          path
-   */
-  resolveCache(fileName) {
-    const thunk = findCacheDir({
-      name: "truffle",
-      cwd: __dirname,
-      thunk: true
-    });
-    return thunk(fileName);
   }
 
   errors(kind, input, error) {
@@ -227,6 +72,133 @@ class LoadingStrategy {
     };
 
     return new Error(kinds[kind]);
+  }
+
+  fileIsCached(fileName) {
+    const file = this.resolveCache(fileName);
+    return fs.existsSync(file);
+  }
+
+  findNewestValidVersion(version, allVersions) {
+    if (!semver.validRange(version)) return null;
+    const satisfyingVersions = Object.keys(allVersions.releases)
+      .map(solcVersion => {
+        if (semver.satisfies(solcVersion, version)) return solcVersion;
+      })
+      .filter(solcVersion => solcVersion);
+    if (satisfyingVersions.length > 0) {
+      return satisfyingVersions.reduce((newestVersion, version) => {
+        return semver.gtr(version, newestVersion) ? version : newestVersion;
+      }, "0.0.0");
+    } else {
+      return null;
+    }
+  }
+
+  getCachedSolcByFileName(fileName) {
+    const filePath = this.resolveCache(fileName);
+    const soljson = originalRequire(filePath);
+    debug("soljson %o", soljson);
+    const wrapped = solcWrap(soljson);
+    this.removeListener();
+    return wrapped;
+  }
+
+  getCachedSolcFileName(commitString) {
+    const cachedCompilerFileNames = fs.readdirSync(this.cachePath);
+    return cachedCompilerFileNames.find(fileName => {
+      return fileName.includes(commitString);
+    });
+  }
+
+  getCommitFromVersion(versionString) {
+    return "commit." + versionString.match(/commit\.(.*?)\./)[1];
+  }
+
+  async getSolcByUrlAndCache(url, fileName, spinner) {
+    try {
+      const response = await request.get(url);
+      if (spinner) spinner.stop();
+      this.addSolcToCache(response, fileName);
+      return this.compilerFromString(response);
+    } catch (error) {
+      if (spinner) spinner.stop();
+      throw this.errors("noRequest", url, error);
+    }
+  }
+
+  getSolcVersions() {
+    const spinner = ora({
+      text: "Fetching solc version list from solc-bin",
+      color: "yellow"
+    }).start();
+
+    return request(this.config.versionsUrl)
+      .then(list => {
+        spinner.stop();
+        return JSON.parse(list);
+      })
+      .catch(err => {
+        spinner.stop();
+        throw this.errors("noRequest", this.config.versionsUrl, err);
+      });
+  }
+
+  /**
+   * Returns terminal url segment for `version` from the versions object
+   * generated  by `getSolcVersions`.
+   * @param  {String} version         ex: "0.4.1", "0.4.16-nightly.2017.8.9+commit.81887bc7"
+   * @param  {Object} allVersions     (see `getSolcVersions`)
+   * @return {String} url             ex: "soljson-v0.4.21+commit.dfe3193c.js"
+   */
+  getVersionUrlSegment(version, allVersions) {
+    if (allVersions.releases[version]) return allVersions.releases[version];
+
+    const isPrerelease =
+      version.includes("nightly") || version.includes("commit");
+
+    if (isPrerelease) {
+      for (let build of allVersions.builds) {
+        const exists =
+          build["prerelease"] === version ||
+          build["build"] === version ||
+          build["longVersion"] === version;
+
+        if (exists) return build["path"];
+      }
+    }
+
+    const versionToUse = this.findNewestValidVersion(version, allVersions);
+    if (versionToUse) return allVersions.releases[versionToUse];
+
+    return null;
+  }
+
+  normalizeSolcVersion(version) {
+    version = String(version);
+    return version.split(":")[1].trim();
+  }
+
+  /**
+   * Cleans up error listeners set (by solc?) when requiring it. (This code inherited from
+   * previous implementation, note to self - ask Tim about this)
+   */
+  removeListener() {
+    const listeners = process.listeners("uncaughtException");
+    const execeptionHandler = listeners[listeners.length - 1];
+
+    if (execeptionHandler) {
+      process.removeListener("uncaughtException", execeptionHandler);
+    }
+  }
+
+  resolveCache(fileName) {
+    const thunk = findCacheDir({
+      name: "truffle",
+      cwd: __dirname,
+      thunk: true
+    });
+    return thunk(fileName);
   }
 }
 

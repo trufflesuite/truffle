@@ -4,6 +4,24 @@ const { execSync } = require("child_process");
 const LoadingStrategy = require("./LoadingStrategy");
 
 class Docker extends LoadingStrategy {
+  async getSolc(commitString) {
+    const solcFileName = this.getCachedSolcFileName(commitString);
+    if (solcFileName) return this.getCachedSolcByFileName(solcFileName);
+
+    const allVersions = await this.getSolcVersions(this.config.versionsUrl);
+    const fileName = this.getVersionUrlSegment(commitString, allVersions);
+
+    if (!fileName) throw this.errors("noVersion", version);
+
+    const url = this.config.compilerUrlRoot + fileName;
+    const spinner = ora({
+      text: "Downloading compiler",
+      color: "red"
+    }).start();
+
+    return this.getSolcByUrlAndCache(url, fileName, spinner);
+  }
+
   load() {
     const versionString = this.validateAndGetSolcVersion();
     const command =
@@ -11,7 +29,7 @@ class Docker extends LoadingStrategy {
 
     const commit = this.getCommitFromVersion(versionString);
 
-    return this.getSolcForNativeOrDockerCompile(commit).then(solcjs => {
+    return this.getSolc(commit).then(solcjs => {
       return {
         compile: options => String(execSync(command, { input: options })),
         version: () => versionString,
@@ -23,8 +41,8 @@ class Docker extends LoadingStrategy {
   getDockerTags() {
     return request(this.config.dockerTagsUrl)
       .then(list => JSON.parse(list).results.map(item => item.name))
-      .catch(err => {
-        throw self.errors("noRequest", this.config.dockerTagsUrl, err);
+      .catch(error => {
+        throw this.errors("noRequest", this.config.dockerTagsUrl, error);
       });
   }
 
@@ -44,14 +62,14 @@ class Docker extends LoadingStrategy {
     // Docker exists locally
     try {
       execSync("docker -v");
-    } catch (err) {
+    } catch (error) {
       throw this.errors("noDocker");
     }
 
     // Image exists locally
     try {
       execSync("docker inspect --type=image ethereum/solc:" + image);
-    } catch (err) {
+    } catch (error) {
       throw this.errors("noImage", image);
     }
 
