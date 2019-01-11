@@ -18,39 +18,6 @@ describe("CompilerSupplier", function() {
   describe("getters", function() {
     before(() => (supplier = new CompilerSupplier()));
 
-    it("getVersions: should return versions object", async function() {
-      const list = await supplier.getVersions();
-      assert(list.releases !== undefined);
-    });
-
-    it("getVersionUrlSegment: should return a JS file name", async function() {
-      const list = await supplier.getVersions();
-
-      let input = "0.4.21";
-      let expected = "soljson-v0.4.21+commit.dfe3193c.js";
-
-      let fileName = await supplier.getVersionUrlSegment(input, list);
-      assert(fileName === expected, "Should locate by version");
-
-      input = "nightly.2018.4.12";
-      expected = "soljson-v0.4.22-nightly.2018.4.12+commit.c3dc67d0.js";
-
-      fileName = await supplier.getVersionUrlSegment(input, list);
-      assert(fileName === expected, "Should locate by nightly");
-
-      input = "commit.c3dc67d0";
-      expected = "soljson-v0.4.22-nightly.2018.4.12+commit.c3dc67d0.js";
-
-      fileName = await supplier.getVersionUrlSegment(input, list);
-      assert(fileName === expected, "Should locate by commit");
-
-      input = "0.4.55.77-fantasy-solc";
-      expected = null;
-
-      fileName = await supplier.getVersionUrlSegment(input, list);
-      assert(fileName === null, "Should return null if not found");
-    });
-
     it("getReleases: should return a `releases` object", async function() {
       const releases = await supplier.getReleases();
       const firstSolc = "0.1.3-nightly.2015.9.25+commit.4457170";
@@ -156,23 +123,6 @@ describe("CompilerSupplier", function() {
       });
     });
 
-    it("errors when specified release does not exist", function(done) {
-      options.compilers = {
-        solc: {
-          cache: false,
-          version: "0.4.55.77-fantasy-solc",
-          settings: {}
-        }
-      };
-
-      compile(version4PragmaSource, options, err => {
-        assert(
-          err.message.includes("Could not find a compiler version matching")
-        );
-        done();
-      });
-    });
-
     it("compiles w/ local path solc when options specify path", function(done) {
       const pathToSolc = path.join(
         __dirname,
@@ -192,25 +142,6 @@ describe("CompilerSupplier", function() {
         if (err) return done(err);
 
         assert(result["Version5Pragma"].contract_name === "Version5Pragma");
-        done();
-      });
-    });
-
-    it("errors when specified path does not exist", function(done) {
-      const pathToSolc = path.join(
-        __dirname,
-        "../solidity-warehouse/solc/index.js"
-      );
-      options.compilers = {
-        solc: {
-          cache: false,
-          version: pathToSolc,
-          settings: {}
-        }
-      };
-
-      compile(version4PragmaSource, options, err => {
-        assert(err.message.includes("Could not find compiler at:"));
         done();
       });
     });
