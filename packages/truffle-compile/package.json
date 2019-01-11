@@ -25,6 +25,7 @@
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "mocha": "5.2.0",
+    "sinon": "^7.2.2",
     "tmp": "0.0.33",
     "truffle-resolver": "^5.0.1"
   },
