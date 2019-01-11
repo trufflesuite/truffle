@@ -25,7 +25,7 @@ class LoadingStrategy {
     });
   }
 
-  addSolcToCache(code, fileName) {
+  addFileToCache(code, fileName) {
     if (!this.config.cache) return;
 
     const filePath = this.resolveCache(fileName);
@@ -119,7 +119,7 @@ class LoadingStrategy {
     try {
       const response = await request.get(url);
       if (spinner) spinner.stop();
-      this.addSolcToCache(response, fileName);
+      this.addFileToCache(response, fileName);
       return this.compilerFromString(response);
     } catch (error) {
       if (spinner) spinner.stop();
