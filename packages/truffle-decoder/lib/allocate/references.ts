@@ -7,16 +7,6 @@ import cloneDeep from "lodash.clonedeep";
 import * as DecodeUtils from "truffle-decode-utils";
 import BN from "bn.js";
 
-interface SlotAllocation {
-  offset: BN;
-  index: number;
-};
-
-export interface ContractStateInfo {
-  variables: EvmVariableReferenceMapping;
-  slot: SlotAllocation;
-}
-
 function getDeclarationsForTypes(contracts: ContractObject[], types: string[]): AstReferences {
   let result: AstReferences = {};
 
@@ -36,39 +26,26 @@ function getDeclarationsForTypes(contracts: ContractObject[], types: string[]): 
   return result;
 }
 
-export function getReferenceDeclarations(contracts: ContractObject[]): [AstReferences, EvmVariableReferenceMapping] {
-  let result: EvmVariableReferenceMapping = {};
+//split this function in two
+export function getReferenceDeclarations(contracts: ContractObject[]): AstReferences {
   const types = [
     "EnumDefinition",
     "StructDefinition"
   ];
 
-  const referenceDeclarations = getDeclarationsForTypes(contracts, types);
+  return getDeclarationsForTypes(contracts, types);
+}
 
-  Object.entries(referenceDeclarations).forEach((entry) => {
-    const id = parseInt(entry[0]);
-    const definition: DecodeUtils.AstDefinition = entry[1];
-
-    result[id] = <ContractStateVariable>{
-      definition: definition,
-      isChildVariable: false
-    };
-
-    switch (definition.nodeType) {
-      case "EnumDefinition": {
-        // do nothing, doesn't need a pointer
-        break;
-      }
-      case "StructDefinition": {
-        const stateInfo = allocateStruct(definition, referenceDeclarations, <DecodeUtils.Allocation.Slot>{
-          offset: new BN(0)
-        });
-        result[id].members = stateInfo.variables;
-      }
-    }
-  });
-
-  return [referenceDeclarations, result];
+export function getAllocations(referenceDeclarations, contracts: AstDefinitions[]): StorageAllocations {
+  allocations: StorageAllocations = {};
+  for(node of referenceDeclarations) {
+    if(node.nodeType === "StructDefinition")
+      allocations = allocateStruct(node, referenceDeclarations, allocations);
+  }
+  for(contract of contracts) {
+    allocations = allocateContract(contract, referenceDeclarations, allocations);
+  }
+  return allocations;
 }
 
 export function getEventDefinitions(contracts: ContractObject[]): AstReferences {
@@ -79,11 +56,11 @@ export function getEventDefinitions(contracts: ContractObject[]): AstReferences 
   return getDeclarationsForTypes(contracts, types);
 }
 
-export function allocateStruct(structDefinition: AstDefinition, referenceDeclarations: AstReferences, existingAllocations: EvmVariableReferenceMapping) {
+export function allocateStruct(structDefinition: AstDefinition, referenceDeclarations: AstReferences, existingAllocations: StorageAllocations): StorageAllocations {
   return allocateDefinitions(structDefinition, structDefinition.members, referenceDeclarations, existingAllocations);
 }
 
-export function allocateDefinitions(parentNode: AstDefinition, definitions: [AstDefinition], referenceDeclarations: AstReferences, existingAllocations: EvmVariableReferenceMapping) {
+export function allocateDefinitions(parentNode: AstDefinition, definitions: AstDefinition[], referenceDeclarations: AstReferences, existingAllocations: StorageAllocations): StorageAllocations {
   let offset = new BN(0);
   let index = DecodeUtils.EVM.WORD_SIZE - 1;
   let allocations = {...existingAllocations}; //we'll be adding to this, so we better clone
@@ -94,10 +71,12 @@ export function allocateDefinitions(parentNode: AstDefinition, definitions: [Ast
   }
 
   //otherwise, we need to allocate
-  let memberAllocations = <EvmVariableReferenceMapping>{};
+  let memberAllocations: StorageMemberAllocations = {}
 
   for(node of definitions)
   {
+    //note: in the future, we will begin by checking if node is constant
+    //and if so doing things a different way to allocate a literal for it
     let size: StorageLength;
     [size, allocations] = storageSizeAndAllocation(node, referenceDeclarations, allocations);
 
@@ -127,7 +106,6 @@ export function allocateDefinitions(parentNode: AstDefinition, definitions: [Ast
     }
   
     memberAllocations[node.id] = <ContractStateVariable>{
-      isChildVariable: true, //??? ask Seese about this TODO
       definition: node,
       pointer: <StoragePointer>{
         storage: range; //don't think we need to clone here...
@@ -180,7 +158,6 @@ export function allocateDefinitions(parentNode: AstDefinition, definitions: [Ast
 
   //stick in allocations...
   allocations[parentNode.id] = <ContractStateVariable>{
-    isChildVariable: false, //??? ask Seese about this TODO
     definition: parentNode,
     pointer: wholePointer,
     members: memberAllocations
@@ -190,51 +167,27 @@ export function allocateDefinitions(parentNode: AstDefinition, definitions: [Ast
   return allocations;
 }
 
-export function allocateDefinition(node: AstDefinition, referenceDeclarations: AstReferences, path?: DecodeUtils.Allocation.Slot, isChildVariable: boolean = false): void {
+function getStateVariables(contract: ContractObject): AstDefinition[] {
+  // process for state variables, filtering out constants
+  const contractNode = getContractNode(contract); //ARGH TODO
+  return contractNode.nodes.filter( (node) =>
+    node.nodeType === "VariableDeclaration" && node.stateVariable && !node.constant
+  );
+  //note, in the future, we will not filter out constants
 }
 
-//TODO: redo the following two.  handling inheritance/constants should be done
-//*before* any allocation, not in the middle like this does.
-//it really does work the way Seese said it does.
-function getStateVariables(contract: ContractObject, initialSlotInfo: SlotAllocation, referenceDeclarations: AstReferences): ContractStateInfo {
-  // process for state variables
-  const contractNode = getContractNode(contract);
-  for (let k = 0; k < contractNode.nodes.length; k++) {
-    const node = contractNode.nodes[k];
+export function allocateContract(contract: AstDefinition, contracts: ContractMapping, referenceDeclarations: AstReferences, existingAllocations: StorageAllocations): StorageAllocations {
 
-    if (node.nodeType === "VariableDeclaration" && node.stateVariable === true) {
-      allocateDefinition(node, state, referenceDeclarations);
-    }
-  }
+  let allocations: StorageAllocations = {...existingAllocations};
 
-  return state;
-}
+  //base contracts are listed from most derived to most base, so we
+  //have to reverse before processing, but reverse() is in place, so we
+  //clone first
+  let linearizedBaseContractsFromBase = [...contract.linearizedBaseContracts].reverse();
 
-//TODO: filter out constants
-export function getContractStateVariables(contract: ContractObject, contracts: ContractMapping, referenceDeclarations: AstReferences): EvmVariableReferenceMapping {
-  let result: EvmVariableReferenceMapping = {};
+  let vars = [].concat(...linearizedBaseContractsFromBase.map( (id) =>
+    getStateVariables(contracts[id]) //TODO fix this to use AstDefition, not ContractObject
+  ));
 
-  if (typeof contract.ast === "undefined") {
-    return result;
-  }
-
-  const contractNode = getContractNode(contract);
-
-  if (contractNode) {
-    // process inheritance
-    let slotAllocation: SlotAllocation = {
-      offset: new BN(0),
-      index: DecodeUtils.EVM.WORD_SIZE - 1
-    };
-
-    for (let i = contractNode.linearizedBaseContracts.length - 1; i >= 0; i--) {
-      const state = getStateVariables(contracts[contractNode.linearizedBaseContracts[i]], slotAllocation, referenceDeclarations);
-
-      slotAllocation.offset = state.slot.offset;
-      slotAllocation.index = state.slot.index;
-      merge(result, state.variables);
-    }
-  }
-
-  return result;
+  return allocateDefinitions(contract, vars, referenceDeclarations, existingAllocations);
 }
