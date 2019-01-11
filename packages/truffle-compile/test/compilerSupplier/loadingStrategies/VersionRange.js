@@ -2,6 +2,11 @@ const fs = require("fs");
 const assert = require("assert");
 const sinon = require("sinon");
 const { VersionRange } = require("../../../compilerSupplier/loadingStrategies");
+const compilerFileNames = [
+  "soljson-v0.4.22+commit.124ca40d.js",
+  "soljson-v0.4.23+commit.1534a40d.js",
+  "soljson-v0.4.11+commit.124234rd.js"
+];
 
 describe("VersionRange", () => {
   beforeEach(() => {
@@ -10,11 +15,6 @@ describe("VersionRange", () => {
 
   describe("versionIsCached(version)", () => {
     beforeEach(() => {
-      const compilerFileNames = [
-        "soljson-v0.4.22+commit.124ca40d.js",
-        "soljson-v0.4.11+commit.124234rd.js",
-        "soljson-v0.4.23+commit.1534a40d.js"
-      ];
       sinon.stub(fs, "readdirSync").returns(compilerFileNames);
     });
     afterEach(() => {
@@ -27,10 +27,7 @@ describe("VersionRange", () => {
       });
 
       it("returns the file name with the prefix removed", () => {
-        assert.equal(
-          VersionRange.prototype.versionIsCached("0.4.11"),
-          expectedResult
-        );
+        assert.equal(instance.versionIsCached("0.4.11"), expectedResult);
       });
     });
 
@@ -40,71 +37,29 @@ describe("VersionRange", () => {
       });
 
       it("returns undefined", () => {
-        assert.equal(
-          VersionRange.prototype.versionIsCached("0.4.29"),
-          expectedResult
-        );
+        assert.equal(instance.versionIsCached("0.4.29"), expectedResult);
       });
     });
   });
 
-  describe("getCachedSolcByVersion(version)", () => {
+  describe("getCachedSolcByVersionRange(version)", () => {
     beforeEach(() => {
-      const compilerFileNames = [
-        "soljson-v0.4.22+commit.124ca40d.js",
-        "soljson-v0.4.23+commit.1534a40d.js",
-        "soljson-v0.4.11+commit.124234rd.js"
-      ];
+      expectedResult = "soljson-v0.4.23+commit.1534a40d.js";
       sinon.stub(fs, "readdirSync").returns(compilerFileNames);
+      sinon.stub(instance, "getCachedSolcByFileName");
     });
     afterEach(() => {
       fs.readdirSync.restore();
+      instance.getCachedSolcByFileName.restore();
     });
 
-    describe("when there is only one valid compiler file", () => {
-      beforeEach(() => {
-        expectedFileName = "soljson-v0.4.11+commit.124234rd.js";
-        sinon
-          .stub(VersionRange.prototype, "getCachedSolcByFileName")
-          .withArgs(expectedFileName)
-          .returns("correct return");
-      });
-      afterEach(() => {
-        VersionRange.prototype.getCachedSolcByFileName.restore();
-      });
-
-      it("calls getCachedSolcByFileName and returns the result", () => {
-        assert(
-          VersionRange.prototype.getCachedSolcByVersion("0.4.11"),
-          "correct return"
-        );
-      });
+    it("returns the compiler when a single version is specified", () => {
+      instance.getCachedSolcByVersionRange("0.4.23");
+      assert(instance.getCachedSolcByFileName.calledWith(expectedResult));
     });
-
-    describe("when there are multiple valid compiler files", () => {
-      beforeEach(() => {
-        expectedFileName = "soljson-v0.4.23+commit.1534a40d.js";
-        sinon
-          .stub(VersionRange.prototype, "getCachedSolcByFileName")
-          .withArgs(expectedFileName)
-          .returns("correct return");
-      });
-      afterEach(() => {
-        VersionRange.prototype.getCachedSolcByFileName.restore();
-      });
-
-      it("calls getCachedSolcByFileName with the most recent compiler version and returns the result", () => {
-        assert.equal(
-          VersionRange.prototype.getCachedSolcByVersion("^0.4.15"),
-          "correct return"
-        );
-      });
+    it("returns the newest compiler when there are multiple valid ones", () => {
+      instance.getCachedSolcByVersionRange("^0.4.1");
+      assert(instance.getCachedSolcByFileName.calledWith(expectedResult));
     });
-  });
-
-  describe("getFromCacheOrByUrl", () => {
-    describe("when the version is cached", () => {});
-
-    describe("when the version is not cached", () => {});
   });
 });

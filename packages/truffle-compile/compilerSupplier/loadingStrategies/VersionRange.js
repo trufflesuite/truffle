@@ -11,7 +11,8 @@ class VersionRange extends LoadingStrategy {
       : this.getSolcByVersionRange(versionRange);
   }
 
-  getCachedSolcByVersion(version) {
+  // Range can also be a single version specification like "0.5.0"
+  getCachedSolcByVersionRange(version) {
     const cachedCompilerFileNames = fs.readdirSync(this.cachePath);
     const validVersions = cachedCompilerFileNames.filter(fileName => {
       const match = fileName.match(/v\d+\.\d+\.\d+.*/);
@@ -62,14 +63,14 @@ class VersionRange extends LoadingStrategy {
 
   getSatisfyingVersionFromCache(versionRange) {
     if (this.versionIsCached(versionRange)) {
-      return this.getCachedSolcByVersion(versionRange);
+      return this.getCachedSolcByVersionRange(versionRange);
     }
     throw this.errors("noVersion", versionRange);
   }
 
   getSolcBySingleVersion(version) {
     if (this.versionIsCached(version))
-      return this.getCachedSolcByVersion(version);
+      return this.getCachedSolcByVersionRange(version);
     return this.getFromCacheOrByUrl(version);
   }
 
