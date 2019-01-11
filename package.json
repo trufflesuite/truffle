@@ -5,6 +5,7 @@
     "build:decode-utils": "cd packages/truffle-decode-utils && npm run build",
     "build:decoder": "cd packages/truffle-decoder && npm run build",
     "build:truffle-contract-schema": "cd packages/truffle-contract-schema && npm run build",
+    "build:truffle-db": "cd packages/truffle-db && npm run build",
     "lerna:bootstrap": "lerna bootstrap",
     "bootstrap": "./scripts/bootstrap.sh",
     "test": "lerna run test --stream --concurrency=1 -- --colors",

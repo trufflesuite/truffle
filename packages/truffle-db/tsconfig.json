@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "declaration": true,
+    "esModuleInterop": true,
+    "lib": ["esnext"],
+    "target": "es6",
+    "moduleResolution": "node",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "paths": {
+      "truffle-db": ["./src"],
+      "truffle-db/*": ["./src/*"]
+    },
+    "rootDir": "./src",
+    "baseUrl": "."
+  },
+  "include": [
+    "src/**/*",
+    "test/**/*",
+    "types/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

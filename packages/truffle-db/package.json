@@ -11,22 +11,50 @@
   "author": "g. nicholas d'andrea <gnidan@users.noreply.github.com>",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
   "license": "MIT",
-  "main": "lib/index.js",
+  "main": "dist/index.js",
   "directories": {
-    "lib": "lib",
+    "dist": "dist",
     "test": "__tests__"
   },
   "files": [
-    "lib"
+    "dist",
+    "types/schema.d.ts"
   ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/trufflesuite/truffle.git"
   },
   "scripts": {
+    "prepare": "yarn build",
+    "build": "./bin/build",
+    "start": "ts-node-dev -r tsconfig-paths/register ./bin/server",
+    "codegen": "gql2ts ./src/data/schema.graphql --namespace DataModel --output-file ./types/schema.d.ts --ignore-type-name-declaration",
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "devDependencies": {
+    "@types/express": "^4.16.0",
+    "@types/graphql": "^14.0.4",
+    "@types/jest": "^23.3.11",
+    "@types/node": "^10.12.18",
+    "gql2ts": "^1.10.1",
+    "jest": "^23.6.0",
+    "ts-jest": "^23.10.5",
+    "ts-node-dev": "^1.0.0-pre.32",
+    "tsconfig-paths": "^3.7.0",
+    "typescript": "^3.2.2"
+  },
+  "dependencies": {
+    "apollo-server-express": "^2.3.1",
+    "express": "^4.16.4",
+    "graphql": "^14.0.2",
+    "graphql-tools": "^4.0.3",
+    "module-alias": "^2.1.0",
+    "source-map-support": "^0.5.9"
+  },
+  "_moduleAliases": {
+    "truffle-db": "truffle-db/dist"
   }
 }
