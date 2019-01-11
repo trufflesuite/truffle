@@ -59,11 +59,9 @@ or equivalently in ES6 <sup>(node.js 8 or newer)</sup>:
 
 ### Browser Usage
 
-In your `head` element, include Web3 and Ethers.js and then include truffle-contract:
+In your `head` element, include truffle-contract:
 
 ```
-<script type="text/javascript" src="./path/to/web3.min.js"></script>
-<script type="text/javascript" src="./path/to/ethers.min.js"></script>
 <script type="text/javascript" src="./dist/truffle-contract.min.js"></script>
 ```
 
@@ -74,6 +72,9 @@ With this usage, `truffle-contract` will be available via the `TruffleContract` 
 ```
 var MyContract = TruffleContract(...);
 ```
+
+**Note**: Web3 and its dependencies are now bundled into truffle-contract
+v4.0.2 or higher.
 
 ### Full Example
 
