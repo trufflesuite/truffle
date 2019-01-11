@@ -43,7 +43,7 @@ const allVersions = {
   latestRelease: "0.5.2"
 };
 
-describe("LoadingStrategy", () => {
+describe("LoadingStrategy base class", () => {
   beforeEach(() => {
     instance = new LoadingStrategy();
   });

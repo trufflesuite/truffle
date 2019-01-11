@@ -2,17 +2,14 @@ const fs = require("fs");
 const assert = require("assert");
 const sinon = require("sinon");
 const { VersionRange } = require("../../../compilerSupplier/loadingStrategies");
+const instance = new VersionRange();
 const compilerFileNames = [
   "soljson-v0.4.22+commit.124ca40d.js",
   "soljson-v0.4.23+commit.1534a40d.js",
   "soljson-v0.4.11+commit.124234rd.js"
 ];
 
-describe("VersionRange", () => {
-  beforeEach(() => {
-    instance = new VersionRange();
-  });
-
+describe("VersionRange loading strategy", () => {
   describe("versionIsCached(version)", () => {
     beforeEach(() => {
       sinon.stub(fs, "readdirSync").returns(compilerFileNames);

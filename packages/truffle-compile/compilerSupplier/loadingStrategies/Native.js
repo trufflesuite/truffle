@@ -1,4 +1,5 @@
 const { execSync } = require("child_process");
+const ora = require("ora");
 const LoadingStrategy = require("./LoadingStrategy");
 
 class Native extends LoadingStrategy {
@@ -9,7 +10,7 @@ class Native extends LoadingStrategy {
     const allVersions = await this.getSolcVersions(this.config.versionsUrl);
     const fileName = this.getVersionUrlSegment(commitString, allVersions);
 
-    if (!fileName) throw this.errors("noVersion", version);
+    if (!fileName) throw new Error("No matching version found");
 
     const url = this.config.compilerUrlRoot + fileName;
     const spinner = ora({
@@ -26,13 +27,20 @@ class Native extends LoadingStrategy {
 
     const commit = this.getCommitFromVersion(versionString);
 
-    return this.getSolc(commit).then(solcjs => {
-      return {
-        compile: options => String(execSync(command, { input: options })),
-        version: () => versionString,
-        importsParser: solcjs
-      };
-    });
+    return this.getSolc(commit)
+      .then(solcjs => {
+        return {
+          compile: options => String(execSync(command, { input: options })),
+          version: () => versionString,
+          importsParser: solcjs
+        };
+      })
+      .catch(error => {
+        if (error.message === "No matching version found") {
+          throw this.errors("noVersion", versionString);
+        }
+        throw new Error(error);
+      });
   }
 
   validateAndGetSolcVersion() {
@@ -42,7 +50,6 @@ class Native extends LoadingStrategy {
     } catch (error) {
       throw this.errors("noNative", null, error);
     }
-
     return this.normalizeSolcVersion(version);
   }
 }
