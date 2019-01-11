@@ -5,8 +5,8 @@ const LoadingStrategy = require("./LoadingStrategy");
 
 class VersionRange extends LoadingStrategy {
   load(versionRange) {
-    const singleVersion = semver.valid(versionRange);
-    return singleVersion
+    const rangeIsSingleVersion = semver.valid(versionRange);
+    return rangeIsSingleVersion
       ? this.getSolcBySingleVersion(versionRange)
       : this.getSolcByVersionRange(versionRange);
   }
