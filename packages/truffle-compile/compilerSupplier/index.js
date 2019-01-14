@@ -44,25 +44,21 @@ class CompilerSupplier {
 
       if (useDocker) {
         strategy = new Docker(this.strategyOptions);
-        return resolve(await strategy.load(userSpecification));
-      }
-      if (useNative) {
+      } else if (useNative) {
         strategy = new Native(this.strategyOptions);
-        return resolve(await strategy.load(userSpecification));
-      }
-      if (useBundledSolc) {
+      } else if (useBundledSolc) {
         strategy = new Bundled(this.strategyOptions);
-        return resolve(await strategy.load(userSpecification));
-      }
-      if (useSpecifiedLocal) {
+      } else if (useSpecifiedLocal) {
         strategy = new Local(this.strategyOptions);
-        return resolve(await strategy.load(userSpecification));
-      }
-      if (isValidVersionRange) {
+      } else if (isValidVersionRange) {
         strategy = new VersionRange(this.strategyOptions);
-        return resolve(await strategy.load(userSpecification));
       }
-      reject(this.badInputError(userSpecification));
+
+      if (strategy) {
+        resolve(await strategy.load(userSpecification));
+      } else {
+        reject(this.badInputError(userSpecification));
+      }
     });
   }
 
