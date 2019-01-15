@@ -26,7 +26,6 @@ function getDeclarationsForTypes(contracts: ContractObject[], types: string[]): 
   return result;
 }
 
-//split this function in two
 export function getReferenceDeclarations(contracts: ContractObject[]): AstReferences {
   const types = [
     "EnumDefinition",
@@ -36,14 +35,18 @@ export function getReferenceDeclarations(contracts: ContractObject[]): AstRefere
   return getDeclarationsForTypes(contracts, types);
 }
 
-export function getAllocations(referenceDeclarations, contracts: AstDefinitions[]): StorageAllocations {
+//referenceDeclarations: all structs to be allocated
+//contracts: all contracts to be allocated
+//referenceContracts: any contracts you *don't* want to be allocated but need
+//anyway because they're inherited by something you do want allocated
+export function getAllocations(referenceDeclarations: AstReferences, contracts: AstReferences, referenceContracts: AstReferences): StorageAllocations {
   allocations: StorageAllocations = {};
   for(node of referenceDeclarations) {
     if(node.nodeType === "StructDefinition")
       allocations = allocateStruct(node, referenceDeclarations, allocations);
   }
   for(contract of contracts) {
-    allocations = allocateContract(contract, referenceDeclarations, allocations);
+    allocations = allocateContract(contract, referenceDeclarations, allocations, referenceContracts);
   }
   return allocations;
 }
@@ -57,18 +60,19 @@ export function getEventDefinitions(contracts: ContractObject[]): AstReferences 
 }
 
 export function allocateStruct(structDefinition: AstDefinition, referenceDeclarations: AstReferences, existingAllocations: StorageAllocations): StorageAllocations {
-  return allocateDefinitions(structDefinition, structDefinition.members, referenceDeclarations, existingAllocations);
+  return allocateMembers(structDefinition, structDefinition.members, referenceDeclarations, existingAllocations);
 }
 
-export function allocateDefinitions(parentNode: AstDefinition, definitions: AstDefinition[], referenceDeclarations: AstReferences, existingAllocations: StorageAllocations): StorageAllocations {
+export function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[], referenceDeclarations: AstReferences, existingAllocations: StorageAllocations, suppressSize: boolean = false): StorageAllocations {
   let offset = new BN(0);
   let index = DecodeUtils.EVM.WORD_SIZE - 1;
-  let allocations = {...existingAllocations}; //we'll be adding to this, so we better clone
 
   //don't allocate things that have already been allocated
   if(parentNode.id in allocations) {
     return allocations;
   }
+
+  let allocations = {...existingAllocations}; //otherwise, we'll be adding to this, so we better clone
 
   //otherwise, we need to allocate
   let memberAllocations: StorageMemberAllocations = {}
@@ -80,7 +84,7 @@ export function allocateDefinitions(parentNode: AstDefinition, definitions: AstD
     let size: StorageLength;
     [size, allocations] = storageSizeAndAllocation(node, referenceDeclarations, allocations);
 
-    if (size.words !== undefined || size.bytes < index + 1) {
+    if (isWordsLength(size) || size.bytes < index + 1) {
       //if it's sized in words, we need to start on a new slot;
       //if it's sized in bytes but there's not enough room, we also need a new slot
       index = DecodeUtils.EVM.WORD_SIZE - 1;
@@ -90,31 +94,31 @@ export function allocateDefinitions(parentNode: AstDefinition, definitions: AstD
   
     let range: Allocation.Range;
 
-    if(size.words !== undefined) {
+    if(isWordsLength(size)) {
       //words case
-      range.from.slot = <Slot>{offset: offset.clone()}; //start at the current slot...
+      range.from.slot = {offset: offset.clone()}; //start at the current slot...
       range.from.index = 0; //...at the beginning fo the word.
-      range.to.slot = <Slot>{offset: offset.add(size.words).subn(1)}; //end at the current slot plus # of words minus 1...
+      range.to.slot = {offset: offset.add(size.words).subn(1)}; //end at the current slot plus # of words minus 1...
       range.to.index = DecodeUtils.EVM.WORD_SIZE - 1; //...at the end of the word.
     }
     else {
       //bytes case
-      range.from.slot = <Slot>{offset: offset.clone()}; //start at the current slot...
-      range.to.slot = <Slot>{offset: offset.clone()}; //...and end in the current slot.
+      range.from.slot = {offset: offset.clone()}; //start at the current slot...
+      range.to.slot = {offset: offset.clone()}; //...and end in the current slot.
       range.to.index = index; //end at the current index...
       range.from.index = index - size.bytes; //...and start appropriately earlier in the slot.
     }
   
-    memberAllocations[node.id] = <ContractStateVariable>{
+    memberAllocations[node.id] = {
       definition: node,
-      pointer: <StoragePointer>{
+      pointer: {
         storage: range; //don't think we need to clone here...
       }
     };
   
     //finally, adjust the current position.
     //if it was sized in words, move down that many slots and reset position w/in slot
-    if(size.words !== undefined) {
+    if(isWordsLength(size)) {
       offset.iadd(size.words);
       index = DecodeUtils.EVM.WORD_SIZE - 1;
     }
@@ -129,54 +133,34 @@ export function allocateDefinitions(parentNode: AstDefinition, definitions: AstD
     }
   }
 
-  //finally, let's set up a pointer describing the overall structure itself
-  //(this is only really meaningful for structs, not contracts, but whatever)
-
-  //for this, we need to know, what's the last word used?  normally this is just offset,
-  //but it's possible we haven't used any of that word, in which case it's one lower
-  if(index === DecodeUtils.EVM.WORD_SIZE - 1) {
-    offset.isubn(1);
-  }
-  
-  //put it all together...
-  let wholePointer = <StoragePointer>{
-    storage: {
-      from: {
-        slot: {
-          offset: new BN(0)
-        },
-        index: 0
-      },
-      to: {
-        slot: {
-          offset: offset.clone()
-        },
-        index: DecodeUtils.EVM.WORD_SIZE - 1;
-      }
-    }
-  }
-
-  //stick in allocations...
-  allocations[parentNode.id] = <ContractStateVariable>{
+  //having made our allocation, let's add it to allocations!
+  allocations[parentNode.id] = {
     definition: parentNode,
-    pointer: wholePointer,
     members: memberAllocations
+  };
+
+  //finally, let's determine the overall size (unless suppressSize was passed)
+  //we do this assuming we're dealing with a struct, so the size is measured in words
+  //it's one plus the last word used, i.e. one plus the current word... unless the
+  //current word remains entirely unused, then it's just the current word
+  if(!suppressSize) {
+    allocations[parentNode.id].size = (index === DecodeUtils.EVM.WORD_SIZE - 1) ?
+      offset.clone() : offset.addn(1);
   }
 
   //...and we're done!
   return allocations;
 }
 
-function getStateVariables(contract: ContractObject): AstDefinition[] {
+function getStateVariables(contractNode: AstDefinition): AstDefinition[] {
   // process for state variables, filtering out constants
-  const contractNode = getContractNode(contract); //ARGH TODO
   return contractNode.nodes.filter( (node) =>
     node.nodeType === "VariableDeclaration" && node.stateVariable && !node.constant
   );
   //note, in the future, we will not filter out constants
 }
 
-export function allocateContract(contract: AstDefinition, contracts: ContractMapping, referenceDeclarations: AstReferences, existingAllocations: StorageAllocations): StorageAllocations {
+export function allocateContract(contract: AstDefinition, referenceDeclarations: AstReferences, existingAllocations: StorageAllocations, contracts: AstReferences): StorageAllocations {
 
   let allocations: StorageAllocations = {...existingAllocations};
 
@@ -186,8 +170,9 @@ export function allocateContract(contract: AstDefinition, contracts: ContractMap
   let linearizedBaseContractsFromBase = [...contract.linearizedBaseContracts].reverse();
 
   let vars = [].concat(...linearizedBaseContractsFromBase.map( (id) =>
-    getStateVariables(contracts[id]) //TODO fix this to use AstDefition, not ContractObject
+    getStateVariables(contracts[id])
   ));
 
-  return allocateDefinitions(contract, vars, referenceDeclarations, existingAllocations);
+  return allocateMembers(contract, vars, referenceDeclarations, existingAllocations, true); 
+    //size is not meaningful for contracts, so we pass suppressSize=true
 }

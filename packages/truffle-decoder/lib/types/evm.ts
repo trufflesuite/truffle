@@ -9,10 +9,9 @@ export interface EvmState {
 }
 
 export interface EvmInfo {
-  scopes: any;
   state: EvmState;
   mappingKeys?: any;
   referenceDeclarations?: AstReferences;
-  referenceVariables?: EvmVariableReferenceMapping;
-  variables?: EvmVariableReferenceMapping
+  storageAllocations?: StorageAllocations;
+  variables?: StorageMemberAllocations;
 }

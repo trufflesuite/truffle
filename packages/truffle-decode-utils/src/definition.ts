@@ -6,12 +6,21 @@ import BN from "bn.js";
 
 export namespace Definition {
 
-  export interface StorageLength = {
-    //use exactly one of these, please, not both
-    bytes?: number;
-    words?: BN;
+  export type StorageLength = {bytes: number} | {words: BN};
+
+  export function isWordsLength(size: StorageLength): size is {words: BN} {
+    return (<{words: BN}>size).words !== undefined;
+  }
+
+  //temporary HACK, to be removed in next PR (or soon, anyway)
+  export function storageLengthToBytes(size: StorageLength): number {
+    if(isWordsLength(size)) {
+      return size.words.muln(EVMUtils.WORD_SIZE).toNumber(); //HACK
     }
-  };
+    else {
+      return size.bytes;
+    }
+  }
 
   export function typeIdentifier(definition: AstDefinition): string {
     return definition.typeDescriptions.typeIdentifier;
@@ -68,80 +77,79 @@ export namespace Definition {
   //NOTE: This wrapper function is for use by the decoder ONLY, after allocation is done.
   //The allocator should (and does) instead use a direct call to storageSizeAndAllocate,
   //not to the wrapper, because it may need the allocations returned.
-  export function storageSize(definition: AstDefinition, referenceDeclarations?: AstReferences, referenceVariables?: EvmVariableReferenceMapping): StorageLength {
-    return storageSizeAndAllocate(definition, referenceDeclarations, referenceVariables)[0];
+  export function storageSize(definition: AstDefinition, referenceDeclarations?: AstReferences, allocations?: StorageAllocations): StorageLength {
+    return storageSizeAndAllocate(definition, referenceDeclarations, allocations)[0];
   }
 
   //first return value is the actual size.
   //second return value is resulting allocations, INCLUDING the ones passed in
-  export function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: AstReferences, referenceVariables?: EvmVariableReferenceMapping): [StorageLength, EvmVariableReferenceMapping] {
-    let allocations = referenceVariables;
+  export function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: AstReferences, existingAllocations?: StorageAllocations): [StorageLength, StorageAllocations] {
     switch (typeClass(definition)) {
       case "bool":
-        return [<StorageLength>{bytes: 1}, allocations];
+        return [{bytes: 1}, existingAllocations];
 
       case "address":
       case "contract":
-        return [<StorageLength>{bytes: 20}, allocations];
+        return [{bytes: 20}, existingAllocations];
 
       case "int":
       case "uint": {
-        return [<StorageLength>{bytes: specifiedSize(definition) || 32 }, allocations]; // default of 256 bits
+        return [{bytes: specifiedSize(definition) || 32 }, existingAllocations]; // default of 256 bits
         //(should 32 here be WORD_SIZE?  I thought so, but comparing with case
         //of fixed/ufixed makes the appropriate generalization less clear)
       }
 
       case "fixed":
       case "ufixed": {
-        return [<StorageLength>{bytes: specifiedSize(definition) || 16 }, allocations]; // default of 128 bits
+        return [{bytes: specifiedSize(definition) || 16 }, existingAllocations]; // default of 128 bits
       }
 
-      case "enum": { //TODO: use recorded size
+      case "enum": {
         const referenceId: string = definition.referencedDeclaration;
         const referenceDeclaration: AstDefinition = info.referenceDeclarations[referenceId];
         const numValues: number = referenceDeclaration.members.length;
-        return [<StorageLength>{bytes: Math.ceil(Math.log2(numValues) / 8)}, allocations];
+        return [{bytes: Math.ceil(Math.log2(numValues) / 8)}, existingAllocations];
       }
 
       case "bytes": {
         //this case is really two different cases!
         const staticSize: number = specifiedSize(definition);
         if(staticSize) {
-          return [<StorageLength>{bytes: staticSize}, allocations];
+          return [{bytes: staticSize}, existingAllocations];
         }
         else
         {
-          return [<StorageLength>{words: new BN(1)}, allocations];
+          return [{words: new BN(1)}, existingAllocations];
         }
       }
 
       case "string":
-        return [<StorageLength>{words: new BN(1)}, allocations];
+        return [{words: new BN(1)}, existingAllocations];
 
       case "mapping":
-        return [<StorageLength>{words: new BN(1)}, allocations];
+        return [{words: new BN(1)}, existingAllocations];
 
       case "function": {
         //this case is also really two different cases
         switch (visibility(definition)) {
           case "internal":
-            return [<StorageLength>{bytes: 8}, allocations];
+            return [{bytes: 8}, existingAllocations];
           case "external":
-            return [<StorageLength>{bytes: 24}, allocations];
+            return [{bytes: 24}, existingAllocations];
         }
       }
 
       case "array": {
         if(isDynamicArray(definition)) {
-          return [<StorageLength>{words: new BN(1)}, allocations];
+          return [{words: new BN(1)}, existingAllocations];
         }
         else {
           //static array case
           const length: string = definition.length || definition.typeName.length;
           const baseDefinition: AstDefinition = definition.baseType || definition.typeName.baseType;
-          const [baseSize, allocations] = storageSizeAndAllocate(baseDefinition, referenceDeclarations, referenceVariables);
-            //yes, this is shadowing "allocations" above; that's fine
+          const [baseSize, allocations] = storageSizeAndAllocate(baseDefinition, referenceDeclarations, existingAllocations);
           if(baseSize.bytes !== undefined) {
+            //bytes case
             const perWord: number = Math.floor(EVMUtils.WORD_SIZE / baseSize.bytes);
             //bn.js has no ceiling-division, so we'll do a floor-division and then
             //increment if not a multiple
@@ -150,10 +158,11 @@ export namespace Definition {
             if(!lengthBN.modn(perWord).isZero()) {
               numWords.iaddn(1); //increment if not multiple
             }
-            return [<StorageLength>{words: numWords}, allocations];
+            return [{words: numWords}, allocations];
           }
-          else { //words
-            return [<StorageLength>{words: baseSize.words.mul(new BN(length))}, allocations];
+          else {
+            //words case
+            return [{words: baseSize.words.mul(new BN(length))}, allocations];
           }
         }
       }
@@ -161,18 +170,17 @@ export namespace Definition {
       case "struct": {
         const referenceId: string = definition.referencedDeclaration;
         let allocation: StoragePointer = info.referenceVariables[referenceId]; //may be undefined!
+        let allocations: StorageAllocations;
         if(allocation === undefined) {
           //if we don't find an allocation, we'll have to do the allocation ourselves
-          allocations = allocateStruct(definition, referenceDeclarations, referenceVariables); //TODO
+          allocations = allocateStruct(definition, referenceDeclarations, existingAllocations);
           allocation = allocations[referenceId];
-          //note that we have altered allocations here
         }
-        //having found our allocation, the size is equal to the last allocated
-        //word, plus one
-        //(we assume the allocation uses "to" rather than "length", because
-        //that's how struct allocations work)
-        let length = allocation.pointer.storage.to.slot.offset.addn(1); //last allocated word, plus one
-        return [<StorageLength>{words: length}, allocations];
+        else {
+          allocations = existingAllocations;
+        }
+        //having found our allocation, we can just look up its size
+        return [allocation.size, allocations];
       }
     }
   }
