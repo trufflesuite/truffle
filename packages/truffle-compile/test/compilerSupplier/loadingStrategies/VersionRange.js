@@ -48,26 +48,6 @@ const allVersions = {
 };
 
 describe("VersionRange loading strategy", () => {
-  describe("load(versionRange)", () => {
-    beforeEach(() => {
-      sinon.stub(instance, "getSolcBySingleVersion");
-      sinon.stub(instance, "getSolcByVersionRange");
-    });
-    afterEach(() => {
-      instance.getSolcBySingleVersion.restore();
-      instance.getSolcByVersionRange.restore();
-    });
-
-    it("calls getSolcBySingleVersion when a single version is specified", async () => {
-      await instance.load("0.5.1");
-      assert(instance.getSolcBySingleVersion.called);
-    });
-    it("calls getSolcByVersionRange when a single version is specified", async () => {
-      await instance.load("^0.5.1");
-      assert(instance.getSolcByVersionRange.called);
-    });
-  });
-
   describe("async getSolcByCommit(commit)", () => {
     describe("when the file is cached", () => {
       beforeEach(() => {

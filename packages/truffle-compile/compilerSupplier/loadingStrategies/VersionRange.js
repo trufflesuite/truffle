@@ -17,10 +17,7 @@ class VersionRange extends LoadingStrategy {
   }
 
   async load(versionRange) {
-    const rangeIsSingleVersion = semver.valid(versionRange);
-    return rangeIsSingleVersion
-      ? this.getSolcBySingleVersion(versionRange)
-      : this.getSolcByVersionRange(versionRange);
+    this.getSolcByVersionRange(versionRange);
   }
 
   fileIsCached(fileName) {
@@ -91,14 +88,14 @@ class VersionRange extends LoadingStrategy {
     }, "-v0.0.0+commit");
   }
 
-  async getFromCacheOrByUrl(version) {
+  async getSolcFromCacheOrUrl(version) {
     let allVersions;
     try {
       allVersions = await this.getSolcVersions(this.config.versionsUrl);
     } catch (error) {
       throw this.errors("noRequest", version, error);
     }
-    const fileName = this.getVersionUrlSegment(version, allVersions);
+    const fileName = this.getSolcVersionFileName(version, allVersions);
 
     if (!fileName) throw this.errors("noVersion", version);
 
@@ -126,7 +123,7 @@ class VersionRange extends LoadingStrategy {
     if (solcFileName) return this.getCachedSolcByFileName(solcFileName);
 
     const allVersions = await this.getSolcVersions(this.config.versionsUrl);
-    const fileName = this.getVersionUrlSegment(commit, allVersions);
+    const fileName = this.getSolcVersionFileName(commit, allVersions);
 
     if (!fileName) throw new Error("No matching version found");
 
@@ -137,12 +134,6 @@ class VersionRange extends LoadingStrategy {
     }).start();
 
     return this.getSolcByUrlAndCache(url, fileName, spinner);
-  }
-
-  getSolcBySingleVersion(version) {
-    if (this.versionIsCached(version))
-      return this.getCachedSolcByVersionRange(version);
-    return this.getFromCacheOrByUrl(version);
   }
 
   async getSolcByUrlAndCache(url, fileName, spinner) {
@@ -158,8 +149,13 @@ class VersionRange extends LoadingStrategy {
   }
 
   async getSolcByVersionRange(versionRange) {
+    const rangeIsSingleVersion = semver.valid(versionRange);
+    if (rangeIsSingleVersion && this.versionIsCached(versionRange)) {
+      return this.getCachedSolcByVersionRange(versionRange);
+    }
+
     try {
-      return await this.getFromCacheOrByUrl(versionRange);
+      return await this.getSolcFromCacheOrUrl(versionRange);
     } catch (error) {
       if (error.message.includes("Failed to complete request")) {
         return this.getSatisfyingVersionFromCache(versionRange);
@@ -185,14 +181,7 @@ class VersionRange extends LoadingStrategy {
       });
   }
 
-  /**
-   * Returns terminal url segment for `version` from the versions object
-   * generated  by `getSolcVersions`.
-   * @param  {String} version         ex: "0.4.1", "0.4.16-nightly.2017.8.9+commit.81887bc7"
-   * @param  {Object} allVersions     (see `getSolcVersions`)
-   * @return {String} url             ex: "soljson-v0.4.21+commit.dfe3193c.js"
-   */
-  getVersionUrlSegment(version, allVersions) {
+  getSolcVersionFileName(version, allVersions) {
     if (allVersions.releases[version]) return allVersions.releases[version];
 
     const isPrerelease =
