@@ -60,6 +60,11 @@ class LoadingStrategy {
     return new Error(kinds[kind]);
   }
 
+  fileIsCached(fileName) {
+    const file = this.resolveCache(fileName);
+    return fs.existsSync(file);
+  }
+
   load(userSpecification) {
     throw new Error(
       "Abstract method LoadingStrategy.load is not implemented for this strategy."

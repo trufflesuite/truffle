@@ -10,9 +10,11 @@ class Docker extends LoadingStrategy {
     const command =
       "docker run -i ethereum/solc:" + this.config.version + " --standard-json";
 
-    const commit = VersionRange.getCommitFromVersion(versionString);
+    const versionRange = new VersionRange();
+    const commit = versionRange.getCommitFromVersion(versionString);
 
-    return VersionRange.getSolcByCommit(commit)
+    return versionRange
+      .getSolcByCommit(commit)
       .then(solcjs => {
         return {
           compile: options => String(execSync(command, { input: options })),
@@ -45,7 +47,6 @@ class Docker extends LoadingStrategy {
       const cachePath = this.resolveCache(fileName);
       return fs.readFileSync(cachePath, "utf-8");
     }
-
     // Image specified
     if (!image) throw this.errors("noString", image);
 
@@ -67,7 +68,7 @@ class Docker extends LoadingStrategy {
     const version = execSync(
       "docker run ethereum/solc:" + image + " --version"
     );
-    const normalized = VersionRange.normalizeSolcVersion(version);
+    const normalized = new VersionRange().normalizeSolcVersion(version);
     this.addFileToCache(normalized, fileName);
     return normalized;
   }

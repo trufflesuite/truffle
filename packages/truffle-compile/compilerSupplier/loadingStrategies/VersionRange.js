@@ -20,11 +20,6 @@ class VersionRange extends LoadingStrategy {
     this.getSolcByVersionRange(versionRange);
   }
 
-  fileIsCached(fileName) {
-    const file = this.resolveCache(fileName);
-    return fs.existsSync(file);
-  }
-
   findNewestValidVersion(version, allVersions) {
     if (!semver.validRange(version)) return null;
     const satisfyingVersions = Object.keys(allVersions.releases)
@@ -88,29 +83,6 @@ class VersionRange extends LoadingStrategy {
     }, "-v0.0.0+commit");
   }
 
-  async getSolcFromCacheOrUrl(version) {
-    let allVersions;
-    try {
-      allVersions = await this.getSolcVersions(this.config.versionsUrl);
-    } catch (error) {
-      throw this.errors("noRequest", version, error);
-    }
-    const fileName = this.getSolcVersionFileName(version, allVersions);
-
-    if (!fileName) throw this.errors("noVersion", version);
-
-    if (this.fileIsCached(fileName))
-      return this.getCachedSolcByFileName(fileName);
-
-    const url = this.config.compilerUrlRoot + fileName;
-    const spinner = ora({
-      text: "Downloading compiler",
-      color: "red"
-    }).start();
-
-    return this.getSolcByUrlAndCache(url, fileName, spinner);
-  }
-
   getSatisfyingVersionFromCache(versionRange) {
     if (this.versionIsCached(versionRange)) {
       return this.getCachedSolcByVersionRange(versionRange);
@@ -164,6 +136,29 @@ class VersionRange extends LoadingStrategy {
     }
   }
 
+  async getSolcFromCacheOrUrl(version) {
+    let allVersions;
+    try {
+      allVersions = await this.getSolcVersions(this.config.versionsUrl);
+    } catch (error) {
+      throw this.errors("noRequest", version, error);
+    }
+    const fileName = this.getSolcVersionFileName(version, allVersions);
+
+    if (!fileName) throw this.errors("noVersion", version);
+
+    if (this.fileIsCached(fileName))
+      return this.getCachedSolcByFileName(fileName);
+
+    const url = this.config.compilerUrlRoot + fileName;
+    const spinner = ora({
+      text: "Downloading compiler",
+      color: "red"
+    }).start();
+
+    return this.getSolcByUrlAndCache(url, fileName, spinner);
+  }
+
   getSolcVersions() {
     const spinner = ora({
       text: "Fetching solc version list from solc-bin",
@@ -204,8 +199,8 @@ class VersionRange extends LoadingStrategy {
     return null;
   }
 
-  normalizeSolcVersion(version) {
-    version = String(version);
+  normalizeSolcVersion(input) {
+    const version = String(input);
     return version.split(":")[1].trim();
   }
 

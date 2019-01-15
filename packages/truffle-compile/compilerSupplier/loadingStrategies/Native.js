@@ -8,9 +8,10 @@ class Native extends LoadingStrategy {
     const versionString = this.validateAndGetSolcVersion();
     const command = "solc --standard-json";
 
-    const commit = VersionRange.getCommitFromVersion(versionString);
-
-    return VersionRange.getSolcByCommit(commit)
+    const versionRange = new VersionRange();
+    const commit = versionRange.getCommitFromVersion(versionString);
+    return versionRange
+      .getSolcByCommit(commit)
       .then(solcjs => {
         return {
           compile: options => String(execSync(command, { input: options })),
@@ -33,7 +34,7 @@ class Native extends LoadingStrategy {
     } catch (error) {
       throw this.errors("noNative", null, error);
     }
-    return VersionRange.normalizeSolcVersion(version);
+    return new VersionRange().normalizeSolcVersion(version);
   }
 }
 
