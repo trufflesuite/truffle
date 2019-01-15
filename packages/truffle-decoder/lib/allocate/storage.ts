@@ -176,3 +176,108 @@ export function allocateContract(contract: AstDefinition, referenceDeclarations:
   return allocateMembers(contract, vars, referenceDeclarations, existingAllocations, true); 
     //size is not meaningful for contracts, so we pass suppressSize=true
 }
+
+
+//first return value is the actual size.
+//second return value is resulting allocations, INCLUDING the ones passed in
+export function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: AstReferences, existingAllocations?: StorageAllocations): [StorageLength, StorageAllocations] {
+  switch (typeClass(definition)) {
+    case "bool":
+      return [{bytes: 1}, existingAllocations];
+
+    case "address":
+    case "contract":
+      return [{bytes: 20}, existingAllocations];
+
+    case "int":
+    case "uint": {
+      return [{bytes: specifiedSize(definition) || 32 }, existingAllocations]; // default of 256 bits
+      //(should 32 here be WORD_SIZE?  I thought so, but comparing with case
+      //of fixed/ufixed makes the appropriate generalization less clear)
+    }
+
+    case "fixed":
+    case "ufixed": {
+      return [{bytes: specifiedSize(definition) || 16 }, existingAllocations]; // default of 128 bits
+    }
+
+    case "enum": {
+      const referenceId: string = definition.referencedDeclaration;
+      const referenceDeclaration: AstDefinition = info.referenceDeclarations[referenceId];
+      const numValues: number = referenceDeclaration.members.length;
+      return [{bytes: Math.ceil(Math.log2(numValues) / 8)}, existingAllocations];
+    }
+
+    case "bytes": {
+      //this case is really two different cases!
+      const staticSize: number = specifiedSize(definition);
+      if(staticSize) {
+        return [{bytes: staticSize}, existingAllocations];
+      }
+      else
+      {
+        return [{words: new BN(1)}, existingAllocations];
+      }
+    }
+
+    case "string":
+      return [{words: new BN(1)}, existingAllocations];
+
+    case "mapping":
+      return [{words: new BN(1)}, existingAllocations];
+
+    case "function": {
+      //this case is also really two different cases
+      switch (visibility(definition)) {
+        case "internal":
+          return [{bytes: 8}, existingAllocations];
+        case "external":
+          return [{bytes: 24}, existingAllocations];
+      }
+    }
+
+    case "array": {
+      if(isDynamicArray(definition)) {
+        return [{words: new BN(1)}, existingAllocations];
+      }
+      else {
+        //static array case
+        const length: string = definition.length || definition.typeName.length;
+        const baseDefinition: AstDefinition = definition.baseType || definition.typeName.baseType;
+        const [baseSize, allocations] = storageSizeAndAllocate(baseDefinition, referenceDeclarations, existingAllocations);
+        if(baseSize.bytes !== undefined) {
+          //bytes case
+          const perWord: number = Math.floor(EVMUtils.WORD_SIZE / baseSize.bytes);
+          //bn.js has no ceiling-division, so we'll do a floor-division and then
+          //increment if not a multiple
+          const lengthBN: BN = new BN(length);
+          let numWords: BN = lengthBN.divn(perWord); //floor
+          if(!lengthBN.modn(perWord).isZero()) {
+            numWords.iaddn(1); //increment if not multiple
+          }
+          return [{words: numWords}, allocations];
+        }
+        else {
+          //words case
+          return [{words: baseSize.words.mul(new BN(length))}, allocations];
+        }
+      }
+    }
+
+    case "struct": {
+      const referenceId: string = definition.referencedDeclaration;
+      let allocation: StoragePointer = info.referenceVariables[referenceId]; //may be undefined!
+      let allocations: StorageAllocations;
+      if(allocation === undefined) {
+        //if we don't find an allocation, we'll have to do the allocation ourselves
+        allocations = allocateStruct(definition, referenceDeclarations, existingAllocations);
+        allocation = allocations[referenceId];
+      }
+      else {
+        allocations = existingAllocations;
+      }
+      //having found our allocation, we can just look up its size
+      return [allocation.size, allocations];
+    }
+  }
+}

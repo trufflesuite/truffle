@@ -12,13 +12,6 @@ import { EventLog, Log } from "web3/types";
 import { Provider } from "web3/providers";
 import abiDecoder from "abi-decoder";
 
-export interface ContractStateVariable {
-  isChildVariable: boolean;
-  definition: AstDefinition;
-  pointer?: StoragePointer;
-  members?: EvmVariableReferenceMapping;
-}
-
 //holds a collection of storage allocations for structs and contracts, indexed
 //by the ID of the struct or contract
 export interface StorageAllocations {
@@ -45,10 +38,6 @@ export interface StorageMemberAllocations {
 export interface StorageMemberAllocation {
   definition: AstDefinition;
   pointer: StoragePointer;
-}
-
-export interface EvmVariableReferenceMapping {
-  [nodeId: number]: ContractStateVariable
 }
 
 export interface EvmMapping {
