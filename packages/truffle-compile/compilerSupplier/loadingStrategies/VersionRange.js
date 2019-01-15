@@ -16,7 +16,7 @@ class VersionRange extends LoadingStrategy {
     return wrapped;
   }
 
-  load(versionRange) {
+  async load(versionRange) {
     const rangeIsSingleVersion = semver.valid(versionRange);
     return rangeIsSingleVersion
       ? this.getSolcBySingleVersion(versionRange)

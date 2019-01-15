@@ -58,12 +58,12 @@ describe("VersionRange loading strategy", () => {
       instance.getSolcByVersionRange.restore();
     });
 
-    it("calls getSolcBySingleVersion when a single version is specified", () => {
-      instance.load("0.5.1");
+    it("calls getSolcBySingleVersion when a single version is specified", async () => {
+      await instance.load("0.5.1");
       assert(instance.getSolcBySingleVersion.called);
     });
-    it("calls getSolcByVersionRange when a single version is specified", () => {
-      instance.load("^0.5.1");
+    it("calls getSolcByVersionRange when a single version is specified", async () => {
+      await instance.load("^0.5.1");
       assert(instance.getSolcByVersionRange.called);
     });
   });
