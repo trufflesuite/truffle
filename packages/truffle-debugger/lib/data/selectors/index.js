@@ -98,22 +98,24 @@ const data = createSelectorTree({
        * data.views.scopes.inlined (namespace)
        */
       inlined: {
-      /**
-       * data.views.scopes.inlined (selector)
-       * see data.info.scopes for how this differs from the raw version
-       */
+        /**
+         * data.views.scopes.inlined (selector)
+         * see data.info.scopes for how this differs from the raw version
+         */
         _: createLeaf(["/info/scopes", "./raw"], (scopes, inlined) =>
-          Object.assign({}, ...Object.entries(inlined)
-            .map(([id, info]) => {
+          Object.assign(
+            {},
+            ...Object.entries(inlined).map(([id, info]) => {
               let newInfo = { ...info };
               newInfo.variables = scopes[id].variables;
-              return {[id]: newInfo}
-            }))
+              return { [id]: newInfo };
+            })
+          )
         ),
 
-      /**
-       * data.views.scopes.inlined.raw
-       */
+        /**
+         * data.views.scopes.inlined.raw
+         */
         raw: createLeaf(
           ["/info/scopes/raw", solidity.info.sources],
 
@@ -141,123 +143,59 @@ const data = createSelectorTree({
      * selector returns (ast node definition, data reference) => Promise<value>
      */
     decoder: createLeaf(
-      ["/views/scopes/inlined", "/next/state", "/proc/mappingKeys",
-        "/views/allocations/forDecoder"],
+      [
+        "/views/referenceDeclarations",
+        "/next/state",
+        "/proc/mappingKeys",
+        "/views/allocations/storage"
+      ],
 
-      (scopes, state, mappingKeys, allocations) =>
-        (definition, ref) =>
-          forEvmState(definition, ref, {
-            scopes,
-            state,
-            mappingKeys,
-            referenceVariables: allocations
-          })
+      (scopes, state, mappingKeys, storageAllocations) => (definition, ref) =>
+        forEvmState(definition, ref, {
+          referenceDeclarations,
+          state,
+          mappingKeys,
+          storageAllocations
+        })
     ),
 
     /*
      * data.views.userDefinedTypes
      */
     userDefinedTypes: {
-
       /*
-       * data.views.userDefinedTypes.containers (namespace)
+       * data.views.userDefinedTypes.contracts
+       * restrict to contracts only, and get their definitions
        */
-      containers: {
-        /*
-         * data.views.userDefinedTypes.containers (selector)
-         * restrict to the user defined types that contain variables, i.e.,
-         * structs and contracts
-         */
-        _: createLeaf(["/info/userDefinedTypes", "/info/scopes"],
-          (typeIds, scopes) => typeIds
-            .filter((id) => scopes[id].variables !== undefined)),
-
-        /*
-         * data.views.userDefinedTypes.containers.ordered
-         * orders the structs and contracts to always put types-referred-to
-         * before the types that refer to them
-         */
-        ordered: createLeaf(["./_", "/views/scopes/inlined"],
-          (types, scopes) => {
-            //note: I'm using a pretty naive topological sorting algorithm here;
-            //it's probably not the best speedwise.  I was going to use Kahn's
-            //algorithm, but honestly, for that to work like it should, you
-            //basically need to make an explicit graph structure; for the sake
-            //of simplicity, I'm not going to do that.  If performance really
-            //becomes a problem, we can go back and address this.  (How many
-            //different types of structs are people really going to define,
-            //anyway? (file under: comments I am going to regret making))
-            let typesLeft = types;
-            let order = [];
-            while(typesLeft.length > 0)
-            {
-              //get all remaining types which are referred to by another
-              //remaining type
-              let children = [].concat(...typesLeft
-                .map(id => scopes[id].variables
-                  .map(variable =>
-                    scopes[variable.id].definition
-                     .typeName.referencedDeclaration)));
-              let notChildren = typesLeft.filter(id => !children.includes(id));
-              //because we're processing things in order of parents first, then
-              //children, we're going to *prepend* the elements we found, so
-              //that ultimately the children end up first
-              order = notChildren.concat(order);
-              typesLeft = typesLeft.filter(id => !notChildren.includes(id));
-            }
-            return order;
-          }
-        )
-      }
+      contracts: createLeaf(
+        ["/info/userDefinedTypes", "/info/scopes"],
+        (typeIds, scopes) =>
+          typeIds
+            .map(id => scopes[id].definition)
+            .filter(node => node.nodeType === "ContractDefinition")
+      )
     },
 
     /*
-     * data.views.allocations (namespace)
+     * data.views.referenceDeclarations
+     */
+    referenceDeclarations: createLeaf(
+      ["./scopes/inlined", "./userDefinedTypes"],
+      (scopes, userDefinedTypes) =>
+        userDefinedTypes.map(id => scopes[id].definition)
+    ),
+
+    /*
+     * data.views.allocations
      */
     allocations: {
-
       /*
-       * data.views.allocations (selector)
+       * data.views.allocations.storage
        */
-      _: createLeaf(["../userDefinedTypes/containers/ordered",
-        "/views/scopes/inlined"], (types, scopes) => {
-          let allocations = {};
-          debug("types %o", types);
-          for(let id of types) {
-            debug("in the allocation loop");
-            debug("id %d", id);
-            let variables = scopes[id].variables;
-            let allocation = TruffleDecodeUtils.Allocation.allocateDeclarations(
-              variables, scopes, allocations);
-            allocations[id] = allocation;
-          }
-          return allocations;
-        }
-      ),
-
-      /*
-       * data.views.allocations.forDecoder
-       * for compatibility with the decoder, the pointer to member m of struct
-       * s (where both these are AST IDs) will be given as
-       * (yield select(...))[s].members[m].pointer
-       * this just takes allocations and formats it as above
-       * NOTE: allocations are not yet formatted as a pointer, so in addition
-       * to the above, it also has to reformat the allocation into a pointer
-       * by setting pointer = {storage : allocation}
-       */
-      forDecoder: createLeaf(["./_"], (allocations) =>
-        Object.assign({},
-          ...Object.entries(allocations).map(([id, allocation]) => ({
-            [id]: {members: 
-              Object.assign({},
-                ...Object.entries(allocation.children)
-                  .map(([memberId, allocation]) => ({
-                    [memberId]: {pointer: {storage: allocation}}
-                  }))
-              )
-            }
-          }))
-        )
+      storage: createLeaf(
+        ["../userDefinedTypes/contracts", "../referenceDeclarations"],
+        (contracts, referenceDeclarations) =>
+          getStorageAllocations(referenceDeclarations, contracts)
       )
     }
   },
@@ -278,13 +216,16 @@ const data = createSelectorTree({
        * But, since it's replacing the old data.info.scopes (which is now
        * data.info.scopes.raw), I didn't want to move it.
        */
-      _: createLeaf(["./raw", "/views/scopes/inlined/raw"],
-        (scopes, inlined) => Object.assign({}, ...Object.entries(scopes)
-          .map(([id, scope]) => {
+      _: createLeaf(["./raw", "/views/scopes/inlined/raw"], (scopes, inlined) =>
+        Object.assign(
+          {},
+          ...Object.entries(scopes).map(([id, scope]) => {
             let definition = inlined[id].definition;
-            if(definition.nodeType !== "ContractDefinition"
-              || scope.variables === undefined) {
-                return {[id]: scope};
+            if (
+              definition.nodeType !== "ContractDefinition" ||
+              scope.variables === undefined
+            ) {
+              return { [id]: scope };
             }
             //if we've reached this point, we should be dealing with a
             //contract, and specifically a contract -- not an interface or
@@ -294,16 +235,21 @@ const data = createSelectorTree({
             //note that Solidity gives us the linearization in order from most
             //derived to most base, but we want most base to most derived;
             //annoyingly, reverse() is in-place, so we clone with slice() first
-            let linearizedBaseContractsFromBase =
-              definition.linearizedBaseContracts.slice().reverse();
+            let linearizedBaseContractsFromBase = definition.linearizedBaseContracts
+              .slice()
+              .reverse();
             //now, we put it all together and also filter out constants
-            newScope.variables = [].concat(...linearizedBaseContractsFromBase
-              .map( (contractId) => scopes[contractId].variables ))
-              .filter( (variable) =>
-                !inlined[variable.id].definition.constant);
-            return {[id]: newScope};
-          }))
-        ),
+            newScope.variables = []
+              .concat(
+                ...linearizedBaseContractsFromBase.map(
+                  contractId => scopes[contractId].variables
+                )
+              )
+              .filter(variable => !inlined[variable.id].definition.constant);
+            return { [id]: newScope };
+          })
+        )
+      ),
 
       /*
        * data.info.scopes.raw
@@ -314,8 +260,10 @@ const data = createSelectorTree({
     /**
      * data.info.userDefinedTypes
      */
-    userDefinedTypes: createLeaf(["/state"], state => state.info.userDefinedTypes)
-
+    userDefinedTypes: createLeaf(
+      ["/state"],
+      state => state.info.userDefinedTypes
+    )
   },
 
   /**

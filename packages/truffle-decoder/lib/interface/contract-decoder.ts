@@ -160,7 +160,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   public async init(): Promise<void> {
-    this.referenceDeclarations = references.getReferenceDeclarations([this.contract, ...this.inheritedContracts]);
+    this.referenceDeclarations = references.getReferenceDeclarations([this.contractNode, ...this.contractNodes]);
 
     this.eventDefinitions = references.getEventDefinitions([this.contract, ...this.inheritedContracts]);
     const ids = Object.keys(this.eventDefinitions);
@@ -170,7 +170,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       this.eventDefinitionIdsByName[this.eventDefinitions[id].name] = id;
     }
 
-    this.storageAllocations = references.getAllocations(this.referenceDeclarations, {this.contractNode.id: this.contractNode}, this.contractNodes);
+    this.storageAllocations = references.getStorageAllocations(this.referenceDeclarations, {this.contractNode.id: this.contractNode});
     this.stateVariableReferences = this.storageAllocations[this.contractNode.id].members;
   }
 

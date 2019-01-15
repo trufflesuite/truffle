@@ -7,16 +7,14 @@ import cloneDeep from "lodash.clonedeep";
 import * as DecodeUtils from "truffle-decode-utils";
 import BN from "bn.js";
 
-function getDeclarationsForTypes(contracts: ContractObject[], types: string[]): AstReferences {
+function getDeclarationsForTypes(contracts: AstDefinition[], types: string[]): AstReferences {
   let result: AstReferences = {};
 
   for (let i = 0; i < contracts.length; i++) {
     const contract = contracts[i];
-    const contractNode = getContractNode(contract);
-    if (contractNode) {
-      for (let k = 0; k < contractNode.nodes.length; k++) {
-        const node = contractNode.nodes[k];
-        if (types.indexOf(node.nodeType) >= 0) {
+    if (contract) {
+      for (const node of contract.nodes) {
+        if (types.includes(node.nodeType)) {
           result[node.id] = node;
         }
       }
@@ -26,27 +24,25 @@ function getDeclarationsForTypes(contracts: ContractObject[], types: string[]): 
   return result;
 }
 
-export function getReferenceDeclarations(contracts: ContractObject[]): AstReferences {
+export function getReferenceDeclarations(contracts: AstDefinition[]): AstReferences {
   const types = [
     "EnumDefinition",
-    "StructDefinition"
+    "StructDefinition",
   ];
 
-  return getDeclarationsForTypes(contracts, types);
+  return [...getDeclarationsForTypes(contracts, types), ...contracts];
 }
 
-//referenceDeclarations: all structs to be allocated
-//contracts: all contracts to be allocated
-//referenceContracts: any contracts you *don't* want to be allocated but need
-//anyway because they're inherited by something you do want allocated
-export function getAllocations(referenceDeclarations: AstReferences, contracts: AstReferences, referenceContracts: AstReferences): StorageAllocations {
+//contracts contains only the contracts to be allocated; any base classes not
+//being allocated should just be in referenceDeclarations
+export function getStorageAllocations(referenceDeclarations: AstReferences, contracts: AstReferences): StorageAllocations {
   allocations: StorageAllocations = {};
   for(node of referenceDeclarations) {
     if(node.nodeType === "StructDefinition")
       allocations = allocateStruct(node, referenceDeclarations, allocations);
   }
   for(contract of contracts) {
-    allocations = allocateContract(contract, referenceDeclarations, allocations, referenceContracts);
+    allocations = allocateContract(contract, referenceDeclarations, allocations);
   }
   return allocations;
 }
@@ -160,7 +156,7 @@ function getStateVariables(contractNode: AstDefinition): AstDefinition[] {
   //note, in the future, we will not filter out constants
 }
 
-export function allocateContract(contract: AstDefinition, referenceDeclarations: AstReferences, existingAllocations: StorageAllocations, contracts: AstReferences): StorageAllocations {
+export function allocateContract(contract: AstDefinition, referenceDeclarations: AstReferences, existingAllocations: StorageAllocations): StorageAllocations {
 
   let allocations: StorageAllocations = {...existingAllocations};
 
@@ -170,7 +166,7 @@ export function allocateContract(contract: AstDefinition, referenceDeclarations:
   let linearizedBaseContractsFromBase = [...contract.linearizedBaseContracts].reverse();
 
   let vars = [].concat(...linearizedBaseContractsFromBase.map( (id) =>
-    getStateVariables(contracts[id])
+    getStateVariables(referenceDeclarations[id])
   ));
 
   return allocateMembers(contract, vars, referenceDeclarations, existingAllocations, true); 

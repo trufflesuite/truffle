@@ -25,7 +25,7 @@ function* tickSaga() {
   let { tree, id: treeId, node, pointer } = yield select(data.views.ast);
 
   let decode = yield select(data.views.decoder);
-  let allocations = yield select(data.views.allocations);
+  let allocations = yield select(data.views.allocations.storage);
   let currentAssignments = yield select(data.proc.assignments);
   let currentDepth = yield select(data.current.functionDepth);
   let address = yield select(data.current.address); //may be undefined
@@ -88,14 +88,13 @@ function* tickSaga() {
       break;
 
     case "ContractDefinition":
-
       let allocation = allocations[node.id];
 
       debug("Contract definition case");
       debug("allocations %O", allocations);
       debug("allocation %O", allocation);
       assignments = { byId: {} };
-      for (let id in allocation.children) {
+      for (let id in allocation.members) {
         id = Number(id); //not sure why we're getting them as strings, but...
         let idObj;
         if (address !== undefined) {
@@ -110,7 +109,9 @@ function* tickSaga() {
           id: fullId,
           ref: {
             ...((currentAssignments.byId[fullId] || {}).ref || {}),
-            storage: allocation.children[id]
+            storage: allocation.members[id].pointer.storage
+            //NOTE: once constants are allowed, we will also have to add
+            //the analogous thing for literal
           }
         };
         assignments.byId[fullId] = assignment;
