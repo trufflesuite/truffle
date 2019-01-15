@@ -1,4 +1,3 @@
-const solc = require("solc");
 const LoadingStrategy = require("./LoadingStrategy");
 
 class Bundled extends LoadingStrategy {
@@ -8,7 +7,7 @@ class Bundled extends LoadingStrategy {
 
   getBundledSolc() {
     this.removeListener();
-    return solc;
+    return require("solc");
   }
 }
 

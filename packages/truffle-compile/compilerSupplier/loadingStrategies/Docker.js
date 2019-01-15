@@ -2,40 +2,30 @@ const request = require("request-promise");
 const fs = require("fs");
 const { execSync } = require("child_process");
 const LoadingStrategy = require("./LoadingStrategy");
+const VersionRange = require("./VersionRange");
 
 class Docker extends LoadingStrategy {
-  async getSolc(commitString) {
-    const solcFileName = this.getCachedSolcFileName(commitString);
-    if (solcFileName) return this.getCachedSolcByFileName(solcFileName);
-
-    const allVersions = await this.getSolcVersions(this.config.versionsUrl);
-    const fileName = this.getVersionUrlSegment(commitString, allVersions);
-
-    if (!fileName) throw this.errors("noVersion", version);
-
-    const url = this.config.compilerUrlRoot + fileName;
-    const spinner = ora({
-      text: "Downloading compiler",
-      color: "red"
-    }).start();
-
-    return this.getSolcByUrlAndCache(url, fileName, spinner);
-  }
-
   load() {
     const versionString = this.validateAndGetSolcVersion();
     const command =
       "docker run -i ethereum/solc:" + this.config.version + " --standard-json";
 
-    const commit = this.getCommitFromVersion(versionString);
+    const commit = VersionRange.getCommitFromVersion(versionString);
 
-    return this.getSolc(commit).then(solcjs => {
-      return {
-        compile: options => String(execSync(command, { input: options })),
-        version: () => versionString,
-        importsParser: solcjs
-      };
-    });
+    return VersionRange.getSolcByCommit(commit)
+      .then(solcjs => {
+        return {
+          compile: options => String(execSync(command, { input: options })),
+          version: () => versionString,
+          importsParser: solcjs
+        };
+      })
+      .catch(error => {
+        if (error.message === "No matching version found") {
+          throw this.errors("noVersion", versionString);
+        }
+        throw new Error(error);
+      });
   }
 
   getDockerTags() {
