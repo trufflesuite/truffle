@@ -171,13 +171,8 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
         : definition.referencedDeclaration;
 
       // seese's way -- now the only way!
-      // however, there is still *one* difference -- the debugger
-      // uses scopes instead of referenceDeclarations, and they work slightly
-      // differently
 
-      const type = (info.referenceDeclarations)
-        ? info.referenceDeclarations[referencedDeclaration].name
-        : info.scopes[referencedDeclaration].definition.name;
+      const type = info.referenceDeclarations[referencedDeclaration].name;
 
       let result: EvmStruct = {
         name: definition.name,
@@ -185,9 +180,8 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
         members: {}
       };
 
-      const members: DecodeUtils.AstDefinition[] = (info.referenceDeclarations)
-        ? info.referenceDeclarations[referencedDeclaration].members
-        : info.scopes[referencedDeclaration].definition.members;
+      const members: DecodeUtils.AstDefinition[] =
+        info.referenceDeclarations[referencedDeclaration].members;
 
       const referenceVariable = info.referenceVariables[referencedDeclaration];
       for (let i = 0; i < members.length; i++) {

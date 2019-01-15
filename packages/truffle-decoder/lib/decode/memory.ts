@@ -66,7 +66,7 @@ export default async function decodeMemoryReference(definition: DecodeUtils.AstD
         ));
 
     case "struct":
-      const { scopes } = info;
+      const { referenceDelcarations } = info;
 
       // Declaration reference usually appears in `typeName`, but for
       // { nodeType: "FunctionCall", kind: "structConstructorCall" }, this
@@ -75,10 +75,10 @@ export default async function decodeMemoryReference(definition: DecodeUtils.AstD
         ? definition.typeName.referencedDeclaration
         : definition.expression.referencedDeclaration;
 
-      let variables = (scopes[referencedDeclaration] || {}).variables;
+      let members = referenceDeclarations[referencedDeclaration].members;
 
       const decodeMember = async ({name, id}: any, i: number) => {
-        let memberDefinition = scopes[id].definition;
+        let memberDefinition = referenceDeclarations[id];
         let memberPointer: MemoryPointer = {
           memory: {
             start: rawValueNumber + i * DecodeUtils.EVM.WORD_SIZE,
@@ -113,7 +113,7 @@ export default async function decodeMemoryReference(definition: DecodeUtils.AstD
         };
       }
 
-      const decodings = (variables || []).map(decodeMember);
+      const decodings = members.map(decodeMember);
 
       return Object.assign({}, ...await Promise.all(decodings));
 
