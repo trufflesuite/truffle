@@ -8,11 +8,11 @@
     "sourceType": "module"
   },
   "rules": {
-    "no-unused-vars": 2,
-    "quote-props": ["error", "consistent"],
-    "semi": [2, "always"],
-    "no-mixed-operators": 1,
-    "no-tabs": 1,
-    "no-useless-escape": 1
+    "no-unused-vars": "warn",
+    "quote-props": [ "error", "consistent" ],
+    "semi": [ "error", "always" ],
+    "no-mixed-operators": "warn",
+    "no-tabs": "warn",
+    "no-useless-escape": "warn"
   }
 }
