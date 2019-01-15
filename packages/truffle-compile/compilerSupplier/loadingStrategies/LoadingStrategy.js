@@ -174,6 +174,12 @@ class LoadingStrategy {
     return null;
   }
 
+  load(userSpecification) {
+    throw new Error(
+      "Abstract method LoadingStrategy.load is not implemented for this strategy."
+    );
+  }
+
   normalizeSolcVersion(version) {
     version = String(version);
     return version.split(":")[1].trim();
