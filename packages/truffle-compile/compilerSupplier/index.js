@@ -16,7 +16,10 @@ class CompilerSupplier {
     _config = _config || {};
     const defaultConfig = { version: null };
     this.config = Object.assign({}, defaultConfig, _config);
-    this.strategyOptions = { version: this.config.version };
+    this.strategyOptions = {
+      version: this.config.version,
+      cache: this.config.cache
+    };
   }
 
   badInputError(userSpecification) {
