@@ -11,8 +11,7 @@ describe("LoadingStrategy base class", () => {
       versionsUrl: "https://solc-bin.ethereum.org/bin/list.json",
       compilerUrlRoot: "https://solc-bin.ethereum.org/bin/",
       dockerTagsUrl:
-        "https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/",
-      cache: true
+        "https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/"
     };
   });
 
@@ -26,6 +25,5 @@ describe("LoadingStrategy base class", () => {
     assert(versionsUrl === expectedDefaultConfig.versionsUrl);
     assert(compilerUrlRoot === expectedDefaultConfig.compilerUrlRoot);
     assert(dockerTagsUrl === expectedDefaultConfig.dockerTagsUrl);
-    assert(cache === expectedDefaultConfig.cache);
   });
 });

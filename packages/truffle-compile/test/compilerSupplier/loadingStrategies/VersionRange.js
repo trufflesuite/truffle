@@ -52,10 +52,12 @@ describe("VersionRange loading strategy", () => {
     beforeEach(() => {
       sinon.stub(instance, "getCachedSolcByVersionRange");
       sinon.stub(instance, "getSolcFromCacheOrUrl");
+      sinon.stub(instance, "versionIsCached").returns(true);
     });
     afterEach(() => {
       instance.getCachedSolcByVersionRange.restore();
       instance.getSolcFromCacheOrUrl.restore();
+      instance.versionIsCached.restore();
     });
 
     it("calls getCachedSolcByVersionRange when single solc is specified", async () => {

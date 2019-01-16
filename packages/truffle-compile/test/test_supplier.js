@@ -67,7 +67,6 @@ describe("CompilerSupplier", function() {
     it("compiles w/ remote solc when options specify release (pinned)", function(done) {
       options.compilers = {
         solc: {
-          cache: false,
           version: "0.4.15",
           settings: {}
         }
@@ -82,17 +81,20 @@ describe("CompilerSupplier", function() {
     });
 
     it("compiles w/ remote solc when options specify prerelease (float)", function(done) {
+      this.timeout(20000);
       // An 0.4.16 prerelease for 0.4.15
       options.compilers = {
         solc: {
-          cache: false,
           version: "0.4.16-nightly.2017.8.9+commit.81887bc7",
           settings: {}
         }
       };
 
       compile(oldPragmaFloatSource, options, (err, result) => {
-        if (err) return done(err);
+        if (err) {
+          assert(false);
+          done();
+        }
 
         assert(result["OldPragmaFloat"].contract_name === "OldPragmaFloat");
         done();
@@ -107,7 +109,6 @@ describe("CompilerSupplier", function() {
 
       options.compilers = {
         solc: {
-          cache: false,
           version: pathToSolc
         }
       };
@@ -134,7 +135,6 @@ describe("CompilerSupplier", function() {
 
       options.compilers = {
         solc: {
-          cache: true,
           version: "0.4.21"
         }
       };

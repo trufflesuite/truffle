@@ -7,8 +7,7 @@ class LoadingStrategy {
       versionsUrl: "https://solc-bin.ethereum.org/bin/list.json",
       compilerUrlRoot: "https://solc-bin.ethereum.org/bin/",
       dockerTagsUrl:
-        "https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/",
-      cache: true
+        "https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/"
     };
     this.config = Object.assign({}, defaultConfig, options);
     this.cachePath = findCacheDir({
@@ -19,8 +18,6 @@ class LoadingStrategy {
   }
 
   addFileToCache(code, fileName) {
-    if (!this.config.cache) return;
-
     const filePath = this.resolveCache(fileName);
     fs.writeFileSync(filePath, code);
   }
