@@ -2,7 +2,6 @@ import debugModule from "debug";
 const debug = debugModule("decoder:decode:storage");
 
 import read from "../read";
-import { slotAddress } from "../read/storage";
 import * as DecodeUtils from "truffle-decode-utils";
 import decode from "./index";
 import decodeValue from "./value";
@@ -193,14 +192,16 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
           from: {
             slot: {
               path: pointer.storage.from.slot,
-              offset: slotAddress(refPointer.storage.from.slot)
+              offset: refPointer.storage.from.slot.offset
+              //note that refPointer should have no path
             },
             index: refPointer.storage.from.index
           },
           to: {
             slot: {
               path: pointer.storage.from.slot,
-              offset: slotAddress(refPointer.storage.to.slot)
+              offset: refPointer.storage.to.slot
+              //note that refPointer should have no path
             },
             index: refPointer.storage.to.index
           },
