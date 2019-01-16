@@ -19,7 +19,6 @@ class Local extends LoadingStrategy {
     } catch (error) {
       throw this.errors("noPath", localPath, error);
     }
-
     return compiler;
   }
 }

@@ -16,10 +16,6 @@ class VersionRange extends LoadingStrategy {
     return wrapped;
   }
 
-  async load(versionRange) {
-    this.getSolcByVersionRange(versionRange);
-  }
-
   findNewestValidVersion(version, allVersions) {
     if (!semver.validRange(version)) return null;
     const satisfyingVersions = Object.keys(allVersions.releases)
@@ -143,6 +139,7 @@ class VersionRange extends LoadingStrategy {
     } catch (error) {
       throw this.errors("noRequest", version, error);
     }
+
     const fileName = this.getSolcVersionFileName(version, allVersions);
 
     if (!fileName) throw this.errors("noVersion", version);
@@ -194,9 +191,14 @@ class VersionRange extends LoadingStrategy {
     }
 
     const versionToUse = this.findNewestValidVersion(version, allVersions);
+
     if (versionToUse) return allVersions.releases[versionToUse];
 
     return null;
+  }
+
+  async load(versionRange) {
+    return this.getSolcByVersionRange(versionRange);
   }
 
   normalizeSolcVersion(input) {
