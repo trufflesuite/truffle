@@ -39,6 +39,7 @@
     "@types/graphql": "^14.0.4",
     "@types/jest": "^23.3.11",
     "@types/node": "^10.12.18",
+    "apollo-server": "^2.3.1",
     "gql2ts": "^1.10.1",
     "jest": "^23.6.0",
     "ts-jest": "^23.10.5",
@@ -47,8 +48,6 @@
     "typescript": "^3.2.2"
   },
   "dependencies": {
-    "apollo-server-express": "^2.3.1",
-    "express": "^4.16.4",
     "graphql": "^14.0.2",
     "graphql-tools": "^4.0.3",
     "module-alias": "^2.1.0",

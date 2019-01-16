@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+# stop if any commands fail
+set -ex
+
+yarn codegen
+tsc $@
+cp ./src/data/schema.graphql ./dist/data/schema.graphql
