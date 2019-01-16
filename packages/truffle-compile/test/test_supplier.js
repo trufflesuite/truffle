@@ -15,30 +15,6 @@ function waitSecond() {
 describe("CompilerSupplier", function() {
   let supplier;
 
-  describe("getters", function() {
-    before(() => (supplier = new CompilerSupplier()));
-
-    it("getReleases: should return a `releases` object", async function() {
-      const releases = await supplier.getReleases();
-      const firstSolc = "0.1.3-nightly.2015.9.25+commit.4457170";
-
-      assert(
-        releases.prereleases[0] === firstSolc,
-        "Should return prereleases"
-      );
-      assert(
-        releases.releases[0] === releases.latestRelease,
-        "Should return releases/latestRelease"
-      );
-    });
-
-    it("lists available docker images [ @native ]", async function() {
-      const list = await supplier.getDockerTags();
-      assert(Array.isArray(list));
-      assert(typeof list[0] === "string");
-    });
-  });
-
   describe("integration", function() {
     this.timeout(40000);
     let oldPragmaPinSource; //  0.4.15
