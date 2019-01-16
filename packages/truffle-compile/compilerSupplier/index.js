@@ -55,7 +55,12 @@ class CompilerSupplier {
       }
 
       if (strategy) {
-        resolve(await strategy.load(userSpecification));
+        try {
+          const solc = await strategy.load(userSpecification);
+          resolve(solc);
+        } catch (error) {
+          reject(error);
+        }
       } else {
         reject(this.badInputError(userSpecification));
       }
