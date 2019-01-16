@@ -116,22 +116,6 @@ class VersionRange extends LoadingStrategy {
     }
   }
 
-  async getSolcByVersionRange(versionRange) {
-    const rangeIsSingleVersion = semver.valid(versionRange);
-    if (rangeIsSingleVersion && this.versionIsCached(versionRange)) {
-      return this.getCachedSolcByVersionRange(versionRange);
-    }
-
-    try {
-      return await this.getSolcFromCacheOrUrl(versionRange);
-    } catch (error) {
-      if (error.message.includes("Failed to complete request")) {
-        return this.getSatisfyingVersionFromCache(versionRange);
-      }
-      throw new Error(error);
-    }
-  }
-
   async getSolcFromCacheOrUrl(version) {
     let allVersions;
     try {
@@ -198,7 +182,19 @@ class VersionRange extends LoadingStrategy {
   }
 
   async load(versionRange) {
-    return this.getSolcByVersionRange(versionRange);
+    const rangeIsSingleVersion = semver.valid(versionRange);
+    if (rangeIsSingleVersion && this.versionIsCached(versionRange)) {
+      return this.getCachedSolcByVersionRange(versionRange);
+    }
+
+    try {
+      return await this.getSolcFromCacheOrUrl(versionRange);
+    } catch (error) {
+      if (error.message.includes("Failed to complete request")) {
+        return this.getSatisfyingVersionFromCache(versionRange);
+      }
+      throw new Error(error);
+    }
   }
 
   normalizeSolcVersion(input) {
