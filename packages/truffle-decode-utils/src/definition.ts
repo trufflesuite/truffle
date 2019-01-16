@@ -1,26 +1,9 @@
 import { EVM as EVMUtils } from "./evm";
 import { AstDefinition } from "./ast";
-import { StoragePointer } from "truffle-decoder/lib/types/pointer";
 import cloneDeep from "lodash.clonedeep";
 import BN from "bn.js";
 
 export namespace Definition {
-
-  export type StorageLength = {bytes: number} | {words: BN};
-
-  export function isWordsLength(size: StorageLength): size is {words: BN} {
-    return (<{words: BN}>size).words !== undefined;
-  }
-
-  //temporary HACK, to be removed in next PR (or soon, anyway)
-  export function storageLengthToBytes(size: StorageLength): number {
-    if(isWordsLength(size)) {
-      return size.words.muln(EVMUtils.WORD_SIZE).toNumber(); //HACK
-    }
-    else {
-      return size.bytes;
-    }
-  }
 
   export function typeIdentifier(definition: AstDefinition): string {
     return definition.typeDescriptions.typeIdentifier;

@@ -12,6 +12,7 @@ import solidity from "lib/solidity/selectors";
 
 import * as TruffleDecodeUtils from "truffle-decode-utils";
 import { forEvmState } from "truffle-decoder";
+import { getStorageAllocations } from "truffle-decoder";
 
 /**
  * @private

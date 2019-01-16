@@ -8,6 +8,7 @@ import decodeValue from "./value";
 import { StoragePointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { Allocation } from "truffle-decode-utils";
+import { storageSize, storageLengthToBytes } from "../allocate/storage";
 import BN from "bn.js";
 import Web3 from "web3";
 import { EvmStruct, EvmMapping } from "../interface/contract-decoder";
@@ -41,7 +42,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       const referenceId = baseDefinition.referencedDeclaration ||
         (baseDefinition.typeName ? baseDefinition.typeName.referencedDeclaration : undefined);
 
-	    let baseSize: number = storageLengthToBytes(DecodeUtils.Definition.storageSize(baseDefinition, info.referenceDeclarations, info.referenceVariables));
+	    let baseSize: number = storageLengthToBytes(storageSize(baseDefinition, info.referenceDeclarations, info.referenceVariables));
 	    //temporary HACK until I go through the decoder -- this will be fixed in next PR!
 
       const perWord = Math.floor(DecodeUtils.EVM.WORD_SIZE / baseSize);

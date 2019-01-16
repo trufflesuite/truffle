@@ -1,5 +1,3 @@
-import { EVM as EVMUtils } from "./evm";
-import { Definition as DefinitionUtils } from "./definition";
 import { Conversion as ConversionUtils }from "./conversion";
 import BN from "bn.js";
 

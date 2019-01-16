@@ -1,4 +1,4 @@
-import { AstReferences, EvmVariableReferenceMapping } from "../interface/contract-decoder";
+import { AstReferences, StorageAllocations, StorageMemberAllocations } from "../interface/contract-decoder";
 
 export interface EvmState {
   stack: Uint8Array[];

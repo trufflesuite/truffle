@@ -1,11 +1,24 @@
-import { EvmVariableReferenceMapping, AstReferences, ContractMapping, getContractNode, ContractStateVariable } from "../interface/contract-decoder";
-import { ContractObject } from "truffle-contract-schema/spec";
+import { AstReferences, StorageAllocations, StorageMemberAllocations } from "../interface/contract-decoder";
 import { StoragePointer } from "../types/pointer";
 import { AstDefinition } from "truffle-decode-utils/src/ast";
-import merge from "lodash.merge";
-import cloneDeep from "lodash.clonedeep";
 import * as DecodeUtils from "truffle-decode-utils";
 import BN from "bn.js";
+
+export type StorageLength = {bytes: number} | {words: BN};
+
+export function isWordsLength(size: StorageLength): size is {words: BN} {
+  return (<{words: BN}>size).words !== undefined;
+}
+
+//temporary HACK, to be removed in next PR (or soon, anyway)
+export function storageLengthToBytes(size: StorageLength): number {
+  if(isWordsLength(size)) {
+    return size.words.muln(DecodeUtils.EVM.WORD_SIZE).toNumber(); //HACK
+  }
+  else {
+    return size.bytes;
+  }
+}
 
 //contracts contains only the contracts to be allocated; any base classes not
 //being allocated should just be in referenceDeclarations
@@ -21,7 +34,7 @@ export function getStorageAllocations(referenceDeclarations: AstReferences, cont
   return allocations;
 }
 
-export function allocateStruct(structDefinition: AstDefinition, referenceDeclarations: AstReferences, existingAllocations: StorageAllocations): StorageAllocations {
+function allocateStruct(structDefinition: AstDefinition, referenceDeclarations: AstReferences, existingAllocations: StorageAllocations): StorageAllocations {
   return allocateMembers(structDefinition, structDefinition.members, referenceDeclarations, existingAllocations);
 }
 
@@ -44,7 +57,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
     //note: in the future, we will begin by checking if node is constant
     //and if so doing things a different way to allocate a literal for it
     let size: StorageLength;
-    [size, allocations] = storageSizeAndAllocation(node, referenceDeclarations, allocations);
+    [size, allocations] = storageSizeAndAllocate(node, referenceDeclarations, allocations);
 
     if (isWordsLength(size) || size.bytes < index + 1) {
       //if it's sized in words, we need to start on a new slot;
@@ -122,7 +135,7 @@ function getStateVariables(contractNode: AstDefinition): AstDefinition[] {
   //note, in the future, we will not filter out constants
 }
 
-export function allocateContract(contract: AstDefinition, referenceDeclarations: AstReferences, existingAllocations: StorageAllocations): StorageAllocations {
+function allocateContract(contract: AstDefinition, referenceDeclarations: AstReferences, existingAllocations: StorageAllocations): StorageAllocations {
 
   let allocations: StorageAllocations = {...existingAllocations};
 
@@ -149,7 +162,7 @@ export function storageSize(definition: AstDefinition, referenceDeclarations?: A
 //first return value is the actual size.
 //second return value is resulting allocations, INCLUDING the ones passed in
 function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: AstReferences, existingAllocations?: StorageAllocations): [StorageLength, StorageAllocations] {
-  switch (typeClass(definition)) {
+  switch (DecodeUtils.Definition.typeClass(definition)) {
     case "bool":
       return [{bytes: 1}, existingAllocations];
 
@@ -159,14 +172,14 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
 
     case "int":
     case "uint": {
-      return [{bytes: specifiedSize(definition) || 32 }, existingAllocations]; // default of 256 bits
+      return [{bytes: DecodeUtils.Definition.specifiedSize(definition) || 32 }, existingAllocations]; // default of 256 bits
       //(should 32 here be WORD_SIZE?  I thought so, but comparing with case
       //of fixed/ufixed makes the appropriate generalization less clear)
     }
 
     case "fixed":
     case "ufixed": {
-      return [{bytes: specifiedSize(definition) || 16 }, existingAllocations]; // default of 128 bits
+      return [{bytes: DecodeUtils.Definition.specifiedSize(definition) || 16 }, existingAllocations]; // default of 128 bits
     }
 
     case "enum": {
@@ -215,7 +228,7 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
         const [baseSize, allocations] = storageSizeAndAllocate(baseDefinition, referenceDeclarations, existingAllocations);
         if(baseSize.bytes !== undefined) {
           //bytes case
-          const perWord: number = Math.floor(EVMUtils.WORD_SIZE / baseSize.bytes);
+          const perWord: number = Math.floor(DecodeUtils.EVM.WORD_SIZE / baseSize.bytes);
           //bn.js has no ceiling-division, so we'll do a floor-division and then
           //increment if not a multiple
           const lengthBN: BN = new BN(length);

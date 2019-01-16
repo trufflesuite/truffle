@@ -3,7 +3,8 @@ import Web3 from "web3";
 import { ContractObject, Ast } from "truffle-contract-schema/spec";
 import BN from "bn.js";
 import { EvmInfo } from "../types/evm";
-import * as references from "../allocate/references";
+import * as general from "../allocate/general";
+import * as storage from "../allocate/storage";
 import { StoragePointer } from "../types/pointer";
 import decode from "../decode";
 import { Definition as DefinitionUtils, EVM, Allocation, AstDefinition } from "truffle-decode-utils";
@@ -22,7 +23,7 @@ export interface StorageAllocations {
 //variables of) a contract
 export interface StorageAllocation {
   definition: AstDefinition;
-  size?: StorageLength; //only used for structs
+  size?: storage.StorageLength; //only used for structs
   members: StorageMemberAllocations;
 }
 
@@ -160,17 +161,17 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   public async init(): Promise<void> {
-    this.referenceDeclarations = references.getReferenceDeclarations([this.contractNode, ...this.contractNodes]);
+    this.referenceDeclarations = general.getReferenceDeclarations([this.contractNode, ...this.contractNodes]);
 
-    this.eventDefinitions = references.getEventDefinitions([this.contract, ...this.inheritedContracts]);
+    this.eventDefinitions = general.getEventDefinitions([this.contract, ...this.inheritedContracts]);
     const ids = Object.keys(this.eventDefinitions);
     this.eventDefinitionIdsByName = {};
-    for (let i = 0; i < ids.length; i++) {
-      const id = parseInt(ids[i]);
+    for (let idString of ids) {
+      const id = parseInt(idString);
       this.eventDefinitionIdsByName[this.eventDefinitions[id].name] = id;
     }
 
-    this.storageAllocations = references.getStorageAllocations(this.referenceDeclarations, {this.contractNode.id: this.contractNode});
+    this.storageAllocations = storage.getStorageAllocations(this.referenceDeclarations, {this.contractNode.id: this.contractNode});
     this.stateVariableReferences = this.storageAllocations[this.contractNode.id].members;
   }
 
