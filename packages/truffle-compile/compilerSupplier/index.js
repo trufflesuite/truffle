@@ -5,7 +5,6 @@ const semver = require("semver");
 const {
   Bundled,
   Docker,
-  LoadingStrategy,
   Local,
   Native,
   VersionRange
@@ -76,7 +75,7 @@ class CompilerSupplier {
   }
 
   getReleases() {
-    return new LoadingStrategy(this.strategyOptions)
+    return new VersionRange(this.strategyOptions)
       .getSolcVersions()
       .then(list => {
         const prereleases = list.builds
