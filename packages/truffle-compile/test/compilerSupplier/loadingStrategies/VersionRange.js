@@ -48,6 +48,74 @@ const allVersions = {
 };
 
 describe("VersionRange loading strategy", () => {
+  describe("async load(versionRange)", () => {
+    beforeEach(() => {
+      sinon.stub(instance, "getCachedSolcByVersionRange");
+      sinon.stub(instance, "getSolcFromCacheOrUrl");
+    });
+    afterEach(() => {
+      instance.getCachedSolcByVersionRange.restore();
+      instance.getSolcFromCacheOrUrl.restore();
+    });
+
+    it("calls getCachedSolcByVersionRange when single solc is specified", async () => {
+      await instance.load("0.5.0");
+      assert(instance.getCachedSolcByVersionRange.called);
+    });
+    it("calls getSolcFromCacheOrUrl when a larger range is specified", async () => {
+      await instance.load("^0.5.0");
+      assert(instance.getSolcFromCacheOrUrl.called);
+    });
+  });
+
+  describe("getSolcFromCacheOrUrl(version)", () => {
+    beforeEach(() => {
+      sinon.stub(instance, "getSolcVersions").returns(allVersions);
+      sinon.stub(instance, "getCachedSolcByFileName");
+    });
+    afterEach(() => {
+      instance.getSolcVersions.restore();
+      instance.getCachedSolcByFileName.restore();
+    });
+
+    describe("when the version is cached", () => {
+      beforeEach(() => {
+        sinon.stub(instance, "fileIsCached").returns(true);
+      });
+      afterEach(() => {
+        instance.fileIsCached.restore();
+      });
+
+      it("calls getCachedSolcByFileName", async () => {
+        await instance.getSolcFromCacheOrUrl("0.5.0");
+        assert(
+          instance.getCachedSolcByFileName.calledWith(
+            "soljson-v0.5.0+commit.1d4f565a.js"
+          )
+        );
+      });
+    });
+
+    describe("when the version is not cached", () => {
+      beforeEach(() => {
+        sinon.stub(instance, "fileIsCached").returns(false);
+        sinon.stub(instance, "compilerFromString");
+        sinon.stub(instance, "addFileToCache");
+      });
+      afterEach(() => {
+        instance.fileIsCached.restore();
+        instance.compilerFromString.restore();
+        instance.addFileToCache.restore();
+      });
+
+      it("eventually calls addFileToCache and compilerFromString", async () => {
+        await instance.getSolcFromCacheOrUrl("0.5.1");
+        assert(instance.addFileToCache.called);
+        assert(instance.compilerFromString.called);
+      });
+    });
+  });
+
   describe("async getSolcByCommit(commit)", () => {
     describe("when the file is cached", () => {
       beforeEach(() => {
