@@ -7,32 +7,6 @@ import cloneDeep from "lodash.clonedeep";
 import * as DecodeUtils from "truffle-decode-utils";
 import BN from "bn.js";
 
-function getDeclarationsForTypes(contracts: AstDefinition[], types: string[]): AstReferences {
-  let result: AstReferences = {};
-
-  for (let i = 0; i < contracts.length; i++) {
-    const contract = contracts[i];
-    if (contract) {
-      for (const node of contract.nodes) {
-        if (types.includes(node.nodeType)) {
-          result[node.id] = node;
-        }
-      }
-    }
-  }
-
-  return result;
-}
-
-export function getReferenceDeclarations(contracts: AstDefinition[]): AstReferences {
-  const types = [
-    "EnumDefinition",
-    "StructDefinition",
-  ];
-
-  return [...getDeclarationsForTypes(contracts, types), ...contracts];
-}
-
 //contracts contains only the contracts to be allocated; any base classes not
 //being allocated should just be in referenceDeclarations
 export function getStorageAllocations(referenceDeclarations: AstReferences, contracts: AstReferences): StorageAllocations {
@@ -47,19 +21,11 @@ export function getStorageAllocations(referenceDeclarations: AstReferences, cont
   return allocations;
 }
 
-export function getEventDefinitions(contracts: ContractObject[]): AstReferences {
-  const types = [
-    "EventDefinition"
-  ];
-
-  return getDeclarationsForTypes(contracts, types);
-}
-
 export function allocateStruct(structDefinition: AstDefinition, referenceDeclarations: AstReferences, existingAllocations: StorageAllocations): StorageAllocations {
   return allocateMembers(structDefinition, structDefinition.members, referenceDeclarations, existingAllocations);
 }
 
-export function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[], referenceDeclarations: AstReferences, existingAllocations: StorageAllocations, suppressSize: boolean = false): StorageAllocations {
+function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[], referenceDeclarations: AstReferences, existingAllocations: StorageAllocations, suppressSize: boolean = false): StorageAllocations {
   let offset = new BN(0);
   let index = DecodeUtils.EVM.WORD_SIZE - 1;
 
@@ -173,10 +139,16 @@ export function allocateContract(contract: AstDefinition, referenceDeclarations:
     //size is not meaningful for contracts, so we pass suppressSize=true
 }
 
+//NOTE: This wrapper function is for use by the decoder ONLY, after allocation is done.
+//The allocator should (and does) instead use a direct call to storageSizeAndAllocate,
+//not to the wrapper, because it may need the allocations returned.
+export function storageSize(definition: AstDefinition, referenceDeclarations?: AstReferences, allocations?: StorageAllocations): StorageLength {
+  return storageSizeAndAllocate(definition, referenceDeclarations, allocations)[0];
+}
 
 //first return value is the actual size.
 //second return value is resulting allocations, INCLUDING the ones passed in
-export function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: AstReferences, existingAllocations?: StorageAllocations): [StorageLength, StorageAllocations] {
+function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: AstReferences, existingAllocations?: StorageAllocations): [StorageLength, StorageAllocations] {
   switch (typeClass(definition)) {
     case "bool":
       return [{bytes: 1}, existingAllocations];

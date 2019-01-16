@@ -74,13 +74,6 @@ export namespace Definition {
     }
   }
 
-  //NOTE: This wrapper function is for use by the decoder ONLY, after allocation is done.
-  //The allocator should (and does) instead use a direct call to storageSizeAndAllocate,
-  //not to the wrapper, because it may need the allocations returned.
-  export function storageSize(definition: AstDefinition, referenceDeclarations?: AstReferences, allocations?: StorageAllocations): StorageLength {
-    return storageSizeAndAllocate(definition, referenceDeclarations, allocations)[0];
-  }
-
   export function isArray(definition: AstDefinition): boolean {
     return typeIdentifier(definition).match(/^t_array/) != null;
   }
