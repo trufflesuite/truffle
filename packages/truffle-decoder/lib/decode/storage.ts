@@ -42,7 +42,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       const referenceId = baseDefinition.referencedDeclaration ||
         (baseDefinition.typeName ? baseDefinition.typeName.referencedDeclaration : undefined);
 
-	    let baseSize: number = storageLengthToBytes(storageSize(baseDefinition, info.referenceDeclarations, info.referenceVariables));
+	    let baseSize: number = storageLengthToBytes(storageSize(baseDefinition, info.referenceDeclarations, info.storageAllocations));
 	    //temporary HACK until I go through the decoder -- this will be fixed in next PR!
 
       const perWord = Math.floor(DecodeUtils.EVM.WORD_SIZE / baseSize);
@@ -183,28 +183,27 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       const members: DecodeUtils.AstDefinition[] =
         info.referenceDeclarations[referencedDeclaration].members;
 
-      const referenceVariable = info.referenceVariables[referencedDeclaration];
+      const structAllocation = info.storageAllocations[referencedDeclaration];
       for (let i = 0; i < members.length; i++) {
-        const variableRef = referenceVariable.members[members[i].id];
-        const refPointer = variableRef.pointer;
+        const memberAllocation = structAllocation.members[members[i].id];
+        const memberPointer = memberAllocation.pointer;
         debug("pointer %O", pointer);
-        debug("refPointer %O", refPointer);
         const childRange = <Allocation.Range>{
           from: {
             slot: {
-              path: pointer.storage.from.slot,
-              offset: refPointer.storage.from.slot.offset
-              //note that refPointer should have no path
+              path: clonedeep(pointer.storage.from.slot),
+              offset: memberPointer.storage.from.slot.offset.clone()
+              //note that memberPointer should have no path
             },
-            index: refPointer.storage.from.index
+            index: memberPointer.storage.from.index
           },
           to: {
             slot: {
-              path: pointer.storage.from.slot,
-              offset: refPointer.storage.to.slot
-              //note that refPointer should have no path
+              path: clonedeep(pointer.storage.from.slot),
+              offset: memberPointer.storage.to.slot.offset.clone()
+              //note that memberPointer should have no path
             },
-            index: refPointer.storage.to.index
+            index: memberPointer.storage.to.index
           },
         };
         const val = await decode(

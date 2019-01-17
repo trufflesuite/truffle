@@ -5,7 +5,7 @@ import decode from "../decode";
 import TruffleDecoder from "./contract-decoder";
 import { ContractObject } from "truffle-contract-schema/spec";
 import { Provider } from "web3/providers";
-import { getStorageAllocations } from "../allocate";
+import { getStorageAllocations } from "../allocate/storage";
 
 export function forContract(contract: ContractObject, inheritedContracts: ContractObject[], provider: Provider): TruffleDecoder {
   return new TruffleDecoder(contract, inheritedContracts, provider);

@@ -151,7 +151,10 @@ const data = createSelectorTree({
         "/views/allocations/storage"
       ],
 
-      (scopes, state, mappingKeys, storageAllocations) => (definition, ref) =>
+      (referenceDeclarations, state, mappingKeys, storageAllocations) => (
+        definition,
+        ref
+      ) =>
         forEvmState(definition, ref, {
           referenceDeclarations,
           state,
@@ -165,11 +168,11 @@ const data = createSelectorTree({
      */
     userDefinedTypes: {
       /*
-       * data.views.userDefinedTypes.contracts
+       * data.views.userDefinedTypes.contractDefinitions
        * restrict to contracts only, and get their definitions
        */
-      contracts: createLeaf(
-        ["/info/userDefinedTypes", "/info/scopes"],
+      contractDefinitions: createLeaf(
+        ["/info/userDefinedTypes", "/views/scopes/inlined"],
         (typeIds, scopes) =>
           typeIds
             .map(id => scopes[id].definition)
@@ -181,9 +184,12 @@ const data = createSelectorTree({
      * data.views.referenceDeclarations
      */
     referenceDeclarations: createLeaf(
-      ["./scopes/inlined", "./userDefinedTypes"],
+      ["./scopes/inlined", "/info/userDefinedTypes"],
       (scopes, userDefinedTypes) =>
-        userDefinedTypes.map(id => scopes[id].definition)
+        Object.assign(
+          {},
+          ...userDefinedTypes.map(id => ({ [id]: scopes[id].definition }))
+        )
     ),
 
     /*
@@ -194,7 +200,7 @@ const data = createSelectorTree({
        * data.views.allocations.storage
        */
       storage: createLeaf(
-        ["../userDefinedTypes/contracts", "../referenceDeclarations"],
+        ["../userDefinedTypes/contractDefinitions", "../referenceDeclarations"],
         (contracts, referenceDeclarations) =>
           getStorageAllocations(referenceDeclarations, contracts)
       )
@@ -211,8 +217,7 @@ const data = createSelectorTree({
     scopes: {
       /**
        * data.info.scopes (selector)
-       * the raw version is below; this version accounts for inheritance and
-       * filters out storage constants
+       * the raw version is below; this version accounts for inheritance
        * NOTE: doesn't this selector really belong in data.views?  Yes.
        * But, since it's replacing the old data.info.scopes (which is now
        * data.info.scopes.raw), I didn't want to move it.
@@ -239,14 +244,12 @@ const data = createSelectorTree({
             let linearizedBaseContractsFromBase = definition.linearizedBaseContracts
               .slice()
               .reverse();
-            //now, we put it all together and also filter out constants
-            newScope.variables = []
-              .concat(
-                ...linearizedBaseContractsFromBase.map(
-                  contractId => scopes[contractId].variables
-                )
+            //now, we put it all together
+            newScope.variables = [].concat(
+              ...linearizedBaseContractsFromBase.map(
+                contractId => scopes[contractId].variables
               )
-              .filter(variable => !inlined[variable.id].definition.constant);
+            );
             return { [id]: newScope };
           })
         )

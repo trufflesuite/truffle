@@ -109,9 +109,7 @@ function* tickSaga() {
           id: fullId,
           ref: {
             ...((currentAssignments.byId[fullId] || {}).ref || {}),
-            storage: allocation.members[id].pointer.storage
-            //NOTE: once constants are allowed, we will also have to add
-            //the analogous thing for literal
+            ...allocation.members[id].pointer
           }
         };
         assignments.byId[fullId] = assignment;

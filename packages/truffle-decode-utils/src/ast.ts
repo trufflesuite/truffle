@@ -8,6 +8,7 @@ export interface AstDefinition {
   constant: boolean;
   id: number;
   name: string;
+  linearizedBaseContracts?: number[];
   nodeType: string;
   scope: number;
   src: string;
@@ -25,12 +26,13 @@ export interface AstDefinition {
     length?: any;
     referencedDeclaration?: any;
     baseType?: any;
+    visibility?: string;
   };
   expression: {
     referencedDeclaration?: any;
   };
   value: null | any;
-  visibility: string;
+  visibility?: string;
   referencedDeclaration?: any;
   [k: string]: any;
 }

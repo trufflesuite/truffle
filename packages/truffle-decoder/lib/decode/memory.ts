@@ -66,7 +66,7 @@ export default async function decodeMemoryReference(definition: DecodeUtils.AstD
         ));
 
     case "struct":
-      const { referenceDelcarations } = info;
+      const { referenceDeclarations } = info;
 
       // Declaration reference usually appears in `typeName`, but for
       // { nodeType: "FunctionCall", kind: "structConstructorCall" }, this

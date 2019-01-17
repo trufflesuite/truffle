@@ -24,10 +24,13 @@ export function getReferenceDeclarations(contracts: AstDefinition[]): AstReferen
     "StructDefinition",
   ];
 
-  return [...getDeclarationsForTypes(contracts, types), ...contracts];
+  let contractsObject: AstReferences = Object.assign({}, ...contracts.map(
+    (node: AstDefinition) => ({[node.id]: node})));
+
+  return {...getDeclarationsForTypes(contracts, types), ...contractsObject};
 }
 
-export function getEventDefinitions(contracts: ContractObject[]): AstReferences {
+export function getEventDefinitions(contracts: AstDefinition[]): AstReferences {
   const types = [
     "EventDefinition"
   ];

@@ -1,4 +1,7 @@
-import { AstReferences, StorageAllocations, StorageMemberAllocations } from "../interface/contract-decoder";
+import debugModule from "debug";
+const debug = debugModule("decoder:allocate:storage");
+
+import { AstReferences, StorageAllocations, StorageAllocation, StorageMemberAllocations } from "../interface/contract-decoder";
 import { StoragePointer } from "../types/pointer";
 import { AstDefinition } from "truffle-decode-utils/src/ast";
 import * as DecodeUtils from "truffle-decode-utils";
@@ -23,12 +26,12 @@ export function storageLengthToBytes(size: StorageLength): number {
 //contracts contains only the contracts to be allocated; any base classes not
 //being allocated should just be in referenceDeclarations
 export function getStorageAllocations(referenceDeclarations: AstReferences, contracts: AstReferences): StorageAllocations {
-  allocations: StorageAllocations = {};
-  for(node of referenceDeclarations) {
+  let allocations: StorageAllocations = {};
+  for(const node of Object.values(referenceDeclarations)) {
     if(node.nodeType === "StructDefinition")
       allocations = allocateStruct(node, referenceDeclarations, allocations);
   }
-  for(contract of contracts) {
+  for(const contract of Object.values(contracts)) {
     allocations = allocateContract(contract, referenceDeclarations, allocations);
   }
   return allocations;
@@ -43,8 +46,8 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
   let index = DecodeUtils.EVM.WORD_SIZE - 1;
 
   //don't allocate things that have already been allocated
-  if(parentNode.id in allocations) {
-    return allocations;
+  if(parentNode.id in existingAllocations) {
+    return existingAllocations;
   }
 
   let allocations = {...existingAllocations}; //otherwise, we'll be adding to this, so we better clone
@@ -52,7 +55,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
   //otherwise, we need to allocate
   let memberAllocations: StorageMemberAllocations = {}
 
-  for(node of definitions)
+  for(const node of definitions)
   {
     //note: in the future, we will begin by checking if node is constant
     //and if so doing things a different way to allocate a literal for it
@@ -67,27 +70,47 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
     }
     //otherwise, we remain in place
   
-    let range: Allocation.Range;
+    let range: DecodeUtils.Allocation.Range;
 
     if(isWordsLength(size)) {
       //words case
-      range.from.slot = {offset: offset.clone()}; //start at the current slot...
-      range.from.index = 0; //...at the beginning fo the word.
-      range.to.slot = {offset: offset.add(size.words).subn(1)}; //end at the current slot plus # of words minus 1...
-      range.to.index = DecodeUtils.EVM.WORD_SIZE - 1; //...at the end of the word.
+      range = {
+        from: {
+          slot: {
+            offset: offset.clone() //start at the current slot...
+          },
+          index: 0 //...at the beginning of the word.
+        },
+        to: {
+          slot: {
+            offset: offset.add(size.words).subn(1) //end at the current slot plus # of words minus 1...
+          },
+          index: DecodeUtils.EVM.WORD_SIZE - 1 //...at the end of the word.
+        },
+      };
     }
     else {
       //bytes case
-      range.from.slot = {offset: offset.clone()}; //start at the current slot...
-      range.to.slot = {offset: offset.clone()}; //...and end in the current slot.
-      range.to.index = index; //end at the current index...
-      range.from.index = index - size.bytes; //...and start appropriately earlier in the slot.
+      range = {
+        from: {
+          slot: {
+            offset: offset.clone() //start at the current slot...
+          },
+          index: index - size.bytes //...early enough to fit what's being allocated.
+        },
+        to: {
+          slot: {
+            offset: offset.clone() //end at the current slot...
+          },
+          index: index //...at the current position.
+        },
+      };
     }
   
     memberAllocations[node.id] = {
       definition: node,
       pointer: {
-        storage: range; //don't think we need to clone here...
+        storage: range //don't think we need to clone here...
       }
     };
   
@@ -120,7 +143,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
   //current word remains entirely unused, then it's just the current word
   if(!suppressSize) {
     allocations[parentNode.id].size = (index === DecodeUtils.EVM.WORD_SIZE - 1) ?
-      offset.clone() : offset.addn(1);
+      {words: offset.clone()} : {words: offset.addn(1)};
   }
 
   //...and we're done!
@@ -129,7 +152,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
 
 function getStateVariables(contractNode: AstDefinition): AstDefinition[] {
   // process for state variables, filtering out constants
-  return contractNode.nodes.filter( (node) =>
+  return contractNode.nodes.filter( (node: AstDefinition) =>
     node.nodeType === "VariableDeclaration" && node.stateVariable && !node.constant
   );
   //note, in the future, we will not filter out constants
@@ -141,10 +164,13 @@ function allocateContract(contract: AstDefinition, referenceDeclarations: AstRef
 
   //base contracts are listed from most derived to most base, so we
   //have to reverse before processing, but reverse() is in place, so we
-  //clone first
-  let linearizedBaseContractsFromBase = [...contract.linearizedBaseContracts].reverse();
+  //clone with slice first
+  let linearizedBaseContractsFromBase: number[] = contract.linearizedBaseContracts.slice().reverse();
 
-  let vars = [].concat(...linearizedBaseContractsFromBase.map( (id) =>
+  debug("LBCFB %o", linearizedBaseContractsFromBase);
+  debug("ref decl ids %o", Object.keys(referenceDeclarations));
+
+  let vars = [].concat(...linearizedBaseContractsFromBase.map( (id: number) =>
     getStateVariables(referenceDeclarations[id])
   ));
 
@@ -183,15 +209,15 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
     }
 
     case "enum": {
-      const referenceId: string = definition.referencedDeclaration;
-      const referenceDeclaration: AstDefinition = info.referenceDeclarations[referenceId];
+      const referenceId: number = definition.referencedDeclaration;
+      const referenceDeclaration: AstDefinition = referenceDeclarations[referenceId];
       const numValues: number = referenceDeclaration.members.length;
       return [{bytes: Math.ceil(Math.log2(numValues) / 8)}, existingAllocations];
     }
 
     case "bytes": {
       //this case is really two different cases!
-      const staticSize: number = specifiedSize(definition);
+      const staticSize: number = DecodeUtils.Definition.specifiedSize(definition);
       if(staticSize) {
         return [{bytes: staticSize}, existingAllocations];
       }
@@ -209,7 +235,7 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
 
     case "function": {
       //this case is also really two different cases
-      switch (visibility(definition)) {
+      switch (DecodeUtils.Definition.visibility(definition)) {
         case "internal":
           return [{bytes: 8}, existingAllocations];
         case "external":
@@ -218,7 +244,7 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
     }
 
     case "array": {
-      if(isDynamicArray(definition)) {
+      if(DecodeUtils.Definition.isDynamicArray(definition)) {
         return [{words: new BN(1)}, existingAllocations];
       }
       else {
@@ -226,14 +252,14 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
         const length: string = definition.length || definition.typeName.length;
         const baseDefinition: AstDefinition = definition.baseType || definition.typeName.baseType;
         const [baseSize, allocations] = storageSizeAndAllocate(baseDefinition, referenceDeclarations, existingAllocations);
-        if(baseSize.bytes !== undefined) {
+        if(!isWordsLength(baseSize)) {
           //bytes case
           const perWord: number = Math.floor(DecodeUtils.EVM.WORD_SIZE / baseSize.bytes);
           //bn.js has no ceiling-division, so we'll do a floor-division and then
           //increment if not a multiple
           const lengthBN: BN = new BN(length);
           let numWords: BN = lengthBN.divn(perWord); //floor
-          if(!lengthBN.modn(perWord).isZero()) {
+          if(lengthBN.modn(perWord) !== 0) { //modn returns a number, not a BN
             numWords.iaddn(1); //increment if not multiple
           }
           return [{words: numWords}, allocations];
@@ -246,16 +272,13 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
     }
 
     case "struct": {
-      const referenceId: string = definition.referencedDeclaration;
-      let allocation: StoragePointer = info.referenceVariables[referenceId]; //may be undefined!
-      let allocations: StorageAllocations;
+      const referenceId: number = definition.referencedDeclaration;
+      let allocations: StorageAllocations = existingAllocations;
+      let allocation: StorageAllocation | undefined = allocations[referenceId]; //may be undefined!
       if(allocation === undefined) {
         //if we don't find an allocation, we'll have to do the allocation ourselves
         allocations = allocateStruct(definition, referenceDeclarations, existingAllocations);
         allocation = allocations[referenceId];
-      }
-      else {
-        allocations = existingAllocations;
       }
       //having found our allocation, we can just look up its size
       return [allocation.size, allocations];

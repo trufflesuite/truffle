@@ -1,6 +1,6 @@
 import AsyncEventEmitter from "async-eventemitter";
 import Web3 from "web3";
-import { ContractObject, Ast } from "truffle-contract-schema/spec";
+import { ContractObject } from "truffle-contract-schema/spec";
 import BN from "bn.js";
 import { EvmInfo } from "../types/evm";
 import * as general from "../allocate/general";
@@ -101,7 +101,7 @@ export interface ContractMapping {
   [nodeId: number]: ContractObject;
 };
 
-export function getContractNode(contract: ContractObject): Ast {
+export function getContractNode(contract: ContractObject): AstDefinition {
   for (let j = 0; j < contract.ast.nodes.length; j++) {
     const contractNode = contract.ast.nodes[j];
     const nodeMatchesContract =
@@ -135,7 +135,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     [name: string]: number
   };
 
-  private stateVariableReferences: StorageAllocation;
+  private stateVariableReferences: StorageMemberAllocations;
 
   constructor(contract: ContractObject, inheritedContracts: ContractObject[], provider: Provider) {
     super();
@@ -151,6 +151,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.contractNode = getContractNode(this.contract);
 
     this.contracts[this.contractNode.id] = this.contract;
+    this.contractNodes[this.contractNode.id] = this.contractNode;
     abiDecoder.addABI(this.contract.abi);
     this.inheritedContracts.forEach((inheritedContract) => {
       let node: AstDefinition = getContractNode(inheritedContract);
@@ -161,17 +162,18 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   public async init(): Promise<void> {
-    this.referenceDeclarations = general.getReferenceDeclarations([this.contractNode, ...this.contractNodes]);
+    this.referenceDeclarations = general.getReferenceDeclarations(Object.values(this.contractNodes));
 
-    this.eventDefinitions = general.getEventDefinitions([this.contract, ...this.inheritedContracts]);
-    const ids = Object.keys(this.eventDefinitions);
+    this.eventDefinitions = general.getEventDefinitions(Object.values(this.contractNodes));
     this.eventDefinitionIdsByName = {};
-    for (let idString of ids) {
-      const id = parseInt(idString);
-      this.eventDefinitionIdsByName[this.eventDefinitions[id].name] = id;
+    for (let id in this.eventDefinitions) {
+      this.eventDefinitionIdsByName[this.eventDefinitions[id].name] = parseInt(id);
+        //this parseInt shouldn't be necessary, but TypeScript refuses to believe
+        //that id must be a number even though the definition of AstReferences
+        //says so
     }
 
-    this.storageAllocations = storage.getStorageAllocations(this.referenceDeclarations, {this.contractNode.id: this.contractNode});
+    this.storageAllocations = storage.getStorageAllocations(this.referenceDeclarations, {[this.contractNode.id]: this.contractNode});
     this.stateVariableReferences = this.storageAllocations[this.contractNode.id].members;
   }
 
@@ -182,13 +184,10 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       variables: {}
     };
 
-    const nodeIds = Object.keys(this.stateVariableReferences);
-
-    for(let i = 0; i < nodeIds.length; i++) {
-      const variable = this.stateVariableReferences[parseInt(nodeIds[i])];
+    for(const id in this.stateVariableReferences) {
+      const variable = this.stateVariableReferences[id];
 
       const info: EvmInfo = {
-        scopes: {},
         state: {
           stack: [],
           storage: {},
@@ -196,7 +195,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         },
         mappingKeys: {},
         referenceDeclarations: this.referenceDeclarations,
-        referenceVariables: this.referenceVariables,
+        storageAllocations: this.storageAllocations,
         variables: this.stateVariableReferences
       };
 
@@ -214,56 +213,6 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   public async variable(name: string, block: BlockType = "latest"): Promise<DecodedVariable | undefined> {
     return undefined;
-  }
-
-  public async mapping(mappingId: number, keys: (number | BN | string)[]): Promise<EvmVariable[] | undefined> {
-    const contractAddress = this.contract.networks[this.contractNetwork].address;
-    const mappingReference = this.stateVariableReferences[mappingId];
-    const definition = mappingReference.definition.typeName.valueType;
-
-    let result: EvmVariable[] = [];
-
-    for (let i = 0; i < keys.length; i++) {
-      let state = <references.ContractStateInfo>{
-        variables: {},
-        slot: {
-          offset: new BN(0),
-          index: EVM.WORD_SIZE - 1
-        }
-      };
-
-      const path: Allocation.Slot = {
-        key: keys[i],
-        path: mappingReference.pointer.storage.from.slot,
-        offset: new BN(0)
-      };
-
-      references.allocateDefinition(definition, state, this.referenceDeclarations, path);
-
-      const nodeIds = Object.keys(state.variables);
-  
-      for(let i = 0; i < nodeIds.length; i++) {
-        const variable = state.variables[parseInt(nodeIds[i])];
-  
-        const info: EvmInfo = {
-          scopes: {},
-          state: {
-            stack: [],
-            storage: {},
-            memory: new Uint8Array(0)
-          },
-          mappingKeys: {},
-          referenceDeclarations: this.referenceDeclarations,
-          variables: this.stateVariableReferences
-        };
-
-        const val = await decode(variable.definition, variable.pointer, info, this.web3, contractAddress);
-
-        result.push(val);
-      }
-    }
-
-    return result;
   }
 
   public watchMappingKeys(mappingId: number, keys: (number | BN | string)[]): void {
