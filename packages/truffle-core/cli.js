@@ -1,23 +1,30 @@
 #!/usr/bin/env node
 require("source-map-support/register");
 
-const TaskError = require("./lib/errors/taskerror");
-const TruffleError = require("truffle-error");
+const semver = require("semver"); // to validate Node version
 
+const TruffleError = require("truffle-error");
+const TaskError = require("./lib/errors/taskerror");
 const analytics = require("./lib/services/analytics");
 const version = require("./lib/version");
 const versionInfo = version.info();
 
-const nodeMajorVersion = parseInt(process.version.slice(1));
-if (nodeMajorVersion < 8) {
+// pre-flight check: Node version compatibility
+const minimumNodeVersion = "8.9.4";
+if (!semver.satisfies(process.version, ">=" + minimumNodeVersion)) {
   console.log(
-    `You are currently using version ${process.version.slice(1)} of Node.`
+    "Error: Node version not supported. You are currently using version " +
+      process.version.slice(1) +
+      " of Node. Truffle requires Node v" +
+      minimumNodeVersion +
+      " or higher."
   );
-  console.log("You must use version 8 or newer.");
+
   analytics.send({
     exception: "wrong node version",
     version: versionInfo.bundle || "(unbundled) " + versionInfo.core
   });
+
   process.exit(1);
 }
 
