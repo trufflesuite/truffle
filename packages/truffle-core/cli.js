@@ -6,7 +6,8 @@ const semver = require("semver"); // to validate Node version
 const TruffleError = require("truffle-error");
 const TaskError = require("./lib/errors/taskerror");
 const analytics = require("./lib/services/analytics");
-const versionInfo = require("./lib/version").info();
+const version = require("./lib/version");
+const versionInfo = version.info();
 
 // pre-flight check: Node version compatibility
 const minimumNodeVersion = "8.9.4";
