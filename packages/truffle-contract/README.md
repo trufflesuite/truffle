@@ -49,7 +49,7 @@ Each instance is tied to a specific address on the Ethereum network, and each in
     // Do something with the result or continue with more transactions.
   });
   ```
-  
+
 or equivalently in ES6 <sup>(node.js 8 or newer)</sup>:  
 
   ```javascript
@@ -130,7 +130,7 @@ MetaCoin.at(contract_address).then(function(instance) {
 
 # API
 
-There are two API's you'll need to be aware of. One is the static Contract Abstraction API and the other is the Contract Instance API. The Abstraction API is a set of functions that exist for all contract abstractions, and those function exist on the abstraction itself (i.e., `MyContract.at()`). In contrast, the Instance API is the API available to contract instances -- i.e., abstractions that represent a specific contract on the network -- and that API is created dynamically based on functions available in your Solidity source file.
+There are two API's you'll need to be aware of. One is the static Contract Abstraction API and the other is the Contract Instance API. The Abstraction API is a set of functions that exist for all contract abstractions, and those functions exist on the abstraction itself (i.e., `MyContract.at()`). In contrast, the Instance API is the API available to contract instances -- i.e., abstractions that represent a specific contract on the network -- and that API is created dynamically based on functions available in your Solidity source file.
 
 ### Contract Abstraction API
 
@@ -203,6 +203,24 @@ Clone a contract abstraction to get another object that manages the same contrac
 var MyOtherContract = MyContract.clone(1337);
 ```
 
+#### `MyContract.numberFormat = number_type`
+You can set this property to choose the number format that abstraction methods return.  The default behavior is to return BN.
+```javascript
+// Choices are:  `["BigNumber", "BN", "String"].
+var Example = artifacts.require('Example');
+Example.numberFormat = 'BigNumber';
+```
+
+#### `MyContract.timeout(block_timeout)`
+This method allows you to set the block timeout for transactions.  Contract instances created from this abstraction will have the specified transaction block timeout.  This means that if a transaction does not immediately get mined, it will retry for the specified number of blocks.
+
+#### `MyContract.autoGas = <boolean>`
+If this is set to true, instances created from this abstraction will use `web3.eth.estimateGas` and then apply a gas multiplier to determine the amount of gas to include with the transaction.  The default value for this is `true`.  See [gasMultiplier](/docs/truffle/reference/contract-abstractions#-code-mycontract-gasmultiplier-gas_multiplier-code-).
+
+#### `MyContract.gasMultiplier(gas_multiplier)`
+This is the value used when `autoGas` is enabled to determine the amount of gas to include with transactions.  The gas is computed by using `web3.eth.estimateGas` and multiplying it by the gas multiplier.  The default value is `1.25`.
+
+
 ### Contract Instance API
 
 Each contract instance is different based on the source Solidity contract, and the API is created dynamically. For the purposes of this documentation, let's use the following Solidity source code below:
@@ -213,7 +231,7 @@ contract MyContract {
   event ValueSet(uint val);
   function setValue(uint val) {
     value = val;
-    ValueSet(value);
+    emit ValueSet(value);
   }
   function getValue() view returns (uint) {
     return value;
