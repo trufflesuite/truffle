@@ -29,7 +29,7 @@ var MyContract = contract({
   address: ..., // optional
   // many more
 })
-MyContract.setProvider(provider);
+MyContract.setProvider(provider.currentProvider);
 ```
 
 You now have access to the following functions on `MyContract`, as well as many others:
