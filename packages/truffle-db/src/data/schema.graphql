@@ -14,19 +14,20 @@ type Project {
   contractInstance(networkId: String!, name: String!): ContractInstance
 }
 
+
 type ContractInstance {
   address: Address!
   network: Network!
-  transactionHash: TransactionHash!
-  constructorArgs: [Value]!
-  contractType: ContractType!
-  callBytecode: Bytecode!
-  linkValues: [LinkValue]!
+  callBytecode: Bytecode
+  contractType: ContractType
+  transactionHash: TransactionHash
+  constructorArgs: [Value]
+  linkValues: [LinkValue]
 }
 
 type ContractType {
-  name: String!
   abi: ABI!
+  name: String
   compilation: Compilation
   createBytecode: Bytecode
 }
@@ -42,7 +43,7 @@ type LinkValue {
 }
 
 type LinkReference {
-  offsets: [ByteOffset]!
+  offsets: [ByteOffset!]!
   length: Int!
 }
 
@@ -54,7 +55,7 @@ type Bytecode {
   bytes: Bytes!
   sourceMap: String,
   instructions: [Instruction!],
-  linkReferences: [LinkReference]!
+  linkReferences: [LinkReference]
 }
 
 type Instruction {
