@@ -4,12 +4,7 @@
   "title": "ABI",
 
   "type": "array",
-  "items": { "oneOf": [
-    { "$ref": "#/definitions/Event" },
-    { "$ref": "#/definitions/ConstructorFunction" },
-    { "$ref": "#/definitions/FallbackFunction" },
-    { "$ref": "#/definitions/NormalFunction" }
-  ]},
+  "items": { "$ref": "#/definitions/ABIItem" },
 
   "definitions": {
     "Name": {
@@ -141,6 +136,12 @@
         "indexed": { "type": "boolean" }
       },
       "required": ["name", "type", "indexed"]
-    }
+    },
+    "ABIItem": { "oneOf": [
+      { "$ref": "#/definitions/Event" },
+      { "$ref": "#/definitions/ConstructorFunction" },
+      { "$ref": "#/definitions/FallbackFunction" },
+      { "$ref": "#/definitions/NormalFunction" }
+    ]}
   }
 }
