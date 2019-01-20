@@ -50,6 +50,7 @@
   "dependencies": {
     "graphql": "^14.0.2",
     "graphql-tools": "^4.0.3",
+    "jsonschema2graphql": "^1.1.0",
     "module-alias": "^2.1.0",
     "source-map-support": "^0.5.9"
   },

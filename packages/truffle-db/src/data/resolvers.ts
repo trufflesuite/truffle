@@ -27,4 +27,4 @@ export const resolvers: IResolvers = {
       return context.Bytecode.instructions(bytes, sourceMap);
     }
   }
-}
+};

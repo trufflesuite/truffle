@@ -1,2 +1,4 @@
 import * as models from "./models";
-export { models };
+import schema from "./schema";
+
+export { models, schema };
