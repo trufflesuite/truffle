@@ -1,4 +1,3 @@
-import { IResolvers } from "graphql-tools";
 import fs from "fs";
 
 const TruffleResolver = require("truffle-resolver");
@@ -15,13 +14,34 @@ interface IContext {
 export const resolvers = {
   Query: {
     contract: {
-      resolve (_, { name }, context: IContext) {
+      resolve (_, { name, networkId }, context: IContext) {
         const truffleResolver: ITruffleResolver = new TruffleResolver({
           contracts_build_directory: context.artifactsDirectory,
           working_directory: context.workingDirectory || process.cwd()
         });
 
-        return truffleResolver.require(name)._json;
+        const artifact = truffleResolver.require(name)._json;
+
+        const result = {
+          ...artifact,
+
+          abi: {
+            json: JSON.stringify(artifact.abi),
+            items: artifact.abi
+          }
+        };
+
+        if (networkId) {
+          return (result.networks[networkId])
+            ? {
+                ...result,
+                networks: {
+                  [networkId]: result.networks[networkId]
+                }
+              }
+            : null
+        }
+        return result;
       }
     },
     contractNames: {

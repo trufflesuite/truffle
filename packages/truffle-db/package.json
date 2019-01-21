@@ -28,7 +28,7 @@
     "prepare": "yarn build",
     "build": "./bin/build",
     "start": "ts-node-dev -r tsconfig-paths/register ./bin/server",
-    "codegen": "gql2ts ./src/data/schema.graphql --namespace DataModel --output-file ./types/schema.d.ts --ignore-type-name-declaration",
+    "codegen": "ts-node-dev -r tsconfig-paths/register ./bin/codegen.js",
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "bugs": {

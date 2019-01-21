@@ -3,6 +3,7 @@
 # stop if any commands fail
 set -ex
 
+mkdir -p dist
+cp ./src/schema.graphql ./dist/schema.graphql
 yarn codegen
 tsc $@
-cp ./src/data/schema.graphql ./dist/data/schema.graphql

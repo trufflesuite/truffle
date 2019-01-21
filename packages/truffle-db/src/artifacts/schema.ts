@@ -1,277 +1,125 @@
-const { default: convert } = require("jsonschema2graphql");
-
 import {
-  printSchema, GraphQLObjectType, GraphQLNonNull, GraphQLList
-} from "jsonschema2graphql/node_modules/graphql";
+  mergeSchemas,
+  transformSchema,
+  FilterRootFields
+} from "graphql-tools";
 
-import { makeExecutableSchema } from "graphql-tools";
+import { schema as rootSchema } from "truffle-db/schema";
 
+import { schema as jsonSchema } from "./json";
+import { readInstructions } from "./bytecode";
 
-const abiSchema = require("truffle-contract-schema/spec/abi.spec.json");
-const networkSchema = require("truffle-contract-schema/spec/network-object.spec.json");
-const contractSchema = require("truffle-contract-schema/spec/contract-object.spec.json");
+export const schema = mergeSchemas({
+  schemas: [
+    rootSchema,
+    transformSchema(jsonSchema, [
+      new FilterRootFields( (_, rootField) => rootField !== "contract"),
+      new FilterRootFields( (_, rootField) => rootField !== "contractNames"),
+    ]),
+    `type Query {
+      contractNames: [String]!
+      contractType(name: String!): ContractType
+      contractInstance(networkId: String!, name: String!): ContractInstance
+    }`,
+    `extend type ABI {
+      items: [AbiItem]!
+    }`
+  ],
+  resolvers: {
+    Query: {
+      contractNames: {
+        resolve: (_, args, context, info) => info.mergeInfo.delegateToSchema({
+          schema: jsonSchema,
+          operation: "query",
+          fieldName: "contractNames",
+          args,
+          context,
+          info
+        })
+      },
+      contractType: {
+        resolve: (_, args, context, info) => info.mergeInfo.delegateToSchema({
+          schema: jsonSchema,
+          operation: "query",
+          fieldName: "contract",
+          args,
+          context,
+          info,
+        })
+      },
 
-import { resolvers } from "./resolvers";
+      contractInstance: {
+        resolve: (_, args, context, info) => info.mergeInfo.delegateToSchema({
+          schema: jsonSchema,
+          operation: "query",
+          fieldName: "contract",
+          args,
+          context,
+          info,
+        })
+      }
+    },
 
-function searchReplace(predicate, func) {
-  const search = (item) => {
-    if (item instanceof Array) {
-      return item.map(search);
-    } else if (typeof item === "object") {
-      return Object.assign(
-        {}, ...Object.entries(item)
-          .map(
-            ([ key, value ]: any) => {
-              return predicate(key, value)
-                ? func(key, value)
-                : { [key]: search(value) }
+    ContractInstance: {
+      address: {
+        fragment: `... on ContractObject {
+          networks {
+            networkObject {
+              address
             }
-          )
-      );
-    } else {
-      return item;
-    }
-  }
-
-  return search;
-}
-
-function convertToArray(schema, keyName = "key", valueName = "value") {
-  const valueTypes = [
-    ...Object.values(schema.patternProperties || {}),
-    ...(schema.additionalProperties || [])
-  ];
-
-  if (!valueTypes.length) {
-    return schema;
-  }
-
-  const valueType = (valueTypes.length > 1)
-    ? { oneOf: valueTypes }
-    : valueTypes[0];
-
-  return {
-    type: "array",
-    items: {
-      type: "object",
-      properties: {
-        [keyName]: { type: "string" },
-        [valueName]: valueType
-      }
-    }
-  }
-}
-
-function processSchema(name, schema) {
-  const definitions = [
-    ...Object.entries(schema.definitions)
-      .map( ([ id, definition ]) => ({
-        ...definition,
-
-        "$id": id
-      }))
-  ];
-
-  return [...definitions, { ...schema, "$id": name }];
-}
-
-const translations = [
-  // fix cross-schema references
-  ({ contractSchema, ...schemas }) => ({
-    ...schemas,
-
-    contractSchema: {
-      ...contractSchema,
-
-      properties: {
-        ...contractSchema.properties,
-
-        // instead of "abi.spec.json#"
-        abi: {
-          ...contractSchema.properties.abi,
-          $ref: "ABI"
-        },
-
-        networks: {
-          ...contractSchema.properties.networks,
-
-          // instead of "network-object.spec.json#"
-          // uses object mapping indirection to avoid hard-coding regex
-          patternProperties: Object.assign(
-            {}, ...
-            Object.keys(contractSchema.properties.networks.patternProperties)
-              .map( (pattern) => ({ [pattern]: { $ref: "NetworkObject" } }) )
-          )
-        }
-      }
-    }
-  }),
-
-  // simplify parameter type definition
-  // definition in schema serves purely for validation, exclude as out of scope
-  ({ abiSchema, ...schemas }) => ({
-    ...schemas,
-
-    abiSchema: {
-      ...abiSchema,
-
-      definitions: {
-        ...abiSchema.definitions,
-
-        Type: {
-          type: "string"
-        }
-      }
-    }
-  }),
-
-  // fix AbiItem polymorphism
-  ({ abiSchema, ...schemas }) => ({
-    ...schemas,
-
-    abiSchema: {
-      ...abiSchema,
-
-      definitions: {
-        ...abiSchema.definitions,
-
-        // add definition - not in schema
-        ItemType: {
-          type: "string",
-          enum: [
-            "event",
-            "function",
-            "constructor",
-            "fallback"
-          ]
-        },
-
-        // ensure all items have same definition for `type` property
-        // (including nullability, says GraphQL)
-        ...Object.assign(
-          {},
-          // for each kind of abi item
-          ...[
-            "Event",
-            "NormalFunction",
-            "ConstructorFunction",
-            "FallbackFunction"
-          ]
-            // lookup corresponding definition so we can use it by short name
+          }
+        }`,
+        resolve: (obj) => {
+          const { networks } = obj;
+          const result = networks
             .map(
-              (typeName) => ([ typeName, abiSchema.definitions[typeName] ])
-            )
-            // generate revised definition as key/value pair
-            .map(
-              ([ typeName, itemType ]) => ({
-                [typeName]: {
-                  ...itemType,
+              ({ networkObject: { address } }) => address
+            )[0];
 
-                  properties: {
-                    ...itemType.properties,
-
-                    // assign that new definition for all item types
-                    type: {
-                      $ref: "#/definitions/ItemType"
-                    }
-                  },
-
-                  // ensure `type` is in array of required property names
-                  required: Array.from(new Set([ ...itemType.required, "type" ]))
-                }
-              })
-            )
-        )
-      }
-    }
-  }),
-
-  // find all refs and remove leading `#/definitions/`
-  searchReplace(
-    (key) => key === "$ref",
-    (key, value) => ({ [key]: value.replace(/^#\/definitions\/(.+)/, "$1") })
-  ),
-
-  // find all `^x-` patternProperties and remove
-  searchReplace(
-    (key) => key === "^x-",
-    () => ({})
-  ),
-
-  // manually fix network object references to event
-  searchReplace(
-    (_, value) => value === "abi.spec.json#/definitions/Event",
-    (key) => ({ [key]: "Event" })
-  ),
-
-
-  ({ contractSchema, ...schemas }) => ({
-    ...schemas,
-
-    contractSchema: {
-      ...contractSchema,
-
-      properties: {
-        ...contractSchema.properties,
-        networks: convertToArray(
-          contractSchema.properties.networks,
-          "networkId",
-          "networkObject"
-        )
-      }
-    }
-  })
-
-];
-
-
-function processSchemas(schemas) {
-  const {
-    abiSchema,
-    networkSchema,
-    contractSchema
-  } = translations.reduce(
-    (schemas, translate: any) => translate(schemas),
-    schemas
-  )
-
-  return [
-    ...processSchema("ABI", abiSchema),
-    ...processSchema("NetworkObject", networkSchema),
-    ...processSchema("ContractObject", contractSchema)
-  ]
-}
-
-const jsonSchema = processSchemas({
-  abiSchema,
-  networkSchema,
-  contractSchema
-});
-
-
-const entryPoints = types => ({
-  query: new GraphQLObjectType({
-    name: "Query",
-    fields: {
-      contract: {
-        type: types["ContractObject"],
-        args: {
-          name: { type: new GraphQLNonNull(types["Name"]) }
+          return result;
         }
       },
-      contractNames: {
-        type: new GraphQLNonNull(new GraphQLList(types["Name"]))
+      callBytecode: {
+        fragment: `... on ContractObject {
+          deployedSourceMap,
+          deployedBytecode
+        }`,
+        resolve: ({
+          deployedBytecode: bytes,
+          deployedSourceMap: sourceMap
+        }) => ({ bytes, sourceMap })
+      },
+      contractType: {
+        fragment: `... on ContractObject {
+          name: contractName
+        }`,
+        resolve: (obj, {}, context, info) => info.mergeInfo.delegateToSchema({
+          schema: jsonSchema,
+          operation: "query",
+          fieldName: "contract",
+          args: {
+            name: obj.name
+          },
+          context,
+          info,
+        })
       }
-    }
-  })
+    },
+
+    ContractType: {
+      name: {
+        fragment: "... on ContractObject { name: contractName }"
+      },
+
+      createBytecode: {
+        fragment: "... on ContractObject { sourceMap, bytecode }",
+        resolve: ({ bytecode: bytes, sourceMap }) => ({ bytes, sourceMap })
+      }
+    },
+
+    Bytecode: {
+      instructions: ({ bytes, sourceMap }) =>
+        readInstructions(bytes, sourceMap)
+    },
+  }
 });
-
-
-const graphqlSchema = convert({ jsonSchema, entryPoints });
-// console.debug("graphqlSchema %o", graphqlSchema);
-const typeDefs = printSchema(graphqlSchema);
-// console.debug("typeDefs %s", typeDefs);
-
-const schema = makeExecutableSchema({ typeDefs, resolvers });
-
-export default schema;

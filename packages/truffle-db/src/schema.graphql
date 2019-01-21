@@ -3,17 +3,10 @@ scalar NetworkID
 scalar TransactionHash
 scalar Value
 scalar Bytes
-scalar ABI
 scalar Object
 scalar AST
 scalar ByteOffset
 scalar FileIndex
-
-type Project {
-  contractType(name: String!): ContractType
-  contractInstance(networkId: String!, name: String!): ContractInstance
-}
-
 
 type ContractInstance {
   address: Address!
@@ -30,6 +23,10 @@ type ContractType {
   name: String
   compilation: Compilation
   createBytecode: Bytecode
+}
+
+type ABI {
+  json: String!
 }
 
 type Network {
@@ -68,11 +65,11 @@ type Instruction {
 
 type InstructionMeta {
   cost: Int!,
-  dynamic: Boolean!,
+  dynamic: Boolean,
 
   # stack operations
-  pops: Int!,
-  pushes: Int!
+  pops: Int,
+  pushes: Int
 }
 
 type SourceRange {
@@ -111,9 +108,4 @@ type SourceRangeMeta {
 enum JumpDirection {
   IN
   OUT
-}
-
-
-type Query {
-  truffleProject: Project!
 }
