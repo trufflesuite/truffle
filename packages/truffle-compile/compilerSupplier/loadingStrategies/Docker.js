@@ -1,12 +1,14 @@
 const request = require("request-promise");
 const fs = require("fs");
 const { execSync } = require("child_process");
+const ora = require("ora");
+const semver = require("semver");
 const LoadingStrategy = require("./LoadingStrategy");
 const VersionRange = require("./VersionRange");
 
 class Docker extends LoadingStrategy {
-  load() {
-    const versionString = this.validateAndGetSolcVersion();
+  async load() {
+    const versionString = await this.validateAndGetSolcVersion();
     const command =
       "docker run -i ethereum/solc:" + this.config.version + " --standard-json";
 
@@ -38,7 +40,27 @@ class Docker extends LoadingStrategy {
       });
   }
 
-  validateAndGetSolcVersion() {
+  downloadDockerImage(image) {
+    if (!semver.valid(image)) {
+      const message =
+        `The image version you have provided is not valid.\n` +
+        `Please ensure that ${image} is a valid docker image name.`;
+      throw new Error(message);
+    }
+    const spinner = ora({
+      text: "Downloading Docker image",
+      color: "red"
+    }).start();
+    try {
+      execSync(`docker pull ethereum/solc:${image}`);
+      spinner.stop();
+    } catch (error) {
+      spinner.stop();
+      throw new Error(error);
+    }
+  }
+
+  async validateAndGetSolcVersion() {
     const image = this.config.version;
     const fileName = image + ".version";
 
@@ -61,7 +83,9 @@ class Docker extends LoadingStrategy {
     try {
       execSync("docker inspect --type=image ethereum/solc:" + image);
     } catch (error) {
-      throw this.errors("noImage", image);
+      console.log(`${image} does not exist locally.\n`);
+      console.log("Attempting to download the Docker image.");
+      this.downloadDockerImage(image);
     }
 
     // Get version & cache.
