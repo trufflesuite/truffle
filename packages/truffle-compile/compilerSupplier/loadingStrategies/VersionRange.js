@@ -95,23 +95,22 @@ class VersionRange extends LoadingStrategy {
 
     if (!fileName) throw new Error("No matching version found");
 
+    return this.getSolcByUrlAndCache(fileName);
+  }
+
+  async getSolcByUrlAndCache(fileName) {
     const url = this.config.compilerUrlRoot + fileName;
     const spinner = ora({
       text: "Downloading compiler",
       color: "red"
     }).start();
-
-    return this.getSolcByUrlAndCache(url, fileName, spinner);
-  }
-
-  async getSolcByUrlAndCache(url, fileName, spinner) {
     try {
       const response = await request.get(url);
-      if (spinner) spinner.stop();
+      spinner.stop();
       this.addFileToCache(response, fileName);
       return this.compilerFromString(response);
     } catch (error) {
-      if (spinner) spinner.stop();
+      spinner.stop();
       throw this.errors("noRequest", url, error);
     }
   }
@@ -125,19 +124,12 @@ class VersionRange extends LoadingStrategy {
     }
 
     const fileName = this.getSolcVersionFileName(version, allVersions);
-
     if (!fileName) throw this.errors("noVersion", version);
 
     if (this.fileIsCached(fileName))
       return this.getCachedSolcByFileName(fileName);
 
-    const url = this.config.compilerUrlRoot + fileName;
-    const spinner = ora({
-      text: "Downloading compiler",
-      color: "red"
-    }).start();
-
-    return this.getSolcByUrlAndCache(url, fileName, spinner);
+    return this.getSolcByUrlAndCache(fileName);
   }
 
   getSolcVersions() {
