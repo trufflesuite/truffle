@@ -4,7 +4,6 @@ moduleAlias.addAlias("truffle-db", path.join(__dirname));
 
 require("source-map-support/register");
 
-const { default: TruffleDB, schema } = require("./db");
+const { TruffleDB } = require("./db");
 
-export default TruffleDB;
-export { schema };
+export { TruffleDB };

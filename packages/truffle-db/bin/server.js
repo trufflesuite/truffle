@@ -1,24 +1,19 @@
 const { ApolloServer } = require("apollo-server");
-const TruffleResolver = require("truffle-resolver");
 
-const { default: TruffleDB, schema } = require("truffle-db");
+const { TruffleDB } = require("truffle-db");
 
 const port = 4444;
 
-const artifacts = new TruffleResolver({
-  working_directory: process.cwd(),
+const db = new TruffleDB({
   contracts_build_directory: process.argv[2] || process.cwd()
 });
 
-const db = new TruffleDB(artifacts);
+const { schema, context } = db;
 
 const server = new ApolloServer({
-  schema,
   tracing: true,
-  context: {
-    ...db.context,
-    artifactsDirectory: process.argv[2] || process.cwd()
-  }
+  schema,
+  context
 });
 
 // This `listen` method launches a web-server.  Existing apps
