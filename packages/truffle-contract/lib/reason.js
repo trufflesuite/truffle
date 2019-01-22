@@ -39,7 +39,7 @@ const reason = {
     const packet = {
       jsonrpc: '2.0',
       method: 'eth_call',
-      params: [params, 'latest'],
+      params: [params, 'pending'],
       id: new Date().getTime(),
     };
 
