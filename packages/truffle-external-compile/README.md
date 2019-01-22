@@ -4,7 +4,7 @@ Package to enable Truffle to run arbitrary commands as part of compilation.
 
 ## Configuration
 
-In your Truffle config (`truffle.js`):
+In your Truffle config (`truffle-config.js`):
 
 ```javascript
 module.exports = {
