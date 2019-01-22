@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("decoder:interface:contract-decoder");
+
 import AsyncEventEmitter from "async-eventemitter";
 import Web3 from "web3";
 import { ContractObject } from "truffle-contract-schema/spec";
@@ -162,6 +165,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   public async init(): Promise<void> {
+    debug("init called");
     this.referenceDeclarations = general.getReferenceDeclarations(Object.values(this.contractNodes));
 
     this.eventDefinitions = general.getEventDefinitions(Object.values(this.contractNodes));
@@ -174,7 +178,9 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     }
 
     this.storageAllocations = storage.getStorageAllocations(this.referenceDeclarations, {[this.contractNode.id]: this.contractNode});
+    debug("done with allocation");
     this.stateVariableReferences = this.storageAllocations[this.contractNode.id].members;
+    debug("stateVariableReferences %O", this.stateVariableReferences);
   }
 
   public async state(block: BlockType = "latest"): Promise<ContractState | undefined> {
@@ -184,8 +190,9 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       variables: {}
     };
 
-    for(const id in this.stateVariableReferences) {
-      const variable = this.stateVariableReferences[id];
+    debug("state called");
+
+    for(const variable of Object.values(this.stateVariableReferences)) {
 
       const info: EvmInfo = {
         state: {
@@ -199,13 +206,17 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         variables: this.stateVariableReferences
       };
 
+      debug("about to decode %s", variable.definition.name);
       const val = await decode(variable.definition, variable.pointer, info, this.web3, this.contractAddress);
+      debug("decoded");
 
       result.variables[variable.definition.name] = <DecodedVariable>{
         name: variable.definition.name,
         type: DefinitionUtils.typeClass(variable.definition),
         value: val
       };
+
+      debug("var %O", result.variables[variable.definition.name]);
     }
 
     return result;

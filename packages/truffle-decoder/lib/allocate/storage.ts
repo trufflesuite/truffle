@@ -16,6 +16,7 @@ export function isWordsLength(size: StorageLength): size is {words: BN} {
 //temporary HACK, to be removed in next PR (or soon, anyway)
 export function storageLengthToBytes(size: StorageLength): number {
   if(isWordsLength(size)) {
+    debug("size.words %d", size.words);
     return size.words.muln(DecodeUtils.EVM.WORD_SIZE).toNumber(); //HACK
   }
   else {
@@ -29,7 +30,6 @@ export function getStorageAllocations(referenceDeclarations: AstReferences, cont
   let allocations: StorageAllocations = {};
   for(const node of Object.values(referenceDeclarations)) {
     if(node.nodeType === "StructDefinition") {
-      debug("nodeType %s", node.nodeType);
       allocations = allocateStruct(node, referenceDeclarations, allocations);
     }
   }
@@ -40,7 +40,6 @@ export function getStorageAllocations(referenceDeclarations: AstReferences, cont
 }
 
 function allocateStruct(structDefinition: AstDefinition, referenceDeclarations: AstReferences, existingAllocations: StorageAllocations): StorageAllocations {
-  debug("structDefinition %O", structDefinition);
   return allocateMembers(structDefinition, structDefinition.members, referenceDeclarations, existingAllocations);
 }
 
@@ -65,8 +64,9 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
     let size: StorageLength;
     [size, allocations] = storageSizeAndAllocate(node, referenceDeclarations, allocations);
 
-    if (isWordsLength(size) || size.bytes < index + 1) {
-      //if it's sized in words, we need to start on a new slot;
+    if ( (isWordsLength(size) && index < DecodeUtils.EVM.WORD_SIZE - 1) ||
+      //if it's sized in words (and we're not at the start of slot) we need to start on a new slot
+      (!isWordsLength(size) && size.bytes > index + 1) ) {
       //if it's sized in bytes but there's not enough room, we also need a new slot
       index = DecodeUtils.EVM.WORD_SIZE - 1;
       offset.iaddn(1);
@@ -99,7 +99,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
           slot: {
             offset: offset.clone() //start at the current slot...
           },
-          index: index - size.bytes //...early enough to fit what's being allocated.
+          index: index - (size.bytes - 1) //...early enough to fit what's being allocated.
         },
         to: {
           slot: {
@@ -170,9 +170,6 @@ function allocateContract(contract: AstDefinition, referenceDeclarations: AstRef
   //clone with slice first
   let linearizedBaseContractsFromBase: number[] = contract.linearizedBaseContracts.slice().reverse();
 
-  debug("LBCFB %o", linearizedBaseContractsFromBase);
-  debug("ref decl ids %o", Object.keys(referenceDeclarations));
-
   let vars = [].concat(...linearizedBaseContractsFromBase.map( (id: number) =>
     getStateVariables(referenceDeclarations[id])
   ));
@@ -212,7 +209,7 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
     }
 
     case "enum": {
-      const referenceId: number = definition.referencedDeclaration;
+      const referenceId: number = definition.referencedDeclaration || definition.typeName.referencedDeclaration;
       const referenceDeclaration: AstDefinition = referenceDeclarations[referenceId];
       const numValues: number = referenceDeclaration.members.length;
       return [{bytes: Math.ceil(Math.log2(numValues) / 8)}, existingAllocations];
@@ -280,7 +277,9 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
       let allocation: StorageAllocation | undefined = allocations[referenceId]; //may be undefined!
       if(allocation === undefined) {
         //if we don't find an allocation, we'll have to do the allocation ourselves
-        allocations = allocateStruct(definition.typeName || definition, referenceDeclarations, existingAllocations);
+        const referenceDeclaration: AstDefinition = referenceDeclarations[referenceId];
+        debug("definition %O", definition);
+        allocations = allocateStruct(referenceDeclaration, referenceDeclarations, existingAllocations);
         allocation = allocations[referenceId];
       }
       //having found our allocation, we can just look up its size
