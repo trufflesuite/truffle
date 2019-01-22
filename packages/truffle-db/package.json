@@ -13,8 +13,7 @@
   "license": "MIT",
   "main": "dist/index.js",
   "directories": {
-    "dist": "dist",
-    "test": "__tests__"
+    "dist": "dist"
   },
   "files": [
     "dist",
@@ -29,7 +28,7 @@
     "build": "./bin/build",
     "start": "ts-node-dev -r tsconfig-paths/register ./bin/server",
     "codegen": "ts-node-dev -r tsconfig-paths/register ./bin/codegen.js",
-    "test": "echo \"Error: run tests from root\" && exit 1"
+    "test": "jest --verbose"
   },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
@@ -53,6 +52,33 @@
     "jsonschema2graphql": "^1.1.0",
     "module-alias": "^2.1.0",
     "source-map-support": "^0.5.9"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "ts",
+      "js",
+      "json",
+      "node"
+    ],
+    "testEnvironment": "node",
+    "transform": {
+      "^.+\\.ts$": "ts-jest"
+    },
+    "globals": {
+      "ts-jest": {
+        "tsConfig": "<rootDir>/tsconfig.json",
+        "diagnostics": true
+      }
+    },
+    "moduleNameMapper": {
+      "^truffle-db/(.*)": "<rootDir>/src/$1",
+      "^truffle-db$": "<rootDir>/src",
+      "^test/(.*)": "<rootDir>/test/$1"
+    },
+    "testMatch": [
+      "<rootDir>/src/**/test/*.+(ts|js)",
+      "<rootDir>/test/**/test/*.+(ts|js)"
+    ]
   },
   "_moduleAliases": {
     "truffle-db": "truffle-db/dist"

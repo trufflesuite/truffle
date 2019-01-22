@@ -27,7 +27,7 @@ export class TruffleDB {
     }
   }
 
-  async query (query: string): Promise<any> {
-    return await graphql(schema, query);
+  async query (query: string, variables: any): Promise<any> {
+    return await graphql(this.schema, query, null, this.context, variables);
   }
 }
