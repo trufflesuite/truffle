@@ -71,7 +71,7 @@ var provider = new HDWalletProvider(privateKeys, "http://localhost:8545", 0, 2);
 
 You can easily use this within a Truffle configuration. For instance:
 
-truffle.js
+truffle-config.js
 ```javascript
 var HDWalletProvider = require("truffle-hdwallet-provider");
 

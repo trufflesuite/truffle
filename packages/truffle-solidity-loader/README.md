@@ -49,9 +49,9 @@ Add the appropriate config to your `loaders` section of your Webpack 4 config:
 Webpack applies loaders [right to left](https://webpack.js.org/api/loaders/#pitching-loader), therefore the output of `truffle-solidity-loader` goes into `json-loader`.
 
 
-### `truffle.js` integration
+### `truffle-config.js` integration
 
-The loader will auto detect a `truffle.js` (or `truffle-config.js` for Windows users) config file in your project and use that for configuration.
+The loader will auto detect a `truffle-config.js` (or `truffle.js`) config file in your project and use that for configuration.
 
 ### Loader options
 
