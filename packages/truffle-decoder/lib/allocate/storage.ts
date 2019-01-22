@@ -28,8 +28,10 @@ export function storageLengthToBytes(size: StorageLength): number {
 export function getStorageAllocations(referenceDeclarations: AstReferences, contracts: AstReferences): StorageAllocations {
   let allocations: StorageAllocations = {};
   for(const node of Object.values(referenceDeclarations)) {
-    if(node.nodeType === "StructDefinition")
+    if(node.nodeType === "StructDefinition") {
+      debug("nodeType %s", node.nodeType);
       allocations = allocateStruct(node, referenceDeclarations, allocations);
+    }
   }
   for(const contract of Object.values(contracts)) {
     allocations = allocateContract(contract, referenceDeclarations, allocations);
@@ -38,6 +40,7 @@ export function getStorageAllocations(referenceDeclarations: AstReferences, cont
 }
 
 function allocateStruct(structDefinition: AstDefinition, referenceDeclarations: AstReferences, existingAllocations: StorageAllocations): StorageAllocations {
+  debug("structDefinition %O", structDefinition);
   return allocateMembers(structDefinition, structDefinition.members, referenceDeclarations, existingAllocations);
 }
 
@@ -272,12 +275,12 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
     }
 
     case "struct": {
-      const referenceId: number = definition.referencedDeclaration;
+      const referenceId: number = definition.referencedDeclaration || definition.typeName.referencedDeclaration;
       let allocations: StorageAllocations = existingAllocations;
       let allocation: StorageAllocation | undefined = allocations[referenceId]; //may be undefined!
       if(allocation === undefined) {
         //if we don't find an allocation, we'll have to do the allocation ourselves
-        allocations = allocateStruct(definition, referenceDeclarations, existingAllocations);
+        allocations = allocateStruct(definition.typeName || definition, referenceDeclarations, existingAllocations);
         allocation = allocations[referenceId];
       }
       //having found our allocation, we can just look up its size

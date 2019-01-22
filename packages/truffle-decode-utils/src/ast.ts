@@ -5,17 +5,19 @@ export interface AstTypeDescriptions {
 }
 
 export interface AstDefinition {
-  constant: boolean;
+  constant?: boolean;
   id: number;
   name: string;
   linearizedBaseContracts?: number[];
+  members?: AstDefinition[];
+  nodes?: any[]; //sorry
   nodeType: string;
-  scope: number;
+  scope?: number;
   src: string;
-  stateVariable: boolean;
-  storageLocation: string;
+  stateVariable?: boolean;
+  storageLocation?: string;
   typeDescriptions: AstTypeDescriptions;
-  typeName: {
+  typeName?: {
     id: number,
     name: string;
     nodeType: string;
@@ -28,10 +30,10 @@ export interface AstDefinition {
     baseType?: any;
     visibility?: string;
   };
-  expression: {
+  expression?: {
     referencedDeclaration?: any;
   };
-  value: null | any;
+  value?: null | any;
   visibility?: string;
   referencedDeclaration?: any;
   [k: string]: any;
