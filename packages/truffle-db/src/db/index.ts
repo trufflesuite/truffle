@@ -20,14 +20,14 @@ export class TruffleDB {
     this.schema = schema;
   }
 
+  async query (query: string, variables: any): Promise<any> {
+    return await graphql(this.schema, query, null, this.context, variables);
+  }
+
   static createContext(config: IConfig): IContext {
     return {
       artifactsDirectory: config.contracts_build_directory,
       workingDirectory: config.working_directory || process.cwd()
     }
-  }
-
-  async query (query: string, variables: any): Promise<any> {
-    return await graphql(this.schema, query, null, this.context, variables);
   }
 }
