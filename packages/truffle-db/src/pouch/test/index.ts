@@ -16,6 +16,7 @@ it("queries contract names", async () => {
   const workspace = new PouchConnector();
 
   const result = await graphql(schema, GetContractNames, null, { workspace });
+  console.debug("result %o", result);
   expect(result).toHaveProperty("data");
 
   const { data } = result;

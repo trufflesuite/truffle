@@ -1,6 +1,8 @@
 import { graphql, GraphQLSchema } from "graphql";
 import { schema } from "truffle-db/data";
 
+import { PouchConnector } from "truffle-db/pouch/db";
+
 interface IConfig {
   contracts_build_directory: string,
   working_directory?: string
@@ -8,7 +10,8 @@ interface IConfig {
 
 interface IContext {
   artifactsDirectory: string,
-  workingDirectory: string
+  workingDirectory: string,
+  workspace: PouchConnector
 }
 
 export class TruffleDB {
@@ -26,6 +29,7 @@ export class TruffleDB {
 
   static createContext(config: IConfig): IContext {
     return {
+      workspace: new PouchConnector(),
       artifactsDirectory: config.contracts_build_directory,
       workingDirectory: config.working_directory || process.cwd()
     }

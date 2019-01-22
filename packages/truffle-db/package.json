@@ -54,6 +54,7 @@
     "module-alias": "^2.1.0",
     "pouchdb": "^7.0.0",
     "pouchdb-adapter-memory": "^7.0.0",
+    "pouchdb-find": "^7.0.0",
     "source-map-support": "^0.5.9"
   },
   "jest": {
