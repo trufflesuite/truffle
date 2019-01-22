@@ -4,6 +4,7 @@ import { graphql } from "graphql";
 import { soliditySha3 } from "web3-utils";
 
 import { PouchConnector, schema } from "truffle-db/pouch";
+import { readInstructions } from "truffle-db/artifacts/bytecode";
 
 const fixturesDirectory = path.join(
   __dirname, // truffle-db/src/db/test
@@ -38,6 +39,19 @@ query GetSource($id: String!) {
 const AddSource = `
 mutation AddSource($contents: String!, $sourcePath: String, $ast: AST) {
   addSource(contents: $contents, sourcePath: $sourcePath, ast: $ast)
+}`;
+
+const GetBytecode = `
+query GetBytecode($id: String!) {
+  bytecode(id: $id) {
+    id
+    bytes
+  }
+}`;
+
+const AddBytecode = `
+mutation AddBytecode($bytes: Bytes!) {
+  addBytecode(bytes: $bytes)
 }`;
 
 it("queries contract names", async () => {
@@ -118,6 +132,47 @@ it("adds source", async () => {
     expect(id).toEqual(variables.id);
     expect(contents).toEqual(variables.contents);
     expect(sourcePath).toEqual(variables.sourcePath);
+  }
+});
+
+it("adds bytecode", async () => {
+  const workspace = new PouchConnector();
+  const variables = {
+    id: soliditySha3(Migrations.bytecode),
+    bytes: Migrations.bytecode
+  }
+
+  // add bytecode
+  {
+    const result = await graphql(
+      schema, AddBytecode, null, { workspace }, {
+        bytes: variables.bytes
+      }
+    );
+
+    const { data } = result;
+    expect(data).toHaveProperty("addBytecode");
+
+    const { addBytecode } = data;
+    expect(addBytecode).toEqual(variables.id);
+  }
+
+  // ensure retrieved as matching
+  {
+    const result = await graphql(schema, GetBytecode, null, { workspace }, {
+      id: variables.id
+    });
+
+    const { data } = result;
+    expect(data).toHaveProperty("bytecode");
+
+    const { bytecode } = data;
+    expect(bytecode).toHaveProperty("id");
+    expect(bytecode).toHaveProperty("bytes");
+
+    const { id, bytes } = bytecode;
+    expect(id).toEqual(variables.id);
+    expect(bytes).toEqual(variables.bytes);
   }
 
 });

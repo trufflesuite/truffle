@@ -10,10 +10,14 @@ export const schema = mergeSchemas({
     // fix seems to require nesting mergeSchemas so extend works
     mergeSchemas({
       schemas: [
-        rootSchema,
-        `extend type Source {
+        rootSchema, `
+        extend type Source {
           id: ID!
-        }`,
+        }
+        extend type Bytecode {
+          id: ID!
+        }
+        `,
       ]
     }),
 
@@ -21,11 +25,13 @@ export const schema = mergeSchemas({
     `type Query {
       contractNames: [String]!
       source(id: String!): Source
+      bytecode(id: String!): Bytecode
     }
 
     type Mutation {
       addContractName(name: String!): String!
       addSource(contents: String!, sourcePath: String, ast: AST): ID!
+      addBytecode(bytes: Bytes!): ID!
     } `
   ],
   resolvers: {
@@ -37,6 +43,10 @@ export const schema = mergeSchemas({
       source: {
         resolve: (_, { id }, { workspace }) =>
           workspace.source({ id })
+      },
+      bytecode: {
+        resolve: (_, { id }, { workspace }) =>
+          workspace.bytecode({ id })
       }
     },
     Mutation: {
@@ -47,7 +57,12 @@ export const schema = mergeSchemas({
       addSource: {
         resolve: (_, { contents, sourcePath, ast }, { workspace }) =>
           workspace.addSource({ contents, sourcePath, ast })
+      },
+      addBytecode: {
+        resolve: (_, { bytes }, { workspace }) =>
+          workspace.addBytecode({ bytes })
       }
+
     }
   }
 });

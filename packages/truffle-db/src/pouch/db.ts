@@ -15,12 +15,17 @@ const resources = {
       { fields: ["contents"] },
       { fields: ["sourcePath"] },
     ]
+  },
+  bytecodes: {
+    createIndexes: [
+    ]
   }
 }
 
 export class PouchConnector {
   contractTypes: PouchDB.Database;
   sources: PouchDB.Database;
+  bytecodes: PouchDB.Database;
 
   private ready: Promise<void>;
 
@@ -96,6 +101,32 @@ export class PouchConnector {
 
     await this.sources.put({
       ...source,
+
+      _id
+    });
+
+    return _id;
+  }
+
+  async bytecode ({ id }: { id: string }) {
+    await this.ready;
+
+    return {
+      ...await this.bytecodes.get(id),
+
+      id
+    };
+  }
+
+  async addBytecode(bytecode: DataModel.IBytecode): Promise<string> {
+    await this.ready;
+
+    const { bytes } = bytecode;
+
+    const _id = soliditySha3(bytes);
+
+    await this.bytecodes.put({
+      ...bytecode,
 
       _id
     });
