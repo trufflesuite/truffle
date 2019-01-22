@@ -63,9 +63,18 @@ export namespace Definition {
 
   export function isDynamicArray(definition: AstDefinition): boolean {
     return isArray(definition) && (
-      (definition.typeName && definition.typeName.length == null) ||
-        definition.length == null
+      definition.typeName
+        ? definition.typeName.length == null
+        : definition.length == null
     );
+  }
+
+  //length of a statically sized array -- please only use for arrays
+  //already verified to be static!
+  export function staticLength(definition: AstDefinition): number { //should this be BN?
+   return definition.typeName
+    ? parseInt(definition.typeName.length.value)
+    : parseInt(definition.length.value);
   }
 
   export function isStruct(definition: AstDefinition): boolean {

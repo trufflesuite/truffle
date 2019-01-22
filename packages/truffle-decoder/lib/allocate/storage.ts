@@ -64,12 +64,13 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
     let size: StorageLength;
     [size, allocations] = storageSizeAndAllocate(node, referenceDeclarations, allocations);
 
-    if ( (isWordsLength(size) && index < DecodeUtils.EVM.WORD_SIZE - 1) ||
-      //if it's sized in words (and we're not at the start of slot) we need to start on a new slot
-      (!isWordsLength(size) && size.bytes > index + 1) ) {
-      //if it's sized in bytes but there's not enough room, we also need a new slot
-      index = DecodeUtils.EVM.WORD_SIZE - 1;
-      offset.iaddn(1);
+    //if it's sized in words (and we're not at the start of slot) we need to start on a new slot
+    //if it's sized in bytes but there's not enough room, we also need a new slot
+    if ( isWordsLength(size)
+      ? index < DecodeUtils.EVM.WORD_SIZE - 1
+      : size.bytes > index + 1) {
+        index = DecodeUtils.EVM.WORD_SIZE - 1;
+        offset.iaddn(1);
     }
     //otherwise, we remain in place
   
@@ -249,20 +250,15 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
       }
       else {
         //static array case
-        const length: string = definition.length || definition.typeName.length;
+        const length: number = DecodeUtils.Definition.staticLength(definition);
         const baseDefinition: AstDefinition = definition.baseType || definition.typeName.baseType;
         const [baseSize, allocations] = storageSizeAndAllocate(baseDefinition, referenceDeclarations, existingAllocations);
         if(!isWordsLength(baseSize)) {
           //bytes case
           const perWord: number = Math.floor(DecodeUtils.EVM.WORD_SIZE / baseSize.bytes);
-          //bn.js has no ceiling-division, so we'll do a floor-division and then
-          //increment if not a multiple
-          const lengthBN: BN = new BN(length);
-          let numWords: BN = lengthBN.divn(perWord); //floor
-          if(lengthBN.modn(perWord) !== 0) { //modn returns a number, not a BN
-            numWords.iaddn(1); //increment if not multiple
-          }
-          return [{words: numWords}, allocations];
+          debug("length %o", length);
+          const numWords: number = Math.ceil(length / perWord);
+          return [{words: new BN(numWords)}, allocations];
         }
         else {
           //words case

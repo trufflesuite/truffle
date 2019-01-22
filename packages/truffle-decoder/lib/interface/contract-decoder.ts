@@ -176,6 +176,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         //that id must be a number even though the definition of AstReferences
         //says so
     }
+    debug("done with event definitions");
 
     this.storageAllocations = storage.getStorageAllocations(this.referenceDeclarations, {[this.contractNode.id]: this.contractNode});
     debug("done with allocation");
