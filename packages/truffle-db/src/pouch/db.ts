@@ -88,7 +88,7 @@ export class PouchConnector {
   async addSource (source: DataModel.ISource): Promise<string> {
     await this.ready;
 
-    const { contents, sourcePath, ast } = source;
+    const { contents, sourcePath } = source;
 
     // hash includes sourcePath because two files can have same contents, but
     // should have different IDs
