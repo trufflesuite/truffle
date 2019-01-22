@@ -164,7 +164,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     });
   }
 
-  public async init(): Promise<void> {
+  public init(): void {
     debug("init called");
     this.referenceDeclarations = general.getReferenceDeclarations(Object.values(this.contractNodes));
 
