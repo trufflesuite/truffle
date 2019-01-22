@@ -22,38 +22,6 @@ query GetContractNames {
   contractNames
 }`;
 
-const AddContractName = `
-mutation AddContractName {
-  addContractName(name: "Migrations")
-}`;
-
-const GetSource = `
-query GetSource($id: String!) {
-  source(id: $id) {
-    id
-    contents
-    sourcePath
-  }
-}`;
-
-const AddSource = `
-mutation AddSource($contents: String!, $sourcePath: String, $ast: AST) {
-  addSource(contents: $contents, sourcePath: $sourcePath, ast: $ast)
-}`;
-
-const GetBytecode = `
-query GetBytecode($id: String!) {
-  bytecode(id: $id) {
-    id
-    bytes
-  }
-}`;
-
-const AddBytecode = `
-mutation AddBytecode($bytes: Bytes!) {
-  addBytecode(bytes: $bytes)
-}`;
-
 it("queries contract names", async () => {
   const workspace = new PouchConnector();
 
@@ -66,6 +34,11 @@ it("queries contract names", async () => {
   const { contractNames } = data;
   expect(contractNames).toEqual([]);
 });
+
+const AddContractName = `
+mutation AddContractName {
+  addContractName(name: "Migrations")
+}`;
 
 it("adds a contract name", async () => {
   const workspace = new PouchConnector();
@@ -91,6 +64,20 @@ it("adds a contract name", async () => {
     expect(contractNames).toEqual(["Migrations"]);
   }
 });
+
+const GetSource = `
+query GetSource($id: String!) {
+  source(id: $id) {
+    id
+    contents
+    sourcePath
+  }
+}`;
+
+const AddSource = `
+mutation AddSource($contents: String!, $sourcePath: String, $ast: AST) {
+  addSource(contents: $contents, sourcePath: $sourcePath, ast: $ast)
+}`;
 
 it("adds source", async () => {
   const workspace = new PouchConnector();
@@ -135,6 +122,19 @@ it("adds source", async () => {
   }
 });
 
+const GetBytecode = `
+query GetBytecode($id: String!) {
+  bytecode(id: $id) {
+    id
+    bytes
+  }
+}`;
+
+const AddBytecode = `
+mutation AddBytecode($bytes: Bytes!) {
+  addBytecode(bytes: $bytes)
+}`;
+
 it("adds bytecode", async () => {
   const workspace = new PouchConnector();
   const variables = {
@@ -174,5 +174,91 @@ it("adds bytecode", async () => {
     expect(id).toEqual(variables.id);
     expect(bytes).toEqual(variables.bytes);
   }
+});
 
+const AddContractType = `
+mutation AddContractType($name: String!, $abi: String!, $createBytecode: ID) {
+  addContractType(name: $name, abi: $abi, createBytecode: $createBytecode)
+}`;
+
+const GetContractType = `
+query GetContractType($name: String!) {
+  contractType(name: $name) {
+    name
+    abi {
+      json
+    }
+    createBytecode {
+      bytes
+    }
+  }
+}`;
+
+it("stores and retrieves aggregated contract type with bytecode", async () => {
+  const workspace = new PouchConnector();
+  const variables = {
+    name: Migrations.contractName,
+    abi: JSON.stringify(Migrations.abi),
+    bytecodeId: soliditySha3(Migrations.bytecode),
+    bytes: Migrations.bytecode
+  }
+
+  // add bytecode
+  {
+    const result = await graphql(
+      schema, AddBytecode, null, { workspace }, {
+        bytes: variables.bytes
+      }
+    );
+
+    const { data } = result;
+    expect(data).toHaveProperty("addBytecode");
+
+    const { addBytecode } = data;
+    expect(addBytecode).toEqual(variables.bytecodeId);
+  }
+
+  // add contract type
+  {
+    const result = await graphql(
+      schema, AddContractType, null, { workspace }, {
+        name: variables.name,
+        abi: variables.abi,
+        createBytecode: variables.bytecodeId
+      }
+    );
+
+    const { data } = result;
+    expect(data).toHaveProperty("addContractType");
+
+    const { addContractType } = data;
+    expect(addContractType).toEqual(variables.name);
+  }
+
+  // ensure retrieved as matching
+  {
+    const result = await graphql(schema, GetContractType, null, { workspace }, {
+      name: variables.name
+    });
+
+    const { data } = result;
+    expect(data).toHaveProperty("contractType");
+
+    const { contractType } = data;
+    expect(contractType).toHaveProperty("name");
+    expect(contractType).toHaveProperty("abi");
+    expect(contractType).toHaveProperty("createBytecode");
+
+    const { name, abi, createBytecode } = contractType;
+    expect(name).toEqual(variables.name);
+    expect(abi).toHaveProperty("json");
+    expect(createBytecode).toHaveProperty("bytes");
+
+    const { json } = abi;
+    expect(json).toEqual(variables.abi);
+
+    const { bytes } = createBytecode;
+    expect(bytes).toEqual(variables.bytes);
+
+  }
 });

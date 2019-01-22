@@ -24,12 +24,14 @@ export const schema = mergeSchemas({
     // define entrypoints
     `type Query {
       contractNames: [String]!
+      contractType(name: String!): ContractType
       source(id: String!): Source
       bytecode(id: String!): Bytecode
     }
 
     type Mutation {
       addContractName(name: String!): String!
+      addContractType(name: String!, abi: String!, createBytecode: ID): String!
       addSource(contents: String!, sourcePath: String, ast: AST): ID!
       addBytecode(bytes: Bytes!): ID!
     } `
@@ -39,6 +41,10 @@ export const schema = mergeSchemas({
       contractNames: {
         resolve: (_, {}, { workspace }) =>
           workspace.contractNames()
+      },
+      contractType: {
+        resolve: (_, { name }, { workspace }) =>
+          workspace.contractType({ name })
       },
       source: {
         resolve: (_, { id }, { workspace }) =>
@@ -54,6 +60,10 @@ export const schema = mergeSchemas({
         resolve: (_, { name }, { workspace }) =>
           workspace.addContractName({ name })
       },
+      addContractType: {
+        resolve: (_, { name, abi, createBytecode }, { workspace }) =>
+          workspace.addContractType({ name, abi, createBytecode })
+      },
       addSource: {
         resolve: (_, { contents, sourcePath, ast }, { workspace }) =>
           workspace.addSource({ contents, sourcePath, ast })
@@ -62,7 +72,12 @@ export const schema = mergeSchemas({
         resolve: (_, { bytes }, { workspace }) =>
           workspace.addBytecode({ bytes })
       }
-
+    },
+    ContractType: {
+      createBytecode: {
+        resolve: ({ createBytecode }, _, { workspace }) =>
+          workspace.bytecode(createBytecode)
+      }
     }
   }
 });

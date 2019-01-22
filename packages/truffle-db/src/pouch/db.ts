@@ -62,14 +62,44 @@ export class PouchConnector {
     return docs.map( ({ name }) => name );
   }
 
-  async addContractType (contractType: { name: string }) {
+  async contractType ({ name }: { name: string }) {
     await this.ready;
 
-    return await this.contractTypes.put({
-      ...contractType,
+    try {
+      const result = {
+        ...await this.contractTypes.get(name)
+      }
+      return result;
+    } catch (_) {
+      return null;
+    }
+  }
 
+  async addContractType (contractType: {
+    name: string,
+    abi?: string,
+    createBytecode?: string
+  }) {
+    await this.ready;
+
+    const { name, abi, createBytecode } = contractType;
+
+    const { _rev } = await this.contractType({ name }) || { _rev: null };
+
+    await this.contractTypes.put({
+      name,
+      abi: {
+        json: abi
+      },
+      createBytecode: {
+        id: createBytecode
+      },
+
+      _rev,
       _id: contractType.name
-    })
+    });
+
+    return name;
   }
 
   async addContractName ({ name }: { name: string }) {
@@ -83,11 +113,15 @@ export class PouchConnector {
   async source ({ id }: { id: string }) {
     await this.ready;
 
-    return {
-      ...await this.sources.get(id),
+    try {
+      return {
+        ...await this.sources.get(id),
 
-      id
-    };
+        id
+      };
+    } catch (_) {
+      return null;
+    }
   }
 
   async addSource (source: DataModel.ISource): Promise<string> {
@@ -99,10 +133,13 @@ export class PouchConnector {
     // should have different IDs
     const _id = soliditySha3(contents, sourcePath);
 
+    const { _rev } = await this.source({ id: _id }) || { _rev: null };
+
     await this.sources.put({
       ...source,
 
-      _id
+      _id,
+      _rev
     });
 
     return _id;
@@ -111,24 +148,33 @@ export class PouchConnector {
   async bytecode ({ id }: { id: string }) {
     await this.ready;
 
-    return {
-      ...await this.bytecodes.get(id),
+    try {
+      return {
+        ...await this.bytecodes.get(id),
 
-      id
-    };
+        id
+      };
+    } catch (_) {
+      return null;
+    }
   }
 
-  async addBytecode(bytecode: DataModel.IBytecode): Promise<string> {
+  async addBytecode (bytecode: {
+    bytes: string
+  }) {
     await this.ready;
 
     const { bytes } = bytecode;
 
     const _id = soliditySha3(bytes);
 
+    const { _rev } = await this.bytecode({ id: _id }) || { _rev: null };
+
     await this.bytecodes.put({
       ...bytecode,
 
-      _id
+      _id,
+      _rev
     });
 
     return _id;
