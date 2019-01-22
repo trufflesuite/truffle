@@ -55,7 +55,8 @@
     "pouchdb": "^7.0.0",
     "pouchdb-adapter-memory": "^7.0.0",
     "pouchdb-find": "^7.0.0",
-    "source-map-support": "^0.5.9"
+    "source-map-support": "^0.5.9",
+    "web3-utils": "^1.0.0-beta.37"
   },
   "jest": {
     "moduleFileExtensions": [

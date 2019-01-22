@@ -1,6 +1,20 @@
+import path from "path";
+
 import { graphql } from "graphql";
+import { soliditySha3 } from "web3-utils";
 
 import { PouchConnector, schema } from "truffle-db/pouch";
+
+const fixturesDirectory = path.join(
+  __dirname, // truffle-db/src/db/test
+  "..", // truffle-db/src/db
+  "..", // truffle-db/src/
+  "..", // truffle-db/
+  "test",
+  "fixtures"
+);
+
+const Migrations = require(path.join(fixturesDirectory, "Migrations.json"));
 
 const GetContractNames = `
 query GetContractNames {
@@ -12,11 +26,24 @@ mutation AddContractName {
   addContractName(name: "Migrations")
 }`;
 
+const GetSource = `
+query GetSource($id: String!) {
+  source(id: $id) {
+    id
+    contents
+    sourcePath
+  }
+}`;
+
+const AddSource = `
+mutation AddSource($contents: String!, $sourcePath: String, $ast: AST) {
+  addSource(contents: $contents, sourcePath: $sourcePath, ast: $ast)
+}`;
+
 it("queries contract names", async () => {
   const workspace = new PouchConnector();
 
   const result = await graphql(schema, GetContractNames, null, { workspace });
-  console.debug("result %o", result);
   expect(result).toHaveProperty("data");
 
   const { data } = result;
@@ -49,4 +76,48 @@ it("adds a contract name", async () => {
     const { contractNames } = data;
     expect(contractNames).toEqual(["Migrations"]);
   }
+});
+
+it("adds source", async () => {
+  const workspace = new PouchConnector();
+  const variables = {
+    contents: Migrations.source,
+    sourcePath: Migrations.sourcePath,
+    ast: Migrations.ast,
+    id: soliditySha3(Migrations.source, Migrations.sourcePath)
+  }
+
+  // add source
+  {
+    const result = await graphql(
+      schema, AddSource, null, { workspace }, variables
+    );
+
+    const { data } = result;
+    expect(data).toHaveProperty("addSource");
+
+    const { addSource } = data;
+    expect(addSource).toEqual(variables.id);
+  }
+
+  // ensure retrieved as matching
+  {
+    const result = await graphql(schema, GetSource, null, { workspace }, {
+      id: variables.id
+    });
+
+    const { data } = result;
+    expect(data).toHaveProperty("source");
+
+    const { source } = data;
+    expect(source).toHaveProperty("id");
+    expect(source).toHaveProperty("contents");
+    expect(source).toHaveProperty("sourcePath");
+
+    const { id, contents, sourcePath } = source;
+    expect(id).toEqual(variables.id);
+    expect(contents).toEqual(variables.contents);
+    expect(sourcePath).toEqual(variables.sourcePath);
+  }
+
 });
