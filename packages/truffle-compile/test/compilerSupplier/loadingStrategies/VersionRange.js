@@ -4,6 +4,7 @@ const request = require("request-promise");
 const sinon = require("sinon");
 const { VersionRange } = require("../../../compilerSupplier/loadingStrategies");
 const instance = new VersionRange();
+let fileName;
 const compilerFileNames = [
   "soljson-v0.4.22+commit.124ca40d.js",
   "soljson-v0.4.23+commit.1534a40d.js",
@@ -165,7 +166,9 @@ describe("VersionRange loading strategy", () => {
       });
       it("throws an error when it can't find a match", async () => {
         try {
-          await instance.getSolcByCommit("some garbage that will not match");
+          let something = await instance.getSolcByCommit(
+            "some garbage that will not match"
+          );
           assert(false);
         } catch (error) {
           assert(error.message === "No matching version found");
@@ -173,11 +176,13 @@ describe("VersionRange loading strategy", () => {
       });
     });
   });
-  describe(".getSolcByUrlAndCache()", () => {
+
+  describe(".getSolcByUrlAndCache(fileName)", () => {
     beforeEach(() => {
+      fileName = "someSolcFile";
       sinon
         .stub(request, "get")
-        .withArgs("someUrl")
+        .withArgs(`${instance.config.compilerUrlRoot}${fileName}`)
         .returns("requestReturn");
       sinon.stub(instance, "addFileToCache").withArgs("requestReturn");
       sinon
@@ -192,7 +197,7 @@ describe("VersionRange loading strategy", () => {
     });
 
     it("calls addFileToCache with the response and the file name", async () => {
-      result = await instance.getSolcByUrlAndCache("someUrl", "someSolcFile");
+      result = await instance.getSolcByUrlAndCache(fileName);
       assert(
         instance.addFileToCache.calledWith("requestReturn", "someSolcFile")
       );
