@@ -38,6 +38,7 @@
     "@types/graphql": "^14.0.4",
     "@types/jest": "^23.3.11",
     "@types/node": "^10.12.18",
+    "@types/pouchdb": "^6.3.2",
     "apollo-server": "^2.3.1",
     "gql2ts": "^1.10.1",
     "jest": "^23.6.0",
@@ -51,6 +52,8 @@
     "graphql-tools": "^4.0.3",
     "jsonschema2graphql": "^1.1.0",
     "module-alias": "^2.1.0",
+    "pouchdb": "^7.0.0",
+    "pouchdb-adapter-memory": "^7.0.0",
     "source-map-support": "^0.5.9"
   },
   "jest": {

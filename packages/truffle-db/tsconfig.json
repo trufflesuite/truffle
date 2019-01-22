@@ -3,9 +3,10 @@
     "sourceMap": true,
     "declaration": true,
     "esModuleInterop": true,
-    "lib": ["esnext"],
+    "lib": ["esnext", "dom"],
     "target": "es6",
     "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
     "module": "commonjs",
     "outDir": "./dist",
     "paths": {
