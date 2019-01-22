@@ -35,11 +35,11 @@ const reason = {
    * @param  {Object} web3
    * @return {String|Undefined}
    */
-  get: function(params, blockNumber, web3){
+  get: function(params, web3){
     const packet = {
       jsonrpc: '2.0',
       method: 'eth_call',
-      params: [params, web3.utils.toHex(blockNumber)],
+      params: [params, 'latest'],
       id: new Date().getTime(),
     };
 
