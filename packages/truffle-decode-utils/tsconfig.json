@@ -8,7 +8,7 @@
     "sourceMap": true,
     "outDir": "dist",
     "baseUrl": ".",
-    "lib": ["es2017", "esnext.asynciterable"],
+    "lib": ["es2017", "esnext.asynciterable", "dom"],
     "paths": {
       "web3": ["../../node_modules/@types/web3/index", "node_modules/web3/index"]
     },
