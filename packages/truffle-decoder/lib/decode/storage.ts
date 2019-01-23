@@ -46,7 +46,6 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       debug("about to determine baseSize");
       let baseSize: number = storageLengthToBytes(storageSize(baseDefinition, info.referenceDeclarations, info.storageAllocations));
       debug("baseSize %o", baseSize);
-        //temporary HACK until I go through the decoder -- this will be fixed in next PR!
 
       const perWord = Math.floor(DecodeUtils.EVM.WORD_SIZE / baseSize);
       debug("perWord %d", perWord);

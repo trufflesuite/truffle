@@ -7,17 +7,17 @@ import { AstDefinition } from "truffle-decode-utils/src/ast";
 import * as DecodeUtils from "truffle-decode-utils";
 import BN from "bn.js";
 
-export type StorageLength = {bytes: number} | {words: BN};
+export type StorageLength = {bytes: number} | {words: number};
 
-export function isWordsLength(size: StorageLength): size is {words: BN} {
-  return (<{words: BN}>size).words !== undefined;
+export function isWordsLength(size: StorageLength): size is {words: number} {
+  return (<{words: number}>size).words !== undefined;
 }
 
 //temporary HACK, to be removed in next PR (or soon, anyway)
 export function storageLengthToBytes(size: StorageLength): number {
   if(isWordsLength(size)) {
     debug("size.words %d", size.words);
-    return size.words.muln(DecodeUtils.EVM.WORD_SIZE).toNumber(); //HACK
+    return size.words * DecodeUtils.EVM.WORD_SIZE;
   }
   else {
     return size.bytes;
@@ -44,8 +44,8 @@ function allocateStruct(structDefinition: AstDefinition, referenceDeclarations: 
 }
 
 function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[], referenceDeclarations: AstReferences, existingAllocations: StorageAllocations, suppressSize: boolean = false): StorageAllocations {
-  let offset = new BN(0);
-  let index = DecodeUtils.EVM.WORD_SIZE - 1;
+  let offset: number = 0; //will convert to BN when placing in slot
+  let index: number = DecodeUtils.EVM.WORD_SIZE - 1;
 
   //don't allocate things that have already been allocated
   if(parentNode.id in existingAllocations) {
@@ -70,7 +70,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
       ? index < DecodeUtils.EVM.WORD_SIZE - 1
       : size.bytes > index + 1) {
         index = DecodeUtils.EVM.WORD_SIZE - 1;
-        offset.iaddn(1);
+        offset += 1;
     }
     //otherwise, we remain in place
   
@@ -81,13 +81,13 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
       range = {
         from: {
           slot: {
-            offset: offset.clone() //start at the current slot...
+            offset: new BN(offset) //start at the current slot...
           },
           index: 0 //...at the beginning of the word.
         },
         to: {
           slot: {
-            offset: offset.add(size.words).subn(1) //end at the current slot plus # of words minus 1...
+            offset: new BN(offset + size.words - 1) //end at the current slot plus # of words minus 1...
           },
           index: DecodeUtils.EVM.WORD_SIZE - 1 //...at the end of the word.
         },
@@ -98,13 +98,13 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
       range = {
         from: {
           slot: {
-            offset: offset.clone() //start at the current slot...
+            offset: new BN(offset) //start at the current slot...
           },
           index: index - (size.bytes - 1) //...early enough to fit what's being allocated.
         },
         to: {
           slot: {
-            offset: offset.clone() //end at the current slot...
+            offset: new BN(offset) //end at the current slot...
           },
           index: index //...at the current position.
         },
@@ -114,14 +114,14 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
     memberAllocations[node.id] = {
       definition: node,
       pointer: {
-        storage: range //don't think we need to clone here...
+        storage: range
       }
     };
   
     //finally, adjust the current position.
     //if it was sized in words, move down that many slots and reset position w/in slot
     if(isWordsLength(size)) {
-      offset.iadd(size.words);
+      offset += size.words;
       index = DecodeUtils.EVM.WORD_SIZE - 1;
     }
     //if it was sized in bytes, move down an appropriate number of bytes.
@@ -130,7 +130,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
       //but if this puts us into the next word, move to the next word.
       if(index < 0) {
         index = DecodeUtils.EVM.WORD_SIZE - 1;
-        offset.iaddn(1);
+        offset += 1;
       }
     }
   }
@@ -147,7 +147,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
   //current word remains entirely unused, then it's just the current word
   if(!suppressSize) {
     allocations[parentNode.id].size = (index === DecodeUtils.EVM.WORD_SIZE - 1) ?
-      {words: offset.clone()} : {words: offset.addn(1)};
+      {words: offset} : {words: offset + 1};
   }
 
   //...and we're done!
@@ -224,15 +224,15 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
       }
       else
       {
-        return [{words: new BN(1)}, existingAllocations];
+        return [{words: 1}, existingAllocations];
       }
     }
 
     case "string":
-      return [{words: new BN(1)}, existingAllocations];
+      return [{words: 1}, existingAllocations];
 
     case "mapping":
-      return [{words: new BN(1)}, existingAllocations];
+      return [{words: 1}, existingAllocations];
 
     case "function": {
       //this case is also really two different cases
@@ -246,7 +246,7 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
 
     case "array": {
       if(DecodeUtils.Definition.isDynamicArray(definition)) {
-        return [{words: new BN(1)}, existingAllocations];
+        return [{words: 1}, existingAllocations];
       }
       else {
         //static array case
@@ -258,11 +258,11 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
           const perWord: number = Math.floor(DecodeUtils.EVM.WORD_SIZE / baseSize.bytes);
           debug("length %o", length);
           const numWords: number = Math.ceil(length / perWord);
-          return [{words: new BN(numWords)}, allocations];
+          return [{words: numWords}, allocations];
         }
         else {
           //words case
-          return [{words: baseSize.words.mul(new BN(length))}, allocations];
+          return [{words: baseSize.words * length}, allocations];
         }
       }
     }

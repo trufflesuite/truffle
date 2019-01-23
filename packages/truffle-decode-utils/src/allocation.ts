@@ -5,13 +5,8 @@ export namespace Allocation {
   export interface Range {
     from: StorageReference;
     to: StorageReference;
-    name?: string;
-    next?: StorageReference;
-    children?: RangeMapping;
     length?: number;
   }
-
-  export type RangeMapping = {[id: string]: Range};
 
   export interface StorageReference {
     slot: Slot;
