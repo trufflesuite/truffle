@@ -12,7 +12,6 @@ import solidity from "lib/solidity/selectors";
 
 import * as TruffleDecodeUtils from "truffle-decode-utils";
 import { forEvmState } from "truffle-decoder";
-import { getStorageAllocations } from "truffle-decoder";
 
 /**
  * @private
@@ -148,7 +147,7 @@ const data = createSelectorTree({
         "/views/referenceDeclarations",
         "/next/state",
         "/proc/mappingKeys",
-        "/views/allocations/storage"
+        "/info/allocations/storage"
       ],
 
       (referenceDeclarations, state, mappingKeys, storageAllocations) => (
@@ -190,21 +189,7 @@ const data = createSelectorTree({
           {},
           ...userDefinedTypes.map(id => ({ [id]: scopes[id].definition }))
         )
-    ),
-
-    /*
-     * data.views.allocations
-     */
-    allocations: {
-      /*
-       * data.views.allocations.storage
-       */
-      storage: createLeaf(
-        ["../userDefinedTypes/contractDefinitions", "../referenceDeclarations"],
-        (contracts, referenceDeclarations) =>
-          getStorageAllocations(referenceDeclarations, contracts)
-      )
-    }
+    )
   },
 
   /**
@@ -259,6 +244,16 @@ const data = createSelectorTree({
        * data.info.scopes.raw
        */
       raw: createLeaf(["/state"], state => state.info.scopes.byId)
+    },
+
+    /*
+     * data.info.allocations
+     */
+    allocations: {
+      /*
+       * data.info.allocations.storage
+       */
+      storage: createLeaf(["/state"], state => state.info.allocations.storage)
     },
 
     /**

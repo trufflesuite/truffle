@@ -33,7 +33,7 @@ export function* saga() {
   // wait for start signal
   let { txHash, provider } = yield take(actions.START);
   debug("starting");
-  
+
   // process transaction
   debug("fetching transaction info");
   let err = yield* fetchTx(txHash, provider);
@@ -44,6 +44,9 @@ export function* saga() {
     debug("visiting ASTs");
     // visit asts
     yield* ast.visitAll();
+
+    //save allocation table
+    yield* data.recordAllocations();
 
     debug("readying");
     // signal that stepping can begin
@@ -107,10 +110,6 @@ function* recordSources(...sources) {
 
 function* recordInstance(address, binary) {
   yield* evm.addInstance(address, binary);
-}
-
-function* recordUserDefinedTypes(sources) {
-  yield* data.recordUserDefinedTypes(sources);
 }
 
 function* ready() {

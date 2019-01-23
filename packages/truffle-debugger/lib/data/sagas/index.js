@@ -13,6 +13,8 @@ import data from "../selectors";
 
 import * as TruffleDecodeUtils from "truffle-decode-utils";
 
+import { getStorageAllocations } from "truffle-decoder";
+
 export function* scope(nodeId, pointer, parentId, sourceId) {
   yield put(actions.scope(nodeId, pointer, parentId, sourceId));
 }
@@ -230,6 +232,16 @@ export function* learnAddressSaga(dummyAddress, address) {
   debug("about to learn an address");
   yield put(actions.learnAddress(dummyAddress, address));
   debug("address learnt");
+}
+
+export function* recordAllocations() {
+  let contracts = yield select(data.views.userDefinedTypes.contractDefinitions);
+  let referenceDeclarations = yield select(data.views.referenceDeclarations);
+  let storageAllocations = getStorageAllocations(
+    referenceDeclarations,
+    contracts
+  );
+  yield put(actions.allocate(storageAllocations));
 }
 
 function makeAssignment(idObj, ref) {
