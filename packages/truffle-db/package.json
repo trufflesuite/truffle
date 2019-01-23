@@ -24,10 +24,10 @@
     "url": "git+https://github.com/trufflesuite/truffle.git"
   },
   "scripts": {
+    "clean": "rm -rf ./dist ./types/schema.d.ts",
     "prepare": "yarn build",
     "build": "./bin/build",
     "start": "ts-node-dev -r tsconfig-paths/register ./bin/server",
-    "codegen": "ts-node-dev -r tsconfig-paths/register ./bin/codegen.js",
     "test": "jest --verbose"
   },
   "bugs": {
