@@ -35,36 +35,6 @@ it("queries contract names", async () => {
   expect(contractNames).toEqual([]);
 });
 
-const AddContractName = `
-mutation AddContractName {
-  addContractName(name: "Migrations")
-}`;
-
-it("adds a contract name", async () => {
-  const workspace = new PouchConnector();
-
-  // perform add
-  {
-    const result = await graphql(schema, AddContractName, null, { workspace });
-    expect(result).toHaveProperty("data");
-
-    const { data } = result;
-    expect(data).toHaveProperty("addContractName");
-  }
-
-  // check result
-  {
-    const result = await graphql(schema, GetContractNames, null, { workspace });
-    expect(result).toHaveProperty("data");
-
-    const { data } = result;
-    expect(data).toHaveProperty("contractNames");
-
-    const { contractNames } = data;
-    expect(contractNames).toEqual(["Migrations"]);
-  }
-});
-
 const GetSource = `
 query GetSource($id: String!) {
   source(id: $id) {
@@ -75,8 +45,15 @@ query GetSource($id: String!) {
 }`;
 
 const AddSource = `
-mutation AddSource($contents: String!, $sourcePath: String, $ast: AST) {
-  addSource(contents: $contents, sourcePath: $sourcePath, ast: $ast)
+mutation AddSource($contents: String!, $sourcePath: String) {
+  addSource(input: {
+    contents: $contents,
+    sourcePath: $sourcePath,
+  }) {
+    source {
+      id
+    }
+  }
 }`;
 
 it("adds source", async () => {
@@ -84,7 +61,6 @@ it("adds source", async () => {
   const variables = {
     contents: Migrations.source,
     sourcePath: Migrations.sourcePath,
-    ast: Migrations.ast,
     id: soliditySha3(Migrations.source, Migrations.sourcePath)
   }
 
@@ -98,7 +74,13 @@ it("adds source", async () => {
     expect(data).toHaveProperty("addSource");
 
     const { addSource } = data;
-    expect(addSource).toEqual(variables.id);
+    expect(addSource).toHaveProperty("source");
+
+    const { source } = addSource;
+    expect(source).toHaveProperty("id");
+
+    const { id } = source;
+    expect(id).toEqual(variables.id);
   }
 
   // ensure retrieved as matching
@@ -132,7 +114,13 @@ query GetBytecode($id: String!) {
 
 const AddBytecode = `
 mutation AddBytecode($bytes: Bytes!) {
-  addBytecode(bytes: $bytes)
+  addBytecode(input: {
+    bytes: $bytes
+  }) {
+    bytecode {
+      id
+    }
+  }
 }`;
 
 it("adds bytecode", async () => {
@@ -154,7 +142,13 @@ it("adds bytecode", async () => {
     expect(data).toHaveProperty("addBytecode");
 
     const { addBytecode } = data;
-    expect(addBytecode).toEqual(variables.id);
+    expect(addBytecode).toHaveProperty("bytecode");
+
+    const { bytecode } = addBytecode;
+    expect(bytecode).toHaveProperty("id");
+
+    const { id } = bytecode;
+    expect(id).toEqual(variables.id);
   }
 
   // ensure retrieved as matching
@@ -173,92 +167,5 @@ it("adds bytecode", async () => {
     const { id, bytes } = bytecode;
     expect(id).toEqual(variables.id);
     expect(bytes).toEqual(variables.bytes);
-  }
-});
-
-const AddContractType = `
-mutation AddContractType($name: String!, $abi: String!, $createBytecode: ID) {
-  addContractType(name: $name, abi: $abi, createBytecode: $createBytecode)
-}`;
-
-const GetContractType = `
-query GetContractType($name: String!) {
-  contractType(name: $name) {
-    name
-    abi {
-      json
-    }
-    createBytecode {
-      bytes
-    }
-  }
-}`;
-
-it("stores and retrieves aggregated contract type with bytecode", async () => {
-  const workspace = new PouchConnector();
-  const variables = {
-    name: Migrations.contractName,
-    abi: JSON.stringify(Migrations.abi),
-    bytecodeId: soliditySha3(Migrations.bytecode),
-    bytes: Migrations.bytecode
-  }
-
-  // add bytecode
-  {
-    const result = await graphql(
-      schema, AddBytecode, null, { workspace }, {
-        bytes: variables.bytes
-      }
-    );
-
-    const { data } = result;
-    expect(data).toHaveProperty("addBytecode");
-
-    const { addBytecode } = data;
-    expect(addBytecode).toEqual(variables.bytecodeId);
-  }
-
-  // add contract type
-  {
-    const result = await graphql(
-      schema, AddContractType, null, { workspace }, {
-        name: variables.name,
-        abi: variables.abi,
-        createBytecode: variables.bytecodeId
-      }
-    );
-
-    const { data } = result;
-    expect(data).toHaveProperty("addContractType");
-
-    const { addContractType } = data;
-    expect(addContractType).toEqual(variables.name);
-  }
-
-  // ensure retrieved as matching
-  {
-    const result = await graphql(schema, GetContractType, null, { workspace }, {
-      name: variables.name
-    });
-
-    const { data } = result;
-    expect(data).toHaveProperty("contractType");
-
-    const { contractType } = data;
-    expect(contractType).toHaveProperty("name");
-    expect(contractType).toHaveProperty("abi");
-    expect(contractType).toHaveProperty("createBytecode");
-
-    const { name, abi, createBytecode } = contractType;
-    expect(name).toEqual(variables.name);
-    expect(abi).toHaveProperty("json");
-    expect(createBytecode).toHaveProperty("bytes");
-
-    const { json } = abi;
-    expect(json).toEqual(variables.abi);
-
-    const { bytes } = createBytecode;
-    expect(bytes).toEqual(variables.bytes);
-
   }
 });

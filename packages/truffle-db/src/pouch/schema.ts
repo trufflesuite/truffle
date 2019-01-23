@@ -29,11 +29,26 @@ export const schema = mergeSchemas({
       bytecode(id: String!): Bytecode
     }
 
+    input AddSourceInput {
+      contents: String!
+      sourcePath: String
+    }
+
+    type AddSourcePayload {
+      source: Source
+    }
+
+    input AddBytecodeInput {
+      bytes: Bytes!
+    }
+
+    type AddBytecodePayload {
+      bytecode: Bytecode
+    }
+
     type Mutation {
-      addContractName(name: String!): String!
-      addContractType(name: String!, abi: String!, createBytecode: ID): String!
-      addSource(contents: String!, sourcePath: String, ast: AST): ID!
-      addBytecode(bytes: Bytes!): ID!
+      addSource(input: AddSourceInput!): AddSourcePayload
+      addBytecode(input: AddBytecodeInput!): AddBytecodePayload
     } `
   ],
   resolvers: {
@@ -56,21 +71,13 @@ export const schema = mergeSchemas({
       }
     },
     Mutation: {
-      addContractName: {
-        resolve: (_, { name }, { workspace }) =>
-          workspace.addContractName({ name })
-      },
-      addContractType: {
-        resolve: (_, { name, abi, createBytecode }, { workspace }) =>
-          workspace.addContractType({ name, abi, createBytecode })
-      },
       addSource: {
-        resolve: (_, { contents, sourcePath, ast }, { workspace }) =>
-          workspace.addSource({ contents, sourcePath, ast })
+        resolve: (_, { input }, { workspace }) =>
+          workspace.addSource({ input })
       },
       addBytecode: {
-        resolve: (_, { bytes }, { workspace }) =>
-          workspace.addBytecode({ bytes })
+        resolve: (_, { input }, { workspace }) =>
+          workspace.addBytecode({ input })
       }
     },
     ContractType: {

@@ -124,25 +124,25 @@ export class PouchConnector {
     }
   }
 
-  async addSource (source: DataModel.ISource): Promise<string> {
+  async addSource ({ input }) {
     await this.ready;
 
-    const { contents, sourcePath } = source;
+    const { contents, sourcePath } = input;
 
     // hash includes sourcePath because two files can have same contents, but
     // should have different IDs
-    const _id = soliditySha3(contents, sourcePath);
+    const id = soliditySha3(contents, sourcePath);
 
-    const { _rev } = await this.source({ id: _id }) || { _rev: null };
+    const source = await this.source({ id }) || { ...input, id };
 
     await this.sources.put({
       ...source,
+      ...input,
 
-      _id,
-      _rev
+      _id: id
     });
 
-    return _id;
+    return { source };
   }
 
   async bytecode ({ id }: { id: string }) {
@@ -159,24 +159,22 @@ export class PouchConnector {
     }
   }
 
-  async addBytecode (bytecode: {
-    bytes: string
-  }) {
+  async addBytecode ({ input }) {
     await this.ready;
 
-    const { bytes } = bytecode;
+    const { bytes } = input;
 
-    const _id = soliditySha3(bytes);
+    const id = soliditySha3(bytes);
 
-    const { _rev } = await this.bytecode({ id: _id }) || { _rev: null };
+    const bytecode = await this.bytecode({ id }) || { ...input, id };
 
     await this.bytecodes.put({
       ...bytecode,
+      ...input,
 
-      _id,
-      _rev
+      _id: id
     });
 
-    return _id;
+    return { bytecode };
   }
 }
