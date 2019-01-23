@@ -1,4 +1,4 @@
-import { Conversion as ConversionUtils }from "./conversion";
+import { Conversion as ConversionUtils } from "./conversion";
 import BN from "bn.js";
 
 export namespace Allocation {

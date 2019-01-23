@@ -46,6 +46,7 @@ export function* saga() {
     yield* ast.visitAll();
 
     //save allocation table
+    debug("saving allocation table");
     yield* data.recordAllocations();
 
     debug("readying");
@@ -58,8 +59,9 @@ export default prefixName("session", saga);
 
 function* forkListeners() {
   return yield all(
-    [ast, controller, data, evm, solidity, trace, web3].map(app =>
-      fork(app.saga)
+    [controller, data, evm, solidity, trace, web3].map(
+      app => fork(app.saga)
+      //ast no longer has a listener
     )
   );
 }

@@ -8,7 +8,7 @@
     "sourceType": "module"
   },
   "rules": {
-    "no-unused-vars": 2,
+    "no-unused-vars": [2, {"argsIgnorePattern": "^_"}],
     "quote-props": ["error", "consistent"],
     "semi": [2, "always"],
     "no-mixed-operators": 1,
