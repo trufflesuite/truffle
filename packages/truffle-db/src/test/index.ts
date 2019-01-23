@@ -4,8 +4,7 @@ import path from "path";
 import { TruffleDB } from "truffle-db";
 
 const fixturesDirectory = path.join(
-  __dirname, // truffle-db/src/db/test
-  "..", // truffle-db/src/db
+  __dirname, // truffle-db/src/test
   "..", // truffle-db/src/
   "..", // truffle-db/
   "test",
