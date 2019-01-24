@@ -1,5 +1,4 @@
 const { execSync } = require("child_process");
-const ora = require("ora");
 const LoadingStrategy = require("./LoadingStrategy");
 const VersionRange = require("./VersionRange");
 

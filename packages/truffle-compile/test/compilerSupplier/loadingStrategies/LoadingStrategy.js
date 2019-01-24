@@ -2,7 +2,7 @@ const assert = require("assert");
 const {
   LoadingStrategy
 } = require("../../../compilerSupplier/loadingStrategies");
-let result, expectedDefaultConfig;
+let expectedDefaultConfig;
 
 describe("LoadingStrategy base class", () => {
   beforeEach(() => {
@@ -16,12 +16,7 @@ describe("LoadingStrategy base class", () => {
   });
 
   it("has a config with some default values", () => {
-    const {
-      versionsUrl,
-      compilerUrlRoot,
-      dockerTagsUrl,
-      cache
-    } = instance.config;
+    const { versionsUrl, compilerUrlRoot, dockerTagsUrl } = instance.config;
     assert(versionsUrl === expectedDefaultConfig.versionsUrl);
     assert(compilerUrlRoot === expectedDefaultConfig.compilerUrlRoot);
     assert(dockerTagsUrl === expectedDefaultConfig.dockerTagsUrl);

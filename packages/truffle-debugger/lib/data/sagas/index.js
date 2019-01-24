@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:data:sagas"); // eslint-disable-line no-unused-vars
 
-import { put, takeEvery, select, call } from "redux-saga/effects";
+import { put, takeEvery, select, call, putResolve } from "redux-saga/effects";
 import jsonpointer from "json-pointer";
 
 import { prefixName, stableKeccak256 } from "lib/helpers";
@@ -13,19 +13,25 @@ import data from "../selectors";
 
 import * as TruffleDecodeUtils from "truffle-decode-utils";
 
+import { getStorageAllocations } from "truffle-decoder";
+
 export function* scope(nodeId, pointer, parentId, sourceId) {
-  yield put(actions.scope(nodeId, pointer, parentId, sourceId));
+  yield putResolve(actions.scope(nodeId, pointer, parentId, sourceId));
 }
 
 export function* declare(node) {
-  yield put(actions.declare(node));
+  yield putResolve(actions.declare(node));
+}
+
+export function* defineType(node) {
+  yield putResolve(actions.defineType(node));
 }
 
 function* tickSaga() {
   let { tree, id: treeId, node, pointer } = yield select(data.views.ast);
 
   let decode = yield select(data.views.decoder);
-  let allocations = yield select(data.views.allocations);
+  let allocations = yield select(data.info.allocations.storage);
   let currentAssignments = yield select(data.proc.assignments);
   let currentDepth = yield select(data.current.functionDepth);
   let address = yield select(data.current.address); //may be undefined
@@ -88,14 +94,13 @@ function* tickSaga() {
       break;
 
     case "ContractDefinition":
-
       let allocation = allocations[node.id];
 
       debug("Contract definition case");
       debug("allocations %O", allocations);
       debug("allocation %O", allocation);
       assignments = { byId: {} };
-      for (let id in allocation.children) {
+      for (let id in allocation.members) {
         id = Number(id); //not sure why we're getting them as strings, but...
         let idObj;
         if (address !== undefined) {
@@ -110,7 +115,7 @@ function* tickSaga() {
           id: fullId,
           ref: {
             ...((currentAssignments.byId[fullId] || {}).ref || {}),
-            storage: allocation.children[id]
+            ...allocation.members[id].pointer
           }
         };
         assignments.byId[fullId] = assignment;
@@ -223,14 +228,23 @@ export function* reset() {
   yield put(actions.reset());
 }
 
-export function* defineType(node) {
-  yield put(actions.defineType(node));
-}
-
 export function* learnAddressSaga(dummyAddress, address) {
   debug("about to learn an address");
   yield put(actions.learnAddress(dummyAddress, address));
   debug("address learnt");
+}
+
+export function* recordAllocations() {
+  let contracts = yield select(data.views.userDefinedTypes.contractDefinitions);
+  debug("contracts %O", contracts);
+  let referenceDeclarations = yield select(data.views.referenceDeclarations);
+  debug("referenceDeclarations %O", referenceDeclarations);
+  let storageAllocations = getStorageAllocations(
+    referenceDeclarations,
+    contracts
+  );
+  debug("storageAllocations %O", storageAllocations);
+  yield put(actions.allocate(storageAllocations));
 }
 
 function makeAssignment(idObj, ref) {

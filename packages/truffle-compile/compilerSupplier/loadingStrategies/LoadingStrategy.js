@@ -62,7 +62,7 @@ class LoadingStrategy {
     return fs.existsSync(file);
   }
 
-  load(userSpecification) {
+  load(_userSpecification) {
     throw new Error(
       "Abstract method LoadingStrategy.load is not implemented for this strategy."
     );

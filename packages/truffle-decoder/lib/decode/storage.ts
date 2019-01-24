@@ -2,13 +2,13 @@ import debugModule from "debug";
 const debug = debugModule("decoder:decode:storage");
 
 import read from "../read";
-import { slotAddress } from "../read/storage";
 import * as DecodeUtils from "truffle-decode-utils";
 import decode from "./index";
 import decodeValue from "./value";
 import { StoragePointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { Allocation } from "truffle-decode-utils";
+import { storageSize, storageLengthToBytes } from "../allocate/storage";
 import BN from "bn.js";
 import Web3 from "web3";
 import { EvmStruct, EvmMapping } from "../interface/contract-decoder";
@@ -24,6 +24,8 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
     case "array": {
       debug("storage array! %o", pointer);
       if (DecodeUtils.Definition.isDynamicArray(definition)) {
+        debug("dynamic array");
+        debug("definition %O", definition);
         data = await read(pointer, state, web3, contractAddress);
         if (!data) {
           return undefined;
@@ -32,9 +34,8 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
         length = DecodeUtils.Conversion.toBN(data).toNumber();
       }
       else {
-        length = definition.typeName
-          ? parseInt(definition.typeName.length.value)
-          : parseInt(definition.length.value);
+        debug("static array");
+        length = DecodeUtils.Definition.staticLength(definition);
       }
       debug("length %o", length);
 
@@ -42,19 +43,11 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       const referenceId = baseDefinition.referencedDeclaration ||
         (baseDefinition.typeName ? baseDefinition.typeName.referencedDeclaration : undefined);
 
-      let baseSize: number;
-      if (typeof referenceId !== "undefined") {
-        const referenceDeclaration: undefined | DecodeUtils.AstDefinition = (info.referenceDeclarations)
-          ? info.referenceDeclarations[referenceId]
-          : info.scopes[referenceId].definition;
-        baseSize = DecodeUtils.Definition.storageSize(baseDefinition, referenceDeclaration);
-      }
-      else {
-        baseSize = DecodeUtils.Definition.storageSize(baseDefinition);
-      }
+      debug("about to determine baseSize");
+      let baseSize: number = storageLengthToBytes(storageSize(baseDefinition, info.referenceDeclarations, info.storageAllocations));
+      debug("baseSize %o", baseSize);
 
       const perWord = Math.floor(DecodeUtils.EVM.WORD_SIZE / baseSize);
-      debug("baseSize %o", baseSize);
       debug("perWord %d", perWord);
 
       const offset = (i: number): number => {
@@ -173,20 +166,14 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
     }
 
     case "struct": {
-      const { scopes } = info;
 
       const referencedDeclaration = (definition.typeName)
         ? definition.typeName.referencedDeclaration
         : definition.referencedDeclaration;
 
       // seese's way -- now the only way!
-      // however, there is still *one* difference -- the debugger
-      // uses scopes instead of referenceDeclarations, and they work slightly
-      // differently
 
-      const type = (info.referenceDeclarations)
-        ? info.referenceDeclarations[referencedDeclaration].name
-        : info.scopes[referencedDeclaration].definition.name;
+      const type = info.referenceDeclarations[referencedDeclaration].name;
 
       let result: EvmStruct = {
         name: definition.name,
@@ -194,30 +181,30 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
         members: {}
       };
 
-      const members: DecodeUtils.AstDefinition[] = (info.referenceDeclarations)
-        ? info.referenceDeclarations[referencedDeclaration].members
-        : info.scopes[referencedDeclaration].definition.members;
+      const members: DecodeUtils.AstDefinition[] =
+        info.referenceDeclarations[referencedDeclaration].members;
 
-      const referenceVariable = info.referenceVariables[referencedDeclaration];
+      const structAllocation = info.storageAllocations[referencedDeclaration];
       for (let i = 0; i < members.length; i++) {
-        const variableRef = referenceVariable.members[members[i].id];
-        const refPointer = variableRef.pointer;
+        const memberAllocation = structAllocation.members[members[i].id];
+        const memberPointer = memberAllocation.pointer;
         debug("pointer %O", pointer);
-        debug("refPointer %O", refPointer);
         const childRange = <Allocation.Range>{
           from: {
             slot: {
-              path: pointer.storage.from.slot,
-              offset: slotAddress(refPointer.storage.from.slot)
+              path: clonedeep(pointer.storage.from.slot),
+              offset: memberPointer.storage.from.slot.offset.clone()
+              //note that memberPointer should have no path
             },
-            index: refPointer.storage.from.index
+            index: memberPointer.storage.from.index
           },
           to: {
             slot: {
-              path: pointer.storage.from.slot,
-              offset: slotAddress(refPointer.storage.to.slot)
+              path: clonedeep(pointer.storage.from.slot),
+              offset: memberPointer.storage.to.slot.offset.clone()
+              //note that memberPointer should have no path
             },
-            index: refPointer.storage.to.index
+            index: memberPointer.storage.to.index
           },
         };
         const val = await decode(
