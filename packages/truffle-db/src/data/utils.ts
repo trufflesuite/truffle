@@ -62,28 +62,26 @@ export function scopeSchemas(schemaMap: SchemaMap): GraphQLSchema {
     })
     .reduce((a, b) => ({ ...a, ...b }), {}) // combine objects
 
-  const schemas: GraphQLSchema[]
-  = Object.entries(schemaOperations).map(
-    // named field definition
-    ([ name, operations ]) => new GraphQLSchema(
-      Object.assign(
-        {}, ...Object.entries(operations).map(
-          ([ operation, typeDef ]) => ({
-            // operation map
-            [operation]: new GraphQLObjectType({
-              name: pascalCase(operation),
-              fields: {
-                [name]: {
-                  type: new GraphQLNonNull(typeDef),
-                  resolve: () => true
-                }
-              }
-            })
-          })
-        )
-      )
-    )
-  );
+  // helper function for schemas
+  const buildSchemaForName = (name, operationsArray) => operationsArray
+    .map(([operation, typeDef]) => ({
+      [operation]: new GraphQLObjectType({
+        name: pascalCase(operation),
+        fields: {
+          [name]: {
+            type: new GraphQLNonNull(typeDef),
+            resolve: () => true
+          }
+        }
+      })
+    }))
+    .reduce((a, b) => ({...a, ...b}), {}) // combine objects
+
+  const schemas: GraphQLSchema[] = Object.entries(schemaOperations)
+    .map(([name, operations]) => {
+      const operationsArray = Object.entries(operations) // array of [op, typeDef]
+      return new GraphQLSchema(buildSchemaForName(name, operationsArray))
+    })
 
   return mergeSchemas({ schemas });
 }
