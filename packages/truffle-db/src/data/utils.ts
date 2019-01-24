@@ -33,23 +33,17 @@ export function scopeSchemas(schemaMap: SchemaMap): GraphQLSchema {
     "mutation": (schema: GraphQLSchema) => schema.getMutationType()
   };
 
-  const rawSchemaOperations: SchemaOperations
-  = Object.assign(
-    {}, ...Object.entries(schemaMap).map(
-      // for each named schema
-      ([ name, schema ]) => ({
-        // collect map of named operations
-        [name]: Object.assign(
-          // by applying named operation getters
-          {}, ...Object.entries(operationGetters).map(
-            ([ operation, getter ]) => ({
-              [operation]: getter(schema)
-            })
-          )
-        )
-      })
-    )
-  );
+  const buildOpsObjectForSchema = (schema, namedOpsArray) => namedOpsArray
+      .map(([op, getter]) => ({ [op]: getter(schema) }))
+      .reduce((a, b) => ({ ...a, ...b }), {});
+
+  const rawSchemaOperations: SchemaOperations = Object.entries(schemaMap)
+    .map(([name, schema]) => {
+      const opGettersArray = Object.entries(operationGetters) // [op, getter]
+      const namedOpsObject = buildOpsObjectForSchema(schema, opGettersArray)
+      return { [name]: namedOpsObject }
+    })
+    .reduce((a, b) => ({ ...a, ...b }), {})
 
   const schemaOperations: SchemaOperations
   = Object.assign(
