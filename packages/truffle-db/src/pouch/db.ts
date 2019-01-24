@@ -102,14 +102,6 @@ export class PouchConnector {
     return name;
   }
 
-  async addContractName ({ name }: { name: string }) {
-    await this.ready;
-
-    await this.addContractType({ name });
-
-    return name;
-  }
-
   async source ({ id }: { id: string }) {
     await this.ready;
 
@@ -124,25 +116,34 @@ export class PouchConnector {
     }
   }
 
-  async addSource ({ input }) {
+  async sourcesAdd ({ input }) {
     await this.ready;
 
-    const { contents, sourcePath } = input;
+    const { sources } = input;
 
-    // hash includes sourcePath because two files can have same contents, but
-    // should have different IDs
-    const id = soliditySha3(contents, sourcePath);
+    return {
+      sources: Promise.all(sources.map(
+        async (sourceInput) => {
+          const { contents, sourcePath } = sourceInput;
+          // hash includes sourcePath because two files can have same contents, but
+          // should have different IDs
+          const id = (sourcePath)
+            ? soliditySha3(contents, sourcePath)
+            : soliditySha3(contents)
 
-    const source = await this.source({ id }) || { ...input, id };
+          const source = await this.source({ id }) || { ...sourceInput, id };
 
-    await this.sources.put({
-      ...source,
-      ...input,
+          await this.sources.put({
+            ...source,
+            ...sourceInput,
 
-      _id: id
-    });
+            _id: id
+          });
 
-    return { source };
+          return source;
+        }
+      ))
+    };
   }
 
   async bytecode ({ id }: { id: string }) {
@@ -159,22 +160,30 @@ export class PouchConnector {
     }
   }
 
-  async addBytecode ({ input }) {
+  async bytecodesAdd ({ input }) {
     await this.ready;
 
-    const { bytes } = input;
+    const { bytecodes } = input;
 
-    const id = soliditySha3(bytes);
+    return {
+      bytecodes: await Promise.all(bytecodes.map(
+        async (bytecodeInput) => {
+          const { bytes } = bytecodeInput;
 
-    const bytecode = await this.bytecode({ id }) || { ...input, id };
+          const id = soliditySha3(bytes);
 
-    await this.bytecodes.put({
-      ...bytecode,
-      ...input,
+          const bytecode = await this.bytecode({ id }) || { ...bytecodeInput, id };
 
-      _id: id
-    });
+          await this.bytecodes.put({
+            ...bytecode,
+            ...bytecodeInput,
 
-    return { bytecode };
+            _id: id
+          });
+
+          return bytecode;
+        }
+      ))
+    };
   }
 }

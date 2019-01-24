@@ -46,11 +46,13 @@ query GetSource($id: String!) {
 
 const AddSource = `
 mutation AddSource($contents: String!, $sourcePath: String) {
-  addSource(input: {
-    contents: $contents,
-    sourcePath: $sourcePath,
+  sourcesAdd(input: {
+    sources: [{
+      contents: $contents,
+      sourcePath: $sourcePath,
+    }]
   }) {
-    source {
+    sources {
       id
     }
   }
@@ -71,12 +73,15 @@ it("adds source", async () => {
     );
 
     const { data } = result;
-    expect(data).toHaveProperty("addSource");
+    expect(data).toHaveProperty("sourcesAdd");
 
-    const { addSource } = data;
-    expect(addSource).toHaveProperty("source");
+    const { sourcesAdd } = data;
+    expect(sourcesAdd).toHaveProperty("sources");
 
-    const { source } = addSource;
+    const { sources } = sourcesAdd;
+    expect(sources).toHaveLength(1);
+
+    const source = sources[0];
     expect(source).toHaveProperty("id");
 
     const { id } = source;
@@ -114,10 +119,12 @@ query GetBytecode($id: String!) {
 
 const AddBytecode = `
 mutation AddBytecode($bytes: Bytes!) {
-  addBytecode(input: {
-    bytes: $bytes
+  bytecodesAdd(input: {
+    bytecodes: [{
+      bytes: $bytes
+    }]
   }) {
-    bytecode {
+    bytecodes {
       id
     }
   }
@@ -139,12 +146,15 @@ it("adds bytecode", async () => {
     );
 
     const { data } = result;
-    expect(data).toHaveProperty("addBytecode");
+    expect(data).toHaveProperty("bytecodesAdd");
 
-    const { addBytecode } = data;
-    expect(addBytecode).toHaveProperty("bytecode");
+    const { bytecodesAdd } = data;
+    expect(bytecodesAdd).toHaveProperty("bytecodes");
 
-    const { bytecode } = addBytecode;
+    const { bytecodes } = bytecodesAdd;
+    expect(bytecodes).toHaveLength(1);
+
+    const bytecode = bytecodes[0];
     expect(bytecode).toHaveProperty("id");
 
     const { id } = bytecode;

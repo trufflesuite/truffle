@@ -29,26 +29,34 @@ export const schema = mergeSchemas({
       bytecode(id: String!): Bytecode
     }
 
-    input AddSourceInput {
+    input SourceInput {
       contents: String!
       sourcePath: String
     }
 
-    type AddSourcePayload {
-      source: Source
+    input SourcesAddInput {
+      sources: [SourceInput!]!
     }
 
-    input AddBytecodeInput {
+    type SourcesAddPayload {
+      sources: [Source!]
+    }
+
+    input BytecodeInput {
       bytes: Bytes!
     }
 
-    type AddBytecodePayload {
-      bytecode: Bytecode
+    input BytecodesAddInput {
+      bytecodes: [BytecodeInput!]!
+    }
+
+    type BytecodesAddPayload {
+      bytecodes: [Bytecode!]
     }
 
     type Mutation {
-      addSource(input: AddSourceInput!): AddSourcePayload
-      addBytecode(input: AddBytecodeInput!): AddBytecodePayload
+      sourcesAdd(input: SourcesAddInput!): SourcesAddPayload
+      bytecodesAdd(input: BytecodesAddInput!): BytecodesAddPayload
     } `
   ],
   resolvers: {
@@ -71,13 +79,13 @@ export const schema = mergeSchemas({
       }
     },
     Mutation: {
-      addSource: {
+      sourcesAdd: {
         resolve: (_, { input }, { workspace }) =>
-          workspace.addSource({ input })
+          workspace.sourcesAdd({ input })
       },
-      addBytecode: {
+      bytecodesAdd: {
         resolve: (_, { input }, { workspace }) =>
-          workspace.addBytecode({ input })
+          workspace.bytecodesAdd({ input })
       }
     },
     ContractType: {
