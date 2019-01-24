@@ -33,38 +33,34 @@ export function scopeSchemas(schemaMap: SchemaMap): GraphQLSchema {
     "mutation": (schema: GraphQLSchema) => schema.getMutationType()
   };
 
-  const buildOpsObjectForSchema = (schema, namedOpsArray) => namedOpsArray
-      .map(([op, getter]) => ({ [op]: getter(schema) }))
-      .reduce((a, b) => ({ ...a, ...b }), {});
+  // helper function for rawSchemaOperations
+  const buildObjForSchema = (schema, opGettersArray) => opGettersArray
+      .map(([op, getter]) => ({ [op]: getter(schema) }))  // key by operation
+      .reduce((a, b) => ({ ...a, ...b }), {});            // combine objects
 
   const rawSchemaOperations: SchemaOperations = Object.entries(schemaMap)
     .map(([name, schema]) => {
-      const opGettersArray = Object.entries(operationGetters) // [op, getter]
-      const namedOpsObject = buildOpsObjectForSchema(schema, opGettersArray)
-      return { [name]: namedOpsObject }
+      const opGettersArray = Object.entries(operationGetters) // array of [op, getter]
+      return {
+        [name]: buildObjForSchema(schema, opGettersArray) // key by name
+      }
     })
-    .reduce((a, b) => ({ ...a, ...b }), {})
+    .reduce((a, b) => ({ ...a, ...b }), {}) // combine objects
 
-  const schemaOperations: SchemaOperations
-  = Object.assign(
-    // for each named set of operations
-    {}, ...Object.entries(rawSchemaOperations).map(
-      ([ name, operations ]) => ({
-        // collect transformed map of operations
-        [name]: Object.assign(
-          {}, ...Object.entries(operations)
-            // by filering for undefined (e.g. schemas without Mutation)
-            .filter( ([ _, typeDef ]) => typeDef )
-            // and prefixing type definition name
-            .map(
-              ([ operation, typeDef ]) => ({
-                [operation]: prefixType({ typeDef, name })
-              })
-            )
-        )
-      })
-    )
-  );
+  // helper function for schemaOperations
+  const buildOpsObjectForName = (name, opsArray) => opsArray
+    .filter(([_, typeDef]) => typeDef)                                  // must have typeDef
+    .map(([op, typeDef]) => ({ [op]: prefixType({ typeDef, name }) }))  // key by operation
+    .reduce((a, b) => ({ ...a, ...b }), {})                             // combine objects
+
+  const schemaOperations: SchemaOperations = Object.entries(rawSchemaOperations)
+    .map(([name, operations]) => {
+      const opsArray = Object.entries(operations) // array of [op, typeDef]
+      return {
+        [name]: buildOpsObjectForName(name, opsArray) // key by name
+      }
+    })
+    .reduce((a, b) => ({ ...a, ...b }), {}) // combine objects
 
   const schemas: GraphQLSchema[]
   = Object.entries(schemaOperations).map(
