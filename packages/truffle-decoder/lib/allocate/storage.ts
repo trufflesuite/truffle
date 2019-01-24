@@ -13,7 +13,6 @@ export function isWordsLength(size: StorageLength): size is {words: number} {
   return (<{words: number}>size).words !== undefined;
 }
 
-//temporary HACK, to be removed in next PR (or soon, anyway)
 export function storageLengthToBytes(size: StorageLength): number {
   if(isWordsLength(size)) {
     debug("size.words %d", size.words);
