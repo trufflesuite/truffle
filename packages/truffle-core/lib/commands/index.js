@@ -1,6 +1,7 @@
 module.exports = {
   build: require("./build"),
   compile: require("./compile"),
+  config: require("./config"),
   console: require("./console"),
   create: require("./create"),
   debug: require("./debug"),
@@ -18,6 +19,5 @@ module.exports = {
   test: require("./test"),
   unbox: require("./unbox"),
   version: require("./version"),
-  config: require("./config"),
   watch: require("./watch")
 };
