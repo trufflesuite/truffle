@@ -21,9 +21,11 @@ const operationGetters = {
   mutation: (schema: GraphQLSchema) => schema.getMutationType(),
 };
 
+export type Schemafiable = string | GraphQLSchema | Array<GraphQLNamedType>;
+
 export type ScopesConfig = {
   subschemas: SchemaMap;
-  typeDefs?: Array<string | GraphQLSchema | Array<GraphQLNamedType>>;
+  typeDefs?: Schemafiable[];
 }
 
 
@@ -51,12 +53,16 @@ export function scopeSchemas(config: ScopesConfig): GraphQLSchema {
     })
     .reduce((a, b) => ({ ...a, ...b }), {}); // combine objects
 
-  const schemas: GraphQLSchema[] = Object.entries(schemaOperations).map(
-    ([name, operations]) => {
-      const operationsArray = Object.entries(operations); // array of [op, typeDef]
-      return new GraphQLSchema(buildSchemaForName(name, operationsArray));
-    },
-  );
+  const schemas: Schemafiable[] = [
+    ...Object.entries(schemaOperations).map(
+      ([name, operations]) => {
+        const operationsArray = Object.entries(operations); // array of [op, typeDef]
+        return new GraphQLSchema(buildSchemaForName(name, operationsArray));
+      },
+    ),
+
+    ...(typeDefs || [])
+  ];
 
   return mergeSchemas({ schemas });
 }

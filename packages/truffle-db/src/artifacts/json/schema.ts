@@ -6,8 +6,6 @@ import {
   printSchema, GraphQLObjectType, GraphQLNonNull, GraphQLList, GraphQLString
 } from "graphql";
 
-
-
 const abiSchema = require("truffle-contract-schema/spec/abi.spec.json");
 const networkSchema = require("truffle-contract-schema/spec/network-object.spec.json");
 const contractSchema = require("truffle-contract-schema/spec/contract-object.spec.json");
@@ -300,3 +298,5 @@ const graphqlSchema = convert({ jsonSchema, entryPoints });
 const typeDefs = printSchema(graphqlSchema);
 
 export const schema = makeExecutableSchema({ typeDefs, resolvers });
+
+export const abiItem = schema.getType('AbiItem');

@@ -1,3 +1,1 @@
-import { schema } from "./schema";
-
-export { schema };
+export { schema, abiItem } from "./schema";
