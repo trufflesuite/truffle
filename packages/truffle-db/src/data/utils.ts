@@ -1,5 +1,5 @@
 import { GraphQLSchema, GraphQLNamedType, GraphQLObjectType } from "graphql";
-import { mergeSchemas } from "graphql-tools";
+import { mergeSchemas, IResolvers } from "graphql-tools";
 import {
   buildObjForSchema,
   buildOpsObjectForName,
@@ -26,13 +26,14 @@ export type Schemafiable = string | GraphQLSchema | Array<GraphQLNamedType>;
 export type ScopesConfig = {
   subschemas: SchemaMap;
   typeDefs?: Schemafiable[];
+  resolvers?: IResolvers;
 }
-
 
 export function scopeSchemas(config: ScopesConfig): GraphQLSchema {
   const {
     subschemas,
-    typeDefs
+    typeDefs,
+    resolvers,
   } = config;
 
   const rawSchemaOperations: SchemaOperations = Object.entries(subschemas)
@@ -64,5 +65,5 @@ export function scopeSchemas(config: ScopesConfig): GraphQLSchema {
     ...(typeDefs || [])
   ];
 
-  return mergeSchemas({ schemas });
+  return mergeSchemas({ schemas, resolvers });
 }
