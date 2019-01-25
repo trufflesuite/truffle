@@ -22,7 +22,7 @@ const resources = {
   }
 }
 
-export class PouchConnector {
+export class Workspace {
   contractTypes: PouchDB.Database;
   sources: PouchDB.Database;
   bytecodes: PouchDB.Database;

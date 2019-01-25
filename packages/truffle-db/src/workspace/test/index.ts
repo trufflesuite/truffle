@@ -3,7 +3,7 @@ import path from "path";
 import { graphql } from "graphql";
 import { soliditySha3 } from "web3-utils";
 
-import { PouchConnector, schema } from "truffle-db/pouch";
+import { Workspace, schema } from "truffle-db/workspace";
 import { readInstructions } from "truffle-db/artifacts/bytecode";
 
 const fixturesDirectory = path.join(
@@ -23,7 +23,7 @@ query GetContractNames {
 }`;
 
 it("queries contract names", async () => {
-  const workspace = new PouchConnector();
+  const workspace = new Workspace();
 
   const result = await graphql(schema, GetContractNames, null, { workspace });
   expect(result).toHaveProperty("data");
@@ -59,7 +59,7 @@ mutation AddSource($contents: String!, $sourcePath: String) {
 }`;
 
 it("adds source", async () => {
-  const workspace = new PouchConnector();
+  const workspace = new Workspace();
   const variables = {
     contents: Migrations.source,
     sourcePath: Migrations.sourcePath,
@@ -131,7 +131,7 @@ mutation AddBytecode($bytes: Bytes!) {
 }`;
 
 it("adds bytecode", async () => {
-  const workspace = new PouchConnector();
+  const workspace = new Workspace();
   const variables = {
     id: soliditySha3(Migrations.bytecode),
     bytes: Migrations.bytecode
