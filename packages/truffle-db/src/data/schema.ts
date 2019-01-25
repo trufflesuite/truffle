@@ -15,7 +15,7 @@ export const schema = scopeSchemas({
     // this schema in more places than the extant JSON-Schema
     [abiItem],
     `extend type ABI {
-      items: [AbiItem]!
+      items: [AbiItem]
     }`
   ],
   resolvers: {

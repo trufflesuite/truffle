@@ -21,7 +21,7 @@ export const schema = mergeSchemas({
       contractInstance(networkId: String!, name: String!): ContractInstance
     }`,
     `extend type ABI {
-      items: [AbiItem]!
+      items: [AbiItem]
     }`
   ],
   resolvers: {
