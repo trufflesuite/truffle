@@ -1,4 +1,4 @@
-import { GraphQLSchema, GraphQLObjectType } from "graphql";
+import { GraphQLSchema, GraphQLNamedType, GraphQLObjectType } from "graphql";
 import { mergeSchemas } from "graphql-tools";
 import {
   buildObjForSchema,
@@ -16,13 +16,24 @@ export type SchemaOperations = {
   };
 };
 
-export function scopeSchemas(schemaMap: SchemaMap): GraphQLSchema {
-  const operationGetters = {
-    query: (schema: GraphQLSchema) => schema.getQueryType(),
-    mutation: (schema: GraphQLSchema) => schema.getMutationType(),
-  };
+const operationGetters = {
+  query: (schema: GraphQLSchema) => schema.getQueryType(),
+  mutation: (schema: GraphQLSchema) => schema.getMutationType(),
+};
 
-  const rawSchemaOperations: SchemaOperations = Object.entries(schemaMap)
+export type ScopesConfig = {
+  subschemas: SchemaMap;
+  typeDefs?: Array<string | GraphQLSchema | Array<GraphQLNamedType>>;
+}
+
+
+export function scopeSchemas(config: ScopesConfig): GraphQLSchema {
+  const {
+    subschemas,
+    typeDefs
+  } = config;
+
+  const rawSchemaOperations: SchemaOperations = Object.entries(subschemas)
     .map(([name, schema]) => {
       const opGettersArray = Object.entries(operationGetters); // array of [op, getter]
       return {
