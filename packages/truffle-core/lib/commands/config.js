@@ -1,7 +1,7 @@
 const command = {
   command: "config",
   description: "Set user-level configuration options",
-  config: {
+  help: {
     usage: "truffle config <option>",
     options: [   
       {
