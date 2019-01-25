@@ -27,6 +27,12 @@ type ContractType {
 
 type ABI {
   json: String!
+  items: [AbiItem]
+}
+
+# stub
+type AbiItem {
+  type: String
 }
 
 type Network {

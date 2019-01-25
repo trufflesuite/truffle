@@ -5,7 +5,6 @@ import {
 } from "graphql-tools";
 
 import { schema as rootSchema } from "truffle-db/schema";
-
 import { schema as jsonSchema } from "./json";
 
 export const schema = mergeSchemas({
@@ -19,9 +18,6 @@ export const schema = mergeSchemas({
       contractNames: [String]!
       contractType(name: String!): ContractType
       contractInstance(networkId: String!, name: String!): ContractInstance
-    }`,
-    `extend type ABI {
-      items: [AbiItem]
     }`
   ],
   resolvers: {
@@ -115,6 +111,5 @@ export const schema = mergeSchemas({
         resolve: ({ bytecode: bytes, sourceMap }) => ({ bytes, sourceMap })
       }
     },
-
   }
 });

@@ -55,22 +55,6 @@ export const resolvers = {
     }
   },
 
-  AbiItem: {
-    __resolveType(obj) {
-      switch (obj.type) {
-        case "event":
-          return "Event";
-        case "constructor":
-          return "ConstructorFunction";
-        case "fallback":
-          return "FallbackFunction";
-        case "function":
-        default:
-          return "NormalFunction";
-      }
-    }
-  },
-
   ContractObject: {
     networks: {
       resolve ({ networks }) {
@@ -81,11 +65,4 @@ export const resolvers = {
     }
   },
 
-  NormalFunction: {
-    type: {
-      resolve (value) {
-        return "function";
-      }
-    }
-  }
 };

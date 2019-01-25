@@ -4,6 +4,8 @@ import {
   buildObjForSchema,
   buildOpsObjectForName,
   buildSchemaForName,
+  buildResolverForSubschema,
+  buildRootResolvers,
 } from "./util-helpers";
 
 export type SchemaMap = {
@@ -14,11 +16,6 @@ export type SchemaOperations = {
   [name: string]: {
     [operation: string]: GraphQLObjectType;
   };
-};
-
-const operationGetters = {
-  query: (schema: GraphQLSchema) => schema.getQueryType(),
-  mutation: (schema: GraphQLSchema) => schema.getMutationType(),
 };
 
 export type Schemafiable = string | GraphQLSchema | Array<GraphQLNamedType>;
@@ -38,9 +35,8 @@ export function scopeSchemas(config: ScopesConfig): GraphQLSchema {
 
   const rawSchemaOperations: SchemaOperations = Object.entries(subschemas)
     .map(([name, schema]) => {
-      const opGettersArray = Object.entries(operationGetters); // array of [op, getter]
       return {
-        [name]: buildObjForSchema(schema, opGettersArray), // key by name
+        [name]: buildObjForSchema(schema), // key by name
       };
     })
     .reduce((a, b) => ({ ...a, ...b }), {}); // combine objects
@@ -65,5 +61,21 @@ export function scopeSchemas(config: ScopesConfig): GraphQLSchema {
     ...(typeDefs || [])
   ];
 
-  return mergeSchemas({ schemas, resolvers });
+  const subschemaResolvers = Object.entries(subschemas)
+    .map(([name, schema]) => {
+      const operationsArray = Object.entries(schemaOperations[name]);
+      return buildResolverForSubschema(schema, operationsArray);
+    })
+    .reduce((a, b) => ({ ...a, ...b }), {});
+
+  const rootResolvers = buildRootResolvers(schemaOperations);
+
+  return mergeSchemas({
+    schemas,
+    resolvers: {
+      ...rootResolvers,
+      ...subschemaResolvers,
+      ...resolvers
+    }
+  });
 }

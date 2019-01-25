@@ -1,4 +1,4 @@
-import { GraphQLNonNull, GraphQLObjectType } from "graphql";
+import { GraphQLSchema, GraphQLNonNull, GraphQLObjectType } from "graphql";
 import pascalCase from "pascal-case";
 
 export function prefixType({ typeDef, name }): GraphQLObjectType {
@@ -16,9 +16,14 @@ export function prefixType({ typeDef, name }): GraphQLObjectType {
   );
 }
 
+const operationGetters = {
+  query: (schema: GraphQLSchema) => schema.getQueryType(),
+  mutation: (schema: GraphQLSchema) => schema.getMutationType(),
+};
+
 // helper function for rawSchemaOperations
-export const buildObjForSchema = (schema, opGettersArray) =>
-  opGettersArray
+export const buildObjForSchema = (schema) =>
+  Object.entries(operationGetters)
     .map(([op, getter]) => ({ [op]: getter(schema) })) // key by operation
     .reduce((a, b) => ({ ...a, ...b }), {}); // combine objects
 
@@ -38,9 +43,50 @@ export const buildSchemaForName = (name, operationsArray) =>
         fields: {
           [name]: {
             type: new GraphQLNonNull(typeDef),
-            resolve: () => true,
+            resolve: () => true
           },
         },
       }),
     }))
     .reduce((a, b) => ({ ...a, ...b }), {}); // combine objects
+
+export const buildRootResolvers = (schemaOperations) =>
+  Object.entries(schemaOperations)
+    .reduce((accumulator, [name, operations]) => {
+      return {
+        ...accumulator,
+
+        ...Object.keys(operations)
+          .map((operation) => ({
+            ...(accumulator[operation] || {}),
+
+            [pascalCase(operation)]: {
+              [name]: () => true
+            }
+          }))
+          .reduce((a, b) => ({ ...a, ...b }))
+      };
+    }, {});
+
+
+export const buildResolverForSubschema = (schema, operationsArray) =>
+  operationsArray
+    .map(([operation, typeDef]) => ({
+      [typeDef.name]:
+        Object.keys(operationGetters[operation](schema).getFields())
+          .map((fieldName) => ({
+            [fieldName]: {
+              resolve: (_, args, context, info) =>
+                info.mergeInfo.delegateToSchema({
+                  schema,
+                  operation,
+                  fieldName,
+                  args,
+                  context,
+                  info
+                })
+            }
+          }))
+          .reduce((a, b) => ({ ...a, ...b }), {})
+    }))
+    .reduce((a, b) => ({ ...a, ...b }), {});

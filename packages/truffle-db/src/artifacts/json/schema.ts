@@ -6,9 +6,11 @@ import {
   printSchema, GraphQLObjectType, GraphQLNonNull, GraphQLList, GraphQLString
 } from "graphql";
 
-const abiSchema = require("truffle-contract-schema/spec/abi.spec.json");
-const networkSchema = require("truffle-contract-schema/spec/network-object.spec.json");
-const contractSchema = require("truffle-contract-schema/spec/contract-object.spec.json");
+const rawSchemas = {
+  abi: require("truffle-contract-schema/spec/abi.spec.json"),
+  networkObject: require("truffle-contract-schema/spec/network-object.spec.json"),
+  contractObject: require("truffle-contract-schema/spec/contract-object.spec.json"),
+};
 
 import { resolvers } from "./resolvers";
 
@@ -76,29 +78,23 @@ function processSchema(name, schema) {
 
 const translations = [
   // fix cross-schema references
-  ({ contractSchema, ...schemas }) => ({
+  ({ contractObject, ...schemas }) => ({
     ...schemas,
 
-    contractSchema: {
-      ...contractSchema,
+    contractObject: {
+      ...contractObject,
 
       properties: {
-        ...contractSchema.properties,
-
-        // instead of "abi.spec.json#"
-        abi: {
-          ...contractSchema.properties.abi,
-          $ref: "ABI"
-        },
+        ...contractObject.properties,
 
         networks: {
-          ...contractSchema.properties.networks,
+          ...contractObject.properties.networks,
 
           // instead of "network-object.spec.json#"
           // uses object mapping indirection to avoid hard-coding regex
           patternProperties: Object.assign(
             {}, ...
-            Object.keys(contractSchema.properties.networks.patternProperties)
+            Object.keys(contractObject.properties.networks.patternProperties)
               .map( (pattern) => ({ [pattern]: { $ref: "NetworkObject" } }) )
           )
         }
@@ -108,14 +104,14 @@ const translations = [
 
   // simplify parameter type definition
   // definition in schema serves purely for validation, exclude as out of scope
-  ({ abiSchema, ...schemas }) => ({
+  ({ abi, ...schemas }) => ({
     ...schemas,
 
-    abiSchema: {
-      ...abiSchema,
+    abi: {
+      ...abi,
 
       definitions: {
-        ...abiSchema.definitions,
+        ...abi.definitions,
 
         Type: {
           type: "string"
@@ -125,14 +121,14 @@ const translations = [
   }),
 
   // fix AbiItem polymorphism
-  ({ abiSchema, ...schemas }) => ({
+  ({ abi, ...schemas }) => ({
     ...schemas,
 
-    abiSchema: {
-      ...abiSchema,
+    abi: {
+      ...abi,
 
       definitions: {
-        ...abiSchema.definitions,
+        ...abi.definitions,
 
         // add definition - not in schema
         ItemType: {
@@ -158,7 +154,7 @@ const translations = [
           ]
             // lookup corresponding definition so we can use it by short name
             .map(
-              (typeName) => ([ typeName, abiSchema.definitions[typeName] ])
+              (typeName) => ([ typeName, abi.definitions[typeName] ])
             )
             // generate revised definition as key/value pair
             .map(
@@ -185,15 +181,15 @@ const translations = [
     }
   }),
 
-  // add rawABI field, move abi to abi.items
-  ({ contractSchema, ...schemas }) => ({
+  // override abi field to show only json
+  ({ contractObject, ...schemas }) => ({
     ...schemas,
 
-    contractSchema: {
-      ...contractSchema,
+    contractObject: {
+      ...contractObject,
 
       properties: {
-        ...contractSchema.properties,
+        ...contractObject.properties,
 
         abi: {
           type: "object",
@@ -202,8 +198,12 @@ const translations = [
               type: "string",
               description: "JSON-encoded ABI"
             },
-
-            items: contractSchema.properties.abi
+            items: {
+              type: "array",
+              items: {
+                type: "object"
+              }
+            }
           },
 
           required: ["json", "items"]
@@ -231,16 +231,16 @@ const translations = [
   ),
 
   // convert networks to key/value array
-  ({ contractSchema, ...schemas }) => ({
+  ({ contractObject, ...schemas }) => ({
     ...schemas,
 
-    contractSchema: {
-      ...contractSchema,
+    contractObject: {
+      ...contractObject,
 
       properties: {
-        ...contractSchema.properties,
+        ...contractObject.properties,
         networks: convertToArray(
-          contractSchema.properties.networks,
+          contractObject.properties.networks,
           "networkId",
           "networkObject"
         )
@@ -253,27 +253,24 @@ const translations = [
 
 function processSchemas(schemas) {
   const {
-    abiSchema,
-    networkSchema,
-    contractSchema
+    abi,
+    networkObject,
+    contractObject
   } = translations.reduce(
     (schemas, translate: any) => translate(schemas),
     schemas
   )
 
-  return [
-    ...processSchema("ABI", abiSchema),
-    ...processSchema("NetworkObject", networkSchema),
-    ...processSchema("ContractObject", contractSchema)
-  ]
+  return {
+    abi: processSchema("ABI", abi),
+    networkObject: processSchema("NetworkObject", networkObject),
+    contractObject: processSchema("ContractObject", contractObject)
+  };
 }
 
-const jsonSchema = processSchemas({
-  abiSchema,
-  networkSchema,
-  contractSchema
-});
+const jsonSchemas = processSchemas(rawSchemas);
 
+export const abiSchema = convert({ jsonSchema: jsonSchemas.abi });
 
 const entryPoints = types => ({
   query: new GraphQLObjectType({
@@ -293,10 +290,16 @@ const entryPoints = types => ({
   })
 });
 
-
-const graphqlSchema = convert({ jsonSchema, entryPoints });
-const typeDefs = printSchema(graphqlSchema);
-
-export const schema = makeExecutableSchema({ typeDefs, resolvers });
-
-export const abiItem = schema.getType('AbiItem');
+export const schema = makeExecutableSchema({
+  typeDefs: printSchema(
+    convert({
+      jsonSchema: [
+        ...jsonSchemas.abi,
+        ...jsonSchemas.networkObject,
+        ...jsonSchemas.contractObject,
+      ],
+      entryPoints
+    })
+  ),
+  resolvers
+});
