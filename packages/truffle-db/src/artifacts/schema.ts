@@ -7,7 +7,6 @@ import {
 import { schema as rootSchema } from "truffle-db/schema";
 
 import { schema as jsonSchema } from "./json";
-import { readInstructions } from "./bytecode";
 
 export const schema = mergeSchemas({
   schemas: [
@@ -117,9 +116,5 @@ export const schema = mergeSchemas({
       }
     },
 
-    Bytecode: {
-      instructions: ({ bytes, sourceMap }) =>
-        readInstructions(bytes, sourceMap)
-    },
   }
 });

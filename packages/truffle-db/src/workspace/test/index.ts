@@ -4,7 +4,6 @@ import { graphql } from "graphql";
 import { soliditySha3 } from "web3-utils";
 
 import { Workspace, schema } from "truffle-db/workspace";
-import { readInstructions } from "truffle-db/artifacts/bytecode";
 
 const fixturesDirectory = path.join(
   __dirname, // truffle-db/src/db/test

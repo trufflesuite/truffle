@@ -3,6 +3,8 @@ import { scopeSchemas } from "./utils";
 import { abiItem, schema as artifactsSchema } from "truffle-db/artifacts";
 import { schema as workspaceSchema } from "truffle-db/workspace";
 
+import { readInstructions } from "./bytecode";
+
 export const schema = scopeSchemas({
   subschemas: {
     artifacts: artifactsSchema,
@@ -15,5 +17,11 @@ export const schema = scopeSchemas({
     `extend type ABI {
       items: [AbiItem]!
     }`
-  ]
+  ],
+  resolvers: {
+    Bytecode: {
+      instructions: ({ bytes, sourceMap }) =>
+        readInstructions(bytes, sourceMap)
+    },
+  }
 });
