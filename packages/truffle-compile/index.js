@@ -1,4 +1,3 @@
-var OS = require("os");
 var path = require("path");
 var Profiler = require("./profiler");
 var CompileError = require("./compileerror");
@@ -127,47 +126,31 @@ var compile = function(sources, options, callback) {
   supplier
     .load()
     .then(solc => {
-      var result = solc.compile(JSON.stringify(solcStandardInput));
+      const result = solc.compile(JSON.stringify(solcStandardInput));
+      const standardOutput = JSON.parse(result);
 
-      var standardOutput = JSON.parse(result);
+      const errorsOrWarningsOccurred =
+        typeof standardOutput.errors !== "undefined";
 
-      var errors = standardOutput.errors || [];
-      var warnings = [];
-
-      if (options.strict !== true) {
-        warnings = errors.filter(function(error) {
-          return error.severity === "warning";
-        });
-
-        errors = errors.filter(function(error) {
-          return error.severity !== "warning";
-        });
+      if (errorsOrWarningsOccurred && options.strict !== true) {
+        const warnings = standardOutput.errors.filter(
+          error => error.severity === "warning"
+        );
+        const errors = standardOutput.errors.filter(
+          error => error.severity !== "warning"
+        );
 
         if (options.quiet !== true && warnings.length > 0) {
-          options.logger.log(
-            OS.EOL + "Compilation warnings encountered:" + OS.EOL
-          );
-          options.logger.log(
-            warnings
-              .map(function(warning) {
-                return warning.formattedMessage;
-              })
-              .join()
-          );
+          options.reporter.warnings(options, warnings);
         }
-      }
 
-      if (errors.length > 0) {
-        options.logger.log("");
-        return callback(
-          new CompileError(
-            standardOutput.errors
-              .map(function(error) {
-                return error.formattedMessage;
-              })
-              .join()
-          )
-        );
+        if (errors.length > 0) {
+          options.logger.log("");
+          const compilationError = new CompileError(
+            errors.map(error => error.formattedMessage).join()
+          );
+          return callback(compilationError);
+        }
       }
 
       var contracts = standardOutput.contracts;

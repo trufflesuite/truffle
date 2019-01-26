@@ -1,6 +1,5 @@
 const debug = require("debug")("workflow-compile");
 const mkdirp = require("mkdirp");
-const path = require("path");
 const { callbackify, promisify } = require("util");
 const Config = require("truffle-config");
 const solcCompile = require("truffle-compile");
@@ -9,7 +8,6 @@ const externalCompile = require("truffle-external-compile");
 const expect = require("truffle-expect");
 const Resolver = require("truffle-resolver");
 const Artifactor = require("truffle-artifactor");
-const OS = require("os");
 const { compilationReporter } = require("truffle-reporters");
 
 const SUPPORTED_COMPILERS = {
@@ -33,6 +31,8 @@ function prepareConfig(options) {
   if (!config.artifactor) {
     config.artifactor = new Artifactor(config.contracts_build_directory);
   }
+
+  config.reporter = compilationReporter;
 
   return config;
 }
@@ -59,12 +59,13 @@ const Contracts = {
   // quiet: Boolean. Suppress output. Defaults to false.
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
   compile: callbackify(async function(options) {
-    compilationReporter.startJob(options);
     const config = prepareConfig(options);
 
     const compilers = config.compiler
       ? [config.compiler]
       : Object.keys(config.compilers);
+
+    config.reporter.startJob(options);
 
     // convert to promise to compile+write
     const compilations = compilers.map(async compiler => {
@@ -108,20 +109,10 @@ const Contracts = {
   }),
 
   writeContracts: async function(contracts, options) {
-    var logger = options.logger || console;
-
     await promisify(mkdirp)(options.contracts_build_directory);
 
     if (options.quiet != true && options.quietWrite != true) {
-      logger.log(
-        "Writing artifacts to ." +
-          path.sep +
-          path.relative(
-            options.working_directory,
-            options.contracts_build_directory
-          ) +
-          OS.EOL
-      );
+      options.reporter.writeArtifacts(options);
     }
 
     var extra_opts = {
