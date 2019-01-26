@@ -404,7 +404,7 @@ compile.with_dependencies = function(options, callback) {
   );
 };
 
-compile.display = function(paths, options) {
+compile.display = (paths, options) => {
   if (options.quiet !== true) {
     if (!Array.isArray(paths)) {
       paths = Object.keys(paths);
@@ -418,7 +418,7 @@ compile.display = function(paths, options) {
           "." + path.sep + path.relative(options.working_directory, contract);
       }
       if (contract.match(blacklistRegex)) return;
-      options.logger.log("Compiling " + contract + "...");
+      options.reporter.compilingContract(options, contract);
     });
   }
 };

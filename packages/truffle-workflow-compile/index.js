@@ -101,7 +101,7 @@ const Contracts = {
           result.contracts[name] = abstraction;
         }
       }
-
+      config.reporter.finishJob(options);
       return result;
     };
 
