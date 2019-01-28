@@ -2,6 +2,8 @@ const path = require("path");
 const OS = require("os");
 const colors = require("colors");
 
+// NOTE: In the future we might want to have this use an event-based system like
+//   the migration reporter does.
 module.exports = {
   compiledContracts: (options, contracts = []) => {
     if (!contracts) return;
