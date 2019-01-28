@@ -3,43 +3,42 @@ const OS = require("os");
 const colors = require("colors");
 
 module.exports = {
-  compilingContract: (options, contract) => {
+  compiledContracts: (options, contracts = []) => {
+    if (!contracts) return;
     const logger = options.logger || console;
-    logger.log("    Compiling " + contract);
+    contracts.forEach(contract => {
+      logger.log("    > " + contract);
+    });
+    logger.log("");
   },
 
   finishJob: options => {
     const logger = options.logger || console;
-    logger.log(OS.EOL + colors.green("=================================="));
-    logger.log(colors.green("Compilation finished successfully!"));
-    logger.log(colors.green("==================================" + OS.EOL));
+    logger.log(OS.EOL + colors.green("Compilation finished successfully"));
+    logger.log(colors.green("=================================" + OS.EOL));
   },
 
   startJob: options => {
     const logger = options.logger || console;
-    logger.log(OS.EOL + colors.green("===================="));
-    logger.log(colors.green("Starting compilation"));
+    logger.log(colors.green(OS.EOL + "Starting compilation"));
     logger.log(colors.green("====================") + OS.EOL);
   },
 
   warnings: (options, warnings) => {
     const logger = options.logger || console;
-    logger.log(OS.EOL + colors.yellow("Compilation warnings encountered:"));
-    logger.log(colors.yellow("=================================") + OS.EOL);
+    logger.log(colors.yellow("    > compilation warnings encountered:"));
     logger.log(warnings.map(warning => warning.formattedMessage).join());
   },
 
   writeArtifacts: options => {
     const logger = options.logger || console;
     logger.log(
-      OS.EOL +
-        "    Writing artifacts to ." +
+      "    > writing artifacts to ." +
         path.sep +
         path.relative(
           options.working_directory,
           options.contracts_build_directory
-        ) +
-        OS.EOL
+        )
     );
   }
 };

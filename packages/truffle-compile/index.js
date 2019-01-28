@@ -412,14 +412,22 @@ compile.display = (paths, options) => {
 
     const blacklistRegex = /^truffle\//;
 
-    paths.sort().forEach(contract => {
-      if (path.isAbsolute(contract)) {
-        contract =
-          "." + path.sep + path.relative(options.working_directory, contract);
-      }
-      if (contract.match(blacklistRegex)) return;
-      options.reporter.compilingContract(options, contract);
-    });
+    const sourceFiles = paths
+      .sort()
+      .map(contract => {
+        if (contract.match(blacklistRegex)) return;
+        if (path.isAbsolute(contract)) {
+          return `.${path.sep}${path.relative(
+            options.working_directory,
+            contract
+          )}`;
+        }
+        return contract;
+      })
+      .filter(name => {
+        return typeof name !== undefined;
+      });
+    options.reporter.compiledContracts(options, sourceFiles);
   }
 };
 
