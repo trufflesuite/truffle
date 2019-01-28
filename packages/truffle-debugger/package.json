@@ -27,7 +27,7 @@
     "json-pointer": "^0.6.0",
     "redux": "^3.7.2",
     "redux-cli-logger": "^2.0.1",
-    "redux-saga": "^0.16.0",
+    "redux-saga": "1.0.0",
     "remote-redux-devtools": "^0.5.12",
     "reselect-tree": "^1.2.0",
     "truffle-code-utils": "^1.1.3",

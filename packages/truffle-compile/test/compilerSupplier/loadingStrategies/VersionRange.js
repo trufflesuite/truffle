@@ -166,9 +166,7 @@ describe("VersionRange loading strategy", () => {
       });
       it("throws an error when it can't find a match", async () => {
         try {
-          let something = await instance.getSolcByCommit(
-            "some garbage that will not match"
-          );
+          await instance.getSolcByCommit("some garbage that will not match");
           assert(false);
         } catch (error) {
           assert(error.message === "No matching version found");

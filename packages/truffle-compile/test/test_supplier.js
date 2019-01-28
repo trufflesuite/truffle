@@ -5,7 +5,6 @@ const assert = require("assert");
 const findCacheDir = require("find-cache-dir");
 const Resolver = require("truffle-resolver");
 const compile = require("../index");
-const CompilerSupplier = require("../compilerSupplier");
 const Config = require("truffle-config");
 
 function waitSecond() {
@@ -13,8 +12,6 @@ function waitSecond() {
 }
 
 describe("CompilerSupplier", function() {
-  let supplier;
-
   describe("integration", function() {
     this.timeout(40000);
     let oldPragmaPinSource; //  0.4.15
