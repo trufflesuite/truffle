@@ -8,7 +8,7 @@ const externalCompile = require("truffle-external-compile");
 const expect = require("truffle-expect");
 const Resolver = require("truffle-resolver");
 const Artifactor = require("truffle-artifactor");
-const { compilationReporter } = require("truffle-reporters");
+const compilationReporter = require("truffle-reporters").compilation;
 
 const SUPPORTED_COMPILERS = {
   solc: solcCompile,

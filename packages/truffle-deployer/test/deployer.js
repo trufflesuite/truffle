@@ -1,7 +1,7 @@
 const ganache = require("ganache-core");
 const Web3 = require("web3");
 const assert = require("assert");
-const Reporter = require("truffle-reporters").migrationsV5;
+const Reporter = require("truffle-reporters").migration;
 const EventEmitter = require("events");
 
 const Deployer = require("../index");
@@ -236,8 +236,8 @@ describe("Deployer (sync)", function() {
 
     utils.stopAutoMine();
 
-    const isLibrary = await IsLibrary.deployed();
-    const example = await Example.deployed();
+    await IsLibrary.deployed();
+    await Example.deployed();
 
     const libReceipt = await web3.eth.getTransactionReceipt(
       IsLibrary.transactionHash
@@ -256,7 +256,7 @@ describe("Deployer (sync)", function() {
 
   it("emits block events while waiting for a tx to mine", async function() {
     this.timeout(15000);
-    const startBlock = await web3.eth.getBlockNumber();
+    await web3.eth.getBlockNumber();
 
     utils.startAutoMine(web3, 4000);
 
