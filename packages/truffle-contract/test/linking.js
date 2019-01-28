@@ -9,6 +9,7 @@ var path = require("path");
 var fs = require("fs");
 var Compile = require("truffle-compile");
 const { promisify } = require("util");
+const compilationReporter = require("truffle-reporters").compilation;
 
 // Clean up after solidity. Only remove solidity's listener,
 // which happens to be the first.
@@ -144,6 +145,8 @@ describe("Library linking with contract objects", function() {
 
     const options = {
       contracts_directory: path.join(__dirname, "sources"),
+      quiet: true,
+      reporter: compilationReporter,
       compilers: {
         solc: {
           version: "0.5.0",
