@@ -20,6 +20,7 @@ describe("Deployer (async / await)", function() {
     owner = accounts[0];
     options = {
       contracts: null,
+      quiet: true, // silence logging
       network: "test",
       network_id: networkId,
       provider: provider

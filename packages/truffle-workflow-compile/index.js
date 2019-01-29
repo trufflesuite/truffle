@@ -65,7 +65,7 @@ const Contracts = {
       ? [config.compiler]
       : Object.keys(config.compilers);
 
-    config.reporter.startJob(options);
+    if (!options.quiet) config.reporter.startJob(options.logger);
 
     // convert to promise to compile+write
     const compilations = compilers.map(async compiler => {
@@ -101,7 +101,7 @@ const Contracts = {
           result.contracts[name] = abstraction;
         }
       }
-      config.reporter.finishJob(options);
+      if (!options.quiet) config.reporter.finishJob(options.logger);
       return result;
     };
 
@@ -112,7 +112,10 @@ const Contracts = {
     await promisify(mkdirp)(options.contracts_build_directory);
 
     if (options.quiet != true && options.quietWrite != true) {
-      options.reporter.writeArtifacts(options);
+      options.reporter.writeArtifacts(
+        options.logger,
+        options.contracts_build_directory
+      );
     }
 
     var extra_opts = {

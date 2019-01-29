@@ -141,7 +141,7 @@ var compile = function(sources, options, callback) {
         );
 
         if (options.quiet !== true && warnings.length > 0) {
-          options.reporter.warnings(options, warnings);
+          options.reporter.warnings(options.logger, warnings);
         }
 
         if (errors.length > 0) {
@@ -427,7 +427,7 @@ compile.display = (paths, options) => {
       .filter(name => {
         return typeof name !== undefined;
       });
-    options.reporter.compiledContracts(options, sourceFiles);
+    options.reporter.compiledContracts(options.logger, sourceFiles);
   }
 };
 
