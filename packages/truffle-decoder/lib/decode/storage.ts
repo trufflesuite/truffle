@@ -5,7 +5,7 @@ import read from "../read";
 import * as DecodeUtils from "truffle-decode-utils";
 import decode from "./index";
 import decodeValue from "./value";
-import { StoragePointer } from "../types/pointer";
+import { StoragePointer, DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import * as Allocation from "../allocate/storage";
 import BN from "bn.js";
@@ -13,7 +13,7 @@ import Web3 from "web3";
 import { EvmStruct, EvmMapping } from "../interface/contract-decoder";
 import clonedeep from "lodash.clonedeep";
 
-export default async decodeStorage(definition: DecodeUtils.AstDefinition, pointer: StoragePointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
+export default async function decodeStorage(definition: DecodeUtils.AstDefinition, pointer: StoragePointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
   if(DecodeUtils.Definition.isReference(definition) || DecodeUtils.Definition.isMapping(definition)) {
     //note that mappings are not caught by isReference and must be checked for separately
     return await decodeStorageReference(definition, pointer, info, web3, contractAddress);
@@ -26,14 +26,14 @@ export default async decodeStorage(definition: DecodeUtils.AstDefinition, pointe
 //decodes storage at the address *read* from the pointer -- hence why this takes DataPointer rather than StoragePointer.
 //NOTE: ONLY for use with pointers to reference types!
 //Of course, pointers to value types don't exist in Solidity, so that warning is redundant, but...
-export default async decodeStorageByAddress(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
+export async function decodeStorageByAddress(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
 
-  const rawValue: Uint8Array = await read(pointer, state);
+  const rawValue: Uint8Array = await read(pointer, info.state);
   const startOffset = DecodeUtils.Conversion.toBN(rawValue);
   //we *know* the type being decoded must be sized in words, because it's a
   //reference type, but TypeScript doesn't, so we'll have to use a type
   //coercion
-  const size = (<{words: number}>storageSize(definition)).words;
+  const size = (<{words: number}>Allocation.storageSize(definition)).words;
   //now, construct the storage pointer
   const newPointer = { storage: {
     from: {
@@ -80,7 +80,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
         (baseDefinition.typeName ? baseDefinition.typeName.referencedDeclaration : undefined);
 
       debug("about to determine baseSize");
-      let baseSize: number = Allocation.storageSize(baseDefinition, info.referenceDeclarations, info.storageAllocations);
+      let baseSize: Allocation.StorageLength = Allocation.storageSize(baseDefinition, info.referenceDeclarations, info.storageAllocations);
       debug("baseSize %o", baseSize);
       
       //we are going to make a list of child ranges, pushing them one by one onto
@@ -91,7 +91,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
       if(Allocation.isWordsLength(baseSize)) {
         //currentSlot will point to the start of the entry being decoded
         let currentSlot: Allocation.Slot = {
-          path: pointer.storage.from.slot;
+          path: pointer.storage.from.slot,
           offset: new BN(0),
           hashPath: DecodeUtils.Definition.isDynamicArray(definition)
         };
@@ -130,7 +130,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
         //note we have baseSize.bytes <= DecodeUtils.EVM.WORD_SIZE
         let currentPosition: Allocation.StoragePosition = {
           slot: {
-            path: pointer.storage.from.slot;
+            path: pointer.storage.from.slot,
             offset: new BN(0),
             hashPath: DecodeUtils.Definition.isDynamicArray(definition)
           },
@@ -155,7 +155,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
           currentPosition.index -= baseSize.bytes;
           if (currentPosition.index < 0) {
             currentPosition.slot.offset.iaddn(1);
-            currentPosition.index = DecodeUtils.EVM.WORD_SIZE - baseSize;
+            currentPosition.index = DecodeUtils.EVM.WORD_SIZE - baseSize.bytes;
           }
         }
       }

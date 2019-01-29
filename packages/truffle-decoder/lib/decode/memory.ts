@@ -91,12 +91,12 @@ export async function decodeMemoryReference(definition: DecodeUtils.AstDefinitio
         : definition.expression.referencedDeclaration;
 
       let allMembers = referenceDeclarations[referencedDeclaration].members;
-      let members = allMembers.filter( ({id}: number) => {
-        !DecodeUtils.Definition.isMapping(referenceDeclarations[id]))
-      };
+      let members = allMembers.filter( (memberDefinition) =>
+        !DecodeUtils.Definition.isMapping(memberDefinition));
 
-      const decodeMember = async ({name, id}: any, i: number) => {
-        let memberDefinition = referenceDeclarations[id];
+      debug("members %O", members);
+
+      const decodeMember = async (memberDefinition: DecodeUtils.AstDefinition, i: number) => {
         let memberPointer: MemoryPointer = {
           memory: {
             start: startPosition + i * DecodeUtils.EVM.WORD_SIZE,
@@ -127,7 +127,7 @@ export async function decodeMemoryReference(definition: DecodeUtils.AstDefinitio
         }
 
         return {
-          [name]: decoded
+          [memberDefinition.name]: decoded
         };
       }
 

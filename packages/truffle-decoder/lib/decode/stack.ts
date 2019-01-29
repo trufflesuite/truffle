@@ -6,8 +6,11 @@ import decodeValue from "./value";
 import { decodeMemoryReference } from "./memory";
 import { decodeStorageReference, decodeStorageByAddress } from "./storage";
 import { storageSize } from "../allocate/storage";
+import { StackPointer } from "../types/pointer";
+import { EvmInfo } from "../types/evm";
+import Web3 from "web3";
 
-export default async decodeStack(definition: DecodeUtils.AstDefinition, pointer: StackPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
+export default async function decodeStack(definition: DecodeUtils.AstDefinition, pointer: StackPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
 
   //first: do we have a memory pointer? if so we can just dispatch to
   //decodeMemoryReference, which knows how to decode the pointer already

@@ -5,6 +5,7 @@ import * as DecodeUtils from "truffle-decode-utils";
 import decodeValue from "./value";
 import decodeMemory from "./memory";
 import decodeStorage from "./storage";
+import decodeStack from "./stack";
 import { AstDefinition } from "truffle-decode-utils";
 import { DataPointer, isLiteralPointer, isStoragePointer, isMemoryPointer, isStackPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
