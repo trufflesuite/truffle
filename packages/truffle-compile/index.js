@@ -140,7 +140,7 @@ var compile = function(sources, options, callback) {
           error => error.severity !== "warning"
         );
 
-        if (options.quiet !== true && warnings.length > 0) {
+        if (options.quiet !== true && warnings.length > 0 && options.reporter) {
           options.reporter.warnings(options.logger, warnings);
         }
 
@@ -427,7 +427,9 @@ compile.display = (paths, options) => {
       .filter(name => {
         return typeof name !== undefined;
       });
-    options.reporter.compiledContracts(options.logger, sourceFiles);
+    if (options.reporter) {
+      options.reporter.compiledContracts(options.logger, sourceFiles);
+    }
   }
 };
 
