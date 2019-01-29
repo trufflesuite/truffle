@@ -72,7 +72,7 @@ module.exports = {
     return function(payload, error, result) {
       if (error != null) {
         // wrap errors in internal error class
-        error = new ProviderError(error.message, error);
+        error = new ProviderError(error.message, options);
         return [payload, error, result];
       }
 
