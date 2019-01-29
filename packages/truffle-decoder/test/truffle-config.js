@@ -53,7 +53,7 @@ module.exports = {
   mocha: {
     // timeout: 100000
   },
-
+  quiet: true,
   // Configure your compilers
   compilers: {
     solc: {

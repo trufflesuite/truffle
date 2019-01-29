@@ -69,6 +69,7 @@ describe("Error cases", function() {
       network: "test",
       network_id: networkId,
       provider: provider,
+      quiet: true,
       logger: {
         log: () => {},
         error: () => {}
@@ -248,7 +249,6 @@ describe("Error cases", function() {
   it("exceeds block limit", async function() {
     const block = await web3.eth.getBlock("latest");
     const gas = block.gasLimit + 1000;
-
     migrate = function() {
       deployer.deploy(Example, { gas: gas });
     };

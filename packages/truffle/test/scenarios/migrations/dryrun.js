@@ -30,6 +30,7 @@ describe("migrate (dry-run)", function() {
     config = await sandbox.create(project);
     config.network = "development";
     config.logger = logger;
+    config.quiet = true;
     config.mocha = {
       reporter: new Reporter(logger)
     };
@@ -47,11 +48,9 @@ describe("migrate (dry-run)", function() {
     CommandRunner.run("migrate --dry-run", config, err => {
       const output = logger.contents();
       processErr(err, output);
-      console.log(output);
+
       assert(output.includes("dry-run"));
-
       assert(!output.includes("transaction hash"));
-
       assert(output.includes("Migrations"));
       assert(output.includes("development-fork"));
       assert(output.includes("2_migrations_sync.js"));

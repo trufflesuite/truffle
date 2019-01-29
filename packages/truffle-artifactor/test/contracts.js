@@ -10,7 +10,6 @@ var Compile = require("truffle-compile");
 var Ganache = require("ganache-core");
 var Web3 = require("web3");
 const { promisify } = require("util");
-const compilationReporter = require("truffle-reporters").compilation;
 
 describe("artifactor + require", function() {
   var Example;
@@ -37,7 +36,7 @@ describe("artifactor + require", function() {
 
     const options = {
       contracts_directory: path.join(__dirname),
-      reporter: compilationReporter,
+      quiet: true,
       compilers: {
         solc: {
           version: "0.5.0",
