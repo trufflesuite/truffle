@@ -113,7 +113,7 @@ describe("Further Decoding", function() {
   });
 
   it("Decodes various reference types correctly", async function() {
-    this.timeout(4000);
+    this.timeout(8000);
 
     let instance = await abstractions.ContainersTest.deployed();
     let receipt = await instance.run();
