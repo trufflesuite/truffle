@@ -108,8 +108,11 @@ export namespace Definition {
   }
 
   export function baseDefinition(definition: AstDefinition): AstDefinition {
-    if (definition.typeName && typeof definition.typeName.baseType === "object") {
+    if (definition.typeName && definition.typeName.baseType) {
       return definition.typeName.baseType;
+    }
+    if (definition.baseType) {
+      return definition.baseType;
     }
 
     let baseIdentifier = typeIdentifier(definition)

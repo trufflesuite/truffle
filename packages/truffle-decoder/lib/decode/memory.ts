@@ -13,11 +13,8 @@ export default async function decodeMemoryReference(definition: DecodeUtils.AstD
   const { state } = info
   // debug("pointer %o", pointer);
   let rawValue: Uint8Array = await read(pointer, state);
-  if (rawValue == undefined) {
-    return undefined;
-  }
 
-  let rawValueNumber = DecodeUtils.Conversion.toBN(rawValue).toNumber();
+  let startPosition = DecodeUtils.Conversion.toBN(rawValue).toNumber();
 
   var bytes;
   switch (DecodeUtils.Definition.typeClass(definition)) {
@@ -25,25 +22,34 @@ export default async function decodeMemoryReference(definition: DecodeUtils.AstD
     case "bytes":
     case "string":
       bytes = await read({
-        memory: { start: rawValueNumber, length: DecodeUtils.EVM.WORD_SIZE}
+        memory: { start: startPosition, length: DecodeUtils.EVM.WORD_SIZE}
       }, state); // bytes contain length in the last byte
 
       let childPointer: MemoryPointer = {
-        memory: { start: rawValueNumber + DecodeUtils.EVM.WORD_SIZE, length: bytes[DecodeUtils.EVM.WORD_SIZE - 1] }
+        memory: { start: startPosition + DecodeUtils.EVM.WORD_SIZE, length: bytes[DecodeUtils.EVM.WORD_SIZE - 1] }
       }
 
       return await decodeValue(definition, childPointer, info);
 
     case "array":
-      bytes = DecodeUtils.Conversion.toBN(await read({
-        memory: { start: rawValueNumber, length: DecodeUtils.EVM.WORD_SIZE },
-      }, state)).toNumber();  // bytes contain array length
+      let length;
+
+      if (DecodeUtils.Definition.isDynamicArray(definition)) {
+        length = DecodeUtils.Conversion.toBN(await read({
+          memory: { start: startPosition, length: DecodeUtils.EVM.WORD_SIZE },
+          }, state)).toNumber();  // initial word contains array length
+        startPosition += DecodeUtils.EVM.WORD_SIZE; //increment startPosition to
+        //next word, as first word was used for length
+      }
+      else {
+        length = DecodeUtils.Definition.staticLength(definition);
+      }
 
       bytes = await read({ memory: {
-        start: rawValueNumber + DecodeUtils.EVM.WORD_SIZE, length: bytes * DecodeUtils.EVM.WORD_SIZE
+        start: startPosition, length: length * DecodeUtils.EVM.WORD_SIZE
       }}, state); // now bytes contain items
 
-      let baseDefinition = DecodeUtils.Definition.baseDefinition(definition);
+      let baseDefinition = definition.baseType || definition.typeName.baseType;
 
       // HACK replace erroneous `_storage_` type identifiers with `_memory_`
       baseDefinition = {
@@ -75,13 +81,16 @@ export default async function decodeMemoryReference(definition: DecodeUtils.AstD
         ? definition.typeName.referencedDeclaration
         : definition.expression.referencedDeclaration;
 
-      let members = referenceDeclarations[referencedDeclaration].members;
+      let allMembers = referenceDeclarations[referencedDeclaration].members;
+      let members = allMembers.filter( ({id}: number) => {
+        !DecodeUtils.Definition.isMapping(referenceDeclarations[id]))
+      };
 
       const decodeMember = async ({name, id}: any, i: number) => {
         let memberDefinition = referenceDeclarations[id];
         let memberPointer: MemoryPointer = {
           memory: {
-            start: rawValueNumber + i * DecodeUtils.EVM.WORD_SIZE,
+            start: startPosition + i * DecodeUtils.EVM.WORD_SIZE,
             length: DecodeUtils.EVM.WORD_SIZE
           }
         };

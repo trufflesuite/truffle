@@ -8,7 +8,7 @@ import decodeValue from "./value";
 import { StoragePointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { Allocation } from "truffle-decode-utils";
-import { storageSize, storageLengthToBytes } from "../allocate/storage";
+import { storageSize, isWordsLength } from "../allocate/storage";
 import BN from "bn.js";
 import Web3 from "web3";
 import { EvmStruct, EvmMapping } from "../interface/contract-decoder";
@@ -27,9 +27,6 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
         debug("dynamic array");
         debug("definition %O", definition);
         data = await read(pointer, state, web3, contractAddress);
-        if (!data) {
-          return undefined;
-        }
 
         length = DecodeUtils.Conversion.toBN(data).toNumber();
       }
@@ -39,79 +36,94 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       }
       debug("length %o", length);
 
-      const baseDefinition = DecodeUtils.Definition.baseDefinition(definition);
+      const baseDefinition = definition.baseType || definition.typeName.baseType;
       const referenceId = baseDefinition.referencedDeclaration ||
         (baseDefinition.typeName ? baseDefinition.typeName.referencedDeclaration : undefined);
 
       debug("about to determine baseSize");
-      let baseSize: number = storageLengthToBytes(storageSize(baseDefinition, info.referenceDeclarations, info.storageAllocations));
+      let baseSize: number = storageSize(baseDefinition, info.referenceDeclarations, info.storageAllocations);
       debug("baseSize %o", baseSize);
-
-      const perWord = Math.floor(DecodeUtils.EVM.WORD_SIZE / baseSize);
-      debug("perWord %d", perWord);
-
-      const offset = (i: number): number => {
-        if (perWord == 1) {
-          return i;
-        }
-
-        return Math.floor(i * baseSize / DecodeUtils.EVM.WORD_SIZE);
-      }
-
-      const index = (i: number) => {
-        if (perWord == 1) {
-          return DecodeUtils.EVM.WORD_SIZE - baseSize;
-        }
-
-        const position = perWord - i % perWord - 1;
-        return position * baseSize;
-      }
-
-      let from = {
-        slot: {
-          ...pointer.storage.from.slot
-        },
-        index: pointer.storage.from.index
-      };
-
-      debug("pointer: %o", pointer);
+      
+      //we are going to make a list of child ranges, pushing them one by one onto
+      //this list, and then decode them; the first part will vary based on whether
+      //we're in the words case or the bytes case, the second will not
       let ranges: Allocation.Range[] = [];
-      let currentReference: Allocation.StorageReference = {
-        slot: {
-          path: from.slot || undefined,
+
+      if(isWordsLength(baseSize)) {
+        //currentSlot will point to the start of the entry being decoded
+        let currentSlot: Allocation.Slot = {
+          path: pointer.storage.from.slot;
           offset: new BN(0),
           hashPath: DecodeUtils.Definition.isDynamicArray(definition)
-        },
-        index: DecodeUtils.EVM.WORD_SIZE - 1
-      };
-
-      for (let i = 0; i < length; i++) {
-        currentReference.index -= baseSize - 1;
-        if (currentReference.index < 0) {
-          currentReference.slot.offset = currentReference.slot.offset.addn(1);
-          currentReference.index = DecodeUtils.EVM.WORD_SIZE - baseSize;
-        }
-
-        let childRange = <Allocation.Range>{
-          from: {
-            slot: {
-              path: currentReference.slot.path,
-              offset: currentReference.slot.offset.clone(),
-              hashPath: currentReference.slot.hashPath
-            },
-            index: currentReference.index
-          },
-          length: baseSize
         };
 
-        currentReference.index -= 1;
+        for (let i = 0; i < length; i++) {
+          let childRange: Allocation.Range = {
+            from: {
+              slot: {
+                path: currentSlot.path,
+                offset: currentSlot.offset.clone(),
+                hashPath: currentSlot.hashPath
+              },
+              index: 0
+            },
+            to: {
+              slot: {
+                path: currentSlot.path,
+                offset: currentSlot.offset.addn(baseSize.words - 1),
+                hashPath: currentSlot.hashPath
+              },
+              index: DecodeUtils.EVM.WORD_SIZE - 1
+            },
+          };
 
-        ranges.push(childRange);
+          ranges.push(childRange);
+
+          currentSlot.offset.iaddn(baseSize.words);
+        }
+      }
+      else {
+
+        const perWord = Math.floor(DecodeUtils.EVM.WORD_SIZE / baseSize.bytes);
+        debug("perWord %d", perWord);
+
+        //currentPosition will point to the start of the entry being decoded
+        //note we have baseSize.bytes <= DecodeUtils.EVM.WORD_SIZE
+        let currentPosition: Allocation.StoragePosition = {
+          slot: {
+            path: pointer.storage.from.slot;
+            offset: new BN(0),
+            hashPath: DecodeUtils.Definition.isDynamicArray(definition)
+          },
+          index: DecodeUtils.EVM.WORD_SIZE - baseSize.bytes //note the starting index!
+        };
+
+        for (let i = 0; i < length; i++) {
+          let childRange: Allocation.Range = {
+            from: {
+              slot: {
+                path: currentPosition.slot.path,
+                offset: currentPosition.slot.offset.clone(),
+                hashPath: currentPosition.slot.hashPath
+              },
+              index: currentPosition.index
+            },
+            length: baseSize.bytes
+          };
+
+          ranges.push(childRange);
+
+          currentPosition.index -= baseSize.bytes;
+          if (currentPosition.index < 0) {
+            currentPosition.slot.offset.iaddn(1);
+            currentPosition.index = DecodeUtils.EVM.WORD_SIZE - baseSize;
+          }
+        }
       }
 
       const decodePromises = ranges.map( (childRange, idx) => {
         debug("childFrom %d, %o", idx, childRange.from);
-        return decode(DecodeUtils.Definition.baseDefinition(definition), <StoragePointer>{
+        return decode(baseDefinition, {
           storage: childRange
         }, info, web3, contractAddress);
       });
@@ -223,12 +235,17 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
     }
 
     case "mapping": {
-      const result = <EvmMapping>{
+
+      const keyDefinition = definition.keyType || definition.typeName.keyType;
+      const valueDefinition = definition.valueType || definition.typeName.valueType;
+      const valueSize = Allocate.storageSize(valueDefinition, info.referenceDeclarations, info.storageAllocations)
+
+      const result: EvmMapping = {
         name: definition.name,
         type: "mapping",
         id: definition.id,
-        keyType: DecodeUtils.Definition.typeClass(definition.typeName.keyType),
-        valueType: DecodeUtils.Definition.typeClass(definition.typeName.valueType),
+        keyType: DecodeUtils.Definition.typeClass(keyDefinition),
+        valueType: DecodeUtils.Definition.typeClass(valueDefinition),
         members: {}
       };
 
@@ -239,26 +256,52 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
         for (const key of keys) {
           const keyValue = DecodeUtils.Conversion.toBytes(key);
 
-          const valuePointer: StoragePointer = {
-            storage: {
-              from: {
-                slot: <Allocation.Slot>{
-                  key: key,
-                  path: baseSlot || undefined,
-                  offset: new BN(0)
+          let valuePointer: StoragePointer;
+
+          if(isWordsLength(valueSize)) {
+            valuePointer = {
+              storage: {
+                from: {
+                  slot: {
+                    key: key,
+                    path: baseSlot,
+                    offset: new BN(0)
+                  },
+                  index: 0
                 },
-                index: 0
-              },
-              to: {
-                slot: <Allocation.Slot>{
-                  key: key,
-                  path: baseSlot || undefined,
-                  offset: new BN(0)
-                },
-                index: 31
+                to: {
+                  slot: {
+                    key: key,
+                    path: baseSlot,
+                    offset: new BN(valueSize.words - 1)
+                  },
+                  index: DecodeUtils.EVM.WORD_SIZE - 1
+                }
               }
-            }
-          };
+            };
+          }
+          else {
+            valuePointer = {
+              storage: {
+                from: {
+                  slot: {
+                    key: key,
+                    path: baseSlot,
+                    offset: new BN(0)
+                  },
+                  index: DecodeUtils.EVM.WORD_SIZE - valueSize.bytes
+                },
+                to: {
+                  slot: {
+                    key: key,
+                    path: baseSlot,
+                    offset: new BN(0)
+                  },
+                  index: DecodeUtils.EVM.WORD_SIZE - 1
+                }
+              }
+            };
+          }
 
           let memberName: string;
           if (typeof key === "string") {
@@ -269,7 +312,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
           }
 
           result.members[memberName] =
-            await decode(definition.typeName.valueType, valuePointer, info, web3, contractAddress);
+            await decode(valueDefinition, valuePointer, info, web3, contractAddress);
         }
       }
 
