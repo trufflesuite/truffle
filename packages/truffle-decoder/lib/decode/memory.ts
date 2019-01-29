@@ -9,7 +9,16 @@ import { chunk } from "../read/memory";
 import { MemoryPointer, DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 
-export default async function decodeMemoryReference(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo): Promise<any> {
+export default async function decodeMemory(definition: DecodeUtils.AstDefinition, pointer: MemoryPointer, info: EvmInfo): Promise <any> {
+  if(DecodeUtils.Definition.isReference(definition)) {
+    return await decodeMemoryReference(definition, pointer, info);
+  }
+  else {
+    return await decodeValue(definition, pointer, info);
+  }
+}
+
+export async function decodeMemoryReference(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo): Promise<any> {
   const { state } = info
   // debug("pointer %o", pointer);
   let rawValue: Uint8Array = await read(pointer, state);

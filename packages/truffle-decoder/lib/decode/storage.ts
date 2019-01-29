@@ -13,7 +13,47 @@ import Web3 from "web3";
 import { EvmStruct, EvmMapping } from "../interface/contract-decoder";
 import clonedeep from "lodash.clonedeep";
 
-export default async function decodeStorageReference(definition: DecodeUtils.AstDefinition, pointer: StoragePointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<any> {
+export default async decodeStorage(definition: DecodeUtils.AstDefinition, pointer: StoragePointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
+  if(DecodeUtils.Definition.isReference(definition) || DecodeUtils.Definition.isMapping(definition)) {
+    //note that mappings are not caught by isReference and must be checked for separately
+    return await decodeStorageReference(definition, pointer, info, web3, contractAddress);
+  }
+  else {
+    return await decodeValue(definition, pointer, info, web3, contractAddress);
+  }
+}
+
+//decodes storage at the address *read* from the pointer -- hence why this takes DataPointer rather than StoragePointer.
+//NOTE: ONLY for use with pointers to reference types!
+//Of course, pointers to value types don't exist in Solidity, so that warning is redundant, but...
+export default async decodeStorageByAddress(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
+
+  const rawValue: Uint8Array = await read(pointer, state);
+  const startOffset = DecodeUtils.Conversion.toBN(rawValue);
+  //we *know* the type being decoded must be sized in words, because it's a
+  //reference type, but TypeScript doesn't, so we'll have to use a type
+  //coercion
+  const size = (<{words: number}>storageSize(definition)).words;
+  //now, construct the storage pointer
+  const newPointer = { storage: {
+    from: {
+      slot: {
+        offset: startOffset
+      },
+      index: 0
+    },
+    to: {
+      slot: {
+        offset: startOffset.addn(size - 1)
+      },
+      index: DecodeUtils.EVM.WORD_SIZE - 1
+    }
+  }};
+  //dispatch to decodeStorageReference
+  return await decodeStorageReference(definition, newPointer, info, web3, contractAddress);
+}
+
+export async function decodeStorageReference(definition: DecodeUtils.AstDefinition, pointer: StoragePointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<any> {
   var data;
   var length;
 
