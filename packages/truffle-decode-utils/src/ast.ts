@@ -1,4 +1,3 @@
-
 export interface AstTypeDescriptions {
   typeIdentifier: string;
   typeString?: string;

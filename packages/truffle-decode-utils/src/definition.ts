@@ -106,29 +106,4 @@ export namespace Definition {
   export function referenceType(definition: AstDefinition): string {
     return typeIdentifier(definition).match(/_([^_]+)(_ptr)?$/)[1];
   }
-
-  export function baseDefinition(definition: AstDefinition): AstDefinition {
-    if (definition.typeName && definition.typeName.baseType) {
-      return definition.typeName.baseType;
-    }
-    if (definition.baseType) {
-      return definition.baseType;
-    }
-
-    let baseIdentifier = typeIdentifier(definition)
-      // first dollar sign     last dollar sign
-      //   `---------.       ,---'
-      .match(/^[^$]+\$_(.+)_\$[^$]+$/)[1]
-      //              `----' greedy match
-
-    // HACK - internal types for memory or storage also seem to be pointers
-    if (baseIdentifier.match(/_(memory|storage)$/) != null) {
-      baseIdentifier = `${baseIdentifier}_ptr`;
-    }
-
-    // another HACK - we get away with it becausewe're only using that one property
-    let result: AstDefinition = cloneDeep(definition);
-    result.typeDescriptions.typeIdentifier = baseIdentifier;
-    return result;
-  }
 }

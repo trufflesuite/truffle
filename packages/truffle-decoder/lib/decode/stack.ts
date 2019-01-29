@@ -21,7 +21,7 @@ export default async function decodeStack(definition: DecodeUtils.AstDefinition,
 
   //next: do we have a storage pointer (which may be a mapping)? if so, we can
   //we dispatch to decodeStorageByAddress, a new function that will decode the
-  //pointer and then dispatch to decodeStorateReference
+  //pointer and then dispatch to decodeStorageReference
   if((DecodeUtils.Definition.isReference(definition)
     && DecodeUtils.Definition.referenceType(definition) === "storage")
     || DecodeUtils.Definition.isMapping(definition)) {
