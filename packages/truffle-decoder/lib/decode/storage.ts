@@ -7,8 +7,7 @@ import decode from "./index";
 import decodeValue from "./value";
 import { StoragePointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
-import { Allocation } from "truffle-decode-utils";
-import { storageSize, isWordsLength } from "../allocate/storage";
+import * as Allocation from "../allocate/storage";
 import BN from "bn.js";
 import Web3 from "web3";
 import { EvmStruct, EvmMapping } from "../interface/contract-decoder";
@@ -41,7 +40,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
         (baseDefinition.typeName ? baseDefinition.typeName.referencedDeclaration : undefined);
 
       debug("about to determine baseSize");
-      let baseSize: number = storageSize(baseDefinition, info.referenceDeclarations, info.storageAllocations);
+      let baseSize: number = Allocation.storageSize(baseDefinition, info.referenceDeclarations, info.storageAllocations);
       debug("baseSize %o", baseSize);
       
       //we are going to make a list of child ranges, pushing them one by one onto
@@ -49,7 +48,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
       //we're in the words case or the bytes case, the second will not
       let ranges: Allocation.Range[] = [];
 
-      if(isWordsLength(baseSize)) {
+      if(Allocation.isWordsLength(baseSize)) {
         //currentSlot will point to the start of the entry being decoded
         let currentSlot: Allocation.Slot = {
           path: pointer.storage.from.slot;
@@ -238,7 +237,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
 
       const keyDefinition = definition.keyType || definition.typeName.keyType;
       const valueDefinition = definition.valueType || definition.typeName.valueType;
-      const valueSize = Allocate.storageSize(valueDefinition, info.referenceDeclarations, info.storageAllocations)
+      const valueSize = Allocation.storageSize(valueDefinition, info.referenceDeclarations, info.storageAllocations)
 
       const result: EvmMapping = {
         name: definition.name,
@@ -258,7 +257,7 @@ export default async function decodeStorageReference(definition: DecodeUtils.Ast
 
           let valuePointer: StoragePointer;
 
-          if(isWordsLength(valueSize)) {
+          if(Allocation.isWordsLength(valueSize)) {
             valuePointer = {
               storage: {
                 from: {
