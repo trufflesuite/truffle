@@ -61,15 +61,13 @@ describe("VersionRange loading strategy", () => {
       instance.versionIsCached.restore();
     });
 
-    it("calls getCachedSolcByVersionRange when single solc is specified", async done => {
+    it("calls getCachedSolcByVersionRange when single solc is specified", async () => {
       await instance.load("0.5.0");
       assert(instance.getCachedSolcByVersionRange.called);
-      done();
     });
-    it("calls getSolcFromCacheOrUrl when a larger range is specified", async done => {
+    it("calls getSolcFromCacheOrUrl when a larger range is specified", async () => {
       await instance.load("^0.5.0");
       assert(instance.getSolcFromCacheOrUrl.called);
-      done();
     });
   });
 
@@ -91,14 +89,13 @@ describe("VersionRange loading strategy", () => {
         instance.fileIsCached.restore();
       });
 
-      it("calls getCachedSolcByFileName", async done => {
+      it("calls getCachedSolcByFileName", async () => {
         await instance.getSolcFromCacheOrUrl("0.5.0");
         assert(
           instance.getCachedSolcByFileName.calledWith(
             "soljson-v0.5.0+commit.1d4f565a.js"
           )
         );
-        done();
       });
     });
 
@@ -114,11 +111,10 @@ describe("VersionRange loading strategy", () => {
         instance.addFileToCache.restore();
       });
 
-      it("eventually calls addFileToCache and compilerFromString", async done => {
+      it("eventually calls addFileToCache and compilerFromString", async () => {
         await instance.getSolcFromCacheOrUrl("0.5.1");
         assert(instance.addFileToCache.called);
         assert(instance.compilerFromString.called);
-        done();
       }).timeout(20000);
     });
   });
@@ -137,10 +133,9 @@ describe("VersionRange loading strategy", () => {
         instance.getCachedSolcByFileName.restore();
       });
 
-      it("calls getCachedSolcByFileName with the file name", async done => {
+      it("calls getCachedSolcByFileName with the file name", async () => {
         await instance.getSolcByCommit("commit.porkBelly");
         assert(instance.getCachedSolcByFileName.calledWith("someFile.js"));
-        done();
       });
     });
 
@@ -165,19 +160,16 @@ describe("VersionRange loading strategy", () => {
         instance.compilerFromString.restore();
       });
 
-      it("eventually calls compilerFromString with request reponse", async done => {
+      it("eventually calls compilerFromString with request reponse", async () => {
         await instance.getSolcByCommit(commitString);
         assert(instance.compilerFromString.calledWith("requestResponse"));
-        done();
       }).timeout(20000);
-      it("throws an error when it can't find a match", async done => {
+      it("throws an error when it can't find a match", async () => {
         try {
           await instance.getSolcByCommit("some garbage that will not match");
           assert(false);
-          done();
         } catch (error) {
           assert(error.message === "No matching version found");
-          done();
         }
       });
     });
@@ -202,13 +194,12 @@ describe("VersionRange loading strategy", () => {
       instance.compilerFromString.restore();
     });
 
-    it("calls addFileToCache with the response and the file name", async done => {
+    it("calls addFileToCache with the response and the file name", async () => {
       result = await instance.getSolcByUrlAndCache(fileName);
       assert(
         instance.addFileToCache.calledWith("requestReturn", "someSolcFile")
       );
       assert(result === "success");
-      done();
     });
   });
 
