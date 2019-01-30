@@ -23,7 +23,7 @@ export async function decodeStack(definition: DecodeUtils.AstDefinition, pointer
 //[and the latter will be removed from LiteralPointer eventually]
 //thus in decoding a literal pointer, we can follow the rules we would
 //for decoding a stack value, unless it's a stringliteral, in which case
-//we can just dispatch to decodeValue which already handles those
+//we can just dispatch to decodeValue which already handles those (this is a hack)
 export async function decodeLiteral(definition: DecodeUtils.AstDefinition, pointer: LiteralPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
 
   //first: do we have a memory pointer? if so we can just dispatch to
@@ -51,5 +51,6 @@ export async function decodeLiteral(definition: DecodeUtils.AstDefinition, point
 
   //finally, if none of the above hold, we can just dispatch to decodeValue.
   //note we don't need web3 and contract address at this point
+  //HACK: string literals fall into this case
   return await decodeValue(definition, pointer, info);
 }
