@@ -28,7 +28,7 @@ export default async function decodeStorage(definition: DecodeUtils.AstDefinitio
 //Of course, pointers to value types don't exist in Solidity, so that warning is redundant, but...
 export async function decodeStorageByAddress(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
 
-  const rawValue: Uint8Array = await read(pointer, info.state);
+  const rawValue: Uint8Array = await read(pointer, info.state, web3, contractAddress);
   const startOffset = DecodeUtils.Conversion.toBN(rawValue);
   //we *know* the type being decoded must be sized in words, because it's a
   //reference type, but TypeScript doesn't, so we'll have to use a type

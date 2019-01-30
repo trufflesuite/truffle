@@ -5,7 +5,7 @@ import * as DecodeUtils from "truffle-decode-utils";
 import decodeValue from "./value";
 import decodeMemory from "./memory";
 import decodeStorage from "./storage";
-import decodeStack from "./stack";
+import { decodeStack, decodeLiteral } from "./stack";
 import { AstDefinition } from "truffle-decode-utils";
 import { DataPointer, isLiteralPointer, isStoragePointer, isMemoryPointer, isStackPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
@@ -15,7 +15,7 @@ export default async function decode(definition: AstDefinition, pointer: DataPoi
   debug("Decoding %s", definition.name);
 
   if (isLiteralPointer(pointer)) {
-    return await decodeValue(definition, pointer, info);
+    return await decodeLiteral(definition, pointer, info);
     //a literal value does not need web3 & contractAddress!
   }
 
