@@ -22,7 +22,6 @@ describe("migration errors", function() {
     config = await sandbox.create(project);
     config.network = "development";
     config.logger = logger;
-    config.quiet = true;
     config.mocha = {
       reporter: new Reporter(logger)
     };
@@ -36,7 +35,6 @@ describe("migration errors", function() {
 
   it("should error and stop", function(done) {
     this.timeout(70000);
-
     CommandRunner.run("migrate", config, err => {
       const output = logger.contents();
       console.log(output);

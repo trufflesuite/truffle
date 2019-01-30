@@ -1,5 +1,4 @@
 module.exports = {
-  quiet: true,
   networks: {
     development: {
       host: "127.0.0.1",
