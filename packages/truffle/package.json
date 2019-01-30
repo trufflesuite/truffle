@@ -31,7 +31,7 @@
     "tmp": "0.0.33",
     "truffle-box": "^1.0.10",
     "truffle-contract": "^4.0.2",
-    "web3": "^1.0.0-beta.37",
+    "web3": "1.0.0-beta.37",
     "webpack": "^2.5.1",
     "webpack-bundle-analyzer": "^3.0.3",
     "yargs": "^8.0.2"
