@@ -44,6 +44,13 @@ describe("compile", function() {
     });
   });
 
+  beforeEach(() => {
+    memStream = new MemoryStream();
+    memStream.on("data", function(data) {
+      output += data.toString();
+    });
+  });
+
   afterEach("Clear MemoryStream", () => (output = ""));
 
   it("compiles all initial contracts", function(done) {
@@ -135,13 +142,6 @@ describe("compile", function() {
   });
 
   describe("solc listing options", function() {
-    beforeEach(() => {
-      memStream = new MemoryStream();
-      memStream.on("data", function(data) {
-        output += data.toString();
-      });
-    });
-
     it("prints a truncated list of solcjs versions", function(done) {
       this.timeout(5000);
 
