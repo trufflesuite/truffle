@@ -1,4 +1,4 @@
-import { Allocation } from "truffle-decode-utils";
+import * as Allocation from "../allocate/storage";
 
 export type DataPointer = StackPointer | MemoryPointer | StoragePointer | LiteralPointer;
 

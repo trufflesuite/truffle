@@ -10,7 +10,7 @@ import * as general from "../allocate/general";
 import * as storage from "../allocate/storage";
 import { StoragePointer } from "../types/pointer";
 import decode from "../decode";
-import { Definition as DefinitionUtils, EVM, Allocation, AstDefinition } from "truffle-decode-utils";
+import { Definition as DefinitionUtils, EVM, AstDefinition } from "truffle-decode-utils";
 import { BlockType, Transaction } from "web3/eth/types";
 import { EventLog, Log } from "web3/types";
 import { Provider } from "web3/providers";

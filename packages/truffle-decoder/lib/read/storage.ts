@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("decoder:read:storage");
 
 import * as DecodeUtils from "truffle-decode-utils";
+import * as Allocation from "../allocate/storage";
 import BN from "bn.js";
 import Web3 from "web3";
 
@@ -13,7 +14,7 @@ import Web3 from "web3";
  *
  * @param slot - number or possibly-nested array of numbers
  */
-export function slotAddress(slot: DecodeUtils.Allocation.Slot): BN {
+export function slotAddress(slot: Allocation.Slot): BN {
   if (typeof slot.key !== "undefined" && typeof slot.path !== "undefined") {
     // mapping reference
     return DecodeUtils.EVM.keccak256(slot.key, slotAddress(slot.path)).add(slot.offset);
@@ -28,7 +29,7 @@ export function slotAddress(slot: DecodeUtils.Allocation.Slot): BN {
   }
 }
 
-export function slotAddressPrintout(slot: DecodeUtils.Allocation.Slot): string {
+export function slotAddressPrintout(slot: Allocation.Slot): string {
   if (typeof slot.key !== "undefined" && typeof slot.path !== "undefined") {
     // mapping reference
     return "keccak(" + slot.key + ", " + slotAddressPrintout(slot.path) + ") + " + slot.offset.toString();
@@ -49,7 +50,7 @@ export function slotAddressPrintout(slot: DecodeUtils.Allocation.Slot): string {
  * @param slot - big number or array of regular numbers
  * @param offset - for array, offset from the keccak determined location
  */
-export async function read(storage: any, slot: DecodeUtils.Allocation.Slot, web3?: Web3, contractAddress?: string): Promise<undefined | Uint8Array> {
+export async function read(storage: any, slot: Allocation.Slot, web3?: Web3, contractAddress?: string): Promise<undefined | Uint8Array> {
   const address = slotAddress(slot);
   debug("Slot printout: %s", slotAddressPrintout(slot));
 
@@ -91,7 +92,7 @@ export async function read(storage: any, slot: DecodeUtils.Allocation.Slot, web3
  * @param to - location (see ^). inclusive.
  * @param length - instead of `to`, number of bytes after `from`
  */
-export async function readRange(storage: any, range: DecodeUtils.Allocation.Range, web3?: Web3, contractAddress?: string): Promise<Uint8Array> {
+export async function readRange(storage: any, range: Allocation.Range, web3?: Web3, contractAddress?: string): Promise<Uint8Array> {
   // debug("readRange %o", range);
 
   let { from, to, length } = range;
