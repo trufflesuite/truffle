@@ -114,9 +114,8 @@ const command = {
     const Box = require("truffle-box");
     const OS = require("os");
 
-    const config = Config.default().with({
-      logger: console
-    });
+    const logger = options.logger || console;
+    const config = Config.default().with({ logger });
 
     let [url, destination] = normalizeInput(options._[0]);
 
