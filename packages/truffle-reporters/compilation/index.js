@@ -6,8 +6,9 @@ const colors = require("colors");
 module.exports = {
   compiledContracts: (logger = console, contracts = []) => {
     if (!contracts) return;
+    logger.log("  > sources");
     contracts.forEach(contract => {
-      logger.log("    > " + contract);
+      logger.log("    " + contract);
     });
     logger.log("");
   },
@@ -23,11 +24,11 @@ module.exports = {
   },
 
   warnings: (logger = console, warnings) => {
-    logger.log(colors.yellow("    > compilation warnings encountered:"));
+    logger.log(colors.yellow("  > compilation warnings encountered:"));
     logger.log(warnings.map(warning => warning.formattedMessage).join());
   },
 
   writeArtifacts: (logger = console, contracts_build_directory) => {
-    logger.log("    > writing artifacts to " + contracts_build_directory);
+    logger.log("  > writing artifacts to " + contracts_build_directory);
   }
 };
