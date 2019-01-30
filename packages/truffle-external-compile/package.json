@@ -26,7 +26,7 @@
     "glob": "^7.1.2",
     "truffle-contract-schema": "^3.0.1",
     "truffle-expect": "^0.0.6",
-    "web3-utils": "1.0.0-beta.37"
+    "web3-utils": "1.0.0-beta.41"
   },
   "devDependencies": {
     "chai": "4.2.0",
