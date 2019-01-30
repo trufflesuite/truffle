@@ -22,6 +22,7 @@ describe("migration errors", function() {
     config = await sandbox.create(project);
     config.network = "development";
     config.logger = logger;
+    config.quiet = true;
     config.mocha = {
       reporter: new Reporter(logger)
     };

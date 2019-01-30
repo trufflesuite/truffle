@@ -20,6 +20,7 @@ describe("truffle unbox", () => {
     it("unboxes truffle-init-default", done => {
       CommandRunner.run("unbox", config, () => {
         const output = logger.contents();
+        console.log("the output is %s", output);
         assert(output.includes("Unbox successful."));
         assert(
           fs.pathExistsSync(

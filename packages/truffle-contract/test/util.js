@@ -7,7 +7,6 @@ var Compile = require("truffle-compile");
 var contract = require("../");
 var path = require("path");
 const { promisify } = require("util");
-const compilationReporter = require("truffle-reporters").compilation;
 
 var log = {
   log: debug
@@ -44,7 +43,6 @@ var util = {
     const options = {
       contracts_directory: path.join(__dirname, "sources"),
       quiet: true,
-      reporter: compilationReporter,
       compilers: {
         solc: {
           version: "0.5.0",
