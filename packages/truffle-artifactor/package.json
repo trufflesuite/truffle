@@ -21,7 +21,7 @@
     "solc": "0.5.0",
     "temp": "^0.8.3",
     "truffle-blockchain-utils": "^0.0.7",
-    "web3": "^1.0.0-beta.37"
+    "web3": "1.0.0-beta.41"
   },
   "dependencies": {
     "async": "2.6.1",

@@ -5,7 +5,7 @@
   "dependencies": {
     "bn.js": "^4.11.8",
     "lodash.clonedeep": "^4.5.0",
-    "web3": "^1.0.0-beta.37"
+    "web3": "1.0.0-beta.41"
   },
   "main": "dist/index.js",
   "types": "src/index.ts",
