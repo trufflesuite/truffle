@@ -33,10 +33,10 @@
     "truffle-blockchain-utils": "^0.0.7",
     "truffle-contract-schema": "^3.0.1",
     "truffle-error": "^0.0.3",
-    "web3": "^1.0.0-beta.33",
-    "web3-core-promievent": "^1.0.0-beta.33",
-    "web3-eth-abi": "^1.0.0-beta.33",
-    "web3-utils": "1.0.0-beta.33"
+    "web3": "1.0.0-beta.37",
+    "web3-core-promievent": "1.0.0-beta.37",
+    "web3-eth-abi": "1.0.0-beta.37",
+    "web3-utils": "1.0.0-beta.37"
   },
   "devDependencies": {
     "async": "2.6.1",
