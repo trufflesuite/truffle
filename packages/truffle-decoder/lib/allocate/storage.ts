@@ -23,6 +23,24 @@ export function storageLengthToBytes(size: StorageLength): number {
   }
 }
 
+export interface Range {
+  from: StoragePosition;
+  to?: StoragePosition;
+  length?: number;
+}
+
+export interface StoragePosition {
+  slot: Slot;
+  index: number;
+};
+
+export interface Slot {
+  key?: any; // TODO:
+  path?: Slot;
+  hashPath?: boolean;
+  offset: BN;
+};
+
 //contracts contains only the contracts to be allocated; any base classes not
 //being allocated should just be in referenceDeclarations
 export function getStorageAllocations(referenceDeclarations: AstReferences, contracts: AstReferences): StorageAllocations {
@@ -73,7 +91,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
     }
     //otherwise, we remain in place
   
-    let range: DecodeUtils.Allocation.Range;
+    let range: Range;
 
     if(isWordsLength(size)) {
       //words case
