@@ -4,26 +4,21 @@ module.exports = {
     logger.log("contracts were compiled %o", data);
   },
 
-  default(options) {
-    logger = options.logger || console;
-    logger.log("this is the default event");
-  },
-
   finishJob(options) {
     logger = options.logger || console;
     logger.log("the job was finished");
   },
 
   initializeListeners(options) {
-    emitter.on("compilation:startJob", this.startJob.bind(this, options));
-    emitter.on("compilation:finishJob", this.finishJob.bind(this, options));
+    emitter.on("compile:startJob", this.startJob.bind(this, options));
+    emitter.on("compile:finishJob", this.finishJob.bind(this, options));
     emitter.on(
-      "compilation:writeArtifacts",
+      "compile:writeArtifacts",
       this.writeArtifacts.bind(this, options)
     );
-    emitter.on("compilation:warnings", this.warnings.bind(this, options));
+    emitter.on("compile:warnings", this.warnings.bind(this, options));
     emitter.on(
-      "compilation:compiledSources",
+      "compile:compiledSources",
       this.compiledSources.bind(this, options)
     );
   },

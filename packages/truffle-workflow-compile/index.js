@@ -60,7 +60,7 @@ var Contracts = {
   compile: callbackify(async function(options) {
     const config = prepareConfig(options);
     if (config.eventManager) {
-      config.eventManager.emitEvent("compilation:startJob");
+      config.eventManager.emitEvent("compile:startJob");
     }
 
     const compilers = config.compiler
@@ -103,7 +103,7 @@ var Contracts = {
       }
 
       if (config.eventManager) {
-        config.eventManager.emitEvent("compilation:finishJob");
+        config.eventManager.emitEvent("compile:finishJob");
       }
       return result;
     };

@@ -141,7 +141,7 @@ var compile = function(sources, options, callback) {
         );
 
         if (warnings.length > 0 && options.eventManager) {
-          options.eventManager.emitEvent("compilation:warnings", warnings);
+          options.eventManager.emitEvent("compile:warnings", warnings);
         }
 
         if (errors.length > 0) {
