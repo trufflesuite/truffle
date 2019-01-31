@@ -11,7 +11,7 @@ export namespace Conversion {
    * @return {BN}
    */
   export function toBN(bytes: undefined | string | number | BN | Uint8Array): BN {
-    if (bytes == undefined) {
+    if (bytes === undefined) {
       return undefined;
     } else if (typeof bytes == "string") {
       return new BN(bytes, 16);

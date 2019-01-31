@@ -36,6 +36,7 @@ export interface StoragePosition {
 
 export interface Slot {
   key?: any; // TODO:
+  keyEncoding?: string; //see decode/storage.ts for explanation of this
   path?: Slot;
   hashPath?: boolean;
   offset: BN;

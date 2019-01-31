@@ -294,58 +294,41 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
         const keys: any[] = info.mappingKeys[definition.id];
         for (const key of keys) {
 
-          //depending on the type of key, we may need to adjust it slightly
-          //(for accessing the right slot, not for display, of course)
-          //for the most part, that means manually padding it to 32 bytes --
-          //note that we CANNOT rely on soliditySha3 to pad it for us!  It does
-          //NOT pad, even when you might expect it to.  For integers we're OK
-          //with not padding because it will interpret them as 256 bits anyway,
-          //but for all other types that need padding (i.e., types other than
-          //string or dynamically-sized bytes), we must either:
-          //1. pad manually, or
-          //2. pass it an object which claims the type is bytes32
-          //(and note that this approach won't work for bools; only manual will)
-          //So I'm just going to go with the former as I think it keeps the
-          //resulting keys less misleading.  However, we have to use an object
-          //for strings, as there it's the only way to prevent
-          //misinterpretation (unless we're going to convert it to a
-          //bytestring, which would be stupid)
-          let adjustedKey: any; //sorry
+          let keyEncoding: string;
+          //keyEncoding is used to let soliditySha3 know how to interpret the
+          //key for hashing... but if you just give it the honest type, it
+          //won't pad, and for value types we need it to pad.
+          //Thus, ints and value bytes become the *largest* size of that type
+          //addresses are treated by Solidity as uint160, so we mark them uint
+          //to get the correct padding
+          //bool... I can't get soliditySha3 to pad a bool no matter what, so
+          //we'll leave it undefined and handle it manually
+          //note that while fixed and ufixed don't exist yet, they would
+          //presumably use fixed256xM and ufixed256xM, where M is the precision
+
           switch(DecodeUtils.Definition.typeClass(keyDefinition)) {
             case "string":
-              adjustedKey = {type: "string", value: key}
-              //this ensures that Web3 doesn't attempt to interpret the string
-              //as a hex string or number
+              keyEncoding = "string";
               break;
             case "bytes":
               let keySize = DecodeUtils.Definition.specifiedSize(keyDefinition);
               if(keySize === null) {
-                adjustedKey = key; //dynamically-sized bytes need no padding
+                keyEncoding = "bytes";
               }
-              //statically-sized ones, however, need to be zero-padded on right
-              //(or we could use an object, but I'm not doing that)
-              adjustedKey = key.padEnd(2 * DecodeUtils.EVM.WORD_SIZE + 2, "0");
-                //note the size formula -- twice the word size, plus 2 for "0x"
+              else {
+                keyEncoding = "bytes32";
+              }
               break;
+            case "uint":
             case "address":
-              //addresses should be padded on the left
-              //(or we could use an object, but I'm not doing that)
-              adjustedKey = "0x" + key.slice(2).
-                padStart(2 * DecodeUtils.EVM.WORD_SIZE, "0");
+              keyEncoding = "uint";
+              break;
+            case "int":
+              keyEncoding = "int";
               break;
             case "bool":
-              //booleans should be padded on the left
-              //this case MUST be done manually; using an object doesn't work
-              adjustedKey = key
-                ? DecodeUtils.Conversion.toHexString(new BN(1), DecodeUtils.EVM.WORD_SIZE)
-                : DecodeUtils.Conversion.toHexString(new BN(0), DecodeUtils.EVM.WORD_SIZE);
+              //deliberately leave keyEncoding undefined (HACK)
               break;
-            default:
-              //this leaves the case of int and uint, which Web3 will actually
-              //get right without our help.
-              //(it also leaves the case of fixed and ufixed, but those don't
-              //exist yet, so whatever)
-              adjustedKey = key;
           }
 
           let valuePointer: StoragePointer;
@@ -355,7 +338,8 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
               storage: {
                 from: {
                   slot: {
-                    key: adjustedKey,
+                    key,
+                    keyEncoding,
                     path: baseSlot,
                     offset: new BN(0)
                   },
@@ -363,7 +347,8 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
                 },
                 to: {
                   slot: {
-                    key: adjustedKey,
+                    key,
+                    keyEncoding,
                     path: baseSlot,
                     offset: new BN(valueSize.words - 1)
                   },
@@ -377,7 +362,8 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
               storage: {
                 from: {
                   slot: {
-                    key: adjustedKey,
+                    key,
+                    keyEncoding,
                     path: baseSlot,
                     offset: new BN(0)
                   },
@@ -385,7 +371,8 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
                 },
                 to: {
                   slot: {
-                    key: adjustedKey,
+                    key,
+                    keyEncoding,
                     path: baseSlot,
                     offset: new BN(0)
                   },
