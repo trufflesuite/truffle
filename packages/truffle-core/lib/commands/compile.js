@@ -56,9 +56,13 @@ var command = {
     const Emittery = require("emittery");
     const emitter = new Emittery();
     const { Reporter } = require("truffle-reporters");
-    new Reporter({ logger: console, emitter });
 
     var config = Config.detect(options);
+    new Reporter({
+      logger: console,
+      emitter,
+      quiet: config.quiet
+    });
     config.emitter = emitter;
 
     config.list !== undefined
