@@ -1,3 +1,6 @@
+const colors = require("colors");
+const OS = require("os");
+
 module.exports = {
   compiledSources(options, data) {
     logger = options.logger || console;
@@ -5,8 +8,9 @@ module.exports = {
   },
 
   finishJob(options) {
-    logger = options.logger || console;
-    logger.log("the job was finished");
+    const logger = options.logger || console;
+    logger.log(OS.EOL + colors.green("Compilation finished successfully"));
+    logger.log(colors.green("=================================" + OS.EOL));
   },
 
   initializeListeners(options) {
@@ -24,8 +28,9 @@ module.exports = {
   },
 
   startJob(options) {
-    logger = options.logger || console;
-    logger.log("the job was started");
+    const logger = options.logger || console;
+    logger.log(colors.green(OS.EOL + "Starting compilation"));
+    logger.log(colors.green("====================") + OS.EOL);
   },
 
   warnings(options, data) {

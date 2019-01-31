@@ -1,4 +1,4 @@
-const compilation = require("./compilation");
+const compile = require("./compile");
 
 class Reporter {
   constructor(options) {
@@ -13,7 +13,7 @@ class Reporter {
       logger: this.logger,
       emitter: this.emitter
     };
-    compilation.initializeListeners(options);
+    compile.initializeListeners(options);
   }
 }
 
