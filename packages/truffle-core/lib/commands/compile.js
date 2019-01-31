@@ -53,17 +53,14 @@ var command = {
     var CompilerSupplier = require("truffle-compile").CompilerSupplier;
     var supplier = new CompilerSupplier();
 
-    const Emittery = require("emittery");
-    const emitter = new Emittery();
-    const { Reporter } = require("truffle-reporters");
-
     var config = Config.detect(options);
-    new Reporter({
+
+    const EventManager = require("../EventManager");
+    const eventManager = new EventManager({
       logger: console,
-      emitter,
-      quiet: config.quiet
+      muteReporters: config.quiet
     });
-    config.emitter = emitter;
+    config.eventManager = eventManager;
 
     config.list !== undefined
       ? command.listVersions(supplier, config, done)

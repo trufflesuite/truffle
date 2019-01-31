@@ -59,8 +59,8 @@ var Contracts = {
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
   compile: callbackify(async function(options) {
     const config = prepareConfig(options);
-    if (config.emitter) {
-      config.emitter.emit("compilation:startJob");
+    if (config.eventManager) {
+      config.eventManager.emitEvent("compilation:startJob");
     }
 
     const compilers = config.compiler
@@ -102,8 +102,8 @@ var Contracts = {
         }
       }
 
-      if (config.emitter) {
-        config.emitter.emit("compilation:finishJob");
+      if (config.eventManager) {
+        config.eventManager.emitEvent("compilation:finishJob");
       }
       return result;
     };

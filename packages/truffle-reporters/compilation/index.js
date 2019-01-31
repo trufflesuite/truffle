@@ -14,26 +14,23 @@ module.exports = {
     logger.log("the job was finished");
   },
 
+  initializeListeners(options) {
+    emitter.on("compilation:startJob", this.startJob.bind(this, options));
+    emitter.on("compilation:finishJob", this.finishJob.bind(this, options));
+    emitter.on(
+      "compilation:writeArtifacts",
+      this.writeArtifacts.bind(this, options)
+    );
+    emitter.on("compilation:warnings", this.warnings.bind(this, options));
+    emitter.on(
+      "compilation:compiledSources",
+      this.compiledSources.bind(this, options)
+    );
+  },
+
   startJob(options) {
     logger = options.logger || console;
     logger.log("the job was started");
-  },
-
-  triggerEvent(event, options, data) {
-    switch (event) {
-      case "startJob":
-        return this.startJob(options);
-      case "finishJob":
-        return this.finishJob(options);
-      case "warnings":
-        return this.warnings(options, data);
-      case "writeArtifacts":
-        return this.writeArtifacts(options, data);
-      case "compiledSources":
-        return this.compiledSources(options, data);
-      default:
-        return this.default;
-    }
   },
 
   warnings(options, data) {

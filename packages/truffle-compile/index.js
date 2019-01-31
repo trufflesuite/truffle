@@ -140,8 +140,8 @@ var compile = function(sources, options, callback) {
           error => error.severity !== "warning"
         );
 
-        if (warnings.length > 0 && options.emitter) {
-          options.emitter.emit("compilation:warnings", warnings);
+        if (warnings.length > 0 && options.eventManager) {
+          options.eventManager.emitEvent("compilation:warnings", warnings);
         }
 
         if (errors.length > 0) {
