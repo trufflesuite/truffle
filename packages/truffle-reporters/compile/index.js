@@ -2,9 +2,11 @@ const colors = require("colors");
 const OS = require("os");
 
 module.exports = {
-  compiledSources(options, data) {
-    logger = options.logger || console;
-    logger.log("contracts were compiled %o", data);
+  compiledSources(options, sources) {
+    if (!sources) return;
+    const logger = options.logger || console;
+    sources.forEach(source => logger.log("    > " + source));
+    logger.log("");
   },
 
   finishJob(options) {
@@ -14,6 +16,7 @@ module.exports = {
   },
 
   initializeListeners(options) {
+    const { emitter } = options;
     emitter.on("compile:startJob", this.startJob.bind(this, options));
     emitter.on("compile:finishJob", this.finishJob.bind(this, options));
     emitter.on(
@@ -33,13 +36,14 @@ module.exports = {
     logger.log(colors.green("====================") + OS.EOL);
   },
 
-  warnings(options, data) {
-    logger = options.logger || console;
-    logger.log("warnings occurred %o", data);
+  warnings(options, warnings) {
+    const logger = options.logger || console;
+    logger.log(colors.yellow("    > compilation warnings encountered:"));
+    logger.log(warnings.map(warning => warning.formattedMessage).join());
   },
 
-  writeArtifacts(options, data) {
-    logger = options.logger || console;
-    logger.log("artifacts were written %o", data);
+  writeArtifacts(options, working_directory) {
+    const logger = options.logger || console;
+    logger.log("    > writing artifacts to ." + working_directory);
   }
 };

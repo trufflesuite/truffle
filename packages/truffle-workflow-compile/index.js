@@ -1,6 +1,5 @@
 var debug = require("debug")("workflow-compile");
 var mkdirp = require("mkdirp");
-var path = require("path");
 var { callbackify, promisify } = require("util");
 var Config = require("truffle-config");
 var solcCompile = require("truffle-compile");
@@ -9,7 +8,6 @@ var externalCompile = require("truffle-external-compile");
 var expect = require("truffle-expect");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
-var OS = require("os");
 
 const SUPPORTED_COMPILERS = {
   solc: solcCompile,
@@ -111,26 +109,17 @@ var Contracts = {
     return await collect(compilations);
   }),
 
-  writeContracts: async function(contracts, options) {
-    var logger = options.logger || console;
-
+  writeContracts: async (contracts, options) => {
     await promisify(mkdirp)(options.contracts_build_directory);
 
-    if (options.quiet != true && options.quietWrite != true) {
-      logger.log(
-        "Writing artifacts to ." +
-          path.sep +
-          path.relative(
-            options.working_directory,
-            options.contracts_build_directory
-          ) +
-          OS.EOL
+    if (options.eventManager) {
+      options.eventManager.emitEvent(
+        "compile:writeArtifacts",
+        options.contracts_build_directory
       );
     }
 
-    var extra_opts = {
-      network_id: options.network_id
-    };
+    const extra_opts = { network_id: options.network_id };
 
     await options.artifactor.saveAll(contracts, extra_opts);
   }

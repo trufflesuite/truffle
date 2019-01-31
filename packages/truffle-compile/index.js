@@ -404,22 +404,26 @@ compile.with_dependencies = function(options, callback) {
   );
 };
 
-compile.display = function(paths, options) {
-  if (options.quiet !== true) {
-    if (!Array.isArray(paths)) {
-      paths = Object.keys(paths);
-    }
+compile.display = (paths, options) => {
+  if (!Array.isArray(paths)) paths = Object.keys(paths);
 
-    const blacklistRegex = /^truffle\//;
+  const blacklistRegex = /^truffle\//;
 
-    paths.sort().forEach(contract => {
-      if (path.isAbsolute(contract)) {
-        contract =
-          "." + path.sep + path.relative(options.working_directory, contract);
-      }
+  const sourceFiles = paths
+    .sort()
+    .map(contract => {
       if (contract.match(blacklistRegex)) return;
-      options.logger.log("Compiling " + contract + "...");
-    });
+      if (path.isAbsolute(contract)) {
+        return `.${path.sep}${path.relative(
+          options.working_directory,
+          contract
+        )}`;
+      }
+      return contract;
+    })
+    .filter(name => name);
+  if (options.eventManager) {
+    options.eventManager.emitEvent("compile:compiledSources", sourceFiles);
   }
 };
 
