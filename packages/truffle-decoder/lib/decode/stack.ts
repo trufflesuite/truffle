@@ -26,6 +26,9 @@ export async function decodeStack(definition: DecodeUtils.AstDefinition, pointer
 //we can just dispatch to decodeValue which already handles those (this is a hack)
 export async function decodeLiteral(definition: DecodeUtils.AstDefinition, pointer: LiteralPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
 
+  debug("definition %O", definition);
+  debug("pointer %o", pointer);
+
   //first: do we have a memory pointer? if so we can just dispatch to
   //decodeMemoryReference, which knows how to decode the pointer already
   if(DecodeUtils.Definition.isReference(definition)

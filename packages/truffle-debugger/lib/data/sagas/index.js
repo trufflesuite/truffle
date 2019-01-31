@@ -11,7 +11,7 @@ import * as actions from "../actions";
 
 import data from "../selectors";
 
-import * as TruffleDecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "truffle-decode-utils";
 
 import { getStorageAllocations } from "truffle-decoder";
 
@@ -31,6 +31,7 @@ function* tickSaga() {
   let { tree, id: treeId, node, pointer } = yield select(data.views.ast);
 
   let decode = yield select(data.views.decoder);
+  let scopes = yield select(data.views.scopes.inlined);
   let allocations = yield select(data.info.allocations.storage);
   let currentAssignments = yield select(data.proc.assignments);
   let currentDepth = yield select(data.current.functionDepth);
@@ -159,19 +160,29 @@ function* tickSaga() {
       break;
 
     case "IndexAccess":
-      // to track `mapping` types known indexes
-      yield put(actions.mapKeyDecoding(true));
+      // to track `mapping` types known indices
 
-      let {
-        baseExpression: { referencedDeclaration: baseDeclarationId },
-        indexExpression: { id: indexId }
-      } = node;
+      let baseExpression = node.baseExpression;
+      let baseDeclarationId = baseExpression.referencedDeclaration;
+      let indexId = node.indexExpression.id;
+
+      let baseDeclaration = scopes[baseDeclarationId].definition;
+
+      //if we're not dealing with a mapping, don't bother!
+      if (!DecodeUtils.Definition.isMapping(baseExpression)) {
+        break;
+      }
+
+      debug("Index access case");
+
+      let keyDefinition =
+        baseDeclaration.keyType || baseDeclaration.typeName.keyType;
+
+      yield put(actions.mapKeyDecoding(true));
 
       //indices need to be identified by stackframe
       let indexIdObj = { astId: indexId, stackframe: currentDepth };
       let fullIndexId = stableKeccak256(indexIdObj);
-
-      debug("Index access case");
 
       const indexReference = (currentAssignments.byId[fullIndexId] || {}).ref;
       // HACK because string literal AST nodes are not sourcemapped to directly
@@ -179,19 +190,19 @@ function* tickSaga() {
       // [observed with solc v0.4.24]
       let indexValue;
       if (indexReference) {
-        indexValue = yield call(decode, node.indexExpression, indexReference);
+        indexValue = yield call(decode, keyDefinition, indexReference);
       } else if (
-        TruffleDecodeUtils.Definition.typeClass(node.indexExpression) ==
+        DecodeUtils.Definition.typeClass(node.indexExpression) ==
         "stringliteral"
       ) {
-        indexValue = yield call(decode, node.indexExpression, {
-          literal: TruffleDecodeUtils.Conversion.toBytes(
-            node.indexExpression.hexValue
-          )
+        indexValue = yield call(decode, keyDefinition, {
+          literal: DecodeUtils.Conversion.toBytes(node.indexExpression.hexValue)
         });
       }
 
       debug("index value %O", indexValue);
+      debug("keyDefinition %O", keyDefinition);
+
       if (indexValue !== undefined) {
         yield put(actions.mapKey(baseDeclarationId, indexValue));
       }

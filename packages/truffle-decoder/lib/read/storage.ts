@@ -58,18 +58,26 @@ export function slotAddressPrintout(slot: Allocation.Slot): string {
  * @param slot - see slotAddress() code to understand how these work
  * @param offset - for array, offset from the keccak determined location
  */
-export async function read(storage: any, slot: Allocation.Slot, web3?: Web3, contractAddress?: string): Promise<undefined | Uint8Array> {
-  const address = slotAddress(slot);
+export async function read(storage: any, slot: Allocation.Slot, web3?: Web3, contractAddress?: string): Promise<Uint8Array> {
   debug("Slot printout: %s", slotAddressPrintout(slot));
+  const address = slotAddress(slot);
 
   // debug("reading slot: %o", DecodeUtils.toHexString(address));
 
   const hexAddress = DecodeUtils.Conversion.toHexString(address, DecodeUtils.EVM.WORD_SIZE);
   let word = storage[hexAddress];
 
-  if (typeof word === "undefined" && web3 && contractAddress) {
+  if (word === undefined && web3 && contractAddress) {
     // fallback
-    word = DecodeUtils.Conversion.toBytes(await web3.eth.getStorageAt(contractAddress, address), 32);
+    word = DecodeUtils.Conversion.toBytes(await web3.eth.getStorageAt(contractAddress, address), DecodeUtils.EVM.WORD_SIZE);
+  }
+
+  //if not found, it's 0
+  //NOTE: really this shouldn't be a fallback like this but rather inside the above cases;
+  //however that would require a reorganization, it'll wait for fullState/contextSelector
+  if(word === undefined) {
+    word = new Uint8Array(DecodeUtils.EVM.WORD_SIZE);
+    word.fill(0);
   }
 
   // debug("word %o", word);

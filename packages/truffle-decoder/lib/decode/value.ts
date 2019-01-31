@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("decoder:decode:value");
+
 import read from "../read";
 import * as DecodeUtils from "truffle-decode-utils";
 import BN from "bn.js";
@@ -14,6 +17,9 @@ export default async function decodeValue(definition: DecodeUtils.AstDefinition,
     // debug("segfault, pointer %o, state: %O", pointer, state);
     return undefined;
   }
+
+  debug("definition %O", definition);
+  debug("pointer %o", pointer);
 
   switch (DecodeUtils.Definition.typeClass(definition)) {
     case "bool":
@@ -44,16 +50,11 @@ export default async function decodeValue(definition: DecodeUtils.AstDefinition,
       return DecodeUtils.Conversion.toHexString(bytes);
 
     case "string":
-    case "stringliteral":
       // debug("typeIdentifier %s %o", DecodeUtils.typeIdentifier(definition), bytes);
       if (typeof bytes == "string") {
         return bytes;
       }
       return String.fromCharCode.apply(undefined, bytes);
-
-    case "rational":
-      // debug("typeIdentifier %s %o", DecodeUtils.typeIdentifier(definition), bytes);
-      return DecodeUtils.Conversion.toBN(bytes);
 
     case "enum":
       const numRepresentation = DecodeUtils.Conversion.toBN(bytes).toNumber();

@@ -104,18 +104,8 @@ export async function decodeMemoryReference(definition: DecodeUtils.AstDefinitio
           }
         };
 
-        // HACK replace erroneous `_storage_` type identifiers with `_memory_`
-        memberDefinition = {
-          ...memberDefinition,
-
-          typeDescriptions: {
-            ...memberDefinition.typeDescriptions,
-
-            typeIdentifier:
-              memberDefinition.typeDescriptions.typeIdentifier
-                .replace(/_storage_/g, "_memory_")
-          }
-        };
+      // replace erroneous `_storage_` type identifiers with `_memory_`
+      memberDefinition = DecodeUtils.Definition.spliceLocation(memberDefinition, "memory");
 
         let decoded;
         try {

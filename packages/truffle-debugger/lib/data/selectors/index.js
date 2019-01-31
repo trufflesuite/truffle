@@ -10,7 +10,7 @@ import ast from "lib/ast/selectors";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
-import * as TruffleDecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "truffle-decode-utils";
 import { forEvmState } from "truffle-decoder";
 
 /**
@@ -26,8 +26,7 @@ function createStateSelectors({ stack, memory, storage }) {
     stack: createLeaf(
       [stack],
 
-      words =>
-        (words || []).map(word => TruffleDecodeUtils.Conversion.toBytes(word))
+      words => (words || []).map(word => DecodeUtils.Conversion.toBytes(word))
     ),
 
     /**
@@ -36,7 +35,7 @@ function createStateSelectors({ stack, memory, storage }) {
     memory: createLeaf(
       [memory],
 
-      words => TruffleDecodeUtils.Conversion.toBytes(words.join(""))
+      words => DecodeUtils.Conversion.toBytes(words.join(""))
     ),
 
     /**
@@ -49,7 +48,7 @@ function createStateSelectors({ stack, memory, storage }) {
         Object.assign(
           {},
           ...Object.entries(mapping).map(([address, word]) => ({
-            [`0x${address}`]: TruffleDecodeUtils.Conversion.toBytes(word)
+            [`0x${address}`]: DecodeUtils.Conversion.toBytes(word)
           }))
         )
     )
@@ -459,7 +458,7 @@ const data = createSelectorTree({
             })
           );
           const keyedResults = await Promise.all(keyedPromises);
-          return TruffleDecodeUtils.Conversion.cleanContainers(
+          return DecodeUtils.Conversion.cleanContainers(
             Object.assign({}, ...keyedResults)
           );
         }
@@ -471,7 +470,7 @@ const data = createSelectorTree({
        * Returns an object with values as Promises
        */
       native: createLeaf(["./decoded"], async decoded => {
-        return TruffleDecodeUtils.Conversion.cleanBNs(await decoded);
+        return DecodeUtils.Conversion.cleanBNs(await decoded);
       })
     }
   },

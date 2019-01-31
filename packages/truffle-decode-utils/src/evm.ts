@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("decode-utils:evm");
+
 import BN from "bn.js";
 import Web3 from "web3";
 import { Conversion as ConversionUtils } from "./conversion";
@@ -19,6 +22,7 @@ export namespace EVM {
     // debug("args %o", args);
 
     const rawSha: string | null = Web3.utils.soliditySha3(...args);
+    debug("rawSha %o", rawSha);
     let sha: string;
     if(rawSha === null) {
       sha = ""; //HACK, I guess?
