@@ -16,6 +16,10 @@ class Reporter {
       "compilation:startJob",
       compilation.triggerEvent.bind(compilation, "startJob", options)
     );
+    this.emitter.on(
+      "compilation:finishJob",
+      compilation.triggerEvent.bind(compilation, "finishJob", options)
+    );
   }
 }
 
