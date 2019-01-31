@@ -1,10 +1,8 @@
 import BN from "bn.js";
 import Web3 from "web3";
+import { EVM as EVMUtils } from "./evm";
 
 export namespace Conversion {
-
-  export const ADDRESS_SIZE = 20;
-  export const WORD_SIZE = 0x20;
 
   /**
    * @param bytes - undefined | string | number | BN | Uint8Array
@@ -81,26 +79,27 @@ export namespace Conversion {
       if (hex.startsWith("0x")) {
         hex = hex.slice(2);
       }
-      if(hex.length < 2 * ADDRESS_SIZE)
+      if(hex.length < 2 * EVMUtils.ADDRESS_SIZE)
       {
-        hex = hex.padStart(2 * WORD_SIZE, "0");
+        hex = hex.padStart(2 * EVMUtils.ADDRESS_SIZE, "0");
       }
-      if(hex.length > 2 * ADDRESS_SIZE)
+      if(hex.length > 2 * EVMUtils.ADDRESS_SIZE)
       {
-        hex = "0x" + hex.slice(hex.length - 2 * ADDRESS_SIZE);
+        hex = "0x" + hex.slice(hex.length - 2 * EVMUtils.ADDRESS_SIZE);
       }
       return Web3.utils.toChecksumAddress(hex);
     }
+    //otherwise, we're in the Uint8Array case, which we can't fully handle ourself
 
-    if(bytes.length > ADDRESS_SIZE) {
-      //truncate *on left* to 20 bytes
-      bytes = bytes.slice(bytes.length - ADDRESS_SIZE, bytes.length);
+    //truncate *on left* to 20 bytes
+    if(bytes.length > EVMUtils.ADDRESS_SIZE) {
+      bytes = bytes.slice(bytes.length - EVMUtils.ADDRESS_SIZE, bytes.length);
     }
 
-    //now, convert to hex string and apply checksum case
-    //that second argument shouldn't actually ever be needed, but I'll be safe
-    //and include it
-    return Web3.utils.toChecksumAddress(toHexString(bytes, ADDRESS_SIZE));
+    //now, convert to hex string and apply checksum case that second argument
+    //(which ensures it's padded to 20 bytes) shouldn't actually ever be
+    //needed, but I'll be safe and include it
+    return Web3.utils.toChecksumAddress(toHexString(bytes, EVMUtils.ADDRESS_SIZE));
   }
 
   export function toBytes(number: number | BN | string, length: number = 0): Uint8Array {
