@@ -173,14 +173,13 @@ function* tickSaga() {
 
       debug("Index access case");
 
-      const indexAssignment = (currentAssignments.byId[fullIndexId] || {}).ref;
-      debug("indexAssignment %O", indexAssignment);
+      const indexReference = (currentAssignments.byId[fullIndexId] || {}).ref;
       // HACK because string literal AST nodes are not sourcemapped to directly
       // value appears to be available in `node.indexExpression.hexValue`
       // [observed with solc v0.4.24]
       let indexValue;
-      if (indexAssignment) {
-        indexValue = yield call(decode, node.indexExpression, indexAssignment);
+      if (indexReference) {
+        indexValue = yield call(decode, node.indexExpression, indexReference);
       } else if (
         TruffleDecodeUtils.Definition.typeClass(node.indexExpression) ==
         "stringliteral"

@@ -25,8 +25,9 @@ export default async function decodeValue(definition: DecodeUtils.AstDefinition,
     case "int":
       return DecodeUtils.Conversion.toSignedBN(bytes);
 
+    case "contract":
     case "address":
-      return DecodeUtils.Conversion.toHexString(bytes, true);
+      return DecodeUtils.Conversion.toAddress(bytes);
 
     case "bytes":
       // debug("typeIdentifier %s %o", DecodeUtils.typeIdentifier(definition), bytes);
@@ -34,8 +35,13 @@ export default async function decodeValue(definition: DecodeUtils.AstDefinition,
       if (typeof bytes == "string") {
         return bytes;
       }
+      //if there's a static size, we want to truncate to that length
       let length = DecodeUtils.Definition.specifiedSize(definition);
-      return DecodeUtils.Conversion.toHexString(bytes, length);
+      if(length !== null) {
+        bytes = bytes.slice(0, length);
+      }
+      //we don't need to pass in length here, since that's for *adding* padding
+      return DecodeUtils.Conversion.toHexString(bytes);
 
     case "string":
     case "stringliteral":

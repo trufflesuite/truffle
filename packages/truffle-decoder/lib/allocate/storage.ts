@@ -212,7 +212,7 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
 
     case "address":
     case "contract":
-      return [{bytes: 20}, existingAllocations];
+      return [{bytes: DecodeUtils.EVM.ADDRESS_SIZE}, existingAllocations];
 
     case "int":
     case "uint": {
@@ -256,8 +256,11 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
       switch (DecodeUtils.Definition.visibility(definition)) {
         case "internal":
           return [{bytes: 8}, existingAllocations];
+            //this size occurs all of once in the code (and shouldn't occur
+            //again later) so it remains a raw number rather than a fancy
+            //named constant :P
         case "external":
-          return [{bytes: 24}, existingAllocations];
+          return [{bytes: DecodeUtils.EVM.ADDRESS_SIZE + DecodeUtils.EVM.SELECTOR_SIZE}, existingAllocations];
       }
     }
 

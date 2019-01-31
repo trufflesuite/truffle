@@ -3,7 +3,6 @@ const debug = debugModule("debugger:evm:sagas");
 
 import { call, put, take, select } from "redux-saga/effects";
 import { prefixName, keccak256 } from "lib/helpers";
-import * as TruffleDecodeUtils from "truffle-decode-utils";
 
 import { TICK } from "lib/trace/actions";
 import * as actions from "../actions";
@@ -95,16 +94,7 @@ export function* callstackSaga() {
         let dummyAddress = yield select(evm.current.creationDepth);
         debug("dummyAddress %d", dummyAddress);
 
-        let stack = yield select(evm.next.state.stack);
-        let createdAddress = TruffleDecodeUtils.Conversion.toHexString(
-          TruffleDecodeUtils.Conversion.toBytes(
-            TruffleDecodeUtils.Conversion.toBN(
-              stack[stack.length - 1],
-              TruffleDecodeUtils.EVM.WORD_SIZE
-            )
-          ),
-          true
-        );
+        let createdAddress = yield select(evm.current.createdAddress);
         debug("createdAddress %s", createdAddress);
 
         yield* data.learnAddressSaga(dummyAddress, createdAddress);

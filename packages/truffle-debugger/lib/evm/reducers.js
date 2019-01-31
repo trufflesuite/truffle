@@ -3,8 +3,6 @@ import { combineReducers } from "redux";
 import * as actions from "./actions";
 import { keccak256 } from "lib/helpers";
 
-import { Web3 } from "web3";
-
 const DEFAULT_CONTEXTS = {
   byContext: {},
   byBinary: {}
@@ -86,8 +84,6 @@ function instances(state = DEFAULT_INSTANCES, action) {
     case actions.ADD_INSTANCE:
       let { address, context, binary } = action;
 
-      address = Web3.utils.toChecksumAddress(address);
-
       // get known addresses for this context
       let otherInstances = state.byContext[context] || [];
       let otherAddresses = otherInstances.map(({ address }) => address);
@@ -125,7 +121,7 @@ const info = combineReducers({
 export function callstack(state = [], action) {
   switch (action.type) {
     case actions.CALL:
-      let address = Web3.utils.toChecksumAddress(action.address);
+      const address = action.address;
       return state.concat([{ address }]);
 
     case actions.CREATE:

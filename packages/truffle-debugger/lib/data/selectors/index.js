@@ -27,14 +27,7 @@ function createStateSelectors({ stack, memory, storage }) {
       [stack],
 
       words =>
-        (words || []).map(word =>
-          TruffleDecodeUtils.Conversion.toBytes(
-            TruffleDecodeUtils.Conversion.toBN(
-              word,
-              TruffleDecodeUtils.EVM.WORD_SIZE
-            )
-          )
-        )
+        (words || []).map(word => TruffleDecodeUtils.Conversion.toBytes(word))
     ),
 
     /**
@@ -43,12 +36,7 @@ function createStateSelectors({ stack, memory, storage }) {
     memory: createLeaf(
       [memory],
 
-      words =>
-        new Uint8Array(
-          (words.join("").match(/.{1,2}/g) || []).map(byte =>
-            parseInt(byte, 16)
-          )
-        )
+      words => TruffleDecodeUtils.Conversion.toBytes(words.join(""))
     ),
 
     /**
@@ -61,9 +49,7 @@ function createStateSelectors({ stack, memory, storage }) {
         Object.assign(
           {},
           ...Object.entries(mapping).map(([address, word]) => ({
-            [`0x${address}`]: new Uint8Array(
-              (word.match(/.{1,2}/g) || []).map(byte => parseInt(byte, 16))
-            )
+            [`0x${address}`]: TruffleDecodeUtils.Conversion.toBytes(word)
           }))
         )
     )

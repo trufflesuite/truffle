@@ -8,6 +8,8 @@ import trace from "lib/trace/selectors";
 
 import { isCallMnemonic, isCreateMnemonic } from "lib/helpers";
 
+import * as DecodeUtils from "truffle-decode-utils";
+
 function findContext({ address, binary }, instances, search, contexts) {
   let record;
   if (address) {
@@ -99,8 +101,7 @@ function createStepSelectors(step, state = null) {
           if (!matches) return null;
 
           let address = stack[stack.length - 2];
-          address = "0x" + address.substring(24);
-          return address;
+          return DecodeUtils.Conversion.toAddress(address);
         }
       ),
 
@@ -254,6 +255,26 @@ const evm = createSelectorTree({
       ["./callstack"],
 
       stack => stack.filter(call => call.address === undefined).length
+    ),
+
+    /**
+     * evm.current.createdAddress
+     * NOTE: Only use this when evm.current.state.isHalting is true!
+     * Otherwise the result will be nonsense!
+     * To enforce this, I am having this return undefined unless
+     * evm.current.state.isHalting holds
+     * (similarly if we're just about to quit)
+     */
+    createdAddress: createLeaf(
+      ["/next/state/stack", "./state/isHalting", "./callstack"],
+      (stack, isHalting, callstack) => {
+        if (isHalting && callstack.length > 1) {
+          let address = stack[stack.length - 1];
+          return DecodeUtils.Conversion.toAddress(address);
+        } else {
+          return null;
+        }
+      }
     ),
 
     /**

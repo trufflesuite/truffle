@@ -293,7 +293,60 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
       if (info.mappingKeys && typeof info.mappingKeys[definition.id] !== "undefined") {
         const keys: any[] = info.mappingKeys[definition.id];
         for (const key of keys) {
-          const keyValue = DecodeUtils.Conversion.toBytes(key);
+
+          //depending on the type of key, we may need to adjust it slightly
+          //(for accessing the right slot, not for display, of course)
+          //for the most part, that means manually padding it to 32 bytes --
+          //note that we CANNOT rely on soliditySha3 to pad it for us!  It does
+          //NOT pad, even when you might expect it to.  For integers we're OK
+          //with not padding because it will interpret them as 256 bits anyway,
+          //but for all other types that need padding (i.e., types other than
+          //string or dynamically-sized bytes), we must either:
+          //1. pad manually, or
+          //2. pass it an object which claims the type is bytes32
+          //(and note that this approach won't work for bools; only manual will)
+          //So I'm just going to go with the former as I think it keeps the
+          //resulting keys less misleading.  However, we have to use an object
+          //for strings, as there it's the only way to prevent
+          //misinterpretation (unless we're going to convert it to a
+          //bytestring, which would be stupid)
+          let adjustedKey: any; //sorry
+          switch(DecodeUtils.Definition.typeClass(keyDefinition)) {
+            case "string":
+              adjustedKey = {type: "string", value: key}
+              //this ensures that Web3 doesn't attempt to interpret the string
+              //as a hex string or number
+              break;
+            case "bytes":
+              let keySize = DecodeUtils.Definition.specifiedSize(keyDefinition);
+              if(keySize === null) {
+                adjustedKey = key; //dynamically-sized bytes need no padding
+              }
+              //statically-sized ones, however, need to be zero-padded on right
+              //(or we could use an object, but I'm not doing that)
+              adjustedKey = key.padEnd(2 * DecodeUtils.EVM.WORD_SIZE + 2, "0");
+                //note the size formula -- twice the word size, plus 2 for "0x"
+              break;
+            case "address":
+              //addresses should be padded on the left
+              //(or we could use an object, but I'm not doing that)
+              adjustedKey = "0x" + key.slice(2).
+                padStart(2 * DecodeUtils.EVM.WORD_SIZE, "0");
+              break;
+            case "bool":
+              //booleans should be padded on the left
+              //this case MUST be done manually; using an object doesn't work
+              adjustedKey = key
+                ? DecodeUtils.Conversion.toHexString(new BN(1), DecodeUtils.EVM.WORD_SIZE)
+                : DecodeUtils.Conversion.toHexString(new BN(0), DecodeUtils.EVM.WORD_SIZE);
+              break;
+            default:
+              //this leaves the case of int and uint, which Web3 will actually
+              //get right without our help.
+              //(it also leaves the case of fixed and ufixed, but those don't
+              //exist yet, so whatever)
+              adjustedKey = key;
+          }
 
           let valuePointer: StoragePointer;
 
@@ -302,7 +355,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
               storage: {
                 from: {
                   slot: {
-                    key: key,
+                    key: adjustedKey,
                     path: baseSlot,
                     offset: new BN(0)
                   },
@@ -310,7 +363,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
                 },
                 to: {
                   slot: {
-                    key: key,
+                    key: adjustedKey,
                     path: baseSlot,
                     offset: new BN(valueSize.words - 1)
                   },
@@ -324,7 +377,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
               storage: {
                 from: {
                   slot: {
-                    key: key,
+                    key: adjustedKey,
                     path: baseSlot,
                     offset: new BN(0)
                   },
@@ -332,7 +385,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
                 },
                 to: {
                   slot: {
-                    key: key,
+                    key: adjustedKey,
                     path: baseSlot,
                     offset: new BN(0)
                   },
@@ -342,15 +395,9 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
             };
           }
 
-          let memberName: string;
-          if (typeof key === "string") {
-            memberName = key;
-          }
-          else {
-            memberName = keyValue.toString();
-          }
-
-          result.members[memberName] =
+          //note at this point, key could be a string, hex string,
+          //BN, or boolean
+          result.members[key.toString()] =
             await decode(valueDefinition, valuePointer, info, web3, contractAddress);
         }
       }
