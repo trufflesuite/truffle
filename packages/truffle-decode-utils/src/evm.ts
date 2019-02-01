@@ -4,12 +4,14 @@ const debug = debugModule("decode-utils:evm");
 import BN from "bn.js";
 import Web3 from "web3";
 import { Conversion as ConversionUtils } from "./conversion";
+import { Constants } from "./constants";
 
 export namespace EVM {
-  export const WORD_SIZE = 0x20;
-  export const ADDRESS_SIZE = 20;
-  export const SELECTOR_SIZE = 4;
-  export const MAX_WORD = new BN(-1).toTwos(WORD_SIZE * 8);
+  //the following constants are re-exported from EVM for convenience
+  export const WORD_SIZE = Constants.WORD_SIZE;
+  export const ADDRESS_SIZE = Constants.ADDRESS_SIZE;
+  export const SELECTOR_SIZE = Constants.SELECTOR_SIZE;
+  export const MAX_WORD = Constants.MAX_WORD;
 
   //beware of using this for generic strings! (it's fine for bytestrings, or
   //strings representing numbers) if you want to use this on a generic string,
