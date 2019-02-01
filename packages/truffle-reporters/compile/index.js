@@ -11,8 +11,7 @@ module.exports = {
 
   finishJob(options) {
     const logger = options.logger || console;
-    logger.log(OS.EOL + colors.green("Compilation finished successfully"));
-    logger.log(colors.green("=================================" + OS.EOL));
+    logger.log(OS.EOL + "Compilation finished successfully." + OS.EOL);
   },
 
   initializeListeners(options) {
@@ -28,12 +27,22 @@ module.exports = {
       "compile:compiledSources",
       this.compiledSources.bind(this, options)
     );
+    emitter.on(
+      "compile:nothingToCompile",
+      this.nothingToCompile.bind(this, options)
+    );
+  },
+
+  nothingToCompile(options) {
+    const logger = options.logger || console;
+    logger.log("    > all contracts up to date");
+    logger.log("    > nothing new to compile");
   },
 
   startJob(options) {
     const logger = options.logger || console;
-    logger.log(colors.green(OS.EOL + "Starting compilation"));
-    logger.log(colors.green("====================") + OS.EOL);
+    logger.log(OS.EOL + "Starting compilation");
+    logger.log("====================" + OS.EOL);
   },
 
   warnings(options, warnings) {

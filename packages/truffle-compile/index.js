@@ -360,6 +360,9 @@ compile.necessary = function(options, callback) {
     if (err) return callback(err);
 
     if (updated.length === 0 && options.quiet !== true) {
+      if (options.eventManager) {
+        options.eventManager.emitEvent("compile:nothingToCompile");
+      }
       return callback(null, [], {});
     }
 
