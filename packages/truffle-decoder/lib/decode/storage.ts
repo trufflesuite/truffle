@@ -12,7 +12,6 @@ import * as Types from "../types/storage";
 import BN from "bn.js";
 import Web3 from "web3";
 import { EvmStruct, EvmMapping } from "../interface/contract-decoder";
-import clonedeep from "lodash.clonedeep";
 
 export default async function decodeStorage(definition: DecodeUtils.AstDefinition, pointer: StoragePointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
   if(DecodeUtils.Definition.isReference(definition) || DecodeUtils.Definition.isMapping(definition)) {
@@ -201,7 +200,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
         length = DecodeUtils.Conversion.toBN(data).subn(1).divn(2).toNumber();
         debug("new-word, length %o", length);
 
-        return decodeValue(definition, <StoragePointer>{
+        return decodeValue(definition, {
           storage: {
             from: {
               slot: {
@@ -247,7 +246,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
         const childRange : Types.Range = {
           from: {
             slot: {
-              path: clonedeep(pointer.storage.from.slot),
+              path: pointer.storage.from.slot,
               offset: memberPointer.storage.from.slot.offset.clone()
               //note that memberPointer should have no path
             },
@@ -255,7 +254,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
           },
           to: {
             slot: {
-              path: clonedeep(pointer.storage.from.slot),
+              path: pointer.storage.from.slot,
               offset: memberPointer.storage.to.slot.offset.clone()
               //note that memberPointer should have no path
             },
