@@ -7,7 +7,8 @@ import decode from "./index";
 import decodeValue from "./value";
 import { StoragePointer, DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
-import * as Allocation from "../allocate/storage";
+import { storageSize } from "../allocate/storage";
+import * as Types from "../types/storage";
 import BN from "bn.js";
 import Web3 from "web3";
 import { EvmStruct, EvmMapping } from "../interface/contract-decoder";
@@ -33,7 +34,7 @@ export async function decodeStorageByAddress(definition: DecodeUtils.AstDefiniti
   //we *know* the type being decoded must be sized in words, because it's a
   //reference type, but TypeScript doesn't, so we'll have to use a type
   //coercion
-  const size = (<{words: number}>Allocation.storageSize(definition)).words;
+  const size = (<{words: number}>storageSize(definition)).words;
   //now, construct the storage pointer
   const newPointer = { storage: {
     from: {
@@ -80,24 +81,24 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
         (baseDefinition.typeName ? baseDefinition.typeName.referencedDeclaration : undefined);
 
       debug("about to determine baseSize");
-      let baseSize: Allocation.StorageLength = Allocation.storageSize(baseDefinition, info.referenceDeclarations, info.storageAllocations);
+      let baseSize: Types.StorageLength = storageSize(baseDefinition, info.referenceDeclarations, info.storageAllocations);
       debug("baseSize %o", baseSize);
       
       //we are going to make a list of child ranges, pushing them one by one onto
       //this list, and then decode them; the first part will vary based on whether
       //we're in the words case or the bytes case, the second will not
-      let ranges: Allocation.Range[] = [];
+      let ranges: Types.Range[] = [];
 
-      if(Allocation.isWordsLength(baseSize)) {
+      if(Types.isWordsLength(baseSize)) {
         //currentSlot will point to the start of the entry being decoded
-        let currentSlot: Allocation.Slot = {
+        let currentSlot: Types.Slot = {
           path: pointer.storage.from.slot,
           offset: new BN(0),
           hashPath: DecodeUtils.Definition.isDynamicArray(definition)
         };
 
         for (let i = 0; i < length; i++) {
-          let childRange: Allocation.Range = {
+          let childRange: Types.Range = {
             from: {
               slot: {
                 path: currentSlot.path,
@@ -128,7 +129,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
 
         //currentPosition will point to the start of the entry being decoded
         //note we have baseSize.bytes <= DecodeUtils.EVM.WORD_SIZE
-        let currentPosition: Allocation.StoragePosition = {
+        let currentPosition: Types.StoragePosition = {
           slot: {
             path: pointer.storage.from.slot,
             offset: new BN(0),
@@ -138,7 +139,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
         };
 
         for (let i = 0; i < length; i++) {
-          let childRange: Allocation.Range = {
+          let childRange: Types.Range = {
             from: {
               slot: {
                 path: currentPosition.slot.path,
@@ -238,9 +239,12 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
       const structAllocation = info.storageAllocations[referencedDeclaration];
       for (let i = 0; i < members.length; i++) {
         const memberAllocation = structAllocation.members[members[i].id];
-        const memberPointer = memberAllocation.pointer;
+        const memberPointer = <StoragePointer>memberAllocation.pointer;
+          //the type system thinks memberPointer might also be a constant
+          //definition pointer.  However, structs can't contain constants,
+          //so *we* know it's not, and can safely coerce it.
         debug("pointer %O", pointer);
-        const childRange = <Allocation.Range>{
+        const childRange : Types.Range = {
           from: {
             slot: {
               path: clonedeep(pointer.storage.from.slot),
@@ -277,7 +281,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
 
       const keyDefinition = definition.keyType || definition.typeName.keyType;
       const valueDefinition = definition.valueType || definition.typeName.valueType;
-      const valueSize = Allocation.storageSize(valueDefinition, info.referenceDeclarations, info.storageAllocations)
+      const valueSize = storageSize(valueDefinition, info.referenceDeclarations, info.storageAllocations)
 
       const result: EvmMapping = {
         name: definition.name,
@@ -288,7 +292,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
         members: {}
       };
 
-      const baseSlot: Allocation.Slot = pointer.storage.from.slot;
+      const baseSlot: Types.Slot = pointer.storage.from.slot;
 
       if (info.mappingKeys && typeof info.mappingKeys[definition.id] !== "undefined") {
         const keys: any[] = info.mappingKeys[definition.id];
@@ -333,7 +337,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
 
           let valuePointer: StoragePointer;
 
-          if(Allocation.isWordsLength(valueSize)) {
+          if(Types.isWordsLength(valueSize)) {
             valuePointer = {
               storage: {
                 from: {

@@ -37,3 +37,8 @@ export interface AstDefinition {
   referencedDeclaration?: any;
   [k: string]: any;
 }
+
+export interface AstReferences {
+  [nodeId: number]: AstDefinition;
+};
+

@@ -7,24 +7,17 @@ import decodeValue from "./value";
 import { decodeMemoryReference } from "./memory";
 import { decodeStorageReference, decodeStorageByAddress } from "./storage";
 import { storageSize } from "../allocate/storage";
-import { StackPointer, LiteralPointer } from "../types/pointer";
+import { StackPointer, StackLiteralPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import Web3 from "web3";
 
 export async function decodeStack(definition: DecodeUtils.AstDefinition, pointer: StackPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
   const rawValue: Uint8Array = await read(pointer, info.state, web3, contractAddress);
-  const literalPointer: LiteralPointer = { literal: rawValue };
+  const literalPointer: StackLiteralPointer = { literal: rawValue };
   return await decodeLiteral(definition, literalPointer, info, web3, contractAddress);
 }
 
-//note that literal pointers are only ever created either from:
-//1. stack values, or
-//2. string literals (which are of typeclass stringliteral)
-//[and the latter will be removed from LiteralPointer eventually]
-//thus in decoding a literal pointer, we can follow the rules we would
-//for decoding a stack value, unless it's a stringliteral, in which case
-//we can just dispatch to decodeValue which already handles those (this is a hack)
-export async function decodeLiteral(definition: DecodeUtils.AstDefinition, pointer: LiteralPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
+export async function decodeLiteral(definition: DecodeUtils.AstDefinition, pointer: StackLiteralPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
 
   debug("definition %O", definition);
   debug("pointer %o", pointer);

@@ -2,7 +2,8 @@ import debugModule from "debug";
 const debug = debugModule("decoder:read:storage");
 
 import * as DecodeUtils from "truffle-decode-utils";
-import * as Allocation from "../allocate/storage";
+import { Slot, Range } from "../types/storage";
+import { WordMapping } from "../types/evm";
 import BN from "bn.js";
 import Web3 from "web3";
 
@@ -14,7 +15,7 @@ import Web3 from "web3";
  *
  * @param slot - number or possibly-nested array of numbers
  */
-export function slotAddress(slot: Allocation.Slot): BN {
+export function slotAddress(slot: Slot): BN {
   if (slot.key !== undefined && slot.path !== undefined) {
     // mapping reference
     let key = slot.key;
@@ -35,7 +36,7 @@ export function slotAddress(slot: Allocation.Slot): BN {
   }
 }
 
-export function slotAddressPrintout(slot: Allocation.Slot): string {
+export function slotAddressPrintout(slot: Slot): string {
   if (slot.key !== undefined && slot.path !== undefined) {
     // mapping reference
     let keyEncoding = slot.keyEncoding ? slot.keyEncoding : "uint"; //HACK for booleans
@@ -58,7 +59,7 @@ export function slotAddressPrintout(slot: Allocation.Slot): string {
  * @param slot - see slotAddress() code to understand how these work
  * @param offset - for array, offset from the keccak determined location
  */
-export async function read(storage: any, slot: Allocation.Slot, web3?: Web3, contractAddress?: string): Promise<Uint8Array> {
+export async function read(storage: WordMapping, slot: Slot, web3?: Web3, contractAddress?: string): Promise<Uint8Array> {
   debug("Slot printout: %s", slotAddressPrintout(slot));
   const address = slotAddress(slot);
 
@@ -100,7 +101,7 @@ export async function read(storage: any, slot: Allocation.Slot, web3?: Web3, con
  * @param to - location (see ^). inclusive.
  * @param length - instead of `to`, number of bytes after `from`
  */
-export async function readRange(storage: any, range: Allocation.Range, web3?: Web3, contractAddress?: string): Promise<Uint8Array> {
+export async function readRange(storage: WordMapping, range: Range, web3?: Web3, contractAddress?: string): Promise<Uint8Array> {
   // debug("readRange %o", range);
 
   let { from, to, length } = range;

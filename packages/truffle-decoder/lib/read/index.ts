@@ -1,6 +1,6 @@
 import * as storage from "./storage";
 import * as memory from "./memory";
-import { DataPointer, isStackPointer, isStoragePointer, isMemoryPointer, isLiteralPointer } from "../types/pointer";
+import { DataPointer, isStackPointer, isStoragePointer, isMemoryPointer, isStackLiteralPointer } from "../types/pointer";
 import { EvmState } from "../types/evm";
 import Web3 from "web3";
 
@@ -11,7 +11,7 @@ export default async function read(pointer: DataPointer, state: EvmState, web3?:
     return await storage.readRange(state.storage, pointer.storage, web3, contractAddress);
   } else if (isMemoryPointer(pointer) && state.memory) {
     return memory.readBytes(state.memory, pointer.memory.start, pointer.memory.length);
-  } else if (isLiteralPointer(pointer)) {
+  } else if (isStackLiteralPointer(pointer)) {
     return pointer.literal;
   }
 }
