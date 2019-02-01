@@ -215,11 +215,22 @@ const data = createSelectorTree({
               .slice()
               .reverse();
             //now, we put it all together
-            newScope.variables = [].concat(
-              ...linearizedBaseContractsFromBase.map(
-                contractId => scopes[contractId].variables
+            newScope.variables = []
+              .concat(
+                ...linearizedBaseContractsFromBase.map(
+                  contractId => scopes[contractId].variables
+                )
               )
-            );
+              .filter(variable => {
+                //...except, HACK, let's filter out those constants we don't know
+                //how to read.  they'll just clutter things up.
+                let definition = inlined[variable.id].definition;
+                return (
+                  !definition.constant ||
+                  DecodeUtils.Definition.isConstantType(definition.value)
+                );
+              });
+
             return { [id]: newScope };
           })
         )

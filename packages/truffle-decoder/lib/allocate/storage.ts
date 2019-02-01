@@ -5,6 +5,7 @@ import { StoragePointer } from "../types/pointer";
 import { StorageAllocations, StorageAllocation, StorageMemberAllocations } from "../types/allocation";
 import { StorageLength, isWordsLength, Range } from "../types/storage";
 import { AstDefinition, AstReferences } from "truffle-decode-utils";
+import { readDefinition } from "../read/constant"
 import * as DecodeUtils from "truffle-decode-utils";
 import BN from "bn.js";
 
@@ -46,12 +47,15 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
 
     //first off: is this a constant? if so we use a different, simpler process
     if(node.constant) {
-      memberAllocations[node.id] = {
-        definition: node,
-        pointer: {
-          definition: node.value
-        }
-      };
+      let pointer = { definition: node.value };
+      //HACK restrict ourselves to the types of constants we know how to handle
+      if(DecodeUtils.Definition.isConstantType(node.value)) {
+        memberAllocations[node.id] = {
+          definition: node,
+          pointer
+        };
+      }
+      //if we don't know how to handle it, we just ignore it
       continue;
     }
 

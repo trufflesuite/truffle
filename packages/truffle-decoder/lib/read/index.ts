@@ -15,6 +15,6 @@ export default async function read(pointer: Pointer.DataPointer, state: EvmState
   } else if (Pointer.isStackLiteralPointer(pointer)) {
     return pointer.literal;
   } else if (Pointer.isConstantDefinitionPointer(pointer)) {
-    return constant.read(pointer);
+    return constant.readDefinition(pointer);
   }
 }
