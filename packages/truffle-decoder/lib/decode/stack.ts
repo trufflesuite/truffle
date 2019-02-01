@@ -6,7 +6,6 @@ import read from "../read";
 import decodeValue from "./value";
 import { decodeMemoryReference } from "./memory";
 import { decodeStorageReference, decodeStorageByAddress } from "./storage";
-import { storageSize } from "../allocate/storage";
 import { StackPointer, StackLiteralPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import Web3 from "web3";

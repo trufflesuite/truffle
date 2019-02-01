@@ -43,8 +43,18 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
 
   for(const node of definitions)
   {
-    //note: in the future, we will begin by checking if node is constant
-    //and if so doing things a different way to allocate a literal for it
+
+    //first off: is this a constant? if so we use a different, simpler process
+    if(node.constant) {
+      memberAllocations[node.id] = {
+        definition: node,
+        pointer: {
+          definition: node.value
+        }
+      };
+      continue;
+    }
+
     let size: StorageLength;
     [size, allocations] = storageSizeAndAllocate(node, referenceDeclarations, allocations);
 
@@ -139,11 +149,10 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
 }
 
 function getStateVariables(contractNode: AstDefinition): AstDefinition[] {
-  // process for state variables, filtering out constants
+  // process for state variables
   return contractNode.nodes.filter( (node: AstDefinition) =>
-    node.nodeType === "VariableDeclaration" && node.stateVariable && !node.constant
+    node.nodeType === "VariableDeclaration" && node.stateVariable
   );
-  //note, in the future, we will not filter out constants
 }
 
 function allocateContract(contract: AstDefinition, referenceDeclarations: AstReferences, existingAllocations: StorageAllocations): StorageAllocations {

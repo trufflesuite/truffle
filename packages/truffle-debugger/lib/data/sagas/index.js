@@ -164,7 +164,8 @@ function* tickSaga() {
 
       let baseExpression = node.baseExpression;
       let baseDeclarationId = baseExpression.referencedDeclaration;
-      let indexId = node.indexExpression.id;
+      let indexDefinition = node.indexExpression;
+      let indexId = indexDefinition.id;
 
       let baseDeclaration = scopes[baseDeclarationId].definition;
 
@@ -185,24 +186,35 @@ function* tickSaga() {
       let fullIndexId = stableKeccak256(indexIdObj);
 
       const indexReference = (currentAssignments.byId[fullIndexId] || {}).ref;
-      // HACK because string literal AST nodes are not sourcemapped to directly
-      // value appears to be available in `node.indexExpression.hexValue`
-      // [observed with solc v0.4.24]
       let indexValue;
       if (indexReference) {
-        indexValue = yield call(decode, keyDefinition, indexReference);
-      } else if (
-        DecodeUtils.Definition.typeClass(node.indexExpression) ==
-        "stringliteral"
-      ) {
+        //in general, we want to decode using the key definition, not the index
+        //definition. however, the key definition may have the wrong location
+        //on it.  so, when applicable, we splice the index definition location
+        //onto the key definition location.
+        let splicedDefinition;
+        if (DecodeUtils.Definition.isReference(indexDefinition)) {
+          splicedDefinition = DecodeUtils.Definition.spliceLocation(
+            keyDefinition,
+            DecodeUtils.Definition.referenceType(indexDefinition)
+          );
+        } else {
+          splicedDefinition = keyDefinition;
+        }
+        indexValue = yield call(decode, splicedDefinition, indexReference);
+      } else if (DecodeUtils.Definition.isConstantType(indexDefinition)) {
+        //constant expression are not always sourcemapped to, meaning we won't
+        //find a prior assignment for them. so we will have to just construct
+        //the ConstantDefinitionPointer ourselves.
         indexValue = yield call(decode, keyDefinition, {
-          literal: DecodeUtils.Conversion.toBytes(node.indexExpression.hexValue)
+          definition: indexDefinition
         });
       }
 
       debug("index value %O", indexValue);
       debug("keyDefinition %O", keyDefinition);
 
+      //if we didn't find it and it's not a constant type... ignore it
       if (indexValue !== undefined) {
         yield put(actions.mapKey(baseDeclarationId, indexValue));
       }

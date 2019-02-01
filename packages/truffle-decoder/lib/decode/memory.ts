@@ -60,18 +60,8 @@ export async function decodeMemoryReference(definition: DecodeUtils.AstDefinitio
 
       let baseDefinition = definition.baseType || definition.typeName.baseType;
 
-      // HACK replace erroneous `_storage_` type identifiers with `_memory_`
-      baseDefinition = {
-        ...baseDefinition,
-
-        typeDescriptions: {
-          ...baseDefinition.typeDescriptions,
-
-          typeIdentifier:
-            baseDefinition.typeDescriptions.typeIdentifier
-              .replace(/_storage_/g, "_memory_")
-        }
-      };
+      // replace erroneous `_storage_` type identifiers with `_memory_`
+      baseDefinition = DecodeUtils.Definition.spliceLocation(baseDefinition, "memory");
 
       return await Promise.all(chunk(bytes, DecodeUtils.EVM.WORD_SIZE)
         .map(

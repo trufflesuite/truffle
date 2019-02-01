@@ -46,3 +46,7 @@ export function isStoragePointer(pointer: DataPointer): pointer is StoragePointe
 export function isStackLiteralPointer(pointer: DataPointer): pointer is StackLiteralPointer {
   return typeof pointer !== "undefined" && "literal" in pointer;
 }
+
+export function isConstantDefinitionPointer(pointer: DataPointer): pointer is ConstantDefinitionPointer {
+  return typeof pointer !== "undefined" && "definition" in pointer;
+}

@@ -31,16 +31,12 @@ export default async function decodeValue(definition: DecodeUtils.AstDefinition,
     case "int":
       return DecodeUtils.Conversion.toSignedBN(bytes);
 
-    case "contract":
+    case "contract": //contract will get separate decoding later
     case "address":
       return DecodeUtils.Conversion.toAddress(bytes);
 
     case "bytes":
       // debug("typeIdentifier %s %o", DecodeUtils.typeIdentifier(definition), bytes);
-      // HACK bytes may be getting passed in as a literal hexstring
-      if (typeof bytes == "string") {
-        return bytes;
-      }
       //if there's a static size, we want to truncate to that length
       let length = DecodeUtils.Definition.specifiedSize(definition);
       if(length !== null) {

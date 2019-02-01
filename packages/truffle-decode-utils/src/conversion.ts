@@ -102,21 +102,18 @@ export namespace Conversion {
     return Web3.utils.toChecksumAddress(toHexString(bytes, Constants.ADDRESS_SIZE));
   }
 
-  export function toBytes(number: number | BN | string, length: number = 0): Uint8Array {
-    let bytes = new Uint8Array(0);
+  export function toBytes(data: BN | string, length: number = 0): Uint8Array {
+    //note that length is a minimum output length
+    //strings will be 0-padded on left
+    //BN will be sign-padded on left
+    //NOTE: if a BN is passed in that is too big for the given length,
+    //you will get an error!
+    //(note that strings passed in should be hex strings; this is not for converting
+    //generic strings to hex)
 
-    if (typeof number === "number") {
-      if (number < 0) {
-        return bytes;
-      }
+    if (typeof data === "string") {
 
-      bytes = new Uint8Array(number);
-    } else if (typeof number === "string") {
-      if (number === "") {
-        return bytes;
-      }
-
-      let hex = number;
+      let hex = data; //renaming for clarity
 
       if (hex.startsWith("0x")) {
         hex = hex.slice(2);
@@ -126,7 +123,7 @@ export namespace Conversion {
         hex = `0${hex}`;
       }
 
-      bytes = new Uint8Array(
+      let bytes = new Uint8Array(
         hex.match(/.{2}/g)
           .map( (byte) => parseInt(byte, 16) )
       );
@@ -134,18 +131,19 @@ export namespace Conversion {
       if (bytes.length < length) {
         let prior = bytes;
         bytes = new Uint8Array(length);
+	bytes.fill(0);
         bytes.set(prior, length - prior.length);
       }
-    } else {
-      // BN
-      if (number.ltn(0)) {
-        return bytes;
-      }
 
-      bytes = new Uint8Array(number.toArrayLike(Buffer));
+      return bytes;
     }
+    else {
+      // BN case
 
-    return bytes;
+      //return new Uint8Array(data.toArrayLike(Buffer, "be", length)); //big-endian
+      //note that the argument for toTwos is given in bits
+      return new Uint8Array(data.toTwos(length * 8).toArrayLike(Buffer, "be", length)); //big-endian
+    }
   }
 
   /**
