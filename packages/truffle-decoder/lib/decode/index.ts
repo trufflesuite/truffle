@@ -5,6 +5,7 @@ import decodeValue from "./value";
 import decodeMemory from "./memory";
 import decodeStorage from "./storage";
 import { decodeStack, decodeLiteral } from "./stack";
+import decodeConstant from "./constant";
 import { AstDefinition } from "truffle-decode-utils";
 import * as Pointer from "../types/pointer";
 import { EvmInfo } from "../types/evm";
@@ -33,8 +34,9 @@ export default async function decode(definition: AstDefinition, pointer: Pointer
   }
 
   if(Pointer.isConstantDefinitionPointer(pointer)) {
-    return await decodeValue(definition, pointer, info);
-    //in this case we can go straight to decodeValue, no need for anything else
+    return await decodeConstant(definition, pointer, info);
+    //I'd like to just use decodeValue, but unfortunately there are some special
+    //cases to deal with
   }
 
   //the type system means we can't hit this point!

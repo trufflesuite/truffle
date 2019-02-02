@@ -187,12 +187,25 @@ function* tickSaga() {
 
       const indexReference = (currentAssignments.byId[fullIndexId] || {}).ref;
       let indexValue;
-      if (indexReference) {
+      if (DecodeUtils.Definition.isConstantType(indexDefinition)) {
+        //while the main case is the next one, where we look for a prior
+        //assignment, we need this case (and need it first) for two reasons:
+        //1. some constant expressions (specifically, string and hex literals)
+        //aren't sourcemapped to and so won't have a prior assignment
+        //2. if the key type is bytesN but the expression is constant, the
+        //value will go on the stack *left*-padded instead of right-padded,
+        //so looking for a prior assignment will read the wrong value.
+        //so instead it's preferable to use the constant directly.
+        indexValue = yield call(decode, keyDefinition, {
+          definition: indexDefinition
+        });
+      } else if (indexReference) {
+        //if a prior assignment is found
+        let splicedDefinition;
         //in general, we want to decode using the key definition, not the index
         //definition. however, the key definition may have the wrong location
         //on it.  so, when applicable, we splice the index definition location
         //onto the key definition location.
-        let splicedDefinition;
         if (DecodeUtils.Definition.isReference(indexDefinition)) {
           splicedDefinition = DecodeUtils.Definition.spliceLocation(
             keyDefinition,
@@ -202,13 +215,6 @@ function* tickSaga() {
           splicedDefinition = keyDefinition;
         }
         indexValue = yield call(decode, splicedDefinition, indexReference);
-      } else if (DecodeUtils.Definition.isConstantType(indexDefinition)) {
-        //constant expression are not always sourcemapped to, meaning we won't
-        //find a prior assignment for them. so we will have to just construct
-        //the ConstantDefinitionPointer ourselves.
-        indexValue = yield call(decode, keyDefinition, {
-          definition: indexDefinition
-        });
       }
 
       debug("index value %O", indexValue);
