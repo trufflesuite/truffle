@@ -215,12 +215,28 @@ function* tickSaga() {
           splicedDefinition = keyDefinition;
         }
         indexValue = yield call(decode, splicedDefinition, indexReference);
+      } else if (indexDefinition.referencedDeclaration) {
+        //last-ditch decoding attempt: is it a storage constant that we know
+        //how to decode?  (if it's a storage constant we *don't* know how to
+        //decode, we're just stuck, sorry.  decoding for general storage
+        //constants will have to wait.)
+        let indexConstantDeclaration =
+          scopes[indexDefinition.referencedDeclaration].definition;
+        debug("indexConstantDeclaration %O", indexConstantDeclaration);
+        if (indexConstantDeclaration.constant) {
+          let indexConstantDefinition = indexConstantDeclaration.value;
+          if (DecodeUtils.Definition.isConstantType(indexConstantDefinition)) {
+            indexValue = yield call(decode, keyDefinition, {
+              definition: indexConstantDeclaration.value
+            });
+          }
+        }
       }
 
       debug("index value %O", indexValue);
       debug("keyDefinition %O", keyDefinition);
 
-      //if we didn't find it and it's not a constant type... ignore it
+      //if we didn't succeed at decoding it, ignore it :-/
       if (indexValue !== undefined) {
         yield put(actions.mapKey(baseDeclarationId, indexValue));
       }
