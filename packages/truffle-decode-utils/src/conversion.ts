@@ -153,7 +153,7 @@ export namespace Conversion {
     if (BN.isBN(value)) {
       return value.toString();
 
-    } else if (value && value.map != undefined) {
+    } else if (value && typeof value.map === "function") {
       return value.map( (inner: any) => cleanBNs(inner) );
 
     } else if (value && typeof value == "object") {
@@ -241,7 +241,7 @@ export namespace Conversion {
     }
 
     // detect arrays or anything with `.map()`, and recurse
-    else if (value && value.map != undefined) {
+    else if (value && typeof value.map === "function") {
       return value.map( (inner: any) => cleanContainers(inner) );
     }
 

@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("decode-utils:definition");
+
 import { EVM as EVMUtils } from "./evm";
 import { AstDefinition } from "./ast";
 import cloneDeep from "lodash.clonedeep";
@@ -116,6 +119,7 @@ export namespace Definition {
   //definition: a storage reference definition
   //location: the location you want it to refer to instead
   export function spliceLocation(definition: AstDefinition, location: string): AstDefinition {
+    debug("definition %O", definition);
     return {
       ...definition,
 
@@ -124,7 +128,7 @@ export namespace Definition {
 
         typeIdentifier:
           definition.typeDescriptions.typeIdentifier
-            .replace(/_storage(?=_ptr|)$/g, "_" + location)
+            .replace(/_storage(?=_ptr$|$)/, "_" + location)
       }
     };
   }
