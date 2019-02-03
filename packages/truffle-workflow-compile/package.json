@@ -17,10 +17,7 @@
   },
   "main": "index.js",
   "scripts": {},
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/trufflesuite/truffle-debug-utils.git"
-  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-workflow-compile",
   "author": "Truffle Suite <inquiry@trufflesuite.com>",
   "license": "MIT",
   "bugs": {

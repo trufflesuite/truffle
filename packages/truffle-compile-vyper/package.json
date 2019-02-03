@@ -17,6 +17,7 @@
   "scripts": {
     "test": "mocha"
   },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-compile-vyper",
   "keywords": [
     "ethereum",
     "truffle",

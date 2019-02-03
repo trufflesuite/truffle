@@ -7,10 +7,7 @@
     "test": "mocha --timeout 5000",
     "prepare": "npx webpack --config webpack/webpack.config.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/trufflesuite/truffle-hdwallet-provider.git"
-  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-hdwallet-provider",
   "keywords": [
     "etheruem",
     "hd",

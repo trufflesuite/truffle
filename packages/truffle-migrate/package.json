@@ -4,10 +4,7 @@
   "description": "On-chain migrations management",
   "main": "index.js",
   "scripts": {},
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/trufflesuite/truffle-migrate.git"
-  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-migrate",
   "keywords": [
     "ethereum",
     "truffle",

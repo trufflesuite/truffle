@@ -63,10 +63,7 @@
   "scripts": {
     "test": "mocha ./test/**"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ConsenSys/truffle.git"
-  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-core",
   "homepage": "https://github.com/ConsenSys/truffle",
   "bugs": {
     "url": "https://github.com/ConsenSys/truffle/issues"

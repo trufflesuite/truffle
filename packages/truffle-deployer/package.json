@@ -6,10 +6,7 @@
   "scripts": {
     "test": "mocha --no-warnings --timeout 10000 --exit"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/trufflesuite/truffle-deployer.git"
-  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-deployer",
   "keywords": [
     "ethereum",
     "truffle",
