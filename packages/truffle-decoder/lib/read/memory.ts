@@ -51,17 +51,3 @@ export function readBytes(memory: Uint8Array, offset: number, length: number) {
 
   return bytes;
 }
-
-/**
- * Split memory into chunks
- */
-export function chunk(memory: Uint8Array, size = DecodeUtils.EVM.WORD_SIZE): Uint8Array[] {
-  let chunks: Uint8Array[] = [];
-
-  for (let i = 0; i < memory.length; i += size) {
-    let chunk = readBytes(memory, i, size);
-    chunks.push(chunk);
-  }
-
-  return chunks;
-}

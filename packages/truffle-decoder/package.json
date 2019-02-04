@@ -47,6 +47,7 @@
     "debug": "^4.1.0",
     "lodash.clonedeep": "^4.5.0",
     "lodash.merge": "^4.6.1",
+    "lodash.range": "^3.2.0",
     "truffle-decode-utils": "^1.0.1",
     "web3": "^1.0.0-beta.37"
   },

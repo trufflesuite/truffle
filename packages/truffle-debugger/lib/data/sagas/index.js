@@ -162,10 +162,11 @@ function* tickSaga() {
     case "IndexAccess":
       // to track `mapping` types known indices
 
+      debug("Index access case");
+
       let baseExpression = node.baseExpression;
       let baseDeclarationId = baseExpression.referencedDeclaration;
       let indexDefinition = node.indexExpression;
-      let indexId = indexDefinition.id;
 
       let baseDeclaration = scopes[baseDeclarationId].definition;
 
@@ -174,20 +175,23 @@ function* tickSaga() {
         break;
       }
 
-      debug("Index access case");
-
       let keyDefinition =
         baseDeclaration.keyType || baseDeclaration.typeName.keyType;
 
-      yield put(actions.mapKeyDecoding(true));
-
+      //begin subsection: key decoding
+      //(I tried factoring this out into its own saga but it didn't work when I
+      //did :P )
+      let indexId = indexDefinition.id;
       //indices need to be identified by stackframe
       let indexIdObj = { astId: indexId, stackframe: currentDepth };
       let fullIndexId = stableKeccak256(indexIdObj);
 
       const indexReference = (currentAssignments.byId[fullIndexId] || {}).ref;
       let indexValue;
-      if (DecodeUtils.Definition.isConstantType(indexDefinition)) {
+
+      yield put(actions.mapKeyDecoding(true));
+
+      if (DecodeUtils.Definition.isSimpleConstant(indexDefinition)) {
         //while the main case is the next one, where we look for a prior
         //assignment, we need this case (and need it first) for two reasons:
         //1. some constant expressions (specifically, string and hex literals)
@@ -216,22 +220,30 @@ function* tickSaga() {
         }
         indexValue = yield call(decode, splicedDefinition, indexReference);
       } else if (indexDefinition.referencedDeclaration) {
-        //last-ditch decoding attempt: is it a storage constant that we know
-        //how to decode?  (if it's a storage constant we *don't* know how to
-        //decode, we're just stuck, sorry.  decoding for general storage
-        //constants will have to wait.)
+        //there's one more reason we might have failed to decode it: it might be a
+        //constant state variable.  Unfortunately, we don't know how to decode all
+        //those at the moment, but we can handle the ones we do know how to decode.
+        //In the future hopefully we will decode all of them
         let indexConstantDeclaration =
           scopes[indexDefinition.referencedDeclaration].definition;
         debug("indexConstantDeclaration %O", indexConstantDeclaration);
         if (indexConstantDeclaration.constant) {
           let indexConstantDefinition = indexConstantDeclaration.value;
-          if (DecodeUtils.Definition.isConstantType(indexConstantDefinition)) {
+          //next line filters out constants we don't know how to handle
+          if (
+            DecodeUtils.Definition.isSimpleConstant(indexConstantDefinition)
+          ) {
             indexValue = yield call(decode, keyDefinition, {
               definition: indexConstantDeclaration.value
             });
           }
         }
       }
+      //if we've failed to decode it, just leave it undefined (in the future though
+      //we should always decode it via one of the three cases above)
+
+      yield put(actions.mapKeyDecoding(false));
+      //end subsection: key decoding
 
       debug("index value %O", indexValue);
       debug("keyDefinition %O", keyDefinition);
@@ -240,8 +252,6 @@ function* tickSaga() {
       if (indexValue !== undefined) {
         yield put(actions.mapKey(baseDeclarationId, indexValue));
       }
-
-      yield put(actions.mapKeyDecoding(false));
 
       break;
 

@@ -115,6 +115,12 @@ export namespace Conversion {
 
       let hex = data; //renaming for clarity
 
+      if(hex === "") {
+        //this special case is necessary because the match below will return null,
+        //not an empty array, when given an empty string
+        return new Uint8Array(0);
+      }
+
       if (hex.startsWith("0x")) {
         hex = hex.slice(2);
       }

@@ -227,7 +227,7 @@ const data = createSelectorTree({
                 let definition = inlined[variable.id].definition;
                 return (
                   !definition.constant ||
-                  DecodeUtils.Definition.isConstantType(definition.value)
+                  DecodeUtils.Definition.isSimpleConstant(definition.value)
                 );
               });
 

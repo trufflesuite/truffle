@@ -3,7 +3,6 @@ const debug = debugModule("decoder:decode:storage");
 
 import read from "../read";
 import * as DecodeUtils from "truffle-decode-utils";
-import decode from "./index";
 import decodeValue from "./value";
 import { StoragePointer, DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
@@ -162,7 +161,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
 
       const decodePromises = ranges.map( (childRange, idx) => {
         debug("childFrom %d, %o", idx, childRange.from);
-        return decode(baseDefinition, {
+        return decodeStorage(baseDefinition, {
           storage: childRange
         }, info, web3, contractAddress);
       });
@@ -236,8 +235,8 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
         info.referenceDeclarations[referencedDeclaration].members;
 
       const structAllocation = info.storageAllocations[referencedDeclaration];
-      for (let i = 0; i < members.length; i++) {
-        const memberAllocation = structAllocation.members[members[i].id];
+      for (let memberDefinition of members) {
+        const memberAllocation = structAllocation.members[memberDefinition.id];
         const memberPointer = <StoragePointer>memberAllocation.pointer;
           //the type system thinks memberPointer might also be a constant
           //definition pointer.  However, structs can't contain constants,
@@ -261,14 +260,14 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
             index: memberPointer.storage.to.index
           },
         };
-        const val = await decode(
-          members[i],
+        const val = await decodeStorage(
+          memberDefinition,
           {storage: childRange}, info, web3, contractAddress
         );
 
-        result.members[members[i].name] = {
-          name: members[i].name,
-          type: DecodeUtils.Definition.typeClass(members[i]),
+        result.members[memberDefinition.name] = {
+          name: memberDefinition.name,
+          type: DecodeUtils.Definition.typeClass(memberDefinition),
           value: val
         };
       }
@@ -277,6 +276,9 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
     }
 
     case "mapping": {
+
+      debug("decoding mapping");
+      debug("name %s", definition.name);
 
       const keyDefinition = definition.keyType || definition.typeName.keyType;
       const valueDefinition = definition.valueType || definition.typeName.valueType;
@@ -296,6 +298,8 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
       if (info.mappingKeys && typeof info.mappingKeys[definition.id] !== "undefined") {
         const keys: any[] = info.mappingKeys[definition.id];
         for (const key of keys) {
+
+          debug("key %O", key);
 
           let keyEncoding: string;
           //keyEncoding is used to let soliditySha3 know how to interpret the
@@ -388,7 +392,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
           //note at this point, key could be a string, hex string,
           //BN, or boolean
           result.members[key.toString()] =
-            await decode(valueDefinition, valuePointer, info, web3, contractAddress);
+            await decodeStorage(valueDefinition, valuePointer, info, web3, contractAddress);
         }
       }
 

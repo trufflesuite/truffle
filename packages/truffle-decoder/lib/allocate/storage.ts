@@ -49,7 +49,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
     if(node.constant) {
       let pointer = { definition: node.value };
       //HACK restrict ourselves to the types of constants we know how to handle
-      if(DecodeUtils.Definition.isConstantType(node.value)) {
+      if(DecodeUtils.Definition.isSimpleConstant(node.value)) {
         memberAllocations[node.id] = {
           definition: node,
           pointer

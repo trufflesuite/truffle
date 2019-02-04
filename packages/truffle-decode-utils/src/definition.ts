@@ -3,7 +3,6 @@ const debug = debugModule("decode-utils:definition");
 
 import { EVM as EVMUtils } from "./evm";
 import { AstDefinition } from "./ast";
-import cloneDeep from "lodash.clonedeep";
 import BN from "bn.js";
 
 export namespace Definition {
@@ -111,7 +110,7 @@ export namespace Definition {
     return typeIdentifier(definition).match(/_([^_]+)(_ptr)?$/)[1];
   }
 
-  export function isConstantType(definition: AstDefinition): boolean {
+  export function isSimpleConstant(definition: AstDefinition): boolean {
     const types = ["stringliteral", "rational"];
     return types.includes(typeClass(definition));
   }
