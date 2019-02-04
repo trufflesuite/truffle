@@ -166,7 +166,6 @@ function* tickSaga() {
 
       let baseExpression = node.baseExpression;
       let baseDeclarationId = baseExpression.referencedDeclaration;
-      let indexDefinition = node.indexExpression;
 
       let baseDeclaration = scopes[baseDeclarationId].definition;
 
@@ -181,66 +180,98 @@ function* tickSaga() {
       //begin subsection: key decoding
       //(I tried factoring this out into its own saga but it didn't work when I
       //did :P )
-      let indexId = indexDefinition.id;
-      //indices need to be identified by stackframe
-      let indexIdObj = { astId: indexId, stackframe: currentDepth };
-      let fullIndexId = stableKeccak256(indexIdObj);
-
-      const indexReference = (currentAssignments.byId[fullIndexId] || {}).ref;
-      let indexValue;
-
       yield put(actions.mapKeyDecoding(true));
 
-      if (DecodeUtils.Definition.isSimpleConstant(indexDefinition)) {
-        //while the main case is the next one, where we look for a prior
-        //assignment, we need this case (and need it first) for two reasons:
-        //1. some constant expressions (specifically, string and hex literals)
-        //aren't sourcemapped to and so won't have a prior assignment
-        //2. if the key type is bytesN but the expression is constant, the
-        //value will go on the stack *left*-padded instead of right-padded,
-        //so looking for a prior assignment will read the wrong value.
-        //so instead it's preferable to use the constant directly.
-        indexValue = yield call(decode, keyDefinition, {
-          definition: indexDefinition
-        });
-      } else if (indexReference) {
-        //if a prior assignment is found
-        let splicedDefinition;
-        //in general, we want to decode using the key definition, not the index
-        //definition. however, the key definition may have the wrong location
-        //on it.  so, when applicable, we splice the index definition location
-        //onto the key definition location.
-        if (DecodeUtils.Definition.isReference(indexDefinition)) {
-          splicedDefinition = DecodeUtils.Definition.spliceLocation(
-            keyDefinition,
-            DecodeUtils.Definition.referenceType(indexDefinition)
+      let indexValue;
+      let indexDefinition = node.indexExpression;
+
+      //why the loop? see the end of the block it heads to for an explanatory
+      //comment
+      while (indexValue === undefined) {
+        let indexId = indexDefinition.id;
+        //indices need to be identified by stackframe
+        let indexIdObj = { astId: indexId, stackframe: currentDepth };
+        let fullIndexId = stableKeccak256(indexIdObj);
+
+        const indexReference = (currentAssignments.byId[fullIndexId] || {}).ref;
+
+        if (DecodeUtils.Definition.isSimpleConstant(indexDefinition)) {
+          //while the main case is the next one, where we look for a prior
+          //assignment, we need this case (and need it first) for two reasons:
+          //1. some constant expressions (specifically, string and hex literals)
+          //aren't sourcemapped to and so won't have a prior assignment
+          //2. if the key type is bytesN but the expression is constant, the
+          //value will go on the stack *left*-padded instead of right-padded,
+          //so looking for a prior assignment will read the wrong value.
+          //so instead it's preferable to use the constant directly.
+          indexValue = yield call(decode, keyDefinition, {
+            definition: indexDefinition
+          });
+        } else if (indexReference) {
+          //if a prior assignment is found
+          let splicedDefinition;
+          //in general, we want to decode using the key definition, not the index
+          //definition. however, the key definition may have the wrong location
+          //on it.  so, when applicable, we splice the index definition location
+          //onto the key definition location.
+          if (DecodeUtils.Definition.isReference(indexDefinition)) {
+            splicedDefinition = DecodeUtils.Definition.spliceLocation(
+              keyDefinition,
+              DecodeUtils.Definition.referenceType(indexDefinition)
+            );
+          } else {
+            splicedDefinition = keyDefinition;
+          }
+          indexValue = yield call(decode, splicedDefinition, indexReference);
+        } else if (
+          indexDefinition.referencedDeclaration &&
+          scopes[indexDefinition.referenceDeclaration]
+        ) {
+          //there's one more reason we might have failed to decode it: it might be a
+          //constant state variable.  Unfortunately, we don't know how to decode all
+          //those at the moment, but we can handle the ones we do know how to decode.
+          //In the future hopefully we will decode all of them
+          debug(
+            "referencedDeclaration %d",
+            indexDefinition.referencedDeclaration
           );
-        } else {
-          splicedDefinition = keyDefinition;
-        }
-        indexValue = yield call(decode, splicedDefinition, indexReference);
-      } else if (indexDefinition.referencedDeclaration) {
-        //there's one more reason we might have failed to decode it: it might be a
-        //constant state variable.  Unfortunately, we don't know how to decode all
-        //those at the moment, but we can handle the ones we do know how to decode.
-        //In the future hopefully we will decode all of them
-        let indexConstantDeclaration =
-          scopes[indexDefinition.referencedDeclaration].definition;
-        debug("indexConstantDeclaration %O", indexConstantDeclaration);
-        if (indexConstantDeclaration.constant) {
-          let indexConstantDefinition = indexConstantDeclaration.value;
-          //next line filters out constants we don't know how to handle
-          if (
-            DecodeUtils.Definition.isSimpleConstant(indexConstantDefinition)
-          ) {
-            indexValue = yield call(decode, keyDefinition, {
-              definition: indexConstantDeclaration.value
-            });
+          let indexConstantDeclaration =
+            scopes[indexDefinition.referencedDeclaration].definition;
+          debug("indexConstantDeclaration %O", indexConstantDeclaration);
+          if (indexConstantDeclaration.constant) {
+            let indexConstantDefinition = indexConstantDeclaration.value;
+            //next line filters out constants we don't know how to handle
+            if (
+              DecodeUtils.Definition.isSimpleConstant(indexConstantDefinition)
+            ) {
+              indexValue = yield call(decode, keyDefinition, {
+                definition: indexConstantDeclaration.value
+              });
+            }
           }
         }
+        //there's still one more reason we might have failed to decode it:
+        //certain (silent) type conversions aren't sourcemapped either.
+        //(thankfully, any type conversion that actually *does* something seems
+        //to be sourcemapped.)  So if we've failed to decode it, we try again
+        //with the argument of the type conversion, if it is one; we leave
+        //indexValue undefined so the loop will continue
+        //(note that this case is last for a reason; if this were earlier, it
+        //would catch *non*-silent type conversions, which we want to just read
+        //off the stack)
+        else if (indexDefinition.kind === "typeConversion") {
+          indexDefinition = indexDefinition.arguments[0];
+        }
+        //otherwise, we've just totally failed to decode it, so we mark
+        //indexValue as null (as distinct from undefined) to indicate this.  In
+        //the future, we should be able to decode all mapping keys, but we're
+        //not quite there yet, sorry (because we can't yet handle all constant
+        //state variables)
+        else {
+          indexValue = null;
+        }
+        //now, as mentioned, retry in the typeConversion case
       }
-      //if we've failed to decode it, just leave it undefined (in the future though
-      //we should always decode it via one of the three cases above)
 
       yield put(actions.mapKeyDecoding(false));
       //end subsection: key decoding
@@ -248,8 +279,8 @@ function* tickSaga() {
       debug("index value %O", indexValue);
       debug("keyDefinition %O", keyDefinition);
 
-      //if we didn't succeed at decoding it, ignore it :-/
-      if (indexValue !== undefined) {
+      //if we succeeded at decoding it -- i.e. it's not null -- then map it!
+      if (indexValue !== null) {
         yield put(actions.mapKey(baseDeclarationId, indexValue));
       }
 
