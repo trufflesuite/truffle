@@ -473,16 +473,7 @@ const data = createSelectorTree({
             Object.assign({}, ...keyedResults)
           );
         }
-      ),
-
-      /**
-       * data.current.identifiers.native
-       *
-       * Returns an object with values as Promises
-       */
-      native: createLeaf(["./decoded"], async decoded => {
-        return DecodeUtils.Conversion.cleanBNs(await decoded);
-      })
+      )
     }
   },
 

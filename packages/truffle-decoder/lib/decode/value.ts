@@ -54,6 +54,7 @@ export default async function decodeValue(definition: DecodeUtils.AstDefinition,
 
     case "enum":
       const numRepresentation = DecodeUtils.Conversion.toBN(bytes).toNumber();
+      debug("numRepresentation %d", numRepresentation);
       const referenceId = definition.referencedDeclaration || (definition.typeName ? definition.typeName.referencedDeclaration : undefined);
       const enumDeclaration = info.referenceDeclarations[referenceId];
       const decodedValue = enumDeclaration.members[numRepresentation].name;

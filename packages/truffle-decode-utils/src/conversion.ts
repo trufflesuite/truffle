@@ -137,7 +137,7 @@ export namespace Conversion {
       if (bytes.length < length) {
         let prior = bytes;
         bytes = new Uint8Array(length);
-	bytes.fill(0);
+        bytes.fill(0);
         bytes.set(prior, length - prior.length);
       }
 
@@ -154,15 +154,21 @@ export namespace Conversion {
 
   /**
    * recursively converts big numbers into something nicer to look at
+   * NOTE: should be used for testing only!
    */
   export function cleanBNs(value: any): any {
     if (BN.isBN(value)) {
-      return value.toString();
+      return value.toNumber();
 
     } else if (value && typeof value.map === "function") {
-      return value.map( (inner: any) => cleanBNs(inner) );
+      return value.map(cleanBNs);
 
-    } else if (value && typeof value == "object") {
+    } else if (value && value instanceof Map) {
+      return new Map(Array.from(value.entries())
+        .map( ([key, inner]: [any, any]) =>
+          <[any, any]>[cleanBNs(key), cleanBNs(inner)]));
+
+    } else if (value && typeof value === "object") {
       return Object.assign(
         {}, ...Object.entries(value)
           .map( ([key, inner]) => ({ [key]: cleanBNs(inner) }) )
@@ -204,7 +210,7 @@ export namespace Conversion {
     // leaves all else alone
     const convertKey = (keyType: string, key: string) => {
       if(keyType.match(/int/)) {
-	return new BN(key, 10);
+        return new BN(key, 10);
       }
       if(keyType === "bool") {
         return key === "true"; 
