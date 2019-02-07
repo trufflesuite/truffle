@@ -7,7 +7,10 @@ export interface GenericPointer {
 }
 
 export interface StackPointer extends GenericPointer {
-  stack: number;
+  stack: {
+    from: number;
+    to: number;
+  }
 }
 
 export interface MemoryPointer extends GenericPointer {

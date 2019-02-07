@@ -18,10 +18,9 @@ export function declare(node) {
 }
 
 export const ASSIGN = "ASSIGN";
-export function assign(context, assignments) {
+export function assign(assignments) {
   return {
     type: ASSIGN,
-    context,
     assignments
   };
 }

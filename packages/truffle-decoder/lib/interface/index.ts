@@ -6,6 +6,7 @@ import TruffleDecoder from "./contract-decoder";
 import { ContractObject } from "truffle-contract-schema/spec";
 import { Provider } from "web3/providers";
 import { getStorageAllocations } from "../allocate/storage";
+import { readStack } from "../read/stack";
 
 export function forContract(contract: ContractObject, inheritedContracts: ContractObject[], provider: Provider): TruffleDecoder {
   return new TruffleDecoder(contract, inheritedContracts, provider);
@@ -16,3 +17,4 @@ export async function forEvmState(definition: AstDefinition, pointer: DataPointe
 }
 
 export { getStorageAllocations };
+export { readStack };

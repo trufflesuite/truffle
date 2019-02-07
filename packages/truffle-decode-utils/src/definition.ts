@@ -94,7 +94,7 @@ export namespace Definition {
   }
 
   export function isReference(definition: AstDefinition): boolean {
-    return typeIdentifier(definition).match(/_(memory|storage)(_ptr)?$/) != null;
+    return typeIdentifier(definition).match(/_(memory|storage|calldata)(_ptr)?$/) != null;
   }
 
   export function isContractType(definition: AstDefinition): boolean {
@@ -105,5 +105,23 @@ export namespace Definition {
 
   export function referenceType(definition: AstDefinition): string {
     return typeIdentifier(definition).match(/_([^_]+)(_ptr)?$/)[1];
+  }
+
+  //stack size, in words, of a given type
+  export function stackSize(definition: AstDefinition): number {
+    if(typeClass(definition) === "function" &&
+      visibility(definition) === "external") {
+      return 2;
+    }
+    if(isReference(definition) && referenceType(definition) === "calldata") {
+      if(typeClass(definition) === "string" ||
+        typeClass(definition) === "bytes") {
+        return 2;
+      }
+      if(isDynamicArray(definition)) {
+        return 2;
+      }
+    }
+    return 1;
   }
 }

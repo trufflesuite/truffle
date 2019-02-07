@@ -13,6 +13,7 @@ import Web3 from "web3";
 
 export default async function decode(definition: AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<any> {
   debug("Decoding %s", definition.name);
+  debug("pointer %O", pointer);
 
   if (isLiteralPointer(pointer)) {
     return await decodeLiteral(definition, pointer, info);

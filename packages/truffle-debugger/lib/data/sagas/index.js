@@ -2,7 +2,6 @@ import debugModule from "debug";
 const debug = debugModule("debugger:data:sagas"); // eslint-disable-line no-unused-vars
 
 import { put, takeEvery, select, call, putResolve } from "redux-saga/effects";
-import jsonpointer from "json-pointer";
 
 import { prefixName, stableKeccak256 } from "lib/helpers";
 
@@ -11,9 +10,9 @@ import * as actions from "../actions";
 
 import data from "../selectors";
 
-import * as TruffleDecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "truffle-decode-utils";
 
-import { getStorageAllocations } from "truffle-decoder";
+import { getStorageAllocations, readStack } from "truffle-decoder";
 
 export function* scope(nodeId, pointer, parentId, sourceId) {
   yield putResolve(actions.scope(nodeId, pointer, parentId, sourceId));
@@ -28,8 +27,7 @@ export function* defineType(node) {
 }
 
 function* tickSaga() {
-  let { tree, id: treeId, node, pointer } = yield select(data.views.ast);
-
+  let node = (yield select(data.views.ast)).node;
   let decode = yield select(data.views.decoder);
   let allocations = yield select(data.info.allocations.storage);
   let currentAssignments = yield select(data.proc.assignments);
@@ -37,13 +35,15 @@ function* tickSaga() {
   let address = yield select(data.current.address); //may be undefined
   let dummyAddress = yield select(data.current.dummyAddress);
 
+  debug("node %o", node);
+
   let stack = yield select(data.next.state.stack);
   if (!stack) {
     return;
   }
 
   let top = stack.length - 1;
-  var parameters, returnParameters, assignment, assignments;
+  var assignment, assignments;
 
   if (!node) {
     return;
@@ -62,35 +62,33 @@ function* tickSaga() {
 
   switch (node.nodeType) {
     case "FunctionDefinition":
-      parameters = node.parameters.parameters.map(
-        (p, i) => `${pointer}/parameters/parameters/${i}`
-      );
+      let parameters = node.parameters.parameters;
+      let returnParameters = node.returnParameters.parameters;
+      let reverseParameters = parameters.concat(returnParameters).reverse();
 
-      returnParameters = node.returnParameters.parameters.map(
-        (p, i) => `${pointer}/returnParameters/parameters/${i}`
-      );
+      let currentPosition = top;
+      assignments = { byId: {} };
 
-      assignments = {
-        byId: Object.assign(
-          {},
-          ...returnParameters
-            .concat(parameters)
-            .reverse()
-            .map(pointer => jsonpointer.get(tree, pointer).id)
-            //note: depth may be off by 1 but it doesn't matter
-            .map((id, i) =>
-              makeAssignment(
-                { astId: id, stackframe: currentDepth },
-                { stack: top - i }
-              )
-            )
-            .map(assignment => ({ [assignment.id]: assignment }))
-        )
-      };
+      for (parameter of reverseParameters) {
+        let words = DecodeUtils.Definition.stackSize(parameter);
+        let pointer = {
+          stack: {
+            from: currentPosition - words + 1,
+            to: currentPosition
+          }
+        };
+        let assignment = makeAssignment(
+          { astId: parameter.id, stackframe: currentDepth },
+          pointer
+        );
+        assignments.byId[assignment.id] = assignment;
+        currentPosition -= words;
+      }
+
       debug("Function definition case");
       debug("assignments %O", assignments);
 
-      yield put(actions.assign(treeId, assignments));
+      yield put(actions.assign(assignments));
       break;
 
     case "ContractDefinition":
@@ -122,11 +120,11 @@ function* tickSaga() {
       }
       debug("assignments %O", assignments);
 
-      yield put(actions.assign(treeId, assignments));
+      yield put(actions.assign(assignments));
       break;
 
     case "VariableDeclaration":
-      let varId = jsonpointer.get(tree, pointer).id;
+      let varId = node.id;
       debug("Variable declaration case");
       debug("currentDepth %d varId %d", currentDepth, varId);
 
@@ -152,10 +150,15 @@ function* tickSaga() {
       //otherwise, go ahead and make the assignment
       assignment = makeAssignment(
         { astId: varId, stackframe: currentDepth },
-        { stack: top }
+        {
+          stack: {
+            from: top - DecodeUtils.Definition.stackSize(node) + 1,
+            to: top
+          }
+        }
       );
       assignments = { byId: { [assignment.id]: assignment } };
-      yield put(actions.assign(treeId, assignments));
+      yield put(actions.assign(assignments));
       break;
 
     case "IndexAccess":
@@ -182,13 +185,11 @@ function* tickSaga() {
       if (indexAssignment) {
         indexValue = yield call(decode, node.indexExpression, indexAssignment);
       } else if (
-        TruffleDecodeUtils.Definition.typeClass(node.indexExpression) ==
+        DecodeUtils.Definition.typeClass(node.indexExpression) ==
         "stringliteral"
       ) {
         indexValue = yield call(decode, node.indexExpression, {
-          literal: TruffleDecodeUtils.Conversion.toBytes(
-            node.indexExpression.hexValue
-          )
+          literal: DecodeUtils.Conversion.toBytes(node.indexExpression.hexValue)
         });
       }
 
@@ -210,7 +211,11 @@ function* tickSaga() {
       }
 
       debug("decoding expression value %O", node.typeDescriptions);
-      let literal = stack[top];
+      let literal = readStack(
+        stack,
+        top - DecodeUtils.Definition.stackSize(node) + 1,
+        top
+      );
 
       debug("default case");
       debug("currentDepth %d node.id %d", currentDepth, node.id);
@@ -219,7 +224,7 @@ function* tickSaga() {
         { literal }
       );
       assignments = { byId: { [assignment.id]: assignment } };
-      yield put(actions.assign(treeId, assignments));
+      yield put(actions.assign(assignments));
       break;
   }
 }
