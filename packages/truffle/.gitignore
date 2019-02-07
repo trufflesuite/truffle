@@ -1,7 +1,0 @@
-node_modules
-.DS_Store
-.tern-port
-yarn.lock
-package-lock.json
-
-dependencies

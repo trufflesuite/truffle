@@ -24,7 +24,7 @@ var Deployed = {
       source +=
         "  function " +
         name +
-        "() public pure returns (address) { " +
+        "() public pure returns (address payable) { " +
         body +
         " }";
       source += "\n";

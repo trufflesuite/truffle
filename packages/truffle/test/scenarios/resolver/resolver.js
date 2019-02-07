@@ -9,7 +9,7 @@ var log = console.log;
 
 describe("Solidity Imports", function() {
   var config;
-  var project = path.join(__dirname, '../../sources/monorepo');
+  var project = path.join(__dirname, "../../sources/monorepo");
   var logger = new MemoryLogger();
 
   before(done => Server.start(done));
@@ -34,7 +34,7 @@ describe("Solidity Imports", function() {
    * |-- node_modules/
    * |   |-- nodepkg/
    * |      |-- LocalNodeImport.sol
-   * |-- truffle.js
+   * |-- truffle-config.js
    * |
    * + errorproject/
    * |-- contracts/
@@ -42,10 +42,10 @@ describe("Solidity Imports", function() {
    * |
    */
 
-  describe('success', function(){
+  describe("success", function() {
     before(function() {
       this.timeout(10000);
-      return sandbox.create(project, 'truffleproject').then(conf => {
+      return sandbox.create(project, "truffleproject").then(conf => {
         config = conf;
         config.network = "development";
         config.logger = logger;
@@ -65,21 +65,21 @@ describe("Solidity Imports", function() {
           return done(err);
         }
 
-        assert(output.includes('./contracts/Importer.sol'));
-        assert(output.includes('ethpmpkg/EthPMImport.sol'));
-        assert(output.includes('nodepkg/ImportOfImport.sol'));
-        assert(output.includes('nodepkg/LocalNodeImport.sol'));
-        assert(output.includes('nodepkg/NodeImport.sol'));
+        assert(output.includes("./contracts/Importer.sol"));
+        assert(output.includes("ethpmpkg/EthPMImport.sol"));
+        assert(output.includes("nodepkg/ImportOfImport.sol"));
+        assert(output.includes("nodepkg/LocalNodeImport.sol"));
+        assert(output.includes("nodepkg/NodeImport.sol"));
 
         done();
       });
     });
   });
 
-  describe('failure', function(){
+  describe("failure", function() {
     before(function() {
       this.timeout(10000);
-      return sandbox.create(project, 'errorproject').then(conf => {
+      return sandbox.create(project, "errorproject").then(conf => {
         config = conf;
         config.network = "development";
         config.logger = logger;
@@ -89,15 +89,15 @@ describe("Solidity Imports", function() {
       });
     });
 
-    it('fails gracefully if an import is not found', function(done){
+    it("fails gracefully if an import is not found", function(done) {
       this.timeout(30000);
 
       CommandRunner.run("compile", config, function(err) {
         const output = logger.contents();
         assert(err);
-        assert(output.includes('Error'));
-        assert(output.includes('Could not find nodepkg/DoesNotExist.sol'));
-        assert(output.includes('Importer.sol'));
+        assert(output.includes("Error"));
+        assert(output.includes("Could not find nodepkg/DoesNotExist.sol"));
+        assert(output.includes("Importer.sol"));
         done();
       });
     });

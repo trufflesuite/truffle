@@ -225,7 +225,7 @@ describe("Variable IDs", function() {
   });
 
   it("Learns contract addresses and distinguishes the results", async function() {
-    this.timeout(30000);
+    this.timeout(4000);
     let instance = await abstractions.AddressTest.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;

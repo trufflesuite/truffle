@@ -1,10 +1,8 @@
 const debug = require("debug")("contract:utils"); // eslint-disable-line no-unused-vars
-var Web3 = require("web3");
-var ethers = require("ethers");
+var web3Utils = require("web3-utils");
+var bigNumberify = require("ethers/utils/bignumber").bigNumberify;
 var abi = require("web3-eth-abi");
 var reformat = require("./reformat");
-
-var web3 = new Web3();
 
 var Utils = {
   is_object: function(val) {
@@ -14,7 +12,7 @@ var Utils = {
   is_big_number: function(val) {
     if (typeof val !== "object") return false;
 
-    return web3.utils.isBN(val) || web3.utils.isBigNumber(val);
+    return web3Utils.isBN(val) || web3Utils.isBigNumber(val);
   },
 
   is_tx_params: function(val) {
@@ -210,7 +208,7 @@ var Utils = {
 
         // Convert Web3 BN / BigNumber
       } else if (Utils.is_big_number(item)) {
-        const ethersBN = ethers.utils.bigNumberify(item.toString());
+        const ethersBN = bigNumberify(item.toString());
         converted.push(ethersBN);
       } else {
         converted.push(item);

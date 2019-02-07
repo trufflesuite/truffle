@@ -33,7 +33,7 @@ export function* saga() {
   // wait for start signal
   let { txHash, provider } = yield take(actions.START);
   debug("starting");
-  
+
   // process transaction
   debug("fetching transaction info");
   let err = yield* fetchTx(txHash, provider);
@@ -45,6 +45,10 @@ export function* saga() {
     // visit asts
     yield* ast.visitAll();
 
+    //save allocation table
+    debug("saving allocation table");
+    yield* data.recordAllocations();
+
     debug("readying");
     // signal that stepping can begin
     yield* ready();
@@ -55,8 +59,9 @@ export default prefixName("session", saga);
 
 function* forkListeners() {
   return yield all(
-    [ast, controller, data, evm, solidity, trace, web3].map(app =>
-      fork(app.saga)
+    [controller, data, evm, solidity, trace, web3].map(
+      app => fork(app.saga)
+      //ast no longer has a listener
     )
   );
 }
@@ -107,10 +112,6 @@ function* recordSources(...sources) {
 
 function* recordInstance(address, binary) {
   yield* evm.addInstance(address, binary);
-}
-
-function* recordUserDefinedTypes(sources) {
-  yield* data.recordUserDefinedTypes(sources);
 }
 
 function* ready() {
