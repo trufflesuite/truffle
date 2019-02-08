@@ -29,10 +29,8 @@ function createStateSelectors({ stack, memory, storage }) {
       words =>
         (words || []).map(word =>
           TruffleDecodeUtils.Conversion.toBytes(
-            TruffleDecodeUtils.Conversion.toBN(
-              word,
-              TruffleDecodeUtils.EVM.WORD_SIZE
-            )
+            word,
+            TruffleDecodeUtils.EVM.WORD_SIZE
           )
         )
     ),
