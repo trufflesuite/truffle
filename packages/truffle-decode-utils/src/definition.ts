@@ -25,7 +25,8 @@ export namespace Definition {
    * should only return "internal" or "external"
    */
   export function visibility(definition: AstDefinition): string {
-    return definition.visibility || definition.typeName.visibility;
+    return definition.typeName ?
+      definition.typeName.visibility : definition.typeName.visibility;
   }
 
 
