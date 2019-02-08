@@ -63,13 +63,17 @@ function* tickSaga() {
   switch (node.nodeType) {
     case "FunctionDefinition":
       let parameters = node.parameters.parameters;
-      let returnParameters = node.returnParameters.parameters;
-      let reverseParameters = parameters.concat(returnParameters).reverse();
+      //note that we do *not* include return parameters, since those are
+      //handled by the VariableDeclaration case (no, I don't know why it
+      //works out that way)
+      let reverseParameters = parameters.slice().reverse();
+      //reverse is in-place, so we use slice() to clone first
+      debug("reverseParameters %o", parameters);
 
       let currentPosition = top;
       assignments = { byId: {} };
 
-      for (parameter of reverseParameters) {
+      for (let parameter of reverseParameters) {
         let words = DecodeUtils.Definition.stackSize(parameter);
         let pointer = {
           stack: {
