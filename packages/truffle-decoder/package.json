@@ -12,10 +12,7 @@
     "start": "node_modules/.bin/tsc --watch",
     "test": "cd test && truffle test"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/trufflesuite/truffle.git"
-  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-decoder",
   "keywords": [
     "ethereum",
     "contract",

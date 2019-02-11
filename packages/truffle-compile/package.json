@@ -37,10 +37,7 @@
   "scripts": {
     "test": "./scripts/test.sh"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/trufflesuite/truffle-compile.git"
-  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-compile",
   "keywords": [
     "ethereum",
     "truffle",
