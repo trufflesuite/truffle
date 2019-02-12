@@ -1,6 +1,6 @@
 {
   "name": "truffle-external-compile",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Wrapper to compile Truffle contracts with arbitrary shell command",
   "keywords": [
     "truffle",
@@ -21,8 +21,8 @@
   "dependencies": {
     "debug": "^4.1.0",
     "glob": "^7.1.2",
-    "truffle-contract-schema": "^3.0.1",
-    "truffle-expect": "^0.0.6",
+    "truffle-contract-schema": "^3.0.2",
+    "truffle-expect": "^0.0.7",
     "web3-utils": "1.0.0-beta.37"
   },
   "devDependencies": {
