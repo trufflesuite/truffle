@@ -21,7 +21,7 @@
     "fs-extra": "6.0.1",
     "ganache-core": "2.3.3",
     "hdkey": "^1.1.0",
-    "lodash": "4.17.10",
+    "lodash": "4.17.11",
     "mkdirp": "^0.5.1",
     "mocha": "5.2.0",
     "node-dir": "0.1.17",
@@ -63,10 +63,7 @@
   "scripts": {
     "test": "mocha ./test/**"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ConsenSys/truffle.git"
-  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-core",
   "homepage": "https://github.com/ConsenSys/truffle",
   "bugs": {
     "url": "https://github.com/ConsenSys/truffle/issues"

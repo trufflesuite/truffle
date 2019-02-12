@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {},
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-code-utils",
   "author": "",
   "license": "MIT",
   "publishConfig": {

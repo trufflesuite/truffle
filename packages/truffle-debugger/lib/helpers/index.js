@@ -23,7 +23,7 @@ export function keccak256(...args) {
  * stringify operation before hashing
  */
 export function stableKeccak256(obj) {
-  return keccak256(stringify(obj));
+  return keccak256({ type: "string", value: stringify(obj) });
 }
 
 /*

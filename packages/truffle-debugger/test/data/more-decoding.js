@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("test:data:more-decoding"); //eslint-disable-line no-unused-vars
+const debug = debugModule("test:data:more-decoding");
 
 import { assert } from "chai";
 
@@ -9,6 +9,8 @@ import { prepareContracts } from "../helpers";
 import Debugger from "lib/debugger";
 
 import solidity from "lib/solidity/selectors";
+
+import * as TruffleDecodeUtils from "truffle-decode-utils";
 
 import BN from "bn.js";
 
@@ -88,8 +90,112 @@ contract ContainersTest {
 }
 `;
 
+const __KEYSANDBYTES = `
+pragma solidity ^0.5.0;
+
+contract ElementaryTest {
+
+  event Done(); //makes a useful breakpoint
+
+  //storage variables to be tested
+  mapping(bool => bool) boolMap;
+  mapping(byte => byte) byteMap;
+  mapping(bytes => bytes) bytesMap;
+  mapping(uint => uint) uintMap;
+  mapping(int => int) intMap;
+  mapping(string => string) stringMap;
+  mapping(address => address) addressMap;
+  mapping(uint8 => uint8) uint8Map;
+
+  function run() public {
+    //local variables to be tested
+    byte oneByte;
+    byte[] memory severalBytes;
+
+    //set up variables for testing
+    oneByte = 0xff;
+    severalBytes = new byte[](1);
+    severalBytes[0] = 0xff;
+
+    boolMap[true] = true;
+
+    byteMap[0x01] = 0x01;
+    byteMap[0xff] = 0xff;
+    byteMap[byte(0x02)] = byte(0x02);
+
+    bytesMap[hex"01"] = hex"01";
+    bytesMap[hex"ff"] = hex"ff";
+
+    uintMap[1] = 1;
+
+    intMap[1] = 1;
+    intMap[-1] = -1;
+
+    uint8Map[uint8(byte(0x01))] = uint8(byte(0x01));
+    uint8Map[uint8(int8(2))] = uint8(int8(2));
+
+    addressMap[0x0000000000000000000000000000000000000001] =
+      0x0000000000000000000000000000000000000001;
+    addressMap[address(this)] = address(this);
+
+    stringMap["innocuous string"] = "innocuous string";
+    stringMap["0xdeadbeef"] = "0xdeadbeef";
+    stringMap["12345"] = "12345";
+
+    emit Done(); //break here (52)
+  }
+}
+`;
+
+const __SPLICING = `
+pragma solidity ^0.5.0;
+
+contract SpliceTest {
+  //splicing is (nontrivially) used in two contexts right now:
+  //1. decoding nested memory structures
+  //2. decoding mapping keys pointed to by a memory variable
+  //we'll also test some trivial splicing, I guess
+
+  event Done();
+
+  mapping(string => string) map;
+
+  struct ArrayPair {
+    uint[2] x;
+    uint[2] y;
+  }
+
+  string pointedAt = "key2";
+
+  function run() public {
+    uint[2][2] memory arrayArray;
+    ArrayPair memory arrayStruct;
+
+    arrayArray[0][0] = 1;
+    arrayArray[0][1] = 2;
+    arrayArray[1][0] = 3;
+    arrayArray[1][1] = 4;
+
+    arrayStruct.x[0] = 1;
+    arrayStruct.x[1] = 2;
+    arrayStruct.y[0] = 3;
+    arrayStruct.y[1] = 4;
+
+    string memory key1 = "key1";
+    string storage key2 = pointedAt;
+
+    map[key1] = "value1";
+    map[key2] = "value2";
+
+    emit Done(); //break here (40)
+  }
+}
+`;
+
 let sources = {
-  "ContainerTest.sol": __CONTAINERS
+  "ContainerTest.sol": __CONTAINERS,
+  "ElementaryTest.sol": __KEYSANDBYTES,
+  "SpliceTest.sol": __SPLICING
 };
 
 describe("Further Decoding", function() {
@@ -113,7 +219,7 @@ describe("Further Decoding", function() {
   });
 
   it("Decodes various reference types correctly", async function() {
-    this.timeout(8000);
+    this.timeout(9000);
 
     let instance = await abstractions.ContainersTest.deployed();
     let receipt = await instance.run();
@@ -144,7 +250,7 @@ describe("Further Decoding", function() {
       arrayMapping: new Map([
         ["hello", [new BN(2), new BN(3), new BN(7), new BN(57)]]
       ]),
-      signedMapping: new Map([["hello", -new BN(1)]]),
+      signedMapping: new Map([["hello", new BN(-1)]]),
       pointedAt: [new BN(107), new BN(214)]
     };
 
@@ -157,6 +263,123 @@ describe("Further Decoding", function() {
           variables[name]["hello"],
           expectedResult[name]["hello"]
         );
+      } else {
+        assert.deepEqual(variables[name], expectedResult[name]);
+      }
+    }
+  });
+
+  it("Decodes elementary types and mappings correctly", async function() {
+    this.timeout(9000);
+
+    let instance = await abstractions.ElementaryTest.deployed();
+    let receipt = await instance.run();
+    let txHash = receipt.tx;
+    let address = instance.address;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      files,
+      contracts: artifacts
+    });
+
+    let session = bugger.connect();
+
+    let sourceId = session.view(solidity.current.source).id;
+    session.addBreakpoint({ sourceId, line: 52 });
+
+    session.continueUntilBreakpoint();
+
+    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+      await session.variables()
+    ); //get rid of BNs to avoid Map problems
+    debug("variables %O", variables);
+
+    const expectedResult = {
+      boolMap: new Map([[true, true]]),
+      byteMap: new Map([["0x01", "0x01"], ["0x02", "0x02"], ["0xff", "0xff"]]),
+      bytesMap: new Map([["0x01", "0x01"], ["0xff", "0xff"]]),
+      uintMap: new Map([[1, 1]]),
+      intMap: new Map([[1, 1], [-1, -1]]),
+      stringMap: new Map([
+        ["innocuous string", "innocuous string"],
+        ["0xdeadbeef", "0xdeadbeef"],
+        ["12345", "12345"]
+      ]),
+      addressMap: new Map([
+        [
+          "0x0000000000000000000000000000000000000001",
+          "0x0000000000000000000000000000000000000001"
+        ],
+        [address, address]
+      ]),
+      uint8Map: new Map([[1, 1], [2, 2]]),
+      oneByte: "0xff",
+      severalBytes: ["0xff"]
+    };
+
+    assert.hasAllKeys(variables, expectedResult);
+
+    for (let name in expectedResult) {
+      if (expectedResult[name] instanceof Map) {
+        assert.sameDeepMembers(
+          Array.from(variables[name].keys()),
+          Array.from(expectedResult[name].keys())
+        );
+        for (let key of expectedResult[name].keys()) {
+          //no mappings are nested so this will do fine
+          assert.deepEqual(variables[name][key], expectedResult[name][key]);
+        }
+      } else {
+        assert.deepEqual(variables[name], expectedResult[name]);
+      }
+    }
+  });
+
+  it("Splices locations correctly", async function() {
+    this.timeout(9000);
+
+    let instance = await abstractions.SpliceTest.deployed();
+    let receipt = await instance.run();
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      files,
+      contracts: artifacts
+    });
+
+    let session = bugger.connect();
+
+    let sourceId = session.view(solidity.current.source).id;
+    session.addBreakpoint({ sourceId, line: 40 });
+
+    session.continueUntilBreakpoint();
+
+    const variables = await session.variables();
+
+    const expectedResult = {
+      map: new Map([["key1", "value1"], ["key2", "value2"]]),
+      pointedAt: "key2",
+      arrayArray: [[new BN(1), new BN(2)], [new BN(3), new BN(4)]],
+      arrayStruct: { x: [new BN(1), new BN(2)], y: [new BN(3), new BN(4)] },
+      key1: "key1",
+      key2: "key2",
+      pointedAt: "key2"
+    };
+
+    assert.hasAllKeys(variables, expectedResult);
+
+    for (let name in expectedResult) {
+      if (expectedResult[name] instanceof Map) {
+        assert.sameDeepMembers(
+          Array.from(variables[name].keys()),
+          Array.from(expectedResult[name].keys())
+        );
+        for (let key of expectedResult[name].keys()) {
+          //no mappings are nested so this will do fine
+          assert.deepEqual(variables[name][key], expectedResult[name][key]);
+        }
       } else {
         assert.deepEqual(variables[name], expectedResult[name]);
       }

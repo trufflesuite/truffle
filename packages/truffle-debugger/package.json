@@ -73,10 +73,7 @@
     "webpack-node-externals": "^1.6.0",
     "write-file-webpack-plugin": "^4.2.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/trufflesuite/truffle-debugger.git"
-  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-debugger",
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle-debugger/issues"
   },

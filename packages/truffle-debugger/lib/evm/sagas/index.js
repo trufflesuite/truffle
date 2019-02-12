@@ -3,7 +3,6 @@ const debug = debugModule("debugger:evm:sagas");
 
 import { call, put, take, select } from "redux-saga/effects";
 import { prefixName, keccak256 } from "lib/helpers";
-import * as TruffleDecodeUtils from "truffle-decode-utils";
 
 import { TICK } from "lib/trace/actions";
 import * as actions from "../actions";
@@ -11,6 +10,8 @@ import * as actions from "../actions";
 import evm from "../selectors";
 
 import * as data from "lib/data/sagas";
+
+import * as DecodeUtils from "truffle-decode-utils";
 
 /**
  * Adds EVM bytecode context
@@ -66,6 +67,8 @@ export function* callstackSaga() {
       debug("got call");
       let address = yield select(evm.current.step.callAddress);
 
+      debug("calling address %s", address);
+
       // if there is no binary (e.g. in the case of precompiled contracts),
       // then there will be no trace steps for the called code, and so we
       // shouldn't tell the debugger that we're entering another execution
@@ -95,15 +98,14 @@ export function* callstackSaga() {
         let dummyAddress = yield select(evm.current.creationDepth);
         debug("dummyAddress %d", dummyAddress);
 
+        //NOTE: the following logic, for getting the created address, really
+        //belongs in a selector.  However, every time I try to make it a
+        //selector, I get mysterious error messages.  So, we'll do it ourselves
+        //in the saga instead.
+
         let stack = yield select(evm.next.state.stack);
-        let createdAddress = TruffleDecodeUtils.Conversion.toHexString(
-          TruffleDecodeUtils.Conversion.toBytes(
-            TruffleDecodeUtils.Conversion.toBN(
-              stack[stack.length - 1],
-              TruffleDecodeUtils.EVM.WORD_SIZE
-            )
-          ),
-          true
+        let createdAddress = DecodeUtils.Conversion.toAddress(
+          stack[stack.length - 1]
         );
         debug("createdAddress %s", createdAddress);
 

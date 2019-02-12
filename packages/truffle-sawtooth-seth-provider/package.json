@@ -5,10 +5,7 @@
   "main": "index.js",
   "author": "Ben Burns",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/benjamincburns/truffle-sawtooth-seth-provider.git"
-  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-sawtooth-seth-provider",
   "homepage": "https://truffleframework.com",
   "bugs": {
     "url": "https://github.com/benjamincburns/truffle-sawtooth-seth-provider/issues"

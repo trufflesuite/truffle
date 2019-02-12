@@ -4,6 +4,8 @@ const debug = debugModule("debugger:trace:sagas");
 import { take, takeEvery, put, select } from "redux-saga/effects";
 import { prefixName, isCallMnemonic } from "lib/helpers";
 
+import * as DecodeUtils from "truffle-decode-utils";
+
 import * as actions from "../actions";
 
 import trace from "../selectors";
@@ -15,7 +17,9 @@ function* waitForTrace() {
     ...new Set(
       steps
         .filter(({ op }) => isCallMnemonic(op))
-        .map(({ stack }) => "0x" + stack[stack.length - 2].substring(24))
+        .map(({ stack }) =>
+          DecodeUtils.Conversion.toAddress(stack[stack.length - 2])
+        )
     )
   ];
 
