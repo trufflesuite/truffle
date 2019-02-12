@@ -258,26 +258,6 @@ const evm = createSelectorTree({
     ),
 
     /**
-     * evm.current.createdAddress
-     * NOTE: Only use this when evm.current.state.isHalting is true!
-     * Otherwise the result will be nonsense!
-     * To enforce this, I am having this return undefined unless
-     * evm.current.state.isHalting holds
-     * (similarly if we're just about to quit)
-     */
-    createdAddress: createLeaf(
-      ["/next/state/stack", "./state/isHalting", "./callstack"],
-      (stack, isHalting, callstack) => {
-        if (isHalting && callstack.length > 1) {
-          let address = stack[stack.length - 1];
-          return DecodeUtils.Conversion.toAddress(address);
-        } else {
-          return null;
-        }
-      }
-    ),
-
-    /**
      * evm.current.context
      */
     context: createLeaf(
