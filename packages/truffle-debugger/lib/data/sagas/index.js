@@ -286,9 +286,6 @@ function* tickSaga() {
 
       break;
 
-    case "Assignment":
-      break;
-
     default:
       if (node.typeDescriptions == undefined) {
         break;
