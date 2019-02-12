@@ -18,7 +18,7 @@ const SolidityTest = {
     suite.timeout(runner.BEFORE_TIMEOUT);
 
     // Set up our runner's needs first.
-    suite.beforeAll("prepare suite", function (done) {
+    suite.beforeAll("prepare suite", function(done) {
       series(
         [
           runner.initialize.bind(runner),
@@ -34,7 +34,7 @@ const SolidityTest = {
       );
     });
 
-    suite.beforeEach("before test", function (done) {
+    suite.beforeEach("before test", function(done) {
       runner.startTest(this, done);
     });
 
@@ -103,7 +103,7 @@ const SolidityTest = {
       }
     });
 
-    suite.afterEach("after test", function (done) {
+    suite.afterEach("after test", function(done) {
       runner.endTest(this, done);
     });
 
@@ -165,7 +165,7 @@ const SolidityTest = {
   deployTestDependencies(abstraction, dependency_paths, runner, callback) {
     const deployer = new Deployer(
       runner.config.with({
-        logger: { log() { } }
+        logger: { log() {} }
       })
     );
 
@@ -184,7 +184,7 @@ const SolidityTest = {
       "AssertString",
       "AssertUint",
       "AssertUintArray",
-      "DeployedAddresses",
+      "DeployedAddresses"
     ];
 
     const testAbstractions = testLibraries.map(name =>

@@ -1,6 +1,8 @@
-import * as Allocation from "../allocate/storage";
+import { AstDefinition } from "truffle-decode-utils";
+import { Range } from "./storage";
 
-export type DataPointer = StackPointer | MemoryPointer | StoragePointer | LiteralPointer;
+export type DataPointer = StackPointer | MemoryPointer | StoragePointer
+	| StackLiteralPointer | ConstantDefinitionPointer;
 
 export interface GenericPointer {
   typeClass?: string;
@@ -18,11 +20,15 @@ export interface MemoryPointer extends GenericPointer {
 }
 
 export interface StoragePointer extends GenericPointer {
-  storage: Allocation.Range;
+  storage: Range;
 }
 
-export interface LiteralPointer extends GenericPointer {
+export interface StackLiteralPointer extends GenericPointer {
   literal: Uint8Array;
+}
+
+export interface ConstantDefinitionPointer extends GenericPointer {
+  definition: AstDefinition;
 }
 
 export function isStackPointer(pointer: DataPointer): pointer is StackPointer {
@@ -37,6 +43,10 @@ export function isStoragePointer(pointer: DataPointer): pointer is StoragePointe
   return typeof pointer !== "undefined" && "storage" in pointer;
 }
 
-export function isLiteralPointer(pointer: DataPointer): pointer is LiteralPointer {
+export function isStackLiteralPointer(pointer: DataPointer): pointer is StackLiteralPointer {
   return typeof pointer !== "undefined" && "literal" in pointer;
+}
+
+export function isConstantDefinitionPointer(pointer: DataPointer): pointer is ConstantDefinitionPointer {
+  return typeof pointer !== "undefined" && "definition" in pointer;
 }

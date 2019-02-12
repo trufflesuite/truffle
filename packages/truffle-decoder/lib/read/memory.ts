@@ -23,43 +23,31 @@ export function read(memory: Uint8Array, offset: number) {
  * @param length - number
  */
 export function readBytes(memory: Uint8Array, offset: number, length: number) {
-  const offsetBN = DecodeUtils.Conversion.toBN(offset);
-  let lengthBN = DecodeUtils.Conversion.toBN(length);
-
-  if (offsetBN.toNumber() >= memory.length) {
-    return new Uint8Array(lengthBN ? lengthBN.toNumber() : 0);
-  }
-
-  if (lengthBN == undefined) {
-    return new Uint8Array(memory.buffer, offsetBN.toNumber());
-  }
 
   // grab `length` bytes no matter what, here fill this array
-  var bytes = new Uint8Array(lengthBN.toNumber());
+  var bytes = new Uint8Array(length);
+  bytes.fill(0); //fill it wil zeroes to start
 
-  // if we're reading past the end of memory, truncate the length to read
-  let excess = offsetBN.add(lengthBN).subn(memory.length).toNumber();
-  if (excess > 0) {
-    lengthBN = new BN(memory.length).sub(offsetBN);
+  //if the start is beyond the end of memory, just return those 0s
+  if (offset >= memory.length) {
+    return bytes;
   }
 
-  let existing = new Uint8Array(memory.buffer, offsetBN.toNumber(), lengthBN.toNumber());
+  // if we're reading past the end of memory, truncate the length to read
+  let excess = offset + length - memory.length;
+  let readLength;
+  if (excess > 0) {
+    readLength = memory.length - offset;
+  }
+  else {
+    readLength = length;
+  }
 
+  //get the (truncated) memory
+  let existing = new Uint8Array(memory.buffer, offset, readLength);
+
+  //copy it into our buffer
   bytes.set(existing);
 
   return bytes;
-}
-
-/**
- * Split memory into chunks
- */
-export function chunk(memory: Uint8Array, size = DecodeUtils.EVM.WORD_SIZE): Uint8Array[] {
-  let chunks: Uint8Array[] = [];
-
-  for (let i = 0; i < memory.length; i += size) {
-    let chunk = readBytes(memory, i, size);
-    chunks.push(chunk);
-  }
-
-  return chunks;
 }
