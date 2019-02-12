@@ -13,6 +13,7 @@ import Web3 from "web3";
 
 export default async function decode(definition: AstDefinition, pointer: Pointer.DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<any> {
   debug("Decoding %s", definition.name);
+  debug("pointer %O", pointer);
 
   if(Pointer.isStoragePointer(pointer)) {
     return await decodeStorage(definition, pointer, info, web3, contractAddress)
