@@ -1,5 +1,4 @@
 const Web3 = require("web3");
-const LegacyContract = require("./lib/contract");
 const deploy = require("./lib/deployer/deploy");
 const deployMany = require("./lib/deployer/deploymany");
 
@@ -13,7 +12,6 @@ module.exports = {
       return web3;
     }
   },
-  clone: LegacyContract.clone,
   Web3,
   deploy,
   deployMany

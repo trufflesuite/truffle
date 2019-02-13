@@ -4,6 +4,7 @@ const Web3 = require("web3");
 const utils = require("../utils");
 const execute = require("../execute");
 const bootstrap = require("./bootstrap");
+const Legacy = require("truffle-legacy-system");
 
 module.exports = Contract => {
   return {
@@ -326,7 +327,7 @@ module.exports = Contract => {
 
       bootstrap(temp);
 
-      temp.web3 = new Web3();
+      temp.web3 = json.legacy ? new Legacy.Web3() : new Web3();
       temp.class_defaults = temp.prototype.defaults || {};
 
       if (network_id) {
