@@ -1,6 +1,7 @@
 const Web3 = require("web3");
 const LegacyContract = require("./lib/contract");
-const LegacyDeployer = require("./lib/deployer");
+const deploy = require("./lib/deployer/deploy");
+const deployMany = require("./lib/deployer/deploymany");
 
 module.exports = {
   shimWeb3: web3 => {
@@ -14,5 +15,6 @@ module.exports = {
   },
   clone: LegacyContract.clone,
   Web3,
-  Deployer: LegacyDeployer
+  deploy,
+  deployMany
 };
