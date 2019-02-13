@@ -156,12 +156,7 @@ class Migration {
     const logger = options.logger;
     const resolver = new ResolverIntercept(options.resolver);
 
-    let web3;
-    if (options.legacy) {
-      web3 = new Legacy.Web3();
-    } else {
-      web3 = new Web3();
-    }
+    const web3 = options.legacy ? new Legacy.Web3() : new Web3();
     web3.setProvider(options.provider);
 
     // Initial context.
