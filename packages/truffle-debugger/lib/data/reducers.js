@@ -179,7 +179,7 @@ function learnAddress(assignment, dummyAddress, address) {
 const DEFAULT_PATHS = {
   decodingStarted: 0,
   byAddress: {},
-  byAstId: {} //WARNING: byAstId is *working* state and should not be relied on
+  byId: {} //WARNING: byId is *working* state and should not be relied on
   //aside from its narrow purpose of avoiding recomputation in the data saga
 };
 
@@ -197,10 +197,14 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
       return {
         decodingStarted: state.decodingStarted + (action.started ? 1 : -1),
         byAddress: { ...state.byAddress },
-        byAstId: { ...state.byAstId }
+        byId: { ...state.byId }
       };
     case actions.MAP_PATH_AND_ASSIGN:
-      let { address, path, astId } = action;
+      let { address, path, assignments } = action;
+
+      //assignments should contain precisely one assignment; we'll just need
+      //its ID, which is its key
+      let id = Object.keys(assignments)[0];
 
       let existingIndex = state.byAddress[address].findIndex(existingPath =>
         deepEqual(path, existingPath)
@@ -211,9 +215,9 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
         return {
           decodingStarted: state.decodingStarted,
           byAddress: state.byAddress,
-          byAstId: {
-            ...state.byAstId,
-            [astId]: [address, existingIndex]
+          byId: {
+            ...state.byId,
+            [id]: [address, existingIndex]
           }
         };
       } else {
@@ -224,9 +228,9 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
             ...state.byAddress,
             [address]: [...state.byAddress[address], path]
           },
-          byAstId: {
-            ...state.byAstId,
-            [astId]: { address, index: state.byAddress[address].length }
+          byId: {
+            ...state.byId,
+            [id]: { address, index: state.byAddress[address].length }
           }
         };
       }
@@ -243,17 +247,17 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
             [address === actions.dummyAddress ? action.adress : address]: paths
           }))
         ),
-        byAstId: Object.assign(
+        byId: Object.assign(
           {},
-          ...Object.entries(state.byAstId).map(
-            ([astId, { address, index }]) => ({
-              [astId]: {
-                address:
-                  address === action.dummyAddress ? action.address : address,
-                index
-              }
-            })
-          )
+          ...Object.entries(state.byId).map(([id, { address, index }]) => ({
+            //note that the ID does *not* need to change here, as it comes
+            //from a stackframe assignment, not an address assignment
+            [id]: {
+              address:
+                address === action.dummyAddress ? action.address : address,
+              index
+            }
+          }))
         )
       };
 

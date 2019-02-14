@@ -340,12 +340,7 @@ function* tickSaga() {
 
         //now, map it! (and do the assign as well)
         yield put(
-          actions.mapPathAndAssign(
-            address || dummyAddress,
-            slot,
-            assignments,
-            node.id
-          )
+          actions.mapPathAndAssign(address || dummyAddress, slot, assignments)
         );
       } else {
         //if we failed to decode, just do the assign from above
@@ -386,12 +381,7 @@ function* tickSaga() {
       slot.offset = memberAllocation.pointer.from.offset.clone();
 
       yield put(
-        actions.mapPathAndAssign(
-          address || dummyAddress,
-          slot,
-          assignments,
-          node.id
-        )
+        actions.mapPathAndAssign(address || dummyAddress, slot, assignments)
       );
 
     default:
@@ -455,7 +445,11 @@ function literalAssignments(node, stack, currentDepth) {
 }
 
 function fetchBasePath(baseNode, mappedPaths, currentAssignments) {
-  let basePathRef = mappedPaths.byAstId[baseNode.id];
+  let fullId = stableKeccak256({
+    astId: baseNode.id,
+    stackframe: currentDepth
+  });
+  let basePathRef = mappedPaths.byId[fullId];
   //may be undefined! this means that the base is not an index or member
   //access, but just an ordinary mapping or array or struct.  note that it may
   //be via a pointer! for this reason, we fetch the base from the stack rather
@@ -463,16 +457,12 @@ function fetchBasePath(baseNode, mappedPaths, currentAssignments) {
   if (basePathRef !== undefined) {
     return mappedPaths.byAddress[basePathRef.address][basePathRef.index];
   } else {
-    let fullId = stableKeccak256({
-      astId: baseExpression.id,
-      stackframe: currentDepth
-    });
     //base expression is an expression, and so has a literal assigned to
     //it
     let offset = DecodeUtils.Conversion.toBN(
       currentAssignments[fullId].ref.literal
     );
-    return { offset: offset.clone() };
+    return { offset };
   }
 }
 

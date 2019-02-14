@@ -26,13 +26,12 @@ export function assign(assignments) {
 }
 
 export const MAP_PATH_AND_ASSIGN = "MAP_PATH_AND_ASSIGN";
-export function mapPathAndAssign(address, path, assignments, astId) {
+export function mapPathAndAssign(address, path, assignments) {
   return {
     type: MAP_PATH_AND_ASSIGN,
     address,
     path,
-    assignments,
-    astId
+    assignments
   };
 }
 

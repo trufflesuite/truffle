@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:session"); //eslint-disable-line no-unused-vars
+const debug = debugModule("debugger:session");
 
 import configureStore from "lib/store";
 
@@ -205,8 +205,11 @@ export default class Session {
   }
 
   async variables() {
+    debug("awaiting decodeReady");
     await this.decodeReady();
+    debug("decode now ready");
 
     return await this.view(data.current.identifiers.decoded);
+    debug("got variables");
   }
 }

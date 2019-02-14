@@ -180,9 +180,9 @@ const data = createSelectorTree({
      * data.views.mappingKeys
      */
     mappingKeys: createLeaf(
-      ["./mappedPaths", "/current/address", "/current/dummyAddress"],
+      ["/proc/mappedPaths", "/current/address", "/current/dummyAddress"],
       (mappedPaths, address, dummyAddress) =>
-        mappedPaths.byAddress[address || dummyAddress].filter(
+        (mappedPaths.byAddress[address || dummyAddress] || []).filter(
           slot => slot.key !== undefined
         )
     )
@@ -472,12 +472,15 @@ const data = createSelectorTree({
         ["/views/decoder", "./definitions", "./refs"],
 
         async (decode, definitions, refs) => {
+          debug("setting up keyedPromises");
           const keyedPromises = Object.entries(refs).map(
             async ([identifier, ref]) => ({
               [identifier]: await decode(definitions[identifier], ref)
             })
           );
+          debug("set up keyedPromises");
           const keyedResults = await Promise.all(keyedPromises);
+          debug("got keyedResults");
           return DecodeUtils.Conversion.cleanContainers(
             Object.assign({}, ...keyedResults)
           );
