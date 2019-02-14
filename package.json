@@ -7,6 +7,7 @@
     "build:truffle-contract-schema": "cd packages/truffle-contract-schema && npm run build",
     "lerna:bootstrap": "lerna bootstrap",
     "bootstrap": "./scripts/bootstrap.sh",
+    "postinstall": "npm install -g solc",
     "test": "lerna run test --stream --concurrency=1 -- --colors",
     "ci": "./scripts/ci.sh",
     "geth": "./scripts/geth.sh",
