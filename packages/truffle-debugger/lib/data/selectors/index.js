@@ -131,7 +131,7 @@ const data = createSelectorTree({
       [
         "/views/referenceDeclarations",
         "/next/state",
-        "/proc/mappingKeys",
+        "/views/mappingKeys",
         "/info/allocations/storage"
       ],
 
@@ -173,6 +173,17 @@ const data = createSelectorTree({
         Object.assign(
           {},
           ...userDefinedTypes.map(id => ({ [id]: scopes[id].definition }))
+        )
+    ),
+
+    /**
+     * data.views.mappingKeys
+     */
+    mappingKeys: createLeaf(
+      ["./mappedPaths", "/current/address", "/current/dummyAddress"],
+      (mappedPaths, address, dummyAddress) =>
+        mappedPaths.byAddress[address || dummyAddress].filter(
+          slot => slot.key !== undefined
         )
     )
   },
@@ -275,21 +286,19 @@ const data = createSelectorTree({
       //assignments object
     ),
 
-    /**
-     * data.proc.mappingKeys
-     *
-     * known keys for each mapping (identified by node ID)
+    /*
+     * data.proc.mappedPaths
      */
-    mappingKeys: createLeaf(["/state"], state => state.proc.mappingKeys.byId),
+    mappedPaths: createLeaf(["/state"], state => state.proc.mappedPaths),
 
     /**
-     * data.proc.decodingMappingKeys
+     * data.proc.decodingKeys
      *
-     * number of mapping keys that are still decoding
+     * number of keys that are still decoding
      */
-    decodingMappingKeys: createLeaf(
-      ["/state"],
-      state => state.proc.mappingKeys.decodingStarted
+    decodingKeys: createLeaf(
+      ["./mappedPaths"],
+      mappedPaths => mappedPaths.decodingStarted
     )
   },
 

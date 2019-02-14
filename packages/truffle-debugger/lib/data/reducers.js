@@ -7,6 +7,8 @@ import { stableKeccak256 } from "lib/helpers";
 
 import * as actions from "./actions";
 
+import * as deepEqual from "lodash.isequal";
+
 const DEFAULT_SCOPES = {
   byId: {}
 };
@@ -101,6 +103,7 @@ const DEFAULT_ASSIGNMENTS = {
 function assignments(state = DEFAULT_ASSIGNMENTS, action) {
   switch (action.type) {
     case actions.ASSIGN:
+    case actions.MAP_PATH_AND_ASSIGN:
       debug("action.assignments %O", action.assignments);
       return Object.values(action.assignments.byId).reduce(
         (acc, assignment) => {
@@ -173,12 +176,18 @@ function learnAddress(assignment, dummyAddress, address) {
   }
 }
 
-const DEFAULT_MAPPING_KEYS = {
+const DEFAULT_PATHS = {
   decodingStarted: 0,
-  byId: {}
+  byAddress: {},
+  byAstId: {} //WARNING: byAstId is *working* state and should not be relied on
+  //aside from its narrow purpose of avoiding recomputation in the data saga
 };
 
-function mappingKeys(state = DEFAULT_MAPPING_KEYS, action) {
+//WARNING: do *not* rely on mappedPaths to keep track of paths that do not
+//involve mapping keys!  Yes, many will get mapped, but there is no guarantee.
+//Only when mapping keys are involved does it necessarily work reliably --
+//which is fine, as that's all we need it for.
+function mappedPaths(state = DEFAULT_PATHS, action) {
   switch (action.type) {
     case actions.MAP_KEY_DECODING:
       debug(
@@ -187,30 +196,66 @@ function mappingKeys(state = DEFAULT_MAPPING_KEYS, action) {
       );
       return {
         decodingStarted: state.decodingStarted + (action.started ? 1 : -1),
-        byId: { ...state.byId }
+        byAddress: { ...state.byAddress },
+        byAstId: { ...state.byAstId }
       };
-    case actions.MAP_KEY:
-      let { id, key } = action;
-      debug("mapping id and key: %s, %o", id, key);
+    case actions.MAP_PATH_AND_ASSIGN:
+      let { address, path, astId } = action;
 
-      return {
-        decodingStarted: state.decodingStarted,
-        byId: {
-          ...state.byId,
+      let existingIndex = state.byAddress[address].findIndex(existingPath =>
+        deepEqual(path, existingPath)
+      );
 
-          // add new key to set of keys already defined
-          [id]: [
-            ...new Set([
-              //set for uniqueness
-              ...(state.byId[id] || []),
-              key
-            ])
-          ]
-        }
-      };
+      if (existingIndex !== -1) {
+        //if it was already present
+        return {
+          decodingStarted: state.decodingStarted,
+          byAddress: state.byAddress,
+          byAstId: {
+            ...state.byAstId,
+            [astId]: [address, existingIndex]
+          }
+        };
+      } else {
+        //if we have to add it
+        return {
+          decodingStarted: state.decodingStarted,
+          byAddress: {
+            ...state.byAddress,
+            [address]: [...state.byAddress[address], path]
+          },
+          byAstId: {
+            ...state.byAstId,
+            [astId]: { address, index: state.byAddress[address].length }
+          }
+        };
+      }
 
     case actions.RESET:
-      return DEFAULT_MAPPING_KEYS;
+      return DEFAULT_PATHS;
+
+    case actions.LEARN_ADDRESS:
+      return {
+        decodingStarted: state.decodingStarted,
+        byAddress: Object.assign(
+          {},
+          ...Object.entries(state.byAddress).map(([address, paths]) => ({
+            [address === actions.dummyAddress ? action.adress : address]: paths
+          }))
+        ),
+        byAstId: Object.assign(
+          {},
+          ...Object.entries(state.byAstId).map(
+            ([astId, { address, index }]) => ({
+              [astId]: {
+                address:
+                  address === action.dummyAddress ? action.address : address,
+                index
+              }
+            })
+          )
+        )
+      };
 
     default:
       return state;
@@ -219,7 +264,7 @@ function mappingKeys(state = DEFAULT_MAPPING_KEYS, action) {
 
 const proc = combineReducers({
   assignments,
-  mappingKeys
+  mappedPaths
 });
 
 const reducer = combineReducers({

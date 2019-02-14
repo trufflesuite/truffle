@@ -171,9 +171,7 @@ export default class Session {
     return new Promise(resolve => {
       let haveResolved = false;
       const unsubscribe = this._store.subscribe(() => {
-        const subscriptionDecodingStarted = this.view(
-          data.proc.decodingMappingKeys
-        );
+        const subscriptionDecodingStarted = this.view(data.proc.decodingKeys);
 
         debug("following decoding started: %d", subscriptionDecodingStarted);
 
@@ -184,7 +182,7 @@ export default class Session {
         }
       });
 
-      const decodingStarted = this.view(data.proc.decodingMappingKeys);
+      const decodingStarted = this.view(data.proc.decodingKeys);
 
       debug("initial decoding started: %d", decodingStarted);
 

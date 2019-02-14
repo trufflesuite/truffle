@@ -53,6 +53,8 @@ export async function decodeMemoryReference(definition: DecodeUtils.AstDefinitio
       }
 
       let baseDefinition = definition.baseType || definition.typeName.baseType;
+        //I'm deliberately not using the DecodeUtils function for this, because
+        //we should *not* need a faked-up type here!
 
       // replace erroneous `_storage_` type identifiers with `_memory_`
       baseDefinition = DecodeUtils.Definition.spliceLocation(baseDefinition, "memory");
@@ -90,8 +92,10 @@ export async function decodeMemoryReference(definition: DecodeUtils.AstDefinitio
           }
         };
 
-      // replace erroneous `_storage_` type identifiers with `_memory_`
-      memberDefinition = DecodeUtils.Definition.spliceLocation(memberDefinition, "memory");
+        // replace erroneous `_storage` type identifiers with `_memory`
+        memberDefinition = DecodeUtils.Definition.spliceLocation(memberDefinition, "memory");
+        //there also used to be code here to add on the "_ptr" ending when absent, but we
+        //presently ignore that ending, so we'll skip that
 
         let decoded;
         try {

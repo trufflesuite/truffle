@@ -207,7 +207,10 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
     }
 
     case "enum": {
-      const referenceId: number = definition.referencedDeclaration || definition.typeName.referencedDeclaration;
+      const referenceId: number = DecodeUtils.Definition.typeId(definition);
+        //note: we use the preexisting function here for convenience, but we
+        //should never need to worry about faked-up enum definitions, so just
+        //checking the referencedDeclaration field would also work
       const referenceDeclaration: AstDefinition = referenceDeclarations[referenceId];
       const numValues: number = referenceDeclaration.members.length;
       return [{bytes: Math.ceil(Math.log2(numValues) / 8)}, existingAllocations];
@@ -251,7 +254,7 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
       else {
         //static array case
         const length: number = DecodeUtils.Definition.staticLength(definition);
-        const baseDefinition: AstDefinition = definition.baseType || definition.typeName.baseType;
+        const baseDefinition: AstDefinition = DecodeUtils.Definition.baseDefinition(definition);
         const [baseSize, allocations] = storageSizeAndAllocate(baseDefinition, referenceDeclarations, existingAllocations);
         if(!isWordsLength(baseSize)) {
           //bytes case
@@ -268,7 +271,7 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
     }
 
     case "struct": {
-      const referenceId: number = definition.referencedDeclaration || definition.typeName.referencedDeclaration;
+      const referenceId: number = DecodeUtils.Definition.typeId(definition);
       let allocations: StorageAllocations = existingAllocations;
       let allocation: StorageAllocation | undefined = allocations[referenceId]; //may be undefined!
       if(allocation === undefined) {

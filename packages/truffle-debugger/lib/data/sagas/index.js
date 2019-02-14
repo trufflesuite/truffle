@@ -12,7 +12,7 @@ import data from "../selectors";
 
 import * as DecodeUtils from "truffle-decode-utils";
 
-import { getStorageAllocations, readStack } from "truffle-decoder";
+import { getStorageAllocations, readStack, storageSize } from "truffle-decoder";
 
 export function* scope(nodeId, pointer, parentId, sourceId) {
   yield putResolve(actions.scope(nodeId, pointer, parentId, sourceId));
@@ -30,8 +30,10 @@ function* tickSaga() {
   let node = (yield select(data.views.ast)).node;
   let decode = yield select(data.views.decoder);
   let scopes = yield select(data.views.scopes.inlined);
+  let referenceDeclarations = yield select(data.views.referenceDeclarations);
   let allocations = yield select(data.info.allocations.storage);
   let currentAssignments = yield select(data.proc.assignments);
+  let mappedPaths = yield select(data.proc.mappedPaths);
   let currentDepth = yield select(data.current.functionDepth);
   let address = yield select(data.current.address); //may be undefined
   let dummyAddress = yield select(data.current.dummyAddress);
@@ -44,7 +46,13 @@ function* tickSaga() {
   }
 
   let top = stack.length - 1;
-  var assignment, assignments;
+  var assignment,
+    assignments,
+    literal,
+    baseExpression,
+    basePathRef,
+    basePath,
+    slot;
 
   if (!node) {
     return;
@@ -168,21 +176,51 @@ function* tickSaga() {
 
     case "IndexAccess":
       // to track `mapping` types known indices
+      // (and also *some* known indices for arrays)
 
       debug("Index access case");
 
-      let baseExpression = node.baseExpression;
-      let baseDeclarationId = baseExpression.referencedDeclaration;
+      //we're going to start by doing the same thing as in the default case
+      //(see below) -- getting things ready for an assignment.  Then we're
+      //going to forget this for a bit while we handle the rest...
+      literal = readStack(
+        stack,
+        top - DecodeUtils.Definition.stackSize(node) + 1,
+        top
+      );
 
-      let baseDeclaration = scopes[baseDeclarationId].definition;
+      assignment = makeAssignment(
+        { astId: node.id, stackframe: currentDepth },
+        { literal }
+      );
+      assignments = { byId: { [assignment.id]: assignment } };
 
-      //if we're not dealing with a mapping, don't bother!
-      if (!DecodeUtils.Definition.isMapping(baseExpression)) {
+      //we'll need this
+      baseExpression = node.baseExpression;
+
+      //but first, a diversion -- is this something that could not *possibly*
+      //lead to a mapping?  i.e., either a bytes, or an array of non-reference
+      //types? or something not in storage?
+      //if so, we'll just do the assign and quit out early
+      if (
+        DecodeUtils.Definition.typeClass(baseExpression) === "bytes" ||
+        DecodeUtils.Definition.referenceType(baseExpression) !== "storage" ||
+        //if the first one didn't catch it, it must be a reference type
+        (DecodeUtils.Definition.typeClass(baseExpression) === "array" &&
+          !DecodeUtils.Definition.isReference(
+            DecodeUtils.Definition.baseType(baseExpression)
+          ))
+      ) {
+        yield put(actions.assign(assignments));
         break;
       }
 
-      let keyDefinition =
-        baseDeclaration.keyType || baseDeclaration.typeName.keyType;
+      let keyDefinition = DecodeUtils.Definition.keyDefinition(
+        baseExpression,
+        referenceDeclarations
+      );
+      //if we're dealing with an array, this will just hack up a uint definition
+      //:)
 
       //begin subsection: key decoding
       //(I tried factoring this out into its own saga but it didn't work when I
@@ -226,6 +264,8 @@ function* tickSaga() {
               keyDefinition,
               DecodeUtils.Definition.referenceType(indexDefinition)
             );
+            //we could put code here to add on the "_ptr" ending when absent,
+            //but we presently ignore that ending, so we'll skip that
           } else {
             splicedDefinition = keyDefinition;
           }
@@ -286,12 +326,106 @@ function* tickSaga() {
       debug("index value %O", indexValue);
       debug("keyDefinition %O", keyDefinition);
 
-      //if we succeeded at decoding it -- i.e. it's not null -- then map it!
+      //whew! But we're not done yet -- we need to turn this decoded key into
+      //an actual path (assuming we *did* decode it)
       if (indexValue !== null) {
-        yield put(actions.mapKey(baseDeclarationId, indexValue));
+        let basePathRef = mappedPaths.byAstId[baseExpression.id];
+        //may be undefined!
+        let basePath =
+          basePathRef !== undefined
+            ? mappedPaths.byAddress[basePathRef.address][basePathRef.index]
+            : undefined;
+
+        let slot = { path: basePath };
+
+        //we need to do things differently depending on whether we're dealing
+        //with an array or mapping
+        switch (DecodeUtils.Definition.typeClass(baseExpression)) {
+          case "array":
+            slot.hashPath = DecodeUtils.Definition.isDynamicArray(
+              baseExpression
+            );
+            slot.offset = indexValue.muln(
+              storageSize(baseExpression, referenceDeclarations, allocations)
+            );
+          case "mapping":
+            slot.key = indexValue;
+            slot.keyEncoding = DecodeUtils.Definition.keyEncoding(
+              keyDefinition
+            );
+          default:
+            debug("unrecognized index access!");
+        }
+
+        //now, map it! (and do the assign as well)
+        yield put(
+          actions.mapPathAndAssign(
+            address || dummyAddress,
+            slot,
+            assignments,
+            node.id
+          )
+        );
+      } else {
+        //if we failed to decode, just do the assign from above
+        yield put(actions.assign(assignments));
       }
 
       break;
+
+    case "MemberAccess":
+      //we're going to start by doing the same thing as in the default case
+      //(see below) -- getting things ready for an assignment.  Then we're
+      //going to forget this for a bit while we handle the rest...
+      literal = readStack(
+        stack,
+        top - DecodeUtils.Definition.stackSize(node) + 1,
+        top
+      );
+
+      assignment = makeAssignment(
+        { astId: node.id, stackframe: currentDepth },
+        { literal }
+      );
+      assignments = { byId: { [assignment.id]: assignment } };
+
+      //MemberAccess uses expression, not baseExpression
+      baseExpression = node.expression;
+
+      //if this isn't a storage struct, we'll just do the assignment and quit
+      //out
+      if (
+        DecodeUtils.Definition.typeClass(baseExpression) !== "struct" ||
+        !DecodeUtils.Definition.isReference(baseExpression) ||
+        DecodeUtils.Definition.referenceType(baseExpression) !== "storage"
+      ) {
+        yield put(actions.assign(assignments));
+        break;
+      }
+
+      //but if it is a storage struct, we have to map the path as well
+      basePathRef = mappedPaths.byAstId[baseExpression.id]; //may be undefined!
+      basePath =
+        basePathRef !== undefined
+          ? mappedPaths.byAddress[basePathRef.address][basePathRef.index]
+          : undefined;
+
+      slot = { path: basePath };
+
+      let structId = DecodeUtils.Definition.typeID(baseExpression);
+      let memberAllocation =
+        allocations[structId].members[node.referencedDeclaration];
+
+      slot.offset = memberAllocation.pointer.from.offset.clone();
+
+      yield put(
+        actions.mapPathAndAssign(
+          address || dummyAddress,
+          slot,
+          assignments,
+          node.id
+        )
+      );
 
     default:
       if (node.typeDescriptions == undefined) {
@@ -299,7 +433,7 @@ function* tickSaga() {
       }
 
       debug("decoding expression value %O", node.typeDescriptions);
-      let literal = readStack(
+      literal = readStack(
         stack,
         top - DecodeUtils.Definition.stackSize(node) + 1,
         top
