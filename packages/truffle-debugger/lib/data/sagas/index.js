@@ -46,13 +46,7 @@ function* tickSaga() {
   }
 
   let top = stack.length - 1;
-  var assignment,
-    assignments,
-    literal,
-    baseExpression,
-    basePathRef,
-    basePath,
-    slot;
+  var assignment, assignments, baseExpression, slot;
 
   if (!node) {
     return;
@@ -113,12 +107,10 @@ function* tickSaga() {
       assignments = { byId: {} };
       for (let id in allocation.members) {
         id = Number(id); //not sure why we're getting them as strings, but...
-        let idObj;
-        if (address !== undefined) {
-          idObj = { astId: id, address };
-        } else {
-          idObj = { astId: id, dummyAddress };
-        }
+        let idObj =
+          address !== undefined
+            ? { astId: id, address }
+            : { astId: id, dummyAddress };
         let fullId = stableKeccak256(idObj);
         //we don't use makeAssignment here as we had to compute the ID anyway
         assignment = {
@@ -183,17 +175,7 @@ function* tickSaga() {
       //we're going to start by doing the same thing as in the default case
       //(see below) -- getting things ready for an assignment.  Then we're
       //going to forget this for a bit while we handle the rest...
-      literal = readStack(
-        stack,
-        top - DecodeUtils.Definition.stackSize(node) + 1,
-        top
-      );
-
-      assignment = makeAssignment(
-        { astId: node.id, stackframe: currentDepth },
-        { literal }
-      );
-      assignments = { byId: { [assignment.id]: assignment } };
+      assignments = literalAssignments(node, stack, currentDepth);
 
       //we'll need this
       baseExpression = node.baseExpression;
@@ -329,12 +311,11 @@ function* tickSaga() {
       //whew! But we're not done yet -- we need to turn this decoded key into
       //an actual path (assuming we *did* decode it)
       if (indexValue !== null) {
-        let basePathRef = mappedPaths.byAstId[baseExpression.id];
-        //may be undefined!
-        let basePath =
-          basePathRef !== undefined
-            ? mappedPaths.byAddress[basePathRef.address][basePathRef.index]
-            : undefined;
+        basePath = fetchBasePath(
+          baseExpression,
+          mappedPaths,
+          currentAssignments
+        );
 
         let slot = { path: basePath };
 
@@ -377,17 +358,7 @@ function* tickSaga() {
       //we're going to start by doing the same thing as in the default case
       //(see below) -- getting things ready for an assignment.  Then we're
       //going to forget this for a bit while we handle the rest...
-      literal = readStack(
-        stack,
-        top - DecodeUtils.Definition.stackSize(node) + 1,
-        top
-      );
-
-      assignment = makeAssignment(
-        { astId: node.id, stackframe: currentDepth },
-        { literal }
-      );
-      assignments = { byId: { [assignment.id]: assignment } };
+      assignments = literalAssignments(node, stack, currentDepth);
 
       //MemberAccess uses expression, not baseExpression
       baseExpression = node.expression;
@@ -404,11 +375,7 @@ function* tickSaga() {
       }
 
       //but if it is a storage struct, we have to map the path as well
-      basePathRef = mappedPaths.byAstId[baseExpression.id]; //may be undefined!
-      basePath =
-        basePathRef !== undefined
-          ? mappedPaths.byAddress[basePathRef.address][basePathRef.index]
-          : undefined;
+      basePath = fetchBasePath(baseExpression, mappedPaths, currentAssignments);
 
       slot = { path: basePath };
 
@@ -433,19 +400,10 @@ function* tickSaga() {
       }
 
       debug("decoding expression value %O", node.typeDescriptions);
-      literal = readStack(
-        stack,
-        top - DecodeUtils.Definition.stackSize(node) + 1,
-        top
-      );
-
       debug("default case");
       debug("currentDepth %d node.id %d", currentDepth, node.id);
-      assignment = makeAssignment(
-        { astId: node.id, stackframe: currentDepth },
-        { literal }
-      );
-      assignments = { byId: { [assignment.id]: assignment } };
+
+      assignments = literalAssignments(node, stack, currentDepth);
       yield put(actions.assign(assignments));
       break;
   }
@@ -477,6 +435,45 @@ export function* recordAllocations() {
 function makeAssignment(idObj, ref) {
   let id = stableKeccak256(idObj);
   return { ...idObj, id, ref };
+}
+
+function literalAssignments(node, stack, currentDepth) {
+  let top = stack.length - 1;
+
+  let literal = readStack(
+    stack,
+    top - DecodeUtils.Definition.stackSize(node) + 1,
+    top
+  );
+
+  let assignment = makeAssignment(
+    { astId: node.id, stackframe: currentDepth },
+    { literal }
+  );
+
+  return { byId: { [assignment.id]: assignment } };
+}
+
+function fetchBasePath(baseNode, mappedPaths, currentAssignments) {
+  let basePathRef = mappedPaths.byAstId[baseNode.id];
+  //may be undefined! this means that the base is not an index or member
+  //access, but just an ordinary mapping or array or struct.  note that it may
+  //be via a pointer! for this reason, we fetch the base from the stack rather
+  //than from the allocation table
+  if (basePathRef !== undefined) {
+    return mappedPaths.byAddress[basePathRef.address][basePathRef.index];
+  } else {
+    let fullId = stableKeccak256({
+      astId: baseExpression.id,
+      stackframe: currentDepth
+    });
+    //base expression is an expression, and so has a literal assigned to
+    //it
+    let offset = DecodeUtils.Conversion.toBN(
+      currentAssignments[fullId].ref.literal
+    );
+    return { offset: offset.clone() };
+  }
 }
 
 export function* saga() {

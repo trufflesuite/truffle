@@ -128,7 +128,7 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
       return {
         byId: Object.assign(
           {},
-          ...Object.entries(state.byId).map(([, assignment]) => {
+          ...Object.values(state.byId).map(assignment => {
             let newAssignment = learnAddress(assignment, dummyAddress, address);
             return {
               [newAssignment.id]: newAssignment

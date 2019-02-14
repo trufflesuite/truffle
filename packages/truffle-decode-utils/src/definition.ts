@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("decode-utils:definition");
 
 import { EVM as EVMUtils } from "./evm";
-import { AstDefinition } from "./ast";
+import { AstDefinition, AstReferences } from "./ast";
 import BN from "bn.js";
 import cloneDeep from "lodash.clonedeep";
 
@@ -80,8 +80,9 @@ export namespace Definition {
       //NOTE: we do this by parsing the type identifier, rather than by just
       //checking the length field, because we might be using this on a faked-up
       //definition
-      return typeIdentifier(definition).match(
-        /\$dyn_(storage|memory|calldata)(_ptr)?$/) != null;
+      typeIdentifier(definition).match(
+        /\$dyn_(storage|memory|calldata)(_ptr)?$/) != null
+    );
   }
 
   //length of a statically sized array -- please only use for arrays
@@ -91,7 +92,7 @@ export namespace Definition {
     //checking the length field, because we might be using this on a faked-up
     //definition
     return parseInt(typeIdentifier(definition).match(
-      /\$(\d+)_(storage|memory|calldata)(_ptr)?$/)[1];
+      /\$(\d+)_(storage|memory|calldata)(_ptr)?$/)[1]);
   }
 
   export function isStruct(definition: AstDefinition): boolean {
@@ -235,9 +236,10 @@ export namespace Definition {
   //for use for mappings and arrays only!
   //for arrays, fakes up a uint definition
   export function keyDefinition(definition: AstDefinition, referenceDeclarations: AstReferences): AstDefinition {
+    let result: AstDefinition;
     switch(typeClass(definition)) {
       case "mapping":
-        let baseDeclarationId = baseExpression.referencedDeclaration;
+        let baseDeclarationId = definition.referencedDeclaration;
         //if there's a referencedDeclaration, we'll use that
         if(baseDeclarationId !== undefined) {
           let baseDeclaration = referenceDeclarations[baseDeclarationId];
@@ -258,17 +260,18 @@ export namespace Definition {
         }
 
         // another HACK - we get away with it because we're only using that one property
-        let result: AstDefinition = cloneDeep(definition);
+        result = cloneDeep(definition);
         result.typeDescriptions.typeIdentifier = keyIdentifier;
         return result;
 
       case "array":
         //HACK -- again we should get away with it because for a uint256 we don't
         //really need to inspect the other properties
-        let result: AstDefinition = cloneDeep(definition);
+        result = cloneDeep(definition);
         result.typeDescriptions.typeIdentifier = "t_uint256";
         return result;
       default:
         debug("unrecognized index access!");
+    }
   }
 }
