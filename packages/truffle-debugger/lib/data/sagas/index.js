@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:data:sagas"); // eslint-disable-line no-unused-vars
+const debug = debugModule("debugger:data:sagas");
 
 import { put, takeEvery, select, call, putResolve } from "redux-saga/effects";
 
@@ -11,8 +11,8 @@ import * as actions from "../actions";
 import data from "../selectors";
 
 import * as DecodeUtils from "truffle-decode-utils";
-
 import { getStorageAllocations, readStack, storageSize } from "truffle-decoder";
+import BN from "bn.js";
 
 export function* scope(nodeId, pointer, parentId, sourceId) {
   yield putResolve(actions.scope(nodeId, pointer, parentId, sourceId));
@@ -46,7 +46,7 @@ function* tickSaga() {
   }
 
   let top = stack.length - 1;
-  var assignment, assignments, baseExpression, slot, basePath;
+  var assignment, assignments, baseExpression, slot, path;
 
   if (!node) {
     return;
@@ -322,14 +322,14 @@ function* tickSaga() {
       //whew! But we're not done yet -- we need to turn this decoded key into
       //an actual path (assuming we *did* decode it)
       if (indexValue !== null) {
-        basePath = fetchBasePath(
+        path = fetchBasePath(
           baseExpression,
           mappedPaths,
           currentAssignments,
           currentDepth
         );
 
-        let slot = { path: basePath };
+        let slot = { path };
 
         //we need to do things differently depending on whether we're dealing
         //with an array or mapping
@@ -340,6 +340,7 @@ function* tickSaga() {
             );
             slot.offset = indexValue.muln(
               storageSize(baseExpression, referenceDeclarations, allocations)
+                .words
             );
             break;
           case "mapping":
@@ -347,6 +348,7 @@ function* tickSaga() {
             slot.keyEncoding = DecodeUtils.Definition.keyEncoding(
               keyDefinition
             );
+            slot.offset = new BN(0);
             break;
           default:
             debug("unrecognized index access!");
@@ -381,26 +383,28 @@ function* tickSaga() {
         !DecodeUtils.Definition.isReference(baseExpression) ||
         DecodeUtils.Definition.referenceType(baseExpression) !== "storage"
       ) {
+        debug("Member case bailed out early");
         yield put(actions.assign(assignments));
         break;
       }
 
       //but if it is a storage struct, we have to map the path as well
-      basePath = fetchBasePath(
+      path = fetchBasePath(
         baseExpression,
         mappedPaths,
         currentAssignments,
         currentDepth
       );
 
-      slot = { path: basePath };
+      slot = { path };
 
-      let structId = DecodeUtils.Definition.typeID(baseExpression);
+      let structId = DecodeUtils.Definition.typeId(baseExpression);
       let memberAllocation =
         allocations[structId].members[node.referencedDeclaration];
 
-      slot.offset = memberAllocation.pointer.from.offset.clone();
+      slot.offset = memberAllocation.pointer.storage.from.slot.offset.clone();
 
+      debug("slot %o", slot);
       yield put(
         actions.mapPathAndAssign(address || dummyAddress, slot, assignments)
       );
@@ -481,7 +485,8 @@ function fetchBasePath(
   //be via a pointer! for this reason, we fetch the base from the stack rather
   //than from the allocation table
   if (basePathRef !== undefined) {
-    return mappedPaths.byAddress[basePathRef.address][basePathRef.index];
+    return mappedPaths.byAddress[basePathRef.address][basePathRef.slotAddress]
+      .slot;
   } else {
     //base expression is an expression, and so has a literal assigned to
     //it

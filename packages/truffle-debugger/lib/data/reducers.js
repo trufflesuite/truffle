@@ -7,7 +7,8 @@ import { stableKeccak256 } from "lib/helpers";
 
 import * as actions from "./actions";
 
-import deepEqual from "lodash.isequal";
+import { slotAddress } from "truffle-decoder";
+import { Conversion, EVM } from "truffle-decode-utils";
 
 const DEFAULT_SCOPES = {
   byId: {}
@@ -200,40 +201,92 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
         byId: state.byId
       };
     case actions.MAP_PATH_AND_ASSIGN:
-      let { address, path, assignments } = action;
+      let { address, slot, assignments } = action;
 
-      //assignments should contain precisely one assignment; we'll just need
-      //its ID, which is its key
-      let id = Object.keys(assignments)[0];
+      //assignments.byId should contain precisely one assignment; we'll just
+      //need its ID, which is its key
+      let id = Object.keys(assignments.byId)[0];
 
-      let existingIndex = (state.byAddress[address] || []).findIndex(
-        existingPath => deepEqual(path, existingPath)
+      debug("slot %o", slot);
+      let hexSlotAddress = Conversion.toHexString(
+        slotAddress(slot),
+        EVM.WORD_SIZE
       );
+      let parentAddress = slot.path
+        ? Conversion.toHexString(slotAddress(slot.path), EVM.WORD_SIZE)
+        : undefined;
 
-      if (existingIndex !== -1) {
-        //if it was already present
-        return {
-          decodingStarted: state.decodingStarted,
-          byAddress: state.byAddress,
-          byId: {
-            ...state.byId,
-            [id]: [address, existingIndex]
+      //this is going to be messy and procedural, sorry.  but let's start with
+      //the easy stuff: create the new address if needed, clone if not,
+      //and set up byId regardless
+      let newState = {
+        decodingStarted: state.decodingStarted,
+        byAddress: {
+          ...state.byAddress,
+          [address]: {
+            ...(state.byAddress[address] || {})
           }
+        },
+        byId: {
+          ...state.byId,
+          [id]: { address, slotAddress: hexSlotAddress }
+        }
+      };
+
+      //now: are we just adding, doing nothing (except to byId), or are we
+      //going to have to do a relink?
+      let oldInfo = newState.byAddress[address][hexSlotAddress];
+      //yes, this looks strange, but we haven't changed it yet except to
+      //clone or create empty (and we don't want undefined!)
+      if (oldInfo === undefined) {
+        //case 1: just add -- but note that if the parent is already present,
+        //use that instead of the given parent!
+        let newSlot;
+        if (
+          parentAddress !== undefined &&
+          newState.byAddress[address][parentAddress]
+        ) {
+          newSlot = {
+            ...slot,
+            path: newState.byAddress[address][parentAddress].slot
+          };
+        } else {
+          newSlot = slot;
+        }
+        newState.byAddress[address][hexSlotAddress] = {
+          slot: newSlot,
+          children: []
         };
-      } else {
-        //if we have to add it
-        return {
-          decodingStarted: state.decodingStarted,
-          byAddress: {
-            ...state.byAddress,
-            [address]: [...(state.byAddress[address] || []), path]
-          },
-          byId: {
-            ...state.byId,
-            [id]: { address, index: (state.byAddress[address] || []).length }
-          }
+      } else if (pathLength(oldInfo.slot) < pathLength(slot)) {
+        //case 2: we need to do a relink
+        //NOTE: this should only happen when pathLength(oldInfo.slot) == 0
+        //i.e. oldInfo.slot.path === undefined
+        //so I am going to make that assumption
+        //first, let's add ourselves to our parent's children
+        //(we clone a bunch to avoid mutating state)
+        //note that parentAddress is guaranteed to be defined in this case
+        newState.byAddress[address][parentAddress] = {
+          ...state.byAddress[address][parentAddress],
+          children: [
+            ...state.byAddress[address][parentAddress].children,
+            slotAddress
+          ]
         };
+        //now, let's redo the actual slot with our new path
+        newState.byAddress[address][hexSlotAddress] = {
+          slot,
+          children: state.byAddress[address][hexSlotAddress].children
+        };
+        //now, we perform the relink!
+        newState.byAddress[address] = relink(
+          newState.byAddress[address],
+          hexSlotAddress
+        );
       }
+      //case 3: we don't need to do anything (except update byId which we
+      //already did)
+
+      return newState;
 
     case actions.RESET:
       return DEFAULT_PATHS;
@@ -243,27 +296,50 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
         decodingStarted: state.decodingStarted,
         byAddress: Object.assign(
           {},
-          ...Object.entries(state.byAddress).map(([address, paths]) => ({
-            [address === actions.dummyAddress ? action.adress : address]: paths
+          ...Object.entries(state.byAddress).map(([address, slots]) => ({
+            [address === actions.dummyAddress ? action.adress : address]: slots
           }))
         ),
         byId: Object.assign(
           {},
-          ...Object.entries(state.byId).map(([id, { address, index }]) => ({
-            //note that the ID does *not* need to change here, as it comes
-            //from a stackframe assignment, not an address assignment
-            [id]: {
-              address:
-                address === action.dummyAddress ? action.address : address,
-              index
-            }
-          }))
+          ...Object.entries(state.byId).map(
+            ([id, { address, slotAddress }]) => ({
+              //note that the ID does *not* need to change here, as it comes
+              //from a stackframe assignment, not an address assignment
+              [id]: {
+                address:
+                  address === action.dummyAddress ? action.address : address,
+                slotAddress
+              }
+            })
+          )
         )
       };
 
     default:
       return state;
   }
+}
+
+function pathLength(slot) {
+  if (slot.path === undefined) return 0;
+  return 1 + pathLength(slot.path);
+}
+
+function relink(slotMap, startAddress) {
+  let children = slotMap[startAddress].children;
+  let newSlotMap = { ...slotMap }; //we don't want to mutate slotMap
+  for (childAddress of children) {
+    newSlotMap[childAddress] = {
+      ...newSlotMap[childAddress],
+      slot: {
+        ...newSlotMap[childAddress].slot,
+        path: newsSlotMap[startAddress].slot
+      }
+    };
+    newSlotMap = relink(newSlotMap, childAddress);
+  }
+  return newSlotMap;
 }
 
 const proc = combineReducers({

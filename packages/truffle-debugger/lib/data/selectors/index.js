@@ -182,9 +182,9 @@ const data = createSelectorTree({
     mappingKeys: createLeaf(
       ["/proc/mappedPaths", "/current/address", "/current/dummyAddress"],
       (mappedPaths, address, dummyAddress) =>
-        (mappedPaths.byAddress[address || dummyAddress] || []).filter(
-          slot => slot.key !== undefined
-        )
+        Object.values(mappedPaths.byAddress[address || dummyAddress] || {})
+          .map(({ slot }) => slot)
+          .filter(slot => slot.key !== undefined)
     )
   },
 
