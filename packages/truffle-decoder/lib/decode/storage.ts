@@ -278,7 +278,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
       return result;
     }
 
-    case "mapping": { //TODO
+    case "mapping": {
 
       debug("decoding mapping");
       debug("name %s", definition.name);
@@ -297,9 +297,11 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
       };
 
       const baseSlot: Types.Slot = pointer.storage.from.slot;
+      debug("baseSlot %o", baseSlot);
+      debug("base slot address %o", slotAddress(baseSlot));
 
       const keySlots = info.mappingKeys.filter( ({path}) =>
-        slotAddress(path) === slotAddress(baseSlot));
+        slotAddress(baseSlot).eq(slotAddress(path)));
 
       for (const {key, keyEncoding} of keySlots) {
 

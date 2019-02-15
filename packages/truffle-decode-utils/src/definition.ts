@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("decode-utils:definition");
 
 import { EVM as EVMUtils } from "./evm";
-import { AstDefinition, AstReferences } from "./ast";
+import { AstDefinition, Scopes } from "./ast";
 import BN from "bn.js";
 import cloneDeep from "lodash.clonedeep";
 
@@ -235,14 +235,15 @@ export namespace Definition {
 
   //for use for mappings and arrays only!
   //for arrays, fakes up a uint definition
-  export function keyDefinition(definition: AstDefinition, referenceDeclarations: AstReferences): AstDefinition {
+  export function keyDefinition(definition: AstDefinition, scopes: Scopes): AstDefinition {
     let result: AstDefinition;
     switch(typeClass(definition)) {
       case "mapping":
         let baseDeclarationId = definition.referencedDeclaration;
+        debug("baseDeclarationId %d", baseDeclarationId);
         //if there's a referencedDeclaration, we'll use that
         if(baseDeclarationId !== undefined) {
-          let baseDeclaration = referenceDeclarations[baseDeclarationId];
+          let baseDeclaration = scopes[baseDeclarationId].definition;
           return baseDeclaration.keyType || baseDeclaration.typeName.keyType;
         }
         //otherwise, we'll need to perform some hackery, similarly to in baseDefinition

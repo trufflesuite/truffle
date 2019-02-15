@@ -7,7 +7,7 @@ import { stableKeccak256 } from "lib/helpers";
 
 import * as actions from "./actions";
 
-import * as deepEqual from "lodash.isequal";
+import deepEqual from "lodash.isequal";
 
 const DEFAULT_SCOPES = {
   byId: {}
@@ -196,8 +196,8 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
       );
       return {
         decodingStarted: state.decodingStarted + (action.started ? 1 : -1),
-        byAddress: { ...state.byAddress },
-        byId: { ...state.byId }
+        byAddress: state.byAddress,
+        byId: state.byId
       };
     case actions.MAP_PATH_AND_ASSIGN:
       let { address, path, assignments } = action;
@@ -206,8 +206,8 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
       //its ID, which is its key
       let id = Object.keys(assignments)[0];
 
-      let existingIndex = state.byAddress[address].findIndex(existingPath =>
-        deepEqual(path, existingPath)
+      let existingIndex = (state.byAddress[address] || []).findIndex(
+        existingPath => deepEqual(path, existingPath)
       );
 
       if (existingIndex !== -1) {
@@ -226,11 +226,11 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
           decodingStarted: state.decodingStarted,
           byAddress: {
             ...state.byAddress,
-            [address]: [...state.byAddress[address], path]
+            [address]: [...(state.byAddress[address] || []), path]
           },
           byId: {
             ...state.byId,
-            [id]: { address, index: state.byAddress[address].length }
+            [id]: { address, index: (state.byAddress[address] || []).length }
           }
         };
       }

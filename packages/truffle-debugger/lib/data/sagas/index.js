@@ -46,7 +46,7 @@ function* tickSaga() {
   }
 
   let top = stack.length - 1;
-  var assignment, assignments, baseExpression, slot;
+  var assignment, assignments, baseExpression, slot, basePath;
 
   if (!node) {
     return;
@@ -182,24 +182,35 @@ function* tickSaga() {
 
       //but first, a diversion -- is this something that could not *possibly*
       //lead to a mapping?  i.e., either a bytes, or an array of non-reference
-      //types? or something not in storage?
+      //types, or a non-storage array in storage?
       //if so, we'll just do the assign and quit out early
+      //(note: we write it this way because mappings don't always have a
+      //referenceType, despite always being storage)
       if (
         DecodeUtils.Definition.typeClass(baseExpression) === "bytes" ||
-        DecodeUtils.Definition.referenceType(baseExpression) !== "storage" ||
-        //if the first one didn't catch it, it must be a reference type
         (DecodeUtils.Definition.typeClass(baseExpression) === "array" &&
-          !DecodeUtils.Definition.isReference(
-            DecodeUtils.Definition.baseType(baseExpression)
-          ))
+          (DecodeUtils.Definition.referenceType(baseExpression) !== "storage" ||
+            !DecodeUtils.Definition.isReference(
+              DecodeUtils.Definition.baseDefinition(baseExpression)
+            )))
       ) {
+        debug("Index case bailed out early");
+        debug("typeClass %s", DecodeUtils.Definition.typeClass(baseExpression));
+        debug(
+          "referenceType %s",
+          DecodeUtils.Definition.referenceType(baseExpression)
+        );
+        debug(
+          "baseDefinition %o",
+          DecodeUtils.Definition.baseDefinition(baseExpression)
+        );
         yield put(actions.assign(assignments));
         break;
       }
 
       let keyDefinition = DecodeUtils.Definition.keyDefinition(
         baseExpression,
-        referenceDeclarations
+        scopes
       );
       //if we're dealing with an array, this will just hack up a uint definition
       //:)
@@ -306,7 +317,7 @@ function* tickSaga() {
       //end subsection: key decoding
 
       debug("index value %O", indexValue);
-      debug("keyDefinition %O", keyDefinition);
+      debug("keyDefinition %o", keyDefinition);
 
       //whew! But we're not done yet -- we need to turn this decoded key into
       //an actual path (assuming we *did* decode it)
@@ -314,7 +325,8 @@ function* tickSaga() {
         basePath = fetchBasePath(
           baseExpression,
           mappedPaths,
-          currentAssignments
+          currentAssignments,
+          currentDepth
         );
 
         let slot = { path: basePath };
@@ -329,14 +341,17 @@ function* tickSaga() {
             slot.offset = indexValue.muln(
               storageSize(baseExpression, referenceDeclarations, allocations)
             );
+            break;
           case "mapping":
             slot.key = indexValue;
             slot.keyEncoding = DecodeUtils.Definition.keyEncoding(
               keyDefinition
             );
+            break;
           default:
             debug("unrecognized index access!");
         }
+        debug("slot %O", slot);
 
         //now, map it! (and do the assign as well)
         yield put(
@@ -344,6 +359,7 @@ function* tickSaga() {
         );
       } else {
         //if we failed to decode, just do the assign from above
+        debug("failed to decode, just assigning");
         yield put(actions.assign(assignments));
       }
 
@@ -370,7 +386,12 @@ function* tickSaga() {
       }
 
       //but if it is a storage struct, we have to map the path as well
-      basePath = fetchBasePath(baseExpression, mappedPaths, currentAssignments);
+      basePath = fetchBasePath(
+        baseExpression,
+        mappedPaths,
+        currentAssignments,
+        currentDepth
+      );
 
       slot = { path: basePath };
 
@@ -444,7 +465,12 @@ function literalAssignments(node, stack, currentDepth) {
   return { byId: { [assignment.id]: assignment } };
 }
 
-function fetchBasePath(baseNode, mappedPaths, currentAssignments) {
+function fetchBasePath(
+  baseNode,
+  mappedPaths,
+  currentAssignments,
+  currentDepth
+) {
   let fullId = stableKeccak256({
     astId: baseNode.id,
     stackframe: currentDepth
@@ -460,7 +486,7 @@ function fetchBasePath(baseNode, mappedPaths, currentAssignments) {
     //base expression is an expression, and so has a literal assigned to
     //it
     let offset = DecodeUtils.Conversion.toBN(
-      currentAssignments[fullId].ref.literal
+      currentAssignments.byId[fullId].ref.literal
     );
     return { offset };
   }
