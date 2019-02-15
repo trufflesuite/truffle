@@ -24,6 +24,8 @@ function prepareConfig(options) {
   // Use a config object to ensure we get the default sources.
   const config = Config.default().merge(options);
 
+  config.compilersInfo = {};
+
   if (!config.resolver) {
     config.resolver = new Resolver(config);
   }
@@ -63,24 +65,10 @@ var Contracts = {
       ? [config.compiler]
       : Object.keys(config.compilers);
 
+    this.reportCompilationStarted(options);
+
     // convert to promise to compile+write
-    const compilations = compilers.map(async compiler => {
-      const compile = SUPPORTED_COMPILERS[compiler];
-      if (!compile) throw new Error("Unsupported compiler: " + compiler);
-
-      const compileFunc =
-        config.all === true || config.compileAll === true
-          ? compile.all
-          : compile.necessary;
-
-      let [contracts, output] = await multiPromisify(compileFunc)(config);
-
-      if (contracts && Object.keys(contracts).length > 0) {
-        await this.writeContracts(contracts, config);
-      }
-
-      return { compiler, contracts, output };
-    });
+    const compilations = await this.compileSources(config, compilers);
 
     const collect = async compilations => {
       let result = {
@@ -101,24 +89,67 @@ var Contracts = {
       return result;
     };
 
+    this.reportCompilationFinished(options, config);
     return await collect(compilations);
   }),
 
-  writeContracts: async function(contracts, options) {
+  compileSources: async function(config, compilers) {
+    return Promise.all(
+      compilers.map(async compiler => {
+        const compile = SUPPORTED_COMPILERS[compiler];
+        if (!compile) throw new Error("Unsupported compiler: " + compiler);
+
+        const compileFunc =
+          config.all === true || config.compileAll === true
+            ? compile.all
+            : compile.necessary;
+
+        let [contracts, output, compilerUsed] = await multiPromisify(
+          compileFunc
+        )(config);
+
+        config.compilersInfo[compilerUsed.name] = {
+          version: compilerUsed.version
+        };
+
+        if (contracts && Object.keys(contracts).length > 0) {
+          await this.writeContracts(contracts, config);
+        }
+
+        return { compiler, contracts, output };
+      })
+    );
+  },
+
+  reportCompilationStarted: options => {
     const logger = options.logger || console;
-
-    await promisify(mkdirp)(options.contracts_build_directory);
-
-    if (options.quiet !== true) {
-      logger.log(
-        `    > writing artifacts to ${options.contracts_build_directory}${
-          OS.EOL
-        }`
-      );
+    if (!options.quiet) {
+      logger.log(OS.EOL + `Compiling your contracts`);
     }
+  },
 
+  reportCompilationFinished: (options, config) => {
+    const logger = options.logger || console;
+    const { compilersInfo } = config;
+    if (!options.quiet) {
+      logger.log(
+        `    > artifacts written to ${options.contracts_build_directory}`
+      );
+      if (Object.keys(compilersInfo).length > 0) {
+        logger.log(OS.EOL + `Compiled successfully using:`);
+        for (const name in compilersInfo) {
+          logger.log(`    > ${name}: ${compilersInfo[name].version}`);
+        }
+      } else {
+        logger.log(OS.EOL + `Compilation successful`);
+      }
+      logger.log();
+    }
+  },
+
+  writeContracts: async (contracts, options) => {
+    await promisify(mkdirp)(options.contracts_build_directory);
     const extra_opts = { network_id: options.network_id };
-
     await options.artifactor.saveAll(contracts, extra_opts);
   }
 };

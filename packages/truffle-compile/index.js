@@ -129,10 +129,6 @@ const compile = function(sources, options, callback) {
     .then(solc => {
       const result = solc.compile(JSON.stringify(solcStandardInput));
 
-      if (options.quiet !== true) {
-        options.logger.log(`    > using solc ${solc.version()}`);
-      }
-
       const standardOutput = JSON.parse(result);
 
       let errors = standardOutput.errors || [];
@@ -253,7 +249,9 @@ const compile = function(sources, options, callback) {
         });
       });
 
-      callback(null, returnVal, files);
+      const compilerInfo = { name: "solc", version: solc.version() };
+
+      callback(null, returnVal, files, compilerInfo);
     })
     .catch(callback);
 };
@@ -421,14 +419,13 @@ compile.display = function(paths, options) {
 
     const blacklistRegex = /^truffle\//;
 
-    options.logger.log();
     paths.sort().forEach(contract => {
       if (path.isAbsolute(contract)) {
         contract =
           "." + path.sep + path.relative(options.working_directory, contract);
       }
       if (contract.match(blacklistRegex)) return;
-      options.logger.log("    > compiling " + contract + "...");
+      options.logger.log("    > compiling " + contract);
     });
   }
 };
