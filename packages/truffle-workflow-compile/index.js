@@ -1,14 +1,14 @@
-var debug = require("debug")("workflow-compile");
-var mkdirp = require("mkdirp");
-var { callbackify, promisify } = require("util");
-var Config = require("truffle-config");
-var solcCompile = require("truffle-compile");
-var vyperCompile = require("truffle-compile-vyper");
-var externalCompile = require("truffle-external-compile");
-var expect = require("truffle-expect");
-var Resolver = require("truffle-resolver");
-var Artifactor = require("truffle-artifactor");
-var OS = require("os");
+const debug = require("debug")("workflow-compile");
+const mkdirp = require("mkdirp");
+const { callbackify, promisify } = require("util");
+const Config = require("truffle-config");
+const solcCompile = require("truffle-compile");
+const vyperCompile = require("truffle-compile-vyper");
+const externalCompile = require("truffle-external-compile");
+const expect = require("truffle-expect");
+const Resolver = require("truffle-resolver");
+const Artifactor = require("truffle-artifactor");
+const OS = require("os");
 
 const SUPPORTED_COMPILERS = {
   solc: solcCompile,
@@ -26,9 +26,7 @@ function prepareConfig(options) {
 
   config.compilersInfo = {};
 
-  if (!config.resolver) {
-    config.resolver = new Resolver(config);
-  }
+  if (!config.resolver) config.resolver = new Resolver(config);
 
   if (!config.artifactor) {
     config.artifactor = new Artifactor(config.contracts_build_directory);
@@ -108,9 +106,11 @@ var Contracts = {
           compileFunc
         )(config);
 
-        config.compilersInfo[compilerUsed.name] = {
-          version: compilerUsed.version
-        };
+        if (compilerUsed) {
+          config.compilersInfo[compilerUsed.name] = {
+            version: compilerUsed.version
+          };
+        }
 
         if (contracts && Object.keys(contracts).length > 0) {
           await this.writeContracts(contracts, config);
