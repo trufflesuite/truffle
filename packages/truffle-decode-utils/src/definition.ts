@@ -166,6 +166,12 @@ export namespace Definition {
     };
   }
 
+  //adds "_ptr" on to the end of type identifiers that might need it; note that
+  //this operats on identifiers, not defintions
+  export function restorePtr(identifier: string): string {
+    return identifier.replace(/(?<=_(storage|memory|calldata))$/, "_ptr");
+  }
+
   //extract the actual numerical value from a node of type rational.
   //currently assumes result will be integer (currently returns BN)
   export function rationalValue(definition: AstDefinition): BN {

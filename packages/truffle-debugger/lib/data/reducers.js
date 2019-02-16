@@ -8,7 +8,7 @@ import { stableKeccak256 } from "lib/helpers";
 import * as actions from "./actions";
 
 import { slotAddress } from "truffle-decoder";
-import { Conversion, EVM } from "truffle-decode-utils";
+import { Conversion, Definition, EVM } from "truffle-decode-utils";
 
 const DEFAULT_SCOPES = {
   byId: {}
@@ -105,6 +105,7 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
   switch (action.type) {
     case actions.ASSIGN:
     case actions.MAP_PATH_AND_ASSIGN:
+      debug("action.type %O", action.type);
       debug("action.assignments %O", action.assignments);
       return Object.values(action.assignments.byId).reduce(
         (acc, assignment) => {
@@ -201,7 +202,13 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
         byId: state.byId
       };
     case actions.MAP_PATH_AND_ASSIGN:
-      let { address, slot, assignments } = action;
+      let { address, slot, assignments, typeIdentifier, baseType } = action;
+
+      //we do NOT want to distinguish between types with and without "_ptr" on
+      //the end here!
+      debug("typeIdentifier %s", typeIdentifier);
+      typeIdentifier = Definition.restorePtr(typeIdentifier);
+      baseType = Definition.restorePtr(baseType);
 
       //assignments.byId should contain precisely one assignment; we'll just
       //need its ID, which is its key
@@ -224,18 +231,37 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
         byAddress: {
           ...state.byAddress,
           [address]: {
-            ...(state.byAddress[address] || {})
+            byType: {
+              ...(state.byAddress[address] || { byType: {} }).byType
+            }
           }
         },
         byId: {
           ...state.byId,
-          [id]: { address, slotAddress: hexSlotAddress }
+          [id]: { address, typeIdentifier, slotAddress: hexSlotAddress }
+        }
+      };
+
+      //now, let's add in the new type, if needed
+      newState.byAddress[address].byType = {
+        ...newState.byAddress[address].byType,
+        [typeIdentifier]: {
+          bySlotAddress: {
+            ...(
+              newState.byAddress[address].byType[typeIdentifier] || {
+                bySlotAddress: {}
+              }
+            ).bySlotAddress
+          }
         }
       };
 
       //now: are we just adding, doing nothing (except to byId), or are we
       //going to have to do a relink?
-      let oldInfo = newState.byAddress[address][hexSlotAddress];
+      let oldInfo =
+        newState.byAddress[address].byType[typeIdentifier].bySlotAddress[
+          hexSlotAddress
+        ];
       //yes, this looks strange, but we haven't changed it yet except to
       //clone or create empty (and we don't want undefined!)
       if (oldInfo === undefined) {
@@ -244,16 +270,24 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
         let newSlot;
         if (
           parentAddress !== undefined &&
-          newState.byAddress[address][parentAddress]
+          newState.byAddress[address].byType[baseType] &&
+          newState.byAddress[address].byType[baseType].bySlotAddress[
+            parentAddress
+          ]
         ) {
           newSlot = {
             ...slot,
-            path: newState.byAddress[address][parentAddress].slot
+            path:
+              newState.byAddress[address].byType[baseType].bySlotAddress[
+                parentAddress
+              ].slot
           };
         } else {
           newSlot = slot;
         }
-        newState.byAddress[address][hexSlotAddress] = {
+        newState.byAddress[address].byType[typeIdentifier].bySlotAddress[
+          hexSlotAddress
+        ] = {
           slot: newSlot,
           children: []
         };
@@ -265,21 +299,37 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
         //first, let's add ourselves to our parent's children
         //(we clone a bunch to avoid mutating state)
         //note that parentAddress is guaranteed to be defined in this case
-        newState.byAddress[address][parentAddress] = {
-          ...state.byAddress[address][parentAddress],
+        newState.byAddress[address].byType[baseType].bySlotAddress[
+          parentAddress
+        ] = {
+          slot:
+            state.byAddress[address].byType[baseType].bySlotAddress[
+              parentAddress
+            ].slot,
           children: [
-            ...state.byAddress[address][parentAddress].children,
-            slotAddress
+            ...state.byAddress[address].byType[baseType].bySlotAddress[
+              parentAddress
+            ].children,
+            {
+              slotAddress,
+              typeIdentifier
+            }
           ]
         };
         //now, let's redo the actual slot with our new path
-        newState.byAddress[address][hexSlotAddress] = {
+        newState.byAddress[address].byType[typeIdentifier].bySlotAddress[
+          hexSlotAddress
+        ] = {
           slot,
-          children: state.byAddress[address][hexSlotAddress].children
+          children:
+            state.byAddress[address].byType[typeIdentifier].bySlotAddress[
+              hexSlotAddress
+            ].children
         };
         //now, we perform the relink!
         newState.byAddress[address] = relink(
           newState.byAddress[address],
+          typeIdentifier,
           hexSlotAddress
         );
       }
@@ -296,19 +346,20 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
         decodingStarted: state.decodingStarted,
         byAddress: Object.assign(
           {},
-          ...Object.entries(state.byAddress).map(([address, slots]) => ({
-            [address === actions.dummyAddress ? action.adress : address]: slots
+          ...Object.entries(state.byAddress).map(([address, types]) => ({
+            [address === actions.dummyAddress ? action.adress : address]: types
           }))
         ),
         byId: Object.assign(
           {},
           ...Object.entries(state.byId).map(
-            ([id, { address, slotAddress }]) => ({
+            ([id, { address, type, slotAddress }]) => ({
               //note that the ID does *not* need to change here, as it comes
               //from a stackframe assignment, not an address assignment
               [id]: {
                 address:
                   address === action.dummyAddress ? action.address : address,
+                typeIdentifier: type,
                 slotAddress
               }
             })
@@ -326,18 +377,29 @@ function pathLength(slot) {
   return 1 + pathLength(slot.path);
 }
 
-function relink(slotMap, startAddress) {
-  let children = slotMap[startAddress].children;
-  let newSlotMap = { ...slotMap }; //we don't want to mutate slotMap
-  for (childAddress of children) {
-    newSlotMap[childAddress] = {
-      ...newSlotMap[childAddress],
+function relink(slotMap, startType, startAddress) {
+  let children = slotMap.byType[type].bySlotAddress[startAddress].children;
+  //we don't watn to mutate slotMap so let's do a partial clone first
+  //(we won't quite fully clone because, well, see below -- we do more)
+  let newSlotMap = {
+    byType: Object.assign(
+      {},
+      ...Object.entries(slotMap.byType).map(
+        ([type, { bySlotAddress: slots }]) => ({
+          [type]: { bySlotAddress: { ...slots } }
+        })
+      )
+    )
+  };
+  for (let { type, slotAddress } of children) {
+    newSlotMap.byType[type].bySlotAddress[slotAddress] = {
+      children: newSlotMap.byType[type].bySlotAddress[slotAddress].children,
       slot: {
-        ...newSlotMap[childAddress].slot,
-        path: newsSlotMap[startAddress].slot
+        ...newSlotMap.byType[type].bySlotAddress[slotAddress].slot,
+        path: newSlotMap.byType[startType].bySlotAddress[startAddress].slot
       }
     };
-    newSlotMap = relink(newSlotMap, childAddress);
+    newSlotMap = relink(newSlotMap, type, slotAddress);
   }
   return newSlotMap;
 }

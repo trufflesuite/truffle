@@ -339,8 +339,7 @@ function* tickSaga() {
               baseExpression
             );
             slot.offset = indexValue.muln(
-              storageSize(baseExpression, referenceDeclarations, allocations)
-                .words
+              storageSize(node, referenceDeclarations, allocations).words
             );
             break;
           case "mapping":
@@ -357,7 +356,13 @@ function* tickSaga() {
 
         //now, map it! (and do the assign as well)
         yield put(
-          actions.mapPathAndAssign(address || dummyAddress, slot, assignments)
+          actions.mapPathAndAssign(
+            address || dummyAddress,
+            slot,
+            assignments,
+            DecodeUtils.Definition.typeIdentifier(node),
+            DecodeUtils.Definition.typeIdentifier(baseExpression)
+          )
         );
       } else {
         //if we failed to decode, just do the assign from above
@@ -372,6 +377,8 @@ function* tickSaga() {
       //(see below) -- getting things ready for an assignment.  Then we're
       //going to forget this for a bit while we handle the rest...
       assignments = literalAssignments(node, stack, currentDepth);
+
+      debug("Member access case");
 
       //MemberAccess uses expression, not baseExpression
       baseExpression = node.expression;
@@ -406,7 +413,13 @@ function* tickSaga() {
 
       debug("slot %o", slot);
       yield put(
-        actions.mapPathAndAssign(address || dummyAddress, slot, assignments)
+        actions.mapPathAndAssign(
+          address || dummyAddress,
+          slot,
+          assignments,
+          DecodeUtils.Definition.typeIdentifier(node),
+          DecodeUtils.Definition.typeIdentifier(baseExpression)
+        )
       );
 
     default:
@@ -485,8 +498,9 @@ function fetchBasePath(
   //be via a pointer! for this reason, we fetch the base from the stack rather
   //than from the allocation table
   if (basePathRef !== undefined) {
-    return mappedPaths.byAddress[basePathRef.address][basePathRef.slotAddress]
-      .slot;
+    return mappedPaths.byAddress[basePathRef.address].byType[
+      basePathRef.typeIdentifier
+    ].bySlotAddress[basePathRef.slotAddress].slot;
   } else {
     //base expression is an expression, and so has a literal assigned to
     //it
