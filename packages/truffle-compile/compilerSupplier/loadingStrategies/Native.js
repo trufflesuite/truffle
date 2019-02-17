@@ -5,7 +5,7 @@ const VersionRange = require("./VersionRange");
 class Native extends LoadingStrategy {
   load() {
     const versionString = this.validateAndGetSolcVersion();
-    const command = "solc --standard-json";
+    const command = "solc --standard-json --allow-paths '.'";
 
     const versionRange = new VersionRange();
     const commit = versionRange.getCommitFromVersion(versionString);
