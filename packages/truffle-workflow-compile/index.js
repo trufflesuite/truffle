@@ -68,11 +68,18 @@ var Contracts = {
     // convert to promise to compile+write
     const compilations = await this.compileSources(config, compilers);
 
+    const numberOfCompiledContracts = compilations.reduce(
+      (number, compilation) => {
+        return number + Object.keys(compilation.contracts).length;
+      },
+      0
+    );
+    if (numberOfCompiledContracts === 0) {
+      return this.reportNothingToCompile(options);
+    }
+
     const collect = async compilations => {
-      let result = {
-        outputs: {},
-        contracts: {}
-      };
+      let result = { outputs: {}, contracts: {} };
 
       for (let compilation of await Promise.all(compilations)) {
         let { compiler, output, contracts } = compilation;
@@ -124,7 +131,7 @@ var Contracts = {
   reportCompilationStarted: options => {
     const logger = options.logger || console;
     if (!options.quiet) {
-      logger.log(OS.EOL + `Compiling your contracts`);
+      logger.log(OS.EOL + `Compiling your contracts` + OS.EOL);
     }
   },
 
@@ -144,6 +151,15 @@ var Contracts = {
         logger.log(OS.EOL + `Compilation successful`);
       }
       logger.log();
+    }
+  },
+
+  reportNothingToCompile: options => {
+    const logger = options.logger || console;
+    if (!options.quiet) {
+      logger.log(
+        `Everything is up to date, there is nothing to compile.` + OS.EOL
+      );
     }
   },
 
