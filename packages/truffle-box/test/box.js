@@ -22,7 +22,7 @@ describe("truffle-box Box", () => {
   });
 
   describe(".unbox()", () => {
-    it("unboxes truffle box from github", () => {
+    it("unboxes truffle box from github", done => {
       return Box.unbox(TRUFFLE_BOX_DEFAULT, destination).then(truffleConfig => {
         assert.ok(truffleConfig);
 
@@ -30,6 +30,7 @@ describe("truffle-box Box", () => {
           fs.existsSync(path.join(destination, "truffle-config.js")),
           "Unboxed project should have truffle config."
         );
+        done();
       });
     });
 
@@ -121,7 +122,10 @@ describe("truffle-box Box", () => {
           "truffle-config.js wasn't recreated!"
         );
         const newConfig = fs.readFileSync(truffleConfigPath, "utf8");
-        assert(newConfig !== mockConfig, "truffle-config.js wasn't overwritten!");
+        assert(
+          newConfig !== mockConfig,
+          "truffle-config.js wasn't overwritten!"
+        );
         done();
       });
     });
