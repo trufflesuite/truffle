@@ -8,8 +8,8 @@ describe("LoadingStrategy base class", () => {
   beforeEach(() => {
     instance = new LoadingStrategy();
     expectedDefaultConfig = {
-      versionsUrl: "https://solc-bin.ethereum.org/bin/list.json",
-      compilerUrlRoot: "https://solc-bin.ethereum.org/bin/",
+      versionsUrl: "https://ethereum.github.io/solc-bin/bin/list.json",
+      compilerUrlRoot: "https://ethereum.github.io/solc-bin/bin/",
       dockerTagsUrl:
         "https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/"
     };
