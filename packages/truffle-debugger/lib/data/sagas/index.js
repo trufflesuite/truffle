@@ -7,6 +7,7 @@ import { prefixName, stableKeccak256 } from "lib/helpers";
 
 import { TICK } from "lib/trace/actions";
 import * as actions from "../actions";
+import * as trace from "lib/trace/sagas";
 
 import data from "../selectors";
 
@@ -40,6 +41,7 @@ function* tickSaga() {
 
   let stack = yield select(data.next.state.stack);
   if (!stack) {
+    yield* trace.signalTickSagaCompletion();
     return;
   }
 
@@ -47,6 +49,7 @@ function* tickSaga() {
   var assignment, assignments, baseExpression, slot, path;
 
   if (!node) {
+    yield* trace.signalTickSagaCompletion();
     return;
   }
 
@@ -58,6 +61,7 @@ function* tickSaga() {
   // asserts that the _current_ operation is the final one before
   // proceeding
   if (!(yield select(data.views.atLastInstructionForSourceRange))) {
+    yield* trace.signalTickSagaCompletion();
     return;
   }
 
@@ -198,7 +202,7 @@ function* tickSaga() {
           DecodeUtils.Definition.referenceType(baseExpression)
         );
         debug("isReference(node) %o", DecodeUtils.Definition.isReference(node));
-        yield putResolve(actions.assign(assignments));
+        yield put(actions.assign(assignments));
         break;
       }
 
@@ -212,7 +216,7 @@ function* tickSaga() {
       //begin subsection: key decoding
       //(I tried factoring this out into its own saga but it didn't work when I
       //did :P )
-      yield putResolve(actions.mapKeyDecoding(true));
+      yield put(actions.mapKeyDecoding(true));
 
       let indexValue;
       let indexDefinition = node.indexExpression;
@@ -307,7 +311,7 @@ function* tickSaga() {
         //now, as mentioned, retry in the typeConversion case
       }
 
-      yield putResolve(actions.mapKeyDecoding(false));
+      yield put(actions.mapKeyDecoding(false));
       //end subsection: key decoding
 
       debug("index value %O", indexValue);
@@ -349,7 +353,7 @@ function* tickSaga() {
         debug("slot %O", slot);
 
         //now, map it! (and do the assign as well)
-        yield putResolve(
+        yield put(
           actions.mapPathAndAssign(
             address || dummyAddress,
             slot,
@@ -361,7 +365,7 @@ function* tickSaga() {
       } else {
         //if we failed to decode, just do the assign from above
         debug("failed to decode, just assigning");
-        yield putResolve(actions.assign(assignments));
+        yield put(actions.assign(assignments));
       }
 
       break;
@@ -387,7 +391,7 @@ function* tickSaga() {
           : !DecodeUtils.Definition.isMapping(node))
       ) {
         debug("Member case bailed out early");
-        yield putResolve(actions.assign(assignments));
+        yield put(actions.assign(assignments));
         break;
       }
 
@@ -408,7 +412,7 @@ function* tickSaga() {
       slot.offset = memberAllocation.pointer.storage.from.slot.offset.clone();
 
       debug("slot %o", slot);
-      yield putResolve(
+      yield put(
         actions.mapPathAndAssign(
           address || dummyAddress,
           slot,
@@ -428,9 +432,11 @@ function* tickSaga() {
       debug("currentDepth %d node.id %d", currentDepth, node.id);
 
       assignments = literalAssignments(node, stack, currentDepth);
-      yield putResolve(actions.assign(assignments));
+      yield put(actions.assign(assignments));
       break;
   }
+
+  yield* trace.signalTickSagaCompletion();
 }
 
 export function* reset() {

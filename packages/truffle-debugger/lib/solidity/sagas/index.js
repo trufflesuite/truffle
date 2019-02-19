@@ -6,6 +6,7 @@ import { prefixName } from "lib/helpers";
 
 import * as actions from "../actions";
 import { TICK } from "lib/trace/actions";
+import * as trace from "lib/trace/sagas";
 
 import solidity from "../selectors";
 
@@ -23,6 +24,7 @@ function* tickSaga() {
     debug("got TICK");
 
     yield* functionDepthSaga();
+    yield* trace.signalTickSagaCompletion();
   }
 }
 

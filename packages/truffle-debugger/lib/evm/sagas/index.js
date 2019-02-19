@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:evm:sagas");
 
-import { call, put, take, select } from "redux-saga/effects";
+import { put, take, select } from "redux-saga/effects";
 import { prefixName, keccak256 } from "lib/helpers";
 
 import { TICK } from "lib/trace/actions";
@@ -10,6 +10,7 @@ import * as actions from "../actions";
 import evm from "../selectors";
 
 import * as data from "lib/data/sagas";
+import * as trace from "lib/trace/sagas";
 
 import * as DecodeUtils from "truffle-decode-utils";
 
@@ -115,6 +116,8 @@ export function* callstackSaga() {
 
       yield put(actions.returnCall());
     }
+
+    yield* trace.signalTickSagaCompletion();
   }
 }
 
@@ -123,7 +126,7 @@ export function* reset() {
 }
 
 export function* saga() {
-  yield call(callstackSaga);
+  yield* callstackSaga();
 }
 
 export default prefixName("evm", saga);
