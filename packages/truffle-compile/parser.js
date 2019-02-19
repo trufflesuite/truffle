@@ -20,8 +20,7 @@ module.exports = {
     // If we're using docker/native, we'll still want to use solcjs to do this part.
     // if (solc.importsParser) solc = solc.importsParser;
     // Helper to detect import errors with an easy regex.
-    var importErrorKeySolcJS = "TRUFFLE_IMPORT";
-    var importErrorKeyNative = "File not found.";
+    var importErrorKey = "not found: File";
 
     // Inject failing import.
     var failingImportFileName = "__Truffle__NotFound.sol";
@@ -44,12 +43,7 @@ module.exports = {
       }
     };
 
-    var output = solc.compile(JSON.stringify(solcStandardInput), function() {
-      // The existence of this function ensures we get a parsable error message.
-      // Without this, we'll get an error message we *can* detect, but the key will make it easier.
-      // Note: This is not a normal callback. See docs here: https://github.com/ethereum/solc-js#from-version-021
-      return { error: importErrorKeySolcJS || importErrorKeyNative };
-    });
+    var output = solc.compile(JSON.stringify(solcStandardInput));
 
     output = JSON.parse(output);
 
@@ -63,10 +57,7 @@ module.exports = {
       // This means we have a *different* parsing error which we should show to the user.
       // Note: solc can return multiple parsing errors at once.
       // We ignore the "pre-release compiler" warning message.
-      return (
-        solidity_error.formattedMessage.indexOf(importErrorKeySolcJS) < 0 &&
-        solidity_error.formattedMessage.indexOf(importErrorKeyNative) < 0
-      );
+      return solidity_error.formattedMessage.indexOf(importErrorKey) < 0;
     });
 
     // Should we try to throw more than one? (aside; we didn't before)
