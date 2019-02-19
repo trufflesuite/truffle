@@ -38,8 +38,6 @@ function* tickSaga() {
   let address = yield select(data.current.address); //may be undefined
   let dummyAddress = yield select(data.current.dummyAddress);
 
-  debug("node %o", node);
-
   let stack = yield select(data.next.state.stack);
   if (!stack) {
     return;
@@ -182,17 +180,16 @@ function* tickSaga() {
 
       //but first, a diversion -- is this something that could not *possibly*
       //lead to a mapping?  i.e., either a bytes, or an array of non-reference
-      //types, or a non-storage array in storage?
+      //types, or a non-storage array?
       //if so, we'll just do the assign and quit out early
-      //(note: we write it this way because mappings don't always have a
-      //referenceType, despite always being storage)
+      //(note: we write it this way because mappings aren't caught by
+      //isReference)
       if (
         DecodeUtils.Definition.typeClass(baseExpression) === "bytes" ||
         (DecodeUtils.Definition.typeClass(baseExpression) === "array" &&
-          (DecodeUtils.Definition.referenceType(baseExpression) !== "storage" ||
-            !DecodeUtils.Definition.isReference(
-              DecodeUtils.Definition.baseDefinition(baseExpression)
-            )))
+          (DecodeUtils.Definition.isReference(node)
+            ? DecodeUtils.Definition.referenceType(baseExpression) !== "storage"
+            : !DecodeUtils.Definition.isMapping(node)))
       ) {
         debug("Index case bailed out early");
         debug("typeClass %s", DecodeUtils.Definition.typeClass(baseExpression));
@@ -200,11 +197,8 @@ function* tickSaga() {
           "referenceType %s",
           DecodeUtils.Definition.referenceType(baseExpression)
         );
-        debug(
-          "baseDefinition %o",
-          DecodeUtils.Definition.baseDefinition(baseExpression)
-        );
-        yield put(actions.assign(assignments));
+        debug("isReference(node) %o", DecodeUtils.Definition.isReference(node));
+        yield putResolve(actions.assign(assignments));
         break;
       }
 
@@ -218,12 +212,12 @@ function* tickSaga() {
       //begin subsection: key decoding
       //(I tried factoring this out into its own saga but it didn't work when I
       //did :P )
-      yield put(actions.mapKeyDecoding(true));
+      yield putResolve(actions.mapKeyDecoding(true));
 
       let indexValue;
       let indexDefinition = node.indexExpression;
 
-      //why the loop? see the end of the block it heads to for an explanatory
+      //why the loop? see the end of the block it heads for an explanatory
       //comment
       while (indexValue === undefined) {
         let indexId = indexDefinition.id;
@@ -313,7 +307,7 @@ function* tickSaga() {
         //now, as mentioned, retry in the typeConversion case
       }
 
-      yield put(actions.mapKeyDecoding(false));
+      yield putResolve(actions.mapKeyDecoding(false));
       //end subsection: key decoding
 
       debug("index value %O", indexValue);
@@ -355,7 +349,7 @@ function* tickSaga() {
         debug("slot %O", slot);
 
         //now, map it! (and do the assign as well)
-        yield put(
+        yield putResolve(
           actions.mapPathAndAssign(
             address || dummyAddress,
             slot,
@@ -367,7 +361,7 @@ function* tickSaga() {
       } else {
         //if we failed to decode, just do the assign from above
         debug("failed to decode, just assigning");
-        yield put(actions.assign(assignments));
+        yield putResolve(actions.assign(assignments));
       }
 
       break;
@@ -383,15 +377,17 @@ function* tickSaga() {
       //MemberAccess uses expression, not baseExpression
       baseExpression = node.expression;
 
-      //if this isn't a storage struct, we'll just do the assignment and quit
-      //out
+      //if this isn't a storage struct, or the element isn't of reference type,
+      //we'll just do the assignment and quit out (again, note that mappings
+      //aren't caught by isReference)
       if (
         DecodeUtils.Definition.typeClass(baseExpression) !== "struct" ||
-        !DecodeUtils.Definition.isReference(baseExpression) ||
-        DecodeUtils.Definition.referenceType(baseExpression) !== "storage"
+        (DecodeUtils.Definition.isReference(node)
+          ? DecodeUtils.Definition.referenceType(baseExpression) !== "storage"
+          : !DecodeUtils.Definition.isMapping(node))
       ) {
         debug("Member case bailed out early");
-        yield put(actions.assign(assignments));
+        yield putResolve(actions.assign(assignments));
         break;
       }
 
@@ -412,7 +408,7 @@ function* tickSaga() {
       slot.offset = memberAllocation.pointer.storage.from.slot.offset.clone();
 
       debug("slot %o", slot);
-      yield put(
+      yield putResolve(
         actions.mapPathAndAssign(
           address || dummyAddress,
           slot,
@@ -432,7 +428,7 @@ function* tickSaga() {
       debug("currentDepth %d node.id %d", currentDepth, node.id);
 
       assignments = literalAssignments(node, stack, currentDepth);
-      yield put(actions.assign(assignments));
+      yield putResolve(actions.assign(assignments));
       break;
   }
 }
@@ -500,7 +496,7 @@ function fetchBasePath(
   if (basePathRef !== undefined) {
     return mappedPaths.byAddress[basePathRef.address].byType[
       basePathRef.typeIdentifier
-    ].bySlotAddress[basePathRef.slotAddress].slot;
+    ].bySlotAddress[basePathRef.slotAddress];
   } else {
     //base expression is an expression, and so has a literal assigned to
     //it

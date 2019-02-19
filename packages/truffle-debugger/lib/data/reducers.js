@@ -256,18 +256,16 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
         }
       };
 
-      //now: are we just adding, doing nothing (except to byId), or are we
-      //going to have to do a relink?
-      let oldInfo =
+      let oldSlot =
         newState.byAddress[address].byType[typeIdentifier].bySlotAddress[
           hexSlotAddress
         ];
       //yes, this looks strange, but we haven't changed it yet except to
       //clone or create empty (and we don't want undefined!)
-      if (oldInfo === undefined) {
-        //case 1: just add -- but note that if the parent is already present,
-        //use that instead of the given parent!
+      //now: is there something already there or no?  if no, we must add
+      if (oldSlot === undefined) {
         let newSlot;
+        debug("parentAddress %o", parentAddress);
         if (
           parentAddress !== undefined &&
           newState.byAddress[address].byType[baseType] &&
@@ -275,66 +273,24 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
             parentAddress
           ]
         ) {
+          //if the parent is already present, use that instead of the given
+          //parent!
           newSlot = {
             ...slot,
             path:
               newState.byAddress[address].byType[baseType].bySlotAddress[
                 parentAddress
-              ].slot
+              ]
           };
         } else {
           newSlot = slot;
         }
         newState.byAddress[address].byType[typeIdentifier].bySlotAddress[
           hexSlotAddress
-        ] = {
-          slot: newSlot,
-          children: []
-        };
-      } else if (pathLength(oldInfo.slot) < pathLength(slot)) {
-        //case 2: we need to do a relink
-        //NOTE: this should only happen when pathLength(oldInfo.slot) == 0
-        //i.e. oldInfo.slot.path === undefined
-        //so I am going to make that assumption
-        //first, let's add ourselves to our parent's children
-        //(we clone a bunch to avoid mutating state)
-        //note that parentAddress is guaranteed to be defined in this case
-        newState.byAddress[address].byType[baseType].bySlotAddress[
-          parentAddress
-        ] = {
-          slot:
-            state.byAddress[address].byType[baseType].bySlotAddress[
-              parentAddress
-            ].slot,
-          children: [
-            ...state.byAddress[address].byType[baseType].bySlotAddress[
-              parentAddress
-            ].children,
-            {
-              slotAddress,
-              typeIdentifier
-            }
-          ]
-        };
-        //now, let's redo the actual slot with our new path
-        newState.byAddress[address].byType[typeIdentifier].bySlotAddress[
-          hexSlotAddress
-        ] = {
-          slot,
-          children:
-            state.byAddress[address].byType[typeIdentifier].bySlotAddress[
-              hexSlotAddress
-            ].children
-        };
-        //now, we perform the relink!
-        newState.byAddress[address] = relink(
-          newState.byAddress[address],
-          typeIdentifier,
-          hexSlotAddress
-        );
+        ] = newSlot;
       }
-      //case 3: we don't need to do anything (except update byId which we
-      //already did)
+      //if there's already something there, we don't need to do anything
+      //(except update byId, which we already did)
 
       return newState;
 
@@ -370,38 +326,6 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
     default:
       return state;
   }
-}
-
-function pathLength(slot) {
-  if (slot.path === undefined) return 0;
-  return 1 + pathLength(slot.path);
-}
-
-function relink(slotMap, startType, startAddress) {
-  let children = slotMap.byType[type].bySlotAddress[startAddress].children;
-  //we don't watn to mutate slotMap so let's do a partial clone first
-  //(we won't quite fully clone because, well, see below -- we do more)
-  let newSlotMap = {
-    byType: Object.assign(
-      {},
-      ...Object.entries(slotMap.byType).map(
-        ([type, { bySlotAddress: slots }]) => ({
-          [type]: { bySlotAddress: { ...slots } }
-        })
-      )
-    )
-  };
-  for (let { type, slotAddress } of children) {
-    newSlotMap.byType[type].bySlotAddress[slotAddress] = {
-      children: newSlotMap.byType[type].bySlotAddress[slotAddress].children,
-      slot: {
-        ...newSlotMap.byType[type].bySlotAddress[slotAddress].slot,
-        path: newSlotMap.byType[startType].bySlotAddress[startAddress].slot
-      }
-    };
-    newSlotMap = relink(newSlotMap, type, slotAddress);
-  }
-  return newSlotMap;
 }
 
 const proc = combineReducers({

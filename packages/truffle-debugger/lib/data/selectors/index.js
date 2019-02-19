@@ -189,7 +189,6 @@ const data = createSelectorTree({
                 .byType
             ).map(({ bySlotAddress }) => Object.values(bySlotAddress))
           )
-          .map(({ slot }) => slot)
           .filter(slot => slot.key !== undefined)
     )
   },

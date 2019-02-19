@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:trace:sagas");
 
-import { take, takeEvery, put, select } from "redux-saga/effects";
+import { take, takeEvery, put, putResolve, select } from "redux-saga/effects";
 import { prefixName, isCallMnemonic } from "lib/helpers";
 
 import * as DecodeUtils from "truffle-decode-utils";
@@ -27,7 +27,7 @@ function* waitForTrace() {
 }
 
 export function* advance() {
-  yield put(actions.next());
+  yield putResolve(actions.next());
 
   debug("TOCK to take");
   yield take([actions.TOCK, actions.END_OF_TRACE]);
@@ -43,7 +43,7 @@ function* next() {
   if (remaining > 0) {
     debug("putting TICK");
     // updates state for current step
-    yield put(actions.tick());
+    yield putResolve(actions.tick());
     debug("put TICK");
 
     remaining--; // local update, just for convenience
