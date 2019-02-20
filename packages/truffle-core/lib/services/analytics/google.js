@@ -147,7 +147,7 @@ const googleAnalytics = {
     let sendObject = {};
     if (eventObject["command"]) {
       sendObject["ec"] = "Truffle Command";
-      sendObject["ea"] = eventObject["command"];
+      sendObject["ea"] = eventObject["command"] + " " + eventObject["args"][0];
       sendObject["el"] = eventObject["version"];
       sendObject["dp"] = "/" + eventObject["command"];
     } else {
