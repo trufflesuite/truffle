@@ -89,7 +89,7 @@ command.run(inputArguments, options, function(err) {
           let identifyingInfo = directory.split("truffle")[0];
           identifyingInfo.replace(/\//gi, "\\/");
           let removedInfo = new RegExp(identifyingInfo, "g");
-          error.replace(removedInfo, "");
+          error = error.replace(removedInfo, "");
         }
         analytics.send({
           exception: "Other Error - " + error,
