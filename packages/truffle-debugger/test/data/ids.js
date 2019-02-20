@@ -12,6 +12,7 @@ import trace from "lib/trace/selectors";
 import solidity from "lib/solidity/selectors";
 
 import * as TruffleDecodeUtils from "truffle-decode-utils";
+import BN from "bn.js";
 
 const __FACTORIAL = `
 pragma solidity ^0.5.0;
@@ -212,20 +213,20 @@ describe("Variable IDs", function() {
       session.continueUntilBreakpoint();
     }
 
-    assert.deepEqual(TruffleDecodeUtils.Conversion.cleanBNs(values), [
-      "3",
-      "2",
-      "1",
-      "0",
-      "1",
-      "1",
-      "2",
-      "6"
+    assert.deepEqual(values, [
+      new BN(3),
+      new BN(2),
+      new BN(1),
+      new BN(0),
+      new BN(1),
+      new BN(1),
+      new BN(2),
+      new BN(6)
     ]);
   });
 
   it("Learns contract addresses and distinguishes the results", async function() {
-    this.timeout(30000);
+    this.timeout(4000);
     let instance = await abstractions.AddressTest.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;

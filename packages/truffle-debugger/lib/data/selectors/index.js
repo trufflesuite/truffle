@@ -10,7 +10,7 @@ import ast from "lib/ast/selectors";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
-import * as TruffleDecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "truffle-decode-utils";
 import { forEvmState } from "truffle-decoder";
 
 /**
@@ -26,15 +26,7 @@ function createStateSelectors({ stack, memory, storage }) {
     stack: createLeaf(
       [stack],
 
-      words =>
-        (words || []).map(word =>
-          TruffleDecodeUtils.Conversion.toBytes(
-            TruffleDecodeUtils.Conversion.toBN(
-              word,
-              TruffleDecodeUtils.EVM.WORD_SIZE
-            )
-          )
-        )
+      words => (words || []).map(word => DecodeUtils.Conversion.toBytes(word))
     ),
 
     /**
@@ -43,12 +35,7 @@ function createStateSelectors({ stack, memory, storage }) {
     memory: createLeaf(
       [memory],
 
-      words =>
-        new Uint8Array(
-          (words.join("").match(/.{1,2}/g) || []).map(byte =>
-            parseInt(byte, 16)
-          )
-        )
+      words => DecodeUtils.Conversion.toBytes(words.join(""))
     ),
 
     /**
@@ -61,9 +48,7 @@ function createStateSelectors({ stack, memory, storage }) {
         Object.assign(
           {},
           ...Object.entries(mapping).map(([address, word]) => ({
-            [`0x${address}`]: new Uint8Array(
-              (word.match(/.{1,2}/g) || []).map(byte => parseInt(byte, 16))
-            )
+            [`0x${address}`]: DecodeUtils.Conversion.toBytes(word)
           }))
         )
     )
@@ -77,38 +62,64 @@ const data = createSelectorTree({
    * data.views
    */
   views: {
+    /**
+     * data.views.ast
+     */
     ast: createLeaf([ast.current], tree => tree),
 
+    /*
+     * data.views.atLastInstructionForSourceRange
+     */
     atLastInstructionForSourceRange: createLeaf(
       [solidity.current.isSourceRangeFinal],
       final => final
     ),
 
     /**
-     * data.views.scopes
+     * data.views.scopes (namespace)
      */
     scopes: {
       /**
-       * data.views.scopes.inlined
+       * data.views.scopes.inlined (namespace)
        */
-      inlined: createLeaf(
-        ["/info/scopes", solidity.info.sources],
-
-        (scopes, sources) =>
+      inlined: {
+        /**
+         * data.views.scopes.inlined (selector)
+         * see data.info.scopes for how this differs from the raw version
+         */
+        _: createLeaf(["/info/scopes", "./raw"], (scopes, inlined) =>
           Object.assign(
             {},
-            ...Object.entries(scopes).map(([id, entry]) => ({
-              [id]: {
-                ...entry,
-
-                definition: jsonpointer.get(
-                  sources[entry.sourceId].ast,
-                  entry.pointer
-                )
-              }
-            }))
+            ...Object.entries(inlined).map(([id, info]) => {
+              let newInfo = { ...info };
+              newInfo.variables = scopes[id].variables;
+              return { [id]: newInfo };
+            })
           )
-      )
+        ),
+
+        /**
+         * data.views.scopes.inlined.raw
+         */
+        raw: createLeaf(
+          ["/info/scopes/raw", solidity.info.sources],
+
+          (scopes, sources) =>
+            Object.assign(
+              {},
+              ...Object.entries(scopes).map(([id, entry]) => ({
+                [id]: {
+                  ...entry,
+
+                  definition: jsonpointer.get(
+                    sources[entry.sourceId].ast,
+                    entry.pointer
+                  )
+                }
+              }))
+            )
+        )
+      }
     },
 
     /**
@@ -117,14 +128,52 @@ const data = createSelectorTree({
      * selector returns (ast node definition, data reference) => Promise<value>
      */
     decoder: createLeaf(
-      ["/views/scopes/inlined", "/next/state", "/proc/mappingKeys"],
+      [
+        "/views/referenceDeclarations",
+        "/next/state",
+        "/proc/mappingKeys",
+        "/info/allocations/storage"
+      ],
 
-      (scopes, state, mappingKeys) => (definition, ref) =>
+      (referenceDeclarations, state, mappingKeys, storageAllocations) => (
+        definition,
+        ref
+      ) =>
         forEvmState(definition, ref, {
-          scopes,
+          referenceDeclarations,
           state,
-          mappingKeys
+          mappingKeys,
+          storageAllocations
         })
+    ),
+
+    /*
+     * data.views.userDefinedTypes
+     */
+    userDefinedTypes: {
+      /*
+       * data.views.userDefinedTypes.contractDefinitions
+       * restrict to contracts only, and get their definitions
+       */
+      contractDefinitions: createLeaf(
+        ["/info/userDefinedTypes", "/views/scopes/inlined"],
+        (typeIds, scopes) =>
+          typeIds
+            .map(id => scopes[id].definition)
+            .filter(node => node.nodeType === "ContractDefinition")
+      )
+    },
+
+    /*
+     * data.views.referenceDeclarations
+     */
+    referenceDeclarations: createLeaf(
+      ["./scopes/inlined", "/info/userDefinedTypes"],
+      (scopes, userDefinedTypes) =>
+        Object.assign(
+          {},
+          ...userDefinedTypes.map(id => ({ [id]: scopes[id].definition }))
+        )
     )
   },
 
@@ -133,9 +182,83 @@ const data = createSelectorTree({
    */
   info: {
     /**
-     * data.info.scopes
+     * data.info.scopes (namespace)
      */
-    scopes: createLeaf(["/state"], state => state.info.scopes.byId)
+    scopes: {
+      /**
+       * data.info.scopes (selector)
+       * the raw version is below; this version accounts for inheritance
+       * NOTE: doesn't this selector really belong in data.views?  Yes.
+       * But, since it's replacing the old data.info.scopes (which is now
+       * data.info.scopes.raw), I didn't want to move it.
+       */
+      _: createLeaf(["./raw", "/views/scopes/inlined/raw"], (scopes, inlined) =>
+        Object.assign(
+          {},
+          ...Object.entries(scopes).map(([id, scope]) => {
+            let definition = inlined[id].definition;
+            if (
+              definition.nodeType !== "ContractDefinition" ||
+              scope.variables === undefined
+            ) {
+              return { [id]: scope };
+            }
+            //if we've reached this point, we should be dealing with a
+            //contract, and specifically a contract -- not an interface or
+            //library (those don't get "variables" entries in their scopes)
+            debug("contract id %d", id);
+            let newScope = { ...scope };
+            //note that Solidity gives us the linearization in order from most
+            //derived to most base, but we want most base to most derived;
+            //annoyingly, reverse() is in-place, so we clone with slice() first
+            let linearizedBaseContractsFromBase = definition.linearizedBaseContracts
+              .slice()
+              .reverse();
+            //now, we put it all together
+            newScope.variables = []
+              .concat(
+                ...linearizedBaseContractsFromBase.map(
+                  contractId => scopes[contractId].variables
+                )
+              )
+              .filter(variable => {
+                //...except, HACK, let's filter out those constants we don't know
+                //how to read.  they'll just clutter things up.
+                let definition = inlined[variable.id].definition;
+                return (
+                  !definition.constant ||
+                  DecodeUtils.Definition.isSimpleConstant(definition.value)
+                );
+              });
+
+            return { [id]: newScope };
+          })
+        )
+      ),
+
+      /*
+       * data.info.scopes.raw
+       */
+      raw: createLeaf(["/state"], state => state.info.scopes.byId)
+    },
+
+    /*
+     * data.info.allocations
+     */
+    allocations: {
+      /*
+       * data.info.allocations.storage
+       */
+      storage: createLeaf(["/state"], state => state.info.allocations.storage)
+    },
+
+    /**
+     * data.info.userDefinedTypes
+     */
+    userDefinedTypes: createLeaf(
+      ["/state"],
+      state => state.info.userDefinedTypes
+    )
   },
 
   /**
@@ -346,20 +469,11 @@ const data = createSelectorTree({
             })
           );
           const keyedResults = await Promise.all(keyedPromises);
-          return TruffleDecodeUtils.Conversion.cleanMappings(
+          return DecodeUtils.Conversion.cleanContainers(
             Object.assign({}, ...keyedResults)
           );
         }
-      ),
-
-      /**
-       * data.current.identifiers.native
-       *
-       * Returns an object with values as Promises
-       */
-      native: createLeaf(["./decoded"], async decoded => {
-        return TruffleDecodeUtils.Conversion.cleanBNs(await decoded);
-      })
+      )
     }
   },
 

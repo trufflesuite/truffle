@@ -7,7 +7,7 @@ function EPM(working_directory, contracts_build_directory) {
 };
 
 EPM.prototype.require = function(import_path, search_path) {
-  if (import_path.indexOf(".") == 0 || import_path.indexOf("/") == 0) {
+  if (import_path.indexOf(".") === 0 || import_path.indexOf("/") === 0) {
     return null;
   }
 
@@ -53,7 +53,7 @@ EPM.prototype.require = function(import_path, search_path) {
 
     Object.keys(deployments).forEach(function(name) {
       var deployment = deployments[name];
-      if (deployment.contract_type == contract_name) {
+      if (deployment.contract_type === contract_name) {
         json.networks[blockchain] = {
           events: {},
           links: {},

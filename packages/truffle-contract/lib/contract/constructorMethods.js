@@ -71,8 +71,8 @@ module.exports = Contract => {
       return new Promise(function(accept, reject) {
         if (
           address == null ||
-          typeof address != "string" ||
-          address.length != 42
+          typeof address !== "string" ||
+          address.length !== 42
         ) {
           var err =
             "Invalid address passed to " +
@@ -197,7 +197,7 @@ module.exports = Contract => {
                 // blockchain uris and see if they match.
                 var uris = Object.keys(constructor._json.networks).filter(
                   function(network) {
-                    return network.indexOf("blockchain://") == 0;
+                    return network.indexOf("blockchain://") === 0;
                   }
                 );
 
@@ -255,10 +255,10 @@ module.exports = Contract => {
       var constructor = this;
 
       // Case: Contract.link(instance)
-      if (typeof name == "function") {
+      if (typeof name === "function") {
         var contract = name;
 
-        if (contract.isDeployed() == false) {
+        if (contract.isDeployed() === false) {
           throw new Error("Cannot link contract without an address.");
         }
 
@@ -273,7 +273,7 @@ module.exports = Contract => {
       }
 
       // Case: Contract.link({<libraryName>: <address>, ... })
-      if (typeof name == "object") {
+      if (typeof name === "object") {
         var obj = name;
         Object.keys(obj).forEach(function(name) {
           var a = obj[name];
@@ -311,7 +311,7 @@ module.exports = Contract => {
       var network_id;
 
       // If we have a network id passed
-      if (typeof json != "object") {
+      if (typeof json !== "object") {
         network_id = json;
         json = constructor._json;
       }
@@ -335,7 +335,7 @@ module.exports = Contract => {
 
       // Copy over custom key/values to the contract class
       Object.keys(json).forEach(function(key) {
-        if (key.indexOf("x-") != 0) return;
+        if (key.indexOf("x-") !== 0) return;
         temp[key] = json[key];
       });
 

@@ -5,7 +5,6 @@ const assert = require("assert");
 const findCacheDir = require("find-cache-dir");
 const Resolver = require("truffle-resolver");
 const compile = require("../index");
-const CompilerSupplier = require("../compilerSupplier");
 const Config = require("truffle-config");
 
 function waitSecond() {
@@ -13,65 +12,6 @@ function waitSecond() {
 }
 
 describe("CompilerSupplier", function() {
-  let supplier;
-
-  describe("getters", function() {
-    before(() => (supplier = new CompilerSupplier()));
-
-    it("getVersions: should return versions object", async function() {
-      const list = await supplier.getVersions();
-      assert(list.releases !== undefined);
-    });
-
-    it("getVersionUrlSegment: should return a JS file name", async function() {
-      const list = await supplier.getVersions();
-
-      let input = "0.4.21";
-      let expected = "soljson-v0.4.21+commit.dfe3193c.js";
-
-      let fileName = await supplier.getVersionUrlSegment(input, list);
-      assert(fileName === expected, "Should locate by version");
-
-      input = "nightly.2018.4.12";
-      expected = "soljson-v0.4.22-nightly.2018.4.12+commit.c3dc67d0.js";
-
-      fileName = await supplier.getVersionUrlSegment(input, list);
-      assert(fileName === expected, "Should locate by nightly");
-
-      input = "commit.c3dc67d0";
-      expected = "soljson-v0.4.22-nightly.2018.4.12+commit.c3dc67d0.js";
-
-      fileName = await supplier.getVersionUrlSegment(input, list);
-      assert(fileName === expected, "Should locate by commit");
-
-      input = "0.4.55.77-fantasy-solc";
-      expected = null;
-
-      fileName = await supplier.getVersionUrlSegment(input, list);
-      assert(fileName === null, "Should return null if not found");
-    });
-
-    it("getReleases: should return a `releases` object", async function() {
-      const releases = await supplier.getReleases();
-      const firstSolc = "0.1.3-nightly.2015.9.25+commit.4457170";
-
-      assert(
-        releases.prereleases[0] === firstSolc,
-        "Should return prereleases"
-      );
-      assert(
-        releases.releases[0] === releases.latestRelease,
-        "Should return releases/latestRelease"
-      );
-    });
-
-    it("lists available docker images [ @native ]", async function() {
-      const list = await supplier.getDockerTags();
-      assert(Array.isArray(list));
-      assert(typeof list[0] === "string");
-    });
-  });
-
   describe("integration", function() {
     this.timeout(40000);
     let oldPragmaPinSource; //  0.4.15
@@ -124,7 +64,6 @@ describe("CompilerSupplier", function() {
     it("compiles w/ remote solc when options specify release (pinned)", function(done) {
       options.compilers = {
         solc: {
-          cache: false,
           version: "0.4.15",
           settings: {}
         }
@@ -139,36 +78,22 @@ describe("CompilerSupplier", function() {
     });
 
     it("compiles w/ remote solc when options specify prerelease (float)", function(done) {
+      this.timeout(20000);
       // An 0.4.16 prerelease for 0.4.15
       options.compilers = {
         solc: {
-          cache: false,
           version: "0.4.16-nightly.2017.8.9+commit.81887bc7",
           settings: {}
         }
       };
 
       compile(oldPragmaFloatSource, options, (err, result) => {
-        if (err) return done(err);
+        if (err) {
+          assert(false);
+          done();
+        }
 
         assert(result["OldPragmaFloat"].contract_name === "OldPragmaFloat");
-        done();
-      });
-    });
-
-    it("errors when specified release does not exist", function(done) {
-      options.compilers = {
-        solc: {
-          cache: false,
-          version: "0.4.55.77-fantasy-solc",
-          settings: {}
-        }
-      };
-
-      compile(version4PragmaSource, options, err => {
-        assert(
-          err.message.includes("Could not find a compiler version matching")
-        );
         done();
       });
     });
@@ -181,7 +106,6 @@ describe("CompilerSupplier", function() {
 
       options.compilers = {
         solc: {
-          cache: false,
           version: pathToSolc
         }
       };
@@ -192,25 +116,6 @@ describe("CompilerSupplier", function() {
         if (err) return done(err);
 
         assert(result["Version5Pragma"].contract_name === "Version5Pragma");
-        done();
-      });
-    });
-
-    it("errors when specified path does not exist", function(done) {
-      const pathToSolc = path.join(
-        __dirname,
-        "../solidity-warehouse/solc/index.js"
-      );
-      options.compilers = {
-        solc: {
-          cache: false,
-          version: pathToSolc,
-          settings: {}
-        }
-      };
-
-      compile(version4PragmaSource, options, err => {
-        assert(err.message.includes("Could not find compiler at:"));
         done();
       });
     });
@@ -227,7 +132,6 @@ describe("CompilerSupplier", function() {
 
       options.compilers = {
         solc: {
-          cache: true,
           version: "0.4.21"
         }
       };

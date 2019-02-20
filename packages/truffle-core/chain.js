@@ -20,10 +20,10 @@ var ipcNetwork;
 var options;
 
 var args = process.argv.slice(2);
-if (args.length == 2) {
+if (args.length === 2) {
   ipcNetwork = args[0];
   options = args[1];
-} else if (args.length == 1) {
+} else if (args.length === 1) {
   ipcNetwork = "develop";
   options = args[0];
 } else {
@@ -93,7 +93,7 @@ Logger.prototype.log = function(message) {
   var self = this;
 
   var subscriberIDs = Object.keys(this.subscribers);
-  if (subscriberIDs.length == 0) {
+  if (subscriberIDs.length === 0) {
     this.messages.push(message);
 
     return;

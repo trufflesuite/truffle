@@ -1,8 +1,12 @@
+import debugModule from "debug";
+const debug = debugModule("decode-utils:definition");
+
 import { EVM as EVMUtils } from "./evm";
 import { AstDefinition } from "./ast";
-import cloneDeep from "lodash.clonedeep";
+import BN from "bn.js";
 
 export namespace Definition {
+
   export function typeIdentifier(definition: AstDefinition): string {
     return definition.typeDescriptions.typeIdentifier;
   }
@@ -15,6 +19,16 @@ export namespace Definition {
    */
   export function typeClass(definition: AstDefinition): string {
     return typeIdentifier(definition).match(/t_([^$_0-9]+)/)[1];
+  }
+
+  /**
+   * For function types; returns internal or external
+   * (not for use on other types! will cause an error!)
+   * should only return "internal" or "external"
+   */
+  export function visibility(definition: AstDefinition): string {
+    return definition.typeName ?
+      definition.typeName.visibility : definition.typeName.visibility;
   }
 
 
@@ -34,6 +48,8 @@ export namespace Definition {
     switch (typeClass(definition)) {
       case "int":
       case "uint":
+      case "fixed":
+      case "ufixed":
         return num / 8;
 
       case "bytes":
@@ -44,63 +60,24 @@ export namespace Definition {
     }
   }
 
-  export function storageSize(definition: AstDefinition, referenceDeclaration?: AstDefinition): number {
-    switch (typeClass(definition)) {
-      case "bool":
-        return 1;
-
-      case "address":
-        return 20;
-
-      case "int":
-      case "uint": {
-        return specifiedSize(definition) || 32; // default of 256 bits
-      }
-
-      case "enum": {
-        if (referenceDeclaration) {
-          const numValues = referenceDeclaration.members.length;
-          // numValues <= 2^n - 1
-          // numValues + 1 <= 2^n
-          // log(numValues + 1) <= n (n is bits)
-          return Math.ceil(Math.log2(numValues + 1) / 8);
-        }
-        else {
-          return 0;
-        }
-      }
-
-      case "bytes": {
-        return specifiedSize(definition) || EVMUtils.WORD_SIZE;
-      }
-
-      case "string":
-      case "bytes":
-      case "array":
-        return EVMUtils.WORD_SIZE;
-
-      case "struct":
-        //
-
-      case "mapping":
-        // HACK just to reserve slot. mappings have no size as such
-        return EVMUtils.WORD_SIZE;
-    }
-  }
-
-  export function requireStartOfSlot(definition: AstDefinition): boolean {
-    return isArray(definition) || isStruct(definition) || isMapping(definition);
-  }
-
   export function isArray(definition: AstDefinition): boolean {
     return typeIdentifier(definition).match(/^t_array/) != null;
   }
 
   export function isDynamicArray(definition: AstDefinition): boolean {
     return isArray(definition) && (
-      (definition.typeName && definition.typeName.length === null) ||
-        definition.length === null
+      definition.typeName
+        ? definition.typeName.length == null
+        : definition.length == null
     );
+  }
+
+  //length of a statically sized array -- please only use for arrays
+  //already verified to be static!
+  export function staticLength(definition: AstDefinition): number {
+   return definition.typeName
+    ? parseInt(definition.typeName.length.value)
+    : parseInt(definition.length.value);
   }
 
   export function isStruct(definition: AstDefinition): boolean {
@@ -120,7 +97,7 @@ export namespace Definition {
   }
 
   export function isReference(definition: AstDefinition): boolean {
-    return typeIdentifier(definition).match(/_(memory|storage)(_ptr)?$/) != null;
+    return typeIdentifier(definition).match(/_(memory|storage|calldata)(_ptr)?$/) != null;
   }
 
   export function isContractType(definition: AstDefinition): boolean {
@@ -129,29 +106,57 @@ export namespace Definition {
     return typeIdentifier(definition).match(/^t_type\$_t_contract/) != null;
   }
 
+  //note: only use this on things already verified to be references
   export function referenceType(definition: AstDefinition): string {
     return typeIdentifier(definition).match(/_([^_]+)(_ptr)?$/)[1];
   }
 
-  export function baseDefinition(definition: AstDefinition): AstDefinition {
-    if (definition.typeName && typeof definition.typeName.baseType === "object") {
-      return definition.typeName.baseType;
+  //stack size, in words, of a given type
+  export function stackSize(definition: AstDefinition): number {
+    if(typeClass(definition) === "function" &&
+      visibility(definition) === "external") {
+      return 2;
     }
-
-    let baseIdentifier = typeIdentifier(definition)
-      // first dollar sign     last dollar sign
-      //   `---------.       ,---'
-      .match(/^[^$]+\$_(.+)_\$[^$]+$/)[1]
-      //              `----' greedy match
-
-    // HACK - internal types for memory or storage also seem to be pointers
-    if (baseIdentifier.match(/_(memory|storage)$/) != null) {
-      baseIdentifier = `${baseIdentifier}_ptr`;
+    if(isReference(definition) && referenceType(definition) === "calldata") {
+      if(typeClass(definition) === "string" ||
+        typeClass(definition) === "bytes") {
+        return 2;
+      }
+      if(isDynamicArray(definition)) {
+        return 2;
+      }
     }
+    return 1;
+  }
 
-    // another HACK - we get away with it becausewe're only using that one property
-    let result: AstDefinition = cloneDeep(definition);
-    result.typeDescriptions.typeIdentifier = baseIdentifier;
-    return result;
+  export function isSimpleConstant(definition: AstDefinition): boolean {
+    const types = ["stringliteral", "rational"];
+    return types.includes(typeClass(definition));
+  }
+
+  //definition: a storage reference definition
+  //location: the location you want it to refer to instead
+  export function spliceLocation(definition: AstDefinition, location: string): AstDefinition {
+    debug("definition %O", definition);
+    return {
+      ...definition,
+
+      typeDescriptions: {
+        ...definition.typeDescriptions,
+
+        typeIdentifier:
+          definition.typeDescriptions.typeIdentifier
+            .replace(/_storage(?=_ptr$|$)/, "_" + location)
+      }
+    };
+  }
+
+  //extract the actual numerical value from a node of type rational.
+  //currently assumes result will be integer (currently returns BN)
+  export function rationalValue(definition: AstDefinition): BN {
+    let identifier = typeIdentifier(definition);
+    let absoluteValue: string = identifier.match(/_(\d+)_by_1$/)[1];
+    let isNegative: boolean = identifier.match(/_minus_/) != null;
+    return isNegative? new BN(absoluteValue).neg() : new BN(absoluteValue);
   }
 }

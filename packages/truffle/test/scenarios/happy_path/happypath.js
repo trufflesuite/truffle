@@ -22,7 +22,7 @@ describe("Happy path (truffle unbox)", function() {
 
   before("set up sandbox", function(done) {
     this.timeout(10000);
-    Box.sandbox("default#web3-one", function(err, conf) {
+    Box.sandbox("default", function(err, conf) {
       if (err) return done(err);
       config = conf;
       config.network = "development";
@@ -44,9 +44,21 @@ describe("Happy path (truffle unbox)", function() {
         return done(err);
       }
 
-      assert(fs.existsSync(path.join(config.contracts_build_directory, "MetaCoin.json")));
-      assert(fs.existsSync(path.join(config.contracts_build_directory, "ConvertLib.json")));
-      assert(fs.existsSync(path.join(config.contracts_build_directory, "Migrations.json")));
+      assert(
+        fs.existsSync(
+          path.join(config.contracts_build_directory, "MetaCoin.json")
+        )
+      );
+      assert(
+        fs.existsSync(
+          path.join(config.contracts_build_directory, "ConvertLib.json")
+        )
+      );
+      assert(
+        fs.existsSync(
+          path.join(config.contracts_build_directory, "Migrations.json")
+        )
+      );
 
       done();
     });
@@ -62,23 +74,37 @@ describe("Happy path (truffle unbox)", function() {
         return done(err);
       }
 
-      var MetaCoin = contract(require(path.join(config.contracts_build_directory, "MetaCoin.json")));
-      var ConvertLib = contract(require(path.join(config.contracts_build_directory, "ConvertLib.json")));
-      var Migrations = contract(require(path.join(config.contracts_build_directory, "Migrations.json")));
+      var MetaCoin = contract(
+        require(path.join(config.contracts_build_directory, "MetaCoin.json"))
+      );
+      var ConvertLib = contract(
+        require(path.join(config.contracts_build_directory, "ConvertLib.json"))
+      );
+      var Migrations = contract(
+        require(path.join(config.contracts_build_directory, "Migrations.json"))
+      );
 
       var promises = [];
 
       [MetaCoin, ConvertLib, Migrations].forEach(function(abstraction) {
         abstraction.setProvider(config.provider);
 
-        promises.push(abstraction.deployed().then(function(instance) {
-          assert.notEqual(instance.address, null, instance.contract_name + " didn't have an address!");
-        }));
+        promises.push(
+          abstraction.deployed().then(function(instance) {
+            assert.notEqual(
+              instance.address,
+              null,
+              instance.contract_name + " didn't have an address!"
+            );
+          })
+        );
       });
 
-      Promise.all(promises).then(function() {
-        done();
-      }).catch(done);
+      Promise.all(promises)
+        .then(function() {
+          done();
+        })
+        .catch(done);
     });
   });
 
@@ -95,5 +121,4 @@ describe("Happy path (truffle unbox)", function() {
       done();
     });
   });
-
 });

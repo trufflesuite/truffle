@@ -23,7 +23,7 @@ export function keccak256(...args) {
  * stringify operation before hashing
  */
 export function stableKeccak256(obj) {
-  return keccak256(stringify(obj));
+  return keccak256({ type: "string", value: stringify(obj) });
 }
 
 /*
@@ -33,4 +33,13 @@ export function stableKeccak256(obj) {
 export function isCallMnemonic(op) {
   const calls = ["CALL", "DELEGATECALL", "STATICCALL", "CALLCODE"];
   return calls.includes(op);
+}
+
+/*
+ * Given a mmemonic, determine whether it's the mnemonic of a creation
+ * instruction
+ */
+export function isCreateMnemonic(op) {
+  const creates = ["CREATE", "CREATE2"];
+  return creates.includes(op);
 }

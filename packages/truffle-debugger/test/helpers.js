@@ -76,7 +76,7 @@ export async function createSandbox() {
       {
         unsafeCleanup: true,
         setGracefulCleanup: true,
-        name: "default#web3-one"
+        name: "default"
       },
       function(err, result) {
         if (err) return reject(err);
@@ -123,7 +123,7 @@ export async function addMigrations(config, migrations = {}) {
 }
 
 export async function defaultMigrations(contractNames) {
-  contractNames = contractNames.filter(name => name != "Migrations");
+  contractNames = contractNames.filter(name => name !== "Migrations");
 
   let migrations = {};
 

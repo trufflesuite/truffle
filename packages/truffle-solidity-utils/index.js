@@ -9,7 +9,7 @@ var SolidityUtils = {
     var column = 0;
 
     source.forEach(function(character) {
-      if (character == "\n") {
+      if (character === "\n") {
         line += 1;
         column = -1;
 

@@ -13,7 +13,7 @@ var cpr_options = {
 // simply move onto the next file.
 
 var copy = function(from, to, extra_options, callback) {
-  if (typeof extra_options == "function") {
+  if (typeof extra_options === "function") {
     callback = extra_options;
     extra_options = {};
   }

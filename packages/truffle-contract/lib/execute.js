@@ -264,7 +264,7 @@ var execute = {
     }
 
     return function(params, callback) {
-      if (typeof params == "function") {
+      if (typeof params === "function") {
         callback = params;
         params = {};
       }

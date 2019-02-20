@@ -1,15 +1,12 @@
 {
   "name": "truffle-provider",
-  "version": "0.1.0",
+  "version": "0.1.4",
   "description": "Beefed up provider module for Truffle",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/trufflesuite/truffle-provider.git"
-  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-provider",
   "keywords": [
     "ethereum",
     "truffle",
@@ -23,11 +20,11 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle-provider#readme",
   "dependencies": {
-    "truffle-error": "^0.0.3",
-    "web3": "^1.0.0-beta.37"
+    "truffle-error": "^0.0.4",
+    "web3": "1.0.0-beta.37"
   },
   "devDependencies": {
-    "ganache-core": "^2.3.1",
+    "ganache-core": "2.3.3",
     "mocha": "5.2.0"
   },
   "publishConfig": {

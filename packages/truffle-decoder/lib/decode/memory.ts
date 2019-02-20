@@ -4,69 +4,70 @@ const debug = debugModule("decoder:decode:memory");
 import read from "../read";
 import * as DecodeUtils from "truffle-decode-utils";
 import decodeValue from "./value";
-import decode from "./index";
-import { chunk } from "../read/memory";
 import { MemoryPointer, DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
+import range from "lodash.range";
 
-export default async function decodeMemoryReference(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo): Promise<any> {
+export default async function decodeMemory(definition: DecodeUtils.AstDefinition, pointer: MemoryPointer, info: EvmInfo): Promise <any> {
+  if(DecodeUtils.Definition.isReference(definition)) {
+    return await decodeMemoryReference(definition, pointer, info);
+  }
+  else {
+    return await decodeValue(definition, pointer, info);
+  }
+}
+
+export async function decodeMemoryReference(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo): Promise<any> {
   const { state } = info
   // debug("pointer %o", pointer);
   let rawValue: Uint8Array = await read(pointer, state);
-  if (rawValue == undefined) {
-    return undefined;
-  }
 
-  let rawValueNumber = DecodeUtils.Conversion.toBN(rawValue).toNumber();
+  let startPosition = DecodeUtils.Conversion.toBN(rawValue).toNumber();
+  let length;
 
-  var bytes;
   switch (DecodeUtils.Definition.typeClass(definition)) {
 
     case "bytes":
     case "string":
-      bytes = await read({
-        memory: { start: rawValueNumber, length: DecodeUtils.EVM.WORD_SIZE}
-      }, state); // bytes contain length in the last byte
+      length = DecodeUtils.Conversion.toBN(await read({
+        memory: { start: startPosition, length: DecodeUtils.EVM.WORD_SIZE}
+      }, state)).toNumber(); //initial word contains length
 
       let childPointer: MemoryPointer = {
-        memory: { start: rawValueNumber + DecodeUtils.EVM.WORD_SIZE, length: bytes[DecodeUtils.EVM.WORD_SIZE - 1] }
+        memory: { start: startPosition + DecodeUtils.EVM.WORD_SIZE, length }
       }
 
       return await decodeValue(definition, childPointer, info);
 
     case "array":
-      bytes = DecodeUtils.Conversion.toBN(await read({
-        memory: { start: rawValueNumber, length: DecodeUtils.EVM.WORD_SIZE },
-      }, state)).toNumber();  // bytes contain array length
 
-      bytes = await read({ memory: {
-        start: rawValueNumber + DecodeUtils.EVM.WORD_SIZE, length: bytes * DecodeUtils.EVM.WORD_SIZE
-      }}, state); // now bytes contain items
+      if (DecodeUtils.Definition.isDynamicArray(definition)) {
+        length = DecodeUtils.Conversion.toBN(await read({
+          memory: { start: startPosition, length: DecodeUtils.EVM.WORD_SIZE },
+          }, state)).toNumber();  // initial word contains array length
+        startPosition += DecodeUtils.EVM.WORD_SIZE; //increment startPosition to
+        //next word, as first word was used for length
+      }
+      else {
+        length = DecodeUtils.Definition.staticLength(definition);
+      }
 
-      let baseDefinition = DecodeUtils.Definition.baseDefinition(definition);
+      let baseDefinition = definition.baseType || definition.typeName.baseType;
 
-      // HACK replace erroneous `_storage_` type identifiers with `_memory_`
-      baseDefinition = {
-        ...baseDefinition,
+      // replace erroneous `_storage_` type identifiers with `_memory_`
+      baseDefinition = DecodeUtils.Definition.spliceLocation(baseDefinition, "memory");
 
-        typeDescriptions: {
-          ...baseDefinition.typeDescriptions,
-
-          typeIdentifier:
-            baseDefinition.typeDescriptions.typeIdentifier
-              .replace(/_storage_/g, "_memory_")
-        }
-      };
-
-      return await Promise.all(chunk(bytes, DecodeUtils.EVM.WORD_SIZE)
-        .map(
-          (chunk) => decode(baseDefinition, {
-            literal: chunk
-          }, info)
+      return await Promise.all(range(length).map( (index: number) =>
+        decodeMemory(baseDefinition,
+          { memory: {
+            start: startPosition + index * DecodeUtils.EVM.WORD_SIZE,
+            length: DecodeUtils.EVM.WORD_SIZE
+          }},
+        info)
         ));
 
     case "struct":
-      const { scopes } = info;
+      const { referenceDeclarations } = info;
 
       // Declaration reference usually appears in `typeName`, but for
       // { nodeType: "FunctionCall", kind: "structConstructorCall" }, this
@@ -75,33 +76,26 @@ export default async function decodeMemoryReference(definition: DecodeUtils.AstD
         ? definition.typeName.referencedDeclaration
         : definition.expression.referencedDeclaration;
 
-      let variables = (scopes[referencedDeclaration] || {}).variables;
+      let allMembers = referenceDeclarations[referencedDeclaration].members;
+      let members = allMembers.filter( (memberDefinition) =>
+        !DecodeUtils.Definition.isMapping(memberDefinition));
 
-      const decodeMember = async ({name, id}: any, i: number) => {
-        let memberDefinition = scopes[id].definition;
+      debug("members %O", members);
+
+      const decodeMember = async (memberDefinition: DecodeUtils.AstDefinition, i: number) => {
         let memberPointer: MemoryPointer = {
           memory: {
-            start: rawValueNumber + i * DecodeUtils.EVM.WORD_SIZE,
+            start: startPosition + i * DecodeUtils.EVM.WORD_SIZE,
             length: DecodeUtils.EVM.WORD_SIZE
           }
         };
 
-        // HACK replace erroneous `_storage_` type identifiers with `_memory_`
-        memberDefinition = {
-          ...memberDefinition,
-
-          typeDescriptions: {
-            ...memberDefinition.typeDescriptions,
-
-            typeIdentifier:
-              memberDefinition.typeDescriptions.typeIdentifier
-                .replace(/_storage_/g, "_memory_")
-          }
-        };
+      // replace erroneous `_storage_` type identifiers with `_memory_`
+      memberDefinition = DecodeUtils.Definition.spliceLocation(memberDefinition, "memory");
 
         let decoded;
         try {
-          decoded = await decode(
+          decoded = await decodeMemory(
             memberDefinition, memberPointer, info
           );
         } catch (err) {
@@ -109,11 +103,11 @@ export default async function decodeMemoryReference(definition: DecodeUtils.AstD
         }
 
         return {
-          [name]: decoded
+          [memberDefinition.name]: decoded
         };
       }
 
-      const decodings = (variables || []).map(decodeMember);
+      const decodings = members.map(decodeMember);
 
       return Object.assign({}, ...await Promise.all(decodings));
 

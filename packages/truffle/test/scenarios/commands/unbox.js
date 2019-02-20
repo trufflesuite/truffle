@@ -64,7 +64,7 @@ describe("truffle unbox", () => {
       describe("full url + branch", () => {
         it("unboxes successfully", done => {
           CommandRunner.run(
-            "unbox https://github.com/truffle-box/bare-box#web3-one",
+            "unbox https://github.com/truffle-box/bare-box#truffle-test-branch",
             config,
             () => {
               const output = logger.contents();
@@ -78,7 +78,7 @@ describe("truffle unbox", () => {
       describe("full url + branch + relativePath", () => {
         it("unboxes successfully", done => {
           CommandRunner.run(
-            "unbox https://github.com/truffle-box/bare-box#web3-one:path/to/subDir",
+            "unbox https://github.com/truffle-box/bare-box#truffle-test-branch:path/to/subDir",
             config,
             () => {
               const output = logger.contents();
@@ -102,7 +102,7 @@ describe("truffle unbox", () => {
       describe("origin/master#branch", () => {
         it("unboxes successfully", done => {
           CommandRunner.run(
-            "unbox truffle-box/bare-box#web3-one",
+            "unbox truffle-box/bare-box#truffle-test-branch",
             config,
             () => {
               const output = logger.contents();
@@ -116,7 +116,7 @@ describe("truffle unbox", () => {
       describe("origin/master#branch:relativePath", () => {
         it("unboxes successfully", done => {
           CommandRunner.run(
-            "unbox truffle-box/bare-box#web3-one:path/to/subDir",
+            "unbox truffle-box/bare-box#truffle-test-branch:path/to/subDir",
             config,
             () => {
               const output = logger.contents();
@@ -139,7 +139,7 @@ describe("truffle unbox", () => {
 
       describe("official truffle box + branch", () => {
         it("unboxes successfully", done => {
-          CommandRunner.run("unbox bare#web3-one", config, () => {
+          CommandRunner.run("unbox bare#truffle-test-branch", config, () => {
             const output = logger.contents();
             assert(output.includes("Unbox successful."));
             done();
@@ -150,7 +150,7 @@ describe("truffle unbox", () => {
       describe("official truffle box + branch + relativePath", () => {
         it("unboxes successfully", done => {
           CommandRunner.run(
-            "unbox bare#web3-one:path/to/subDir",
+            "unbox bare#truffle-test-branch:path/to/subDir",
             config,
             () => {
               const output = logger.contents();
@@ -192,7 +192,7 @@ describe("truffle unbox", () => {
       describe("git@ ssh + branch", () => {
         it("unboxes successfully", done => {
           CommandRunner.run(
-            "unbox git@github.com:truffle-box/bare-box#web3-one",
+            "unbox git@github.com:truffle-box/bare-box#truffle-test-branch",
             config,
             () => {
               const output = logger.contents();
@@ -206,7 +206,7 @@ describe("truffle unbox", () => {
       describe("git@ ssh + branch + relativePath", () => {
         it("unboxes successfully", done => {
           CommandRunner.run(
-            "unbox git@github.com:truffle-box/bare-box#web3-one:path/to/subDir",
+            "unbox git@github.com:truffle-box/bare-box#truffle-test-branch:path/to/subDir",
             config,
             () => {
               const output = logger.contents();

@@ -33,7 +33,7 @@ var DebugUtils = {
 
         var contracts = files
           .filter(file_path => {
-            return path.extname(file_path) == ".json";
+            return path.extname(file_path) === ".json";
           })
           .map(file_path => {
             return path.basename(file_path, ".json");
@@ -170,7 +170,7 @@ var DebugUtils = {
     var output = "";
     for (var i = 0; i < line.length; i++) {
       var pointedAt = i >= startCol && i < endCol;
-      var isTab = line[i] == "\t";
+      var isTab = line[i] === "\t";
 
       var additional;
       if (isTab) {
@@ -221,7 +221,7 @@ var DebugUtils = {
 
     // range.end is undefined in some cases
     // null/undefined check to avoid exceptions
-    if (range.end && range.start.line == range.end.line) {
+    if (range.end && range.start.line === range.end.line) {
       // start and end are same line: pointer ends at column
       pointerEnd = range.end.column;
     } else {
@@ -250,14 +250,14 @@ var DebugUtils = {
   formatStack: function(stack) {
     var formatted = stack.map(function(item, index) {
       item = "  " + item;
-      if (index == stack.length - 1) {
+      if (index === stack.length - 1) {
         item += " (top)";
       }
 
       return item;
     });
 
-    if (stack.length == 0) {
+    if (stack.length === 0) {
       formatted.push("  No data on stack.");
     }
 

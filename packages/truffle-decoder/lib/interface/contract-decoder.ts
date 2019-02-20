@@ -1,26 +1,21 @@
+import debugModule from "debug";
+const debug = debugModule("decoder:interface:contract-decoder");
+
 import AsyncEventEmitter from "async-eventemitter";
 import Web3 from "web3";
-import { ContractObject, Ast } from "truffle-contract-schema/spec";
+import { ContractObject } from "truffle-contract-schema/spec";
 import BN from "bn.js";
 import { EvmInfo } from "../types/evm";
-import * as references from "../allocate/references";
+import * as general from "../allocate/general";
+import * as storage from "../allocate/storage";
 import { StoragePointer } from "../types/pointer";
+import { StorageAllocations, StorageMemberAllocations } from "../types/allocation";
 import decode from "../decode";
-import { Definition as DefinitionUtils, EVM, Allocation, AstDefinition } from "truffle-decode-utils";
+import { Definition as DefinitionUtils, EVM, AstDefinition, AstReferences } from "truffle-decode-utils";
 import { BlockType, Transaction } from "web3/eth/types";
 import { EventLog, Log } from "web3/types";
+import { Provider } from "web3/providers";
 import abiDecoder from "abi-decoder";
-
-export interface ContractStateVariable {
-  isChildVariable: boolean;
-  definition: AstDefinition;
-  pointer?: StoragePointer;
-  members?: EvmVariableReferenceMapping;
-}
-
-export interface EvmVariableReferenceMapping {
-  [nodeId: number]: ContractStateVariable
-}
 
 export interface EvmMapping {
   name: string;
@@ -74,18 +69,17 @@ interface ContractEvent {
   }
 };
 
-export interface AstReferences {
-  [nodeId: number]: AstDefinition;
-};
-
 export interface ContractMapping {
   [nodeId: number]: ContractObject;
 };
 
-export function getContractNode(contract: ContractObject): Ast {
+export function getContractNode(contract: ContractObject): AstDefinition {
   for (let j = 0; j < contract.ast.nodes.length; j++) {
     const contractNode = contract.ast.nodes[j];
-    if (contractNode.nodeType === "ContractDefinition" && contractNode.name === contract.contractName) {
+    const nodeMatchesContract =
+      contractNode.name === contract.contractName ||
+      contractNode.name === contract.contract_name;
+    if (contractNode.nodeType === "ContractDefinition" && nodeMatchesContract) {
       return contractNode;
     }
   }
@@ -93,40 +87,32 @@ export function getContractNode(contract: ContractObject): Ast {
   return undefined;
 }
 
-function getContractNodeId(contract: ContractObject): number {
-  const node = getContractNode(contract);
-  return node ? node.id : 0;
-}
-
 export default class TruffleContractDecoder extends AsyncEventEmitter {
   private web3: Web3;
 
   private contract: ContractObject;
+  private contractNode: AstDefinition;
   private contractNetwork: string;
   private contractAddress: string;
   private inheritedContracts: ContractObject[];
 
   private contracts: ContractMapping = {};
+  private contractNodes: AstReferences = {};
 
   private referenceDeclarations: AstReferences;
-  private referenceVariables: EvmVariableReferenceMapping;
+  private storageAllocations: StorageAllocations;
 
   private eventDefinitions: AstReferences;
   private eventDefinitionIdsByName: {
     [name: string]: number
   };
 
-  private stateVariableReferences: EvmVariableReferenceMapping;
+  private stateVariableReferences: StorageMemberAllocations;
 
-  constructor(contract: ContractObject, inheritedContracts: ContractObject[], provider: string) {
+  constructor(contract: ContractObject, inheritedContracts: ContractObject[], provider: Provider) {
     super();
 
-    if (provider.startsWith("http:\/\/") || provider.startsWith("https:\/\/")) {
-      this.web3 = new Web3(new Web3.providers.HttpProvider(provider));
-    }
-    else if (provider.startsWith("ws:\/\/")) {
-      this.web3 = new Web3(new Web3.providers.WebsocketProvider(provider));
-    }
+    this.web3 = new Web3(provider);
 
     this.contract = contract; //cloneDeep(contract);
     this.inheritedContracts = inheritedContracts; //cloneDeep(inheritedContracts);
@@ -134,26 +120,37 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.contractNetwork = Object.keys(this.contract.networks)[0];
     this.contractAddress = this.contract.networks[this.contractNetwork].address;
 
-    this.contracts[getContractNodeId(this.contract)] = this.contract;
+    this.contractNode = getContractNode(this.contract);
+
+    this.contracts[this.contractNode.id] = this.contract;
+    this.contractNodes[this.contractNode.id] = this.contractNode;
     abiDecoder.addABI(this.contract.abi);
     this.inheritedContracts.forEach((inheritedContract) => {
-      this.contracts[getContractNodeId(inheritedContract)] = inheritedContract;
+      let node: AstDefinition = getContractNode(inheritedContract);
+      this.contracts[node.id] = inheritedContract;
+      this.contractNodes[node.id] = node;
       abiDecoder.addABI(inheritedContract.abi);
     });
   }
 
-  public async init(): Promise<void> {
-    [this.referenceDeclarations, this.referenceVariables] = references.getReferenceDeclarations([this.contract, ...this.inheritedContracts]);
+  public init(): void {
+    debug("init called");
+    this.referenceDeclarations = general.getReferenceDeclarations(Object.values(this.contractNodes));
 
-    this.eventDefinitions = references.getEventDefinitions([this.contract, ...this.inheritedContracts]);
-    const ids = Object.keys(this.eventDefinitions);
+    this.eventDefinitions = general.getEventDefinitions(Object.values(this.contractNodes));
     this.eventDefinitionIdsByName = {};
-    for (let i = 0; i < ids.length; i++) {
-      const id = parseInt(ids[i]);
-      this.eventDefinitionIdsByName[this.eventDefinitions[id].name] = id;
+    for (let id in this.eventDefinitions) {
+      this.eventDefinitionIdsByName[this.eventDefinitions[id].name] = parseInt(id);
+        //this parseInt shouldn't be necessary, but TypeScript refuses to believe
+        //that id must be a number even though the definition of AstReferences
+        //says so
     }
+    debug("done with event definitions");
 
-    this.stateVariableReferences = references.getContractStateVariables(this.contract, this.contracts, this.referenceDeclarations);
+    this.storageAllocations = storage.getStorageAllocations(this.referenceDeclarations, {[this.contractNode.id]: this.contractNode});
+    debug("done with allocation");
+    this.stateVariableReferences = this.storageAllocations[this.contractNode.id].members;
+    debug("stateVariableReferences %O", this.stateVariableReferences);
   }
 
   public async state(block: BlockType = "latest"): Promise<ContractState | undefined> {
@@ -163,33 +160,33 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       variables: {}
     };
 
-    const nodeIds = Object.keys(this.stateVariableReferences);
+    debug("state called");
 
-    for(let i = 0; i < nodeIds.length; i++) {
-      const variable = this.stateVariableReferences[parseInt(nodeIds[i])];
+    for(const variable of Object.values(this.stateVariableReferences)) {
 
-      if (!variable.isChildVariable) {
-        const info: EvmInfo = {
-          scopes: {},
-          state: {
-            stack: [],
-            storage: {},
-            memory: new Uint8Array(0)
-          },
-          mappingKeys: {},
-          referenceDeclarations: this.referenceDeclarations,
-          referenceVariables: this.referenceVariables,
-          variables: this.stateVariableReferences
-        };
+      const info: EvmInfo = {
+        state: {
+          stack: [],
+          storage: {},
+          memory: new Uint8Array(0)
+        },
+        mappingKeys: {},
+        referenceDeclarations: this.referenceDeclarations,
+        storageAllocations: this.storageAllocations,
+        variables: this.stateVariableReferences
+      };
 
-        const val = await decode(variable.definition, variable.pointer, info, this.web3, this.contractAddress);
+      debug("about to decode %s", variable.definition.name);
+      const val = await decode(variable.definition, variable.pointer, info, this.web3, this.contractAddress);
+      debug("decoded");
 
-        result.variables[variable.definition.name] = <DecodedVariable>{
-          name: variable.definition.name,
-          type: DefinitionUtils.typeClass(variable.definition),
-          value: val
-        };
-      }
+      result.variables[variable.definition.name] = <DecodedVariable>{
+        name: variable.definition.name,
+        type: DefinitionUtils.typeClass(variable.definition),
+        value: val
+      };
+
+      debug("var %O", result.variables[variable.definition.name]);
     }
 
     return result;
@@ -197,58 +194,6 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   public async variable(name: string, block: BlockType = "latest"): Promise<DecodedVariable | undefined> {
     return undefined;
-  }
-
-  public async mapping(mappingId: number, keys: (number | BN | string)[]): Promise<EvmVariable[] | undefined> {
-    const contractAddress = this.contract.networks[this.contractNetwork].address;
-    const mappingReference = this.stateVariableReferences[mappingId];
-    const definition = mappingReference.definition.typeName.valueType;
-
-    let result: EvmVariable[] = [];
-
-    for (let i = 0; i < keys.length; i++) {
-      let state = <references.ContractStateInfo>{
-        variables: {},
-        slot: {
-          offset: new BN(0),
-          index: EVM.WORD_SIZE - 1
-        }
-      };
-
-      const path: Allocation.Slot = {
-        key: keys[i],
-        path: mappingReference.pointer.storage.from.slot,
-        offset: new BN(0)
-      };
-
-      references.allocateDefinition(definition, state, this.referenceDeclarations, path);
-
-      const nodeIds = Object.keys(state.variables);
-  
-      for(let i = 0; i < nodeIds.length; i++) {
-        const variable = state.variables[parseInt(nodeIds[i])];
-  
-        if (!variable.isChildVariable) {
-          const info: EvmInfo = {
-            scopes: {},
-            state: {
-              stack: [],
-              storage: {},
-              memory: new Uint8Array(0)
-            },
-            mappingKeys: {},
-            referenceDeclarations: this.referenceDeclarations,
-            variables: this.stateVariableReferences
-          };
-  
-          const val = await decode(variable.definition, variable.pointer, info, this.web3, contractAddress);
-  
-          result.push(val);
-        }
-      }
-    }
-
-    return result;
   }
 
   public watchMappingKeys(mappingId: number, keys: (number | BN | string)[]): void {

@@ -211,7 +211,7 @@ describe.skip("EthPM integration", function() {
 
               search.forEach(function(contract_name, index) {
                 files.forEach(function(file) {
-                  if (path.basename(file, ".json") == contract_name) {
+                  if (path.basename(file, ".json") === contract_name) {
                     found[index] = true;
                   }
                 });

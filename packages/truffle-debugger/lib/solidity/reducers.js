@@ -92,11 +92,11 @@ export function functionDepth(state = 0, action) {
 }
 
 function spelunk(jump) {
-  if (jump == "i") {
+  if (jump === "i") {
     return 1;
-  } else if (jump == "o") {
+  } else if (jump === "o") {
     return -1;
-  } else if (jump == "2") {
+  } else if (jump === "2") {
     return 2; //HACK WORKAROUND
   } else {
     return 0;

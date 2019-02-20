@@ -12,7 +12,7 @@ var Develop = {
     // The path to the dev env process depends on whether or not
     // we're running in the bundled version. If not, use chain.js
     // directly, otherwise let the bundle point at the bundled version.
-    if (typeof BUNDLE_CHAIN_FILENAME != "undefined") {
+    if (typeof BUNDLE_CHAIN_FILENAME !== "undefined") {
       // Remember: In the bundled version, __dirname refers to the
       // build directory where cli.bundled.js and cli.chain.js live.
       chainPath = path.join(__dirname, BUNDLE_CHAIN_FILENAME);

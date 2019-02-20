@@ -169,7 +169,7 @@ const SolidityTest = {
       })
     );
 
-    const assertLibraries = [
+    const testLibraries = [
       "Assert",
       "AssertAddress",
       "AssertAddressArray",
@@ -183,27 +183,25 @@ const SolidityTest = {
       "AssertIntArray",
       "AssertString",
       "AssertUint",
-      "AssertUintArray"
+      "AssertUintArray",
+      "DeployedAddresses"
     ];
 
-    const assertAbstractions = assertLibraries.map(name =>
+    const testAbstractions = testLibraries.map(name =>
       runner.config.resolver.require(`truffle/${name}.sol`)
     );
 
-    const DeployedAddresses = runner.config.resolver.require(
-      "truffle/DeployedAddresses.sol"
-    );
     SafeSend = runner.config.resolver.require(SafeSend);
 
-    for (const abstraction of assertAbstractions) {
-      deployer.deploy(abstraction);
+    for (const testLib of testAbstractions) {
+      deployer.deploy(testLib);
+      deployer.link(testLib, abstraction);
     }
-    deployer.deploy(DeployedAddresses).then(() => {
-      return dependency_paths.forEach(dependency_path => {
-        const dependency = runner.config.resolver.require(dependency_path);
 
-        if (dependency.isDeployed()) deployer.link(dependency, abstraction);
-      });
+    dependency_paths.forEach(dependency_path => {
+      const dependency = runner.config.resolver.require(dependency_path);
+
+      if (dependency.isDeployed()) deployer.link(dependency, abstraction);
     });
 
     let deployed;

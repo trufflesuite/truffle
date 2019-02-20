@@ -11,7 +11,7 @@ import Debugger from "lib/debugger";
 import sessionSelector from "lib/session/selectors";
 import data from "lib/data/selectors";
 
-import * as TruffleDecodeUtils from "truffle-decode-utils";
+import BN from "bn.js";
 
 const __FAILURE = `
 pragma solidity ~0.5;
@@ -99,13 +99,10 @@ describe("End State", function() {
 
     debug("DCI %O", session.view(data.current.identifiers));
     debug("DCIR %O", session.view(data.current.identifiers.refs));
-    debug("DCIN %O", session.view(data.current.identifiers.native));
     debug("proc.assignments %O", session.view(data.proc.assignments));
 
     assert.ok(session.view(sessionSelector.transaction.receipt).status);
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
-      await session.variables()
-    );
-    assert.deepEqual(variables, { x: "107" });
+    const variables = await session.variables();
+    assert.deepEqual(variables, { x: new BN(107) });
   });
 });

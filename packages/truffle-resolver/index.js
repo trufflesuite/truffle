@@ -40,7 +40,7 @@ Resolver.prototype.require = function(import_path, search_path) {
 Resolver.prototype.resolve = function(import_path, imported_from, callback) {
   var self = this;
 
-  if (typeof imported_from == "function") {
+  if (typeof imported_from === "function") {
     callback = imported_from;
     imported_from = null;
   }

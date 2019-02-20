@@ -1,5 +1,5 @@
 const utils = require("../utils");
-const Web3 = require("web3");
+const web3Utils = require("web3-utils");
 
 module.exports = {
   contract_name: {
@@ -200,9 +200,6 @@ module.exports = {
     return this.network.links || {};
   },
   events: function() {
-    // helper web3; not used for provider
-    var web3 = new Web3();
-
     var events;
 
     if (this._json.networks[this.network_id] == null) {
@@ -215,7 +212,7 @@ module.exports = {
     var abi = this.abi;
 
     abi.forEach(function(item) {
-      if (item.type != "event") return;
+      if (item.type !== "event") return;
 
       if (item.signature) {
         events[item.signature] = item;
@@ -232,7 +229,7 @@ module.exports = {
 
         signature += ")";
 
-        var topic = web3.utils.keccak256(signature);
+        var topic = web3Utils.keccak256(signature);
 
         events[topic] = item;
       }
@@ -269,7 +266,7 @@ module.exports = {
     get: function() {
       var code = this._json.deployedBytecode;
 
-      if (code.indexOf("0x") != 0) {
+      if (code.indexOf("0x") !== 0) {
         code = "0x" + code;
       }
 
@@ -278,7 +275,7 @@ module.exports = {
     set: function(val) {
       var code = val;
 
-      if (val.indexOf("0x") != 0) {
+      if (val.indexOf("0x") !== 0) {
         code = "0x" + code;
       }
 
