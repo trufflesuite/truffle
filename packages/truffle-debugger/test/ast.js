@@ -105,7 +105,7 @@ describe("AST", function() {
           `Node ${pointer} should not end after source`
         );
 
-        session.stepNext();
+        await session.stepNext();
       } while (!session.view(trace.finished));
     });
   });

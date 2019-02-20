@@ -6,6 +6,7 @@ import configureStore from "lib/store";
 import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
 import data from "lib/data/selectors";
+import controllerSelector from "lib/controller/selectors";
 
 import rootSaga from "./sagas";
 import reducer from "./reducers";
@@ -132,15 +133,17 @@ export default class Session {
       let hasStarted = false;
       let hasResolved = false;
       const unsubscribe = this._store.subscribe(() => {
-        const isStepping = this.view(controller.isStepping);
+        const isStepping = this.view(controllerSelector.isStepping);
 
         if (isStepping && !hasStarted) {
           hasStarted = true;
+          debug("heard step start");
           return;
         }
 
         if (!isStepping && hasStarted && !hasResolved) {
           hasResolved = true;
+          debug("heard step stop");
           unsubscribe();
           resolve(true);
         }

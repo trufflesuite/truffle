@@ -571,22 +571,22 @@ var command = {
             if (!alreadyFinished) {
               switch (cmd) {
                 case "o":
-                  session.stepOver();
+                  await session.stepOver();
                   break;
                 case "i":
-                  session.stepInto();
+                  await session.stepInto();
                   break;
                 case "u":
-                  session.stepOut();
+                  await session.stepOut();
                   break;
                 case "n":
-                  session.stepNext();
+                  await session.stepNext();
                   break;
                 case ";":
-                  session.advance();
+                  await session.advance();
                   break;
                 case "c":
-                  session.continueUntilBreakpoint();
+                  await session.continueUntilBreakpoint();
                   break;
               }
             } //otherwise, inform the user we can't do that
@@ -604,7 +604,7 @@ var command = {
             }
             if (cmd === "r") {
               //reset if given the reset command
-              session.reset();
+              await session.reset();
             }
 
             // Check if execution has (just now) stopped.

@@ -35,7 +35,7 @@ export function* saga() {
     let saga = CONTROL_SAGAS[action.type];
 
     yield race({
-      exec: call(saga, action),
+      exec: call(saga, false), //don't suppress done!
       interrupt: take(actions.INTERRUPT)
     });
   }
@@ -43,13 +43,21 @@ export function* saga() {
 
 export default prefixName("controller", saga);
 
+//NOTE: many of these stepping sagas will take a (false by default)
+//"suppressDone" option.  this should be set to true when calling them from
+//another stepping saga so that the stepping won't be marked as done until the
+//whole thing is done.
+
 /**
  * Advance the state by one instruction
  */
-function* advance() {
+function* advance(suppressDone = false) {
   // send action to advance trace
+  debug("advance, suppressDone = %o", suppressDone);
   yield* trace.advance();
-  yield put(actions.doneStepping());
+  if (!suppressDone) {
+    yield put(actions.doneStepping());
+  }
 }
 
 /**
@@ -59,14 +67,15 @@ function* advance() {
  * "Stepping", then, is stepping to the next logical item, not stepping to the next
  * instruction. See advance() if you'd like to advance by one instruction.
  */
-function* stepNext() {
+function* stepNext(suppressDone = false) {
   const startingRange = yield select(controller.current.location.sourceRange);
+  debug("stepNext, suppressDone = %o", suppressDone);
 
   var upcoming, finished;
 
   do {
     // advance at least once step
-    yield* advance();
+    yield* advance(true);
 
     // and check the next source range
     try {
@@ -86,7 +95,10 @@ function* stepNext() {
       (upcoming.sourceRange.start == startingRange.start &&
         upcoming.sourceRange.length == startingRange.length))
   );
-  yield put(actions.doneStepping());
+  if (!suppressDone) {
+    debug("stepNext putting doneStepping");
+    yield put(actions.doneStepping());
+  }
 }
 
 /**
@@ -101,20 +113,14 @@ function* stepNext() {
  * that exists outside of the range, then stepInto will only execute until that
  * step.
  */
-function* stepInto() {
+function* stepInto(suppressDone = false) {
   if (yield select(controller.current.willJump)) {
-    yield* stepNext();
-
-    //must mark done stepping before early return
-    yield put(actions.doneStepping());
+    yield* stepNext(suppressDone); //we'll let stepNext give the done signal
     return;
   }
 
   if (yield select(controller.current.location.isMultiline)) {
-    yield* stepOver();
-
-    //must mark done stepping before early return
-    yield put(actions.doneStepping());
+    yield* stepOver(suppressDone); //we'll let stepOver give the done signal
     return;
   }
 
@@ -124,7 +130,7 @@ function* stepInto() {
   var currentRange;
 
   do {
-    yield* stepNext();
+    yield* stepNext(true);
 
     currentDepth = yield select(controller.current.functionDepth);
     currentRange = yield select(controller.current.location.sourceRange);
@@ -137,7 +143,9 @@ function* stepInto() {
     currentRange.start + currentRange.length <=
       startingRange.start + startingRange.length
   );
-  yield put(actions.doneStepping());
+  if (!suppressDone) {
+    yield put(actions.doneStepping());
+  }
 }
 
 /**
@@ -145,12 +153,9 @@ function* stepInto() {
  *
  * This will run until the debugger encounters a decrease in function depth.
  */
-function* stepOut() {
+function* stepOut(suppressDone = false) {
   if (yield select(controller.current.location.isMultiline)) {
-    yield* stepOver();
-
-    //must mark done stepping before early return
-    yield put(actions.doneStepping());
+    yield* stepOver(suppressDone); //we'll let stepOver give the done signal
     return;
   }
 
@@ -158,11 +163,13 @@ function* stepOut() {
   var currentDepth;
 
   do {
-    yield* stepNext();
+    yield* stepNext(true);
 
     currentDepth = yield select(controller.current.functionDepth);
   } while (currentDepth >= startingDepth);
-  yield put(actions.doneStepping());
+  if (!suppressDone) {
+    yield put(actions.doneStepping());
+  }
 }
 
 /**
@@ -171,14 +178,14 @@ function* stepOut() {
  * Step over the current line. This will step to the next instruction that
  * exists on a different line of code within the same function depth.
  */
-function* stepOver() {
+function* stepOver(suppressDone = false) {
   const startingDepth = yield select(controller.current.functionDepth);
   const startingRange = yield select(controller.current.location.sourceRange);
   var currentDepth;
   var currentRange;
 
   do {
-    yield* stepNext();
+    yield* stepNext(true);
 
     currentDepth = yield select(controller.current.functionDepth);
     currentRange = yield select(controller.current.location.sourceRange);
@@ -193,16 +200,20 @@ function* stepOver() {
     (currentDepth > startingDepth ||
       currentRange.lines.start.line == startingRange.lines.start.line)
   );
-  yield put(actions.doneStepping());
+  if (!suppressDone) {
+    yield put(actions.doneStepping());
+  }
 }
 
 /**
  * continueUntilBreakpoint - step through execution until a breakpoint
  */
-function* continueUntilBreakpoint() {
+function* continueUntilBreakpoint(suppressDone = false) {
   var currentLocation, currentNode, currentLine, currentSourceId;
   var finished;
   var previousLine, previousSourceId;
+
+  debug("continue, suppressDone = %o", suppressDone);
 
   let breakpoints = yield select(controller.breakpoints);
 
@@ -214,7 +225,7 @@ function* continueUntilBreakpoint() {
   currentSourceId = currentLocation.source.id;
 
   do {
-    yield* stepNext();
+    yield* stepNext(true);
 
     previousLine = currentLine;
     previousSourceId = currentSourceId;
@@ -242,16 +253,20 @@ function* continueUntilBreakpoint() {
         );
       }).length > 0;
   } while (!breakpointHit && !finished);
-  yield put(actions.doneStepping());
+  if (!suppressDone) {
+    yield put(actions.doneStepping());
+  }
 }
 
 /**
  * reset -- reset the state of the debugger
  */
-function* reset() {
+function* reset(suppressDone = false) {
   yield* data.reset();
   yield* evm.reset();
   yield* solidity.reset();
   yield* trace.reset();
-  yield put(actions.doneStepping());
+  if (!suppressDone) {
+    yield put(actions.doneStepping());
+  }
 }

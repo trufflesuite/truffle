@@ -79,7 +79,7 @@ async function prepareDebugger(testName, sources) {
 
   session.addBreakpoint(breakpoint);
 
-  session.continueUntilBreakpoint();
+  await session.continueUntilBreakpoint();
 
   return session;
 }

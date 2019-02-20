@@ -236,7 +236,7 @@ describe("Further Decoding", function() {
     let sourceId = session.view(solidity.current.source).id;
     session.addBreakpoint({ sourceId, line: 71 });
 
-    session.continueUntilBreakpoint();
+    await session.continueUntilBreakpoint();
 
     const variables = await session.variables();
 
@@ -288,7 +288,7 @@ describe("Further Decoding", function() {
     let sourceId = session.view(solidity.current.source).id;
     session.addBreakpoint({ sourceId, line: 52 });
 
-    session.continueUntilBreakpoint();
+    await session.continueUntilBreakpoint();
 
     const variables = TruffleDecodeUtils.Conversion.cleanBNs(
       await session.variables()
@@ -354,7 +354,7 @@ describe("Further Decoding", function() {
     let sourceId = session.view(solidity.current.source).id;
     session.addBreakpoint({ sourceId, line: 40 });
 
-    session.continueUntilBreakpoint();
+    await session.continueUntilBreakpoint();
 
     const variables = await session.variables();
 

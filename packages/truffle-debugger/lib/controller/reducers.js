@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:controller:reducers"); //eslint-disable-line no-unused-vars
+const debug = debugModule("debugger:controller:reducers");
 
 import { combineReducers } from "redux";
 
@@ -54,8 +54,10 @@ const CONTROL_ACTIONS = [
 
 function isStepping(state = false, action) {
   if (CONTROL_ACTIONS.includes(action.type)) {
+    debug("got step start action");
     return true;
-  } else if (actions.type === actions.END_STEPPING) {
+  } else if (action.type === actions.DONE_STEPPING) {
+    debug("got step stop action");
     return false;
   } else {
     return state;
