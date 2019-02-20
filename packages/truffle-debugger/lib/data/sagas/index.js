@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:data:sagas");
 
-import { put, takeEvery, select, call, putResolve } from "redux-saga/effects";
+import { put, takeEvery, select, call } from "redux-saga/effects";
 
 import { prefixName, stableKeccak256 } from "lib/helpers";
 
@@ -16,15 +16,15 @@ import { getStorageAllocations, readStack, storageSize } from "truffle-decoder";
 import BN from "bn.js";
 
 export function* scope(nodeId, pointer, parentId, sourceId) {
-  yield putResolve(actions.scope(nodeId, pointer, parentId, sourceId));
+  yield put(actions.scope(nodeId, pointer, parentId, sourceId));
 }
 
 export function* declare(node) {
-  yield putResolve(actions.declare(node));
+  yield put(actions.declare(node));
 }
 
 export function* defineType(node) {
-  yield putResolve(actions.defineType(node));
+  yield put(actions.defineType(node));
 }
 
 function* tickSaga() {
