@@ -51,9 +51,6 @@ const command = {
     const CompilerSupplier = require("truffle-compile").CompilerSupplier;
     const supplier = new CompilerSupplier();
 
-    if (options.downloadSolc)
-      return this.downloadAndCacheSolc({ options, supplier });
-
     const Contracts = require("truffle-workflow-compile");
     const Config = require("truffle-config");
     const config = Config.detect(options);
@@ -62,16 +59,6 @@ const command = {
       ? command.listVersions(supplier, config, done)
       : Contracts.compile(config, done);
   },
-
-  downloadAndCacheSolc: async ({ options, supplier }) => {
-    const logger = options.logger || console;
-    const version = options.downloadSolc;
-    const solc = await supplier.downloadAndCacheSolc(version);
-    return logger.log(
-      `    > successfully downloaded and cached ${solc.version()}`
-    );
-  },
-
   listVersions: function(supplier, options, done) {
     const log = options.logger.log;
     options.list = options.list.length ? options.list : "releases";
