@@ -23,7 +23,7 @@ describe("truffle-box Box", () => {
 
   describe(".unbox()", () => {
     it("unboxes truffle box from github", done => {
-      return Box.unbox(TRUFFLE_BOX_DEFAULT, destination).then(truffleConfig => {
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination).then(truffleConfig => {
         assert.ok(truffleConfig);
 
         assert(
