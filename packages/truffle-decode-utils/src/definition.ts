@@ -39,7 +39,7 @@ export namespace Definition {
    */
   export function visibility(definition: AstDefinition): string {
     return definition.typeName ?
-      definition.typeName.visibility : definition.typeName.visibility;
+      definition.typeName.visibility : definition.visibility;
   }
 
 

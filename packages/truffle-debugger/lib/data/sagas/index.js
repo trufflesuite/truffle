@@ -28,6 +28,13 @@ export function* defineType(node) {
 }
 
 function* tickSaga() {
+  debug("got TICK");
+
+  yield* variablesAndMappingsSaga();
+  yield* trace.signalTickSagaCompletion();
+}
+
+function* variablesAndMappingsSaga() {
   let node = (yield select(data.views.ast)).node;
   let decode = yield select(data.views.decoder);
   let scopes = yield select(data.views.scopes.inlined);
@@ -41,7 +48,6 @@ function* tickSaga() {
 
   let stack = yield select(data.next.state.stack);
   if (!stack) {
-    yield* trace.signalTickSagaCompletion();
     return;
   }
 
@@ -49,7 +55,6 @@ function* tickSaga() {
   var assignment, assignments, baseExpression, slot, path;
 
   if (!node) {
-    yield* trace.signalTickSagaCompletion();
     return;
   }
 
@@ -61,7 +66,6 @@ function* tickSaga() {
   // asserts that the _current_ operation is the final one before
   // proceeding
   if (!(yield select(data.views.atLastInstructionForSourceRange))) {
-    yield* trace.signalTickSagaCompletion();
     return;
   }
 
@@ -435,8 +439,6 @@ function* tickSaga() {
       yield put(actions.assign(assignments));
       break;
   }
-
-  yield* trace.signalTickSagaCompletion();
 }
 
 export function* reset() {
@@ -514,13 +516,7 @@ function fetchBasePath(
 }
 
 export function* saga() {
-  yield takeEvery(TICK, function*() {
-    try {
-      yield* tickSaga();
-    } catch (e) {
-      debug("ERROR: %O", e);
-    }
-  });
+  yield takeEvery(TICK, tickSaga);
 }
 
 export default prefixName("data", saga);

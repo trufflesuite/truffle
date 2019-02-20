@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:solidity:sagas");
 
-import { call, put, take, select } from "redux-saga/effects";
+import { put, takeEvery, select } from "redux-saga/effects";
 import { prefixName } from "lib/helpers";
 
 import * as actions from "../actions";
@@ -19,13 +19,10 @@ export function* addSourceMap(binary, sourceMap) {
 }
 
 function* tickSaga() {
-  while (true) {
-    yield take(TICK);
-    debug("got TICK");
+  debug("got TICK");
 
-    yield* functionDepthSaga();
-    yield* trace.signalTickSagaCompletion();
-  }
+  yield* functionDepthSaga();
+  yield* trace.signalTickSagaCompletion();
 }
 
 function* functionDepthSaga() {
@@ -75,7 +72,7 @@ export function* reset() {
 }
 
 export function* saga() {
-  yield call(tickSaga);
+  yield takeEvery(TICK, tickSaga);
 }
 
 export default prefixName("solidity", saga);
