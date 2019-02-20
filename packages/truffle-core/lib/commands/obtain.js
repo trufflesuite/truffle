@@ -9,8 +9,9 @@ module.exports = {
     const CompilerSupplier = require("truffle-compile").CompilerSupplier;
     const supplier = new CompilerSupplier();
 
-    return this.downloadAndCacheSolc({ options, supplier });
-    then(done);
+    return this.downloadAndCacheSolc({ options, supplier })
+      .then(done)
+      .catch(done);
   },
   downloadAndCacheSolc: async ({ options, supplier }) => {
     const logger = options.logger || console;
