@@ -28,7 +28,6 @@
   },
   "dependencies": {
     "@types/lodash.range": "^3.2.4",
-    "lodash.isequal": "^4.5.0",
     "lodash.range": "^3.2.0"
   },
   "husky": {
