@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:controller:sagas");
+const debug = debugModule("debugger:controller:sagas"); //eslint-disable-line no-unused-vars
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
 
@@ -11,17 +11,16 @@ import trace from "lib/trace/selectors";
 /**
  * @private
  */
-const identity = (x) => x;
+const identity = x => x;
 
 /**
  * controller
  */
 const controller = createSelectorTree({
-
   /**
    * controller.state
    */
-  state: ((state) => state.controller),
+  state: state => state.controller,
   /**
    * controller.current
    */
@@ -63,20 +62,24 @@ const controller = createSelectorTree({
       /**
        * controller.current.location.isMultiline
        */
-      isMultiline: createLeaf([solidity.current.isMultiline], identity),
+      isMultiline: createLeaf([solidity.current.isMultiline], identity)
     }
   },
 
   /**
    * controller.breakpoints
    */
-  breakpoints: createLeaf(["./state"], (state) => state.breakpoints),
+  breakpoints: createLeaf(["./state"], state => state.breakpoints),
+
+  /**
+   * controller.isStepping
+   */
+  isStepping: createLeaf(["./state"], state => state.isStepping),
 
   /**
    * controller.finished
    */
-  finished: createLeaf([trace.finished], identity),
-
+  finished: createLeaf([trace.finished], identity)
 });
 
 export default controller;

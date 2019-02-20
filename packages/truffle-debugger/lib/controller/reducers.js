@@ -42,8 +42,29 @@ function breakpoints(state = [], action) {
   }
 }
 
+const CONTROL_ACTIONS = [
+  actions.ADVANCE,
+  actions.STEP_NEXT,
+  actions.STEP_OVER,
+  actions.STEP_INTO,
+  actions.STEP_OUT,
+  actions.CONTINUE,
+  actions.RESET
+];
+
+function isStepping(state = false, action) {
+  if (CONTROL_ACTIONS.includes(action.type)) {
+    return true;
+  } else if (actions.type === actions.END_STEPPING) {
+    return false;
+  } else {
+    return state;
+  }
+}
+
 const reducer = combineReducers({
-  breakpoints
+  breakpoints,
+  isStepping
 });
 
 export default reducer;

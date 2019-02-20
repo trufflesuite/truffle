@@ -34,8 +34,6 @@ export function* saga() {
     debug("got control action");
     let saga = CONTROL_SAGAS[action.type];
 
-    yield put(actions.beginStep(action.type));
-
     yield race({
       exec: call(saga, action),
       interrupt: take(actions.INTERRUPT)
@@ -51,6 +49,7 @@ export default prefixName("controller", saga);
 function* advance() {
   // send action to advance trace
   yield* trace.advance();
+  yield put(actions.doneStepping());
 }
 
 /**
@@ -87,6 +86,7 @@ function* stepNext() {
       (upcoming.sourceRange.start == startingRange.start &&
         upcoming.sourceRange.length == startingRange.length))
   );
+  yield put(actions.doneStepping());
 }
 
 /**
@@ -105,12 +105,16 @@ function* stepInto() {
   if (yield select(controller.current.willJump)) {
     yield* stepNext();
 
+    //must mark done stepping before early return
+    yield put(actions.doneStepping());
     return;
   }
 
   if (yield select(controller.current.location.isMultiline)) {
     yield* stepOver();
 
+    //must mark done stepping before early return
+    yield put(actions.doneStepping());
     return;
   }
 
@@ -133,6 +137,7 @@ function* stepInto() {
     currentRange.start + currentRange.length <=
       startingRange.start + startingRange.length
   );
+  yield put(actions.doneStepping());
 }
 
 /**
@@ -144,6 +149,8 @@ function* stepOut() {
   if (yield select(controller.current.location.isMultiline)) {
     yield* stepOver();
 
+    //must mark done stepping before early return
+    yield put(actions.doneStepping());
     return;
   }
 
@@ -155,6 +162,7 @@ function* stepOut() {
 
     currentDepth = yield select(controller.current.functionDepth);
   } while (currentDepth >= startingDepth);
+  yield put(actions.doneStepping());
 }
 
 /**
@@ -185,6 +193,7 @@ function* stepOver() {
     (currentDepth > startingDepth ||
       currentRange.lines.start.line == startingRange.lines.start.line)
   );
+  yield put(actions.doneStepping());
 }
 
 /**
@@ -233,6 +242,7 @@ function* continueUntilBreakpoint() {
         );
       }).length > 0;
   } while (!breakpointHit && !finished);
+  yield put(actions.doneStepping());
 }
 
 /**
@@ -243,4 +253,5 @@ function* reset() {
   yield* evm.reset();
   yield* solidity.reset();
   yield* trace.reset();
+  yield put(actions.doneStepping());
 }

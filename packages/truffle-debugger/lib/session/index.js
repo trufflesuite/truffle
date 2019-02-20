@@ -127,32 +127,54 @@ export default class Session {
     return this.dispatch(controller.interrupt());
   }
 
-  advance() {
-    return this.dispatch(controller.advance());
+  async doneStepping(stepperAction) {
+    return new Promise(resolve => {
+      let hasStarted = false;
+      let hasResolved = false;
+      const unsubscribe = this._store.subscribe(() => {
+        const isStepping = this.view(controller.isStepping);
+
+        if (isStepping && !hasStarted) {
+          hasStarted = true;
+          return;
+        }
+
+        if (!isStepping && hasStarted && !hasResolved) {
+          hasResolved = true;
+          unsubscribe();
+          resolve(true);
+        }
+      });
+      this.dispatch(stepperAction);
+    });
   }
 
-  stepNext() {
-    return this.dispatch(controller.stepNext());
+  async advance() {
+    return await this.doneStepping(controller.advance());
   }
 
-  stepOver() {
-    return this.dispatch(controller.stepOver());
+  async stepNext() {
+    return await this.doneStepping(controller.stepNext());
   }
 
-  stepInto() {
-    return this.dispatch(controller.stepInto());
+  async stepOver() {
+    return await this.doneStepping(controller.stepOver());
   }
 
-  stepOut() {
-    return this.dispatch(controller.stepOut());
+  async stepInto() {
+    return await this.doneStepping(controller.stepInto());
   }
 
-  reset() {
-    return this.dispatch(controller.reset());
+  async stepOut() {
+    return await this.doneStepping(controller.stepOut());
   }
 
-  continueUntilBreakpoint() {
-    return this.dispatch(controller.continueUntilBreakpoint());
+  async reset() {
+    return await this.doneStepping(controller.reset());
+  }
+
+  async continueUntilBreakpoint() {
+    return await this.doneStepping(controller.continueUntilBreakpoint());
   }
 
   addBreakpoint(breakpoint) {
