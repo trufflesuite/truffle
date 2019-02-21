@@ -199,12 +199,10 @@ pragma solidity ^0.5.0;
 contract ComplexMappingTest {
 
   struct MappingStruct {
-    mapping(string => string) map0;
-    mapping(string => string) map1;
+    mapping(string => string) map;
   }
 
-  mapping(string => string)[2] mapArrayStatic;
-  mapping(string => string)[] mapArrayDynamic;
+  mapping(string => string)[1] mapArrayStatic;
   mapping(string => mapping(string => string)) mapMap;
   MappingStruct mapStruct0;
   MappingStruct mapStruct1;
@@ -212,30 +210,11 @@ contract ComplexMappingTest {
   function run() public {
 
     mapArrayStatic[0]["a"] = "0a";
-    mapArrayStatic[0]["b"] = "0b";
-    mapArrayStatic[1]["c"] = "1c";
-    mapArrayStatic[1]["d"] = "1d";
-
-    mapArrayDynamic.length = 2;
-    mapArrayDynamic[0]["a"] = "0a";
-    mapArrayDynamic[0]["b"] = "0b";
-    mapArrayDynamic[1]["c"] = "1c";
-    mapArrayDynamic[1]["d"] = "1d";
 
     mapMap["a"]["c"] = "ac";
-    mapMap["a"]["d"] = "ad";
-    mapMap["b"]["e"] = "be";
-    mapMap["b"]["f"] = "bf";
 
-    mapStruct0.map0["a"] = "00a";
-    mapStruct0.map0["b"] = "00b";
-    mapStruct0.map1["c"] = "01c";
-    mapStruct0.map1["d"] = "01d";
-
-    mapStruct1.map0["e"] = "10e";
-    mapStruct1.map0["f"] = "10f";
-    mapStruct1.map1["g"] = "11g";
-    mapStruct1.map1["h"] = "11h";
+    mapStruct0.map["a"] = "00a";
+    mapStruct1.map["e"] = "10e";
   }
 }
 `;
@@ -436,7 +415,7 @@ describe("Further Decoding", function() {
   });
 
   it("Decodes inner mappings correctly and keeps path info", async function() {
-    this.timeout(24000);
+    this.timeout(12000);
 
     let instance = await abstractions.ComplexMappingTest.deployed();
     let receipt = await instance.run();
@@ -456,25 +435,13 @@ describe("Further Decoding", function() {
     const variables = await session.variables();
 
     const expectedResult = {
-      mapArrayStatic: [
-        new Map([["a", "0a"], ["b", "0b"]]),
-        new Map([["c", "1c"], ["d", "1d"]])
-      ],
-      mapArrayDynamic: [
-        new Map([["a", "0a"], ["b", "0b"]]),
-        new Map([["c", "1c"], ["d", "1d"]])
-      ],
-      mapMap: new Map([
-        ["a", new Map([["c", "ac"], ["d", "ad"]])],
-        ["b", new Map([["e", "be"], ["f", "bf"]])]
-      ]),
+      mapArrayStatic: [new Map([["a", "0a"]])],
+      mapMap: new Map([["a", new Map([["c", "ac"]])]]),
       mapStruct0: {
-        map0: new Map([["a", "00a"], ["b", "00b"]]),
-        map1: new Map([["c", "01c"], ["d", "01d"]])
+        map: new Map([["a", "00a"]])
       },
       mapStruct1: {
-        map0: new Map([["e", "00e"], ["f", "00f"]]),
-        map1: new Map([["g", "01g"], ["h", "01h"]])
+        map: new Map([["e", "00e"]])
       }
     };
 
@@ -483,12 +450,7 @@ describe("Further Decoding", function() {
 
     assert.hasAllKeys(variables, expectedResult);
 
-    const simpleCases = [
-      "mapArrayStatic",
-      "mapArrayDynamic",
-      "mapStruct0",
-      "mapStruct1"
-    ];
+    const simpleCases = ["mapArrayStatic", "mapStruct0", "mapStruct1"];
 
     //first group: mappings in structs and arrays
     for (let name of simpleCases) {
