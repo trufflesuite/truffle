@@ -94,7 +94,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   private contractNode: AstDefinition;
   private contractNetwork: string;
   private contractAddress: string;
-  private inheritedContracts: ContractObject[];
+  private relevantContracts: ContractObject[];
 
   private contracts: ContractMapping = {};
   private contractNodes: AstReferences = {};
@@ -109,13 +109,13 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   private stateVariableReferences: StorageMemberAllocations;
 
-  constructor(contract: ContractObject, inheritedContracts: ContractObject[], provider: Provider) {
+  constructor(contract: ContractObject, relevantContracts: ContractObject[], provider: Provider) {
     super();
 
     this.web3 = new Web3(provider);
 
-    this.contract = contract; //cloneDeep(contract);
-    this.inheritedContracts = inheritedContracts; //cloneDeep(inheritedContracts);
+    this.contract = contract;
+    this.relevantContracts = relevantContracts;
 
     this.contractNetwork = Object.keys(this.contract.networks)[0];
     this.contractAddress = this.contract.networks[this.contractNetwork].address;
@@ -125,11 +125,11 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.contracts[this.contractNode.id] = this.contract;
     this.contractNodes[this.contractNode.id] = this.contractNode;
     abiDecoder.addABI(this.contract.abi);
-    this.inheritedContracts.forEach((inheritedContract) => {
-      let node: AstDefinition = getContractNode(inheritedContract);
-      this.contracts[node.id] = inheritedContract;
+    this.relevantContracts.forEach((relevantContract) => {
+      let node: AstDefinition = getContractNode(relevantContract);
+      this.contracts[node.id] = relevantContract;
       this.contractNodes[node.id] = node;
-      abiDecoder.addABI(inheritedContract.abi);
+      abiDecoder.addABI(relevantContract.abi);
     });
   }
 
