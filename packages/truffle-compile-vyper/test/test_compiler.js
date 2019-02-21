@@ -15,6 +15,10 @@ describe('vyper compiler', function () {
 
   it('compiles vyper contracts', function (done) {
     compile.all(config, function (err, contracts, paths) {
+      if (err) {
+        console.debug("error compiling vyper %o", err);
+      }
+      
       assert.equal(err, null, 'Compiles without error');
 
       paths.forEach(function (path) {
@@ -45,6 +49,10 @@ describe('vyper compiler', function () {
 
   it('skips solidity contracts', function (done) {
     compile.all(config, function (err, contracts, paths) {
+      if (err) {
+        console.debug("error compiling vyper %o", err);
+      }
+
       assert.equal(err, null, 'Compiles without error');
 
       paths.forEach(function (path) {
