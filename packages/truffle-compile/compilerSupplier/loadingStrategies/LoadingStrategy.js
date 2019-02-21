@@ -4,8 +4,8 @@ const fs = require("fs");
 class LoadingStrategy {
   constructor(options) {
     const defaultConfig = {
-      versionsUrl: "https://solc.trufflesuite.com/bin/list.json",
-      compilerUrlRoot: "https://solc.trufflesuite.com/bin/",
+      versionsUrl: "https://relay.trufflesuite.com/solc/bin/list.json",
+      compilerUrlRoot: "https://relay.trufflesuite.com/solc/bin/",
       dockerTagsUrl:
         "https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/"
     };
