@@ -35,29 +35,21 @@ export function* saga() {
     let saga = CONTROL_SAGAS[action.type];
 
     yield race({
-      exec: call(saga, false), //don't suppress done!
+      exec: call(saga),
       interrupt: take(actions.INTERRUPT)
     });
+    yield put(actions.doneStepping());
   }
 }
 
 export default prefixName("controller", saga);
 
-//NOTE: many of these stepping sagas will take a (false by default)
-//"suppressDone" option.  this should be set to true when calling them from
-//another stepping saga so that the stepping won't be marked as done until the
-//whole thing is done.
-
 /**
  * Advance the state by one instruction
  */
-function* advance(suppressDone = false) {
+function* advance() {
   // send action to advance trace
-  debug("advance, suppressDone = %o", suppressDone);
   yield* trace.advance();
-  if (!suppressDone) {
-    yield put(actions.doneStepping());
-  }
 }
 
 /**
@@ -67,15 +59,14 @@ function* advance(suppressDone = false) {
  * "Stepping", then, is stepping to the next logical item, not stepping to the next
  * instruction. See advance() if you'd like to advance by one instruction.
  */
-function* stepNext(suppressDone = false) {
+function* stepNext() {
   const startingRange = yield select(controller.current.location.sourceRange);
-  debug("stepNext, suppressDone = %o", suppressDone);
 
   var upcoming, finished;
 
   do {
     // advance at least once step
-    yield* advance(true);
+    yield* advance();
 
     // and check the next source range
     try {
@@ -95,10 +86,6 @@ function* stepNext(suppressDone = false) {
       (upcoming.sourceRange.start == startingRange.start &&
         upcoming.sourceRange.length == startingRange.length))
   );
-  if (!suppressDone) {
-    debug("stepNext putting doneStepping");
-    yield put(actions.doneStepping());
-  }
 }
 
 /**
@@ -113,14 +100,14 @@ function* stepNext(suppressDone = false) {
  * that exists outside of the range, then stepInto will only execute until that
  * step.
  */
-function* stepInto(suppressDone = false) {
+function* stepInto() {
   if (yield select(controller.current.willJump)) {
-    yield* stepNext(suppressDone); //we'll let stepNext give the done signal
+    yield* stepNext();
     return;
   }
 
   if (yield select(controller.current.location.isMultiline)) {
-    yield* stepOver(suppressDone); //we'll let stepOver give the done signal
+    yield* stepOver();
     return;
   }
 
@@ -130,7 +117,7 @@ function* stepInto(suppressDone = false) {
   var currentRange;
 
   do {
-    yield* stepNext(true);
+    yield* stepNext();
 
     currentDepth = yield select(controller.current.functionDepth);
     currentRange = yield select(controller.current.location.sourceRange);
@@ -143,9 +130,6 @@ function* stepInto(suppressDone = false) {
     currentRange.start + currentRange.length <=
       startingRange.start + startingRange.length
   );
-  if (!suppressDone) {
-    yield put(actions.doneStepping());
-  }
 }
 
 /**
@@ -153,9 +137,9 @@ function* stepInto(suppressDone = false) {
  *
  * This will run until the debugger encounters a decrease in function depth.
  */
-function* stepOut(suppressDone = false) {
+function* stepOut() {
   if (yield select(controller.current.location.isMultiline)) {
-    yield* stepOver(suppressDone); //we'll let stepOver give the done signal
+    yield* stepOver();
     return;
   }
 
@@ -163,13 +147,10 @@ function* stepOut(suppressDone = false) {
   var currentDepth;
 
   do {
-    yield* stepNext(true);
+    yield* stepNext();
 
     currentDepth = yield select(controller.current.functionDepth);
   } while (currentDepth >= startingDepth);
-  if (!suppressDone) {
-    yield put(actions.doneStepping());
-  }
 }
 
 /**
@@ -178,14 +159,14 @@ function* stepOut(suppressDone = false) {
  * Step over the current line. This will step to the next instruction that
  * exists on a different line of code within the same function depth.
  */
-function* stepOver(suppressDone = false) {
+function* stepOver() {
   const startingDepth = yield select(controller.current.functionDepth);
   const startingRange = yield select(controller.current.location.sourceRange);
   var currentDepth;
   var currentRange;
 
   do {
-    yield* stepNext(true);
+    yield* stepNext();
 
     currentDepth = yield select(controller.current.functionDepth);
     currentRange = yield select(controller.current.location.sourceRange);
@@ -200,20 +181,15 @@ function* stepOver(suppressDone = false) {
     (currentDepth > startingDepth ||
       currentRange.lines.start.line == startingRange.lines.start.line)
   );
-  if (!suppressDone) {
-    yield put(actions.doneStepping());
-  }
 }
 
 /**
  * continueUntilBreakpoint - step through execution until a breakpoint
  */
-function* continueUntilBreakpoint(suppressDone = false) {
+function* continueUntilBreakpoint() {
   var currentLocation, currentNode, currentLine, currentSourceId;
   var finished;
   var previousLine, previousSourceId;
-
-  debug("continue, suppressDone = %o", suppressDone);
 
   let breakpoints = yield select(controller.breakpoints);
 
@@ -225,7 +201,7 @@ function* continueUntilBreakpoint(suppressDone = false) {
   currentSourceId = currentLocation.source.id;
 
   do {
-    yield* stepNext(true);
+    yield* stepNext();
 
     previousLine = currentLine;
     previousSourceId = currentSourceId;
@@ -253,20 +229,14 @@ function* continueUntilBreakpoint(suppressDone = false) {
         );
       }).length > 0;
   } while (!breakpointHit && !finished);
-  if (!suppressDone) {
-    yield put(actions.doneStepping());
-  }
 }
 
 /**
  * reset -- reset the state of the debugger
  */
-function* reset(suppressDone = false) {
+function* reset() {
   yield* data.reset();
   yield* evm.reset();
   yield* solidity.reset();
   yield* trace.reset();
-  if (!suppressDone) {
-    yield put(actions.doneStepping());
-  }
 }
