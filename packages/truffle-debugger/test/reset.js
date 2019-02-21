@@ -70,7 +70,7 @@ describe("Reset Button", function() {
     variables[1] = []; //collected during 2nd run
 
     variables[0].push(await session.variables());
-    session.addBreakpoint({ sourceId, line: 10 });
+    await session.addBreakpoint({ sourceId, line: 10 });
     await session.continueUntilBreakpoint(); //advance to line 10
     variables[0].push(await session.variables());
     await session.continueUntilBreakpoint(); //advance to the end

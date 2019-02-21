@@ -202,8 +202,8 @@ describe("Variable IDs", function() {
     debug("sourceId %d", session.view(solidity.current.source).id);
 
     let sourceId = session.view(solidity.current.source).id;
-    session.addBreakpoint({ sourceId, line: 12 });
-    session.addBreakpoint({ sourceId, line: 22 });
+    await session.addBreakpoint({ sourceId, line: 12 });
+    await session.addBreakpoint({ sourceId, line: 22 });
 
     var values = [];
 
@@ -241,7 +241,7 @@ describe("Variable IDs", function() {
     debug("sourceId %d", session.view(solidity.current.source).id);
 
     let sourceId = session.view(solidity.current.source).id;
-    session.addBreakpoint({ sourceId, line: 32 });
+    await session.addBreakpoint({ sourceId, line: 32 });
     await session.continueUntilBreakpoint();
     debug("node %o", session.view(solidity.current.node));
     assert.equal(
@@ -271,7 +271,7 @@ describe("Variable IDs", function() {
     debug("sourceId %d", session.view(solidity.current.source).id);
 
     let sourceId = session.view(solidity.current.source).id;
-    session.addBreakpoint({ sourceId, line: 18 });
+    await session.addBreakpoint({ sourceId, line: 18 });
     await session.continueUntilBreakpoint();
     assert.property(await session.variables(), "flag");
   });
@@ -291,7 +291,7 @@ describe("Variable IDs", function() {
     debug("sourceId %d", session.view(solidity.current.source).id);
 
     let sourceId = session.view(solidity.current.source).id;
-    session.addBreakpoint({ sourceId, line: 27 });
+    await session.addBreakpoint({ sourceId, line: 27 });
     await session.continueUntilBreakpoint();
     assert.property(await session.variables(), "flag");
   });

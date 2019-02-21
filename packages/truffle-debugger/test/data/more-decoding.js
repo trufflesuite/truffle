@@ -234,7 +234,7 @@ describe("Further Decoding", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    session.addBreakpoint({ sourceId, line: 71 });
+    await session.addBreakpoint({ sourceId, line: 71 });
 
     await session.continueUntilBreakpoint();
 
@@ -286,7 +286,7 @@ describe("Further Decoding", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    session.addBreakpoint({ sourceId, line: 52 });
+    await session.addBreakpoint({ sourceId, line: 52 });
 
     await session.continueUntilBreakpoint();
 
@@ -352,7 +352,7 @@ describe("Further Decoding", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    session.addBreakpoint({ sourceId, line: 40 });
+    await session.addBreakpoint({ sourceId, line: 40 });
 
     await session.continueUntilBreakpoint();
 

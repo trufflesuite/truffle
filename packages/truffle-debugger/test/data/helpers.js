@@ -77,7 +77,7 @@ async function prepareDebugger(testName, sources) {
     line: lastStatementLine(source)
   };
 
-  session.addBreakpoint(breakpoint);
+  await session.addBreakpoint(breakpoint);
 
   await session.continueUntilBreakpoint();
 

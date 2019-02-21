@@ -36,7 +36,7 @@ export default class Session {
     this._store.dispatch(actions.start(txHash, provider));
   }
 
-  ready() {
+  async ready() {
     return new Promise((accept, reject) => {
       this._store.subscribe(() => {
         if (this.state.session.status == "ACTIVE") {
@@ -118,13 +118,13 @@ export default class Session {
     return selector(this.state);
   }
 
-  dispatch(action) {
+  async dispatch(action) {
     this._store.dispatch(action);
 
     return true;
   }
 
-  interrupt() {
+  async interrupt() {
     return this.dispatch(controller.interrupt());
   }
 
@@ -180,15 +180,15 @@ export default class Session {
     return await this.doneStepping(controller.continueUntilBreakpoint());
   }
 
-  addBreakpoint(breakpoint) {
+  async addBreakpoint(breakpoint) {
     return this.dispatch(controller.addBreakpoint(breakpoint));
   }
 
-  removeBreakpoint(breakpoint) {
+  async removeBreakpoint(breakpoint) {
     return this.dispatch(controller.removeBreakpoint(breakpoint));
   }
 
-  removeAllBreakpoints() {
+  async removeAllBreakpoints() {
     return this.dispatch(controller.removeAllBreakpoints());
   }
 
