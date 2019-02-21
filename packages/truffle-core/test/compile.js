@@ -14,13 +14,6 @@ describe("compile", function() {
   var output = "";
   var memStream;
 
-  beforeEach(() => {
-    memStream = new MemoryStream();
-    memStream.on("data", function(data) {
-      output += data.toString();
-    });
-  });
-
   before("Create a sandbox", function(done) {
     this.timeout(20000);
 
@@ -85,10 +78,11 @@ describe("compile", function() {
       }),
       function(err, result) {
         if (err) return done(err);
+        let { contracts } = result;
 
         assert.equal(
-          typeof result,
-          "undefined",
+          Object.keys(contracts).length,
+          0,
           "Compiled a contract even though we weren't expecting it"
         );
         done();
@@ -141,6 +135,13 @@ describe("compile", function() {
   });
 
   describe("solc listing options", function() {
+    beforeEach(() => {
+      memStream = new MemoryStream();
+      memStream.on("data", function(data) {
+        output += data.toString();
+      });
+    });
+
     it("prints a truncated list of solcjs versions", function(done) {
       this.timeout(5000);
 
