@@ -30,16 +30,17 @@ class CompilerSupplier {
   }
 
   async downloadAndCacheSolc(version) {
-    if (!semver.valid(version)) {
-      const message =
-        `You must specify a valid solc version to download` +
-        `Please ensure that the version you entered, ` +
-        `${version}, is valid.`;
-      throw new Error(message);
+    if (semver.validRange(version)) {
+      return await new VersionRange(this.strategyOptions).getSolcFromCacheOrUrl(
+        version
+      );
     }
-    return await new VersionRange(this.strategyOptions).getSolcFromCacheOrUrl(
-      version
-    );
+
+    const message =
+      `You must specify a valid solc version to download` +
+      `Please ensure that the version you entered, ` +
+      `${version}, is valid.`;
+    throw new Error(message);
   }
 
   load() {
