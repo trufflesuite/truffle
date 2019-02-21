@@ -10,7 +10,7 @@ import ast from "lib/ast/selectors";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
-import * as TruffleDecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "truffle-decode-utils";
 import { forEvmState } from "truffle-decoder";
 
 /**
@@ -26,15 +26,7 @@ function createStateSelectors({ stack, memory, storage }) {
     stack: createLeaf(
       [stack],
 
-      words =>
-        (words || []).map(word =>
-          TruffleDecodeUtils.Conversion.toBytes(
-            TruffleDecodeUtils.Conversion.toBN(
-              word,
-              TruffleDecodeUtils.EVM.WORD_SIZE
-            )
-          )
-        )
+      words => (words || []).map(word => DecodeUtils.Conversion.toBytes(word))
     ),
 
     /**
@@ -43,12 +35,7 @@ function createStateSelectors({ stack, memory, storage }) {
     memory: createLeaf(
       [memory],
 
-      words =>
-        new Uint8Array(
-          (words.join("").match(/.{1,2}/g) || []).map(byte =>
-            parseInt(byte, 16)
-          )
-        )
+      words => DecodeUtils.Conversion.toBytes(words.join(""))
     ),
 
     /**
@@ -61,9 +48,7 @@ function createStateSelectors({ stack, memory, storage }) {
         Object.assign(
           {},
           ...Object.entries(mapping).map(([address, word]) => ({
-            [`0x${address}`]: new Uint8Array(
-              (word.match(/.{1,2}/g) || []).map(byte => parseInt(byte, 16))
-            )
+            [`0x${address}`]: DecodeUtils.Conversion.toBytes(word)
           }))
         )
     )
@@ -230,11 +215,22 @@ const data = createSelectorTree({
               .slice()
               .reverse();
             //now, we put it all together
-            newScope.variables = [].concat(
-              ...linearizedBaseContractsFromBase.map(
-                contractId => scopes[contractId].variables
+            newScope.variables = []
+              .concat(
+                ...linearizedBaseContractsFromBase.map(
+                  contractId => scopes[contractId].variables
+                )
               )
-            );
+              .filter(variable => {
+                //...except, HACK, let's filter out those constants we don't know
+                //how to read.  they'll just clutter things up.
+                let definition = inlined[variable.id].definition;
+                return (
+                  !definition.constant ||
+                  DecodeUtils.Definition.isSimpleConstant(definition.value)
+                );
+              });
+
             return { [id]: newScope };
           })
         )
@@ -473,20 +469,11 @@ const data = createSelectorTree({
             })
           );
           const keyedResults = await Promise.all(keyedPromises);
-          return TruffleDecodeUtils.Conversion.cleanContainers(
+          return DecodeUtils.Conversion.cleanContainers(
             Object.assign({}, ...keyedResults)
           );
         }
-      ),
-
-      /**
-       * data.current.identifiers.native
-       *
-       * Returns an object with values as Promises
-       */
-      native: createLeaf(["./decoded"], async decoded => {
-        return TruffleDecodeUtils.Conversion.cleanBNs(await decoded);
-      })
+      )
     }
   },
 

@@ -1,13 +1,10 @@
 {
   "name": "truffle-expect",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Simple module for ensuring specific options are passed to a function",
   "main": "index.js",
   "scripts": {},
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/trufflesuite/truffle-expect.git"
-  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-expect",
   "keywords": [
     "truffle",
     "ethereum",

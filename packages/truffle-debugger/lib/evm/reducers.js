@@ -84,8 +84,6 @@ function instances(state = DEFAULT_INSTANCES, action) {
     case actions.ADD_INSTANCE:
       let { address, context, binary } = action;
 
-      address = address.toLowerCase();
-
       // get known addresses for this context
       let otherInstances = state.byContext[context] || [];
       let otherAddresses = otherInstances.map(({ address }) => address);
@@ -123,9 +121,7 @@ const info = combineReducers({
 export function callstack(state = [], action) {
   switch (action.type) {
     case actions.CALL:
-      let address = action.address.toLowerCase();
-      //we get some addresses in lowercase, some in checksum case,
-      //so I'm lowercasing them all for consistency
+      const address = action.address;
       return state.concat([{ address }]);
 
     case actions.CREATE:
