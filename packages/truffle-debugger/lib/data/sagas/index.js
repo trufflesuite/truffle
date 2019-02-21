@@ -323,6 +323,9 @@ function* variablesAndMappingsSaga() {
 
       //whew! But we're not done yet -- we need to turn this decoded key into
       //an actual path (assuming we *did* decode it)
+      //OK, not an actual path -- we're just going to use a simple offset for
+      //the path.  But that's OK, because the mappedPaths reducer will turn
+      //it into an actual path.
       if (indexValue !== null) {
         path = fetchBasePath(
           baseExpression,
@@ -496,23 +499,12 @@ function fetchBasePath(
     astId: baseNode.id,
     stackframe: currentDepth
   });
-  let basePathRef = mappedPaths.byId[fullId];
-  //may be undefined! this means that the base is not an index or member
-  //access, but just an ordinary mapping or array or struct.  note that it may
-  //be via a pointer! for this reason, we fetch the base from the stack rather
-  //than from the allocation table
-  if (basePathRef !== undefined) {
-    return mappedPaths.byAddress[basePathRef.address].byType[
-      basePathRef.typeIdentifier
-    ].bySlotAddress[basePathRef.slotAddress];
-  } else {
-    //base expression is an expression, and so has a literal assigned to
-    //it
-    let offset = DecodeUtils.Conversion.toBN(
-      currentAssignments.byId[fullId].ref.literal
-    );
-    return { offset };
-  }
+  //base expression is an expression, and so has a literal assigned to
+  //it
+  let offset = DecodeUtils.Conversion.toBN(
+    currentAssignments.byId[fullId].ref.literal
+  );
+  return { offset };
 }
 
 export function* saga() {

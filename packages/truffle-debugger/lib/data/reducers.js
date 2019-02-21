@@ -180,9 +180,7 @@ function learnAddress(assignment, dummyAddress, address) {
 
 const DEFAULT_PATHS = {
   decodingStarted: 0,
-  byAddress: {},
-  byId: {} //WARNING: byId is *working* state and should not be relied on
-  //aside from its narrow purpose of avoiding recomputation in the data saga
+  byAddress: {}
 };
 
 //WARNING: do *not* rely on mappedPaths to keep track of paths that do not
@@ -198,21 +196,16 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
       );
       return {
         decodingStarted: state.decodingStarted + (action.started ? 1 : -1),
-        byAddress: state.byAddress,
-        byId: state.byId
+        byAddress: state.byAddress
       };
     case actions.MAP_PATH_AND_ASSIGN:
-      let { address, slot, assignments, typeIdentifier, baseType } = action;
+      let { address, slot, typeIdentifier, baseType } = action;
 
       //we do NOT want to distinguish between types with and without "_ptr" on
       //the end here!
       debug("typeIdentifier %s", typeIdentifier);
       typeIdentifier = Definition.restorePtr(typeIdentifier);
       baseType = Definition.restorePtr(baseType);
-
-      //assignments.byId should contain precisely one assignment; we'll just
-      //need its ID, which is its key
-      let id = Object.keys(assignments.byId)[0];
 
       debug("slot %o", slot);
       let hexSlotAddress = Conversion.toHexString(
@@ -224,8 +217,7 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
         : undefined;
 
       //this is going to be messy and procedural, sorry.  but let's start with
-      //the easy stuff: create the new address if needed, clone if not,
-      //and set up byId regardless
+      //the easy stuff: create the new address if needed, clone if not
       let newState = {
         decodingStarted: state.decodingStarted,
         byAddress: {
@@ -235,10 +227,6 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
               ...(state.byAddress[address] || { byType: {} }).byType
             }
           }
-        },
-        byId: {
-          ...state.byId,
-          [id]: { address, typeIdentifier, slotAddress: hexSlotAddress }
         }
       };
 
@@ -290,7 +278,6 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
         ] = newSlot;
       }
       //if there's already something there, we don't need to do anything
-      //(except update byId, which we already did)
 
       return newState;
 
@@ -305,21 +292,6 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
           ...Object.entries(state.byAddress).map(([address, types]) => ({
             [address === actions.dummyAddress ? action.adress : address]: types
           }))
-        ),
-        byId: Object.assign(
-          {},
-          ...Object.entries(state.byId).map(
-            ([id, { address, type, slotAddress }]) => ({
-              //note that the ID does *not* need to change here, as it comes
-              //from a stackframe assignment, not an address assignment
-              [id]: {
-                address:
-                  address === action.dummyAddress ? action.address : address,
-                typeIdentifier: type,
-                slotAddress
-              }
-            })
-          )
         )
       };
 
