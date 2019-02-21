@@ -5,7 +5,7 @@
   "main": "box.js",
   "scripts": {
     "lint": "eslint ./index.js ./lib || true",
-    "test": "mocha"
+    "test": "mocha --timeout 10000"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-box",
   "keywords": [
