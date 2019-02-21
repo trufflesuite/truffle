@@ -9,6 +9,7 @@ import { prepareContracts } from "../helpers";
 import Debugger from "lib/debugger";
 
 import solidity from "lib/solidity/selectors";
+import data from "lib/data/selectors";
 
 import * as TruffleDecodeUtils from "truffle-decode-utils";
 
@@ -192,10 +193,58 @@ contract SpliceTest {
 }
 `;
 
+const __INNERMAPS = `
+pragma solidity ^0.5.0;
+
+contract ComplexMappingTest {
+
+  struct MappingStruct {
+    mapping(string => string) map0;
+    mapping(string => string) map1;
+  }
+
+  mapping(string => string)[2] mapArrayStatic;
+  mapping(string => string)[] mapArrayDynamic;
+  mapping(string => mapping(string => string)) mapMap;
+  MappingStruct mapStruct0;
+  MappingStruct mapStruct1;
+
+  function run() public {
+
+    mapArrayStatic[0]["a"] = "0a";
+    mapArrayStatic[0]["b"] = "0b";
+    mapArrayStatic[1]["c"] = "1c";
+    mapArrayStatic[1]["d"] = "1d";
+
+    mapArrayDynamic.length = 2;
+    mapArrayDynamic[0]["a"] = "0a";
+    mapArrayDynamic[0]["b"] = "0b";
+    mapArrayDynamic[1]["c"] = "1c";
+    mapArrayDynamic[1]["d"] = "1d";
+
+    mapMap["a"]["c"] = "ac";
+    mapMap["a"]["d"] = "ad";
+    mapMap["b"]["e"] = "be";
+    mapMap["b"]["f"] = "bf";
+
+    mapStruct0.map0["a"] = "00a";
+    mapStruct0.map0["b"] = "00b";
+    mapStruct0.map1["c"] = "01c";
+    mapStruct0.map1["d"] = "01d";
+
+    mapStruct1.map0["e"] = "10e";
+    mapStruct1.map0["f"] = "10f";
+    mapStruct1.map1["g"] = "11g";
+    mapStruct1.map1["h"] = "11h";
+  }
+}
+`;
+
 let sources = {
   "ContainerTest.sol": __CONTAINERS,
   "ElementaryTest.sol": __KEYSANDBYTES,
-  "SpliceTest.sol": __SPLICING
+  "SpliceTest.sol": __SPLICING,
+  "ComplexMappingsTest.sol": __INNERMAPS
 };
 
 describe("Further Decoding", function() {
@@ -219,7 +268,7 @@ describe("Further Decoding", function() {
   });
 
   it("Decodes various reference types correctly", async function() {
-    this.timeout(9000);
+    this.timeout(12000);
 
     let instance = await abstractions.ContainersTest.deployed();
     let receipt = await instance.run();
@@ -270,7 +319,7 @@ describe("Further Decoding", function() {
   });
 
   it("Decodes elementary types and mappings correctly", async function() {
-    this.timeout(9000);
+    this.timeout(12000);
 
     let instance = await abstractions.ElementaryTest.deployed();
     let receipt = await instance.run();
@@ -337,7 +386,7 @@ describe("Further Decoding", function() {
   });
 
   it("Splices locations correctly", async function() {
-    this.timeout(9000);
+    this.timeout(12000);
 
     let instance = await abstractions.SpliceTest.deployed();
     let receipt = await instance.run();
@@ -383,6 +432,119 @@ describe("Further Decoding", function() {
       } else {
         assert.deepEqual(variables[name], expectedResult[name]);
       }
+    }
+  });
+
+  it("Decodes inner mappings correctly and keeps path info", async function() {
+    this.timeout(24000);
+
+    let instance = await abstractions.ComplexMappingTest.deployed();
+    let receipt = await instance.run();
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      files,
+      contracts: artifacts
+    });
+
+    let session = bugger.connect();
+
+    //we're only testing storage so run till end
+    await session.continueUntilBreakpoint();
+
+    const variables = await session.variables();
+
+    const expectedResult = {
+      mapArrayStatic: [
+        new Map([["a", "0a"], ["b", "0b"]]),
+        new Map([["c", "1c"], ["d", "1d"]])
+      ],
+      mapArrayDynamic: [
+        new Map([["a", "0a"], ["b", "0b"]]),
+        new Map([["c", "1c"], ["d", "1d"]])
+      ],
+      mapMap: new Map([
+        ["a", new Map([["c", "ac"], ["d", "ad"]])],
+        ["b", new Map([["e", "be"], ["f", "bf"]])]
+      ]),
+      mapStruct0: {
+        map0: new Map([["a", "00a"], ["b", "00b"]]),
+        map1: new Map([["c", "01c"], ["d", "01d"]])
+      },
+      mapStruct1: {
+        map0: new Map([["e", "00e"], ["f", "00f"]]),
+        map1: new Map([["g", "01g"], ["h", "01h"]])
+      }
+    };
+
+    debug("variables %O", variables);
+    debug("expectedResult %O", expectedResult);
+
+    assert.hasAllKeys(variables, expectedResult);
+
+    const simpleCases = [
+      "mapArrayStatic",
+      "mapArrayDynamic",
+      "mapStruct0",
+      "mapStruct1"
+    ];
+
+    //first group: mappings in structs and arrays
+    for (let name of simpleCases) {
+      //need to use Object.keys in case it's an array
+      assert.hasAllKeys(variables[name], Object.keys(expectedResult[name]));
+      for (let objectKey in expectedResult[name]) {
+        assert.hasAllKeys(
+          variables[name][objectKey],
+          Array.from(expectedResult[name][objectKey].keys())
+        );
+        for (let mapKey of expectedResult[name][objectKey].keys()) {
+          //they're all strings, don't need deepEqual
+          assert.equal(
+            variables[name][objectKey][mapKey],
+            expectedResult[name][objectKey][mapKey]
+          );
+        }
+      }
+    }
+
+    //second group: mappings in mappings (just mapMap)
+    assert.hasAllKeys(
+      variables.mapMap,
+      Array.from(expectedResult.mapMap.keys())
+    );
+    debug("expectedResult.mapMap %O", expectedResult.mapMap);
+    for (let outerKey of expectedResult.mapMap.keys()) {
+      assert.hasAllKeys(
+        variables.mapMap.get(outerKey),
+        Array.from(expectedResult.mapMap.get(outerKey).keys())
+      );
+      for (let innerKey of expectedResult.mapMap.get(outerKey).keys()) {
+        //they're all strings, don't need deepEqual
+        assert.equal(
+          variables.mapMap.get(outerKey)[innerKey],
+          expectedResult.mapMap.get(outerKey)[innerKey]
+        );
+      }
+    }
+
+    //get offsets of top-level variables for this contract
+    //converting to numbers for convenience
+    const startingOffsets = Object.values(
+      Object.values(session.view(data.info.allocations.storage)).filter(
+        ({ definition }) => definition.name === "ComplexMappingTest"
+      )[0].members
+    ).map(({ pointer }) => pointer.storage.from.slot.offset);
+
+    const mappingKeys = session.view(data.views.mappingKeys);
+    for (let slot of mappingKeys) {
+      while (slot.path !== undefined) {
+        slot = slot.path;
+      }
+      //check that each path in the mapping keys can be traced back to one of
+      //the top-level variables
+      assert.deepInclude(startingOffsets, slot.offset);
     }
   });
 });
