@@ -29,7 +29,7 @@ export namespace Definition {
     debug("definition %O", definition);
     return parseInt(
       typeIdentifier(definition)
-        .match(/\$(\d+)_(storage|memory|calldata)(_ptr)?$/)[1]);
+        .match(/\$(\d+)(_(storage|memory|calldata)(_ptr)?)?$/)[1]);
   }
 
   /**

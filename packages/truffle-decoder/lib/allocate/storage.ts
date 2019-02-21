@@ -207,6 +207,7 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
     }
 
     case "enum": {
+      debug("enum definition %O", definition);
       const referenceId: number = DecodeUtils.Definition.typeId(definition);
         //note: we use the preexisting function here for convenience, but we
         //should never need to worry about faked-up enum definitions, so just
