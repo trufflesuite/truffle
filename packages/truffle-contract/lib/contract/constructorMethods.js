@@ -4,7 +4,6 @@ const Web3 = require("web3");
 const utils = require("../utils");
 const execute = require("../execute");
 const bootstrap = require("./bootstrap");
-const Legacy = require("truffle-legacy-system");
 
 module.exports = Contract => {
   return {
@@ -167,73 +166,133 @@ module.exports = Contract => {
       var constructor = this;
 
       return new Promise(function(accept, reject) {
-        // Try to get the current blockLimit
-        constructor.web3.eth
-          .getBlock("latest")
-          .then(function(block) {
-            // Try to detect the network we have artifacts for.
-            if (constructor.network_id) {
-              // We have a network id and a configuration, let's go with it.
-              if (constructor.networks[constructor.network_id] != null) {
-                return accept({
-                  id: constructor.network_id,
-                  blockLimit: block.gasLimit
-                });
-              }
+        if (constructor.legacy) {
+          // Try to detect the network we have artifacts for.
+          if (constructor.network_id) {
+            // We have a network id and a configuration, let's go with it.
+            if (constructor.networks[constructor.network_id] != null) {
+              return accept({
+                id: constructor.network_id
+              });
+            }
+          }
+
+          constructor.web3.eth.net.getId().then(function(result) {
+            var network_id = result.toString();
+
+            // If we found the network via a number, let's use that.
+            if (constructor.hasNetwork(network_id)) {
+              constructor.setNetwork(network_id);
+              return accept({
+                id: network_id
+              });
             }
 
-            constructor.web3.eth.net
-              .getId()
-              .then(function(network_id) {
-                // If we found the network via a number, let's use that.
-                if (constructor.hasNetwork(network_id)) {
-                  constructor.setNetwork(network_id);
+            // Otherwise, go through all the networks that are listed as
+            // blockchain uris and see if they match.
+            var uris = Object.keys(constructor._json.networks).filter(function(
+              network
+            ) {
+              return network.indexOf("blockchain://") == 0;
+            });
+
+            var matches = uris.map(function(uri) {
+              return BlockchainUtils.matches.bind(
+                BlockchainUtils,
+                uri,
+                constructor.web3.currentProvider
+              );
+            });
+
+            utils.parallel(matches, function(err, results) {
+              if (err) return reject(err);
+
+              for (var i = 0; i < results.length; i++) {
+                if (results[i]) {
+                  constructor.setNetwork(uris[i]);
+                  return accept({
+                    id: uris[i]
+                  });
+                }
+              }
+
+              // We found nothing. Set the network id to whatever the provider states.
+              constructor.setNetwork(network_id);
+
+              accept({
+                network_id
+              });
+            });
+          });
+        } else {
+          // Try to get the current blockLimit
+          constructor.web3.eth
+            .getBlock("latest")
+            .then(function(block) {
+              // Try to detect the network we have artifacts for.
+              if (constructor.network_id) {
+                // We have a network id and a configuration, let's go with it.
+                if (constructor.networks[constructor.network_id] != null) {
                   return accept({
                     id: constructor.network_id,
                     blockLimit: block.gasLimit
                   });
                 }
+              }
 
-                // Otherwise, go through all the networks that are listed as
-                // blockchain uris and see if they match.
-                var uris = Object.keys(constructor._json.networks).filter(
-                  function(network) {
-                    return network.indexOf("blockchain://") === 0;
+              constructor.web3.eth.net
+                .getId()
+                .then(function(network_id) {
+                  // If we found the network via a number, let's use that.
+                  if (constructor.hasNetwork(network_id)) {
+                    constructor.setNetwork(network_id);
+                    return accept({
+                      id: constructor.network_id,
+                      blockLimit: block.gasLimit
+                    });
                   }
-                );
 
-                var matches = uris.map(function(uri) {
-                  return BlockchainUtils.matches.bind(
-                    BlockchainUtils,
-                    uri,
-                    constructor.web3.currentProvider
-                  );
-                });
-
-                utils.parallel(matches, function(err, results) {
-                  if (err) return reject(err);
-
-                  for (var i = 0; i < results.length; i++) {
-                    if (results[i]) {
-                      constructor.setNetwork(uris[i]);
-                      return accept({
-                        id: constructor.network_id,
-                        blockLimit: block.gasLimit
-                      });
+                  // Otherwise, go through all the networks that are listed as
+                  // blockchain uris and see if they match.
+                  var uris = Object.keys(constructor._json.networks).filter(
+                    function(network) {
+                      return network.indexOf("blockchain://") === 0;
                     }
-                  }
+                  );
 
-                  // We found nothing. Set the network id to whatever the provider states.
-                  constructor.setNetwork(network_id);
-                  return accept({
-                    id: constructor.network_id,
-                    blockLimit: block.gasLimit
+                  var matches = uris.map(function(uri) {
+                    return BlockchainUtils.matches.bind(
+                      BlockchainUtils,
+                      uri,
+                      constructor.web3.currentProvider
+                    );
                   });
-                });
-              })
-              .catch(reject);
-          })
-          .catch(reject);
+
+                  utils.parallel(matches, function(err, results) {
+                    if (err) return reject(err);
+
+                    for (var i = 0; i < results.length; i++) {
+                      if (results[i]) {
+                        constructor.setNetwork(uris[i]);
+                        return accept({
+                          id: constructor.network_id,
+                          blockLimit: block.gasLimit
+                        });
+                      }
+                    }
+
+                    // We found nothing. Set the network id to whatever the provider states.
+                    constructor.setNetwork(network_id);
+                    return accept({
+                      id: constructor.network_id,
+                      blockLimit: block.gasLimit
+                    });
+                  });
+                })
+                .catch(reject);
+            })
+            .catch(reject);
+        }
       });
     },
 
@@ -327,7 +386,7 @@ module.exports = Contract => {
 
       bootstrap(temp);
 
-      temp.web3 = json.legacy ? new Legacy.Web3() : new Web3();
+      temp.web3 = new Web3();
       temp.class_defaults = temp.prototype.defaults || {};
 
       if (network_id) {

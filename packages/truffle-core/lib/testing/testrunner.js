@@ -29,7 +29,7 @@ function TestRunner(options = {}) {
   this.first_snapshot = true;
   this.initial_snapshot = null;
   this.known_events = {};
-  this.web3 = options.legacy ? new Legacy.Web3() : new Web3();
+  this.web3 = new Web3();
   this.web3.setProvider(options.provider);
 
   // For each test
@@ -205,7 +205,7 @@ TestRunner.prototype.endTest = function(mocha, callback) {
           return;
         }
 
-        var types = event.abi_entry.inputs
+        var types = event.abi_entry.inputs // eslint-disable-line no-unused-vars
           .map(function(input) {
             return input.indexed === true ? null : input.type;
           })

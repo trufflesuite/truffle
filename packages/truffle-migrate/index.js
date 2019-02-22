@@ -116,12 +116,7 @@ const Migrate = {
       };
     }
 
-    options.legacy
-      ? (clone.provider = this.wrapLegacyProvider(
-          options.provider,
-          clone.logger
-        ))
-      : (clone.provider = this.wrapProvider(options.provider, clone.logger));
+    clone.provider = this.wrapProvider(options.provider, clone.logger);
     clone.resolver = this.wrapResolver(options.resolver, clone.provider);
 
     // Make migrations aware of their position in sequence

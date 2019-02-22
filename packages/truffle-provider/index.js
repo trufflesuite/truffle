@@ -1,6 +1,5 @@
 var debug = require("debug")("provider"); // eslint-disable-line no-unused-vars
 var Web3 = require("web3");
-var Legacy = require("truffle-legacy-system");
 
 var wrapper = require("./wrapper");
 
@@ -21,14 +20,10 @@ module.exports = {
         "ws://" + options.host + ":" + options.port
       );
     } else {
-      options.legacy
-        ? (provider = new Legacy.Web3.providers.HttpProvider(
-            `http://${options.host}:${options.port}`
-          ))
-        : (provider = new Web3.providers.HttpProvider(
-            `http://${options.host}:${options.port}`,
-            { keepAlive: false }
-          ));
+      provider = new Web3.providers.HttpProvider(
+        `http://${options.host}:${options.port}`,
+        { keepAlive: false }
+      );
     }
 
     return this.wrap(provider, options);

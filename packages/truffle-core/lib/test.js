@@ -2,7 +2,6 @@ var Mocha = require("mocha");
 var chai = require("chai");
 var path = require("path");
 var Web3 = require("web3");
-var Legacy = require("truffle-legacy-system");
 var Config = require("truffle-config");
 var Contracts = require("truffle-workflow-compile");
 var Resolver = require("truffle-resolver");
@@ -39,7 +38,7 @@ var Test = {
 
     // `accounts` will be populated before each contract() invocation
     // and passed to it so tests don't have to call it themselves.
-    var web3 = options.legacy ? new Legacy.Web3() : new Web3();
+    var web3 = new Web3();
     web3.setProvider(config.provider);
 
     // Override console.warn() because web3 outputs gross errors to it.

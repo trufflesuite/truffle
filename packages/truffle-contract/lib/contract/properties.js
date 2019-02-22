@@ -317,6 +317,14 @@ module.exports = {
       this._json.sourcePath = val;
     }
   },
+  legacy: {
+    get: function() {
+      return this._json.legacy;
+    },
+    set: function(val) {
+      this._json.legacy = val;
+    }
+  },
   legacyAST: {
     get: function() {
       return this._json.legacyAST;

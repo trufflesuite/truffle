@@ -1,4 +1,3 @@
-const Web3 = require("web3");
 const deploy = require("./lib/deployer/deploy");
 const deployMany = require("./lib/deployer/deploymany");
 
@@ -12,7 +11,6 @@ module.exports = {
       return web3;
     }
   },
-  Web3,
   deploy,
   deployMany
 };
