@@ -213,81 +213,79 @@ module.exports = {
       var supplier = new CompilerSupplier(options.compilers.solc);
       supplier
         .load()
-        .then(async solc => {
+        .then(solc => {
           // Get all the source code
-          const resolved = await self.resolveAllSources(
-            resolver,
-            allPaths,
-            solc
-          );
+          self.resolveAllSources(resolver, allPaths, solc, (err, resolved) => {
+            if (err) return callback(err);
 
-          // Generate hash of all sources including external packages - passed to solc inputs.
-          var resolvedPaths = Object.keys(resolved);
-          resolvedPaths.forEach(
-            file => (allSources[file] = resolved[file].body)
-          );
+            // Generate hash of all sources including external packages - passed to solc inputs.
+            var resolvedPaths = Object.keys(resolved);
+            resolvedPaths.forEach(
+              file => (allSources[file] = resolved[file].body)
+            );
 
-          // Exit w/out minimizing if we've been asked to compile everything, or nothing.
-          if (self.listsEqual(options.paths, allPaths)) {
-            return callback(null, allSources, {});
-          } else if (!options.paths.length) {
-            return callback(null, {}, {});
-          }
+            // Exit w/out minimizing if we've been asked to compile everything, or nothing.
+            if (self.listsEqual(options.paths, allPaths)) {
+              return callback(null, allSources, {});
+            } else if (!options.paths.length) {
+              return callback(null, {}, {});
+            }
 
-          // Seed compilationTargets with known updates
-          updates.forEach(update => compilationTargets.push(update));
+            // Seed compilationTargets with known updates
+            updates.forEach(update => compilationTargets.push(update));
 
-          // While there are updated files in the queue, we take each one
-          // and search the entire file corpus to find any sources that import it.
-          // Those sources are added to list of compilation targets as well as
-          // the update queue because their own ancestors need to be discovered.
-          async.whilst(
-            () => updates.length > 0,
-            updateFinished => {
-              var currentUpdate = updates.shift();
-              var files = allPaths.slice();
+            // While there are updated files in the queue, we take each one
+            // and search the entire file corpus to find any sources that import it.
+            // Those sources are added to list of compilation targets as well as
+            // the update queue because their own ancestors need to be discovered.
+            async.whilst(
+              () => updates.length > 0,
+              updateFinished => {
+                var currentUpdate = updates.shift();
+                var files = allPaths.slice();
 
-              // While files: dequeue and inspect their imports
-              async.whilst(
-                () => files.length > 0,
-                fileFinished => {
-                  var currentFile = files.shift();
+                // While files: dequeue and inspect their imports
+                async.whilst(
+                  () => files.length > 0,
+                  fileFinished => {
+                    var currentFile = files.shift();
 
-                  // Ignore targets already selected.
-                  if (compilationTargets.includes(currentFile)) {
-                    return fileFinished();
-                  }
+                    // Ignore targets already selected.
+                    if (compilationTargets.includes(currentFile)) {
+                      return fileFinished();
+                    }
 
-                  var imports;
-                  try {
-                    imports = self.getImports(
-                      currentFile,
-                      resolved[currentFile],
-                      solc
-                    );
-                  } catch (err) {
-                    err.message =
-                      "Error parsing " + currentFile + ": " + e.message;
-                    return fileFinished(err);
-                  }
+                    var imports;
+                    try {
+                      imports = self.getImports(
+                        currentFile,
+                        resolved[currentFile],
+                        solc
+                      );
+                    } catch (err) {
+                      err.message =
+                        "Error parsing " + currentFile + ": " + e.message;
+                      return fileFinished(err);
+                    }
 
-                  // If file imports a compilation target, add it
-                  // to list of updates and compilation targets
-                  if (imports.includes(currentUpdate)) {
-                    updates.push(currentFile);
-                    compilationTargets.push(currentFile);
-                  }
+                    // If file imports a compilation target, add it
+                    // to list of updates and compilation targets
+                    if (imports.includes(currentUpdate)) {
+                      updates.push(currentFile);
+                      compilationTargets.push(currentFile);
+                    }
 
-                  fileFinished();
-                },
-                err => updateFinished(err)
-              );
-            },
-            err =>
-              err
-                ? callback(err)
-                : callback(null, allSources, compilationTargets)
-          );
+                    fileFinished();
+                  },
+                  err => updateFinished(err)
+                );
+              },
+              err =>
+                err
+                  ? callback(err)
+                  : callback(null, allSources, compilationTargets)
+            );
+          });
         })
         .catch(callback);
     });
@@ -295,12 +293,11 @@ module.exports = {
 
   // Resolves sources in several async passes. For each resolved set it detects unknown
   // imports from external packages and adds them to the set of files to resolve.
-  resolveAllSources: async function(resolver, initialPaths, solc) {
+  resolveAllSources: function(resolver, initialPaths, solc, callback) {
     var self = this;
     var mapping = {};
     var allPaths = initialPaths.slice();
 
-    // Begin generateMapping
     function generateMapping(finished) {
       var promises = [];
 
@@ -329,7 +326,6 @@ module.exports = {
         });
         promises.push(promise);
       }
-      // End generateMapping
 
       // Resolve everything known and add it to the map, then inspect each file's
       // imports and add those to the list of paths to resolve if we don't have it.
@@ -365,14 +361,11 @@ module.exports = {
         .then(finished);
     }
 
-    return new Promise((resolve, reject) => {
-      async.whilst(() => allPaths.length, generateMapping, error => {
-        if (error) {
-          reject(new Error(error));
-        }
-        resolve(mapping);
-      });
-    });
+    async.whilst(
+      () => allPaths.length,
+      generateMapping,
+      err => (err ? callback(err) : callback(null, mapping))
+    );
   },
 
   getImports: function(file, resolved, solc) {
