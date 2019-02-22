@@ -1,12 +1,12 @@
-const OS = require("os");
-const path = require("path");
-const Profiler = require("./profiler");
-const CompileError = require("./compileerror");
-const CompilerSupplier = require("./compilerSupplier");
-const expect = require("truffle-expect");
-const find_contracts = require("truffle-contract-sources");
-const Config = require("truffle-config");
-const debug = require("debug")("compile"); // eslint-disable-line no-unused-vars
+var OS = require("os");
+var path = require("path");
+var Profiler = require("./profiler");
+var CompileError = require("./compileerror");
+var CompilerSupplier = require("./compilerSupplier");
+var expect = require("truffle-expect");
+var find_contracts = require("truffle-contract-sources");
+var Config = require("truffle-config");
+var debug = require("debug")("compile"); // eslint-disable-line no-unused-vars
 
 // Most basic of the compile commands. Takes a hash of sources, where
 // the keys are file or module paths and the values are the bodies of
@@ -18,7 +18,7 @@ const debug = require("debug")("compile"); // eslint-disable-line no-unused-vars
 //   quiet: false,
 //   logger: console
 // }
-const compile = function(sources, options, callback) {
+var compile = function(sources, options, callback) {
   if (typeof options === "function") {
     callback = options;
     options = {};
@@ -26,7 +26,7 @@ const compile = function(sources, options, callback) {
 
   if (options.logger === undefined) options.logger = console;
 
-  const hasTargets =
+  var hasTargets =
     options.compilationTargets && options.compilationTargets.length;
 
   expect.options(options, ["contracts_directory", "compilers"]);
@@ -50,9 +50,9 @@ const compile = function(sources, options, callback) {
 
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
-  const operatingSystemIndependentSources = {};
-  const operatingSystemIndependentTargets = {};
-  const originalPathMappings = {};
+  var operatingSystemIndependentSources = {};
+  var operatingSystemIndependentTargets = {};
+  var originalPathMappings = {};
 
   Object.keys(sources).forEach(function(source) {
     // Turn all backslashes into forward slashes
@@ -77,7 +77,7 @@ const compile = function(sources, options, callback) {
     originalPathMappings[replacement] = source;
   });
 
-  const defaultSelectors = {
+  var defaultSelectors = {
     "": ["legacyAST", "ast"],
     "*": [
       "abi",
@@ -92,15 +92,15 @@ const compile = function(sources, options, callback) {
 
   // Specify compilation targets
   // Each target uses defaultSelectors, defaulting to single target `*` if targets are unspecified
-  const outputSelection = {};
-  const targets = operatingSystemIndependentTargets;
-  const targetPaths = Object.keys(targets);
+  var outputSelection = {};
+  var targets = operatingSystemIndependentTargets;
+  var targetPaths = Object.keys(targets);
 
   targetPaths.length
     ? targetPaths.forEach(key => (outputSelection[key] = defaultSelectors))
     : (outputSelection["*"] = defaultSelectors);
 
-  const solcStandardInput = {
+  var solcStandardInput = {
     language: "Solidity",
     sources: {},
     settings: {
@@ -115,36 +115,44 @@ const compile = function(sources, options, callback) {
     return callback(null, [], []);
   }
 
-  Object.keys(operatingSystemIndependentSources).forEach(file_path => {
+  Object.keys(operatingSystemIndependentSources).forEach(function(file_path) {
     solcStandardInput.sources[file_path] = {
       content: operatingSystemIndependentSources[file_path]
     };
   });
 
   // Load solc module only when compilation is actually required.
-  const supplier = new CompilerSupplier(options.compilers.solc);
+  var supplier = new CompilerSupplier(options.compilers.solc);
 
   supplier
     .load()
     .then(solc => {
-      const result = solc.compile(JSON.stringify(solcStandardInput));
+      var result = solc.compile(JSON.stringify(solcStandardInput));
 
-      const standardOutput = JSON.parse(result);
+      var standardOutput = JSON.parse(result);
 
-      let errors = standardOutput.errors || [];
-      let warnings = [];
+      var errors = standardOutput.errors || [];
+      var warnings = [];
 
       if (options.strict !== true) {
-        warnings = errors.filter(error => error.severity === "warning");
+        warnings = errors.filter(function(error) {
+          return error.severity === "warning";
+        });
 
-        errors = errors.filter(error => error.severity !== "warning");
+        errors = errors.filter(function(error) {
+          return error.severity !== "warning";
+        });
 
         if (options.quiet !== true && warnings.length > 0) {
           options.logger.log(
-            OS.EOL + "    > compilation warnings encountered:" + OS.EOL
+            OS.EOL + "Compilation warnings encountered:" + OS.EOL
           );
           options.logger.log(
-            warnings.map(warning => warning.formattedMessage).join()
+            warnings
+              .map(function(warning) {
+                return warning.formattedMessage;
+              })
+              .join()
           );
         }
       }
@@ -153,7 +161,11 @@ const compile = function(sources, options, callback) {
         options.logger.log("");
         return callback(
           new CompileError(
-            standardOutput.errors.map(error => error.formattedMessage).join()
+            standardOutput.errors
+              .map(function(error) {
+                return error.formattedMessage;
+              })
+              .join()
           )
         );
       }
@@ -161,7 +173,7 @@ const compile = function(sources, options, callback) {
       var contracts = standardOutput.contracts;
 
       var files = [];
-      Object.keys(standardOutput.sources).forEach(filename => {
+      Object.keys(standardOutput.sources).forEach(function(filename) {
         var source = standardOutput.sources[filename];
         files[source.id] = originalPathMappings[filename];
       });
@@ -169,10 +181,10 @@ const compile = function(sources, options, callback) {
       var returnVal = {};
 
       // This block has comments in it as it's being prepared for solc > 0.4.10
-      Object.keys(contracts).forEach(source_path => {
+      Object.keys(contracts).forEach(function(source_path) {
         var files_contracts = contracts[source_path];
 
-        Object.keys(files_contracts).forEach(contract_name => {
+        Object.keys(files_contracts).forEach(function(contract_name) {
           var contract = files_contracts[contract_name];
 
           // All source will have a key, but only the compiled source will have
@@ -249,9 +261,7 @@ const compile = function(sources, options, callback) {
         });
       });
 
-      const compilerInfo = { name: "solc", version: solc.version() };
-
-      callback(null, returnVal, files, compilerInfo);
+      callback(null, returnVal, files);
     })
     .catch(callback);
 };
@@ -425,7 +435,7 @@ compile.display = function(paths, options) {
           "." + path.sep + path.relative(options.working_directory, contract);
       }
       if (contract.match(blacklistRegex)) return;
-      options.logger.log("    > compiling " + contract);
+      options.logger.log("Compiling " + contract + "...");
     });
   }
 };
