@@ -99,7 +99,7 @@ class VersionRange extends LoadingStrategy {
   }
 
   async getSolcByUrlAndCache(fileName) {
-    const url = this.config.compilerUrlRoot + fileName;
+    let url = this.config.compilerUrlRoot + fileName;
     const spinner = ora({
       text: "Downloading compiler",
       color: "red"
@@ -110,8 +110,16 @@ class VersionRange extends LoadingStrategy {
       this.addFileToCache(response, fileName);
       return this.compilerFromString(response);
     } catch (error) {
-      spinner.stop();
-      throw this.errors("noRequest", url, error);
+      try {
+        url = this.config.compilerFallbackUrlRoot + fileName;
+        const response = await request.get(url);
+        spinner.stop();
+        this.addFileToCache(response, fileName);
+        return this.compilerFromString(response);
+      } catch (error) {
+        spinner.stop();
+        throw this.errors("noRequest", url, error);
+      }
     }
   }
 
@@ -143,9 +151,20 @@ class VersionRange extends LoadingStrategy {
         spinner.stop();
         return JSON.parse(list);
       })
-      .catch(err => {
-        spinner.stop();
-        throw this.errors("noRequest", this.config.versionsUrl, err);
+      .catch(() => {
+        return request(this.config.versionsFallbackUrl)
+          .then(list => {
+            spinner.stop();
+            return JSON.parse(list);
+          })
+          .catch(err => {
+            spinner.stop();
+            throw this.errors(
+              "noRequest",
+              this.config.versionsFallbackUrl,
+              err
+            );
+          });
       });
   }
 

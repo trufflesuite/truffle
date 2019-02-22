@@ -37,6 +37,8 @@ const allVersions = {
     }
   ],
   releases: {
+    "0.5.4": "soljson-v0.5.4+commit.9549d8ff.js",
+    "0.5.3": "soljson-v0.5.3+commit.10d17f24.js",
     "0.5.2": "soljson-v0.5.2+commit.1df8f40c.js",
     "0.5.1": "soljson-v0.5.1+commit.c8a2cb62.js",
     "0.5.0": "soljson-v0.5.0+commit.1d4f565a.js",
@@ -45,7 +47,7 @@ const allVersions = {
     "0.4.23": "soljson-v0.4.23+commit.124ca40d.js",
     "0.4.22": "soljson-v0.4.22+commit.4cb486ee.js"
   },
-  latestRelease: "0.5.2"
+  latestRelease: "0.5.4"
 };
 
 describe("VersionRange loading strategy", () => {
@@ -113,6 +115,28 @@ describe("VersionRange loading strategy", () => {
 
       it("eventually calls addFileToCache and compilerFromString", async () => {
         await instance.getSolcFromCacheOrUrl("0.5.1");
+        assert(instance.addFileToCache.called);
+        assert(instance.compilerFromString.called);
+      });
+    });
+
+    describe("when the compiler root url is dead", () => {
+      beforeEach(() => {
+        instance.config.compilerUrlRoot = "https://dead";
+        sinon.stub(instance, "fileIsCached").returns(false);
+        sinon.stub(instance, "compilerFromString");
+        sinon.stub(instance, "addFileToCache");
+      });
+      afterEach(() => {
+        instance.config.compilerUrlRoot =
+          "https://solc-bin.ethereum.org/solc/bin/";
+        instance.fileIsCached.restore();
+        instance.compilerFromString.restore();
+        instance.addFileToCache.restore();
+      });
+
+      it("uses fallback url for compilerUrlRoot", async () => {
+        await instance.getSolcFromCacheOrUrl("0.5.3");
         assert(instance.addFileToCache.called);
         assert(instance.compilerFromString.called);
       });
@@ -205,7 +229,7 @@ describe("VersionRange loading strategy", () => {
 
   describe(".findNewestValidVersion(version, allVersions)", () => {
     it("returns the version name of the newest valid version", () => {
-      expectedResult = "0.5.2";
+      expectedResult = "0.5.4";
       assert(
         instance.findNewestValidVersion("^0.5.0", allVersions) ===
           expectedResult
