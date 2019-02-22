@@ -178,3 +178,8 @@ export async function migrate(config) {
 export async function gatherArtifacts(config) {
   return Debug.gatherArtifacts(config);
 }
+
+export function lineOf(searchString, source) {
+  const lines = source.split("\n");
+  return lines.findIndex(line => line.includes(searchString));
+}
