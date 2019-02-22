@@ -9,40 +9,13 @@ import { EvmInfo } from "../types/evm";
 import * as general from "../allocate/general";
 import * as storage from "../allocate/storage";
 import { StoragePointer } from "../types/pointer";
+import { StorageAllocations, StorageMemberAllocations } from "../types/allocation";
 import decode from "../decode";
-import { Definition as DefinitionUtils, EVM, AstDefinition } from "truffle-decode-utils";
+import { Definition as DefinitionUtils, EVM, AstDefinition, AstReferences } from "truffle-decode-utils";
 import { BlockType, Transaction } from "web3/eth/types";
 import { EventLog, Log } from "web3/types";
 import { Provider } from "web3/providers";
 import abiDecoder from "abi-decoder";
-
-//holds a collection of storage allocations for structs and contracts, indexed
-//by the ID of the struct or contract
-export interface StorageAllocations {
-  [id: number]: StorageAllocation
-}
-
-//an individual storage allocation for (the members of) a struct or (the state
-//variables of) a contract
-export interface StorageAllocation {
-  definition: AstDefinition;
-  size?: storage.StorageLength; //only used for structs
-  members: StorageMemberAllocations;
-}
-
-//a collection of the individual storage references for (the members of) a
-//struct or (the state variables of) a contract, indexed by the ID of the
-//member or state variable
-export interface StorageMemberAllocations {
-  [id: number]: StorageMemberAllocation
-}
-
-//an individual storage reference for a member of a struct or a state variable
-//of a contract
-export interface StorageMemberAllocation {
-  definition: AstDefinition;
-  pointer: StoragePointer;
-}
 
 export interface EvmMapping {
   name: string;
@@ -96,10 +69,6 @@ interface ContractEvent {
   }
 };
 
-export interface AstReferences {
-  [nodeId: number]: AstDefinition;
-};
-
 export interface ContractMapping {
   [nodeId: number]: ContractObject;
 };
@@ -125,7 +94,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   private contractNode: AstDefinition;
   private contractNetwork: string;
   private contractAddress: string;
-  private inheritedContracts: ContractObject[];
+  private relevantContracts: ContractObject[];
 
   private contracts: ContractMapping = {};
   private contractNodes: AstReferences = {};
@@ -140,13 +109,13 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   private stateVariableReferences: StorageMemberAllocations;
 
-  constructor(contract: ContractObject, inheritedContracts: ContractObject[], provider: Provider) {
+  constructor(contract: ContractObject, relevantContracts: ContractObject[], provider: Provider) {
     super();
 
     this.web3 = new Web3(provider);
 
-    this.contract = contract; //cloneDeep(contract);
-    this.inheritedContracts = inheritedContracts; //cloneDeep(inheritedContracts);
+    this.contract = contract;
+    this.relevantContracts = relevantContracts;
 
     this.contractNetwork = Object.keys(this.contract.networks)[0];
     this.contractAddress = this.contract.networks[this.contractNetwork].address;
@@ -156,11 +125,11 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.contracts[this.contractNode.id] = this.contract;
     this.contractNodes[this.contractNode.id] = this.contractNode;
     abiDecoder.addABI(this.contract.abi);
-    this.inheritedContracts.forEach((inheritedContract) => {
-      let node: AstDefinition = getContractNode(inheritedContract);
-      this.contracts[node.id] = inheritedContract;
+    this.relevantContracts.forEach((relevantContract) => {
+      let node: AstDefinition = getContractNode(relevantContract);
+      this.contracts[node.id] = relevantContract;
       this.contractNodes[node.id] = node;
-      abiDecoder.addABI(inheritedContract.abi);
+      abiDecoder.addABI(relevantContract.abi);
     });
   }
 

@@ -1,12 +1,13 @@
 {
   "name": "truffle-solidity-loader",
-  "version": "0.1.3",
+  "version": "0.1.5",
   "description": "A Webpack loader that uses Truffle to load and provision solidity contracts, with Truffle migrations.",
   "main": "index.js",
   "scripts": {
     "lintjs": "standard",
     "lintjs-fix": "standard --fix"
   },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-solidity-loader",
   "authors": [
     "John McDowall <john@kantan.io>",
     "Angello Pozo <angellopozo@gmail.com>"
@@ -17,8 +18,8 @@
     "find-up": "^1.1.2",
     "loader-utils": "^1.1.0",
     "schema-utils": "^1.0.0",
-    "truffle-config": "^1.1.3",
-    "truffle-core": "^5.0.3"
+    "truffle-config": "^1.1.4",
+    "truffle-core": "^5.0.5"
   },
   "devDependencies": {
     "standard": "^11.0.1"

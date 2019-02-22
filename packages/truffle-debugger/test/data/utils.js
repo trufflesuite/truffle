@@ -74,12 +74,5 @@ describe("Utils", function() {
         "0xff00ff"
       );
     });
-
-    it("allows removing leading zeroes", function() {
-      assert.equal(
-        TruffleDecodeUtils.Conversion.toHexString([0x00, 0x00, 0xcc], true),
-        "0xcc"
-      );
-    });
   });
 });
