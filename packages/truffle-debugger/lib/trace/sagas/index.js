@@ -52,8 +52,8 @@ function* next() {
 
     //wait for all subtocks before continuing
     while (waitingForSubmodules > 0) {
-      yield take(actions.SUBTOCK);
-      debug("got SUBTOCK");
+      yield take(actions.BACKTICK);
+      debug("got BACKTICK");
       waitingForSubmodules--;
     }
 

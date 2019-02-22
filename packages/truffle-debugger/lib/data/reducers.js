@@ -195,17 +195,32 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
         state.decodingStarted + (action.started ? 1 : -1)
       );
       return {
-        decodingStarted: state.decodingStarted + (action.started ? 1 : -1),
-        byAddress: state.byAddress
+        ...state,
+        decodingStarted: state.decodingStarted + (action.started ? 1 : -1)
       };
     case actions.MAP_PATH_AND_ASSIGN:
-      let { address, slot, typeIdentifier, baseType } = action;
+      let { address, slot, typeIdentifier, parentType } = action;
+      //how this case works: first, we find the spot in our table (based on
+      //address, type identifier, and slot address) where the new entry should
+      //be added; if needed we set up all the objects needed along the way.  If
+      //there's already something there, we do nothing.  If there's nothing
+      //there, we record our given slot in that spot in that table -- however,
+      //we alter it in one key way.  Before entry, we check if the slot's
+      //*parent* has a spot in the table, based on address (same for both child
+      //and parent), parentType, and the parent's slot address (which can be
+      //found as the slotAddress of the slot's path object, if it exists -- if
+      //it doesn't then we conclude that no the parent does not have a spot in
+      //the table).  If the parent has a slot in the table already, then we
+      //alter the child slot by replacing its path with the parent slot.  This
+      //will keep the slotAddress the same, but since the versions kept in the
+      //table here are supposed to preserve path information, we'll be
+      //replacing a fairly bare-bones Slot object with one with a full path.
 
       //we do NOT want to distinguish between types with and without "_ptr" on
       //the end here!
       debug("typeIdentifier %s", typeIdentifier);
       typeIdentifier = Definition.restorePtr(typeIdentifier);
-      baseType = Definition.restorePtr(baseType);
+      parentType = Definition.restorePtr(parentType);
 
       debug("slot %o", slot);
       let hexSlotAddress = Conversion.toHexString(
@@ -219,7 +234,7 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
       //this is going to be messy and procedural, sorry.  but let's start with
       //the easy stuff: create the new address if needed, clone if not
       let newState = {
-        decodingStarted: state.decodingStarted,
+        ...state,
         byAddress: {
           ...state.byAddress,
           [address]: {
@@ -256,8 +271,8 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
         debug("parentAddress %o", parentAddress);
         if (
           parentAddress !== undefined &&
-          newState.byAddress[address].byType[baseType] &&
-          newState.byAddress[address].byType[baseType].bySlotAddress[
+          newState.byAddress[address].byType[parentType] &&
+          newState.byAddress[address].byType[parentType].bySlotAddress[
             parentAddress
           ]
         ) {
@@ -266,7 +281,7 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
           newSlot = {
             ...slot,
             path:
-              newState.byAddress[address].byType[baseType].bySlotAddress[
+              newState.byAddress[address].byType[parentType].bySlotAddress[
                 parentAddress
               ]
           };
@@ -285,12 +300,14 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
       return DEFAULT_PATHS;
 
     case actions.LEARN_ADDRESS:
+      debug("action %o", action);
       return {
-        decodingStarted: state.decodingStarted,
+        ...state,
         byAddress: Object.assign(
           {},
           ...Object.entries(state.byAddress).map(([address, types]) => ({
-            [address === actions.dummyAddress ? action.adress : address]: types
+            [address == action.dummyAddress ? action.address : address]: types
+            //using == due to string/number discrepancy
           }))
         )
       };

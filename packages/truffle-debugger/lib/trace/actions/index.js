@@ -39,7 +39,7 @@ export function reset() {
   return { type: RESET };
 }
 
-export const SUBTOCK = "SUBTOCK";
+export const BACKTICK = "BACKTICK";
 export function subtock() {
-  return { type: SUBTOCK };
+  return { type: BACKTICK };
 }

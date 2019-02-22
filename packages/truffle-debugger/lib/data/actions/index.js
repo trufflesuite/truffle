@@ -31,7 +31,7 @@ export function mapPathAndAssign(
   slot,
   assignments,
   typeIdentifier,
-  baseType
+  parentType
 ) {
   return {
     type: MAP_PATH_AND_ASSIGN,
@@ -39,7 +39,7 @@ export function mapPathAndAssign(
     slot,
     assignments,
     typeIdentifier,
-    baseType
+    parentType
   };
 }
 
