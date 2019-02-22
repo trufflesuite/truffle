@@ -236,10 +236,12 @@ var DebugUtils = {
     return allLines.join(OS.EOL);
   },
 
-  formatInstruction: function(traceIndex, instruction) {
+  formatInstruction: function(traceIndex, traceLength, instruction) {
     return (
       "(" +
       traceIndex +
+      "/" +
+      traceLength +
       ") " +
       instruction.name +
       " " +
