@@ -115,18 +115,19 @@ class VersionRange extends LoadingStrategy {
     }
   }
 
-  async getSolcFromCacheOrUrl(version) {
+  async getSolcFromCacheOrUrl(versionConstraint) {
     let allVersions, versionToUse;
     try {
       allVersions = await this.getSolcVersions(this.config.versionsUrl);
     } catch (error) {
-      throw this.errors("noRequest", version, error);
+      throw this.errors("noRequest", versionConstraint, error);
     }
 
-    const isVersionRange = !semver.valid(version);
+    const isVersionRange = !semver.valid(versionConstraint);
+
     versionToUse = isVersionRange
-      ? this.findNewestValidVersion(version, allVersions)
-      : version;
+      ? this.findNewestValidVersion(versionConstraint, allVersions)
+      : versionConstraint;
 
     const fileName = this.getSolcVersionFileName(versionToUse, allVersions);
     if (!fileName) throw this.errors("noVersion", versionToUse);

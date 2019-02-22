@@ -93,7 +93,7 @@ describe("VersionRange loading strategy", () => {
         await instance.getSolcFromCacheOrUrl("^0.5.0");
         assert(
           instance.getSolcByUrlAndCache.calledWith(
-            "oljson-v0.5.2+commit.1df8f40c.js"
+            "soljson-v0.5.2+commit.1df8f40c.js"
           ),
           "getSolcByUrlAndCache not called with the compiler file name"
         );
