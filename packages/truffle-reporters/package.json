@@ -1,9 +1,10 @@
 {
   "name": "truffle-reporters",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Reporters for Truffle modules",
   "main": "index.js",
   "scripts": {},
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-reporters",
   "author": "",
   "license": "MIT",
   "publishConfig": {

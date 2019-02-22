@@ -1,9 +1,10 @@
 {
   "name": "truffle-code-utils",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "",
   "main": "index.js",
   "scripts": {},
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-code-utils",
   "author": "",
   "license": "MIT",
   "publishConfig": {

@@ -1,18 +1,20 @@
-import { AstReferences, EvmVariableReferenceMapping } from "../interface/contract-decoder";
+import { AstReferences } from "truffle-decode-utils";
+import { StorageAllocations, StorageMemberAllocations } from "./allocation";
 
 export interface EvmState {
   stack: Uint8Array[];
-  storage: {
-    [slotAddress: string]: Uint8Array
-  };
+  storage: WordMapping;
   memory: Uint8Array;
 }
 
+export interface WordMapping {
+  [slotAddress: string]: Uint8Array
+}
+
 export interface EvmInfo {
-  scopes: any;
   state: EvmState;
   mappingKeys?: any;
   referenceDeclarations?: AstReferences;
-  referenceVariables?: EvmVariableReferenceMapping;
-  variables?: EvmVariableReferenceMapping
+  storageAllocations?: StorageAllocations;
+  variables?: StorageMemberAllocations;
 }

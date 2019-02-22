@@ -1,8 +1,8 @@
 /**
  * Utilities for reformatting web3 outputs
  */
-const BigNumber = require('bignumber.js');
-const web3Utils = require('web3-utils');
+const BigNumber = require("bignumber.js/bignumber");
+const web3Utils = require("web3-utils");
 
 /**
  * Converts from string to other number format
@@ -10,14 +10,18 @@ const web3Utils = require('web3-utils');
  * @param  {String} format name of format to convert to
  * @return {Object|String} converted value
  */
-const _convertNumber = function(val, format){
+const _convertNumber = function(val, format) {
   const badFormatMsg = `Attempting to convert to unknown number format: ${format}`;
 
-  switch(format){
-    case 'BigNumber': return new BigNumber(val);
-    case 'BN':        return web3Utils.toBN(val);
-    case 'String':    return val;
-    default:          throw new Error(badFormatMsg);
+  switch (format) {
+    case "BigNumber":
+      return new BigNumber(val);
+    case "BN":
+      return web3Utils.toBN(val);
+    case "String":
+      return val;
+    default:
+      throw new Error(badFormatMsg);
   }
 };
 
@@ -27,8 +31,8 @@ const _convertNumber = function(val, format){
  * @param  {String}   format    name of format to convert to
  * @return {Object[]|String[]}  array of converted values
  */
-const _convertNumberArray = function(arr, format){
-  return arr.map((item => _convertNumber(item, format)));
+const _convertNumberArray = function(arr, format) {
+  return arr.map(item => _convertNumber(item, format));
 };
 
 /**
@@ -41,41 +45,39 @@ const _convertNumberArray = function(arr, format){
  * @param  {Array}               abiSegment  event params OR .call outputs
  * @return {String|Object|Array} reformatted result
  */
-const numbers = function(result, abiSegment){
+const numbers = function(result, abiSegment) {
   const format = this.numberFormat;
 
   abiSegment.forEach((output, i) => {
-
     // output is a number type (uint || int);
-    if (output.type.includes('int')){
-
+    if (output.type.includes("int")) {
       // output is an array type
-      if(output.type.includes('[')){
-
+      if (output.type.includes("[")) {
         // result is array
-        if (Array.isArray(result)){
+        if (Array.isArray(result)) {
           result = _convertNumberArray(result, format);
 
-        // result is object
+          // result is object
         } else {
           // output has name
-          if (output.name.length){
-            result[output.name] = _convertNumberArray(result[output.name], format);
+          if (output.name.length) {
+            result[output.name] = _convertNumberArray(
+              result[output.name],
+              format
+            );
           }
           // output will always have an index key
           result[i] = _convertNumberArray(result[i], format);
         }
-      //
-      } else if (typeof result === 'object'){
-
+        //
+      } else if (typeof result === "object") {
         // output has name
-          if (output.name.length){
-            result[output.name] = _convertNumber(result[output.name], format);
-          }
+        if (output.name.length) {
+          result[output.name] = _convertNumber(result[output.name], format);
+        }
 
-          // output will always have an index key
-          result[i] = _convertNumber(result[i], format);
-
+        // output will always have an index key
+        result[i] = _convertNumber(result[i], format);
       } else {
         result = _convertNumber(result, format);
       }
@@ -87,4 +89,3 @@ const numbers = function(result, abiSegment){
 module.exports = {
   numbers: numbers
 };
-

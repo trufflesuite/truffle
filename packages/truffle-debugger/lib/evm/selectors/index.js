@@ -6,7 +6,9 @@ import levenshtein from "fast-levenshtein";
 
 import trace from "lib/trace/selectors";
 
-import { isCallMnemonic } from "lib/helpers";
+import { isCallMnemonic, isCreateMnemonic } from "lib/helpers";
+
+import * as DecodeUtils from "truffle-decode-utils";
 
 function findContext({ address, binary }, instances, search, contexts) {
   let record;
@@ -64,7 +66,7 @@ function createStepSelectors(step, state = null) {
     /**
      * .isCreate
      */
-    isCreate: createLeaf(["./trace"], step => step.op == "CREATE"),
+    isCreate: createLeaf(["./trace"], step => isCreateMnemonic(step.op)),
 
     /**
      * .isHalting
@@ -99,8 +101,7 @@ function createStepSelectors(step, state = null) {
           if (!matches) return null;
 
           let address = stack[stack.length - 2];
-          address = "0x" + address.substring(24);
-          return address;
+          return DecodeUtils.Conversion.toAddress(address);
         }
       ),
 

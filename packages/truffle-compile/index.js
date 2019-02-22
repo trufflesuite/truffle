@@ -175,7 +175,7 @@ var compile = function(sources, options, callback) {
       var files = [];
       Object.keys(standardOutput.sources).forEach(function(filename) {
         var source = standardOutput.sources[filename];
-        files[source.id] = filename;
+        files[source.id] = originalPathMappings[filename];
       });
 
       var returnVal = {};

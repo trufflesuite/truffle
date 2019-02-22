@@ -18,10 +18,9 @@ export function declare(node) {
 }
 
 export const ASSIGN = "ASSIGN";
-export function assign(context, assignments) {
+export function assign(assignments) {
   return {
     type: ASSIGN,
-    context,
     assignments
   };
 }
@@ -62,5 +61,14 @@ export function defineType(node) {
   return {
     type: DEFINE_TYPE,
     node
+  };
+}
+
+export const ALLOCATE = "ALLOCATE";
+export function allocate(storage) {
+  return {
+    type: ALLOCATE,
+    storage
+    //later there will be more
   };
 }

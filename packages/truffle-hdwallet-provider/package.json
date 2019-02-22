@@ -1,16 +1,13 @@
 {
   "name": "truffle-hdwallet-provider",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "HD Wallet-enabled Web3 provider",
   "main": "dist/index.js",
   "scripts": {
     "test": "mocha --timeout 5000",
     "prepare": "npx webpack --config webpack/webpack.config.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/trufflesuite/truffle-hdwallet-provider.git"
-  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-hdwallet-provider",
   "keywords": [
     "etheruem",
     "hd",
@@ -32,7 +29,7 @@
     "ganache-core": "2.3.3",
     "js-scrypt": "^0.2.0",
     "mocha": "^5.1.1",
-    "web3": "^1.0.0-beta.37",
+    "web3": "1.0.0-beta.37",
     "web3-provider-engine": "git+https://github.com/cgewecke/provider-engine.git#web3-one",
     "webpack": "^4.24.0",
     "webpack-cli": "^3.1.2"
