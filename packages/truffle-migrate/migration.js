@@ -92,7 +92,7 @@ class Migration {
       if (options.save === false) return;
 
       // Write migrations record to chain
-      const Migrations = resolver.require("Migrations.sol");
+      const Migrations = resolver.require("Migrations");
 
       if (Migrations && Migrations.isDeployed()) {
         const message = `Saving migration to chain.`;
