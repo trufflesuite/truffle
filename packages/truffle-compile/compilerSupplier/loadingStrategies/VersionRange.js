@@ -90,18 +90,21 @@ class VersionRange extends LoadingStrategy {
     const solcFileName = this.getCachedSolcFileName(commit);
     if (solcFileName) return this.getCachedSolcByFileName(solcFileName);
 
-    const allVersions = await this.getSolcVersions(this.config.versionsUrl);
+    const allVersions = await this.getSolcVersions(0);
     const fileName = this.getSolcVersionFileName(commit, allVersions);
 
     if (!fileName) throw new Error("No matching version found");
 
-    return this.getSolcByUrlAndCache(fileName);
+    return this.getSolcByUrlAndCache(fileName, 0);
   }
 
-  async getSolcByUrlAndCache(fileName) {
-    let url = this.config.compilerUrlRoot + fileName;
+  async getSolcByUrlAndCache(fileName, index, err) {
+    if (index >= this.config.compilerRoots.length) {
+      throw this.errors("noRequest", "compiler URLs", err);
+    }
+    const url = this.config.compilerRoots[index] + fileName;
     const spinner = ora({
-      text: "Downloading compiler",
+      text: "Downloading compiler. Attempt #" + (index + 1),
       color: "red"
     }).start();
     try {
@@ -110,23 +113,15 @@ class VersionRange extends LoadingStrategy {
       this.addFileToCache(response, fileName);
       return this.compilerFromString(response);
     } catch (error) {
-      try {
-        url = this.config.compilerFallbackUrlRoot + fileName;
-        const response = await request.get(url);
-        spinner.stop();
-        this.addFileToCache(response, fileName);
-        return this.compilerFromString(response);
-      } catch (error) {
-        spinner.stop();
-        throw this.errors("noRequest", url, error);
-      }
+      spinner.stop();
+      return this.getSolcByUrlAndCache(fileName, index + 1, error);
     }
   }
 
   async getSolcFromCacheOrUrl(version) {
     let allVersions;
     try {
-      allVersions = await this.getSolcVersions(this.config.versionsUrl);
+      allVersions = await this.getSolcVersions(0);
     } catch (error) {
       throw this.errors("noRequest", version, error);
     }
@@ -137,34 +132,27 @@ class VersionRange extends LoadingStrategy {
     if (this.fileIsCached(fileName))
       return this.getCachedSolcByFileName(fileName);
 
-    return this.getSolcByUrlAndCache(fileName);
+    return this.getSolcByUrlAndCache(fileName, 0);
   }
 
-  getSolcVersions() {
+  getSolcVersions(index, err) {
+    if (index >= this.config.compilerRoots.length) {
+      throw this.errors("noRequest", "version URLs", err);
+    }
+
     const spinner = ora({
-      text: "Fetching solc version list from solc-bin",
+      text: "Fetching solc version list from solc-bin. Attempt #" + (index + 1),
       color: "yellow"
     }).start();
 
-    return request(this.config.versionsUrl)
+    return request(this.config.compilerRoots[index] + "list.json")
       .then(list => {
         spinner.stop();
         return JSON.parse(list);
       })
-      .catch(() => {
-        return request(this.config.versionsFallbackUrl)
-          .then(list => {
-            spinner.stop();
-            return JSON.parse(list);
-          })
-          .catch(err => {
-            spinner.stop();
-            throw this.errors(
-              "noRequest",
-              this.config.versionsFallbackUrl,
-              err
-            );
-          });
+      .catch(error => {
+        spinner.stop();
+        return this.getSolcVersions(index + 1, error);
       });
   }
 

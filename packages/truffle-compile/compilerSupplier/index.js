@@ -13,9 +13,19 @@ const {
 class CompilerSupplier {
   constructor(_config) {
     _config = _config || {};
-    const defaultConfig = { version: null };
+    const defaultConfig = {
+      version: null,
+      compilerRoots: [
+        "https://solc-bin.ethereum.org/bin/",
+        "https://ethereum.github.io/solc-bin/bin/",
+        "https://relay.trufflesuite.com/solc/bin/"
+      ]
+    };
     this.config = Object.assign({}, defaultConfig, _config);
-    this.strategyOptions = { version: this.config.version };
+    this.strategyOptions = {
+      version: this.config.version,
+      compilerRoots: this.config.compilerRoots
+    };
   }
 
   badInputError(userSpecification) {

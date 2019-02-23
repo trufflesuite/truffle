@@ -119,28 +119,6 @@ describe("VersionRange loading strategy", () => {
         assert(instance.compilerFromString.called);
       });
     });
-
-    describe("when the compiler root url is dead", () => {
-      beforeEach(() => {
-        instance.config.compilerUrlRoot = "https://dead";
-        sinon.stub(instance, "fileIsCached").returns(false);
-        sinon.stub(instance, "compilerFromString");
-        sinon.stub(instance, "addFileToCache");
-      });
-      afterEach(() => {
-        instance.config.compilerUrlRoot =
-          "https://solc-bin.ethereum.org/solc/bin/";
-        instance.fileIsCached.restore();
-        instance.compilerFromString.restore();
-        instance.addFileToCache.restore();
-      });
-
-      it("uses fallback url for compilerUrlRoot", async () => {
-        await instance.getSolcFromCacheOrUrl("0.5.3");
-        assert(instance.addFileToCache.called);
-        assert(instance.compilerFromString.called);
-      });
-    });
   });
 
   describe("async getSolcByCommit(commit)", () => {
@@ -175,7 +153,8 @@ describe("VersionRange loading strategy", () => {
         sinon.stub(instance, "addFileToCache");
         sinon.stub(instance, "compilerFromString");
         expectedUrl =
-          instance.config.compilerUrlRoot + "soljson-v0.5.1+commit.c8a2cb62.js";
+          instance.config.compilerRoots[0] +
+          "soljson-v0.5.1+commit.c8a2cb62.js";
       });
       afterEach(() => {
         instance.getCachedSolcFileName.restore();
@@ -204,7 +183,7 @@ describe("VersionRange loading strategy", () => {
       fileName = "someSolcFile";
       sinon
         .stub(request, "get")
-        .withArgs(`${instance.config.compilerUrlRoot}${fileName}`)
+        .withArgs(`${instance.config.compilerRoots[0]}${fileName}`)
         .returns("requestReturn");
       sinon.stub(instance, "addFileToCache").withArgs("requestReturn");
       sinon

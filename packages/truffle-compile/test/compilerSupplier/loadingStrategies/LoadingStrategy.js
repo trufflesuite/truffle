@@ -8,29 +8,19 @@ describe("LoadingStrategy base class", () => {
   beforeEach(() => {
     instance = new LoadingStrategy();
     expectedDefaultConfig = {
-      versionsUrl: "https://solc-bin.ethereum.org/bin/list.json",
-      compilerUrlRoot: "https://solc-bin.ethereum.org/solc/bin/",
-      versionsFallbackUrl: "https://relay.trufflesuite.com/solc/bin/list.json",
-      compilerFallbackUrlRoot: "https://relay.trufflesuite.com/solc/bin/",
+      compilerRoots: [
+        "https://solc-bin.ethereum.org/bin/",
+        "https://ethereum.github.io/solc-bin/bin/",
+        "https://relay.trufflesuite.com/solc/bin/"
+      ],
       dockerTagsUrl:
         "https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/"
     };
   });
 
   it("has a config with some default values", () => {
-    const {
-      versionsUrl,
-      compilerUrlRoot,
-      versionsFallbackUrl,
-      compilerFallbackUrlRoot,
-      dockerTagsUrl
-    } = instance.config;
-    assert(versionsUrl === expectedDefaultConfig.versionsUrl);
-    assert(compilerUrlRoot === expectedDefaultConfig.compilerUrlRoot);
-    assert(versionsFallbackUrl === expectedDefaultConfig.versionsFallbackUrl);
-    assert(
-      compilerFallbackUrlRoot === expectedDefaultConfig.compilerFallbackUrlRoot
-    );
+    const { compilerRoots, dockerTagsUrl } = instance.config;
+    assert.deepEqual(compilerRoots, expectedDefaultConfig.compilerRoots);
     assert(dockerTagsUrl === expectedDefaultConfig.dockerTagsUrl);
   });
 });
