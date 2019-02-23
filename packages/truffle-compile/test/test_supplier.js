@@ -65,12 +65,7 @@ describe("CompilerSupplier", function() {
       options.compilers = {
         solc: {
           version: "0.4.15",
-          settings: {},
-          compilerRoots: [
-            "https://solc-bin.ethereum.org/bin/",
-            "https://ethereum.github.io/solc-bin/bin/",
-            "https://relay.trufflesuite.com/solc/bin/"
-          ]
+          settings: {}
         }
       };
 

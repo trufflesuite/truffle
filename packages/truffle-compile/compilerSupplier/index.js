@@ -86,7 +86,7 @@ class CompilerSupplier {
 
   getReleases() {
     return new VersionRange(this.strategyOptions)
-      .getSolcVersions()
+      .getSolcVersions(0)
       .then(list => {
         const prereleases = list.builds
           .filter(build => build["prerelease"])

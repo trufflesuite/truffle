@@ -98,10 +98,7 @@ class VersionRange extends LoadingStrategy {
     return this.getSolcByUrlAndCache(fileName, 0);
   }
 
-  async getSolcByUrlAndCache(fileName, index, err) {
-    if (index >= this.config.compilerRoots.length) {
-      throw this.errors("noRequest", "compiler URLs", err);
-    }
+  async getSolcByUrlAndCache(fileName, index) {
     const url = this.config.compilerRoots[index] + fileName;
     const spinner = ora({
       text: "Downloading compiler. Attempt #" + (index + 1),
@@ -114,7 +111,10 @@ class VersionRange extends LoadingStrategy {
       return this.compilerFromString(response);
     } catch (error) {
       spinner.stop();
-      return this.getSolcByUrlAndCache(fileName, index + 1, error);
+      if (index >= this.config.compilerRoots.length - 1) {
+        throw this.errors("noRequest", "compiler URLs", error);
+      }
+      return this.getSolcByUrlAndCache(fileName, index + 1);
     }
   }
 
@@ -135,11 +135,7 @@ class VersionRange extends LoadingStrategy {
     return this.getSolcByUrlAndCache(fileName, 0);
   }
 
-  getSolcVersions(index, err) {
-    if (index >= this.config.compilerRoots.length) {
-      throw this.errors("noRequest", "version URLs", err);
-    }
-
+  getSolcVersions(index) {
     const spinner = ora({
       text: "Fetching solc version list from solc-bin. Attempt #" + (index + 1),
       color: "yellow"
@@ -152,7 +148,10 @@ class VersionRange extends LoadingStrategy {
       })
       .catch(error => {
         spinner.stop();
-        return this.getSolcVersions(index + 1, error);
+        if (index >= this.config.compilerRoots.length - 1) {
+          throw this.errors("noRequest", "version URLs", error);
+        }
+        return this.getSolcVersions(index + 1);
       });
   }
 

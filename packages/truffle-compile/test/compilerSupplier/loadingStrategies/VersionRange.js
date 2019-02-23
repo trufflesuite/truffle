@@ -198,7 +198,7 @@ describe("VersionRange loading strategy", () => {
     });
 
     it("calls addFileToCache with the response and the file name", async () => {
-      result = await instance.getSolcByUrlAndCache(fileName);
+      result = await instance.getSolcByUrlAndCache(fileName, 0);
       assert(
         instance.addFileToCache.calledWith("requestReturn", "someSolcFile")
       );
