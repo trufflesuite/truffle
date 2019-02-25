@@ -48,7 +48,23 @@ function multiPromisify(func) {
     });
 }
 
-var Contracts = {
+const Contracts = {
+  collectCompilations: async compilations => {
+    let result = { outputs: {}, contracts: {} };
+
+    for (let compilation of await Promise.all(compilations)) {
+      let { compiler, output, contracts } = compilation;
+
+      result.outputs[compiler] = output;
+
+      for (let [name, abstraction] of Object.entries(contracts)) {
+        result.contracts[name] = abstraction;
+      }
+    }
+
+    return result;
+  },
+
   // contracts_directory: String. Directory where .sol files can be found.
   // contracts_build_directory: String. Directory where .sol.js files can be found and written to.
   // all: Boolean. Compile all sources found. Defaults to true. If false, will compare sources against built files
@@ -65,7 +81,6 @@ var Contracts = {
 
     this.reportCompilationStarted(options);
 
-    // convert to promise to compile+write
     const compilations = await this.compileSources(config, compilers);
 
     const numberOfCompiledContracts = compilations.reduce(
@@ -74,28 +89,11 @@ var Contracts = {
       },
       0
     );
-    if (numberOfCompiledContracts === 0) {
-      return this.reportNothingToCompile(options);
-    }
 
-    const collect = async compilations => {
-      let result = { outputs: {}, contracts: {} };
-
-      for (let compilation of await Promise.all(compilations)) {
-        let { compiler, output, contracts } = compilation;
-
-        result.outputs[compiler] = output;
-
-        for (let [name, abstraction] of Object.entries(contracts)) {
-          result.contracts[name] = abstraction;
-        }
-      }
-
-      return result;
-    };
+    if (numberOfCompiledContracts === 0) this.reportNothingToCompile(options);
 
     this.reportCompilationFinished(options, config);
-    return await collect(compilations);
+    return await this.collectCompilations(compilations);
   }),
 
   compileSources: async function(config, compilers) {
