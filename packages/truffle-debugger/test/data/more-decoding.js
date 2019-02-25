@@ -5,7 +5,7 @@ import { assert } from "chai";
 
 import Ganache from "ganache-core";
 
-import { prepareContracts } from "../helpers";
+import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
 
 import solidity from "lib/solidity/selectors";
@@ -234,7 +234,8 @@ describe("Further Decoding", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    session.addBreakpoint({ sourceId, line: 71 });
+    let source = session.view(solidity.current.source).source;
+    session.addBreakpoint({ sourceId, line: lineOf("break here", source) });
 
     session.continueUntilBreakpoint();
 
@@ -286,7 +287,8 @@ describe("Further Decoding", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    session.addBreakpoint({ sourceId, line: 52 });
+    let source = session.view(solidity.current.source).source;
+    session.addBreakpoint({ sourceId, line: lineOf("break here", source) });
 
     session.continueUntilBreakpoint();
 
@@ -352,7 +354,8 @@ describe("Further Decoding", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    session.addBreakpoint({ sourceId, line: 40 });
+    let source = session.view(solidity.current.source).source;
+    session.addBreakpoint({ sourceId, line: lineOf("break here", source) });
 
     session.continueUntilBreakpoint();
 

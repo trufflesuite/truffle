@@ -5,7 +5,7 @@ import { assert } from "chai";
 
 import Ganache from "ganache-core";
 
-import { prepareContracts } from "./helpers";
+import { prepareContracts, lineOf } from "./helpers";
 import Debugger from "lib/debugger";
 
 import solidity from "lib/solidity/selectors";
@@ -46,7 +46,7 @@ contract NestedCall {
   //              1
   function run() public {
     first();
-    second();
+    second(); //BREAK
   }
 
   function first() public {
@@ -104,7 +104,8 @@ describe("Solidity Debugging", function() {
 
     // at `second();`
     let source = await session.view(solidity.current.source);
-    let breakpoint = { sourceId: source.id, line: 16 };
+    let breakLine = lineOf("BREAK", source.source);
+    let breakpoint = { sourceId: source.id, line: breakLine };
 
     session.addBreakpoint(breakpoint);
 
@@ -113,7 +114,7 @@ describe("Solidity Debugging", function() {
 
       if (!session.view(trace.finished)) {
         let range = await session.view(solidity.current.sourceRange);
-        assert.equal(range.lines.start.line, 16);
+        assert.equal(range.lines.start.line, breakLine);
       }
     } while (!session.view(trace.finished));
   });
