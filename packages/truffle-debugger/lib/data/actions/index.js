@@ -25,12 +25,21 @@ export function assign(assignments) {
   };
 }
 
-export const MAP_KEY = "MAP_KEY";
-export function mapKey(id, key) {
+export const MAP_PATH_AND_ASSIGN = "MAP_PATH_AND_ASSIGN";
+export function mapPathAndAssign(
+  address,
+  slot,
+  assignments,
+  typeIdentifier,
+  parentType
+) {
   return {
-    type: MAP_KEY,
-    id,
-    key
+    type: MAP_PATH_AND_ASSIGN,
+    address,
+    slot,
+    assignments,
+    typeIdentifier,
+    parentType
   };
 }
 

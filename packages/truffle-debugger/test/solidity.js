@@ -103,16 +103,16 @@ describe("Solidity Debugging", function() {
     let session = bugger.connect();
 
     // at `second();`
-    let source = await session.view(solidity.current.source);
+    let source = session.view(solidity.current.source);
     let breakpoint = { sourceId: source.id, line: 16 };
 
-    session.addBreakpoint(breakpoint);
+    await session.addBreakpoint(breakpoint);
 
     do {
-      session.continueUntilBreakpoint();
+      await session.continueUntilBreakpoint();
 
       if (!session.view(trace.finished)) {
-        let range = await session.view(solidity.current.sourceRange);
+        let range = session.view(solidity.current.sourceRange);
         assert.equal(range.lines.start.line, 16);
       }
     } while (!session.view(trace.finished));
@@ -136,7 +136,7 @@ describe("Solidity Debugging", function() {
       var finished;
 
       do {
-        session.stepNext();
+        await session.stepNext();
         finished = session.view(trace.finished);
 
         let actual = session.view(solidity.current.functionDepth);
@@ -172,7 +172,7 @@ describe("Solidity Debugging", function() {
           assert.equal(actual, numExpected);
         }
 
-        session.stepNext();
+        await session.stepNext();
       }
 
       assert(hasBegun); //check for non-vacuity of the above tests
@@ -201,7 +201,7 @@ describe("Solidity Debugging", function() {
       var finished;
 
       do {
-        session.stepNext();
+        await session.stepNext();
         finished = session.view(trace.finished);
 
         let currentDepth = session.view(solidity.current.functionDepth);

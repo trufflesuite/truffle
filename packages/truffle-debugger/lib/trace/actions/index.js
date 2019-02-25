@@ -38,3 +38,8 @@ export const RESET = "TRACE_RESET";
 export function reset() {
   return { type: RESET };
 }
+
+export const BACKTICK = "BACKTICK";
+export function subtock() {
+  return { type: BACKTICK };
+}

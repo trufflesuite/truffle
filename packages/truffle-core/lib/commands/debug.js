@@ -363,7 +363,7 @@ var command = {
             }
           }
 
-          function setOrClearBreakpoint(args, setOrClear) {
+          async function setOrClearBreakpoint(args, setOrClear) {
             //setOrClear: true for set, false for clear
             var currentLocation = session.view(controller.current.location);
             var breakpoints = session.view(controller.breakpoints);
@@ -393,7 +393,7 @@ var command = {
                 config.logger.log("Cannot add breakpoint everywhere.\n");
                 return;
               }
-              session.removeAllBreakpoints();
+              await session.removeAllBreakpoints();
               config.logger.log("Removed all breakpoints.\n");
               return;
             }
@@ -524,10 +524,10 @@ var command = {
             //finally, if we've reached this point, do it!
             //also report back to the user on what happened
             if (setOrClear) {
-              session.addBreakpoint(breakpoint);
+              await session.addBreakpoint(breakpoint);
               config.logger.log(`Breakpoint added at ${locationMessage}.\n`);
             } else {
-              session.removeBreakpoint(breakpoint);
+              await session.removeBreakpoint(breakpoint);
               config.logger.log(`Breakpoint removed at ${locationMessage}.\n`);
             }
             return;
@@ -571,22 +571,22 @@ var command = {
             if (!alreadyFinished) {
               switch (cmd) {
                 case "o":
-                  session.stepOver();
+                  await session.stepOver();
                   break;
                 case "i":
-                  session.stepInto();
+                  await session.stepInto();
                   break;
                 case "u":
-                  session.stepOut();
+                  await session.stepOut();
                   break;
                 case "n":
-                  session.stepNext();
+                  await session.stepNext();
                   break;
                 case ";":
-                  session.advance();
+                  await session.advance();
                   break;
                 case "c":
-                  session.continueUntilBreakpoint();
+                  await session.continueUntilBreakpoint();
                   break;
               }
             } //otherwise, inform the user we can't do that
@@ -604,7 +604,7 @@ var command = {
             }
             if (cmd === "r") {
               //reset if given the reset command
-              session.reset();
+              await session.reset();
             }
 
             // Check if execution has (just now) stopped.
@@ -646,10 +646,10 @@ var command = {
                 evalAndPrintExpression(cmdArgs);
                 break;
               case "b":
-                setOrClearBreakpoint(splitArgs, true);
+                await setOrClearBreakpoint(splitArgs, true);
                 break;
               case "B":
-                setOrClearBreakpoint(splitArgs, false);
+                await setOrClearBreakpoint(splitArgs, false);
                 break;
               case ";":
               case "p":
