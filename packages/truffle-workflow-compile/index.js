@@ -48,23 +48,7 @@ function multiPromisify(func) {
     });
 }
 
-const Contracts = {
-  collectCompilations: async compilations => {
-    let result = { outputs: {}, contracts: {} };
-
-    for (let compilation of await Promise.all(compilations)) {
-      let { compiler, output, contracts } = compilation;
-
-      result.outputs[compiler] = output;
-
-      for (let [name, abstraction] of Object.entries(contracts)) {
-        result.contracts[name] = abstraction;
-      }
-    }
-
-    return result;
-  },
-
+var Contracts = {
   // contracts_directory: String. Directory where .sol files can be found.
   // contracts_build_directory: String. Directory where .sol.js files can be found and written to.
   // all: Boolean. Compile all sources found. Defaults to true. If false, will compare sources against built files
@@ -84,13 +68,34 @@ const Contracts = {
     // convert to promise to compile+write
     const compilations = await this.compileSources(config, compilers);
 
-    const numberOfCompiledSources = this.countCompiledSources(compilations);
+    const numberOfCompiledContracts = compilations.reduce(
+      (number, compilation) => {
+        return number + Object.keys(compilation.contracts).length;
+      },
+      0
+    );
+    if (numberOfCompiledContracts === 0) {
+      return this.reportNothingToCompile(options);
+    }
 
-    if (numberOfCompiledSources === 0) this.reportNothingToCompile(options);
+    const collect = async compilations => {
+      let result = { outputs: {}, contracts: {} };
 
-    this.reportCompilationFinished(options, config, numberOfCompiledSources);
+      for (let compilation of await Promise.all(compilations)) {
+        let { compiler, output, contracts } = compilation;
 
-    return await this.collectCompilations(compilations);
+        result.outputs[compiler] = output;
+
+        for (let [name, abstraction] of Object.entries(contracts)) {
+          result.contracts[name] = abstraction;
+        }
+      }
+
+      return result;
+    };
+
+    this.reportCompilationFinished(options, config);
+    return await collect(compilations);
   }),
 
   compileSources: async function(config, compilers) {
@@ -123,12 +128,6 @@ const Contracts = {
     );
   },
 
-  countCompiledSources: compilations => {
-    return compilations.reduce((number, compilation) => {
-      return number + Object.keys(compilation.contracts).length;
-    }, 0);
-  },
-
   reportCompilationStarted: options => {
     const logger = options.logger || console;
     if (!options.quiet) {
@@ -136,23 +135,20 @@ const Contracts = {
     }
   },
 
-  reportCompilationFinished: (options, config, numberOfCompiledSources) => {
+  reportCompilationFinished: (options, config) => {
     const logger = options.logger || console;
     const { compilersInfo } = config;
     if (!options.quiet) {
       logger.log(
         `    > artifacts written to ${options.contracts_build_directory}`
       );
-      if (
-        Object.keys(compilersInfo).length > 0 &&
-        numberOfCompiledSources > 0
-      ) {
+      if (Object.keys(compilersInfo).length > 0) {
         logger.log(OS.EOL + `Compiled successfully using:` + OS.EOL);
         for (const name in compilersInfo) {
           logger.log(`    > ${name}: ${compilersInfo[name].version}`);
         }
       } else {
-        logger.log(OS.EOL + `Compilation finished`);
+        logger.log(OS.EOL + `Compilation successful`);
       }
       logger.log();
     }

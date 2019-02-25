@@ -368,9 +368,10 @@ var command = {
             var currentLocation = session.view(controller.current.location);
             var breakpoints = session.view(controller.breakpoints);
 
-            var currentNode = currentLocation.node.id;
             var currentLine = currentLocation.sourceRange.lines.start.line;
             var currentSourceId = currentLocation.source.id;
+            //don't get node id unless we have to as workaround to problem
+            //where it has sometimes turned up undefined
 
             var sourceName; //to be used if a source is entered
 
@@ -381,7 +382,7 @@ var command = {
             if (args.length === 0) {
               //no arguments, want currrent node
               debug("node case");
-              breakpoint.node = currentNode;
+              breakpoint.node = currentLocation.node.id;
               breakpoint.line = currentLine;
               breakpoint.sourceId = currentSourceId;
             }
