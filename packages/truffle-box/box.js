@@ -2,7 +2,6 @@ const utils = require("./lib/utils");
 const tmp = require("tmp");
 const path = require("path");
 const Config = require("truffle-config");
-const ora = require("ora");
 
 function parseSandboxOptions(options) {
   if (typeof options === "function") {
@@ -37,11 +36,12 @@ const Box = {
     };
 
     try {
-      options.logger.log("");
+      options.eventEmitter.emitEvent("unbox:preparingToDownload");
       const tempDir = await utils.setUpTempDirectory();
       tempDirPath = tempDir.path;
       tempDirCleanup = tempDir.cleanupCallback;
 
+      options.eventEmitter.emitEvent("unbox:downloadingBox");
       await utils.downloadBox(url, tempDirPath);
 
       const boxConfig = await utils.readBoxConfig(tempDirPath);
@@ -53,15 +53,16 @@ const Box = {
         unpackBoxOptions
       );
 
-      const cleanupSpinner = ora("Cleaning up temporary files").start();
+      options.eventEmitter.emitEvent("unbox:cleaningTempFiles");
       tempDirCleanup();
-      cleanupSpinner.succeed();
 
+      options.eventManager.emitEvent("unbox:settingUpBox");
       await utils.setUpBox(boxConfig, destination);
 
       return boxConfig;
     } catch (error) {
       if (tempDirCleanup) tempDirCleanup();
+      options.eventEmitter.emitEvent("unbox:jobFailed");
       throw new Error(error);
     }
   },

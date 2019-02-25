@@ -4,17 +4,13 @@ const config = require("../config");
 const tmp = require("tmp");
 const cwd = require("process").cwd();
 const path = require("path");
-const ora = require("ora");
 
 module.exports = {
   downloadBox: async (url, destination) => {
-    const downloadSpinner = ora("Downloading").start();
     try {
       await unbox.verifyURL(url);
       await unbox.fetchRepository(url, destination);
-      downloadSpinner.succeed();
     } catch (error) {
-      downloadSpinner.fail();
       throw new Error(error);
     }
   },
@@ -37,20 +33,16 @@ module.exports = {
     }
   },
 
-  setUpTempDirectory: () => {
-    const prepareSpinner = ora("Preparing to download").start();
+  setUpTempDirectory: options => {
+    options.eventManager.emitEvent("unbox:preparingToDownload");
     return new Promise((resolve, reject) => {
       const options = {
         dir: cwd,
         unsafeCleanup: true
       };
       tmp.dir(options, (error, dir, cleanupCallback) => {
-        if (error) {
-          prepareSpinner.fail();
-          return reject(error);
-        }
+        if (error) return reject(error);
 
-        prepareSpinner.succeed();
         resolve({
           path: path.join(dir, "box"),
           cleanupCallback
@@ -65,12 +57,10 @@ module.exports = {
   },
 
   setUpBox: async (boxConfig, destination) => {
-    const setUpSpinner = ora("Setting up box").start();
     try {
       await unbox.installBoxDependencies(boxConfig, destination);
-      setUpSpinner.succeed();
     } catch (error) {
-      setUpSpinner.fail();
+      throw new Error(error);
     }
   }
 };
