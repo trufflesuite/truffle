@@ -228,7 +228,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     };
   }
 
-  //EXAMPLE: to watch a.b[c][d].e, use watchMappingKey("a", "b", c, d, "e")
+  //EXAMPLE: to watch a.b.c[d][e], use watchMappingKey("a", "b", "c", d, e)
   //(this will watch all ancestors too, or at least ones given by mapping keys)
   //feel free to mix arrays, mappings, and structs here!
   //see the comment on constructSlot for more detail on what forms are accepted
