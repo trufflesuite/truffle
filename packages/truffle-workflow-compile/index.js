@@ -124,7 +124,7 @@ const Contracts = {
   },
 
   countCompiledSources: compilations => {
-    compilations.reduce((number, compilation) => {
+    return compilations.reduce((number, compilation) => {
       return number + Object.keys(compilation.contracts).length;
     }, 0);
   },
@@ -147,7 +147,7 @@ const Contracts = {
         Object.keys(compilersInfo).length > 0 &&
         numberOfCompiledSources > 0
       ) {
-        logger.log(OS.EOL + `Compiled successfully using:`);
+        logger.log(OS.EOL + `Compiled successfully using:` + OS.EOL);
         for (const name in compilersInfo) {
           logger.log(`    > ${name}: ${compilersInfo[name].version}`);
         }
