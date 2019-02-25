@@ -196,7 +196,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     return result;
   }
 
-  public async variable(name: string, block: BlockType = "latest"): Promise<DecodedVariable | undefined> {
+  public async variable(nameOrId: string | number, block: BlockType = "latest"): Promise<DecodedVariable | undefined> {
 
     const info: EvmInfo = {
       state: {
@@ -210,19 +210,26 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       variables: this.stateVariableReferences
     };
 
-    const variable = Object.values(this.stateVariableReferences)
-    .find(({definition}) => definition.name === name); //there should be exactly one
+    let variable: StorageMemberAllocation;
+    if(typeof nameOrId === "number")
+    {
+      variable = this.stateVariableReferences[nameOrId];
+    }
+    else { //search by name
+      variable = Object.values(this.stateVariableReferences)
+      .find(({definition}) => definition.name === nameOrId); //there should be exactly one
+    }
 
     if(variable === undefined) { //if user put in a bad name
       return undefined;
     }
 
-    debug("about to decode %s", name);
+    debug("about to decode %o", nameOrId);
     const value = await decode(variable.definition, variable.pointer, info, this.web3, this.contractAddress);
     debug("decoded");
 
     return {
-      name,
+      name: variable.definition.name,
       type: DefinitionUtils.typeClass(variable.definition),
       value
     };
@@ -233,7 +240,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   //feel free to mix arrays, mappings, and structs here!
   //see the comment on constructSlot for more detail on what forms are accepted
   public watchMappingKey(variable: number | string, ...indices: any[]): void {
-    let slot: Slot = this.constructSlot(variable, ...indices)[0];
+    let slot: Slot | undefined = this.constructSlot(variable, ...indices)[0];
     //add mapping key and all ancestors
     while(slot !== undefined &&
       this.mappingKeys.every(existingSlot =>
@@ -251,7 +258,10 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   //input is similar to watchMappingKey; will unwatch all descendants too
   public unwatchMappingKey(variable: number | string, ...indices: any[]): void {
-    let slot: Slot = this.constructSlot(variable, ...indices)[0];
+    let slot: Slot | undefined = this.constructSlot(variable, ...indices)[0];
+    if(slot === undefined) {
+      return; //not strictly necessary, but may as well
+    }
     //remove mapping key and all descendants
     this.mappingKeys = this.mappingKeys.filter( existingSlot => {
       while(existingSlot !== undefined) {
@@ -348,7 +358,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   //array indices and numeric mapping keys may be BN, number, or numeric string
   //string mapping keys should be given as strings. duh.
   //bytes mapping keys should be given as hex strings beginning with "0x"
-  //address mapping keys should be given *exactly*, in checksum case
+  //address mapping keys are like bytes; checksum case is not required
   //boolean mapping keys may be given either as booleans, or as string "true" or "false"
   private constructSlot(variable: number | string, ...indices: any[]): [Slot | undefined , AstDefinition | undefined] {
     //base case: we need to locate the variable and its definition
@@ -404,9 +414,11 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         switch(DefinitionUtils.typeClass(keyDefinition)) {
           case "string":
           case "bytes":
-          case "address":
             index = rawIndex;
             break;
+          case "address":
+	    index = Web3.utils.toChecksumAddress(rawIndex);
+	    break;
           case "int":
           case "uint":
             if(rawIndex instanceof BN) {
