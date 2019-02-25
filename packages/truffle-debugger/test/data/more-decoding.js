@@ -271,7 +271,7 @@ describe("Further Decoding", function() {
   });
 
   it("Decodes elementary types and mappings correctly", async function() {
-    this.timeout(9000);
+    this.timeout(10000);
 
     let instance = await abstractions.ElementaryTest.deployed();
     let receipt = await instance.run();
