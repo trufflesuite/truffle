@@ -26,8 +26,20 @@ matrix:
       env: INTEGRATION=true
     - node_js: 8
       env: COVERAGE=true
+    - os: windows
+      node_js: 8
+      env: GETH=true
+    - os: windows
+      node_js: 8
+      env: PACKAGES=true
+    - os: windows
+      node_js: 8
+      env: INTEGRATION=true
   allow_failures:
     - node_js: 8
+      env: GETH=true
+    - os: windows
+      node_js: 8
       env: GETH=true
     - node_js: 8
       env: COVERAGE=true
