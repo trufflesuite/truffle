@@ -61,7 +61,7 @@
     "truffle-exec": "./exec.js"
   },
   "scripts": {
-    "test": "mocha ./test/**"
+    "test": "mocha ./test/** ./test/**/*"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-core",
   "homepage": "https://github.com/ConsenSys/truffle",

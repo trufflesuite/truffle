@@ -42,6 +42,7 @@ var command = {
     var trace = selectors.trace;
     var solidity = selectors.solidity;
     var controller = selectors.controller;
+    var evm = selectors.evm;
 
     var config = Config.detect(options);
 
@@ -172,12 +173,20 @@ var command = {
             var instruction = session.view(solidity.current.instruction);
             var step = session.view(trace.step);
             var traceIndex = session.view(trace.index);
+            var totalSteps = session.view(trace.steps).length;
+            var gas = session.view(evm.current.state.gas);
 
             config.logger.log("");
             config.logger.log(
-              DebugUtils.formatInstruction(traceIndex, instruction)
+              DebugUtils.formatInstruction(
+                traceIndex + 1,
+                totalSteps,
+                instruction
+              )
             );
             config.logger.log(DebugUtils.formatStack(step.stack));
+            config.logger.log("");
+            config.logger.log(gas + " gas remaining");
           }
 
           function select(expr) {
@@ -368,9 +377,10 @@ var command = {
             var currentLocation = session.view(controller.current.location);
             var breakpoints = session.view(controller.breakpoints);
 
-            var currentNode = currentLocation.node.id;
             var currentLine = currentLocation.sourceRange.lines.start.line;
             var currentSourceId = currentLocation.source.id;
+            //don't get node id unless we have to as workaround to problem
+            //where it has sometimes turned up undefined
 
             var sourceName; //to be used if a source is entered
 
@@ -381,7 +391,7 @@ var command = {
             if (args.length === 0) {
               //no arguments, want currrent node
               debug("node case");
-              breakpoint.node = currentNode;
+              breakpoint.node = currentLocation.node.id;
               breakpoint.line = currentLine;
               breakpoint.sourceId = currentSourceId;
             }

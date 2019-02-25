@@ -13,6 +13,7 @@ module.exports = {
   install: require("./install"),
   migrate: require("./migrate"),
   networks: require("./networks"),
+  obtain: require("./obtain"),
   opcode: require("./opcode"),
   publish: require("./publish"),
   run: require("./run"),

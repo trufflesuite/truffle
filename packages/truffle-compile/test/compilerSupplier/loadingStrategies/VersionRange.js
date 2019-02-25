@@ -81,6 +81,25 @@ describe("VersionRange loading strategy", () => {
       instance.getCachedSolcByFileName.restore();
     });
 
+    describe("when a version constraint is specified", () => {
+      beforeEach(() => {
+        sinon.stub(instance, "getSolcByUrlAndCache");
+      });
+      afterEach(() => {
+        instance.getSolcByUrlAndCache.restore();
+      });
+
+      it("calls findNewstValidVersion to determine which version to fetch", async () => {
+        await instance.getSolcFromCacheOrUrl("^0.5.0");
+        assert(
+          instance.getSolcByUrlAndCache.calledWith(
+            "soljson-v0.5.2+commit.1df8f40c.js"
+          ),
+          "getSolcByUrlAndCache not called with the compiler file name"
+        );
+      });
+    });
+
     describe("when the version is cached", () => {
       beforeEach(() => {
         sinon.stub(instance, "fileIsCached").returns(true);
