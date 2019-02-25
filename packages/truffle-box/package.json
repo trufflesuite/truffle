@@ -1,11 +1,11 @@
 {
   "name": "truffle-box",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "Truffle project boilerplate utility",
   "main": "box.js",
   "scripts": {
     "lint": "eslint ./index.js ./lib || true",
-    "test": "mocha"
+    "test": "mocha --timeout 10000"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-box",
   "keywords": [
