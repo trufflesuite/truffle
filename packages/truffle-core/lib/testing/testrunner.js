@@ -1,5 +1,4 @@
-var Web3 = require("web3");
-var Legacy = require("truffle-legacy-system");
+var Web3Shim = require("truffle-interface-adapter").Web3Shim;
 var Config = require("truffle-config");
 var Migrate = require("truffle-migrate");
 var TestResolver = require("./testresolver");
@@ -29,8 +28,7 @@ function TestRunner(options = {}) {
   this.first_snapshot = true;
   this.initial_snapshot = null;
   this.known_events = {};
-  this.web3 = new Web3();
-  this.web3.setProvider(options.provider);
+  this.web3 = new Web3Shim(options);
 
   // For each test
   this.currentTestStartBlock = null;
@@ -41,8 +39,6 @@ function TestRunner(options = {}) {
 
 TestRunner.prototype.initialize = function(callback) {
   var self = this;
-
-  self.web3 = Legacy.shimWeb3(self.web3);
 
   var test_source = new TestSource(self.config);
   this.config.resolver = new TestResolver(
@@ -141,31 +137,18 @@ TestRunner.prototype.resetState = function(callback) {
 
 TestRunner.prototype.startTest = function(mocha, callback) {
   var self = this;
-  if (self.config.legacy) {
-    this.web3.eth.getBlockNumber(function(err, result) {
-      if (err) return callback(err);
-
-      result = web3.toBigNumber(result);
+  this.web3.eth
+    .getBlockNumber()
+    .then(result => {
+      var one = self.web3.utils.toBN(1);
+      result = self.web3.utils.toBN(result);
 
       // Add one in base 10
-      self.currentTestStartBlock = result.plus(1, 10);
+      self.currentTestStartBlock = result.add(one);
 
       callback();
-    });
-  } else {
-    this.web3.eth
-      .getBlockNumber()
-      .then(result => {
-        var one = self.web3.utils.toBN(1);
-        result = self.web3.utils.toBN(result);
-
-        // Add one in base 10
-        self.currentTestStartBlock = result.add(one);
-
-        callback();
-      })
-      .catch(callback);
-  }
+    })
+    .catch(callback);
 };
 
 TestRunner.prototype.endTest = function(mocha, callback) {
@@ -280,9 +263,7 @@ TestRunner.prototype.rpc = function(method, arg, cb) {
     cb(null, result);
   };
 
-  this.config.legacy
-    ? this.provider.sendAsync(req, intermediary)
-    : this.provider.send(req, intermediary);
+  this.provider.send(req, intermediary);
 };
 
 module.exports = TestRunner;

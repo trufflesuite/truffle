@@ -34,6 +34,10 @@
     "source": { "$ref": "#/definitions/Source" },
     "sourcePath": { "$ref": "#/definitions/SourcePath" },
     "ast": { "$ref": "#/definitions/AST" },
+    "legacy": {
+      "type": "boolean",
+      "description": "Pass-through flag that specifies if this contract should use Truffle's legacy migrations"
+    },
     "legacyAST": { "$ref": "#/definitions/LegacyAST" },
     "compiler": {
       "type": "object",
