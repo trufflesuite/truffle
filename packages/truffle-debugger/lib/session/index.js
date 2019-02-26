@@ -156,6 +156,10 @@ export default class Session {
     return await this.doneStepping(controller.advance());
   }
 
+  async multiadvance(count) {
+    return await this.doneStepping(controller.multiadvance(count));
+  }
+
   async stepNext() {
     return await this.doneStepping(controller.stepNext());
   }

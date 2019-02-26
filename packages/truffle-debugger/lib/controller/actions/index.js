@@ -3,6 +3,11 @@ export function advance() {
   return { type: ADVANCE };
 }
 
+export const MULTIADVANCE = "MULTIADVANCE";
+export function multiadvance(count) {
+  return { type: MULTIADVANCE, count };
+}
+
 export const STEP_NEXT = "STEP_NEXT";
 export function stepNext() {
   return { type: STEP_NEXT };

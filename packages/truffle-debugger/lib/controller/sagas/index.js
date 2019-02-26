@@ -14,8 +14,11 @@ import * as actions from "../actions";
 
 import controller from "../selectors";
 
+//NOTE: when updating this don't forget to update CONTROL_ACTIONS in
+//reducers.js as well!
 const CONTROL_SAGAS = {
   [actions.ADVANCE]: advance,
+  [actions.MULTIADVANCE]: multiadvance,
   [actions.STEP_NEXT]: stepNext,
   [actions.STEP_OVER]: stepOver,
   [actions.STEP_INTO]: stepInto,
@@ -35,7 +38,7 @@ export function* saga() {
     let saga = CONTROL_SAGAS[action.type];
 
     yield race({
-      exec: call(saga),
+      exec: call(saga, action), //not all will use this
       interrupt: take(actions.INTERRUPT)
     });
     yield put(actions.doneStepping());
@@ -50,6 +53,17 @@ export default prefixName("controller", saga);
 function* advance() {
   // send action to advance trace
   yield* trace.advance();
+}
+
+/*
+ * Advance the state by the given number of instructions
+ */
+function* multiadvance(action) {
+  let { count } = action;
+  for (let i = 0; i < count && !(yield select(controller.finished)); i++) {
+    debug("about to advance #%d", i);
+    yield* advance();
+  }
 }
 
 /**
