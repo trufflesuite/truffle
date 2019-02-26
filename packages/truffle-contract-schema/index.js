@@ -80,7 +80,6 @@ var properties = {
   source: {},
   sourcePath: {},
   ast: {},
-  legacy: {},
   legacyAST: {
     transform: function(value, obj) {
       var schemaVersion = obj.schemaVersion || "0.0.0";
@@ -115,7 +114,9 @@ var properties = {
     }
   },
   devdoc: {},
-  userdoc: {}
+  userdoc: {},
+  legacy: {},
+  quorum: {}
 };
 
 /**

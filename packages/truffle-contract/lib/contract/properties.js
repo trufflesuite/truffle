@@ -314,14 +314,6 @@ module.exports = {
       this._json.sourcePath = val;
     }
   },
-  legacy: {
-    get: function() {
-      return this._json.legacy;
-    },
-    set: function(val) {
-      this._json.legacy = val;
-    }
-  },
   legacyAST: {
     get: function() {
       return this._json.legacyAST;
@@ -369,5 +361,21 @@ module.exports = {
   },
   devdoc: function() {
     return this._json.devdoc;
+  },
+  legacy: {
+    get: function() {
+      return this._json.legacy;
+    },
+    set: function(val) {
+      this._json.legacy = val;
+    }
+  },
+  quorum: {
+    get: function() {
+      return this._json.quorum;
+    },
+    set: function(val) {
+      this._json.quorum = val;
+    }
   }
 };

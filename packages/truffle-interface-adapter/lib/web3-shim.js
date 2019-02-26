@@ -6,7 +6,10 @@ const BN = require("bn.js");
 class Web3Shim {
   constructor(options) {
     let web3 = new Web3();
-    web3.setProvider(options.provider);
+
+    if (options.provider) {
+      web3.setProvider(options.provider);
+    }
 
     if (options.quorum) {
       // duck punch the block output formatter since quorum uses nanoseconds in the timestamp
