@@ -146,8 +146,8 @@ const googleAnalytics = {
     let visitor = this.setPersistentAnalyticsData();
     let sendObject = {};
     if (eventObject["command"]) {
-      sendObject["ec"] = "Truffle Command";
-      sendObject["ea"] = eventObject["command"];
+      sendObject["ec"] = eventObject["command"];
+      sendObject["ea"] = JSON.stringify(eventObject["args"]);
       sendObject["el"] = eventObject["version"];
       sendObject["dp"] = "/" + eventObject["command"];
     } else {
