@@ -7,7 +7,6 @@
     "lib": "lib"
   },
   "dependencies": {
-    "web3": "0.20.6"
   },
   "devDependencies": {},
   "author": "",
