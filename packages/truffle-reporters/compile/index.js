@@ -32,10 +32,6 @@ module.exports = {
     const { emitter } = options;
     emitter.on("compile:startJob", this.startJob.bind(this, options));
     emitter.on("compile:finishJob", this.finishJob.bind(this, options));
-    emitter.on(
-      "compile:writeArtifacts",
-      this.writeArtifacts.bind(this, options)
-    );
     emitter.on("compile:warnings", this.warnings.bind(this, options));
     emitter.on(
       "compile:compiledSources",

@@ -33,25 +33,6 @@ function normalizeURL(
   throw new Error("Box specified in invalid format");
 }
 
-/*
- * returns a list of messages, one for each command, formatted
- * so that:
- *
- *    command key:   command string
- *
- * are aligned
- */
-function formatCommands(commands) {
-  const names = Object.keys(commands);
-
-  const maxLength = Math.max.apply(null, names.map(name => name.length));
-
-  return names.map(name => {
-    const spacing = Array(maxLength - name.length + 1).join(" ");
-    return `  ${name}: ${spacing}${commands[name]}`;
-  });
-}
-
 function normalizeDestination(destination, working_directory) {
   const path = require("path");
   destination = path.join(working_directory, destination);
@@ -112,11 +93,13 @@ const command = {
   run(options, done) {
     const Config = require("truffle-config");
     const Box = require("truffle-box");
-    const OS = require("os");
+    const eventManager = require("../eventManager");
 
     const config = Config.default().with({
       logger: console
     });
+
+    config.eventManager = eventManager(config);
 
     let [url, destination] = normalizeInput(options._[0]);
 
@@ -125,21 +108,16 @@ const command = {
 
     const unboxOptions = Object.assign({}, options, { logger: config.logger });
 
-    Box.unbox(url, destination, unboxOptions)
+    config.eventManager.emitEvent("unbox:startJob");
+
+    Box.unbox(url, destination, unboxOptions, config)
       .then(boxConfig => {
-        config.logger.log("\nUnbox successful. Sweet!" + OS.EOL);
-
-        const commandMessages = formatCommands(boxConfig.commands);
-        if (commandMessages.length > 0) config.logger.log("Commands:" + OS.EOL);
-
-        commandMessages.forEach(message => config.logger.log(message));
-        config.logger.log("");
-
-        if (boxConfig.epilogue) {
-          config.logger.log(boxConfig.epilogue.replace("\n", OS.EOL));
-        }
-
-        done();
+        config.eventManager.emitEvent("unbox:jobFinished", boxConfig);
+        // This is a timeout to give time to the eventManager
+        // to handle the jobFinished event
+        setTimeout(() => {
+          done();
+        }, 1000);
       })
       .catch(done);
   }

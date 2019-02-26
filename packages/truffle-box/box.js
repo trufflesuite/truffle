@@ -27,7 +27,8 @@ function parseSandboxOptions(options) {
 }
 
 const Box = {
-  unbox: async (url, destination, options = {}) => {
+  unbox: async (url, destination, options = {}, config) => {
+    const { eventManager } = config;
     let tempDirCleanup;
     options.logger = options.logger || { log: () => {} };
     const unpackBoxOptions = {
@@ -36,13 +37,11 @@ const Box = {
     };
 
     try {
-      options.eventEmitter.emitEvent("unbox:preparingToDownload");
-      const tempDir = await utils.setUpTempDirectory();
+      const tempDir = await utils.setUpTempDirectory(eventManager);
       tempDirPath = tempDir.path;
       tempDirCleanup = tempDir.cleanupCallback;
 
-      options.eventEmitter.emitEvent("unbox:downloadingBox");
-      await utils.downloadBox(url, tempDirPath);
+      await utils.downloadBox(url, tempDirPath, eventManager);
 
       const boxConfig = await utils.readBoxConfig(tempDirPath);
 
@@ -53,16 +52,16 @@ const Box = {
         unpackBoxOptions
       );
 
-      options.eventEmitter.emitEvent("unbox:cleaningTempFiles");
+      eventManager.emitEvent("unbox:cleaningTempFiles:start");
       tempDirCleanup();
+      eventManager.emitEvent("unbox:cleaningTempFiles:end");
 
-      options.eventManager.emitEvent("unbox:settingUpBox");
-      await utils.setUpBox(boxConfig, destination);
+      await utils.setUpBox(boxConfig, destination, eventManager);
 
       return boxConfig;
     } catch (error) {
       if (tempDirCleanup) tempDirCleanup();
-      options.eventEmitter.emitEvent("unbox:jobFailed");
+      eventManager.emitEvent("unbox:jobFailed");
       throw new Error(error);
     }
   },

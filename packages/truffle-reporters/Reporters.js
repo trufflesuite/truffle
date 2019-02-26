@@ -1,5 +1,5 @@
 const compile = require("./compile");
-const unbox = require("./unbox");
+const UnboxReporter = require("./unbox");
 
 class Reporters {
   constructor(initializationOptions) {
@@ -8,7 +8,7 @@ class Reporters {
 
   initializeListeners(initializationOptions) {
     compile.initializeListeners(initializationOptions);
-    unbox.initializeListeners(initializationOptions);
+    new UnboxReporter(initializationOptions);
   }
 }
 
