@@ -53,19 +53,21 @@ compile.necessary = function(options, callback) {
 };
 
 compile.display = function(paths, options) {
-  if (options.quiet !== true) {
-    if (!Array.isArray(paths)) {
-      paths = Object.keys(paths);
+  if (!Array.isArray(paths)) {
+    paths = Object.keys(paths);
+  }
+
+  const sourceFiles = paths.sort().map(contract => {
+    if (path.isAbsolute(contract)) {
+      return `.${path.sep}${path.relative(
+        options.working_directory,
+        contract
+      )}`;
     }
 
-    paths.sort().forEach(contract => {
-      if (path.isAbsolute(contract)) {
-        contract =
-          "." + path.sep + path.relative(options.working_directory, contract);
-      }
-      options.logger.log("    > compiling " + contract);
-    });
-  }
+    return contract;
+  });
+  options.eventManager.emitEvent("compile:compiledSources", sourceFiles);
 };
 
 // -------- End of common with truffle-compile --------

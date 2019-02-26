@@ -6,12 +6,22 @@ module.exports = {
     if (!sources) return;
     const logger = options.logger || console;
     sources.forEach(source => logger.log("    > " + source));
-    logger.log("");
   },
 
-  finishJob(options) {
+  finishJob(options, config) {
     const logger = options.logger || console;
-    logger.log(OS.EOL + "Compilation finished successfully." + OS.EOL);
+    const { compilersInfo } = config;
+    if (!options.quiet) {
+      if (Object.keys(compilersInfo).length > 0) {
+        logger.log(OS.EOL + `Compiled successfully using:` + OS.EOL);
+        for (const name in compilersInfo) {
+          logger.log(`    > ${name}: ${compilersInfo[name].version}`);
+        }
+      } else {
+        logger.log(OS.EOL + `Compilation successful`);
+      }
+      logger.log();
+    }
   },
 
   initializeListeners(options) {
@@ -35,8 +45,9 @@ module.exports = {
 
   nothingToCompile(options) {
     const logger = options.logger || console;
-    logger.log("    > all contracts up to date");
-    logger.log("    > nothing new to compile");
+    logger.log(
+      `Everything is up to date, there is nothing to compile.` + OS.EOL
+    );
   },
 
   startJob(options) {
@@ -51,8 +62,10 @@ module.exports = {
     logger.log(warnings.map(warning => warning.formattedMessage).join());
   },
 
-  writeArtifacts(options, working_directory) {
+  writeArtifacts(options) {
     const logger = options.logger || console;
-    logger.log("    > writing artifacts to ." + working_directory);
+    logger.log(
+      `    > artifacts written to ${options.contracts_build_directory}`
+    );
   }
 };

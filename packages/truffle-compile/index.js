@@ -126,6 +126,8 @@ const compile = function(sources, options, callback) {
   supplier
     .load()
     .then(solc => {
+      let errors = [];
+      let warnings = [];
       const result = solc.compile(JSON.stringify(solcStandardInput));
 
       const standardOutput = JSON.parse(result);
@@ -134,33 +136,24 @@ const compile = function(sources, options, callback) {
         typeof standardOutput.errors !== "undefined";
 
       if (errorsOrWarningsOccurred && options.strict !== true) {
-        const warnings = standardOutput.errors.filter(
+        warnings = standardOutput.errors.filter(
           error => error.severity === "warning"
         );
-        const errors = standardOutput.errors.filter(
+        errors = standardOutput.errors.filter(
           error => error.severity !== "warning"
         );
+      }
 
-        if (warnings.length > 0 && options.eventManager) {
-          options.eventManager.emitEvent("compile:warnings", warnings);
-        }
-
-        if (errors.length > 0) {
-          options.logger.log("");
-          const compilationError = new CompileError(
-            errors.map(error => error.formattedMessage).join()
-          );
-          return callback(compilationError);
-        }
+      if (warnings.length > 0) {
+        options.eventManager.emitEvent("compile:warnings", warnings);
       }
 
       if (errors.length > 0) {
         options.logger.log("");
-        return callback(
-          new CompileError(
-            standardOutput.errors.map(error => error.formattedMessage).join()
-          )
+        const compilationError = new CompileError(
+          errors.map(error => error.formattedMessage).join()
         );
+        return callback(compilationError);
       }
 
       var contracts = standardOutput.contracts;
@@ -438,9 +431,7 @@ compile.display = (paths, options) => {
       return contract;
     })
     .filter(name => name);
-  if (options.eventManager) {
-    options.eventManager.emitEvent("compile:compiledSources", sourceFiles);
-  }
+  options.eventManager.emitEvent("compile:compiledSources", sourceFiles);
 };
 
 compile.CompilerSupplier = CompilerSupplier;

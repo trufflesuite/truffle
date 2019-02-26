@@ -73,15 +73,12 @@ const Contracts = {
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
   compile: callbackify(async function(options) {
     const config = prepareConfig(options);
-    if (config.eventManager) {
-      config.eventManager.emitEvent("compile:startJob");
-    }
+
+    options.eventManager.emitEvent("compile:startJob", options);
 
     const compilers = config.compiler
       ? [config.compiler]
       : Object.keys(config.compilers);
-
-    this.reportCompilationStarted(options);
 
     const compilations = await this.compileSources(config, compilers);
 
@@ -92,9 +89,10 @@ const Contracts = {
       0
     );
 
-    if (numberOfCompiledContracts === 0) this.reportNothingToCompile(options);
+    if (numberOfCompiledContracts === 0)
+      options.eventManager.emitEvent("compile:nothingToCompile");
 
-    this.reportCompilationFinished(options, config);
+    options.eventManager.emitEvent("compile:finishJob", config);
     return await this.collectCompilations(compilations);
   }),
 
@@ -121,46 +119,12 @@ const Contracts = {
 
         if (contracts && Object.keys(contracts).length > 0) {
           await this.writeContracts(contracts, config);
+          config.eventManager.emitEvent("compile:writeArtifacts");
         }
 
         return { compiler, contracts, output };
       })
     );
-  },
-
-  reportCompilationStarted: options => {
-    const logger = options.logger || console;
-    if (!options.quiet) {
-      logger.log(OS.EOL + `Compiling your contracts` + OS.EOL);
-    }
-  },
-
-  reportCompilationFinished: (options, config) => {
-    const logger = options.logger || console;
-    const { compilersInfo } = config;
-    if (!options.quiet) {
-      logger.log(
-        `    > artifacts written to ${options.contracts_build_directory}`
-      );
-      if (Object.keys(compilersInfo).length > 0) {
-        logger.log(OS.EOL + `Compiled successfully using:` + OS.EOL);
-        for (const name in compilersInfo) {
-          logger.log(`    > ${name}: ${compilersInfo[name].version}`);
-        }
-      } else {
-        logger.log(OS.EOL + `Compilation successful`);
-      }
-      logger.log();
-    }
-  },
-
-  reportNothingToCompile: options => {
-    const logger = options.logger || console;
-    if (!options.quiet) {
-      logger.log(
-        `Everything is up to date, there is nothing to compile.` + OS.EOL
-      );
-    }
   },
 
   writeContracts: async (contracts, options) => {
