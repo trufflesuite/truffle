@@ -1,8 +1,9 @@
 const Web3 = require("web3");
+const BN = require("bn.js");
 
 // This is a temporary shim to support the basic issues with Quorum
 
-export default class Web3Shim {
+class Web3Shim {
   constructor(options) {
     let web3 = new Web3();
     web3.setProvider(options.provider);
@@ -23,3 +24,5 @@ export default class Web3Shim {
     return web3;
   }
 }
+
+module.exports = Web3Shim;
