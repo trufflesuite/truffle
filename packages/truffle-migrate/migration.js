@@ -2,7 +2,7 @@ const path = require("path");
 const Deployer = require("truffle-deployer");
 const Require = require("truffle-require");
 const Emittery = require("emittery");
-const Web3 = require("web3");
+const Web3Shim = require("truffle-interface-adapter").Web3Shim;
 
 const ResolverIntercept = require("./resolverintercept");
 
@@ -153,8 +153,7 @@ class Migration {
     const self = this;
     const logger = options.logger;
 
-    const web3 = new Web3();
-    web3.setProvider(options.provider);
+    const web3 = new Web3Shim(options);
 
     logger.log(
       "Running migration: " +
@@ -262,8 +261,7 @@ class Migration {
     const logger = options.logger;
     const resolver = new ResolverIntercept(options.resolver);
 
-    const web3 = new Web3();
-    web3.setProvider(options.provider);
+    const web3 = new Web3Shim(options);
 
     // Initial context.
     const context = {

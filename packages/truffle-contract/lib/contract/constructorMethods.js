@@ -1,6 +1,6 @@
 const Web3PromiEvent = require("web3-core-promievent");
 const BlockchainUtils = require("truffle-blockchain-utils");
-const Web3 = require("web3");
+const Web3Shim = require("truffle-interface-adapter").Web3Shim;
 const utils = require("../utils");
 const execute = require("../execute");
 const bootstrap = require("./bootstrap");
@@ -386,7 +386,7 @@ module.exports = Contract => {
 
       bootstrap(temp);
 
-      temp.web3 = new Web3();
+      temp.web3 = new Web3Shim(temp._json);
       temp.class_defaults = temp.prototype.defaults || {};
 
       if (network_id) {

@@ -1,0 +1,22 @@
+{
+  "name": "truffle-interface-adapter",
+  "version": "1.0.0",
+  "description": "A library that provides an adapter layer for Truffle to interace with different types of networks/ledgers.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"No test specified\" && exit 0;"
+  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-interface-adapter",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "devDependencies": {},
+  "dependencies": {
+    "web3": "1.0.0-beta.37"
+  }
+}
