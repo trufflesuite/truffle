@@ -1,13 +1,13 @@
-var debug = require("debug")("workflow-compile");
-var mkdirp = require("mkdirp");
-var { callbackify, promisify } = require("util");
-var Config = require("truffle-config");
-var solcCompile = require("truffle-compile");
-var vyperCompile = require("truffle-compile-vyper");
-var externalCompile = require("truffle-external-compile");
-var expect = require("truffle-expect");
-var Resolver = require("truffle-resolver");
-var Artifactor = require("truffle-artifactor");
+const debug = require("debug")("workflow-compile");
+const mkdirp = require("mkdirp");
+const { callbackify, promisify } = require("util");
+const Config = require("truffle-config");
+const solcCompile = require("truffle-compile");
+const vyperCompile = require("truffle-compile-vyper");
+const externalCompile = require("truffle-external-compile");
+const expect = require("truffle-expect");
+const Resolver = require("truffle-resolver");
+const Artifactor = require("truffle-artifactor");
 
 const SUPPORTED_COMPILERS = {
   solc: solcCompile,
@@ -23,9 +23,9 @@ function prepareConfig(options) {
   // Use a config object to ensure we get the default sources.
   const config = Config.default().merge(options);
 
-  if (!config.resolver) {
-    config.resolver = new Resolver(config);
-  }
+  config.compilersInfo = {};
+
+  if (!config.resolver) config.resolver = new Resolver(config);
 
   if (!config.artifactor) {
     config.artifactor = new Artifactor(config.contracts_build_directory);
@@ -47,7 +47,23 @@ function multiPromisify(func) {
     });
 }
 
-var Contracts = {
+const Contracts = {
+  collectCompilations: async compilations => {
+    let result = { outputs: {}, contracts: {} };
+
+    for (let compilation of await Promise.all(compilations)) {
+      let { compiler, output, contracts } = compilation;
+
+      result.outputs[compiler] = output;
+
+      for (let [name, abstraction] of Object.entries(contracts)) {
+        result.contracts[name] = abstraction;
+      }
+    }
+
+    return result;
+  },
+
   // contracts_directory: String. Directory where .sol files can be found.
   // contracts_build_directory: String. Directory where .sol.js files can be found and written to.
   // all: Boolean. Compile all sources found. Defaults to true. If false, will compare sources against built files
@@ -65,62 +81,91 @@ var Contracts = {
       ? [config.compiler]
       : Object.keys(config.compilers);
 
-    // convert to promise to compile+write
-    const compilations = compilers.map(async compiler => {
-      const compile = SUPPORTED_COMPILERS[compiler];
-      if (!compile) throw new Error("Unsupported compiler: " + compiler);
+    this.reportCompilationStarted(options);
 
-      const compileFunc =
-        config.all === true || config.compileAll === true
-          ? compile.all
-          : compile.necessary;
+    const compilations = await this.compileSources(config, compilers);
 
-      let [contracts, output] = await multiPromisify(compileFunc)(config);
+    const numberOfCompiledContracts = compilations.reduce(
+      (number, compilation) => {
+        return number + Object.keys(compilation.contracts).length;
+      },
+      0
+    );
 
-      if (contracts && Object.keys(contracts).length > 0) {
-        await this.writeContracts(contracts, config);
-      }
+    if (numberOfCompiledContracts === 0) this.reportNothingToCompile(options);
 
-      return { compiler, contracts, output };
-    });
-
-    const collect = async compilations => {
-      let result = {
-        outputs: {},
-        contracts: {}
-      };
-
-      for (let compilation of await Promise.all(compilations)) {
-        let { compiler, output, contracts } = compilation;
-
-        result.outputs[compiler] = output;
-
-        for (let [name, abstraction] of Object.entries(contracts)) {
-          result.contracts[name] = abstraction;
-        }
-      }
-
-      if (config.eventManager) {
-        config.eventManager.emitEvent("compile:finishJob");
-      }
-      return result;
-    };
-
-    return await collect(compilations);
+    this.reportCompilationFinished(options, config);
+    return await this.collectCompilations(compilations);
   }),
+
+  compileSources: async function(config, compilers) {
+    return Promise.all(
+      compilers.map(async compiler => {
+        const compile = SUPPORTED_COMPILERS[compiler];
+        if (!compile) throw new Error("Unsupported compiler: " + compiler);
+
+        const compileFunc =
+          config.all === true || config.compileAll === true
+            ? compile.all
+            : compile.necessary;
+
+        let [contracts, output, compilerUsed] = await multiPromisify(
+          compileFunc
+        )(config);
+
+        if (compilerUsed) {
+          config.compilersInfo[compilerUsed.name] = {
+            version: compilerUsed.version
+          };
+        }
+
+        if (contracts && Object.keys(contracts).length > 0) {
+          await this.writeContracts(contracts, config);
+        }
+
+        return { compiler, contracts, output };
+      })
+    );
+  },
+
+  reportCompilationStarted: options => {
+    const logger = options.logger || console;
+    if (!options.quiet) {
+      logger.log(OS.EOL + `Compiling your contracts` + OS.EOL);
+    }
+  },
+
+  reportCompilationFinished: (options, config) => {
+    const logger = options.logger || console;
+    const { compilersInfo } = config;
+    if (!options.quiet) {
+      logger.log(
+        `    > artifacts written to ${options.contracts_build_directory}`
+      );
+      if (Object.keys(compilersInfo).length > 0) {
+        logger.log(OS.EOL + `Compiled successfully using:` + OS.EOL);
+        for (const name in compilersInfo) {
+          logger.log(`    > ${name}: ${compilersInfo[name].version}`);
+        }
+      } else {
+        logger.log(OS.EOL + `Compilation successful`);
+      }
+      logger.log();
+    }
+  },
+
+  reportNothingToCompile: options => {
+    const logger = options.logger || console;
+    if (!options.quiet) {
+      logger.log(
+        `Everything is up to date, there is nothing to compile.` + OS.EOL
+      );
+    }
+  },
 
   writeContracts: async (contracts, options) => {
     await promisify(mkdirp)(options.contracts_build_directory);
-
-    if (options.eventManager) {
-      options.eventManager.emitEvent(
-        "compile:writeArtifacts",
-        options.contracts_build_directory
-      );
-    }
-
     const extra_opts = { network_id: options.network_id };
-
     await options.artifactor.saveAll(contracts, extra_opts);
   }
 };

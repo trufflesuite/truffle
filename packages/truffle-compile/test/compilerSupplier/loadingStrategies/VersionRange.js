@@ -54,11 +54,13 @@ describe("VersionRange loading strategy", () => {
       sinon.stub(instance, "getCachedSolcByVersionRange");
       sinon.stub(instance, "getSolcFromCacheOrUrl");
       sinon.stub(instance, "versionIsCached").returns(true);
+      sinon.stub(request, "get").returns("response");
     });
     afterEach(() => {
       instance.getCachedSolcByVersionRange.restore();
       instance.getSolcFromCacheOrUrl.restore();
       instance.versionIsCached.restore();
+      request.get.restore();
     });
 
     it("calls getCachedSolcByVersionRange when single solc is specified", async () => {
@@ -79,6 +81,25 @@ describe("VersionRange loading strategy", () => {
     afterEach(() => {
       instance.getSolcVersions.restore();
       instance.getCachedSolcByFileName.restore();
+    });
+
+    describe("when a version constraint is specified", () => {
+      beforeEach(() => {
+        sinon.stub(instance, "getSolcByUrlAndCache");
+      });
+      afterEach(() => {
+        instance.getSolcByUrlAndCache.restore();
+      });
+
+      it("calls findNewstValidVersion to determine which version to fetch", async () => {
+        await instance.getSolcFromCacheOrUrl("^0.5.0");
+        assert(
+          instance.getSolcByUrlAndCache.calledWith(
+            "soljson-v0.5.2+commit.1df8f40c.js"
+          ),
+          "getSolcByUrlAndCache not called with the compiler file name"
+        );
+      });
     });
 
     describe("when the version is cached", () => {
@@ -102,7 +123,7 @@ describe("VersionRange loading strategy", () => {
     describe("when the version is not cached", () => {
       beforeEach(() => {
         sinon.stub(instance, "fileIsCached").returns(false);
-        sinon.stub(instance, "compilerFromString");
+        sinon.stub(instance, "compilerFromString").returns("compiler");
         sinon.stub(instance, "addFileToCache");
       });
       afterEach(() => {

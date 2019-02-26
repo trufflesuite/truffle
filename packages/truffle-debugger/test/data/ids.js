@@ -5,7 +5,7 @@ import { assert } from "chai";
 
 import Ganache from "ganache-core";
 
-import { prepareContracts } from "../helpers";
+import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
 
 import trace from "lib/trace/selectors";
@@ -26,7 +26,7 @@ contract FactorialTest {
     uint prev;
     uint prevFac;
     nbang = n;
-    prev = n - 1; //break here (12)
+    prev = n - 1; //break here #1 (12)
     if(n>0)
     {
       prevFac = factorial(n - 1);
@@ -36,7 +36,7 @@ contract FactorialTest {
     {
       nbang = 1;
     }
-    lastResult = nbang; //break here (22)
+    lastResult = nbang; //break here #2 (22)
   }
 }
 `;
@@ -97,7 +97,7 @@ contract Intervening {
     flag = 0;
     inner.run();
 
-    flag = 1; //break here (18)
+    flag = 1; //break here #1 (18)
 
   }
 
@@ -106,7 +106,7 @@ contract Intervening {
     flag = 0;
     flag = InterveningLib.run();
 
-    flag = 1; //break here (27)
+    flag = 1; //break here #2 (27)
 
   }
 }
@@ -202,8 +202,9 @@ describe("Variable IDs", function() {
     debug("sourceId %d", session.view(solidity.current.source).id);
 
     let sourceId = session.view(solidity.current.source).id;
-    session.addBreakpoint({ sourceId, line: 12 });
-    session.addBreakpoint({ sourceId, line: 22 });
+    let source = session.view(solidity.current.source).source;
+    session.addBreakpoint({ sourceId, line: lineOf("break here #1", source) });
+    session.addBreakpoint({ sourceId, line: lineOf("break here #2", source) });
 
     var values = [];
 
@@ -241,7 +242,8 @@ describe("Variable IDs", function() {
     debug("sourceId %d", session.view(solidity.current.source).id);
 
     let sourceId = session.view(solidity.current.source).id;
-    session.addBreakpoint({ sourceId, line: 32 });
+    let source = session.view(solidity.current.source).source;
+    session.addBreakpoint({ sourceId, line: lineOf("break here", source) });
     session.continueUntilBreakpoint();
     debug("node %o", session.view(solidity.current.node));
     assert.equal(
@@ -271,7 +273,8 @@ describe("Variable IDs", function() {
     debug("sourceId %d", session.view(solidity.current.source).id);
 
     let sourceId = session.view(solidity.current.source).id;
-    session.addBreakpoint({ sourceId, line: 18 });
+    let source = session.view(solidity.current.source).source;
+    session.addBreakpoint({ sourceId, line: lineOf("break here #1", source) });
     session.continueUntilBreakpoint();
     assert.property(await session.variables(), "flag");
   });
@@ -291,7 +294,8 @@ describe("Variable IDs", function() {
     debug("sourceId %d", session.view(solidity.current.source).id);
 
     let sourceId = session.view(solidity.current.source).id;
-    session.addBreakpoint({ sourceId, line: 27 });
+    let source = session.view(solidity.current.source).source;
+    session.addBreakpoint({ sourceId, line: lineOf("break here #2", source) });
     session.continueUntilBreakpoint();
     assert.property(await session.variables(), "flag");
   });

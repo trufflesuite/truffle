@@ -66,7 +66,6 @@ const command = {
       ? command.listVersions(supplier, config, done)
       : Contracts.compile(config, done);
   },
-
   listVersions: function(supplier, options, done) {
     const log = options.logger.log;
     options.list = options.list.length ? options.list : "releases";
