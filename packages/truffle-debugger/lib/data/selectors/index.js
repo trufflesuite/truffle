@@ -131,7 +131,7 @@ const data = createSelectorTree({
       [
         "/views/referenceDeclarations",
         "/next/state",
-        "/proc/mappingKeys",
+        "/views/mappingKeys",
         "/info/allocations/storage"
       ],
 
@@ -174,6 +174,22 @@ const data = createSelectorTree({
           {},
           ...userDefinedTypes.map(id => ({ [id]: scopes[id].definition }))
         )
+    ),
+
+    /**
+     * data.views.mappingKeys
+     */
+    mappingKeys: createLeaf(
+      ["/proc/mappedPaths", "/current/address", "/current/dummyAddress"],
+      (mappedPaths, address, dummyAddress) =>
+        []
+          .concat(
+            ...Object.values(
+              (mappedPaths.byAddress[address || dummyAddress] || { byType: {} })
+                .byType
+            ).map(({ bySlotAddress }) => Object.values(bySlotAddress))
+          )
+          .filter(slot => slot.key !== undefined)
     )
   },
 
@@ -275,21 +291,19 @@ const data = createSelectorTree({
       //assignments object
     ),
 
-    /**
-     * data.proc.mappingKeys
-     *
-     * known keys for each mapping (identified by node ID)
+    /*
+     * data.proc.mappedPaths
      */
-    mappingKeys: createLeaf(["/state"], state => state.proc.mappingKeys.byId),
+    mappedPaths: createLeaf(["/state"], state => state.proc.mappedPaths),
 
     /**
-     * data.proc.decodingMappingKeys
+     * data.proc.decodingKeys
      *
-     * number of mapping keys that are still decoding
+     * number of keys that are still decoding
      */
-    decodingMappingKeys: createLeaf(
-      ["/state"],
-      state => state.proc.mappingKeys.decodingStarted
+    decodingKeys: createLeaf(
+      ["./mappedPaths"],
+      mappedPaths => mappedPaths.decodingStarted
     )
   },
 
@@ -463,12 +477,15 @@ const data = createSelectorTree({
         ["/views/decoder", "./definitions", "./refs"],
 
         async (decode, definitions, refs) => {
+          debug("setting up keyedPromises");
           const keyedPromises = Object.entries(refs).map(
             async ([identifier, ref]) => ({
               [identifier]: await decode(definitions[identifier], ref)
             })
           );
+          debug("set up keyedPromises");
           const keyedResults = await Promise.all(keyedPromises);
+          debug("got keyedResults");
           return DecodeUtils.Conversion.cleanContainers(
             Object.assign({}, ...keyedResults)
           );

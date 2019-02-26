@@ -101,7 +101,7 @@ describe("EVM Debugging", function() {
       var finished; // is the trace finished?
 
       do {
-        session.stepNext();
+        await session.stepNext();
         finished = session.view(trace.finished);
 
         let actual = session.view(evm.current.callstack).length;
@@ -132,7 +132,7 @@ describe("EVM Debugging", function() {
       var finished; // is the trace finished?
 
       do {
-        session.stepNext();
+        await session.stepNext();
         finished = session.view(trace.finished);
 
         let currentDepth = session.view(evm.current.callstack).length;

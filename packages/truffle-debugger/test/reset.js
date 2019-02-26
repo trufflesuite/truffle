@@ -71,19 +71,19 @@ describe("Reset Button", function() {
     variables[1] = []; //collected during 2nd run
 
     variables[0].push(await session.variables());
-    session.addBreakpoint({ sourceId, line: lineOf("BREAK", source) });
-    session.continueUntilBreakpoint(); //advance to line 10
+    await session.addBreakpoint({ sourceId, line: lineOf("BREAK", source) });
+    await session.continueUntilBreakpoint(); //advance to line 10
     variables[0].push(await session.variables());
-    session.continueUntilBreakpoint(); //advance to the end
+    await session.continueUntilBreakpoint(); //advance to the end
     variables[0].push(await session.variables());
 
     //now, reset and do it again
-    session.reset();
+    await session.reset();
 
     variables[1].push(await session.variables());
-    session.continueUntilBreakpoint(); //advance to line 10
+    await session.continueUntilBreakpoint(); //advance to line 10
     variables[1].push(await session.variables());
-    session.continueUntilBreakpoint(); //advance to the end
+    await session.continueUntilBreakpoint(); //advance to the end
     variables[1].push(await session.variables());
 
     assert.deepEqual(variables[1], variables[0]);

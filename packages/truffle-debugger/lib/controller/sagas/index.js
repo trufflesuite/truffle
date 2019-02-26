@@ -34,12 +34,11 @@ export function* saga() {
     debug("got control action");
     let saga = CONTROL_SAGAS[action.type];
 
-    yield put(actions.beginStep(action.type));
-
     yield race({
-      exec: call(saga, action),
+      exec: call(saga),
       interrupt: take(actions.INTERRUPT)
     });
+    yield put(actions.doneStepping());
   }
 }
 
@@ -104,13 +103,11 @@ function* stepNext() {
 function* stepInto() {
   if (yield select(controller.current.willJump)) {
     yield* stepNext();
-
     return;
   }
 
   if (yield select(controller.current.location.isMultiline)) {
     yield* stepOver();
-
     return;
   }
 
@@ -143,7 +140,6 @@ function* stepInto() {
 function* stepOut() {
   if (yield select(controller.current.location.isMultiline)) {
     yield* stepOver();
-
     return;
   }
 

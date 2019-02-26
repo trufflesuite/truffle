@@ -170,7 +170,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
           storage: {},
           memory: new Uint8Array(0)
         },
-        mappingKeys: {},
+        mappingKeys: [],
         referenceDeclarations: this.referenceDeclarations,
         storageAllocations: this.storageAllocations,
         variables: this.stateVariableReferences
