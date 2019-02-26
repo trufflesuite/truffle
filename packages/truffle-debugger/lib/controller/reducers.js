@@ -44,7 +44,6 @@ function breakpoints(state = [], action) {
 
 const CONTROL_ACTIONS = [
   actions.ADVANCE,
-  actions.MULTIADVANCE,
   actions.STEP_NEXT,
   actions.STEP_OVER,
   actions.STEP_INTO,

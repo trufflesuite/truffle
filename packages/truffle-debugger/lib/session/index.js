@@ -152,12 +152,8 @@ export default class Session {
     });
   }
 
-  async advance() {
-    return await this.doneStepping(controller.advance());
-  }
-
-  async multiadvance(count) {
-    return await this.doneStepping(controller.multiadvance(count));
+  async advance(count = 1) {
+    return await this.doneStepping(controller.advance(count));
   }
 
   async stepNext() {

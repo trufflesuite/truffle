@@ -1,11 +1,6 @@
 export const ADVANCE = "ADVANCE";
-export function advance() {
-  return { type: ADVANCE };
-}
-
-export const MULTIADVANCE = "MULTIADVANCE";
-export function multiadvance(count) {
-  return { type: MULTIADVANCE, count };
+export function advance(count = 1) {
+  return { type: ADVANCE, count };
 }
 
 export const STEP_NEXT = "STEP_NEXT";

@@ -603,7 +603,7 @@ var command = {
                       config.logger.log("Number of steps must be an integer.");
                       break;
                     }
-                    await session.multiadvance(count);
+                    await session.advance(count);
                   } else {
                     await session.advance();
                   }
