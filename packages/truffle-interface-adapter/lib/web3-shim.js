@@ -8,7 +8,9 @@ class Web3Shim {
     let web3 = new Web3();
     web3.setProvider(options.provider);
 
-    if (options.legacy) {
+    if (options.quorum) {
+      // duck punch the block output formatter since quorum uses nanoseconds in the timestamp
+      // field instead of seconds
       const _oldFormatter = web3.eth.getBlock.method.outputFormatter;
       web3.eth.getBlock.method.outputFormatter = block => {
         const _oldTimestamp = block.timestamp;

@@ -7,6 +7,11 @@ var command = {
       type: "boolean",
       default: false
     },
+    "quorum": {
+      describe: "Enable Quorum support; also enables --legacy",
+      type: "boolean",
+      default: false
+    },
     "reset": {
       type: "boolean",
       default: false
@@ -33,11 +38,15 @@ var command = {
   },
   help: {
     usage:
-      "truffle migrate [--legacy] [--reset] [-f <number>] [--network <name>] [--compile-all] [--verbose-rpc] [--interactive]",
+      "truffle migrate [--legacy] [--quorum] [--reset] [-f <number>] [--network <name>] [--compile-all] [--verbose-rpc] [--interactive]",
     options: [
       {
         option: "--legacy",
         description: "Run legacy migrations"
+      },
+      {
+        option: "--quorum",
+        description: "Enable Quorum support; also enables --legacy"
       },
       {
         option: "--reset",
@@ -99,6 +108,11 @@ var command = {
       7762959, // Musiccoin
       61717561 // Aquachain
     ];
+
+    // Quorum support requires legacy migrations
+    if (options.quorum === true) {
+      options.legacy = true;
+    }
 
     function setupDryRunEnvironmentThenRunMigrations(config) {
       return new Promise((resolve, reject) => {

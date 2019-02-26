@@ -7,6 +7,11 @@ var command = {
       type: "boolean",
       default: false
     },
+    "quorum": {
+      describe: "Enable Quorum support; also enables --legacy",
+      type: "boolean",
+      default: false
+    },
     "show-events": {
       describe: "Show all test logs",
       type: "boolean",
@@ -15,7 +20,7 @@ var command = {
   },
   help: {
     usage:
-      "truffle test [<test_file>] [--legacy] [--compile-all] [--network <name>] [--verbose-rpc] [--show-events]",
+      "truffle test [<test_file>] [--legacy] [--quorum] [--compile-all] [--network <name>] [--verbose-rpc] [--show-events]",
     options: [
       {
         option: "<test_file>",
@@ -26,6 +31,10 @@ var command = {
       {
         option: "--legacy",
         description: "Run legacy tests"
+      },
+      {
+        option: "--quorum",
+        description: "Enable Quorum support; also enables --legacy"
       },
       {
         option: "--compile-all",
@@ -61,6 +70,11 @@ var command = {
     var fs = require("fs");
     var copy = require("../copy");
     var Environment = require("../environment");
+
+    // Quorum support requires legacy migrations
+    if (options.quorum === true) {
+      options.legacy = true;
+    }
 
     var config = Config.detect(options);
 
