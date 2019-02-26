@@ -9,19 +9,23 @@ module.exports = {
   },
 
   finishJob(options, config) {
-    const logger = options.logger || console;
+    const { globalConfig } = options;
     const { compilersInfo } = config;
-    if (!options.quiet) {
-      if (Object.keys(compilersInfo).length > 0) {
-        logger.log(OS.EOL + `Compiled successfully using:` + OS.EOL);
-        for (const name in compilersInfo) {
-          logger.log(`    > ${name}: ${compilersInfo[name].version}`);
-        }
-      } else {
-        logger.log(OS.EOL + `Compilation successful`);
+    const logger = options.logger || console;
+    if (Object.keys(compilersInfo).length > 0) {
+      logger.log(
+        `${OS.EOL}    > artifacts written to ${
+          globalConfig.contracts_build_directory
+        }`
+      );
+      logger.log(OS.EOL + `Compiled successfully using:` + OS.EOL);
+      for (const name in compilersInfo) {
+        logger.log(`    > ${name}: ${compilersInfo[name].version}`);
       }
-      logger.log();
+    } else {
+      logger.log(OS.EOL + `Compilation successful`);
     }
+    logger.log();
   },
 
   initializeListeners(options) {
@@ -52,20 +56,12 @@ module.exports = {
 
   startJob(options) {
     const logger = options.logger || console;
-    logger.log(OS.EOL + "Starting compilation");
-    logger.log("====================" + OS.EOL);
+    logger.log(`${OS.EOL}Compiling your contracts${OS.EOL}`);
   },
 
   warnings(options, warnings) {
     const logger = options.logger || console;
     logger.log(colors.yellow("    > compilation warnings encountered:"));
     logger.log(warnings.map(warning => warning.formattedMessage).join());
-  },
-
-  writeArtifacts(options) {
-    const logger = options.logger || console;
-    logger.log(
-      `    > artifacts written to ${options.contracts_build_directory}`
-    );
   }
 };

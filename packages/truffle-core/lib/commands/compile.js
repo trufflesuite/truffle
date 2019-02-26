@@ -52,15 +52,11 @@ const command = {
     const Contracts = require("truffle-workflow-compile");
     const { CompilerSupplier } = require("truffle-compile");
     const supplier = new CompilerSupplier();
+    const eventManager = require("../eventManager");
 
     const config = Config.detect(options);
 
-    const EventManager = require("../EventManager");
-    const eventManager = new EventManager({
-      logger: console,
-      muteReporters: config.quiet
-    });
-    config.eventManager = eventManager;
+    config.eventManager = eventManager(config);
 
     config.list !== undefined
       ? command.listVersions(supplier, config, done)

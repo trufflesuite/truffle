@@ -119,7 +119,6 @@ const Contracts = {
 
         if (contracts && Object.keys(contracts).length > 0) {
           await this.writeContracts(contracts, config);
-          config.eventManager.emitEvent("compile:writeArtifacts");
         }
 
         return { compiler, contracts, output };

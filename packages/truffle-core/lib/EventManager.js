@@ -1,32 +1,45 @@
 const Emittery = require("emittery");
-const { Reporter } = require("truffle-reporters");
+const { Reporters } = require("truffle-reporters");
 
 class EventManager {
-  constructor(options) {
-    const { logger, muteReporters } = options;
-    this.logger = logger || console;
-    this.muteReporters = muteReporters;
-    this.emitter = new Emittery();
-    this.initializeSubscribers();
+  constructor(eventManagerOptions) {
+    const { logger, muteReporters, globalConfig } = eventManagerOptions;
+
+    const emitter = new Emittery();
+    this.emitter = emitter;
+
+    const initializationOptions = {
+      globalConfig,
+      emitter,
+      logger,
+      muteReporters
+    };
+    this.initializeSubscribers(initializationOptions);
   }
 
   emitEvent(event, data) {
     this.emitter.emit(event, data);
   }
 
-  initializeReporters() {
-    const reporterOptions = {
-      logger: this.logger,
-      emitter: this.emitter
-    };
-    new Reporter(reporterOptions);
+  initializeReporters(initializationOptions) {
+    new Reporters(initializationOptions);
   }
 
-  initializeSubscribers() {
-    if (!this.muteReporters) {
-      this.initializeReporters();
+  initializeSubscribers(initializationOptions) {
+    const { muteReporters } = initializationOptions;
+    if (!muteReporters) {
+      this.initializeReporters(initializationOptions);
     }
   }
 }
 
-module.exports = EventManager;
+const eventManager = config => {
+  const logger = config.logger || console;
+  return new EventManager({
+    logger,
+    muteReporters: config.quiet,
+    globalConfig: config
+  });
+};
+
+module.exports = eventManager;
