@@ -1,7 +1,6 @@
 import debugModule from "debug";
 const debug = debugModule("decoder:interface:contract-decoder");
 
-import util from "util";
 import AsyncEventEmitter from "async-eventemitter";
 import Web3 from "web3";
 import { ContractObject } from "truffle-contract-schema/spec";
@@ -18,6 +17,7 @@ import { BlockType, Transaction } from "web3/eth/types";
 import { EventLog, Log } from "web3/types";
 import { Provider } from "web3/providers";
 import abiDecoder from "abi-decoder";
+import isEqual from "lodash.isequal"; //util.isDeepStrictEqual doesn't exist in Node 8
 
 export interface EvmMapping {
   name: string;
@@ -244,7 +244,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     //add mapping key and all ancestors
     while(slot !== undefined &&
       this.mappingKeys.every(existingSlot =>
-      !util.isDeepStrictEqual(existingSlot,slot)
+      !isEqual(existingSlot,slot)
         //we put the newness requirement in the while condition rather than a
         //separate if because if we hit one ancestor that's not new, the futher
         //ones won't be either
@@ -265,7 +265,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     //remove mapping key and all descendants
     this.mappingKeys = this.mappingKeys.filter( existingSlot => {
       while(existingSlot !== undefined) {
-        if(util.isDeepStrictEqual(existingSlot, slot)) {
+        if(isEqual(existingSlot, slot)) {
           return false; //if it matches, remove it
         }
         existingSlot = existingSlot.path;
