@@ -1,6 +1,6 @@
 export const ADVANCE = "ADVANCE";
-export function advance() {
-  return { type: ADVANCE };
+export function advance(count = 1) {
+  return { type: ADVANCE, count };
 }
 
 export const STEP_NEXT = "STEP_NEXT";
