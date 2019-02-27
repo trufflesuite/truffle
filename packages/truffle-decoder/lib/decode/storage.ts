@@ -26,7 +26,7 @@ export default async function decodeStorage(definition: DecodeUtils.AstDefinitio
 //decodes storage at the address *read* from the pointer -- hence why this takes DataPointer rather than StoragePointer.
 //NOTE: ONLY for use with pointers to reference types!
 //Of course, pointers to value types don't exist in Solidity, so that warning is redundant, but...
-export async function decodeStorageByAddress(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
+export async function decodeStorageReferenceByAddress(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
 
   const rawValue: Uint8Array = await read(pointer, info.state, web3, contractAddress);
   const startOffset = DecodeUtils.Conversion.toBN(rawValue);
@@ -234,12 +234,11 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
         members: {}
       };
 
-      const members: DecodeUtils.AstDefinition[] =
-        info.referenceDeclarations[referencedDeclaration].members;
-
       const structAllocation = info.storageAllocations[referencedDeclaration];
-      for (let memberDefinition of members) {
-        const memberAllocation = structAllocation.members[memberDefinition.id];
+      const members = Object.values(structAllocation.members);
+
+      for (let memberAllocation of members) {
+        let memberDefinition = memberAllocation.definition;
         const memberPointer = <StoragePointer>memberAllocation.pointer;
           //the type system thinks memberPointer might also be a constant
           //definition pointer.  However, structs can't contain constants,

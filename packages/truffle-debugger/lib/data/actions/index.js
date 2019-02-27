@@ -74,10 +74,11 @@ export function defineType(node) {
 }
 
 export const ALLOCATE = "ALLOCATE";
-export function allocate(storage) {
+export function allocate(storage, memory, calldata) {
   return {
     type: ALLOCATE,
-    storage
-    //later there will be more
+    storage,
+    memory,
+    calldata
   };
 }

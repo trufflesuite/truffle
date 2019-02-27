@@ -1,11 +1,12 @@
 import { AstReferences } from "truffle-decode-utils";
-import { StorageAllocations, StorageMemberAllocations } from "./allocation";
+import { StorageAllocations, CalldataAllocations, MemoryAllocations, StorageMemberAllocations } from "./allocation";
 import { Slot } from "./storage";
 
 export interface EvmState {
   stack: Uint8Array[];
   storage: WordMapping;
   memory: Uint8Array;
+  calldata: Uint8Array;
 }
 
 export interface WordMapping {
@@ -17,5 +18,7 @@ export interface EvmInfo {
   mappingKeys?: Slot[];
   referenceDeclarations?: AstReferences;
   storageAllocations?: StorageAllocations;
+  calldataAllocations?: CalldataAllocations;
+  memoryAllocations?: MemoryAllocations;
   variables?: StorageMemberAllocations;
 }

@@ -5,6 +5,7 @@ import decodeValue from "./value";
 import decodeMemory from "./memory";
 import decodeStorage from "./storage";
 import { decodeStack, decodeLiteral } from "./stack";
+import decodeCalldata from "./calldata";
 import decodeConstant from "./constant";
 import { AstDefinition } from "truffle-decode-utils";
 import * as Pointer from "../types/pointer";
@@ -17,11 +18,6 @@ export default async function decode(definition: AstDefinition, pointer: Pointer
 
   if(Pointer.isStoragePointer(pointer)) {
     return await decodeStorage(definition, pointer, info, web3, contractAddress)
-  }
-
-  if(Pointer.isMemoryPointer(pointer)) {
-    return await decodeMemory(definition, pointer, info);
-    //memory does not need web3 & contractAddress
   }
 
   if(Pointer.isStackPointer(pointer)) {
@@ -39,6 +35,20 @@ export default async function decode(definition: AstDefinition, pointer: Pointer
     //I'd like to just use decodeValue, but unfortunately there are some special
     //cases to deal with
   }
+
+  //NOTE: the following two cases shouldn't come up but they've been left in as
+  //fallback cases
+
+  if(Pointer.isMemoryPointer(pointer)) {
+    return await decodeMemory(definition, pointer, info);
+    //memory does not need web3 & contractAddress
+  }
+
+  if(Pointer.isCalldataPointer(pointer)) {
+    return await decodeCalldata(definition, pointer, info);
+    //calldata does not need web3 & contractAddress
+  }
+
 
   //the type system means we can't hit this point!
 }

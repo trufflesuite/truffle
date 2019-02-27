@@ -18,43 +18,6 @@ import { forEvmState } from "truffle-decoder";
  */
 const identity = x => x;
 
-function createStateSelectors({ stack, memory, storage }) {
-  return {
-    /**
-     * .stack
-     */
-    stack: createLeaf(
-      [stack],
-
-      words => (words || []).map(word => DecodeUtils.Conversion.toBytes(word))
-    ),
-
-    /**
-     * .memory
-     */
-    memory: createLeaf(
-      [memory],
-
-      words => DecodeUtils.Conversion.toBytes(words.join(""))
-    ),
-
-    /**
-     * .storage
-     */
-    storage: createLeaf(
-      [storage],
-
-      mapping =>
-        Object.assign(
-          {},
-          ...Object.entries(mapping).map(([address, word]) => ({
-            [`0x${address}`]: DecodeUtils.Conversion.toBytes(word)
-          }))
-        )
-    )
-  };
-}
-
 const data = createSelectorTree({
   state: state => state.data,
 
@@ -130,12 +93,12 @@ const data = createSelectorTree({
     decoder: createLeaf(
       [
         "/views/referenceDeclarations",
-        "/next/state",
+        "/current/state",
         "/views/mappingKeys",
-        "/info/allocations/storage"
+        "/info/allocations"
       ],
 
-      (referenceDeclarations, state, mappingKeys, storageAllocations) => (
+      (referenceDeclarations, state, mappingKeys, allocations) => (
         definition,
         ref
       ) =>
@@ -143,7 +106,9 @@ const data = createSelectorTree({
           referenceDeclarations,
           state,
           mappingKeys,
-          storageAllocations
+          storageAllocations: allocations.storage,
+          memoryAllocations: allocations.memory,
+          calldataAllocations: allocations.calldata
         })
     ),
 
@@ -261,12 +226,7 @@ const data = createSelectorTree({
     /*
      * data.info.allocations
      */
-    allocations: {
-      /*
-       * data.info.allocations.storage
-       */
-      storage: createLeaf(["/state"], state => state.info.allocations.storage)
-    },
+    allocations: createLeaf(["/state"], state => state.info.allocations),
 
     /**
      * data.info.userDefinedTypes
@@ -312,6 +272,53 @@ const data = createSelectorTree({
    */
   current: {
     /**
+     * data.current.state
+     */
+    state: {
+      /**
+       * data.current.state.stack
+       */
+      stack: createLeaf(
+        [evm.current.state.stack],
+
+        words => (words || []).map(word => DecodeUtils.Conversion.toBytes(word))
+      ),
+
+      /**
+       * data.current.state.memory
+       */
+      memory: createLeaf(
+        [evm.current.state.memory],
+
+        words => DecodeUtils.Conversion.toBytes(words.join(""))
+      ),
+
+      /**
+       * data.current.state.calldata
+       */
+      calldata: createLeaf(
+        [evm.current.call],
+
+        ({ data }) => DecodeUtils.Conversion.toBytes(data)
+      ),
+
+      /**
+       * data.current.state.storage
+       */
+      storage: createLeaf(
+        [evm.current.state.storage],
+
+        mapping =>
+          Object.assign(
+            {},
+            ...Object.entries(mapping).map(([address, word]) => ({
+              [`0x${address}`]: DecodeUtils.Conversion.toBytes(word)
+            }))
+          )
+      )
+    },
+
+    /**
      *
      * data.current.scope
      */
@@ -321,11 +328,6 @@ const data = createSelectorTree({
        */
       id: createLeaf([ast.current.node], node => node.id)
     },
-
-    /**
-     * data.current.state
-     */
-    state: createStateSelectors(evm.current.state),
 
     /**
      * data.current.functionDepth
@@ -501,7 +503,16 @@ const data = createSelectorTree({
     /**
      * data.next.state
      */
-    state: createStateSelectors(evm.next.state)
+    state: {
+      /**
+       * data.next.state.stack
+       */
+      stack: createLeaf(
+        [evm.next.state.stack],
+
+        words => (words || []).map(word => DecodeUtils.Conversion.toBytes(word))
+      )
+    }
   }
 });
 

@@ -78,17 +78,23 @@ function userDefinedTypes(state = [], action) {
   }
 }
 
-function storage(state = {}, action) {
+const DEFAULT_ALLOCATIONS = {
+  storage: {},
+  memory: {},
+  calldata: {}
+};
+
+function allocations(state = DEFAULT_ALLOCATIONS, action) {
   if (action.type === actions.ALLOCATE) {
-    return action.storage;
+    return {
+      storage: action.storage,
+      memory: action.memory,
+      calldata: action.calldata
+    };
   } else {
     return state;
   }
 }
-
-const allocations = combineReducers({
-  storage
-});
 
 const info = combineReducers({
   scopes,
