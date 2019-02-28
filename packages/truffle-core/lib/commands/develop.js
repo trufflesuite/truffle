@@ -51,7 +51,7 @@ const command = {
       customConfig.accounts || 10
     );
 
-    const onMissing = name => "**";
+    const onMissing = () => "**";
 
     const warning =
       ":warning:  Important :warning:  : " +
