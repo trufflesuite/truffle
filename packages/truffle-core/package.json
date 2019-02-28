@@ -19,7 +19,7 @@
     "ethpm": "0.0.16",
     "ethpm-registry": "0.1.0-next.2",
     "fs-extra": "6.0.1",
-    "ganache-core": "2.3.3",
+    "ganache-core": "2.5.1",
     "hdkey": "^1.1.0",
     "lodash": "4.17.11",
     "mkdirp": "^0.5.1",
