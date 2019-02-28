@@ -83,17 +83,11 @@ const command = {
         config.logger.log();
 
         config.logger.log(`Accounts:`);
-        for (var i = 0; i < accounts.length; i++) {
-          const account = accounts[i];
-          config.logger.log(`(${i}) ${account}`);
-        }
+        accounts.forEach((acct, idx) => config.logger.log(`(${idx}) ${acct}`));
         config.logger.log();
 
         config.logger.log(`Private Keys:`);
-        for (var i = 0; i < privateKeys.length; i++) {
-          const privateKey = privateKeys[i];
-          config.logger.log(`(${i}) ${privateKey}`);
-        }
+        privateKeys.forEach((key, idx) => config.logger.log(`(${idx}) ${key}`));
         config.logger.log();
 
         config.logger.log(`Mnemonic: ${mnemonic}`);
