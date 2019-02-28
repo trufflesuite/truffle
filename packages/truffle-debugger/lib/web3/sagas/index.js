@@ -43,7 +43,7 @@ function* fetchTransactionInfo(adapter, { txHash }) {
   }
 
   if (receipt.contractAddress) {
-    yield put(actions.receiveCall({ binary: tx.input }));
+    yield put(actions.receiveCall({ binary: tx.input, data: "0x" }));
     return;
   }
 
