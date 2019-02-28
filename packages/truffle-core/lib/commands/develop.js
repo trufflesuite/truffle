@@ -65,7 +65,7 @@ const command = {
     const ganacheOptions = {
       host: customConfig.host || "127.0.0.1",
       port: customConfig.port || 9545,
-      network_id: customConfig.network_id || 4447,
+      network_id: customConfig.network_id || 5777,
       total_accounts: customConfig.accounts || 10,
       default_balance_ether: customConfig.defaultEtherBalance || 100,
       blockTime: customConfig.blockTime || 0,
