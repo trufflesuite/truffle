@@ -15,7 +15,7 @@ const command = {
     usage: "truffle develop",
     options: []
   },
-  async runConsole(config, ganacheOptions, done) {
+  runConsole: async (config, ganacheOptions, done) => {
     const Console = require("../console");
     const Environment = require("../environment");
 
@@ -40,7 +40,7 @@ const command = {
       process.exit();
     });
   },
-  async run(options, done) {
+  run: async (options, done) => {
     const Config = require("truffle-config");
     const Develop = require("../develop");
 
