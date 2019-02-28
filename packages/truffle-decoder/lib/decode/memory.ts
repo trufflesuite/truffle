@@ -95,14 +95,7 @@ export async function decodeMemoryReferenceByAddress(definition: DecodeUtils.Ast
         //there also used to be code here to add on the "_ptr" ending when absent, but we
         //presently ignore that ending, so we'll skip that
 
-        let decoded;
-        try {
-          decoded = await decodeMemory(
-            memberDefinition, childPointer, info
-          );
-        } catch (err) {
-          decoded = err;
-        }
+        let decoded = await decodeMemory(memberDefinition, childPointer, info);
 
         return {
           [memberDefinition.name]: decoded

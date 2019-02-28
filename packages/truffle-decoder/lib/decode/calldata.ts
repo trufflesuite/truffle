@@ -121,16 +121,9 @@ export async function decodeCalldataReferenceByAddress(definition: DecodeUtils.A
         //there also used to be code here to add on the "_ptr" ending when absent, but we
         //presently ignore that ending, so we'll skip that
 
-        let decoded;
-        try {
-          decoded = await decodeCalldata(
-            memberDefinition, childPointer, info, startPosition
-            //note in this case startPosition has not been altered,
-            //which is how we want it
-          );
-        } catch (err) {
-          decoded = err;
-        }
+        let decoded = await decodeCalldata(memberDefinition, childPointer, info, startPosition);
+          //note in this case startPosition has not been altered,
+          //which is how we want it
 
         return {
           [memberDefinition.name]: decoded
@@ -207,14 +200,7 @@ export async function decodeCalldataReferenceStatic(definition: DecodeUtils.AstD
         //there also used to be code here to add on the "_ptr" ending when absent, but we
         //presently ignore that ending, so we'll skip that
 
-        let decoded;
-        try {
-          decoded = await decodeCalldata(
-            memberDefinition, childPointer, info
-          );
-        } catch (err) {
-          decoded = err;
-        }
+        let decoded = await decodeCalldata(memberDefinition, childPointer, info);
 
         return {
           [memberDefinition.name]: decoded
