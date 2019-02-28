@@ -26,10 +26,10 @@ const command = {
       name => !excluded.includes(name)
     );
 
-    const console_commands = {};
-    available_commands.forEach(name => {
-      console_commands[name] = commands[name];
-    });
+    const console_commands = available_commands.reduce(
+      (acc, name) => Object.assign({}, acc, { [name]: commands[name] }),
+      {}
+    );
 
     const environmentDevelop = util.promisify(Environment.develop);
     environmentDevelop(config, ganacheOptions).catch(err => done(err));
