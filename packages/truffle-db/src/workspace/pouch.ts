@@ -112,7 +112,7 @@ export class Workspace {
 
   async compilation ({ id }: { id: string }) {
     await this.ready;
-
+    
     try {
       return  {
         ... await this.compilations.get(id),
@@ -135,8 +135,8 @@ export class Workspace {
         async (compilationInput) => {
          const { compiler, contractTypes, sources  } = compilationInput;
  
-         const id = soliditySha3(compiler.id, sources.id)
-         // const compilation = await { ...compilationInput, id},
+         const id = soliditySha3(compiler.id, ...sources.map(source => source.id))
+         
          const compilation = await this.compilation({ id }) || { ...compilationInput, id };
 
           await this.compilations.put({
