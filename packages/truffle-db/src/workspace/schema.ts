@@ -17,6 +17,9 @@ export const schema = mergeSchemas({
         extend type Bytecode {
           id: ID!
         }
+        extend type Compilation {
+          id: ID!
+        }
         `,
       ]
     }),
@@ -24,6 +27,7 @@ export const schema = mergeSchemas({
     // define entrypoints
     `type Query {
       contractNames: [String]!
+      compilation(id: String!): Compilation
       contractType(name: String!): ContractType
       source(id: String!): Source
       bytecode(id: String!): Bytecode
@@ -54,9 +58,22 @@ export const schema = mergeSchemas({
       bytecodes: [Bytecode!]
     }
 
+    input CompilationInput {
+      compiler: Object
+      contractTypes: Object
+      sources: Object
+    }
+    input CompilationAddInput {
+      compilation: [CompilationInput!]!
+    }
+    type CompilationAddPayload {
+      compilation: [Compilation!]
+    }
+
     type Mutation {
       sourcesAdd(input: SourcesAddInput!): SourcesAddPayload
       bytecodesAdd(input: BytecodesAddInput!): BytecodesAddPayload
+      compilationAdd(input: CompilationAddInput!): CompilationAddPayload
     } `
   ],
   resolvers: {
@@ -76,6 +93,10 @@ export const schema = mergeSchemas({
       bytecode: {
         resolve: (_, { id }, { workspace }) =>
           workspace.bytecode({ id })
+      }, 
+      compilation: {
+        resolve: (_, { id }, { workspace }) =>
+          workspace.compilation({ id })
       }
     },
     Mutation: {
@@ -86,6 +107,10 @@ export const schema = mergeSchemas({
       bytecodesAdd: {
         resolve: (_, { input }, { workspace }) =>
           workspace.bytecodesAdd({ input })
+      }, 
+      compilationAdd: {
+        resolve: (_, { input }, { workspace }) =>
+          workspace.compilationAdd({ input })
       }
     },
     ContractType: {
