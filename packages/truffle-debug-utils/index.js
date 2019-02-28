@@ -9,7 +9,7 @@ var commandReference = {
   "i": "step into",
   "u": "step out",
   "n": "step next",
-  ";": "step instruction",
+  ";": "step instruction (include number to step multiple)",
   "p": "print instruction",
   "h": "print this help",
   "v": "print variables and values",
@@ -125,8 +125,9 @@ var DebugUtils = {
     ];
 
     var commandSections = [
-      ["o", "i", "u", "n", ";"],
-      ["p", "h", "q", "r"],
+      ["o", "i", "u", "n"],
+      [";", "p"],
+      ["h", "q", "r"],
       ["b", "B", "c"],
       ["+", "-"],
       ["?"],

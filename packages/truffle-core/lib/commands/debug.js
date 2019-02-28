@@ -567,6 +567,8 @@ var command = {
 
             if (cmd === "") {
               cmd = lastCommand;
+              cmdArgs = "";
+              splitArgs = [];
             }
 
             //quit if that's what we were given
@@ -593,7 +595,18 @@ var command = {
                   await session.stepNext();
                   break;
                 case ";":
-                  await session.advance();
+                  //two cases -- parameterized and unparameterized
+                  if (cmdArgs !== "") {
+                    let count = parseInt(cmdArgs, 10);
+                    debug("cmdArgs=%s", cmdArgs);
+                    if (isNaN(count)) {
+                      config.logger.log("Number of steps must be an integer.");
+                      break;
+                    }
+                    await session.advance(count);
+                  } else {
+                    await session.advance();
+                  }
                   break;
                 case "c":
                   await session.continueUntilBreakpoint();
