@@ -15,7 +15,7 @@ const command = {
     usage: "truffle develop",
     options: []
   },
-  runConsole: async (config, ganacheOptions, done) => {
+  runConsole: (config, ganacheOptions, done) => {
     const Console = require("../console");
     const Environment = require("../environment");
 
@@ -36,11 +36,11 @@ const command = {
 
     const c = new Console(console_commands, config.with({ noAliases: true }));
     c.start(done);
-    c.on("exit", async () => {
+    c.on("exit", () => {
       process.exit();
     });
   },
-  run: async (options, done) => {
+  run: (options, done) => {
     const Config = require("truffle-config");
     const Develop = require("../develop");
 
