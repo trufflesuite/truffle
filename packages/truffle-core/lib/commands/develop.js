@@ -1,7 +1,8 @@
-var emoji = require("node-emoji");
+const emoji = require("node-emoji");
 const mnemonicInfo = require("truffle-core/lib/mnemonics/mnemonic");
+const util = require("util");
 
-var command = {
+const command = {
   command: "develop",
   description: "Open a console with a local development blockchain",
   builder: {
@@ -14,87 +15,68 @@ var command = {
     usage: "truffle develop",
     options: []
   },
-  runConsole: function(config, ganacheOptions, done) {
-    var Console = require("../console");
-    var Environment = require("../environment");
+  async runConsole(config, ganacheOptions, done) {
+    const Console = require("../console");
+    const Environment = require("../environment");
 
-    var commands = require("./index");
-    var excluded = ["console", "init", "develop"];
+    const commands = require("./index");
+    const excluded = ["console", "develop", "unbox", "init"];
 
-    var available_commands = Object.keys(commands).filter(function(name) {
-      return excluded.indexOf(name) === -1;
-    });
+    const available_commands = Object.keys(commands).filter(
+      name => !excluded.includes(name)
+    );
 
-    var console_commands = {};
-    available_commands.forEach(function(name) {
+    const console_commands = {};
+    available_commands.forEach(name => {
       console_commands[name] = commands[name];
     });
 
-    Environment.develop(config, ganacheOptions, function(err) {
-      if (err) return done(err);
+    const environmentDevelop = util.promisify(Environment.develop);
+    environmentDevelop(config, ganacheOptions).catch(err => done(err));
 
-      var c = new Console(
-        console_commands,
-        config.with({
-          noAliases: true
-        })
-      );
-
-      c.start(done);
-      c.on("exit", function() {
-        process.exit();
-      });
+    const c = new Console(console_commands, config.with({ noAliases: true }));
+    c.start(done);
+    c.on("exit", async () => {
+      process.exit();
     });
   },
-  run: function(options, done) {
-    var Config = require("truffle-config");
-    var Develop = require("../develop");
+  async run(options, done) {
+    const Config = require("truffle-config");
+    const Develop = require("../develop");
 
-    var config = Config.detect(options);
-    var customConfig = config.networks.develop;
-    let numAddresses = 10;
-    let defaultEtherBalance = 100;
-    let bTime = 0;
-
-    if (customConfig) {
-      numAddresses = customConfig.accounts ? customConfig.accounts : 10;
-      defaultEtherBalance = customConfig.defaultEtherBalance
-        ? customConfig.defaultEtherBalance
-        : 100;
-      bTime = customConfig.blockTime ? customConfig.blockTime : 0;
-    }
+    const config = Config.detect(options);
+    const customConfig = config.networks.develop || {};
 
     const { mnemonic, accounts, privateKeys } = mnemonicInfo.getAccountsInfo(
-      numAddresses
+      customConfig.accounts || 10
     );
 
-    var onMissing = function(name) {
-      return "**";
-    };
+    const onMissing = name => "**";
 
-    var warning =
+    const warning =
       ":warning:  Important :warning:  : " +
       "This mnemonic was created for you by Truffle. It is not secure.\n" +
       "Ensure you do not use it on production blockchains, or else you risk losing funds.";
 
-    var ipcOptions = {
+    const ipcOptions = {
       log: options.log
     };
 
-    var ganacheOptions = {
-      host: "127.0.0.1",
-      port: 9545,
-      network_id: 4447,
-      total_accounts: numAddresses,
-      default_balance_ether: defaultEtherBalance,
-      blockTime: bTime,
-      mnemonic: mnemonic,
-      gasLimit: config.gas,
+    const ganacheOptions = {
+      host: customConfig.host || "127.0.0.1",
+      port: customConfig.port || 9545,
+      network_id: customConfig.network_id || 4447,
+      total_accounts: customConfig.accounts || 10,
+      default_balance_ether: customConfig.defaultEtherBalance || 100,
+      blockTime: customConfig.blockTime || 0,
+      mnemonic,
+      gasLimit: customConfig.gas || 0x6691b7,
+      gasPrice: customConfig.gasPrice || 0x77359400,
       noVMErrorsOnRPCResponse: true
     };
 
-    Develop.connectOrStart(ipcOptions, ganacheOptions, function(started) {
-      var url = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
+    Develop.connectOrStart(ipcOptions, ganacheOptions, started => {
+      const url = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
 
       if (started) {
         config.logger.log(`Truffle Develop started at ${url}`);
@@ -102,14 +84,14 @@ var command = {
 
         config.logger.log(`Accounts:`);
         for (var i = 0; i < accounts.length; i++) {
-          var account = accounts[i];
+          const account = accounts[i];
           config.logger.log(`(${i}) ${account}`);
         }
         config.logger.log();
 
         config.logger.log(`Private Keys:`);
         for (var i = 0; i < privateKeys.length; i++) {
-          var privateKey = privateKeys[i];
+          const privateKey = privateKeys[i];
           config.logger.log(`(${i}) ${privateKey}`);
         }
         config.logger.log();
