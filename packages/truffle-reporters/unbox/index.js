@@ -19,7 +19,7 @@ class UnboxReporter {
 
   cleaningTempFiles(isStart) {
     if (isStart) {
-      this.spinner = this.ora("cleaning up temporary files").start();
+      this.spinner = this.ora("Cleaning up temporary files").start();
     } else {
       this.spinner.succeed();
     }
