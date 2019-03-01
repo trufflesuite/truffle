@@ -12,7 +12,13 @@ import * as trace from "lib/trace/sagas";
 import data from "../selectors";
 
 import * as DecodeUtils from "truffle-decode-utils";
-import { getStorageAllocations, readStack, storageSize } from "truffle-decoder";
+import {
+  getStorageAllocations,
+  getMemoryAllocations,
+  getCalldataAllocations,
+  readStack,
+  storageSize
+} from "truffle-decoder";
 import BN from "bn.js";
 
 export function* scope(nodeId, pointer, parentId, sourceId) {
@@ -46,7 +52,16 @@ function* variablesAndMappingsSaga() {
   let address = yield select(data.current.address); //may be undefined
   let dummyAddress = yield select(data.current.dummyAddress);
 
-  let stack = yield select(data.next.state.stack);
+  let stack = yield select(data.next.state.stack); //note the use of next!
+  //in this saga we are interested in the *results* of the current instruction
+  //note that the decoder is still based on data.current.state; that's fine
+  //though.  There's already a delay between when we record things off the
+  //stack and when we decode them, after all.  Basically, nothing serious
+  //should happen after an index node but before the index access node that
+  //would cause storage, memory, or calldata to change, meaning that even if
+  //the literal we recorded was a pointer, it will still be valid at the time
+  //we use it.  (The other literals we make use of, for the base expressions,
+  //are not decoded, so no potential mismatch there would be relevant anyway.)
   if (!stack) {
     return;
   }
@@ -455,16 +470,22 @@ export function* learnAddressSaga(dummyAddress, address) {
 }
 
 export function* recordAllocations() {
-  let contracts = yield select(data.views.userDefinedTypes.contractDefinitions);
+  const contracts = yield select(
+    data.views.userDefinedTypes.contractDefinitions
+  );
   debug("contracts %O", contracts);
-  let referenceDeclarations = yield select(data.views.referenceDeclarations);
+  const referenceDeclarations = yield select(data.views.referenceDeclarations);
   debug("referenceDeclarations %O", referenceDeclarations);
-  let storageAllocations = getStorageAllocations(
+  const storageAllocations = getStorageAllocations(
     referenceDeclarations,
     contracts
   );
   debug("storageAllocations %O", storageAllocations);
-  yield put(actions.allocate(storageAllocations));
+  const memoryAllocations = getMemoryAllocations(referenceDeclarations);
+  const calldataAllocations = getCalldataAllocations(referenceDeclarations);
+  yield put(
+    actions.allocate(storageAllocations, memoryAllocations, calldataAllocations)
+  );
 }
 
 function makeAssignment(idObj, ref) {

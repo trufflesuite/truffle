@@ -52,9 +52,9 @@ export function* addInstance(address, binary) {
   return context;
 }
 
-export function* begin({ address, binary }) {
+export function* begin({ address, binary, data }) {
   if (address) {
-    yield put(actions.call(address));
+    yield put(actions.call(address, data));
   } else {
     yield put(actions.create(binary));
   }
@@ -71,6 +71,7 @@ export function* callstackSaga() {
   if (yield select(evm.current.step.isCall)) {
     debug("got call");
     let address = yield select(evm.current.step.callAddress);
+    let data = yield select(evm.current.step.callData);
 
     debug("calling address %s", address);
 
@@ -82,7 +83,7 @@ export function* callstackSaga() {
       return;
     }
 
-    yield put(actions.call(address));
+    yield put(actions.call(address, data));
   } else if (yield select(evm.current.step.isCreate)) {
     debug("got create");
     let binary = yield select(evm.current.step.createBinary);
