@@ -129,7 +129,8 @@ const Contracts = {
   reportCompilationStarted: options => {
     const logger = options.logger || console;
     if (!options.quiet) {
-      logger.log(OS.EOL + `Compiling your contracts` + OS.EOL);
+      logger.log(OS.EOL + `Compiling your contracts...`);
+      logger.log(`===========================`);
     }
   },
 
@@ -139,14 +140,12 @@ const Contracts = {
     if (!options.quiet) {
       if (Object.keys(compilersInfo).length > 0) {
         logger.log(
-          `    > artifacts written to ${options.contracts_build_directory}`
+          `> Artifacts written to ${options.contracts_build_directory}`
         );
-        logger.log(OS.EOL + `Compiled successfully using:` + OS.EOL);
+        logger.log(`> Compiled successfully using:`);
         for (const name in compilersInfo) {
-          logger.log(`    > ${name}: ${compilersInfo[name].version}`);
+          logger.log(`   - ${name}: ${compilersInfo[name].version}`);
         }
-      } else {
-        logger.log(OS.EOL + `Compilation successful`);
       }
       logger.log();
     }
@@ -155,9 +154,7 @@ const Contracts = {
   reportNothingToCompile: options => {
     const logger = options.logger || console;
     if (!options.quiet) {
-      logger.log(
-        `Everything is up to date, there is nothing to compile.` + OS.EOL
-      );
+      logger.log(`> Everything is up to date, there is nothing to compile.`);
     }
   },
 
