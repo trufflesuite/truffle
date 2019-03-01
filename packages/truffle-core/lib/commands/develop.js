@@ -75,6 +75,10 @@ const command = {
       noVMErrorsOnRPCResponse: true
     };
 
+    if (customConfig.hardfork !== null && customConfig.hardfork !== undefined) {
+      ganacheOptions["hardfork"] = customConfig.hardfork;
+    }
+
     Develop.connectOrStart(ipcOptions, ganacheOptions, started => {
       const url = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
 
