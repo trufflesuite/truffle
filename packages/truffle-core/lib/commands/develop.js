@@ -84,7 +84,7 @@ var command = {
     var ganacheOptions = {
       host: "127.0.0.1",
       port: 9545,
-      network_id: 4447,
+      network_id: 5777,
       total_accounts: numAddresses,
       default_balance_ether: defaultEtherBalance,
       blockTime: bTime,

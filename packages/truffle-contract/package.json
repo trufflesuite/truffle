@@ -43,7 +43,7 @@
     "browserify": "^14.0.0",
     "chai": "4.2.0",
     "debug": "^4.1.0",
-    "ganache-core": "2.3.3",
+    "ganache-core": "2.5.1",
     "mocha": "5.2.0",
     "solc": "0.5.0",
     "temp": "^0.8.3",
