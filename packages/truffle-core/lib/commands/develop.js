@@ -32,13 +32,18 @@ const command = {
     );
 
     const environmentDevelop = util.promisify(Environment.develop);
-    environmentDevelop(config, ganacheOptions).catch(err => done(err));
-
-    const c = new Console(console_commands, config.with({ noAliases: true }));
-    c.start(done);
-    c.on("exit", () => {
-      process.exit();
-    });
+    environmentDevelop(config, ganacheOptions)
+      .catch(err => done(err))
+      .then(() => {
+        const c = new Console(
+          console_commands,
+          config.with({ noAliases: true })
+        );
+        c.start(done);
+        c.on("exit", () => {
+          process.exit();
+        });
+      });
   },
   run: (options, done) => {
     const Config = require("truffle-config");
