@@ -143,8 +143,15 @@ const Contracts = {
           `> Artifacts written to ${options.contracts_build_directory}`
         );
         logger.log(`> Compiled successfully using:`);
+
+        const maxLength = Object.keys(compilersInfo)
+          .map(name => name.length)
+          .reduce((max, length) => (length > max ? length : max), 0);
+
         for (const name in compilersInfo) {
-          logger.log(`   - ${name}: ${compilersInfo[name].version}`);
+          const padding = " ".repeat(maxLength - name.length);
+
+          logger.log(`   - ${name}:${padding} ${compilersInfo[name].version}`);
         }
       }
       logger.log();
