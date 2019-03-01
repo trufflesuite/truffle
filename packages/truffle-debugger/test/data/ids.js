@@ -230,7 +230,7 @@ describe("Variable IDs", function() {
       new BN(2),
       new BN(6)
     ]);
-  });
+  }).timeout(8000);
 
   it("Learns contract addresses and distinguishes the results", async function() {
     this.timeout(4000);
