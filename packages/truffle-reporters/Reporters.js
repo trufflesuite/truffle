@@ -1,14 +1,17 @@
-const compile = require("./compile");
-const UnboxReporter = require("./unbox");
+const compile = require("./compile/index1");
+const Reporter = require("./Reporter");
+// const UnboxReporter = require("./unbox");
 
 class Reporters {
   constructor(initializationOptions) {
-    this.initializeListeners(initializationOptions);
+    this.initializeReporters(initializationOptions);
   }
 
-  initializeListeners(initializationOptions) {
-    compile.initializeListeners(initializationOptions);
-    new UnboxReporter(initializationOptions);
+  initializeReporters(initializationOptions) {
+    const { emitter } = initializationOptions;
+    new Reporter({ options: compile[0], emitter });
+    // compile.initializeListeners(initializationOptions);
+    // new UnboxReporter(initializationOptions);
   }
 }
 
