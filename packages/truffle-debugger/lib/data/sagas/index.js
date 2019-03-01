@@ -45,7 +45,7 @@ function* variablesAndMappingsSaga() {
   let decode = yield select(data.views.decoder);
   let scopes = yield select(data.views.scopes.inlined);
   let referenceDeclarations = yield select(data.views.referenceDeclarations);
-  let allocations = (yield select(data.info.allocations)).storage;
+  let allocations = yield select(data.info.allocations.storage);
   let currentAssignments = yield select(data.proc.assignments);
   let mappedPaths = yield select(data.proc.mappedPaths);
   let currentDepth = yield select(data.current.functionDepth);
@@ -53,6 +53,15 @@ function* variablesAndMappingsSaga() {
   let dummyAddress = yield select(data.current.dummyAddress);
 
   let stack = yield select(data.next.state.stack); //note the use of next!
+  //in this saga we are interested in the *results* of the current instruction
+  //note that the decoder is still based on data.current.state; that's fine
+  //though.  There's already a delay between when we record things off the
+  //stack and when we decode them, after all.  Basically, nothing serious
+  //should happen after an index node but before the index access node that
+  //would cause storage, memory, or calldata to change, meaning that even if
+  //the literal we recorded was a pointer, it will still be valid at the time
+  //we use it.  (The other literals we make use of, for the base expressions,
+  //are not decoded, so no potential mismatch there would be relevant anyway.)
   if (!stack) {
     return;
   }

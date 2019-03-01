@@ -37,7 +37,7 @@ function allocateStruct(definition: AstDefinition, referenceDeclarations: AstRef
     let dynamicMember: boolean;
     [length, dynamicMember, allocations] = calldataSizeAndAllocate(member, referenceDeclarations, allocations);
 
-    //vomit on illegal types in calldata
+    //vomit on illegal types in calldata -- note the short-circuit!
     if(length === undefined) {
       allocations[definition.id] = null;
       return allocations;

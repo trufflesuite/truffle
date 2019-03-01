@@ -173,6 +173,7 @@ export async function decodeCalldataReferenceStatic(definition: DecodeUtils.AstD
     case "struct":
       //this one is exactly the same as in the dynamic case,
       //except that we don't need to pass base to decodeCalldata
+      //(or in other words, COPYPASTE WARNING; sorry future me :P )
       const { referenceDeclarations, calldataAllocations } = info;
 
       const referencedDeclaration = definition.typeName

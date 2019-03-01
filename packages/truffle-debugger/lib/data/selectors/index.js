@@ -226,7 +226,22 @@ const data = createSelectorTree({
     /*
      * data.info.allocations
      */
-    allocations: createLeaf(["/state"], state => state.info.allocations),
+    allocations: {
+      /*
+       * data.info.allocations.storage
+       */
+      storage: createLeaf(["/state"], state => state.info.allocations.storage),
+
+      /*
+       * data.info.allocations.memory
+       */
+      memory: createLeaf(["/state"], state => state.info.allocations.memory),
+
+      /*
+       * data.info.allocations.calldata
+       */
+      calldata: createLeaf(["/state"], state => state.info.allocations.calldata)
+    },
 
     /**
      * data.info.userDefinedTypes
