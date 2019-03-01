@@ -63,7 +63,7 @@ compile.display = function(paths, options) {
         contract =
           "." + path.sep + path.relative(options.working_directory, contract);
       }
-      options.logger.log("    > compiling " + contract);
+      options.logger.log("> Compiling " + contract);
     });
   }
 };

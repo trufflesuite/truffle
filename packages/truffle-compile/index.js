@@ -425,7 +425,7 @@ compile.display = function(paths, options) {
           "." + path.sep + path.relative(options.working_directory, contract);
       }
       if (contract.match(blacklistRegex)) return;
-      options.logger.log("    > compiling " + contract);
+      options.logger.log("> Compiling " + contract);
     });
   }
 };
