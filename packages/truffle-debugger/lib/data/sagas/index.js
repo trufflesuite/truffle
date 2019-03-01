@@ -86,6 +86,8 @@ function* variablesAndMappingsSaga() {
 
   switch (node.nodeType) {
     case "FunctionDefinition":
+    case "ModifierDefinition":
+      //NOTE: this will *not* catch most modifier definitions! BUG
       let parameters = node.parameters.parameters;
       //note that we do *not* include return parameters, since those are
       //handled by the VariableDeclaration case (no, I don't know why it
