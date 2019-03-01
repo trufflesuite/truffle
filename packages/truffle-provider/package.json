@@ -1,6 +1,6 @@
 {
   "name": "truffle-provider",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Beefed up provider module for Truffle",
   "main": "index.js",
   "scripts": {
