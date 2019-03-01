@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:data:selectors"); // eslint-disable-line no-unused-vars
+const debug = debugModule("debugger:data:selectors");
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import jsonpointer from "json-pointer";
@@ -213,10 +213,7 @@ const data = createSelectorTree({
           {},
           ...Object.entries(scopes).map(([id, scope]) => {
             let definition = inlined[id].definition;
-            if (
-              definition.nodeType !== "ContractDefinition" ||
-              scope.variables === undefined
-            ) {
+            if (definition.nodeType !== "ContractDefinition") {
               return { [id]: scope };
             }
             //if we've reached this point, we should be dealing with a
@@ -234,12 +231,15 @@ const data = createSelectorTree({
             newScope.variables = []
               .concat(
                 ...linearizedBaseContractsFromBase.map(
-                  contractId => scopes[contractId].variables
+                  contractId => scopes[contractId].variables || []
+                  //we need the || [] because contracts with no state variables
+                  //have variables undefined rather than empty like you'd expect
                 )
               )
               .filter(variable => {
                 //...except, HACK, let's filter out those constants we don't know
                 //how to read.  they'll just clutter things up.
+                debug("variable %O", variable);
                 let definition = inlined[variable.id].definition;
                 return (
                   !definition.constant ||
