@@ -286,6 +286,13 @@ module.exports = {
   resolve: {
     alias: {
       "ws": path.join(__dirname, "./nil.js"),
+      "bn.js": path.join(
+        __dirname,
+        "../..",
+        "node_modules",
+        "bn.js",
+        "lib",
+        "bn.js"),
       "original-fs": path.join(__dirname, "./nil.js"),
       "scrypt": "js-scrypt"
     }
