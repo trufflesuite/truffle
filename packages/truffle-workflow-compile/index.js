@@ -137,10 +137,10 @@ const Contracts = {
     const logger = options.logger || console;
     const { compilersInfo } = config;
     if (!options.quiet) {
-      logger.log(
-        `    > artifacts written to ${options.contracts_build_directory}`
-      );
       if (Object.keys(compilersInfo).length > 0) {
+        logger.log(
+          `    > artifacts written to ${options.contracts_build_directory}`
+        );
         logger.log(OS.EOL + `Compiled successfully using:` + OS.EOL);
         for (const name in compilersInfo) {
           logger.log(`    > ${name}: ${compilersInfo[name].version}`);
