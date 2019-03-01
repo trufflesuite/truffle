@@ -729,15 +729,21 @@
   dependencies:
     "@types/lodash" "*"
 
+"@types/lodash.isequal@^4.5.4":
+  version "4.5.4"
+  resolved "https://registry.yarnpkg.com/@types/lodash.isequal/-/lodash.isequal-4.5.4.tgz#845f3f331e5ccfd96f040cbb981f8f6f05f3b322"
+  dependencies:
+    "@types/lodash" "*"
+
 "@types/lodash.merge@^4.6.4":
   version "4.6.4"
   resolved "https://registry.yarnpkg.com/@types/lodash.merge/-/lodash.merge-4.6.4.tgz#0eaae4c82b82d0426612ba929f53edafe5402c58"
   dependencies:
     "@types/lodash" "*"
 
-"@types/lodash.range@^3.2.4":
-  version "3.2.4"
-  resolved "https://registry.yarnpkg.com/@types/lodash.range/-/lodash.range-3.2.4.tgz#9cb9d304db6eda3bb71b577e9b6a85983821514b"
+"@types/lodash.range@^3.2.5":
+  version "3.2.5"
+  resolved "https://registry.yarnpkg.com/@types/lodash.range/-/lodash.range-3.2.5.tgz#9539220590ab76bb533674c77b5f7d8be5202637"
   dependencies:
     "@types/lodash" "*"
 
@@ -7761,6 +7767,10 @@ lodash.foreach@^4.3.0:
 lodash.get@^4.4.2:
   version "4.4.2"
   resolved "https://registry.yarnpkg.com/lodash.get/-/lodash.get-4.4.2.tgz#2d177f652fa31e939b4438d5341499dfa3825e99"
+
+lodash.isequal@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/lodash.isequal/-/lodash.isequal-4.5.0.tgz#415c4478f2bcc30120c22ce10ed3226f7d3e18e0"
 
 lodash.map@^4.4.0, lodash.map@^4.6.0:
   version "4.6.0"

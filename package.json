@@ -27,10 +27,7 @@
       "packages/*"
     ]
   },
-  "dependencies": {
-    "@types/lodash.range": "^3.2.4",
-    "lodash.range": "^3.2.0"
-  },
+  "dependencies": {},
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
