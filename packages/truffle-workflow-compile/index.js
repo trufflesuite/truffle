@@ -74,7 +74,7 @@ const Contracts = {
   compile: callbackify(async function(options) {
     const config = prepareConfig(options);
 
-    options.eventManager.emitEvent("compile:startJob", options);
+    options.eventManager.emitEvent("compile:startJob");
 
     const compilers = config.compiler
       ? [config.compiler]
@@ -92,7 +92,10 @@ const Contracts = {
     if (numberOfCompiledContracts === 0)
       options.eventManager.emitEvent("compile:nothingToCompile");
 
-    options.eventManager.emitEvent("compile:finishJob", config);
+    options.eventManager.emitEvent("compile:finishJob", {
+      globalConfig: config,
+      compilersInfo: config.compilersInfo
+    });
     return await this.collectCompilations(compilations);
   }),
 

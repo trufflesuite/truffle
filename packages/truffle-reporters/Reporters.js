@@ -1,4 +1,4 @@
-const compile = require("./compile/index1");
+const compile = require("./compile");
 const Reporter = require("./Reporter");
 // const UnboxReporter = require("./unbox");
 
@@ -10,7 +10,6 @@ class Reporters {
   initializeReporters(initializationOptions) {
     const { emitter } = initializationOptions;
     new Reporter({ options: compile[0], emitter });
-    // compile.initializeListeners(initializationOptions);
     // new UnboxReporter(initializationOptions);
   }
 }
