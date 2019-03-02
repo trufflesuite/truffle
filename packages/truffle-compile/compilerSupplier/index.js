@@ -14,17 +14,11 @@ class CompilerSupplier {
   constructor(_config) {
     _config = _config || {};
     const defaultConfig = {
-      version: null,
-      compilerRoots: [
-        "https://solc-bin.ethereum.org/bin/",
-        "https://ethereum.github.io/solc-bin/bin/",
-        "https://relay.trufflesuite.com/solc/bin/"
-      ]
+      version: null
     };
     this.config = Object.assign({}, defaultConfig, _config);
     this.strategyOptions = {
-      version: this.config.version,
-      compilerRoots: this.config.compilerRoots
+      version: this.config.version
     };
   }
 
@@ -60,6 +54,9 @@ class CompilerSupplier {
       } else if (useSpecifiedLocal) {
         strategy = new Local(this.strategyOptions);
       } else if (isValidVersionRange) {
+        if (this.config.compilerRoots) {
+          this.strategyOptions.compilerRoots = this.config.compilerRoots;
+        }
         strategy = new VersionRange(this.strategyOptions);
       }
 
@@ -86,7 +83,7 @@ class CompilerSupplier {
 
   getReleases() {
     return new VersionRange(this.strategyOptions)
-      .getSolcVersions(0)
+      .getSolcVersions()
       .then(list => {
         const prereleases = list.builds
           .filter(build => build["prerelease"])

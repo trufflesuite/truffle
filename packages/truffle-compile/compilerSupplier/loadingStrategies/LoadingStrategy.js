@@ -5,9 +5,9 @@ class LoadingStrategy {
   constructor(options) {
     const defaultConfig = {
       compilerRoots: [
+        "https://relay.trufflesuite.com/solc/bin/",
         "https://solc-bin.ethereum.org/bin/",
-        "https://ethereum.github.io/solc-bin/bin/",
-        "https://relay.trufflesuite.com/solc/bin/"
+        "https://ethereum.github.io/solc-bin/bin/"
       ],
       dockerTagsUrl:
         "https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/"
@@ -39,6 +39,7 @@ class LoadingStrategy {
         input +
         ". Are you connected to the internet?\n\n" +
         error,
+      noUrl: "compilerRoots URL missing",
       noDocker:
         "You are trying to run dockerized solc, but docker is not installed.",
       noImage:

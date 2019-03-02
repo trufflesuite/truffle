@@ -9,9 +9,9 @@ describe("LoadingStrategy base class", () => {
     instance = new LoadingStrategy();
     expectedDefaultConfig = {
       compilerRoots: [
+        "https://relay.trufflesuite.com/solc/bin/",
         "https://solc-bin.ethereum.org/bin/",
-        "https://ethereum.github.io/solc-bin/bin/",
-        "https://relay.trufflesuite.com/solc/bin/"
+        "https://ethereum.github.io/solc-bin/bin/"
       ],
       dockerTagsUrl:
         "https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/"
