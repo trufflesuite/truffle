@@ -39,7 +39,7 @@ class LoadingStrategy {
         input +
         ". Are you connected to the internet?\n\n" +
         error,
-      noUrl: "compilerRoots URL missing",
+      noUrl: "compiler root URL missing",
       noDocker:
         "You are trying to run dockerized solc, but docker is not installed.",
       noImage:
