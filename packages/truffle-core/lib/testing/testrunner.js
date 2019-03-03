@@ -190,7 +190,7 @@ TestRunner.prototype.endTest = function(mocha, callback) {
         var event = self.known_events[log.topics[0]];
 
         if (event == null) {
-          return;
+          return; // do not log anonymous events
         }
 
         var types = event.abi_entry.inputs.map(function(input) {
@@ -200,27 +200,19 @@ TestRunner.prototype.endTest = function(mocha, callback) {
         var values = abi.decodeLog(
           event.abi_entry.inputs,
           log.data,
-          log.topics
+          log.topics.slice(1) // skip topic[0] for non-anonymous event
         );
-        var index = 0;
 
-        var line = "    " + event.abi_entry.name + "(";
-        line += event.abi_entry.inputs
-          .map(function(input) {
-            var value = "";
-            if (input.indexed === true) {
-              value = "<indexed> ";
-            }
-
-            value += values[index] + " (" + types[index] + ")";
-
-            index += 1;
-
-            return input.name + ": " + `${value}`;
+        var eventName = event.abi_entry.name;
+        var eventArgs = event.abi_entry.inputs
+          .map(function(input, index) {
+            var prefix = input.indexed === true ? "<indexed> " : "";
+            var value = `${values[index]} (${types[index]})`;
+            return `${input.name}: ${prefix}${value}`;
           })
           .join(", ");
-        line += ")";
-        self.logger.log(line);
+
+        self.logger.log(`    ${eventName}(${eventArgs})`);
       });
       self.logger.log("\n    ---------------------------");
       callback();
