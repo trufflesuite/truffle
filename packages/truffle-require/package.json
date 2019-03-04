@@ -1,6 +1,6 @@
 {
   "name": "truffle-require",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Require and execute a Javascript module within a Truffle context",
   "main": "require.js",
   "scripts": {
@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "original-require": "1.0.1",
-    "truffle-config": "^1.1.4",
+    "truffle-config": "^1.1.5",
     "truffle-expect": "^0.0.7",
     "web3": "1.0.0-beta.37"
   },

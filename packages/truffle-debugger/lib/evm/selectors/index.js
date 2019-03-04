@@ -6,7 +6,11 @@ import levenshtein from "fast-levenshtein";
 
 import trace from "lib/trace/selectors";
 
-import { isCallMnemonic, isCreateMnemonic } from "lib/helpers";
+import {
+  isCallMnemonic,
+  isCreateMnemonic,
+  isShortCallMnemonic
+} from "lib/helpers";
 
 import * as DecodeUtils from "truffle-decode-utils";
 
@@ -62,6 +66,13 @@ function createStepSelectors(step, state = null) {
      * whether the opcode will switch to another calling context
      */
     isCall: createLeaf(["./trace"], step => isCallMnemonic(step.op)),
+
+    /**
+     * .isShortCall
+     *
+     * for calls that only take 6 arguments instead of 7
+     */
+    isShortCall: createLeaf(["./trace"], step => isShortCallMnemonic(step.op)),
 
     /**
      * .isCreate
@@ -120,6 +131,30 @@ function createStepSelectors(step, state = null) {
           // Note we multiply by 2 because these offsets are in bytes.
           const offset = parseInt(stack[stack.length - 2], 16) * 2;
           const length = parseInt(stack[stack.length - 3], 16) * 2;
+
+          return "0x" + memory.join("").substring(offset, offset + length);
+        }
+      ),
+
+      /**
+       * .callData
+       *
+       * data passed to EVM call
+       */
+      callData: createLeaf(
+        ["./isCall", "./isShortCall", "./trace", state],
+        (matches, short, step, { stack, memory }) => {
+          if (!matches) return null;
+
+          //if it's 6-argument call, the data start and offset will be one spot
+          //higher in the stack than they would be for a 7-argument call, so
+          //let's introduce an offset to handle this
+          let argOffset = short ? 1 : 0;
+
+          // Get the data from memory.
+          // Note we multiply by 2 because these offsets are in bytes.
+          const offset = parseInt(stack[stack.length - 4 + argOffset], 16) * 2;
+          const length = parseInt(stack[stack.length - 5 + argOffset], 16) * 2;
 
           return "0x" + memory.join("").substring(offset, offset + length);
         }

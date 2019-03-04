@@ -95,7 +95,7 @@ describe("End State", function() {
 
     let session = bugger.connect();
 
-    session.continueUntilBreakpoint(); //no breakpoints set so advances to end
+    await session.continueUntilBreakpoint(); //no breakpoints set so advances to end
 
     debug("DCI %O", session.view(data.current.identifiers));
     debug("DCIR %O", session.view(data.current.identifiers.refs));

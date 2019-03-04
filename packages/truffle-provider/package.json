@@ -1,6 +1,6 @@
 {
   "name": "truffle-provider",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Beefed up provider module for Truffle",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "web3": "1.0.0-beta.37"
   },
   "devDependencies": {
-    "ganache-core": "2.3.3",
+    "ganache-core": "2.5.1",
     "mocha": "5.2.0"
   },
   "publishConfig": {
