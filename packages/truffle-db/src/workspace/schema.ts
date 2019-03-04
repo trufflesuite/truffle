@@ -27,10 +27,10 @@ export const schema = mergeSchemas({
     // define entrypoints
     `type Query {
       contractNames: [String]!
-      compilation(id: String!): Compilation
+      compilation(id: ID!): Compilation
       contractType(name: String!): ContractType
-      source(id: String!): Source
-      bytecode(id: String!): Bytecode
+      source(id: ID!): Source
+      bytecode(id: ID!): Bytecode
     }
 
     input SourceInput {
@@ -58,10 +58,25 @@ export const schema = mergeSchemas({
       bytecodes: [Bytecode!]
     }
 
+    input compilerInput {
+      id: String
+      name: String
+      version: String
+      settings: Object
+    }
+
+    input compilationSourceInput {
+      id: ID!
+    }
+
+    input compilationSourcesInput {
+      source: compilationSourceInput
+    }
+
     input CompilationInput {
-      compiler: Object
+      compiler: compilerInput!
       contractTypes: Object
-      sources: Object
+      sources: [compilationSourcesInput!]
     }
     input CompilationAddInput {
       compilation: [CompilationInput!]!
