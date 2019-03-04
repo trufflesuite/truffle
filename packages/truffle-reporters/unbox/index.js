@@ -11,102 +11,54 @@ const formatCommands = commands => {
   });
 };
 
-class UnboxReporter {
-  constructor(options) {
+module.exports = {
+  initialization: function() {
     this.ora = ora;
-    this.initializeListeners(options);
-  }
-
-  cleaningTempFiles(isStart) {
-    if (isStart) {
-      this.spinner = this.ora("cleaning up temporary files").start();
-    } else {
-      this.spinner.succeed();
-    }
-  }
-
-  downloadingBox(isStart) {
-    if (isStart) {
-      this.spinner = this.ora("Downloading").start();
-    } else {
-      this.spinner.succeed();
-    }
-  }
-
-  jobFinished(options, boxConfig) {
-    const logger = options.logger || console;
-    logger.log(`${OS.EOL}Unbox successful, sweet!${OS.EOL}`);
-
-    const commandMessages = formatCommands(boxConfig.commands);
-    if (commandMessages.length > 0) logger.log("Commands:" + OS.EOL);
-
-    commandMessages.forEach(message => logger.log(message));
-    logger.log("");
-
-    if (boxConfig.epilogue) {
-      logger.log(boxConfig.epilogue.replace("\n", OS.EOL));
-    }
-  }
-
-  initializeListeners(options) {
-    const { emitter } = options;
-    emitter.on("unbox:startJob", this.startJob.bind(this, options));
-    emitter.on(
-      "unbox:preparingToDownload:start",
-      this.preparingToDownload.bind(this, true)
-    );
-    emitter.on(
-      "unbox:preparingToDownload:end",
-      this.preparingToDownload.bind(this, false)
-    );
-    emitter.on(
-      "unbox:downloadingBox:start",
-      this.downloadingBox.bind(this, true)
-    );
-    emitter.on(
-      "unbox:downloadingBox:end",
-      this.downloadingBox.bind(this, false)
-    );
-    emitter.on(
-      "unbox:cleaningTempFiles:start",
-      this.cleaningTempFiles.bind(this, true)
-    );
-    emitter.on(
-      "unbox:cleaningTempFiles:end",
-      this.cleaningTempFiles.bind(this, false)
-    );
-    emitter.on("unbox:settingUpBox:start", this.settingUpBox.bind(this, true));
-    emitter.on("unbox:settingUpBox:end", this.settingUpBox.bind(this, false));
-    emitter.on("unbox:jobFinished", this.jobFinished.bind(options, this));
-    emitter.on("unbox:jobFailed", this.jobFailed.bind(this, options));
-  }
-
-  jobFailed(options) {
-    const logger = options.logger || console;
-    this.spinner.fail();
-    logger.log("Unbox failed!");
-  }
-
-  preparingToDownload(isStart) {
-    if (isStart) {
+  },
+  handlers: {
+    "unbox:startJob": function() {
+      this.logger.log(`${OS.EOL}Starting unbox${OS.EOL}`);
+    },
+    "unbox:preparingToDownload:start": function() {
       this.spinner = this.ora("Preparing to download box").start();
-    } else {
+    },
+    "unbox:preparingToDownload:end": function() {
       this.spinner.succeed();
-    }
-  }
-
-  settingUpBox() {
-    if (isStart) {
+    },
+    "unbox:downloadingBox:start": function() {
+      this.spinner = this.ora("Downloading").start();
+    },
+    "unbox:downloadingBox:end": function() {
+      this.spinner.succeed();
+    },
+    "unbox:cleaningTempFiles:start": function() {
+      this.spinner = this.ora("cleaning up temporary files").start();
+    },
+    "unbox:cleaningTempFiles:end": function() {
+      this.spinner.succeed();
+    },
+    "unbox:settingUpBox:start": function() {
       this.spinner = this.ora("Setting up box").start();
-    } else {
+    },
+    "unbox:settingUpBox:end": function() {
       this.spinner.succeed();
+    },
+    "unbox:jobFinished": function({ boxConfig }) {
+      this.logger.log(`${OS.EOL}Unbox successful, sweet!${OS.EOL}`);
+
+      const commandMessages = formatCommands(boxConfig.commands);
+      if (commandMessages.length > 0) this.logger.log("Commands:" + OS.EOL);
+
+      commandMessages.forEach(message => this.logger.log(message));
+      this.logger.log("");
+
+      if (boxConfig.epilogue) {
+        this.logger.log(boxConfig.epilogue.replace("\n", OS.EOL));
+      }
+    },
+    "unbox:jobFailed": function() {
+      this.spinner.fail();
+      this.logger.log("Unbox failed!");
     }
   }
-
-  startJob(options) {
-    const logger = options.logger || console;
-    logger.log(`${OS.EOL}Starting unbox${OS.EOL}`);
-  }
-}
-
-module.exports = UnboxReporter;
+};

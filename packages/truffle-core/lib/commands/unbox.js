@@ -112,7 +112,7 @@ const command = {
 
     Box.unbox(url, destination, unboxOptions, config)
       .then(boxConfig => {
-        config.eventManager.emitEvent("unbox:jobFinished", boxConfig);
+        config.eventManager.emitEvent("unbox:jobFinished", { boxConfig });
         // This is a timeout to give time to the eventManager
         // to handle the jobFinished event
         setTimeout(() => {

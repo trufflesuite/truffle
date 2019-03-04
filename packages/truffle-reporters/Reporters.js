@@ -1,8 +1,8 @@
 const compile = require("./compile");
+const unbox = require("./unbox");
 const Reporter = require("./Reporter");
-// const UnboxReporter = require("./unbox");
 
-const defaultReporters = [compile];
+const defaultReporters = [compile, unbox];
 
 class Reporters {
   constructor(initializationOptions) {
