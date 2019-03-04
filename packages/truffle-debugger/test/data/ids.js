@@ -203,15 +203,21 @@ describe("Variable IDs", function() {
 
     let sourceId = session.view(solidity.current.source).id;
     let source = session.view(solidity.current.source).source;
-    session.addBreakpoint({ sourceId, line: lineOf("break here #1", source) });
-    session.addBreakpoint({ sourceId, line: lineOf("break here #2", source) });
+    await session.addBreakpoint({
+      sourceId,
+      line: lineOf("break here #1", source)
+    });
+    await session.addBreakpoint({
+      sourceId,
+      line: lineOf("break here #2", source)
+    });
 
     var values = [];
 
-    session.continueUntilBreakpoint();
+    await session.continueUntilBreakpoint();
     while (!session.view(trace.finished)) {
       values.push(await session.variable("nbang"));
-      session.continueUntilBreakpoint();
+      await session.continueUntilBreakpoint();
     }
 
     assert.deepEqual(values, [
@@ -224,7 +230,7 @@ describe("Variable IDs", function() {
       new BN(2),
       new BN(6)
     ]);
-  });
+  }).timeout(8000);
 
   it("Learns contract addresses and distinguishes the results", async function() {
     this.timeout(4000);
@@ -243,14 +249,17 @@ describe("Variable IDs", function() {
 
     let sourceId = session.view(solidity.current.source).id;
     let source = session.view(solidity.current.source).source;
-    session.addBreakpoint({ sourceId, line: lineOf("break here", source) });
-    session.continueUntilBreakpoint();
+    await session.addBreakpoint({
+      sourceId,
+      line: lineOf("break here", source)
+    });
+    await session.continueUntilBreakpoint();
     debug("node %o", session.view(solidity.current.node));
     assert.equal(
       TruffleDecodeUtils.Conversion.cleanBNs(await session.variable("secret")),
       "107"
     );
-    session.continueUntilBreakpoint();
+    await session.continueUntilBreakpoint();
     debug("node %o", session.view(solidity.current.node));
     assert.equal(
       TruffleDecodeUtils.Conversion.cleanBNs(await session.variable("secret")),
@@ -274,8 +283,11 @@ describe("Variable IDs", function() {
 
     let sourceId = session.view(solidity.current.source).id;
     let source = session.view(solidity.current.source).source;
-    session.addBreakpoint({ sourceId, line: lineOf("break here #1", source) });
-    session.continueUntilBreakpoint();
+    await session.addBreakpoint({
+      sourceId,
+      line: lineOf("break here #1", source)
+    });
+    await session.continueUntilBreakpoint();
     assert.property(await session.variables(), "flag");
   });
 
@@ -295,8 +307,11 @@ describe("Variable IDs", function() {
 
     let sourceId = session.view(solidity.current.source).id;
     let source = session.view(solidity.current.source).source;
-    session.addBreakpoint({ sourceId, line: lineOf("break here #2", source) });
-    session.continueUntilBreakpoint();
+    await session.addBreakpoint({
+      sourceId,
+      line: lineOf("break here #2", source)
+    });
+    await session.continueUntilBreakpoint();
     assert.property(await session.variables(), "flag");
   });
 });

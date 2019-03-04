@@ -2,6 +2,8 @@ const compile = require("./compile");
 const Reporter = require("./Reporter");
 // const UnboxReporter = require("./unbox");
 
+const defaultReporters = [compile];
+
 class Reporters {
   constructor(initializationOptions) {
     this.initializeReporters(initializationOptions);
@@ -9,8 +11,9 @@ class Reporters {
 
   initializeReporters(initializationOptions) {
     const { emitter } = initializationOptions;
-    new Reporter({ options: compile[0], emitter });
-    // new UnboxReporter(initializationOptions);
+    defaultReporters.forEach(reporter => {
+      new Reporter({ options: reporter, emitter });
+    });
   }
 }
 

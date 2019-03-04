@@ -114,6 +114,47 @@ describe("CompilerSupplier", () => {
       });
     });
 
+    describe("when a user specifies the compiler url root", () => {
+      it("Uses the user specified url", done => {
+        // This doesn't really verify that user provided list is being used but this in combination with next test does.
+        // I am not sure what's the best way to check if user specified list is being used.
+        config = {
+          version: "0.4.11",
+          compilerRoots: [
+            "https://f00dbabe",
+            "https://ethereum.github.io/solc-bin/bin/"
+          ]
+        };
+        supplier = new CompilerSupplier(config);
+        supplier
+          .load()
+          .then(() => {
+            assert(true);
+            done();
+          })
+          .catch(() => {
+            assert(false);
+            done();
+          });
+      });
+
+      it("throws an error on incorrect user url", done => {
+        config = { version: "0.4.12", compilerRoots: ["https://f00dbabe"] };
+        supplier = new CompilerSupplier(config);
+        supplier
+          .load()
+          .then(() => {
+            assert(false);
+            done();
+          })
+          .catch(error => {
+            let expectedMessageSnippet = "Could not find a compiler version";
+            assert(error.message.includes(expectedMessageSnippet));
+            done();
+          });
+      });
+    });
+
     describe("when a solc version range is specified", () => {
       beforeEach(() => {
         config = { version: "^0.4.11" };

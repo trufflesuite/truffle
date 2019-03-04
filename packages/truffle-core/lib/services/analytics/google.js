@@ -142,12 +142,12 @@ const googleAnalytics = {
    * send event to Google Analytics
    * @param {Object}
    */
-  sendAnalyticsEvent: function(eventObject, callback) {
+  sendAnalyticsEvent: function(eventObject) {
     let visitor = this.setPersistentAnalyticsData();
     let sendObject = {};
     if (eventObject["command"]) {
-      sendObject["ec"] = "Truffle Command";
-      sendObject["ea"] = eventObject["command"];
+      sendObject["ec"] = eventObject["command"];
+      sendObject["ea"] = JSON.stringify(eventObject["args"]);
       sendObject["el"] = eventObject["version"];
       sendObject["dp"] = "/" + eventObject["command"];
     } else {
@@ -159,7 +159,7 @@ const googleAnalytics = {
     }
 
     if (visitor) {
-      visitor.event(sendObject, function(err) {});
+      visitor.event(sendObject, () => {});
     }
 
     return true;

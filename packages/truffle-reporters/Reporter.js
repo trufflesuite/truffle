@@ -1,39 +1,29 @@
 class Reporter {
   constructor({ options, emitter }) {
-    const { initialization } = options;
+    const { initialization, handlers } = options;
     this.logger = console;
     this.emitter = emitter;
     if (initialization) initialization.bind(this)();
-    this.buildReporter(options);
+    if (handlers) {
+      this.attachListeners(handlers);
+    } else {
+      const message =
+        `You must provide a handlers property in your reporter ` +
+        `config. Please ensure that the handlers property ` +
+        ` exists. Current the handlers property is ${handlers}.`;
+      throw new Error(message);
+    }
   }
 
   attachListener(name, handler) {
     this.emitter.on(name, handler.bind(this));
   }
 
-  attachListeners(reporterDescription, currentNamespace) {
-    const { name, handlers, namespaces } = reporterDescription;
-    if (handlers && name) {
-      const eventName = this.buildName(currentNamespace, name);
-      handlers.forEach(handler => {
-        this.attachListener(eventName, handler);
-      });
-    }
-
-    if (namespaces && namespaces.length > 0) {
-      namespaces.forEach(namespace => {
-        const newNamespace = this.buildName(currentNamespace, name);
-        this.attachListeners(namespace, newNamespace);
-      });
-    }
-  }
-
-  buildName(currentNamespace, name) {
-    return currentNamespace ? `${currentNamespace}:${name}` : name;
-  }
-
-  buildReporter(reporterDescription) {
-    this.attachListeners(reporterDescription, null);
+  attachListeners(handlers) {
+    const handlerNames = Object.keys(handlers);
+    handlerNames.forEach(handlerName => {
+      this.attachListener(handlerName, handlers[handlerName]);
+    });
   }
 }
 

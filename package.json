@@ -7,7 +7,7 @@
     "build:truffle-contract-schema": "cd packages/truffle-contract-schema && npm run build",
     "lerna:bootstrap": "lerna bootstrap",
     "bootstrap": "./scripts/bootstrap.sh",
-    "postinstall": "truffle obtain 0.5.4",
+    "postinstall": "truffle obtain --solc=0.5.4",
     "test": "lerna run test --stream --concurrency=1 -- --colors",
     "ci": "./scripts/ci.sh",
     "geth": "./scripts/geth.sh",
@@ -27,10 +27,7 @@
       "packages/*"
     ]
   },
-  "dependencies": {
-    "@types/lodash.range": "^3.2.4",
-    "lodash.range": "^3.2.0"
-  },
+  "dependencies": {},
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"

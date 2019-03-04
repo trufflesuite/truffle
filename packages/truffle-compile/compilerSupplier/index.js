@@ -64,6 +64,9 @@ class CompilerSupplier {
       } else if (useSpecifiedLocal) {
         strategy = new Local(this.strategyOptions);
       } else if (isValidVersionRange) {
+        if (this.config.compilerRoots) {
+          this.strategyOptions.compilerRoots = this.config.compilerRoots;
+        }
         strategy = new VersionRange(this.strategyOptions);
       }
 
