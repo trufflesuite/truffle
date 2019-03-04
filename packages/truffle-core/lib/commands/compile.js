@@ -1,6 +1,6 @@
-var format = JSON.stringify;
+const format = JSON.stringify;
 
-var command = {
+const command = {
   command: "compile",
   description: "Compile contract source files",
   builder: {
@@ -48,18 +48,17 @@ var command = {
     ]
   },
   run: function(options, done) {
-    var Config = require("truffle-config");
-    var Contracts = require("truffle-workflow-compile");
-    var CompilerSupplier = require("truffle-compile").CompilerSupplier;
-    var supplier = new CompilerSupplier();
+    const CompilerSupplier = require("truffle-compile").CompilerSupplier;
+    const supplier = new CompilerSupplier();
 
-    var config = Config.detect(options);
+    const Contracts = require("truffle-workflow-compile");
+    const Config = require("truffle-config");
+    const config = Config.detect(options);
 
     config.list !== undefined
       ? command.listVersions(supplier, config, done)
       : Contracts.compile(config, done);
   },
-
   listVersions: function(supplier, options, done) {
     const log = options.logger.log;
     options.list = options.list.length ? options.list : "releases";

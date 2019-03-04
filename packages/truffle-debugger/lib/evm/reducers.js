@@ -121,12 +121,14 @@ const info = combineReducers({
 export function callstack(state = [], action) {
   switch (action.type) {
     case actions.CALL:
-      const address = action.address;
-      return state.concat([{ address }]);
+      const { address, data } = action;
+      return state.concat([{ address, data }]);
 
     case actions.CREATE:
       const binary = action.binary;
-      return state.concat([{ binary }]);
+      return state.concat([{ binary, data: "0x" }]);
+    //note: the empty data for creation calls doesn't matter right now, but
+    //it will once I implement globally available variables
 
     case actions.RETURN:
       //HACK: pop the stack, UNLESS that would leave it empty (this will only

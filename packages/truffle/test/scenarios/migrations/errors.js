@@ -88,7 +88,9 @@ describe("migration errors", function() {
       assert(output.includes("Deploying 'Loops'"));
       assert(output.includes("Error"));
       assert(
-        output.includes("out of gas") || output.includes("gas required exceeds")
+        output.includes("out of gas") ||
+          output.includes("gas required exceeds") ||
+          output.includes("check your gas limit")
       );
       done();
     });

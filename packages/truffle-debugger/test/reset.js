@@ -5,7 +5,7 @@ import { assert } from "chai";
 
 import Ganache from "ganache-core";
 
-import { prepareContracts } from "./helpers";
+import { prepareContracts, lineOf } from "./helpers";
 import Debugger from "lib/debugger";
 
 import solidity from "lib/solidity/selectors";
@@ -20,7 +20,7 @@ contract SetsThings {
   int w;
   function run() public {
     x = 1;
-    y = 2;
+    y = 2; //BREAK
     z = 3;
     w = 4;
   }
@@ -64,25 +64,26 @@ describe("Reset Button", function() {
 
     let session = bugger.connect();
     let sourceId = session.view(solidity.current.source).id;
+    let source = session.view(solidity.current.source).source;
 
     let variables = [];
     variables[0] = []; //collected during 1st run
     variables[1] = []; //collected during 2nd run
 
     variables[0].push(await session.variables());
-    session.addBreakpoint({ sourceId, line: 10 });
-    session.continueUntilBreakpoint(); //advance to line 10
+    await session.addBreakpoint({ sourceId, line: lineOf("BREAK", source) });
+    await session.continueUntilBreakpoint(); //advance to line 10
     variables[0].push(await session.variables());
-    session.continueUntilBreakpoint(); //advance to the end
+    await session.continueUntilBreakpoint(); //advance to the end
     variables[0].push(await session.variables());
 
     //now, reset and do it again
-    session.reset();
+    await session.reset();
 
     variables[1].push(await session.variables());
-    session.continueUntilBreakpoint(); //advance to line 10
+    await session.continueUntilBreakpoint(); //advance to line 10
     variables[1].push(await session.variables());
-    session.continueUntilBreakpoint(); //advance to the end
+    await session.continueUntilBreakpoint(); //advance to the end
     variables[1].push(await session.variables());
 
     assert.deepEqual(variables[1], variables[0]);

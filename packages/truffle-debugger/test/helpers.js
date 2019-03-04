@@ -25,7 +25,7 @@ export async function prepareContracts(provider, sources = {}, migrations) {
 
   config.compilers = {
     solc: {
-      version: "0.5.1",
+      version: "0.5.4",
       settings: {
         optimizer: { enabled: false, runs: 200 },
         evmVersion: "byzantium"
@@ -177,4 +177,9 @@ export async function migrate(config) {
 
 export async function gatherArtifacts(config) {
   return Debug.gatherArtifacts(config);
+}
+
+export function lineOf(searchString, source) {
+  const lines = source.split("\n");
+  return lines.findIndex(line => line.includes(searchString));
 }

@@ -1,6 +1,6 @@
 {
   "name": "truffle-hdwallet-provider",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "HD Wallet-enabled Web3 provider",
   "main": "dist/index.js",
   "scripts": {
@@ -26,7 +26,7 @@
     "ethereumjs-tx": "^1.3.7",
     "ethereumjs-util": "^5.2.0",
     "ethereumjs-wallet": "^0.6.2",
-    "ganache-core": "2.3.3",
+    "ganache-core": "2.5.1",
     "js-scrypt": "^0.2.0",
     "mocha": "^5.1.1",
     "web3": "1.0.0-beta.37",

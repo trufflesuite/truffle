@@ -42,6 +42,7 @@ var command = {
     var trace = selectors.trace;
     var solidity = selectors.solidity;
     var controller = selectors.controller;
+    var evm = selectors.evm;
 
     var config = Config.detect(options);
 
@@ -172,12 +173,20 @@ var command = {
             var instruction = session.view(solidity.current.instruction);
             var step = session.view(trace.step);
             var traceIndex = session.view(trace.index);
+            var totalSteps = session.view(trace.steps).length;
+            var gas = session.view(evm.current.state.gas);
 
             config.logger.log("");
             config.logger.log(
-              DebugUtils.formatInstruction(traceIndex, instruction)
+              DebugUtils.formatInstruction(
+                traceIndex + 1,
+                totalSteps,
+                instruction
+              )
             );
             config.logger.log(DebugUtils.formatStack(step.stack));
+            config.logger.log("");
+            config.logger.log(gas + " gas remaining");
           }
 
           function select(expr) {
@@ -363,7 +372,7 @@ var command = {
             }
           }
 
-          function setOrClearBreakpoint(args, setOrClear) {
+          async function setOrClearBreakpoint(args, setOrClear) {
             //setOrClear: true for set, false for clear
             var currentLocation = session.view(controller.current.location);
             var breakpoints = session.view(controller.breakpoints);
@@ -394,7 +403,7 @@ var command = {
                 config.logger.log("Cannot add breakpoint everywhere.\n");
                 return;
               }
-              session.removeAllBreakpoints();
+              await session.removeAllBreakpoints();
               config.logger.log("Removed all breakpoints.\n");
               return;
             }
@@ -525,10 +534,10 @@ var command = {
             //finally, if we've reached this point, do it!
             //also report back to the user on what happened
             if (setOrClear) {
-              session.addBreakpoint(breakpoint);
+              await session.addBreakpoint(breakpoint);
               config.logger.log(`Breakpoint added at ${locationMessage}.\n`);
             } else {
-              session.removeBreakpoint(breakpoint);
+              await session.removeBreakpoint(breakpoint);
               config.logger.log(`Breakpoint removed at ${locationMessage}.\n`);
             }
             return;
@@ -558,6 +567,8 @@ var command = {
 
             if (cmd === "") {
               cmd = lastCommand;
+              cmdArgs = "";
+              splitArgs = [];
             }
 
             //quit if that's what we were given
@@ -572,22 +583,33 @@ var command = {
             if (!alreadyFinished) {
               switch (cmd) {
                 case "o":
-                  session.stepOver();
+                  await session.stepOver();
                   break;
                 case "i":
-                  session.stepInto();
+                  await session.stepInto();
                   break;
                 case "u":
-                  session.stepOut();
+                  await session.stepOut();
                   break;
                 case "n":
-                  session.stepNext();
+                  await session.stepNext();
                   break;
                 case ";":
-                  session.advance();
+                  //two cases -- parameterized and unparameterized
+                  if (cmdArgs !== "") {
+                    let count = parseInt(cmdArgs, 10);
+                    debug("cmdArgs=%s", cmdArgs);
+                    if (isNaN(count)) {
+                      config.logger.log("Number of steps must be an integer.");
+                      break;
+                    }
+                    await session.advance(count);
+                  } else {
+                    await session.advance();
+                  }
                   break;
                 case "c":
-                  session.continueUntilBreakpoint();
+                  await session.continueUntilBreakpoint();
                   break;
               }
             } //otherwise, inform the user we can't do that
@@ -605,7 +627,7 @@ var command = {
             }
             if (cmd === "r") {
               //reset if given the reset command
-              session.reset();
+              await session.reset();
             }
 
             // Check if execution has (just now) stopped.
@@ -647,10 +669,10 @@ var command = {
                 evalAndPrintExpression(cmdArgs);
                 break;
               case "b":
-                setOrClearBreakpoint(splitArgs, true);
+                await setOrClearBreakpoint(splitArgs, true);
                 break;
               case "B":
-                setOrClearBreakpoint(splitArgs, false);
+                await setOrClearBreakpoint(splitArgs, false);
                 break;
               case ";":
               case "p":
