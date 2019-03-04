@@ -88,9 +88,11 @@ describe("VersionRange loading strategy", () => {
     describe("when a version constraint is specified", () => {
       beforeEach(() => {
         sinon.stub(instance, "getSolcByUrlAndCache");
+        sinon.stub(instance, "fileIsCached").returns(false);
       });
       afterEach(() => {
         instance.getSolcByUrlAndCache.restore();
+        instance.fileIsCached.restore();
       });
 
       it("calls findNewstValidVersion to determine which version to fetch", async () => {
