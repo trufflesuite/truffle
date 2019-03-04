@@ -13,7 +13,7 @@ before_install:
   - sudo apt-get install -y dpkg
   - sudo apt-get install solc jq snapd
   - export PATH=$PATH:/snap/bin
-  - sudo snap install vyper --edge --devmode
+  - sudo snap install vyper --beta --devmode
 
 matrix:
   fast_finish: true
@@ -24,15 +24,11 @@ matrix:
       env: PACKAGES=true
     - node_js: 8
       env: INTEGRATION=true
-    - node_js: 6
-      env: INTEGRATION=true
     - node_js: 8
       env: COVERAGE=true
   allow_failures:
     - node_js: 8
       env: GETH=true
-    - node_js: 6
-      env: INTEGRATION=true
     - node_js: 8
       env: COVERAGE=true
 

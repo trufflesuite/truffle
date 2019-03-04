@@ -1,45 +1,13 @@
 import debugModule from "debug";
 const debug = debugModule("decoder:allocate:storage");
 
-import { AstReferences, StorageAllocations, StorageAllocation, StorageMemberAllocations } from "../interface/contract-decoder";
 import { StoragePointer } from "../types/pointer";
-import { AstDefinition } from "truffle-decode-utils/src/ast";
+import { StorageAllocations, StorageAllocation, StorageMemberAllocations } from "../types/allocation";
+import { StorageLength, isWordsLength, Range } from "../types/storage";
+import { AstDefinition, AstReferences } from "truffle-decode-utils";
+import { readDefinition } from "../read/constant"
 import * as DecodeUtils from "truffle-decode-utils";
 import BN from "bn.js";
-
-export type StorageLength = {bytes: number} | {words: number};
-
-export function isWordsLength(size: StorageLength): size is {words: number} {
-  return (<{words: number}>size).words !== undefined;
-}
-
-export function storageLengthToBytes(size: StorageLength): number {
-  if(isWordsLength(size)) {
-    debug("size.words %d", size.words);
-    return size.words * DecodeUtils.EVM.WORD_SIZE;
-  }
-  else {
-    return size.bytes;
-  }
-}
-
-export interface Range {
-  from: StoragePosition;
-  to?: StoragePosition;
-  length?: number;
-}
-
-export interface StoragePosition {
-  slot: Slot;
-  index: number;
-};
-
-export interface Slot {
-  key?: any; // TODO:
-  path?: Slot;
-  hashPath?: boolean;
-  offset: BN;
-};
 
 //contracts contains only the contracts to be allocated; any base classes not
 //being allocated should just be in referenceDeclarations
@@ -76,8 +44,21 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
 
   for(const node of definitions)
   {
-    //note: in the future, we will begin by checking if node is constant
-    //and if so doing things a different way to allocate a literal for it
+
+    //first off: is this a constant? if so we use a different, simpler process
+    if(node.constant) {
+      let pointer = { definition: node.value };
+      //HACK restrict ourselves to the types of constants we know how to handle
+      if(DecodeUtils.Definition.isSimpleConstant(node.value)) {
+        memberAllocations[node.id] = {
+          definition: node,
+          pointer
+        };
+      }
+      //if we don't know how to handle it, we just ignore it
+      continue;
+    }
+
     let size: StorageLength;
     [size, allocations] = storageSizeAndAllocate(node, referenceDeclarations, allocations);
 
@@ -172,11 +153,10 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
 }
 
 function getStateVariables(contractNode: AstDefinition): AstDefinition[] {
-  // process for state variables, filtering out constants
+  // process for state variables
   return contractNode.nodes.filter( (node: AstDefinition) =>
-    node.nodeType === "VariableDeclaration" && node.stateVariable && !node.constant
+    node.nodeType === "VariableDeclaration" && node.stateVariable
   );
-  //note, in the future, we will not filter out constants
 }
 
 function allocateContract(contract: AstDefinition, referenceDeclarations: AstReferences, existingAllocations: StorageAllocations): StorageAllocations {
@@ -212,7 +192,7 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
 
     case "address":
     case "contract":
-      return [{bytes: 20}, existingAllocations];
+      return [{bytes: DecodeUtils.EVM.ADDRESS_SIZE}, existingAllocations];
 
     case "int":
     case "uint": {
@@ -227,7 +207,11 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
     }
 
     case "enum": {
-      const referenceId: number = definition.referencedDeclaration || definition.typeName.referencedDeclaration;
+      debug("enum definition %O", definition);
+      const referenceId: number = DecodeUtils.Definition.typeId(definition);
+        //note: we use the preexisting function here for convenience, but we
+        //should never need to worry about faked-up enum definitions, so just
+        //checking the referencedDeclaration field would also work
       const referenceDeclaration: AstDefinition = referenceDeclarations[referenceId];
       const numValues: number = referenceDeclaration.members.length;
       return [{bytes: Math.ceil(Math.log2(numValues) / 8)}, existingAllocations];
@@ -256,8 +240,11 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
       switch (DecodeUtils.Definition.visibility(definition)) {
         case "internal":
           return [{bytes: 8}, existingAllocations];
+            //this size occurs all of once in the code (and shouldn't occur
+            //again later) so it remains a raw number rather than a fancy
+            //named constant :P
         case "external":
-          return [{bytes: 24}, existingAllocations];
+          return [{bytes: DecodeUtils.EVM.ADDRESS_SIZE + DecodeUtils.EVM.SELECTOR_SIZE}, existingAllocations];
       }
     }
 
@@ -268,7 +255,7 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
       else {
         //static array case
         const length: number = DecodeUtils.Definition.staticLength(definition);
-        const baseDefinition: AstDefinition = definition.baseType || definition.typeName.baseType;
+        const baseDefinition: AstDefinition = DecodeUtils.Definition.baseDefinition(definition);
         const [baseSize, allocations] = storageSizeAndAllocate(baseDefinition, referenceDeclarations, existingAllocations);
         if(!isWordsLength(baseSize)) {
           //bytes case
@@ -285,7 +272,7 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
     }
 
     case "struct": {
-      const referenceId: number = definition.referencedDeclaration || definition.typeName.referencedDeclaration;
+      const referenceId: number = DecodeUtils.Definition.typeId(definition);
       let allocations: StorageAllocations = existingAllocations;
       let allocation: StorageAllocation | undefined = allocations[referenceId]; //may be undefined!
       if(allocation === undefined) {

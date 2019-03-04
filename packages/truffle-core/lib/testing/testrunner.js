@@ -38,13 +38,17 @@ function TestRunner(options) {
 
   this.BEFORE_TIMEOUT = 120000;
   this.TEST_TIMEOUT = 300000;
-};
+}
 
 TestRunner.prototype.initialize = function(callback) {
   var self = this;
 
   var test_source = new TestSource(self.config);
-  this.config.resolver = new TestResolver(self.initial_resolver, test_source, self.config.contracts_build_directory);
+  this.config.resolver = new TestResolver(
+    self.initial_resolver,
+    test_source,
+    self.config.contracts_build_directory
+  );
 
   var afterStateReset = function(err) {
     if (err) return callback(err);
@@ -56,25 +60,34 @@ TestRunner.prototype.initialize = function(callback) {
         return path.extname(file) === ".json";
       });
 
-      async.map(files, function(file, finished) {
-        fs.readFile(path.join(self.config.contracts_build_directory, file), "utf8", finished);
-      }, function(err, data) {
-        if (err) return callback(err);
+      async.map(
+        files,
+        function(file, finished) {
+          fs.readFile(
+            path.join(self.config.contracts_build_directory, file),
+            "utf8",
+            finished
+          );
+        },
+        function(err, data) {
+          if (err) return callback(err);
 
-        var contracts = data.map(JSON.parse).map(contract);
-        var abis = _.flatMap(contracts, "abi");
+          var contracts = data.map(JSON.parse).map(contract);
+          var abis = _.flatMap(contracts, "abi");
 
-        abis.map(function(abi) {
-          if (abi.type === "event") {
-            var signature = abi.name + "(" + _.map(abi.inputs, "type").join(",") + ")";
-            self.known_events[self.web3.utils.sha3(signature)] = {
-              signature: signature,
-              abi_entry: abi
-            };
-          }
-        });
-        callback();
-      });
+          abis.map(function(abi) {
+            if (abi.type === "event") {
+              var signature =
+                abi.name + "(" + _.map(abi.inputs, "type").join(",") + ")";
+              self.known_events[self.web3.utils.sha3(signature)] = {
+                signature: signature,
+                abi_entry: abi
+              };
+            }
+          });
+          callback();
+        }
+      );
     });
   };
 
@@ -100,10 +113,13 @@ TestRunner.prototype.initialize = function(callback) {
 };
 
 TestRunner.prototype.deploy = function(callback) {
-  Migrate.run(this.config.with({
-    reset: true,
-    quiet: true
-  }), callback);
+  Migrate.run(
+    this.config.with({
+      reset: true,
+      quiet: true
+    }),
+    callback
+  );
 };
 
 TestRunner.prototype.resetState = function(callback) {
@@ -124,20 +140,23 @@ TestRunner.prototype.resetState = function(callback) {
 
 TestRunner.prototype.startTest = function(mocha, callback) {
   var self = this;
-  this.web3.eth.getBlockNumber().then(result => {
-    var one = self.web3.utils.toBN(1);
-    result = self.web3.utils.toBN(result);
+  this.web3.eth
+    .getBlockNumber()
+    .then(result => {
+      var one = self.web3.utils.toBN(1);
+      result = self.web3.utils.toBN(result);
 
-    // Add one in base 10
-    self.currentTestStartBlock = result.add(one);
+      // Add one in base 10
+      self.currentTestStartBlock = result.add(one);
 
-    callback();
-  }).catch(callback);
+      callback();
+    })
+    .catch(callback);
 };
 
 TestRunner.prototype.endTest = function(mocha, callback) {
   var self = this;
-  
+
   // Skip logging if test passes and `show-events` option is not true
   if (mocha.currentTest.state !== "failed" && !self.config["show-events"]) {
     return callback();
@@ -146,68 +165,70 @@ TestRunner.prototype.endTest = function(mocha, callback) {
   var logs = [];
 
   // There's no API for eth_getLogs?
-  this.rpc("eth_getLogs", [{
-    fromBlock: "0x" + this.currentTestStartBlock.toString(16)
-  }], function(err, result) {
-    if (err) return callback(err);
+  this.rpc(
+    "eth_getLogs",
+    [
+      {
+        fromBlock: "0x" + this.currentTestStartBlock.toString(16)
+      }
+    ],
+    function(err, result) {
+      if (err) return callback(err);
 
-    var logs = result.result;
+      logs = result.result;
 
-    if (logs.length === 0) {
-      self.logger.log("    > No events were emitted");
-      return callback();
-    }
-
-    self.logger.log("\n    Events emitted during test:");
-    self.logger.log(  "    ---------------------------");
-    self.logger.log("");
-
-    logs.forEach(function(log) {
-      var event = self.known_events[log.topics[0]];
-
-      if (event == null) {
-        return;
+      if (logs.length === 0) {
+        self.logger.log("    > No events were emitted");
+        return callback();
       }
 
-      var types = event.abi_entry.inputs.map(function(input) {
-        return input.indexed === true ? null : input.type;
-      }).filter(function(type) {
-        return type != null;
-      });
+      self.logger.log("\n    Events emitted during test:");
+      self.logger.log("    ---------------------------");
+      self.logger.log("");
 
-      var values = abi.decodeLog(event.abi_entry.inputs, log.data, log.topics);
-      var index = 0;
+      logs.forEach(function(log) {
+        var event = self.known_events[log.topics[0]];
 
-      var line = "    " + event.abi_entry.name + "(";
-      line += event.abi_entry.inputs.map(function(input) {
-        var value;
-        if (input.indexed === true) {
-          value = "<indexed>";
-        } else {
-          value = values[index];
+        if (event == null) {
+          return; // do not log anonymous events
         }
-        index += 1;
 
-        return input.name + ": " + `${value}`
-      }).join(", ");
-      line += ")";
-      self.logger.log(line);
-    });
-    self.logger.log(  "\n    ---------------------------");
-    callback();
-  });
+        var types = event.abi_entry.inputs.map(function(input) {
+          return input.type;
+        });
+
+        var values = abi.decodeLog(
+          event.abi_entry.inputs,
+          log.data,
+          log.topics.slice(1) // skip topic[0] for non-anonymous event
+        );
+
+        var eventName = event.abi_entry.name;
+        var eventArgs = event.abi_entry.inputs
+          .map(function(input, index) {
+            var prefix = input.indexed === true ? "<indexed> " : "";
+            var value = `${values[index]} (${types[index]})`;
+            return `${input.name}: ${prefix}${value}`;
+          })
+          .join(", ");
+
+        self.logger.log(`    ${eventName}(${eventArgs})`);
+      });
+      self.logger.log("\n    ---------------------------");
+      callback();
+    }
+  );
 };
 
-TestRunner.prototype.snapshot = function(callback) {
+(TestRunner.prototype.snapshot = function(callback) {
   this.rpc("evm_snapshot", function(err, result) {
     if (err) return callback(err);
     callback(null, result.result);
   });
-},
-
-TestRunner.prototype.revert = function(snapshot_id, callback) {
-  this.rpc("evm_revert", [snapshot_id], callback);
-};
+}),
+  (TestRunner.prototype.revert = function(snapshot_id, callback) {
+    this.rpc("evm_revert", [snapshot_id], callback);
+  });
 
 TestRunner.prototype.rpc = function(method, arg, cb) {
   var req = {

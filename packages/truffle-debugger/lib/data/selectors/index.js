@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:data:selectors"); // eslint-disable-line no-unused-vars
+const debug = debugModule("debugger:data:selectors");
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import jsonpointer from "json-pointer";
@@ -10,65 +10,13 @@ import ast from "lib/ast/selectors";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
-import * as TruffleDecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "truffle-decode-utils";
 import { forEvmState } from "truffle-decoder";
 
 /**
  * @private
  */
 const identity = x => x;
-
-function createStateSelectors({ stack, memory, storage }) {
-  return {
-    /**
-     * .stack
-     */
-    stack: createLeaf(
-      [stack],
-
-      words =>
-        (words || []).map(word =>
-          TruffleDecodeUtils.Conversion.toBytes(
-            TruffleDecodeUtils.Conversion.toBN(
-              word,
-              TruffleDecodeUtils.EVM.WORD_SIZE
-            )
-          )
-        )
-    ),
-
-    /**
-     * .memory
-     */
-    memory: createLeaf(
-      [memory],
-
-      words =>
-        new Uint8Array(
-          (words.join("").match(/.{1,2}/g) || []).map(byte =>
-            parseInt(byte, 16)
-          )
-        )
-    ),
-
-    /**
-     * .storage
-     */
-    storage: createLeaf(
-      [storage],
-
-      mapping =>
-        Object.assign(
-          {},
-          ...Object.entries(mapping).map(([address, word]) => ({
-            [`0x${address}`]: new Uint8Array(
-              (word.match(/.{1,2}/g) || []).map(byte => parseInt(byte, 16))
-            )
-          }))
-        )
-    )
-  };
-}
 
 const data = createSelectorTree({
   state: state => state.data,
@@ -145,12 +93,12 @@ const data = createSelectorTree({
     decoder: createLeaf(
       [
         "/views/referenceDeclarations",
-        "/next/state",
-        "/proc/mappingKeys",
-        "/info/allocations/storage"
+        "/current/state",
+        "/views/mappingKeys",
+        "/info/allocations"
       ],
 
-      (referenceDeclarations, state, mappingKeys, storageAllocations) => (
+      (referenceDeclarations, state, mappingKeys, allocations) => (
         definition,
         ref
       ) =>
@@ -158,7 +106,9 @@ const data = createSelectorTree({
           referenceDeclarations,
           state,
           mappingKeys,
-          storageAllocations
+          storageAllocations: allocations.storage,
+          memoryAllocations: allocations.memory,
+          calldataAllocations: allocations.calldata
         })
     ),
 
@@ -189,6 +139,22 @@ const data = createSelectorTree({
           {},
           ...userDefinedTypes.map(id => ({ [id]: scopes[id].definition }))
         )
+    ),
+
+    /**
+     * data.views.mappingKeys
+     */
+    mappingKeys: createLeaf(
+      ["/proc/mappedPaths", "/current/address", "/current/dummyAddress"],
+      (mappedPaths, address, dummyAddress) =>
+        []
+          .concat(
+            ...Object.values(
+              (mappedPaths.byAddress[address || dummyAddress] || { byType: {} })
+                .byType
+            ).map(({ bySlotAddress }) => Object.values(bySlotAddress))
+          )
+          .filter(slot => slot.key !== undefined)
     )
   },
 
@@ -212,10 +178,7 @@ const data = createSelectorTree({
           {},
           ...Object.entries(scopes).map(([id, scope]) => {
             let definition = inlined[id].definition;
-            if (
-              definition.nodeType !== "ContractDefinition" ||
-              scope.variables === undefined
-            ) {
+            if (definition.nodeType !== "ContractDefinition") {
               return { [id]: scope };
             }
             //if we've reached this point, we should be dealing with a
@@ -230,11 +193,25 @@ const data = createSelectorTree({
               .slice()
               .reverse();
             //now, we put it all together
-            newScope.variables = [].concat(
-              ...linearizedBaseContractsFromBase.map(
-                contractId => scopes[contractId].variables
+            newScope.variables = []
+              .concat(
+                ...linearizedBaseContractsFromBase.map(
+                  contractId => scopes[contractId].variables || []
+                  //we need the || [] because contracts with no state variables
+                  //have variables undefined rather than empty like you'd expect
+                )
               )
-            );
+              .filter(variable => {
+                //...except, HACK, let's filter out those constants we don't know
+                //how to read.  they'll just clutter things up.
+                debug("variable %O", variable);
+                let definition = inlined[variable.id].definition;
+                return (
+                  !definition.constant ||
+                  DecodeUtils.Definition.isSimpleConstant(definition.value)
+                );
+              });
+
             return { [id]: newScope };
           })
         )
@@ -253,7 +230,17 @@ const data = createSelectorTree({
       /*
        * data.info.allocations.storage
        */
-      storage: createLeaf(["/state"], state => state.info.allocations.storage)
+      storage: createLeaf(["/state"], state => state.info.allocations.storage),
+
+      /*
+       * data.info.allocations.memory
+       */
+      memory: createLeaf(["/state"], state => state.info.allocations.memory),
+
+      /*
+       * data.info.allocations.calldata
+       */
+      calldata: createLeaf(["/state"], state => state.info.allocations.calldata)
     },
 
     /**
@@ -279,21 +266,19 @@ const data = createSelectorTree({
       //assignments object
     ),
 
-    /**
-     * data.proc.mappingKeys
-     *
-     * known keys for each mapping (identified by node ID)
+    /*
+     * data.proc.mappedPaths
      */
-    mappingKeys: createLeaf(["/state"], state => state.proc.mappingKeys.byId),
+    mappedPaths: createLeaf(["/state"], state => state.proc.mappedPaths),
 
     /**
-     * data.proc.decodingMappingKeys
+     * data.proc.decodingKeys
      *
-     * number of mapping keys that are still decoding
+     * number of keys that are still decoding
      */
-    decodingMappingKeys: createLeaf(
-      ["/state"],
-      state => state.proc.mappingKeys.decodingStarted
+    decodingKeys: createLeaf(
+      ["./mappedPaths"],
+      mappedPaths => mappedPaths.decodingStarted
     )
   },
 
@@ -301,6 +286,53 @@ const data = createSelectorTree({
    * data.current
    */
   current: {
+    /**
+     * data.current.state
+     */
+    state: {
+      /**
+       * data.current.state.stack
+       */
+      stack: createLeaf(
+        [evm.current.state.stack],
+
+        words => (words || []).map(word => DecodeUtils.Conversion.toBytes(word))
+      ),
+
+      /**
+       * data.current.state.memory
+       */
+      memory: createLeaf(
+        [evm.current.state.memory],
+
+        words => DecodeUtils.Conversion.toBytes(words.join(""))
+      ),
+
+      /**
+       * data.current.state.calldata
+       */
+      calldata: createLeaf(
+        [evm.current.call],
+
+        ({ data }) => DecodeUtils.Conversion.toBytes(data)
+      ),
+
+      /**
+       * data.current.state.storage
+       */
+      storage: createLeaf(
+        [evm.current.state.storage],
+
+        mapping =>
+          Object.assign(
+            {},
+            ...Object.entries(mapping).map(([address, word]) => ({
+              [`0x${address}`]: DecodeUtils.Conversion.toBytes(word)
+            }))
+          )
+      )
+    },
+
     /**
      *
      * data.current.scope
@@ -311,11 +343,6 @@ const data = createSelectorTree({
        */
       id: createLeaf([ast.current.node], node => node.id)
     },
-
-    /**
-     * data.current.state
-     */
-    state: createStateSelectors(evm.current.state),
 
     /**
      * data.current.functionDepth
@@ -467,26 +494,20 @@ const data = createSelectorTree({
         ["/views/decoder", "./definitions", "./refs"],
 
         async (decode, definitions, refs) => {
+          debug("setting up keyedPromises");
           const keyedPromises = Object.entries(refs).map(
             async ([identifier, ref]) => ({
               [identifier]: await decode(definitions[identifier], ref)
             })
           );
+          debug("set up keyedPromises");
           const keyedResults = await Promise.all(keyedPromises);
-          return TruffleDecodeUtils.Conversion.cleanContainers(
+          debug("got keyedResults");
+          return DecodeUtils.Conversion.cleanContainers(
             Object.assign({}, ...keyedResults)
           );
         }
-      ),
-
-      /**
-       * data.current.identifiers.native
-       *
-       * Returns an object with values as Promises
-       */
-      native: createLeaf(["./decoded"], async decoded => {
-        return TruffleDecodeUtils.Conversion.cleanBNs(await decoded);
-      })
+      )
     }
   },
 
@@ -497,7 +518,16 @@ const data = createSelectorTree({
     /**
      * data.next.state
      */
-    state: createStateSelectors(evm.next.state)
+    state: {
+      /**
+       * data.next.state.stack
+       */
+      stack: createLeaf(
+        [evm.next.state.stack],
+
+        words => (words || []).map(word => DecodeUtils.Conversion.toBytes(word))
+      )
+    }
   }
 });
 

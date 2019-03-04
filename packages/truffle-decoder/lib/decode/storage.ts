@@ -3,15 +3,15 @@ const debug = debugModule("decoder:decode:storage");
 
 import read from "../read";
 import * as DecodeUtils from "truffle-decode-utils";
-import decode from "./index";
 import decodeValue from "./value";
 import { StoragePointer, DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
-import * as Allocation from "../allocate/storage";
+import { storageSize } from "../allocate/storage";
+import { slotAddress } from "../read/storage";
+import * as Types from "../types/storage";
 import BN from "bn.js";
 import Web3 from "web3";
 import { EvmStruct, EvmMapping } from "../interface/contract-decoder";
-import clonedeep from "lodash.clonedeep";
 
 export default async function decodeStorage(definition: DecodeUtils.AstDefinition, pointer: StoragePointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
   if(DecodeUtils.Definition.isReference(definition) || DecodeUtils.Definition.isMapping(definition)) {
@@ -26,14 +26,14 @@ export default async function decodeStorage(definition: DecodeUtils.AstDefinitio
 //decodes storage at the address *read* from the pointer -- hence why this takes DataPointer rather than StoragePointer.
 //NOTE: ONLY for use with pointers to reference types!
 //Of course, pointers to value types don't exist in Solidity, so that warning is redundant, but...
-export async function decodeStorageByAddress(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
+export async function decodeStorageReferenceByAddress(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
 
   const rawValue: Uint8Array = await read(pointer, info.state, web3, contractAddress);
   const startOffset = DecodeUtils.Conversion.toBN(rawValue);
   //we *know* the type being decoded must be sized in words, because it's a
   //reference type, but TypeScript doesn't, so we'll have to use a type
   //coercion
-  const size = (<{words: number}>Allocation.storageSize(definition)).words;
+  const size = (<{words: number}>storageSize(definition)).words;
   //now, construct the storage pointer
   const newPointer = { storage: {
     from: {
@@ -76,28 +76,30 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
       debug("length %o", length);
 
       const baseDefinition = definition.baseType || definition.typeName.baseType;
+        //I'm deliberately not using the DecodeUtils function for this, because
+        //we should *not* need a faked-up type here!
       const referenceId = baseDefinition.referencedDeclaration ||
         (baseDefinition.typeName ? baseDefinition.typeName.referencedDeclaration : undefined);
 
       debug("about to determine baseSize");
-      let baseSize: Allocation.StorageLength = Allocation.storageSize(baseDefinition, info.referenceDeclarations, info.storageAllocations);
+      let baseSize: Types.StorageLength = storageSize(baseDefinition, info.referenceDeclarations, info.storageAllocations);
       debug("baseSize %o", baseSize);
       
       //we are going to make a list of child ranges, pushing them one by one onto
       //this list, and then decode them; the first part will vary based on whether
       //we're in the words case or the bytes case, the second will not
-      let ranges: Allocation.Range[] = [];
+      let ranges: Types.Range[] = [];
 
-      if(Allocation.isWordsLength(baseSize)) {
+      if(Types.isWordsLength(baseSize)) {
         //currentSlot will point to the start of the entry being decoded
-        let currentSlot: Allocation.Slot = {
+        let currentSlot: Types.Slot = {
           path: pointer.storage.from.slot,
           offset: new BN(0),
           hashPath: DecodeUtils.Definition.isDynamicArray(definition)
         };
 
         for (let i = 0; i < length; i++) {
-          let childRange: Allocation.Range = {
+          let childRange: Types.Range = {
             from: {
               slot: {
                 path: currentSlot.path,
@@ -128,7 +130,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
 
         //currentPosition will point to the start of the entry being decoded
         //note we have baseSize.bytes <= DecodeUtils.EVM.WORD_SIZE
-        let currentPosition: Allocation.StoragePosition = {
+        let currentPosition: Types.StoragePosition = {
           slot: {
             path: pointer.storage.from.slot,
             offset: new BN(0),
@@ -138,7 +140,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
         };
 
         for (let i = 0; i < length; i++) {
-          let childRange: Allocation.Range = {
+          let childRange: Types.Range = {
             from: {
               slot: {
                 path: currentPosition.slot.path,
@@ -162,7 +164,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
 
       const decodePromises = ranges.map( (childRange, idx) => {
         debug("childFrom %d, %o", idx, childRange.from);
-        return decode(baseDefinition, {
+        return decodeStorage(baseDefinition, {
           storage: childRange
         }, info, web3, contractAddress);
       });
@@ -200,7 +202,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
         length = DecodeUtils.Conversion.toBN(data).subn(1).divn(2).toNumber();
         debug("new-word, length %o", length);
 
-        return decodeValue(definition, <StoragePointer>{
+        return decodeValue(definition, {
           storage: {
             from: {
               slot: {
@@ -232,18 +234,20 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
         members: {}
       };
 
-      const members: DecodeUtils.AstDefinition[] =
-        info.referenceDeclarations[referencedDeclaration].members;
-
       const structAllocation = info.storageAllocations[referencedDeclaration];
-      for (let i = 0; i < members.length; i++) {
-        const memberAllocation = structAllocation.members[members[i].id];
-        const memberPointer = memberAllocation.pointer;
+      const members = Object.values(structAllocation.members);
+
+      for (let memberAllocation of members) {
+        let memberDefinition = memberAllocation.definition;
+        const memberPointer = <StoragePointer>memberAllocation.pointer;
+          //the type system thinks memberPointer might also be a constant
+          //definition pointer.  However, structs can't contain constants,
+          //so *we* know it's not, and can safely coerce it.
         debug("pointer %O", pointer);
-        const childRange = <Allocation.Range>{
+        const childRange : Types.Range = {
           from: {
             slot: {
-              path: clonedeep(pointer.storage.from.slot),
+              path: pointer.storage.from.slot,
               offset: memberPointer.storage.from.slot.offset.clone()
               //note that memberPointer should have no path
             },
@@ -251,21 +255,21 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
           },
           to: {
             slot: {
-              path: clonedeep(pointer.storage.from.slot),
+              path: pointer.storage.from.slot,
               offset: memberPointer.storage.to.slot.offset.clone()
               //note that memberPointer should have no path
             },
             index: memberPointer.storage.to.index
           },
         };
-        const val = await decode(
-          members[i],
+        const val = await decodeStorage(
+          memberDefinition,
           {storage: childRange}, info, web3, contractAddress
         );
 
-        result.members[members[i].name] = {
-          name: members[i].name,
-          type: DecodeUtils.Definition.typeClass(members[i]),
+        result.members[memberDefinition.name] = {
+          name: memberDefinition.name,
+          type: DecodeUtils.Definition.typeClass(memberDefinition),
           value: val
         };
       }
@@ -275,9 +279,12 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
 
     case "mapping": {
 
+      debug("decoding mapping");
+      debug("name %s", definition.name);
+
       const keyDefinition = definition.keyType || definition.typeName.keyType;
       const valueDefinition = definition.valueType || definition.typeName.valueType;
-      const valueSize = Allocation.storageSize(valueDefinition, info.referenceDeclarations, info.storageAllocations)
+      const valueSize = storageSize(valueDefinition, info.referenceDeclarations, info.storageAllocations)
 
       const result: EvmMapping = {
         name: definition.name,
@@ -288,71 +295,70 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
         members: {}
       };
 
-      const baseSlot: Allocation.Slot = pointer.storage.from.slot;
+      const baseSlot: Types.Slot = pointer.storage.from.slot;
+      debug("baseSlot %o", baseSlot);
+      debug("base slot address %o", slotAddress(baseSlot));
 
-      if (info.mappingKeys && typeof info.mappingKeys[definition.id] !== "undefined") {
-        const keys: any[] = info.mappingKeys[definition.id];
-        for (const key of keys) {
-          const keyValue = DecodeUtils.Conversion.toBytes(key);
+      const keySlots = info.mappingKeys.filter( ({path}) =>
+        slotAddress(baseSlot).eq(slotAddress(path)));
 
-          let valuePointer: StoragePointer;
+      for (const {key, keyEncoding} of keySlots) {
 
-          if(Allocation.isWordsLength(valueSize)) {
-            valuePointer = {
-              storage: {
-                from: {
-                  slot: {
-                    key: key,
-                    path: baseSlot,
-                    offset: new BN(0)
-                  },
-                  index: 0
+        let valuePointer: StoragePointer;
+
+        if(Types.isWordsLength(valueSize)) {
+          valuePointer = {
+            storage: {
+              from: {
+                slot: {
+                  key,
+                  keyEncoding,
+                  path: baseSlot,
+                  offset: new BN(0)
                 },
-                to: {
-                  slot: {
-                    key: key,
-                    path: baseSlot,
-                    offset: new BN(valueSize.words - 1)
-                  },
-                  index: DecodeUtils.EVM.WORD_SIZE - 1
-                }
-              }
-            };
-          }
-          else {
-            valuePointer = {
-              storage: {
-                from: {
-                  slot: {
-                    key: key,
-                    path: baseSlot,
-                    offset: new BN(0)
-                  },
-                  index: DecodeUtils.EVM.WORD_SIZE - valueSize.bytes
+                index: 0
+              },
+              to: {
+                slot: {
+                  key,
+                  keyEncoding,
+                  path: baseSlot,
+                  offset: new BN(valueSize.words - 1)
                 },
-                to: {
-                  slot: {
-                    key: key,
-                    path: baseSlot,
-                    offset: new BN(0)
-                  },
-                  index: DecodeUtils.EVM.WORD_SIZE - 1
-                }
+                index: DecodeUtils.EVM.WORD_SIZE - 1
               }
-            };
-          }
-
-          let memberName: string;
-          if (typeof key === "string") {
-            memberName = key;
-          }
-          else {
-            memberName = keyValue.toString();
-          }
-
-          result.members[memberName] =
-            await decode(valueDefinition, valuePointer, info, web3, contractAddress);
+            }
+          };
         }
+        else {
+          valuePointer = {
+            storage: {
+              from: {
+                slot: {
+                  key,
+                  keyEncoding,
+                  path: baseSlot,
+                  offset: new BN(0)
+                },
+                index: DecodeUtils.EVM.WORD_SIZE - valueSize.bytes
+              },
+              to: {
+                slot: {
+                  key,
+                  keyEncoding,
+                  path: baseSlot,
+                  offset: new BN(0)
+                },
+                index: DecodeUtils.EVM.WORD_SIZE - 1
+              }
+            }
+          };
+        }
+
+        //note at this point, key could be a string, hex string,
+        //BN, or boolean
+        result.members[key.toString()] =
+          await decodeStorage(valueDefinition, valuePointer, info, web3, contractAddress);
       }
 
       return result;

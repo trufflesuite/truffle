@@ -1,1 +1,0 @@
-describe("Native loading strategy", () => {});

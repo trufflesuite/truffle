@@ -29,6 +29,20 @@ class CompilerSupplier {
     return new Error(message);
   }
 
+  async downloadAndCacheSolc(version) {
+    if (semver.validRange(version)) {
+      return await new VersionRange(this.strategyOptions).getSolcFromCacheOrUrl(
+        version
+      );
+    }
+
+    const message =
+      `You must specify a valid solc version to download` +
+      `Please ensure that the version you entered, ` +
+      `${version}, is valid.`;
+    throw new Error(message);
+  }
+
   load() {
     const userSpecification = this.config.version;
 
@@ -50,6 +64,9 @@ class CompilerSupplier {
       } else if (useSpecifiedLocal) {
         strategy = new Local(this.strategyOptions);
       } else if (isValidVersionRange) {
+        if (this.config.compilerRoots) {
+          this.strategyOptions.compilerRoots = this.config.compilerRoots;
+        }
         strategy = new VersionRange(this.strategyOptions);
       }
 

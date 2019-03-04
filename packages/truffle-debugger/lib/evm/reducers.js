@@ -84,8 +84,6 @@ function instances(state = DEFAULT_INSTANCES, action) {
     case actions.ADD_INSTANCE:
       let { address, context, binary } = action;
 
-      address = address.toLowerCase();
-
       // get known addresses for this context
       let otherInstances = state.byContext[context] || [];
       let otherAddresses = otherInstances.map(({ address }) => address);
@@ -123,14 +121,14 @@ const info = combineReducers({
 export function callstack(state = [], action) {
   switch (action.type) {
     case actions.CALL:
-      let address = action.address.toLowerCase();
-      //we get some addresses in lowercase, some in checksum case,
-      //so I'm lowercasing them all for consistency
-      return state.concat([{ address }]);
+      const { address, data } = action;
+      return state.concat([{ address, data }]);
 
     case actions.CREATE:
       const binary = action.binary;
-      return state.concat([{ binary }]);
+      return state.concat([{ binary, data: "0x" }]);
+    //note: the empty data for creation calls doesn't matter right now, but
+    //it will once I implement globally available variables
 
     case actions.RETURN:
       //HACK: pop the stack, UNLESS that would leave it empty (this will only

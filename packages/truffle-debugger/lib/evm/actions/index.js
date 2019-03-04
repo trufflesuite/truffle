@@ -28,10 +28,11 @@ export function addInstance(address, context, binary) {
 }
 
 export const CALL = "CALL";
-export function call(address) {
+export function call(address, data) {
   return {
     type: CALL,
-    address
+    address,
+    data
   };
 }
 
