@@ -145,7 +145,7 @@ const compile = function(sources, options, callback) {
       }
 
       if (warnings.length > 0) {
-        options.eventManager.emitEvent("compile:warnings", warnings);
+        options.eventManager.emitEvent("compile:warnings", { warnings });
       }
 
       if (errors.length > 0) {
@@ -431,7 +431,7 @@ compile.display = (paths, options) => {
       return contract;
     })
     .filter(name => name);
-  options.eventManager.emitEvent("compile:compiledSources", sourceFiles);
+  options.eventManager.emitEvent("compile:compiledSources", { sourceFiles });
 };
 
 compile.CompilerSupplier = CompilerSupplier;

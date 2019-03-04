@@ -27,11 +27,11 @@ module.exports = {
       }
       this.logger.log();
     },
-    "compile:compiledSources": function(sources) {
+    "compile:compiledSources": function({ sources }) {
       if (!sources) return;
       sources.forEach(source => this.logger.log("> Compiling " + source));
     },
-    "compile:warnings": function(options, warnings) {
+    "compile:warnings": function({ warnings }) {
       this.logger.log("> Compilation warnings encountered:");
       this.logger.log(warnings.map(warning => warning.formattedMessage).join());
     },
