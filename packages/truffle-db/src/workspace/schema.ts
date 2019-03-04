@@ -25,8 +25,8 @@ export const schema = mergeSchemas({
     `type Query {
       contractNames: [String]!
       contractType(name: String!): ContractType
-      source(id: String!): Source
-      bytecode(id: String!): Bytecode
+      source(id: ID!): Source
+      bytecode(id: ID!): Bytecode
     }
 
     input SourceInput {
