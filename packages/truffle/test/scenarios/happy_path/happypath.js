@@ -8,7 +8,7 @@ var assert = require("assert");
 var Server = require("../server");
 var Reporter = require("../reporter");
 
-describe.only("Happy path (truffle unbox)", function() {
+describe("Happy path (truffle unbox)", function() {
   var config;
   var logger = new MemoryLogger();
 
@@ -73,8 +73,6 @@ describe.only("Happy path (truffle unbox)", function() {
         console.log(output);
         return done(err);
       }
-
-      console.log(config.contracts_build_directory);
 
       var MetaCoin = contract(
         require(path.join(config.contracts_build_directory, "MetaCoin.json"))
