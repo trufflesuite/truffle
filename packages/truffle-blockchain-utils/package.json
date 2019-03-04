@@ -1,13 +1,10 @@
 {
   "name": "truffle-blockchain-utils",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Utilities for identifying and managing blockchains",
   "main": "index.js",
   "scripts": {},
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/trufflesuite/truffle-blockchain-utils.git"
-  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-blockchain-utils",
   "keywords": [
     "ethereum",
     "truffle",

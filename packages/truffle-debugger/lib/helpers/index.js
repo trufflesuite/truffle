@@ -23,7 +23,7 @@ export function keccak256(...args) {
  * stringify operation before hashing
  */
 export function stableKeccak256(obj) {
-  return keccak256(stringify(obj));
+  return keccak256({ type: "string", value: stringify(obj) });
 }
 
 /*
@@ -33,6 +33,14 @@ export function stableKeccak256(obj) {
 export function isCallMnemonic(op) {
   const calls = ["CALL", "DELEGATECALL", "STATICCALL", "CALLCODE"];
   return calls.includes(op);
+}
+
+/*
+ * returns true for mnemonics for calls that take only 6 args instead of 7
+ */
+export function isShortCallMnemonic(op) {
+  const shortCalls = ["DELEGATECALL", "STATICCALL"];
+  return shortCalls.includes(op);
 }
 
 /*

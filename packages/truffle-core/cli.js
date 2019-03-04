@@ -83,6 +83,17 @@ command.run(inputArguments, options, function(err) {
         process.exit(err);
       } else {
         let error = err.stack || err.message || err.toString();
+        //remove identifying information if error stack is passed to analytics
+        if (error === err.stack) {
+          let directory = __dirname;
+          //making sure users' identifying information does not get sent to
+          //analytics by cutting off everything before truffle. Will not properly catch the user's info
+          //here if the user has truffle in their name.
+          let identifyingInfo = directory.split("truffle")[0];
+          identifyingInfo.replace(/\//gi, "\\/");
+          let removedInfo = new RegExp(identifyingInfo, "g");
+          error = error.replace(removedInfo, "");
+        }
         analytics.send({
           exception: "Other Error - " + error,
           version: versionInfo.bundle

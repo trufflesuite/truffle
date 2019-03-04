@@ -27,7 +27,7 @@ export function receiveBinary(address, binary) {
   return {
     type: RECEIVE_BINARY,
     address,
-binary
+    binary
   };
 }
 
@@ -40,11 +40,12 @@ export function receiveTrace(trace) {
 }
 
 export const RECEIVE_CALL = "RECEIVE_CALL";
-export function receiveCall({address, binary}) {
+export function receiveCall({ address, binary, data }) {
   return {
     type: RECEIVE_CALL,
     address,
-binary
+    binary,
+    data
   };
 }
 

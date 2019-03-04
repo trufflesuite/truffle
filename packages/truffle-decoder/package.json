@@ -1,6 +1,6 @@
 {
   "name": "truffle-decoder",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "A library that provides both high and low level decoding of Ethereum contract variables",
   "main": "dist/interface/index.js",
   "types": "lib/interface/index.ts",
@@ -12,10 +12,7 @@
     "start": "node_modules/.bin/tsc --watch",
     "test": "cd test && truffle test"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/trufflesuite/truffle.git"
-  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-decoder",
   "keywords": [
     "ethereum",
     "contract",
@@ -33,11 +30,13 @@
     "@types/debug": "^0.0.31",
     "@types/lodash": "^4.14.116",
     "@types/lodash.clonedeep": "^4.5.4",
+    "@types/lodash.isequal": "^4.5.4",
     "@types/lodash.merge": "^4.6.4",
+    "@types/lodash.range": "^3.2.5",
     "@types/web3": "^1.0.5",
     "json-schema-to-typescript": "^5.5.0",
-    "truffle": "^5.0.3",
-    "truffle-contract-schema": "^3.0.1",
+    "truffle": "^5.0.6",
+    "truffle-contract-schema": "^3.0.2",
     "typescript": "^3.1.3"
   },
   "dependencies": {
@@ -46,8 +45,10 @@
     "bn.js": "^4.11.8",
     "debug": "^4.1.0",
     "lodash.clonedeep": "^4.5.0",
+    "lodash.isequal": "^4.5.0",
     "lodash.merge": "^4.6.1",
-    "truffle-decode-utils": "^1.0.2",
+    "lodash.range": "^3.2.0",
+    "truffle-decode-utils": "^1.0.4",
     "web3": "1.0.0-beta.37"
   },
   "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"

@@ -2,7 +2,8 @@ import debugModule from "debug";
 const debug = debugModule("decoder:read:storage");
 
 import * as DecodeUtils from "truffle-decode-utils";
-import * as Allocation from "../allocate/storage";
+import { Slot, Range } from "../types/storage";
+import { WordMapping } from "../types/evm";
 import BN from "bn.js";
 import Web3 from "web3";
 
@@ -14,12 +15,18 @@ import Web3 from "web3";
  *
  * @param slot - number or possibly-nested array of numbers
  */
-export function slotAddress(slot: Allocation.Slot): BN {
-  if (typeof slot.key !== "undefined" && typeof slot.path !== "undefined") {
+export function slotAddress(slot: Slot): BN {
+  if (slot.key !== undefined && slot.path !== undefined) {
     // mapping reference
-    return DecodeUtils.EVM.keccak256(slot.key, slotAddress(slot.path)).add(slot.offset);
+    let key = slot.key;
+    let keyEncoding = slot.keyEncoding;
+    if(keyEncoding === undefined) { //HACK: booleans must be handled manually
+      key = key ? new BN(1) : new BN(0);
+      keyEncoding = "uint";
+    }
+    return DecodeUtils.EVM.keccak256({type: keyEncoding, value: key}, slotAddress(slot.path)).add(slot.offset);
   }
-  else if (typeof slot.path !== "undefined") {
+  else if (slot.path !== undefined) {
     const pathAddress = slotAddress(slot.path);
     const path: BN = slot.hashPath ? DecodeUtils.EVM.keccak256(pathAddress) : pathAddress;
     return path.add(slot.offset);
@@ -29,15 +36,17 @@ export function slotAddress(slot: Allocation.Slot): BN {
   }
 }
 
-export function slotAddressPrintout(slot: Allocation.Slot): string {
-  if (typeof slot.key !== "undefined" && typeof slot.path !== "undefined") {
+export function slotAddressPrintout(slot: Slot): string {
+  if (slot.key !== undefined && slot.path !== undefined) {
     // mapping reference
-    return "keccak(" + slot.key + ", " + slotAddressPrintout(slot.path) + ") + " + slot.offset.toString();
+    let keyEncoding = slot.keyEncoding ? slot.keyEncoding : "uint"; //HACK for booleans
+    return "keccak(" + slot.key + " as " + keyEncoding + ", " + slotAddressPrintout(slot.path) + ") + " + slot.offset.toString();
   }
-  else if (typeof slot.path !== "undefined") {
+  else if (slot.path !== undefined) {
     const pathAddressPrintout = slotAddressPrintout(slot.path);
-    const pathPrintout: string = slot.hashPath ? "keccak(" + pathAddressPrintout + ")" : pathAddressPrintout;
-    return pathPrintout;
+    return slot.hashPath
+      ? "keccak(" + pathAddressPrintout + ")" + slot.offset.toString()
+      : pathAddressPrintout + slot.offset.toString();
   }
   else {
     return slot.offset.toString();
@@ -47,21 +56,29 @@ export function slotAddressPrintout(slot: Allocation.Slot): string {
 /**
  * read slot from storage
  *
- * @param slot - big number or array of regular numbers
+ * @param slot - see slotAddress() code to understand how these work
  * @param offset - for array, offset from the keccak determined location
  */
-export async function read(storage: any, slot: Allocation.Slot, web3?: Web3, contractAddress?: string): Promise<undefined | Uint8Array> {
-  const address = slotAddress(slot);
+export async function read(storage: WordMapping, slot: Slot, web3?: Web3, contractAddress?: string): Promise<Uint8Array> {
   debug("Slot printout: %s", slotAddressPrintout(slot));
+  const address = slotAddress(slot);
 
   // debug("reading slot: %o", DecodeUtils.toHexString(address));
 
   const hexAddress = DecodeUtils.Conversion.toHexString(address, DecodeUtils.EVM.WORD_SIZE);
   let word = storage[hexAddress];
 
-  if (typeof word === "undefined" && web3 && contractAddress) {
+  if (word === undefined && web3 && contractAddress) {
     // fallback
-    word = DecodeUtils.Conversion.toBytes(await web3.eth.getStorageAt(contractAddress, address), 32);
+    word = DecodeUtils.Conversion.toBytes(await web3.eth.getStorageAt(contractAddress, address), DecodeUtils.EVM.WORD_SIZE);
+  }
+
+  //if not found, it's 0
+  //NOTE: really this shouldn't be a fallback like this but rather inside the above cases;
+  //however that would require a reorganization, it'll wait for fullState/contextSelector
+  if(word === undefined) {
+    word = new Uint8Array(DecodeUtils.EVM.WORD_SIZE);
+    word.fill(0);
   }
 
   // debug("word %o", word);
@@ -73,15 +90,7 @@ export async function read(storage: any, slot: Allocation.Slot, web3?: Web3, con
  *
  * parameters `from` and `to` are objects with the following properties:
  *
- *   slot - (required) one of the following:
- *     - a literal value referring to a slot (a number, a bytestring, etc.)
- *
- *     - a "path" array of literal values
- *       path array values get converted into keccak256 hash as per solidity
- *       storage allocation method, after recursing.
- *
- *     - an object { path, offset }, where path is one of the above ^
- *       offset values indicate sequential address offset, post-keccak
+ *   slot - see the slotAddress() code to understand how these work
  *
  *     ref: https://solidity.readthedocs.io/en/v0.4.23/miscellaneous.html#layout-of-state-variables-in-storage
  *     (search "concatenation")
@@ -92,7 +101,7 @@ export async function read(storage: any, slot: Allocation.Slot, web3?: Web3, con
  * @param to - location (see ^). inclusive.
  * @param length - instead of `to`, number of bytes after `from`
  */
-export async function readRange(storage: any, range: Allocation.Range, web3?: Web3, contractAddress?: string): Promise<Uint8Array> {
+export async function readRange(storage: WordMapping, range: Range, web3?: Web3, contractAddress?: string): Promise<Uint8Array> {
   // debug("readRange %o", range);
 
   let { from, to, length } = range;

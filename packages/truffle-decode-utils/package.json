@@ -1,6 +1,6 @@
 {
   "name": "truffle-decode-utils",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "Utilities for decoding data from the EVM",
   "dependencies": {
     "bn.js": "^4.11.8",
@@ -14,10 +14,7 @@
     "start": "node_modules/.bin/tsc --watch",
     "test": "echo \"No test specified\" && exit 0;"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/trufflesuite/truffle-decode-utils.git"
-  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-decode-utils",
   "author": "Truffle Suite <inquiry@trufflesuite.com>",
   "license": "MIT",
   "bugs": {

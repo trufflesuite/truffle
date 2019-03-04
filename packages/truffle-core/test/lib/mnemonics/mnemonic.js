@@ -1,6 +1,6 @@
 const assert = require("chai").assert;
 const sinon = require("sinon");
-const accountsInfo = require("../lib/mnemonics/mnemonic");
+const accountsInfo = require("../../../lib/mnemonics/mnemonic");
 const Configstore = require("configstore");
 
 describe("mnemonic", function() {

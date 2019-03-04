@@ -18,20 +18,28 @@ export function declare(node) {
 }
 
 export const ASSIGN = "ASSIGN";
-export function assign(context, assignments) {
+export function assign(assignments) {
   return {
     type: ASSIGN,
-    context,
     assignments
   };
 }
 
-export const MAP_KEY = "MAP_KEY";
-export function mapKey(id, key) {
+export const MAP_PATH_AND_ASSIGN = "MAP_PATH_AND_ASSIGN";
+export function mapPathAndAssign(
+  address,
+  slot,
+  assignments,
+  typeIdentifier,
+  parentType
+) {
   return {
-    type: MAP_KEY,
-    id,
-    key
+    type: MAP_PATH_AND_ASSIGN,
+    address,
+    slot,
+    assignments,
+    typeIdentifier,
+    parentType
   };
 }
 
@@ -66,10 +74,11 @@ export function defineType(node) {
 }
 
 export const ALLOCATE = "ALLOCATE";
-export function allocate(storage) {
+export function allocate(storage, memory, calldata) {
   return {
     type: ALLOCATE,
-    storage
-    //later there will be more
+    storage,
+    memory,
+    calldata
   };
 }

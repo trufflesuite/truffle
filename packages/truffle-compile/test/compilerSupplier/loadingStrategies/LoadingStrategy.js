@@ -8,17 +8,19 @@ describe("LoadingStrategy base class", () => {
   beforeEach(() => {
     instance = new LoadingStrategy();
     expectedDefaultConfig = {
-      versionsUrl: "https://solc-bin.ethereum.org/bin/list.json",
-      compilerUrlRoot: "https://solc-bin.ethereum.org/bin/",
+      compilerRoots: [
+        "https://relay.trufflesuite.com/solc/bin/",
+        "https://solc-bin.ethereum.org/bin/",
+        "https://ethereum.github.io/solc-bin/bin/"
+      ],
       dockerTagsUrl:
         "https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/"
     };
   });
 
   it("has a config with some default values", () => {
-    const { versionsUrl, compilerUrlRoot, dockerTagsUrl } = instance.config;
-    assert(versionsUrl === expectedDefaultConfig.versionsUrl);
-    assert(compilerUrlRoot === expectedDefaultConfig.compilerUrlRoot);
+    const { compilerRoots, dockerTagsUrl } = instance.config;
+    assert.deepEqual(compilerRoots, expectedDefaultConfig.compilerRoots);
     assert(dockerTagsUrl === expectedDefaultConfig.dockerTagsUrl);
   });
 });

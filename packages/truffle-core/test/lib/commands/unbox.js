@@ -1,5 +1,5 @@
 const assert = require("assert");
-const unbox = require("../lib/commands/unbox");
+const unbox = require("../../../lib/commands/unbox");
 const Config = require("truffle-config");
 const sinon = require("sinon");
 const temp = require("temp").track();
@@ -25,7 +25,8 @@ describe("commands/unbox.js", () => {
     "https://github.com/truffle-box/bare-box",
     "truffle-box/bare-box",
     "bare",
-    "git@github.com:truffle-box/bare-box"
+    "git@github.com:truffle-box/bare-box",
+    "https://github.com/truffle-box/bare-box#master"
   ];
   const relativePaths = [
     "https://github.com/truffle-box/bare-box:path/SubDir",
