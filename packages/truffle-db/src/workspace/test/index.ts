@@ -35,7 +35,7 @@ it("queries contract names", async () => {
 });
 
 const GetSource = `
-query GetSource($id: String!) {
+query GetSource($id: ID!) {
   source(id: $id) {
     id
     contents
@@ -109,7 +109,7 @@ it("adds source", async () => {
 });
 
 const GetBytecode = `
-query GetBytecode($id: String!) {
+query GetBytecode($id: ID!) {
   bytecode(id: $id) {
     id
     bytes
