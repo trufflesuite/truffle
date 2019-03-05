@@ -45,7 +45,7 @@ const logSolidity = (logger = console, versionInformation, config) => {
 };
 
 const logWeb3 = (logger = console) => {
-  logger.log(`Web3 v${web3pkg.version}`);
+  logger.log(`Web3.js v${web3pkg.version}`);
 };
 
 const logAll = (logger = console, config) => {
