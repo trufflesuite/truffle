@@ -91,7 +91,7 @@ function* variablesAndMappingsSaga() {
   //definitions when called as a base constructor); as such I've added this
   //"modifier preamble" to catch them
   if (yield select(data.current.aboutToModify)) {
-    let modifier = yield select(data.next.function);
+    let modifier = yield select(data.current.modifierBeingInvoked);
     //may be either a modifier or base constructor
     let currentIndex = yield select(data.current.modifierArgumentIndex);
     let parameters = modifier.parameters.parameters;

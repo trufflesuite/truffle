@@ -423,6 +423,22 @@ const data = createSelectorTree({
       }
     ),
 
+    /*
+     * data.current.modifierInvocation
+     */
+    modifierInvocation: createLeaf(
+      ["./scope", "/views/scopes/inlined"],
+      (node, scopes) => {
+        const types = [
+          "ModifierInvocation",
+          "InheritanceSpecifier",
+          "SourceUnit"
+        ];
+        //again, SourceUnit included as fallback
+        return findAncestorOfType(node, types, scopes);
+      }
+    ),
+
     /**
      * data.current.modifierArgumentIndex
      * gets the index of the current modifier argument that you're in
@@ -449,18 +465,41 @@ const data = createSelectorTree({
     ),
 
     /*
-     * data.current.modifierInvocation
+     * data.current.modifierBeingInvoked
+     * gets the node corresponding to the modifier or base constructor
+     * being invoked
      */
-    modifierInvocation: createLeaf(
-      ["./scope", "/views/scopes/inlined"],
-      (node, scopes) => {
-        const types = [
-          "ModifierInvocation",
-          "InheritanceSpecifier",
-          "SourceUnit"
-        ];
-        //again, SourceUnit included as fallback
-        return findAncestorOfType(node, types, scopes);
+    modifierBeingInvoked: createLeaf(
+      ["./modifierInvocation", "/views/scopes/inlined"],
+      (invocation, scopes) => {
+        if (!invocation || invocation.nodeType === "SourceUnit") {
+          return undefined;
+        }
+
+        let rawId; //raw referencedDeclaration ID extracted from the AST.
+        //if it's a modifier this is what we want, but if it's base
+        //constructor, we'll get the contract instead, and need to find its
+        //constructor.
+        switch (invocation.nodeType) {
+          case "ModifierInvocation":
+            rawId = invocation.modifierName.referencedDeclaration;
+          case "InheritanceSpecifier":
+            rawId = invocation.baseName.referencedDeclaration;
+        }
+        let rawNode = scopes[rawId].definition;
+        switch (rawNode.nodeType) {
+          case "ModifierDefinition":
+            return rawNode;
+          case "ContractDefinition":
+            return rawNode.nodes.find(
+              node =>
+                node.type === "FunctionDefinition" &&
+                node.kind === "constructor"
+            );
+          default:
+            //we should never hit this case
+            return undefined;
+        }
       }
     ),
 
