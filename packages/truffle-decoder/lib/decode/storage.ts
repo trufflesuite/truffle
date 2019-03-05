@@ -33,7 +33,7 @@ export async function decodeStorageReferenceByAddress(definition: DecodeUtils.As
   //we *know* the type being decoded must be sized in words, because it's a
   //reference type, but TypeScript doesn't, so we'll have to use a type
   //coercion
-  const size = (<{words: number}>storageSize(definition)).words;
+  const size = (<{words: number}>storageSize(definition, info.referenceDeclarations, info.storageAllocations)).words;
   //now, construct the storage pointer
   const newPointer = { storage: {
     from: {

@@ -1,6 +1,6 @@
 {
   "name": "truffle-compile",
-  "version": "4.0.6",
+  "version": "4.0.7",
   "description": "Compiler helper and artifact manager",
   "main": "index.js",
   "dependencies": {
@@ -27,7 +27,7 @@
     "mocha": "5.2.0",
     "sinon": "^7.2.2",
     "tmp": "0.0.33",
-    "truffle-resolver": "^5.0.6"
+    "truffle-resolver": "^5.0.7"
   },
   "babel": {
     "presets": [
