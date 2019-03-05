@@ -114,6 +114,17 @@ function* variablesAndMappingsSaga() {
       //NOTE: this will *not* catch most modifier definitions!
       //the rest hopefully will be caught by the modifier preamble
       //(in fact they won't all be, but...)
+
+      //HACK: filter out some garbage
+      //this filters out the case where we're really in an invocation of a
+      //modifier or base constructor, but have temporarily hit the definition
+      //node for some reason.  However this obviously can have a false positive
+      //in the case where a function has the same modifier twice.
+      let nextModifier = yield select(data.next.modifierBeingInvoked);
+      if (nextModifier && nextModifier.id === node.id) {
+        break;
+      }
+
       let parameters = node.parameters.parameters;
       //note that we do *not* include return parameters, since those are
       //handled by the VariableDeclaration case (no, I don't know why it

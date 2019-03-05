@@ -26,6 +26,34 @@ function findAncestorOfType(node, types, scopes) {
   return node;
 }
 
+//given a modifier invocation (or inheritance specifier) node,
+//get the node for the actual modifier (or constructor)
+function modifierForInvocation(invocation, scopes) {
+  let rawId; //raw referencedDeclaration ID extracted from the AST.
+  //if it's a modifier this is what we want, but if it's base
+  //constructor, we'll get the contract instead, and need to find its
+  //constructor.
+  switch (invocation.nodeType) {
+    case "ModifierInvocation":
+      rawId = invocation.modifierName.referencedDeclaration;
+    case "InheritanceSpecifier":
+      rawId = invocation.baseName.referencedDeclaration;
+  }
+  let rawNode = scopes[rawId].definition;
+  switch (rawNode.nodeType) {
+    case "ModifierDefinition":
+      return rawNode;
+    case "ContractDefinition":
+      return rawNode.nodes.find(
+        node =>
+          node.type === "FunctionDefinition" && node.kind === "constructor"
+      );
+    default:
+      //we should never hit this case
+      return undefined;
+  }
+}
+
 const data = createSelectorTree({
   state: state => state.data,
 
@@ -476,30 +504,7 @@ const data = createSelectorTree({
           return undefined;
         }
 
-        let rawId; //raw referencedDeclaration ID extracted from the AST.
-        //if it's a modifier this is what we want, but if it's base
-        //constructor, we'll get the contract instead, and need to find its
-        //constructor.
-        switch (invocation.nodeType) {
-          case "ModifierInvocation":
-            rawId = invocation.modifierName.referencedDeclaration;
-          case "InheritanceSpecifier":
-            rawId = invocation.baseName.referencedDeclaration;
-        }
-        let rawNode = scopes[rawId].definition;
-        switch (rawNode.nodeType) {
-          case "ModifierDefinition":
-            return rawNode;
-          case "ContractDefinition":
-            return rawNode.nodes.find(
-              node =>
-                node.type === "FunctionDefinition" &&
-                node.kind === "constructor"
-            );
-          default:
-            //we should never hit this case
-            return undefined;
-        }
+        return modifierForInvocation(invocation, scopes);
       }
     ),
 
@@ -764,6 +769,24 @@ const data = createSelectorTree({
 
         //now: does the pointer point within the body?
         return pointer.startsWith(functionPointer + "/body");
+      }
+    ),
+
+    /*
+     * data.next.modifierBeingInvoked
+     */
+    modifierBeingInvoked: createLeaf(
+      [
+        "./modifierInvocation",
+        "/views/scopes/inlined",
+        evm.current.step.isContextChange
+      ],
+      (invocation, scopes, invalid) => {
+        if (invalid || !invocation || invocation.nodeType === "SourceUnit") {
+          return undefined;
+        }
+
+        return modifierForInvocation(invocation, scopes);
       }
     )
 
