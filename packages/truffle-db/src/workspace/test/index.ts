@@ -236,7 +236,6 @@ it("adds compilation", async () => {
   }
 
   const compilationId = soliditySha3("1234", variables.sourceId)
-  console.log("compilation id " + compilationId);
 
   // add compilation
   {
@@ -244,7 +243,6 @@ it("adds compilation", async () => {
       schema, AddCompilation, null, { workspace }, variables
     );
 
-    console.debug("result %o", result);
     const { data } = result;
     expect(data).toHaveProperty("compilationsAdd");
 
@@ -275,7 +273,7 @@ it("adds compilation", async () => {
   // ensure retrieved as matching
   {
     const result = await graphql(schema, GetCompilation, null, { workspace }, {id: variables.id});
-console.log("RESULT 2" + JSON.stringify(result));
+
     const { data } = result;
     expect(data).toHaveProperty("compilation");
 
