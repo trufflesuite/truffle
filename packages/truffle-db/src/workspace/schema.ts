@@ -69,14 +69,10 @@ export const schema = mergeSchemas({
       id: ID!
     }
 
-    input compilationSourcesInput {
-      source: compilationSourceInput
-    }
-
     input CompilationInput {
       compiler: compilerInput!
       contractTypes: Object
-      sources: [compilationSourcesInput!]
+      sources: [compilationSourceInput!]!
     }
     input CompilationAddInput {
       compilation: [CompilationInput!]!

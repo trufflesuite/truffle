@@ -133,16 +133,19 @@ export class Workspace {
     return {
       compilation: Promise.all(compilation.map(
         async (compilationInput) => {
-         const { compiler, sources } = compilationInput;
+         const { compiler, contractTypes, sources } = compilationInput;
 
-         // const id = soliditySha3([compiler.id, ...sources.map(source => source.id)]);
-         const id = compiler.id;
+         const sourceIds = sources.map(source => source.id);
+         const sourcesObject = Object.assign({}, sourceIds);
+
+         const id = soliditySha3(compiler.id, sourcesObject);
 
          const compilation = await this.compilation({ id }) || { ...compilationInput, id };
 
           await this.compilations.put({
             ...compilation,
             ...compilationInput,
+
 
             _id: id
           });
