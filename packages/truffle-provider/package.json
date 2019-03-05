@@ -21,7 +21,7 @@
   "homepage": "https://github.com/trufflesuite/truffle-provider#readme",
   "dependencies": {
     "truffle-error": "^0.0.4",
-    "web3": "1.0.0-beta.37"
+    "web3": "1.0.0-beta.48"
   },
   "devDependencies": {
     "ganache-core": "2.5.1",

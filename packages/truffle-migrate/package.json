@@ -25,7 +25,7 @@
     "truffle-expect": "^0.0.7",
     "truffle-reporters": "^1.0.4",
     "truffle-require": "^2.0.5",
-    "web3": "1.0.0-beta.37"
+    "web3": "1.0.0-beta.48"
   },
   "devDependencies": {
     "mocha": "5.2.0"
