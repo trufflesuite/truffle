@@ -5,7 +5,6 @@ import { createSelectorTree, createLeaf } from "reselect-tree";
 
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
-import ast from "lib/ast/selectors";
 import trace from "lib/trace/selectors";
 
 /**
@@ -57,7 +56,7 @@ const controller = createSelectorTree({
       /**
        * controller.current.location.node
        */
-      node: createLeaf([ast.current.node], identity),
+      node: createLeaf([solidity.current.node], identity),
 
       /**
        * controller.current.location.isMultiline

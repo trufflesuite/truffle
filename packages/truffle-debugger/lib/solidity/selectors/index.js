@@ -30,6 +30,56 @@ function getSourceRange(instruction = {}) {
   };
 }
 
+//function to create selectors that need both a current and next version
+function createMultistepSelectors(stepSelector) {
+  return {
+    /**
+     * .instruction
+     */
+    instruction: createLeaf(
+      ["/current/instructionAtProgramCounter", stepSelector.programCounter],
+      //HACK: we use solidity.current.instructionAtProgramCounter
+      //even if we're looking at solidity.next.
+      //This is harmless... so long as the current instruction isn't a context
+      //change.  So, don't use solidity.next when it is.
+
+      (map, pc) => map[pc] || {}
+    ),
+
+    /**
+     * .source
+     */
+    source: createLeaf(
+      ["/info/sources", "./instruction"],
+
+      (sources, { file: id }) => sources[id] || {}
+    ),
+
+    /**
+     * .sourceRange
+     */
+    sourceRange: createLeaf(["./instruction"], getSourceRange),
+
+    /**
+     * solidity.current.pointer
+     */
+    pointer: createLeaf(
+      ["./source", "./sourceRange"],
+
+      ({ ast }, range) => findRange(ast, range.start, range.length)
+    ),
+
+    /**
+     * solidity.current.node
+     */
+    node: createLeaf(
+      ["./source", "./pointer"],
+      ({ ast }, pointer) =>
+        pointer ? jsonpointer.get(ast, pointer) : jsonpointer.get(ast, "")
+    )
+  };
+}
+
 let solidity = createSelectorTree({
   /**
    * solidity.state
@@ -188,28 +238,7 @@ let solidity = createSelectorTree({
       }
     ),
 
-    /**
-     * solidity.current.instruction
-     */
-    instruction: createLeaf(
-      ["./instructionAtProgramCounter", evm.current.step.programCounter],
-
-      (map, pc) => map[pc] || {}
-    ),
-
-    /**
-     * solidity.current.source
-     */
-    source: createLeaf(
-      ["/info/sources", "./instruction"],
-
-      (sources, { file: id }) => sources[id] || {}
-    ),
-
-    /**
-     * solidity.current.sourceRange
-     */
-    sourceRange: createLeaf(["./instruction"], getSourceRange),
+    ...createMultistepSelectors(evm.current.step),
 
     /**
      * solidity.current.isSourceRangeFinal
@@ -279,31 +308,6 @@ let solidity = createSelectorTree({
       isHalting => isHalting
     ),
 
-    //HACK: DUPLICATE CODE FOLLOWS
-    //The following code duplicates some selectors in ast.
-    //This exists to suppor the solidity.current.contractCall workaround below.
-    //This should be cleaned up later.
-
-    /**
-     * solidity.current.pointer
-     * HACK duplicates ast.current.pointer
-     */
-    pointer: createLeaf(
-      ["./source", "./sourceRange"],
-
-      ({ ast }, range) => findRange(ast, range.start, range.length)
-    ),
-
-    /**
-     * solidity.current.node
-     * HACK duplicates ast.current.node
-     */
-    node: createLeaf(
-      ["./source", "./pointer"],
-      ({ ast }, pointer) =>
-        pointer ? jsonpointer.get(ast, pointer) : jsonpointer.get(ast, "")
-    ),
-
     /**
      * solidity.current.isContractCall
      * HACK WORKAROUND (only applies to solc version <0.5.1)
@@ -339,7 +343,14 @@ let solidity = createSelectorTree({
         context.compiler.name === "solc" &&
         semver.satisfies(context.compiler.version, "<0.5.1")
     )
-  }
+  },
+
+  /**
+   * solidity.next
+   * HACK WARNING: do not use these selectors when the current instruction is a
+   * context change! (evm call or evm return)
+   */
+  next: createMultistepSelectors(evm.next.step)
 });
 
 export default solidity;

@@ -6,7 +6,6 @@ import jsonpointer from "json-pointer";
 
 import { stableKeccak256 } from "lib/helpers";
 
-import ast from "lib/ast/selectors";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
@@ -18,6 +17,15 @@ import { forEvmState } from "truffle-decoder";
  */
 const identity = x => x;
 
+function findAncestorOfType(node, types, scopes) {
+  //note: I'm not including any protection against null in this function.
+  //You are advised to include "SourceUnit" as a fallback type.
+  while (node && !types.includes(node.nodeType)) {
+    node = scopes[scopes[node.id].parentId].definition;
+  }
+  return node;
+}
+
 const data = createSelectorTree({
   state: state => state.data,
 
@@ -25,11 +33,6 @@ const data = createSelectorTree({
    * data.views
    */
   views: {
-    /**
-     * data.views.ast
-     */
-    ast: createLeaf([ast.current], tree => tree),
-
     /*
      * data.views.atLastInstructionForSourceRange
      */
@@ -334,15 +337,10 @@ const data = createSelectorTree({
     },
 
     /**
-     *
      * data.current.scope
+     * this should probably be named data.current.node!
      */
-    scope: {
-      /**
-       * data.current.scope.id
-       */
-      id: createLeaf([ast.current.node], node => node.id)
-    },
+    scope: createLeaf([solidity.current.node], identity),
 
     /**
      * data.current.functionDepth
@@ -352,7 +350,7 @@ const data = createSelectorTree({
 
     /**
      * data.current.address
-     * Note: May be undefined (if in an initializer)
+     * Note: May be undefined (if in a constructor)
      */
 
     address: createLeaf([evm.current.call], call => call.address),
@@ -362,6 +360,85 @@ const data = createSelectorTree({
      */
 
     dummyAddress: createLeaf([evm.current.creationDepth], identity),
+
+    /*
+     * data.current.aboutToModify
+     * HACK
+     * This selector is used to catch those times when we go straight from a
+     * modifier invocation into the modifier itself, skipping over the
+     * definition node (this includes base constructor calls).  So it should
+     * return true when:
+     * 1. we're on the node corresponding to the last argument to a modifier
+     * invocation or base constructor call, and
+     * 2. the next node is in a modifier or constructor *body*
+     */
+    aboutToModify: createLeaf(
+      [
+        "/views/scopes/inlined",
+        "./scope",
+        "./modifierInvocation",
+        "/next/function",
+        "/next/inBody",
+        evm.current.step.isContextChange
+      ],
+      (scopes, node, invocation, nextFunction, nextInBody, isContextChange) => {
+        //ensure: current instruction is not a context change (because if it is
+        //we cannot rely on data.next.function and data.next.inBody, but also
+        //if it is we know we're not about to call a modifier or base
+        //constructor!)
+        //we also want to return false if we can't find things for whatever
+        //reason
+        if (isContextChange || !node || !invocation || !nextFunction) {
+          return false;
+        }
+
+        //ensure: next function is a modifier or constructor
+        if (
+          nextFunction.nodeType !== "ModifierDefinition" &&
+          !(
+            nextFunction.nodeType === "FunctionDefinition" &&
+            nextFunction.kind === "constructor"
+          )
+        ) {
+          return false;
+        }
+
+        //ensure: current position is in a ModifierInvocation or InheritanceSpecifier
+        //(recall that SourceUnit was included as fallback)
+        if (invocation.nodeType === "SourceUnit") {
+          return false;
+        }
+
+        //ensure: next node is in a body
+        if (!nextInBody) {
+          return false;
+        }
+
+        //now: are we on the node corresponding to the last argument?
+        let modifierArguments = invocation.arguments;
+        if (modifierArguments.length === 0) {
+          return false;
+        }
+        let lastArgument = modifierArguments[modifierArguments.length - 1];
+        return node.id === lastArgument.id;
+      }
+    ),
+
+    /*
+     * data.current.modifierInvocation
+     */
+    modifierInvocation: createLeaf(
+      ["./scope", "/views/scopes/inlined"],
+      (node, scopes) => {
+        const types = [
+          "ModifierInvocation",
+          "InheritanceSpecifier",
+          "SourceUnit"
+        ];
+        //again, SourceUnit included as fallback
+        return findAncestorOfType(node, types, scopes);
+      }
+    ),
 
     /**
      * data.current.identifiers (namespace)
@@ -423,7 +500,7 @@ const data = createSelectorTree({
         [
           "/proc/assignments",
           "./_",
-          solidity.current.functionDepth, //for pruning things too deep on stack
+          "/current/functionDepth", //for pruning things too deep on stack
           "/current/address", //for contract variables
           "/current/dummyAddress" //for contract vars when in creation call
         ],
@@ -527,7 +604,81 @@ const data = createSelectorTree({
 
         words => (words || []).map(word => DecodeUtils.Conversion.toBytes(word))
       )
-    }
+    },
+
+    //HACK WARNING
+    //the following selectors depend on solidity.next
+    //do not use them when the current instruction is a context change!
+
+    /**
+     * data.next.scope
+     * this should probably be named data.next.node!
+     */
+    scope: createLeaf([solidity.next.node], identity),
+
+    /**
+     * data.next.function
+     */
+    function: createLeaf(
+      ["./scope", "/views/scopes/inlined", evm.current.step.isContextChange],
+      (node, scopes, invalid) => {
+        //don't attempt this at a context change!
+        //(also don't attempt this if we can't find the node for whatever
+        //reason)
+        if (invalid || !node) {
+          return undefined;
+        }
+        const types = [
+          "FunctionDefinition",
+          "ModifierDefinition",
+          "ContractDefinition",
+          "SourceUnit"
+        ];
+        //no, not all of these are function definitions, as such, but I want a
+        //fallback in case we're outside a function definition somehow
+        debug("data.next.scope %O", node);
+        return findAncestorOfType(node, types, scopes);
+      }
+    ),
+
+    /**
+     * data.next.inBody
+     * are we in the *body* of a function or modifier?
+     */
+    inBody: createLeaf(
+      [
+        "./scope",
+        "./function",
+        "/views/scopes/inlined",
+        evm.current.step.isContextChange
+      ],
+      (node, functionNode, scopes, invalid) => {
+        //don't attempt this at a context change!
+        //(also don't attempt this if we can't find the node for whatever
+        //reason)
+        if (invalid || !node) {
+          return undefined;
+        }
+
+        //now, first: make sure the function is actually a function (or
+        //modifier)
+        if (
+          functionNode.nodeType !== "FunctionDefinition" &&
+          functionNode.nodeType !== "ModifierDefinition"
+        ) {
+          return false;
+        }
+
+        //next: let's get the pointers
+        let pointer = scopes[node.id].pointer;
+        let functionPointer = scopes[functionNode.id].pointer;
+
+        //now: does the pointer point within the body?
+        return pointer.startsWith(functionPointer + "/body");
+      }
+    )
+
+    //END HACK WARNING
   }
 });
 

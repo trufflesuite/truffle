@@ -41,7 +41,7 @@ function* tickSaga() {
 }
 
 function* variablesAndMappingsSaga() {
-  let node = (yield select(data.views.ast)).node;
+  let node = yield select(data.current.scope); //no it's not really a scope
   let decode = yield select(data.views.decoder);
   let scopes = yield select(data.views.scopes.inlined);
   let referenceDeclarations = yield select(data.views.referenceDeclarations);
@@ -67,7 +67,7 @@ function* variablesAndMappingsSaga() {
   }
 
   let top = stack.length - 1;
-  var assignment, assignments, baseExpression, slot, path;
+  var assignment, assignments, preambleAssignments, baseExpression, slot, path;
 
   if (!node) {
     return;
@@ -84,36 +84,31 @@ function* variablesAndMappingsSaga() {
     return;
   }
 
+  //HACK: modifier preamble
+  //modifier definitions are typically skipped (this includes constructor
+  //definitions when called as a base constructor); as such I've added this
+  //"modifier preamble" to catch them
+  if (yield select(data.current.aboutToModify)) {
+    let modifier = yield select(data.next.function);
+    //may be either a modifier or base constructor
+    let parameters = modifier.parameters.parameters;
+    preambleAssignments = assignParameters(parameters, top, currentDepth);
+  } else {
+    preambleAssignments = {};
+  }
+
   switch (node.nodeType) {
     case "FunctionDefinition":
     case "ModifierDefinition":
-      //NOTE: this will *not* catch most modifier definitions! BUG
+      //NOTE: this will *not* catch most modifier definitions!
+      //the rest hopefully will be caught by the modifier preamble
       let parameters = node.parameters.parameters;
       //note that we do *not* include return parameters, since those are
       //handled by the VariableDeclaration case (no, I don't know why it
       //works out that way)
-      let reverseParameters = parameters.slice().reverse();
-      //reverse is in-place, so we use slice() to clone first
-      debug("reverseParameters %o", parameters);
 
-      let currentPosition = top;
-      assignments = { byId: {} };
-
-      for (let parameter of reverseParameters) {
-        let words = DecodeUtils.Definition.stackSize(parameter);
-        let pointer = {
-          stack: {
-            from: currentPosition - words + 1,
-            to: currentPosition
-          }
-        };
-        let assignment = makeAssignment(
-          { astId: parameter.id, stackframe: currentDepth },
-          pointer
-        );
-        assignments.byId[assignment.id] = assignment;
-        currentPosition -= words;
-      }
+      //we can skip preambleAssignments here, that isn't used in this case
+      assignments = assignParameters(parameters, top, currentDepth);
 
       debug("Function definition case");
       debug("assignments %O", assignments);
@@ -127,7 +122,7 @@ function* variablesAndMappingsSaga() {
       debug("Contract definition case");
       debug("allocations %O", allocations);
       debug("allocation %O", allocation);
-      assignments = { byId: {} };
+      assignments = {};
       for (let id in allocation.members) {
         id = Number(id); //not sure why we're getting them as strings, but...
         let idObj =
@@ -144,10 +139,11 @@ function* variablesAndMappingsSaga() {
             ...allocation.members[id].pointer
           }
         };
-        assignments.byId[fullId] = assignment;
+        assignments[fullId] = assignment;
       }
       debug("assignments %O", assignments);
 
+      //this case doesn't need preambleAssignments either
       yield put(actions.assign(assignments));
       break;
 
@@ -185,7 +181,8 @@ function* variablesAndMappingsSaga() {
           }
         }
       );
-      assignments = { byId: { [assignment.id]: assignment } };
+      assignments = { [assignment.id]: assignment };
+      //this case doesn't need preambleAssignments either
       yield put(actions.assign(assignments));
       break;
 
@@ -198,7 +195,10 @@ function* variablesAndMappingsSaga() {
       //we're going to start by doing the same thing as in the default case
       //(see below) -- getting things ready for an assignment.  Then we're
       //going to forget this for a bit while we handle the rest...
-      assignments = literalAssignments(node, stack, currentDepth);
+      assignments = {
+        ...preambleAssignments,
+        ...literalAssignments(node, stack, currentDepth)
+      };
 
       //we'll need this
       baseExpression = node.baseExpression;
@@ -398,7 +398,10 @@ function* variablesAndMappingsSaga() {
       //we're going to start by doing the same thing as in the default case
       //(see below) -- getting things ready for an assignment.  Then we're
       //going to forget this for a bit while we handle the rest...
-      assignments = literalAssignments(node, stack, currentDepth);
+      assignments = {
+        ...preambleAssignments,
+        ...literalAssignments(node, stack, currentDepth)
+      };
 
       debug("Member access case");
 
@@ -455,7 +458,10 @@ function* variablesAndMappingsSaga() {
       debug("default case");
       debug("currentDepth %d node.id %d", currentDepth, node.id);
 
-      assignments = literalAssignments(node, stack, currentDepth);
+      assignments = {
+        ...preambleAssignments,
+        ...literalAssignments(node, stack, currentDepth)
+      };
       yield put(actions.assign(assignments));
       break;
   }
@@ -509,7 +515,34 @@ function literalAssignments(node, stack, currentDepth) {
     { literal }
   );
 
-  return { byId: { [assignment.id]: assignment } };
+  return { [assignment.id]: assignment };
+}
+
+//takes a parameter list as given in the AST
+function assignParameters(parameters, top, functionDepth) {
+  let reverseParameters = parameters.slice().reverse();
+  //reverse is in-place, so we use slice() to clone first
+  debug("reverseParameters %o", parameters);
+
+  let currentPosition = top;
+  let assignments = {};
+
+  for (let parameter of reverseParameters) {
+    let words = DecodeUtils.Definition.stackSize(parameter);
+    let pointer = {
+      stack: {
+        from: currentPosition - words + 1,
+        to: currentPosition
+      }
+    };
+    let assignment = makeAssignment(
+      { astId: parameter.id, stackframe: functionDepth },
+      pointer
+    );
+    assignments[assignment.id] = assignment;
+    currentPosition -= words;
+  }
+  return assignments;
 }
 
 function fetchBasePath(

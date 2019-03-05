@@ -87,6 +87,15 @@ function createStepSelectors(step, state = null) {
     isHalting: createLeaf(
       ["./trace"],
       step => step.op == "STOP" || step.op == "RETURN"
+    ),
+
+    /**
+     * .isContextChange
+     * groups together calls, creates, and halts
+     */
+    isContextChange: createLeaf(
+      ["./isCall", "./isCreate", "./isHalting"],
+      (call, create, halt) => call || create || halt
     )
   };
 
@@ -334,6 +343,9 @@ const evm = createSelectorTree({
       }))
     ),
 
+    /*
+     * evm.next.step
+     */
     step: createStepSelectors(trace.next, "./state")
   }
 });
