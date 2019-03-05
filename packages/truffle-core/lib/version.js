@@ -1,5 +1,6 @@
 const pkg = require("../package.json");
 const solcpkg = require("solc/package.json");
+const web3pkg = require("web3/package.json");
 
 const info = () => {
   let bundleVersion;
@@ -43,11 +44,16 @@ const logSolidity = (logger = console, versionInformation, config) => {
   }
 };
 
+const logWeb3 = (logger = console) => {
+  logger.log(`Web3 v${web3pkg.version}`);
+};
+
 const logAll = (logger = console, config) => {
   const versionInformation = info();
   logTruffle(logger, versionInformation);
   logSolidity(logger, versionInformation, config);
   logNode(logger);
+  logWeb3(logger);
 };
 
 const logTruffleAndNode = (logger = console) => {
