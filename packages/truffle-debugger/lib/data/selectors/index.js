@@ -369,57 +369,60 @@ const data = createSelectorTree({
      * definition node (this includes base constructor calls).  So it should
      * return true when:
      * 1. we're on the node corresponding to the last argument to a modifier
-     * invocation or base constructor call, and
-     * 2. the next node is in a modifier or constructor *body*
+     * invocation or base constructor call, or, if said argument is a type
+     * conversion, its argument (or nested argument)
+     * 2. the next node is in a modifier body, function body, or *different*
+     * modifier invocation or base constructor call
+     * NOTE: what if we jump in from an argument that's not the last? well then
+     * we deliberately fail to catch that, as we'd get garbage if we did
      */
     aboutToModify: createLeaf(
       [
-        "/views/scopes/inlined",
         "./scope",
         "./modifierInvocation",
-        "/next/function",
+        "/next/modifierInvocation",
         "/next/inBody",
         evm.current.step.isContextChange
       ],
-      (scopes, node, invocation, nextFunction, nextInBody, isContextChange) => {
+      (node, invocation, nextInvocation, nextInBody, isContextChange) => {
         //ensure: current instruction is not a context change (because if it is
         //we cannot rely on data.next.function and data.next.inBody, but also
         //if it is we know we're not about to call a modifier or base
         //constructor!)
         //we also want to return false if we can't find things for whatever
         //reason
-        if (isContextChange || !node || !invocation || !nextFunction) {
+        if (isContextChange || !node || !invocation || !nextInvocation) {
           return false;
         }
 
-        //ensure: next function is a modifier or constructor
-        if (
-          nextFunction.nodeType !== "ModifierDefinition" &&
-          !(
-            nextFunction.nodeType === "FunctionDefinition" &&
-            nextFunction.kind === "constructor"
-          )
-        ) {
-          return false;
-        }
-
-        //ensure: current position is in a ModifierInvocation or InheritanceSpecifier
-        //(recall that SourceUnit was included as fallback)
+        //ensure: current position is in a ModifierInvocation or
+        //InheritanceSpecifier (recall that SourceUnit was included as
+        //fallback)
         if (invocation.nodeType === "SourceUnit") {
           return false;
         }
 
-        //ensure: next node is in a body
-        if (!nextInBody) {
+        //ensure: next node is in a body, or a different modifier invocation or
+        //inheritance specifier
+        if (
+          !nextInBody &&
+          (nextInvocation.nodeType === "SourceUnit" ||
+            nextInvocation.id === invocation.id)
+        ) {
           return false;
         }
 
-        //now: are we on the node corresponding to the last argument?
+        //now: are we on the node corresponding to an argument, or, if
+        //it's a type conversion, its nested argument?
         let modifierArguments = invocation.arguments;
         if (modifierArguments.length === 0) {
           return false;
         }
         let lastArgument = modifierArguments[modifierArguments.length - 1];
+        while (lastArgument.kind === "typeConversion") {
+          if (node.id === lastArgument.id) return true;
+          lastArgument = lastArgument.arguments[0];
+        }
         return node.id === lastArgument.id;
       }
     ),
@@ -594,6 +597,8 @@ const data = createSelectorTree({
   next: {
     /**
      * data.next.state
+     * Yes, I'm just repeating the code for data.current.state.stack here;
+     * not worth the trouble to factor out
      */
     state: {
       /**
@@ -637,6 +642,30 @@ const data = createSelectorTree({
         //no, not all of these are function definitions, as such, but I want a
         //fallback in case we're outside a function definition somehow
         debug("data.next.scope %O", node);
+        return findAncestorOfType(node, types, scopes);
+      }
+    ),
+
+    /**
+     * data.next.modifierInvocation
+     * Note: yes, I'm just repeating the code from data.current here but with
+     * invalid added
+     */
+    modifierInvocation: createLeaf(
+      ["./scope", "/views/scopes/inlined", evm.current.step.isContextChange],
+      (node, scopes, invalid) => {
+        //don't attempt this at a context change!
+        //(also don't attempt this if we can't find the node for whatever
+        //reason)
+        if (invalid || !node) {
+          return undefined;
+        }
+        const types = [
+          "ModifierInvocation",
+          "InheritanceSpecifier",
+          "SourceUnit"
+        ];
+        //again, SourceUnit included as fallback
         return findAncestorOfType(node, types, scopes);
       }
     ),
