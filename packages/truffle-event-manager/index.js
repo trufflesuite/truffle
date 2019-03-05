@@ -37,13 +37,4 @@ class EventManager {
   }
 }
 
-const eventManager = config => {
-  const logger = config.logger || console;
-  return new EventManager({
-    logger,
-    muteReporters: config.quiet,
-    globalConfig: config
-  });
-};
-
-module.exports = eventManager;
+module.exports = EventManager;

@@ -6,7 +6,7 @@ const Module = require("module");
 const findUp = require("find-up");
 const originalrequire = require("original-require");
 const Configstore = require("configstore");
-const eventManager = require("../truffle-event-manager");
+const EventManager = require("../truffle-event-manager");
 
 const DEFAULT_CONFIG_FILENAME = "truffle.js";
 const BACKUP_CONFIG_FILENAME = "truffle-config.js"; // For Windows + Command Prompt
@@ -25,7 +25,7 @@ function Config(truffle_directory, working_directory, network) {
     logger: this.logger,
     globalConfig: this
   };
-  this.eventManager = eventManager(eventManagerOptions);
+  this.eventManager = new EventManager(eventManagerOptions);
 
   // This is a list of multi-level keys with defaults
   // we need to _.merge. Using this list for safety
@@ -386,15 +386,21 @@ Config.detect = (options = {}, filename) => {
 // attached as it might override some options (e.g. { quiet: true })
 const attachNewEventManager = (config, newOptions) => {
   const currentEventManagerOptions = config.eventManager.initializationOptions;
+  const { quiet, logger, globalConfig } = newOptions;
+  const optionsToMerge = {};
 
-  const { quiet, logger } = newOptions;
+  if (typeof quiet !== "undefined") optionsToMerge.quiet = quiet;
+  if (typeof logger !== "undefined") optionsToMerge.logger = logger;
+  if (typeof globalConfig !== "undefined")
+    optionsToMerge.globalConfig = globalConfig;
 
-  const newEventManagerOptions = Object.assign({}, currentEventManagerOptions, {
-    muteReporters: quiet,
-    logger
-  });
+  const newEventManagerOptions = Object.assign(
+    {},
+    currentEventManagerOptions,
+    optionsToMerge
+  );
 
-  config.eventManager = eventManager(newEventManagerOptions);
+  config.eventManager = new EventManager(newEventManagerOptions);
 };
 
 Config.load = function(file, options) {
