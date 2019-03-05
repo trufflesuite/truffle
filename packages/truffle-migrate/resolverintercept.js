@@ -6,7 +6,7 @@ function ResolverIntercept(resolver) {
 ResolverIntercept.prototype.require = function(import_path) {
   // Modify import_path so the cache key is deterministic
   // Remove preceding `./` and `.sol` extension
-  import_path = import_path.replace(/^\.\\/, "").replace(/\.sol$/i, "");
+  import_path = import_path.replace(/^\.\//, "").replace(/\.sol$/i, "");
 
   // TODO: Using the import path for relative files may result in multiple
   // paths for the same file. This could return different objects since it won't be a cache hit.
