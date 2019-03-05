@@ -13260,18 +13260,6 @@ web3-utils@1.0.0-beta.35:
     underscore "1.8.3"
     utf8 "2.1.1"
 
-web3-utils@1.0.0-beta.37:
-  version "1.0.0-beta.37"
-  resolved "https://registry.yarnpkg.com/web3-utils/-/web3-utils-1.0.0-beta.37.tgz#ab868a90fe5e649337e38bdaf72133fcbf4d414d"
-  dependencies:
-    bn.js "4.11.6"
-    eth-lib "0.1.27"
-    ethjs-unit "0.1.6"
-    number-to-bn "1.7.0"
-    randomhex "0.1.5"
-    underscore "1.8.3"
-    utf8 "2.1.1"
-
 web3-utils@1.0.0-beta.41:
   version "1.0.0-beta.41"
   resolved "https://registry.yarnpkg.com/web3-utils/-/web3-utils-1.0.0-beta.41.tgz#83301ffd85cbf9b99a8bd5ca828f96113a1ccc71"
