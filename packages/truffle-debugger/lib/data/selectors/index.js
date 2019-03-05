@@ -368,13 +368,11 @@ const data = createSelectorTree({
      * modifier invocation into the modifier itself, skipping over the
      * definition node (this includes base constructor calls).  So it should
      * return true when:
-     * 1. we're on the node corresponding to the last argument to a modifier
+     * 1. we're on the node corresponding to an argument to a modifier
      * invocation or base constructor call, or, if said argument is a type
      * conversion, its argument (or nested argument)
      * 2. the next node is in a modifier body, function body, or *different*
      * modifier invocation or base constructor call
-     * NOTE: what if we jump in from an argument that's not the last? well then
-     * we deliberately fail to catch that, as we'd get garbage if we did
      */
     aboutToModify: createLeaf(
       [
@@ -415,15 +413,38 @@ const data = createSelectorTree({
         //now: are we on the node corresponding to an argument, or, if
         //it's a type conversion, its nested argument?
         let modifierArguments = invocation.arguments;
-        if (modifierArguments.length === 0) {
-          return false;
+        return modifierArguments.some(argument => {
+          while (argument.kind === "typeConversion") {
+            if (node.id === argument.id) return true;
+            argument = argument.arguments[0];
+          }
+          return node.id === argument.id;
+        });
+      }
+    ),
+
+    /**
+     * data.current.modifierArgumentIndex
+     * gets the index of the current modifier argument that you're in
+     * (undefined when not in a modifier argument)
+     */
+    modifierArgumentIndex: createLeaf(
+      ["/info/scopes", "./scope", "./modifierInvocation"],
+      (scopes, node, invocation) => {
+        if (invocation.nodeType === "SourceUnit") {
+          return undefined;
         }
-        let lastArgument = modifierArguments[modifierArguments.length - 1];
-        while (lastArgument.kind === "typeConversion") {
-          if (node.id === lastArgument.id) return true;
-          lastArgument = lastArgument.arguments[0];
+
+        let pointer = scopes[node.id].pointer;
+        let invocationPointer = scopes[invocation.id].pointer;
+
+        //slice the invocation pointer off the beginning
+        let difference = pointer.replace(invocationPointer, "");
+        let rawIndex = difference.match(/^arguments\/(\d+)\//);
+        if (rawIndex === null) {
+          return undefined;
         }
-        return node.id === lastArgument.id;
+        return parseInt(rawIndex[1]);
       }
     ),
 

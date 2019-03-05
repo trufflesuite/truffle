@@ -11,6 +11,8 @@ import * as trace from "lib/trace/sagas";
 
 import data from "../selectors";
 
+import sum from "lodash.sum";
+
 import * as DecodeUtils from "truffle-decode-utils";
 import {
   getStorageAllocations,
@@ -91,8 +93,17 @@ function* variablesAndMappingsSaga() {
   if (yield select(data.current.aboutToModify)) {
     let modifier = yield select(data.next.function);
     //may be either a modifier or base constructor
+    let currentIndex = yield select(data.current.modifierArgumentIndex);
     let parameters = modifier.parameters.parameters;
-    preambleAssignments = assignParameters(parameters, top, currentDepth);
+    //now: look at the parameters *after* the current index.  we'll need to
+    //adjust for those.
+    let parametersLeft = parameters.slice(currentIndex + 1);
+    let adjustment = sum(parametersLeft.map(DecodeUtils.Definition.stackSize));
+    preambleAssignments = assignParameters(
+      parameters,
+      top + adjustment,
+      currentDepth
+    );
   } else {
     preambleAssignments = {};
   }

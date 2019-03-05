@@ -25,6 +25,7 @@
     "debug": "^4.1.0",
     "fast-levenshtein": "^2.0.6",
     "json-pointer": "^0.6.0",
+    "lodash.sum": "^4.0.2",
     "redux": "^3.7.2",
     "redux-cli-logger": "^2.0.1",
     "redux-saga": "1.0.0",
