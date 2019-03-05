@@ -178,3 +178,89 @@ it("adds bytecode", async () => {
     expect(bytes).toEqual(variables.bytes);
   }
 });
+
+const GetCompilation = `
+query GetCompilation($id: ID!) {
+  compilation(id: $id) {
+    id
+    compiler {
+      name
+      version
+    }
+  }
+}`;
+
+const CompilationAdd = `
+mutation AddCompilation($compilerName: String!, $compilerVersion: String!, $sourceId: ID!) {
+  compilationAdd(input: {
+    compilation: [{
+      compiler: {
+        id: "1234"
+        name: $compilerName
+        version: $compilerVersion
+      }
+      contractTypes: {
+
+      }
+      sources: [
+        {
+         id: $sourceId 
+        }
+      ]
+    }]
+  }) {
+    compilation {
+      id
+      compiler {
+        name
+      }
+    }
+  }
+}`;
+
+it("adds compilation", async () => {
+  const workspace = new Workspace();
+ 
+  const variables = {
+    compilerName: Migrations.compiler.name,
+    compilerVersion: Migrations.compiler.version,
+    sourceId: soliditySha3(Migrations.source, Migrations.sourcePath),
+    id: "0xfd63faebf4e7515b2f48fdf22066869e09df9b2e91f4e0cf88d7d14ec496b515"
+  }
+
+  const compilationId = soliditySha3("1234", variables.sourceId)
+  console.log("compilation id " + compilationId);
+
+  // add compilation
+  {
+    const result = await graphql(
+      schema, CompilationAdd, null, { workspace }, variables
+    );
+console.log("RESULT " + JSON.stringify(result));
+    const { data } = result;
+    expect(data).toHaveProperty("compilationAdd");
+
+    const { compilationAdd } = data;
+    expect(compilationAdd).toHaveProperty("compilation");
+
+    const { compilation } = compilationAdd;
+    expect(compilation).toHaveLength(1);
+
+    const compiler = compilation[0].compiler;
+    expect(compiler).toHaveProperty("name");
+
+  }
+
+  // ensure retrieved as matching
+  {
+    const result = await graphql(schema, GetCompilation, null, { workspace }, {id: variables.id});
+console.log("RESULT 2" + JSON.stringify(result));
+    const { data } = result;
+    expect(data).toHaveProperty("compilation");
+
+    const { compilation } = data;
+    expect(compilation).toHaveProperty("id");
+    expect(compilation).toHaveProperty("compiler");
+    
+  }
+});
