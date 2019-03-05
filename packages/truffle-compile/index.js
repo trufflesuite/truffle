@@ -145,7 +145,7 @@ const compile = function(sources, options, callback) {
       }
 
       if (warnings.length > 0) {
-        options.eventManager.emitEvent("compile:warnings", { warnings });
+        options.eventManager.emit("compile:warnings", { warnings });
       }
 
       if (errors.length > 0) {
@@ -366,7 +366,7 @@ compile.necessary = function(options, callback) {
 
     if (updated.length === 0 && options.quiet !== true) {
       if (options.eventManager) {
-        options.eventManager.emitEvent("compile:nothingToCompile");
+        options.eventManager.emit("compile:nothingToCompile");
       }
       return callback(null, [], {});
     }
@@ -417,7 +417,7 @@ compile.display = (paths, options) => {
 
   const blacklistRegex = /^truffle\//;
 
-  const sourceFiles = paths
+  const sourceFileNames = paths
     .sort()
     .map(contract => {
       if (contract.match(blacklistRegex)) return;
@@ -431,7 +431,7 @@ compile.display = (paths, options) => {
       return contract;
     })
     .filter(name => name);
-  options.eventManager.emitEvent("compile:compiledSources", { sourceFiles });
+  options.eventManager.emit("compile:compiledSources", { sourceFileNames });
 };
 
 compile.CompilerSupplier = CompilerSupplier;

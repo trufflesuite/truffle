@@ -52,16 +52,16 @@ const Box = {
         unpackBoxOptions
       );
 
-      eventManager.emitEvent("unbox:cleaningTempFiles:start");
+      eventManager.emit("unbox:cleaningTempFiles:start");
       tempDirCleanup();
-      eventManager.emitEvent("unbox:cleaningTempFiles:end");
+      eventManager.emit("unbox:cleaningTempFiles:end");
 
       await utils.setUpBox(boxConfig, destination, eventManager);
 
       return boxConfig;
     } catch (error) {
       if (tempDirCleanup) tempDirCleanup();
-      eventManager.emitEvent("unbox:jobFailed");
+      eventManager.emit("unbox:jobFailed");
       throw new Error(error);
     }
   },

@@ -7,13 +7,13 @@ const path = require("path");
 
 module.exports = {
   downloadBox: async (url, destination, eventManager) => {
-    eventManager.emitEvent("unbox:downloadingBox:start");
+    eventManager.emit("unbox:downloadingBox:start");
     try {
       await unbox.verifyURL(url);
       await unbox.fetchRepository(url, destination);
-      eventManager.emitEvent("unbox:downloadingBox:end");
+      eventManager.emit("unbox:downloadingBox:end");
     } catch (error) {
-      eventManager.emitEvent("unbox:jobFailed");
+      eventManager.emit("unbox:jobFailed");
       throw new Error(error);
     }
   },
@@ -37,7 +37,7 @@ module.exports = {
   },
 
   setUpTempDirectory: eventManager => {
-    eventManager.emitEvent("unbox:preparingToDownload:start");
+    eventManager.emit("unbox:preparingToDownload:start");
     return new Promise((resolve, reject) => {
       const options = {
         dir: cwd,
@@ -45,11 +45,11 @@ module.exports = {
       };
       tmp.dir(options, (error, dir, cleanupCallback) => {
         if (error) {
-          eventManager.emitEvent("unbox:jobFailed");
+          eventManager.emit("unbox:jobFailed");
           return reject(error);
         }
 
-        eventManager.emitEvent("unbox:preparingToDownload:end");
+        eventManager.emit("unbox:preparingToDownload:end");
         resolve({
           path: path.join(dir, "box"),
           cleanupCallback
@@ -64,12 +64,12 @@ module.exports = {
   },
 
   setUpBox: async (boxConfig, destination, eventManager) => {
-    eventManager.emitEvent("unbox:settingUpBox:start");
+    eventManager.emit("unbox:settingUpBox:start");
     try {
       await unbox.installBoxDependencies(boxConfig, destination);
-      eventManager.emitEvent("unbox:settingUpBox:end");
+      eventManager.emit("unbox:settingUpBox:end");
     } catch (error) {
-      eventManager.emitEvent("unbox:jobFailed");
+      eventManager.emit("unbox:jobFailed");
       throw new Error(error);
     }
   }

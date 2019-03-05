@@ -5,6 +5,10 @@ class EventManager {
   constructor(eventManagerOptions) {
     const { logger, muteReporters, globalConfig } = eventManagerOptions;
 
+    // Keep a reference to these so it can be cloned
+    // if necessary in truffle-config
+    this.initializationOptions = eventManagerOptions;
+
     const emitter = new Emittery();
     this.emitter = emitter;
 
@@ -17,7 +21,7 @@ class EventManager {
     this.initializeSubscribers(initializationOptions);
   }
 
-  emitEvent(event, data) {
+  emit(event, data) {
     this.emitter.emit(event, data);
   }
 

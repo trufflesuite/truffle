@@ -6,6 +6,7 @@ const Module = require("module");
 const findUp = require("find-up");
 const originalrequire = require("original-require");
 const Configstore = require("configstore");
+const eventManager = require("../truffle-event-manager");
 
 const DEFAULT_CONFIG_FILENAME = "truffle.js";
 const BACKUP_CONFIG_FILENAME = "truffle-config.js"; // For Windows + Command Prompt
@@ -18,6 +19,13 @@ function Config(truffle_directory, working_directory, network) {
     gasPrice: 20000000000, // 20 gwei,
     from: null
   };
+
+  const eventManagerOptions = {
+    muteReporters: this.quiet,
+    logger: this.logger,
+    globalConfig: this
+  };
+  this.eventManager = eventManager(eventManagerOptions);
 
   // This is a list of multi-level keys with defaults
   // we need to _.merge. Using this list for safety
@@ -319,29 +327,33 @@ Config.prototype.normalize = function(obj) {
   return clone;
 };
 
-Config.prototype.with = function(obj) {
-  var normalized = this.normalize(obj);
-  var current = this.normalize(this);
+Config.prototype.with = function(options) {
+  const normalized = this.normalize(options);
+  const current = this.normalize(this);
+
+  attachNewEventManager(this, options);
 
   return _.extend({}, current, normalized);
 };
 
-Config.prototype.merge = function(obj) {
-  var self = this;
-  var clone = this.normalize(obj);
+Config.prototype.merge = function(options) {
+  const self = this;
+  const clone = this.normalize(options);
 
   // Only set keys for values that don't throw.
-  Object.keys(obj).forEach(function(key) {
+  Object.keys(options).forEach(function(key) {
     try {
       if (typeof clone[key] === "object" && self._deepCopy.includes(key)) {
         self[key] = _.merge(self[key], clone[key]);
       } else {
         self[key] = clone[key];
       }
-    } catch (e) {
+    } catch (error) {
       // Do nothing.
     }
   });
+
+  attachNewEventManager(this, options);
 
   return this;
 };
@@ -368,6 +380,21 @@ Config.detect = (options = {}, filename) => {
   }
 
   return Config.load(file, options);
+};
+
+// When new options are passed in, a new eventManager needs to be
+// attached as it might override some options (e.g. { quiet: true })
+const attachNewEventManager = (config, newOptions) => {
+  const currentEventManagerOptions = config.eventManager.initializationOptions;
+
+  const { quiet, logger } = newOptions;
+
+  const newEventManagerOptions = Object.assign({}, currentEventManagerOptions, {
+    muteReporters: quiet,
+    logger
+  });
+
+  config.eventManager = eventManager(newEventManagerOptions);
 };
 
 Config.load = function(file, options) {

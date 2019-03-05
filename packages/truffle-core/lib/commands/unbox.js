@@ -93,13 +93,10 @@ const command = {
   run(options, done) {
     const Config = require("truffle-config");
     const Box = require("truffle-box");
-    const eventManager = require("../eventManager");
 
     const config = Config.default().with({
       logger: console
     });
-
-    config.eventManager = eventManager(config);
 
     let [url, destination] = normalizeInput(options._[0]);
 
@@ -108,11 +105,11 @@ const command = {
 
     const unboxOptions = Object.assign({}, options, { logger: config.logger });
 
-    config.eventManager.emitEvent("unbox:startJob");
+    config.eventManager.emit("unbox:startJob");
 
     Box.unbox(url, destination, unboxOptions, config)
       .then(boxConfig => {
-        config.eventManager.emitEvent("unbox:jobFinished", { boxConfig });
+        config.eventManager.emit("unbox:jobFinished", { boxConfig });
         // This is a timeout to give time to the eventManager
         // to handle the jobFinished event
         setTimeout(() => {
