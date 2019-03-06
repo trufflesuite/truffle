@@ -75,7 +75,7 @@ export class Workspace {
     }
   }
 
-  async addContractType (contractType: {
+  async contractTypesAdd (contractType: {
     name: string,
     abi?: string,
     createBytecode?: string
