@@ -61,7 +61,7 @@ function createMultistepSelectors(stepSelector) {
     sourceRange: createLeaf(["./instruction"], getSourceRange),
 
     /**
-     * .current.pointer
+     * .pointer
      */
     pointer: createLeaf(
       ["./source", "./sourceRange"],
@@ -70,7 +70,7 @@ function createMultistepSelectors(stepSelector) {
     ),
 
     /**
-     * .current.node
+     * .node
      */
     node: createLeaf(
       ["./source", "./pointer"],
