@@ -94,11 +94,13 @@ function* variablesAndMappingsSaga() {
     let modifier = yield select(data.current.modifierBeingInvoked);
     //may be either a modifier or base constructor
     let currentIndex = yield select(data.current.modifierArgumentIndex);
+    debug("currentIndex %d", currentIndex);
     let parameters = modifier.parameters.parameters;
     //now: look at the parameters *after* the current index.  we'll need to
     //adjust for those.
     let parametersLeft = parameters.slice(currentIndex + 1);
     let adjustment = sum(parametersLeft.map(DecodeUtils.Definition.stackSize));
+    debug("adjustment %d", adjustment);
     preambleAssignments = assignParameters(
       parameters,
       top + adjustment,

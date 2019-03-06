@@ -36,8 +36,12 @@ function modifierForInvocation(invocation, scopes) {
   switch (invocation.nodeType) {
     case "ModifierInvocation":
       rawId = invocation.modifierName.referencedDeclaration;
+      break;
     case "InheritanceSpecifier":
       rawId = invocation.baseName.referencedDeclaration;
+      break;
+    default:
+      debug("bad invocation node");
   }
   let rawNode = scopes[rawId].definition;
   switch (rawNode.nodeType) {
@@ -46,7 +50,7 @@ function modifierForInvocation(invocation, scopes) {
     case "ContractDefinition":
       return rawNode.nodes.find(
         node =>
-          node.type === "FunctionDefinition" && node.kind === "constructor"
+          node.nodeType === "FunctionDefinition" && node.kind === "constructor"
       );
     default:
       //we should never hit this case
@@ -484,7 +488,10 @@ const data = createSelectorTree({
 
         //slice the invocation pointer off the beginning
         let difference = pointer.replace(invocationPointer, "");
-        let rawIndex = difference.match(/^arguments\/(\d+)\//);
+        debug("difference %s", difference);
+        let rawIndex = difference.match(/^\/arguments\/(\d+)/);
+        //note that that \d+ is greedy
+        debug("rawIndex %o", rawIndex);
         if (rawIndex === null) {
           return undefined;
         }
@@ -706,7 +713,6 @@ const data = createSelectorTree({
         ];
         //no, not all of these are function definitions, as such, but I want a
         //fallback in case we're outside a function definition somehow
-        debug("data.next.scope %O", node);
         return findAncestorOfType(node, types, scopes);
       }
     ),
