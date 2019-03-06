@@ -55,10 +55,10 @@ export const schema = mergeSchemas({
     }
 
     input contractTypeInput {
-      abi: ABI!
+      abi: String
       name: String
-      compilation: Compilation
-      createBytecode: Bytecode
+      compilation: Object
+      createBytecode: BytecodeInput
     }
 
     input ContractTypesAddInput {
@@ -66,7 +66,7 @@ export const schema = mergeSchemas({
     }
 
     type ContractTypesAddPayload {
-      contractType: [contractType!]
+      contractType: [ContractType!]
     }
 
     type Mutation {
@@ -102,7 +102,7 @@ export const schema = mergeSchemas({
       bytecodesAdd: {
         resolve: (_, { input }, { workspace }) =>
           workspace.bytecodesAdd({ input })
-      }
+      },
       contractTypesAdd: {
         resolve: (_, {input}, {workspace}) => 
         workspace.contractTypesAdd({input})
