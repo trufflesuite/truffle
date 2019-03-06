@@ -58,33 +58,33 @@ export const schema = mergeSchemas({
       bytecodes: [Bytecode!]
     }
 
-    input compilerInput {
+    input CompilerInput {
       id: String
       name: String
       version: String
       settings: Object
     }
 
-    input compilationSourceInput {
+    input CompilationSourceInput {
       id: ID!
     }
 
     input CompilationInput {
-      compiler: compilerInput!
+      compiler: CompilerInput!
       contractTypes: Object
-      sources: [compilationSourceInput!]!
+      sources: [CompilationSourceInput!]!
     }
-    input CompilationAddInput {
-      compilation: [CompilationInput!]!
+    input CompilationsAddInput {
+      compilations: [CompilationInput!]!
     }
-    type CompilationAddPayload {
-      compilation: [Compilation!]
+    type CompilationsAddPayload {
+      compilations: [Compilation!]
     }
 
     type Mutation {
       sourcesAdd(input: SourcesAddInput!): SourcesAddPayload
       bytecodesAdd(input: BytecodesAddInput!): BytecodesAddPayload
-      compilationAdd(input: CompilationAddInput!): CompilationAddPayload
+      compilationsAdd(input: CompilationsAddInput!): CompilationsAddPayload
     } `
   ],
   resolvers: {
@@ -104,7 +104,7 @@ export const schema = mergeSchemas({
       bytecode: {
         resolve: (_, { id }, { workspace }) =>
           workspace.bytecode({ id })
-      }, 
+      },
       compilation: {
         resolve: (_, { id }, { workspace }) =>
           workspace.compilation({ id })
@@ -118,10 +118,18 @@ export const schema = mergeSchemas({
       bytecodesAdd: {
         resolve: (_, { input }, { workspace }) =>
           workspace.bytecodesAdd({ input })
-      }, 
-      compilationAdd: {
+      },
+      compilationsAdd: {
         resolve: (_, { input }, { workspace }) =>
-          workspace.compilationAdd({ input })
+          workspace.compilationsAdd({ input })
+      }
+    },
+    Compilation: {
+      sources: {
+        resolve: ({ sources }, _, { workspace }) =>
+          Promise.all(
+            sources.map(source => workspace.source(source))
+          )
       }
     },
     ContractType: {

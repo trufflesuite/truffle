@@ -187,13 +187,17 @@ query GetCompilation($id: ID!) {
       name
       version
     }
+    sources {
+      id
+      contents
+    }
   }
 }`;
 
-const CompilationAdd = `
+const AddCompilation = `
 mutation AddCompilation($compilerName: String!, $compilerVersion: String!, $sourceId: ID!) {
-  compilationAdd(input: {
-    compilation: [{
+  compilationsAdd(input: {
+    compilations: [{
       compiler: {
         id: "1234"
         name: $compilerName
@@ -204,15 +208,18 @@ mutation AddCompilation($compilerName: String!, $compilerVersion: String!, $sour
       }
       sources: [
         {
-         id: $sourceId 
+         id: $sourceId
         }
       ]
     }]
   }) {
-    compilation {
+    compilations {
       id
       compiler {
         name
+      }
+      sources {
+        id
       }
     }
   }
@@ -220,7 +227,7 @@ mutation AddCompilation($compilerName: String!, $compilerVersion: String!, $sour
 
 it("adds compilation", async () => {
   const workspace = new Workspace();
- 
+
   const variables = {
     compilerName: Migrations.compiler.name,
     compilerVersion: Migrations.compiler.version,
@@ -234,20 +241,34 @@ it("adds compilation", async () => {
   // add compilation
   {
     const result = await graphql(
-      schema, CompilationAdd, null, { workspace }, variables
+      schema, AddCompilation, null, { workspace }, variables
     );
-console.log("RESULT " + JSON.stringify(result));
+
+    console.debug("result %o", result);
     const { data } = result;
-    expect(data).toHaveProperty("compilationAdd");
+    expect(data).toHaveProperty("compilationsAdd");
 
-    const { compilationAdd } = data;
-    expect(compilationAdd).toHaveProperty("compilation");
+    const { compilationsAdd } = data;
+    expect(compilationsAdd).toHaveProperty("compilations");
 
-    const { compilation } = compilationAdd;
-    expect(compilation).toHaveLength(1);
+    const { compilations } = compilationsAdd;
+    expect(compilations).toHaveLength(1);
 
-    const compiler = compilation[0].compiler;
-    expect(compiler).toHaveProperty("name");
+    for (let compilation of compilations) {
+      expect(compilation).toHaveProperty("compiler");
+      expect(compilation).toHaveProperty("sources");
+      const { compiler, sources } = compilation;
+
+      expect(compiler).toHaveProperty("name");
+
+      expect(sources).toHaveLength(1);
+      for (let source of sources) {
+        expect(source).toHaveProperty("id");
+        const { id } = source;
+
+        expect(id).toEqual(variables.sourceId);
+      }
+    }
 
   }
 
@@ -261,6 +282,19 @@ console.log("RESULT 2" + JSON.stringify(result));
     const { compilation } = data;
     expect(compilation).toHaveProperty("id");
     expect(compilation).toHaveProperty("compiler");
-    
+    expect(compilation).toHaveProperty("sources");
+
+    const { sources } = compilation;
+
+    for (let source of sources) {
+      expect(source).toHaveProperty("id");
+      const { id } = source;
+      expect(id).not.toBeNull();
+
+      expect(source).toHaveProperty("contents");
+      const { contents } = source;
+      expect(contents).not.toBeNull();
+    }
+
   }
 });

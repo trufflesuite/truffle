@@ -112,26 +112,26 @@ export class Workspace {
 
   async compilation ({ id }: { id: string }) {
     await this.ready;
-    
+
     try {
       return  {
         ... await this.compilations.get(id),
 
         id
       };
-      
+
     } catch (_) {
       return null;
     }
   }
 
-  async compilationAdd ({ input }) {
+  async compilationsAdd ({ input }) {
     await this.ready;
 
-    const { compilation } = input;
+    const { compilations } = input;
 
     return {
-      compilation: Promise.all(compilation.map(
+      compilations: Promise.all(compilations.map(
         async (compilationInput) => {
          const { compiler, contractTypes, sources } = compilationInput;
 
