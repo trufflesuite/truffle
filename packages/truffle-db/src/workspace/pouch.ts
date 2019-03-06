@@ -18,9 +18,6 @@ const resources = {
   },
   compilations: {
     createIndexes: [
-      { fields: ["compiler"] },
-      { fields: ["contractTypes"]},
-      { fields: ["sources"]}
     ]
   },
   bytecodes: {
