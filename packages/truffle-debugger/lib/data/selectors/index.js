@@ -403,25 +403,30 @@ const data = createSelectorTree({
      * 1. we're on the node corresponding to an argument to a modifier
      * invocation or base constructor call, or, if said argument is a type
      * conversion, its argument (or nested argument)
-     * 2. the next node is in a modifier body, function body, or *different*
-     * modifier invocation or base constructor call
+     * 2. the next node is not a FunctionDefinition, ModifierDefinition, or
+     * in the same modifier / base constructor invocation
      */
     aboutToModify: createLeaf(
       [
         "./scope",
         "./modifierInvocation",
+        "/next/scope",
         "/next/modifierInvocation",
-        "/next/inBody",
         evm.current.step.isContextChange
       ],
-      (node, invocation, nextInvocation, nextInBody, isContextChange) => {
+      (node, invocation, next, nextInvocation, isContextChange) => {
         //ensure: current instruction is not a context change (because if it is
-        //we cannot rely on data.next.function and data.next.inBody, but also
-        //if it is we know we're not about to call a modifier or base
-        //constructor!)
+        //we cannot rely on the data.next selectors, but also if it is we know
+        //we're not about to call a modifier or base constructor!)
         //we also want to return false if we can't find things for whatever
         //reason
-        if (isContextChange || !node || !invocation || !nextInvocation) {
+        if (
+          isContextChange ||
+          !node ||
+          !next ||
+          !invocation ||
+          !nextInvocation
+        ) {
           return false;
         }
 
@@ -432,12 +437,18 @@ const data = createSelectorTree({
           return false;
         }
 
-        //ensure: next node is in a body, or a different modifier invocation or
-        //inheritance specifier
+        //ensure: next node is not a function definition or modifier definition
         if (
-          !nextInBody &&
-          (nextInvocation.nodeType === "SourceUnit" ||
-            nextInvocation.id === invocation.id)
+          next.nodeType === "FunctionDefinition" ||
+          next.nodeType === "ModifierDefinition"
+        ) {
+          return false;
+        }
+
+        //ensure: next node is not in the same invocation
+        if (
+          nextInvocation.nodeType !== "SourceUnit" &&
+          nextInvocation.id === invocation.id
         ) {
           return false;
         }
@@ -738,43 +749,6 @@ const data = createSelectorTree({
         ];
         //again, SourceUnit included as fallback
         return findAncestorOfType(node, types, scopes);
-      }
-    ),
-
-    /**
-     * data.next.inBody
-     * are we in the *body* of a function or modifier?
-     */
-    inBody: createLeaf(
-      [
-        "./scope",
-        "./function",
-        "/views/scopes/inlined",
-        evm.current.step.isContextChange
-      ],
-      (node, functionNode, scopes, invalid) => {
-        //don't attempt this at a context change!
-        //(also don't attempt this if we can't find the node for whatever
-        //reason)
-        if (invalid || !node) {
-          return undefined;
-        }
-
-        //now, first: make sure the function is actually a function (or
-        //modifier)
-        if (
-          functionNode.nodeType !== "FunctionDefinition" &&
-          functionNode.nodeType !== "ModifierDefinition"
-        ) {
-          return false;
-        }
-
-        //next: let's get the pointers
-        let pointer = scopes[node.id].pointer;
-        let functionPointer = scopes[functionNode.id].pointer;
-
-        //now: does the pointer point within the body?
-        return pointer.startsWith(functionPointer + "/body");
       }
     ),
 
