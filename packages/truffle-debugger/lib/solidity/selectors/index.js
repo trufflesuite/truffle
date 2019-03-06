@@ -61,7 +61,7 @@ function createMultistepSelectors(stepSelector) {
     sourceRange: createLeaf(["./instruction"], getSourceRange),
 
     /**
-     * solidity.current.pointer
+     * .current.pointer
      */
     pointer: createLeaf(
       ["./source", "./sourceRange"],
@@ -70,7 +70,7 @@ function createMultistepSelectors(stepSelector) {
     ),
 
     /**
-     * solidity.current.node
+     * .current.node
      */
     node: createLeaf(
       ["./source", "./pointer"],
