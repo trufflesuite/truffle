@@ -709,30 +709,6 @@ const data = createSelectorTree({
     scope: createLeaf([solidity.next.node], identity),
 
     /**
-     * data.next.function
-     */
-    function: createLeaf(
-      ["./scope", "/views/scopes/inlined", evm.current.step.isContextChange],
-      (node, scopes, invalid) => {
-        //don't attempt this at a context change!
-        //(also don't attempt this if we can't find the node for whatever
-        //reason)
-        if (invalid || !node) {
-          return undefined;
-        }
-        const types = [
-          "FunctionDefinition",
-          "ModifierDefinition",
-          "ContractDefinition",
-          "SourceUnit"
-        ];
-        //no, not all of these are function definitions, as such, but I want a
-        //fallback in case we're outside a function definition somehow
-        return findAncestorOfType(node, types, scopes);
-      }
-    ),
-
-    /**
      * data.next.modifierInvocation
      * Note: yes, I'm just repeating the code from data.current here but with
      * invalid added
