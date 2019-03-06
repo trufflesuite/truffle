@@ -410,11 +410,12 @@ const data = createSelectorTree({
       [
         "./scope",
         "./modifierInvocation",
+        "./modifierArgumentIndex",
         "/next/scope",
         "/next/modifierInvocation",
         evm.current.step.isContextChange
       ],
-      (node, invocation, next, nextInvocation, isContextChange) => {
+      (node, invocation, index, next, nextInvocation, isContextChange) => {
         //ensure: current instruction is not a context change (because if it is
         //we cannot rely on the data.next selectors, but also if it is we know
         //we're not about to call a modifier or base constructor!)
@@ -455,14 +456,17 @@ const data = createSelectorTree({
 
         //now: are we on the node corresponding to an argument, or, if
         //it's a type conversion, its nested argument?
-        let modifierArguments = invocation.arguments;
-        return modifierArguments.some(argument => {
-          while (argument.kind === "typeConversion") {
-            if (node.id === argument.id) return true;
-            argument = argument.arguments[0];
+        if (index === undefined) {
+          return false;
+        }
+        let argument = invocation.arguments[index];
+        while (argument.kind === "typeConversion") {
+          if (node.id === argument.id) {
+            return true;
           }
-          return node.id === argument.id;
-        });
+          argument = argument.arguments[0];
+        }
+        return node.id === argument.id;
       }
     ),
 
