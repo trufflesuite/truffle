@@ -1,6 +1,6 @@
 {
   "name": "truffle-interface-adapter",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "A library that provides an adapter layer for Truffle to interace with different types of networks/ledgers.",
   "main": "index.js",
   "directories": {
