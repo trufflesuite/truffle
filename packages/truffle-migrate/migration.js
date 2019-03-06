@@ -144,8 +144,8 @@ class Migration {
 
   // ------------------------------------- Private -------------------------------------------------
   /**
-   * Runs the legacy migration sequence by instantiating a
-   * legacy deployer using a legacy web3 provider.
+   * Runs the legacy migration sequence by used in Truffle v4,
+   * but continues to use the concurrent Deployer and Web3 provider
    * @param  {Object}   options  config and command-line
    * @param  {Function} callback
    */

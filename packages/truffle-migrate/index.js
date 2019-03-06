@@ -148,35 +148,6 @@ const Migrate = {
     };
   },
 
-  wrapLegacyProvider: function(provider, logger) {
-    var printTransaction = function(tx_hash) {
-      logger.log("  ... " + tx_hash);
-    };
-
-    return {
-      send: function(payload) {
-        var result = provider.send(payload);
-
-        if (payload.method == "eth_sendTransaction") {
-          printTransaction(result.result);
-        }
-
-        return result;
-      },
-      sendAsync: function(payload, callback) {
-        provider.sendAsync(payload, function(err, result) {
-          if (err) return callback(err);
-
-          if (payload.method == "eth_sendTransaction") {
-            printTransaction(result.result);
-          }
-
-          callback(err, result);
-        });
-      }
-    };
-  },
-
   wrapResolver: function(resolver, provider) {
     return {
       require: function(import_path, search_path) {
