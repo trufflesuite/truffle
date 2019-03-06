@@ -15,7 +15,7 @@ class LoadingStrategy {
     };
     this.config = Object.assign({}, defaultConfig, options);
 
-    this.cachePath = Config.getCacheDirectory();
+    this.cachePath = path.resolve(Config.getCacheDirectory(), "compilers");
   }
 
   addFileToCache(code, fileName) {

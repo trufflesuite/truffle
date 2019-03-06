@@ -123,9 +123,12 @@ describe("CompilerSupplier", function() {
       let initialAccessTime;
       let finalAccessTime;
 
-      const configDirectory = Config.getCacheDirectory();
+      const compilerCacheDirectory = path.resolve(
+        Config.getCacheDirectory(),
+        "compilers"
+      );
       const expectedCache = path.resolve(
-        configDirectory,
+        compilerCacheDirectory,
         "soljson-v0.4.21+commit.dfe3193c.js"
       );
 
