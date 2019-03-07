@@ -223,7 +223,9 @@ module.exports = {
           // Generate hash of all sources including external packages - passed to solc inputs.
           var resolvedPaths = Object.keys(resolved);
           resolvedPaths.forEach(file => {
-            allSources[file] = resolved[file].body;
+            // Don't throw vyper files into solc!
+            if (path.extname(file) !== ".vy")
+              allSources[file] = resolved[file].body;
           });
 
           // Exit w/out minimizing if we've been asked to compile everything, or nothing.
