@@ -78,11 +78,11 @@ v4.0.2 or higher.
 
 ### Full Example
 
-Let's use `truffle-contract` with an example contract from [Dapps For Beginners](https://dappsforbeginners.wordpress.com/tutorials/your-first-dapp/). In this case, the abstraction has been saved to a `.sol.js` file by [truffle-artifactor](https://github.com/trufflesuite/truffle-artifactor):
+Let's use `truffle-contract` with an example contract from [Dapps For Beginners](https://dappsforbeginners.wordpress.com/tutorials/your-first-dapp/). In this case, the abstraction has been saved to a `.sol` file by [truffle-artifactor](https://github.com/trufflesuite/truffle/tree/master/packages/truffle-artifactor):
 
 ```javascript
 // Require the package that was previosly saved by truffle-artifactor
-var MetaCoin = require("./path/to/MetaCoin.sol.js");
+var MetaCoin = require("./path/to/MetaCoin.sol");
 
 // Remember to set the Web3 provider (see above).
 MetaCoin.setProvider(provider);
@@ -357,4 +357,4 @@ instance.setValue.estimateGas(5).then(function(result) {
 
 # Testing
 
-This package is the result of breaking up EtherPudding into multiple modules. Tests currently reside within [truffle-artifactor](https://github.com/trufflesuite/truffle-artifactor) but will soon move here.
+This package is the result of breaking up EtherPudding into multiple modules. Tests currently reside within [truffle-artifactor](https://github.com/trufflesuite/truffle/tree/master/packages/truffle-artifactor) but will soon move here.
