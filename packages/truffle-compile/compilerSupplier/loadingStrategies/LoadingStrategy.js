@@ -15,7 +15,12 @@ class LoadingStrategy {
     };
     this.config = Object.assign({}, defaultConfig, options);
 
-    this.cachePath = path.resolve(Config.getCacheDirectory(), "compilers");
+    const compilerCachePath = path.resolve(
+      Config.getCacheDirectory(),
+      "compilers"
+    );
+    if (!fs.existsSync(compilerCachePath)) fs.mkdirSync(compilerCachePath);
+    this.cachePath = compilerCachePath;
   }
 
   addFileToCache(code, fileName) {
