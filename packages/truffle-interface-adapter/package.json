@@ -7,7 +7,7 @@
     "lib": "lib"
   },
   "scripts": {
-    "test": "echo \"No test specified\" && exit 0;"
+    "test": "mocha"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-interface-adapter",
   "license": "MIT",
@@ -15,7 +15,9 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "homepage": "https://github.com/trufflesuite/truffle#readme",
-  "devDependencies": {},
+  "devDependencies": {
+    "ganache-core": "2.5.1"
+  },
   "dependencies": {
     "bn.js": "^4.11.8",
     "web3": "1.0.0-beta.37"
