@@ -1,21 +1,21 @@
 // Compares .sol files to their .sol.js counterparts,
 // determines which .sol files have been updated.
 
-var path = require("path");
-var async = require("async");
-var fs = require("fs");
-var Parser = require("./parser");
-var CompilerSupplier = require("./compilerSupplier");
-var expect = require("truffle-expect");
-var find_contracts = require("truffle-contract-sources");
-var debug = require("debug")("compile:profiler"); // eslint-disable-line no-unused-vars
+const path = require("path");
+const async = require("async");
+const fs = require("fs");
+const Parser = require("./parser");
+const CompilerSupplier = require("./compilerSupplier");
+const expect = require("truffle-expect");
+const find_contracts = require("truffle-contract-sources");
+const debug = require("debug")("compile:profiler"); // eslint-disable-line no-unused-vars
 
 module.exports = {
-  updated: function(options, callback) {
+  updated(options, callback) {
     expect.options(options, ["resolver"]);
 
-    var contracts_directory = options.contracts_directory;
-    var build_directory = options.contracts_build_directory;
+    const contracts_directory = options.contracts_directory;
+    const build_directory = options.contracts_build_directory;
 
     function getFiles(done) {
       if (options.files) {
@@ -25,20 +25,20 @@ module.exports = {
       }
     }
 
-    var sourceFilesArtifacts = {};
-    var sourceFilesArtifactsUpdatedTimes = {};
+    const sourceFilesArtifacts = {};
+    const sourceFilesArtifactsUpdatedTimes = {};
 
-    var updatedFiles = [];
+    const updatedFiles = [];
 
     async.series(
       [
         // Get all the source files and create an object out of them.
-        function(c) {
-          getFiles(function(err, files) {
+        c => {
+          getFiles((err, files) => {
             if (err) return c(err);
 
             // Use an object for O(1) access.
-            files.forEach(function(sourceFile) {
+            files.forEach(sourceFile => {
               sourceFilesArtifacts[sourceFile] = [];
             });
 
@@ -46,13 +46,11 @@ module.exports = {
           });
         },
         // Get all the artifact files, and read them, parsing them as JSON
-        function(c) {
-          fs.readdir(build_directory, function(err, build_files) {
+        c => {
+          fs.readdir(build_directory, (err, build_files) => {
             if (err) {
               // The build directory may not always exist.
-              if (
-                err.message.indexOf("ENOENT: no such file or directory") >= 0
-              ) {
+              if (err.message.includes("ENOENT: no such file or directory")) {
                 // Ignore it.
                 build_files = [];
               } else {
@@ -60,28 +58,28 @@ module.exports = {
               }
             }
 
-            build_files = build_files.filter(function(build_file) {
-              return path.extname(build_file) === ".json";
-            });
+            build_files = build_files.filter(
+              build_file => path.extname(build_file) === ".json"
+            );
 
             async.map(
               build_files,
-              function(buildFile, finished) {
+              (buildFile, finished) => {
                 fs.readFile(
                   path.join(build_directory, buildFile),
                   "utf8",
-                  function(err, body) {
+                  (err, body) => {
                     if (err) return finished(err);
                     finished(null, body);
                   }
                 );
               },
-              function(err, jsonData) {
+              (err, jsonData) => {
                 if (err) return c(err);
 
                 try {
-                  for (var i = 0; i < jsonData.length; i++) {
-                    var data = JSON.parse(jsonData[i]);
+                  for (let i = 0; i < jsonData.length; i++) {
+                    const data = JSON.parse(jsonData[i]);
 
                     // In case there are artifacts from other source locations.
                     if (sourceFilesArtifacts[data.sourcePath] == null) {
@@ -99,15 +97,15 @@ module.exports = {
             );
           });
         },
-        function(c) {
+        c => {
           // Get the minimum updated time for all of a source file's artifacts
           // (note: one source file might have multiple artifacts).
-          Object.keys(sourceFilesArtifacts).forEach(function(sourceFile) {
-            var artifacts = sourceFilesArtifacts[sourceFile];
+          Object.keys(sourceFilesArtifacts).forEach(sourceFile => {
+            const artifacts = sourceFilesArtifacts[sourceFile];
 
             sourceFilesArtifactsUpdatedTimes[sourceFile] = artifacts.reduce(
-              function(minimum, current) {
-                var updatedAt = new Date(current.updatedAt).getTime();
+              (minimum, current) => {
+                const updatedAt = new Date(current.updatedAt).getTime();
 
                 if (updatedAt < minimum) {
                   return updatedAt;
@@ -130,13 +128,13 @@ module.exports = {
         },
         // Stat all the source files, getting there updated times, and comparing them to
         // the artifact updated times.
-        function(c) {
-          var sourceFiles = Object.keys(sourceFilesArtifacts);
+        c => {
+          const sourceFiles = Object.keys(sourceFilesArtifacts);
 
           async.map(
             sourceFiles,
-            function(sourceFile, finished) {
-              fs.stat(sourceFile, function(err, stat) {
+            (sourceFile, finished) => {
+              fs.stat(sourceFile, (err, stat) => {
                 if (err) {
                   // Ignore it. This means the source file was removed
                   // but the artifact file possibly exists. Return null
@@ -146,20 +144,20 @@ module.exports = {
                 finished(null, stat);
               });
             },
-            function(err, sourceFileStats) {
+            (err, sourceFileStats) => {
               if (err) return callback(err);
 
-              sourceFiles.forEach(function(sourceFile, index) {
-                var sourceFileStat = sourceFileStats[index];
+              sourceFiles.forEach((sourceFile, index) => {
+                const sourceFileStat = sourceFileStats[index];
 
                 // Ignore updating artifacts if source file has been removed.
                 if (sourceFileStat == null) {
                   return;
                 }
 
-                var artifactsUpdatedTime =
+                const artifactsUpdatedTime =
                   sourceFilesArtifactsUpdatedTimes[sourceFile] || 0;
-                var sourceFileUpdatedTime = (
+                const sourceFileUpdatedTime = (
                   sourceFileStat.mtime || sourceFileStat.ctime
                 ).getTime();
 
@@ -173,7 +171,7 @@ module.exports = {
           );
         }
       ],
-      function(err) {
+      err => {
         callback(err, updatedFiles);
       }
     );
@@ -181,12 +179,12 @@ module.exports = {
 
   // Returns the minimal set of sources to pass to solc as compilations targets,
   // as well as the complete set of sources so solc can resolve the comp targets' imports.
-  required_sources: function(options, callback) {
-    var self = this;
+  required_sources(options, callback) {
+    const self = this;
 
     expect.options(options, ["paths", "base_path", "resolver"]);
 
-    var resolver = options.resolver;
+    const resolver = options.resolver;
 
     // Fetch the whole contract set
     find_contracts(options.contracts_directory, (err, allPaths) => {
@@ -199,15 +197,15 @@ module.exports = {
         }
       });
 
-      var updates = self
+      const updates = self
         .convert_to_absolute_paths(options.paths, options.base_path)
         .sort();
       allPaths = self
         .convert_to_absolute_paths(allPaths, options.base_path)
         .sort();
 
-      var allSources = {};
-      var compilationTargets = [];
+      const allSources = {};
+      const compilationTargets = [];
 
       // Load compiler
       const supplier = new CompilerSupplier(options.compilers.solc);
@@ -221,7 +219,7 @@ module.exports = {
             solc
           );
           // Generate hash of all sources including external packages - passed to solc inputs.
-          var resolvedPaths = Object.keys(resolved);
+          const resolvedPaths = Object.keys(resolved);
           resolvedPaths.forEach(file => {
             // Don't throw vyper files into solc!
             if (path.extname(file) !== ".vy")
@@ -245,21 +243,21 @@ module.exports = {
           async.whilst(
             () => updates.length > 0,
             updateFinished => {
-              var currentUpdate = updates.shift();
-              var files = allPaths.slice();
+              const currentUpdate = updates.shift();
+              const files = allPaths.slice();
 
               // While files: dequeue and inspect their imports
               async.whilst(
                 () => files.length > 0,
                 fileFinished => {
-                  var currentFile = files.shift();
+                  const currentFile = files.shift();
 
                   // Ignore targets already selected.
                   if (compilationTargets.includes(currentFile)) {
                     return fileFinished();
                   }
 
-                  var imports;
+                  let imports;
                   try {
                     imports = self.getImports(
                       currentFile,
@@ -267,8 +265,7 @@ module.exports = {
                       solc
                     );
                   } catch (err) {
-                    err.message =
-                      "Error parsing " + currentFile + ": " + e.message;
+                    err.message = `Error parsing ${currentFile}: ${e.message}`;
                     return fileFinished(err);
                   }
 
@@ -296,22 +293,22 @@ module.exports = {
 
   // Resolves sources in several async passes. For each resolved set it detects unknown
   // imports from external packages and adds them to the set of files to resolve.
-  resolveAllSources: async function(resolver, initialPaths, solc) {
-    var self = this;
-    var mapping = {};
-    var allPaths = initialPaths.slice();
+  async resolveAllSources(resolver, initialPaths, solc) {
+    const self = this;
+    const mapping = {};
+    const allPaths = initialPaths.slice();
 
     // Begin generateMapping
     function generateMapping(finished) {
-      var promises = [];
+      const promises = [];
 
       // Dequeue all the known paths, generating resolver promises,
       // We'll add paths if we discover external package imports.
       while (allPaths.length) {
-        var file;
-        var parent = null;
+        let file;
+        let parent = null;
 
-        var candidate = allPaths.shift();
+        const candidate = allPaths.shift();
 
         // Some paths will have been extracted as imports from a file
         // and have information about their parent location we need to track.
@@ -321,11 +318,9 @@ module.exports = {
         } else {
           file = candidate;
         }
-        var promise = new Promise((accept, reject) => {
+        const promise = new Promise((accept, reject) => {
           resolver.resolve(file, parent, (err, body, absolutePath, source) => {
-            err
-              ? reject(err)
-              : accept({ file: absolutePath, body: body, source: source });
+            err ? reject(err) : accept({ file: absolutePath, body, source });
           });
         });
         promises.push(promise);
@@ -342,14 +337,14 @@ module.exports = {
 
           // Queue unknown imports for the next resolver cycle
           while (results.length) {
-            var result = results.shift();
+            const result = results.shift();
 
             // Inspect the imports
-            var imports;
+            let imports;
             try {
               imports = self.getImports(result.file, result, solc);
             } catch (err) {
-              err.message = "Error parsing " + result.file + ": " + err.message;
+              err.message = `Error parsing ${result.file}: ${err.message}`;
               return finished(err);
             }
 
@@ -374,32 +369,33 @@ module.exports = {
     });
   },
 
-  getImports: function(file, resolved, solc) {
-    var self = this;
+  getImports(file, { body, source }, solc) {
+    const self = this;
 
     // No imports in vyper!
     if (path.extname(file) === ".vy") return [];
 
-    var imports = Parser.parseImports(resolved.body, solc);
+    const imports = Parser.parseImports(body, solc);
 
     // Convert explicitly relative dependencies of modules back into module paths.
-    return imports.map(dependencyPath => {
-      return self.isExplicitlyRelative(dependencyPath)
-        ? resolved.source.resolve_dependency_path(file, dependencyPath)
-        : dependencyPath;
-    });
+    return imports.map(
+      dependencyPath =>
+        self.isExplicitlyRelative(dependencyPath)
+          ? source.resolve_dependency_path(file, dependencyPath)
+          : dependencyPath
+    );
   },
 
-  listsEqual: function(listA, listB) {
-    var a = listA.sort();
-    var b = listB.sort();
+  listsEqual(listA, listB) {
+    const a = listA.sort();
+    const b = listB.sort();
 
     return JSON.stringify(a) === JSON.stringify(b);
   },
 
-  convert_to_absolute_paths: function(paths, base) {
-    var self = this;
-    return paths.map(function(p) {
+  convert_to_absolute_paths(paths, base) {
+    const self = this;
+    return paths.map(p => {
       // If it's anabsolute paths, leave it alone.
       if (path.isAbsolute(p)) return p;
 
@@ -411,7 +407,7 @@ module.exports = {
     });
   },
 
-  isExplicitlyRelative: function(import_path) {
+  isExplicitlyRelative(import_path) {
     return import_path.indexOf(".") === 0;
   }
 };
