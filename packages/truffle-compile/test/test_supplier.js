@@ -124,7 +124,7 @@ describe("CompilerSupplier", function() {
       let finalAccessTime;
 
       const compilerCacheDirectory = path.resolve(
-        Config.getCacheDirectory(),
+        Config.getTruffleDataDirectory(),
         "compilers"
       );
       const expectedCache = path.resolve(
