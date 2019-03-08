@@ -300,7 +300,10 @@ var Networks = {
       return callback(null, false);
     }
 
-    var web3 = new Web3Shim({ provider });
+    var web3 = new Web3Shim({
+      provider,
+      networkType: network_options.type
+    });
     web3.eth.net
       .getId(current_network_id => {
         if (first === current_network_id) {

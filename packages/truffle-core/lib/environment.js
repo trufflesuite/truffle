@@ -57,7 +57,10 @@ const Environment = {
       );
     }
 
-    var web3 = new Web3Shim(config);
+    var web3 = new Web3Shim({
+      provider: config.provider,
+      networkType: config.networks[config.network].type
+    });
 
     async function detectNetworkId() {
       const providerNetworkId = await web3.eth.net.getId();
@@ -104,7 +107,10 @@ const Environment = {
   fork: async function(config, callback) {
     expect.options(config, ["from"]);
 
-    var web3 = new Web3Shim(config);
+    var web3 = new Web3Shim({
+      provider: config.provider,
+      networkType: config.network.type
+    });
 
     try {
       var accounts = await web3.eth.getAccounts();

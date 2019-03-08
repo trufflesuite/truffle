@@ -35,7 +35,10 @@ function Console(tasks, options) {
   this.repl = options.repl || new ReplManager(options);
   this.command = new Command(tasks);
 
-  this.web3 = new Web3Shim(options);
+  this.web3 = new Web3Shim({
+    provider: options.provider,
+    networkType: options.network.type
+  });
 
   // Bubble the ReplManager's exit event
   this.repl.on("exit", function() {

@@ -3,30 +3,50 @@ const BN = require("bn.js");
 
 // This is a temporary shim to support the basic issues with Quorum
 
-class Web3Shim {
+class Web3Shim extends Web3 {
   constructor(options) {
-    let web3 = new Web3();
+    super();
+
+    this.networkType = options.networkType || "ethereum";
 
     if (options.provider) {
-      web3.setProvider(options.provider);
+      this.initProvider(options.provider);
     }
 
-    if (options.quorum) {
-      // duck punch the block output formatter since quorum uses nanoseconds in the timestamp
-      // field instead of seconds
-      const _oldFormatter = web3.eth.getBlock.method.outputFormatter;
-      web3.eth.getBlock.method.outputFormatter = block => {
-        const _oldTimestamp = block.timestamp;
-        let timestamp = new BN(block.timestamp.slice(2), 16);
-        timestamp = timestamp.div(new BN(10).pow(new BN(9)));
-        block.timestamp = "0x" + timestamp.toString(16);
-        let result = _oldFormatter.call(web3.eth.getBlock.method, block);
-        result.timestamp = _oldTimestamp;
-        return result;
-      };
-    }
+    this.initInterface();
+  }
 
-    return web3;
+  setNetworkType(networkType) {
+    this.networkType = networkType;
+    this.initInterface();
+  }
+
+  initInterface() {
+    switch (this.networkType) {
+      case "quorum": {
+        this.initQuorum();
+        break;
+      }
+      case "ethereum":
+      default: {
+        break;
+      }
+    }
+  }
+
+  initQuorum() {
+    // duck punch the block output formatter since quorum uses nanoseconds in the timestamp
+    // field instead of seconds
+    const _oldFormatter = this.eth.getBlock.method.outputFormatter;
+    this.eth.getBlock.method.outputFormatter = block => {
+      const _oldTimestamp = block.timestamp;
+      let timestamp = new BN(block.timestamp.slice(2), 16);
+      timestamp = timestamp.div(new BN(10).pow(new BN(9)));
+      block.timestamp = "0x" + timestamp.toString(16);
+      let result = _oldFormatter.call(this.eth.getBlock.method, block);
+      result.timestamp = _oldTimestamp;
+      return result;
+    };
   }
 }
 

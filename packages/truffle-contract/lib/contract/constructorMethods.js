@@ -326,11 +326,12 @@ module.exports = Contract => {
 
       bootstrap(temp);
 
-      temp.web3 = new Web3Shim(temp._json);
+      temp.web3 = new Web3Shim();
       temp.class_defaults = temp.prototype.defaults || {};
 
       if (network_id) {
         temp.setNetwork(network_id);
+        temp.web3.setNetworkType(temp._json.networks[network_id]);
       }
 
       // Copy over custom key/values to the contract class

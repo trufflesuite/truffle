@@ -6,7 +6,7 @@ var command = {
   builder: migrate.builder,
   help: {
     usage:
-      "truffle deploy [--legacy] [--quorum] [--reset] [-f <number>] [--network <name>] [--compile-all] [--verbose-rpc]",
+      "truffle deploy [--reset] [-f <number>] [--network <name>] [--compile-all] [--verbose-rpc]",
     options: migrate.help.options
   },
   run: migrate.run

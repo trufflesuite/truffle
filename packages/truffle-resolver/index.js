@@ -26,8 +26,6 @@ Resolver.prototype.require = function(import_path, search_path) {
     var source = self.sources[i];
     var result = source.require(import_path, search_path);
     if (result) {
-      if (self.options.legacy) result.legacy = true;
-      if (self.options.quorum) result.quorum = true;
       var abstraction = contract(result);
       provision(abstraction, self.options);
       return abstraction;

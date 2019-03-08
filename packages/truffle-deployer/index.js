@@ -22,7 +22,6 @@ class Deployer extends Deployment {
     this.provider = options.provider;
     this.basePath = options.basePath || process.cwd();
     this.known_contracts = {};
-    this.legacy = options.legacy || false;
 
     (options.contracts || []).forEach(
       contract => (this.known_contracts[contract.contract_name] = contract)
@@ -43,7 +42,7 @@ class Deployer extends Deployment {
     const args = Array.prototype.slice.call(arguments);
     const contract = args.shift();
 
-    if (this.legacy) {
+    if (this.network.type === "quorum") {
       if (Array.isArray(contract)) {
         return this.queueOrExec(Legacy.deployMany(contract, this));
       } else {

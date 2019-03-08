@@ -125,7 +125,10 @@ var Package = {
     options.network = "ropsten";
 
     var provider = options.provider;
-    var web3 = new Web3Shim(options);
+    var web3 = new Web3Shim({
+      provider: options.provider,
+      networkType: options.network.type
+    });
     var host = options.ethpm.ipfs_host;
 
     if (host instanceof EthPM.hosts.IPFS === false) {

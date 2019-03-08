@@ -153,7 +153,10 @@ class Migration {
     const self = this;
     const logger = options.logger;
 
-    const web3 = new Web3Shim(options);
+    const web3 = new Web3Shim({
+      provider: options.provider,
+      networkType: options.network.type
+    });
 
     logger.log(
       "Running migration: " +
@@ -174,8 +177,7 @@ class Migration {
       network: options.network,
       network_id: options.network_id,
       provider: options.provider,
-      basePath: path.dirname(self.file),
-      legacy: options.legacy
+      basePath: path.dirname(self.file)
     });
 
     const finish = err => {
@@ -253,7 +255,7 @@ class Migration {
   async run(options, callback) {
     const self = this;
 
-    if (options.legacy) {
+    if (options.network.type === "quorum") {
       await self.runLegacyMigrations(options, callback);
       return;
     }
@@ -261,7 +263,10 @@ class Migration {
     const logger = options.logger;
     const resolver = new ResolverIntercept(options.resolver);
 
-    const web3 = new Web3Shim(options);
+    const web3 = new Web3Shim({
+      provider: options.provider,
+      networkType: options.network.type
+    });
 
     // Initial context.
     const context = {
@@ -276,8 +281,7 @@ class Migration {
       network: options.network,
       network_id: options.network_id,
       provider: options.provider,
-      basePath: path.dirname(self.file),
-      legacy: options.legacy
+      basePath: path.dirname(self.file)
     });
 
     // Connect reporter to this migration

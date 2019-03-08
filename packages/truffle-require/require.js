@@ -112,7 +112,10 @@ var Require = {
       "network_id"
     ]);
 
-    var web3 = new Web3Shim(options);
+    var web3 = new Web3Shim({
+      provider: options.provider,
+      networkType: options.network.type
+    });
 
     self.file(
       {
