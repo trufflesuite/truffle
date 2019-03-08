@@ -390,7 +390,7 @@ Config.getUserConfig = function() {
   return new Configstore("truffle", {}, { globalConfigPath: true });
 };
 
-Config.getCacheDirectory = () => {
+Config.getTruffleDataDirectory = () => {
   const configStore = new Configstore(
     "truffle",
     {},

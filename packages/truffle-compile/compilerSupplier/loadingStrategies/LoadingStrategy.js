@@ -16,11 +16,11 @@ class LoadingStrategy {
     this.config = Object.assign({}, defaultConfig, options);
 
     const compilerCachePath = path.resolve(
-      Config.getCacheDirectory(),
+      Config.getTruffleDataDirectory(),
       "compilers"
     );
     if (!fs.existsSync(compilerCachePath)) fs.mkdirSync(compilerCachePath);
-    this.cachePath = compilerCachePath;
+    this.compilerCachePath = compilerCachePath;
   }
 
   addFileToCache(code, fileName) {
@@ -89,7 +89,7 @@ class LoadingStrategy {
   }
 
   resolveCache(fileName) {
-    return path.resolve(this.cachePath, fileName);
+    return path.resolve(this.compilerCachePath, fileName);
   }
 }
 
