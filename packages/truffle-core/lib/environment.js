@@ -105,11 +105,11 @@ const Environment = {
 
   // Ensure you call Environment.detect() first.
   fork: async function(config, callback) {
-    expect.options(config, ["from"]);
+    expect.options(config, ["from", "provider", "networks", "network"]);
 
     var web3 = new Web3Shim({
       provider: config.provider,
-      networkType: config.network.type
+      networkType: config.networks[config.network].type
     });
 
     try {

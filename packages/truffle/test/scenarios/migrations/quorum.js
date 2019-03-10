@@ -16,11 +16,11 @@ function processErr(err, output) {
   }
 }
 
-describe("migrate with --quorum (and inherently --legacy)", function() {
+describe("migrate with quroum interface", function() {
   let config;
   let web3;
   let networkId;
-  const project = path.join(__dirname, "../../sources/migrations/success");
+  const project = path.join(__dirname, "../../sources/migrations/quorum");
   const logger = new MemoryLogger();
 
   before(done => Server.start(done));
@@ -45,7 +45,7 @@ describe("migrate with --quorum (and inherently --legacy)", function() {
   it("runs migrations (sync & async/await)", function(done) {
     this.timeout(70000);
 
-    CommandRunner.run("migrate --quorum", config, err => {
+    CommandRunner.run("migrate", config, err => {
       const output = logger.contents();
       processErr(err, output);
 

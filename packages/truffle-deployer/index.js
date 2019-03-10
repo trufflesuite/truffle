@@ -9,7 +9,7 @@ const Legacy = require("truffle-legacy-system");
 class Deployer extends Deployment {
   constructor(options) {
     options = options || {};
-    expect.options(options, ["provider", "network", "network_id"]);
+    expect.options(options, ["provider", "networks", "network", "network_id"]);
 
     const emitter = new Emittery();
     super(emitter, options);
@@ -18,6 +18,7 @@ class Deployer extends Deployment {
     this.chain = new DeferredChain();
     this.logger = options.logger || { log: function() {} };
     this.network = options.network;
+    this.networks = options.networks;
     this.network_id = options.network_id;
     this.provider = options.provider;
     this.basePath = options.basePath || process.cwd();
@@ -42,7 +43,7 @@ class Deployer extends Deployment {
     const args = Array.prototype.slice.call(arguments);
     const contract = args.shift();
 
-    if (this.network.type === "quorum") {
+    if (this.networks[this.network].type === "quorum") {
       if (Array.isArray(contract)) {
         return this.queueOrExec(Legacy.deployMany(contract, this));
       } else {

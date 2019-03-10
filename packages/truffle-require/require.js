@@ -114,7 +114,7 @@ var Require = {
 
     var web3 = new Web3Shim({
       provider: options.provider,
-      networkType: options.network.type
+      networkType: options.networks[options.network].type
     });
 
     self.file(

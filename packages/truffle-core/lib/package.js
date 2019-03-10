@@ -127,7 +127,7 @@ var Package = {
     var provider = options.provider;
     var web3 = new Web3Shim({
       provider: options.provider,
-      networkType: options.network.type
+      networkType: "ethereum"
     });
     var host = options.ethpm.ipfs_host;
 

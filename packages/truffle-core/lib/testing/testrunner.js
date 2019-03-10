@@ -28,7 +28,10 @@ function TestRunner(options = {}) {
   this.first_snapshot = true;
   this.initial_snapshot = null;
   this.known_events = {};
-  this.web3 = new Web3Shim(options);
+  this.web3 = new Web3Shim({
+    provider: options.provider,
+    networkType: options.networks[options.network].type
+  });
 
   // For each test
   this.currentTestStartBlock = null;

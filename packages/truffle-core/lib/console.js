@@ -23,6 +23,7 @@ function Console(tasks, options) {
     "contracts_directory",
     "contracts_build_directory",
     "migrations_directory",
+    "networks",
     "network",
     "network_id",
     "provider",
@@ -37,7 +38,7 @@ function Console(tasks, options) {
 
   this.web3 = new Web3Shim({
     provider: options.provider,
-    networkType: options.network.type
+    networkType: options.networks[options.network].type
   });
 
   // Bubble the ReplManager's exit event

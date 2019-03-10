@@ -114,9 +114,7 @@ var properties = {
     }
   },
   devdoc: {},
-  userdoc: {},
-  legacy: {},
-  quorum: {}
+  userdoc: {}
 };
 
 /**

@@ -155,7 +155,7 @@ class Migration {
 
     const web3 = new Web3Shim({
       provider: options.provider,
-      networkType: options.network.type
+      networkType: options.networks[options.network].type
     });
 
     logger.log(
@@ -174,6 +174,7 @@ class Migration {
       logger: logger,
       confirmations: options.confirmations,
       timeoutBlocks: options.timeoutBlocks,
+      networks: options.networks,
       network: options.network,
       network_id: options.network_id,
       provider: options.provider,
@@ -255,7 +256,7 @@ class Migration {
   async run(options, callback) {
     const self = this;
 
-    if (options.network.type === "quorum") {
+    if (options.networks[options.network].type === "quorum") {
       await self.runLegacyMigrations(options, callback);
       return;
     }
@@ -265,7 +266,7 @@ class Migration {
 
     const web3 = new Web3Shim({
       provider: options.provider,
-      networkType: options.network.type
+      networkType: options.networks[options.network].type
     });
 
     // Initial context.
@@ -278,6 +279,7 @@ class Migration {
       logger: logger,
       confirmations: options.confirmations,
       timeoutBlocks: options.timeoutBlocks,
+      networks: options.networks,
       network: options.network,
       network_id: options.network_id,
       provider: options.provider,

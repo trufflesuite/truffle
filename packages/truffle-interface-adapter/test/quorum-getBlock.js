@@ -17,7 +17,7 @@ async function prepareGanache(quorumEnabled) {
 
       web3Shim = new Web3Shim({
         provider: new Web3.providers.HttpProvider(`http://127.0.0.1:${port}`),
-        quorum: quorumEnabled
+        networkType: quorumEnabled ? "quorum" : "ethereum"
       });
       resolve({
         server,

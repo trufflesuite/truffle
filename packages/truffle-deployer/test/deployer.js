@@ -7,7 +7,7 @@ const EventEmitter = require("events");
 const Deployer = require("../index");
 const utils = require("./helpers/utils");
 
-describe("Deployer (sync)", function() {
+describe.only("Deployer (sync)", function() {
   let owner;
   let options;
   let networkId;
@@ -57,6 +57,11 @@ describe("Deployer (sync)", function() {
         UsesLibrary,
         Abstract
       ],
+      networks: {
+        test: {
+          // TODO:
+        }
+      },
       network: "test",
       network_id: networkId,
       provider: provider,
@@ -218,7 +223,7 @@ describe("Deployer (sync)", function() {
     assert(output.includes("UsesExample"));
   });
 
-  it("waits for confirmations", async function() {
+  it.only("waits for confirmations", async function() {
     this.timeout(15000);
     const startBlock = await web3.eth.getBlockNumber();
 
@@ -236,8 +241,8 @@ describe("Deployer (sync)", function() {
 
     utils.stopAutoMine();
 
-    const isLibrary = await IsLibrary.deployed();
-    const example = await Example.deployed();
+    await IsLibrary.deployed();
+    await Example.deployed();
 
     const libReceipt = await web3.eth.getTransactionReceipt(
       IsLibrary.transactionHash
@@ -256,7 +261,7 @@ describe("Deployer (sync)", function() {
 
   it("emits block events while waiting for a tx to mine", async function() {
     this.timeout(15000);
-    const startBlock = await web3.eth.getBlockNumber();
+    await web3.eth.getBlockNumber();
 
     utils.startAutoMine(web3, 4000);
 
