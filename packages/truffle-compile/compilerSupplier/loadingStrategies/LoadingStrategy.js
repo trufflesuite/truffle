@@ -1,4 +1,5 @@
-const findCacheDir = require("find-cache-dir");
+const Config = require("truffle-config");
+const path = require("path");
 const fs = require("fs");
 
 class LoadingStrategy {
@@ -13,11 +14,13 @@ class LoadingStrategy {
         "https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/"
     };
     this.config = Object.assign({}, defaultConfig, options);
-    this.cachePath = findCacheDir({
-      name: "truffle",
-      cwd: __dirname,
-      create: true
-    });
+
+    const compilerCachePath = path.resolve(
+      Config.getTruffleDataDirectory(),
+      "compilers"
+    );
+    if (!fs.existsSync(compilerCachePath)) fs.mkdirSync(compilerCachePath);
+    this.compilerCachePath = compilerCachePath;
   }
 
   addFileToCache(code, fileName) {
@@ -86,12 +89,7 @@ class LoadingStrategy {
   }
 
   resolveCache(fileName) {
-    const thunk = findCacheDir({
-      name: "truffle",
-      cwd: __dirname,
-      thunk: true
-    });
-    return thunk(fileName);
+    return path.resolve(this.compilerCachePath, fileName);
   }
 }
 
