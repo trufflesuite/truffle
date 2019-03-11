@@ -29,7 +29,7 @@ async function prepareGanache(quorumEnabled) {
 
 describe("Quorum getBlock Overload", () => {
   it("recovers block timestamp as hexstring instead of number w/ quorum=true", async () => {
-    return new Promise(async resolve => {
+    return new Promise(async (resolve, reject) => {
       let preparedGanache;
       try {
         preparedGanache = await prepareGanache(true);
