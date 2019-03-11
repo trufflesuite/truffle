@@ -241,6 +241,14 @@ module.exports = Contract => {
       this.network_id = network_id + "";
     },
 
+    setNetworkType: function(networkType) {
+      if (this.web3) {
+        this.web3.setNetworkType(networkType);
+      }
+
+      this.networkType = networkType;
+    },
+
     setWallet: function(wallet) {
       this.web3.eth.accounts.wallet = wallet;
     },
@@ -326,12 +334,13 @@ module.exports = Contract => {
 
       bootstrap(temp);
 
-      temp.web3 = new Web3Shim();
+      temp.web3 = new Web3Shim({
+        type: temp.networkType
+      });
       temp.class_defaults = temp.prototype.defaults || {};
 
       if (network_id) {
         temp.setNetwork(network_id);
-        temp.web3.setNetworkType(temp._json.networks[network_id]);
       }
 
       // Copy over custom key/values to the contract class
