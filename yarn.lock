@@ -50,6 +50,14 @@
   version "7.3.1"
   resolved "https://registry.yarnpkg.com/@babel/parser/-/parser-7.3.1.tgz#8f4ffd45f779e6132780835ffa7a215fa0b2d181"
 
+"@babel/runtime-corejs2@^7.2.0":
+  version "7.3.4"
+  resolved "https://registry.yarnpkg.com/@babel/runtime-corejs2/-/runtime-corejs2-7.3.4.tgz#63f8bbc77622da202e9ea6f8f6e3bf28991832d9"
+  integrity sha512-QwPuQE65kNxjsNKk34Rfgen2R5fk0J2So99SD45uXBp34QOfyz11SqVgJ4xvyCpnCIieSQ0X0hSSc9z/ymlJJw==
+  dependencies:
+    core-js "^2.5.7"
+    regenerator-runtime "^0.12.0"
+
 "@babel/runtime@^7.0.0", "@babel/runtime@^7.3.1":
   version "7.3.1"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.3.1.tgz#574b03e8e8a9898eaf4a872a92ea20b7846f6f2a"
@@ -3212,6 +3220,11 @@ copy-webpack-plugin@^4.0.1:
 core-js@^2.4.0, core-js@^2.5.0:
   version "2.6.3"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.3.tgz#4b70938bdffdaf64931e66e2db158f0892289c49"
+
+core-js@^2.5.7:
+  version "2.6.5"
+  resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.5.tgz#44bc8d249e7fb2ff5d00e0341a7ffb94fbf67895"
+  integrity sha512-klh/kDpwX8hryYL14M9w/xei6vrv6sE8gTHDG7/T/+SEovB/G4ejwcfE/CBzO6Edsu+OETZMZ3wcX/EjUkrl5A==
 
 core-util-is@1.0.2, core-util-is@~1.0.0:
   version "1.0.2"
@@ -13742,6 +13755,13 @@ xhr@^2.0.4, xhr@^2.2.0, xhr@^2.3.3:
 xmlhttprequest@*, xmlhttprequest@1.8.0, xmlhttprequest@^1.8.0:
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/xmlhttprequest/-/xmlhttprequest-1.8.0.tgz#67fe075c5c24fef39f9d65f5f7b7fe75171968fc"
+
+xregexp@^4.2.4:
+  version "4.2.4"
+  resolved "https://registry.yarnpkg.com/xregexp/-/xregexp-4.2.4.tgz#02a4aea056d65a42632c02f0233eab8e4d7e57ed"
+  integrity sha512-sO0bYdYeJAJBcJA8g7MJJX7UrOZIfJPd8U2SC7B2Dd/J24U0aQNoGp33shCaBSWeb0rD5rh6VBUIXOkGal1TZA==
+  dependencies:
+    "@babel/runtime-corejs2" "^7.2.0"
 
 xtend@^4.0.0, xtend@^4.0.1, xtend@~4.0.0, xtend@~4.0.1:
   version "4.0.1"
