@@ -7,7 +7,7 @@ const EventEmitter = require("events");
 const Deployer = require("../index");
 const utils = require("./helpers/utils");
 
-describe.only("Deployer (sync)", function() {
+describe("Deployer (sync)", function() {
   let owner;
   let options;
   let networkId;
@@ -223,7 +223,7 @@ describe.only("Deployer (sync)", function() {
     assert(output.includes("UsesExample"));
   });
 
-  it.only("waits for confirmations", async function() {
+  it("waits for confirmations", async function() {
     this.timeout(15000);
     const startBlock = await web3.eth.getBlockNumber();
 
