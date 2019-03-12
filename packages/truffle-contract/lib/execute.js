@@ -7,16 +7,6 @@ var Reason = require("./reason");
 var handlers = require("./handlers");
 var override = require("./override");
 var reformat = require("./reformat");
-var BN = require("bn.js");
-
-function createBN(n) {
-  if (typeof n === "string" && n.startsWith("0x")) {
-    n = n.slice(2);
-    return new BN(n, "hex");
-  } else {
-    return new BN(n);
-  }
-}
 
 var execute = {
   // -----------------------------------  Helpers --------------------------------------------------
@@ -38,13 +28,15 @@ var execute = {
       web3.eth
         .estimateGas(params)
         .then(gas => {
-          var bestEstimate = createBN(gas).muln(constructor.gasMultiplier);
+          var bestEstimate = utils
+            .bigNumberify(gas)
+            .mul(constructor.gasMultiplier);
 
           // Don't go over blockLimit
-          const limit = createBN(blockLimit);
+          const limit = utils.bigNumberify(blockLimit);
           bestEstimate.gte(limit)
-            ? accept("0x" + limit.subn(1).toString(16))
-            : accept("0x" + bestEstimate.toString(16));
+            ? accept(limit.sub(1).toHexString())
+            : accept(bestEstimate.toHexString());
 
           // We need to let txs that revert through.
           // Often that's exactly what you are testing.
