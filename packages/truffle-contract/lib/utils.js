@@ -215,9 +215,7 @@ var Utils = {
       }
     });
     return converted;
-  },
-
-  bigNumberify
+  }
 };
 
 module.exports = Utils;
