@@ -17,6 +17,9 @@ export const schema = mergeSchemas({
         extend type Bytecode {
           id: ID!
         }
+        extend type Contract {
+          id: ID!
+        }
         `,
       ]
     }),
@@ -24,7 +27,7 @@ export const schema = mergeSchemas({
     // define entrypoints
     `type Query {
       contractNames: [String]!
-      contractType(name: String!): ContractType
+      contract(id: ID!): Contract
       source(id: ID!): Source
       bytecode(id: ID!): Bytecode
     }
@@ -54,25 +57,27 @@ export const schema = mergeSchemas({
       bytecodes: [Bytecode!]
     }
 
-    input contractTypeInput {
-      abi: String
+    input contractSourceInput {
+      id: ID!
+    }
+
+    input contractInput {
       name: String
-      compilation: Object
-      createBytecode: BytecodeInput
+      source: contractSourceInput!
     }
 
-    input ContractTypesAddInput {
-      contractType: [contractTypeInput!]!
+    input ContractsAddInput {
+      contracts: [contractInput!]!
     }
 
-    type ContractTypesAddPayload {
-      contractType: [ContractType!]
+    type ContractsAddPayload {
+      contracts: [Contract]!
     }
 
     type Mutation {
       sourcesAdd(input: SourcesAddInput!): SourcesAddPayload
       bytecodesAdd(input: BytecodesAddInput!): BytecodesAddPayload
-      contractTypesAdd(input:ContractTypesAddInput!):ContractTypesAddPayload
+      contractsAdd(input:ContractsAddInput!):ContractsAddPayload
     } `
   ],
   resolvers: {
@@ -81,9 +86,9 @@ export const schema = mergeSchemas({
         resolve: (_, {}, { workspace }) =>
           workspace.contractNames()
       },
-      contractType: {
-        resolve: (_, { name }, { workspace }) =>
-          workspace.contractType({ name })
+      contract: {
+        resolve: (_, { id }, { workspace }) =>
+          workspace.contract({ id })
       },
       source: {
         resolve: (_, { id }, { workspace }) =>
@@ -103,16 +108,16 @@ export const schema = mergeSchemas({
         resolve: (_, { input }, { workspace }) =>
           workspace.bytecodesAdd({ input })
       },
-      contractTypesAdd: {
+      contractsAdd: {
         resolve: (_, {input}, {workspace}) => 
-        workspace.contractTypesAdd({input})
+        workspace.contractsAdd({input})
       }
     },
-    ContractType: {
-      createBytecode: {
-        resolve: ({ createBytecode }, _, { workspace }) =>
-          workspace.bytecode(createBytecode)
+    Contract: {
+      source: {
+        resolve: ({ source }, _, { workspace }) => 
+          workspace.source(source)
       }
-    }
+    },
   }
 });

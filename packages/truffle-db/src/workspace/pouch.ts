@@ -5,9 +5,8 @@ import PouchDBFind from "pouchdb-find";
 import { soliditySha3 } from "web3-utils";
 
 const resources = {
-  contractTypes: {
+  contracts: {
     createIndexes: [
-      { fields: ["name"] }
     ]
   },
   sources: {
@@ -23,7 +22,7 @@ const resources = {
 }
 
 export class Workspace {
-  contractTypes: PouchDB.Database;
+  contracts: PouchDB.Database;
   sources: PouchDB.Database;
   bytecodes: PouchDB.Database;
 
@@ -55,51 +54,54 @@ export class Workspace {
   async contractNames () {
     await this.ready;
 
-    const { docs }: any = await this.contractTypes.find({
+    const { docs }: any = await this.contracts.find({
       selector: {},
       fields: ['name']
     })
     return docs.map( ({ name }) => name );
   }
 
-  async contractType ({ name }: { name: string }) {
+  async contract ({ id }: { id: string }) {
     await this.ready;
 
     try {
       const result = {
-        ...await this.contractTypes.get(name)
+        ...await this.contracts.get(id), 
+
+        id
       }
+      
       return result;
     } catch (_) {
       return null;
     }
   }
 
-  async contractTypesAdd (contractType: {
-    name: string,
-    abi?: string,
-    createBytecode?: string
-  }) {
+  async contractsAdd({input}) {
     await this.ready;
 
-    const { name, abi, createBytecode } = contractType;
+    const { contracts } = input;
+    
+    return {
+      contracts: Promise.all(contracts.map(
+        async (contractInput) => {
+          const { name, source } = contractInput;
+          const id = soliditySha3(name, source.id);
+          const contract = await this.contract( { id } );
+   
+          if(contract) {
+            return contract;
+          } else {
+            await this.contracts.put({
+            ...contractInput, 
+            _id: id,
+            });
 
-    const { _rev } = await this.contractType({ name }) || { _rev: null };
-
-    await this.contractTypes.put({
-      name,
-      abi: {
-        json: abi
-      },
-      createBytecode: {
-        id: createBytecode
-      },
-
-      _rev,
-      _id: contractType.name
-    });
-
-    return name;
+            return { name, source, id };
+          }
+        }
+      ))
+    }
   }
 
   async source ({ id }: { id: string }) {
