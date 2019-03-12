@@ -178,3 +178,83 @@ it("adds bytecode", async () => {
     expect(bytes).toEqual(variables.bytes);
   }
 });
+
+const GetContract = `
+query getContract($id:ID!){
+    contract(id:$id) {
+      name
+      source {
+        contents
+      }
+    }
+}`
+
+const AddContracts = `
+mutation addContracts($contractName: String, $sourceId: ID!) {
+  contractsAdd(input: {
+    contracts: [{
+      name: $contractName
+      source: {
+        id: $sourceId
+      }
+    }]
+  }) {
+    contracts {
+      id
+      name
+      source {
+        id
+      }
+    }
+  }
+}`
+
+it("adds contracts", async () => {
+  const workspace = new Workspace();
+  const id = soliditySha3(Migrations.contractName, soliditySha3(Migrations.source, Migrations.sourcePath))
+  
+  const variables = {
+    contractName: Migrations.contractName,
+    sourceId: soliditySha3(Migrations.source, Migrations.sourcePath),
+    id: id
+  }
+
+  // add contracts
+  {
+    const result = await graphql(
+      schema, AddContracts, null, { workspace }, variables
+    );
+    const { data } = result;
+    expect(data).toHaveProperty("contractsAdd");
+
+    const { contractsAdd } = data;
+    expect(contractsAdd).toHaveProperty("contracts");
+
+    const { contracts } = contractsAdd;
+    expect(contracts).toHaveLength(1);
+
+    const contract = contracts[0];
+    expect(contract).toHaveProperty("id");
+    expect(contract).toHaveProperty("name");
+    expect(contract).toHaveProperty("source");
+
+    const { id } = contract;
+    expect(id).toEqual(variables.id);
+  }
+
+  // ensure retrieved as matching
+  {
+    const result = await graphql(schema, GetContract, null, { workspace }, { id: variables.id });
+    const { data } = result;
+    expect(data).toHaveProperty("contract");
+
+    const { contract } = data;
+    expect(contract).toHaveProperty("name");
+    expect(contract).toHaveProperty("source");
+  
+
+    const { name, source } = contract;
+    expect(name).toEqual(variables.contractName);
+    expect(source.contents).toEqual(Migrations.source);
+  }
+});
