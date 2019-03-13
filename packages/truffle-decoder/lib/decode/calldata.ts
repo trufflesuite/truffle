@@ -94,45 +94,7 @@ export async function decodeCalldataReferenceByAddress(definition: DecodeUtils.A
       ));
 
     case "struct":
-      const { referenceDeclarations, calldataAllocations } = info;
-
-      const referencedDeclaration = definition.typeName
-        ? definition.typeName.referencedDeclaration
-        : definition.referencedDeclaration;
-      const structAllocation = calldataAllocations[referencedDeclaration];
-
-      if(structAllocation == null) {
-        return undefined; //this should never happen
-      }
-
-      const decodeAllocation = async (memberAllocation: CalldataMemberAllocation) => {
-        const memberPointer = memberAllocation.pointer;
-        const childPointer: CalldataPointer = {
-          calldata: {
-            start: startPosition + memberPointer.calldata.start,
-            length: memberPointer.calldata.length
-          }
-        };
-
-        let memberDefinition = memberAllocation.definition;
-
-        // replace erroneous `_storage` type identifiers with `_calldata`
-        memberDefinition = DecodeUtils.Definition.spliceLocation(memberDefinition, "calldata");
-        //there also used to be code here to add on the "_ptr" ending when absent, but we
-        //presently ignore that ending, so we'll skip that
-
-        let decoded = await decodeCalldata(memberDefinition, childPointer, info, startPosition);
-          //note in this case startPosition has not been altered,
-          //which is how we want it
-
-        return {
-          [memberDefinition.name]: decoded
-        };
-      }
-
-      const decodings = Object.values(structAllocation.members).map(decodeAllocation);
-
-      return Object.assign({}, ...await Promise.all(decodings));
+      return await decodeCalldataStructByPosition(definition, startPosition, info);
 
     default:
       // debug("Unknown calldata reference type: %s", DecodeUtils.typeIdentifier(definition));
@@ -171,49 +133,53 @@ export async function decodeCalldataReferenceStatic(definition: DecodeUtils.AstD
       ));
 
     case "struct":
-      //this one is exactly the same as in the dynamic case,
-      //except that we don't need to pass base to decodeCalldata
-      //(or in other words, COPYPASTE WARNING; sorry future me :P )
-      const { referenceDeclarations, calldataAllocations } = info;
-
-      const referencedDeclaration = definition.typeName
-        ? definition.typeName.referencedDeclaration
-        : definition.referencedDeclaration;
-      const structAllocation = calldataAllocations[referencedDeclaration];
-
-      if(structAllocation == null) {
-        return undefined; //this should never happen
-      }
-
-      const decodeAllocation = async (memberAllocation: CalldataMemberAllocation) => {
-        const memberPointer = memberAllocation.pointer;
-        const childPointer: CalldataPointer = {
-          calldata: {
-            start: pointer.calldata.start + memberPointer.calldata.start,
-            length: memberPointer.calldata.length
-          }
-        };
-
-        let memberDefinition = memberAllocation.definition;
-
-        // replace erroneous `_storage` type identifiers with `_calldata`
-        memberDefinition = DecodeUtils.Definition.spliceLocation(memberDefinition, "calldata");
-        //there also used to be code here to add on the "_ptr" ending when absent, but we
-        //presently ignore that ending, so we'll skip that
-
-        let decoded = await decodeCalldata(memberDefinition, childPointer, info);
-
-        return {
-          [memberDefinition.name]: decoded
-        };
-      }
-
-      const decodings = Object.values(structAllocation.members).map(decodeAllocation);
-
-      return Object.assign({}, ...await Promise.all(decodings));
+      return await decodeCalldataStructByPosition(definition, pointer.calldata.start, info);
 
     default:
       // debug("Unknown calldata reference type: %s", DecodeUtils.typeIdentifier(definition));
       return undefined;
   }
+}
+
+//note that this function takes the start position as a *number*; it does not take a calldata pointer
+async function decodeCalldataStructByPosition(definition: DecodeUtils.AstDefinition, startPosition: number, info: EvmInfo): Promise<any> {
+  const { state, referenceDeclarations, calldataAllocations } = info;
+
+  const referencedDeclaration = definition.typeName
+    ? definition.typeName.referencedDeclaration
+    : definition.referencedDeclaration;
+  const structAllocation = calldataAllocations[referencedDeclaration];
+
+  if(structAllocation == null) {
+    return undefined; //this should never happen
+  }
+
+  const decodeAllocation = async (memberAllocation: CalldataMemberAllocation) => {
+    const memberPointer = memberAllocation.pointer;
+    const childPointer: CalldataPointer = {
+      calldata: {
+        start: startPosition + memberPointer.calldata.start,
+        length: memberPointer.calldata.length
+      }
+    };
+
+    let memberDefinition = memberAllocation.definition;
+
+    // replace erroneous `_storage` type identifiers with `_calldata`
+    memberDefinition = DecodeUtils.Definition.spliceLocation(memberDefinition, "calldata");
+    //there also used to be code here to add on the "_ptr" ending when absent, but we
+    //presently ignore that ending, so we'll skip that
+
+    let decoded = await decodeCalldata(memberDefinition, childPointer, info, startPosition);
+    //note that if we are in the static case, then the last parameter is irrelevant,
+    //but we pass it anyway for simplicity
+
+    return {
+      [memberDefinition.name]: decoded
+    };
+  }
+
+  const decodings = Object.values(structAllocation.members).map(decodeAllocation);
+
+  return Object.assign({}, ...await Promise.all(decodings));
 }
