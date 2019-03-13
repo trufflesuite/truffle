@@ -11,7 +11,6 @@ import Debugger from "lib/debugger";
 import trace from "lib/trace/selectors";
 import solidity from "lib/solidity/selectors";
 
-import * as TruffleDecodeUtils from "truffle-decode-utils";
 import BN from "bn.js";
 
 const __FACTORIAL = `
@@ -231,41 +230,6 @@ describe("Variable IDs", function() {
       new BN(6)
     ]);
   }).timeout(8000);
-
-  it("Learns contract addresses and distinguishes the results", async function() {
-    this.timeout(4000);
-    let instance = await abstractions.AddressTest.deployed();
-    let receipt = await instance.run();
-    let txHash = receipt.tx;
-
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
-
-    let session = bugger.connect();
-    debug("sourceId %d", session.view(solidity.current.source).id);
-
-    let sourceId = session.view(solidity.current.source).id;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
-      sourceId,
-      line: lineOf("break here", source)
-    });
-    await session.continueUntilBreakpoint();
-    debug("node %o", session.view(solidity.current.node));
-    assert.equal(
-      TruffleDecodeUtils.Conversion.cleanBNs(await session.variable("secret")),
-      "107"
-    );
-    await session.continueUntilBreakpoint();
-    debug("node %o", session.view(solidity.current.node));
-    assert.equal(
-      TruffleDecodeUtils.Conversion.cleanBNs(await session.variable("secret")),
-      "46"
-    );
-  });
 
   it("Stays at correct stackframe after contract call", async function() {
     let instance = await abstractions.Intervening.deployed();
