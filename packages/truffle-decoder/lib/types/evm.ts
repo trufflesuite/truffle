@@ -20,5 +20,4 @@ export interface EvmInfo {
   storageAllocations?: StorageAllocations;
   calldataAllocations?: CalldataAllocations;
   memoryAllocations?: MemoryAllocations;
-  variables?: StorageMemberAllocations;
 }
