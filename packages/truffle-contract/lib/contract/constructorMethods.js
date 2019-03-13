@@ -42,6 +42,9 @@ module.exports = Contract => {
 
       var args = Array.prototype.slice.call(arguments);
 
+      const options = this.web3.hasContractOptions() ? args.shift() : null;
+      this.web3.registerNewContract(constructor.bytecode, options);
+
       // Promievent and flag that allows instance to resolve (rather than just receipt)
       var context = {
         contract: constructor,
