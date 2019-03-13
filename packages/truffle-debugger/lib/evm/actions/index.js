@@ -28,19 +28,21 @@ export function addInstance(address, context, binary) {
 }
 
 export const CALL = "CALL";
-export function call(address, data) {
+export function call(address, data, storageAddress) {
   return {
     type: CALL,
     address,
-    data
+    data,
+    storageAddress
   };
 }
 
 export const CREATE = "CREATE";
-export function create(binary) {
+export function create(binary, storageAddress) {
   return {
     type: CREATE,
-    binary
+    binary,
+    storageAddress
   };
 }
 

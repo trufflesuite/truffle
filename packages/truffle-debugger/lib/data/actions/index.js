@@ -56,15 +56,6 @@ export function reset() {
   return { type: RESET };
 }
 
-export const LEARN_ADDRESS = "LEARN_ADDRESS";
-export function learnAddress(dummyAddress, address) {
-  return {
-    type: LEARN_ADDRESS,
-    dummyAddress,
-    address
-  };
-}
-
 export const DEFINE_TYPE = "DEFINE_TYPE";
 export function defineType(node) {
   return {
