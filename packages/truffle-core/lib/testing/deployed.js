@@ -2,7 +2,10 @@
 var Web3 = require("web3");
 
 var Deployed = {
-  makeSolidityDeployedAddressesLibrary: function(mapping) {
+  makeSolidityDeployedAddressesLibrary: function(
+    mapping,
+    removeAddressPayable
+  ) {
     var self = this;
 
     var source = "";
@@ -31,6 +34,9 @@ var Deployed = {
     });
 
     source += "}";
+
+    // if true, strip out payable!
+    if (removeAddressPayable) source = source.replace(/ payable/gm, "");
 
     return source;
   },
