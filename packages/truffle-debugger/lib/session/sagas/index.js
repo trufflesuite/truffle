@@ -68,6 +68,7 @@ function* forkListeners() {
 
 function* fetchTx(txHash, provider) {
   let result = yield* web3.inspectTransaction(txHash, provider);
+  debug("result %o", result);
 
   if (result.error) {
     return result.error;

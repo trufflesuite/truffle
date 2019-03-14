@@ -52,7 +52,7 @@ function* fetchTransactionInfo(adapter, { txHash }) {
     yield put(
       actions.receiveCall({
         binary: tx.input,
-        storageAddress: receipt.createdAddress,
+        storageAddress: receipt.contractAddress,
         status: receipt.status
       })
     );
@@ -89,10 +89,12 @@ export function* inspectTransaction(txHash, provider) {
     return { error: action.error };
   }
 
-  let call = yield take(actions.RECEIVE_CALL);
+  let { address, binary, data, storageAddress, status } = yield take(
+    actions.RECEIVE_CALL
+  );
   debug("received call");
 
-  return { trace, ...call };
+  return { trace, address, binary, data, storageAddress, status };
 }
 
 export function* obtainBinaries(addresses) {
