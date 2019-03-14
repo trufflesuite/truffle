@@ -45,6 +45,7 @@
     "truffle-error": "^0.0.4",
     "truffle-expect": "^0.0.7",
     "truffle-init": "^1.0.7",
+    "truffle-interface-adapter": "^0.1.0",
     "truffle-migrate": "^3.0.8",
     "truffle-provider": "^0.1.5",
     "truffle-provisioner": "^0.1.2",

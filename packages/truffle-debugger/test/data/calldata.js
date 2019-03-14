@@ -8,9 +8,9 @@ import Ganache from "ganache-core";
 import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
 
-import solidity from "lib/solidity/selectors";
+import * as TruffleDecodeUtils from "truffle-decode-utils";
 
-import BN from "bn.js";
+import solidity from "lib/solidity/selectors";
 
 const __CALLDATA = `
 pragma solidity ^0.5.4;
@@ -139,14 +139,16 @@ describe("Calldata Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = await session.variables();
+    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+      await session.variables()
+    );
 
     const expectedResult = {
       hello: "hello",
       deadbeef: "0xdeadbeef",
-      twoInts: [new BN(107), new BN(683)],
-      someInts: [new BN(41), new BN(42)],
-      pair: { x: new BN(321), y: new BN(2049) }
+      twoInts: [107, 683],
+      someInts: [41, 42],
+      pair: { x: 321, y: 2049 }
     };
 
     assert.deepEqual(variables, expectedResult);

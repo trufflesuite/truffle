@@ -1,11 +1,11 @@
 var fs = require("fs");
 var path = require("path");
-var Module = require('module');
-var vm = require('vm');
+var Module = require("module");
+var vm = require("vm");
 var originalrequire = require("original-require");
 var expect = require("truffle-expect");
 var Config = require("truffle-config");
-var Web3 = require("web3");
+var Web3Shim = require("truffle-interface-adapter").Web3Shim;
 
 // options.file: path to file to execute. Must be a module that exports a function.
 // options.args: arguments passed to the exported function within file. If a callback
@@ -14,16 +14,14 @@ var Web3 = require("web3");
 //   function is run.
 var Require = {
   file: function(options, done) {
-    var self = this;
+    var self = this; // eslint-disable-line no-unused-vars
     var file = options.file;
 
-    expect.options(options, [
-      "file"
-    ]);
+    expect.options(options, ["file"]);
 
     options = Config.default().with(options);
 
-    fs.readFile(options.file, {encoding: "utf8"}, function(err, source) {
+    fs.readFile(options.file, { encoding: "utf8" }, function(err, source) {
       if (err) return done(err);
 
       // Modified from here: https://gist.github.com/anatoliychakkaev/1599423
@@ -63,12 +61,12 @@ var Require = {
             var moduleDir = path.dirname(file);
             while (true) {
               try {
-                return originalrequire(path.join(moduleDir, 'node_modules', pkgPath));
-              } catch (e) {
-
-              }
+                return originalrequire(
+                  path.join(moduleDir, "node_modules", pkgPath)
+                );
+              } catch (e) {}
               var oldModuleDir = moduleDir;
-              moduleDir = path.join(moduleDir, '..');
+              moduleDir = path.join(moduleDir, "..");
               if (moduleDir === oldModuleDir) {
                 break;
               }
@@ -81,7 +79,7 @@ var Require = {
         artifacts: options.resolver,
         setImmediate: setImmediate,
         setInterval: setInterval,
-        setTimeout: setTimeout,
+        setTimeout: setTimeout
       };
 
       // Now add contract names.
@@ -114,19 +112,24 @@ var Require = {
       "network_id"
     ]);
 
-    var web3 = new Web3();
-    web3.setProvider(options.provider);
-
-    self.file({
-      file: options.file,
-      context: {
-        web3: web3
-      },
-      resolver: options.resolver
-    }, function(err, fn) {
-      if (err) return done(err);
-      fn(done);
+    var web3 = new Web3Shim({
+      provider: options.provider,
+      networkType: options.networks[options.network].type
     });
+
+    self.file(
+      {
+        file: options.file,
+        context: {
+          web3: web3
+        },
+        resolver: options.resolver
+      },
+      function(err, fn) {
+        if (err) return done(err);
+        fn(done);
+      }
+    );
   }
 };
 

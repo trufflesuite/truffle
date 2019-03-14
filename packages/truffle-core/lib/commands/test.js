@@ -95,7 +95,7 @@ var command = {
         function cleanup() {
           var args = arguments;
           // Ensure directory cleanup.
-          temp.cleanup(function() {
+          temp.cleanup(() => {
             // Ignore cleanup errors.
             done.apply(null, args);
             if (ipcDisconnect) {

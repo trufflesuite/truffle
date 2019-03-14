@@ -11,8 +11,6 @@ import Debugger from "lib/debugger";
 import trace from "lib/trace/selectors";
 import solidity from "lib/solidity/selectors";
 
-import BN from "bn.js";
-
 const __FACTORIAL = `
 pragma solidity ^0.5.0;
 
@@ -187,6 +185,7 @@ describe("Variable IDs", function() {
   });
 
   it("Distinguishes between stackframes", async function() {
+    this.timeout(8000);
     let instance = await abstractions.FactorialTest.deployed();
     let receipt = await instance.factorial(3);
     let txHash = receipt.tx;
@@ -215,21 +214,12 @@ describe("Variable IDs", function() {
 
     await session.continueUntilBreakpoint();
     while (!session.view(trace.finished)) {
-      values.push(await session.variable("nbang"));
+      values.push((await session.variable("nbang")).toNumber());
       await session.continueUntilBreakpoint();
     }
 
-    assert.deepEqual(values, [
-      new BN(3),
-      new BN(2),
-      new BN(1),
-      new BN(0),
-      new BN(1),
-      new BN(1),
-      new BN(2),
-      new BN(6)
-    ]);
-  }).timeout(8000);
+    assert.deepEqual(values, [3, 2, 1, 0, 1, 1, 2, 6]);
+  });
 
   it("Stays at correct stackframe after contract call", async function() {
     let instance = await abstractions.Intervening.deployed();
