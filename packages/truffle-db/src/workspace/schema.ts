@@ -17,6 +17,9 @@ export const schema = mergeSchemas({
         extend type Bytecode {
           id: ID!
         }
+        extend type Compilation {
+          id: ID!
+        }
         `,
       ]
     }),
@@ -24,6 +27,7 @@ export const schema = mergeSchemas({
     // define entrypoints
     `type Query {
       contractNames: [String]!
+      compilation(id: ID!): Compilation
       contractType(name: String!): ContractType
       source(id: ID!): Source
       bytecode(id: ID!): Bytecode
@@ -54,9 +58,33 @@ export const schema = mergeSchemas({
       bytecodes: [Bytecode!]
     }
 
+    input CompilerInput {
+      id: String
+      name: String
+      version: String
+      settings: Object
+    }
+
+    input CompilationSourceInput {
+      id: ID!
+    }
+
+    input CompilationInput {
+      compiler: CompilerInput!
+      contractTypes: Object
+      sources: [CompilationSourceInput!]!
+    }
+    input CompilationsAddInput {
+      compilations: [CompilationInput!]!
+    }
+    type CompilationsAddPayload {
+      compilations: [Compilation!]
+    }
+
     type Mutation {
       sourcesAdd(input: SourcesAddInput!): SourcesAddPayload
       bytecodesAdd(input: BytecodesAddInput!): BytecodesAddPayload
+      compilationsAdd(input: CompilationsAddInput!): CompilationsAddPayload
     } `
   ],
   resolvers: {
@@ -76,6 +104,10 @@ export const schema = mergeSchemas({
       bytecode: {
         resolve: (_, { id }, { workspace }) =>
           workspace.bytecode({ id })
+      },
+      compilation: {
+        resolve: (_, { id }, { workspace }) =>
+          workspace.compilation({ id })
       }
     },
     Mutation: {
@@ -86,6 +118,18 @@ export const schema = mergeSchemas({
       bytecodesAdd: {
         resolve: (_, { input }, { workspace }) =>
           workspace.bytecodesAdd({ input })
+      },
+      compilationsAdd: {
+        resolve: (_, { input }, { workspace }) =>
+          workspace.compilationsAdd({ input })
+      }
+    },
+    Compilation: {
+      sources: {
+        resolve: ({ sources }, _, { workspace }) =>
+          Promise.all(
+            sources.map(source => workspace.source(source))
+          )
       }
     },
     ContractType: {

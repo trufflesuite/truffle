@@ -178,3 +178,121 @@ it("adds bytecode", async () => {
     expect(bytes).toEqual(variables.bytes);
   }
 });
+
+const GetCompilation = `
+query GetCompilation($id: ID!) {
+  compilation(id: $id) {
+    id
+    compiler {
+      name
+      version
+    }
+    sources {
+      id
+      contents
+    }
+  }
+}`;
+
+const AddCompilation = `
+mutation AddCompilation($compilerName: String!, $compilerVersion: String!, $sourceId: ID!) {
+  compilationsAdd(input: {
+    compilations: [{
+      compiler: {
+        id: "1234"
+        name: $compilerName
+        version: $compilerVersion
+      }
+      contractTypes: {
+
+      }
+      sources: [
+        {
+         id: $sourceId
+        }
+      ]
+    }]
+  }) {
+    compilations {
+      id
+      compiler {
+        name
+      }
+      sources {
+        id
+      }
+    }
+  }
+}`;
+
+it("adds compilation", async () => {
+  const workspace = new Workspace();
+
+  const variables = {
+    compilerName: Migrations.compiler.name,
+    compilerVersion: Migrations.compiler.version,
+    sourceId: soliditySha3(Migrations.source, Migrations.sourcePath),
+    id: "0xfd63faebf4e7515b2f48fdf22066869e09df9b2e91f4e0cf88d7d14ec496b515"
+  }
+
+  const compilationId = soliditySha3("1234", variables.sourceId)
+
+  // add compilation
+  {
+    const result = await graphql(
+      schema, AddCompilation, null, { workspace }, variables
+    );
+
+    const { data } = result;
+    expect(data).toHaveProperty("compilationsAdd");
+
+    const { compilationsAdd } = data;
+    expect(compilationsAdd).toHaveProperty("compilations");
+
+    const { compilations } = compilationsAdd;
+    expect(compilations).toHaveLength(1);
+
+    for (let compilation of compilations) {
+      expect(compilation).toHaveProperty("compiler");
+      expect(compilation).toHaveProperty("sources");
+      const { compiler, sources } = compilation;
+
+      expect(compiler).toHaveProperty("name");
+
+      expect(sources).toHaveLength(1);
+      for (let source of sources) {
+        expect(source).toHaveProperty("id");
+        const { id } = source;
+
+        expect(id).toEqual(variables.sourceId);
+      }
+    }
+
+  }
+
+  // ensure retrieved as matching
+  {
+    const result = await graphql(schema, GetCompilation, null, { workspace }, {id: variables.id});
+
+    const { data } = result;
+    expect(data).toHaveProperty("compilation");
+
+    const { compilation } = data;
+    expect(compilation).toHaveProperty("id");
+    expect(compilation).toHaveProperty("compiler");
+    expect(compilation).toHaveProperty("sources");
+
+    const { sources } = compilation;
+
+    for (let source of sources) {
+      expect(source).toHaveProperty("id");
+      const { id } = source;
+      expect(id).not.toBeNull();
+
+      expect(source).toHaveProperty("contents");
+      const { contents } = source;
+      expect(contents).not.toBeNull();
+    }
+
+  }
+});
