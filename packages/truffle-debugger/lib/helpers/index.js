@@ -44,6 +44,14 @@ export function isShortCallMnemonic(op) {
 }
 
 /*
+ * returns true for mnemonics call and delegate storage
+ */
+export function isDelegateCallMnemonicBroad(op) {
+  const shortCalls = ["DELEGATECALL", "CALLCODE"];
+  return shortCalls.includes(op);
+}
+
+/*
  * Given a mmemonic, determine whether it's the mnemonic of a creation
  * instruction
  */

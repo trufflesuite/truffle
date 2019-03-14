@@ -145,13 +145,12 @@ const data = createSelectorTree({
      * data.views.mappingKeys
      */
     mappingKeys: createLeaf(
-      ["/proc/mappedPaths", "/current/address", "/current/dummyAddress"],
-      (mappedPaths, address, dummyAddress) =>
+      ["/proc/mappedPaths", "/current/address"],
+      (mappedPaths, address) =>
         []
           .concat(
             ...Object.values(
-              (mappedPaths.byAddress[address || dummyAddress] || { byType: {} })
-                .byType
+              (mappedPaths.byAddress[address] || { byType: {} }).byType
             ).map(({ bySlotAddress }) => Object.values(bySlotAddress))
           )
           .filter(slot => slot.key !== undefined)
@@ -352,16 +351,11 @@ const data = createSelectorTree({
 
     /**
      * data.current.address
-     * Note: May be undefined (if in an initializer)
+     * NOTE: this is the STORAGE address for the current call, not the CODE
+     * address
      */
 
-    address: createLeaf([evm.current.call], call => call.address),
-
-    /**
-     * data.current.dummyAddress
-     */
-
-    dummyAddress: createLeaf([evm.current.creationDepth], identity),
+    address: createLeaf([evm.current.call], call => call.storageAddress),
 
     /**
      * data.current.identifiers (namespace)
@@ -424,11 +418,10 @@ const data = createSelectorTree({
           "/proc/assignments",
           "./_",
           solidity.current.functionDepth, //for pruning things too deep on stack
-          "/current/address", //for contract variables
-          "/current/dummyAddress" //for contract vars when in creation call
+          "/current/address" //for contract variables
         ],
 
-        (assignments, identifiers, currentDepth, address, dummyAddress) =>
+        (assignments, identifiers, currentDepth, address) =>
           Object.assign(
             {},
             ...Object.entries(identifiers).map(([identifier, astId]) => {
@@ -436,21 +429,11 @@ const data = createSelectorTree({
               let id;
 
               //first, check if it's a contract var
-              if (address !== undefined) {
-                let matchIds = (assignments.byAstId[astId] || []).filter(
-                  idHash => assignments.byId[idHash].address === address
-                );
-                if (matchIds.length > 0) {
-                  id = matchIds[0]; //there should only be one!
-                }
-              } else {
-                let matchIds = (assignments.byAstId[astId] || []).filter(
-                  idHash =>
-                    assignments.byId[idHash].dummyAddress === dummyAddress
-                );
-                if (matchIds.length > 0) {
-                  id = matchIds[0]; //again, there should only be one!
-                }
+              let matchIds = (assignments.byAstId[astId] || []).filter(
+                idHash => assignments.byId[idHash].address === address
+              );
+              if (matchIds.length > 0) {
+                id = matchIds[0]; //there should only be one!
               }
 
               //if not contract, it's local, so find the innermost

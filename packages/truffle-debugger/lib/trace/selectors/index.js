@@ -6,21 +6,21 @@ let trace = createSelectorTree({
    *
    * current step index
    */
-  index: (state) => state.trace.proc.index,
+  index: state => state.trace.proc.index,
 
   /**
    * trace.finished
    *
    * is the trace finished?
    */
-  finished: (state) => state.trace.proc.finished,
+  finished: state => state.trace.proc.finished,
 
   /**
    * trace.steps
    *
    * all trace steps
    */
-  steps: (state) => state.trace.info.steps,
+  steps: state => state.trace.info.steps,
 
   /**
    * trace.stepsRemaining
@@ -28,7 +28,8 @@ let trace = createSelectorTree({
    * number of steps remaining in trace
    */
   stepsRemaining: createLeaf(
-    ["./steps", "./index"], (steps, index) => steps.length - index
+    ["./steps", "./index"],
+    (steps, index) => steps.length - index
   ),
 
   /**
@@ -36,9 +37,7 @@ let trace = createSelectorTree({
    *
    * current trace step
    */
-  step: createLeaf(
-    ["./steps", "./index"], (steps, index) => steps[index]
-  ),
+  step: createLeaf(["./steps", "./index"], (steps, index) => steps[index]),
 
   /**
    * trace.next
@@ -48,9 +47,21 @@ let trace = createSelectorTree({
    * we will return the *same* trace step
    */
   next: createLeaf(
-    ["./steps", "./index"], (steps, index) =>
+    ["./steps", "./index"],
+    (steps, index) =>
       index < steps.length - 1 ? steps[index + 1] : steps[index]
-  )
+  ),
+
+  /*
+   * trace.nextOfSameDepth
+   * next trace step that's at the same depth as this one
+   * NOTE: if there is none, will return undefined
+   * (should not be used in such cases)
+   */
+  nextOfSameDepth: createLeaf(["./steps", "./index"], (steps, index) => {
+    let depth = steps[index].depth;
+    return steps.slice(index + 1).find(step => step.depth === depth);
+  })
 });
 
 export default trace;

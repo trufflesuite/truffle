@@ -38,12 +38,23 @@ function* fetchTransactionInfo(adapter, { txHash }) {
   yield put(session.saveReceipt(receipt));
 
   if (tx.to != null) {
-    yield put(actions.receiveCall({ address: tx.to, data: tx.input }));
+    yield put(
+      actions.receiveCall({
+        address: tx.to,
+        data: tx.input,
+        storageAddress: tx.to
+      })
+    );
     return;
   }
 
   if (receipt.contractAddress) {
-    yield put(actions.receiveCall({ binary: tx.input }));
+    yield put(
+      actions.receiveCall({
+        binary: tx.input,
+        storageAddress: receipt.createdAddress
+      })
+    );
     return;
   }
 
@@ -77,10 +88,12 @@ export function* inspectTransaction(txHash, provider) {
     return { error: action.error };
   }
 
-  let { address, binary, data } = yield take(actions.RECEIVE_CALL);
+  let { address, binary, data, storageAddress } = yield take(
+    actions.RECEIVE_CALL
+  );
   debug("received call");
 
-  return { trace, address, binary, data };
+  return { trace, address, binary, data, storageAddress };
 }
 
 export function* obtainBinaries(addresses) {

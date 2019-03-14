@@ -6,13 +6,13 @@ import levenshtein from "fast-levenshtein";
 
 import trace from "lib/trace/selectors";
 
+import * as DecodeUtils from "truffle-decode-utils";
 import {
   isCallMnemonic,
   isCreateMnemonic,
-  isShortCallMnemonic
+  isShortCallMnemonic,
+  isDelegateCallMnemonicBroad
 } from "lib/helpers";
-
-import * as DecodeUtils from "truffle-decode-utils";
 
 function findContext({ address, binary }, instances, search, contexts) {
   let record;
@@ -73,6 +73,15 @@ function createStepSelectors(step, state = null) {
      * for calls that only take 6 arguments instead of 7
      */
     isShortCall: createLeaf(["./trace"], step => isShortCallMnemonic(step.op)),
+
+    /**
+     * .isDelegateCallBroad
+     *
+     * for calls delegate storage
+     */
+    isDelegateCallBroad: createLeaf(["./trace"], step =>
+      isDelegateCallMnemonicBroad(step.op)
+    ),
 
     /**
      * .isCreate
@@ -283,16 +292,6 @@ const evm = createSelectorTree({
     ),
 
     /**
-     * evm.current.creationDepth
-     * how many creation calls are currently on the call stack?
-     */
-    creationDepth: createLeaf(
-      ["./callstack"],
-
-      stack => stack.filter(call => call.address === undefined).length
-    ),
-
-    /**
      * evm.current.context
      */
     context: createLeaf(
@@ -315,7 +314,26 @@ const evm = createSelectorTree({
     /**
      * evm.current.step
      */
-    step: createStepSelectors(trace.step, "./state")
+    step: {
+      ...createStepSelectors(trace.step, "./state"),
+
+      /*
+       * evm.current.step.createdAddress
+       *
+       * address created by the current create step;
+       * only exists for current, not next
+       */
+      createdAddress: createLeaf(
+        ["./isCreate", "/nextOfSameDepth/state/stack"],
+        (matches, stack) => {
+          if (!matches) {
+            return undefined;
+          }
+          let address = stack[stack.length - 1];
+          return DecodeUtils.Conversion.toAddress(address);
+        }
+      )
+    }
   },
 
   /**
@@ -335,6 +353,23 @@ const evm = createSelectorTree({
     ),
 
     step: createStepSelectors(trace.next, "./state")
+  },
+
+  /**
+   * evm.nextOfSameDepth
+   */
+  nextOfSameDepth: {
+    /**
+     * evm.nextOfSameDepth.state
+     *
+     * evm state at the next step of same depth
+     */
+    state: Object.assign(
+      {},
+      ...["depth", "error", "gas", "memory", "stack", "storage"].map(param => ({
+        [param]: createLeaf([trace.nextOfSameDepth], step => step[param])
+      }))
+    )
   }
 });
 
