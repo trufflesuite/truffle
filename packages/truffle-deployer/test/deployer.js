@@ -241,9 +241,6 @@ describe("Deployer (sync)", function() {
 
     utils.stopAutoMine();
 
-    await IsLibrary.deployed();
-    await Example.deployed();
-
     const libReceipt = await web3.eth.getTransactionReceipt(
       IsLibrary.transactionHash
     );
@@ -261,7 +258,6 @@ describe("Deployer (sync)", function() {
 
   it("emits block events while waiting for a tx to mine", async function() {
     this.timeout(15000);
-    await web3.eth.getBlockNumber();
 
     utils.startAutoMine(web3, 4000);
 

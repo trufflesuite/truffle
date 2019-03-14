@@ -67,9 +67,7 @@ describe("Error cases", function() {
         Loops
       ],
       networks: {
-        test: {
-          // TODO:
-        }
+        test: {}
       },
       network: "test",
       network_id: networkId,

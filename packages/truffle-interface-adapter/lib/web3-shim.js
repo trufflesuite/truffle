@@ -1,7 +1,11 @@
 const Web3 = require("web3");
 const BN = require("bn.js");
 
-// This is a temporary shim to support the basic issues with Quorum
+// March 13, 2019 - Mike Seese:
+// This is a temporary shim to support the basic, Ethereum-based
+// multiledger integration. This whole adapter, including this shim,
+// will undergo better architecture before TruffleCon to support
+// other non-Ethereum-based ledgers.
 
 class Web3Shim extends Web3 {
   constructor(options) {
