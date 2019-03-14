@@ -15,6 +15,10 @@ const resources = {
       { fields: ["sourcePath"] },
     ]
   },
+  compilations: {
+    createIndexes: [
+    ]
+  },
   bytecodes: {
     createIndexes: [
     ]
@@ -25,6 +29,7 @@ export class Workspace {
   contracts: PouchDB.Database;
   sources: PouchDB.Database;
   bytecodes: PouchDB.Database;
+  compilations: PouchDB.Database;
 
   private ready: Promise<void>;
 
@@ -87,8 +92,9 @@ export class Workspace {
         async (contractInput) => {
           const { name, source } = contractInput;
           const id = soliditySha3(name, source.id);
+          
           const contract = await this.contract( { id } );
-   
+          
           if(contract) {
             return contract;
           } else {
@@ -96,13 +102,61 @@ export class Workspace {
             ...contractInput, 
             _id: id,
             });
-
+           
             return { name, source, id };
           }
         }
       ))
     }
   }
+
+  async compilation ({ id }: { id: string }) {
+    await this.ready;
+
+    try {
+      return  {
+        ... await this.compilations.get(id),
+
+        id
+      };
+
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async compilationsAdd ({ input }) {
+    await this.ready;
+
+    const { compilations } = input;
+
+    return {
+      compilations: Promise.all(compilations.map(
+        async (compilationInput) => {
+         const { compiler, contractTypes, sources } = compilationInput;
+
+         const sourceIds = sources.map(source => source.id);
+         const sourcesObject = Object.assign({}, sourceIds);
+
+         const id = soliditySha3(compiler.id, sourcesObject);
+
+         const compilation = await this.compilation({ id }) || { ...compilationInput, id };
+
+          await this.compilations.put({
+            ...compilation,
+            ...compilationInput,
+
+
+            _id: id
+          });
+
+          return compilation;
+        }
+      ))
+    };
+  }
+
+
 
   async source ({ id }: { id: string }) {
     await this.ready;

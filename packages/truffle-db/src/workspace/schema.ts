@@ -20,6 +20,9 @@ export const schema = mergeSchemas({
         extend type Contract {
           id: ID!
         }
+        extend type Compilation {
+          id: ID!
+        }
         `,
       ]
     }),
@@ -28,6 +31,7 @@ export const schema = mergeSchemas({
     `type Query {
       contractNames: [String]!
       contract(id: ID!): Contract
+      compilation(id: ID!): Compilation
       source(id: ID!): Source
       bytecode(id: ID!): Bytecode
     }
@@ -73,11 +77,39 @@ export const schema = mergeSchemas({
     type ContractsAddPayload {
       contracts: [Contract]!
     }
+      
+    input CompilerInput {
+      id: String
+      name: String
+      version: String
+      settings: Object
+    }
+
+    input CompilationSourceInput {
+      id: ID!
+    }
+
+    input CompilationContractInput {
+      id: ID!
+    }
+
+    input CompilationInput {
+      compiler: CompilerInput!
+      contracts: [CompilationContractInput!]
+      sources: [CompilationSourceInput!]!
+    }
+    input CompilationsAddInput {
+      compilations: [CompilationInput!]!
+    }
+    type CompilationsAddPayload {
+      compilations: [Compilation!]
+    }
 
     type Mutation {
       sourcesAdd(input: SourcesAddInput!): SourcesAddPayload
       bytecodesAdd(input: BytecodesAddInput!): BytecodesAddPayload
       contractsAdd(input:ContractsAddInput!):ContractsAddPayload
+      compilationsAdd(input: CompilationsAddInput!): CompilationsAddPayload
     } `
   ],
   resolvers: {
@@ -97,6 +129,10 @@ export const schema = mergeSchemas({
       bytecode: {
         resolve: (_, { id }, { workspace }) =>
           workspace.bytecode({ id })
+      },
+      compilation: {
+        resolve: (_, { id }, { workspace }) =>
+          workspace.compilation({ id })
       }
     },
     Mutation: {
@@ -110,7 +146,25 @@ export const schema = mergeSchemas({
       },
       contractsAdd: {
         resolve: (_, {input}, {workspace}) => 
-        workspace.contractsAdd({input})
+        workspace.contractsAdd({ input })
+      }, 
+      compilationsAdd: {
+        resolve: (_, { input }, { workspace }) =>
+          workspace.compilationsAdd({ input })
+      }
+    },
+    Compilation: {
+      sources: {
+        resolve: ({ sources }, _, { workspace }) =>
+          Promise.all(
+            sources.map(source => workspace.source(source))
+          )
+      },
+      contracts: {
+        resolve: ({ contracts }, _, { workspace }) =>
+          Promise.all(
+            contracts.map(contract => workspace.contract(contract))
+          )
       }
     },
     Contract: {

@@ -87,10 +87,6 @@ type SourceRange {
   meta: SourceRangeMeta!
 }
 
-type Sources {
-  source(index: FileIndex!): Source
-}
-
 type Source {
   sourcePath: String
   contents: String!
@@ -100,7 +96,7 @@ type Source {
 type Compilation {
   compiler: Compiler!
   contracts: [Contract!]
-  sources: Sources!
+  sources: [Source]!
 }
 
 type Compiler {
