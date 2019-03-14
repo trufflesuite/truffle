@@ -40,13 +40,14 @@ export function receiveTrace(trace) {
 }
 
 export const RECEIVE_CALL = "RECEIVE_CALL";
-export function receiveCall({ address, binary, data, storageAddress }) {
+export function receiveCall({ address, binary, data, storageAddress, status }) {
   return {
     type: RECEIVE_CALL,
     address,
     binary,
     data,
-    storageAddress
+    storageAddress,
+    status //only used for creation calls at present!
   };
 }
 
