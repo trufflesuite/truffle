@@ -1,5 +1,6 @@
 var debug = require("debug")("provider"); // eslint-disable-line no-unused-vars
 var Web3 = require("web3");
+var Web3Shim = require("truffle-interface-adapter").Web3Shim;
 
 var wrapper = require("./wrapper");
 
@@ -21,7 +22,7 @@ module.exports = {
       );
     } else {
       provider = new Web3.providers.HttpProvider(
-        "http://" + options.host + ":" + options.port,
+        `http://${options.host}:${options.port}`,
         { keepAlive: false }
       );
     }
@@ -30,12 +31,10 @@ module.exports = {
   },
 
   test_connection: function(provider, callback) {
-    var web3 = new Web3();
+    var web3 = new Web3Shim({ provider });
     var fail = new Error(
       "Could not connect to your RPC client. Please check your RPC configuration."
     );
-
-    web3.setProvider(provider);
 
     web3.eth
       .getCoinbase()
