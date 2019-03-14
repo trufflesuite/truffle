@@ -75,9 +75,19 @@ function* fetchTx(txHash, provider) {
 
   yield* evm.begin(result);
 
+  //get addresses created/called during transaction
   let addresses = yield* trace.processTrace(result.trace);
-  if (result.address && addresses.indexOf(result.address) == -1) {
+  //add in the address of the call itself (if a call)
+  if (result.address && !addresses.includes(result.address)) {
     addresses.push(result.address);
+  }
+  //if a create, only add in address if it was successful
+  if (
+    result.binary &&
+    result.status &&
+    !addresses.includes(result.storageAddress)
+  ) {
+    addresses.push(result.storageAddress);
   }
 
   let binaries = yield* web3.obtainBinaries(addresses);
