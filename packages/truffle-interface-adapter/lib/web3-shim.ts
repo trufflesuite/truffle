@@ -1,14 +1,24 @@
-const Web3 = require("web3");
+import Web3 from "web3";
+import { Provider } from "web3/providers";
 
-const ethereumOverloads = require("./ethereum-overloads");
-const quorumOverloads = require("./quorum-overloads");
-const AxCoreProviderExtension = require("./axcore-provider-extension");
+import * as ethereumOverloads from "./ethereum-overloads";
+import * as quorumOverloads from "./quorum-overloads";
+import AxCoreProviderExtension, { AxCoreDeployOptions } from "./axcore-provider-extension";
 
 // March 13, 2019 - Mike Seese:
 // This is a temporary shim to support the basic, Ethereum-based
 // multiledger integration. This whole adapter, including this shim,
 // will undergo better architecture before TruffleCon to support
 // other non-Ethereum-based ledgers.
+
+export type NetworkType = "ethereum" | "quorum" | "axcore";
+
+type DeployOptions = AxCoreDeployOptions;
+
+export interface Web3ShimOptions {
+  provider?: Provider;
+  networkType?: NetworkType;
+};
 
 // March 14, 2019 - Mike Seese:
 // This shim was intended to be temporary (see the above comment)
@@ -25,15 +35,17 @@ const AxCoreProviderExtension = require("./axcore-provider-extension");
 // should drive the development of the correct architecture of
 // `truffle-interface-adapter`that should use this work in a more
 // sane and organized manner.
-class Web3Shim extends Web3 {
-  constructor(options) {
+export default class Web3Shim extends Web3 {
+  public networkType: NetworkType;
+
+  constructor(options?: Web3ShimOptions) {
     super();
 
     if (options) {
       this.networkType = options.networkType || "ethereum";
 
       if (options.provider) {
-        this.setProvider(options.provider);
+        this.setProviderOverload(options.provider);
       }
     } else {
       this.networkType = "ethereum";
@@ -42,7 +54,10 @@ class Web3Shim extends Web3 {
     this.initInterface();
   }
 
-  setProvider(provider) {
+  // Unfortunately cannot easily overload web3's
+  // setProvider method due to how they initialize
+  // it
+  setProviderOverload(provider: Provider) {
     switch (this.networkType) {
       case "axcore": {
         provider = new AxCoreProviderExtension(provider);
@@ -55,10 +70,10 @@ class Web3Shim extends Web3 {
       }
     }
 
-    super.setProvider(provider);
+    this.setProvider(provider);
   }
 
-  setNetworkType(networkType) {
+  setNetworkType(networkType: NetworkType) {
     this.networkType = networkType;
     this.initInterface();
   }
@@ -97,12 +112,23 @@ class Web3Shim extends Web3 {
     return this.networkType === "axcore";
   }
 
-  registerNewContract(bytecode, options) {
+  registerNewContract(bytecode: string, options: DeployOptions) {
     // we're creating a new contract with this bytecode
     // we should watch for this bytecode, and process
     // options accordingly. once it's deployed, we can
     // associate an address to the options.
+    switch (this.networkType) {
+      case "axcore": {
+        if (this.currentProvider instanceof AxCoreProviderExtension) {
+          this.currentProvider.registerNewContract(bytecode, options);
+        }
+        break;
+      }
+      case "quorum":
+      case "ethereum":
+      default: {
+        break;
+      }
+    }
   }
 }
-
-module.exports = Web3Shim;

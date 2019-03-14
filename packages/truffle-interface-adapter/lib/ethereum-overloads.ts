@@ -1,8 +1,17 @@
-const BN = require("bn.js");
+import BN from "bn.js";
+import Web3 from "web3";
 
-module.exports.getBlock = web3 => {
+// The ts-ignores are ignoring the checks that are
+// saying that web3.eth.getBlock is a function and doesn't
+// have a `method` property, which it does
+
+export function getBlock(web3: Web3) {
+  // @ts-ignore
   const _oldFormatter = web3.eth.getBlock.method.outputFormatter;
+
+  // @ts-ignore
   web3.eth.getBlock.method.outputFormatter = block => {
+    // @ts-ignore
     let result = _oldFormatter.call(web3.eth.getBlock.method, block);
 
     // Perhaps there is a better method of doing this,
@@ -14,11 +23,15 @@ module.exports.getBlock = web3 => {
   };
 };
 
-module.exports.getTransaction = web3 => {
+export function getTransaction(web3: Web3) {
   const _oldTransactionFormatter =
+    // @ts-ignore
     web3.eth.getTransaction.method.outputFormatter;
+
+  // @ts-ignore
   web3.eth.getTransaction.method.outputFormatter = tx => {
     let result = _oldTransactionFormatter.call(
+      // @ts-ignore
       web3.eth.getTransaction.method,
       tx
     );
@@ -31,11 +44,15 @@ module.exports.getTransaction = web3 => {
   };
 };
 
-module.exports.getTransactionReceipt = web3 => {
+export function getTransactionReceipt(web3: Web3) {
   const _oldTransactionReceiptFormatter =
+    // @ts-ignore
     web3.eth.getTransactionReceipt.method.outputFormatter;
+
+  // @ts-ignore
   web3.eth.getTransactionReceipt.method.outputFormatter = receipt => {
     let result = _oldTransactionReceiptFormatter.call(
+      // @ts-ignore
       web3.eth.getTransactionReceipt.method,
       receipt
     );
