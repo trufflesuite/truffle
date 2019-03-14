@@ -28,9 +28,10 @@ var execute = {
       web3.eth
         .estimateGas(params)
         .then(gas => {
-          var bestEstimate = utils
-            .bigNumberify(gas)
-            .mul(constructor.gasMultiplier);
+          const bestEstimate = utils.multiplyBigNumberByDecimal(
+            utils.bigNumberify(gas),
+            constructor.gasMultiplier
+          );
 
           // Don't go over blockLimit
           const limit = utils.bigNumberify(blockLimit);
