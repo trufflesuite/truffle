@@ -1,7 +1,6 @@
 const debug = require("debug")("contract:execute"); // eslint-disable-line no-unused-vars
 var Web3PromiEvent = require("web3-core-promievent");
 var EventEmitter = require("events");
-var BigNumber = require("bignumber.js");
 var utils = require("./utils");
 var StatusError = require("./statuserror");
 var Reason = require("./reason");
@@ -29,15 +28,15 @@ var execute = {
       web3.eth
         .estimateGas(params)
         .then(gas => {
-          var bestEstimate = new BigNumber(gas)
-            .multipliedBy(constructor.gasMultiplier)
-            .integerValue(BigNumber.ROUND_DOWN);
+          var bestEstimate = utils
+            .bigNumberify(gas)
+            .mul(constructor.gasMultiplier);
 
           // Don't go over blockLimit
-          const limit = new BigNumber(blockLimit);
-          bestEstimate.isGreaterThanOrEqualTo(limit)
-            ? accept("0x" + limit.minus(1).toString(16))
-            : accept("0x" + bestEstimate.toString(16));
+          const limit = utils.bigNumberify(blockLimit);
+          bestEstimate.gte(limit)
+            ? accept(limit.sub(1).toHexString())
+            : accept(bestEstimate.toHexString());
 
           // We need to let txs that revert through.
           // Often that's exactly what you are testing.

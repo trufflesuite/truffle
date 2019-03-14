@@ -1,6 +1,6 @@
 var TruffleError = require("truffle-error");
 var inherits = require("util").inherits;
-var BigNumber = require("bignumber.js");
+var utils = require("./utils");
 
 inherits(StatusError, TruffleError);
 
@@ -13,7 +13,7 @@ function StatusError(args, tx, receipt, reason) {
 
   if (reason) reasonString = `Reason given: ${reason}.`;
 
-  if (new BigNumber(receipt.gasUsed).isEqualTo(new BigNumber(gasLimit))) {
+  if (utils.bigNumberify(receipt.gasUsed).eq(utils.bigNumberify(gasLimit))) {
     message =
       "Transaction: " +
       tx +
