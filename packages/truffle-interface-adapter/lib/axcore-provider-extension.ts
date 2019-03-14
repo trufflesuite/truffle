@@ -12,59 +12,79 @@ function isContractDeploy(payload: JsonRPCRequest) {
 }
 
 interface IndexedOptions {
-  [key: string]: AxCoreDeployOptions
+  [BytecodeHash: string]: AxCoreDeployOptions;
+};
+
+interface IndexedBytecodes {
+  [TransactionHash: string]: string;
 };
 
 export default class AxCorePayloadExtension {
   private provider: Provider;
   private transactionOptions: IndexedOptions;
   private predeployOptions: IndexedOptions;
+  private deployingContracts: IndexedBytecodes;
   private contractOptions: IndexedOptions;
-  private deployingContracts: { [key: string]: string };
 
   constructor(provider: Provider) {
     this.provider = provider;
 
     this.transactionOptions = {};
     this.predeployOptions = {}; // indexed by hashed bytecode
+    this.deployingContracts = {}; // indexed by tx hash
     this.contractOptions = {}; // indexed by address
-    this.deployingContracts = {};
   }
 
   send(payload: JsonRPCRequest, callback: Callback<JsonRPCResponse>): any {
     if (payload.method === "eth_getTransactionReceipt" && typeof this.transactionOptions[payload.params[0]] !== "undefined") {
       // add payload extensions
-      const txHash = payload.params[0];
+      const txHash: string = payload.params[0];
       payload.params.push(this.transactionOptions[txHash].param1);
       payload.params.push(this.transactionOptions[txHash].param2);
+      delete this.transactionOptions[txHash];
+    }
+    else if (payload.params.length > 0) {
+      if (payload.params[0].to && this.contractOptions[payload.params[0].to]) {
+        const contractAddress: string = payload.params[0].to;
+        Object.assign(payload.params[0], this.contractOptions[contractAddress]);
+      }
+      else if (isContractDeploy(payload)) {
+        const bytecode: string = payload.params[0].data;
+        const bytecodeHash: string = crypto.createHash("md5").update(bytecode).digest("hex");
+        if (this.predeployOptions[bytecodeHash]) {
+          Object.assign(payload.params[0], this.predeployOptions[bytecodeHash]);
+        }
+      }
     }
 
     this.provider.send(payload, (...args: any[]) => {
       if (payload.method === "eth_sendTransaction" || payload.method === "eth_sendRawTransaction") {
-        const txHash = args[1].result;
+        const txHash: string = args[1].result;
         if (isContractDeploy(payload)) {
-          const bytecode = payload.params[0].data;
-          const bytecodeHash = crypto.createHash("md5").update(bytecode).digest("hex");
+          const bytecode: string = payload.params[0].data;
+          const bytecodeHash: string = crypto.createHash("md5").update(bytecode).digest("hex");
 
           if (this.predeployOptions[bytecodeHash]) {
             this.deployingContracts[txHash] = bytecodeHash;
             this.transactionOptions[txHash] = this.predeployOptions[bytecodeHash];
           }
         }
-        else {
-          this.transactionOptions[txHash] = 
+        else if (payload.params.length > 0 && payload.params[0].param1 && payload.params[0].param2) {
+          this.transactionOptions[txHash] = {
+            param1: payload.params[0].param1,
+            param2: payload.params[0].param2
+          };
         }
       }
 
       if (payload.method === "eth_getTransactionReceipt") {
-        const txHash = args[1].result.transactionHash;
-        const to = args[1].result.to;
+        const txHash: string = args[1].result.transactionHash;
+        const to: string = args[1].result.to;
         if (this.deployingContracts[txHash]) {
           const bytecodeHash = this.deployingContracts[txHash];
           const options = this.predeployOptions[bytecodeHash];
           this.contractOptions[to] = options;
           delete this.predeployOptions[bytecodeHash];
-          console.log ("INSTALLED");
         }
       }
 
@@ -73,7 +93,7 @@ export default class AxCorePayloadExtension {
   }
 
   registerNewContract(bytecode: string, options: AxCoreDeployOptions) {
-    const bytecodeHash = crypto.createHash("md5").update(bytecode).digest("hex");
+    const bytecodeHash: string = crypto.createHash("md5").update(bytecode).digest("hex");
 
     this.predeployOptions[bytecodeHash] = options;
   }
