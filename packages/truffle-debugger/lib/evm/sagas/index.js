@@ -116,7 +116,8 @@ export function* callstackAndCodexSaga() {
 }
 
 export function* reset() {
-  yield put(actions.reset());
+  let initialAddress = (yield select(evm.current.callstack))[0].storageAddress;
+  yield put(actions.reset(initialAddress));
 }
 
 export function* saga() {

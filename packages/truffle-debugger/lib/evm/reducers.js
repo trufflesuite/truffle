@@ -146,10 +146,23 @@ export function callstack(state = [], action) {
   }
 }
 
+//default codex with nothing
 const DEFAULT_CODEX = {
   byAddress: {}
   //there will be more here later!
 };
+
+//default codex with a single address
+function defaultCodex(address) {
+  return {
+    byAddress: {
+      [address]: {
+        storage: {}
+        //there will be more here later!
+      }
+    }
+  };
+}
 
 export function codex(state = DEFAULT_CODEX, action) {
   switch (action.type) {
@@ -188,6 +201,8 @@ export function codex(state = DEFAULT_CODEX, action) {
           }
         }
       };
+    case actions.RESET:
+      return defaultCodex(action.storageAddress);
     default:
       return state;
   }

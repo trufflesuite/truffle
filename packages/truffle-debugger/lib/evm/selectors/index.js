@@ -390,7 +390,7 @@ const evm = createSelectorTree({
         ["./_", "../state/storage", "../call"],
         (codex, rawStorage, { storageAddress }) =>
           storageAddress === DecodeUtils.EVM.ZERO_ADDRESS
-            ? rawStorage
+            ? rawStorage //HACK -- if zero address ignore the codex
             : codex.byAddress[storageAddress].storage
       )
     }

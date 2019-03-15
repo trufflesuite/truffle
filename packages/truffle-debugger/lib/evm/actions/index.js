@@ -64,6 +64,9 @@ export function store(address, slot, value) {
 }
 
 export const RESET = "EVM_RESET";
-export function reset() {
-  return { type: RESET };
+export function reset(storageAddress) {
+  return {
+    type: RESET,
+    storageAddress
+  };
 }
