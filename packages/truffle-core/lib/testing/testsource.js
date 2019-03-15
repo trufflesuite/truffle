@@ -3,7 +3,6 @@ var path = require("path");
 var fs = require("fs");
 var contract = require("truffle-contract");
 var find_contracts = require("truffle-contract-sources");
-const semver = require("semver");
 
 function TestSource(config) {
   this.config = config;
@@ -85,17 +84,9 @@ TestSource.prototype.resolve = function(import_path, callback) {
               mapping[name] = address;
             });
 
-            let removeAddressPayable = false; // must be true for 0.4.xx solidity unit testing
-
-            if (self.config.compilers.solc.version) {
-              const solcVersion = self.config.compilers.solc.version;
-              if (semver.lt(semver.coerce(solcVersion), "0.5.0"))
-                removeAddressPayable = true;
-            }
-
             return Deployed.makeSolidityDeployedAddressesLibrary(
               mapping,
-              removeAddressPayable
+              self.config.compilers
             );
           })
           .then(function(addressSource) {
