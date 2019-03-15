@@ -355,7 +355,7 @@ const data = createSelectorTree({
        * data.current.state.storage
        */
       storage: createLeaf(
-        [evm.current.state.storage],
+        [evm.current.codex.storage],
 
         mapping =>
           Object.assign(
