@@ -177,6 +177,7 @@ export function codex(state = DEFAULT_CODEX, action) {
         return state;
       }
       return {
+        ...state,
         byAddress: {
           ...state.byAddress,
           [action.storageAddress]: {
@@ -190,6 +191,7 @@ export function codex(state = DEFAULT_CODEX, action) {
       //add or update the needed slot
       const { address, slot, value } = action;
       return {
+        ...state,
         byAddress: {
           ...state.byAddress,
           [address]: {
