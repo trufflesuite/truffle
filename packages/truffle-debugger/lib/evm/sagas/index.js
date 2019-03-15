@@ -9,6 +9,8 @@ import * as actions from "../actions";
 
 import evm from "../selectors";
 
+import * as DecodeUtils from "truffle-decode-utils";
+
 import * as trace from "lib/trace/sagas";
 
 /**
@@ -60,11 +62,11 @@ export function* begin({ address, binary, data, storageAddress }) {
 function* tickSaga() {
   debug("got TICK");
 
-  yield* callstackSaga();
+  yield* callstackAndCodexSaga();
   yield* trace.signalTickSagaCompletion();
 }
 
-export function* callstackSaga() {
+export function* callstackAndCodexSaga() {
   if (yield select(evm.current.step.isCall)) {
     debug("got call");
     let address = yield select(evm.current.step.callAddress);
@@ -97,6 +99,19 @@ export function* callstackSaga() {
     debug("got return");
 
     yield put(actions.returnCall());
+  } else if (yield select(evm.current.step.touchesStorage)) {
+    let storageAddress = (yield select(evm.current.call)).storageAddress;
+    //skip doing a touch operation if it's the zero address, since we can't
+    //track things reliably in that case; we'll fall back on the old state
+    //mechanism in that case
+    if (storageAddress !== DecodeUtils.EVM.ZERO_ADDRESS) {
+      let slot = yield select(evm.current.step.storageAffected);
+      //note we get next storage, since we're updating to that
+      let storage = yield select(evm.next.state.storage);
+      //normally we'd need a 0 fallback for this next line, but in this case we
+      //can be sure the value will be there, since we're touching that storage
+      yield put(actions.store(storageAddress, slot, storage[slot]));
+    }
   }
 }
 

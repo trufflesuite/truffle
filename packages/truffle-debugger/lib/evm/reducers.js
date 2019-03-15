@@ -2,6 +2,7 @@ import { combineReducers } from "redux";
 
 import * as actions from "./actions";
 import { keccak256 } from "lib/helpers";
+import * as DecodeUtils from "truffle-decode-utils";
 
 const DEFAULT_CONTEXTS = {
   byContext: {},
@@ -145,8 +146,56 @@ export function callstack(state = [], action) {
   }
 }
 
+const DEFAULT_CODEX = {
+  byAddress: {}
+  //there will be more here later!
+};
+
+export function codex(state = DEFAULT_CODEX, action) {
+  switch (action.type) {
+    case actions.CALL:
+    case actions.CREATE:
+      //on a call or create, add new pages to the codex if necessary;
+      //don't add a zero page though (or pages that already exist)
+      if (
+        state.byAddress[action.storageAddress] !== undefined ||
+        action.storageAddress === DecodeUtils.EVM.ZERO_ADDRESS
+      ) {
+        return state;
+      }
+      return {
+        byAddress: {
+          ...state.byAddress,
+          [action.storageAddress]: {
+            storage: {}
+            //there will be more here later!
+          }
+        }
+      };
+    case actions.STORE:
+      //on a store, the relevant page should already exist, so we can just
+      //add or update the needed slot
+      const { address, slot, value } = action;
+      return {
+        byAddress: {
+          ...state.byAddress,
+          [address]: {
+            ...state.byAddress[address],
+            storage: {
+              ...state.byAddress[address].storage,
+              [slot]: value
+            }
+          }
+        }
+      };
+    default:
+      return state;
+  }
+}
+
 const proc = combineReducers({
-  callstack
+  callstack,
+  codex
 });
 
 const reducer = combineReducers({
