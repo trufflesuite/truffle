@@ -11,6 +11,8 @@ before_install:
   - sudo apt-get install solc jq snapd
   - export PATH=$PATH:/snap/bin
   - sudo snap install vyper --beta --devmode
+  - npm list -g lerna --depth=0 || npm install -g lerna
+  - npm install -g yarn
 
 matrix:
   fast_finish: true
@@ -31,8 +33,6 @@ matrix:
 
 
 install:
-  - npm install -g lerna
-  - npm install -g yarn
   - npm run bootstrap
 
 cache:
