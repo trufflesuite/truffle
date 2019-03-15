@@ -2,9 +2,6 @@ dist: trusty
 sudo: required
 language: node_js
 
-services:
-  - docker
-
 before_install:
   - docker pull ethereum/client-go:latest
   - docker pull ethereum/solc:0.4.22
