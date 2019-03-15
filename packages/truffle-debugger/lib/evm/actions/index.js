@@ -53,7 +53,20 @@ export function returnCall() {
   };
 }
 
+export const STORE = "STORE";
+export function store(address, slot, value) {
+  return {
+    type: STORE,
+    address,
+    slot,
+    value
+  };
+}
+
 export const RESET = "EVM_RESET";
-export function reset() {
-  return { type: RESET };
+export function reset(storageAddress) {
+  return {
+    type: RESET,
+    storageAddress
+  };
 }
