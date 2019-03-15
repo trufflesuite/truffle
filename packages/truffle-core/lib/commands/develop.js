@@ -84,6 +84,23 @@ const command = {
       ganacheOptions["hardfork"] = customConfig.hardfork;
     }
 
+    function sanitizeNetworkID() {
+      let network_id = ganacheOptions.network_id;
+      if (network_id !== "*") {
+        if (!parseInt(network_id, 10)) {
+          const error =
+            `The network id specified in the truffle config ` +
+            `(${network_id}) is not valid. Please properly configure the network id as an integer value.`;
+          throw new Error(error);
+        }
+      } else {
+        // We have a "*" network. Replace it w/ the default.
+        ganacheOptions.network_id = 5777;
+      }
+    }
+
+    sanitizeNetworkID();
+
     Develop.connectOrStart(ipcOptions, ganacheOptions, started => {
       const url = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
 
