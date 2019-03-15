@@ -1,10 +1,11 @@
 // Using web3 for its sha function...
 var Web3 = require("web3");
+const semver = require("semver");
 
 var Deployed = {
   makeSolidityDeployedAddressesLibrary: function(
     mapping,
-    removeAddressPayable
+    { solc: { version } }
   ) {
     var self = this;
 
@@ -35,8 +36,10 @@ var Deployed = {
 
     source += "}";
 
-    // if true, strip out payable!
-    if (removeAddressPayable) source = source.replace(/ payable/gm, "");
+    if (version) {
+      if (semver.lt(semver.coerce(version), "0.5.0"))
+        source = source.replace(/ payable/gm, "");
+    }
 
     return source;
   },
