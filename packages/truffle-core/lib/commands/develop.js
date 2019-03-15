@@ -84,8 +84,7 @@ const command = {
       ganacheOptions["hardfork"] = customConfig.hardfork;
     }
 
-    function sanitizeNetworkID() {
-      let network_id = ganacheOptions.network_id;
+    function sanitizeNetworkID(network_id) {
       if (network_id !== "*") {
         if (!parseInt(network_id, 10)) {
           const error =
@@ -93,13 +92,14 @@ const command = {
             `(${network_id}) is not valid. Please properly configure the network id as an integer value.`;
           throw new Error(error);
         }
+        return network_id;
       } else {
-        // We have a "*" network. Replace it w/ the default.
-        ganacheOptions.network_id = 5777;
+        // We have a "*" network. Return the default.
+        return 5777;
       }
     }
 
-    sanitizeNetworkID();
+    ganacheOptions.network_id = sanitizeNetworkID(ganacheOptions.network_id);
 
     Develop.connectOrStart(ipcOptions, ganacheOptions, started => {
       const url = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
