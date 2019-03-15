@@ -390,4 +390,13 @@ Config.getUserConfig = function() {
   return new Configstore("truffle", {}, { globalConfigPath: true });
 };
 
+Config.getTruffleDataDirectory = () => {
+  const configStore = new Configstore(
+    "truffle",
+    {},
+    { globalConfigPath: true }
+  );
+  return path.dirname(configStore.path);
+};
+
 module.exports = Config;

@@ -51,8 +51,8 @@ function* variablesAndMappingsSaga() {
   let currentAssignments = yield select(data.proc.assignments);
   let mappedPaths = yield select(data.proc.mappedPaths);
   let currentDepth = yield select(data.current.functionDepth);
-  let address = yield select(data.current.address); //may be undefined
-  let dummyAddress = yield select(data.current.dummyAddress);
+  let address = yield select(data.current.address);
+  //storage address, not code address
 
   let stack = yield select(data.next.state.stack); //note the use of next!
   //in this saga we are interested in the *results* of the current instruction
@@ -150,10 +150,7 @@ function* variablesAndMappingsSaga() {
       assignments = {};
       for (let id in allocation.members) {
         id = Number(id); //not sure why we're getting them as strings, but...
-        let idObj =
-          address !== undefined
-            ? { astId: id, address }
-            : { astId: id, dummyAddress };
+        let idObj = { astId: id, address };
         let fullId = stableKeccak256(idObj);
         //we don't use makeAssignment here as we had to compute the ID anyway
         assignment = {
@@ -188,9 +185,7 @@ function* variablesAndMappingsSaga() {
       if (
         currentAssignments.byAstId[varId] !== undefined &&
         currentAssignments.byAstId[varId].some(
-          id =>
-            currentAssignments.byId[id].address !== undefined ||
-            currentAssignments.byId[id].dummyAddress !== undefined
+          id => currentAssignments.byId[id].address !== undefined
         )
       ) {
         break;
@@ -404,7 +399,7 @@ function* variablesAndMappingsSaga() {
         //now, map it! (and do the assign as well)
         yield put(
           actions.mapPathAndAssign(
-            address || dummyAddress,
+            address,
             slot,
             assignments,
             DecodeUtils.Definition.typeIdentifier(node),
@@ -466,7 +461,7 @@ function* variablesAndMappingsSaga() {
       debug("slot %o", slot);
       yield put(
         actions.mapPathAndAssign(
-          address || dummyAddress,
+          address,
           slot,
           assignments,
           DecodeUtils.Definition.typeIdentifier(node),
@@ -494,12 +489,6 @@ function* variablesAndMappingsSaga() {
 
 export function* reset() {
   yield put(actions.reset());
-}
-
-export function* learnAddressSaga(dummyAddress, address) {
-  debug("about to learn an address");
-  yield put(actions.learnAddress(dummyAddress, address));
-  debug("address learnt");
 }
 
 export function* recordAllocations() {

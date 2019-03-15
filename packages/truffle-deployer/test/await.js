@@ -20,6 +20,11 @@ describe("Deployer (async / await)", function() {
     owner = accounts[0];
     options = {
       contracts: null,
+      networks: {
+        test: {
+          // TODO:
+        }
+      },
       network: "test",
       network_id: networkId,
       provider: provider

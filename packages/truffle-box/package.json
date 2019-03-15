@@ -1,6 +1,6 @@
 {
   "name": "truffle-box",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "Truffle project boilerplate utility",
   "main": "box.js",
   "scripts": {
@@ -20,7 +20,7 @@
     "eslint": "^4.0.0",
     "mocha": "5.2.0",
     "sinon": "^6.3.4",
-    "truffle-config": "^1.1.5"
+    "truffle-config": "^1.1.6"
   },
   "dependencies": {
     "fs-extra": "6.0.1",
