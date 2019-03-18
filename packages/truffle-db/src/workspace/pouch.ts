@@ -30,10 +30,10 @@ const resources = {
 }
 
 export class Workspace {
-  contracts: PouchDB.Database;
   sources: PouchDB.Database;
   bytecodes: PouchDB.Database;
   compilations: PouchDB.Database;
+  contracts: PouchDB.Database;
   contractConstructors: PouchDB.Database;
 
   private ready: Promise<void>;
@@ -80,7 +80,6 @@ export class Workspace {
 
         id
       }
-      
       return result;
     } catch (_) {
       return null;
@@ -138,9 +137,7 @@ export class Workspace {
     return {
       contractConstructors: Promise.all(contractConstructors.map(
         async (contractConstructorInput) => {
-          
           const { abi, compilation, createBytecode,linkValues, contract  } = contractConstructorInput;
-         
           const id = abi !== undefined? soliditySha3(abi, createBytecode.id) : soliditySha3(createBytecode.id);
          
           const contractConstructor = await this.contractConstructor( { id } );
@@ -150,6 +147,7 @@ export class Workspace {
           } else {
             let result = await this.contractConstructors.put({
             ...contractConstructorInput, 
+            
             _id: id,
             });
            

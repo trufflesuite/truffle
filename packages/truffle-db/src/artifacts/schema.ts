@@ -19,9 +19,6 @@ export const schema = mergeSchemas({
       contractInstance(networkId: String!, name: String!): ContractInstance
     }`
   ],
-
-
-
   resolvers: {
     Query: {
       contractNames: {
@@ -35,7 +32,6 @@ export const schema = mergeSchemas({
         })
       },
      
-
       contractInstance: {
         resolve: (_, args, context, info) => info.mergeInfo.delegateToSchema({
           schema: jsonSchema,
