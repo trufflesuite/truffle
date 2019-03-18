@@ -1,8 +1,9 @@
-const compile = require("./compile");
-const unbox = require("./unbox");
+const { compileReporter, compileEvents } = require("./compile");
+const { unboxReporter, unboxEvents } = require("./unbox");
 const Reporter = require("./Reporter");
 
-const defaultReporters = [compile, unbox];
+const supportedEvents = { compile: compileEvents, unbox: unboxEvents };
+const defaultReporters = { compileReporter, unboxReporter };
 
 class Reporters {
   constructor(initializationOptions) {
@@ -11,9 +12,13 @@ class Reporters {
 
   initializeReporters(initializationOptions) {
     const { emitter } = initializationOptions;
-    defaultReporters.forEach(reporter => {
-      new Reporter({ options: reporter, emitter });
-    });
+    for (let reporterName in defaultReporters) {
+      new Reporter({
+        options: defaultReporters[reporterName],
+        events: supportedEvents[reporterName],
+        emitter
+      });
+    }
   }
 }
 

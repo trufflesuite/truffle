@@ -61,7 +61,7 @@ const Box = {
       return boxConfig;
     } catch (error) {
       if (tempDirCleanup) tempDirCleanup();
-      eventManager.emit("unbox:jobFailed");
+      eventManager.emit("unbox:fail");
       throw new Error(error);
     }
   },

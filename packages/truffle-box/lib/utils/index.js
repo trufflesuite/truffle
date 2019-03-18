@@ -13,7 +13,7 @@ module.exports = {
       await unbox.fetchRepository(url, destination);
       eventManager.emit("unbox:downloadingBox:end");
     } catch (error) {
-      eventManager.emit("unbox:jobFailed");
+      eventManager.emit("unbox:fail");
       throw new Error(error);
     }
   },
@@ -45,7 +45,7 @@ module.exports = {
       };
       tmp.dir(options, (error, dir, cleanupCallback) => {
         if (error) {
-          eventManager.emit("unbox:jobFailed");
+          eventManager.emit("unbox:fail");
           return reject(error);
         }
 
@@ -69,7 +69,7 @@ module.exports = {
       await unbox.installBoxDependencies(boxConfig, destination);
       eventManager.emit("unbox:settingUpBox:end");
     } catch (error) {
-      eventManager.emit("unbox:jobFailed");
+      eventManager.emit("unbox:fail");
       throw new Error(error);
     }
   }
