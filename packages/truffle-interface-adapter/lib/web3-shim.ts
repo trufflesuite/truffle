@@ -112,7 +112,7 @@ export default class Web3Shim extends Web3 {
     return this.networkType === "axcore";
   }
 
-  registerNewContract(bytecode: string, options: DeployOptions) {
+  registerNewContract(bytecode: string, options: DeployOptions): string | null {
     // we're creating a new contract with this bytecode
     // we should watch for this bytecode, and process
     // options accordingly. once it's deployed, we can
@@ -120,14 +120,17 @@ export default class Web3Shim extends Web3 {
     switch (this.networkType) {
       case "axcore": {
         if (this.currentProvider instanceof AxCoreProviderExtension) {
-          this.currentProvider.registerNewContract(bytecode, options);
+          return this.currentProvider.registerNewContract(bytecode, options);
         }
-        break;
+        else {
+          return `There was an issue with configuring the AxCore provider.\n` +
+            `Please report this issue at https://github.com/trufflesuite/truffle/issues/new.\n`;
+        }
       }
       case "quorum":
       case "ethereum":
       default: {
-        break;
+        return null;
       }
     }
   }

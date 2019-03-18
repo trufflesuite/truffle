@@ -97,10 +97,26 @@ export default class AxCorePayloadExtension {
     })
   }
 
-  registerNewContract(bytecode: string, options: AxCoreDeployOptions) {
+  registerNewContract(bytecode: string, options: AxCoreDeployOptions): string | null {
+    if (typeof options !== "object" || typeof options.param1 === "undefined" || typeof options.param2 === "undefined") {
+      return `The "axcore" network type requires an options parameter to deployer.deploy(__CONTRACTNAME__, options, ...args) and __CONTRACTNAME__.new(options, ...args)\n` +
+      `The "options" field should look like this: {\n` +
+      `  param1: "param1-value",\n` +
+      `  param2: "param1-value"\n` +
+      `}\n` +
+      `The options object with both params was not provided while migrating __CONTRACTNAME__\n` +
+      `Read more datails in the documentation here:\n` +
+      `https://truffleframework.com/docs/truffle/distributed-ledger-support/working-with-axcore\n`;
+    }
+
     const bytecodeHash: string = crypto.createHash("md5").update(bytecode).digest("hex");
 
-    this.predeployOptions[bytecodeHash] = options;
+    this.predeployOptions[bytecodeHash] = {
+      param1: options.param1,
+      param2: options.param2
+    };
+
+    return null;
   }
 };
 

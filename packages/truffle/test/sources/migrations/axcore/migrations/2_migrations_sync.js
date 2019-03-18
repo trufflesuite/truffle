@@ -3,7 +3,7 @@ const UsesExample = artifacts.require("UsesExample");
 
 module.exports = function(deployer) {
   deployer
-    .deploy(Example)
+    .deploy(Example, { param1: "hello", param2: "world" })
     .then(() =>
       deployer.deploy(
         UsesExample,
