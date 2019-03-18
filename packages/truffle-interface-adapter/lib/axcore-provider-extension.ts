@@ -102,7 +102,7 @@ export default class AxCorePayloadExtension {
       return `The "axcore" network type requires an options parameter to deployer.deploy(__CONTRACTNAME__, options, ...args) and __CONTRACTNAME__.new(options, ...args)\n` +
       `The "options" field should look like this: {\n` +
       `  param1: "param1-value",\n` +
-      `  param2: "param1-value"\n` +
+      `  param2: "param2-value"\n` +
       `}\n` +
       `The options object with both params was not provided while migrating __CONTRACTNAME__\n` +
       `Read more datails in the documentation here:\n` +
