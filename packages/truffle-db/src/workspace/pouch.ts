@@ -9,6 +9,10 @@ const resources = {
     createIndexes: [
     ]
   },
+  contractConstructors: {
+    createIndexes: [
+    ]
+  },
   sources: {
     createIndexes: [
       { fields: ["contents"] },
@@ -30,6 +34,7 @@ export class Workspace {
   sources: PouchDB.Database;
   bytecodes: PouchDB.Database;
   compilations: PouchDB.Database;
+  contractConstructors: PouchDB.Database;
 
   private ready: Promise<void>;
 
@@ -91,8 +96,7 @@ export class Workspace {
       contracts: Promise.all(contracts.map(
         async (contractInput) => {
           const { name, source } = contractInput;
-          const id = soliditySha3(name, source.id);
-          
+          const id = name !== undefined ? soliditySha3(name, source.id) : soliditySha3(source.id);
           const contract = await this.contract( { id } );
           
           if(contract) {
@@ -104,6 +108,52 @@ export class Workspace {
             });
            
             return { name, source, id };
+          }
+        }
+      ))
+    }
+  }
+
+  async contractConstructor ({ id }: { id: string }) {
+    await this.ready;
+   
+    try {
+      const result = {
+        ...await this.contractConstructors.get(id), 
+
+        id
+      }
+
+      return result;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async contractConstructorsAdd({input}) {
+    await this.ready;
+
+    const { contractConstructors } = input;
+    
+    return {
+      contractConstructors: Promise.all(contractConstructors.map(
+        async (contractConstructorInput) => {
+          
+          const { abi, compilation, createBytecode,linkValues, contract  } = contractConstructorInput;
+         
+          const id = abi !== undefined? soliditySha3(abi, createBytecode.id) : soliditySha3(createBytecode.id);
+         
+          const contractConstructor = await this.contractConstructor( { id } );
+         
+          if(contractConstructor) {
+            return contractConstructor;
+          } else {
+            let result = await this.contractConstructors.put({
+            ...contractConstructorInput, 
+            _id: id,
+            });
+           
+            return await this.contractConstructor({ id });
           }
         }
       ))

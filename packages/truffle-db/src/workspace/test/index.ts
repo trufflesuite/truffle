@@ -203,9 +203,10 @@ mutation addContracts($contractName: String, $sourceId: ID!) {
       id
       name
       source {
-        id
+        contents
       }
     }
+  }
 }`   
 
 const GetCompilation = `
@@ -224,7 +225,7 @@ query GetCompilation($id: ID!) {
 }`;
 
 const AddCompilation = `
-mutation AddCompilation($compilerName: String!, $compilerVersion: String!, $sourceId: ID!) {
+mutation AddCompilation($compilerName: String!, $compilerVersion: String!, $sourceId: ID!, $contractId: ID!) {
   compilationsAdd(input: {
     compilations: [{
       compiler: {
@@ -232,9 +233,9 @@ mutation AddCompilation($compilerName: String!, $compilerVersion: String!, $sour
         name: $compilerName
         version: $compilerVersion
       }
-      contract: {
-        id: "1234"
-      }
+      contracts: [{
+        id: $contractId
+      }]
       sources: [
         {
          id: $sourceId
@@ -271,6 +272,7 @@ it("adds contracts", async () => {
     );
 
     const { data } = result;
+  
     expect(data).toHaveProperty("contractsAdd");
 
     const { contractsAdd } = data;
@@ -304,7 +306,6 @@ it("adds contracts", async () => {
   }
 });
 
-
 it("adds compilation", async () => {
   const workspace = new Workspace();
 
@@ -312,10 +313,11 @@ it("adds compilation", async () => {
     compilerName: Migrations.compiler.name,
     compilerVersion: Migrations.compiler.version,
     sourceId: soliditySha3(Migrations.source, Migrations.sourcePath),
-    id: "0xfd63faebf4e7515b2f48fdf22066869e09df9b2e91f4e0cf88d7d14ec496b515"
+    id: "0xfd63faebf4e7515b2f48fdf22066869e09df9b2e91f4e0cf88d7d14ec496b515", 
+    contractId: soliditySha3(Migrations.contractName, soliditySha3(Migrations.source, Migrations.sourcePath))
   }
 
-  const compilationId = soliditySha3("1234", variables.sourceId)
+  const compilationId = soliditySha3(variables.contractId, variables.sourceId)
 
   // add compilation
   {
@@ -374,3 +376,147 @@ it("adds compilation", async () => {
   }
 });
 
+const getContractConstructors = `
+query contractConstructor($id: ID!) {
+  contractConstructor(id:$id) {
+    createBytecode {
+      bytes
+      sourceMap
+    }
+    contract {
+      name
+      source {
+        sourcePath
+      }
+    }
+    compilation {
+      compiler {
+        name
+      }
+      contracts {
+        name
+        source {
+          sourcePath
+        }
+      }
+      sources {
+        sourcePath
+        contents
+        ast  
+      }
+    }
+  }
+}`
+
+const AddContractConstructors = `
+mutation addConstructors($bytecodeId: ID!, $compilationId: ID!, $contractId: ID!) {
+    contractConstructorsAdd(input: {
+      contractConstructors:[{
+        createBytecode: {
+          id: $bytecodeId
+        }
+        compilation: {
+          id: $compilationId
+        }
+        contract: {
+          id: $contractId
+        }
+      }]
+    }) {
+      contractConstructors {
+        id
+        createBytecode {
+          bytes
+          sourceMap
+        }
+        compilation {
+          compiler {
+            name
+          }
+          contracts {
+            name
+          }
+          sources {
+            sourcePath
+          }
+        }
+        contract {
+          name
+          source {
+            sourcePath
+          }
+        }
+      }
+    }
+}`
+
+it("adds contract constructors", async () => {
+  const workspace = new Workspace();
+
+  const variables = {
+    bytecodeId: soliditySha3(Migrations.bytecode), 
+    compilationId: "0xfd63faebf4e7515b2f48fdf22066869e09df9b2e91f4e0cf88d7d14ec496b515",
+    contractId: soliditySha3(Migrations.contractName, soliditySha3(Migrations.source, Migrations.sourcePath))
+  }
+
+  const constructorId = soliditySha3(variables.bytecodeId);
+
+  // add contract constructors
+  {
+    const result = await graphql(
+      schema, AddContractConstructors, null, { workspace }, variables
+    );
+
+    const { data } = result;
+    expect(data).toHaveProperty("contractConstructorsAdd");
+
+    const { contractConstructorsAdd } = data;
+    expect(contractConstructorsAdd).toHaveProperty("contractConstructors");
+
+    const { contractConstructors } = contractConstructorsAdd;
+
+    expect(contractConstructors).toHaveLength(1);
+
+    const { id } = contractConstructors[0];
+    expect(id).toEqual(constructorId);
+
+    const { createBytecode, compilation, contract } = contractConstructors[0];
+
+   
+    expect(createBytecode).toHaveProperty("bytes");
+    expect(createBytecode).toHaveProperty("sourceMap");  
+
+
+    expect(compilation).toHaveProperty("compiler");
+    expect(compilation).toHaveProperty("contracts");
+    expect(compilation).toHaveProperty("sources");
+
+    expect(contract).toHaveProperty("name");
+    expect(contract).toHaveProperty("source");
+
+  }
+
+  // ensure retrieved as matching
+  {
+    const result = await graphql(schema, getContractConstructors, null, { workspace }, { id: constructorId });
+    
+    const { data } = result;
+    expect(data).toHaveProperty("contractConstructor");
+
+    const { contractConstructor } = data;
+    expect(contractConstructor).toHaveProperty("contract");
+
+    const { createBytecode, contract, compilation } = contractConstructor;
+    
+    expect(createBytecode).toHaveProperty("bytes");
+    expect(createBytecode).toHaveProperty("sourceMap");
+    
+    expect(contract).toHaveProperty("name");
+    expect(contract).toHaveProperty("source");
+    
+    expect(compilation).toHaveProperty("compiler");
+    expect(compilation).toHaveProperty("contracts");
+    expect(compilation).toHaveProperty("sources");
+
+  }
+});

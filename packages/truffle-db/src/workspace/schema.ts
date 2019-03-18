@@ -22,6 +22,9 @@ export const schema = mergeSchemas({
         }
         extend type Compilation {
           id: ID!
+        }  
+        extend type ContractConstructor {
+          id: ID!
         }
         `,
       ]
@@ -32,6 +35,7 @@ export const schema = mergeSchemas({
       contractNames: [String]!
       contract(id: ID!): Contract
       compilation(id: ID!): Compilation
+      contractConstructor(id: ID!): ContractConstructor
       source(id: ID!): Source
       bytecode(id: ID!): Bytecode
     }
@@ -105,11 +109,56 @@ export const schema = mergeSchemas({
       compilations: [Compilation!]
     }
 
+    input contractConstructorBytecodeInput {
+      id: ID!
+    }
+
+    input contractConstructorCompilationInput {
+      id: ID!
+    }
+
+    input linkReferenceInput {
+      offsets: [ByteOffset!]
+      length: Int!
+    }
+
+    input linkValueInput {
+      linkReference: linkReferenceInput!
+      value: Bytes!
+    }
+
+    input abiInput {
+      json: String!
+      items: [String]
+    }
+
+    input contractConstructorContractInput {
+      id: ID!
+    }
+
+    input contractConstructorInput {
+      abi: abiInput
+      createBytecode: contractConstructorBytecodeInput!
+      compilation: contractConstructorCompilationInput
+      linkValues: [linkValueInput]
+      contract: contractConstructorContractInput
+    }
+
+    input ContractConstructorsAddInput {
+      contractConstructors: [contractConstructorInput!]
+    }
+
+    type ContractConstructorsAddPayload {
+      contractConstructors: [ContractConstructor!]
+    }
+
     type Mutation {
       sourcesAdd(input: SourcesAddInput!): SourcesAddPayload
       bytecodesAdd(input: BytecodesAddInput!): BytecodesAddPayload
       contractsAdd(input:ContractsAddInput!):ContractsAddPayload
       compilationsAdd(input: CompilationsAddInput!): CompilationsAddPayload
+      contractsAdd(input:ContractsAddInput!): ContractsAddPayload
+      contractConstructorsAdd(input:ContractConstructorsAddInput!): ContractConstructorsAddPayload
     } `
   ],
   resolvers: {
@@ -133,6 +182,10 @@ export const schema = mergeSchemas({
       compilation: {
         resolve: (_, { id }, { workspace }) =>
           workspace.compilation({ id })
+      },
+      contractConstructor: {
+        resolve: (_, { id }, { workspace }) =>
+          workspace.contractConstructor({ id })
       }
     },
     Mutation: {
@@ -151,6 +204,10 @@ export const schema = mergeSchemas({
       compilationsAdd: {
         resolve: (_, { input }, { workspace }) =>
           workspace.compilationsAdd({ input })
+      }, 
+      contractConstructorsAdd: {
+        resolve: (_, { input }, { workspace }) =>
+          workspace.contractConstructorsAdd({ input })
       }
     },
     Compilation: {
@@ -173,5 +230,19 @@ export const schema = mergeSchemas({
           workspace.source(source)
       }
     },
+    ContractConstructor: {
+      createBytecode: {
+        resolve: ({ createBytecode }, _, { workspace }) => 
+          workspace.bytecode(createBytecode)
+      }, 
+      compilation: {
+        resolve: ({ compilation }, _, { workspace }) => 
+          workspace.compilation(compilation)
+      },
+      contract: {
+        resolve: ({ contract }, _, { workspace }) => 
+          workspace.contract(contract)
+      } 
+    },  
   }
 });
