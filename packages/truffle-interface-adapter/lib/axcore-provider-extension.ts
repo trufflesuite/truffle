@@ -8,7 +8,10 @@ export interface AxCoreDeployOptions {
 };
 
 function isContractDeploy(payload: JsonRPCRequest) {
-  return payload.params.length > 0 && payload.params[0].to == null;
+  return payload.params.length > 0 &&
+    typeof payload.params[0] === "object" &&
+    payload.params[0].from &&
+    payload.params[0].to == null;
 }
 
 interface IndexedOptions {
@@ -58,33 +61,35 @@ export default class AxCorePayloadExtension {
     }
 
     this.provider.send(payload, (...args: any[]) => {
-      if (payload.method === "eth_sendTransaction" || payload.method === "eth_sendRawTransaction") {
-        const txHash: string = args[1].result;
-        if (isContractDeploy(payload)) {
-          const bytecode: string = payload.params[0].data;
-          const bytecodeHash: string = crypto.createHash("md5").update(bytecode).digest("hex");
+      if (args.length > 1 && args[1].result) {
+        if (payload.method === "eth_sendTransaction" || payload.method === "eth_sendRawTransaction") {
+          const txHash: string = args[1].result;
+          if (isContractDeploy(payload)) {
+            const bytecode: string = payload.params[0].data;
+            const bytecodeHash: string = crypto.createHash("md5").update(bytecode).digest("hex");
 
-          if (this.predeployOptions[bytecodeHash]) {
-            this.deployingContracts[txHash] = bytecodeHash;
-            this.transactionOptions[txHash] = this.predeployOptions[bytecodeHash];
+            if (this.predeployOptions[bytecodeHash]) {
+              this.deployingContracts[txHash] = bytecodeHash;
+              this.transactionOptions[txHash] = this.predeployOptions[bytecodeHash];
+            }
+          }
+          else if (payload.params.length > 0 && payload.params[0].param1 && payload.params[0].param2) {
+            this.transactionOptions[txHash] = {
+              param1: payload.params[0].param1,
+              param2: payload.params[0].param2
+            };
           }
         }
-        else if (payload.params.length > 0 && payload.params[0].param1 && payload.params[0].param2) {
-          this.transactionOptions[txHash] = {
-            param1: payload.params[0].param1,
-            param2: payload.params[0].param2
-          };
-        }
-      }
 
-      if (payload.method === "eth_getTransactionReceipt") {
-        const txHash: string = args[1].result.transactionHash;
-        const to: string = args[1].result.to;
-        if (this.deployingContracts[txHash]) {
-          const bytecodeHash = this.deployingContracts[txHash];
-          const options = this.predeployOptions[bytecodeHash];
-          this.contractOptions[to] = options;
-          delete this.predeployOptions[bytecodeHash];
+        if (payload.method === "eth_getTransactionReceipt") {
+          const txHash: string = args[1].result.transactionHash;
+          const to: string = args[1].result.to;
+          if (this.deployingContracts[txHash]) {
+            const bytecodeHash = this.deployingContracts[txHash];
+            const options = this.predeployOptions[bytecodeHash];
+            this.contractOptions[to] = options;
+            delete this.predeployOptions[bytecodeHash];
+          }
         }
       }
 

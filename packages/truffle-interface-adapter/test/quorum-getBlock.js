@@ -1,6 +1,6 @@
 const Ganache = require("ganache-core");
 const Web3 = require("web3");
-const Web3Shim = require("../lib/web3-shim");
+const Web3Shim = require("truffle-interface-adapter").Web3Shim;
 const assert = require("assert");
 const BN = require("bn.js");
 
