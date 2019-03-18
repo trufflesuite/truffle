@@ -2,11 +2,11 @@ const OS = require("os");
 
 module.exports = {
   handlers: {
-    "compile:startJob": function() {
+    "compile:start": function() {
       this.logger.log(OS.EOL + `Compiling your contracts...`);
       this.logger.log(`===========================`);
     },
-    "compile:finishJob": function({ globalConfig, compilersInfo }) {
+    "compile:finish": function({ globalConfig, compilersInfo }) {
       if (Object.keys(compilersInfo).length > 0) {
         this.logger.log(
           `> Artifacts written to ${globalConfig.contracts_build_directory}`
