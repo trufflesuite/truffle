@@ -34,8 +34,19 @@ class VersionRange extends LoadingStrategy {
 
   getCachedSolcByFileName(fileName) {
     const filePath = this.resolveCache(fileName);
+    
+    // disable babel-register cache temporarily
+    const oldCacheSetting = process.env.BABEL_DISABLE_CACHE;
+    process.env.BABEL_DISABLE_CACHE = true;
+    
+    // perform require
     const soljson = originalRequire(filePath);
+    
+    // restore old setting
+    process.env.BABEL_DISABLE_CACHE = oldCacheSetting;
+    
     debug("soljson %o", soljson);
+    
     const wrapped = solcWrap(soljson);
     this.removeListener();
     return wrapped;
