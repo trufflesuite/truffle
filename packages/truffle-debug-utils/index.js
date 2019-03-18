@@ -277,6 +277,16 @@ var DebugUtils = {
       return object.map(DebugUtils.cleanConstructors);
     }
 
+    if (object && object instanceof Map) {
+      //map case
+      return new Map(
+        Array.from(object.entries()).map(([key, value]) => [
+          key,
+          DebugUtils.cleanConstructors(value)
+        ])
+      );
+    }
+
     try {
       //we do not want to alter BNs!
       //(or other special objects, but that's just BNs right now)
