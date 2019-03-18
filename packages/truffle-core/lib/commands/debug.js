@@ -264,6 +264,8 @@ var command = {
           // TODO make this more robust for all cases and move to
           // truffle-debug-utils
           function formatValue(value, indent) {
+            value = DebugUtils.cleanConstructors(value); //HACK
+
             if (!indent) {
               indent = 0;
             }
