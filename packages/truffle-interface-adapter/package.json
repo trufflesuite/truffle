@@ -2,11 +2,12 @@
   "name": "truffle-interface-adapter",
   "version": "0.1.2",
   "description": "A library that provides an adapter layer for Truffle to interace with different types of networks/ledgers.",
-  "main": "index.js",
+  "main": "dist/index.js",
   "directories": {
     "lib": "lib"
   },
   "scripts": {
+    "build": "node_modules/.bin/tsc",
     "test": "mocha"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-interface-adapter",
@@ -16,7 +17,10 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle#readme",
   "devDependencies": {
-    "ganache-core": "2.5.1"
+    "@types/bn.js": "^4.11.4",
+    "@types/web3": "^1.0.18",
+    "ganache-core": "2.5.1",
+    "typescript": "^3.3.3333"
   },
   "dependencies": {
     "bn.js": "^4.11.8",

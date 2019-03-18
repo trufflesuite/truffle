@@ -14,7 +14,7 @@ module.exports = Contract => {
         );
       }
 
-      this.web3.setProvider(provider);
+      this.web3.setProviderOverload(provider);
       this.currentProvider = provider;
     },
 

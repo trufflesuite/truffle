@@ -8,3 +8,4 @@ npm run build:truffle-contract-schema # must come before decode-utils
 npm run build:decode-utils # must come before decoder
 npm run build:decoder # must come before debugger
 npm run build:debugger
+npm run build:interface-adapter
