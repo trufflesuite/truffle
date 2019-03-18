@@ -215,6 +215,35 @@ var Utils = {
       }
     });
     return converted;
+  },
+
+  bigNumberify,
+
+  /**
+   * Multiplies an ethers.js BigNumber and a number with decimal places using
+   * integer math rather than using an arbitrary floating-point library like
+   * `bignumber.js`.
+   * @param  {BigNumber} bignum            an ethers.js BigNumber (use bigNumberify)
+   * @param  {Number}    decimal           a number which has 0+ decimal places
+   * @param  {Number}    [maxPrecision=5]  the max number of signficant figures
+   *                                       `decimal` can have. (default: 5)
+   * @return {BigNumber}                   floor(bignum * decimal)
+   */
+  multiplyBigNumberByDecimal: function(bignum, decimal, maxPrecision) {
+    if (typeof maxPrecision === "undefined") {
+      maxPrecision = 5;
+    }
+
+    const significantFigures = Math.min(
+      decimal.toString().length - 1, // length less one because `.`
+      maxPrecision
+    );
+
+    const denominator = bigNumberify(10).pow(significantFigures);
+    const numerator = Math.round(decimal * denominator);
+    const secondOperand = bigNumberify(numerator).div(denominator);
+
+    return bignum.mul(secondOperand);
   }
 };
 

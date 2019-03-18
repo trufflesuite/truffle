@@ -1,5 +1,7 @@
 const Web3 = require("web3");
-const BN = require("bn.js");
+
+const ethereumOverloads = require("./ethereum-overloads");
+const quorumOverloads = require("./quorum-overloads");
 
 // March 13, 2019 - Mike Seese:
 // This is a temporary shim to support the basic, Ethereum-based
@@ -52,24 +54,25 @@ class Web3Shim extends Web3 {
       }
       case "ethereum":
       default: {
+        this.initEthereum();
         break;
       }
     }
   }
 
+  initEthereum() {
+    // truffle has started expecting gas used/limit to be
+    // hex strings to support bignumbers for other ledgers
+    ethereumOverloads.getBlock(this);
+    ethereumOverloads.getTransaction(this);
+    ethereumOverloads.getTransactionReceipt(this);
+  }
+
   initQuorum() {
-    // duck punch the block output formatter since quorum uses nanoseconds in the timestamp
-    // field instead of seconds
-    const _oldFormatter = this.eth.getBlock.method.outputFormatter;
-    this.eth.getBlock.method.outputFormatter = block => {
-      const _oldTimestamp = block.timestamp;
-      let timestamp = new BN(block.timestamp.slice(2), 16);
-      timestamp = timestamp.div(new BN(10).pow(new BN(9)));
-      block.timestamp = "0x" + timestamp.toString(16);
-      let result = _oldFormatter.call(this.eth.getBlock.method, block);
-      result.timestamp = _oldTimestamp;
-      return result;
-    };
+    // duck punch some of web3's output formatters
+    quorumOverloads.getBlock(this);
+    quorumOverloads.getTransaction(this);
+    quorumOverloads.getTransactionReceipt(this);
   }
 }
 
