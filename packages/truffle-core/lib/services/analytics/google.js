@@ -142,6 +142,7 @@ const googleAnalytics = {
    * send event to Google Analytics
    * @param {Object}
    */
+  // eslint-disable-next-line no-unused-vars
   sendAnalyticsEvent: function(eventObject, callback) {
     let visitor = this.setPersistentAnalyticsData();
     let sendObject = {};
@@ -159,6 +160,7 @@ const googleAnalytics = {
     }
 
     if (visitor) {
+      // eslint-disable-next-line no-unused-vars
       visitor.event(sendObject, function(err) {});
     }
 

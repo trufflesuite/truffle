@@ -292,7 +292,8 @@ module.exports = {
         "node_modules",
         "bn.js",
         "lib",
-        "bn.js"),
+        "bn.js"
+      ),
       "original-fs": path.join(__dirname, "./nil.js"),
       "scrypt": "js-scrypt"
     }

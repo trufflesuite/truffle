@@ -1,0 +1,14 @@
+{
+  "name": "truffle-legacy-system",
+  "version": "1.0.5",
+  "description": "Legacy on-chain migrations & testing management library",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {},
+  "author": "",
+  "license": "ISC"
+}

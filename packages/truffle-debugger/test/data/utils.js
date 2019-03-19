@@ -35,7 +35,7 @@ describe("Utils", function() {
     it("returns correct negative value", function() {
       let bytes = [0xf5, 0xe2, 0xc5, 0x17]; // starts with 0b1
       let raw = new BN("f5e2c517", 16);
-      let bitfipped = new BN(
+      let bitflipped = new BN(
         raw
           .toString(2)
           .replace(/0/g, "x")
@@ -44,7 +44,7 @@ describe("Utils", function() {
         2
       );
 
-      let expectedValue = bitfipped.addn(1).neg();
+      let expectedValue = bitflipped.addn(1).neg();
 
       let result = TruffleDecodeUtils.Conversion.toSignedBN(bytes);
 

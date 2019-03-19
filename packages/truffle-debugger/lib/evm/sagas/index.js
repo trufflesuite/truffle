@@ -9,10 +9,9 @@ import * as actions from "../actions";
 
 import evm from "../selectors";
 
-import * as data from "lib/data/sagas";
-import * as trace from "lib/trace/sagas";
-
 import * as DecodeUtils from "truffle-decode-utils";
+
+import * as trace from "lib/trace/sagas";
 
 /**
  * Adds EVM bytecode context
@@ -52,22 +51,22 @@ export function* addInstance(address, binary) {
   return context;
 }
 
-export function* begin({ address, binary, data }) {
+export function* begin({ address, binary, data, storageAddress }) {
   if (address) {
-    yield put(actions.call(address, data));
+    yield put(actions.call(address, data, storageAddress));
   } else {
-    yield put(actions.create(binary));
+    yield put(actions.create(binary, storageAddress));
   }
 }
 
 function* tickSaga() {
   debug("got TICK");
 
-  yield* callstackSaga();
+  yield* callstackAndCodexSaga();
   yield* trace.signalTickSagaCompletion();
 }
 
-export function* callstackSaga() {
+export function* callstackAndCodexSaga() {
   if (yield select(evm.current.step.isCall)) {
     debug("got call");
     let address = yield select(evm.current.step.callAddress);
@@ -82,49 +81,43 @@ export function* callstackSaga() {
     if (yield select(evm.current.step.callsPrecompile)) {
       return;
     }
-
-    yield put(actions.call(address, data));
+    if (yield select(evm.current.step.isDelegateCallBroad)) {
+      //if delegating, keep same storage address we already have
+      let storageAddress = (yield select(evm.current.call)).storageAddress;
+      yield put(actions.call(address, data, storageAddress));
+    } else {
+      //if we're not delegating storage, storageAddress == address
+      yield put(actions.call(address, data, address));
+    }
   } else if (yield select(evm.current.step.isCreate)) {
     debug("got create");
     let binary = yield select(evm.current.step.createBinary);
+    let createdAddress = yield select(evm.current.step.createdAddress);
 
-    yield put(actions.create(binary));
+    yield put(actions.create(binary, createdAddress));
   } else if (yield select(evm.current.step.isHalting)) {
     debug("got return");
 
-    let callstack = yield select(evm.current.callstack);
-
-    //if the program's not ending, and we just returned from a constructor,
-    //learn the address of what we just initialized
-    //(do this before we put the return action to avoid off-by-one error)
-    if (
-      callstack.length > 1 &&
-      callstack[callstack.length - 1].address === undefined
-    ) {
-      let dummyAddress = yield select(evm.current.creationDepth);
-      debug("dummyAddress %d", dummyAddress);
-
-      //NOTE: the following logic, for getting the created address, really
-      //belongs in a selector.  However, every time I try to make it a
-      //selector, I get mysterious error messages.  So, we'll do it ourselves
-      //in the saga instead.
-
-      let stack = yield select(evm.next.state.stack);
-      let createdAddress = DecodeUtils.Conversion.toAddress(
-        stack[stack.length - 1]
-      );
-      debug("createdAddress %s", createdAddress);
-
-      yield* data.learnAddressSaga(dummyAddress, createdAddress);
-      debug("address learnt");
-    }
-
     yield put(actions.returnCall());
+  } else if (yield select(evm.current.step.touchesStorage)) {
+    let storageAddress = (yield select(evm.current.call)).storageAddress;
+    //skip doing a touch operation if it's the zero address, since we can't
+    //track things reliably in that case; we'll fall back on the old state
+    //mechanism in that case
+    if (storageAddress !== DecodeUtils.EVM.ZERO_ADDRESS) {
+      let slot = yield select(evm.current.step.storageAffected);
+      //note we get next storage, since we're updating to that
+      let storage = yield select(evm.next.state.storage);
+      //normally we'd need a 0 fallback for this next line, but in this case we
+      //can be sure the value will be there, since we're touching that storage
+      yield put(actions.store(storageAddress, slot, storage[slot]));
+    }
   }
 }
 
 export function* reset() {
-  yield put(actions.reset());
+  let initialAddress = (yield select(evm.current.callstack))[0].storageAddress;
+  yield put(actions.reset(initialAddress));
 }
 
 export function* saga() {

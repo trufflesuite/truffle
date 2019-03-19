@@ -3,7 +3,7 @@ var TruffleError = require("truffle-error");
 var Networks = require("./networks");
 var EthPM = require("ethpm");
 var EthPMRegistry = require("ethpm-registry");
-var Web3 = require("web3");
+var Web3Shim = require("truffle-interface-adapter").Web3Shim;
 var async = require("async");
 var path = require("path");
 var fs = require("fs");
@@ -125,7 +125,10 @@ var Package = {
     options.network = "ropsten";
 
     var provider = options.provider;
-    var web3 = new Web3(provider);
+    var web3 = new Web3Shim({
+      provider: options.provider,
+      networkType: "ethereum"
+    });
     var host = options.ethpm.ipfs_host;
 
     if (host instanceof EthPM.hosts.IPFS === false) {
