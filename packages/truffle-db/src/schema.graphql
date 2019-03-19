@@ -12,17 +12,23 @@ type ContractInstance {
   address: Address!
   network: Network!
   callBytecode: Bytecode
-  contractType: ContractType
+  contract: Contract
   transactionHash: TransactionHash
   constructorArgs: [Value]
   linkValues: [LinkValue]
 }
 
-type ContractType {
-  abi: ABI!
-  name: String
+type ContractConstructor {
+  abi: ABI
   compilation: Compilation
   createBytecode: Bytecode
+  linkValues: [LinkValue]
+  contract: Contract
+}
+
+type Contract {
+  name: String
+  source: Source
 }
 
 type ABI {
@@ -48,10 +54,6 @@ type LinkValue {
 type LinkReference {
   offsets: [ByteOffset!]!
   length: Int!
-}
-
-type ContractTypes {
-  contractTypes: [ContractType]!
 }
 
 type Bytecode {
@@ -93,7 +95,7 @@ type Source {
 
 type Compilation {
   compiler: Compiler!
-  contractTypes: ContractTypes!
+  contracts: [Contract!]
   sources: [Source]!
 }
 

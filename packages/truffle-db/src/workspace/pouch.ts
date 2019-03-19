@@ -5,9 +5,12 @@ import PouchDBFind from "pouchdb-find";
 import { soliditySha3 } from "web3-utils";
 
 const resources = {
-  contractTypes: {
+  contracts: {
     createIndexes: [
-      { fields: ["name"] }
+    ]
+  },
+  contractConstructors: {
+    createIndexes: [
     ]
   },
   sources: {
@@ -27,10 +30,11 @@ const resources = {
 }
 
 export class Workspace {
-  contractTypes: PouchDB.Database;
   sources: PouchDB.Database;
   bytecodes: PouchDB.Database;
   compilations: PouchDB.Database;
+  contracts: PouchDB.Database;
+  contractConstructors: PouchDB.Database;
 
   private ready: Promise<void>;
 
@@ -60,19 +64,21 @@ export class Workspace {
   async contractNames () {
     await this.ready;
 
-    const { docs }: any = await this.contractTypes.find({
+    const { docs }: any = await this.contracts.find({
       selector: {},
       fields: ['name']
     })
     return docs.map( ({ name }) => name );
   }
 
-  async contractType ({ name }: { name: string }) {
+  async contract ({ id }: { id: string }) {
     await this.ready;
 
     try {
       const result = {
-        ...await this.contractTypes.get(name)
+        ...await this.contracts.get(id), 
+
+        id
       }
       return result;
     } catch (_) {
@@ -80,31 +86,76 @@ export class Workspace {
     }
   }
 
-  async addContractType (contractType: {
-    name: string,
-    abi?: string,
-    createBytecode?: string
-  }) {
+  async contractsAdd({input}) {
     await this.ready;
 
-    const { name, abi, createBytecode } = contractType;
+    const { contracts } = input;
+    
+    return {
+      contracts: Promise.all(contracts.map(
+        async (contractInput) => {
+          const { name, source } = contractInput;
+          const id = name !== undefined ? soliditySha3(name, source.id) : soliditySha3(source.id);
+          const contract = await this.contract( { id } );
+          
+          if(contract) {
+            return contract;
+          } else {
+            await this.contracts.put({
+            ...contractInput, 
+            _id: id,
+            });
+           
+            return { name, source, id };
+          }
+        }
+      ))
+    }
+  }
 
-    const { _rev } = await this.contractType({ name }) || { _rev: null };
+  async contractConstructor ({ id }: { id: string }) {
+    await this.ready;
+   
+    try {
+      const result = {
+        ...await this.contractConstructors.get(id), 
 
-    await this.contractTypes.put({
-      name,
-      abi: {
-        json: abi
-      },
-      createBytecode: {
-        id: createBytecode
-      },
+        id
+      }
 
-      _rev,
-      _id: contractType.name
-    });
+      return result;
+    } catch (_) {
+      return null;
+    }
+  }
 
-    return name;
+  async contractConstructorsAdd({input}) {
+    await this.ready;
+
+    const { contractConstructors } = input;
+    
+    return {
+      contractConstructors: Promise.all(contractConstructors.map(
+        async (contractConstructorInput) => {
+          const { abi, compilation, createBytecode,linkValues, contract  } = contractConstructorInput;
+          const id = abi !== undefined? soliditySha3(abi, createBytecode.id) : soliditySha3(createBytecode.id);
+         
+          const contractConstructor = await this.contractConstructor( { id } );
+         
+          if(contractConstructor) {
+            return contractConstructor;
+          } else {
+            let result = await this.contractConstructors.put({
+            ...contractConstructorInput, 
+            
+            _id: id,
+            });
+           
+            return await this.contractConstructor({ id });
+          }
+        }
+      ))
+    }
   }
 
   async compilation ({ id }: { id: string }) {
