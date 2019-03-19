@@ -65,17 +65,17 @@ export const schema = mergeSchemas({
       bytecodes: [Bytecode!]
     }
 
-    input contractSourceInput {
+    input ContractSourceInput {
       id: ID!
     }
 
-    input contractInput {
+    input ContractInput {
       name: String
-      source: contractSourceInput!
+      source: ContractSourceInput!
     }
 
     input ContractsAddInput {
-      contracts: [contractInput!]!
+      contracts: [ContractInput!]!
     }
 
     type ContractsAddPayload {
@@ -109,43 +109,43 @@ export const schema = mergeSchemas({
       compilations: [Compilation!]
     }
 
-    input contractConstructorBytecodeInput {
+    input ContractConstructorBytecodeInput {
       id: ID!
     }
 
-    input contractConstructorCompilationInput {
+    input ContractConstructorCompilationInput {
       id: ID!
     }
 
-    input linkReferenceInput {
+    input LinkReferenceInput {
       offsets: [ByteOffset!]
       length: Int!
     }
 
-    input linkValueInput {
-      linkReference: linkReferenceInput!
+    input LinkValueInput {
+      linkReference: LinkReferenceInput!
       value: Bytes!
     }
 
-    input abiInput {
+    input AbiInput {
       json: String!
       items: [String]
     }
 
-    input contractConstructorContractInput {
+    input ContractConstructorContractInput {
       id: ID!
     }
 
-    input contractConstructorInput {
-      abi: abiInput
-      createBytecode: contractConstructorBytecodeInput!
-      compilation: contractConstructorCompilationInput
-      linkValues: [linkValueInput]
-      contract: contractConstructorContractInput
+    input ContractConstructorInput {
+      abi: AbiInput
+      createBytecode: ContractConstructorBytecodeInput!
+      compilation: ContractConstructorCompilationInput
+      linkValues: [LinkValueInput]
+      contract: ContractConstructorContractInput
     }
 
     input ContractConstructorsAddInput {
-      contractConstructors: [contractConstructorInput!]
+      contractConstructors: [ContractConstructorInput!]
     }
 
     type ContractConstructorsAddPayload {
@@ -155,10 +155,10 @@ export const schema = mergeSchemas({
     type Mutation {
       sourcesAdd(input: SourcesAddInput!): SourcesAddPayload
       bytecodesAdd(input: BytecodesAddInput!): BytecodesAddPayload
-      contractsAdd(input:ContractsAddInput!):ContractsAddPayload
+      contractsAdd(input: ContractsAddInput!): ContractsAddPayload
       compilationsAdd(input: CompilationsAddInput!): CompilationsAddPayload
-      contractsAdd(input:ContractsAddInput!): ContractsAddPayload
-      contractConstructorsAdd(input:ContractConstructorsAddInput!): ContractConstructorsAddPayload
+      contractsAdd(input: ContractsAddInput!): ContractsAddPayload
+      contractConstructorsAdd(input: ContractConstructorsAddInput!): ContractConstructorsAddPayload
     } `
   ],
   resolvers: {
