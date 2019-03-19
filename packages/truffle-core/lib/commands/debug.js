@@ -235,19 +235,17 @@ var command = {
 
           async function printWatchExpressionsResults() {
             debug("enabledExpressions %o", enabledExpressions);
-            await Promise.all(
-              [...enabledExpressions].map(async expression => {
-                config.logger.log(expression);
-                // Add some padding. Note: This won't work with all loggers,
-                // meaning it's not portable. But doing this now so we can get something
-                // pretty until we can build more architecture around this.
-                // Note: Selector results already have padding, so this isn't needed.
-                if (expression[0] === ":") {
-                  process.stdout.write("  ");
-                }
-                await printWatchExpressionResult(expression);
-              })
-            );
+            for (let expression of enabledExpressions) {
+              config.logger.log(expression);
+              // Add some padding. Note: This won't work with all loggers,
+              // meaning it's not portable. But doing this now so we can get something
+              // pretty until we can build more architecture around this.
+              // Note: Selector results already have padding, so this isn't needed.
+              if (expression[0] === ":") {
+                process.stdout.write("  ");
+              }
+              await printWatchExpressionResult(expression);
+            }
           }
 
           async function printWatchExpressionResult(expression) {
