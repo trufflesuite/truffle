@@ -3,6 +3,7 @@ var dir = require("node-dir");
 var path = require("path");
 var async = require("async");
 var debug = require("debug")("lib:debug");
+var BN = require("bn.js");
 
 var commandReference = {
   "o": "step over",
@@ -265,6 +266,54 @@ var DebugUtils = {
     }
 
     return formatted.join(OS.EOL);
+  },
+
+  //HACK
+  cleanConstructors: function(object) {
+    debug("object %o", object);
+
+    if (object && typeof object.map === "function") {
+      //array case
+      return object.map(DebugUtils.cleanConstructors);
+    }
+
+    if (object && object instanceof Map) {
+      //map case
+      return new Map(
+        Array.from(object.entries()).map(([key, value]) => [
+          key,
+          DebugUtils.cleanConstructors(value)
+        ])
+      );
+    }
+
+    try {
+      //we do not want to alter BNs!
+      //(or other special objects, but that's just BNs right now)
+      if (BN.isBN(object)) {
+        return object;
+      }
+    } catch (e) {
+      //HACK
+      //if isBN threw an error, it's not a BN, so move on
+    }
+
+    if (object && typeof object === "object") {
+      //generic object case
+      return Object.assign(
+        {},
+        ...Object.entries(object)
+          .filter(
+            ([key, value]) => key !== "constructor" || value !== undefined
+          )
+          .map(([key, value]) => ({
+            [key]: DebugUtils.cleanConstructors(value)
+          }))
+      );
+    }
+
+    //for strings, numbers, etc
+    return object;
   }
 };
 
