@@ -6,7 +6,6 @@ import jsonpointer from "json-pointer";
 
 import { stableKeccak256 } from "lib/helpers";
 
-import ast from "lib/ast/selectors";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
@@ -18,6 +17,47 @@ import { forEvmState } from "truffle-decoder";
  */
 const identity = x => x;
 
+function findAncestorOfType(node, types, scopes) {
+  //note: I'm not including any protection against null in this function.
+  //You are advised to include "SourceUnit" as a fallback type.
+  while (node && !types.includes(node.nodeType)) {
+    node = scopes[scopes[node.id].parentId].definition;
+  }
+  return node;
+}
+
+//given a modifier invocation (or inheritance specifier) node,
+//get the node for the actual modifier (or constructor)
+function modifierForInvocation(invocation, scopes) {
+  let rawId; //raw referencedDeclaration ID extracted from the AST.
+  //if it's a modifier this is what we want, but if it's base
+  //constructor, we'll get the contract instead, and need to find its
+  //constructor.
+  switch (invocation.nodeType) {
+    case "ModifierInvocation":
+      rawId = invocation.modifierName.referencedDeclaration;
+      break;
+    case "InheritanceSpecifier":
+      rawId = invocation.baseName.referencedDeclaration;
+      break;
+    default:
+      debug("bad invocation node");
+  }
+  let rawNode = scopes[rawId].definition;
+  switch (rawNode.nodeType) {
+    case "ModifierDefinition":
+      return rawNode;
+    case "ContractDefinition":
+      return rawNode.nodes.find(
+        node =>
+          node.nodeType === "FunctionDefinition" && node.kind === "constructor"
+      );
+    default:
+      //we should never hit this case
+      return undefined;
+  }
+}
+
 const data = createSelectorTree({
   state: state => state.data,
 
@@ -25,11 +65,6 @@ const data = createSelectorTree({
    * data.views
    */
   views: {
-    /**
-     * data.views.ast
-     */
-    ast: createLeaf([ast.current], tree => tree),
-
     /*
      * data.views.atLastInstructionForSourceRange
      */
@@ -333,15 +368,15 @@ const data = createSelectorTree({
     },
 
     /**
-     *
-     * data.current.scope
+     * data.current.node
      */
-    scope: {
-      /**
-       * data.current.scope.id
-       */
-      id: createLeaf([ast.current.node], node => node.id)
-    },
+    node: createLeaf([solidity.current.node], identity),
+
+    /**
+     * data.current.scope
+     * old alias for data.current.node (deprecated)
+     */
+    scope: createLeaf(["./node"], identity),
 
     /**
      * data.current.functionDepth
@@ -357,6 +392,143 @@ const data = createSelectorTree({
 
     address: createLeaf([evm.current.call], call => call.storageAddress),
 
+    /*
+     * data.current.aboutToModify
+     * HACK
+     * This selector is used to catch those times when we go straight from a
+     * modifier invocation into the modifier itself, skipping over the
+     * definition node (this includes base constructor calls).  So it should
+     * return true when:
+     * 1. we're on the node corresponding to an argument to a modifier
+     * invocation or base constructor call, or, if said argument is a type
+     * conversion, its argument (or nested argument)
+     * 2. the next node is not a FunctionDefinition, ModifierDefinition, or
+     * in the same modifier / base constructor invocation
+     */
+    aboutToModify: createLeaf(
+      [
+        "./node",
+        "./modifierInvocation",
+        "./modifierArgumentIndex",
+        "/next/node",
+        "/next/modifierInvocation",
+        evm.current.step.isContextChange
+      ],
+      (node, invocation, index, next, nextInvocation, isContextChange) => {
+        //ensure: current instruction is not a context change (because if it is
+        //we cannot rely on the data.next selectors, but also if it is we know
+        //we're not about to call a modifier or base constructor!)
+        //we also want to return false if we can't find things for whatever
+        //reason
+        if (
+          isContextChange ||
+          !node ||
+          !next ||
+          !invocation ||
+          !nextInvocation
+        ) {
+          return false;
+        }
+
+        //ensure: current position is in a ModifierInvocation or
+        //InheritanceSpecifier (recall that SourceUnit was included as
+        //fallback)
+        if (invocation.nodeType === "SourceUnit") {
+          return false;
+        }
+
+        //ensure: next node is not a function definition or modifier definition
+        if (
+          next.nodeType === "FunctionDefinition" ||
+          next.nodeType === "ModifierDefinition"
+        ) {
+          return false;
+        }
+
+        //ensure: next node is not in the same invocation
+        if (
+          nextInvocation.nodeType !== "SourceUnit" &&
+          nextInvocation.id === invocation.id
+        ) {
+          return false;
+        }
+
+        //now: are we on the node corresponding to an argument, or, if
+        //it's a type conversion, its nested argument?
+        if (index === undefined) {
+          return false;
+        }
+        let argument = invocation.arguments[index];
+        while (argument.kind === "typeConversion") {
+          if (node.id === argument.id) {
+            return true;
+          }
+          argument = argument.arguments[0];
+        }
+        return node.id === argument.id;
+      }
+    ),
+
+    /*
+     * data.current.modifierInvocation
+     */
+    modifierInvocation: createLeaf(
+      ["./node", "/views/scopes/inlined"],
+      (node, scopes) => {
+        const types = [
+          "ModifierInvocation",
+          "InheritanceSpecifier",
+          "SourceUnit"
+        ];
+        //again, SourceUnit included as fallback
+        return findAncestorOfType(node, types, scopes);
+      }
+    ),
+
+    /**
+     * data.current.modifierArgumentIndex
+     * gets the index of the current modifier argument that you're in
+     * (undefined when not in a modifier argument)
+     */
+    modifierArgumentIndex: createLeaf(
+      ["/info/scopes", "./node", "./modifierInvocation"],
+      (scopes, node, invocation) => {
+        if (invocation.nodeType === "SourceUnit") {
+          return undefined;
+        }
+
+        let pointer = scopes[node.id].pointer;
+        let invocationPointer = scopes[invocation.id].pointer;
+
+        //slice the invocation pointer off the beginning
+        let difference = pointer.replace(invocationPointer, "");
+        debug("difference %s", difference);
+        let rawIndex = difference.match(/^\/arguments\/(\d+)/);
+        //note that that \d+ is greedy
+        debug("rawIndex %o", rawIndex);
+        if (rawIndex === null) {
+          return undefined;
+        }
+        return parseInt(rawIndex[1]);
+      }
+    ),
+
+    /*
+     * data.current.modifierBeingInvoked
+     * gets the node corresponding to the modifier or base constructor
+     * being invoked
+     */
+    modifierBeingInvoked: createLeaf(
+      ["./modifierInvocation", "/views/scopes/inlined"],
+      (invocation, scopes) => {
+        if (!invocation || invocation.nodeType === "SourceUnit") {
+          return undefined;
+        }
+
+        return modifierForInvocation(invocation, scopes);
+      }
+    ),
+
     /**
      * data.current.identifiers (namespace)
      */
@@ -367,7 +539,7 @@ const data = createSelectorTree({
        * returns identifers and corresponding definition node ID
        */
       _: createLeaf(
-        ["/views/scopes/inlined", "/current/scope"],
+        ["/views/scopes/inlined", "/current/node"],
 
         (scopes, scope) => {
           let cur = scope.id;
@@ -417,7 +589,7 @@ const data = createSelectorTree({
         [
           "/proc/assignments",
           "./_",
-          solidity.current.functionDepth, //for pruning things too deep on stack
+          "/current/functionDepth", //for pruning things too deep on stack
           "/current/address" //for contract variables
         ],
 
@@ -500,6 +672,8 @@ const data = createSelectorTree({
   next: {
     /**
      * data.next.state
+     * Yes, I'm just repeating the code for data.current.state.stack here;
+     * not worth the trouble to factor out
      */
     state: {
       /**
@@ -510,7 +684,60 @@ const data = createSelectorTree({
 
         words => (words || []).map(word => DecodeUtils.Conversion.toBytes(word))
       )
-    }
+    },
+
+    //HACK WARNING
+    //the following selectors depend on solidity.next
+    //do not use them when the current instruction is a context change!
+
+    /**
+     * data.next.node
+     */
+    node: createLeaf([solidity.next.node], identity),
+
+    /**
+     * data.next.modifierInvocation
+     * Note: yes, I'm just repeating the code from data.current here but with
+     * invalid added
+     */
+    modifierInvocation: createLeaf(
+      ["./node", "/views/scopes/inlined", evm.current.step.isContextChange],
+      (node, scopes, invalid) => {
+        //don't attempt this at a context change!
+        //(also don't attempt this if we can't find the node for whatever
+        //reason)
+        if (invalid || !node) {
+          return undefined;
+        }
+        const types = [
+          "ModifierInvocation",
+          "InheritanceSpecifier",
+          "SourceUnit"
+        ];
+        //again, SourceUnit included as fallback
+        return findAncestorOfType(node, types, scopes);
+      }
+    ),
+
+    /*
+     * data.next.modifierBeingInvoked
+     */
+    modifierBeingInvoked: createLeaf(
+      [
+        "./modifierInvocation",
+        "/views/scopes/inlined",
+        evm.current.step.isContextChange
+      ],
+      (invocation, scopes, invalid) => {
+        if (invalid || !invocation || invocation.nodeType === "SourceUnit") {
+          return undefined;
+        }
+
+        return modifierForInvocation(invocation, scopes);
+      }
+    )
+
+    //END HACK WARNING
   }
 });
 

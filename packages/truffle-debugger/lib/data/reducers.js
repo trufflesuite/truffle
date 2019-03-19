@@ -111,23 +111,20 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
     case actions.MAP_PATH_AND_ASSIGN:
       debug("action.type %O", action.type);
       debug("action.assignments %O", action.assignments);
-      return Object.values(action.assignments.byId).reduce(
-        (acc, assignment) => {
-          let { id, astId } = assignment; //we don't need the rest
-          return {
-            byId: {
-              ...acc.byId,
-              [id]: assignment
-            },
-            byAstId: {
-              ...acc.byAstId,
-              [astId]: [...new Set([...(acc.byAstId[astId] || []), id])]
-              //we use a set for uniqueness
-            }
-          };
-        },
-        state
-      );
+      return Object.values(action.assignments).reduce((acc, assignment) => {
+        let { id, astId } = assignment; //we don't need the rest
+        return {
+          byId: {
+            ...acc.byId,
+            [id]: assignment
+          },
+          byAstId: {
+            ...acc.byAstId,
+            [astId]: [...new Set([...(acc.byAstId[astId] || []), id])]
+            //we use a set for uniqueness
+          }
+        };
+      }, state);
 
     case actions.RESET:
       return DEFAULT_ASSIGNMENTS;

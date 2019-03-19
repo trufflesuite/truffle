@@ -99,6 +99,15 @@ function createStepSelectors(step, state = null) {
     ),
 
     /**
+     * .isContextChange
+     * groups together calls, creates, and halts
+     */
+    isContextChange: createLeaf(
+      ["./isCall", "./isCreate", "./isHalting"],
+      (call, create, halt) => call || create || halt
+    ),
+
+    /*
      * .touchesStorage
      *
      * whether the instruction involves storage
@@ -412,6 +421,9 @@ const evm = createSelectorTree({
       }))
     ),
 
+    /*
+     * evm.next.step
+     */
     step: createStepSelectors(trace.next, "./state")
   },
 
