@@ -43,7 +43,7 @@ class VersionRange extends LoadingStrategy {
 
   // Range can also be a single version specification like "0.5.0"
   getCachedSolcByVersionRange(version) {
-    const cachedCompilerFileNames = fs.readdirSync(this.cachePath);
+    const cachedCompilerFileNames = fs.readdirSync(this.compilerCachePath);
     const validVersions = cachedCompilerFileNames.filter(fileName => {
       const match = fileName.match(/v\d+\.\d+\.\d+.*/);
       if (match) return semver.satisfies(match[0], version);
@@ -57,7 +57,7 @@ class VersionRange extends LoadingStrategy {
   }
 
   getCachedSolcFileName(commit) {
-    const cachedCompilerFileNames = fs.readdirSync(this.cachePath);
+    const cachedCompilerFileNames = fs.readdirSync(this.compilerCachePath);
     return cachedCompilerFileNames.find(fileName => {
       return fileName.includes(commit);
     });
@@ -208,7 +208,7 @@ class VersionRange extends LoadingStrategy {
   }
 
   versionIsCached(version) {
-    const cachedCompilerFileNames = fs.readdirSync(this.cachePath);
+    const cachedCompilerFileNames = fs.readdirSync(this.compilerCachePath);
     const cachedVersions = cachedCompilerFileNames.map(fileName => {
       const match = fileName.match(/v\d+\.\d+\.\d+.*/);
       if (match) return match[0];

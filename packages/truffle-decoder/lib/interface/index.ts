@@ -12,8 +12,8 @@ export { getMemoryAllocations } from "../allocate/memory";
 export { readStack } from "../read/stack";
 export { slotAddress } from "../read/storage";
 
-export function forContract(contract: ContractObject, relevantContracts: ContractObject[], provider: Provider): TruffleDecoder {
-  return new TruffleDecoder(contract, relevantContracts, provider);
+export function forContract(contract: ContractObject, relevantContracts: ContractObject[], provider: Provider, address?: string): TruffleDecoder {
+  return new TruffleDecoder(contract, relevantContracts, provider, address);
 }
 
 export async function forEvmState(definition: AstDefinition, pointer: DataPointer, info: EvmInfo): Promise<any> {

@@ -1,4 +1,5 @@
 const Web3 = require("web3");
+const Web3Shim = require("truffle-interface-adapter").Web3Shim;
 const TruffleError = require("truffle-error");
 const expect = require("truffle-expect");
 const Resolver = require("truffle-resolver");
@@ -56,7 +57,10 @@ const Environment = {
       );
     }
 
-    var web3 = new Web3(config.provider);
+    var web3 = new Web3Shim({
+      provider: config.provider,
+      networkType: config.networks[config.network].type
+    });
 
     async function detectNetworkId() {
       const providerNetworkId = await web3.eth.net.getId();
@@ -101,9 +105,12 @@ const Environment = {
 
   // Ensure you call Environment.detect() first.
   fork: async function(config, callback) {
-    expect.options(config, ["from"]);
+    expect.options(config, ["from", "provider", "networks", "network"]);
 
-    var web3 = new Web3(config.provider);
+    var web3 = new Web3Shim({
+      provider: config.provider,
+      networkType: config.networks[config.network].type
+    });
 
     try {
       var accounts = await web3.eth.getAccounts();
