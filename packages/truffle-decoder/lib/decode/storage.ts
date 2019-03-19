@@ -189,9 +189,6 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
         // string lives in word, length is last byte / 2
         length = lengthByte / 2;
         debug("in-word; length %o", length);
-        if (length == 0) {
-          return "";
-        }
 
         return decodeValue(definition, { storage: {
           from: { slot: pointer.storage.from.slot, index: 0 },
