@@ -368,10 +368,15 @@ const data = createSelectorTree({
     },
 
     /**
-     * data.current.scope
-     * this should probably be named data.current.node!
+     * data.current.node
      */
-    scope: createLeaf([solidity.current.node], identity),
+    node: createLeaf([solidity.current.node], identity),
+
+    /**
+     * data.current.scope
+     * old alias for data.current.node (deprecated)
+     */
+    scope: createLeaf(["./node"], identity),
 
     /**
      * data.current.functionDepth
@@ -402,10 +407,10 @@ const data = createSelectorTree({
      */
     aboutToModify: createLeaf(
       [
-        "./scope",
+        "./node",
         "./modifierInvocation",
         "./modifierArgumentIndex",
-        "/next/scope",
+        "/next/node",
         "/next/modifierInvocation",
         evm.current.step.isContextChange
       ],
@@ -468,7 +473,7 @@ const data = createSelectorTree({
      * data.current.modifierInvocation
      */
     modifierInvocation: createLeaf(
-      ["./scope", "/views/scopes/inlined"],
+      ["./node", "/views/scopes/inlined"],
       (node, scopes) => {
         const types = [
           "ModifierInvocation",
@@ -486,7 +491,7 @@ const data = createSelectorTree({
      * (undefined when not in a modifier argument)
      */
     modifierArgumentIndex: createLeaf(
-      ["/info/scopes", "./scope", "./modifierInvocation"],
+      ["/info/scopes", "./node", "./modifierInvocation"],
       (scopes, node, invocation) => {
         if (invocation.nodeType === "SourceUnit") {
           return undefined;
@@ -534,7 +539,7 @@ const data = createSelectorTree({
        * returns identifers and corresponding definition node ID
        */
       _: createLeaf(
-        ["/views/scopes/inlined", "/current/scope"],
+        ["/views/scopes/inlined", "/current/node"],
 
         (scopes, scope) => {
           let cur = scope.id;
@@ -686,10 +691,9 @@ const data = createSelectorTree({
     //do not use them when the current instruction is a context change!
 
     /**
-     * data.next.scope
-     * this should probably be named data.next.node!
+     * data.next.node
      */
-    scope: createLeaf([solidity.next.node], identity),
+    node: createLeaf([solidity.next.node], identity),
 
     /**
      * data.next.modifierInvocation
@@ -697,7 +701,7 @@ const data = createSelectorTree({
      * invalid added
      */
     modifierInvocation: createLeaf(
-      ["./scope", "/views/scopes/inlined", evm.current.step.isContextChange],
+      ["./node", "/views/scopes/inlined", evm.current.step.isContextChange],
       (node, scopes, invalid) => {
         //don't attempt this at a context change!
         //(also don't attempt this if we can't find the node for whatever

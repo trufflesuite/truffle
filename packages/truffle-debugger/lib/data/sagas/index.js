@@ -43,7 +43,7 @@ function* tickSaga() {
 }
 
 function* variablesAndMappingsSaga() {
-  let node = yield select(data.current.scope); //no it's not really a scope
+  let node = yield select(data.current.node);
   let decode = yield select(data.views.decoder);
   let scopes = yield select(data.views.scopes.inlined);
   let referenceDeclarations = yield select(data.views.referenceDeclarations);
