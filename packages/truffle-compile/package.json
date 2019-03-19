@@ -4,6 +4,8 @@
   "description": "Compiler helper and artifact manager",
   "main": "index.js",
   "dependencies": {
+    "@babel/core": "^7.3.4",
+    "@babel/register": "^7.0.0",
     "async": "2.6.1",
     "colors": "^1.1.2",
     "debug": "^4.1.0",

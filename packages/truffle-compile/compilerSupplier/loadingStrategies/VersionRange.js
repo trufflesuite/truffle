@@ -34,6 +34,12 @@ class VersionRange extends LoadingStrategy {
 
   getCachedSolcByFileName(fileName) {
     const filePath = this.resolveCache(fileName);
+
+    // dynamically load to forcibly ignore soljson
+    require("@babel/register")({
+      ignore: ["node_modules", filePath]
+    });
+
     const soljson = originalRequire(filePath);
     debug("soljson %o", soljson);
     const wrapped = solcWrap(soljson);

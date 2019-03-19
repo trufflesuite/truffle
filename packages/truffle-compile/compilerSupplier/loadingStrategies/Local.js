@@ -13,6 +13,11 @@ class Local extends LoadingStrategy {
       ? localPath
       : path.resolve(process.cwd(), localPath);
 
+    // dynamically load to forcibly ignore soljson
+    require("@babel/register")({
+      ignore: ["node_modules", localPath]
+    });
+
     try {
       compiler = originalRequire(compilerPath);
       this.removeListener();
