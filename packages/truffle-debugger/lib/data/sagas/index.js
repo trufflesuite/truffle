@@ -64,6 +64,14 @@ function* variablesAndMappingsSaga() {
   //the literal we recorded was a pointer, it will still be valid at the time
   //we use it.  (The other literals we make use of, for the base expressions,
   //are not decoded, so no potential mismatch there would be relevant anyway.)
+
+  let alternateStack = yield select(data.nextMapped.state.stack);
+  //HACK: unfortunately, in some cases, data.next.state.stack gets the wrong
+  //results due to unmapped instructions intervening.  So, we get the stack at
+  //the next *mapped* stack instead.  This is something of a hack and won't
+  //work if we're about to change context, but it should work in the cases that
+  //need it.
+
   if (!stack) {
     return;
   }
@@ -210,6 +218,8 @@ function* variablesAndMappingsSaga() {
       // to track `mapping` types known indices
       // (and also *some* known indices for arrays)
 
+      //HACK: we use the alternate stack in this case
+
       debug("Index access case");
 
       //we're going to start by doing the same thing as in the default case
@@ -217,7 +227,7 @@ function* variablesAndMappingsSaga() {
       //going to forget this for a bit while we handle the rest...
       assignments = {
         ...preambleAssignments,
-        ...literalAssignments(node, stack, currentDepth)
+        ...literalAssignments(node, alternateStack, currentDepth)
       };
 
       //we'll need this
@@ -415,12 +425,14 @@ function* variablesAndMappingsSaga() {
       break;
 
     case "MemberAccess":
+      //HACK: we use the alternate stack in this case
+
       //we're going to start by doing the same thing as in the default case
       //(see below) -- getting things ready for an assignment.  Then we're
       //going to forget this for a bit while we handle the rest...
       assignments = {
         ...preambleAssignments,
-        ...literalAssignments(node, stack, currentDepth)
+        ...literalAssignments(node, alternateStack, currentDepth)
       };
 
       debug("Member access case");
