@@ -54,7 +54,7 @@ const Box = {
 
       eventManager.emit("unbox:cleaningTempFiles:start");
       tempDirCleanup();
-      eventManager.emit("unbox:cleaningTempFiles:end");
+      eventManager.emit("unbox:cleaningTempFiles:succeed");
 
       await utils.setUpBox(boxConfig, destination, eventManager);
 

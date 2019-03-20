@@ -23,28 +23,28 @@ module.exports = {
     "unbox:preparingToDownload:start": function() {
       this.spinner = this.ora("Preparing to download box").start();
     },
-    "unbox:preparingToDownload:end": function() {
+    "unbox:preparingToDownload:succeed": function() {
       this.spinner.succeed();
     },
     "unbox:downloadingBox:start": function() {
       this.spinner = this.ora("Downloading").start();
     },
-    "unbox:downloadingBox:end": function() {
+    "unbox:downloadingBox:succeed": function() {
       this.spinner.succeed();
     },
     "unbox:cleaningTempFiles:start": function() {
       this.spinner = this.ora("cleaning up temporary files").start();
     },
-    "unbox:cleaningTempFiles:end": function() {
+    "unbox:cleaningTempFiles:succeed": function() {
       this.spinner.succeed();
     },
     "unbox:settingUpBox:start": function() {
       this.spinner = this.ora("Setting up box").start();
     },
-    "unbox:settingUpBox:end": function() {
+    "unbox:settingUpBox:succeed": function() {
       this.spinner.succeed();
     },
-    "unbox:finish": function({ boxConfig }) {
+    "unbox:succeed": function({ boxConfig }) {
       this.logger.log(`${OS.EOL}Unbox successful, sweet!${OS.EOL}`);
 
       const commandMessages = formatCommands(boxConfig.commands);
