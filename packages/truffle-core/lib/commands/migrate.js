@@ -145,8 +145,11 @@ var command = {
     function runMigrations(config, callback) {
       Migrate.launchReporter();
 
-      if (options.f) {
-        Migrate.runFrom(options.f, config, done);
+      // check --f && --from flag usage
+      const from = options.f || options.from;
+
+      if (from) {
+        Migrate.runFrom(from, config, done);
       } else {
         Migrate.needsMigrating(config, function(err, needsMigrating) {
           if (err) return callback(err);
