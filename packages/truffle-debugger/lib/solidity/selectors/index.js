@@ -10,6 +10,7 @@ import { findRange } from "lib/ast/map";
 import jsonpointer from "json-pointer";
 
 import evm from "lib/evm/selectors";
+import trace from "lib/trace/selectors";
 
 const semver = require("semver");
 
@@ -342,6 +343,19 @@ let solidity = createSelectorTree({
         context.compiler !== undefined && //would be undefined for e.g. a precompile
         context.compiler.name === "solc" &&
         semver.satisfies(context.compiler.version, "<0.5.1")
+    ),
+
+    /*
+     * solidity.current.nextMapped
+     * returns the next trace step after this one which is sourcemapped
+     * HACK: this assumes we're not about to change context! don't use this if
+     * we are!
+     * ALSO, this may return undefined, so be prepared for that
+     */
+    nextMapped: createLeaf(
+      ["./instructionAtProgramCounter", trace.steps, trace.index],
+      (map, steps, index) =>
+        steps.slice(index + 1).find(({ pc }) => map[pc] && map[pc].file !== -1)
     )
   },
 

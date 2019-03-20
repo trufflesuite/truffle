@@ -736,8 +736,33 @@ const data = createSelectorTree({
         return modifierForInvocation(invocation, scopes);
       }
     )
-
     //END HACK WARNING
+  },
+
+  /**
+   * data.nextMapped
+   */
+  nextMapped: {
+    /**
+     * data.nextMapped.state
+     * Yes, I'm just repeating the code for data.current.state.stack here;
+     * not worth the trouble to factor out
+     * HACK: this assumes we're not about to change context! don't use this if we
+     * are!
+     */
+    state: {
+      /**
+       * data.nextMapped.state.stack
+       */
+      stack: createLeaf(
+        [solidity.current.nextMapped],
+
+        step =>
+          ((step || {}).stack || []).map(word =>
+            DecodeUtils.Conversion.toBytes(word)
+          )
+      )
+    }
   }
 });
 
