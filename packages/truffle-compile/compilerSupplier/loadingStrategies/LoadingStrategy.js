@@ -17,7 +17,7 @@ class LoadingStrategy {
 
     const compilerCachePath = path.resolve(
       Config.getTruffleDataDirectory(),
-      "compilers"
+      "compilers/node_modules" // because babel binds to require & does weird things
     );
     if (!fs.existsSync(compilerCachePath)) fs.mkdirSync(compilerCachePath);
     this.compilerCachePath = compilerCachePath;
