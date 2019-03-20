@@ -916,6 +916,11 @@
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@types/minimist/-/minimist-1.2.0.tgz#69a23a3ad29caf0097f06eda59b361ee2f0639f6"
 
+"@types/mocha@^5.2.6":
+  version "5.2.6"
+  resolved "https://registry.yarnpkg.com/@types/mocha/-/mocha-5.2.6.tgz#b8622d50557dd155e9f2f634b7d68fd38de5e94b"
+  integrity sha512-1axi39YdtBI7z957vdqXI4Ac25e7YihYQtJa+Clnxg1zTJEaIRbndt71O3sP4GAMgiAm0pY26/b9BrY4MR/PMw==
+
 "@types/mz@0.0.32":
   version "0.0.32"
   resolved "https://registry.yarnpkg.com/@types/mz/-/mz-0.0.32.tgz#e8248b4e41424c052edc1725dd33650c313a3659"
@@ -1393,6 +1398,11 @@ are-we-there-yet@~1.1.2:
   dependencies:
     delegates "^1.0.0"
     readable-stream "^2.0.6"
+
+arg@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/arg/-/arg-4.1.0.tgz#583c518199419e0037abb74062c37f8519e575f0"
+  integrity sha512-ZWc51jO3qegGkVh8Hwpv636EkbesNV5ZNQPCtRa+0qytRYPEs9IYT9qITY9buezqUH5uqyzlWLcufrzU2rffdg==
 
 argparse@^1.0.7:
   version "1.0.10"
@@ -3441,6 +3451,7 @@ copy-webpack-plugin@^4.0.1:
 core-js@^2.4.0, core-js@^2.5.0, core-js@^2.5.3, core-js@^2.5.7:
   version "2.6.5"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.5.tgz#44bc8d249e7fb2ff5d00e0341a7ffb94fbf67895"
+  integrity sha512-klh/kDpwX8hryYL14M9w/xei6vrv6sE8gTHDG7/T/+SEovB/G4ejwcfE/CBzO6Edsu+OETZMZ3wcX/EjUkrl5A==
 
 core-util-is@1.0.2, core-util-is@~1.0.0:
   version "1.0.2"
@@ -3933,7 +3944,7 @@ diff@3.3.1:
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/diff/-/diff-3.3.1.tgz#aa8567a6eed03c531fc89d3f711cd0e5259dec75"
 
-diff@3.5.0, diff@^3.5.0:
+diff@3.5.0, diff@^3.1.0, diff@^3.5.0:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/diff/-/diff-3.5.0.tgz#800c0dd1e0a8bfbc95835c202ad220fe317e5a12"
 
@@ -8302,6 +8313,11 @@ make-dir@^2.0.0:
     pify "^4.0.1"
     semver "^5.6.0"
 
+make-error@^1.1.1:
+  version "1.3.5"
+  resolved "https://registry.yarnpkg.com/make-error/-/make-error-1.3.5.tgz#efe4e81f6db28cadd605c70f29c831b58ef776c8"
+  integrity sha512-c3sIjNUow0+8swNwVpqoH4YCShKNFkMaw6oH1mNS2haDZQqkeZFlHS3dhoeEbKKmJB4vXpJucU6oH75aDYeE9g==
+
 make-fetch-happen@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/make-fetch-happen/-/make-fetch-happen-4.0.1.tgz#141497cb878f243ba93136c83d8aba12c216c083"
@@ -8784,7 +8800,7 @@ mocha@^4.1.0:
     mkdirp "0.5.1"
     supports-color "4.4.0"
 
-mocha@^6.0.0:
+mocha@^6.0.0, mocha@^6.0.2:
   version "6.0.2"
   resolved "https://registry.yarnpkg.com/mocha/-/mocha-6.0.2.tgz#cdc1a6fdf66472c079b5605bac59d29807702d2c"
   dependencies:
@@ -11710,6 +11726,14 @@ source-map-support@^0.5.1:
     buffer-from "^1.0.0"
     source-map "^0.6.0"
 
+source-map-support@^0.5.6:
+  version "0.5.11"
+  resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.11.tgz#efac2ce0800355d026326a0ca23e162aeac9a4e2"
+  integrity sha512-//sajEx/fGL3iw6fltKMdPvy8kL3kJ2O3iuYlRoT3k9Kb4BjOoZ+BZzaNHeuaruSt+Kf3Zk9tnfAQg9/AJqUVQ==
+  dependencies:
+    buffer-from "^1.0.0"
+    source-map "^0.6.0"
+
 source-map-url@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/source-map-url/-/source-map-url-0.4.0.tgz#3e935d7ddd73631b97659956d55128e87b5084a3"
@@ -12616,6 +12640,17 @@ ts-invariant@^0.3.2:
   resolved "https://registry.yarnpkg.com/ts-invariant/-/ts-invariant-0.3.2.tgz#89a2ffeb70879b777258df1df1c59383c35209b0"
   dependencies:
     tslib "^1.9.3"
+
+ts-node@^8.0.3:
+  version "8.0.3"
+  resolved "https://registry.yarnpkg.com/ts-node/-/ts-node-8.0.3.tgz#aa60b836a24dafd8bf21b54766841a232fdbc641"
+  integrity sha512-2qayBA4vdtVRuDo11DEFSsD/SFsBXQBRZZhbRGSIkmYmVkWjULn/GGMdG10KVqkaGndljfaTD8dKjWgcejO8YA==
+  dependencies:
+    arg "^4.1.0"
+    diff "^3.1.0"
+    make-error "^1.1.1"
+    source-map-support "^0.5.6"
+    yn "^3.0.0"
 
 tslib@^1.9.0, tslib@^1.9.3:
   version "1.9.3"
@@ -14447,6 +14482,11 @@ yauzl@^2.4.2:
   dependencies:
     buffer-crc32 "~0.2.3"
     fd-slicer "~1.1.0"
+
+yn@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/yn/-/yn-3.0.0.tgz#0073c6b56e92aed652fbdfd62431f2d6b9a7a091"
+  integrity sha512-+Wo/p5VRfxUgBUGy2j/6KX2mj9AYJWOHuhMjMcbBFc3y54o9/4buK1ksBvuiK01C3kby8DH9lSmJdSxw+4G/2Q==
 
 zen-observable-ts@^0.8.18:
   version "0.8.18"

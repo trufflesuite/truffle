@@ -23,6 +23,8 @@
     "ganache-core": "2.5.1",
     "mocha": "^6.0.2",
     "ts-node": "^8.0.3",
+    "truffle-compile": "4.0.8",
+    "truffle-contract": "4.0.9",
     "typescript": "^3.3.3333"
   },
   "dependencies": {

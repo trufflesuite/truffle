@@ -18,16 +18,21 @@ interface IndexedOptions {
   [BytecodeHash: string]: AxCoreDeployOptions;
 };
 
-interface IndexedBytecodes {
+interface IndexedBytecodeHashes {
   [TransactionHash: string]: string;
+};
+
+interface IndexedBytecodes {
+  [FunctionSignatureHash: string]: string[];
 };
 
 export default class AxCorePayloadExtension {
   private provider: Provider;
   private transactionOptions: IndexedOptions;
   private predeployOptions: IndexedOptions;
-  private deployingContracts: IndexedBytecodes;
+  private deployingContracts: IndexedBytecodeHashes;
   private contractOptions: IndexedOptions;
+  private constructorBytecodes: IndexedBytecodes;
 
   constructor(provider: Provider) {
     this.provider = provider;
@@ -36,15 +41,34 @@ export default class AxCorePayloadExtension {
     this.predeployOptions = {}; // indexed by hashed bytecode
     this.deployingContracts = {}; // indexed by tx hash
     this.contractOptions = {}; // indexed by address
+    this.constructorBytecodes = {}; // indexed by constructor signature hash
+  }
+
+  getBytecodeHashForTxData(data: string): string | null {
+    const functionSignatureHash = data.slice(2, 10);
+
+    if (this.constructorBytecodes[functionSignatureHash]) {
+      const bytecodes = this.constructorBytecodes[functionSignatureHash];
+      for (let i = 0; i < bytecodes.length; i++) {
+        if (data.startsWith(bytecodes[i])) {
+          const bytecodeHash: string = crypto.createHash("md5").update(bytecodes[i]).digest("hex");
+          return bytecodeHash;
+        }
+      }
+    }
+
+    return null;
   }
 
   send(payload: JsonRPCRequest, callback: Callback<JsonRPCResponse>): any {
-    if (payload.method === "eth_getTransactionReceipt" && typeof this.transactionOptions[payload.params[0]] !== "undefined") {
-      // add payload extensions
-      const txHash: string = payload.params[0];
-      payload.params.push(this.transactionOptions[txHash].param1);
-      payload.params.push(this.transactionOptions[txHash].param2);
-      delete this.transactionOptions[txHash];
+    if (payload.method === "eth_getTransactionReceipt") {
+      if (typeof this.transactionOptions[payload.params[0]] !== "undefined") {
+        // add payload extensions
+        const txHash: string = payload.params[0];
+        payload.params.push(this.transactionOptions[txHash].param1);
+        payload.params.push(this.transactionOptions[txHash].param2);
+        delete this.transactionOptions[txHash];
+      }
     }
     else if (payload.params.length > 0) {
       if (payload.params[0].to && this.contractOptions[payload.params[0].to]) {
@@ -53,7 +77,8 @@ export default class AxCorePayloadExtension {
       }
       else if (isContractDeploy(payload)) {
         const bytecode: string = payload.params[0].data;
-        const bytecodeHash: string = crypto.createHash("md5").update(bytecode).digest("hex");
+        const bytecodeHash = this.getBytecodeHashForTxData(bytecode);
+
         if (this.predeployOptions[bytecodeHash]) {
           Object.assign(payload.params[0], this.predeployOptions[bytecodeHash]);
         }
@@ -66,11 +91,12 @@ export default class AxCorePayloadExtension {
           const txHash: string = args[1].result;
           if (isContractDeploy(payload)) {
             const bytecode: string = payload.params[0].data;
-            const bytecodeHash: string = crypto.createHash("md5").update(bytecode).digest("hex");
+            const bytecodeHash = this.getBytecodeHashForTxData(bytecode);
 
             if (this.predeployOptions[bytecodeHash]) {
               this.deployingContracts[txHash] = bytecodeHash;
               this.transactionOptions[txHash] = this.predeployOptions[bytecodeHash];
+              delete this.constructorBytecodes[bytecode.slice(2, 10)];
             }
           }
           else if (payload.params.length > 0 && payload.params[0].param1 && payload.params[0].param2) {
@@ -83,7 +109,7 @@ export default class AxCorePayloadExtension {
 
         if (payload.method === "eth_getTransactionReceipt") {
           const txHash: string = args[1].result.transactionHash;
-          const to: string = args[1].result.to;
+          const to: string = args[1].result.contractAddress;
           if (this.deployingContracts[txHash]) {
             const bytecodeHash = this.deployingContracts[txHash];
             const options = this.predeployOptions[bytecodeHash];
@@ -110,6 +136,15 @@ export default class AxCorePayloadExtension {
     }
 
     const bytecodeHash: string = crypto.createHash("md5").update(bytecode).digest("hex");
+
+    const functionSignatureHash = bytecode.slice(2, 10);
+
+    if (this.constructorBytecodes[functionSignatureHash]) {
+      this.constructorBytecodes[functionSignatureHash].push(bytecode);
+    }
+    else {
+      this.constructorBytecodes[functionSignatureHash] = [ bytecode ];
+    }
 
     this.predeployOptions[bytecodeHash] = {
       param1: options.param1,
