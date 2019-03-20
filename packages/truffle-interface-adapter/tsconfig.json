@@ -12,7 +12,8 @@
     "paths": {
       "web3": ["../../node_modules/@types/web3/index", "node_modules/web3/index"]
     },
-    "rootDir": "lib"
+    "rootDir": "lib",
+    "typeRoots": ["./typings", "./node_modules/@types", "../../node_modules/@types"],
   },
   "include": [
     "./lib/**/*.ts",

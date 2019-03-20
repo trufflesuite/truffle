@@ -35,7 +35,7 @@ export interface Web3ShimOptions {
 // should drive the development of the correct architecture of
 // `truffle-interface-adapter`that should use this work in a more
 // sane and organized manner.
-export default class Web3Shim extends Web3 {
+export class Web3Shim extends Web3 {
   public networkType: NetworkType;
 
   constructor(options?: Web3ShimOptions) {
@@ -108,7 +108,7 @@ export default class Web3Shim extends Web3 {
     quorumOverloads.getTransactionReceipt(this);
   }
 
-  hasContractOptions() {
+  hasContractOptions(): boolean {
     return this.networkType === "axcore";
   }
 
