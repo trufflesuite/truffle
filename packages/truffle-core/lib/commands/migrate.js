@@ -20,6 +20,10 @@ var command = {
       describe: "Specify a migration number to run from",
       type: "number"
     },
+    "from": {
+      describe: "Specify a migration number to run from",
+      type: "number"
+    },
     "to": {
       describe: "Specify a migration number to run to",
       type: "number"
@@ -32,7 +36,7 @@ var command = {
   },
   help: {
     usage:
-      "truffle migrate [--reset] [--f <number>] [--to <number>] [--network <name>] [--compile-all] [--verbose-rpc] [--interactive]",
+      "truffle migrate [--reset] [--f <number> | --from <number>] [--to <number>] [--network <name>] [--compile-all] [--verbose-rpc] [--interactive]",
     options: [
       {
         option: "--reset",
@@ -41,7 +45,7 @@ var command = {
           "completed migration."
       },
       {
-        option: "--f <number>",
+        option: "--f <number> | --from <number>",
         description:
           "Run contracts from a specific migration. The number refers to the prefix of " +
           "the migration file."
