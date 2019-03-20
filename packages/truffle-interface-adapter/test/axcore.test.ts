@@ -92,6 +92,7 @@ async function setupProvider(constructor: any, options: any, axcoreEnabled: bool
 }
 
 describe("AxCore", function() {
+  this.timeout(5000);
   let constructor: any;
   let provider: Ganache.Provider;
 
@@ -138,7 +139,6 @@ describe("AxCore", function() {
   });
 
   it("it deploys, sends transaction, and parameters are passed through", async function() {
-    this.timeout(5000);
     const options = {param1: "hello", param2: "world"};
     provider = await setupProvider(constructor, options, true);
     const instance = await constructor.new(options, 1);
