@@ -20,10 +20,7 @@ class LoadingStrategy {
       "compilers"
     );
     const compilerCachePath = path.resolve(compilersDir, "node_modules"); // because babel binds to require & does weird things
-    if (!fs.existsSync(compilersDir)) {
-      fs.mkdirSync(compilersDir);
-      fs.mkdirSync(compilerCachePath);
-    }
+    if (!fs.existsSync(compilersDir)) fs.mkdirSync(compilersDir);
     if (!fs.existsSync(compilerCachePath)) fs.mkdirSync(compilerCachePath); // for 5.0.8 users
 
     this.compilerCachePath = compilerCachePath;
