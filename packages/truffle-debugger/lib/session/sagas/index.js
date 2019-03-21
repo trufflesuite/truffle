@@ -99,8 +99,14 @@ function* fetchTx(txHash, provider) {
 }
 
 function* recordContexts(...contexts) {
-  for (let { contractName, binary, sourceMap, compiler } of contexts) {
-    yield* evm.addContext(contractName, { binary }, compiler);
+  for (let {
+    contractName,
+    binary,
+    sourceMap,
+    compiler,
+    contractId
+  } of contexts) {
+    yield* evm.addContext(contractName, { binary }, compiler, contractId);
 
     if (sourceMap) {
       yield* solidity.addSourceMap(binary, sourceMap);

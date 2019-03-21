@@ -1,8 +1,7 @@
 import debugModule from "debug";
+const debug = debugModule("debugger:web3:adapter");
 
 import Web3 from "web3";
-
-const debug = debugModule("debugger:web3:adapter");
 
 export default class Web3Adapter {
   constructor(provider) {
@@ -10,40 +9,35 @@ export default class Web3Adapter {
   }
 
   async getTrace(txHash) {
-    return new Promise( (accept, reject) => {
-      this.web3.currentProvider.send({
-        jsonrpc: "2.0",
-        method: "debug_traceTransaction",
-        params: [txHash, {}],
-        id: new Date().getTime()
-      }, (err, result) => {
-        if (err) return reject(err);
-        if (result.error) return reject(new Error(result.error.message));
-        debug("result: %o", result);
-        accept(result.result.structLogs);
-      });
+    return new Promise((accept, reject) => {
+      this.web3.currentProvider.send(
+        {
+          jsonrpc: "2.0",
+          method: "debug_traceTransaction",
+          params: [txHash, {}],
+          id: new Date().getTime()
+        },
+        (err, result) => {
+          if (err) return reject(err);
+          if (result.error) return reject(new Error(result.error.message));
+          debug("result: %o", result);
+          accept(result.result.structLogs);
+        }
+      );
     });
-  };
+  }
 
   async getTransaction(txHash) {
-    return new Promise( (accept, reject) => {
-      this.web3.eth.getTransaction(txHash, (err, tx) => {
-        if (err) return reject(err);
-
-        return accept(tx);
-      });
-    });
-  };
+    return await this.web3.eth.getTransaction(txHash);
+  }
 
   async getReceipt(txHash) {
-    return new Promise( (accept, reject) => {
-      this.web3.eth.getTransactionReceipt(txHash, (err, receipt) => {
-        if (err) return reject(err);
+    return await this.web3.eth.getTransactionReceipt(txHash);
+  }
 
-        return accept(receipt);
-      });
-    });
-  };
+  async getBlock(blockNumberOrHash) {
+    return await this.web3.eth.getBlock(blockNumberOrHash);
+  }
 
   /**
    * getDeployedCode - get the deployed code for an address from the client
@@ -52,13 +46,6 @@ export default class Web3Adapter {
    */
   async getDeployedCode(address) {
     debug("getting deployed code for %s", address);
-    return new Promise((accept, reject) => {
-      this.web3.eth.getCode(address, (err, deployedBinary) => {
-        if (err) debug("error: %o", err);
-        if (err) return reject(err);
-        debug("got deployed code for %s", address);
-        accept(deployedBinary);
-      });
-    });
-  };
+    return await this.web3.eth.getCode(address);
+  }
 }

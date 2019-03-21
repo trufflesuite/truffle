@@ -3,7 +3,7 @@ const debug = debugModule("debugger:data:sagas");
 
 import { put, takeEvery, select, call } from "redux-saga/effects";
 
-import { prefixName, stableKeccak256 } from "lib/helpers";
+import { prefixName, stableKeccak256, makeAssignment } from "lib/helpers";
 
 import { TICK } from "lib/trace/actions";
 import * as actions from "../actions";
@@ -520,11 +520,6 @@ export function* recordAllocations() {
   yield put(
     actions.allocate(storageAllocations, memoryAllocations, calldataAllocations)
   );
-}
-
-function makeAssignment(idObj, ref) {
-  let id = stableKeccak256(idObj);
-  return { ...idObj, id, ref };
 }
 
 function literalAssignments(node, stack, currentDepth) {

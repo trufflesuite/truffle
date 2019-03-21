@@ -15,6 +15,8 @@ import { prefixName } from "lib/helpers";
 import * as actions from "../actions";
 import * as session from "lib/session/actions";
 
+import BN from "bn.js";
+
 import Web3Adapter from "../adapter";
 
 function* fetchTransactionInfo(adapter, { txHash }) {
@@ -32,17 +34,35 @@ function* fetchTransactionInfo(adapter, { txHash }) {
   yield put(actions.receiveTrace(trace));
 
   let tx = yield apply(adapter, adapter.getTransaction, [txHash]);
+  debug("tx %O", tx);
   let receipt = yield apply(adapter, adapter.getReceipt, [txHash]);
+  debug("receipt %O", receipt);
+  let block = yield apply(adapter, adapter.getBlock, [tx.blockNumber]);
+  debug("block %O", block);
 
   yield put(session.saveTransaction(tx));
   yield put(session.saveReceipt(receipt));
+  yield put(session.saveBlock(block));
+
+  //these ones get grouped together for convenience
+  let solidityBlock = {
+    coinbase: block.miner,
+    difficulty: new BN(block.difficulty),
+    gaslimit: new BN(block.gasLimit),
+    number: new BN(block.number),
+    timestamp: new BN(block.timestamp)
+  };
 
   if (tx.to != null) {
     yield put(
       actions.receiveCall({
         address: tx.to,
         data: tx.input,
-        storageAddress: tx.to
+        storageAddress: tx.to,
+        sender: tx.from,
+        value: new BN(tx.value),
+        gasprice: new BN(tx.gasPrice),
+        block: solidityBlock
       })
     );
     return;
@@ -53,7 +73,11 @@ function* fetchTransactionInfo(adapter, { txHash }) {
       actions.receiveCall({
         binary: tx.input,
         storageAddress: receipt.contractAddress,
-        status: receipt.status
+        status: receipt.status,
+        sender: tx.from,
+        value: new BN(tx.value),
+        gasprice: new BN(tx.gasPrice),
+        block: solidityBlock
       })
     );
     return;
@@ -89,12 +113,31 @@ export function* inspectTransaction(txHash, provider) {
     return { error: action.error };
   }
 
-  let { address, binary, data, storageAddress, status } = yield take(
-    actions.RECEIVE_CALL
-  );
+  let {
+    address,
+    binary,
+    data,
+    storageAddress,
+    status,
+    sender,
+    value,
+    gasprice,
+    block
+  } = yield take(actions.RECEIVE_CALL);
   debug("received call");
 
-  return { trace, address, binary, data, storageAddress, status };
+  return {
+    trace,
+    address,
+    binary,
+    data,
+    storageAddress,
+    status,
+    sender,
+    value,
+    gasprice,
+    block
+  };
 }
 
 export function* obtainBinaries(addresses) {

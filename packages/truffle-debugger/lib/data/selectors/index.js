@@ -364,6 +364,38 @@ const data = createSelectorTree({
               [`0x${address}`]: DecodeUtils.Conversion.toBytes(word)
             }))
           )
+      ),
+
+      /*
+       * data.current.specials
+       * I've named these after the solidity variables they correspond to,
+       * which are *mostly* the same as the corresponding EVM opcodes
+       * (FWIW: this = ADDRESS, sender = CALLER, value = CALLVALUE)
+       */
+      specials: createLeaf(
+        ["/current/address", evm.current.call, evm.info.globals],
+        (address, { sender, value }, { tx, block }) => ({
+          this: DecodeUtils.Conversion.toBytes(address),
+
+          sender: DecodeUtils.Conversion.toBytes(sender),
+
+          value: DecodeUtils.Conversion.toBytes(value),
+
+          //let's crack open that tx and block!
+          ...Object.assign(
+            {},
+            ...Object.entries(tx).map(([variable, value]) => ({
+              [variable]: DecodeUtils.Conversion.toBytes(value)
+            }))
+          ),
+
+          ...Object.assign(
+            {},
+            ...Object.entries(block).map(([variable, value]) => ({
+              [variable]: DecodeUtils.Conversion.toBytes(value)
+            }))
+          )
+        })
       )
     },
 
@@ -536,7 +568,8 @@ const data = createSelectorTree({
       /**
        * data.current.identifiers (selector)
        *
-       * returns identifers and corresponding definition node ID
+       * returns identifers and corresponding definition node ID or builtin name
+       * (object entries look like [name]: {astId: id} or like [name]: {builtin: name}
        */
       _: createLeaf(
         ["/views/scopes/inlined", "/current/node"],
@@ -551,13 +584,21 @@ const data = createSelectorTree({
               ...(scopes[cur].variables || [])
                 .filter(v => v.name !== "") //exclude anonymous output params
                 .filter(v => variables[v.name] == undefined)
-                .map(v => ({ [v.name]: v.id }))
+                .map(v => ({ [v.name]: { astId: v.id } }))
             );
 
             cur = scopes[cur].parentId;
           } while (cur != null);
 
-          return variables;
+          let builtins = {
+            msg: { builtin: "msg" },
+            tx: { builtin: "tx" },
+            block: { builtin: "block" },
+            this: { builtin: "this" },
+            now: { builtin: "now" }
+          };
+
+          return { ...variables, ...builtins };
         }
       ),
 
@@ -567,17 +608,30 @@ const data = createSelectorTree({
        * current variable definitions
        */
       definitions: createLeaf(
-        ["/views/scopes/inlined", "./_"],
+        ["/views/scopes/inlined", "./_", "./thisDefinition"],
 
-        (scopes, identifiers) =>
-          Object.assign(
+        (scopes, identifiers, thisDefinition) => {
+          let variables = Object.assign(
             {},
-            ...Object.entries(identifiers).map(([identifier, id]) => {
-              let { definition } = scopes[id];
-
-              return { [identifier]: definition };
+            ...Object.entries(identifiers).map(([identifier, { astId }]) => {
+              if (astId !== undefined) {
+                //will be undefined for builtins
+                let { definition } = scopes[astId];
+                return { [identifier]: definition };
+              } else {
+                return {}; //skip over builtins; we'll handle those separately
+              }
             })
-          )
+          );
+          let builtins = {
+            msg: DecodeUtils.Definition.MSG_DEFINITION,
+            tx: DecodeUtils.Definition.TX_DEFINITION,
+            block: DecodeUtils.Definition.BLOCK_DEFINITION,
+            this: thisDefinition,
+            now: DecodeUtils.Definition.spoofUintDefinition("now")
+          };
+          return { ...variables, ...builtins };
+        }
       ),
 
       /**
@@ -596,47 +650,56 @@ const data = createSelectorTree({
         (assignments, identifiers, currentDepth, address) =>
           Object.assign(
             {},
-            ...Object.entries(identifiers).map(([identifier, astId]) => {
-              //note: this needs tweaking for specials later
-              let id;
+            ...Object.entries(identifiers).map(
+              ([identifier, { astId, builtin }]) => {
+                let id;
 
-              //first, check if it's a contract var
-              let matchIds = (assignments.byAstId[astId] || []).filter(
-                idHash => assignments.byId[idHash].address === address
-              );
-              if (matchIds.length > 0) {
-                id = matchIds[0]; //there should only be one!
-              }
-
-              //if not contract, it's local, so find the innermost
-              //(but not beyond current depth)
-              if (id === undefined) {
-                let matchFrames = (assignments.byAstId[astId] || [])
-                  .map(id => assignments.byId[id].stackframe)
-                  .filter(stackframe => stackframe !== undefined);
-
-                if (matchFrames.length > 0) {
-                  //this check isn't *really*
-                  //necessary, but may as well prevent stupid stuff
-                  let maxMatch = Math.min(
-                    currentDepth,
-                    Math.max(...matchFrames)
+                //is this an ordinary variable or a builtin?
+                if (astId !== undefined) {
+                  //if not a builtin, first check if it's a contract var
+                  let matchIds = (assignments.byAstId[astId] || []).filter(
+                    idHash => assignments.byId[idHash].address === address
                   );
-                  id = stableKeccak256({ astId, stackframe: maxMatch });
+                  if (matchIds.length > 0) {
+                    id = matchIds[0]; //there should only be one!
+                  }
+
+                  //if not contract, it's local, so find the innermost
+                  //(but not beyond current depth)
+                  if (id === undefined) {
+                    let matchFrames = (assignments.byAstId[astId] || [])
+                      .map(id => assignments.byId[id].stackframe)
+                      .filter(stackframe => stackframe !== undefined);
+
+                    if (matchFrames.length > 0) {
+                      //this check isn't *really*
+                      //necessary, but may as well prevent stupid stuff
+                      let maxMatch = Math.min(
+                        currentDepth,
+                        Math.max(...matchFrames)
+                      );
+                      id = stableKeccak256({ astId, stackframe: maxMatch });
+                    }
+                  }
+                } else {
+                  //otherwise, it's a builtin
+                  //NOTE: for now we assume there is only one assignment per
+                  //builtin, but this will change in the future
+                  id = assignments.byBuiltin[builtin][0];
                 }
+
+                //if we still didn't find it, oh well
+
+                let { ref } = assignments.byId[id] || {};
+                if (!ref) {
+                  return undefined;
+                }
+
+                return {
+                  [identifier]: ref
+                };
               }
-
-              //if we still didn't find it, oh well
-
-              let { ref } = assignments.byId[id] || {};
-              if (!ref) {
-                return undefined;
-              }
-
-              return {
-                [identifier]: ref
-              };
-            })
+            )
           )
       ),
 
@@ -662,6 +725,17 @@ const data = createSelectorTree({
             Object.assign({}, ...keyedResults)
           );
         }
+      ),
+
+      /*
+       * data.current.identifiers.thisDefinition
+       *
+       * returns a spoofed definition for the this variable
+       */
+      thisDefinition: createLeaf(
+        [evm.current.context],
+        ({ contractName, contractId }) =>
+          DecodeUtils.Definition.spoofThisDefinition(contractName, contractId)
       )
     }
   },

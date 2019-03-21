@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("decoder:read:stack");
+
 import * as DecodeUtils from "truffle-decode-utils";
 
 export function readStack(stack: Uint8Array[], from: number, to: number): Uint8Array {
