@@ -151,7 +151,7 @@ describe("Calldata Decoding", function() {
       pair: { x: 321, y: 2049 }
     };
 
-    assert.deepEqual(variables, expectedResult);
+    assert.deepInclude(variables, expectedResult);
   });
 
   it("Decodes correctly in the initial call", async function() {
@@ -183,7 +183,7 @@ describe("Calldata Decoding", function() {
       hello: "hello world"
     };
 
-    assert.deepEqual(variables, expectedResult);
+    assert.include(variables, expectedResult);
   });
 
   it("Decodes correctly in a pure call", async function() {
@@ -215,7 +215,7 @@ describe("Calldata Decoding", function() {
       hello: "hello world"
     };
 
-    assert.deepEqual(variables, expectedResult);
+    assert.include(variables, expectedResult);
   });
 
   it("Decodes correctly in a library call", async function() {
@@ -247,6 +247,6 @@ describe("Calldata Decoding", function() {
       hello: "hello world"
     };
 
-    assert.deepEqual(variables, expectedResult);
+    assert.include(variables, expectedResult);
   });
 });
