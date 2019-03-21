@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("debugger:web3:adapter");
 
 import Web3 from "web3";
+import { promisify } from "util";
 
 export default class Web3Adapter {
   constructor(provider) {
@@ -9,22 +10,21 @@ export default class Web3Adapter {
   }
 
   async getTrace(txHash) {
-    return new Promise((accept, reject) => {
-      this.web3.currentProvider.send(
-        {
-          jsonrpc: "2.0",
-          method: "debug_traceTransaction",
-          params: [txHash, {}],
-          id: new Date().getTime()
-        },
-        (err, result) => {
-          if (err) return reject(err);
-          if (result.error) return reject(new Error(result.error.message));
-          debug("result: %o", result);
-          accept(result.result.structLogs);
-        }
-      );
-    });
+    let result = await promisify(this.web3.currentProvider.send)(
+      //send *only* uses callbacks, so we use promsifiy to make things more
+      //readable
+      {
+        jsonrpc: "2.0",
+        method: "debug_traceTransaction",
+        params: [txHash, {}],
+        id: new Date().getTime()
+      }
+    );
+    if (result.error) {
+      throw new Error(result.error.message);
+    } else {
+      return result.result.structLogs;
+    }
   }
 
   async getTransaction(txHash) {
