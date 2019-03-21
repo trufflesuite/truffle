@@ -575,20 +575,22 @@ const data = createSelectorTree({
         ["/views/scopes/inlined", "/current/node"],
 
         (scopes, scope) => {
-          let cur = scope.id;
           let variables = {};
+          if (scope !== undefined) {
+            let cur = scope.id;
 
-          do {
-            variables = Object.assign(
-              variables,
-              ...(scopes[cur].variables || [])
-                .filter(v => v.name !== "") //exclude anonymous output params
-                .filter(v => variables[v.name] == undefined)
-                .map(v => ({ [v.name]: { astId: v.id } }))
-            );
+            do {
+              variables = Object.assign(
+                variables,
+                ...(scopes[cur].variables || [])
+                  .filter(v => v.name !== "") //exclude anonymous output params
+                  .filter(v => variables[v.name] == undefined)
+                  .map(v => ({ [v.name]: { astId: v.id } }))
+              );
 
-            cur = scopes[cur].parentId;
-          } while (cur != null);
+              cur = scopes[cur].parentId;
+            } while (cur != null);
+          }
 
           let builtins = {
             msg: { builtin: "msg" },
