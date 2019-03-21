@@ -21,7 +21,7 @@ class LoadingStrategy {
     );
     if (!fs.existsSync(compilerCachePath)) {
       fs.mkdirSync(compilerCachePath);
-      compilerCachePath += "/node_modules"; // because babel binds to require & does weird things
+      compilerCachePath = path.resolve(compilerCachePath, "node_modules"); // because babel binds to require & does weird things
       fs.mkdirSync(compilerCachePath);
     }
     this.compilerCachePath = compilerCachePath;
