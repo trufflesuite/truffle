@@ -367,7 +367,7 @@ const data = createSelectorTree({
       ),
 
       /*
-       * data.current.specials
+       * data.current.state.specials
        * I've named these after the solidity variables they correspond to,
        * which are *mostly* the same as the corresponding EVM opcodes
        * (FWIW: this = ADDRESS, sender = CALLER, value = CALLVALUE)
