@@ -16,6 +16,7 @@ export const schema = mergeSchemas({
     ]),
     `type Query {
       contractNames: [String]!
+      contract(name: String!): Contract
       contractInstance(networkId: String!, name: String!): ContractInstance
     }`
   ],
@@ -31,12 +32,21 @@ export const schema = mergeSchemas({
           info
         })
       },
-     
-      contractInstance: {
+      contract: {
         resolve: (_, args, context, info) => info.mergeInfo.delegateToSchema({
           schema: jsonSchema,
           operation: "query",
           fieldName: "contract",
+          args,
+          context,
+          info
+        })
+      },
+      contractInstance: {
+        resolve: (_, args, context, info) => info.mergeInfo.delegateToSchema({
+          schema: jsonSchema,
+          operation: "query",
+          fieldName: "contractInstance",
           args,
           context,
           info,
@@ -75,5 +85,11 @@ export const schema = mergeSchemas({
       },
       
     },
+
+    Contract: {
+      name: {
+        fragment: "... on ContractObject { name: contractName }"
+      }
+    }
   }
 });

@@ -246,8 +246,25 @@ const translations = [
         )
       }
     }
-  })
+  }),
+ 
+  ({ contractObject, ...schemas }) => ({
+    ...schemas,
 
+    contractObject: {
+      ...contractObject,
+
+      properties: {
+        ...contractObject.properties, 
+        source: {
+          type: "object", 
+          properties: {
+            contents: {type: "string"}, 
+            sourcePath: {type: "string"}
+          }},
+      }
+    }
+  })
 ];
 
 

@@ -28,7 +28,8 @@ export const resolvers = {
           abi: {
             json: JSON.stringify(artifact.abi),
             items: artifact.abi
-          }
+          },
+          source: { contents: artifact.source, sourcePath: artifact.sourcePath }
         };
 
         if (networkId) {
