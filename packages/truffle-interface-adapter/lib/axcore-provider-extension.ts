@@ -69,6 +69,14 @@ export default class AxCorePayloadExtension {
         payload.params.push(this.transactionOptions[txHash].param2);
       }
     }
+    else if (payload.method === "eth_getCode") {
+      if (typeof this.contractOptions[payload.params[0]] !== "undefined") {
+        // add payload extensions
+        const contractAddress: string = payload.params[0];
+        payload.params.push(this.contractOptions[contractAddress].param1);
+        payload.params.push(this.contractOptions[contractAddress].param2);
+      }
+    }
     else if (payload.params.length > 0) {
       if (payload.params[0].to && this.contractOptions[payload.params[0].to]) {
         const contractAddress: string = payload.params[0].to;

@@ -59,6 +59,15 @@ async function setupProvider(constructor: any, options: any, axcoreEnabled: bool
         // as it doesnt expect them
         payload.params = [ payload.params[0] ];
       }
+      else if (payload.method === "eth_getCode") {
+        isValid = isValid && payload.params.length === 4;
+        isValid = isValid && payload.params[2] === options.param1;
+        isValid = isValid && payload.params[3] === options.param2;
+
+        // we need to remove the extra params as ganache fails
+        // as it doesnt expect them
+        payload.params = [ payload.params[0], payload.params[1] ];
+      }
       else if (typeof payload.params[0] === "object") {
         isValid = isValid && payload.params[0].param1 === options.param1;
         isValid = isValid && payload.params[0].param2 === options.param2;
