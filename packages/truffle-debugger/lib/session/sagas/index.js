@@ -115,8 +115,7 @@ function* recordContexts(...contexts) {
 }
 
 function* recordSources(...sources) {
-  for (let i = 0; i < sources.length; i++) {
-    const sourceData = sources[i];
+  for (let sourceData of sources) {
     if (sourceData !== undefined && sourceData !== null) {
       yield* solidity.addSource(
         sourceData.source,
