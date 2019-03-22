@@ -110,9 +110,7 @@ export function* callstackAndCodexSaga() {
       let storageAddress = (yield select(evm.current.step.isDelegateCallBroad))
         ? currentCall.storageAddress //for CALLCODE
         : address;
-      let sender = currentCall.address || currentCall.storageAddress;
-      //if calling from a creation call, sender will be the address the
-      //contract will be created at, which can be found in storageAddress
+      let sender = currentCall.storageAddress; //not the code address!
       let value = yield select(evm.current.step.callValue); //0 if static
       yield put(actions.call(address, data, storageAddress, sender, value));
     }
@@ -121,11 +119,10 @@ export function* callstackAndCodexSaga() {
     let binary = yield select(evm.current.step.createBinary);
     let createdAddress = yield select(evm.current.step.createdAddress);
     let value = yield select(evm.current.step.createValue);
-    let { address, storageAddress } = yield select(evm.current.call);
+    let sender = (yield select(evm.current.call)).storageAddress;
+    //not the code address!
 
-    yield put(
-      actions.create(binary, createdAddress, address || storageAddress, value)
-    );
+    yield put(actions.create(binary, createdAddress, sender, value));
     //as above, storageAddress handles when calling from a creation call
   } else if (yield select(evm.current.step.isHalting)) {
     debug("got return");
