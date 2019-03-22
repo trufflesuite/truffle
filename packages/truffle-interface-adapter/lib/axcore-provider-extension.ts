@@ -67,7 +67,6 @@ export default class AxCorePayloadExtension {
         const txHash: string = payload.params[0];
         payload.params.push(this.transactionOptions[txHash].param1);
         payload.params.push(this.transactionOptions[txHash].param2);
-        delete this.transactionOptions[txHash];
       }
     }
     else if (payload.params.length > 0) {
@@ -116,6 +115,7 @@ export default class AxCorePayloadExtension {
             this.contractOptions[to] = options;
             delete this.predeployOptions[bytecodeHash];
           }
+          delete this.transactionOptions[txHash];
         }
       }
 
