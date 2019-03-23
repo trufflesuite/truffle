@@ -343,7 +343,37 @@ var command = {
               await session.variables()
             );
 
-            const expr = preprocessSelectors(raw);
+            //HACK -- we can't use "this" as a variable name, so we're going to
+            //find an available replacement name, and then modify the context
+            //and expression appropriately
+            let pseudoThis = "_this";
+            while (pseudoThis in context) {
+              pseudoThis = "_" + pseudoThis;
+            }
+            //in addition to pseudoThis, which replaces this, we also have
+            //pseudoPseudoThis, which replaces pseudoThis in order to ensure
+            //that any uses of pseudoThis yield an error instead of showing this
+            let pseudoPseudoThis = "thereisnovariableofthatname";
+            while (pseudoPseudoThis in context) {
+              pseudoPseudoThis = "_" + pseudoPseudoThis;
+            }
+            context = DebugUtils.cleanThis(context, pseudoThis);
+            let expr = raw.replace(
+              //those characters in [] are the legal JS variable name characters
+              //note that pseudoThis contains no special characters
+              new RegExp(
+                "(?<![a-zA-Z0-9_$])" + pseudoThis + "(?![a-zA-Z0-9_$])"
+              ),
+              pseudoPseudoThis
+            );
+            expr = expr.replace(
+              //those characters in [] are the legal JS variable name characters
+              /(?<![a-zA-Z0-9_$])this(?![a-zA-Z0-9_$])/,
+              pseudoThis
+            );
+            //note that pseudoThis contains no dollar signs to screw things up
+
+            expr = preprocessSelectors(expr);
 
             try {
               var result = safeEval(expr, context);

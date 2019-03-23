@@ -314,6 +314,17 @@ var DebugUtils = {
 
     //for strings, numbers, etc
     return object;
+  },
+
+  //HACK
+  cleanThis: function(variables, replacement) {
+    return Object.assign(
+      {},
+      ...Object.entries(variables).map(
+        ([variable, value]) =>
+          variable === "this" ? { [replacement]: value } : { [variable]: value }
+      )
+    );
   }
 };
 
