@@ -114,23 +114,6 @@ async function promptOverwrites(contentCollisions, logger = console) {
 
 async function copyTempIntoDestination(tmpDir, destination, options) {
   fs.ensureDirSync(destination);
-  if (!fs.emptyDirSync(destination)) {
-    logger.log(`This directory is non-empty...`);
-    const prompt = [
-      {
-        type: "confirm",
-        name: "proceed",
-        message: `Proceed anyway?`,
-        default: true
-      }
-    ];
-
-    const answer = await inquirer.prompt(prompt);
-    if (!answer.proceed) {
-      console.log("Cancelling unbox");
-      return;
-    }
-  }
   const { force, logger } = options;
   const boxContents = fs.readdirSync(tmpDir);
   const destinationContents = fs.readdirSync(destination);
