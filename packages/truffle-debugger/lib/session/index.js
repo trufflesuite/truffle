@@ -152,7 +152,8 @@ export default class Session {
     });
   }
 
-  async advance(count = 1) {
+  //Note: count is an optional argument; default behavior is to advance 1
+  async advance(count) {
     return await this.doneStepping(controller.advance(count));
   }
 
@@ -176,9 +177,10 @@ export default class Session {
     return await this.doneStepping(controller.reset());
   }
 
-  async continueUntilBreakpoint(
-    breakpoints = this.view(controllerSelector.breakpoints)
-  ) {
+  //NOTE: breakpoints is an OPTIONAL argument for if you want to supply your
+  //own list of breakpoints; leave it out to use the internal one (as
+  //controlled by the functions below)
+  async continueUntilBreakpoint(breakpoints) {
     return await this.doneStepping(
       controller.continueUntilBreakpoint(breakpoints)
     );

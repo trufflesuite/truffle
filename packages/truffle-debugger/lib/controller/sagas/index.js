@@ -48,9 +48,11 @@ export default prefixName("controller", saga);
 
 /*
  * Advance the state by the given number of instructions (but not past the end)
+ * (if no count given, advance 1)
  */
-function* advance(action = actions.advance()) {
-  let { count } = action;
+function* advance(action) {
+  let count =
+    action !== undefined && action.count !== undefined ? action.count : 1; //default is, as mentioned, to advance 1
   for (let i = 0; i < count && !(yield select(controller.finished)); i++) {
     yield* trace.advance();
   }
@@ -190,7 +192,7 @@ function* stepOver() {
 /**
  * continueUntilBreakpoint - step through execution until a breakpoint
  */
-function* continueUntilBreakpoint(action = actions.continueUntilBreakpoint()) {
+function* continueUntilBreakpoint(action) {
   var currentLocation, currentNode, currentLine, currentSourceId;
   var finished;
   var previousLine, previousSourceId;
@@ -199,7 +201,7 @@ function* continueUntilBreakpoint(action = actions.continueUntilBreakpoint()) {
   //if it was, override that with the specified list.
   //note that explicitly specifying an empty list will advance to the end.
   let breakpoints =
-    action.breakpoints !== undefined
+    action !== undefined && action.breakpoints !== undefined
       ? action.breakpoints
       : yield select(controller.breakpoints);
 
