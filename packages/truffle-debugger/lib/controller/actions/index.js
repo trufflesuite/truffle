@@ -34,9 +34,12 @@ export function interrupt() {
 }
 
 export const CONTINUE = "CONTINUE";
-export function continueUntilBreakpoint() {
+export function continueUntilBreakpoint(breakpoints = undefined) {
   //"continue" is not a legal name
-  return { type: CONTINUE };
+  return {
+    type: CONTINUE,
+    breakpoints
+  };
 }
 
 export const ADD_BREAKPOINT = "ADD_BREAKPOINT";

@@ -176,8 +176,12 @@ export default class Session {
     return await this.doneStepping(controller.reset());
   }
 
-  async continueUntilBreakpoint() {
-    return await this.doneStepping(controller.continueUntilBreakpoint());
+  async continueUntilBreakpoint(
+    breakpoints = this.view(controllerSelector.breakpoints)
+  ) {
+    return await this.doneStepping(
+      controller.continueUntilBreakpoint(breakpoints)
+    );
   }
 
   async addBreakpoint(breakpoint) {

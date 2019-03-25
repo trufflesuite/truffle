@@ -190,12 +190,18 @@ function* stepOver() {
 /**
  * continueUntilBreakpoint - step through execution until a breakpoint
  */
-function* continueUntilBreakpoint() {
+function* continueUntilBreakpoint(action = actions.continueUntilBreakpoint()) {
   var currentLocation, currentNode, currentLine, currentSourceId;
   var finished;
   var previousLine, previousSourceId;
 
-  let breakpoints = yield select(controller.breakpoints);
+  //if breakpoints was not specified, use the stored list from the state.
+  //if it was, override that with the specified list.
+  //note that explicitly specifying an empty list will advance to the end.
+  let breakpoints =
+    action.breakpoints !== undefined
+      ? action.breakpoints
+      : yield select(controller.breakpoints);
 
   let breakpointHit = false;
 
