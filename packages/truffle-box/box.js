@@ -3,6 +3,8 @@ const tmp = require("tmp");
 const path = require("path");
 const Config = require("truffle-config");
 const ora = require("ora");
+const fs = require("fs");
+const inquirer = require("inquirer");
 
 function parseSandboxOptions(options) {
   if (typeof options === "function") {
@@ -38,6 +40,7 @@ const Box = {
 
     try {
       options.logger.log("");
+      await Box.checkDir(options);
       const tempDir = await utils.setUpTempDirectory();
       tempDirPath = tempDir.path;
       tempDirCleanup = tempDir.cleanupCallback;
@@ -63,6 +66,28 @@ const Box = {
     } catch (error) {
       if (tempDirCleanup) tempDirCleanup();
       throw new Error(error);
+    }
+  },
+
+  checkDir: async options => {
+    if (!options.force) {
+      const currentDir = fs.readdirSync(process.cwd());
+      if (currentDir.length) {
+        options.logger.log(`This directory is non-empty...`);
+        const prompt = [
+          {
+            type: "confirm",
+            name: "proceed",
+            message: `Proceed anyway?`,
+            default: true
+          }
+        ];
+        const answer = await inquirer.prompt(prompt);
+        if (!answer.proceed) {
+          options.logger.log("Unbox cancelled");
+          process.exit();
+        }
+      }
     }
   },
 
