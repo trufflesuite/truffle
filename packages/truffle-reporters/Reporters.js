@@ -3,7 +3,7 @@ const { unboxReporter, unboxEvents } = require("./unbox");
 const Reporter = require("./Reporter");
 
 const supportedEvents = { compile: compileEvents, unbox: unboxEvents };
-const defaultReporters = { compileReporter, unboxReporter };
+const defaultReporters = { compile: compileReporter, unbox: unboxReporter };
 
 class Reporters {
   constructor(initializationOptions) {
