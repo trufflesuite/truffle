@@ -52,10 +52,9 @@ class Reporter {
   convertInputToRegex(name) {
     return new RegExp(
       name.replace(
-        /\*([^*])|\*\*/g, // match single or double `*`
-        (match, char) => {
-          // char is whatever follows a single `*`
-          return match === "**" ? "([^:]+(:[^:]+)*)?" : `[^:]+${char}`; // ensure char still remains (since it's part of match)
+        /\*\*|\*/g, // match single or double `*`
+        match => {
+          return match === "**" ? "([^:]+(:[^:]+)*)?" : "[^:]+";
         }
       )
     );
@@ -64,6 +63,7 @@ class Reporter {
   determineMatchingEventNames(name, events) {
     if (events.includes(name)) return [name];
     const regex = this.convertInputToRegex(name);
+    console.log(`the regex is ${regex}`);
     return this.matchingEvents(regex, events);
   }
 
