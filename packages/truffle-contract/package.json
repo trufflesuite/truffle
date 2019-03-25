@@ -32,7 +32,7 @@
     "truffle-error": "^0.0.4",
     "truffle-interface-adapter": "^0.1.2",
     "web3": "1.0.0-beta.50",
-    "web3-core-promievent": "1.0.0-beta.50",
+    "web3-core-promievent": "1.0.0-beta.48",
     "web3-eth-abi": "1.0.0-beta.50",
     "web3-utils": "1.0.0-beta.50"
   },
