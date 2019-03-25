@@ -43,7 +43,6 @@ GlobalNPM.prototype.resolve = function(import_path, imported_from, callback) {
       ""
     );
     const expected_path = path.join(global_package_path, import_path);
-    console.log(expected_path);
     try {
       body = fs.readFileSync(expected_path, { encoding: "utf8" });
     } catch (err) {}
