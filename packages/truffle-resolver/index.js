@@ -1,5 +1,6 @@
 var EPMSource = require("./epm");
 var NPMSource = require("./npm");
+var GlobalNPMSource = require("./globalnpm");
 var FSSource = require("./fs");
 var whilst = require("async/whilst");
 var contract = require("truffle-contract");
@@ -7,19 +8,17 @@ var expect = require("truffle-expect");
 var provision = require("truffle-provisioner");
 
 function Resolver(options) {
-  expect.options(options, [
-    "working_directory",
-    "contracts_build_directory",
-  ]);
+  expect.options(options, ["working_directory", "contracts_build_directory"]);
 
   this.options = options;
 
   this.sources = [
     new EPMSource(options.working_directory, options.contracts_build_directory),
     new NPMSource(options.working_directory),
+    new GlobalNPMSource(),
     new FSSource(options.working_directory, options.contracts_build_directory)
   ];
-};
+}
 
 // This function might be doing too much. If so, too bad (for now).
 Resolver.prototype.require = function(import_path, search_path) {
@@ -34,7 +33,9 @@ Resolver.prototype.require = function(import_path, search_path) {
       return abstraction;
     }
   }
-  throw new Error("Could not find artifacts for " + import_path + " from any sources");
+  throw new Error(
+    "Could not find artifacts for " + import_path + " from any sources"
+  );
 };
 
 Resolver.prototype.resolve = function(import_path, imported_from, callback) {
@@ -50,34 +51,42 @@ Resolver.prototype.resolve = function(import_path, imported_from, callback) {
   var current_index = -1;
   var current_source;
 
-  whilst(function() {
-    return !resolved_body && current_index < self.sources.length - 1;
-  }, function(next) {
-    current_index += 1;
-    current_source = self.sources[current_index];
+  whilst(
+    function() {
+      return !resolved_body && current_index < self.sources.length - 1;
+    },
+    function(next) {
+      current_index += 1;
+      current_source = self.sources[current_index];
 
-    current_source.resolve(import_path, imported_from, function(err, body, file_path) {
-      if (!err && body) {
-        resolved_body = body;
-        resolved_path = file_path;
+      current_source.resolve(import_path, imported_from, function(
+        err,
+        body,
+        file_path
+      ) {
+        if (!err && body) {
+          resolved_body = body;
+          resolved_path = file_path;
+        }
+        next(err);
+      });
+    },
+    function(err) {
+      if (err) return callback(err);
+
+      if (!resolved_body) {
+        var message = "Could not find " + import_path + " from any sources";
+
+        if (imported_from) {
+          message += "; imported from " + imported_from;
+        }
+
+        return callback(new Error(message));
       }
-      next(err);
-    });
-  }, function(err) {
-    if (err) return callback(err);
 
-    if (!resolved_body) {
-      var message = "Could not find " + import_path + " from any sources";
-
-      if (imported_from) {
-        message += "; imported from " + imported_from;
-      }
-
-      return callback(new Error(message));
+      callback(null, resolved_body, resolved_path, current_source);
     }
-
-    callback(null, resolved_body, resolved_path, current_source);
-  });
+  );
 };
 
 module.exports = Resolver;
