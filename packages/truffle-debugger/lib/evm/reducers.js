@@ -172,6 +172,10 @@ export function codex(state = [], action) {
   let newState, topCodex;
 
   const updateFrameStorage = (frame, address, slot, value) => {
+    if (address === DecodeUtils.EVM.ZERO_ADDRESS) {
+      //we do not maintain a zero page! we leave that alone!
+      return frame;
+    }
     let existingPage = frame.accounts[address] || { storage: {} };
     return {
       ...frame,
