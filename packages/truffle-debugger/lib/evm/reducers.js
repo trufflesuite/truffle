@@ -1,8 +1,13 @@
+import debugModule from "debug";
+const debug = debugModule("debugger:evm:reducers");
+
 import { combineReducers } from "redux";
 
 import * as actions from "./actions";
 import { keccak256 } from "lib/helpers";
 import * as DecodeUtils from "truffle-decode-utils";
+
+import BN from "bn.js";
 
 const DEFAULT_CONTEXTS = {
   byContext: {},
@@ -15,7 +20,7 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
      * Adding a new context
      */
     case actions.ADD_CONTEXT: {
-      const { contractName, raw, compiler } = action;
+      const { contractName, raw, compiler, contractId } = action;
       const context = keccak256(raw);
 
       return {
@@ -29,7 +34,8 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
 
             contractName,
             context,
-            compiler
+            compiler,
+            contractId
           }
         }
       };
@@ -114,23 +120,61 @@ function instances(state = DEFAULT_INSTANCES, action) {
   }
 }
 
-const info = combineReducers({
-  contexts,
-  instances
+const DEFAULT_TX = {
+  gasprice: new BN(0),
+  origin: DecodeUtils.EVM.ZERO_ADDRESS
+};
+
+function tx(state = DEFAULT_TX, action) {
+  if (action.type === actions.SAVE_GLOBALS) {
+    let { gasprice, origin } = action;
+    return { gasprice, origin };
+  } else {
+    return state;
+  }
+}
+
+const DEFAULT_BLOCK = {
+  coinbase: DecodeUtils.EVM.ZERO_ADDRESS,
+  difficulty: new BN(0),
+  gaslimit: new BN(0),
+  number: new BN(0),
+  timestamp: new BN(0)
+};
+
+function block(state = DEFAULT_BLOCK, action) {
+  if (action.type === actions.SAVE_GLOBALS) {
+    debug("action %O", action);
+    return action.block;
+  } else {
+    return state;
+  }
+}
+
+const globals = combineReducers({
+  tx,
+  block
 });
 
-export function callstack(state = [], action) {
+const info = combineReducers({
+  contexts,
+  instances,
+  globals
+});
+
+function callstack(state = [], action) {
   switch (action.type) {
     case actions.CALL: {
-      const { address, data, storageAddress } = action;
-      return state.concat([{ address, data, storageAddress }]);
+      const { address, data, storageAddress, sender, value } = action;
+      return state.concat([{ address, data, storageAddress, sender, value }]);
     }
 
     case actions.CREATE: {
-      const { binary, storageAddress } = action;
-      return state.concat([{ binary, data: "0x", storageAddress }]);
-      //note: the empty data for creation calls doesn't matter right now, but
-      //it will once I implement globally available variables
+      const { binary, storageAddress, sender, value } = action;
+      return state.concat(
+        [{ binary, data: "0x", storageAddress, sender, value }]
+        //the empty data field is to make msg.data and msg.sig come out right
+      );
     }
 
     case actions.RETURN:
@@ -168,7 +212,7 @@ function defaultCodexFrame(address) {
   }
 }
 
-export function codex(state = [], action) {
+function codex(state = [], action) {
   let newState, topCodex;
 
   const updateFrameStorage = (frame, address, slot, value) => {

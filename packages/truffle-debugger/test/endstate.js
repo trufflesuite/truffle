@@ -105,6 +105,6 @@ describe("End State", function() {
     const variables = TruffleDecodeUtils.Conversion.cleanBNs(
       await session.variables()
     );
-    assert.deepEqual(variables, { x: 107 });
+    assert.include(variables, { x: 107 });
   });
 });

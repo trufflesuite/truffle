@@ -77,7 +77,7 @@ const info = combineReducers({
   sourceMaps
 });
 
-export function functionDepthStack(state = [0], action) {
+function functionDepthStack(state = [0], action) {
   switch (action.type) {
     case actions.JUMP:
       let newState = state.slice(); //clone the state

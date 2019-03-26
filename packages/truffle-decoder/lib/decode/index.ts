@@ -7,6 +7,7 @@ import decodeStorage from "./storage";
 import { decodeStack, decodeLiteral } from "./stack";
 import decodeCalldata from "./calldata";
 import decodeConstant from "./constant";
+import decodeSpecial from "./special";
 import { AstDefinition } from "truffle-decode-utils";
 import * as Pointer from "../types/pointer";
 import { EvmInfo } from "../types/evm";
@@ -36,6 +37,10 @@ export default async function decode(definition: AstDefinition, pointer: Pointer
     //cases to deal with
   }
 
+  if(Pointer.isSpecialPointer(pointer)) {
+    return await decodeSpecial(definition, pointer, info);
+  }
+
   //NOTE: the following two cases shouldn't come up but they've been left in as
   //fallback cases
 
@@ -48,7 +53,4 @@ export default async function decode(definition: AstDefinition, pointer: Pointer
     return await decodeCalldata(definition, pointer, info);
     //calldata does not need web3 & contractAddress
   }
-
-
-  //the type system means we can't hit this point!
 }

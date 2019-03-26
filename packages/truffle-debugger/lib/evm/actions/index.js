@@ -1,10 +1,11 @@
 export const ADD_CONTEXT = "EVM_ADD_CONTEXT";
-export function addContext(contractName, raw, compiler) {
+export function addContext(contractName, raw, compiler, contractId) {
   return {
     type: ADD_CONTEXT,
     contractName,
     raw,
-    compiler
+    compiler,
+    contractId
   };
 }
 
@@ -27,22 +28,36 @@ export function addInstance(address, context, binary) {
   };
 }
 
+export const SAVE_GLOBALS = "SAVE_GLOBALS";
+export function saveGlobals(origin, gasprice, block) {
+  return {
+    type: SAVE_GLOBALS,
+    origin,
+    gasprice,
+    block
+  };
+}
+
 export const CALL = "CALL";
-export function call(address, data, storageAddress) {
+export function call(address, data, storageAddress, sender, value) {
   return {
     type: CALL,
     address,
     data,
-    storageAddress
+    storageAddress,
+    sender,
+    value
   };
 }
 
 export const CREATE = "CREATE";
-export function create(binary, storageAddress) {
+export function create(binary, storageAddress, sender, value) {
   return {
     type: CREATE,
     binary,
-    storageAddress
+    storageAddress,
+    sender,
+    value
   };
 }
 

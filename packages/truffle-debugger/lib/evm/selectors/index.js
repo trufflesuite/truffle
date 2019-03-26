@@ -3,6 +3,7 @@ const debug = debugModule("debugger:evm:selectors"); // eslint-disable-line no-u
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import levenshtein from "fast-levenshtein";
+import BN from "bn.js";
 
 import trace from "lib/trace/selectors";
 
@@ -11,7 +12,9 @@ import {
   isCallMnemonic,
   isCreateMnemonic,
   isShortCallMnemonic,
-  isDelegateCallMnemonicBroad
+  isDelegateCallMnemonicBroad,
+  isDelegateCallMnemonicStrict,
+  isStaticCallMnemonic
 } from "lib/helpers";
 
 function findContext({ address, binary }, instances, search, contexts) {
@@ -77,10 +80,26 @@ function createStepSelectors(step, state = null) {
     /**
      * .isDelegateCallBroad
      *
-     * for calls delegate storage
+     * for calls that delegate storage
      */
     isDelegateCallBroad: createLeaf(["./trace"], step =>
       isDelegateCallMnemonicBroad(step.op)
+    ),
+
+    /**
+     * .isDelegateCallStrict
+     *
+     * for calls that additionally delegate sender and value
+     */
+    isDelegateCallStrict: createLeaf(["./trace"], step =>
+      isDelegateCallMnemonicStrict(step.op)
+    ),
+
+    /**
+     * .isStaticCall
+     */
+    isStaticCall: createLeaf(["./trace"], step =>
+      isStaticCallMnemonic(step.op)
     ),
 
     /**
@@ -197,6 +216,43 @@ function createStepSelectors(step, state = null) {
       ),
 
       /**
+       * .callValue
+       *
+       * value for the call (not create); returns null for DELEGATECALL
+       */
+      callValue: createLeaf(
+        ["./isCall", "./isDelegateCallStrict", "./isStaticCall", state],
+        (calls, delegates, isStatic, { stack }) => {
+          if (!calls || delegates) {
+            return null;
+          }
+
+          if (isStatic) {
+            return new BN(0);
+          }
+
+          //otherwise, for CALL and CALLCODE, it's the 3rd argument
+          let value = stack[stack.length - 3];
+          return DecodeUtils.Conversion.toBN(value);
+        }
+      ),
+
+      /**
+       * .createValue
+       *
+       * value for the create
+       */
+      createValue: createLeaf(["./isCreate", state], (matches, { stack }) => {
+        if (!matches) {
+          return null;
+        }
+
+        //creates have the value as the first argument
+        let value = stack[stack.length - 1];
+        return DecodeUtils.Conversion.toBN(value);
+      }),
+
+      /**
        * .storageAffected
        *
        * storage slot being stored to or loaded from
@@ -280,6 +336,20 @@ const evm = createSelectorTree({
 
         return {};
       })
+    },
+
+    /*
+     * evm.info.globals
+     */
+    globals: {
+      /*
+       * evm.info.globals.tx
+       */
+      tx: createLeaf(["/state"], state => state.info.globals.tx),
+      /*
+       * evm.info.globals.block
+       */
+      block: createLeaf(["/state"], state => state.info.globals.block)
     }
   },
 

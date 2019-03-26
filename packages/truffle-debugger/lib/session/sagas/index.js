@@ -99,8 +99,14 @@ function* fetchTx(txHash, provider) {
 }
 
 function* recordContexts(...contexts) {
-  for (let { contractName, binary, sourceMap, compiler } of contexts) {
-    yield* evm.addContext(contractName, { binary }, compiler);
+  for (let {
+    contractName,
+    binary,
+    sourceMap,
+    compiler,
+    contractId
+  } of contexts) {
+    yield* evm.addContext(contractName, { binary }, compiler, contractId);
 
     if (sourceMap) {
       yield* solidity.addSourceMap(binary, sourceMap);
@@ -109,8 +115,7 @@ function* recordContexts(...contexts) {
 }
 
 function* recordSources(...sources) {
-  for (let i = 0; i < sources.length; i++) {
-    const sourceData = sources[i];
+  for (let sourceData of sources) {
     if (sourceData !== undefined && sourceData !== null) {
       yield* solidity.addSource(
         sourceData.source,

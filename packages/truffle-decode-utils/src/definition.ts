@@ -271,4 +271,91 @@ export namespace Definition {
         debug("unrecognized index access!");
     }
   }
+
+  //spoofed definitions we'll need
+  //we'll give them id -1 to indicate that they're spoofed
+
+  //id, name, nodeType, typeDescriptions.typeIdentifier
+  export function spoofUintDefinition(name: string): AstDefinition {
+    return {
+      id: -1,
+      name,
+      nodeType: "VariableDeclaration",
+      typeDescriptions: {
+        typeIdentifier: "t_uint256"
+      }
+    };
+  }
+
+  export function spoofAddressPayableDefinition(name: string): AstDefinition {
+    return {
+      id: -1,
+      name,
+      nodeType: "VariableDeclaration",
+      typeDescriptions: {
+        typeIdentifier: "t_address_payable"
+      }
+    };
+  }
+
+  export const MSG_SIG_DEFINITION: AstDefinition = {
+    id: -1,
+    name: "sig",
+    nodeType: "VariableDeclaration",
+    typeDescriptions: {
+      typeIdentifier: "t_bytes" + EVMUtils.SELECTOR_SIZE
+    }
+  };
+
+  export const MSG_DATA_DEFINITION: AstDefinition = {
+    id: -1,
+    name: "data",
+    nodeType: "VariableDeclaration",
+    typeDescriptions: {
+      typeIdentifier: "t_bytes_calldata_ptr"
+    }
+  };
+
+  export const MSG_DEFINITION: AstDefinition = {
+    id: -1,
+    name: "msg",
+    nodeType: "VariableDeclaration",
+    typeDescriptions: {
+      typeIdentifier: "t_magic_message"
+    }
+  };
+
+  export const TX_DEFINITION: AstDefinition = {
+    id: -1,
+    name: "tx",
+    nodeType: "VariableDeclaration",
+    typeDescriptions: {
+      typeIdentifier: "t_magic_transaction"
+    }
+  };
+
+  export const BLOCK_DEFINITION: AstDefinition = {
+    id: -1,
+    name: "block",
+    nodeType: "VariableDeclaration",
+    typeDescriptions: {
+      typeIdentifier: "t_magic_block"
+    }
+  };
+
+  export function spoofThisDefinition(contractName: string, contractId: number): AstDefinition {
+    let formattedName = contractName.replace(/\$/g, "$$".repeat(3));
+    //note that string.replace treats $'s specially in the replacement string;
+    //we want 3 $'s for each $ in the input, so we need to put *6* $'s in the
+    //replacement string
+    return {
+      id: -1,
+      name: "this",
+      nodeType: "VariableDeclaration",
+      typeDescriptions: {
+        typeIdentifier: "t_contract$_" + formattedName + "_$" + contractId
+      }
+    }
+  }
+
 }
