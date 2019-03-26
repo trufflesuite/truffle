@@ -32,14 +32,14 @@ function parseSandboxOptions(options) {
 const Box = {
   unbox: async (url, destination, options = {}) => {
     let tempDirCleanup;
-    options.logger = options.logger || { log: () => {} };
+    logger = options.logger || { log: () => {} };
     const unpackBoxOptions = {
       logger: options.logger,
       force: options.force
     };
 
     try {
-      options.logger.log("");
+      logger.log("");
       await Box.checkDir(options);
       const tempDir = await utils.setUpTempDirectory();
       tempDirPath = tempDir.path;
@@ -69,11 +69,12 @@ const Box = {
     }
   },
 
-  checkDir: async options => {
+  checkDir: async (options = {}) => {
+    let logger = options.logger || console;
     if (!options.force) {
       const currentDir = fs.readdirSync(process.cwd());
       if (currentDir.length) {
-        options.logger.log(`This directory is non-empty...`);
+        logger.log(`This directory is non-empty...`);
         const prompt = [
           {
             type: "confirm",
@@ -84,7 +85,7 @@ const Box = {
         ];
         const answer = await inquirer.prompt(prompt);
         if (!answer.proceed) {
-          options.logger.log("Unbox cancelled");
+          logger.log("Unbox cancelled");
           process.exit();
         }
       }
@@ -97,7 +98,6 @@ const Box = {
   //   Cleanup temporary files even when an uncaught exception occurs
   sandbox: function(options, callback) {
     var self = this;
-
     const { name, unsafeCleanup, setGracefulCleanup } = parseSandboxOptions(
       options
     );
@@ -111,12 +111,14 @@ const Box = {
     }
 
     tmp.dir({ unsafeCleanup }, function(err, dir) {
-      if (err) {
-        return callback(err);
-      }
+      if (err) return callback(err);
 
       self
-        .unbox("https://github.com/trufflesuite/truffle-init-" + name, dir)
+        .unbox(
+          "https://github.com/trufflesuite/truffle-init-" + name,
+          dir,
+          options
+        )
         .then(function() {
           var config = Config.load(path.join(dir, "truffle-config.js"), {});
           callback(null, config);
