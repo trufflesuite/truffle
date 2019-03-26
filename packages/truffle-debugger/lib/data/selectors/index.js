@@ -605,36 +605,50 @@ const data = createSelectorTree({
       ),
 
       /**
-       * data.current.identifiers.definitions
-       *
-       * current variable definitions
+       * data.current.identifiers.definitions (namespace)
        */
-      definitions: createLeaf(
-        ["/views/scopes/inlined", "./_", "./thisDefinition"],
+      definitions: {
+        /* data.current.identifiers.definitions (selector)
+         * definitions for current variables, by identifier
+         */
+        _: createLeaf(
+          ["/views/scopes/inlined", "../_", "./this"],
 
-        (scopes, identifiers, thisDefinition) => {
-          let variables = Object.assign(
-            {},
-            ...Object.entries(identifiers).map(([identifier, { astId }]) => {
-              if (astId !== undefined) {
-                //will be undefined for builtins
-                let { definition } = scopes[astId];
-                return { [identifier]: definition };
-              } else {
-                return {}; //skip over builtins; we'll handle those separately
-              }
-            })
-          );
-          let builtins = {
-            msg: DecodeUtils.Definition.MSG_DEFINITION,
-            tx: DecodeUtils.Definition.TX_DEFINITION,
-            block: DecodeUtils.Definition.BLOCK_DEFINITION,
-            this: thisDefinition,
-            now: DecodeUtils.Definition.spoofUintDefinition("now")
-          };
-          return { ...variables, ...builtins };
-        }
-      ),
+          (scopes, identifiers, thisDefinition) => {
+            let variables = Object.assign(
+              {},
+              ...Object.entries(identifiers).map(([identifier, { astId }]) => {
+                if (astId !== undefined) {
+                  //will be undefined for builtins
+                  let { definition } = scopes[astId];
+                  return { [identifier]: definition };
+                } else {
+                  return {}; //skip over builtins; we'll handle those separately
+                }
+              })
+            );
+            let builtins = {
+              msg: DecodeUtils.Definition.MSG_DEFINITION,
+              tx: DecodeUtils.Definition.TX_DEFINITION,
+              block: DecodeUtils.Definition.BLOCK_DEFINITION,
+              this: thisDefinition,
+              now: DecodeUtils.Definition.spoofUintDefinition("now")
+            };
+            return { ...variables, ...builtins };
+          }
+        ),
+
+        /*
+         * data.current.identifiers.definitions.this
+         *
+         * returns a spoofed definition for the this variable
+         */
+        this: createLeaf(
+          [evm.current.context],
+          ({ contractName, contractId }) =>
+            DecodeUtils.Definition.spoofThisDefinition(contractName, contractId)
+        )
+      },
 
       /**
        * data.current.identifiers.refs
@@ -727,17 +741,6 @@ const data = createSelectorTree({
             Object.assign({}, ...keyedResults)
           );
         }
-      ),
-
-      /*
-       * data.current.identifiers.thisDefinition
-       *
-       * returns a spoofed definition for the this variable
-       */
-      thisDefinition: createLeaf(
-        [evm.current.context],
-        ({ contractName, contractId }) =>
-          DecodeUtils.Definition.spoofThisDefinition(contractName, contractId)
       )
     }
   },
