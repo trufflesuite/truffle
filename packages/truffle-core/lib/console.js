@@ -2,7 +2,7 @@ var ReplManager = require("./repl");
 var Command = require("./command");
 var provision = require("truffle-provisioner");
 var contract = require("truffle-contract");
-var Web3 = require("web3");
+var Web3Shim = require("truffle-interface-adapter").Web3Shim;
 var vm = require("vm");
 var expect = require("truffle-expect");
 var TruffleError = require("truffle-error");
@@ -23,6 +23,7 @@ function Console(tasks, options) {
     "contracts_directory",
     "contracts_build_directory",
     "migrations_directory",
+    "networks",
     "network",
     "network_id",
     "provider",
@@ -35,14 +36,16 @@ function Console(tasks, options) {
   this.repl = options.repl || new ReplManager(options);
   this.command = new Command(tasks);
 
-  this.web3 = new Web3();
-  this.web3.setProvider(options.provider);
+  this.web3 = new Web3Shim({
+    provider: options.provider,
+    networkType: options.networks[options.network].type
+  });
 
   // Bubble the ReplManager's exit event
   this.repl.on("exit", function() {
     self.emit("exit");
   });
-};
+}
 
 Console.prototype.start = function(callback) {
   var self = this;
@@ -58,14 +61,16 @@ Console.prototype.start = function(callback) {
 
   this.provision(function(err, abstractions) {
     if (err) {
-      self.options.logger.log("Unexpected error: Cannot provision contracts while instantiating the console.");
+      self.options.logger.log(
+        "Unexpected error: Cannot provision contracts while instantiating the console."
+      );
       self.options.logger.log(err.stack || err.message || err);
     }
 
     self.repl.start({
       prompt: "truffle(" + self.options.network + ")> ",
       context: {
-        web3: self.web3,
+        web3: self.web3
       },
       interpreter: self.interpret.bind(self),
       done: callback
@@ -90,31 +95,41 @@ Console.prototype.provision = function(callback) {
     files = files || [];
 
     files.forEach(function(file) {
-      promises.push(new Promise(function(accept, reject) {
-        fs.readFile(path.join(self.options.contracts_build_directory, file), "utf8", function(err, body) {
-          if (err) return reject(err);
-          try {
-            body = JSON.parse(body);
-          } catch (e) {
-            return reject(new Error("Cannot parse " + file + ": " + e.message));
-          }
+      promises.push(
+        new Promise(function(accept, reject) {
+          fs.readFile(
+            path.join(self.options.contracts_build_directory, file),
+            "utf8",
+            function(err, body) {
+              if (err) return reject(err);
+              try {
+                body = JSON.parse(body);
+              } catch (e) {
+                return reject(
+                  new Error("Cannot parse " + file + ": " + e.message)
+                );
+              }
 
-          accept(body);
-        });
-      }));
+              accept(body);
+            }
+          );
+        })
+      );
     });
 
-    Promise.all(promises).then(function(json_blobs) {
-      var abstractions = json_blobs.map(function(json) {
-        var abstraction = contract(json);
-        provision(abstraction, self.options);
-        return abstraction;
-      });
+    Promise.all(promises)
+      .then(function(json_blobs) {
+        var abstractions = json_blobs.map(function(json) {
+          var abstraction = contract(json);
+          provision(abstraction, self.options);
+          return abstraction;
+        });
 
-      self.resetContractsInConsoleContext(abstractions);
+        self.resetContractsInConsoleContext(abstractions);
 
-      callback(null, abstractions);
-    }).catch(callback);
+        callback(null, abstractions);
+      })
+      .catch(callback);
   });
 };
 
@@ -149,15 +164,13 @@ Console.prototype.interpret = function(cmd, context, filename, callback) {
       }
 
       // Reprovision after each command as it may change contracts.
-      self.provision(function(err, abstractions) {
+      self.provision(function(err) {
         // Don't pass abstractions to the callback if they're there or else
         // they'll get printed in the repl.
         callback(err);
       });
     });
   }
-
-  var result;
 
   // Much of the following code is from here, though spruced up:
   // https://github.com/nfcampos/await-outside
@@ -185,17 +198,23 @@ Console.prototype.interpret = function(cmd, context, filename, callback) {
 
     // Wrap the await inside an async function.
     // Strange indentation keeps column offset correct in stack traces
-    source = `(async function() { try { ${assign ? `global.${RESULT} =` : "return"} (
+    source = `(async function() { try { ${
+      assign ? `global.${RESULT} =` : "return"
+    } (
 ${expression.trim()}
 ); } catch(e) { global.ERROR = e; throw e; } }())`;
 
     assignment = assign
       ? `${assign.trim()} global.${RESULT}; void delete global.${RESULT};`
       : null;
-  } 
+  }
 
   var runScript = function(s) {
-    const options = { displayErrors: true, breakOnSigint: true, filename: filename };
+    const options = {
+      displayErrors: true,
+      breakOnSigint: true,
+      filename: filename
+    };
     return s.runInContext(context, options);
   };
 
@@ -210,17 +229,20 @@ ${expression.trim()}
   // Ensure our script returns a promise whether we're using an
   // async function or not. If our script is an async function,
   // this will ensure the console waits until that await is finished.
-  Promise.resolve(runScript(script)).then(function(value) {
-    // If there's an assignment to run, run that.
-    if (assignment) {
-      return runScript(vm.createScript(assignment));
-    } else {
-      return value;
-    }
-  }).then(function(value) {
-    // All good? Return the value (e.g., eval'd script or assignment)
-    callback(null, value);
-  }).catch(callback);
+  Promise.resolve(runScript(script))
+    .then(function(value) {
+      // If there's an assignment to run, run that.
+      if (assignment) {
+        return runScript(vm.createScript(assignment));
+      } else {
+        return value;
+      }
+    })
+    .then(function(value) {
+      // All good? Return the value (e.g., eval'd script or assignment)
+      callback(null, value);
+    })
+    .catch(callback);
 };
 
 module.exports = Console;

@@ -1,5 +1,5 @@
 import { StorageLength } from "./storage";
-import { StoragePointer, ConstantDefinitionPointer } from "./pointer";
+import { StoragePointer, ConstantDefinitionPointer, CalldataPointer, MemoryPointer } from "./pointer";
 import { AstDefinition } from "truffle-decode-utils";
 
 //holds a collection of storage allocations for structs and contracts, indexed
@@ -30,4 +30,49 @@ export interface StorageMemberAllocation {
   pointer: StoragePointer | ConstantDefinitionPointer;
 }
 
-//later this file will also contain types for ABI allocations
+//calldata types below work similar to storage types above; note these are only
+//used for structs so there's no need to account for contracts or constants
+//also, we now also keep track of which structs are dynamic
+//also, we allow a calldata allocation to be null to indicate a type not allowed
+//in calldata
+
+export interface CalldataAllocations {
+  [id: number]: CalldataAllocation | null
+}
+
+export interface CalldataAllocation {
+  definition: AstDefinition;
+  length: number; //measured in bytes
+  dynamic: boolean;
+  members: CalldataMemberAllocations;
+}
+
+export interface CalldataMemberAllocations {
+  [id: number]: CalldataMemberAllocation
+}
+
+export interface CalldataMemberAllocation {
+  definition: AstDefinition;
+  pointer: CalldataPointer;
+}
+
+//and finally, memory; works the same as calldata, except we don't bother keeping
+//track of size (it's always 1 word) or dynamicity (meaningless in memory)
+
+export interface MemoryAllocations {
+  [id: number]: MemoryAllocation
+}
+
+export interface MemoryAllocation {
+  definition: AstDefinition;
+  members: MemoryMemberAllocations;
+}
+
+export interface MemoryMemberAllocations {
+  [id: number]: MemoryMemberAllocation
+}
+
+export interface MemoryMemberAllocation {
+  definition: AstDefinition;
+  pointer: MemoryPointer;
+}

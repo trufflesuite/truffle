@@ -102,7 +102,7 @@ describe("Precompiled Contracts", () => {
         results[name].push(stepResult);
       }
 
-      session.advance();
+      await session.advance();
       finished = session.view(trace.finished);
     } while (!finished);
   });

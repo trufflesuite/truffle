@@ -8,14 +8,16 @@ import BN from "bn.js";
 import { EvmInfo } from "../types/evm";
 import * as general from "../allocate/general";
 import * as storage from "../allocate/storage";
-import { StoragePointer } from "../types/pointer";
-import { StorageAllocations, StorageMemberAllocations } from "../types/allocation";
+import { StoragePointer, isStoragePointer } from "../types/pointer";
+import { StorageAllocations, StorageMemberAllocations, StorageMemberAllocation } from "../types/allocation";
+import { Slot, isWordsLength } from "../types/storage";
 import decode from "../decode";
 import { Definition as DefinitionUtils, EVM, AstDefinition, AstReferences } from "truffle-decode-utils";
 import { BlockType, Transaction } from "web3/eth/types";
 import { EventLog, Log } from "web3/types";
 import { Provider } from "web3/providers";
 import abiDecoder from "abi-decoder";
+import isEqual from "lodash.isequal"; //util.isDeepStrictEqual doesn't exist in Node 8
 
 export interface EvmMapping {
   name: string;
@@ -41,7 +43,7 @@ export interface EvmEnum {
   value: string;
 };
 
-type EvmVariable = BN | string | EvmMapping | EvmStruct | EvmEnum;
+type EvmVariable = BN | string | boolean | EvmMapping | EvmStruct | EvmEnum;
 
 interface DecodedVariable {
   name: string;
@@ -94,7 +96,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   private contractNode: AstDefinition;
   private contractNetwork: string;
   private contractAddress: string;
-  private inheritedContracts: ContractObject[];
+  private relevantContracts: ContractObject[];
 
   private contracts: ContractMapping = {};
   private contractNodes: AstReferences = {};
@@ -109,27 +111,31 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   private stateVariableReferences: StorageMemberAllocations;
 
-  constructor(contract: ContractObject, inheritedContracts: ContractObject[], provider: Provider) {
+  private mappingKeys: Slot[] = [];
+
+  constructor(contract: ContractObject, relevantContracts: ContractObject[], provider: Provider, address: string) {
     super();
 
     this.web3 = new Web3(provider);
 
-    this.contract = contract; //cloneDeep(contract);
-    this.inheritedContracts = inheritedContracts; //cloneDeep(inheritedContracts);
+    this.contract = contract;
+    this.relevantContracts = relevantContracts;
 
     this.contractNetwork = Object.keys(this.contract.networks)[0];
-    this.contractAddress = this.contract.networks[this.contractNetwork].address;
+    this.contractAddress = address !== undefined
+      ? address
+      : this.contract.networks[this.contractNetwork].address;
 
     this.contractNode = getContractNode(this.contract);
 
     this.contracts[this.contractNode.id] = this.contract;
     this.contractNodes[this.contractNode.id] = this.contractNode;
     abiDecoder.addABI(this.contract.abi);
-    this.inheritedContracts.forEach((inheritedContract) => {
-      let node: AstDefinition = getContractNode(inheritedContract);
-      this.contracts[node.id] = inheritedContract;
+    this.relevantContracts.forEach((relevantContract) => {
+      let node: AstDefinition = getContractNode(relevantContract);
+      this.contracts[node.id] = relevantContract;
       this.contractNodes[node.id] = node;
-      abiDecoder.addABI(inheritedContract.abi);
+      abiDecoder.addABI(relevantContract.abi);
     });
   }
 
@@ -168,19 +174,19 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         state: {
           stack: [],
           storage: {},
-          memory: new Uint8Array(0)
+          memory: new Uint8Array(0),
+          calldata: new Uint8Array(0)
         },
-        mappingKeys: {},
+        mappingKeys: this.mappingKeys,
         referenceDeclarations: this.referenceDeclarations,
         storageAllocations: this.storageAllocations,
-        variables: this.stateVariableReferences
       };
 
       debug("about to decode %s", variable.definition.name);
       const val = await decode(variable.definition, variable.pointer, info, this.web3, this.contractAddress);
       debug("decoded");
 
-      result.variables[variable.definition.name] = <DecodedVariable>{
+      result.variables[variable.definition.name] = {
         name: variable.definition.name,
         type: DefinitionUtils.typeClass(variable.definition),
         value: val
@@ -192,17 +198,86 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     return result;
   }
 
-  public async variable(name: string, block: BlockType = "latest"): Promise<DecodedVariable | undefined> {
-    return undefined;
+  public async variable(nameOrId: string | number, block: BlockType = "latest"): Promise<DecodedVariable | undefined> {
+
+    const info: EvmInfo = {
+      state: {
+        stack: [],
+        storage: {},
+        memory: new Uint8Array(0),
+        calldata: new Uint8Array(0)
+      },
+      mappingKeys: this.mappingKeys,
+      referenceDeclarations: this.referenceDeclarations,
+      storageAllocations: this.storageAllocations,
+    };
+
+    let variable: StorageMemberAllocation;
+    if(typeof nameOrId === "number")
+    {
+      variable = this.stateVariableReferences[nameOrId];
+    }
+    else { //search by name
+      variable = Object.values(this.stateVariableReferences)
+      .find(({definition}) => definition.name === nameOrId); //there should be exactly one
+    }
+
+    if(variable === undefined) { //if user put in a bad name
+      return undefined;
+    }
+
+    debug("about to decode %o", nameOrId);
+    const value = await decode(variable.definition, variable.pointer, info, this.web3, this.contractAddress);
+    debug("decoded");
+
+    return {
+      name: variable.definition.name,
+      type: DefinitionUtils.typeClass(variable.definition),
+      value
+    };
   }
 
-  public watchMappingKeys(mappingId: number, keys: (number | BN | string)[]): void {
-    //
+  //EXAMPLE: to watch a.b.c[d][e], use watchMappingKey("a", "b", "c", d, e)
+  //(this will watch all ancestors too, or at least ones given by mapping keys)
+  //feel free to mix arrays, mappings, and structs here!
+  //see the comment on constructSlot for more detail on what forms are accepted
+  public watchMappingKey(variable: number | string, ...indices: any[]): void {
+    let slot: Slot | undefined = this.constructSlot(variable, ...indices)[0];
+    //add mapping key and all ancestors
+    while(slot !== undefined &&
+      this.mappingKeys.every(existingSlot =>
+      !isEqual(existingSlot,slot)
+        //we put the newness requirement in the while condition rather than a
+        //separate if because if we hit one ancestor that's not new, the futher
+        //ones won't be either
+    )) {
+      if(slot.key !== undefined) { //only add mapping keys
+          this.mappingKeys = [...this.mappingKeys, slot];
+      }
+      slot = slot.path;
+    }
   }
 
-  public unwatchMappingKeys(mappingId: number, keys: (number | BN | string)[]): void {
-    //
+  //input is similar to watchMappingKey; will unwatch all descendants too
+  public unwatchMappingKey(variable: number | string, ...indices: any[]): void {
+    let slot: Slot | undefined = this.constructSlot(variable, ...indices)[0];
+    if(slot === undefined) {
+      return; //not strictly necessary, but may as well
+    }
+    //remove mapping key and all descendants
+    this.mappingKeys = this.mappingKeys.filter( existingSlot => {
+      while(existingSlot !== undefined) {
+        if(isEqual(existingSlot, slot)) {
+          return false; //if it matches, remove it
+        }
+        existingSlot = existingSlot.path;
+      }
+      return true; //if we didn't match, keep the key
+    });
   }
+  //NOTE: if you decide to add a way to remove a mapping key *without* removing
+  //all descendants, you'll need to alter watchMappingKey to use an if rather
+  //than a while
 
   public decodeTransaction(transaction: Transaction): any {
     const decodedData = abiDecoder.decodeMethod(transaction.input);
@@ -276,4 +351,128 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   public removeEventListener(name: string): void {
   }
+
+  //in addition to returning the slot we want, it also returns a definition
+  //used in the recursive call
+  //HOW TO USE:
+  //variable may be either a variable id (number) or name (string)
+  //struct members may be given either by id (number) or name (string)
+  //array indices and numeric mapping keys may be BN, number, or numeric string
+  //string mapping keys should be given as strings. duh.
+  //bytes mapping keys should be given as hex strings beginning with "0x"
+  //address mapping keys are like bytes; checksum case is not required
+  //boolean mapping keys may be given either as booleans, or as string "true" or "false"
+  private constructSlot(variable: number | string, ...indices: any[]): [Slot | undefined , AstDefinition | undefined] {
+    //base case: we need to locate the variable and its definition
+    if(indices.length === 0) {
+      let allocation: StorageMemberAllocation;
+      if(typeof variable === "number") {
+        allocation = this.stateVariableReferences[variable];
+      }
+      else {
+        allocation = Object.values(this.stateVariableReferences)
+        .find(({definition}) => definition.name === variable);
+      }
+
+      let definition = allocation.definition;
+      let pointer = allocation.pointer;
+      if(!isStoragePointer(pointer)) { //if it's a constant
+        return [undefined, undefined];
+      }
+      return [pointer.storage.from.slot, definition];
+    }
+
+    //main case
+    let parentIndices = indices.slice(0, -1); //remove last index
+    let [parentSlot, parentDefinition] = this.constructSlot(variable, ...parentIndices);
+    if(parentSlot === undefined) {
+      return [undefined, undefined];
+    }
+    let rawIndex = indices[indices.length - 1];
+    let index: any;
+    let slot: Slot;
+    let definition: AstDefinition;
+    switch(DefinitionUtils.typeClass(parentDefinition)) {
+      case "array":
+        if(rawIndex instanceof BN) {
+          index = rawIndex.clone();
+        }
+        else {
+          index = new BN(rawIndex);
+        }
+        definition = parentDefinition.baseType || parentDefinition.typeName.baseType;
+        let size = storage.storageSize(definition, this.referenceDeclarations, this.storageAllocations);
+        if(!isWordsLength(size)) {
+          return [undefined, undefined];
+        }
+        slot = {
+          path: parentSlot,
+          offset: index.muln(size.words),
+          hashPath: DefinitionUtils.isDynamicArray(parentDefinition)
+        }
+        break;
+      case "mapping":
+        let keyDefinition = parentDefinition.keyType || parentDefinition.typeName.keyType;
+        switch(DefinitionUtils.typeClass(keyDefinition)) {
+          case "string":
+          case "bytes":
+            index = rawIndex;
+            break;
+          case "address":
+	    index = Web3.utils.toChecksumAddress(rawIndex);
+	    break;
+          case "int":
+          case "uint":
+            if(rawIndex instanceof BN) {
+              index = rawIndex.clone();
+            }
+            else {
+              index = new BN(rawIndex);
+            }
+            break;
+          case "bool":
+            if(typeof rawIndex === "string") {
+              index = rawIndex !== "false";
+            }
+            else {
+              index = rawIndex;
+            }
+            break;
+          default: //there is no other case, except fixed and ufixed, but
+            return [undefined, undefined];
+        }
+        definition = parentDefinition.valueType || parentDefinition.typeName.valueType;
+        slot = {
+          path: parentSlot,
+          key: index,
+          keyEncoding: DefinitionUtils.keyEncoding(keyDefinition),
+          offset: new BN(0)
+        }
+        break;
+      case "struct":
+        let parentId = DefinitionUtils.typeId(parentDefinition);
+        let allocation: StorageMemberAllocation;
+        if(typeof rawIndex === "number") {
+          index = rawIndex;
+          allocation = this.storageAllocations[parentId].members[index];
+          definition = allocation.definition;
+        }
+        else {
+          allocation = Object.values(this.storageAllocations[parentId].members)
+          .find(({definition}) => definition.name === rawIndex); //there should be exactly one
+          definition = allocation.definition;
+          index = definition.id; //not really necessary, but may as well
+        }
+        slot = {
+          path: parentSlot,
+          //need type coercion here -- we know structs don't contain constants but the compiler doesn't
+          offset: (<StoragePointer>allocation.pointer).storage.from.slot.offset.clone()
+        }
+        break;
+      default:
+        return [undefined, undefined];
+    }
+    return [slot, definition];
+  }
+
 }

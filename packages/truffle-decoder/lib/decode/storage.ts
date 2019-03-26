@@ -7,6 +7,7 @@ import decodeValue from "./value";
 import { StoragePointer, DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { storageSize } from "../allocate/storage";
+import { slotAddress } from "../read/storage";
 import * as Types from "../types/storage";
 import BN from "bn.js";
 import Web3 from "web3";
@@ -25,14 +26,14 @@ export default async function decodeStorage(definition: DecodeUtils.AstDefinitio
 //decodes storage at the address *read* from the pointer -- hence why this takes DataPointer rather than StoragePointer.
 //NOTE: ONLY for use with pointers to reference types!
 //Of course, pointers to value types don't exist in Solidity, so that warning is redundant, but...
-export async function decodeStorageByAddress(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
+export async function decodeStorageReferenceByAddress(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
 
   const rawValue: Uint8Array = await read(pointer, info.state, web3, contractAddress);
   const startOffset = DecodeUtils.Conversion.toBN(rawValue);
   //we *know* the type being decoded must be sized in words, because it's a
   //reference type, but TypeScript doesn't, so we'll have to use a type
   //coercion
-  const size = (<{words: number}>storageSize(definition)).words;
+  const size = (<{words: number}>storageSize(definition, info.referenceDeclarations, info.storageAllocations)).words;
   //now, construct the storage pointer
   const newPointer = { storage: {
     from: {
@@ -75,6 +76,8 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
       debug("length %o", length);
 
       const baseDefinition = definition.baseType || definition.typeName.baseType;
+        //I'm deliberately not using the DecodeUtils function for this, because
+        //we should *not* need a faked-up type here!
       const referenceId = baseDefinition.referencedDeclaration ||
         (baseDefinition.typeName ? baseDefinition.typeName.referencedDeclaration : undefined);
 
@@ -186,9 +189,6 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
         // string lives in word, length is last byte / 2
         length = lengthByte / 2;
         debug("in-word; length %o", length);
-        if (length == 0) {
-          return "";
-        }
 
         return decodeValue(definition, { storage: {
           from: { slot: pointer.storage.from.slot, index: 0 },
@@ -231,12 +231,11 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
         members: {}
       };
 
-      const members: DecodeUtils.AstDefinition[] =
-        info.referenceDeclarations[referencedDeclaration].members;
-
       const structAllocation = info.storageAllocations[referencedDeclaration];
-      for (let memberDefinition of members) {
-        const memberAllocation = structAllocation.members[memberDefinition.id];
+      const members = Object.values(structAllocation.members);
+
+      for (let memberAllocation of members) {
+        let memberDefinition = memberAllocation.definition;
         const memberPointer = <StoragePointer>memberAllocation.pointer;
           //the type system thinks memberPointer might also be a constant
           //definition pointer.  However, structs can't contain constants,
@@ -294,106 +293,69 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
       };
 
       const baseSlot: Types.Slot = pointer.storage.from.slot;
+      debug("baseSlot %o", baseSlot);
+      debug("base slot address %o", slotAddress(baseSlot));
 
-      if (info.mappingKeys && typeof info.mappingKeys[definition.id] !== "undefined") {
-        const keys: any[] = info.mappingKeys[definition.id];
-        for (const key of keys) {
+      const keySlots = info.mappingKeys.filter( ({path}) =>
+        slotAddress(baseSlot).eq(slotAddress(path)));
 
-          debug("key %O", key);
+      for (const {key, keyEncoding} of keySlots) {
 
-          let keyEncoding: string;
-          //keyEncoding is used to let soliditySha3 know how to interpret the
-          //key for hashing... but if you just give it the honest type, it
-          //won't pad, and for value types we need it to pad.
-          //Thus, ints and value bytes become the *largest* size of that type
-          //addresses are treated by Solidity as uint160, so we mark them uint
-          //to get the correct padding
-          //bool... I can't get soliditySha3 to pad a bool no matter what, so
-          //we'll leave it undefined and handle it manually
-          //note that while fixed and ufixed don't exist yet, they would
-          //presumably use fixed256xM and ufixed256xM, where M is the precision
+        let valuePointer: StoragePointer;
 
-          switch(DecodeUtils.Definition.typeClass(keyDefinition)) {
-            case "string":
-              keyEncoding = "string";
-              break;
-            case "bytes":
-              let keySize = DecodeUtils.Definition.specifiedSize(keyDefinition);
-              if(keySize === null) {
-                keyEncoding = "bytes";
-              }
-              else {
-                keyEncoding = "bytes32";
-              }
-              break;
-            case "uint":
-            case "address":
-              keyEncoding = "uint";
-              break;
-            case "int":
-              keyEncoding = "int";
-              break;
-            case "bool":
-              //deliberately leave keyEncoding undefined (HACK)
-              break;
-          }
-
-          let valuePointer: StoragePointer;
-
-          if(Types.isWordsLength(valueSize)) {
-            valuePointer = {
-              storage: {
-                from: {
-                  slot: {
-                    key,
-                    keyEncoding,
-                    path: baseSlot,
-                    offset: new BN(0)
-                  },
-                  index: 0
+        if(Types.isWordsLength(valueSize)) {
+          valuePointer = {
+            storage: {
+              from: {
+                slot: {
+                  key,
+                  keyEncoding,
+                  path: baseSlot,
+                  offset: new BN(0)
                 },
-                to: {
-                  slot: {
-                    key,
-                    keyEncoding,
-                    path: baseSlot,
-                    offset: new BN(valueSize.words - 1)
-                  },
-                  index: DecodeUtils.EVM.WORD_SIZE - 1
-                }
-              }
-            };
-          }
-          else {
-            valuePointer = {
-              storage: {
-                from: {
-                  slot: {
-                    key,
-                    keyEncoding,
-                    path: baseSlot,
-                    offset: new BN(0)
-                  },
-                  index: DecodeUtils.EVM.WORD_SIZE - valueSize.bytes
+                index: 0
+              },
+              to: {
+                slot: {
+                  key,
+                  keyEncoding,
+                  path: baseSlot,
+                  offset: new BN(valueSize.words - 1)
                 },
-                to: {
-                  slot: {
-                    key,
-                    keyEncoding,
-                    path: baseSlot,
-                    offset: new BN(0)
-                  },
-                  index: DecodeUtils.EVM.WORD_SIZE - 1
-                }
+                index: DecodeUtils.EVM.WORD_SIZE - 1
               }
-            };
-          }
-
-          //note at this point, key could be a string, hex string,
-          //BN, or boolean
-          result.members[key.toString()] =
-            await decodeStorage(valueDefinition, valuePointer, info, web3, contractAddress);
+            }
+          };
         }
+        else {
+          valuePointer = {
+            storage: {
+              from: {
+                slot: {
+                  key,
+                  keyEncoding,
+                  path: baseSlot,
+                  offset: new BN(0)
+                },
+                index: DecodeUtils.EVM.WORD_SIZE - valueSize.bytes
+              },
+              to: {
+                slot: {
+                  key,
+                  keyEncoding,
+                  path: baseSlot,
+                  offset: new BN(0)
+                },
+                index: DecodeUtils.EVM.WORD_SIZE - 1
+              }
+            }
+          };
+        }
+
+        //note at this point, key could be a string, hex string,
+        //BN, or boolean
+        result.members[key.toString()] =
+          await decodeStorage(valueDefinition, valuePointer, info, web3, contractAddress);
       }
 
       return result;

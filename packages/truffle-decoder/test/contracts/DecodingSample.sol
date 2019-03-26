@@ -140,5 +140,8 @@ contract DecodingSample {
     //fixedArrayStructS[1].structS2.structTwoDynamicArrayUint[1] = 250;
     //fixedArrayStructS[1].structS2.structTwoDynamicArrayUint[2] = 10123;
     //fixedArrayStructS[1].structS2.structTwoDynamicArrayUint[3] = 68715;
+
+    varMapping[2] = 41;
+    varMapping[3] = 107;
   }
 }

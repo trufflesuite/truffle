@@ -2,7 +2,7 @@ import { AstDefinition } from "truffle-decode-utils";
 import { Range } from "./storage";
 
 export type DataPointer = StackPointer | MemoryPointer | StoragePointer
-	| StackLiteralPointer | ConstantDefinitionPointer;
+  | CalldataPointer | StackLiteralPointer | ConstantDefinitionPointer;
 
 export interface GenericPointer {
   typeClass?: string;
@@ -17,6 +17,13 @@ export interface StackPointer extends GenericPointer {
 
 export interface MemoryPointer extends GenericPointer {
   memory: {
+    start: number;
+    length: number;
+  }
+}
+
+export interface CalldataPointer extends GenericPointer {
+  calldata: {
     start: number;
     length: number;
   }
@@ -40,6 +47,10 @@ export function isStackPointer(pointer: DataPointer): pointer is StackPointer {
 
 export function isMemoryPointer(pointer: DataPointer): pointer is MemoryPointer {
   return typeof pointer !== "undefined" && "memory" in pointer;
+}
+
+export function isCalldataPointer(pointer: DataPointer): pointer is CalldataPointer {
+  return typeof pointer !== "undefined" && "calldata" in pointer;
 }
 
 export function isStoragePointer(pointer: DataPointer): pointer is StoragePointer {

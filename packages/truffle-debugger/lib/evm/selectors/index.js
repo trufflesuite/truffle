@@ -6,9 +6,13 @@ import levenshtein from "fast-levenshtein";
 
 import trace from "lib/trace/selectors";
 
-import { isCallMnemonic, isCreateMnemonic } from "lib/helpers";
-
 import * as DecodeUtils from "truffle-decode-utils";
+import {
+  isCallMnemonic,
+  isCreateMnemonic,
+  isShortCallMnemonic,
+  isDelegateCallMnemonicBroad
+} from "lib/helpers";
 
 function findContext({ address, binary }, instances, search, contexts) {
   let record;
@@ -64,6 +68,22 @@ function createStepSelectors(step, state = null) {
     isCall: createLeaf(["./trace"], step => isCallMnemonic(step.op)),
 
     /**
+     * .isShortCall
+     *
+     * for calls that only take 6 arguments instead of 7
+     */
+    isShortCall: createLeaf(["./trace"], step => isShortCallMnemonic(step.op)),
+
+    /**
+     * .isDelegateCallBroad
+     *
+     * for calls delegate storage
+     */
+    isDelegateCallBroad: createLeaf(["./trace"], step =>
+      isDelegateCallMnemonicBroad(step.op)
+    ),
+
+    /**
      * .isCreate
      */
     isCreate: createLeaf(["./trace"], step => isCreateMnemonic(step.op)),
@@ -76,6 +96,25 @@ function createStepSelectors(step, state = null) {
     isHalting: createLeaf(
       ["./trace"],
       step => step.op == "STOP" || step.op == "RETURN"
+    ),
+
+    /**
+     * .isContextChange
+     * groups together calls, creates, and halts
+     */
+    isContextChange: createLeaf(
+      ["./isCall", "./isCreate", "./isHalting"],
+      (call, create, halt) => call || create || halt
+    ),
+
+    /*
+     * .touchesStorage
+     *
+     * whether the instruction involves storage
+     */
+    touchesStorage: createLeaf(
+      ["./trace"],
+      step => step.op == "SLOAD" || step.op == "SSTORE"
     )
   };
 
@@ -95,10 +134,12 @@ function createStepSelectors(step, state = null) {
        * address transferred to by call operation
        */
       callAddress: createLeaf(
-        ["./isCall", "./trace", state],
+        ["./isCall", state],
 
-        (matches, step, { stack }) => {
-          if (!matches) return null;
+        (matches, { stack }) => {
+          if (!matches) {
+            return null;
+          }
 
           let address = stack[stack.length - 2];
           return DecodeUtils.Conversion.toAddress(address);
@@ -111,15 +152,43 @@ function createStepSelectors(step, state = null) {
        * binary code to execute via create operation
        */
       createBinary: createLeaf(
-        ["./isCreate", "./trace", state],
+        ["./isCreate", state],
 
-        (matches, step, { stack, memory }) => {
-          if (!matches) return null;
+        (matches, { stack, memory }) => {
+          if (!matches) {
+            return null;
+          }
 
           // Get the code that's going to be created from memory.
           // Note we multiply by 2 because these offsets are in bytes.
           const offset = parseInt(stack[stack.length - 2], 16) * 2;
           const length = parseInt(stack[stack.length - 3], 16) * 2;
+
+          return "0x" + memory.join("").substring(offset, offset + length);
+        }
+      ),
+
+      /**
+       * .callData
+       *
+       * data passed to EVM call
+       */
+      callData: createLeaf(
+        ["./isCall", "./isShortCall", state],
+        (matches, short, { stack, memory }) => {
+          if (!matches) {
+            return null;
+          }
+
+          //if it's 6-argument call, the data start and offset will be one spot
+          //higher in the stack than they would be for a 7-argument call, so
+          //let's introduce an offset to handle this
+          let argOffset = short ? 1 : 0;
+
+          // Get the data from memory.
+          // Note we multiply by 2 because these offsets are in bytes.
+          const offset = parseInt(stack[stack.length - 4 + argOffset], 16) * 2;
+          const length = parseInt(stack[stack.length - 5 + argOffset], 16) * 2;
 
           return "0x" + memory.join("").substring(offset, offset + length);
         }
@@ -157,6 +226,24 @@ function createStepSelectors(step, state = null) {
           let { context } = instances[address] || {};
           let { binary } = contexts[context] || {};
           return !binary;
+        }
+      ),
+
+      /**
+       * .storageAffected
+       *
+       * storage slot being stored to or loaded from
+       * we do NOT prepend "0x"
+       */
+      storageAffected: createLeaf(
+        ["./touchesStorage", state],
+
+        (matches, { stack }) => {
+          if (!matches) {
+            return null;
+          }
+
+          return stack[stack.length - 1];
         }
       )
     });
@@ -248,16 +335,6 @@ const evm = createSelectorTree({
     ),
 
     /**
-     * evm.current.creationDepth
-     * how many creation calls are currently on the call stack?
-     */
-    creationDepth: createLeaf(
-      ["./callstack"],
-
-      stack => stack.filter(call => call.address === undefined).length
-    ),
-
-    /**
      * evm.current.context
      */
     context: createLeaf(
@@ -280,7 +357,52 @@ const evm = createSelectorTree({
     /**
      * evm.current.step
      */
-    step: createStepSelectors(trace.step, "./state")
+    step: {
+      ...createStepSelectors(trace.step, "./state"),
+
+      /*
+       * evm.current.step.createdAddress
+       *
+       * address created by the current create step;
+       * only exists for current, not next
+       */
+      createdAddress: createLeaf(
+        ["./isCreate", "/nextOfSameDepth/state/stack"],
+        (matches, stack) => {
+          if (!matches) {
+            return null;
+          }
+          let address = stack[stack.length - 1];
+          return DecodeUtils.Conversion.toAddress(address);
+        }
+      )
+    },
+
+    /**
+     * evm.current.codex (namespace)
+     */
+    codex: {
+      /**
+       * evm.current.codex (selector)
+       * the whole codex! not that that's very much at the moment
+       */
+      _: createLeaf(["/state"], state => state.proc.codex),
+
+      /**
+       * evm.current.codex.storage
+       * the current storage, as fetched from the codex... unless we're in a
+       * failed creation call, then we just fall back on the state (which will
+       * work, since nothing else can interfere with the storage of a failed
+       * creation call!)
+       */
+      storage: createLeaf(
+        ["./_", "../state/storage", "../call"],
+        (codex, rawStorage, { storageAddress }) =>
+          storageAddress === DecodeUtils.EVM.ZERO_ADDRESS
+            ? rawStorage //HACK -- if zero address ignore the codex
+            : codex.byAddress[storageAddress].storage
+      )
+    }
   },
 
   /**
@@ -299,7 +421,27 @@ const evm = createSelectorTree({
       }))
     ),
 
+    /*
+     * evm.next.step
+     */
     step: createStepSelectors(trace.next, "./state")
+  },
+
+  /**
+   * evm.nextOfSameDepth
+   */
+  nextOfSameDepth: {
+    /**
+     * evm.nextOfSameDepth.state
+     *
+     * evm state at the next step of same depth
+     */
+    state: Object.assign(
+      {},
+      ...["depth", "error", "gas", "memory", "stack", "storage"].map(param => ({
+        [param]: createLeaf([trace.nextOfSameDepth], step => step[param])
+      }))
+    )
   }
 });
 

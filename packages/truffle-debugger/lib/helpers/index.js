@@ -36,6 +36,22 @@ export function isCallMnemonic(op) {
 }
 
 /*
+ * returns true for mnemonics for calls that take only 6 args instead of 7
+ */
+export function isShortCallMnemonic(op) {
+  const shortCalls = ["DELEGATECALL", "STATICCALL"];
+  return shortCalls.includes(op);
+}
+
+/*
+ * returns true for mnemonics call and delegate storage
+ */
+export function isDelegateCallMnemonicBroad(op) {
+  const shortCalls = ["DELEGATECALL", "CALLCODE"];
+  return shortCalls.includes(op);
+}
+
+/*
  * Given a mmemonic, determine whether it's the mnemonic of a creation
  * instruction
  */

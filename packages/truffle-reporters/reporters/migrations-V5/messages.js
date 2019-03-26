@@ -1,5 +1,3 @@
-const emoji = require("node-emoji");
-
 /**
  *  A module that formats output for the Migrations reporter.
  */
@@ -266,11 +264,7 @@ class MigrationsMessages {
       saving: () => `\n   * Saving migration`,
 
       firstMigrate: () => {
-        let output = emoji.emojify(
-          `:warning:  Important :warning:\nIf you're using an HDWalletProvider, ` +
-            `it must be Web3 1.0 enabled or your migration will hang.\n\n`,
-          this.onMissing
-        );
+        let output = ``;
 
         reporter.migration.dryRun
           ? (output +=
