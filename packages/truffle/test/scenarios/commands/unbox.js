@@ -2,10 +2,10 @@ const assert = require("assert");
 const CommandRunner = require("../commandrunner");
 const MemoryLogger = require("../memorylogger");
 const fs = require("fs-extra");
+const logger = new MemoryLogger();
 
 describe("truffle unbox", () => {
   let config;
-  const logger = new MemoryLogger();
 
   beforeEach("set up config for logger", () => {
     config = { working_directory: `${process.cwd()}/test/sources/unbox` };
@@ -19,8 +19,7 @@ describe("truffle unbox", () => {
   describe("when run without arguments", () => {
     it("unboxes truffle-init-default", done => {
       CommandRunner.run("unbox --force", config, () => {
-        const output = logger.contents();
-        assert(output.includes("Unbox successful."));
+        assert(logger.contents().includes("Unbox successful."));
         assert(
           fs.pathExistsSync(
             `${process.cwd()}/test/sources/unbox/contracts/ConvertLib.sol`
