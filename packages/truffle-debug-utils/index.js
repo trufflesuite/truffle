@@ -287,6 +287,8 @@ var DebugUtils = {
       );
     }
 
+    //HACK -- due to safeEval altering things, it's possible for isBN() to
+    //throw an error here
     try {
       //we do not want to alter BNs!
       //(or other special objects, but that's just BNs right now)
@@ -294,7 +296,6 @@ var DebugUtils = {
         return object;
       }
     } catch (e) {
-      //HACK
       //if isBN threw an error, it's not a BN, so move on
     }
 
@@ -325,6 +326,54 @@ var DebugUtils = {
           variable === "this" ? { [replacement]: value } : { [variable]: value }
       )
     );
+  },
+
+  //HACK
+  //replace maps with objects (POJSOs?) and BNs with numbers
+  //May cause errors if BNs are too big!  But I think this is the right
+  //tradeoff for now; note this is only used when dealing with *expressions*,
+  //not individual variables (it's used so you can add and index and etc like
+  //you would in Solidity)
+  nativize: function(object) {
+    if (object && typeof object.map === "function") {
+      //array case
+      return object.map(DebugUtils.nativize);
+    }
+
+    if (object && object instanceof Map) {
+      //map case
+      //HACK -- we apply toString() to all the keys; due to JS's use of weak
+      //comparison for indexing, this should still work
+      return Object.assign(
+        {},
+        ...Array.from(object.entries()).map(([key, value]) => ({
+          [key.toString()]: DebugUtils.nativize(value)
+        }))
+      );
+    }
+
+    //HACK -- due to safeEval altering things, it's possible for isBN() to
+    //throw an error here
+    try {
+      if (BN.isBN(object)) {
+        return object.toNumber();
+      }
+    } catch (e) {
+      //if isBN threw an error, it's not a BN, so move on
+    }
+
+    if (object && typeof object === "object") {
+      //generic object case
+      return Object.assign(
+        {},
+        ...Object.entries(object).map(([key, value]) => ({
+          [key]: DebugUtils.nativize(value)
+        }))
+      );
+    }
+
+    //default case for strings, numbers, etc
+    return object;
   }
 };
 

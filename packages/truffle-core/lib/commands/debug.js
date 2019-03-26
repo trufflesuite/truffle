@@ -283,8 +283,7 @@ var command = {
               .join(OS.EOL);
           }
 
-          async function printVariables() {
-            var variables = await session.variables();
+          function printVariables(variables) {
             debug("variables %o", variables);
 
             // Get the length of the longest name.
@@ -337,10 +336,28 @@ var command = {
            *        :!<trace.step.stack>[1]
            */
           async function evalAndPrintExpression(raw, indent, suppress) {
+            let variables = await session.variables();
+
+            //if we're just dealing with a single variable, handle that case
+            //separately (so that we can do things in a better way for that
+            //case)
+
+            let variable = raw.trim();
+            if (variable in variables) {
+              printVariables({ [variable]: variables[variable] });
+              return;
+            }
+
+            //HACK
+            //if we're not in the single-variable case, we'll need to do some
+            //things to Javascriptify our variables so that the JS syntax for
+            //using them is closer to the Solidity syntax
+            variables = DebugUtils.nativize(variables);
+
             var context = Object.assign(
               { $: select },
 
-              await session.variables()
+              variables
             );
 
             //HACK -- we can't use "this" as a variable name, so we're going to
@@ -693,7 +710,7 @@ var command = {
                 printWatchExpressions();
                 break;
               case "v":
-                await printVariables();
+                printVariables(await session.variables());
                 break;
               case ":":
                 evalAndPrintExpression(cmdArgs);
