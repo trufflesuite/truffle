@@ -171,6 +171,23 @@ function defaultCodexFrame(address) {
 export function codex(state = [], action) {
   let newState, topCodex;
 
+  const updateFrameStorage = (frame, address, slot, value) => {
+    let existingPage = frame.accounts[address] || { storage: {} };
+    return {
+      ...frame,
+      accounts: {
+        ...frame.accounts,
+        [address]: {
+          ...existingPage,
+          storage: {
+            ...existingPage.storage,
+            [slot]: value
+          }
+        }
+      }
+    };
+  };
+
   switch (action.type) {
     case actions.CALL:
     case actions.CREATE:
@@ -206,26 +223,35 @@ export function codex(state = [], action) {
       };
       return newState;
 
-    case actions.STORE:
+    case actions.STORE: {
       //on a store, the relevant page should already exist, so we can just
       //add or update the needed slot
       const { address, slot, value } = action;
       newState = state.slice(); //clone the state
       topCodex = newState[newState.length - 1];
-      newState[newState.length - 1] = {
-        ...topCodex,
-        accounts: {
-          ...topCodex.accounts,
-          [address]: {
-            ...topCodex.accounts[address],
-            storage: {
-              ...topCodex.accounts[address].storage,
-              [slot]: value
-            }
-          }
-        }
-      };
+      newState[newState.length - 1] = updateFrameStorage(
+        topCodex,
+        address,
+        slot,
+        value
+      );
       return newState;
+    }
+
+    case actions.LOAD: {
+      //loads are a little more complicated -- usually we do nothing, but if
+      //it's an external load (there was nothing already there), then we want
+      //to update *every* stackframe
+      const { address, slot, value } = action;
+      topCodex = state[state.length - 1];
+      if (topCodex.accounts[address].storage[slot] !== undefined) {
+        return state;
+      } else {
+        return state.map(frame =>
+          updateFrameStorage(frame, address, slot, value)
+        );
+      }
+    }
 
     case actions.RETURN:
       //we want to pop the top while making the new top a copy of the old top;

@@ -100,13 +100,23 @@ function createStepSelectors(step, state = null) {
     ),
 
     /*
+     * .isStore
+     */
+    isStore: createLeaf(["./trace"], step => step.op == "SSTORE"),
+
+    /*
+     * .isLoad
+     */
+    isLoad: createLeaf(["./trace"], step => step.op == "SLOAD"),
+
+    /*
      * .touchesStorage
      *
      * whether the instruction involves storage
      */
     touchesStorage: createLeaf(
-      ["./trace"],
-      step => step.op == "SLOAD" || step.op == "SSTORE"
+      ["./isStore", "isLoad"],
+      (stores, loads) => stores || loads
     )
   };
 

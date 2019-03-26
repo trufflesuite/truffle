@@ -117,7 +117,12 @@ export function* callstackAndCodexSaga() {
       let storage = yield select(evm.next.state.storage);
       //normally we'd need a 0 fallback for this next line, but in this case we
       //can be sure the value will be there, since we're touching that storage
-      yield put(actions.store(storageAddress, slot, storage[slot]));
+      if (yield select(evm.current.step.isStore)) {
+        yield put(actions.store(storageAddress, slot, storage[slot]));
+      } else {
+        //otherwise, it's a load
+        yield put(actions.load(storageAddress, slot, storage[slot]));
+      }
     }
   }
 }

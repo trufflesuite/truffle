@@ -70,6 +70,16 @@ export function store(address, slot, value) {
   };
 }
 
+export const LOAD = "LOAD";
+export function load(address, slot, value) {
+  return {
+    type: LOAD,
+    address,
+    slot,
+    value
+  };
+}
+
 export const RESET = "EVM_RESET";
 export function reset(storageAddress) {
   return {
