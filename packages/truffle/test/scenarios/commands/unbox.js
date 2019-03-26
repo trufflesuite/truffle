@@ -18,7 +18,7 @@ describe("truffle unbox", () => {
 
   describe("when run without arguments", () => {
     it("unboxes truffle-init-default", done => {
-      CommandRunner.run("unbox", config, () => {
+      CommandRunner.run("unbox --force", config, () => {
         const output = logger.contents();
         assert(output.includes("Unbox successful."));
         assert(
