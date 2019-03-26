@@ -119,6 +119,35 @@ describe("Solidity Debugging", function() {
     } while (!session.view(trace.finished));
   });
 
+  it("exposes functionality to stop at specified breakpoints", async function() {
+    // prepare
+    let instance = await abstractions.NestedCall.deployed();
+    let receipt = await instance.run();
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      files,
+      contracts: artifacts
+    });
+
+    let session = bugger.connect();
+
+    // at `second();`
+    let source = session.view(solidity.current.source);
+    let breakLine = lineOf("BREAK", source.source);
+    let breakpoint = { sourceId: source.id, line: breakLine };
+
+    do {
+      await session.continueUntilBreakpoint([breakpoint]);
+
+      if (!session.view(trace.finished)) {
+        let range = session.view(solidity.current.sourceRange);
+        assert.equal(range.lines.start.line, breakLine);
+      }
+    } while (!session.view(trace.finished));
+  });
+
   describe("Function Depth", function() {
     it("remains at 1 in absence of inner function calls", async function() {
       const maxExpected = 1;
