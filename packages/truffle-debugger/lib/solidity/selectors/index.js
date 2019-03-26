@@ -139,17 +139,11 @@ let solidity = createSelectorTree({
         let instructions = CodeUtils.parseCode(binary);
 
         if (!sourceMap) {
+          // HACK
           // Let's create a source map to use since none exists. This source map
-          // maps just as many ranges as there are instructions, and ensures every
-          // instruction is marked as "jumping out". This will ensure all
-          // available debugger commands step one instruction at a time.
-          //
-          // This is kindof a hack; perhaps this should be broken out into separate
-          // context types. TODO
-          sourceMap = "";
-          for (var i = 0; i < instructions.length; i++) {
-            sourceMap += i + ":" + i + ":1:-1;";
-          }
+          // maps just as many ranges as there are instructions, and marks them
+          // all as being Solidity-internal and not jumps.
+          sourceMap = "0:0:-1:-".concat(";".repeat(instructions.length - 1));
         }
 
         var lineAndColumnMappings = Object.assign(
