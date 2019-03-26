@@ -78,7 +78,7 @@ describe("truffle unbox", () => {
       describe("full url + branch + relativePath", () => {
         it("unboxes successfully", done => {
           CommandRunner.run(
-            "unbox https://github.com/truffle-box/bare-box#truffle-test-branch:path/to/subDir",
+            "unbox https://github.com/truffle-box/bare-box#truffle-test-branch:path/to/subDir --force",
             config,
             () => {
               const output = logger.contents();
@@ -116,7 +116,7 @@ describe("truffle unbox", () => {
       describe("origin/master#branch:relativePath", () => {
         it("unboxes successfully", done => {
           CommandRunner.run(
-            "unbox truffle-box/bare-box#truffle-test-branch:path/to/subDir",
+            "unbox truffle-box/bare-box#truffle-test-branch:path/to/subDir --force",
             config,
             () => {
               const output = logger.contents();
@@ -150,7 +150,7 @@ describe("truffle unbox", () => {
       describe("official truffle box + branch + relativePath", () => {
         it("unboxes successfully", done => {
           CommandRunner.run(
-            "unbox bare#truffle-test-branch:path/to/subDir",
+            "unbox bare#truffle-test-branch:path/to/subDir --force",
             config,
             () => {
               const output = logger.contents();
@@ -206,7 +206,7 @@ describe("truffle unbox", () => {
       describe("git@ ssh + branch + relativePath", () => {
         it("unboxes successfully", done => {
           CommandRunner.run(
-            "unbox git@github.com:truffle-box/bare-box#truffle-test-branch:path/to/subDir",
+            "unbox git@github.com:truffle-box/bare-box#truffle-test-branch:path/to/subDir --force",
             config,
             () => {
               const output = logger.contents();
