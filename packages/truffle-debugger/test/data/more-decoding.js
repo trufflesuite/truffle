@@ -258,7 +258,7 @@ describe("Further Decoding", function() {
       pointedAt: [107, 214]
     };
 
-    assert.hasAllKeys(variables, expectedResult);
+    assert.containsAllKeys(variables, expectedResult);
 
     for (let name in expectedResult) {
       if (expectedResult[name] instanceof Map) {
@@ -315,7 +315,7 @@ describe("Further Decoding", function() {
       severalBytes: ["0xff"]
     };
 
-    assert.hasAllKeys(variables, expectedResult);
+    assert.containsAllKeys(variables, expectedResult);
 
     for (let name in expectedResult) {
       if (expectedResult[name] instanceof Map) {
@@ -371,7 +371,7 @@ describe("Further Decoding", function() {
       pointedAt: "key2"
     };
 
-    assert.hasAllKeys(variables, expectedResult);
+    assert.containsAllKeys(variables, expectedResult);
 
     for (let name in expectedResult) {
       if (expectedResult[name] instanceof Map) {
@@ -423,7 +423,7 @@ describe("Further Decoding", function() {
     debug("variables %O", variables);
     debug("expectedResult %O", expectedResult);
 
-    assert.hasAllKeys(variables, expectedResult);
+    assert.containsAllKeys(variables, expectedResult);
 
     const simpleCases = ["mapArrayStatic", "mapStruct0", "mapStruct1"];
 
@@ -447,7 +447,7 @@ describe("Further Decoding", function() {
     }
 
     //second group: mappings in mappings (just mapMap)
-    assert.hasAllKeys(
+    assert.containsAllKeys(
       variables.mapMap,
       Array.from(expectedResult.mapMap.keys())
     );

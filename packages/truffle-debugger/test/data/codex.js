@@ -8,8 +8,6 @@ import Ganache from "ganache-core";
 import { prepareContracts } from "../helpers";
 import Debugger from "lib/debugger";
 
-import * as TruffleDecodeUtils from "truffle-decode-utils";
-
 const __LIBTEST = `
 pragma solidity ^0.5.4;
 
@@ -85,10 +83,8 @@ describe("Codex", function() {
 
     await session.continueUntilBreakpoint(); //run till end
 
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
-      await session.variables()
-    );
+    const variables = await session.variables();
 
-    assert.equal(variables.surface.get("ping"), 1);
+    assert.equal(variables.surface.get("ping").toNumber(), 1);
   });
 });

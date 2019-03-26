@@ -18,11 +18,16 @@ import * as trace from "lib/trace/sagas";
  *
  * @return {string} ID (0x-prefixed keccak of binary)
  */
-export function* addContext(contractName, { address, binary }, compiler) {
+export function* addContext(
+  contractName,
+  { address, binary },
+  compiler,
+  contractId
+) {
   const raw = binary || address;
   const context = keccak256(raw);
 
-  yield put(actions.addContext(contractName, raw, compiler));
+  yield put(actions.addContext(contractName, raw, compiler, contractId));
 
   if (binary) {
     yield put(actions.addBinary(context, binary));
@@ -51,11 +56,21 @@ export function* addInstance(address, binary) {
   return context;
 }
 
-export function* begin({ address, binary, data, storageAddress }) {
+export function* begin({
+  address,
+  binary,
+  data,
+  storageAddress,
+  sender,
+  value,
+  gasprice,
+  block
+}) {
+  yield put(actions.saveGlobals(sender, gasprice, block));
   if (address) {
-    yield put(actions.call(address, data, storageAddress));
+    yield put(actions.call(address, data, storageAddress, sender, value));
   } else {
-    yield put(actions.create(binary, storageAddress));
+    yield put(actions.create(binary, storageAddress, sender, value));
   }
 }
 
@@ -74,27 +89,41 @@ export function* callstackAndCodexSaga() {
 
     debug("calling address %s", address);
 
+    debug("step", yield select(evm.current.step.trace));
+
     // if there is no binary (e.g. in the case of precompiled contracts),
     // then there will be no trace steps for the called code, and so we
     // shouldn't tell the debugger that we're entering another execution
     // context
+    // (This also catches calls to externally-owned accounts rather than
+    // contract accounts)
     if (yield select(evm.current.step.callsPrecompile)) {
       return;
     }
-    if (yield select(evm.current.step.isDelegateCallBroad)) {
-      //if delegating, keep same storage address we already have
-      let storageAddress = (yield select(evm.current.call)).storageAddress;
-      yield put(actions.call(address, data, storageAddress));
+    if (yield select(evm.current.step.isDelegateCallStrict)) {
+      //if delegating, leave storageAddress, sender, and value the same
+      let { storageAddress, sender, value } = yield select(evm.current.call);
+      yield put(actions.call(address, data, storageAddress, sender, value));
     } else {
-      //if we're not delegating storage, storageAddress == address
-      yield put(actions.call(address, data, address));
+      //this branch covers CALL, CALLCODE, and STATICCALL
+      let currentCall = yield select(evm.current.call);
+      let storageAddress = (yield select(evm.current.step.isDelegateCallBroad))
+        ? currentCall.storageAddress //for CALLCODE
+        : address;
+      let sender = currentCall.storageAddress; //not the code address!
+      let value = yield select(evm.current.step.callValue); //0 if static
+      yield put(actions.call(address, data, storageAddress, sender, value));
     }
   } else if (yield select(evm.current.step.isCreate)) {
     debug("got create");
     let binary = yield select(evm.current.step.createBinary);
     let createdAddress = yield select(evm.current.step.createdAddress);
+    let value = yield select(evm.current.step.createValue);
+    let sender = (yield select(evm.current.call)).storageAddress;
+    //not the code address!
 
-    yield put(actions.create(binary, createdAddress));
+    yield put(actions.create(binary, createdAddress, sender, value));
+    //as above, storageAddress handles when calling from a creation call
   } else if (yield select(evm.current.step.isHalting)) {
     debug("got return");
 
