@@ -172,10 +172,6 @@ export function codex(state = [], action) {
   let newState, topCodex;
 
   const updateFrameStorage = (frame, address, slot, value) => {
-    if (address === DecodeUtils.EVM.ZERO_ADDRESS) {
-      //we do not maintain a zero page! we leave that alone!
-      return frame;
-    }
     let existingPage = frame.accounts[address] || { storage: {} };
     return {
       ...frame,
@@ -231,6 +227,10 @@ export function codex(state = [], action) {
       //on a store, the relevant page should already exist, so we can just
       //add or update the needed slot
       const { address, slot, value } = action;
+      if (address === DecodeUtils.EVM.ZERO_ADDRESS) {
+        //as always, we do not maintain a zero page
+        return state;
+      }
       newState = state.slice(); //clone the state
       topCodex = newState[newState.length - 1];
       newState[newState.length - 1] = updateFrameStorage(
@@ -247,6 +247,10 @@ export function codex(state = [], action) {
       //it's an external load (there was nothing already there), then we want
       //to update *every* stackframe
       const { address, slot, value } = action;
+      if (address === DecodeUtils.EVM.ZERO_ADDRESS) {
+        //as always, we do not maintain a zero page
+        return state;
+      }
       topCodex = state[state.length - 1];
       if (topCodex.accounts[address].storage[slot] !== undefined) {
         return state;
