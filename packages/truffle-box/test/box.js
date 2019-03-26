@@ -211,10 +211,10 @@ describe("truffle-box Box", () => {
 
     describe("when the directory is non-empty", () => {
       beforeEach(() => {
-        sinon.stub(fs, "readdirSync").returns(["someCrappyFile.js"]);
+        sinon.stub(regularFs, "readdirSync").returns(["someCrappyFile.js"]);
       });
       afterEach(() => {
-        fs.readdirSync.restore();
+        regularFs.readdirSync.restore();
       });
 
       it("prompts the user", () => {
