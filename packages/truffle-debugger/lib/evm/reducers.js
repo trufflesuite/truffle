@@ -134,8 +134,9 @@ export function callstack(state = [], action) {
     }
 
     case actions.RETURN:
-      //HACK: pop the stack, UNLESS that would leave it empty (this will only
-      //happen at the end when we want to keep the last one around)
+    case actions.FAIL:
+      //pop the stack... unless (HACK) that would leave it empty (this will
+      //only happen at the end when we want to keep the last one around)
       return state.length > 1 ? state.slice(0, -1) : state;
 
     case actions.RESET:
@@ -146,65 +147,102 @@ export function callstack(state = [], action) {
   }
 }
 
-//default codex with nothing
-const DEFAULT_CODEX = {
-  byAddress: {}
-  //there will be more here later!
-};
-
-//default codex with a single address
-function defaultCodex(address) {
-  return {
-    byAddress: {
-      [address]: {
-        storage: {}
-        //there will be more here later!
+//default codex stackframe with a single address (or none if address not
+//supplied)
+function defaultCodexFrame(address) {
+  if (address !== undefined) {
+    return {
+      //there will be more here in the future!
+      accounts: {
+        [address]: {
+          //there will be more here in the future!
+          storage: {}
+        }
       }
-    }
-  };
+    };
+  } else {
+    return {
+      //there will be more here in the future!
+      accounts: {}
+    };
+  }
 }
 
-export function codex(state = DEFAULT_CODEX, action) {
+export function codex(state = [], action) {
+  let newState, topCodex;
+
   switch (action.type) {
     case actions.CALL:
     case actions.CREATE:
-      //on a call or create, add new pages to the codex if necessary;
-      //don't add a zero page though (or pages that already exist)
+      //on a call or create, make a new stackframe, then add a new pages to the
+      //codex if necessary; don't add a zero page though (or pages that already
+      //exist)
+
+      //first, add a new stackframe; if there's an existing stackframe, clone
+      //that, otherwise make one from scratch
+      newState =
+        state.length > 0
+          ? [...state, state[state.length - 1]]
+          : [defaultCodexFrame()];
+      topCodex = newState[newState.length - 1];
+      //now, do we need to add a new address to this stackframe?
       if (
-        state.byAddress[action.storageAddress] !== undefined ||
+        topCodex.accounts[action.storageAddress] !== undefined ||
         action.storageAddress === DecodeUtils.EVM.ZERO_ADDRESS
       ) {
-        return state;
+        //if we don't
+        return newState;
       }
-      return {
-        ...state,
-        byAddress: {
-          ...state.byAddress,
+      //if we do
+      newState[newState.length - 1] = {
+        ...topCodex,
+        accounts: {
+          ...topCodex.accounts,
           [action.storageAddress]: {
             storage: {}
-            //there will be more here later!
+            //there will be more here in the future!
           }
         }
       };
+      return newState;
+
     case actions.STORE:
       //on a store, the relevant page should already exist, so we can just
       //add or update the needed slot
       const { address, slot, value } = action;
-      return {
-        ...state,
-        byAddress: {
-          ...state.byAddress,
+      newState = state.slice(); //clone the state
+      topCodex = newState[newState.length - 1];
+      newState[newState.length - 1] = {
+        ...topCodex,
+        accounts: {
+          ...topCodex.accounts,
           [address]: {
-            ...state.byAddress[address],
+            ...topCodex.accounts[address],
             storage: {
-              ...state.byAddress[address].storage,
+              ...topCodex.accounts[address].storage,
               [slot]: value
             }
           }
         }
       };
+      return newState;
+
+    case actions.RETURN:
+      //we want to pop the top while making the new top a copy of the old top;
+      //that is to say, we want to drop just the element *second* from the top
+      //(although, HACK, if the stack only has one element, just leave it alone)
+      return state.length > 1
+        ? state.slice(0, -2).concat([state[state.length - 1]])
+        : state;
+
+    case actions.FAIL:
+      //pop the stack... unless (HACK) that would leave it empty (this will
+      //only happen at the end when we want to keep the last one around)
+      return state.length > 1 ? state.slice(0, -1) : state;
+
     case actions.RESET:
-      return defaultCodex(action.storageAddress);
+      return [defaultCodexFrame(action.storageAddress)];
+
     default:
       return state;
   }

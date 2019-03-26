@@ -67,20 +67,27 @@ function* tickSaga() {
 }
 
 export function* callstackAndCodexSaga() {
-  if (yield select(evm.current.step.isCall)) {
+  if (yield select(evm.current.step.isExceptionalHalting)) {
+    //let's handle this case first so we can be sure everything else is *not*
+    //an exceptional halt
+    debug("exceptional halt!");
+
+    yield put(actions.fail());
+  } else if (yield select(evm.current.step.isCall)) {
     debug("got call");
+    // if there is no binary (e.g. in the case of precompiled contracts or
+    // externally owned accounts), then there will be no trace steps for the
+    // called code, and so we shouldn't tell the debugger that we're entering
+    // another execution context
+    if (yield select(evm.current.step.callsPrecompileOrExternal)) {
+      return;
+    }
+
     let address = yield select(evm.current.step.callAddress);
     let data = yield select(evm.current.step.callData);
 
     debug("calling address %s", address);
 
-    // if there is no binary (e.g. in the case of precompiled contracts),
-    // then there will be no trace steps for the called code, and so we
-    // shouldn't tell the debugger that we're entering another execution
-    // context
-    if (yield select(evm.current.step.callsPrecompile)) {
-      return;
-    }
     if (yield select(evm.current.step.isDelegateCallBroad)) {
       //if delegating, keep same storage address we already have
       let storageAddress = (yield select(evm.current.call)).storageAddress;

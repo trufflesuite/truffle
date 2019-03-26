@@ -5,14 +5,11 @@ import { createSelectorTree, createLeaf } from "reselect-tree";
 import SolidityUtils from "truffle-solidity-utils";
 import CodeUtils from "truffle-code-utils";
 
-import * as DecodeUtils from "truffle-decode-utils";
 import { findRange } from "lib/ast/map";
 import jsonpointer from "json-pointer";
 
 import evm from "lib/evm/selectors";
 import trace from "lib/trace/selectors";
-
-const semver = require("semver");
 
 function getSourceRange(instruction = {}) {
   return {
@@ -116,9 +113,17 @@ let solidity = createSelectorTree({
     ),
 
     /**
+     * solidity.current.functionDepthStack
+     */
+    functionDepthStack: state => state.solidity.proc.functionDepthStack,
+
+    /**
      * solidity.current.functionDepth
      */
-    functionDepth: state => state.solidity.proc.functionDepth,
+    functionDepth: createLeaf(
+      ["./functionDepthStack"],
+      stack => stack[stack.length - 1]
+    ),
 
     /**
      * solidity.current.instructions
@@ -297,9 +302,12 @@ let solidity = createSelectorTree({
     willCreate: createLeaf([evm.current.step.isCreate], x => x),
 
     /**
-     * solidity.current.callsPrecompile
+     * solidity.current.callsPrecompileOrExternal
      */
-    callsPrecompile: createLeaf([evm.current.step.callsPrecompile], x => x),
+    callsPrecompileOrExternal: createLeaf(
+      [evm.current.step.callsPrecompileOrExternal],
+      x => x
+    ),
 
     /**
      * solidity.current.willReturn
@@ -310,40 +318,9 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.current.isContractCall
-     * HACK WORKAROUND (only applies to solc version <0.5.1)
-     * this selector exists to work around a problem in solc
-     * it attempts to detect whether the current node is a contract method call
-     * (or library method call)
-     * it will not successfully detect this if the method was first placed in a
-     * function variable, only if it is being called directly
+     * solidity.current.willFail
      */
-    isContractCall: createLeaf(
-      ["./node"],
-      node =>
-        node !== undefined &&
-        node.nodeType === "FunctionCall" &&
-        node.expression !== undefined &&
-        node.expression.nodeType === "MemberAccess" &&
-        node.expression.expression !== undefined &&
-        (DecodeUtils.Definition.isContract(node.expression.expression) ||
-          DecodeUtils.Definition.isContractType(node.expression.expression))
-    ),
-
-    /**
-     * solidity.current.needsFunctionDepthWorkaround
-     * HACK
-     * Determines if the solidity version used for the contract about to be
-     * called was <0.5.1, to determine whether to use the above workaround
-     * Only call this if the current step is a call or create!
-     */
-    needsFunctionDepthWorkaround: createLeaf(
-      [evm.current.step.callContext],
-      context =>
-        context.compiler !== undefined && //would be undefined for e.g. a precompile
-        context.compiler.name === "solc" &&
-        semver.satisfies(context.compiler.version, "<0.5.1")
-    ),
+    willFail: createLeaf([evm.current.step.isExceptionalHalting], x => x),
 
     /*
      * solidity.current.nextMapped

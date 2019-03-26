@@ -53,6 +53,13 @@ export function returnCall() {
   };
 }
 
+export const FAIL = "FAIL";
+export function fail() {
+  return {
+    type: FAIL
+  };
+}
+
 export const STORE = "STORE";
 export function store(address, slot, value) {
   return {

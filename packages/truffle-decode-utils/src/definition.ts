@@ -107,18 +107,8 @@ export namespace Definition {
     return typeIdentifier(definition).match(/^t_enum/) != null;
   }
 
-  export function isContract(definition: AstDefinition): boolean {
-    return typeIdentifier(definition).match(/^t_contract/) != null;
-  }
-
   export function isReference(definition: AstDefinition): boolean {
     return typeIdentifier(definition).match(/_(memory|storage|calldata)(_ptr)?$/) != null;
-  }
-
-  export function isContractType(definition: AstDefinition): boolean {
-    // checks whether the given node is a contract *type*, rather than whether
-    // it's a contract
-    return typeIdentifier(definition).match(/^t_type\$_t_contract/) != null;
   }
 
   //note: only use this on things already verified to be references
