@@ -40,7 +40,7 @@ const Box = {
 
     try {
       logger.log("");
-      await Box.checkDir(options);
+      await Box.checkDir(options, destination);
       const tempDir = await utils.setUpTempDirectory();
       tempDirPath = tempDir.path;
       tempDirCleanup = tempDir.cleanupCallback;
@@ -69,11 +69,11 @@ const Box = {
     }
   },
 
-  checkDir: async (options = {}) => {
+  checkDir: async (options = {}, destination) => {
     let logger = options.logger || console;
     if (!options.force) {
-      const currentDir = fs.readdirSync(process.cwd());
-      if (currentDir.length) {
+      const unboxDir = fs.readdirSync(destination);
+      if (unboxDir.length) {
         logger.log(`This directory is non-empty...`);
         const prompt = [
           {
