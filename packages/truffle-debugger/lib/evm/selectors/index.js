@@ -111,20 +111,22 @@ function createStepSelectors(step, state = null) {
      * .isHalting
      *
      * whether the instruction halts or returns from a calling context
+     * (covers only ordinary halds, not exceptional halts)
      */
     isHalting: createLeaf(
       ["./trace"],
       step => step.op == "STOP" || step.op == "RETURN"
     ),
 
-    /**
-     * .isContextChange
-     * groups together calls, creates, and halts
+    /*
+     * .isStore
      */
-    isContextChange: createLeaf(
-      ["./isCall", "./isCreate", "./isHalting"],
-      (call, create, halt) => call || create || halt
-    ),
+    isStore: createLeaf(["./trace"], step => step.op == "SSTORE"),
+
+    /*
+     * .isLoad
+     */
+    isLoad: createLeaf(["./trace"], step => step.op == "SLOAD"),
 
     /*
      * .touchesStorage
@@ -132,8 +134,8 @@ function createStepSelectors(step, state = null) {
      * whether the instruction involves storage
      */
     touchesStorage: createLeaf(
-      ["./trace"],
-      step => step.op == "SLOAD" || step.op == "SSTORE"
+      ["./isStore", "isLoad"],
+      (stores, loads) => stores || loads
     )
   };
 
@@ -249,42 +251,6 @@ function createStepSelectors(step, state = null) {
         let value = stack[stack.length - 1];
         return DecodeUtils.Conversion.toBN(value);
       }),
-
-      /**
-       * .callContext
-       *
-       * context for what we're about to call into (or create)
-       */
-      callContext: createLeaf(
-        [
-          "./callAddress",
-          "./createBinary",
-          "/info/instances",
-          "/info/binaries/search",
-          "/info/contexts"
-        ],
-        (address, binary, instances, search, contexts) =>
-          findContext({ address, binary }, instances, search, contexts)
-      ),
-
-      /**
-       * .callsPrecompile
-       *
-       * is the call address to a precompiled contract?
-       * NOTE: this also handles calls to externally-owned accounts
-       * HACK
-       */
-      callsPrecompile: createLeaf(
-        ["./callAddress", "/info/contexts", "/info/instances"],
-
-        (address, contexts, instances) => {
-          if (!address) return null;
-
-          let { context } = instances[address] || {};
-          let { binary } = contexts[context] || {};
-          return !binary;
-        }
-      ),
 
       /**
        * .storageAffected
@@ -431,11 +397,13 @@ const evm = createSelectorTree({
     step: {
       ...createStepSelectors(trace.step, "./state"),
 
+      //the following step selectors only exist for current, not next or any
+      //other step
+
       /*
        * evm.current.step.createdAddress
        *
-       * address created by the current create step;
-       * only exists for current, not next
+       * address created by the current create step
        */
       createdAddress: createLeaf(
         ["./isCreate", "/nextOfSameDepth/state/stack"],
@@ -446,6 +414,36 @@ const evm = createSelectorTree({
           let address = stack[stack.length - 1];
           return DecodeUtils.Conversion.toAddress(address);
         }
+      ),
+
+      /**
+       * evm.current.step.callsPrecompileOrExternal
+       *
+       * are we calling a precompiled contract or an externally-owned account,
+       * rather than a contract account that isn't precompiled?
+       */
+      callsPrecompileOrExternal: createLeaf(
+        ["./isCall", "/current/state/depth", "/next/state/depth"],
+        (calls, currentDepth, nextDepth) => calls && currentDepth === nextDepth
+      ),
+
+      /**
+       * evm.current.step.isContextChange
+       * groups together calls, creates, halts, and exceptional halts
+       */
+      isContextChange: createLeaf(
+        ["/current/state/depth", "/next/state/depth"],
+        (currentDepth, nextDepth) => currentDepth !== nextDepth
+      ),
+
+      /**
+       * evm.current.step.isExceptionalHalting
+       *
+       */
+      isExceptionalHalting: createLeaf(
+        ["./isHalting", "/current/state/depth", "/next/state/depth"],
+        (halting, currentDepth, nextDepth) =>
+          nextDepth < currentDepth && !halting
       )
     },
 
@@ -471,7 +469,7 @@ const evm = createSelectorTree({
         (codex, rawStorage, { storageAddress }) =>
           storageAddress === DecodeUtils.EVM.ZERO_ADDRESS
             ? rawStorage //HACK -- if zero address ignore the codex
-            : codex.byAddress[storageAddress].storage
+            : codex[codex.length - 1].accounts[storageAddress].storage
       )
     }
   },

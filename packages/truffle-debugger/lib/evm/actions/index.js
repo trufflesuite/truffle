@@ -68,10 +68,27 @@ export function returnCall() {
   };
 }
 
+export const FAIL = "FAIL";
+export function fail() {
+  return {
+    type: FAIL
+  };
+}
+
 export const STORE = "STORE";
 export function store(address, slot, value) {
   return {
     type: STORE,
+    address,
+    slot,
+    value
+  };
+}
+
+export const LOAD = "LOAD";
+export function load(address, slot, value) {
+  return {
+    type: LOAD,
     address,
     slot,
     value
