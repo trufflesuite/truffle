@@ -41,7 +41,9 @@ const Box = {
     try {
       logger.log("");
       await Box.checkDir(options);
+
       const tempDir = await utils.setUpTempDirectory();
+
       tempDirPath = tempDir.path;
       tempDirCleanup = tempDir.cleanupCallback;
 
