@@ -187,23 +187,6 @@ function createStepSelectors(step, state = null) {
       ),
 
       /**
-       * .callContext
-       *
-       * context for what we're about to call into (or create)
-       */
-      callContext: createLeaf(
-        [
-          "./callAddress",
-          "./createBinary",
-          "/info/instances",
-          "/info/binaries/search",
-          "/info/contexts"
-        ],
-        (address, binary, instances, search, contexts) =>
-          findContext({ address, binary }, instances, search, contexts)
-      ),
-
-      /**
        * .storageAffected
        *
        * storage slot being stored to or loaded from
