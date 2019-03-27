@@ -423,7 +423,7 @@ var command = {
             }
           }
 
-          async function watchExpressionAnalytics(raw) {
+          function watchExpressionAnalytics(raw) {
             let type = raw[0];
             let exprArgs = raw.substring(1);
 
@@ -432,12 +432,11 @@ var command = {
               return;
             }
 
-            let variables = await session.variables();
-
             let expression = exprArgs.trim();
+            let isVariable = expression.match(/[a-zA-Z_$][a-zA-Z_$0-9]*/);
             analytics.send({
               command: "watch expression",
-              args: { isVariable: expression in variables }
+              args: { isVariable }
             });
           }
 
@@ -719,7 +718,7 @@ var command = {
             // (we want to see if execution stopped before printing state).
             switch (cmd) {
               case "+":
-                await watchExpressionAnalytics(cmdArgs);
+                watchExpressionAnalytics(cmdArgs);
                 enabledExpressions.add(cmdArgs);
                 await printWatchExpressionResult(cmdArgs);
                 break;
@@ -736,7 +735,7 @@ var command = {
                 await printVariables();
                 break;
               case ":":
-                await watchExpressionAnalytics(cmdArgs);
+                watchExpressionAnalytics(cmdArgs);
                 evalAndPrintExpression(cmdArgs);
                 break;
               case "b":
