@@ -297,8 +297,16 @@ function codex(state = [], action) {
       }
       topCodex = state[state.length - 1];
       if (topCodex.accounts[address].storage[slot] !== undefined) {
+        //if we already have a value in the *top* stackframe, update *no*
+        //stackframes; don't update the top (no need, it's just a load, not a
+        //store), don't update the rest (that would be wrong, you might be
+        //loading a value that will get reverted later)
         return state;
       } else {
+        //if we *don't* already have a value in the top stackframe, that means
+        //we're loading a value from a previous transaction!  That's not a
+        //value that will get reverted if this call fails, so update *every*
+        //stackframe
         return state.map(frame =>
           updateFrameStorage(frame, address, slot, value)
         );
