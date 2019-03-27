@@ -27,6 +27,15 @@ export function stableKeccak256(obj) {
 }
 
 /*
+ * used by data; takes an id object and a ref (pointer) and returns a full
+ * corresponding assignment object
+ */
+export function makeAssignment(idObj, ref) {
+  let id = stableKeccak256(idObj);
+  return { ...idObj, id, ref };
+}
+
+/*
  * Given a mmemonic, determine whether it's the mnemonic of a calling
  * instruction (does NOT include creation instructions)
  */
@@ -41,6 +50,30 @@ export function isCallMnemonic(op) {
 export function isShortCallMnemonic(op) {
   const shortCalls = ["DELEGATECALL", "STATICCALL"];
   return shortCalls.includes(op);
+}
+
+/*
+ * returns true for mnemonics for calls that delegate storage
+ */
+export function isDelegateCallMnemonicBroad(op) {
+  const delegateCalls = ["DELEGATECALL", "CALLCODE"];
+  return delegateCalls.includes(op);
+}
+
+/*
+ * returns true for mnemonics for calls that delegate everything
+ */
+export function isDelegateCallMnemonicStrict(op) {
+  const delegateCalls = ["DELEGATECALL"];
+  return delegateCalls.includes(op);
+}
+
+/*
+ * returns true for mnemonics for static calls
+ */
+export function isStaticCallMnemonic(op) {
+  const delegateCalls = ["STATICCALL"];
+  return delegateCalls.includes(op);
 }
 
 /*

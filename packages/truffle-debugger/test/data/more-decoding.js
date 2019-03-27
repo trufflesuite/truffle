@@ -13,8 +13,6 @@ import data from "lib/data/selectors";
 
 import * as TruffleDecodeUtils from "truffle-decode-utils";
 
-import BN from "bn.js";
-
 const __CONTAINERS = `
 pragma solidity ^0.5.0;
 
@@ -244,21 +242,23 @@ describe("Further Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = await session.variables();
+    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+      await session.variables()
+    );
 
     const expectedResult = {
-      memoryStaticArray: [new BN(107)],
-      memoryStructWithMap: { x: new BN(107), y: new BN(214) },
-      localStorage: [new BN(107), new BN(214)],
-      storageStructArray: [{ x: new BN(107) }],
-      storageArrayArray: [[new BN(2), new BN(3)]],
-      structMapping: new Map([["hello", { x: new BN(107) }]]),
-      arrayMapping: new Map([["hello", [new BN(2), new BN(3)]]]),
-      signedMapping: new Map([["hello", new BN(-1)]]),
-      pointedAt: [new BN(107), new BN(214)]
+      memoryStaticArray: [107],
+      memoryStructWithMap: { x: 107, y: 214 },
+      localStorage: [107, 214],
+      storageStructArray: [{ x: 107 }],
+      storageArrayArray: [[2, 3]],
+      structMapping: new Map([["hello", { x: 107 }]]),
+      arrayMapping: new Map([["hello", [2, 3]]]),
+      signedMapping: new Map([["hello", -1]]),
+      pointedAt: [107, 214]
     };
 
-    assert.hasAllKeys(variables, expectedResult);
+    assert.containsAllKeys(variables, expectedResult);
 
     for (let name in expectedResult) {
       if (expectedResult[name] instanceof Map) {
@@ -315,7 +315,7 @@ describe("Further Decoding", function() {
       severalBytes: ["0xff"]
     };
 
-    assert.hasAllKeys(variables, expectedResult);
+    assert.containsAllKeys(variables, expectedResult);
 
     for (let name in expectedResult) {
       if (expectedResult[name] instanceof Map) {
@@ -357,19 +357,21 @@ describe("Further Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = await session.variables();
+    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+      await session.variables()
+    );
 
     const expectedResult = {
       map: new Map([["key1", "value1"], ["key2", "value2"]]),
       pointedAt: "key2",
-      arrayArray: [[new BN(82)]],
-      arrayStruct: { x: [new BN(82)] },
+      arrayArray: [[82]],
+      arrayStruct: { x: [82] },
       key1: "key1",
       key2: "key2",
       pointedAt: "key2"
     };
 
-    assert.hasAllKeys(variables, expectedResult);
+    assert.containsAllKeys(variables, expectedResult);
 
     for (let name in expectedResult) {
       if (expectedResult[name] instanceof Map) {
@@ -421,7 +423,7 @@ describe("Further Decoding", function() {
     debug("variables %O", variables);
     debug("expectedResult %O", expectedResult);
 
-    assert.hasAllKeys(variables, expectedResult);
+    assert.containsAllKeys(variables, expectedResult);
 
     const simpleCases = ["mapArrayStatic", "mapStruct0", "mapStruct1"];
 
@@ -445,7 +447,7 @@ describe("Further Decoding", function() {
     }
 
     //second group: mappings in mappings (just mapMap)
-    assert.hasAllKeys(
+    assert.containsAllKeys(
       variables.mapMap,
       Array.from(expectedResult.mapMap.keys())
     );

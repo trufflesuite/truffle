@@ -2,7 +2,7 @@ const path = require("path");
 const Deployer = require("truffle-deployer");
 const Require = require("truffle-require");
 const Emittery = require("emittery");
-const Web3 = require("web3");
+const Web3Shim = require("truffle-interface-adapter").Web3Shim;
 
 const ResolverIntercept = require("./resolverintercept");
 
@@ -142,6 +142,110 @@ class Migration {
     }
   }
 
+  // ------------------------------------- Private -------------------------------------------------
+  /**
+   * Runs the legacy migration sequence by used in Truffle v4,
+   * but continues to use the concurrent Deployer and Web3 provider
+   * @param  {Object}   options  config and command-line
+   * @param  {Function} callback
+   */
+  async runLegacyMigrations(options, callback) {
+    const self = this;
+    const logger = options.logger;
+
+    const web3 = new Web3Shim({
+      provider: options.provider,
+      networkType: options.networks[options.network].type
+    });
+
+    logger.log(
+      "Running migration: " +
+        path.relative(options.migrations_directory, self.file)
+    );
+
+    const resolver = new ResolverIntercept(options.resolver);
+
+    // Initial context.
+    const context = {
+      web3: web3
+    };
+
+    const deployer = new Deployer({
+      logger: logger,
+      confirmations: options.confirmations,
+      timeoutBlocks: options.timeoutBlocks,
+      networks: options.networks,
+      network: options.network,
+      network_id: options.network_id,
+      provider: options.provider,
+      basePath: path.dirname(self.file)
+    });
+
+    const finish = err => {
+      if (err) return callback(err);
+      deployer
+        .start()
+        .then(() => {
+          if (options.save === false) return;
+
+          const Migrations = resolver.require("./Migrations.sol");
+
+          if (Migrations && Migrations.isDeployed()) {
+            logger.log("Saving successful migration to network...");
+            return Migrations.deployed().then(migrations => {
+              return migrations.setCompleted(self.number);
+            });
+          }
+        })
+        .then(() => {
+          if (options.save === false) return;
+          logger.log("Saving artifacts...");
+          return options.artifactor.saveAll(resolver.contracts());
+        })
+        .then(() => {
+          // Use process.nextTicK() to prevent errors thrown in the callback from triggering the below catch()
+          process.nextTick(callback);
+        })
+        .catch(e => {
+          logger.log(
+            "Error encountered, bailing. Network state unknown. Review successful transactions manually."
+          );
+          callback(e);
+        });
+    };
+
+    web3.eth.getAccountsAndMigrate = () => {
+      return new Promise((resolve, reject) => {
+        web3.eth.getAccounts((err, accounts) => {
+          if (err) return reject(err);
+
+          Require.file(
+            {
+              file: self.file,
+              context: context,
+              resolver: resolver,
+              args: [deployer]
+            },
+            (err, fn) => {
+              if (!fn || !fn.length || fn.length == 0) {
+                return reject(
+                  new Error(
+                    "Migration " +
+                      self.file +
+                      " invalid or does not take any parameters"
+                  )
+                );
+              }
+              fn(deployer, options.network, accounts);
+              resolve(finish());
+            }
+          );
+        });
+      });
+    };
+    web3.eth.getAccountsAndMigrate();
+  }
+
   // ------------------------------------- Public -------------------------------------------------
   /**
    * Instantiates a deployer, connects this migration and its deployer to the reporter
@@ -151,10 +255,19 @@ class Migration {
    */
   async run(options, callback) {
     const self = this;
+
+    if (options.networks[options.network].type === "quorum") {
+      await self.runLegacyMigrations(options, callback);
+      return;
+    }
+
     const logger = options.logger;
     const resolver = new ResolverIntercept(options.resolver);
-    const web3 = new Web3();
-    web3.setProvider(options.provider);
+
+    const web3 = new Web3Shim({
+      provider: options.provider,
+      networkType: options.networks[options.network].type
+    });
 
     // Initial context.
     const context = {
@@ -166,6 +279,7 @@ class Migration {
       logger: logger,
       confirmations: options.confirmations,
       timeoutBlocks: options.timeoutBlocks,
+      networks: options.networks,
       network: options.network,
       network_id: options.network_id,
       provider: options.provider,

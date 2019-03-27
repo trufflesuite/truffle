@@ -3,16 +3,19 @@ const debug = debugModule("debugger:evm:selectors"); // eslint-disable-line no-u
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import levenshtein from "fast-levenshtein";
+import BN from "bn.js";
 
 import trace from "lib/trace/selectors";
 
+import * as DecodeUtils from "truffle-decode-utils";
 import {
   isCallMnemonic,
   isCreateMnemonic,
-  isShortCallMnemonic
+  isShortCallMnemonic,
+  isDelegateCallMnemonicBroad,
+  isDelegateCallMnemonicStrict,
+  isStaticCallMnemonic
 } from "lib/helpers";
-
-import * as DecodeUtils from "truffle-decode-utils";
 
 function findContext({ address, binary }, instances, search, contexts) {
   let record;
@@ -75,6 +78,31 @@ function createStepSelectors(step, state = null) {
     isShortCall: createLeaf(["./trace"], step => isShortCallMnemonic(step.op)),
 
     /**
+     * .isDelegateCallBroad
+     *
+     * for calls that delegate storage
+     */
+    isDelegateCallBroad: createLeaf(["./trace"], step =>
+      isDelegateCallMnemonicBroad(step.op)
+    ),
+
+    /**
+     * .isDelegateCallStrict
+     *
+     * for calls that additionally delegate sender and value
+     */
+    isDelegateCallStrict: createLeaf(["./trace"], step =>
+      isDelegateCallMnemonicStrict(step.op)
+    ),
+
+    /**
+     * .isStaticCall
+     */
+    isStaticCall: createLeaf(["./trace"], step =>
+      isStaticCallMnemonic(step.op)
+    ),
+
+    /**
      * .isCreate
      */
     isCreate: createLeaf(["./trace"], step => isCreateMnemonic(step.op)),
@@ -83,10 +111,31 @@ function createStepSelectors(step, state = null) {
      * .isHalting
      *
      * whether the instruction halts or returns from a calling context
+     * (covers only ordinary halds, not exceptional halts)
      */
     isHalting: createLeaf(
       ["./trace"],
       step => step.op == "STOP" || step.op == "RETURN"
+    ),
+
+    /*
+     * .isStore
+     */
+    isStore: createLeaf(["./trace"], step => step.op == "SSTORE"),
+
+    /*
+     * .isLoad
+     */
+    isLoad: createLeaf(["./trace"], step => step.op == "SLOAD"),
+
+    /*
+     * .touchesStorage
+     *
+     * whether the instruction involves storage
+     */
+    touchesStorage: createLeaf(
+      ["./isStore", "isLoad"],
+      (stores, loads) => stores || loads
     )
   };
 
@@ -106,10 +155,12 @@ function createStepSelectors(step, state = null) {
        * address transferred to by call operation
        */
       callAddress: createLeaf(
-        ["./isCall", "./trace", state],
+        ["./isCall", state],
 
-        (matches, step, { stack }) => {
-          if (!matches) return null;
+        (matches, { stack }) => {
+          if (!matches) {
+            return null;
+          }
 
           let address = stack[stack.length - 2];
           return DecodeUtils.Conversion.toAddress(address);
@@ -122,10 +173,12 @@ function createStepSelectors(step, state = null) {
        * binary code to execute via create operation
        */
       createBinary: createLeaf(
-        ["./isCreate", "./trace", state],
+        ["./isCreate", state],
 
-        (matches, step, { stack, memory }) => {
-          if (!matches) return null;
+        (matches, { stack, memory }) => {
+          if (!matches) {
+            return null;
+          }
 
           // Get the code that's going to be created from memory.
           // Note we multiply by 2 because these offsets are in bytes.
@@ -142,9 +195,11 @@ function createStepSelectors(step, state = null) {
        * data passed to EVM call
        */
       callData: createLeaf(
-        ["./isCall", "./isShortCall", "./trace", state],
-        (matches, short, step, { stack, memory }) => {
-          if (!matches) return null;
+        ["./isCall", "./isShortCall", state],
+        (matches, short, { stack, memory }) => {
+          if (!matches) {
+            return null;
+          }
 
           //if it's 6-argument call, the data start and offset will be one spot
           //higher in the stack than they would be for a 7-argument call, so
@@ -161,37 +216,57 @@ function createStepSelectors(step, state = null) {
       ),
 
       /**
-       * .callContext
+       * .callValue
        *
-       * context for what we're about to call into (or create)
+       * value for the call (not create); returns null for DELEGATECALL
        */
-      callContext: createLeaf(
-        [
-          "./callAddress",
-          "./createBinary",
-          "/info/instances",
-          "/info/binaries/search",
-          "/info/contexts"
-        ],
-        (address, binary, instances, search, contexts) =>
-          findContext({ address, binary }, instances, search, contexts)
+      callValue: createLeaf(
+        ["./isCall", "./isDelegateCallStrict", "./isStaticCall", state],
+        (calls, delegates, isStatic, { stack }) => {
+          if (!calls || delegates) {
+            return null;
+          }
+
+          if (isStatic) {
+            return new BN(0);
+          }
+
+          //otherwise, for CALL and CALLCODE, it's the 3rd argument
+          let value = stack[stack.length - 3];
+          return DecodeUtils.Conversion.toBN(value);
+        }
       ),
 
       /**
-       * .callsPrecompile
+       * .createValue
        *
-       * is the call address to a precompiled contract?
-       * HACK
+       * value for the create
        */
-      callsPrecompile: createLeaf(
-        ["./callAddress", "/info/contexts", "/info/instances"],
+      createValue: createLeaf(["./isCreate", state], (matches, { stack }) => {
+        if (!matches) {
+          return null;
+        }
 
-        (address, contexts, instances) => {
-          if (!address) return null;
+        //creates have the value as the first argument
+        let value = stack[stack.length - 1];
+        return DecodeUtils.Conversion.toBN(value);
+      }),
 
-          let { context } = instances[address] || {};
-          let { binary } = contexts[context] || {};
-          return !binary;
+      /**
+       * .storageAffected
+       *
+       * storage slot being stored to or loaded from
+       * we do NOT prepend "0x"
+       */
+      storageAffected: createLeaf(
+        ["./touchesStorage", state],
+
+        (matches, { stack }) => {
+          if (!matches) {
+            return null;
+          }
+
+          return stack[stack.length - 1];
         }
       )
     });
@@ -261,6 +336,20 @@ const evm = createSelectorTree({
 
         return {};
       })
+    },
+
+    /*
+     * evm.info.globals
+     */
+    globals: {
+      /*
+       * evm.info.globals.tx
+       */
+      tx: createLeaf(["/state"], state => state.info.globals.tx),
+      /*
+       * evm.info.globals.block
+       */
+      block: createLeaf(["/state"], state => state.info.globals.block)
     }
   },
 
@@ -280,16 +369,6 @@ const evm = createSelectorTree({
       ["./callstack"],
 
       stack => (stack.length ? stack[stack.length - 1] : {})
-    ),
-
-    /**
-     * evm.current.creationDepth
-     * how many creation calls are currently on the call stack?
-     */
-    creationDepth: createLeaf(
-      ["./callstack"],
-
-      stack => stack.filter(call => call.address === undefined).length
     ),
 
     /**
@@ -315,7 +394,84 @@ const evm = createSelectorTree({
     /**
      * evm.current.step
      */
-    step: createStepSelectors(trace.step, "./state")
+    step: {
+      ...createStepSelectors(trace.step, "./state"),
+
+      //the following step selectors only exist for current, not next or any
+      //other step
+
+      /*
+       * evm.current.step.createdAddress
+       *
+       * address created by the current create step
+       */
+      createdAddress: createLeaf(
+        ["./isCreate", "/nextOfSameDepth/state/stack"],
+        (matches, stack) => {
+          if (!matches) {
+            return null;
+          }
+          let address = stack[stack.length - 1];
+          return DecodeUtils.Conversion.toAddress(address);
+        }
+      ),
+
+      /**
+       * evm.current.step.callsPrecompileOrExternal
+       *
+       * are we calling a precompiled contract or an externally-owned account,
+       * rather than a contract account that isn't precompiled?
+       */
+      callsPrecompileOrExternal: createLeaf(
+        ["./isCall", "/current/state/depth", "/next/state/depth"],
+        (calls, currentDepth, nextDepth) => calls && currentDepth === nextDepth
+      ),
+
+      /**
+       * evm.current.step.isContextChange
+       * groups together calls, creates, halts, and exceptional halts
+       */
+      isContextChange: createLeaf(
+        ["/current/state/depth", "/next/state/depth"],
+        (currentDepth, nextDepth) => currentDepth !== nextDepth
+      ),
+
+      /**
+       * evm.current.step.isExceptionalHalting
+       *
+       */
+      isExceptionalHalting: createLeaf(
+        ["./isHalting", "/current/state/depth", "/next/state/depth"],
+        (halting, currentDepth, nextDepth) =>
+          nextDepth < currentDepth && !halting
+      )
+    },
+
+    /**
+     * evm.current.codex (namespace)
+     */
+    codex: {
+      /**
+       * evm.current.codex (selector)
+       * the whole codex! not that that's very much at the moment
+       */
+      _: createLeaf(["/state"], state => state.proc.codex),
+
+      /**
+       * evm.current.codex.storage
+       * the current storage, as fetched from the codex... unless we're in a
+       * failed creation call, then we just fall back on the state (which will
+       * work, since nothing else can interfere with the storage of a failed
+       * creation call!)
+       */
+      storage: createLeaf(
+        ["./_", "../state/storage", "../call"],
+        (codex, rawStorage, { storageAddress }) =>
+          storageAddress === DecodeUtils.EVM.ZERO_ADDRESS
+            ? rawStorage //HACK -- if zero address ignore the codex
+            : codex[codex.length - 1].accounts[storageAddress].storage
+      )
+    }
   },
 
   /**
@@ -334,7 +490,27 @@ const evm = createSelectorTree({
       }))
     ),
 
+    /*
+     * evm.next.step
+     */
     step: createStepSelectors(trace.next, "./state")
+  },
+
+  /**
+   * evm.nextOfSameDepth
+   */
+  nextOfSameDepth: {
+    /**
+     * evm.nextOfSameDepth.state
+     *
+     * evm state at the next step of same depth
+     */
+    state: Object.assign(
+      {},
+      ...["depth", "error", "gas", "memory", "stack", "storage"].map(param => ({
+        [param]: createLeaf([trace.nextOfSameDepth], step => step[param])
+      }))
+    )
   }
 });
 

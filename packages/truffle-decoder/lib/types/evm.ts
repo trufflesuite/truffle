@@ -6,7 +6,10 @@ export interface EvmState {
   stack: Uint8Array[];
   storage: WordMapping;
   memory: Uint8Array;
-  calldata: Uint8Array;
+  calldata?: Uint8Array;
+  specials?: {
+    [builtin: string]: Uint8Array //sorry
+  }
 }
 
 export interface WordMapping {
@@ -20,5 +23,4 @@ export interface EvmInfo {
   storageAllocations?: StorageAllocations;
   calldataAllocations?: CalldataAllocations;
   memoryAllocations?: MemoryAllocations;
-  variables?: StorageMemberAllocations;
 }

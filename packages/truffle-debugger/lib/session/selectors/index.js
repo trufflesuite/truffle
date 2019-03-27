@@ -11,58 +11,65 @@ const session = createSelectorTree({
    * session.info
    */
   info: {
-
     /**
      * session.info.affectedInstances
      */
     affectedInstances: createLeaf(
-      [evm.info.instances, evm.info.contexts, solidity.info.sources, solidity.info.sourceMaps],
+      [
+        evm.info.instances,
+        evm.info.contexts,
+        solidity.info.sources,
+        solidity.info.sourceMaps
+      ],
 
-      (instances, contexts, sources, sourceMaps) => Object.assign({},
-        ...Object.entries(instances).map(
-          ([address, {context}]) => {
+      (instances, contexts, sources, sourceMaps) =>
+        Object.assign(
+          {},
+          ...Object.entries(instances).map(([address, { context }]) => {
             debug("instances %O", instances);
             debug("contexts %O", contexts);
             let { contractName, binary } = contexts[context];
             let { sourceMap } = sourceMaps[context] || {};
 
-            let { source } = sourceMap ?
-              // look for source ID between second and third colons (HACK)
-              sources[sourceMap.match(/^[^:]+:[^:]+:([^:]+):/)[1]] :
-              {};
+            let { source } = sourceMap
+              ? // look for source ID between second and third colons (HACK)
+                sources[sourceMap.match(/^[^:]+:[^:]+:([^:]+):/)[1]]
+              : {};
 
             return {
               [address]: {
-                contractName, source, binary
+                contractName,
+                source,
+                binary
               }
             };
-          }
+          })
         )
-      )
     )
-
   },
-
 
   /**
    * session.transaction (namespace)
    */
   transaction: {
-
     /**
      * session.transaction (selector)
      * contains the web3 transaction object
      */
-    _: (state) => state.session.transaction,
+    _: state => state.session.transaction,
 
     /**
      * session.transaction.receipt
      * contains the web3 receipt object
      */
-    receipt: (state) => state.session.receipt,
+    receipt: state => state.session.receipt,
 
+    /**
+     * session.transaction.block
+     * contains the web3 block object
+     */
+    block: state => state.session.block
   }
-  
 });
 
 export default session;

@@ -25,6 +25,16 @@ export function jump(jumpDirection) {
   };
 }
 
+export const EXTERNAL_CALL = "EXTERNAL_CALL";
+export function externalCall() {
+  return { type: EXTERNAL_CALL };
+}
+
+export const EXTERNAL_RETURN = "EXTERNAL_RETURN";
+export function externalReturn() {
+  return { type: EXTERNAL_RETURN };
+}
+
 export const RESET = "SOLIDITY_RESET";
 export function reset() {
   return { type: RESET };

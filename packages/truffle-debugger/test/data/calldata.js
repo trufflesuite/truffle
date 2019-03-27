@@ -8,9 +8,9 @@ import Ganache from "ganache-core";
 import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
 
-import solidity from "lib/solidity/selectors";
+import * as TruffleDecodeUtils from "truffle-decode-utils";
 
-import BN from "bn.js";
+import solidity from "lib/solidity/selectors";
 
 const __CALLDATA = `
 pragma solidity ^0.5.4;
@@ -43,8 +43,6 @@ contract CalldataTest {
 
   function multiTest(
     string calldata hello,
-    bytes calldata deadbeef,
-    uint[2] calldata twoInts,
     uint[] calldata someInts,
     Pair calldata pair)
   external {
@@ -53,8 +51,6 @@ contract CalldataTest {
 
   function multiTester() public {
     uint[2] memory twoInts;
-    twoInts[0] = 107;
-    twoInts[1] = 683;
     uint[] memory someInts;
     someInts = new uint[](2);
     someInts[0] = 41;
@@ -62,7 +58,7 @@ contract CalldataTest {
     Pair memory pair;
     pair.x = 321;
     pair.y = 2049;
-    this.multiTest("hello", hex"deadbeef", twoInts, someInts, pair);
+    this.multiTest("hello", someInts, pair);
   }
 
 }
@@ -139,17 +135,17 @@ describe("Calldata Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = await session.variables();
+    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+      await session.variables()
+    );
 
     const expectedResult = {
       hello: "hello",
-      deadbeef: "0xdeadbeef",
-      twoInts: [new BN(107), new BN(683)],
-      someInts: [new BN(41), new BN(42)],
-      pair: { x: new BN(321), y: new BN(2049) }
+      someInts: [41, 42],
+      pair: { x: 321, y: 2049 }
     };
 
-    assert.deepEqual(variables, expectedResult);
+    assert.deepInclude(variables, expectedResult);
   });
 
   it("Decodes correctly in the initial call", async function() {
@@ -181,7 +177,7 @@ describe("Calldata Decoding", function() {
       hello: "hello world"
     };
 
-    assert.deepEqual(variables, expectedResult);
+    assert.include(variables, expectedResult);
   });
 
   it("Decodes correctly in a pure call", async function() {
@@ -213,7 +209,7 @@ describe("Calldata Decoding", function() {
       hello: "hello world"
     };
 
-    assert.deepEqual(variables, expectedResult);
+    assert.include(variables, expectedResult);
   });
 
   it("Decodes correctly in a library call", async function() {
@@ -245,6 +241,6 @@ describe("Calldata Decoding", function() {
       hello: "hello world"
     };
 
-    assert.deepEqual(variables, expectedResult);
+    assert.include(variables, expectedResult);
   });
 });

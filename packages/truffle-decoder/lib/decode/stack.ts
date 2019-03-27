@@ -41,11 +41,20 @@ export async function decodeLiteral(definition: DecodeUtils.AstDefinition, point
   //next: do we have a calldata pointer?
   if(DecodeUtils.Definition.isReference(definition)
     && DecodeUtils.Definition.referenceType(definition) === "calldata") {
-    //is it a lookup type or a multivalue type?
-    if(DecodeUtils.Definition.isDynamicArray(definition) ||
-      DecodeUtils.Definition.typeClass(definition) === "string" ||
+
+    //if it's a string or bytes, we will interpret the pointer ourself and skip
+    //straight to decodeValue.  this is to allow us to correctly handle the
+    //case of msg.data used as a mapping key.
+    if(DecodeUtils.Definition.typeClass(definition) === "string" ||
       DecodeUtils.Definition.typeClass(definition) === "bytes") {
-      //lookup case
+      let start = DecodeUtils.Conversion.toBN(pointer.literal.slice(0, DecodeUtils.EVM.WORD_SIZE)).toNumber();
+      let length = DecodeUtils.Conversion.toBN(pointer.literal.slice(DecodeUtils.EVM.WORD_SIZE)).toNumber();
+      let newPointer = { calldata: { start, length }};
+      return await decodeValue(definition, newPointer, info);
+    }
+
+    //otherwise, is it a dynamic array?
+    if(DecodeUtils.Definition.isDynamicArray(definition)) {
       //in this case, we're actually going to *throw away* the length info,
       //because it makes the logic simpler -- we'll get the length info back
       //from calldata

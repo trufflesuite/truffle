@@ -3,14 +3,14 @@ export function start(txHash, provider) {
   return {
     type: START,
     txHash,
-provider
+    provider
   };
 }
 
 export const READY = "SESSION_READY";
 export function ready() {
   return {
-    type: READY,
+    type: READY
   };
 }
 
@@ -27,7 +27,7 @@ export function recordContracts(contexts, sources) {
   return {
     type: RECORD_CONTRACTS,
     contexts,
-sources
+    sources
   };
 }
 
@@ -44,5 +44,13 @@ export function saveReceipt(receipt) {
   return {
     type: SAVE_RECEIPT,
     receipt
+  };
+}
+
+export const SAVE_BLOCK = "SAVE_BLOCK";
+export function saveBlock(block) {
+  return {
+    type: SAVE_BLOCK,
+    block
   };
 }

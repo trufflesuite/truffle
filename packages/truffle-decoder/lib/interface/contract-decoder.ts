@@ -113,7 +113,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   private mappingKeys: Slot[] = [];
 
-  constructor(contract: ContractObject, relevantContracts: ContractObject[], provider: Provider) {
+  constructor(contract: ContractObject, relevantContracts: ContractObject[], provider: Provider, address: string) {
     super();
 
     this.web3 = new Web3(provider);
@@ -122,7 +122,9 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.relevantContracts = relevantContracts;
 
     this.contractNetwork = Object.keys(this.contract.networks)[0];
-    this.contractAddress = this.contract.networks[this.contractNetwork].address;
+    this.contractAddress = address !== undefined
+      ? address
+      : this.contract.networks[this.contractNetwork].address;
 
     this.contractNode = getContractNode(this.contract);
 
@@ -172,13 +174,11 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         state: {
           stack: [],
           storage: {},
-          memory: new Uint8Array(0),
-          calldata: new Uint8Array(0)
+          memory: new Uint8Array(0)
         },
         mappingKeys: this.mappingKeys,
         referenceDeclarations: this.referenceDeclarations,
         storageAllocations: this.storageAllocations,
-        variables: this.stateVariableReferences
       };
 
       debug("about to decode %s", variable.definition.name);
@@ -203,13 +203,11 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       state: {
         stack: [],
         storage: {},
-        memory: new Uint8Array(0),
-        calldata: new Uint8Array(0)
+        memory: new Uint8Array(0)
       },
       mappingKeys: this.mappingKeys,
       referenceDeclarations: this.referenceDeclarations,
       storageAllocations: this.storageAllocations,
-      variables: this.stateVariableReferences
     };
 
     let variable: StorageMemberAllocation;
