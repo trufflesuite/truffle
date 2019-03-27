@@ -262,8 +262,6 @@ var command = {
           // TODO make this more robust for all cases and move to
           // truffle-debug-utils
           function formatValue(value, indent) {
-            value = DebugUtils.cleanConstructors(value); //HACK
-
             if (!indent) {
               indent = 0;
             }
@@ -348,6 +346,7 @@ var command = {
             if (variable in variables) {
               let formatted = formatValue(variables[variable], indent);
               config.logger.log(formatted);
+              config.logger.log();
               return;
             }
 
@@ -397,6 +396,7 @@ var command = {
 
             try {
               var result = safeEval(expr, context);
+              result = DebugUtils.cleanConstructors(result); //HACK
               var formatted = formatValue(result, indent);
               config.logger.log(formatted);
               config.logger.log();
