@@ -34,6 +34,7 @@ contract B {
           "*": {
             "*": [
               "abi",
+              "metadata",
               "evm.bytecode.object",
               "evm.bytecode.sourceMap",
               "evm.deployedBytecode.object",
@@ -54,10 +55,13 @@ contract B {
 
     var expected = {
       abi: rawA.abi,
+      metadata: rawA.metadata,
       bytecode: "0x" + rawA.evm.bytecode.object,
       deployedBytecode: "0x" + rawA.evm.deployedBytecode.object,
       sourceMap: rawA.evm.bytecode.sourceMap,
-      deployedSourceMap: rawA.evm.deployedBytecode.sourceMap
+      deployedSourceMap: rawA.evm.deployedBytecode.sourceMap,
+      devdoc: rawA.devdoc,
+      userdoc: rawA.userdoc
     };
 
     Object.keys(expected).forEach(function(key) {
