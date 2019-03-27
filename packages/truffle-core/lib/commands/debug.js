@@ -283,7 +283,9 @@ var command = {
               .join(OS.EOL);
           }
 
-          function printVariables(variables) {
+          async function printVariables() {
+            let variables = await session.variables();
+
             debug("variables %o", variables);
 
             // Get the length of the longest name.
@@ -344,7 +346,8 @@ var command = {
 
             let variable = raw.trim();
             if (variable in variables) {
-              printVariables({ [variable]: variables[variable] });
+              let formatted = formatValue(variables[variable], indent);
+              config.logger.log(formatted);
               return;
             }
 
@@ -710,7 +713,7 @@ var command = {
                 printWatchExpressions();
                 break;
               case "v":
-                printVariables(await session.variables());
+                await printVariables();
                 break;
               case ":":
                 evalAndPrintExpression(cmdArgs);
