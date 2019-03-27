@@ -24,6 +24,7 @@ var command = {
     var safeEval = require("safe-eval");
     var util = require("util");
     const BN = require("bn.js");
+    const analytics = require("../services/analytics");
 
     // add custom inspect options for BNs
     BN.prototype[util.inspect.custom] = function(depth, options) {
@@ -422,6 +423,24 @@ var command = {
             }
           }
 
+          async function watchExpressionAnalytics(raw) {
+            let type = raw[0];
+            let exprArgs = raw.substring(1);
+
+            if (type === "!") {
+              //not doing analytics on selector watches...
+              return;
+            }
+
+            let variables = await session.variables();
+
+            let expression = exprArgs.trim();
+            analytics.send({
+              command: "watch expression",
+              args: { isVariable: expression in variables }
+            });
+          }
+
           async function setOrClearBreakpoint(args, setOrClear) {
             //setOrClear: true for set, false for clear
             var currentLocation = session.view(controller.current.location);
@@ -700,6 +719,7 @@ var command = {
             // (we want to see if execution stopped before printing state).
             switch (cmd) {
               case "+":
+                await watchExpressionAnalytics(cmdArgs);
                 enabledExpressions.add(cmdArgs);
                 await printWatchExpressionResult(cmdArgs);
                 break;
@@ -716,6 +736,7 @@ var command = {
                 await printVariables();
                 break;
               case ":":
+                await watchExpressionAnalytics(cmdArgs);
                 evalAndPrintExpression(cmdArgs);
                 break;
               case "b":
