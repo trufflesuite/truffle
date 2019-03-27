@@ -22,17 +22,20 @@ describe("truffle unbox", () => {
         assert(
           fs.pathExistsSync(
             `${process.cwd()}/test/sources/unbox/contracts/ConvertLib.sol`
-          )
+          ),
+          "ConvertLib.sol does not exist"
         );
         assert(
           fs.pathExistsSync(
             `${process.cwd()}/test/sources/unbox/contracts/Migrations.sol`
-          )
+          ),
+          "Migrations.sol does not exist"
         );
         assert(
           fs.pathExistsSync(
             `${process.cwd()}/test/sources/unbox/contracts/MetaCoin.sol`
-          )
+          ),
+          "MetaCoin.sol does not exist"
         );
         done();
       });
