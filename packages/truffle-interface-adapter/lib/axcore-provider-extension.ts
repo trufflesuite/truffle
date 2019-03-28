@@ -61,7 +61,7 @@ export default class AxCorePayloadExtension {
   }
 
   send(payload: JsonRPCRequest, callback: Callback<JsonRPCResponse>): any {
-    if (payload.method === "eth_getTransactionReceipt") {
+    if (["eth_getTransactionReceipt", "eth_getTransactionByHash"].indexOf(payload.method) >= 0) {
       if (typeof this.transactionOptions[payload.params[0]] !== "undefined") {
         // add payload extensions
         const txHash: string = payload.params[0];
@@ -69,7 +69,7 @@ export default class AxCorePayloadExtension {
         payload.params.push(this.transactionOptions[txHash].param2);
       }
     }
-    else if (payload.method === "eth_getCode") {
+    else if (["eth_getCode", "eth_getStorageAt"].indexOf(payload.method) >= 0) {
       if (typeof this.contractOptions[payload.params[0]] !== "undefined") {
         // add payload extensions
         const contractAddress: string = payload.params[0];
@@ -94,7 +94,7 @@ export default class AxCorePayloadExtension {
 
     this.provider.send(payload, (...args: any[]) => {
       if (args.length > 1 && args[1].result) {
-        if (payload.method === "eth_sendTransaction" || payload.method === "eth_sendRawTransaction") {
+        if (["eth_sendTransaction", "eth_sendRawTransaction"].indexOf(payload.method) >= 0) {
           const txHash: string = args[1].result;
           if (isContractDeploy(payload)) {
             const bytecode: string = payload.params[0].data;
@@ -123,7 +123,6 @@ export default class AxCorePayloadExtension {
             this.contractOptions[to] = options;
             delete this.predeployOptions[bytecodeHash];
           }
-          delete this.transactionOptions[txHash];
         }
       }
 

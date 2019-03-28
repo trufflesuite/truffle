@@ -40,6 +40,13 @@ const compileOptions = {
   }
 };
 
+const methodOriginalLengths: { [method: string]: number } = {
+  eth_getTransactionReceipt: 1,
+  eth_getTransactionByHash: 1,
+  eth_getCode: 2,
+  eth_getStorageAt: 3,
+};
+
 async function setupProvider(constructor: any, options: any, axcoreEnabled: boolean): Promise<Ganache.Provider> {
   const provider: Ganache.Provider = Ganache.provider({
     blockTime: 0
@@ -50,23 +57,20 @@ async function setupProvider(constructor: any, options: any, axcoreEnabled: bool
   provider.send = (payload: JsonRPCRequest, callback: Callback<JsonRPCResponse>) => {
     let isValid = true;
     if (payload.params.length > 0) {
-      if (payload.method === "eth_getTransactionReceipt") {
-        isValid = isValid && payload.params.length === 3;
-        isValid = isValid && payload.params[1] === options.param1;
-        isValid = isValid && payload.params[2] === options.param2;
+      if (typeof methodOriginalLengths[payload.method] !== "undefined") {
+        const originalLength = methodOriginalLengths[payload.method];
+
+        isValid = isValid && payload.params.length === originalLength + 2;
+        isValid = isValid && payload.params[originalLength] === options.param1;
+        isValid = isValid && payload.params[originalLength + 1] === options.param2;
 
         // we need to remove the extra params as ganache fails
         // as it doesnt expect them
-        payload.params = [ payload.params[0] ];
-      }
-      else if (payload.method === "eth_getCode") {
-        isValid = isValid && payload.params.length === 4;
-        isValid = isValid && payload.params[2] === options.param1;
-        isValid = isValid && payload.params[3] === options.param2;
-
-        // we need to remove the extra params as ganache fails
-        // as it doesnt expect them
-        payload.params = [ payload.params[0], payload.params[1] ];
+        const modifiedParams = payload.params;
+        payload.params = [];
+        for (let i = 0; i < originalLength; i++) {
+          payload.params.push(modifiedParams[i]);
+        }
       }
       else if (typeof payload.params[0] === "object") {
         isValid = isValid && payload.params[0].param1 === options.param1;
