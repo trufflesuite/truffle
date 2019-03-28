@@ -424,16 +424,14 @@ var command = {
           }
 
           function watchExpressionAnalytics(raw) {
-            let type = raw[0];
-            let exprArgs = raw.substring(1);
-
-            if (type === "!") {
-              //not doing analytics on selector watches...
+            if (raw.includes("!<")) {
+              //don't send analytics for watch expressions involving selectors
               return;
             }
-
-            let expression = exprArgs.trim();
-            let isVariable = expression.match(/[a-zA-Z_$][a-zA-Z_$0-9]*/);
+            let expression = raw.trim();
+            //legal Solidity identifiers (= legal JS identifiers)
+            let identifierRegex = /^[a-zA-Z_$][a-zA-Z_$0-9]*$/;
+            let isVariable = expression.match(identifierRegex) !== null;
             analytics.send({
               command: "watch expression",
               args: { isVariable }
@@ -718,7 +716,9 @@ var command = {
             // (we want to see if execution stopped before printing state).
             switch (cmd) {
               case "+":
-                watchExpressionAnalytics(cmdArgs);
+                if (cmdArgs[0] === ":") {
+                  watchExpressionAnalytics(cmdArgs.substring(1));
+                }
                 enabledExpressions.add(cmdArgs);
                 await printWatchExpressionResult(cmdArgs);
                 break;
