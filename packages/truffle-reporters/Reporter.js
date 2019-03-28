@@ -1,13 +1,13 @@
 class Reporter {
-  // const supportedEvents = { compile: compileEvents, unbox: unboxEvents };
-  // const defaultReporters = { compileReporter, unboxReporter };
-  constructor({ options, emitter, events }) {
-    const { initialization, handlers } = options;
+  constructor({ initialization, handlers }) {
     this.logger = console;
-    this.emitter = emitter;
+    this.handlers = handlers;
+
     if (initialization) initialization.bind(this)();
+
     if (handlers) {
-      this.attachListeners(handlers, events);
+      const handlerNames = Object.keys(handlers);
+      this.handlerLookupTable = this.setUpLookupTable(handlerNames);
     } else {
       const message =
         `You must provide a handlers property in your reporter ` +
@@ -17,39 +17,7 @@ class Reporter {
     }
   }
 
-  attachListener(name, handler) {
-    this.emitter.on(name, handler.bind(this));
-  }
-
-  attachListeners(handlers, events) {
-    const handlerNames = Object.keys(handlers);
-    handlerNames.forEach(handlerName => {
-      const relevantEventNames = this.determineMatchingEventNames(
-        handlerName,
-        events
-      );
-      if (relevantEventNames.length > 1) {
-        relevantEventNames.forEach(relevantEventName => {
-          this.attachListener(relevantEventName, handlers[handlerName]);
-        });
-      } else if (relevantEventNames.length === 1) {
-        this.attachListener(relevantEventNames[0], handlers[handlerName]);
-      } else {
-        console.log(
-          `The event name you have supplied, ${handlerName}, ` +
-            `doesn't match any events.`
-        );
-        console.log(
-          `Please ensure that the name you provided in your ` +
-            `reporter configuration is one of ${events.join(", ")} or can ` +
-            `be mapped to at least one of them with the wildcard characters ` +
-            `"*" and "**".`
-        );
-      }
-    });
-  }
-
-  convertInputToRegex(name) {
+  convertHandlerNameToRegex(name) {
     return new RegExp(
       name.replace(
         /\*\*|\*/g, // match single or double `*`
@@ -60,20 +28,21 @@ class Reporter {
     );
   }
 
-  determineMatchingEventNames(name, events) {
-    if (events.includes(name)) return [name];
-    const regex = this.convertInputToRegex(name);
-    console.log(`the regex is ${regex}`);
-    return this.matchingEvents(regex, events);
+  handleEvent(eventName, data) {
+    for (let regex in this.handlerLookupTable) {
+      if (regex.test(eventName)) {
+        const handlerName = this.handlerLookupTable[regex];
+        this.handlers[handlerName](data);
+      }
+    }
   }
 
-  matchingEvents(regex, events) {
-    return events.reduce((matchingEvents, event) => {
-      if (regex.test(event)) {
-        return matchingEvents.concat(event);
-      }
-      return matchingEvents;
-    }, []);
+  setUpLookupTable(handlerNames) {
+    return handlerNames.reduce((lookupTable, handlerName) => {
+      const regex = this.convertHandlerNameToRegex(handlerName);
+      lookupTable[regex] = handlerName;
+      return lookupTable;
+    }, {});
   }
 }
 
