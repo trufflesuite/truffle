@@ -433,7 +433,7 @@ var command = {
             let identifierRegex = /^[a-zA-Z_$][a-zA-Z_$0-9]*$/;
             let isVariable = expression.match(identifierRegex) !== null;
             analytics.send({
-              command: "watch expression",
+              command: "debug: watch expression",
               args: { isVariable }
             });
           }
