@@ -16,50 +16,72 @@ module.exports = {
     this.ora = ora;
   },
   handlers: {
-    "unbox:start": function() {
-      this.logger.log(`${OS.EOL}Starting unbox...`);
-      this.logger.log(`=================${OS.EOL}`);
-    },
-    "unbox:preparingToDownload:start": function() {
-      this.spinner = this.ora("Preparing to download box").start();
-    },
-    "unbox:preparingToDownload:succeed": function() {
-      this.spinner.succeed();
-    },
-    "unbox:downloadingBox:start": function() {
-      this.spinner = this.ora("Downloading").start();
-    },
-    "unbox:downloadingBox:succeed": function() {
-      this.spinner.succeed();
-    },
-    "unbox:cleaningTempFiles:start": function() {
-      this.spinner = this.ora("cleaning up temporary files").start();
-    },
-    "unbox:cleaningTempFiles:succeed": function() {
-      this.spinner.succeed();
-    },
-    "unbox:settingUpBox:start": function() {
-      this.spinner = this.ora("Setting up box").start();
-    },
-    "unbox:settingUpBox:succeed": function() {
-      this.spinner.succeed();
-    },
-    "unbox:succeed": function({ boxConfig }) {
-      this.logger.log(`${OS.EOL}Unbox successful, sweet!${OS.EOL}`);
-
-      const commandMessages = formatCommands(boxConfig.commands);
-      if (commandMessages.length > 0) this.logger.log("Commands:" + OS.EOL);
-
-      commandMessages.forEach(message => this.logger.log(message));
-      this.logger.log("");
-
-      if (boxConfig.epilogue) {
-        this.logger.log(boxConfig.epilogue.replace("\n", OS.EOL));
+    "unbox:start": [
+      function() {
+        this.logger.log(`${OS.EOL}Starting unbox...`);
+        this.logger.log(`=================${OS.EOL}`);
       }
-    },
-    "unbox:fail": function() {
-      this.spinner.fail();
-      this.logger.log("Unbox failed!");
-    }
+    ],
+    "unbox:preparingToDownload:start": [
+      function() {
+        this.spinner = this.ora("Preparing to download box").start();
+      }
+    ],
+    "unbox:preparingToDownload:succeed": [
+      function() {
+        this.spinner.succeed();
+      }
+    ],
+    "unbox:downloadingBox:start": [
+      function() {
+        this.spinner = this.ora("Downloading").start();
+      }
+    ],
+    "unbox:downloadingBox:succeed": [
+      function() {
+        this.spinner.succeed();
+      }
+    ],
+    "unbox:cleaningTempFiles:start": [
+      function() {
+        this.spinner = this.ora("cleaning up temporary files").start();
+      }
+    ],
+    "unbox:cleaningTempFiles:succeed": [
+      function() {
+        this.spinner.succeed();
+      }
+    ],
+    "unbox:settingUpBox:start": [
+      function() {
+        this.spinner = this.ora("Setting up box").start();
+      }
+    ],
+    "unbox:settingUpBox:succeed": [
+      function() {
+        this.spinner.succeed();
+      }
+    ],
+    "unbox:succeed": [
+      function({ boxConfig }) {
+        this.logger.log(`${OS.EOL}Unbox successful, sweet!${OS.EOL}`);
+
+        const commandMessages = formatCommands(boxConfig.commands);
+        if (commandMessages.length > 0) this.logger.log("Commands:" + OS.EOL);
+
+        commandMessages.forEach(message => this.logger.log(message));
+        this.logger.log("");
+
+        if (boxConfig.epilogue) {
+          this.logger.log(boxConfig.epilogue.replace("\n", OS.EOL));
+        }
+      }
+    ],
+    "unbox:fail": [
+      function() {
+        this.spinner.fail();
+        this.logger.log("Unbox failed!");
+      }
+    ]
   }
 };

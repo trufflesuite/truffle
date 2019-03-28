@@ -5,9 +5,9 @@ class Reporter {
 
     if (initialization) initialization.bind(this)();
 
-    if (handlers) {
+    if (this.handlers) {
       const handlerNames = Object.keys(handlers);
-      this.handlerLookupTable = this.setUpLookupTable(handlerNames);
+      this.handlerLookupTable = this.createLookupTable(handlerNames);
     } else {
       const message =
         `You must provide a handlers property in your reporter ` +
@@ -29,20 +29,28 @@ class Reporter {
   }
 
   handleEvent(eventName, data) {
-    for (let regex in this.handlerLookupTable) {
-      if (regex.test(eventName)) {
-        const handlerName = this.handlerLookupTable[regex];
-        this.handlers[handlerName](data);
+    for (let handlerName in this.handlerLookupTable) {
+      if (this.regexMatchesEntireName(eventName, handlerName)) {
+        this.handlers[handlerName].forEach(handler => {
+          handler.bind(this, data)();
+        });
       }
     }
   }
 
-  setUpLookupTable(handlerNames) {
+  createLookupTable(handlerNames) {
     return handlerNames.reduce((lookupTable, handlerName) => {
       const regex = this.convertHandlerNameToRegex(handlerName);
-      lookupTable[regex] = handlerName;
+      lookupTable[handlerName] = regex;
       return lookupTable;
     }, {});
+  }
+
+  regexMatchesEntireName(eventName, handlerName) {
+    const matches = eventName.match(this.handlerLookupTable[handlerName]);
+    if (!matches) return null;
+    const filteredMatches = matches.filter(match => typeof match === "string");
+    return filteredMatches.find(filteredMatch => filteredMatch === eventName);
   }
 }
 

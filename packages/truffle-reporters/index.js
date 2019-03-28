@@ -2,5 +2,5 @@ const migrationsV5 = require("./reporters/migrations-V5/reporter");
 
 module.exports = {
   migrationsV5: migrationsV5,
-  Reporters: require("./Reporters")
+  ReporterAggregator: require("./ReporterAggregator")
 };
