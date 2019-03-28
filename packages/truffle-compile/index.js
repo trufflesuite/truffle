@@ -6,6 +6,7 @@ const CompilerSupplier = require("./compilerSupplier");
 const expect = require("truffle-expect");
 const find_contracts = require("truffle-contract-sources");
 const Config = require("truffle-config");
+const semver = require("semver");
 const debug = require("debug")("compile"); // eslint-disable-line no-unused-vars
 
 // Most basic of the compile commands. Takes a hash of sources, where
@@ -152,11 +153,16 @@ const compile = function(sources, options, callback) {
 
       if (errors.length > 0) {
         options.logger.log("");
-        return callback(
-          new CompileError(
-            standardOutput.errors.map(error => error.formattedMessage).join()
-          )
-        );
+        errors = errors.map(error => error.formattedMessage).join();
+        if (errors.includes("requires different compiler version")) {
+          const contractSolcVer = errors.match(/pragma solidity[^;]*/gm)[0];
+          const configSolcVer =
+            options.compilers.solc.version || semver.valid(solc.version());
+          errors = errors.concat(
+            `\nError: Truffle is currently using solc ${configSolcVer}, but one or more of your contracts specify "${contractSolcVer}".\nPlease update your truffle config or pragma statement(s).\n(See https://truffleframework.com/docs/truffle/reference/configuration#compiler-configuration for information on\nconfiguring Truffle to use a specific solc compiler version.)`
+          );
+        }
+        return callback(new CompileError(errors));
       }
 
       var contracts = standardOutput.contracts;
