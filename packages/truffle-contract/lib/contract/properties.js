@@ -76,6 +76,9 @@ module.exports = {
       this._json.abi = val;
     }
   },
+  metadata: function() {
+    return this._json.metadata;
+  },
   network: function() {
     var network_id = this.network_id;
 
