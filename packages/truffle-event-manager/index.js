@@ -22,11 +22,11 @@ class EventManager {
   }
 
   emit(event, data) {
-    if (this.reporters) this.reporters.emit(event, data);
+    this.emitter.emit(event, data);
   }
 
   initializeReporters(initializationOptions) {
-    this.reporters = new ReporterAggregator(initializationOptions);
+    new ReporterAggregator(initializationOptions);
   }
 
   initializeSubscribers(initializationOptions) {
