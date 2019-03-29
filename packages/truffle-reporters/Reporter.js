@@ -58,7 +58,7 @@ class Reporter {
   setUpGlobbedListeners(handlers) {
     const handlerNames = Object.keys(handlers);
     this.globbedHandlerLookupTable = this.createLookupTable(handlerNames);
-    this.emitter.onAny(this.handleEvent);
+    this.emitter.onAny(this.handleEvent.bind(this));
   }
 
   setUpListeners(handlers) {
