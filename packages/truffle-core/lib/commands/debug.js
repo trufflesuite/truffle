@@ -24,6 +24,7 @@ var command = {
     var safeEval = require("safe-eval");
     var util = require("util");
     const BN = require("bn.js");
+    const analytics = require("../services/analytics");
 
     // add custom inspect options for BNs
     BN.prototype[util.inspect.custom] = function(depth, options) {
@@ -262,8 +263,6 @@ var command = {
           // TODO make this more robust for all cases and move to
           // truffle-debug-utils
           function formatValue(value, indent) {
-            value = DebugUtils.cleanConstructors(value); //HACK
-
             if (!indent) {
               indent = 0;
             }
@@ -284,7 +283,8 @@ var command = {
           }
 
           async function printVariables() {
-            var variables = await session.variables();
+            let variables = await session.variables();
+
             debug("variables %o", variables);
 
             // Get the length of the longest name.
@@ -337,10 +337,30 @@ var command = {
            *        :!<trace.step.stack>[1]
            */
           async function evalAndPrintExpression(raw, indent, suppress) {
+            let variables = await session.variables();
+
+            //if we're just dealing with a single variable, handle that case
+            //separately (so that we can do things in a better way for that
+            //case)
+
+            let variable = raw.trim();
+            if (variable in variables) {
+              let formatted = formatValue(variables[variable], indent);
+              config.logger.log(formatted);
+              config.logger.log();
+              return;
+            }
+
+            //HACK
+            //if we're not in the single-variable case, we'll need to do some
+            //things to Javascriptify our variables so that the JS syntax for
+            //using them is closer to the Solidity syntax
+            variables = DebugUtils.nativize(variables);
+
             var context = Object.assign(
               { $: select },
 
-              await session.variables()
+              variables
             );
 
             //HACK -- we can't use "this" as a variable name, so we're going to
@@ -377,6 +397,7 @@ var command = {
 
             try {
               var result = safeEval(expr, context);
+              result = DebugUtils.cleanConstructors(result); //HACK
               var formatted = formatValue(result, indent);
               config.logger.log(formatted);
               config.logger.log();
@@ -400,6 +421,21 @@ var command = {
                 config.logger.log(formatValue(undefined));
               }
             }
+          }
+
+          function watchExpressionAnalytics(raw) {
+            if (raw.includes("!<")) {
+              //don't send analytics for watch expressions involving selectors
+              return;
+            }
+            let expression = raw.trim();
+            //legal Solidity identifiers (= legal JS identifiers)
+            let identifierRegex = /^[a-zA-Z_$][a-zA-Z_$0-9]*$/;
+            let isVariable = expression.match(identifierRegex) !== null;
+            analytics.send({
+              command: "debug: watch expression",
+              args: { isVariable }
+            });
           }
 
           async function setOrClearBreakpoint(args, setOrClear) {
@@ -680,6 +716,9 @@ var command = {
             // (we want to see if execution stopped before printing state).
             switch (cmd) {
               case "+":
+                if (cmdArgs[0] === ":") {
+                  watchExpressionAnalytics(cmdArgs.substring(1));
+                }
                 enabledExpressions.add(cmdArgs);
                 await printWatchExpressionResult(cmdArgs);
                 break;
@@ -696,6 +735,7 @@ var command = {
                 await printVariables();
                 break;
               case ":":
+                watchExpressionAnalytics(cmdArgs);
                 evalAndPrintExpression(cmdArgs);
                 break;
               case "b":
