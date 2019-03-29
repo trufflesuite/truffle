@@ -2,18 +2,21 @@ const assert = require("assert");
 const CommandRunner = require("../commandrunner");
 const MemoryLogger = require("../memorylogger");
 const fs = require("fs-extra");
+const tmp = require("tmp");
+const path = require("path");
 
 describe("truffle unbox", () => {
   let config;
   const logger = new MemoryLogger();
 
   beforeEach("set up config for logger", () => {
-    config = { working_directory: `${process.cwd()}/test/sources/unbox` };
+    tempDir = tmp.dirSync({ unsafeCleanup: true });
+    config = { working_directory: tempDir.name };
     config.logger = logger;
   });
 
   afterEach("clear working_directory", () => {
-    fs.emptyDirSync(`${process.cwd()}/test/sources/unbox`);
+    tempDir.removeCallback();
   });
 
   describe("when run without arguments", () => {
@@ -21,19 +24,19 @@ describe("truffle unbox", () => {
       CommandRunner.run("unbox --force", config, () => {
         assert(
           fs.pathExistsSync(
-            `${process.cwd()}/test/sources/unbox/contracts/ConvertLib.sol`
+            path.join(tempDir.name, "contracts", "ConvertLib.sol")
           ),
           "ConvertLib.sol does not exist"
         );
         assert(
           fs.pathExistsSync(
-            `${process.cwd()}/test/sources/unbox/contracts/Migrations.sol`
+            path.join(tempDir.name, "contracts", "Migrations.sol")
           ),
           "Migrations.sol does not exist"
         );
         assert(
           fs.pathExistsSync(
-            `${process.cwd()}/test/sources/unbox/contracts/MetaCoin.sol`
+            path.join(tempDir.name, "contracts", "MetaCoin.sol")
           ),
           "MetaCoin.sol does not exist"
         );
@@ -44,10 +47,6 @@ describe("truffle unbox", () => {
 
   describe("when run with arguments", () => {
     describe("valid input", () => {
-      afterEach("clear working_directory", () => {
-        fs.emptyDirSync(`${process.cwd()}/test/sources/unbox`);
-      });
-
       describe("full url", () => {
         it("unboxes successfully", done => {
           CommandRunner.run(
@@ -220,10 +219,6 @@ describe("truffle unbox", () => {
     });
 
     describe("with invalid input", () => {
-      afterEach("clear working_directory", () => {
-        fs.emptyDirSync(`${process.cwd()}/test/sources/unbox`);
-      });
-
       describe("invalid full url", () => {
         it("throws an error", done => {
           CommandRunner.run(
