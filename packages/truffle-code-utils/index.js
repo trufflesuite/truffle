@@ -14,12 +14,12 @@ module.exports = {
    * If you pass in numInstructions (hint: count the semicolons in the source
    * map, then add one) this is used to exclude metadata instead.
    *
-   * @param  {String} hex_string Hex string representing the code
+   * @param  {String} hexString Hex string representing the code
    * @return Array               Array of instructions
    */
-  parseCode: function(hex_string, numInstructions = null) {
+  parseCode: function(hexString, numInstructions = null) {
     // Convert to an array of bytes
-    let code = hex_string
+    let code = hexString
       .slice(2)
       .match(/(..?)/g)
       .map(hex => parseInt(hex, 16));
