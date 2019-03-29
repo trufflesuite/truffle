@@ -3,22 +3,17 @@ const Reporter = require("./Reporter");
 const defaultReporters = { compile, unbox };
 
 class ReporterAggregator {
-  constructor() {
-    this.reporters = [];
-    this.initializeReporters();
+  constructor(initializationOptions) {
+    this.initializeReporters(initializationOptions);
   }
 
-  emit(event, data) {
-    if (this.reporters) {
-      this.reporters.forEach(reporter => reporter.handleEvent(event, data));
-    }
-  }
-
-  initializeReporters() {
+  initializeReporters(initializationOptions) {
+    const { emitter } = initializationOptions;
     for (let reporterName in defaultReporters) {
-      this.reporters = this.reporters.concat(
-        new Reporter(defaultReporters[reporterName])
-      );
+      new Reporter({
+        options: defaultReporters[reporterName],
+        emitter
+      });
     }
   }
 }

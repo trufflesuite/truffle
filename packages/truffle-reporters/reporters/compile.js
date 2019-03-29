@@ -1,6 +1,9 @@
 const OS = require("os");
 
 module.exports = {
+  initialization: function() {
+    this.logger = console;
+  },
   handlers: {
     "compile:start": [
       function() {

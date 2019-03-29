@@ -13,6 +13,7 @@ const formatCommands = commands => {
 
 module.exports = {
   initialization: function() {
+    this.logger = console;
     this.ora = ora;
   },
   handlers: {
