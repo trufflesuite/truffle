@@ -4,29 +4,45 @@ module.exports = {
   /**
    * parseCode - return a list of instructions given a 0x-prefixed code string.
    *
-   * Any contract metadata, if present, will be stripped.
+   * If numInstructions is not passed in, we attempt to strip contract
+   * metadata.  This won't work very well if the code is for a constructor or a
+   * contract that can create other contracts, but it's better than nothing.
+   *
+   * WARNING: Don't invoke the function that way if you're dealing with a
+   * constructor with arguments attached!  Then you could get disaster!
+   *
+   * If you pass in numInstructions (hint: count the semicolons in the source
+   * map, then add one) this is used to exclude metadata instead.
    *
    * @param  {String} hex_string Hex string representing the code
    * @return Array               Array of instructions
    */
-  parseCode: function(hex_string) {
+  parseCode: function(hex_string, numInstructions = null) {
     // Convert to an array of bytes (denoted by substrings)
     var code = hex_string.match(/(..?)/g);
 
-    // Remove the contract metadata; last two bytes encode its length (not
-    // including those two bytes)
-    // TODO: Make this conditional, as it's assumed the metadata exists.
-    let metadataLength = parseInt(
-      code[code.length - 2] + code[code.length - 1],
-      16
-    );
-    code.splice(-(metadataLength + 2));
+    let stripMetadata = numInstructions === null;
+
+    if (stripMetadata) {
+      // Remove the contract metadata; last two bytes encode its length (not
+      // including those two bytes)
+      let metadataLength = parseInt(
+        code[code.length - 2] + code[code.length - 1],
+        16
+      );
+      code.splice(-(metadataLength + 2));
+    }
 
     // Convert to Buffer
     code = Buffer.from(code.join("").replace("0x", ""), "hex");
 
-    var instructions = [];
-    for (var pc = 0; pc < code.length; pc++) {
+    let instructions = [];
+    for (
+      let pc = 0;
+      pc < code.length &&
+      (stripMetadata || instructions.length < numInstructions);
+      pc++
+    ) {
       let opcode = {};
       opcode.pc = pc;
       opcode.name = opcodes(code[pc]);

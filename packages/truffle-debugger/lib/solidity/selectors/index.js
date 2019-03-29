@@ -136,13 +136,25 @@ let solidity = createSelectorTree({
           return [];
         }
 
-        let instructions = CodeUtils.parseCode(binary);
+        let numInstructions;
+        if (sourceMap) {
+          numInstructions = sourceMap.split(";").length;
+        } else {
+          //HACK
+          numInstructions = (binary.length - 2) / 2;
+          //this is actually an overestimate, but that's OK
+        }
+
+        //because we might be dealing with a constructor with arguments, we do
+        //*not* remove metadata manually
+        let instructions = CodeUtils.parseCode(binary, numInstructions);
 
         if (!sourceMap) {
           // HACK
-          // Let's create a source map to use since none exists. This source map
-          // maps just as many ranges as there are instructions, and marks them
-          // all as being Solidity-internal and not jumps.
+          // Let's create a source map to use since none exists. This source
+          // map maps just as many ranges as there are instructions (or
+          // possibly more), and marks them all as being Solidity-internal and
+          // not jumps.
           sourceMap = "0:0:-1:-".concat(";".repeat(instructions.length - 1));
         }
 
