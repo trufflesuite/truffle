@@ -1,4 +1,5 @@
 const { ReporterAggregator } = require("truffle-reporters");
+const Emittery = require("emittery");
 
 class EventManager {
   constructor(eventManagerOptions) {
@@ -8,7 +9,11 @@ class EventManager {
     // if necessary in truffle-config
     this.initializationOptions = eventManagerOptions;
 
+    const emitter = new Emittery();
+    this.emitter = emitter;
+
     const initializationOptions = {
+      emitter,
       globalConfig,
       logger,
       muteReporters
