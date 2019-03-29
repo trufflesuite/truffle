@@ -84,3 +84,13 @@ export function isCreateMnemonic(op) {
   const creates = ["CREATE", "CREATE2"];
   return creates.includes(op);
 }
+
+/*
+ * Given a mmemonic, determine whether it's the mnemonic of a normal
+ * halting instruction
+ */
+export function isNormalHaltingMnemonic(op) {
+  const halts = ["STOP", "RETURN", "SELFDESTRUCT", "SUICIDE"];
+  //the mnemonic SUICIDE is no longer used, but just in case, I'm including it
+  return halts.includes(op);
+}
