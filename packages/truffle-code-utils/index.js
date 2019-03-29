@@ -18,23 +18,20 @@ module.exports = {
    * @return Array               Array of instructions
    */
   parseCode: function(hex_string, numInstructions = null) {
-    // Convert to an array of bytes (denoted by substrings)
-    var code = hex_string.match(/(..?)/g);
+    // Convert to an array of bytes
+    let code = hex_string
+      .slice(2)
+      .match(/(..?)/g)
+      .map(hex => parseInt(hex, 16));
 
     let stripMetadata = numInstructions === null;
 
     if (stripMetadata) {
       // Remove the contract metadata; last two bytes encode its length (not
       // including those two bytes)
-      let metadataLength = parseInt(
-        code[code.length - 2] + code[code.length - 1],
-        16
-      );
+      let metadataLength = (code[code.length - 2] << 8) + code[code.length - 1];
       code.splice(-(metadataLength + 2));
     }
-
-    // Convert to Buffer
-    code = Buffer.from(code.join("").replace("0x", ""), "hex");
 
     let instructions = [];
     for (
@@ -49,9 +46,14 @@ module.exports = {
       if (opcode.name.slice(0, 4) === "PUSH") {
         var length = code[pc] - 0x60 + 1; //0x60 is code for PUSH1
         opcode.pushData = code.slice(pc + 1, pc + length + 1);
+        if (opcode.pushData.length < length) {
+          opcode.pushData = opcode.pushData.concat(
+            new Array(length - opcode.pushData.length).fill(0)
+          );
+        }
 
         // convert pushData to hex
-        opcode.pushData = "0x" + opcode.pushData.toString("hex");
+        opcode.pushData = "0x" + Buffer.from(opcode.pushData).toString("hex");
 
         pc += length;
       }
