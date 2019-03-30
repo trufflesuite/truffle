@@ -1,26 +1,23 @@
 {
   "name": "truffle-workflow-compile",
-  "version": "2.0.2",
+  "version": "2.0.10",
   "description": "Core workflow behavior for `truffle compile` command",
   "dependencies": {
     "async": "2.6.1",
     "debug": "^4.1.0",
-    "lodash": "4.17.10",
+    "lodash": "4.17.11",
     "mkdirp": "^0.5.1",
-    "truffle-artifactor": "^4.0.2",
-    "truffle-compile": "^4.0.2",
-    "truffle-compile-vyper": "^1.0.2",
-    "truffle-config": "^1.1.2",
-    "truffle-expect": "^0.0.6",
-    "truffle-external-compile": "^1.0.1",
-    "truffle-resolver": "^5.0.2"
+    "truffle-artifactor": "^4.0.10",
+    "truffle-compile": "^4.0.10",
+    "truffle-compile-vyper": "^1.0.10",
+    "truffle-config": "^1.1.7",
+    "truffle-expect": "^0.0.7",
+    "truffle-external-compile": "^1.0.7",
+    "truffle-resolver": "^5.0.10"
   },
   "main": "index.js",
   "scripts": {},
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/trufflesuite/truffle-debug-utils.git"
-  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-workflow-compile",
   "author": "Truffle Suite <inquiry@trufflesuite.com>",
   "license": "MIT",
   "bugs": {

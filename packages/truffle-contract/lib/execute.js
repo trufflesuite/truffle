@@ -28,12 +28,16 @@ var execute = {
       web3.eth
         .estimateGas(params)
         .then(gas => {
-          var bestEstimate = Math.floor(constructor.gasMultiplier * gas);
+          const bestEstimate = utils.multiplyBigNumberByDecimal(
+            utils.bigNumberify(gas),
+            constructor.gasMultiplier
+          );
 
           // Don't go over blockLimit
-          bestEstimate >= blockLimit
-            ? accept(blockLimit - 1)
-            : accept(bestEstimate);
+          const limit = utils.bigNumberify(blockLimit);
+          bestEstimate.gte(limit)
+            ? accept(limit.sub(1).toHexString())
+            : accept(bestEstimate.toHexString());
 
           // We need to let txs that revert through.
           // Often that's exactly what you are testing.

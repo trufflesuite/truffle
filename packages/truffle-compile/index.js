@@ -1,12 +1,13 @@
-var OS = require("os");
-var path = require("path");
-var Profiler = require("./profiler");
-var CompileError = require("./compileerror");
-var CompilerSupplier = require("./compilerSupplier");
-var expect = require("truffle-expect");
-var find_contracts = require("truffle-contract-sources");
-var Config = require("truffle-config");
-var debug = require("debug")("compile"); // eslint-disable-line no-unused-vars
+const OS = require("os");
+const path = require("path");
+const Profiler = require("./profiler");
+const CompileError = require("./compileerror");
+const CompilerSupplier = require("./compilerSupplier");
+const expect = require("truffle-expect");
+const find_contracts = require("truffle-contract-sources");
+const Config = require("truffle-config");
+const semver = require("semver");
+const debug = require("debug")("compile"); // eslint-disable-line no-unused-vars
 
 // Most basic of the compile commands. Takes a hash of sources, where
 // the keys are file or module paths and the values are the bodies of
@@ -18,7 +19,7 @@ var debug = require("debug")("compile"); // eslint-disable-line no-unused-vars
 //   quiet: false,
 //   logger: console
 // }
-var compile = function(sources, options, callback) {
+const compile = function(sources, options, callback) {
   if (typeof options === "function") {
     callback = options;
     options = {};
@@ -26,7 +27,7 @@ var compile = function(sources, options, callback) {
 
   if (options.logger === undefined) options.logger = console;
 
-  var hasTargets =
+  const hasTargets =
     options.compilationTargets && options.compilationTargets.length;
 
   expect.options(options, ["contracts_directory", "compilers"]);
@@ -50,9 +51,9 @@ var compile = function(sources, options, callback) {
 
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
-  var operatingSystemIndependentSources = {};
-  var operatingSystemIndependentTargets = {};
-  var originalPathMappings = {};
+  const operatingSystemIndependentSources = {};
+  const operatingSystemIndependentTargets = {};
+  const originalPathMappings = {};
 
   Object.keys(sources).forEach(function(source) {
     // Turn all backslashes into forward slashes
@@ -77,10 +78,11 @@ var compile = function(sources, options, callback) {
     originalPathMappings[replacement] = source;
   });
 
-  var defaultSelectors = {
+  const defaultSelectors = {
     "": ["legacyAST", "ast"],
     "*": [
       "abi",
+      "metadata",
       "evm.bytecode.object",
       "evm.bytecode.sourceMap",
       "evm.deployedBytecode.object",
@@ -92,15 +94,15 @@ var compile = function(sources, options, callback) {
 
   // Specify compilation targets
   // Each target uses defaultSelectors, defaulting to single target `*` if targets are unspecified
-  var outputSelection = {};
-  var targets = operatingSystemIndependentTargets;
-  var targetPaths = Object.keys(targets);
+  const outputSelection = {};
+  const targets = operatingSystemIndependentTargets;
+  const targetPaths = Object.keys(targets);
 
   targetPaths.length
     ? targetPaths.forEach(key => (outputSelection[key] = defaultSelectors))
     : (outputSelection["*"] = defaultSelectors);
 
-  var solcStandardInput = {
+  const solcStandardInput = {
     language: "Solidity",
     sources: {},
     settings: {
@@ -115,76 +117,69 @@ var compile = function(sources, options, callback) {
     return callback(null, [], []);
   }
 
-  Object.keys(operatingSystemIndependentSources).forEach(function(file_path) {
+  Object.keys(operatingSystemIndependentSources).forEach(file_path => {
     solcStandardInput.sources[file_path] = {
       content: operatingSystemIndependentSources[file_path]
     };
   });
 
   // Load solc module only when compilation is actually required.
-  var supplier = new CompilerSupplier(options.compilers.solc);
+  const supplier = new CompilerSupplier(options.compilers.solc);
 
   supplier
     .load()
     .then(solc => {
-      var result = solc.compile(JSON.stringify(solcStandardInput));
+      const result = solc.compile(JSON.stringify(solcStandardInput));
 
-      var standardOutput = JSON.parse(result);
+      const standardOutput = JSON.parse(result);
 
-      var errors = standardOutput.errors || [];
-      var warnings = [];
+      let errors = standardOutput.errors || [];
+      let warnings = [];
 
       if (options.strict !== true) {
-        warnings = errors.filter(function(error) {
-          return error.severity === "warning";
-        });
+        warnings = errors.filter(error => error.severity === "warning");
 
-        errors = errors.filter(function(error) {
-          return error.severity !== "warning";
-        });
+        errors = errors.filter(error => error.severity !== "warning");
 
         if (options.quiet !== true && warnings.length > 0) {
           options.logger.log(
-            OS.EOL + "Compilation warnings encountered:" + OS.EOL
+            OS.EOL + "    > compilation warnings encountered:" + OS.EOL
           );
           options.logger.log(
-            warnings
-              .map(function(warning) {
-                return warning.formattedMessage;
-              })
-              .join()
+            warnings.map(warning => warning.formattedMessage).join()
           );
         }
       }
 
       if (errors.length > 0) {
         options.logger.log("");
-        return callback(
-          new CompileError(
-            standardOutput.errors
-              .map(function(error) {
-                return error.formattedMessage;
-              })
-              .join()
-          )
-        );
+        errors = errors.map(error => error.formattedMessage).join();
+        if (errors.includes("requires different compiler version")) {
+          const contractSolcVer = errors.match(/pragma solidity[^;]*/gm)[0];
+          const configSolcVer =
+            options.compilers.solc.version || semver.valid(solc.version());
+          errors = errors.concat(
+            `\nError: Truffle is currently using solc ${configSolcVer}, but one or more of your contracts specify "${contractSolcVer}".\nPlease update your truffle config or pragma statement(s).\n(See https://truffleframework.com/docs/truffle/reference/configuration#compiler-configuration for information on\nconfiguring Truffle to use a specific solc compiler version.)`
+          );
+        }
+        return callback(new CompileError(errors));
       }
 
       var contracts = standardOutput.contracts;
 
       var files = [];
-      Object.keys(standardOutput.sources).forEach(function(filename) {
+      Object.keys(standardOutput.sources).forEach(filename => {
         var source = standardOutput.sources[filename];
-        files[source.id] = filename;
+        files[source.id] = originalPathMappings[filename];
       });
 
       var returnVal = {};
 
       // This block has comments in it as it's being prepared for solc > 0.4.10
-      Object.keys(contracts).forEach(function(source_path) {
+      Object.keys(contracts).forEach(source_path => {
         var files_contracts = contracts[source_path];
 
-        Object.keys(files_contracts).forEach(function(contract_name) {
+        Object.keys(files_contracts).forEach(contract_name => {
           var contract = files_contracts[contract_name];
 
           // All source will have a key, but only the compiled source will have
@@ -200,6 +195,7 @@ var compile = function(sources, options, callback) {
             legacyAST: standardOutput.sources[source_path].legacyAST,
             ast: standardOutput.sources[source_path].ast,
             abi: contract.abi,
+            metadata: contract.metadata,
             bytecode: "0x" + contract.evm.bytecode.object,
             deployedBytecode: "0x" + contract.evm.deployedBytecode.object,
             unlinked_binary: "0x" + contract.evm.bytecode.object, // deprecated
@@ -261,7 +257,9 @@ var compile = function(sources, options, callback) {
         });
       });
 
-      callback(null, returnVal, files);
+      const compilerInfo = { name: "solc", version: solc.version() };
+
+      callback(null, returnVal, files, compilerInfo);
     })
     .catch(callback);
 };
@@ -435,7 +433,7 @@ compile.display = function(paths, options) {
           "." + path.sep + path.relative(options.working_directory, contract);
       }
       if (contract.match(blacklistRegex)) return;
-      options.logger.log("Compiling " + contract + "...");
+      options.logger.log("> Compiling " + contract);
     });
   }
 };

@@ -1,13 +1,10 @@
 {
   "name": "truffle-provisioner",
-  "version": "0.1.1",
+  "version": "0.1.4",
   "description": "Provision contract objects for use from multiple sources",
   "main": "index.js",
   "scripts": {},
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/trufflesuite/truffle-provisioner.git"
-  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-provisioner",
   "keywords": [
     "ethereum",
     "truffle",

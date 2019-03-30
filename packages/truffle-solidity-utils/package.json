@@ -1,13 +1,10 @@
 {
   "name": "truffle-solidity-utils",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Utilities for Solidity contracts",
   "main": "index.js",
   "scripts": {},
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/trufflesuite/truffle-solidity-utils.git"
-  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-solidity-utils",
   "keywords": [
     "ethereum",
     "truffle",

@@ -2,7 +2,6 @@ const debug = require("debug")("compile:test:test_supplier");
 const fs = require("fs");
 const path = require("path");
 const assert = require("assert");
-const findCacheDir = require("find-cache-dir");
 const Resolver = require("truffle-resolver");
 const compile = require("../index");
 const Config = require("truffle-config");
@@ -124,8 +123,14 @@ describe("CompilerSupplier", function() {
       let initialAccessTime;
       let finalAccessTime;
 
-      const thunk = findCacheDir({ name: "truffle", thunk: true });
-      const expectedCache = thunk("soljson-v0.4.21+commit.dfe3193c.js");
+      const compilerCacheDirectory = path.resolve(
+        Config.getTruffleDataDirectory(),
+        "compilers/node_modules"
+      );
+      const expectedCache = path.resolve(
+        compilerCacheDirectory,
+        "soljson-v0.4.21+commit.dfe3193c.js"
+      );
 
       // Delete if it's already there.
       if (fs.existsSync(expectedCache)) fs.unlinkSync(expectedCache);

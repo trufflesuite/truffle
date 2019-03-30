@@ -142,12 +142,13 @@ const googleAnalytics = {
    * send event to Google Analytics
    * @param {Object}
    */
+  // eslint-disable-next-line no-unused-vars
   sendAnalyticsEvent: function(eventObject, callback) {
     let visitor = this.setPersistentAnalyticsData();
     let sendObject = {};
     if (eventObject["command"]) {
-      sendObject["ec"] = "Truffle Command";
-      sendObject["ea"] = eventObject["command"];
+      sendObject["ec"] = eventObject["command"];
+      sendObject["ea"] = JSON.stringify(eventObject["args"]);
       sendObject["el"] = eventObject["version"];
       sendObject["dp"] = "/" + eventObject["command"];
     } else {
@@ -159,6 +160,7 @@ const googleAnalytics = {
     }
 
     if (visitor) {
+      // eslint-disable-next-line no-unused-vars
       visitor.event(sendObject, function(err) {});
     }
 

@@ -1,14 +1,6 @@
-export const BEGIN_STEP = "BEGIN_STEP";
-export function beginStep(type) {
-  return {
-    type: BEGIN_STEP,
-    stepType: type
-  };
-}
-
 export const ADVANCE = "ADVANCE";
-export function advance() {
-  return { type: ADVANCE };
+export function advance(count) {
+  return { type: ADVANCE, count };
 }
 
 export const STEP_NEXT = "STEP_NEXT";
@@ -42,9 +34,12 @@ export function interrupt() {
 }
 
 export const CONTINUE = "CONTINUE";
-export function continueUntilBreakpoint() {
+export function continueUntilBreakpoint(breakpoints) {
   //"continue" is not a legal name
-  return { type: CONTINUE };
+  return {
+    type: CONTINUE,
+    breakpoints
+  };
 }
 
 export const ADD_BREAKPOINT = "ADD_BREAKPOINT";
@@ -67,5 +62,12 @@ export const REMOVE_ALL_BREAKPOINTS = "REMOVE_ALL_BREAKPOINTS";
 export function removeAllBreakpoints() {
   return {
     type: REMOVE_ALL_BREAKPOINTS
+  };
+}
+
+export const DONE_STEPPING = "DONE_STEPPING";
+export function doneStepping() {
+  return {
+    type: DONE_STEPPING
   };
 }

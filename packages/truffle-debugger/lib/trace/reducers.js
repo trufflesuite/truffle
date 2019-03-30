@@ -2,7 +2,7 @@ import { combineReducers } from "redux";
 
 import * as actions from "./actions";
 
-export function index(state = 0, action) {
+function index(state = 0, action) {
   switch (action.type) {
     case actions.TOCK:
       return state + 1;
@@ -15,7 +15,7 @@ export function index(state = 0, action) {
   }
 }
 
-export function finished(state = false, action) {
+function finished(state = false, action) {
   switch (action.type) {
     case actions.END_OF_TRACE:
       return true;
@@ -28,7 +28,7 @@ export function finished(state = false, action) {
   }
 }
 
-export function steps(state = null, action) {
+function steps(state = null, action) {
   if (action.type === actions.SAVE_STEPS) {
     return action.steps;
   } else {

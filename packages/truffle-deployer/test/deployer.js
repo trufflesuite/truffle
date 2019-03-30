@@ -57,6 +57,11 @@ describe("Deployer (sync)", function() {
         UsesLibrary,
         Abstract
       ],
+      networks: {
+        test: {
+          // TODO:
+        }
+      },
       network: "test",
       network_id: networkId,
       provider: provider,
@@ -236,9 +241,6 @@ describe("Deployer (sync)", function() {
 
     utils.stopAutoMine();
 
-    const isLibrary = await IsLibrary.deployed();
-    const example = await Example.deployed();
-
     const libReceipt = await web3.eth.getTransactionReceipt(
       IsLibrary.transactionHash
     );
@@ -256,7 +258,6 @@ describe("Deployer (sync)", function() {
 
   it("emits block events while waiting for a tx to mine", async function() {
     this.timeout(15000);
-    const startBlock = await web3.eth.getBlockNumber();
 
     utils.startAutoMine(web3, 4000);
 

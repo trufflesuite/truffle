@@ -3,9 +3,11 @@ const debug = debugModule("debugger:data:reducers");
 
 import { combineReducers } from "redux";
 
-import { stableKeccak256 } from "lib/helpers";
-
 import * as actions from "./actions";
+
+import { slotAddress } from "truffle-decoder";
+import { makeAssignment } from "lib/helpers";
+import { Conversion, Definition, EVM } from "truffle-decode-utils";
 
 const DEFAULT_SCOPES = {
   byId: {}
@@ -75,17 +77,23 @@ function userDefinedTypes(state = [], action) {
   }
 }
 
-function storage(state = {}, action) {
+const DEFAULT_ALLOCATIONS = {
+  storage: {},
+  memory: {},
+  calldata: {}
+};
+
+function allocations(state = DEFAULT_ALLOCATIONS, action) {
   if (action.type === actions.ALLOCATE) {
-    return action.storage;
+    return {
+      storage: action.storage,
+      memory: action.memory,
+      calldata: action.calldata
+    };
   } else {
     return state;
   }
 }
-
-const allocations = combineReducers({
-  storage
-});
 
 const info = combineReducers({
   scopes,
@@ -93,57 +101,51 @@ const info = combineReducers({
   allocations
 });
 
+const GLOBAL_ASSIGNMENTS = [
+  [{ builtin: "msg" }, { special: "msg" }],
+  [{ builtin: "tx" }, { special: "tx" }],
+  [{ builtin: "block" }, { special: "block" }],
+  [{ builtin: "this" }, { special: "this" }],
+  [{ builtin: "now" }, { special: "timestamp" }] //we don't have an alias "now"
+].map(([idObj, ref]) => makeAssignment(idObj, ref));
+
 const DEFAULT_ASSIGNMENTS = {
-  byId: {},
-  byAstId: {}
+  byId: Object.assign(
+    {}, //we start out with all globals assigned
+    ...GLOBAL_ASSIGNMENTS.map(assignment => ({ [assignment.id]: assignment }))
+  ),
+  byAstId: {}, //no regular variables assigned at start
+  byBuiltin: Object.assign(
+    {}, //again, all globals start assigned
+    ...GLOBAL_ASSIGNMENTS.map(assignment => ({
+      [assignment.builtin]: [assignment.id] //yes, that's a 1-element array
+    }))
+  )
 };
 
 function assignments(state = DEFAULT_ASSIGNMENTS, action) {
   switch (action.type) {
     case actions.ASSIGN:
+    case actions.MAP_PATH_AND_ASSIGN:
+      debug("action.type %O", action.type);
       debug("action.assignments %O", action.assignments);
-      return Object.values(action.assignments.byId).reduce(
-        (acc, assignment) => {
-          let { id, astId } = assignment; //we don't need the rest
-          return {
-            byId: {
-              ...acc.byId,
-              [id]: assignment
-            },
-            byAstId: {
-              ...acc.byAstId,
-              [astId]: [...new Set([...(acc.byAstId[astId] || []), id])]
-              //we use a set for uniqueness
-            }
-          };
-        },
-        state
-      );
-
-    case actions.LEARN_ADDRESS:
-      let { dummyAddress, address } = action;
-      return {
-        byId: Object.assign(
-          {},
-          ...Object.entries(state.byId).map(([, assignment]) => {
-            let newAssignment = learnAddress(assignment, dummyAddress, address);
-            return {
-              [newAssignment.id]: newAssignment
-            };
-          })
-        ),
-        byAstId: Object.assign(
-          {},
-          ...Object.entries(state.byAstId).map(([astId]) => {
-            return {
-              [astId]: state.byAstId[astId].map(
-                id => learnAddress(state.byId[id], dummyAddress, address).id
-                //this above involves some recomputation but oh well
-              )
-            };
-          })
-        )
-      };
+      return Object.values(action.assignments).reduce((acc, assignment) => {
+        let { id, astId } = assignment;
+        //we assume for now that only ordinary variables will be assigned this
+        //way, and not globals; globals are handled in DEFAULT_ASSIGNMENTS
+        return {
+          ...acc,
+          byId: {
+            ...acc.byId,
+            [id]: assignment
+          },
+          byAstId: {
+            ...acc.byAstId,
+            [astId]: [...new Set([...(acc.byAstId[astId] || []), id])]
+            //we use a set for uniqueness
+          }
+        };
+      }, state);
 
     case actions.RESET:
       return DEFAULT_ASSIGNMENTS;
@@ -153,32 +155,16 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
   }
 }
 
-function learnAddress(assignment, dummyAddress, address) {
-  if (assignment.dummyAddress === dummyAddress) {
-    //we can assume here that the object being
-    //transformed has a very particular form
-    let newIdObj = {
-      astId: assignment.astId,
-      address
-    };
-    let newId = stableKeccak256(newIdObj);
-    return {
-      id: newId,
-      ref: assignment.ref,
-      astId: assignment.astId,
-      address
-    };
-  } else {
-    return assignment;
-  }
-}
-
-const DEFAULT_MAPPING_KEYS = {
+const DEFAULT_PATHS = {
   decodingStarted: 0,
-  byId: {}
+  byAddress: {}
 };
 
-function mappingKeys(state = DEFAULT_MAPPING_KEYS, action) {
+//WARNING: do *not* rely on mappedPaths to keep track of paths that do not
+//involve mapping keys!  Yes, many will get mapped, but there is no guarantee.
+//Only when mapping keys are involved does it necessarily work reliably --
+//which is fine, as that's all we need it for.
+function mappedPaths(state = DEFAULT_PATHS, action) {
   switch (action.type) {
     case actions.MAP_KEY_DECODING:
       debug(
@@ -186,31 +172,109 @@ function mappingKeys(state = DEFAULT_MAPPING_KEYS, action) {
         state.decodingStarted + (action.started ? 1 : -1)
       );
       return {
-        decodingStarted: state.decodingStarted + (action.started ? 1 : -1),
-        byId: { ...state.byId }
+        ...state,
+        decodingStarted: state.decodingStarted + (action.started ? 1 : -1)
       };
-    case actions.MAP_KEY:
-      let { id, key } = action;
-      debug("mapping id and key: %s, %o", id, key);
+    case actions.MAP_PATH_AND_ASSIGN:
+      let { address, slot, typeIdentifier, parentType } = action;
+      //how this case works: first, we find the spot in our table (based on
+      //address, type identifier, and slot address) where the new entry should
+      //be added; if needed we set up all the objects needed along the way.  If
+      //there's already something there, we do nothing.  If there's nothing
+      //there, we record our given slot in that spot in that table -- however,
+      //we alter it in one key way.  Before entry, we check if the slot's
+      //*parent* has a spot in the table, based on address (same for both child
+      //and parent), parentType, and the parent's slot address (which can be
+      //found as the slotAddress of the slot's path object, if it exists -- if
+      //it doesn't then we conclude that no the parent does not have a spot in
+      //the table).  If the parent has a slot in the table already, then we
+      //alter the child slot by replacing its path with the parent slot.  This
+      //will keep the slotAddress the same, but since the versions kept in the
+      //table here are supposed to preserve path information, we'll be
+      //replacing a fairly bare-bones Slot object with one with a full path.
 
-      return {
-        decodingStarted: state.decodingStarted,
-        byId: {
-          ...state.byId,
+      //we do NOT want to distinguish between types with and without "_ptr" on
+      //the end here!
+      debug("typeIdentifier %s", typeIdentifier);
+      typeIdentifier = Definition.restorePtr(typeIdentifier);
+      parentType = Definition.restorePtr(parentType);
 
-          // add new key to set of keys already defined
-          [id]: [
-            ...new Set([
-              //set for uniqueness
-              ...(state.byId[id] || []),
-              key
-            ])
-          ]
+      debug("slot %o", slot);
+      let hexSlotAddress = Conversion.toHexString(
+        slotAddress(slot),
+        EVM.WORD_SIZE
+      );
+      let parentAddress = slot.path
+        ? Conversion.toHexString(slotAddress(slot.path), EVM.WORD_SIZE)
+        : undefined;
+
+      //this is going to be messy and procedural, sorry.  but let's start with
+      //the easy stuff: create the new address if needed, clone if not
+      let newState = {
+        ...state,
+        byAddress: {
+          ...state.byAddress,
+          [address]: {
+            byType: {
+              ...(state.byAddress[address] || { byType: {} }).byType
+            }
+          }
         }
       };
 
+      //now, let's add in the new type, if needed
+      newState.byAddress[address].byType = {
+        ...newState.byAddress[address].byType,
+        [typeIdentifier]: {
+          bySlotAddress: {
+            ...(
+              newState.byAddress[address].byType[typeIdentifier] || {
+                bySlotAddress: {}
+              }
+            ).bySlotAddress
+          }
+        }
+      };
+
+      let oldSlot =
+        newState.byAddress[address].byType[typeIdentifier].bySlotAddress[
+          hexSlotAddress
+        ];
+      //yes, this looks strange, but we haven't changed it yet except to
+      //clone or create empty (and we don't want undefined!)
+      //now: is there something already there or no?  if no, we must add
+      if (oldSlot === undefined) {
+        let newSlot;
+        debug("parentAddress %o", parentAddress);
+        if (
+          parentAddress !== undefined &&
+          newState.byAddress[address].byType[parentType] &&
+          newState.byAddress[address].byType[parentType].bySlotAddress[
+            parentAddress
+          ]
+        ) {
+          //if the parent is already present, use that instead of the given
+          //parent!
+          newSlot = {
+            ...slot,
+            path:
+              newState.byAddress[address].byType[parentType].bySlotAddress[
+                parentAddress
+              ]
+          };
+        } else {
+          newSlot = slot;
+        }
+        newState.byAddress[address].byType[typeIdentifier].bySlotAddress[
+          hexSlotAddress
+        ] = newSlot;
+      }
+      //if there's already something there, we don't need to do anything
+
+      return newState;
+
     case actions.RESET:
-      return DEFAULT_MAPPING_KEYS;
+      return DEFAULT_PATHS;
 
     default:
       return state;
@@ -219,7 +283,7 @@ function mappingKeys(state = DEFAULT_MAPPING_KEYS, action) {
 
 const proc = combineReducers({
   assignments,
-  mappingKeys
+  mappedPaths
 });
 
 const reducer = combineReducers({

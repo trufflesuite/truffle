@@ -95,17 +95,16 @@ describe("End State", function() {
 
     let session = bugger.connect();
 
-    session.continueUntilBreakpoint(); //no breakpoints set so advances to end
+    await session.continueUntilBreakpoint(); //no breakpoints set so advances to end
 
     debug("DCI %O", session.view(data.current.identifiers));
     debug("DCIR %O", session.view(data.current.identifiers.refs));
-    debug("DCIN %O", session.view(data.current.identifiers.native));
     debug("proc.assignments %O", session.view(data.proc.assignments));
 
     assert.ok(session.view(sessionSelector.transaction.receipt).status);
     const variables = TruffleDecodeUtils.Conversion.cleanBNs(
       await session.variables()
     );
-    assert.deepEqual(variables, { x: "107" });
+    assert.include(variables, { x: 107 });
   });
 });

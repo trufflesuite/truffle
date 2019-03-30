@@ -23,7 +23,16 @@ export function keccak256(...args) {
  * stringify operation before hashing
  */
 export function stableKeccak256(obj) {
-  return keccak256(stringify(obj));
+  return keccak256({ type: "string", value: stringify(obj) });
+}
+
+/*
+ * used by data; takes an id object and a ref (pointer) and returns a full
+ * corresponding assignment object
+ */
+export function makeAssignment(idObj, ref) {
+  let id = stableKeccak256(idObj);
+  return { ...idObj, id, ref };
 }
 
 /*
@@ -36,10 +45,52 @@ export function isCallMnemonic(op) {
 }
 
 /*
+ * returns true for mnemonics for calls that take only 6 args instead of 7
+ */
+export function isShortCallMnemonic(op) {
+  const shortCalls = ["DELEGATECALL", "STATICCALL"];
+  return shortCalls.includes(op);
+}
+
+/*
+ * returns true for mnemonics for calls that delegate storage
+ */
+export function isDelegateCallMnemonicBroad(op) {
+  const delegateCalls = ["DELEGATECALL", "CALLCODE"];
+  return delegateCalls.includes(op);
+}
+
+/*
+ * returns true for mnemonics for calls that delegate everything
+ */
+export function isDelegateCallMnemonicStrict(op) {
+  const delegateCalls = ["DELEGATECALL"];
+  return delegateCalls.includes(op);
+}
+
+/*
+ * returns true for mnemonics for static calls
+ */
+export function isStaticCallMnemonic(op) {
+  const delegateCalls = ["STATICCALL"];
+  return delegateCalls.includes(op);
+}
+
+/*
  * Given a mmemonic, determine whether it's the mnemonic of a creation
  * instruction
  */
 export function isCreateMnemonic(op) {
   const creates = ["CREATE", "CREATE2"];
   return creates.includes(op);
+}
+
+/*
+ * Given a mmemonic, determine whether it's the mnemonic of a normal
+ * halting instruction
+ */
+export function isNormalHaltingMnemonic(op) {
+  const halts = ["STOP", "RETURN", "SELFDESTRUCT", "SUICIDE"];
+  //the mnemonic SUICIDE is no longer used, but just in case, I'm including it
+  return halts.includes(op);
 }

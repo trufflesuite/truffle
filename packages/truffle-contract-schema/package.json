@@ -1,6 +1,6 @@
 {
   "name": "truffle-contract-schema",
-  "version": "3.0.1",
+  "version": "3.0.6",
   "description": "JSON schema for contract artifacts",
   "main": "index.js",
   "scripts": {
@@ -8,10 +8,7 @@
     "build": "cd spec && json2ts -i contract-object.spec.json -o ./index.d.ts",
     "test": "mocha"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/trufflesuite/truffle-schema.git"
-  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-contract-schema",
   "keywords": [
     "ethereum",
     "json",

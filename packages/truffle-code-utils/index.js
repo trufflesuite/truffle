@@ -4,32 +4,56 @@ module.exports = {
   /**
    * parseCode - return a list of instructions given a 0x-prefixed code string.
    *
-   * Any contract metadata, if present, will be stripped.
+   * If numInstructions is not passed in, we attempt to strip contract
+   * metadata.  This won't work very well if the code is for a constructor or a
+   * contract that can create other contracts, but it's better than nothing.
    *
-   * @param  {String} hex_string Hex string representing the code
+   * WARNING: Don't invoke the function that way if you're dealing with a
+   * constructor with arguments attached!  Then you could get disaster!
+   *
+   * If you pass in numInstructions (hint: count the semicolons in the source
+   * map, then add one) this is used to exclude metadata instead.
+   *
+   * @param  {String} hexString Hex string representing the code
    * @return Array               Array of instructions
    */
-  parseCode: function (hex_string) {
-    // Convert to an array of bytes (denoted by substrings)
-    var code = hex_string.match(/(..?)/g);
+  parseCode: function(hexString, numInstructions = null) {
+    // Convert to an array of bytes
+    let code = hexString
+      .slice(2)
+      .match(/(..?)/g)
+      .map(hex => parseInt(hex, 16));
 
-    // Remove the last 43 bytes, which is the contract metadata
-    // TODO: Make this conditional, as it's assumed the metadata exists.
-    code.splice(-43);
+    let stripMetadata = numInstructions === null;
 
-    // Convert to Buffer
-    code = Buffer.from(code.join("").replace("0x", ""), "hex");
+    if (stripMetadata) {
+      // Remove the contract metadata; last two bytes encode its length (not
+      // including those two bytes)
+      let metadataLength = (code[code.length - 2] << 8) + code[code.length - 1];
+      code.splice(-(metadataLength + 2));
+    }
 
-    var instructions = [];
-    for (var pc = 0; pc < code.length; pc++) {
-      var opcode = opcodes(code[pc], true);
+    let instructions = [];
+    for (
+      let pc = 0;
+      pc < code.length &&
+      (stripMetadata || instructions.length < numInstructions);
+      pc++
+    ) {
+      let opcode = {};
       opcode.pc = pc;
-      if (opcode.name.slice(0, 4) === 'PUSH') {
-        var length = code[pc] - 0x5f;
+      opcode.name = opcodes(code[pc]);
+      if (opcode.name.slice(0, 4) === "PUSH") {
+        var length = code[pc] - 0x60 + 1; //0x60 is code for PUSH1
         opcode.pushData = code.slice(pc + 1, pc + length + 1);
+        if (opcode.pushData.length < length) {
+          opcode.pushData = opcode.pushData.concat(
+            new Array(length - opcode.pushData.length).fill(0)
+          );
+        }
 
         // convert pushData to hex
-        opcode.pushData = "0x" + opcode.pushData.toString("hex");
+        opcode.pushData = "0x" + Buffer.from(opcode.pushData).toString("hex");
 
         pc += length;
       }

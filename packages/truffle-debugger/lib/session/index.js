@@ -1,11 +1,12 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:session"); //eslint-disable-line no-unused-vars
+const debug = debugModule("debugger:session");
 
 import configureStore from "lib/store";
 
 import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
 import data from "lib/data/selectors";
+import controllerSelector from "lib/controller/selectors";
 
 import rootSaga from "./sagas";
 import reducer from "./reducers";
@@ -35,7 +36,7 @@ export default class Session {
     this._store.dispatch(actions.start(txHash, provider));
   }
 
-  ready() {
+  async ready() {
     return new Promise((accept, reject) => {
       this._store.subscribe(() => {
         if (this.state.session.status == "ACTIVE") {
@@ -80,13 +81,21 @@ export default class Session {
       debug("sourceMap %o", sourceMap);
       debug("compiler %o", compiler);
 
+      let contractId = ast.nodes.find(
+        node =>
+          node.nodeType === "ContractDefinition" && node.name === contractName
+      ).id; //could also record contractKind, but we don't need to
+
+      debug("contractId %d", contractId);
+
       sourcesByPath[sourcePath] = { sourcePath, source, ast };
 
       if (binary && binary != "0x") {
         contexts.push({
           contractName,
           binary,
-          sourceMap
+          sourceMap,
+          contractId
         });
       }
 
@@ -95,7 +104,8 @@ export default class Session {
           contractName,
           binary: deployedBinary,
           sourceMap: deployedSourceMap,
-          compiler
+          compiler,
+          contractId
         });
       }
     }
@@ -117,53 +127,83 @@ export default class Session {
     return selector(this.state);
   }
 
-  dispatch(action) {
+  async dispatch(action) {
     this._store.dispatch(action);
 
     return true;
   }
 
-  interrupt() {
+  async interrupt() {
     return this.dispatch(controller.interrupt());
   }
 
-  advance() {
-    return this.dispatch(controller.advance());
+  async doneStepping(stepperAction) {
+    return new Promise(resolve => {
+      let hasStarted = false;
+      let hasResolved = false;
+      const unsubscribe = this._store.subscribe(() => {
+        const isStepping = this.view(controllerSelector.isStepping);
+
+        if (isStepping && !hasStarted) {
+          hasStarted = true;
+          debug("heard step start");
+          return;
+        }
+
+        if (!isStepping && hasStarted && !hasResolved) {
+          hasResolved = true;
+          debug("heard step stop");
+          unsubscribe();
+          resolve(true);
+        }
+      });
+      this.dispatch(stepperAction);
+    });
   }
 
-  stepNext() {
-    return this.dispatch(controller.stepNext());
+  //Note: count is an optional argument; default behavior is to advance 1
+  async advance(count) {
+    return await this.doneStepping(controller.advance(count));
   }
 
-  stepOver() {
-    return this.dispatch(controller.stepOver());
+  async stepNext() {
+    return await this.doneStepping(controller.stepNext());
   }
 
-  stepInto() {
-    return this.dispatch(controller.stepInto());
+  async stepOver() {
+    return await this.doneStepping(controller.stepOver());
   }
 
-  stepOut() {
-    return this.dispatch(controller.stepOut());
+  async stepInto() {
+    return await this.doneStepping(controller.stepInto());
   }
 
-  reset() {
-    return this.dispatch(controller.reset());
+  async stepOut() {
+    return await this.doneStepping(controller.stepOut());
   }
 
-  continueUntilBreakpoint() {
-    return this.dispatch(controller.continueUntilBreakpoint());
+  async reset() {
+    return await this.doneStepping(controller.reset());
   }
 
-  addBreakpoint(breakpoint) {
+  //NOTE: breakpoints is an OPTIONAL argument for if you want to supply your
+  //own list of breakpoints; leave it out to use the internal one (as
+  //controlled by the functions below)
+  async continueUntilBreakpoint(breakpoints) {
+    return await this.doneStepping(
+      controller.continueUntilBreakpoint(breakpoints)
+    );
+  }
+
+  async addBreakpoint(breakpoint) {
     return this.dispatch(controller.addBreakpoint(breakpoint));
   }
 
-  removeBreakpoint(breakpoint) {
+  async removeBreakpoint(breakpoint) {
     return this.dispatch(controller.removeBreakpoint(breakpoint));
   }
 
-  removeAllBreakpoints() {
+  async removeAllBreakpoints() {
     return this.dispatch(controller.removeAllBreakpoints());
   }
 
@@ -171,9 +211,7 @@ export default class Session {
     return new Promise(resolve => {
       let haveResolved = false;
       const unsubscribe = this._store.subscribe(() => {
-        const subscriptionDecodingStarted = this.view(
-          data.proc.decodingMappingKeys
-        );
+        const subscriptionDecodingStarted = this.view(data.proc.decodingKeys);
 
         debug("following decoding started: %d", subscriptionDecodingStarted);
 
@@ -184,7 +222,7 @@ export default class Session {
         }
       });
 
-      const decodingStarted = this.view(data.proc.decodingMappingKeys);
+      const decodingStarted = this.view(data.proc.decodingKeys);
 
       debug("initial decoding started: %d", decodingStarted);
 
@@ -207,8 +245,11 @@ export default class Session {
   }
 
   async variables() {
+    debug("awaiting decodeReady");
     await this.decodeReady();
+    debug("decode now ready");
 
     return await this.view(data.current.identifiers.decoded);
+    debug("got variables");
   }
 }

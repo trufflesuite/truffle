@@ -5,7 +5,7 @@ import { assert } from "chai";
 
 import Ganache from "ganache-core";
 
-import { prepareContracts } from "./helpers";
+import { prepareContracts, lineOf } from "./helpers";
 import Debugger from "lib/debugger";
 
 import solidity from "lib/solidity/selectors";
@@ -30,7 +30,8 @@ contract SingleCall {
 }
 `;
 
-const __NESTED_CALL = `pragma solidity ~0.5;
+const __NESTED_CALL = `
+pragma solidity ~0.5;
 
 contract NestedCall {
   event First();
@@ -46,7 +47,7 @@ contract NestedCall {
   //              1
   function run() public {
     first();
-    second();
+    second(); //BREAK
   }
 
   function first() public {
@@ -63,9 +64,38 @@ contract NestedCall {
 }
 `;
 
+const __FAILED_CALL = `
+pragma solidity ^0.5.0;
+
+contract RevertTest {
+
+  event Begin();
+  event Done();
+
+  function() external {
+    doStuff();
+  }
+
+  function doStuff() public {
+    fail();
+  }
+
+  function fail() public {
+    revert();
+  }
+
+  function run() public {
+    emit Begin(); //BREAK #1
+    address(this).call(hex"");
+    emit Done(); //BREAK #2
+  }
+}
+`;
+
 let sources = {
   "SingleCall.sol": __SINGLE_CALL,
-  "NestedCall.sol": __NESTED_CALL
+  "NestedCall.sol": __NESTED_CALL,
+  "FailedCall.sol": __FAILED_CALL
 };
 
 describe("Solidity Debugging", function() {
@@ -103,17 +133,47 @@ describe("Solidity Debugging", function() {
     let session = bugger.connect();
 
     // at `second();`
-    let source = await session.view(solidity.current.source);
-    let breakpoint = { sourceId: source.id, line: 16 };
+    let source = session.view(solidity.current.source);
+    let breakLine = lineOf("BREAK", source.source);
+    let breakpoint = { sourceId: source.id, line: breakLine };
 
-    session.addBreakpoint(breakpoint);
+    await session.addBreakpoint(breakpoint);
 
     do {
-      session.continueUntilBreakpoint();
+      await session.continueUntilBreakpoint();
 
       if (!session.view(trace.finished)) {
-        let range = await session.view(solidity.current.sourceRange);
-        assert.equal(range.lines.start.line, 16);
+        let range = session.view(solidity.current.sourceRange);
+        assert.equal(range.lines.start.line, breakLine);
+      }
+    } while (!session.view(trace.finished));
+  });
+
+  it("exposes functionality to stop at specified breakpoints", async function() {
+    // prepare
+    let instance = await abstractions.NestedCall.deployed();
+    let receipt = await instance.run();
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      files,
+      contracts: artifacts
+    });
+
+    let session = bugger.connect();
+
+    // at `second();`
+    let source = session.view(solidity.current.source);
+    let breakLine = lineOf("BREAK", source.source);
+    let breakpoint = { sourceId: source.id, line: breakLine };
+
+    do {
+      await session.continueUntilBreakpoint([breakpoint]);
+
+      if (!session.view(trace.finished)) {
+        let range = session.view(solidity.current.sourceRange);
+        assert.equal(range.lines.start.line, breakLine);
       }
     } while (!session.view(trace.finished));
   });
@@ -136,7 +196,7 @@ describe("Solidity Debugging", function() {
       var finished;
 
       do {
-        session.stepNext();
+        await session.stepNext();
         finished = session.view(trace.finished);
 
         let actual = session.view(solidity.current.functionDepth);
@@ -172,7 +232,7 @@ describe("Solidity Debugging", function() {
           assert.equal(actual, numExpected);
         }
 
-        session.stepNext();
+        await session.stepNext();
       }
 
       assert(hasBegun); //check for non-vacuity of the above tests
@@ -194,14 +254,14 @@ describe("Solidity Debugging", function() {
 
       // follow functionDepth values in list
       // see source above
-      let expectedDepthSequence = [0, 1, 2, 3, 2, 1, 2, 1, -1];
+      let expectedDepthSequence = [0, 1, 2, 3, 2, 1, 2, 1, 0];
       //end at -1 due to losing 2 from contract method return
       let actualSequence = [session.view(solidity.current.functionDepth)];
 
       var finished;
 
       do {
-        session.stepNext();
+        await session.stepNext();
         finished = session.view(trace.finished);
 
         let currentDepth = session.view(solidity.current.functionDepth);
@@ -213,6 +273,36 @@ describe("Solidity Debugging", function() {
       } while (!finished);
 
       assert.deepEqual(actualSequence, expectedDepthSequence);
+    });
+
+    it("unwinds correctly on call failure", async function() {
+      // prepare
+      let instance = await abstractions.RevertTest.deployed();
+      let receipt = await instance.run();
+      let txHash = receipt.tx;
+
+      let bugger = await Debugger.forTx(txHash, {
+        provider,
+        files,
+        contracts: artifacts
+      });
+
+      let session = bugger.connect();
+
+      let source = session.view(solidity.current.source);
+      let breakLine1 = lineOf("BREAK #1", source.source);
+      let breakpoint1 = { sourceId: source.id, line: breakLine1 };
+      await session.addBreakpoint(breakpoint1);
+      let breakLine2 = lineOf("BREAK #2", source.source);
+      let breakpoint2 = { sourceId: source.id, line: breakLine2 };
+      await session.addBreakpoint(breakpoint2);
+
+      await session.continueUntilBreakpoint();
+      let depthBefore = session.view(solidity.current.functionDepth);
+      await session.continueUntilBreakpoint();
+      let depthAfter = session.view(solidity.current.functionDepth);
+
+      assert.equal(depthAfter, depthBefore);
     });
   });
 });

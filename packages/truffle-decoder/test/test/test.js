@@ -10,10 +10,7 @@ function validateStructS(struct, values) {
   assert.equal(struct.members.structInt.value.toString(), values[0]);
   assert.equal(struct.members.structString.value, values[1]);
   assert.equal(struct.members.structBool.value, values[2]);
-  assert.equal(
-    struct.members.structAddress.value,
-    values[3]
-  );
+  assert.equal(struct.members.structAddress.value, values[3]);
 
   const s2 = struct.members.structS2.value;
   validateStructS2(s2, values[4]);
@@ -21,16 +18,24 @@ function validateStructS(struct, values) {
 
 function validateStructS2(s2, values) {
   assert.equal(typeof s2, "object");
-  assert.equal(s2.members.structTwoFixedArrayUint.value[0].toString(), values[0]);
-  assert.equal(s2.members.structTwoFixedArrayUint.value[1].toString(), values[1]);
+  assert.equal(
+    s2.members.structTwoFixedArrayUint.value[0].toString(),
+    values[0]
+  );
+  assert.equal(
+    s2.members.structTwoFixedArrayUint.value[1].toString(),
+    values[1]
+  );
   assert.equal(s2.members.structTwoDynamicArrayUint.value.length, values[2]);
   for (let i = 0; i < values[2]; i++) {
-    assert.equal(s2.members.structTwoDynamicArrayUint.value[i].toString(), values[3 + i]);
+    assert.equal(
+      s2.members.structTwoDynamicArrayUint.value[i].toString(),
+      values[3 + i]
+    );
   }
 }
 
-// eslint-disable-next-line no-unused-vars
-contract("DecodingSample", accounts => {
+contract("DecodingSample", _accounts => {
   it("should get the initial state properly", async () => {
     await DecodingSample.deployed();
     const decoder = TruffleDecoder.forContract(
@@ -39,6 +44,9 @@ contract("DecodingSample", accounts => {
       web3.currentProvider
     );
     decoder.init();
+
+    decoder.watchMappingKey("varMapping", 2);
+    decoder.watchMappingKey("varMapping", 3);
 
     const initialState = await decoder.state();
 
@@ -61,7 +69,7 @@ contract("DecodingSample", accounts => {
     assert.equal(variables.varBool.value, true);
     assert.equal(
       variables.varAddress.value,
-      "0x12345567890abcdeffedcba09876543211337121"
+      "0x12345567890abcDEffEDcBa09876543211337121"
     );
     assert.equal(variables.varBytes7.value, "0x78554477331122");
     assert.equal(variables.varBytes.value, "0x01030307");
@@ -73,15 +81,8 @@ contract("DecodingSample", accounts => {
       "-2",
       "three",
       false,
-      "0x54321567890abcdeffedcba09876543211337121",
-      [
-        "4",
-        "2",
-        3,
-        "4",
-        "8",
-        "12"
-      ]
+      "0x54321567890abcdeFfEDcBA09876543211337121",
+      ["4", "2", 3, "4", "8", "12"]
     ]);
 
     assert.equal(variables.fixedArrayUint.value[0].toString(), "16");
@@ -90,10 +91,22 @@ contract("DecodingSample", accounts => {
     assert.equal(variables.fixedArrayString.value[1].toString(), "world");
     assert.equal(variables.fixedArrayBool.value[0], true);
     assert.equal(variables.fixedArrayBool.value[1], false);
-    assert.equal(variables.fixedArrayAddress.value[0].toString(), "0x98761567890abcdeffedcba09876543211337121");
-    assert.equal(variables.fixedArrayAddress.value[1].toString(), "0xfedc1567890abcdeffedcba09876543211337121");
-    assert.equal(variables.fixedArrayBytes7.value[0].toString(), "0x75754477331122");
-    assert.equal(variables.fixedArrayBytes7.value[1].toString(), "0xe7d14477331122");
+    assert.equal(
+      variables.fixedArrayAddress.value[0].toString(),
+      "0x98761567890ABCdeffEdCba09876543211337121"
+    );
+    assert.equal(
+      variables.fixedArrayAddress.value[1].toString(),
+      "0xfEDc1567890aBcDeFfEdcba09876543211337121"
+    );
+    assert.equal(
+      variables.fixedArrayBytes7.value[0].toString(),
+      "0x75754477331122"
+    );
+    assert.equal(
+      variables.fixedArrayBytes7.value[1].toString(),
+      "0xe7d14477331122"
+    );
     assert.equal(variables.fixedArrayByte.value[0].toString(), "0x37");
     assert.equal(variables.fixedArrayByte.value[1].toString(), "0xbe");
     assert.equal(variables.fixedArrayEnum.value[0].value, "E.EnumValFour");
@@ -105,10 +118,22 @@ contract("DecodingSample", accounts => {
     assert.equal(variables.dynamicArrayString.value[1].toString(), "world");
     assert.equal(variables.dynamicArrayBool.value[0], true);
     assert.equal(variables.dynamicArrayBool.value[1], false);
-    assert.equal(variables.dynamicArrayAddress.value[0].toString(), "0x98761567890abcdeffedcba09876543211337121");
-    assert.equal(variables.dynamicArrayAddress.value[1].toString(), "0xfedc1567890abcdeffedcba09876543211337121");
-    assert.equal(variables.dynamicArrayBytes7.value[0].toString(), "0x75754477331122");
-    assert.equal(variables.dynamicArrayBytes7.value[1].toString(), "0xe7d14477331122");
+    assert.equal(
+      variables.dynamicArrayAddress.value[0].toString(),
+      "0x98761567890ABCdeffEdCba09876543211337121"
+    );
+    assert.equal(
+      variables.dynamicArrayAddress.value[1].toString(),
+      "0xfEDc1567890aBcDeFfEdcba09876543211337121"
+    );
+    assert.equal(
+      variables.dynamicArrayBytes7.value[0].toString(),
+      "0x75754477331122"
+    );
+    assert.equal(
+      variables.dynamicArrayBytes7.value[1].toString(),
+      "0xe7d14477331122"
+    );
     assert.equal(variables.dynamicArrayByte.value[0].toString(), "0x37");
     assert.equal(variables.dynamicArrayByte.value[1].toString(), "0xbe");
     assert.equal(variables.dynamicArrayEnum.value[0].value, "E.EnumValFour");
@@ -116,6 +141,7 @@ contract("DecodingSample", accounts => {
 
     // const fixedStructArray = variables.fixedArrayStructS.value;
 
-    // const mappingValue = await decoder.mapping(contractState.variables["myMap"].value.id, [17]);
+    assert.equal(variables.varMapping.value.members[2], 41);
+    assert.equal(variables.varMapping.value.members[3], 107);
   });
 });

@@ -1,13 +1,10 @@
 {
   "name": "truffle-contract-sources",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "description": "Utility for finding all contracts within a directory",
   "main": "index.js",
   "scripts": {},
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/trufflesuite/truffle-contract-sources.git"
-  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-contract-sources",
   "keywords": [
     "ethereum",
     "contracts",
