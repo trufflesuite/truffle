@@ -91,12 +91,7 @@ let solidity = createSelectorTree({
     /**
      * solidity.info.sources
      */
-    sources: createLeaf(["/state"], state => state.info.sources.byId),
-
-    /**
-     * solidity.info.sourceMaps
-     */
-    sourceMaps: createLeaf(["/state"], state => state.info.sourceMaps.byContext)
+    sources: createLeaf(["/state"], state => state.info.sources.byId)
   },
 
   /**
@@ -107,9 +102,9 @@ let solidity = createSelectorTree({
      * solidity.current.sourceMap
      */
     sourceMap: createLeaf(
-      [evm.current.context, "/info/sourceMaps"],
+      [evm.current.context],
 
-      ({ context }, sourceMaps) => sourceMaps[context] || {}
+      ({ sourceMap }) => sourceMap
     ),
 
     /**
@@ -131,7 +126,7 @@ let solidity = createSelectorTree({
     instructions: createLeaf(
       ["/info/sources", evm.current.context, "./sourceMap"],
 
-      (sources, { binary }, { sourceMap }) => {
+      (sources, { binary }, sourceMap) => {
         if (!binary) {
           return [];
         }
@@ -237,7 +232,10 @@ let solidity = createSelectorTree({
           map[instruction.pc] = instruction;
         });
 
-        // fill in gaps in map by defaulting to the last known instruction
+        // (HACK) fill in gaps in map by defaulting to the last known instruction
+        // NOTE: this should never come up! for this to come up you'd have to
+        // be inside the data portion of a PUSH instruction, which is not EVM
+        // legal (attempts at frameshifting are strictly prohibited :P )
         let lastSeen = null;
         for (let [pc, instruction] of map.entries()) {
           if (instruction) {

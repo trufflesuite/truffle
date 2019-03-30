@@ -98,7 +98,7 @@ describe("Contexts", function() {
     // run outer contract method
     let result = await outer.run();
 
-    assert.equal(2, result.receipt.rawLogs.length, "There should be two logs");
+    assert.equal(result.receipt.rawLogs.length, 2, "There should be two logs");
 
     let txHash = result.tx;
 
@@ -118,7 +118,7 @@ describe("Contexts", function() {
 
     let affectedAddresses = Object.keys(affectedInstances);
 
-    assert.equal(2, affectedAddresses.length);
+    assert.equal(affectedAddresses.length, 2);
 
     assert.include(
       affectedAddresses,

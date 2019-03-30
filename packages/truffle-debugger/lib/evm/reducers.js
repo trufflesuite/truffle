@@ -4,70 +4,121 @@ const debug = debugModule("debugger:evm:reducers");
 import { combineReducers } from "redux";
 
 import * as actions from "./actions";
-import { keccak256 } from "lib/helpers";
+import { keccak256, extractPrimarySource } from "lib/helpers";
 import * as DecodeUtils from "truffle-decode-utils";
+import escapeRegExp from "lodash.escaperegexp";
 
 import BN from "bn.js";
 
-const DEFAULT_CONTEXTS = {
-  byContext: {},
-  byBinary: {}
-};
-
-function contexts(state = DEFAULT_CONTEXTS, action) {
+function contexts(state = {}, action) {
   switch (action.type) {
     /*
      * Adding a new context
      */
     case actions.ADD_CONTEXT: {
-      const { contractName, raw, compiler, contractId } = action;
-      const context = keccak256(raw);
+      const {
+        contractName,
+        binary,
+        sourceMap,
+        compiler,
+        abi,
+        contractId,
+        isConstructor
+      } = action;
+      debug("action %O", action);
+      const context = keccak256({ type: "bytes", value: binary });
+      let primarySource;
+      if (sourceMap !== undefined) {
+        primarySource = extractPrimarySource(sourceMap);
+      }
+      //otherwise leave it undefined
 
       return {
         ...state,
 
-        byContext: {
-          ...state.byContext,
-
-          [context]: {
-            ...(state.byContext[context] || {}),
-
-            contractName,
-            context,
-            compiler,
-            contractId
-          }
+        [context]: {
+          contractName,
+          context,
+          binary,
+          sourceMap,
+          primarySource,
+          compiler,
+          abi,
+          contractId,
+          isConstructor
         }
       };
     }
 
-    /*
-     * Adding binary for a context
-     */
-    case actions.ADD_BINARY: {
-      const { context, binary } = action;
+    case actions.NORMALIZE_CONTEXTS: {
+      //unfortunately, due to our current link references format, we can't
+      //really use the binary frm the artifact directly -- neither for purposes
+      //of matching, nor for purposes of decoding internal functions.  So, we
+      //need to perform this normalization step on our contexts before using
+      //them.  Once we have truffle-db, this step should largely go away.
 
-      if (state.byBinary[binary]) {
-        return state;
+      debug("normalizing contexts");
+
+      //first, let's clone the state; we're going to make some deep modifications,
+      //so we'll want more than a shallow clone here
+      let newState = Object.assign(
+        {},
+        ...Object.entries(state).map(([id, context]) => ({
+          [id]: {
+            ...context
+          }
+        }))
+      );
+
+      debug("state cloned");
+
+      //next, we get all the contract names and sort them descending by length.
+      //We're going to want to go in descending order of length so that we
+      //don't run into problems when one name is a substring of another.
+      //For simplicity, we'll exclude names of length <40, because we can
+      //handle these with our more general check for link references at the end
+      const fillerLength = 2 * DecodeUtils.EVM.ADDRESS_SIZE;
+      let names = Object.values(state)
+        .map(context => context.contractName)
+        .filter(name => name.length >= fillerLength)
+        .sort((name1, name2) => name2.length - name1.length);
+
+      debug("names sorted");
+
+      //now, we need to turn all these names into regular expressions, because,
+      //unfortunately, str.replace() will only replace all if you use a /g regexp;
+      //note that because names may contain '$', we need to escape them
+      //(also we prepend "__" because that's the placeholder format)
+      let regexps = names.map(
+        name => new RegExp(escapeRegExp("__" + name), "g")
+      );
+
+      debug("regexps prepared");
+
+      //having done so, we can do the replace for these names!
+      const replacement = ".".repeat(fillerLength);
+      for (let regexp of regexps) {
+        for (let context of Object.values(newState)) {
+          context.binary = context.binary.replace(regexp, replacement);
+        }
       }
 
-      return {
-        byContext: {
-          ...state.byContext,
+      debug("long replacements complete");
 
-          [context]: {
-            ...state.byContext[context],
+      //finally, we can do a generic replace that will catch all names of length
+      //<40, while also catching the Solidity compiler's link reference format
+      //as well as Truffle's.  Hooray!
+      const genericRegexp = new RegExp("_.{" + (fillerLength - 2) + "}_", "g");
+      //we're constructing the regexp /_.{38}_/g, but I didn't want to use a
+      //literal 38 :P
+      for (let context of Object.values(newState)) {
+        context.binary = context.binary.replace(genericRegexp, replacement);
+      }
 
-            binary
-          }
-        },
+      debug("short replacements complete");
 
-        byBinary: {
-          ...state.byBinary,
-
-          [binary]: { context: context }
-        }
-      };
+      //finally, return this mess!
+      return newState;
     }
 
     /*
