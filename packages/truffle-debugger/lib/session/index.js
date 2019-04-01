@@ -79,11 +79,14 @@ export default class Session {
         compiler
       } = contract;
 
-      let contractId = ast.nodes.find(
+      let contractNode = ast.nodes.find(
         node =>
           node.nodeType === "ContractDefinition" && node.name === contractName
-      ).id; //ideally we'd hold this off till later, but that would break the
+      ); //ideally we'd hold this off till later, but that would break the
       //direction of the evm/solidity dependence, so we do it now
+
+      let contractId = contractNode.id;
+      let contractKind = contractNode.contractKind;
 
       debug("contractName %s", contractName);
       debug("sourceMap %o", sourceMap);
@@ -100,6 +103,7 @@ export default class Session {
           abi,
           compiler,
           contractId,
+          contractKind,
           isConstructor: true
         });
       }
@@ -112,6 +116,7 @@ export default class Session {
           abi,
           compiler,
           contractId,
+          contractKind,
           isConstructor: false
         });
       }

@@ -6,6 +6,7 @@ export function addContext({
   compiler,
   abi,
   contractId,
+  contractKind,
   isConstructor
 }) {
   return {
@@ -16,6 +17,7 @@ export function addContext({
     compiler,
     abi,
     contractId,
+    contractKind,
     isConstructor
   };
 }

@@ -23,6 +23,7 @@ function contexts(state = {}, action) {
         compiler,
         abi,
         contractId,
+        contractKind,
         isConstructor
       } = action;
       debug("action %O", action);
@@ -45,6 +46,7 @@ function contexts(state = {}, action) {
           compiler,
           abi,
           contractId,
+          contractKind,
           isConstructor
         }
       };
@@ -105,7 +107,7 @@ function contexts(state = {}, action) {
 
       debug("long replacements complete");
 
-      //finally, we can do a generic replace that will catch all names of length
+      //now we can do a generic replace that will catch all names of length
       //<40, while also catching the Solidity compiler's link reference format
       //as well as Truffle's.  Hooray!
       const genericRegexp = new RegExp("_.{" + (fillerLength - 2) + "}_", "g");
@@ -116,6 +118,29 @@ function contexts(state = {}, action) {
       }
 
       debug("short replacements complete");
+      //but there's one more step -- libraries sometimes include 0s in place of
+      //their own address instead of a link reference, so we need to account
+      //for that too (really this only occurs in even more specific contexts,
+      //but it would be too much trouble to distinguish any further)
+      const pushAddressInstruction = (
+        0x60 +
+        DecodeUtils.EVM.ADDRESS_SIZE -
+        1
+      ).toString(16); //"73"
+      const libraryRegexp = new RegExp(
+        pushAddressInstruction + "00".repeat(DecodeUtils.EVM.ADDRESS_SIZE),
+        "g"
+      );
+      for (let context of Object.values(newState)) {
+        if (context.contractKind === "library") {
+          context.binary = context.binary.replace(
+            libraryRegexp,
+            pushAddressInstruction + replacement
+          );
+        }
+      }
+
+      debug("extra library replacements complete");
 
       //finally, return this mess!
       return newState;
