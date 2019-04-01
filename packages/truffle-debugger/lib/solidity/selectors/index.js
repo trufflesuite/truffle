@@ -150,7 +150,10 @@ let solidity = createSelectorTree({
           // map maps just as many ranges as there are instructions (or
           // possibly more), and marks them all as being Solidity-internal and
           // not jumps.
-          sourceMap = "0:0:-1:-".concat(";".repeat(instructions.length - 1));
+          sourceMap =
+            binary !== "0x"
+              ? "0:0:-1:-".concat(";".repeat(instructions.length - 1))
+              : "";
         }
 
         var lineAndColumnMappings = Object.assign(
