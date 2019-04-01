@@ -118,24 +118,21 @@ function contexts(state = {}, action) {
       }
 
       debug("short replacements complete");
-      //but there's one more step -- libraries sometimes include 0s in place of
-      //their own address instead of a link reference, so we need to account
-      //for that too (really this only occurs in even more specific contexts,
-      //but it would be too much trouble to distinguish any further)
+      //but there's one more step -- libraries' deployedBytecode will include
+      //0s in place of their own address instead of a link reference at the
+      //beginning, so we need to account for that too
       const pushAddressInstruction = (
         0x60 +
         DecodeUtils.EVM.ADDRESS_SIZE -
         1
       ).toString(16); //"73"
-      const libraryRegexp = new RegExp(
-        pushAddressInstruction + "00".repeat(DecodeUtils.EVM.ADDRESS_SIZE),
-        "g"
-      );
       for (let context of Object.values(newState)) {
-        if (context.contractKind === "library") {
+        if (context.contractKind === "library" && !context.isConstructor) {
           context.binary = context.binary.replace(
-            libraryRegexp,
-            pushAddressInstruction + replacement
+            "0x" +
+              pushAddressInstruction +
+              "00".repeat(DecodeUtils.EVM.ADDRESS_SIZE),
+            "0x" + pushAddressInstruction + replacement
           );
         }
       }
