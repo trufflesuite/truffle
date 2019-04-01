@@ -32,9 +32,11 @@ pragma solidity ^0.5.4;
 contract RevertTest {
 
   uint x;
+  uint y;
 
   function() external {
     x = 2;
+    y = x;
     revert();
   }
 
@@ -47,9 +49,11 @@ contract RevertTest {
 contract RevertTest2 {
 
   uint x;
+  uint y;
 
   function() external {
     x = 2;
+    y = x;
     assert(false);
   }
 

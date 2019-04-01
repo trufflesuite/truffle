@@ -14,7 +14,8 @@ import {
   isShortCallMnemonic,
   isDelegateCallMnemonicBroad,
   isDelegateCallMnemonicStrict,
-  isStaticCallMnemonic
+  isStaticCallMnemonic,
+  isNormalHaltingMnemonic
 } from "lib/helpers";
 
 function findContext({ address, binary }, instances, search, contexts) {
@@ -113,9 +114,8 @@ function createStepSelectors(step, state = null) {
      * whether the instruction halts or returns from a calling context
      * (covers only ordinary halds, not exceptional halts)
      */
-    isHalting: createLeaf(
-      ["./trace"],
-      step => step.op == "STOP" || step.op == "RETURN"
+    isHalting: createLeaf(["./trace"], step =>
+      isNormalHaltingMnemonic(step.op)
     ),
 
     /*
