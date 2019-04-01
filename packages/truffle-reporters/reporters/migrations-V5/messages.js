@@ -211,6 +211,14 @@ class MigrationsMessages {
             data.receipt.contractAddress
           }\n`;
 
+          output += `   > ${"block number:".padEnd(20)} ${
+            data.receipt.blockNumber
+          }\n`;
+
+          output += `   > ${"block timestamp:".padEnd(20)} ${
+            data.timestamp
+          }\n`;
+          
         output +=
           `   > ${"account:".padEnd(20)} ${data.from}\n` +
           `   > ${"balance:".padEnd(20)} ${data.balance}\n` +
