@@ -227,23 +227,13 @@ let solidity = createSelectorTree({
       ["./instructions"],
 
       instructions => {
-        let map = [];
+        let map = {};
         instructions.forEach(function(instruction) {
           map[instruction.pc] = instruction;
         });
-
-        // (HACK) fill in gaps in map by defaulting to the last known instruction
-        // NOTE: this should never come up! for this to come up you'd have to
-        // be inside the data portion of a PUSH instruction, which is not EVM
-        // legal (attempts at frameshifting are strictly prohibited :P )
-        let lastSeen = null;
-        for (let [pc, instruction] of map.entries()) {
-          if (instruction) {
-            lastSeen = instruction;
-          } else {
-            map[pc] = lastSeen;
-          }
-        }
+        //note: this will have gaps in it.  That's OK!  Those gaps are the data
+        //portions of push instructions, which it is illegal to jump into.  We
+        //don't need to assign instructions to illegal PC values.
         return map;
       }
     ),
