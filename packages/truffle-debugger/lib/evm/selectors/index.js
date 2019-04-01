@@ -32,7 +32,13 @@ function matchContext({ binary, isConstructor }, givenBinary) {
   for (let i = 0; i < binary.length; i++) {
     //note: using strings like arrays is kind of dangerous in general in JS,
     //but everything here is ASCII so it's fine
-    if (binary[i] !== "." && binary[i] !== givenBinary[i]) {
+    //note that we need to compare case-insensitive, since Solidity will
+    //put addresses in checksum case in the compiled source
+    //(we don't actually need that second toLowerCase(), but whatever)
+    if (
+      binary[i] !== "." &&
+      binary[i].toLowerCase() !== givenBinary[i].toLowerCase()
+    ) {
       return false;
     }
   }
@@ -307,9 +313,11 @@ const evm = createSelectorTree({
        * (returns null on no match)
        */
       search: createLeaf(["/info/contexts"], contexts => binary => {
+        debug("binary %s", binary);
         let context = Object.values(contexts).find(context =>
           matchContext(context, binary)
         );
+        debug("context found: %O", context);
         return context !== undefined ? context.context : null;
       })
     },
