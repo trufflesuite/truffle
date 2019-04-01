@@ -211,11 +211,11 @@ class MigrationsMessages {
             data.receipt.contractAddress
           }\n`;
 
-          output += `   > ${"Block Number:".padEnd(20)} ${
+          output += `   > ${"block number:".padEnd(20)} ${
             data.receipt.blockNumber
           }\n`;
 
-          output += `   > ${"Block Timestamp:".padEnd(20)} ${
+          output += `   > ${"block timestamp:".padEnd(20)} ${
             data.timestamp
           }\n`;
           
