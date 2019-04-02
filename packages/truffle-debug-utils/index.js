@@ -251,6 +251,10 @@ var DebugUtils = {
     );
   },
 
+  formatPC: function(pc) {
+    return "  PC = " + pc.toString() + " = 0x" + pc.toString(16);
+  },
+
   formatStack: function(stack) {
     var formatted = stack.map(function(item, index) {
       item = "  " + item;
