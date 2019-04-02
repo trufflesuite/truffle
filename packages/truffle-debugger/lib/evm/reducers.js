@@ -77,12 +77,13 @@ function contexts(state = {}, action) {
       //next, we get all the contract names and sort them descending by length.
       //We're going to want to go in descending order of length so that we
       //don't run into problems when one name is a substring of another.
-      //For simplicity, we'll exclude names of length <40, because we can
+      //For simplicity, we'll exclude names of length <38, because we can
       //handle these with our more general check for link references at the end
       const fillerLength = 2 * DecodeUtils.EVM.ADDRESS_SIZE;
       let names = Object.values(state)
         .map(context => context.contractName)
-        .filter(name => name.length >= fillerLength)
+        .filter(name => name.length >= fillerLength - 3)
+        //the -3 is for 2 leading underscores and 1 trailing
         .sort((name1, name2) => name2.length - name1.length);
 
       debug("names sorted");
