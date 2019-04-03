@@ -252,7 +252,11 @@ var DebugUtils = {
   },
 
   formatPC: function(pc) {
-    return "  PC = " + pc.toString() + " = 0x" + pc.toString(16);
+    let hex = pc.toString(16);
+    if (hex.length % 2 !== 0) {
+      hex = "0" + hex; //ensure even length
+    }
+    return "  PC = " + pc.toString() + " = 0x" + hex;
   },
 
   formatStack: function(stack) {
