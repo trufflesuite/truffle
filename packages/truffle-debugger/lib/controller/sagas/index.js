@@ -3,7 +3,7 @@ const debug = debugModule("debugger:controller:sagas");
 
 import { put, call, race, take, select } from "redux-saga/effects";
 
-import { prefixName } from "lib/helpers";
+import { prefixName, SKIPPED_TYPES } from "lib/helpers";
 
 import * as trace from "lib/trace/sagas";
 import * as data from "lib/data/sagas";
@@ -25,9 +25,6 @@ const CONTROL_SAGAS = {
   [actions.CONTINUE]: continueUntilBreakpoint,
   [actions.RESET]: reset
 };
-
-/** AST node types that are skipped to filter out some noise */
-const SKIPPED_TYPES = new Set(["ContractDefinition", "VariableDeclaration"]);
 
 export function* saga() {
   while (true) {

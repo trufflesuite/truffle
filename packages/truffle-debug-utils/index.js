@@ -17,7 +17,7 @@ var commandReference = {
   ":": "evaluate expression - see `v`",
   "+": "add watch expression (`+:<expr>`)",
   "-": "remove watch expression (-:<expr>)",
-  "?": "list existing watch expressions",
+  "?": "list existing watch expressions and breakpoints",
   "b": "add breakpoint",
   "B": "remove breakpoint",
   "c": "continue until breakpoint",
@@ -236,6 +236,27 @@ var DebugUtils = {
     ]);
 
     return allLines.join(OS.EOL);
+  },
+
+  formatBreakpointLocation: function(
+    breakpoint,
+    here,
+    currentSourceId,
+    sourceNames
+  ) {
+    if (breakpoint.node !== undefined) {
+      return here
+        ? `this point in line ${breakpoint.line + 1}`
+        : `a point in line ${breakpoint.line + 1}`;
+      //+1 to adjust for zero-indexing
+    } else if (breakpoint.sourceId !== currentSourceId) {
+      let sourceName = sourceNames[breakpoint.sourceId];
+      return `line ${breakpoint.line + 1} in ${sourceName}`;
+      //+1 to adjust for zero-indexing
+    } else {
+      return `line ${breakpoint.line + 1}`;
+      //+1 to adjust for zero-indexing
+    }
   },
 
   formatInstruction: function(traceIndex, traceLength, instruction) {

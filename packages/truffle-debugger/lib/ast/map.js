@@ -2,6 +2,8 @@ import debugModule from "debug";
 const debug = debugModule("debugger:ast:map");
 
 import IntervalTree from "node-interval-tree";
+import jsonpointer from "json-pointer";
+import { SKIPPED_TYPES } from "lib/helpers";
 
 /**
  * @private
@@ -77,6 +79,8 @@ export function findRange(node, sourceStart, sourceLength) {
 /**
  * @private
  */
-export function anyInRange(node, sourceStart, sourceLength) {
-  return findOverlappingRange(node, sourceStart, sourceLength).length > 0;
+export function anyNonSkippedInRange(node, sourceStart, sourceLength) {
+  return findOverlappingRange(node, sourceStart, sourceLength).some(
+    ({ pointer }) => !SKIPPED_TYPES.has(jsonpointer.get(node, pointer).nodeType)
+  );
 }
