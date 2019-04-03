@@ -3,10 +3,10 @@ import * as utils from "truffle-decode-utils";
 const stringify = require("json-stable-stringify");
 
 /** AST node types that are skipped by stepNext() to filter out some noise */
-export const SKIPPED_TYPES = new Set([
-  "ContractDefinition",
-  "VariableDeclaration"
-]);
+export function isSkippedNodeType(node) {
+  const skippedTypes = ["ContractDefinition", "VariableDeclaration"];
+  return skippedTypes.includes(node.nodeType);
+}
 
 export function prefixName(prefix, fn) {
   Object.defineProperty(fn, "name", {
