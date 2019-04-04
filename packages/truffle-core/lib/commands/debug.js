@@ -243,16 +243,21 @@ var command = {
                 })
               )
             );
-            for (breakpoint in session.view(controller.breakpoints)) {
-              let currentSourceId = session.view(controller.current.location)
-                .source.id;
-              let locationMessage = DebugUtils.formatBreakpointLocation(
-                breakpoint,
-                false,
-                currentSourceId,
-                sourceNames
-              );
-              config.logger.log("Breakpoint at " + locationMessage);
+            let breakpoints = session.view(controller.breakpoints);
+            if (breakpoints.length > 0) {
+              for (let breakpoint of session.view(controller.breakpoints)) {
+                let currentSourceId = session.view(controller.current.location)
+                  .source.id;
+                let locationMessage = DebugUtils.formatBreakpointLocation(
+                  breakpoint,
+                  false,
+                  currentSourceId,
+                  sourceNames
+                );
+                config.logger.log("  Breakpoint at " + locationMessage);
+              }
+            } else {
+              config.logger.log("No breakpoints added.");
             }
           }
 
