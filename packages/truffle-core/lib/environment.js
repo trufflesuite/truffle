@@ -57,7 +57,7 @@ const Environment = {
       );
     }
 
-    var web3 = new Web3Shim({
+    const web3 = new Web3Shim({
       provider: config.provider,
       networkType: config.networks[config.network].type
     });

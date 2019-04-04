@@ -52,30 +52,24 @@ module.exports = {
 
   // before send/sendAsync
   preHook: function(options) {
-    return function(payload) {
+    return function(method, params) {
       if (options.verbose) {
         // for request payload debugging
         options.logger.log(
           "   > " +
-            JSON.stringify(payload, null, 2)
+            JSON.stringify(method, params, null, 2)
               .split("\n")
               .join("\n   > ")
         );
       }
 
-      return payload;
+      return { method, params };
     };
   },
 
   // after send/sendAsync
   postHook: function(options) {
-    return function(payload, error, result) {
-      if (error != null) {
-        // wrap errors in internal error class
-        error = new ProviderError(error.message, options);
-        return [payload, error, result];
-      }
-
+    return function(method, params, result) {
       if (options.verbose) {
         options.logger.log(
           " <   " +
@@ -84,8 +78,7 @@ module.exports = {
               .join("\n <   ")
         );
       }
-
-      return [payload, error, result];
+      return result;
     };
   },
 
@@ -100,16 +93,20 @@ module.exports = {
    * Return the wrapped function matching the original function's signature.
    */
   send: function(originalSend, preHook, postHook) {
-    return function(payload, callback) {
-      payload = preHook(payload);
+    return function(inputMethod, inputParams) {
+      return new Promise((resolve, reject) => {
+        let { method, params } = preHook(inputMethod, inputParams);
 
-      originalSend(payload, function(error, result) {
-        var modified = postHook(payload, error, result);
-        payload = modified[0];
-        error = modified[1];
-        result = modified[2];
-
-        callback(error, result);
+        return originalSend(method, params)
+          .then(result => {
+            const modifiedResult = postHook(method, params, result);
+            resolve(modifiedResult);
+          })
+          .catch(error => {
+            // wrap errors in internal error class
+            error = new ProviderError(error.message, options);
+            reject(error);
+          });
       });
     };
   }
