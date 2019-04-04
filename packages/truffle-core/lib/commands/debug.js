@@ -246,12 +246,12 @@ var command = {
             let breakpoints = session.view(controller.breakpoints);
             if (breakpoints.length > 0) {
               for (let breakpoint of session.view(controller.breakpoints)) {
-                let currentSourceId = session.view(controller.current.location)
-                  .source.id;
+                let currentLocation = session.view(controller.current.location);
                 let locationMessage = DebugUtils.formatBreakpointLocation(
                   breakpoint,
-                  false,
-                  currentSourceId,
+                  currentLocation.node !== undefined &&
+                    breakpoint.node === currentLocation.node.id,
+                  currentLocation.source.id,
                   sourceNames
                 );
                 config.logger.log("  Breakpoint at " + locationMessage);

@@ -229,6 +229,7 @@ export default class Session {
         line < lineLengths.length &&
         !anyNonSkippedInRange(ast, lineStarts[line], lineLengths[line])
       ) {
+        debug("incrementing");
         line++;
       }
       if (line >= lineLengths.length) {
@@ -237,6 +238,7 @@ export default class Session {
         adjustedBreakpoint = { ...breakpoint, line };
       }
     } else {
+      debug("node-based breakpoint");
       adjustedBreakpoint = breakpoint;
     }
     return adjustedBreakpoint;
