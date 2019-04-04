@@ -108,8 +108,7 @@ var Test = {
         dependency_paths = paths;
 
         testContracts = sol_tests.map(function(test_file_path) {
-          var built_name = "./" + path.basename(test_file_path);
-          return test_resolver.require(built_name);
+          return test_resolver.require(test_file_path);
         });
 
         runner = new TestRunner(config);
