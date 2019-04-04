@@ -251,6 +251,14 @@ var DebugUtils = {
     );
   },
 
+  formatPC: function(pc) {
+    let hex = pc.toString(16);
+    if (hex.length % 2 !== 0) {
+      hex = "0" + hex; //ensure even length
+    }
+    return "  PC = " + pc.toString() + " = 0x" + hex;
+  },
+
   formatStack: function(stack) {
     var formatted = stack.map(function(item, index) {
       item = "  " + item;
