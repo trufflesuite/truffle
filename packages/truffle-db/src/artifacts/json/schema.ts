@@ -259,9 +259,10 @@ const translations = [
         source: {
           type: "object", 
           properties: {
-            contents: {type: "string"}, 
-            sourcePath: {type: "string"}
-          }},
+            contents: { type: "string" }, 
+            sourcePath: { type: "string" }
+          }
+        }
       }
     }
   })

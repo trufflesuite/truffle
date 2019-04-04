@@ -27,16 +27,47 @@ query GetContractNames {
 }
 `;
 
-const GetNameAndABI = `
-query GetNameAndABI($name:String!) {
+const GetContract = `
+query GetContract($name:String!) {
   artifacts {
     contract(name:$name) {
       name
-      source {
-        contents
-        sourcePath
+      sourceContract {
+        name
+        source {
+          contents
+          sourcePath
+        }
+        ast
+      }
+      abi {
+        json
       }
     }
+  }
+}`;
+
+const GetContractConstructor = `
+query getContractConstructor($name:String!) {
+  artifacts {  
+    contractConstructor(name: $name) {
+      contract {
+        name
+        sourceContract {
+          name
+          source {
+            contents
+            sourcePath
+          }
+        }
+        abi {
+          json
+        }
+      }
+      createBytecode {
+        bytes
+      }
+    }  
   }
 }`;
 
@@ -54,12 +85,10 @@ it("lists artifact contract names", async () => {
   expect(contractNames).toContain("Migrations");
 });
 
-it("retrieves name and ABI correctly", async () => {
-  const result = await db.query(GetNameAndABI, {
+it("retrieves contract correctly", async () => {
+  const result = await db.query(GetContract, {
     name: Migrations.contractName
   });
-
-  console.debug(JSON.stringify(result));
 
   const { data } = result;
   expect(data).toHaveProperty("artifacts");
@@ -69,10 +98,37 @@ it("retrieves name and ABI correctly", async () => {
 
   const { contract } = artifacts;
   expect(contract).toHaveProperty("name");
-  expect(contract).toHaveProperty("source");
+  expect(contract).toHaveProperty("sourceContract");
 
-  const { name, source } = contract;
+  const { name, sourceContract, abi } = contract;
   expect(name).toEqual(Migrations.contractName);
+  expect(sourceContract).toHaveProperty("name");
+  expect(sourceContract).toHaveProperty("ast");
+  expect(sourceContract).toHaveProperty("source");
+
+  const { ast, source } = sourceContract; 
   expect(source).toHaveProperty("contents");
   expect(source).toHaveProperty("sourcePath");
 });
+
+it("retrieves contract constructor object correctly", async() => {
+  const result = await db.query(GetContractConstructor, {
+    name: Migrations.contractName
+  });
+
+  const { data } = result;
+  expect(data).toHaveProperty("artifacts");
+
+  const { artifacts } = data;
+  expect(artifacts).toHaveProperty("contractConstructor");
+
+  const { contractConstructor } = artifacts;
+  expect(contractConstructor).toHaveProperty("contract");
+  expect(contractConstructor).toHaveProperty("createBytecode");
+
+  const { contract } = contractConstructor;
+  expect(contract).toHaveProperty("name");
+  expect(contract).toHaveProperty("abi");
+  expect(contract).toHaveProperty("sourceContract");
+});
+

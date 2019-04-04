@@ -18,15 +18,18 @@ type ContractInstance {
 }
 
 type ContractConstructor {
+  abi: ABI
+  name: String
+  compilation: Compilation
   createBytecode: Bytecode
 }
 
 type Contract {
   name: String
+  source: Source
   abi: ABI
   compilation: Compilation
   sourceContract: SourceContract
-  constructor: ContractConstructor
 }
 
 type ABI {

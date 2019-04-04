@@ -17,6 +17,7 @@ export const schema = mergeSchemas({
     `type Query {
       contractNames: [String]!
       contract(name: String!): Contract
+      contractConstructor(name: String!): ContractConstructor
       contractInstance(networkId: String!, name: String!): ContractInstance
     }`
   ],
@@ -42,11 +43,21 @@ export const schema = mergeSchemas({
           info
         })
       },
+      contractConstructor: {
+        resolve: (_, args, context, info) => info.mergeInfo.delegateToSchema({
+          schema: jsonSchema,
+          operation: "query",
+          fieldName: "contract",
+          args,
+          context,
+          info
+        })
+      },
       contractInstance: {
         resolve: (_, args, context, info) => info.mergeInfo.delegateToSchema({
           schema: jsonSchema,
           operation: "query",
-          fieldName: "contractInstance",
+          fieldName: "contract",
           args,
           context,
           info,
@@ -89,7 +100,57 @@ export const schema = mergeSchemas({
     Contract: {
       name: {
         fragment: "... on ContractObject { name: contractName }"
-      }
+      }, 
+      sourceContract: {
+        fragment: 
+        `... on ContractObject { 
+          ast
+        }`,
+        resolve: (obj, ast) => {
+          const { name, source } = obj;
+          const sourceContract = {
+            name: name, 
+            source: source, 
+            ast: ast
+          }
+          return sourceContract;
+        }
+      }, 
+    },
+
+    ContractConstructor: {
+      contract: {
+        fragment: 
+        `... on ContractObject { 
+          contents,
+          sourcePath,
+          ast
+        }`,
+        resolve: (obj, contents, sourcePath, ast) => {
+          const { name } = obj;
+          const contract = {
+            name: name,
+            sourceContract: {
+              name: name,
+              source: {
+                contents, 
+                sourcePath
+              },
+              ast: ast
+            }
+          }
+          return contract;
+        }
+      },
+      createBytecode: {
+        fragment: `... on ContractObject {
+          bytecode
+        }`,
+        resolve: ({
+          bytecode: bytes,
+        }) => ({ bytes })
+      },
+
     }
   }
 });
