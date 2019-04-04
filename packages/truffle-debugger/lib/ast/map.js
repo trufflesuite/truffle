@@ -83,8 +83,8 @@ export function anyNonSkippedInRange(node, sourceStart, sourceLength) {
   let sourceEnd = sourceStart + sourceLength;
   return findOverlappingRange(node, sourceStart, sourceLength).some(
     ({ range, pointer }) =>
-      sourceStart <= range[0] &&
-      range[0] < sourceEnd && //we want to go by starting line
+      sourceStart <= range[0] && //we want to go by starting line
+      range[0] < sourceEnd &&
       !isSkippedNodeType(jsonpointer.get(node, pointer))
     //NOTE: this doesn't actually catch everything skipped!  But doing better
     //is hard
