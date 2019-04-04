@@ -25,9 +25,9 @@ class Reporter {
   constructor() {
     this.deployer = null;
     this.migration = null;
-    this.currentGasTotal = new web3Utils.BN(0);
-    this.currentCostTotal = new web3Utils.BN(0);
-    this.finalCostTotal = new web3Utils.BN(0);
+    this.currentGasTotal = web3Utils.toBN(0);
+    this.currentCostTotal = web3Utils.toBN(0);
+    this.finalCostTotal = web3Utils.toBN(0);
     this.deployments = 0;
     this.separator = "\n";
     this.summary = [];
@@ -95,8 +95,8 @@ class Reporter {
     const cost = web3Utils.fromWei(this.currentCostTotal, "ether");
     this.finalCostTotal = this.finalCostTotal.add(this.currentCostTotal);
 
-    this.currentGasTotal = new web3Utils.BN(0);
-    this.currentCostTotal = new web3Utils.BN(0);
+    this.currentGasTotal = web3Utils.toBN(0);
+    this.currentCostTotal = web3Utils.toBN(0);
 
     return {
       gas: gas.toString(10),
@@ -311,9 +311,9 @@ class Reporter {
       );
       const balance = await data.contract.web3.eth.getBalance(tx.from);
 
-      const gasPrice = new web3Utils.BN(tx.gasPrice);
-      const gas = new web3Utils.BN(data.receipt.gasUsed);
-      const value = new web3Utils.BN(tx.value);
+      const gasPrice = web3Utils.toBN(tx.gasPrice);
+      const gas = web3Utils.toBN(data.receipt.gasUsed);
+      const value = web3Utils.toBN(tx.value);
       const cost = gasPrice.mul(gas).add(value);
 
       data.gasPrice = web3Utils.fromWei(gasPrice, "gwei");
