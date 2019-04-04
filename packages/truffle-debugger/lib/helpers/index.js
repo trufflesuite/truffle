@@ -3,9 +3,20 @@ import * as utils from "truffle-decode-utils";
 const stringify = require("json-stable-stringify");
 
 /** AST node types that are skipped by stepNext() to filter out some noise */
-export function isSkippedNodeType(node) {
+export function isDeliberatelySkippedNodeType(node) {
   const skippedTypes = ["ContractDefinition", "VariableDeclaration"];
   return skippedTypes.includes(node.nodeType);
+}
+
+export function isSkippedNodeType(node) {
+  return (
+    isDeliberatelySkippedNodeType(node) ||
+    (node.typeDescriptions !== undefined && //seems this sometimes happens?
+      utils.Definition.typeClass(node) === "stringliteral")
+  );
+  //HACK
+  //these aren't the only types of skipped nodes, but determining all skipped
+  //nodes would be too difficult
 }
 
 export function prefixName(prefix, fn) {

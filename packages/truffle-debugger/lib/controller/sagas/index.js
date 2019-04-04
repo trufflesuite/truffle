@@ -3,7 +3,7 @@ const debug = debugModule("debugger:controller:sagas");
 
 import { put, call, race, take, select } from "redux-saga/effects";
 
-import { prefixName, isSkippedNodeType } from "lib/helpers";
+import { prefixName, isDeliberatelySkippedNodeType } from "lib/helpers";
 
 import * as trace from "lib/trace/sagas";
 import * as data from "lib/data/sagas";
@@ -85,7 +85,7 @@ function* stepNext() {
     !finished &&
     (!upcoming ||
       !upcoming.node ||
-      isSkippedNodeType(upcoming.node) ||
+      isDeliberatelySkippedNodeType(upcoming.node) ||
       (upcoming.sourceRange.start == startingRange.start &&
         upcoming.sourceRange.length == startingRange.length))
   );

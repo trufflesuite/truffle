@@ -221,6 +221,10 @@ export default class Session {
         lineStarts.push(lineStarts[lineStarts.length - 1] + length + 1);
         //+1 for the /n itself
       }
+      debug(
+        "line: %s",
+        source.slice(lineStarts[line], lineStarts[line] + lineLengths[line])
+      );
       while (
         line < lineLengths.length &&
         !anyNonSkippedInRange(ast, lineStarts[line], lineLengths[line])
