@@ -26,14 +26,11 @@ const quorumOverloads = require("./quorum-overloads");
 // sane and organized manner.
 class Web3Shim extends Web3 {
   constructor(options) {
-    super();
+    const { provider } = options;
+    super(provider);
 
     if (options) {
       this.networkType = options.networkType || "ethereum";
-
-      if (options.provider) {
-        this.setProvider(options.provider);
-      }
     } else {
       this.networkType = "ethereum";
     }
