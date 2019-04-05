@@ -222,6 +222,7 @@ describe("Variable IDs", function() {
   });
 
   it("Stays at correct stackframe after contract call", async function() {
+    this.timeout(3000);
     let instance = await abstractions.Intervening.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
@@ -246,6 +247,7 @@ describe("Variable IDs", function() {
   });
 
   it("Stays at correct stackframe after library call", async function() {
+    this.timeout(3000);
     let instance = await abstractions.Intervening.deployed();
     let receipt = await instance.runLib();
     let txHash = receipt.tx;

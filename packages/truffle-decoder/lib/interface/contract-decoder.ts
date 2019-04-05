@@ -75,18 +75,14 @@ export interface ContractMapping {
   [nodeId: number]: ContractObject;
 };
 
-export function getContractNode(contract: ContractObject): AstDefinition {
-  for (let j = 0; j < contract.ast.nodes.length; j++) {
-    const contractNode = contract.ast.nodes[j];
-    const nodeMatchesContract =
-      contractNode.name === contract.contractName ||
-      contractNode.name === contract.contract_name;
-    if (contractNode.nodeType === "ContractDefinition" && nodeMatchesContract) {
-      return contractNode;
-    }
-  }
-
-  return undefined;
+//note: may return undefined
+function getContractNode(contract: ContractObject): AstDefinition {
+  return (contract.ast || {nodes: []}).nodes.find(
+    (contractNode: AstDefinition) =>
+    contractNode.nodeType === "ContractDefinition"
+    && (contractNode.name === contract.contractName
+      || contractNode.name === contract.contract_name)
+  );
 }
 
 export default class TruffleContractDecoder extends AsyncEventEmitter {
@@ -133,9 +129,11 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     abiDecoder.addABI(this.contract.abi);
     this.relevantContracts.forEach((relevantContract) => {
       let node: AstDefinition = getContractNode(relevantContract);
-      this.contracts[node.id] = relevantContract;
-      this.contractNodes[node.id] = node;
-      abiDecoder.addABI(relevantContract.abi);
+      if(node !== undefined) {
+        this.contracts[node.id] = relevantContract;
+        this.contractNodes[node.id] = node;
+        abiDecoder.addABI(relevantContract.abi);
+      }
     });
   }
 
@@ -174,8 +172,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         state: {
           stack: [],
           storage: {},
-          memory: new Uint8Array(0),
-          calldata: new Uint8Array(0)
+          memory: new Uint8Array(0)
         },
         mappingKeys: this.mappingKeys,
         referenceDeclarations: this.referenceDeclarations,
@@ -204,8 +201,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       state: {
         stack: [],
         storage: {},
-        memory: new Uint8Array(0),
-        calldata: new Uint8Array(0)
+        memory: new Uint8Array(0)
       },
       mappingKeys: this.mappingKeys,
       referenceDeclarations: this.referenceDeclarations,

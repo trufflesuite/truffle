@@ -81,13 +81,21 @@ export default class Session {
       debug("sourceMap %o", sourceMap);
       debug("compiler %o", compiler);
 
+      let contractId = ast.nodes.find(
+        node =>
+          node.nodeType === "ContractDefinition" && node.name === contractName
+      ).id; //could also record contractKind, but we don't need to
+
+      debug("contractId %d", contractId);
+
       sourcesByPath[sourcePath] = { sourcePath, source, ast };
 
       if (binary && binary != "0x") {
         contexts.push({
           contractName,
           binary,
-          sourceMap
+          sourceMap,
+          contractId
         });
       }
 
@@ -96,7 +104,8 @@ export default class Session {
           contractName,
           binary: deployedBinary,
           sourceMap: deployedSourceMap,
-          compiler
+          compiler,
+          contractId
         });
       }
     }
@@ -152,7 +161,8 @@ export default class Session {
     });
   }
 
-  async advance(count = 1) {
+  //Note: count is an optional argument; default behavior is to advance 1
+  async advance(count) {
     return await this.doneStepping(controller.advance(count));
   }
 
@@ -176,8 +186,13 @@ export default class Session {
     return await this.doneStepping(controller.reset());
   }
 
-  async continueUntilBreakpoint() {
-    return await this.doneStepping(controller.continueUntilBreakpoint());
+  //NOTE: breakpoints is an OPTIONAL argument for if you want to supply your
+  //own list of breakpoints; leave it out to use the internal one (as
+  //controlled by the functions below)
+  async continueUntilBreakpoint(breakpoints) {
+    return await this.doneStepping(
+      controller.continueUntilBreakpoint(breakpoints)
+    );
   }
 
   async addBreakpoint(breakpoint) {

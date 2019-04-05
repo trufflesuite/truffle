@@ -116,21 +116,19 @@ describe("Contexts", function() {
     );
     debug("affectedInstances: %o", affectedInstances);
 
-    let affectedAddresses = Object.keys(affectedInstances).map(address =>
-      address.toLowerCase()
-    );
+    let affectedAddresses = Object.keys(affectedInstances);
 
     assert.equal(2, affectedAddresses.length);
 
     assert.include(
       affectedAddresses,
-      outer.address.toLowerCase(),
+      outer.address,
       "OuterContract should be an affected address"
     );
 
     assert.include(
       affectedAddresses,
-      inner.address.toLowerCase(),
+      inner.address,
       "InnerContract should be an affected address"
     );
   });

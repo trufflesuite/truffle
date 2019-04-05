@@ -12,7 +12,7 @@ export const WAITING = "WAITING";
 export const ACTIVE = "ACTIVE";
 export const ERROR = "ERROR";
 
-export function status(state = WAITING, action) {
+function status(state = WAITING, action) {
   switch (action.type) {
     case actions.READY:
       return ACTIVE;
@@ -25,8 +25,8 @@ export function status(state = WAITING, action) {
   }
 }
 
-export function transaction(state = {}, action) {
-  switch(action.type) {
+function transaction(state = {}, action) {
+  switch (action.type) {
     case actions.SAVE_TRANSACTION:
       return action.transaction;
     default:
@@ -34,10 +34,19 @@ export function transaction(state = {}, action) {
   }
 }
 
-export function receipt(state = {}, action) {
-  switch(action.type) {
+function receipt(state = {}, action) {
+  switch (action.type) {
     case actions.SAVE_RECEIPT:
       return action.receipt;
+    default:
+      return state;
+  }
+}
+
+function block(state = {}, action) {
+  switch (action.type) {
+    case actions.SAVE_BLOCK:
+      return action.block;
     default:
       return state;
   }
@@ -46,7 +55,8 @@ export function receipt(state = {}, action) {
 const session = combineReducers({
   status,
   transaction,
-  receipt
+  receipt,
+  block
 });
 
 const reduceState = combineReducers({

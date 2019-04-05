@@ -27,6 +27,13 @@ var provider = new HDWalletProvider(mnemonic, "http://localhost:8545", 5);
 // Or, use your own hierarchical derivation path
 var provider = new HDWalletProvider(mnemonic, "http://localhost:8545", 5, 1, "m/44'/137'/0'/0/");
 
+
+// HDWalletProvider is compatible with Web3. Use it at Web3 constructor, just like any other Web3 Provider
+const web3 = new Web3(provider); 
+
+// Or, if web3 is alreay initialized, you can call the 'setProvider' on web3, web3.eth, web3.shh and/or web3.bzz
+web3.setProvider(provider)
+
 // ...
 // Write your code here.
 // ...

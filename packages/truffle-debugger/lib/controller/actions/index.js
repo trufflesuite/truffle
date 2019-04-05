@@ -1,5 +1,5 @@
 export const ADVANCE = "ADVANCE";
-export function advance(count = 1) {
+export function advance(count) {
   return { type: ADVANCE, count };
 }
 
@@ -34,9 +34,12 @@ export function interrupt() {
 }
 
 export const CONTINUE = "CONTINUE";
-export function continueUntilBreakpoint() {
+export function continueUntilBreakpoint(breakpoints) {
   //"continue" is not a legal name
-  return { type: CONTINUE };
+  return {
+    type: CONTINUE,
+    breakpoints
+  };
 }
 
 export const ADD_BREAKPOINT = "ADD_BREAKPOINT";

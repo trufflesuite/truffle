@@ -45,6 +45,9 @@ var properties = {
       return value;
     }
   },
+  metadata: {
+    sources: ["metadata"]
+  },
   bytecode: {
     sources: ["bytecode", "binary", "unlinked_binary", "evm.bytecode.object"],
     transform: function(value) {

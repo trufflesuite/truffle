@@ -9,8 +9,6 @@ import * as actions from "../actions";
 
 import evm from "../selectors";
 
-import * as DecodeUtils from "truffle-decode-utils";
-
 import * as trace from "lib/trace/sagas";
 
 /**
@@ -18,11 +16,16 @@ import * as trace from "lib/trace/sagas";
  *
  * @return {string} ID (0x-prefixed keccak of binary)
  */
-export function* addContext(contractName, { address, binary }, compiler) {
+export function* addContext(
+  contractName,
+  { address, binary },
+  compiler,
+  contractId
+) {
   const raw = binary || address;
   const context = keccak256(raw);
 
-  yield put(actions.addContext(contractName, raw, compiler));
+  yield put(actions.addContext(contractName, raw, compiler, contractId));
 
   if (binary) {
     yield put(actions.addBinary(context, binary));
@@ -51,11 +54,21 @@ export function* addInstance(address, binary) {
   return context;
 }
 
-export function* begin({ address, binary, data, storageAddress }) {
+export function* begin({
+  address,
+  binary,
+  data,
+  storageAddress,
+  sender,
+  value,
+  gasprice,
+  block
+}) {
+  yield put(actions.saveGlobals(sender, gasprice, block));
   if (address) {
-    yield put(actions.call(address, data, storageAddress));
+    yield put(actions.call(address, data, storageAddress, sender, value));
   } else {
-    yield put(actions.create(binary, storageAddress));
+    yield put(actions.create(binary, storageAddress, sender, value));
   }
 }
 
@@ -67,50 +80,67 @@ function* tickSaga() {
 }
 
 export function* callstackAndCodexSaga() {
-  if (yield select(evm.current.step.isCall)) {
+  if (yield select(evm.current.step.isExceptionalHalting)) {
+    //let's handle this case first so we can be sure everything else is *not*
+    //an exceptional halt
+    debug("exceptional halt!");
+
+    yield put(actions.fail());
+  } else if (yield select(evm.current.step.isCall)) {
     debug("got call");
+    // if there is no binary (e.g. in the case of precompiled contracts or
+    // externally owned accounts), then there will be no trace steps for the
+    // called code, and so we shouldn't tell the debugger that we're entering
+    // another execution context
+    if (yield select(evm.current.step.callsPrecompileOrExternal)) {
+      return;
+    }
+
     let address = yield select(evm.current.step.callAddress);
     let data = yield select(evm.current.step.callData);
 
     debug("calling address %s", address);
 
-    // if there is no binary (e.g. in the case of precompiled contracts),
-    // then there will be no trace steps for the called code, and so we
-    // shouldn't tell the debugger that we're entering another execution
-    // context
-    if (yield select(evm.current.step.callsPrecompile)) {
-      return;
-    }
-    if (yield select(evm.current.step.isDelegateCallBroad)) {
-      //if delegating, keep same storage address we already have
-      let storageAddress = (yield select(evm.current.call)).storageAddress;
-      yield put(actions.call(address, data, storageAddress));
+    if (yield select(evm.current.step.isDelegateCallStrict)) {
+      //if delegating, leave storageAddress, sender, and value the same
+      let { storageAddress, sender, value } = yield select(evm.current.call);
+      yield put(actions.call(address, data, storageAddress, sender, value));
     } else {
-      //if we're not delegating storage, storageAddress == address
-      yield put(actions.call(address, data, address));
+      //this branch covers CALL, CALLCODE, and STATICCALL
+      let currentCall = yield select(evm.current.call);
+      let storageAddress = (yield select(evm.current.step.isDelegateCallBroad))
+        ? currentCall.storageAddress //for CALLCODE
+        : address;
+      let sender = currentCall.storageAddress; //not the code address!
+      let value = yield select(evm.current.step.callValue); //0 if static
+      yield put(actions.call(address, data, storageAddress, sender, value));
     }
   } else if (yield select(evm.current.step.isCreate)) {
     debug("got create");
     let binary = yield select(evm.current.step.createBinary);
     let createdAddress = yield select(evm.current.step.createdAddress);
+    let value = yield select(evm.current.step.createValue);
+    let sender = (yield select(evm.current.call)).storageAddress;
+    //not the code address!
 
-    yield put(actions.create(binary, createdAddress));
+    yield put(actions.create(binary, createdAddress, sender, value));
+    //as above, storageAddress handles when calling from a creation call
   } else if (yield select(evm.current.step.isHalting)) {
     debug("got return");
 
     yield put(actions.returnCall());
   } else if (yield select(evm.current.step.touchesStorage)) {
     let storageAddress = (yield select(evm.current.call)).storageAddress;
-    //skip doing a touch operation if it's the zero address, since we can't
-    //track things reliably in that case; we'll fall back on the old state
-    //mechanism in that case
-    if (storageAddress !== DecodeUtils.EVM.ZERO_ADDRESS) {
-      let slot = yield select(evm.current.step.storageAffected);
-      //note we get next storage, since we're updating to that
-      let storage = yield select(evm.next.state.storage);
-      //normally we'd need a 0 fallback for this next line, but in this case we
-      //can be sure the value will be there, since we're touching that storage
+    let slot = yield select(evm.current.step.storageAffected);
+    //note we get next storage, since we're updating to that
+    let storage = yield select(evm.next.state.storage);
+    //normally we'd need a 0 fallback for this next line, but in this case we
+    //can be sure the value will be there, since we're touching that storage
+    if (yield select(evm.current.step.isStore)) {
       yield put(actions.store(storageAddress, slot, storage[slot]));
+    } else {
+      //otherwise, it's a load
+      yield put(actions.load(storageAddress, slot, storage[slot]));
     }
   }
 }

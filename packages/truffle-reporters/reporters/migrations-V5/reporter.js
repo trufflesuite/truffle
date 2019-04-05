@@ -309,6 +309,13 @@ class Reporter {
       const tx = await data.contract.web3.eth.getTransaction(
         data.receipt.transactionHash
       );
+
+      const block = await data.contract.web3.eth.getBlock(
+        data.receipt.blockNumber
+      );
+
+      data.timestamp = block.timestamp;
+
       const balance = await data.contract.web3.eth.getBalance(tx.from);
 
       const gasPrice = web3Utils.toBN(tx.gasPrice);

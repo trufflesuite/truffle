@@ -1,8 +1,13 @@
+import debugModule from "debug";
+const debug = debugModule("debugger:evm:reducers");
+
 import { combineReducers } from "redux";
 
 import * as actions from "./actions";
 import { keccak256 } from "lib/helpers";
 import * as DecodeUtils from "truffle-decode-utils";
+
+import BN from "bn.js";
 
 const DEFAULT_CONTEXTS = {
   byContext: {},
@@ -15,7 +20,7 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
      * Adding a new context
      */
     case actions.ADD_CONTEXT: {
-      const { contractName, raw, compiler } = action;
+      const { contractName, raw, compiler, contractId } = action;
       const context = keccak256(raw);
 
       return {
@@ -29,7 +34,8 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
 
             contractName,
             context,
-            compiler
+            compiler,
+            contractId
           }
         }
       };
@@ -114,28 +120,67 @@ function instances(state = DEFAULT_INSTANCES, action) {
   }
 }
 
-const info = combineReducers({
-  contexts,
-  instances
+const DEFAULT_TX = {
+  gasprice: new BN(0),
+  origin: DecodeUtils.EVM.ZERO_ADDRESS
+};
+
+function tx(state = DEFAULT_TX, action) {
+  if (action.type === actions.SAVE_GLOBALS) {
+    let { gasprice, origin } = action;
+    return { gasprice, origin };
+  } else {
+    return state;
+  }
+}
+
+const DEFAULT_BLOCK = {
+  coinbase: DecodeUtils.EVM.ZERO_ADDRESS,
+  difficulty: new BN(0),
+  gaslimit: new BN(0),
+  number: new BN(0),
+  timestamp: new BN(0)
+};
+
+function block(state = DEFAULT_BLOCK, action) {
+  if (action.type === actions.SAVE_GLOBALS) {
+    debug("action %O", action);
+    return action.block;
+  } else {
+    return state;
+  }
+}
+
+const globals = combineReducers({
+  tx,
+  block
 });
 
-export function callstack(state = [], action) {
+const info = combineReducers({
+  contexts,
+  instances,
+  globals
+});
+
+function callstack(state = [], action) {
   switch (action.type) {
     case actions.CALL: {
-      const { address, data, storageAddress } = action;
-      return state.concat([{ address, data, storageAddress }]);
+      const { address, data, storageAddress, sender, value } = action;
+      return state.concat([{ address, data, storageAddress, sender, value }]);
     }
 
     case actions.CREATE: {
-      const { binary, storageAddress } = action;
-      return state.concat([{ binary, data: "0x", storageAddress }]);
-      //note: the empty data for creation calls doesn't matter right now, but
-      //it will once I implement globally available variables
+      const { binary, storageAddress, sender, value } = action;
+      return state.concat(
+        [{ binary, data: "0x", storageAddress, sender, value }]
+        //the empty data field is to make msg.data and msg.sig come out right
+      );
     }
 
     case actions.RETURN:
-      //HACK: pop the stack, UNLESS that would leave it empty (this will only
-      //happen at the end when we want to keep the last one around)
+    case actions.FAIL:
+      //pop the stack... unless (HACK) that would leave it empty (this will
+      //only happen at the end when we want to keep the last one around)
       return state.length > 1 ? state.slice(0, -1) : state;
 
     case actions.RESET:
@@ -146,65 +191,144 @@ export function callstack(state = [], action) {
   }
 }
 
-//default codex with nothing
-const DEFAULT_CODEX = {
-  byAddress: {}
-  //there will be more here later!
-};
-
-//default codex with a single address
-function defaultCodex(address) {
-  return {
-    byAddress: {
-      [address]: {
-        storage: {}
-        //there will be more here later!
+//default codex stackframe with a single address (or none if address not
+//supplied)
+function defaultCodexFrame(address) {
+  if (address !== undefined) {
+    return {
+      //there will be more here in the future!
+      accounts: {
+        [address]: {
+          //there will be more here in the future!
+          storage: {}
+        }
       }
-    }
-  };
+    };
+  } else {
+    return {
+      //there will be more here in the future!
+      accounts: {}
+    };
+  }
 }
 
-export function codex(state = DEFAULT_CODEX, action) {
+function codex(state = [], action) {
+  let newState, topCodex;
+
+  const updateFrameStorage = (frame, address, slot, value) => {
+    let existingPage = frame.accounts[address] || { storage: {} };
+    return {
+      ...frame,
+      accounts: {
+        ...frame.accounts,
+        [address]: {
+          ...existingPage,
+          storage: {
+            ...existingPage.storage,
+            [slot]: value
+          }
+        }
+      }
+    };
+  };
+
   switch (action.type) {
     case actions.CALL:
     case actions.CREATE:
-      //on a call or create, add new pages to the codex if necessary;
-      //don't add a zero page though (or pages that already exist)
+      //on a call or create, make a new stackframe, then add a new pages to the
+      //codex if necessary; don't add a zero page though (or pages that already
+      //exist)
+
+      //first, add a new stackframe; if there's an existing stackframe, clone
+      //that, otherwise make one from scratch
+      newState =
+        state.length > 0
+          ? [...state, state[state.length - 1]]
+          : [defaultCodexFrame()];
+      topCodex = newState[newState.length - 1];
+      //now, do we need to add a new address to this stackframe?
       if (
-        state.byAddress[action.storageAddress] !== undefined ||
+        topCodex.accounts[action.storageAddress] !== undefined ||
         action.storageAddress === DecodeUtils.EVM.ZERO_ADDRESS
       ) {
-        return state;
+        //if we don't
+        return newState;
       }
-      return {
-        ...state,
-        byAddress: {
-          ...state.byAddress,
+      //if we do
+      newState[newState.length - 1] = {
+        ...topCodex,
+        accounts: {
+          ...topCodex.accounts,
           [action.storageAddress]: {
             storage: {}
-            //there will be more here later!
+            //there will be more here in the future!
           }
         }
       };
-    case actions.STORE:
+      return newState;
+
+    case actions.STORE: {
       //on a store, the relevant page should already exist, so we can just
       //add or update the needed slot
       const { address, slot, value } = action;
-      return {
-        ...state,
-        byAddress: {
-          ...state.byAddress,
-          [address]: {
-            ...state.byAddress[address],
-            storage: {
-              ...state.byAddress[address].storage,
-              [slot]: value
-            }
-          }
-        }
-      };
+      if (address === DecodeUtils.EVM.ZERO_ADDRESS) {
+        //as always, we do not maintain a zero page
+        return state;
+      }
+      newState = state.slice(); //clone the state
+      topCodex = newState[newState.length - 1];
+      newState[newState.length - 1] = updateFrameStorage(
+        topCodex,
+        address,
+        slot,
+        value
+      );
+      return newState;
+    }
+
+    case actions.LOAD: {
+      //loads are a little more complicated -- usually we do nothing, but if
+      //it's an external load (there was nothing already there), then we want
+      //to update *every* stackframe
+      const { address, slot, value } = action;
+      if (address === DecodeUtils.EVM.ZERO_ADDRESS) {
+        //as always, we do not maintain a zero page
+        return state;
+      }
+      topCodex = state[state.length - 1];
+      if (topCodex.accounts[address].storage[slot] !== undefined) {
+        //if we already have a value in the *top* stackframe, update *no*
+        //stackframes; don't update the top (no need, it's just a load, not a
+        //store), don't update the rest (that would be wrong, you might be
+        //loading a value that will get reverted later)
+        return state;
+      } else {
+        //if we *don't* already have a value in the top stackframe, that means
+        //we're loading a value from a previous transaction!  That's not a
+        //value that will get reverted if this call fails, so update *every*
+        //stackframe
+        return state.map(frame =>
+          updateFrameStorage(frame, address, slot, value)
+        );
+      }
+    }
+
+    case actions.RETURN:
+      //we want to pop the top while making the new top a copy of the old top;
+      //that is to say, we want to drop just the element *second* from the top
+      //(although, HACK, if the stack only has one element, just leave it alone)
+      return state.length > 1
+        ? state.slice(0, -2).concat([state[state.length - 1]])
+        : state;
+
+    case actions.FAIL:
+      //pop the stack... unless (HACK) that would leave it empty (this will
+      //only happen at the end when we want to keep the last one around)
+      return state.length > 1 ? state.slice(0, -1) : state;
+
     case actions.RESET:
-      return defaultCodex(action.storageAddress);
+      return [defaultCodexFrame(action.storageAddress)];
+
     default:
       return state;
   }
