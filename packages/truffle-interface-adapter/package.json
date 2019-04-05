@@ -20,6 +20,6 @@
   },
   "dependencies": {
     "bn.js": "^4.11.8",
-    "web3": "1.0.0-beta.50"
+    "web3": "1.0.0-beta.52"
   }
 }

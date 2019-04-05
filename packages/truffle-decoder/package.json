@@ -49,7 +49,7 @@
     "lodash.merge": "^4.6.1",
     "lodash.range": "^3.2.0",
     "truffle-decode-utils": "^1.0.6",
-    "web3": "1.0.0-beta.50"
+    "web3": "1.0.0-beta.52"
   },
   "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
 }

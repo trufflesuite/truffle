@@ -13,7 +13,7 @@
   "dependencies": {
     "node-emoji": "^1.8.1",
     "ora": "^3.0.0",
-    "web3-utils": "1.0.0-beta.50"
+    "web3-utils": "1.0.0-beta.52"
   },
   "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
 }
