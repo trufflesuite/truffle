@@ -43,7 +43,6 @@ var command = {
     var trace = selectors.trace;
     var solidity = selectors.solidity;
     var controller = selectors.controller;
-    var evm = selectors.evm;
 
     var config = Config.detect(options);
 
@@ -176,7 +175,6 @@ var command = {
             var step = session.view(trace.step);
             var traceIndex = session.view(trace.index);
             var totalSteps = session.view(trace.steps).length;
-            var gas = session.view(evm.current.state.gas);
 
             config.logger.log("");
             config.logger.log(
@@ -186,9 +184,10 @@ var command = {
                 instruction
               )
             );
+            config.logger.log(DebugUtils.formatPC(step.pc));
             config.logger.log(DebugUtils.formatStack(step.stack));
             config.logger.log("");
-            config.logger.log(gas + " gas remaining");
+            config.logger.log(step.gas + " gas remaining");
           }
 
           function select(expr) {
