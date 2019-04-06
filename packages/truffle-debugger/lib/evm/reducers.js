@@ -27,7 +27,9 @@ function contexts(state = {}, action) {
         isConstructor
       } = action;
       debug("action %O", action);
-      const context = keccak256({ type: "bytes", value: binary });
+      //NOTE: we take hash as *string*, not as bytes, because the binary may
+      //contain link references!
+      const context = keccak256({ type: "string", value: binary });
       let primarySource;
       if (sourceMap !== undefined) {
         primarySource = extractPrimarySource(sourceMap);

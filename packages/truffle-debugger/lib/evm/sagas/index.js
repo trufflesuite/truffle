@@ -17,7 +17,9 @@ import * as trace from "lib/trace/sagas";
  * @return {string} ID (0x-prefixed keccak of binary)
  */
 export function* addContext(context) {
-  const contextHash = keccak256({ type: "bytes", value: context.binary });
+  const contextHash = keccak256({ type: "string", value: context.binary });
+  //NOTE: we take hash as *string*, not as bytes, because the binary may
+  //contain link references!
 
   debug("context %O", context);
   yield put(actions.addContext(context));
