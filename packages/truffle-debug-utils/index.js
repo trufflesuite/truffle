@@ -244,18 +244,20 @@ var DebugUtils = {
     currentSourceId,
     sourceNames
   ) {
+    let baseMessage;
     if (breakpoint.node !== undefined) {
-      return here
+      baseMessage = here
         ? `this point in line ${breakpoint.line + 1}`
         : `a point in line ${breakpoint.line + 1}`;
-      //+1 to adjust for zero-indexing
-    } else if (breakpoint.sourceId !== currentSourceId) {
-      let sourceName = sourceNames[breakpoint.sourceId];
-      return `line ${breakpoint.line + 1} in ${sourceName}`;
-      //+1 to adjust for zero-indexing
+      //note we always add 1 to adjust for zero-indexing
     } else {
-      return `line ${breakpoint.line + 1}`;
-      //+1 to adjust for zero-indexing
+      baseMessage = `line ${breakpoint.line + 1}`;
+    }
+    if (breakpoint.sourceId !== currentSourceId) {
+      let sourceName = sourceNames[breakpoint.sourceId];
+      return baseMessage + ` in ${sourceName}`;
+    } else {
+      return baseMessage;
     }
   },
 
