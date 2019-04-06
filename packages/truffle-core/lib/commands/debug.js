@@ -578,7 +578,8 @@ var command = {
             //want to adjust to make sure we don't set it on an empty line or
             //anything like that
             if (setOrClear) {
-              breakpoint = session.adjustBreakpoint(breakpoint);
+              let resolver = session.view(controller.breakpoints.resolver);
+              breakpoint = resolver(breakpoint);
               //of course, this might result in finding that there's nowhere to
               //add it after that point
               if (breakpoint === null) {

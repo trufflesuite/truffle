@@ -50,7 +50,11 @@ export default prefixName("controller", saga);
 function* advance(action) {
   let count =
     action !== undefined && action.count !== undefined ? action.count : 1; //default is, as mentioned, to advance 1
-  for (let i = 0; i < count && !(yield select(controller.finished)); i++) {
+  for (
+    let i = 0;
+    i < count && !(yield select(controller.current.finished));
+    i++
+  ) {
     yield* trace.advance();
   }
 }
@@ -78,7 +82,7 @@ function* stepNext() {
       upcoming = null;
     }
 
-    finished = yield select(controller.finished);
+    finished = yield select(controller.current.finished);
 
     // if the next step's source range is still the same, keep going
   } while (
@@ -216,7 +220,7 @@ function* continueUntilBreakpoint(action) {
     previousSourceId = currentSourceId;
 
     currentLocation = yield select(controller.current.location);
-    finished = yield select(controller.finished);
+    finished = yield select(controller.current.finished);
     debug("finished %o", finished);
 
     currentNode = currentLocation.node.id;

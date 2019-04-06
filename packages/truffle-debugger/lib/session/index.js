@@ -6,13 +6,10 @@ import configureStore from "lib/store";
 import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
 import data from "lib/data/selectors";
-import solidity from "lib/solidity/selectors";
 import controllerSelector from "lib/controller/selectors";
 
 import rootSaga from "./sagas";
 import reducer from "./reducers";
-
-import { anyNonSkippedInRange } from "lib/ast/map";
 
 /**
  * Debugger Session
@@ -200,48 +197,6 @@ export default class Session {
 
   async addBreakpoint(breakpoint) {
     this.dispatch(controller.addBreakpoint(breakpoint));
-  }
-
-  //this function adjusts a given line-based breakpoint (on node-based
-  //breakpoints it simply returns the input) by repeatedly moving it down a
-  //line until it lands on a line where there's actually somewhere to break.
-  //if no such line exists beyond that point, it returns null instead.
-  adjustBreakpoint(breakpoint) {
-    let adjustedBreakpoint;
-    if (breakpoint.node === undefined) {
-      let line = breakpoint.line;
-      let { source, ast } = this.view(solidity.info.sources)[
-        breakpoint.sourceId
-      ];
-      let lineLengths = source.split("\n").map(line => line.length);
-      //why does neither JS nor lodash have a scan function like Haskell??
-      //guess we'll have to do our scan manually
-      let lineStarts = [0];
-      for (let length of lineLengths) {
-        lineStarts.push(lineStarts[lineStarts.length - 1] + length + 1);
-        //+1 for the /n itself
-      }
-      debug(
-        "line: %s",
-        source.slice(lineStarts[line], lineStarts[line] + lineLengths[line])
-      );
-      while (
-        line < lineLengths.length &&
-        !anyNonSkippedInRange(ast, lineStarts[line], lineLengths[line])
-      ) {
-        debug("incrementing");
-        line++;
-      }
-      if (line >= lineLengths.length) {
-        adjustedBreakpoint = null;
-      } else {
-        adjustedBreakpoint = { ...breakpoint, line };
-      }
-    } else {
-      debug("node-based breakpoint");
-      adjustedBreakpoint = breakpoint;
-    }
-    return adjustedBreakpoint;
   }
 
   async removeBreakpoint(breakpoint) {
