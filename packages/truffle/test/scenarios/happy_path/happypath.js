@@ -1,16 +1,17 @@
-var Box = require("truffle-box");
-var MemoryLogger = require("../memorylogger");
-var CommandRunner = require("../commandrunner");
-var contract = require("truffle-contract");
-var fs = require("fs");
-var path = require("path");
-var assert = require("assert");
-var Server = require("../server");
-var Reporter = require("../reporter");
+const Box = require("truffle-box");
+const MemoryLogger = require("../memorylogger");
+const CommandRunner = require("../commandrunner");
+const contract = require("truffle-contract");
+const fs = require("fs");
+const path = require("path");
+const assert = require("assert");
+const Server = require("../server");
+const Reporter = require("../reporter");
 
 describe("Happy path (truffle unbox)", function() {
-  var config;
-  var logger = new MemoryLogger();
+  let config;
+  let options;
+  const logger = new MemoryLogger();
 
   before("set up the server", function(done) {
     Server.start(done);
@@ -22,7 +23,8 @@ describe("Happy path (truffle unbox)", function() {
 
   before("set up sandbox", function(done) {
     this.timeout(10000);
-    Box.sandbox("default", function(err, conf) {
+    options = { name: "default", force: true };
+    Box.sandbox(options, function(err, conf) {
       if (err) return done(err);
       config = conf;
       config.network = "development";
