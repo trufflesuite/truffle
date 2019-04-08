@@ -1,7 +1,7 @@
 const Ganache = require("ganache-core");
 const assert = require("assert");
 const WalletProvider = require("../src/index.js");
-const EthUtil = require("ethereumjs-util");
+const EthUtil = require("newchainjs-util");
 
 describe("HD Wallet Provider", function() {
   const Web3 = require("web3");
@@ -26,16 +26,16 @@ describe("HD Wallet Provider", function() {
 
   it("provides for a mnemonic", function(done) {
     const truffleDevAccounts = [
-      "0x627306090abab3a6e1400e9345bc60c78a8bef57",
-      "0xf17f52151ebef6c7334fad080c5704d77216b732",
-      "0xc5fdf4076b8f3a5357c5e395ab970b5b54098fef",
-      "0x821aea9a577a9b44299b9c15c88cf3087f3b5544",
-      "0x0d1d4e623d10f9fba5db95830f7d3839406c6af2",
-      "0x2932b7a2355d6fecc4b5c0b6bd44cc31df247a2e",
-      "0x2191ef87e392377ec08e7c08eb105ef5448eced5",
-      "0x0f4f2ac550a1b4e2280d04c21cea7ebd822934b5",
-      "0x6330a553fc93768f612722bb8c2ec78ac90b3bbc",
-      "0x5aeda56215b167893e80b4fe645ba6d5bab767de"
+      "0x3bdb7a8f066a3ac5ebb30be9ae8d979a1a10c7a4",
+      "0x80c4c4eb8575fde8f034eae47a2185c3ad5b8b2d",
+      "0x1017e752ca0fa9be617b7e5cc22b45e310533c64",
+      "0x1da8e1bb32c9f1b4374ac58b05b1f3e196ef3c1a",
+      "0xf92cc0410eca6fce10c61e4a15c7a35d5e2ba96c",
+      "0x36456b4c64d50cf3e9d0afb525975897e0cb744f",
+      "0xeecf554104ada447834cb4f66fff3d2ebd2aafb1",
+      "0x502aaaf58f94ba566da0b7a45bc72f351ee9f74b",
+      "0x21ac36744f99a4b663fb4bd54d512958b5121ccd",
+      "0x1d9948fc3b4dddfd31ef9b68043dd223fb893760"
     ];
 
     const mnemonic =
@@ -73,7 +73,7 @@ describe("HD Wallet Provider", function() {
     web3.setProvider(provider);
 
     const addresses = provider.getAddresses();
-    assert.equal(addresses[0], "0xc515db5834d8f110eee96c3036854dbf1d87de2b");
+    assert.equal(addresses[0], "0xe61da4c2aa40b4b6e35239e3eace8eaf8b367df3");
     addresses.forEach(address => {
       assert(EthUtil.isValidAddress(address), "invalid address");
     });
@@ -91,9 +91,9 @@ describe("HD Wallet Provider", function() {
     ];
 
     const privateKeysByAddress = {
-      "0xc515db5834d8f110eee96c3036854dbf1d87de2b":
+      "0xe61da4c2aa40b4b6e35239e3eace8eaf8b367df3":
         "3f841bf589fdf83a521e55d51afddc34fa65351161eead24f064855fc29c9580",
-      "0xbd3366a0e5d2fb52691e3e08fabe136b0d4e5929":
+      "0x98acfa6cee067eebb36e66daf1c7ec0dcc5b8021":
         "9549f39decea7b7504e15572b2c6a72766df0281cea22bd1a3bc87166b1ca290"
     };
 

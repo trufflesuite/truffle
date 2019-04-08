@@ -1,31 +1,31 @@
 {
-  "name": "truffle-hdwallet-provider",
-  "version": "1.0.6",
+  "name": "newtruffle-hdwallet-provider",
+  "version": "0.1.0",
   "description": "HD Wallet-enabled Web3 provider",
   "main": "dist/index.js",
   "scripts": {
     "test": "mocha --timeout 5000",
     "prepare": "npx webpack --config webpack/webpack.config.js"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-hdwallet-provider",
+  "repository": "https://github.com/xiawu/NewTruffle/tree/master/packages/truffle-hdwallet-provider",
   "keywords": [
-    "etheruem",
+    "newchain",
     "hd",
     "wallet",
     "mnemonic",
     "provider"
   ],
-  "author": "Tim Coulter <tim.coulter@consensys.net>",
+  "author": "Xia Wu <xiawu@zeuux.org>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-hdwallet-provider/issues"
+    "url": "https://github.com/xiawu/NewTruffle/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-hdwallet-provider#readme",
+  "homepage": "https://github.com/xiawu/NewTruffle#readme",
   "devDependencies": {
     "bip39": "^2.2.0",
-    "ethereumjs-tx": "^1.3.7",
-    "ethereumjs-util": "^5.2.0",
-    "ethereumjs-wallet": "^0.6.2",
+    "newchainjs-tx": "latest",
+    "newchainjs-util": "latest",
+    "newchainjs-wallet": "latest",
     "ganache-core": "2.5.1",
     "js-scrypt": "^0.2.0",
     "mocha": "^5.1.1",

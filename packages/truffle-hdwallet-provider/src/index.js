@@ -1,15 +1,15 @@
 const bip39 = require("bip39");
-const ethJSWallet = require("ethereumjs-wallet");
-const hdkey = require("ethereumjs-wallet/hdkey");
-const debug = require("debug")("truffle-hdwallet-provider");
+const ethJSWallet = require("newchainjs-wallet");
+const hdkey = require("newchainjs-wallet/hdkey");
+const debug = require("debug")("newtruffle-hdwallet-provider");
 const ProviderEngine = require("web3-provider-engine");
 const FiltersSubprovider = require("web3-provider-engine/subproviders/filters.js");
 const NonceSubProvider = require("web3-provider-engine/subproviders/nonce-tracker.js");
 const HookedSubprovider = require("web3-provider-engine/subproviders/hooked-wallet.js");
 const ProviderSubprovider = require("web3-provider-engine/subproviders/provider.js");
 const Web3 = require("web3");
-const Transaction = require("ethereumjs-tx");
-const ethUtil = require("ethereumjs-util");
+const Transaction = require("newchainjs-tx");
+const ethUtil = require("newchainjs-util");
 
 // This line shares nonce state across multiple provider instances. Necessary
 // because within truffle the wallet is repeatedly newed if it's declared in the config within a
@@ -24,7 +24,7 @@ function HDWalletProvider(
   address_index = 0,
   num_addresses = 1,
   shareNonce = true,
-  wallet_hdpath = "m/44'/60'/0'/0/"
+  wallet_hdpath = "m/44'/1642'/0'/0/"
 ) {
   if ((mnemonic && mnemonic.indexOf(" ") === -1) || Array.isArray(mnemonic)) {
     const privateKeys = Array.isArray(mnemonic) ? mnemonic : [mnemonic];
