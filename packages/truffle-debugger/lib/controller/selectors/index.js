@@ -127,6 +127,12 @@ const controller = createSelectorTree({
   },
 
   /**
+   * controller.finished
+   * deprecated alias for controller.current.finished
+   */
+  finished: createLeaf(["/current/finished"], finished => finished),
+
+  /**
    * controller.isStepping
    */
   isStepping: createLeaf(["./state"], state => state.isStepping)
