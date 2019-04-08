@@ -295,7 +295,7 @@ const evm = createSelectorTree({
     /**
      * evm.info.contexts
      */
-    contexts: createLeaf(["/state"], state => state.info.contexts),
+    contexts: createLeaf(["/state"], state => state.info.contexts.byContext),
 
     /**
      * evm.info.instances

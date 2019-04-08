@@ -10,7 +10,11 @@ import escapeRegExp from "lodash.escaperegexp";
 
 import BN from "bn.js";
 
-function contexts(state = {}, action) {
+const DEFAULT_CONTEXTS = {
+  byContexts: {}
+};
+
+function contexts(state = DEFAULT_CONTEXTS, action) {
   switch (action.type) {
     /*
      * Adding a new context
@@ -38,18 +42,20 @@ function contexts(state = {}, action) {
 
       return {
         ...state,
-
-        [context]: {
-          contractName,
-          context,
-          binary,
-          sourceMap,
-          primarySource,
-          compiler,
-          abi,
-          contractId,
-          contractKind,
-          isConstructor
+        byContext: {
+          ...state.byContext,
+          [context]: {
+            contractName,
+            context,
+            binary,
+            sourceMap,
+            primarySource,
+            compiler,
+            abi,
+            contractId,
+            contractKind,
+            isConstructor
+          }
         }
       };
     }
@@ -65,14 +71,16 @@ function contexts(state = {}, action) {
 
       //first, let's clone the state; we're going to make some deep modifications,
       //so we'll want more than a shallow clone here
-      let newState = Object.assign(
-        {},
-        ...Object.entries(state).map(([id, context]) => ({
-          [id]: {
-            ...context
-          }
-        }))
-      );
+      let newState = {
+        byContext: Object.assign(
+          {},
+          ...Object.entries(state.byContext).map(([id, context]) => ({
+            [id]: {
+              ...context
+            }
+          }))
+        )
+      };
 
       debug("state cloned");
 
@@ -82,7 +90,7 @@ function contexts(state = {}, action) {
       //For simplicity, we'll exclude names of length <38, because we can
       //handle these with our more general check for link references at the end
       const fillerLength = 2 * DecodeUtils.EVM.ADDRESS_SIZE;
-      let names = Object.values(state)
+      let names = Object.values(newState.byContext)
         .map(context => context.contractName)
         .filter(name => name.length >= fillerLength - 3)
         //the -3 is for 2 leading underscores and 1 trailing
@@ -103,7 +111,7 @@ function contexts(state = {}, action) {
       //having done so, we can do the replace for these names!
       const replacement = ".".repeat(fillerLength);
       for (let regexp of regexps) {
-        for (let context of Object.values(newState)) {
+        for (let context of Object.values(newState.byContext)) {
           context.binary = context.binary.replace(regexp, replacement);
         }
       }
@@ -116,7 +124,7 @@ function contexts(state = {}, action) {
       const genericRegexp = new RegExp("_.{" + (fillerLength - 2) + "}_", "g");
       //we're constructing the regexp /_.{38}_/g, but I didn't want to use a
       //literal 38 :P
-      for (let context of Object.values(newState)) {
+      for (let context of Object.values(newState.byContext)) {
         context.binary = context.binary.replace(genericRegexp, replacement);
       }
 
@@ -129,7 +137,7 @@ function contexts(state = {}, action) {
         DecodeUtils.EVM.ADDRESS_SIZE -
         1
       ).toString(16); //"73"
-      for (let context of Object.values(newState)) {
+      for (let context of Object.values(newState.byContext)) {
         if (context.contractKind === "library" && !context.isConstructor) {
           context.binary = context.binary.replace(
             "0x" +
