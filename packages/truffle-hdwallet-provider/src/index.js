@@ -21,11 +21,11 @@ const singletonNonceSubProvider = new NonceSubProvider();
 function HDWalletProvider(
   mnemonic,
   provider,
+  chainId = 1012, // mainnet: 1012, testnet:1007, devnet: 1002
   address_index = 0,
   num_addresses = 1,
   shareNonce = true,
-  wallet_hdpath = "m/44'/1642'/0'/0/",
-  chainId = 1012 // mainnet: 1012, testnet:1007, devnet: 1002
+  wallet_hdpath = "m/44'/1642'/0'/0/"
 ) {
   if ((mnemonic && mnemonic.indexOf(" ") === -1) || Array.isArray(mnemonic)) {
     const privateKeys = Array.isArray(mnemonic) ? mnemonic : [mnemonic];
@@ -56,6 +56,7 @@ function HDWalletProvider(
         .derivePath(this.wallet_hdpath + i)
         .getWallet();
       const addr = "0x" + wallet.getAddress().toString("hex");
+      
       this.addresses.push(addr);
       this.wallets[addr] = wallet;
     }
@@ -67,7 +68,7 @@ function HDWalletProvider(
   const tmp_chainId = this.chainId;
   const tmp_accounts = this.addresses;
   const tmp_wallets = this.wallets;
-
+  
   this.engine = new ProviderEngine();
   this.engine.addProvider(
     new HookedSubprovider({
@@ -91,7 +92,7 @@ function HDWalletProvider(
         }
         // default add chainId parameter
         txParams.chainId = tmp_chainId;
-
+        console.log('txParams:' + tmp_chainId);
         const tx = new Transaction(txParams);
         tx.sign(pkey);
         const rawTx = "0x" + tx.serialize().toString("hex");
