@@ -196,7 +196,7 @@ export default class Session {
   }
 
   async addBreakpoint(breakpoint) {
-    return this.dispatch(controller.addBreakpoint(breakpoint));
+    this.dispatch(controller.addBreakpoint(breakpoint));
   }
 
   async removeBreakpoint(breakpoint) {

@@ -3,7 +3,7 @@ const debug = debugModule("debugger:controller:sagas");
 
 import { put, call, race, take, select } from "redux-saga/effects";
 
-import { prefixName } from "lib/helpers";
+import { prefixName, isDeliberatelySkippedNodeType } from "lib/helpers";
 
 import * as trace from "lib/trace/sagas";
 import * as data from "lib/data/sagas";
@@ -25,9 +25,6 @@ const CONTROL_SAGAS = {
   [actions.CONTINUE]: continueUntilBreakpoint,
   [actions.RESET]: reset
 };
-
-/** AST node types that are skipped to filter out some noise */
-const SKIPPED_TYPES = new Set(["ContractDefinition", "VariableDeclaration"]);
 
 export function* saga() {
   while (true) {
@@ -53,7 +50,11 @@ export default prefixName("controller", saga);
 function* advance(action) {
   let count =
     action !== undefined && action.count !== undefined ? action.count : 1; //default is, as mentioned, to advance 1
-  for (let i = 0; i < count && !(yield select(controller.finished)); i++) {
+  for (
+    let i = 0;
+    i < count && !(yield select(controller.current.finished));
+    i++
+  ) {
     yield* trace.advance();
   }
 }
@@ -81,14 +82,14 @@ function* stepNext() {
       upcoming = null;
     }
 
-    finished = yield select(controller.finished);
+    finished = yield select(controller.current.finished);
 
     // if the next step's source range is still the same, keep going
   } while (
     !finished &&
     (!upcoming ||
       !upcoming.node ||
-      SKIPPED_TYPES.has(upcoming.node.nodeType) ||
+      isDeliberatelySkippedNodeType(upcoming.node) ||
       (upcoming.sourceRange.start == startingRange.start &&
         upcoming.sourceRange.length == startingRange.length))
   );
@@ -219,7 +220,7 @@ function* continueUntilBreakpoint(action) {
     previousSourceId = currentSourceId;
 
     currentLocation = yield select(controller.current.location);
-    finished = yield select(controller.finished);
+    finished = yield select(controller.current.finished);
     debug("finished %o", finished);
 
     currentNode = currentLocation.node.id;
