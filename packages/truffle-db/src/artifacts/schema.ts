@@ -131,7 +131,7 @@ export const schema = mergeSchemas({
           const contract = {
             name: name,
             sourceContract: {
-              name: name,
+              name,
               source: {
                 contents, 
                 sourcePath
