@@ -8,6 +8,7 @@
     "lib": "lib"
   },
   "scripts": {
+    "prepare": "npm run build",
     "build": "node_modules/.bin/tsc",
     "start": "node_modules/.bin/tsc --watch",
     "test": "cd test && truffle test"
