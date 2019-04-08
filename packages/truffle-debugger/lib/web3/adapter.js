@@ -46,6 +46,7 @@ export default class Web3Adapter {
    */
   async getDeployedCode(address) {
     debug("getting deployed code for %s", address);
-    return await this.web3.eth.getCode(address);
+    let code = await this.web3.eth.getCode(address);
+    return code === "0x0" ? "0x" : code;
   }
 }
