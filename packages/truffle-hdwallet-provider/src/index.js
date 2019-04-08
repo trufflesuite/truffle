@@ -24,7 +24,8 @@ function HDWalletProvider(
   address_index = 0,
   num_addresses = 1,
   shareNonce = true,
-  wallet_hdpath = "m/44'/1642'/0'/0/"
+  wallet_hdpath = "m/44'/1642'/0'/0/",
+  chainId = 1012 // mainnet: 1012, testnet:1007, devnet: 1002
 ) {
   if ((mnemonic && mnemonic.indexOf(" ") === -1) || Array.isArray(mnemonic)) {
     const privateKeys = Array.isArray(mnemonic) ? mnemonic : [mnemonic];
@@ -60,6 +61,10 @@ function HDWalletProvider(
     }
   }
 
+  // set the chainId
+  this.chainId = chainId;
+
+  const tmp_chainId = this.chainId;
   const tmp_accounts = this.addresses;
   const tmp_wallets = this.wallets;
 
@@ -84,6 +89,9 @@ function HDWalletProvider(
         } else {
           cb("Account not found");
         }
+        // default add chainId parameter
+        txParams.chainId = tmp_chainId;
+
         const tx = new Transaction(txParams);
         tx.sign(pkey);
         const rawTx = "0x" + tx.serialize().toString("hex");
