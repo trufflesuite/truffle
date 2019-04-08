@@ -1,6 +1,6 @@
 {
   "name": "truffle-solidity-loader",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "A Webpack loader that uses Truffle to load and provision solidity contracts, with Truffle migrations.",
   "main": "index.js",
   "scripts": {
@@ -19,7 +19,7 @@
     "loader-utils": "^1.1.0",
     "schema-utils": "^1.0.0",
     "truffle-config": "^1.1.7",
-    "truffle-core": "^5.0.11"
+    "truffle-core": "^5.0.12"
   },
   "devDependencies": {
     "standard": "^11.0.1"
