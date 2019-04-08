@@ -6,63 +6,41 @@ var debug = require("debug")("artifactor");
 
 function Artifactor(destination) {
   this.destination = destination;
-};
+}
 
-Artifactor.prototype.save = function(object) {
-  var self = this;
+Artifactor.prototype.save = function(artifactObject) {
+  const self = this;
 
-  return new Promise(function(accept, reject) {
-    object = Schema.normalize(object);
+  const normalizedArtifact = Schema.normalize(artifactObject);
+  const contractName = normalizedArtifact.contractName;
 
-    if (object.contractName == null) {
-      return reject(new Error("You must specify a contract name."));
-    }
+  if (!contractName) throw new Error("You must specify a contract name.");
 
-    var output_path = object.contractName;
+  const output_path = path.join(self.destination, `${contractName}.json`);
+  let completeArtifact = {};
 
-    // Create new path off of destination.
-    output_path = path.join(self.destination, output_path);
-    output_path = path.resolve(output_path);
+  // helper for writing artifacts
+  const writeArtifact = _completeArtifact => {
+    completeArtifact.updatedAt = new Date().toISOString();
+    fs.writeFileSync(
+      output_path,
+      JSON.stringify(_completeArtifact, null, 2),
+      "utf8"
+    );
+  };
 
-    // Add json extension.
-    output_path = output_path + ".json";
-
-    fs.readFile(output_path, {encoding: "utf8"}, function(err, json) {
-      // No need to handle the error. If the file doesn't exist then we'll start afresh
-      // with a new object.
-
-      var finalObject = object;
-
-      if (!err) {
-        var existingObjDirty;
-        try {
-          existingObjDirty = JSON.parse(json);
-        } catch (e) {
-          reject(e);
-        }
-
-        // normalize existing and merge into final
-        finalObject = Schema.normalize(existingObjDirty);
-
-        // merge networks
-        var finalNetworks = {};
-        _.merge(finalNetworks, finalObject.networks, object.networks);
-
-        // update existing with new
-        _.assign(finalObject, object);
-        finalObject.networks = finalNetworks;
-      }
-
-      // update timestamp
-      finalObject.updatedAt = new Date().toISOString();
-
-      // output object
-      fs.outputFile(output_path, JSON.stringify(finalObject, null, 2), "utf8", function(err) {
-        if (err) return reject(err);
-        accept();
-      });
-    });
-  });
+  try {
+    const existingArtifact = fs.readFileSync(output_path, "utf8"); // check if artifact already exists
+    const existingArtifactObject = JSON.parse(existingArtifact); // parse existing artifact
+    const normalizedExistingArtifact = Schema.normalize(existingArtifactObject);
+    _.merge(completeArtifact, normalizedExistingArtifact, normalizedArtifact);
+    writeArtifact(completeArtifact);
+  } catch (e) {
+    if (e.code === "ENOENT") return writeArtifact(normalizedArtifact);
+    // if artifact doesn't already exist, write new file
+    else if (e instanceof SyntaxError) throw new Error(e); // catches improperly formatted artifact json
+    throw new Error(e); // catch all other errors
+  }
 };
 
 Artifactor.prototype.saveAll = function(objects) {
@@ -80,7 +58,9 @@ Artifactor.prototype.saveAll = function(objects) {
   return new Promise(function(accept, reject) {
     fs.stat(self.destination, function(err, stat) {
       if (err) {
-        return reject(new Error("Desination " + self.destination + " doesn't exist!"));
+        return reject(
+          new Error("Desination " + self.destination + " doesn't exist!")
+        );
       }
       accept();
     });
