@@ -53,7 +53,12 @@ const mappingFixtures = [
       from: "uint256",
       to: "uint256"
     },
-    value: new Map(generateArray(5).map((value, idx) => [idx, value]))
+    value: {
+      ...Object.assign(
+        {},
+        ...generateArray(5).map((value, idx) => ({ [idx]: value }))
+      )
+    }
   },
   {
     name: "numberedStrings",
@@ -61,9 +66,14 @@ const mappingFixtures = [
       from: "uint256",
       to: "string"
     },
-    value: new Map(
-      generateArray(7).map((value, idx) => [value, faker.lorem.slug(idx)])
-    )
+    value: {
+      ...Object.assign(
+        {},
+        ...generateArray(7).map((value, idx) => ({
+          [value]: faker.lorem.slug(idx)
+        }))
+      )
+    }
   },
   {
     name: "stringsToStrings",
@@ -71,9 +81,14 @@ const mappingFixtures = [
       from: "string",
       to: "string"
     },
-    value: new Map(
-      [0, 1, 2, 3, 4].map(idx => [faker.lorem.slug(idx), faker.lorem.slug(idx)])
-    )
+    value: {
+      ...Object.assign(
+        {},
+        ...[0, 1, 2, 3, 4].map(idx => ({
+          [faker.lorem.slug(idx)]: faker.lorem.slug(idx)
+        }))
+      )
+    }
   }
 ];
 
@@ -131,7 +146,7 @@ contract ${contractName} {
   function run() public {
     ${fixtures
       .map(({ name, type: { from }, value }) =>
-        Array.from(value.entries())
+        Object.entries(value)
           .map(
             ([k, v]) =>
               from === "string"
