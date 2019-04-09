@@ -61,11 +61,12 @@ class Artifactor {
     }
 
     try {
-      fs.statSync(self.destination);
+      fs.statSync(self.destination); // check if destinationn exists
     } catch (e) {
       if (e.code === "ENOENT")
+        // if destination doesn't exist, throw error
         throw new Error(`Destination "${self.destination}" doesn't exist!`);
-      throw new Error(e);
+      throw new Error(e); // throw on all other errors
     }
 
     Object.keys(newArtifactObjects).forEach(contractName => {
