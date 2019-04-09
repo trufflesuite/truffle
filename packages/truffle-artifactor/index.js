@@ -39,8 +39,8 @@ class Artifactor {
       _.merge(completeArtifact, normalizedExistingArtifact, normalizedArtifact);
       writeArtifact(completeArtifact);
     } catch (e) {
-      if (e.code === "ENOENT") return writeArtifact(normalizedArtifact);
       // if artifact doesn't already exist, write new file
+      if (e.code === "ENOENT") return writeArtifact(normalizedArtifact);
       else if (e instanceof SyntaxError) throw new Error(e); // catches improperly formatted artifact json
       throw new Error(e); // catch all other errors
     }
