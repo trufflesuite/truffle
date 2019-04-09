@@ -151,12 +151,8 @@ const SolidityTest = {
             contracts[name].default_network = runner.config.default_network;
           });
 
-          runner.config.artifactor
-            .saveAll(contracts, runner.config.contracts_build_directory)
-            .then(() => {
-              callback();
-            })
-            .catch(callback);
+          runner.config.artifactor.saveAll(contracts);
+          callback();
         }
       );
     });
