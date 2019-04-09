@@ -21,7 +21,7 @@ Artifactor.prototype.save = function(artifactObject) {
 
   // helper for writing artifacts
   const writeArtifact = _completeArtifact => {
-    completeArtifact.updatedAt = new Date().toISOString();
+    _completeArtifact.updatedAt = new Date().toISOString();
     fs.writeFileSync(
       output_path,
       JSON.stringify(_completeArtifact, null, 2),
