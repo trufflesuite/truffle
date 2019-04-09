@@ -43,37 +43,31 @@ Artifactor.prototype.save = function(artifactObject) {
   }
 };
 
-Artifactor.prototype.saveAll = function(objects) {
-  var self = this;
+Artifactor.prototype.saveAll = function(artifactObjects) {
+  const self = this;
+  let newArtifactObjects = {};
 
-  if (Array.isArray(objects)) {
-    var array = objects;
-    objects = {};
+  if (Array.isArray(artifactObjects)) {
+    const tmpArtifactArray = artifactObjects;
 
-    array.forEach(function(item) {
-      objects[item.contract_name] = item;
+    tmpArtifactArray.forEach(function(artifactObj) {
+      newArtifactObjects[artifactObj.contract_name] = artifactObj;
     });
+  } else {
+    newArtifactObjects = artifactObjects;
   }
 
-  return new Promise(function(accept, reject) {
-    fs.stat(self.destination, function(err, stat) {
-      if (err) {
-        return reject(
-          new Error("Desination " + self.destination + " doesn't exist!")
-        );
-      }
-      accept();
-    });
-  }).then(function() {
-    var promises = [];
+  try {
+    fs.statSync(self.destination);
+  } catch (e) {
+    if (e.code === "ENOENT")
+      throw new Error(`Destination "${self.destination}" doesn't exist!`);
+    throw new Error(e);
+  }
 
-    Object.keys(objects).forEach(function(contractName) {
-      var object = objects[contractName];
-      object.contractName = contractName;
-      promises.push(self.save(object));
-    });
-
-    return Promise.all(promises);
+  Object.keys(newArtifactObjects).forEach(contractName => {
+    let artifactObject = newArtifactObjects[contractName];
+    self.save(artifactObject);
   });
 };
 
