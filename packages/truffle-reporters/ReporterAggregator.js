@@ -1,6 +1,6 @@
-const { unbox, compile } = require("./reporters");
+const { unbox, compile, obtain } = require("./reporters");
 const Reporter = require("./Reporter");
-const defaultReporters = { compile, unbox };
+const defaultReporters = { compile, unbox, obtain };
 
 class ReporterAggregator {
   constructor(initializationOptions) {

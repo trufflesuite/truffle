@@ -1,7 +1,6 @@
 const debug = require("debug")("compile:compilerSupplier");
 const requireFromString = require("require-from-string");
 const fs = require("fs");
-const ora = require("ora");
 const originalRequire = require("original-require");
 const request = require("request-promise");
 const semver = require("semver");
@@ -100,17 +99,17 @@ class VersionRange extends LoadingStrategy {
 
   async getSolcByUrlAndCache(fileName, index = 0) {
     const url = this.config.compilerRoots[index] + fileName;
-    const spinner = ora({
-      text: "Downloading compiler. Attempt #" + (index + 1),
-      color: "red"
-    }).start();
+    const { eventManager } = this.config;
+    eventManager.emit("downloadCompiler:start", {
+      attemptNumber: index + 1
+    });
     try {
       const response = await request.get(url);
-      spinner.stop();
+      eventManager.emit("downloadCompiler:succeed");
       this.addFileToCache(response, fileName);
       return this.compilerFromString(response);
     } catch (error) {
-      spinner.stop();
+      eventManager.emit("downloadCompiler:fail");
       if (index >= this.config.compilerRoots.length - 1) {
         throw this.errors("noRequest", "compiler URLs", error);
       }
@@ -142,18 +141,19 @@ class VersionRange extends LoadingStrategy {
   }
 
   getSolcVersions(index = 0) {
-    const spinner = ora({
-      text: "Fetching solc version list from solc-bin. Attempt #" + (index + 1),
-      color: "yellow"
-    }).start();
-    if (!this.config.compilerRoots || this.config.compilerRoots.length < 1)
+    const { eventManager } = this.config;
+    eventManager.emit("fetchSolcList:start", { attemptNumber: index + 1 });
+    if (!this.config.compilerRoots || this.config.compilerRoots.length < 1) {
+      eventManager.emit("fetchSolcList:fail");
       throw this.errors("noUrl");
+    }
     return request(this.config.compilerRoots[index] + "list.json")
       .then(list => {
-        spinner.stop();
+        eventManager.emit("fetchSolcList:succeed");
         return JSON.parse(list);
       })
       .catch(error => {
+        eventManager.emit("fetchSolcList:fail");
         spinner.stop();
         if (index >= this.config.compilerRoots.length - 1) {
           throw this.errors("noRequest", "version URLs", error);

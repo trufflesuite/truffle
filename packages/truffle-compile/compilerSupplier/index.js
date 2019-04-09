@@ -11,11 +11,12 @@ const {
 } = require("./loadingStrategies");
 
 class CompilerSupplier {
-  constructor(_config) {
-    _config = _config || {};
-    const defaultConfig = { version: null };
-    this.config = Object.assign({}, defaultConfig, _config);
-    this.strategyOptions = { version: this.config.version };
+  constructor(config) {
+    this.config = config;
+    this.strategyOptions = {
+      version: this.config.version,
+      eventManager: config.eventManager
+    };
   }
 
   badInputError(userSpecification) {
@@ -64,8 +65,8 @@ class CompilerSupplier {
       } else if (useSpecifiedLocal) {
         strategy = new Local(this.strategyOptions);
       } else if (isValidVersionRange) {
-        if (this.config.compilerRoots) {
-          this.strategyOptions.compilerRoots = this.config.compilerRoots;
+        if (this.compilerRoots) {
+          this.strategyOptions.compilerRoots = this.compilerRoots;
         }
         strategy = new VersionRange(this.strategyOptions);
       }
