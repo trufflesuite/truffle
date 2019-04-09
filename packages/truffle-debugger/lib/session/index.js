@@ -6,6 +6,7 @@ import configureStore from "lib/store";
 import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
 import data from "lib/data/selectors";
+import { decode, decodeAll } from "lib/data/sagas";
 import controllerSelector from "lib/controller/selectors";
 
 import rootSaga from "./sagas";
@@ -26,7 +27,9 @@ export default class Session {
     /**
      * @private
      */
-    this._store = configureStore(reducer, rootSaga);
+    let { store, sagaMiddleware } = configureStore(reducer, rootSaga);
+    this._store = store;
+    this._sagaMiddleware = sagaMiddleware;
 
     let { contexts, sources } = Session.normalize(contracts, files);
 
@@ -145,6 +148,10 @@ export default class Session {
     return true;
   }
 
+  async runSaga(saga, ...args) {
+    return await this._sagaMiddleware.run(saga, ...args).toPromise();
+  }
+
   async interrupt() {
     return this.dispatch(controller.interrupt());
   }
@@ -219,49 +226,19 @@ export default class Session {
     return this.dispatch(controller.removeAllBreakpoints());
   }
 
+  //deprecated -- decode is now *always* ready!
   async decodeReady() {
-    return new Promise(resolve => {
-      let haveResolved = false;
-      const unsubscribe = this._store.subscribe(() => {
-        const subscriptionDecodingStarted = this.view(data.proc.decodingKeys);
-
-        debug("following decoding started: %d", subscriptionDecodingStarted);
-
-        if (subscriptionDecodingStarted <= 0 && !haveResolved) {
-          haveResolved = true;
-          unsubscribe();
-          resolve();
-        }
-      });
-
-      const decodingStarted = this.view(data.proc.decodingKeys);
-
-      debug("initial decoding started: %d", decodingStarted);
-
-      if (decodingStarted <= 0) {
-        haveResolved = true;
-        unsubscribe();
-        resolve();
-      }
-    });
+    return true;
   }
 
   async variable(name) {
-    await this.decodeReady();
-
     const definitions = this.view(data.current.identifiers.definitions);
     const refs = this.view(data.current.identifiers.refs);
 
-    const decode = this.view(data.views.decoder);
-    return await decode(definitions[name], refs[name]);
+    return await this.runSaga(decode, definitions[name], refs[name]);
   }
 
   async variables() {
-    debug("awaiting decodeReady");
-    await this.decodeReady();
-    debug("decode now ready");
-
-    return await this.view(data.current.identifiers.decoded);
-    debug("got variables");
+    return await this.runSaga(decodeAll);
   }
 }

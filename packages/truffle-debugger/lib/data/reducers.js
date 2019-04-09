@@ -156,7 +156,6 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
 }
 
 const DEFAULT_PATHS = {
-  decodingStarted: 0,
   byAddress: {}
 };
 
@@ -166,15 +165,6 @@ const DEFAULT_PATHS = {
 //which is fine, as that's all we need it for.
 function mappedPaths(state = DEFAULT_PATHS, action) {
   switch (action.type) {
-    case actions.MAP_KEY_DECODING:
-      debug(
-        "decoding started: %d",
-        state.decodingStarted + (action.started ? 1 : -1)
-      );
-      return {
-        ...state,
-        decodingStarted: state.decodingStarted + (action.started ? 1 : -1)
-      };
     case actions.MAP_PATH_AND_ASSIGN:
       let { address, slot, typeIdentifier, parentType } = action;
       //how this case works: first, we find the spot in our table (based on

@@ -9,15 +9,15 @@ import { decodeStorageReferenceByAddress } from "./storage";
 import { decodeCalldataReferenceByAddress } from "./calldata";
 import { StackPointer, StackLiteralPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
-import Web3 from "web3";
+import { DecoderRequest } from "../types/request";
 
-export async function decodeStack(definition: DecodeUtils.AstDefinition, pointer: StackPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
-  const rawValue: Uint8Array = await read(pointer, info.state, web3, contractAddress);
+export function* decodeStack(definition: DecodeUtils.AstDefinition, pointer: StackPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
+  const rawValue: Uint8Array = yield* read(pointer, info.state);
   const literalPointer: StackLiteralPointer = { literal: rawValue };
-  return await decodeLiteral(definition, literalPointer, info, web3, contractAddress);
+  return yield* decodeLiteral(definition, literalPointer, info);
 }
 
-export async function decodeLiteral(definition: DecodeUtils.AstDefinition, pointer: StackLiteralPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
+export function* decodeLiteral(definition: DecodeUtils.AstDefinition, pointer: StackLiteralPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
 
   debug("definition %O", definition);
   debug("pointer %o", pointer);
@@ -26,7 +26,7 @@ export async function decodeLiteral(definition: DecodeUtils.AstDefinition, point
   //decodeMemoryReference, which knows how to decode the pointer already
   if(DecodeUtils.Definition.isReference(definition)
     && DecodeUtils.Definition.referenceType(definition) === "memory") {
-    return await decodeMemoryReferenceByAddress(definition, pointer, info);
+    return yield* decodeMemoryReferenceByAddress(definition, pointer, info);
   }
 
   //next: do we have a storage pointer (which may be a mapping)? if so, we can
@@ -35,7 +35,7 @@ export async function decodeLiteral(definition: DecodeUtils.AstDefinition, point
   if((DecodeUtils.Definition.isReference(definition)
     && DecodeUtils.Definition.referenceType(definition) === "storage")
     || DecodeUtils.Definition.isMapping(definition)) {
-    return await decodeStorageReferenceByAddress(definition, pointer, info, web3, contractAddress);
+    return yield* decodeStorageReferenceByAddress(definition, pointer, info);
   }
 
   //next: do we have a calldata pointer?
@@ -50,7 +50,7 @@ export async function decodeLiteral(definition: DecodeUtils.AstDefinition, point
       let start = DecodeUtils.Conversion.toBN(pointer.literal.slice(0, DecodeUtils.EVM.WORD_SIZE)).toNumber();
       let length = DecodeUtils.Conversion.toBN(pointer.literal.slice(DecodeUtils.EVM.WORD_SIZE)).toNumber();
       let newPointer = { calldata: { start, length }};
-      return await decodeValue(definition, newPointer, info);
+      return yield* decodeValue(definition, newPointer, info);
     }
 
     //otherwise, is it a dynamic array?
@@ -62,12 +62,12 @@ export async function decodeLiteral(definition: DecodeUtils.AstDefinition, point
       //HACK -- in order to read the correct location, we need to add an offset
       //of -32 (since, again, we're throwing away the length info), so we pass
       //that in as the "base" value
-      return await decodeCalldataReferenceByAddress(definition, {literal: locationOnly}, info, -DecodeUtils.EVM.WORD_SIZE);
+      return yield* decodeCalldataReferenceByAddress(definition, {literal: locationOnly}, info, -DecodeUtils.EVM.WORD_SIZE);
     }
     else {
       //multivalue case -- this case is straightforward
       //pass in 0 as the base since this is an absolute pointer
-      return await decodeCalldataReferenceByAddress(definition, pointer, info, 0);
+      return yield* decodeCalldataReferenceByAddress(definition, pointer, info, 0);
     }
   }
 
@@ -76,6 +76,5 @@ export async function decodeLiteral(definition: DecodeUtils.AstDefinition, point
   //don't yet support this case, so let's just move on
 
   //finally, if none of the above hold, we can just dispatch to decodeValue.
-  //note we don't need web3 and contract address at this point
-  return await decodeValue(definition, pointer, info);
+  return yield* decodeValue(definition, pointer, info);
 }

@@ -4,8 +4,8 @@ const debug = debugModule("decoder:read:storage");
 import * as DecodeUtils from "truffle-decode-utils";
 import { Slot, Range } from "../types/storage";
 import { WordMapping } from "../types/evm";
+import { DecoderRequest } from "../types/request";
 import BN from "bn.js";
-import Web3 from "web3";
 
 /**
  * convert a slot to a word corresponding to actual storage address
@@ -59,29 +59,25 @@ export function slotAddressPrintout(slot: Slot): string {
  * @param slot - see slotAddress() code to understand how these work
  * @param offset - for array, offset from the keccak determined location
  */
-export async function read(storage: WordMapping, slot: Slot, web3?: Web3, contractAddress?: string): Promise<Uint8Array> {
+export function* read(storage: WordMapping, slot: Slot): IterableIterator<Uint8Array | DecoderRequest> {
   debug("Slot printout: %s", slotAddressPrintout(slot));
-  const address = slotAddress(slot);
+  const address: BN = slotAddress(slot);
 
   // debug("reading slot: %o", DecodeUtils.toHexString(address));
 
   const hexAddress = DecodeUtils.Conversion.toHexString(address, DecodeUtils.EVM.WORD_SIZE);
   let word = storage[hexAddress];
 
-  if (word === undefined && web3 && contractAddress) {
-    // fallback
-    word = DecodeUtils.Conversion.toBytes(await web3.eth.getStorageAt(contractAddress, address), DecodeUtils.EVM.WORD_SIZE);
-  }
-
-  //if not found, it's 0
-  //NOTE: really this shouldn't be a fallback like this but rather inside the above cases;
-  //however that would require a reorganization, it'll wait for fullState/contextSelector
+  //if we can't find the word in the map, we place a request to the invoker to supply it
+  //(contract-decoder will look it up from the blockchain, while the debugger will just
+  //say 0)
   if(word === undefined) {
-    word = new Uint8Array(DecodeUtils.EVM.WORD_SIZE);
-    word.fill(0);
+    word = yield {
+      requesting: "storage",
+      slot: address
+    };
   }
 
-  // debug("word %o", word);
   return word;
 }
 
@@ -101,7 +97,7 @@ export async function read(storage: WordMapping, slot: Slot, web3?: Web3, contra
  * @param to - location (see ^). inclusive.
  * @param length - instead of `to`, number of bytes after `from`
  */
-export async function readRange(storage: WordMapping, range: Range, web3?: Web3, contractAddress?: string): Promise<Uint8Array> {
+export function* readRange(storage: WordMapping, range: Range): IterableIterator<Uint8Array | DecoderRequest> {
   // debug("readRange %o", range);
 
   let { from, to, length } = range;
@@ -144,7 +140,7 @@ export async function readRange(storage: WordMapping, range: Range, web3?: Web3,
 
   for (let i = 0; i < totalWords; i++) {
     let offset = from.slot.offset.addn(i);
-    const word = await read(storage, { ...from.slot, offset }, web3, contractAddress);
+    const word = yield* read(storage, { ...from.slot, offset });
     if (typeof word !== "undefined") {
       data.set(word, i * DecodeUtils.EVM.WORD_SIZE);
     }

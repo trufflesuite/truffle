@@ -7,12 +7,14 @@ import BN from "bn.js";
 import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { EvmEnum } from "../interface/contract-decoder";
-import Web3 from "web3";
+import { DecoderRequest } from "../types/request";
 
-export default async function decodeValue(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<undefined | boolean | BN | string | EvmEnum> {
+export default function* decodeValue(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo): IterableIterator<undefined | boolean | BN | string | DecoderRequest | Uint8Array> {
+  //NOTE: this does not actually return a Uint8Aarray, but due to the use of yield* read,
+  //we have to include it in the type :-/
   const { state } = info;
 
-  let bytes = await read(pointer, state, web3, contractAddress);
+  let bytes = yield* read(pointer, state);
   if (bytes == undefined) {
     // debug("segfault, pointer %o, state: %O", pointer, state);
     return undefined;
