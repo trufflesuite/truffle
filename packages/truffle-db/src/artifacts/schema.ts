@@ -104,10 +104,11 @@ export const schema = mergeSchemas({
       sourceContract: {
         fragment: 
         `... on ContractObject { 
-          ast
+          ast,
+          source { contents, sourcePath }
         }`,
-        resolve: (obj, ast) => {
-          const { name, source } = obj;
+        resolve: (obj) => {
+          const { name, source, ast } = obj;
           const sourceContract = {
             name: name, 
             source: source, 
@@ -122,22 +123,21 @@ export const schema = mergeSchemas({
       contract: {
         fragment: 
         `... on ContractObject { 
-          contents,
-          sourcePath,
-          ast
+          source { contents, sourcePath },
+          name: contractName, 
+          ast, 
+          abi { json, items }
         }`,
-        resolve: (obj, contents, sourcePath, ast) => {
-          const { name } = obj;
+        resolve: (obj) => {
+          const { name, source, ast, abi } = obj;
           const contract = {
             name: name,
             sourceContract: {
-              name,
-              source: {
-                contents, 
-                sourcePath
-              },
+              name: name,
+              source: source,
               ast: ast
-            }
+            }, 
+            abi: abi
           }
           return contract;
         }
