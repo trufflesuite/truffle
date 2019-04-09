@@ -32,7 +32,19 @@ function generateTests(fixtures) {
   for (let { name, value: expected } of fixtures) {
     it(`correctly decodes ${name}`, async () => {
       const response = await this.decode(name);
-      assert.deepEqual(response, expected);
+      if (expected instanceof Map) {
+        assert.instanceOf(response, Map);
+        assert.sameDeepMembers(
+          Array.from(response.keys()),
+          Array.from(expected.keys())
+        );
+        for (let key of expected.keys()) {
+          //no mappings in this test are nested so this will do fine
+          assert.deepEqual(response[key], expected[key]);
+        }
+      } else {
+        assert.deepEqual(response, expected);
+      }
     });
   }
 }
