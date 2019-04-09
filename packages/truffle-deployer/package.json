@@ -1,6 +1,6 @@
 {
   "name": "truffle-deployer",
-  "version": "3.0.11",
+  "version": "3.0.12",
   "description": "Light deployment module for easily deploying Ethereum contracts",
   "main": "index.js",
   "scripts": {
@@ -28,7 +28,7 @@
   "devDependencies": {
     "ganache-core": "2.5.1",
     "mocha": "5.2.0",
-    "truffle-reporters": "^1.0.7",
+    "truffle-reporters": "^1.0.8",
     "truffle-workflow-compile": "^2.0.10",
     "web3": "1.0.0-beta.37"
   },
