@@ -36,7 +36,7 @@ var command = {
   },
   help: {
     usage:
-      "truffle migrate [--reset] [--f <number> | --from <number>] [--to <number>] [--network <name>] [--compile-all] [--verbose-rpc] [--interactive]",
+      "truffle migrate [--reset] [--f <number> | --from <number>] [--to <number>] [--network <name>] [--compile-all] [--verbose-rpc] [--interactive] [--dry-run [boolean]]",
     options: [
       {
         option: "--reset",
@@ -76,6 +76,10 @@ var command = {
         option: "--interactive",
         description:
           "Prompt to confirm that the user wants to proceed after the dry run."
+      },
+      {
+        option: "--dry-run [boolean]",
+        description: "Do a test run before performing an actual migration."
       }
     ]
   },
