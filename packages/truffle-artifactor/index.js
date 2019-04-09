@@ -9,7 +9,7 @@ class Artifactor {
     this.destination = destination;
   }
 
-  save(artifactObject) {
+  async save(artifactObject) {
     const self = this;
 
     const normalizedArtifact = Schema.normalize(artifactObject);
@@ -46,7 +46,7 @@ class Artifactor {
     }
   }
 
-  saveAll(artifactObjects) {
+  async saveAll(artifactObjects) {
     const self = this;
     let newArtifactObjects = {};
 
