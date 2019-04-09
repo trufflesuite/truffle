@@ -17,7 +17,7 @@ var commandReference = {
   ":": "evaluate expression - see `v`",
   "+": "add watch expression (`+:<expr>`)",
   "-": "remove watch expression (-:<expr>)",
-  "?": "list existing watch expressions",
+  "?": "list existing watch expressions and breakpoints",
   "b": "add breakpoint",
   "B": "remove breakpoint",
   "c": "continue until breakpoint",
@@ -65,6 +65,7 @@ var DebugUtils = {
                   sourceMap: contract.sourceMap,
                   sourcePath: contract.sourcePath,
                   binary: contract.binary,
+                  abi: contract.abi,
                   ast: contract.ast,
                   deployedBinary: contract.deployedBinary,
                   deployedSourceMap: contract.deployedSourceMap,
@@ -238,6 +239,29 @@ var DebugUtils = {
     return allLines.join(OS.EOL);
   },
 
+  formatBreakpointLocation: function(
+    breakpoint,
+    here,
+    currentSourceId,
+    sourceNames
+  ) {
+    let baseMessage;
+    if (breakpoint.node !== undefined) {
+      baseMessage = here
+        ? `this point in line ${breakpoint.line + 1}`
+        : `a point in line ${breakpoint.line + 1}`;
+      //note we always add 1 to adjust for zero-indexing
+    } else {
+      baseMessage = `line ${breakpoint.line + 1}`;
+    }
+    if (breakpoint.sourceId !== currentSourceId) {
+      let sourceName = sourceNames[breakpoint.sourceId];
+      return baseMessage + ` in ${sourceName}`;
+    } else {
+      return baseMessage;
+    }
+  },
+
   formatInstruction: function(traceIndex, traceLength, instruction) {
     return (
       "(" +
@@ -249,6 +273,14 @@ var DebugUtils = {
       " " +
       (instruction.pushData || "")
     );
+  },
+
+  formatPC: function(pc) {
+    let hex = pc.toString(16);
+    if (hex.length % 2 !== 0) {
+      hex = "0" + hex; //ensure even length
+    }
+    return "  PC = " + pc.toString() + " = 0x" + hex;
   },
 
   formatStack: function(stack) {

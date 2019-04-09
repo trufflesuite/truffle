@@ -1,7 +1,5 @@
 import { combineReducers } from "redux";
 
-import { keccak256 } from "lib/helpers";
-
 import * as actions from "./actions";
 
 const DEFAULT_SOURCES = {
@@ -40,41 +38,8 @@ function sources(state = DEFAULT_SOURCES, action) {
   }
 }
 
-const DEFAULT_SOURCEMAPS = {
-  byContext: {}
-};
-
-function sourceMaps(state = DEFAULT_SOURCEMAPS, action) {
-  switch (action.type) {
-    /*
-     * Adding a new sourceMap
-     */
-    case actions.ADD_SOURCEMAP:
-      let { binary, sourceMap } = action;
-      let context = keccak256(binary);
-
-      return {
-        byContext: {
-          ...state.byContext,
-
-          [context]: {
-            context,
-            sourceMap
-          }
-        }
-      };
-
-    /*
-     * Default Case
-     */
-    default:
-      return state;
-  }
-}
-
 const info = combineReducers({
-  sources,
-  sourceMaps
+  sources
 });
 
 function functionDepthStack(state = [0], action) {

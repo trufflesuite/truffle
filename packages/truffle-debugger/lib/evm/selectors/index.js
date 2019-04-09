@@ -2,7 +2,6 @@ import debugModule from "debug";
 const debug = debugModule("debugger:evm:selectors"); // eslint-disable-line no-unused-vars
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
-import levenshtein from "fast-levenshtein";
 import BN from "bn.js";
 
 import trace from "lib/trace/selectors";
@@ -18,24 +17,32 @@ import {
   isNormalHaltingMnemonic
 } from "lib/helpers";
 
-function findContext({ address, binary }, instances, search, contexts) {
-  let record;
-  if (address) {
-    record = instances[address];
-    if (!record) {
-      return { address };
-    }
-    binary = record.binary;
-  } else {
-    record = search(binary);
+function matchContext({ binary, isConstructor }, givenBinary) {
+  let lengthDifference = givenBinary.length - binary.length;
+  //first: if it's not a constructor, they'd better be equal in length.
+  //if it is a constructor, the given binary must be at least as long,
+  //and the difference must be a multiple of 64
+  if (
+    (!isConstructor && lengthDifference !== 0) ||
+    lengthDifference < 0 ||
+    lengthDifference % (2 * DecodeUtils.EVM.WORD_SIZE) !== 0
+  ) {
+    return false;
   }
-
-  let context = contexts[(record || {}).context];
-
-  return {
-    ...context,
-    binary
-  };
+  for (let i = 0; i < binary.length; i++) {
+    //note: using strings like arrays is kind of dangerous in general in JS,
+    //but everything here is ASCII so it's fine
+    //note that we need to compare case-insensitive, since Solidity will
+    //put addresses in checksum case in the compiled source
+    //(we don't actually need that second toLowerCase(), but whatever)
+    if (
+      binary[i] !== "." &&
+      binary[i].toLowerCase() !== givenBinary[i].toLowerCase()
+    ) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /**
@@ -299,42 +306,19 @@ const evm = createSelectorTree({
      * evm.info.binaries
      */
     binaries: {
-      _: createLeaf(["/state"], state => state.info.contexts.byBinary),
-
       /**
        * evm.info.binaries.search
        *
-       * returns function (binary) => context
+       * returns function (binary) => context (returns the *ID* of the context)
+       * (returns null on no match)
        */
-      search: createLeaf(["./_"], binaries => binary => {
-        // search for a given binary based on levenshtein distances to
-        // existing (known) context binaries.
-        //
-        // levenshtein distance is the number of textual modifications
-        // (insert, change, delete) required to convert string a to b
-        //
-        // filter by a percentage threshold
-        const threshold = 0.25;
-
-        // skip levenshtein check for undefined binaries
-        if (!binary || binary == "0x0") {
-          return {};
-        }
-
-        const results = Object.entries(binaries)
-          .map(([knownBinary, { context }]) => ({
-            context,
-            distance: levenshtein.get(knownBinary, binary)
-          }))
-          .filter(({ distance }) => distance <= binary.length * threshold)
-          .sort(({ distance: a }, { distance: b }) => a - b);
-
-        if (results[0]) {
-          const { context } = results[0];
-          return { context };
-        }
-
-        return {};
+      search: createLeaf(["/info/contexts"], contexts => binary => {
+        debug("binary %s", binary);
+        let context = Object.values(contexts).find(context =>
+          matchContext(context, binary)
+        );
+        debug("context found: %O", context);
+        return context !== undefined ? context.context : null;
       })
     },
 
@@ -376,7 +360,27 @@ const evm = createSelectorTree({
      */
     context: createLeaf(
       ["./call", "/info/instances", "/info/binaries/search", "/info/contexts"],
-      findContext
+      ({ address, binary }, instances, search, contexts) => {
+        let contextId;
+        if (address) {
+          //if we're in a call to a deployed contract, we *must* have recorded
+          //it in the instance table, so we just need to look up the context ID
+          //from there; we don't need to do any further searching
+          contextId = instances[address].context;
+          binary = instances[address].binary;
+        } else {
+          //otherwise, if we're in a constructor, we'll need to actually do a
+          //search
+          contextId = search(binary);
+        }
+
+        let context = contexts[contextId];
+
+        return {
+          ...context,
+          binary
+        };
+      }
     ),
 
     /**

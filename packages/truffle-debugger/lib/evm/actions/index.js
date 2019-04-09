@@ -1,21 +1,30 @@
 export const ADD_CONTEXT = "EVM_ADD_CONTEXT";
-export function addContext(contractName, raw, compiler, contractId) {
+export function addContext({
+  contractName,
+  binary,
+  sourceMap,
+  compiler,
+  abi,
+  contractId,
+  contractKind,
+  isConstructor
+}) {
   return {
     type: ADD_CONTEXT,
     contractName,
-    raw,
+    binary,
+    sourceMap,
     compiler,
-    contractId
+    abi,
+    contractId,
+    contractKind,
+    isConstructor
   };
 }
 
-export const ADD_BINARY = "EVM_ADD_BINARY";
-export function addBinary(context, binary) {
-  return {
-    type: ADD_BINARY,
-    context,
-    binary
-  };
+export const NORMALIZE_CONTEXTS = "EVM_NORMALIZE_CONTEXTS";
+export function normalizeContexts() {
+  return { type: NORMALIZE_CONTEXTS };
 }
 
 export const ADD_INSTANCE = "EVM_ADD_INSTANCE";

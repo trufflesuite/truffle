@@ -1,15 +1,16 @@
-var Box = require("truffle-box");
-var MemoryLogger = require("../memorylogger");
-var CommandRunner = require("../commandrunner");
-var fs = require("fs-extra");
-var path = require("path");
-var assert = require("assert");
-var Server = require("../server");
-var Reporter = require("../reporter");
+const Box = require("truffle-box");
+const MemoryLogger = require("../memorylogger");
+const CommandRunner = require("../commandrunner");
+const fs = require("fs-extra");
+const path = require("path");
+const assert = require("assert");
+const Server = require("../server");
+const Reporter = require("../reporter");
 
 describe("Solidity Tests", function() {
-  var logger = new MemoryLogger();
-  var config;
+  const logger = new MemoryLogger();
+  let config;
+  let options;
 
   /**
    * Installs a bare truffle project and deposits a solidity test target
@@ -18,7 +19,8 @@ describe("Solidity Tests", function() {
    * @param  {String}   file Solidity test target
    */
   function initSandbox(done, file) {
-    Box.sandbox("bare", function(err, conf) {
+    options = { name: "bare", force: true };
+    Box.sandbox(options, (err, conf) => {
       if (err) return done(err);
       config = conf;
       config.logger = logger;

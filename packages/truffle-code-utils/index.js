@@ -19,10 +19,9 @@ module.exports = {
    */
   parseCode: function(hexString, numInstructions = null) {
     // Convert to an array of bytes
-    let code = hexString
-      .slice(2)
-      .match(/(..?)/g)
-      .map(hex => parseInt(hex, 16));
+    let code = (hexString.slice(2).match(/(..?)/g) || []).map(hex =>
+      parseInt(hex, 16)
+    );
 
     let stripMetadata = numInstructions === null;
 

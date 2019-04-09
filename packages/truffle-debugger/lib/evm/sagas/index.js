@@ -16,22 +16,19 @@ import * as trace from "lib/trace/sagas";
  *
  * @return {string} ID (0x-prefixed keccak of binary)
  */
-export function* addContext(
-  contractName,
-  { address, binary },
-  compiler,
-  contractId
-) {
-  const raw = binary || address;
-  const context = keccak256(raw);
+export function* addContext(context) {
+  const contextHash = keccak256({ type: "string", value: context.binary });
+  //NOTE: we take hash as *string*, not as bytes, because the binary may
+  //contain link references!
 
-  yield put(actions.addContext(contractName, raw, compiler, contractId));
+  debug("context %O", context);
+  yield put(actions.addContext(context));
 
-  if (binary) {
-    yield put(actions.addBinary(context, binary));
-  }
+  return contextHash;
+}
 
-  return context;
+export function* normalizeContexts() {
+  yield put(actions.normalizeContexts());
 }
 
 /**
@@ -42,13 +39,19 @@ export function* addContext(
  */
 export function* addInstance(address, binary) {
   let search = yield select(evm.info.binaries.search);
-  let { context } = search(binary);
+  let context = search(binary);
 
-  // in case binary is unknown, add context for address
-  if (!context) {
-    context = yield* addContext(undefined, { address }, undefined);
+  // in case binary is unknown, add a context for it
+  if (context === null) {
+    context = yield* addContext({
+      binary,
+      isConstructor: false
+      //addInstance is only used for adding deployed instances, so it will
+      //never be a constructor
+    });
   }
 
+  //now, whether we needed a new context or not, add the instance
   yield put(actions.addInstance(address, context, binary));
 
   return context;

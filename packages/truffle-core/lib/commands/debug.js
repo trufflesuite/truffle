@@ -43,7 +43,6 @@ var command = {
     var trace = selectors.trace;
     var solidity = selectors.solidity;
     var controller = selectors.controller;
-    var evm = selectors.evm;
 
     var config = Config.detect(options);
 
@@ -96,7 +95,8 @@ var command = {
                 deployedBinary:
                   contract.deployedBinary || contract.deployedBytecode,
                 deployedSourceMap: contract.deployedSourceMap,
-                compiler: contract.compiler
+                compiler: contract.compiler,
+                abi: contract.abi
               };
             })
           });
@@ -175,7 +175,6 @@ var command = {
             var step = session.view(trace.step);
             var traceIndex = session.view(trace.index);
             var totalSteps = session.view(trace.steps).length;
-            var gas = session.view(evm.current.state.gas);
 
             config.logger.log("");
             config.logger.log(
@@ -185,9 +184,10 @@ var command = {
                 instruction
               )
             );
+            config.logger.log(DebugUtils.formatPC(step.pc));
             config.logger.log(DebugUtils.formatStack(step.stack));
             config.logger.log("");
-            config.logger.log(gas + " gas remaining");
+            config.logger.log(step.gas + " gas remaining");
           }
 
           function select(expr) {
@@ -232,6 +232,33 @@ var command = {
             enabledExpressions.forEach(function(expression) {
               config.logger.log("  " + expression);
             });
+          }
+
+          function printBreakpoints() {
+            let sourceNames = Object.assign(
+              {},
+              ...Object.values(session.view(solidity.info.sources)).map(
+                ({ id, sourcePath }) => ({
+                  [id]: path.basename(sourcePath)
+                })
+              )
+            );
+            let breakpoints = session.view(controller.breakpoints);
+            if (breakpoints.length > 0) {
+              for (let breakpoint of session.view(controller.breakpoints)) {
+                let currentLocation = session.view(controller.current.location);
+                let locationMessage = DebugUtils.formatBreakpointLocation(
+                  breakpoint,
+                  currentLocation.node !== undefined &&
+                    breakpoint.node === currentLocation.node.id,
+                  currentLocation.source.id,
+                  sourceNames
+                );
+                config.logger.log("  Breakpoint at " + locationMessage);
+              }
+            } else {
+              config.logger.log("No breakpoints added.");
+            }
           }
 
           async function printWatchExpressionsResults() {
@@ -448,8 +475,6 @@ var command = {
             //don't get node id unless we have to as workaround to problem
             //where it has sometimes turned up undefined
 
-            var sourceName; //to be used if a source is entered
-
             var breakpoint = {};
 
             debug("args %O", args);
@@ -530,7 +555,6 @@ var command = {
               }
 
               //otherwise, we found it!
-              sourceName = path.basename(matchingSources[0].sourcePath);
               breakpoint.sourceId = matchingSources[0].id;
               breakpoint.line = line - 1; //adjust for zero-indexing!
             }
@@ -550,21 +574,38 @@ var command = {
               breakpoint.line = line - 1; //adjust for zero-indexing!
             }
 
-            //having constructed the breakpoint, here's now a user-readable
-            //message describing its location
-            let locationMessage;
-            if (breakpoint.node !== undefined) {
-              locationMessage = `this point in line ${breakpoint.line + 1}`;
-              //+1 to adjust for zero-indexing
-            } else if (breakpoint.sourceId !== currentSourceId) {
-              //note: we should only be in this case if a source was entered!
-              //if no source as entered and we are here, something is wrong
-              locationMessage = `line ${breakpoint.line + 1} in ${sourceName}`;
-              //+1 to adjust for zero-indexing
-            } else {
-              locationMessage = `line ${breakpoint.line + 1}`;
-              //+1 to adjust for zero-indexing
+            //OK, we've constructed the breakpoint!  But if we're adding, we'll
+            //want to adjust to make sure we don't set it on an empty line or
+            //anything like that
+            if (setOrClear) {
+              let resolver = session.view(controller.breakpoints.resolver);
+              breakpoint = resolver(breakpoint);
+              //of course, this might result in finding that there's nowhere to
+              //add it after that point
+              if (breakpoint === null) {
+                config.logger.log(
+                  "Nowhere to add breakpoint at or beyond that location.\n"
+                );
+                return;
+              }
             }
+
+            //having constructed and adjusted breakpoint, here's now a
+            //user-readable message describing its location
+            let sourceNames = Object.assign(
+              {},
+              ...Object.values(session.view(solidity.info.sources)).map(
+                ({ id, sourcePath }) => ({
+                  [id]: path.basename(sourcePath)
+                })
+              )
+            );
+            let locationMessage = DebugUtils.formatBreakpointLocation(
+              breakpoint,
+              true,
+              currentSourceId,
+              sourceNames
+            );
 
             //one last check -- does this breakpoint already exist?
             let alreadyExists =
@@ -730,6 +771,7 @@ var command = {
                 break;
               case "?":
                 printWatchExpressions();
+                printBreakpoints();
                 break;
               case "v":
                 await printVariables();

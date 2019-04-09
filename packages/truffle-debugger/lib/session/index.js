@@ -75,27 +75,36 @@ export default class Session {
         sourcePath,
         source,
         ast,
+        abi,
         compiler
       } = contract;
 
-      debug("sourceMap %o", sourceMap);
-      debug("compiler %o", compiler);
-
-      let contractId = ast.nodes.find(
+      let contractNode = ast.nodes.find(
         node =>
           node.nodeType === "ContractDefinition" && node.name === contractName
-      ).id; //could also record contractKind, but we don't need to
+      ); //ideally we'd hold this off till later, but that would break the
+      //direction of the evm/solidity dependence, so we do it now
 
-      debug("contractId %d", contractId);
+      let contractId = contractNode.id;
+      let contractKind = contractNode.contractKind;
 
-      sourcesByPath[sourcePath] = { sourcePath, source, ast };
+      debug("contractName %s", contractName);
+      debug("sourceMap %o", sourceMap);
+      debug("compiler %o", compiler);
+      debug("abi %O", abi);
+
+      sourcesByPath[sourcePath] = { sourcePath, source, ast, compiler };
 
       if (binary && binary != "0x") {
         contexts.push({
           contractName,
           binary,
           sourceMap,
-          contractId
+          abi,
+          compiler,
+          contractId,
+          contractKind,
+          isConstructor: true
         });
       }
 
@@ -104,8 +113,11 @@ export default class Session {
           contractName,
           binary: deployedBinary,
           sourceMap: deployedSourceMap,
+          abi,
           compiler,
-          contractId
+          contractId,
+          contractKind,
+          isConstructor: false
         });
       }
     }
@@ -196,7 +208,7 @@ export default class Session {
   }
 
   async addBreakpoint(breakpoint) {
-    return this.dispatch(controller.addBreakpoint(breakpoint));
+    this.dispatch(controller.addBreakpoint(breakpoint));
   }
 
   async removeBreakpoint(breakpoint) {
