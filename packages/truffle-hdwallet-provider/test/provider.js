@@ -26,21 +26,21 @@ describe("HD Wallet Provider", function() {
 
   it("provides for a mnemonic", function(done) {
     const truffleDevAccounts = [
-      "0x3bdb7a8f066a3ac5ebb30be9ae8d979a1a10c7a4",
-      "0x80c4c4eb8575fde8f034eae47a2185c3ad5b8b2d",
-      "0x1017e752ca0fa9be617b7e5cc22b45e310533c64",
-      "0x1da8e1bb32c9f1b4374ac58b05b1f3e196ef3c1a",
-      "0xf92cc0410eca6fce10c61e4a15c7a35d5e2ba96c",
-      "0x36456b4c64d50cf3e9d0afb525975897e0cb744f",
-      "0xeecf554104ada447834cb4f66fff3d2ebd2aafb1",
-      "0x502aaaf58f94ba566da0b7a45bc72f351ee9f74b",
-      "0x21ac36744f99a4b663fb4bd54d512958b5121ccd",
-      "0x1d9948fc3b4dddfd31ef9b68043dd223fb893760"
+      "0xd07529d3a38e2c52b541617b3151ee99c5c3dcd0",
+      "0xb82ba4e7b0b8908f031a305090899447093bf1c2",
+      "0xefd7ab9c0b80133670b916bd145e7e67cf4fafa5",
+      "0xf68fbb8a87c8bf75a02e834eab3ce6cbfcff5db6",
+      "0x6504e34c1bbdd61ac4ce9a616c8e8aec5441ecf2",
+      "0xdc12eb7cc7645e951505d9824aa3575e53131e6f",
+      "0x598cf05905c16668348f4a795493f2ec370751af",
+      "0xe8ad23f4b2cb5c9014fc78a0a0e46fbd2462583f",
+      "0xb341a6c30340e7851d36d0ab35f93833b65d3893",
+      "0xb1d0c1de9d64535d4932630959512f194ec0f36b"
     ];
 
     const mnemonic =
       "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
-    provider = new WalletProvider(mnemonic, `http://localhost:${port}`, 0, 10);
+    provider = new WalletProvider(mnemonic, `http://localhost:${port}`, 'testnet', 0, 10);
 
     assert.deepEqual(provider.getAddresses(), truffleDevAccounts);
     web3.setProvider(provider);
@@ -56,6 +56,7 @@ describe("HD Wallet Provider", function() {
       provider = new WalletProvider(
         "takoyaki is delicious",
         "http://localhost:8545",
+        "testnet",
         0,
         1
       );
@@ -100,6 +101,7 @@ describe("HD Wallet Provider", function() {
     provider = new WalletProvider(
       privateKeys,
       `http://localhost:${port}`,
+      "testnet",
       0,
       privateKeys.length
     ); //pass in num_addresses to load full array

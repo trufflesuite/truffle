@@ -11,6 +11,11 @@ const Web3 = require("web3");
 const Transaction = require("newchainjs-tx");
 const ethUtil = require("newchainjs-util");
 
+const NETWORK_CONFIG = {
+  'mainnet': 1012,
+  'testnet': 1007,
+  'devnet': 1002
+}
 // This line shares nonce state across multiple provider instances. Necessary
 // because within truffle the wallet is repeatedly newed if it's declared in the config within a
 // function, resetting nonce from tx to tx. An instance can opt out
@@ -21,7 +26,7 @@ const singletonNonceSubProvider = new NonceSubProvider();
 function HDWalletProvider(
   mnemonic,
   provider,
-  chainId = 1012, // mainnet: 1012, testnet:1007, devnet: 1002
+  chainName = "mainnet",
   address_index = 0,
   num_addresses = 1,
   shareNonce = true,
@@ -63,8 +68,10 @@ function HDWalletProvider(
   }
 
   // set the chainId
-  this.chainId = chainId;
-
+  this.chainId = NETWORK_CONFIG[chainName];
+  if (!this.chainId) {
+    throw new Error('invalid chain name')
+  }
   const tmp_chainId = this.chainId;
   const tmp_accounts = this.addresses;
   const tmp_wallets = this.wallets;
@@ -92,7 +99,6 @@ function HDWalletProvider(
         }
         // default add chainId parameter
         txParams.chainId = tmp_chainId;
-        console.log('txParams:' + tmp_chainId);
         const tx = new Transaction(txParams);
         tx.sign(pkey);
         const rawTx = "0x" + tx.serialize().toString("hex");
