@@ -15,7 +15,7 @@ describe("artifactor + require", function() {
   var Example;
   var accounts;
   var abi;
-  var binary;
+  var bytecode;
   var network_id;
   var artifactor;
   var provider = Ganache.provider();
@@ -62,7 +62,7 @@ describe("artifactor + require", function() {
 
     var compiled = Schema.normalize(result["Example"]);
     abi = compiled.abi;
-    binary = compiled.bytecode;
+    bytecode = compiled.bytecode;
 
     // Setup
     var dirPath = temp.mkdirSync({
@@ -78,9 +78,12 @@ describe("artifactor + require", function() {
       .save({
         contractName: "Example",
         abi: abi,
-        binary: binary,
-        address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01",
-        network_id: network_id
+        bytecode: bytecode,
+        networks: {
+          [`${network_id}`]: {
+            address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01"
+          }
+        }
       })
       .then(function() {
         var json = requireNoCache(expected_filepath);
@@ -285,7 +288,7 @@ describe("artifactor + require", function() {
   it("creates a network object when an address is set if no network specified", function(done) {
     var NewExample = contract({
       abi: abi,
-      unlinked_binary: binary
+      bytecode: bytecode
     });
 
     NewExample.setProvider(provider);
@@ -336,7 +339,7 @@ describe("artifactor + require", function() {
     var MyContract = contract({
       contractName: "MyContract",
       abi: [event_abi],
-      binary: "0x12345678"
+      bytecode: "0x12345678"
     });
 
     MyContract.setNetwork(5);
