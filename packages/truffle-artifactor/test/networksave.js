@@ -16,13 +16,16 @@ const thirdNetworkObj = {
   2: { address: "0x6a90f4263739e4e20146ee4b5691d5b0fe5d48ec" }
 };
 
-const dirPath = temp.mkdirSync({
-  dir: path.resolve("./"),
-  prefix: "tmp-test-contract-"
-});
-const expected_filepath = path.join(dirPath, "Example.json");
+let dirPath, expected_filepath;
 
 describe("if artifact file doesn't already exist...", () => {
+  before(() => {
+    dirPath = temp.mkdirSync({
+      dir: path.resolve("./"),
+      prefix: "tmp-test-contract-"
+    });
+    expected_filepath = path.join(dirPath, "Example.json");
+  });
   it("...artifactor merges a passed network object to json", done => {
     // make sure the artifact file doesn't already exist
     assert(!fs.existsSync(expected_filepath));
