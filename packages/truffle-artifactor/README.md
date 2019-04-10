@@ -39,9 +39,10 @@ const artifactor = new Artifactor(__dirname);
 
 // See truffle-schema for more info: https://github.com/trufflesuite/truffle/tree/develop/packages/truffle-contract-schema
 const contractData = {
+  contractName: "...",   // String; optional.
   abi: ...,              // Array; required.
-  unlinkedBinary: "..." // String; optional.
-  address: "..."         // String; optional.
+  metadata: "...",       // String; optional.
+  bytecode: "..."        // String; optional.
 };
 
 artifactor.save(contractData);
@@ -59,12 +60,23 @@ Save contract data as a `.json` file. Returns a Promise.
 
     ```javascript
     {
-      contractName: "MyContract",  // String; optional. Defaults to "Contract"
+      contractName: "MyContract",   // String; optional. Defaults to "Contract".
       abi: ...,                     // Array; required.  Application binary interface.
-      unlinked_binary: "...",       // String; optional. Binary without resolve library links.
-      address: "...",               // String; optional. Deployed address of contract.
-      network_id: "...",            // String; optional. ID of network being saved within abstraction.
-      default_network: "..."        // String; optional. ID of default network this abstraction should use.
+      metadata: "...",              // String; optional. Contract metadata.
+      bytecode: "...",              // String; optional. Contract-creation binary without resolve library links.
+      deployedBytecode: "...",      // String; optional. On-chain deployed binary without resolve library links.
+      sourceMap: "...",             // String; optional. Source mapping for bytecode.
+      deployedSourceMap: "...",     // String; optional. Source mapping for deployedBytecode.
+      source: "...",                // String; optional. Uncompiled source code for contract.
+      sourcePath: "...",            // String; optional. File path for uncompiled source code.
+      ast: ...,                     // Object; optional. JSON representation of contract source code, as output by compiler.
+      legacyAST: ...,               // Object; optional. Legacy JSON representation of contract source code, as output by compiler.
+      compiler: ...,                // Object; optional. Compiler "type" and "properties".
+      networks: ...,                // Object; optional. Mapping of network ID keys to network object values (address information, links to other contract instances, and/or contract event logs).
+      schemaVersion: "...",         // String; optional. Schema version used by contract object representation.
+      updatedAt: "...",             // String; optional. Time contract object representation was generated/most recently updated.
+      devdoc: "...",                // String; optional. Developer documentation.
+      userdoc: "..."                // String; optional. User documentation.
     }
     ```
 
@@ -78,7 +90,7 @@ Save many contracts to the filesystem at once. Returns a Promise.
     {
       "MyContract": {
         "abi": ...,
-        "unlinked_binary": ...
+        "bytecode": "..."
       }
       "AnotherContract": {
         // ...
