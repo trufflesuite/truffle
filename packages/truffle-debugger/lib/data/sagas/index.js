@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:data:sagas");
 
-import { put, takeEvery, select, call } from "redux-saga/effects";
+import { put, takeEvery, select } from "redux-saga/effects";
 
 import { prefixName, stableKeccak256, makeAssignment } from "lib/helpers";
 
@@ -19,7 +19,8 @@ import {
   getMemoryAllocations,
   getCalldataAllocations,
   readStack,
-  storageSize
+  storageSize,
+  forEvmState
 } from "truffle-decoder";
 import BN from "bn.js";
 
@@ -42,9 +43,48 @@ function* tickSaga() {
   yield* trace.signalTickSagaCompletion();
 }
 
+export function* decode(definition, ref) {
+  let referenceDeclarations = yield select(data.views.referenceDeclarations);
+  let state = yield select(data.current.state);
+  let mappingKeys = yield select(data.views.mappingKeys);
+  let allocations = yield select(data.info.allocations);
+
+  let ZERO_WORD = new Uint8Array(DecodeUtils.EVM.WORD_SIZE);
+  ZERO_WORD.fill(0);
+
+  let decoder = forEvmState(definition, ref, {
+    referenceDeclarations,
+    state,
+    mappingKeys,
+    storageAllocations: allocations.storage,
+    memoryAllocations: allocations.memory,
+    calldataAllocations: allocations.calldata
+  });
+
+  let result = decoder.next();
+  while (!result.done) {
+    let request = result.value;
+    let response;
+    switch (request.type) {
+      //yes, this is a little silly right now
+      case "storage":
+        //the debugger supplies all storage it knows at the beginning.
+        //any storage it does not know is presumed to be zero.
+        response = ZERO_WORD;
+        break;
+      default:
+        debug("unrecognized request type!");
+    }
+    result = decoder.next(response);
+  }
+  //at this point, result.value holds the final value
+  //note: we're still using the old decoder output format, so we need to clean
+  //containers before returning something the debugger can use
+  return DecodeUtils.Conversion.cleanContainers(result.value);
+}
+
 function* variablesAndMappingsSaga() {
   let node = yield select(data.current.node);
-  let decode = yield select(data.views.decoder);
   let scopes = yield select(data.views.scopes.inlined);
   let referenceDeclarations = yield select(data.views.referenceDeclarations);
   let allocations = yield select(data.info.allocations.storage);
@@ -267,7 +307,6 @@ function* variablesAndMappingsSaga() {
       //begin subsection: key decoding
       //(I tried factoring this out into its own saga but it didn't work when I
       //did :P )
-      yield put(actions.mapKeyDecoding(true));
 
       let indexValue;
       let indexDefinition = node.indexExpression;
@@ -291,7 +330,7 @@ function* variablesAndMappingsSaga() {
           //value will go on the stack *left*-padded instead of right-padded,
           //so looking for a prior assignment will read the wrong value.
           //so instead it's preferable to use the constant directly.
-          indexValue = yield call(decode, keyDefinition, {
+          indexValue = yield* decode(keyDefinition, {
             definition: indexDefinition
           });
         } else if (indexReference) {
@@ -311,7 +350,7 @@ function* variablesAndMappingsSaga() {
           } else {
             splicedDefinition = keyDefinition;
           }
-          indexValue = yield call(decode, splicedDefinition, indexReference);
+          indexValue = yield* decode(splicedDefinition, indexReference);
         } else if (
           indexDefinition.referencedDeclaration &&
           scopes[indexDefinition.referenceDeclaration]
@@ -333,7 +372,7 @@ function* variablesAndMappingsSaga() {
             if (
               DecodeUtils.Definition.isSimpleConstant(indexConstantDefinition)
             ) {
-              indexValue = yield call(decode, keyDefinition, {
+              indexValue = yield* decode(keyDefinition, {
                 definition: indexConstantDeclaration.value
               });
             }
@@ -362,7 +401,6 @@ function* variablesAndMappingsSaga() {
         //now, as mentioned, retry in the typeConversion case
       }
 
-      yield put(actions.mapKeyDecoding(false));
       //end subsection: key decoding
 
       debug("index value %O", indexValue);

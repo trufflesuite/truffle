@@ -202,7 +202,8 @@ export namespace Conversion {
       type !== "mapping" && keyType === undefined &&
         typeof members === "object" &&
         Object.values(members).every(
-          (member: any) => member.name && member.type && member.value);
+          (member: any) => member.name && member.type &&
+          member.value !== undefined);
 
     // converts integer mapping keys to BN
     // converts bool mapping keys to boolean

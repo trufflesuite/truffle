@@ -5,6 +5,7 @@ import decode from "../decode";
 import TruffleDecoder from "./contract-decoder";
 import { ContractObject } from "truffle-contract-schema/spec";
 import { Provider } from "web3/providers";
+import { DecoderRequest } from "../types/request";
 
 export { getStorageAllocations, storageSize } from "../allocate/storage";
 export { getCalldataAllocations } from "../allocate/calldata";
@@ -16,6 +17,6 @@ export function forContract(contract: ContractObject, relevantContracts: Contrac
   return new TruffleDecoder(contract, relevantContracts, provider, address);
 }
 
-export async function forEvmState(definition: AstDefinition, pointer: DataPointer, info: EvmInfo): Promise<any> {
-  return await decode(definition, pointer, info);
+export function* forEvmState(definition: AstDefinition, pointer: DataPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
+  return yield* decode(definition, pointer, info);
 }
