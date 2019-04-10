@@ -17,9 +17,11 @@ describe("truffle-box Box", () => {
   beforeEach(() => {
     fs.ensureDirSync(destination);
     config = Config.default();
+    sinon.stub(config.eventManager, "emit");
   });
   afterEach(() => {
     fs.removeSync(destination);
+    config.eventManager.emit.restore();
   });
 
   describe(".unbox()", () => {
@@ -67,7 +69,6 @@ describe("truffle-box Box", () => {
       beforeEach(() => {
         cleanupCallback = sinon.spy();
         sinon.stub(utils, "downloadBox").throws();
-        sinon.stub(config.eventManager, "emit");
         sinon.stub(utils, "setUpTempDirectory").returns(
           new Promise(resolve => {
             resolve({
@@ -79,7 +80,6 @@ describe("truffle-box Box", () => {
       });
       afterEach(() => {
         utils.setUpTempDirectory.restore();
-        config.eventManager.emit.restore();
         utils.downloadBox.restore();
       });
 
