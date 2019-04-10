@@ -1,8 +1,7 @@
 {
-  "name": "truffle",
-  "namespace": "consensys",
-  "version": "5.0.11",
-  "description": "Truffle - Simple development framework for Ethereum",
+  "name": "newtruffle",
+  "version": "0.1.0",
+  "description": "NewTruffle - Simple development framework for NewChain",
   "dependencies": {
     "app-module-path": "^2.2.0",
     "mocha": "^4.1.0",
@@ -38,7 +37,7 @@
     "yargs": "^8.0.2"
   },
   "bin": {
-    "truffle": "./build/cli.bundled.js"
+    "newtruffle": "./build/cli.bundled.js"
   },
   "scripts": {
     "analyze": "./scripts/analyze.sh",
@@ -52,12 +51,12 @@
     "publish:user-level-mnemonic": "node ./scripts/prereleaseVersion.js user-level-mnemonic user-level-mnemonic",
     "test:raw": "NO_BUILD=true mocha"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle",
-  "homepage": "https://github.com/trufflesuite/truffle/",
+  "repository": "https://github.com/xiawu/NewTruffle/tree/master/packages/truffle",
+  "homepage": "https://github.com/xiawu/NewTruffle",
   "bugs": {
-    "url": "https://github.com/trufflesuite/truffle/issues"
+    "url": "https://github.com/xiawu/NewTruffle/issues"
   },
-  "author": "consensys.net",
+  "author": "Xia Wu <xiawu@zeuux.org>",
   "authors": [
     {
       "name": "Tim Coulter",
