@@ -8,23 +8,11 @@ const outputDir = path.join(__dirname, "build");
 
 module.exports = {
   entry: {
-    cli: path.join(
-      __dirname,
-      "../..",
-      "node_modules",
-      "truffle-core",
-      "cli.js"
-    ),
-    chain: path.join(
-      __dirname,
-      "../..",
-      "node_modules",
-      "truffle-core",
-      "chain.js"
-    ),
+    cli: path.join(__dirname, "", "node_modules", "truffle-core", "cli.js"),
+    chain: path.join(__dirname, "", "node_modules", "truffle-core", "chain.js"),
     analytics: path.join(
       __dirname,
-      "../..",
+      "",
       "node_modules",
       "truffle-core",
       "lib",
@@ -91,7 +79,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "",
           "node_modules",
           "truffle-core",
           "lib",
@@ -102,7 +90,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "",
           "node_modules",
           "truffle-core",
           "lib",
@@ -113,7 +101,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "",
           "node_modules",
           "truffle-core",
           "lib",
@@ -124,7 +112,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "",
           "node_modules",
           "truffle-core",
           "lib",
@@ -135,7 +123,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "",
           "node_modules",
           "truffle-core",
           "lib",
@@ -146,7 +134,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "",
           "node_modules",
           "truffle-core",
           "lib",
@@ -157,7 +145,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "",
           "node_modules",
           "truffle-core",
           "lib",
@@ -168,7 +156,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "",
           "node_modules",
           "truffle-core",
           "lib",
@@ -179,7 +167,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "",
           "node_modules",
           "truffle-core",
           "lib",
@@ -190,7 +178,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "",
           "node_modules",
           "truffle-core",
           "lib",
@@ -201,7 +189,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "",
           "node_modules",
           "truffle-core",
           "lib",
@@ -212,7 +200,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "",
           "node_modules",
           "truffle-core",
           "lib",
@@ -223,7 +211,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "",
           "node_modules",
           "truffle-core",
           "lib",
@@ -234,7 +222,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "",
           "node_modules",
           "truffle-core",
           "lib",
@@ -245,7 +233,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "",
           "node_modules",
           "truffle-core",
           "lib",
@@ -256,7 +244,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "",
           "node_modules",
           "truffle-core",
           "lib",
@@ -267,7 +255,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "",
           "node_modules",
           "truffle-core",
           "lib",

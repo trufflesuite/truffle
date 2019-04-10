@@ -1,6 +1,6 @@
 {
   "name": "newtruffle",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "NewTruffle - Simple development framework for NewChain",
   "dependencies": {
     "app-module-path": "^2.2.0",
