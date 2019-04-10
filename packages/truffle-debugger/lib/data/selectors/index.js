@@ -10,7 +10,6 @@ import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
 import * as DecodeUtils from "truffle-decode-utils";
-import { forEvmState } from "truffle-decoder";
 
 /**
  * @private
@@ -119,33 +118,6 @@ const data = createSelectorTree({
         )
       }
     },
-
-    /**
-     * data.views.decoder
-     *
-     * selector returns (ast node definition, data reference) => Promise<value>
-     */
-    decoder: createLeaf(
-      [
-        "/views/referenceDeclarations",
-        "/current/state",
-        "/views/mappingKeys",
-        "/info/allocations"
-      ],
-
-      (referenceDeclarations, state, mappingKeys, allocations) => (
-        definition,
-        ref
-      ) =>
-        forEvmState(definition, ref, {
-          referenceDeclarations,
-          state,
-          mappingKeys,
-          storageAllocations: allocations.storage,
-          memoryAllocations: allocations.memory,
-          calldataAllocations: allocations.calldata
-        })
-    ),
 
     /*
      * data.views.userDefinedTypes
@@ -717,30 +689,6 @@ const data = createSelectorTree({
               }
             )
           )
-      ),
-
-      /**
-       * data.current.identifiers.decoded
-       *
-       * Returns an object with values as Promises
-       */
-      decoded: createLeaf(
-        ["/views/decoder", "./definitions", "./refs"],
-
-        async (decode, definitions, refs) => {
-          debug("setting up keyedPromises");
-          const keyedPromises = Object.entries(refs).map(
-            async ([identifier, ref]) => ({
-              [identifier]: await decode(definitions[identifier], ref)
-            })
-          );
-          debug("set up keyedPromises");
-          const keyedResults = await Promise.all(keyedPromises);
-          debug("got keyedResults");
-          return DecodeUtils.Conversion.cleanContainers(
-            Object.assign({}, ...keyedResults)
-          );
-        }
       )
     }
   },

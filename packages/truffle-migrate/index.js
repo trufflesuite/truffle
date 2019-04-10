@@ -173,12 +173,29 @@ const Migrate = {
       return callback(null, 0);
     }
 
+    const migrationsOnChain = async (migrationsAddress, callback) => {
+      return (
+        (await Migrations.web3.eth.getCode(migrationsAddress, callback)) !==
+        "0x"
+      );
+    };
+
+    // Two possible Migrations.sol's (lintable/unlintable)
+    const lastCompletedMigration = migrationsInstance => {
+      try {
+        return migrationsInstance.last_completed_migration.call();
+      } catch (e) {
+        if (e instanceof TypeError)
+          return migrationsInstance.lastCompletedMigration.call();
+        throw new Error(e);
+      }
+    };
+
     Migrations.deployed()
-      .then(function(migrations) {
-        // Two possible Migrations.sol's (lintable/unlintable)
-        return migrations.last_completed_migration
-          ? migrations.last_completed_migration.call()
-          : migrations.lastCompletedMigration.call();
+      .then(async function(migrations) {
+        return (await migrationsOnChain(migrations.address))
+          ? await lastCompletedMigration(migrations)
+          : 0;
       })
       .then(function(completed_migration) {
         callback(null, parseInt(completed_migration));

@@ -15,7 +15,7 @@ export function abbreviateValues(value, options = {}, depth = 0) {
     return "...";
   }
 
-  const recurse = (child) => abbreviateValues(child, options, depth + 1);
+  const recurse = child => abbreviateValues(child, options, depth + 1);
 
   if (value instanceof Array) {
     if (value.length > options.arrayLimit) {
@@ -27,27 +27,28 @@ export function abbreviateValues(value, options = {}, depth = 0) {
     }
 
     return value.map(recurse);
-
   } else if (value instanceof Object) {
-    return Object.assign({},
-      ...Object.entries(value).map(
-        ([k, v]) => ({ [recurse(k)]: recurse(v) })
-      )
+    return Object.assign(
+      {},
+      ...Object.entries(value).map(([k, v]) => ({ [recurse(k)]: recurse(v) }))
     );
-
   } else if (typeof value === "string" && value.length > options.stringLimit) {
     let inner = "...";
     let extractAmount = (options.stringLimit - inner.length) / 2;
     let leading = value.slice(0, Math.ceil(extractAmount));
     let trailing = value.slice(value.length - Math.floor(extractAmount));
     return `${leading}${inner}${trailing}`;
-
   } else {
     return value;
   }
 }
 
-export default function configureStore (reducer, saga, initialState, composeEnhancers) {
+export default function configureStore(
+  reducer,
+  saga,
+  initialState,
+  composeEnhancers
+) {
   const sagaMiddleware = createSagaMiddleware();
 
   if (!composeEnhancers) {
@@ -56,25 +57,22 @@ export default function configureStore (reducer, saga, initialState, composeEnha
 
   const loggerMiddleware = createLogger({
     log: reduxDebug,
-    stateTransformer: (state) => abbreviateValues(state, {
-      arrayLimit: 4,
-      recurseLimit: 3
-    }),
-    actionTransformer: abbreviateValues,
+    stateTransformer: state =>
+      abbreviateValues(state, {
+        arrayLimit: 4,
+        recurseLimit: 3
+      }),
+    actionTransformer: abbreviateValues
   });
 
   let store = createStore(
-    reducer, initialState,
+    reducer,
+    initialState,
 
-    composeEnhancers(
-      applyMiddleware(
-        sagaMiddleware,
-        loggerMiddleware
-      )
-    )
+    composeEnhancers(applyMiddleware(sagaMiddleware, loggerMiddleware))
   );
 
   sagaMiddleware.run(saga);
 
-  return store;
+  return { store, sagaMiddleware };
 }

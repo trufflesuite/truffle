@@ -314,6 +314,9 @@ class Reporter {
         data.receipt.blockNumber
       );
 
+      // if geth returns null, try again!
+      if (!block) return this.postDeploy(data);
+
       data.timestamp = block.timestamp;
 
       const balance = await data.contract.web3.eth.getBalance(tx.from);
