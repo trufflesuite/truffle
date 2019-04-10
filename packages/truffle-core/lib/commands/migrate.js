@@ -36,7 +36,9 @@ var command = {
   },
   help: {
     usage:
-      "truffle migrate [--reset] [--f <number> | --from <number>] [--to <number>] [--network <name>] [--compile-all] [--verbose-rpc] [--interactive] [--dry-run [boolean]]",
+      "truffle migrate [--reset] [--f <number> | --from <number>] [--to <number>] " +
+      "[--network <name>]\n                                [--compile-all] " +
+      "[--verbose-rpc] [--interactive] [--dry-run] [--skip-dry-run]",
     options: [
       {
         option: "--reset",
@@ -78,8 +80,12 @@ var command = {
           "Prompt to confirm that the user wants to proceed after the dry run."
       },
       {
-        option: "--dry-run [boolean]",
-        description: "Do a test run before performing an actual migration."
+        option: "--dry-run",
+        description: "Only perform a test or 'dry run' migration."
+      },
+      {
+        option: "--skip-dry-run",
+        description: "Do not run a test or 'dry run' migration."
       }
     ]
   },
@@ -207,8 +213,8 @@ var command = {
         const production =
           networkWhitelist.includes(parseInt(conf.network_id)) ||
           conf.production;
+        const dryRunAndMigration = production && !conf.skipDryRun;
 
-        // Dry run only
         if (dryRunOnly) {
           try {
             await setupDryRunEnvironmentThenRunMigrations(conf);
@@ -216,9 +222,7 @@ var command = {
           } catch (err) {
             done(err);
           }
-
-          // Production: dry-run then real run
-        } else if (production && !conf.skipDryRun) {
+        } else if (dryRunAndMigration) {
           const currentBuild = conf.contracts_build_directory;
           conf.dryRun = true;
 
