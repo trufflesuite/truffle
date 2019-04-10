@@ -199,13 +199,13 @@ var command = {
       Environment.detect(conf, async function(err) {
         if (err) return done(err);
 
-        var dryRun = options.dryRun === true;
-        var production =
+        const dryRunOnly = options.dryRun === true;
+        const production =
           networkWhitelist.includes(parseInt(conf.network_id)) ||
           conf.production;
 
         // Dry run only
-        if (dryRun) {
+        if (dryRunOnly) {
           try {
             await setupDryRunEnvironmentThenRunMigrations(conf);
             done();
