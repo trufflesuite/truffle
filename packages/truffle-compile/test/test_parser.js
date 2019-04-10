@@ -1,13 +1,13 @@
-var fs = require("fs");
-var path = require("path");
-var Parser = require("../parser");
-var CompilerSupplier = require("../compilerSupplier");
-var assert = require("assert");
+const fs = require("fs");
+const path = require("path");
+const Parser = require("../parser");
+const CompilerSupplier = require("../compilerSupplier");
+const assert = require("assert");
 
 describe("Parser", function() {
-  var source = null;
-  var erroneousSource = null;
-  var solc;
+  let source = null;
+  let erroneousSource = null;
+  let solc, supplierOptions;
 
   before("get code", async function() {
     source = fs.readFileSync(
@@ -18,8 +18,15 @@ describe("Parser", function() {
       path.join(__dirname, "./sources/badSources/ShouldError.sol"),
       "utf-8"
     );
-
-    const supplier = new CompilerSupplier();
+    supplierOptions = {
+      solcConfig: {
+        version: null
+      },
+      eventManager: {
+        emit: () => {}
+      }
+    };
+    const supplier = new CompilerSupplier(supplierOptions);
     solc = await supplier.load();
   });
 

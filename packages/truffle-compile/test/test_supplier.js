@@ -19,6 +19,9 @@ describe("CompilerSupplier", function() {
     let version5PragmaSource; // ^0.5.0
 
     const options = {
+      eventManager: {
+        emit: () => {}
+      },
       contracts_directory: "",
       solc: "",
       quiet: true
@@ -120,6 +123,7 @@ describe("CompilerSupplier", function() {
     });
 
     it("caches releases and uses them if available", function(done) {
+      this.timeout(80000);
       let initialAccessTime;
       let finalAccessTime;
 
@@ -136,9 +140,7 @@ describe("CompilerSupplier", function() {
       if (fs.existsSync(expectedCache)) fs.unlinkSync(expectedCache);
 
       options.compilers = {
-        solc: {
-          version: "0.4.21"
-        }
+        solc: { version: "0.4.21" }
       };
 
       const cachedOptions = Config.default().merge(options);

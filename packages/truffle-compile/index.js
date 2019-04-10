@@ -123,7 +123,10 @@ const compile = function(sources, options, callback) {
   });
 
   // Load solc module only when compilation is actually required.
-  const supplier = new CompilerSupplier(options.compilers.solc);
+  const supplier = new CompilerSupplier({
+    solcConfig: options.compilers.solc,
+    eventManager: options.eventManager
+  });
 
   supplier
     .load()
@@ -131,7 +134,6 @@ const compile = function(sources, options, callback) {
       let errors = [];
       let warnings = [];
       const result = solc.compile(JSON.stringify(solcStandardInput));
-
       const standardOutput = JSON.parse(result);
 
       const errorsOrWarningsOccurred =
@@ -374,9 +376,6 @@ compile.necessary = function(options, callback) {
     if (err) return callback(err);
 
     if (updated.length === 0 && options.quiet !== true) {
-      if (options.eventManager) {
-        options.eventManager.emit("compile:nothingToCompile");
-      }
       return callback(null, [], {});
     }
 

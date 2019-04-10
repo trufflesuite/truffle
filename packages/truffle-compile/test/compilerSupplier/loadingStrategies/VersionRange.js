@@ -3,7 +3,13 @@ const fs = require("fs");
 const request = require("request-promise");
 const sinon = require("sinon");
 const { VersionRange } = require("../../../compilerSupplier/loadingStrategies");
-const instance = new VersionRange();
+const Config = require("truffle-config");
+const config = Config.default();
+let versionRangeOptions = {
+  eventManager: config.eventManager,
+  solcConfig: config.compilers.solc
+};
+const instance = new VersionRange(versionRangeOptions);
 let fileName;
 const compilerFileNames = [
   "soljson-v0.4.22+commit.124ca40d.js",
@@ -140,7 +146,7 @@ describe("VersionRange loading strategy", () => {
         await instance.getSolcFromCacheOrUrl("0.5.1");
         assert(instance.addFileToCache.called);
         assert(instance.compilerFromString.called);
-      });
+      }).timeout(60000);
     });
   });
 
@@ -189,7 +195,7 @@ describe("VersionRange loading strategy", () => {
       it("eventually calls compilerFromString with request reponse", async () => {
         await instance.getSolcByCommit(commitString);
         assert(instance.compilerFromString.calledWith("requestResponse"));
-      });
+      }).timeout(20000);
       it("throws an error when it can't find a match", async () => {
         try {
           await instance.getSolcByCommit("some garbage that will not match");
@@ -197,7 +203,7 @@ describe("VersionRange loading strategy", () => {
         } catch (error) {
           assert(error.message === "No matching version found");
         }
-      });
+      }).timeout(20000);
     });
   });
 

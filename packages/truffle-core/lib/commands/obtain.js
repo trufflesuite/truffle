@@ -17,8 +17,12 @@ module.exports = {
     const CompilerSupplier = require("truffle-compile").CompilerSupplier;
     const SUPPORTED_COMPILERS = ["--solc"];
     const Config = require("truffle-config");
-    const config = Config.detect(options);
-    const supplier = new CompilerSupplier(config);
+    const config = Config.default().with(options);
+    const supplierOptions = {
+      eventManager: config.eventManager,
+      solcConfig: config.compilers.solc
+    };
+    const supplier = new CompilerSupplier(supplierOptions);
 
     config.eventManager.emit("obtain:start");
 

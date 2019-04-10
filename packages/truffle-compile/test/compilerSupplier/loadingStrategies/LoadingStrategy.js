@@ -2,11 +2,17 @@ const assert = require("assert");
 const {
   LoadingStrategy
 } = require("../../../compilerSupplier/loadingStrategies");
-let expectedDefaultConfig;
+let expectedDefaultConfig, loadingStrategyOptions;
 
 describe("LoadingStrategy base class", () => {
   beforeEach(() => {
-    instance = new LoadingStrategy();
+    loadingStrategyOptions = {
+      version: null,
+      eventManager: {
+        emit: () => {}
+      }
+    };
+    instance = new LoadingStrategy(loadingStrategyOptions);
     expectedDefaultConfig = {
       compilerRoots: [
         "https://relay.trufflesuite.com/solc/bin/",

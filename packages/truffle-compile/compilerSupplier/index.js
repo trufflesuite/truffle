@@ -11,12 +11,17 @@ const {
 } = require("./loadingStrategies");
 
 class CompilerSupplier {
-  constructor(config) {
-    this.config = config;
-    this.strategyOptions = {
-      version: this.config.version,
-      eventManager: config.eventManager
-    };
+  constructor({ eventManager, solcConfig }) {
+    const { version, docker, compilerRoots } = solcConfig;
+    this.eventManager = eventManager;
+    this.version = version;
+    this.docker = docker;
+    this.compilerRoots = compilerRoots;
+    this.strategyOptions = {};
+    if (version) this.strategyOptions.version = version;
+    if (docker) this.strategyOptions.docker = compilerRoots;
+    if (compilerRoots) this.strategyOptions.compilerRoots = compilerRoots;
+    if (eventManager) this.strategyOptions.eventManager = eventManager;
   }
 
   badInputError(userSpecification) {
@@ -45,11 +50,11 @@ class CompilerSupplier {
   }
 
   load() {
-    const userSpecification = this.config.version;
+    const userSpecification = this.version;
 
     return new Promise(async (resolve, reject) => {
       let strategy;
-      const useDocker = this.config.docker;
+      const useDocker = this.docker;
       const useNative = userSpecification === "native";
       const useBundledSolc = !userSpecification;
       const useSpecifiedLocal =
@@ -65,9 +70,6 @@ class CompilerSupplier {
       } else if (useSpecifiedLocal) {
         strategy = new Local(this.strategyOptions);
       } else if (isValidVersionRange) {
-        if (this.compilerRoots) {
-          this.strategyOptions.compilerRoots = this.compilerRoots;
-        }
         strategy = new VersionRange(this.strategyOptions);
       }
 

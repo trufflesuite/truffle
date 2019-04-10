@@ -1,9 +1,31 @@
 const debug = require("debug")("compile:test:test_ordering");
-var fs = require("fs");
-var path = require("path");
-var Compile = require("../index");
-var CompilerSupplier = require("../compilerSupplier");
-var assert = require("assert");
+const fs = require("fs");
+const path = require("path");
+const Compile = require("../index");
+const CompilerSupplier = require("../compilerSupplier");
+const assert = require("assert");
+let compileOptions = {
+  contracts_directory: "",
+  compilers: {
+    solc: {
+      version: "0.4.25",
+      settings: {
+        optimizer: {
+          enabled: false,
+          runs: 200
+        },
+        evmVersion: "byzantium"
+      }
+    }
+  },
+  quiet: true
+};
+let supplierOptions = {
+  solcConfig: compileOptions.compilers.solc,
+  eventManager: {
+    emit: () => {}
+  }
+};
 
 describe("Compile - solidity ^0.4.0", function() {
   this.timeout(5000); // solc
@@ -12,27 +34,10 @@ describe("Compile - solidity ^0.4.0", function() {
   let inheritedSource = null;
   let solc = null; // gets loaded via supplier
 
-  const compileOptions = {
-    contracts_directory: "",
-    compilers: {
-      solc: {
-        version: "0.4.25",
-        settings: {
-          optimizer: {
-            enabled: false,
-            runs: 200
-          },
-          evmVersion: "byzantium"
-        }
-      }
-    },
-    quiet: true
-  };
-
   before("get solc", async function() {
     this.timeout(40000);
 
-    const supplier = new CompilerSupplier(compileOptions.compilers.solc);
+    const supplier = new CompilerSupplier(supplierOptions);
     solc = await supplier.load();
   });
 
