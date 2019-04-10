@@ -81,16 +81,6 @@ export function* decode(definition, ref) {
   return DecodeUtils.Conversion.cleanContainers(result.value);
 }
 
-export function* decodeAll() {
-  let definitions = yield select(data.current.identifiers.definitions);
-  let refs = yield select(data.current.identifiers.refs);
-  let decoded = {};
-  for (let [identifier, ref] of Object.entries(refs)) {
-    decoded[identifier] = yield* decode(definitions[identifier], ref);
-  }
-  return decoded;
-}
-
 function* variablesAndMappingsSaga() {
   let node = yield select(data.current.node);
   let scopes = yield select(data.views.scopes.inlined);

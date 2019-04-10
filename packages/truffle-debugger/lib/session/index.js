@@ -6,7 +6,7 @@ import configureStore from "lib/store";
 import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
 import data from "lib/data/selectors";
-import { decode, decodeAll } from "lib/data/sagas";
+import { decode } from "lib/data/sagas";
 import controllerSelector from "lib/controller/selectors";
 
 import rootSaga from "./sagas";
@@ -148,7 +148,13 @@ export default class Session {
     return true;
   }
 
-  async runSaga(saga, ...args) {
+  /**
+   * @private
+   * Allows running any saga -- for internal use only!
+   * Using this could seriously screw up the debugger state if you
+   * don't know what you're doing!
+   */
+  async _runSaga(saga, ...args) {
     return await this._sagaMiddleware.run(saga, ...args).toPromise();
   }
 
@@ -235,10 +241,20 @@ export default class Session {
     const definitions = this.view(data.current.identifiers.definitions);
     const refs = this.view(data.current.identifiers.refs);
 
-    return await this.runSaga(decode, definitions[name], refs[name]);
+    return await this._runSaga(decode, definitions[name], refs[name]);
   }
 
   async variables() {
-    return await this.runSaga(decodeAll);
+    let definitions = this.view(data.current.identifiers.definitions);
+    let refs = this.view(data.current.identifiers.refs);
+    let decoded = {};
+    for (let [identifier, ref] of Object.entries(refs)) {
+      decoded[identifier] = await this._runSaga(
+        decode,
+        definitions[identifier],
+        ref
+      );
+    }
+    return decoded;
   }
 }
