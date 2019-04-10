@@ -93,13 +93,23 @@ export const schema = mergeSchemas({
       id: ID!
     }
 
-    input CompilationContractInput {
+    input CompilationSourceContractSourceInput {
       id: ID!
+    }
+
+    input CompilationSourceContractAstInput {
+      json: String!
+    }
+
+    input CompilationSourceContractInput {
+      name: String
+      source: CompilationSourceContractSourceInput
+      ast: CompilationSourceContractAstInput
     }
 
     input CompilationInput {
       compiler: CompilerInput!
-      contracts: [CompilationContractInput!]
+      contracts: [CompilationSourceContractInput!]
       sources: [CompilationSourceInput!]!
     }
     input CompilationsAddInput {
@@ -216,12 +226,6 @@ export const schema = mergeSchemas({
           Promise.all(
             sources.map(source => workspace.source(source))
           )
-      },
-      contracts: {
-        resolve: ({ contracts }, _, { workspace }) =>
-          Promise.all(
-            contracts.map(contract => workspace.contract(contract))
-          )
       }
     },
     Contract: {
@@ -229,6 +233,12 @@ export const schema = mergeSchemas({
         resolve: ({ source }, _, { workspace }) => 
           workspace.source(source)
       }
+    },
+    SourceContract: {
+      source: {
+        resolve: ({ source }, _, { workspace }) =>
+            workspace.source(source)
+      },
     },
     ContractConstructor: {
       createBytecode: {
