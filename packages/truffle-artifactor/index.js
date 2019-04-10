@@ -20,7 +20,7 @@ class Artifactor {
     const output_path = path.join(self.destination, `${contractName}.json`);
     let completeArtifact = {};
 
-    // helper for writing artifacts
+    // private helper for writing artifacts
     const writeArtifact = _completeArtifact => {
       _completeArtifact.updatedAt = new Date().toISOString();
       fs.writeFileSync(
