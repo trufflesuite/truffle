@@ -38,28 +38,28 @@ const Artifactor = require("truffle-artifactor");
 const artifactor = new Artifactor(__dirname);
 
 // See truffle-schema for more info: https://github.com/trufflesuite/truffle/tree/develop/packages/truffle-contract-schema
-const contract_data = {
+const contractData = {
   abi: ...,              // Array; required.
-  unlinked_binary: "..." // String; optional.
+  unlinkedBinary: "..." // String; optional.
   address: "..."         // String; optional.
 };
 
-artifactor.save(contract_data);
+artifactor.save(contractData);
 // The file ./MyContract.json now exists, which you can
 // import into your project like any other Javascript file.
 ```
 
 # API
 
-#### `artifactor.save(contract_data)`
+#### `artifactor.save(contractData)`
 
 Save contract data as a `.json` file. Returns a Promise.
 
-* `contract_data`: Object. Data that represents this contract:
+* `contractData`: Object. Data that represents this contract:
 
     ```javascript
     {
-      contract_name: "MyContract",  // String; optional. Defaults to "Contract"
+      contractName: "MyContract",  // String; optional. Defaults to "Contract"
       abi: ...,                     // Array; required.  Application binary interface.
       unlinked_binary: "...",       // String; optional. Binary without resolve library links.
       address: "...",               // String; optional. Deployed address of contract.
@@ -72,7 +72,7 @@ Save contract data as a `.json` file. Returns a Promise.
 
 Save many contracts to the filesystem at once. Returns a Promise.
 
-* `contracts`: Object. Keys are the contract names and the values are `contract_data` objects, as in the `save()` function above:
+* `contracts`: Object. Keys are the contract names and the values are `contractData` objects, as in the `save()` function above:
 
     ```javascript
     {
