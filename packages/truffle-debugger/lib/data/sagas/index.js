@@ -65,13 +65,15 @@ export function* decode(definition, ref) {
   while (!result.done) {
     let request = result.value;
     let response;
-    switch (request.requesting) {
+    switch (request.type) {
       //yes, this is a little silly right now
       case "storage":
         //the debugger supplies all storage it knows at the beginning.
         //any storage it does not know is presumed to be zero.
         response = ZERO_WORD;
         break;
+      default:
+        debug("unrecognized request type!");
     }
     result = decoder.next(response);
   }

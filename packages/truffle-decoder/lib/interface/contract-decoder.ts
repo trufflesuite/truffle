@@ -12,7 +12,7 @@ import * as storage from "../allocate/storage";
 import { StoragePointer, isStoragePointer } from "../types/pointer";
 import { StorageAllocations, StorageMemberAllocations, StorageMemberAllocation } from "../types/allocation";
 import { Slot, isWordsLength } from "../types/storage";
-import { DecoderRequest } from "../types/request";
+import { DecoderRequest, isStorageRequest } from "../types/request";
 import decode from "../decode";
 import { Definition as DefinitionUtils, EVM, AstDefinition, AstReferences } from "truffle-decode-utils";
 import { BlockType, Transaction } from "web3/eth/types";
@@ -178,17 +178,16 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     while(!result.done) {
       let request = <DecoderRequest>(result.value);
       let response: any
-      switch(request.requesting) {
-        //yes, this is a little silly right now
-        case "storage":
-          response = DecodeUtils.Conversion.toBytes(
-            await this.web3.eth.getStorageAt(
-              this.contractAddress,
-              request.slot,
-              block),
-            DecodeUtils.EVM.WORD_SIZE);
-          break;
+      if(isStorageRequest(request)) {
+        response = DecodeUtils.Conversion.toBytes(
+          await this.web3.eth.getStorageAt(
+            this.contractAddress,
+            request.slot,
+            block),
+          DecodeUtils.EVM.WORD_SIZE);
       }
+      //note: one of the above conditionals *must* be true by the type system.
+      //yes, right now there's only one such conditional.
       result = decoder.next(response);
     }
     //at this point, result.value holds the final value

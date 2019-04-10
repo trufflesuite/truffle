@@ -73,7 +73,7 @@ export function* read(storage: WordMapping, slot: Slot): IterableIterator<Uint8A
   //say 0)
   if(word === undefined) {
     word = yield {
-      requesting: "storage",
+      type: "storage",
       slot: address
     };
   }
