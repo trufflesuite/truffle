@@ -201,7 +201,8 @@ var command = {
 
         var dryRun = options.dryRun === true;
         var production =
-          networkWhitelist.includes(conf.network_id) || conf.production;
+          networkWhitelist.includes(parseInt(conf.network_id)) ||
+          conf.production;
 
         // Dry run only
         if (dryRun) {
