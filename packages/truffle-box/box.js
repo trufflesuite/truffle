@@ -112,15 +112,16 @@ const Box = {
 
     tmp.dir({ unsafeCleanup }, function(err, dir) {
       if (err) return callback(err);
-
+      let config = Config.default();
       self
         .unbox(
           "https://github.com/trufflesuite/truffle-init-" + name,
           dir,
-          options
+          options,
+          config
         )
         .then(function() {
-          var config = Config.load(path.join(dir, "truffle-config.js"), {});
+          config = Config.load(path.join(dir, "truffle-config.js"), {});
           callback(null, config);
         })
         .catch(callback);

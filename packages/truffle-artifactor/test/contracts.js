@@ -1,14 +1,15 @@
-var assert = require("chai").assert;
-var Artifactor = require("../");
-var contract = require("truffle-contract");
-var Schema = require("truffle-contract-schema");
-var temp = require("temp").track();
-var path = require("path");
-var fs = require("fs");
-var requireNoCache = require("require-nocache")(module);
-var Compile = require("truffle-compile");
-var Ganache = require("ganache-core");
-var Web3 = require("web3");
+const assert = require("chai").assert;
+const Artifactor = require("../");
+const contract = require("truffle-contract");
+const Schema = require("truffle-contract-schema");
+const temp = require("temp").track();
+const path = require("path");
+const fs = require("fs");
+const requireNoCache = require("require-nocache")(module);
+const Config = require("truffle-config");
+const Compile = require("truffle-compile");
+const Ganache = require("ganache-core");
+const Web3 = require("web3");
 const { promisify } = require("util");
 
 describe("artifactor + require", function() {
@@ -34,7 +35,7 @@ describe("artifactor + require", function() {
       Example: fs.readFileSync(sourcePath, { encoding: "utf8" })
     };
 
-    const options = {
+    const config = Config.default().with({
       contracts_directory: path.join(__dirname),
       compilers: {
         solc: {
@@ -48,10 +49,10 @@ describe("artifactor + require", function() {
           }
         }
       }
-    };
+    });
 
     // Compile first
-    var result = await promisify(Compile)(sources, options);
+    var result = await promisify(Compile)(sources, config);
 
     // Clean up after solidity. Only remove solidity's listener,
     // which happens to be the first.

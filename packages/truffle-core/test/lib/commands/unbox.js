@@ -38,9 +38,12 @@ describe("commands/unbox.js", () => {
   describe("run", () => {
     beforeEach(() => {
       tempDir = temp.mkdirSync();
-      mockConfig = {
+      mockConfig = Config.default().with({
         logger: { log: () => {} },
         working_directory: tempDir
+      });
+      mockConfig.eventManager = {
+        emit: () => {}
       };
       sinon.stub(Config, "default").returns({ with: () => mockConfig });
     });
@@ -85,7 +88,7 @@ describe("commands/unbox.js", () => {
           );
         });
         Promise.all(promises).then(() => done());
-      });
+      }).timeout(10000);
 
       it("runs when passed a relative unbox path", done => {
         let promises = [];
@@ -97,7 +100,7 @@ describe("commands/unbox.js", () => {
           );
         });
         Promise.all(promises).then(() => done());
-      });
+      }).timeout(10000);
     });
   });
 });

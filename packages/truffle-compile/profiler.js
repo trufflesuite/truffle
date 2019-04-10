@@ -208,8 +208,12 @@ module.exports = {
       const allSources = {};
       const compilationTargets = [];
 
+      const supplierOptions = {
+        solcConfig: options.compilers.solc,
+        eventManager: options.eventManager
+      };
       // Load compiler
-      const supplier = new CompilerSupplier(options.compilers.solc);
+      const supplier = new CompilerSupplier(supplierOptions);
       supplier
         .load()
         .then(async solc => {

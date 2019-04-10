@@ -191,7 +191,6 @@ var command = {
       }
     }
 
-    console.log("about to get the config with options --> %o", options);
     const conf = Config.detect(options);
 
     Contracts.compile(conf, function(err) {
