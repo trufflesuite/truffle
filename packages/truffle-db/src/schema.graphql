@@ -4,7 +4,6 @@ scalar TransactionHash
 scalar Value
 scalar Bytes
 scalar Object
-scalar AST
 scalar ByteOffset
 scalar FileIndex
 
@@ -28,6 +27,9 @@ type ContractConstructor {
 
 type Contract {
   name: String
+  abi: ABI
+  compilation: Compilation
+  sourceContract: SourceContract
   source: Source
 }
 
@@ -39,6 +41,16 @@ type ABI {
 # stub
 type AbiItem {
   type: String
+}
+
+type SourceContract {
+  name: String
+  source: Source
+  ast: AST
+}
+
+type AST {
+  json: String!
 }
 
 type Network {
@@ -95,8 +107,8 @@ type Source {
 
 type Compilation {
   compiler: Compiler!
-  contracts: [Contract!]
   sources: [Source]!
+  contracts: [SourceContract]!
 }
 
 type Compiler {
