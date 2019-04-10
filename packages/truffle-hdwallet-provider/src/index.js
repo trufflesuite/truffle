@@ -26,11 +26,42 @@ function HDWalletProvider(
   shareNonce = true,
   wallet_hdpath = "m/44'/60'/0'/0/"
 ) {
-  if ((mnemonic && mnemonic.indexOf(" ") === -1) || Array.isArray(mnemonic)) {
-    const privateKeys = Array.isArray(mnemonic) ? mnemonic : [mnemonic];
-    this.wallets = {};
-    this.addresses = [];
+  this.hdwallet;
+  this.wallet_hdpath = wallet_hdpath;
+  this.wallets = {};
+  this.addresses = [];
+  this.engine = new ProviderEngine();
 
+  // private helper to normalize given mnemonic
+  const normalizePrivateKeys = mnemonic => {
+    if (Array.isArray(mnemonic)) return mnemonic;
+    else if (mnemonic && mnemonic.indexOf(" ") === -1) return [mnemonic];
+    // if truthy, but no spaces in mnemonic
+    else return false; // neither an array nor valid value passed;
+  };
+
+  // private helper to check if given mnemonic uses BIP39 passphrase protection
+  const checkBIP39Mnemonic = mnemonic => {
+    this.hdwallet = hdkey.fromMasterSeed(bip39.mnemonicToSeed(mnemonic));
+
+    if (!bip39.validateMnemonic(mnemonic)) {
+      throw new Error("Mnemonic invalid or undefined");
+    }
+
+    // crank the addresses out
+    for (let i = address_index; i < address_index + num_addresses; i++) {
+      const wallet = this.hdwallet
+        .derivePath(this.wallet_hdpath + i)
+        .getWallet();
+      const addr = `0x${wallet.getAddress().toString("hex")}`;
+      this.addresses.push(addr);
+      this.wallets[addr] = wallet;
+    }
+  };
+
+  // private helper leveraging ethUtils to populate wallets/addresses
+  const ethUtilValidation = privateKeys => {
+    // crank the addresses out
     for (let i = address_index; i < address_index + num_addresses; i++) {
       const privateKey = Buffer.from(privateKeys[i].replace("0x", ""), "hex");
       if (ethUtil.isValidPrivate(privateKey)) {
@@ -40,30 +71,16 @@ function HDWalletProvider(
         this.wallets[address] = wallet;
       }
     }
-  } else {
-    this.hdwallet = hdkey.fromMasterSeed(bip39.mnemonicToSeed(mnemonic));
-    this.wallet_hdpath = wallet_hdpath;
-    this.wallets = {};
-    this.addresses = [];
+  };
 
-    if (!bip39.validateMnemonic(mnemonic)) {
-      throw new Error("Mnemonic invalid or undefined");
-    }
+  const privateKeys = normalizePrivateKeys(mnemonic);
 
-    for (let i = address_index; i < address_index + num_addresses; i++) {
-      const wallet = this.hdwallet
-        .derivePath(this.wallet_hdpath + i)
-        .getWallet();
-      const addr = "0x" + wallet.getAddress().toString("hex");
-      this.addresses.push(addr);
-      this.wallets[addr] = wallet;
-    }
-  }
+  if (!privateKeys) checkBIP39Mnemonic(mnemonic);
+  else ethUtilValidation(privateKeys);
 
   const tmp_accounts = this.addresses;
   const tmp_wallets = this.wallets;
 
-  this.engine = new ProviderEngine();
   this.engine.addProvider(
     new HookedSubprovider({
       getAccounts: function(cb) {
@@ -116,6 +133,7 @@ function HDWalletProvider(
 
   this.engine.addProvider(new FiltersSubprovider());
   if (typeof provider === "string") {
+    // shim Web3 to give it expected sendAsync method
     Web3.providers.HttpProvider.prototype.sendAsync =
       Web3.providers.HttpProvider.prototype.send;
     this.engine.addProvider(
