@@ -39,10 +39,11 @@ const artifactor = new Artifactor(__dirname);
 
 // See truffle-schema for more info: https://github.com/trufflesuite/truffle/tree/develop/packages/truffle-contract-schema
 const contractData = {
-  contractName: "...",   // String; optional.
-  abi: ...,              // Array; required.
-  metadata: "...",       // String; optional.
-  bytecode: "..."        // String; optional.
+  contractName: "...",        // String; optional.
+  abi: ...,                   // Array; required.
+  metadata: "...",            // String; optional.
+  bytecode: "...",            // String; optional.
+  "x-some-dependency": ...    // String, Number, Object, or Array: optional.
 };
 
 artifactor.save(contractData);
@@ -76,7 +77,8 @@ Save contract data as a `.json` file. Returns a Promise.
       schemaVersion: "...",         // String; optional. Schema version used by contract object representation.
       updatedAt: "...",             // String; optional. Time contract object representation was generated/most recently updated.
       devdoc: "...",                // String; optional. Developer documentation.
-      userdoc: "..."                // String; optional. User documentation.
+      userdoc: "...",               // String; optional. User documentation.
+      "x-custom-property": ...      // String, Number, Object, or Array: optional. Custom property. Keys must be prefixed with "x-".
     }
     ```
 
