@@ -10,14 +10,12 @@ class Artifactor {
   }
 
   async save(artifactObject) {
-    const self = this;
-
     const normalizedArtifact = Schema.normalize(artifactObject);
     const contractName = normalizedArtifact.contractName;
 
     if (!contractName) throw new Error("You must specify a contract name.");
 
-    const output_path = path.join(self.destination, `${contractName}.json`);
+    const output_path = path.join(this.destination, `${contractName}.json`);
     let completeArtifact = {};
 
     // private helper for writing artifacts
@@ -47,7 +45,6 @@ class Artifactor {
   }
 
   async saveAll(artifactObjects) {
-    const self = this;
     let newArtifactObjects = {};
 
     if (Array.isArray(artifactObjects)) {
@@ -61,17 +58,17 @@ class Artifactor {
     }
 
     try {
-      fs.statSync(self.destination); // check if destinationn exists
+      fs.statSync(this.destination); // check if destination exists
     } catch (e) {
       if (e.code === "ENOENT")
         // if destination doesn't exist, throw error
-        throw new Error(`Destination "${self.destination}" doesn't exist!`);
+        throw new Error(`Destination "${this.destination}" doesn't exist!`);
       throw new Error(e); // throw on all other errors
     }
 
     Object.keys(newArtifactObjects).forEach(contractName => {
       let artifactObject = newArtifactObjects[contractName];
-      self.save(artifactObject);
+      this.save(artifactObject);
     });
   }
 }
