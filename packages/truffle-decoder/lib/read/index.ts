@@ -4,13 +4,13 @@ import * as stack from "./stack";
 import * as constant from "./constant";
 import * as Pointer from "../types/pointer";
 import { EvmState } from "../types/evm";
-import Web3 from "web3";
+import { DecoderRequest } from "../types/request";
 
-export default async function read(pointer: Pointer.DataPointer, state: EvmState, web3?: Web3, contractAddress?: string): Promise<Uint8Array> {
+export default function* read(pointer: Pointer.DataPointer, state: EvmState): IterableIterator<Uint8Array | DecoderRequest> {
   if (Pointer.isStackPointer(pointer) && state.stack) {
     return stack.readStack(state.stack, pointer.stack.from, pointer.stack.to);
   } else if (Pointer.isStoragePointer(pointer) && state.storage) {
-    return await storage.readRange(state.storage, pointer.storage, web3, contractAddress);
+    return yield* storage.readRange(state.storage, pointer.storage);
   } else if (Pointer.isMemoryPointer(pointer) && state.memory) {
     return memory.readBytes(state.memory, pointer.memory.start, pointer.memory.length);
   } else if (Pointer.isCalldataPointer(pointer) && state.calldata) {
