@@ -257,6 +257,7 @@ describe("CompilerSupplier", function() {
         };
 
         options.resolver = new Resolver(options);
+        options = Config.default().merge(options);
 
         compile.with_dependencies(options, (err, result) => {
           if (err) return done(err);
@@ -278,6 +279,7 @@ describe("CompilerSupplier", function() {
             settings: {}
           }
         };
+        options = Config.default().merge(options);
 
         compile(version4PragmaSource, options, err => {
           assert(err.message.includes("option must be"));
@@ -295,6 +297,7 @@ describe("CompilerSupplier", function() {
             settings: {}
           }
         };
+        options = Config.default().merge(options);
 
         compile(version4PragmaSource, options, err => {
           assert(err.message.includes(imageName));
