@@ -4,6 +4,7 @@ const MemoryLogger = require("../memorylogger");
 const fs = require("fs-extra");
 const tmp = require("tmp");
 const path = require("path");
+const Config = require("truffle-config");
 
 describe("truffle unbox", () => {
   let config;
@@ -13,6 +14,7 @@ describe("truffle unbox", () => {
     tempDir = tmp.dirSync({ unsafeCleanup: true });
     config = { working_directory: tempDir.name };
     config.logger = logger;
+    config = Config.default().merge(config);
   });
 
   afterEach("clear working_directory", () => {
@@ -54,7 +56,7 @@ describe("truffle unbox", () => {
             config,
             () => {
               const output = logger.contents();
-              assert(output.includes("Unbox successful."));
+              assert(output.includes("Unbox successful,"));
               done();
             }
           );
@@ -68,7 +70,7 @@ describe("truffle unbox", () => {
             config,
             () => {
               const output = logger.contents();
-              assert(output.includes("Unbox successful."));
+              assert(output.includes("Unbox successful,"));
               done();
             }
           );
@@ -82,7 +84,7 @@ describe("truffle unbox", () => {
             config,
             () => {
               const output = logger.contents();
-              assert(output.includes("Unbox successful."));
+              assert(output.includes("Unbox successful,"));
               done();
             }
           );
@@ -93,7 +95,7 @@ describe("truffle unbox", () => {
         it("unboxes successfully", done => {
           CommandRunner.run("unbox truffle-box/bare-box", config, () => {
             const output = logger.contents();
-            assert(output.includes("Unbox successful."));
+            assert(output.includes("Unbox successful,"));
             done();
           });
         }).timeout(20000);
@@ -106,7 +108,7 @@ describe("truffle unbox", () => {
             config,
             () => {
               const output = logger.contents();
-              assert(output.includes("Unbox successful."));
+              assert(output.includes("Unbox successful,"));
               done();
             }
           );
@@ -120,7 +122,7 @@ describe("truffle unbox", () => {
             config,
             () => {
               const output = logger.contents();
-              assert(output.includes("Unbox successful."));
+              assert(output.includes("Unbox successful,"));
               done();
             }
           );
@@ -131,7 +133,7 @@ describe("truffle unbox", () => {
         it("unboxes successfully", done => {
           CommandRunner.run("unbox bare", config, () => {
             const output = logger.contents();
-            assert(output.includes("Unbox successful."));
+            assert(output.includes("Unbox successful,"));
             done();
           });
         }).timeout(20000);
@@ -141,7 +143,7 @@ describe("truffle unbox", () => {
         it("unboxes successfully", done => {
           CommandRunner.run("unbox bare#truffle-test-branch", config, () => {
             const output = logger.contents();
-            assert(output.includes("Unbox successful."));
+            assert(output.includes("Unbox successful,"));
             done();
           });
         }).timeout(20000);
@@ -154,7 +156,7 @@ describe("truffle unbox", () => {
             config,
             () => {
               const output = logger.contents();
-              assert(output.includes("Unbox successful."));
+              assert(output.includes("Unbox successful,"));
               done();
             }
           );
@@ -168,7 +170,7 @@ describe("truffle unbox", () => {
             config,
             () => {
               const output = logger.contents();
-              assert(output.includes("Unbox successful."));
+              assert(output.includes("Unbox successful,"));
               done();
             }
           );
@@ -196,7 +198,7 @@ describe("truffle unbox", () => {
             config,
             () => {
               const output = logger.contents();
-              assert(output.includes("Unbox successful."));
+              assert(output.includes("Unbox successful,"));
               done();
             }
           );
@@ -210,7 +212,7 @@ describe("truffle unbox", () => {
             config,
             () => {
               const output = logger.contents();
-              assert(output.includes("Unbox successful."));
+              assert(output.includes("Unbox successful,"));
               done();
             }
           );
