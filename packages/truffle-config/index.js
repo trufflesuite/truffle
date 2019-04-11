@@ -386,13 +386,14 @@ Config.detect = (options = {}, filename) => {
 // attached as it might override some options (e.g. { quiet: true })
 const attachNewEventManager = (config, newOptions) => {
   const currentEventManagerOptions = config.eventManager.initializationOptions;
-  const { quiet, logger, globalConfig } = newOptions;
+  const { quiet, logger, globalConfig, reporters } = newOptions;
   const optionsToMerge = {};
 
   if (typeof quiet !== "undefined") optionsToMerge.quiet = quiet;
   if (typeof logger !== "undefined") optionsToMerge.logger = logger;
   if (typeof globalConfig !== "undefined")
     optionsToMerge.globalConfig = globalConfig;
+  if (typeof reporters !== "undefined") optionsToMerge.reporters = reporters;
 
   const newEventManagerOptions = Object.assign(
     {},
@@ -413,6 +414,7 @@ Config.load = function(file, options) {
   delete require.cache[Module._resolveFilename(file, module)];
   var static_config = originalrequire(file);
 
+  attachNewEventManager(config, static_config);
   config.merge(static_config);
   config.merge(options);
 

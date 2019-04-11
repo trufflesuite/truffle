@@ -8,12 +8,20 @@ class ReporterAggregator {
   }
 
   initializeReporters(initializationOptions) {
-    const { emitter } = initializationOptions;
+    const { emitter, reporters } = initializationOptions;
     for (let reporterName in defaultReporters) {
       new Reporter({
         options: defaultReporters[reporterName],
         emitter
       });
+    }
+    if (reporters) {
+      for (let reporterName in reporters) {
+        new Reporter({
+          options: reporters[reporterName],
+          emitter
+        });
+      }
     }
   }
 }
