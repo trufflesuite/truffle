@@ -7,8 +7,8 @@ const findUp = require("find-up");
 const originalrequire = require("original-require");
 const Configstore = require("configstore");
 
-const DEFAULT_CONFIG_FILENAME = "truffle.js";
-const BACKUP_CONFIG_FILENAME = "truffle-config.js"; // For Windows + Command Prompt
+const DEFAULT_CONFIG_FILENAME = "truffle-config.js";
+const BACKUP_CONFIG_FILENAME = "truffle.js"; // For Windows + Command Prompt
 
 function Config(truffle_directory, working_directory, network) {
   var self = this;
@@ -349,15 +349,26 @@ Config.prototype.merge = function(obj) {
 Config.default = () => new Config();
 
 Config.search = (options = {}, filename) => {
-  let search;
+  let file;
 
-  !filename
-    ? (search = [DEFAULT_CONFIG_FILENAME, BACKUP_CONFIG_FILENAME])
-    : (search = filename);
+  const searchOptions = {cwd: options.working_directory || options.workingDirectory};
 
-  return findUp.sync(search, {
-    cwd: options.working_directory || options.workingDirectory
-  });
+  if (!filename) {
+    const defaultFile = findUp.sync(DEFAULT_CONFIG_FILENAME, searchOptions);
+    const backupFile = findUp.sync(BACKUP_CONFIG_FILENAME, searchOptions);
+    if (defaultFile && backupFile) {
+      file = defaultFile;
+      console.warn(`Both ${BACKUP_CONFIG_FILENAME} and ${DEFAULT_CONFIG_FILENAME} were found. Using ${DEFAULT_CONFIG_FILENAME}`);
+    } else if (defaultFile) {
+      file = defaultFile;
+    } else if (backupFile) {
+      file = backupFile;
+    }
+  } else {
+    file = findUp.sync(filename, searchOptions);
+  }
+
+  return file;
 };
 
 Config.detect = (options = {}, filename) => {
