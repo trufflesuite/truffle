@@ -17,6 +17,7 @@ describe("CompilerSupplier", function() {
     let oldPragmaFloatSource; // ^0.4.15
     let version4PragmaSource; // ^0.4.21
     let version5PragmaSource; // ^0.5.0
+    let compileConfig;
 
     const options = {
       eventManager: {
@@ -279,9 +280,9 @@ describe("CompilerSupplier", function() {
             settings: {}
           }
         };
-        options = Config.default().merge(options);
+        compileConfig = Config.default().merge(options);
 
-        compile(version4PragmaSource, options, err => {
+        compile(version4PragmaSource, compileConfig, err => {
           assert(err.message.includes("option must be"));
           done();
         });
@@ -297,9 +298,9 @@ describe("CompilerSupplier", function() {
             settings: {}
           }
         };
-        options = Config.default().merge(options);
+        compileConfig = Config.default().merge(options);
 
-        compile(version4PragmaSource, options, err => {
+        compile(version4PragmaSource, compileConfig, err => {
           assert(err.message.includes(imageName));
           done();
         });
