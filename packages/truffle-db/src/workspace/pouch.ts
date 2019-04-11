@@ -138,8 +138,9 @@ export class Workspace {
     return {
       contractConstructors: Promise.all(contractConstructors.map(
         async (contractConstructorInput) => {
-          const { abi, compilation, createBytecode,linkValues, contract  } = contractConstructorInput;
-          const id = abi !== undefined? soliditySha3(abi, createBytecode.id) : soliditySha3(createBytecode.id);
+          const { createBytecode, contract  } = contractConstructorInput;
+          //just using createBytecode id for now until we figure out what the id should be comprised ofwork
+          const id = soliditySha3(createBytecode.id);
          
           const contractConstructor = await this.contractConstructor( { id } );
          

@@ -18,10 +18,7 @@ type ContractInstance {
 }
 
 type ContractConstructor {
-  abi: ABI
-  compilation: Compilation
   createBytecode: Bytecode
-  linkValues: [LinkValue]
   contract: Contract
 }
 

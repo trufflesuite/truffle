@@ -143,10 +143,6 @@ export const schema = mergeSchemas({
       id: ID!
     }
 
-    input ContractConstructorCompilationInput {
-      id: ID!
-    }
-
     input LinkReferenceInput {
       offsets: [ByteOffset!]
       length: Int!
@@ -164,8 +160,6 @@ export const schema = mergeSchemas({
 
     input ContractConstructorInput {
       createBytecode: ContractConstructorBytecodeInput!
-      compilation: ContractConstructorCompilationInput
-      linkValues: [LinkValueInput]
       contract: ContractConstructorContractInput
     }
 
@@ -268,10 +262,6 @@ export const schema = mergeSchemas({
         resolve: ({ createBytecode }, _, { workspace }) => 
           workspace.bytecode(createBytecode)
       }, 
-      compilation: {
-        resolve: ({ compilation }, _, { workspace }) => 
-          workspace.compilation(compilation)
-      },
       contract: {
         resolve: ({ contract }, _, { workspace }) => 
           workspace.contract(contract)
