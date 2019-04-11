@@ -161,6 +161,66 @@ const data = createSelectorTree({
             ).map(({ bySlotAddress }) => Object.values(bySlotAddress))
           )
           .filter(slot => slot.key !== undefined)
+    ),
+
+    /*
+     * data.views.blockNumber
+     * returns block number as string
+     */
+    blockNumber: createLeaf([evm.info.globals.block], block =>
+      block.number.toString()
+    ),
+
+    /*
+     * data.views.instances
+     * same as evm.info.instances, but we just map address => binary,
+     * we don't bother with context
+     */
+    instances: createLeaf([evm.info.instances], instances =>
+      Object.assign(
+        {},
+        ...Object.entries(instances).map(([address, { binary }]) => ({
+          [address]: binary
+        }))
+      )
+    ),
+
+    /*
+     * data.views.contexts
+     * same as evm.info.contexts, but:
+     * 0. we only include non-constructor contexts
+     * 1. we now index by contract ID rather than hash
+     * 2. we strip out context, sourceMap, primarySource, and compiler
+     * 3. we alter abi in several ways:
+     * 3a. we strip abi down to just (ordinary) functions
+     * 3b. we augment these functions with signatures (here meaning selectors)
+     * 3c. abi is now an object, not an array, and indexed by these signatures
+     */
+    contexts: createLeaf([evm.info.contexts], contexts =>
+      Object.assign(
+        {},
+        ...Object.values(contexts)
+          .filter(context => !context.isConstructor)
+          .map(
+            ({
+              contractName,
+              binary,
+              abi,
+              contractId,
+              contractKind,
+              isConstructor
+            }) => ({
+              [contractId]: {
+                contractName,
+                binary,
+                contractId,
+                contractKind,
+                isConstructor,
+                abi: DecodeUtils.Contexts.abiToFunctionAbiWithSignatures(abi)
+              }
+            })
+          )
+      )
     )
   },
 

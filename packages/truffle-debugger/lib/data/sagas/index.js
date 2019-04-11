@@ -8,6 +8,8 @@ import { prefixName, stableKeccak256, makeAssignment } from "lib/helpers";
 import { TICK } from "lib/trace/actions";
 import * as actions from "../actions";
 import * as trace from "lib/trace/sagas";
+import * as evm from "lib/evm/sagas";
+import * as web3 from "lib/web3/sagas";
 
 import data from "../selectors";
 
@@ -40,6 +42,7 @@ function* tickSaga() {
   debug("got TICK");
 
   yield* variablesAndMappingsSaga();
+  debug("about to SUBTOCK");
   yield* trace.signalTickSagaCompletion();
 }
 
@@ -48,6 +51,9 @@ export function* decode(definition, ref) {
   let state = yield select(data.current.state);
   let mappingKeys = yield select(data.views.mappingKeys);
   let allocations = yield select(data.info.allocations);
+  let instances = yield select(data.views.instances);
+  let contexts = yield select(data.views.contexts);
+  let blockNumber = yield select(data.views.blockNumber);
 
   let ZERO_WORD = new Uint8Array(DecodeUtils.EVM.WORD_SIZE);
   ZERO_WORD.fill(0);
@@ -58,7 +64,8 @@ export function* decode(definition, ref) {
     mappingKeys,
     storageAllocations: allocations.storage,
     memoryAllocations: allocations.memory,
-    calldataAllocations: allocations.calldata
+    calldataAllocations: allocations.calldata,
+    contexts
   });
 
   let result = decoder.next();
@@ -72,6 +79,19 @@ export function* decode(definition, ref) {
         //any storage it does not know is presumed to be zero.
         response = ZERO_WORD;
         break;
+      case "code":
+        let address = request.address;
+        if (address in instances) {
+          response = DecodeUtils.Conversion.toBytes(instances[address]);
+        } else {
+          //I don't want to write a new web3 saga, so let's just use
+          //obtainBinaries with a one-element array
+          debug("fetching binary");
+          let binary = (yield* web3.obtainBinaries([address], blockNumber))[0];
+          debug("adding instance");
+          yield* evm.addInstance(address, binary);
+          response = DecodeUtils.Conversion.toBytes(binary);
+        }
       default:
         debug("unrecognized request type!");
     }
@@ -330,6 +350,7 @@ function* variablesAndMappingsSaga() {
           //value will go on the stack *left*-padded instead of right-padded,
           //so looking for a prior assignment will read the wrong value.
           //so instead it's preferable to use the constant directly.
+          debug("about to decode simple literal");
           indexValue = yield* decode(keyDefinition, {
             definition: indexDefinition
           });
@@ -350,6 +371,7 @@ function* variablesAndMappingsSaga() {
           } else {
             splicedDefinition = keyDefinition;
           }
+          debug("about to decode");
           indexValue = yield* decode(splicedDefinition, indexReference);
         } else if (
           indexDefinition.referencedDeclaration &&
@@ -372,6 +394,7 @@ function* variablesAndMappingsSaga() {
             if (
               DecodeUtils.Definition.isSimpleConstant(indexConstantDefinition)
             ) {
+              debug("about to decode simple constant");
               indexValue = yield* decode(keyDefinition, {
                 definition: indexConstantDeclaration.value
               });
