@@ -1,14 +1,15 @@
-const chalk = require('chalk');
+const chalk = require("chalk");
 
 const Logger = {
-  log: function (msg) {
-    console.log('[TRUFFLE SOLIDITY] ' + msg);
+  log(msg) {
+    // sometimes reporter msg is undefined
+    if (msg) console.log(`[TRUFFLE SOLIDITY] ${msg}`);
   },
-  error: function (msg) {
-    console.log(chalk.red('[! TRUFFLE SOLIDITY ERROR] ' + msg));
+  error(msg) {
+    console.log(chalk.red(`[! TRUFFLE SOLIDITY ERROR] ${msg}`));
   },
-  debug: function (msg) {
-    console.debug(chalk.red('[! TRUFFLE SOLIDITY DEBUGGER] ' + msg));
+  debug(msg) {
+    console.debug(chalk.red(`[! TRUFFLE SOLIDITY DEBUGGER] ${msg}`));
   }
 };
 
