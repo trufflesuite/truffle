@@ -16,13 +16,13 @@ describe("artifactor + require", () => {
   let accounts;
   let abi;
   let bytecode;
-  let network_id;
+  let networkID;
   let artifactor;
   const provider = Ganache.provider();
   const web3 = new Web3();
   web3.setProvider(provider);
 
-  before(() => web3.eth.net.getId().then(id => (network_id = id)));
+  before(() => web3.eth.net.getId().then(id => (networkID = id)));
 
   before(async function() {
     this.timeout(20000);
@@ -68,7 +68,7 @@ describe("artifactor + require", () => {
       prefix: "tmp-test-contract-"
     });
 
-    const expected_filepath = path.join(dirPath, "Example.json");
+    const expectedFilepath = path.join(dirPath, "Example.json");
 
     artifactor = new Artifactor(dirPath);
 
@@ -78,21 +78,21 @@ describe("artifactor + require", () => {
         abi,
         bytecode,
         networks: {
-          [`${network_id}`]: {
+          [`${networkID}`]: {
             address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01"
           }
         }
       })
       .then(() => {
-        const json = requireNoCache(expected_filepath);
+        const json = requireNoCache(expectedFilepath);
         Example = contract(json);
         Example.setProvider(provider);
       });
   });
 
   before(() =>
-    web3.eth.getAccounts().then(accs => {
-      accounts = accs;
+    web3.eth.getAccounts().then(_accounts => {
+      accounts = _accounts;
 
       Example.defaults({
         from: accounts[0]
@@ -166,9 +166,9 @@ describe("artifactor + require", () => {
         // BigNumber passed in a call.
         return example.parrot.call(865);
       })
-      .then(parrot_value => {
+      .then(parrotValue => {
         assert.equal(
-          parseInt(parrot_value),
+          parseInt(parrotValue),
           865,
           "Parrotted value should equal 865"
         );
@@ -297,12 +297,12 @@ describe("artifactor + require", () => {
       .then(({ address }) => {
         // We have a network id in this case, with new(), since it was detected,
         // but no further configuration.
-        assert.equal(NewExample.network_id, network_id);
-        assert.equal(NewExample.toJSON().networks[network_id], null);
+        assert.equal(NewExample.network_id, networkID);
+        assert.equal(NewExample.toJSON().networks[networkID], null);
 
         NewExample.address = address;
 
-        assert.equal(NewExample.toJSON().networks[network_id].address, address);
+        assert.equal(NewExample.toJSON().networks[networkID].address, address);
 
         done();
       })
@@ -310,7 +310,7 @@ describe("artifactor + require", () => {
   });
 
   it("doesn't error when calling .links() or .events() with no network configuration", done => {
-    const event_abi = {
+    const eventABI = {
       anonymous: false,
       inputs: [
         {
@@ -330,20 +330,20 @@ describe("artifactor + require", () => {
 
     const MyContract = contract({
       contractName: "MyContract",
-      abi: [event_abi],
+      abi: [eventABI],
       bytecode: "0x12345678"
     });
 
     MyContract.setNetwork(5);
 
-    const expected_event_topic = web3.utils.sha3(
+    const expectedEventTopic = web3.utils.sha3(
       "PackageRelease(bytes32,bytes32)"
     );
 
     // We want to make sure these don't throw when a network configuration doesn't exist.
     // While we're at it, lets make sure we still get the event we expect.
     assert.deepEqual(MyContract.links, {});
-    assert.deepEqual(MyContract.events[expected_event_topic], event_abi);
+    assert.deepEqual(MyContract.events[expectedEventTopic], eventABI);
 
     done();
   });
