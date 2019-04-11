@@ -12,7 +12,7 @@ class Docker extends LoadingStrategy {
     const command =
       "docker run -i ethereum/solc:" + this.config.version + " --standard-json";
 
-    const versionRange = new VersionRange();
+    const versionRange = new VersionRange(this.config);
     const commit = versionRange.getCommitFromVersion(versionString);
 
     return versionRange
@@ -92,7 +92,9 @@ class Docker extends LoadingStrategy {
     const version = execSync(
       "docker run ethereum/solc:" + image + " --version"
     );
-    const normalized = new VersionRange().normalizeSolcVersion(version);
+    const normalized = new VersionRange(this.config).normalizeSolcVersion(
+      version
+    );
     this.addFileToCache(normalized, fileName);
     return normalized;
   }
