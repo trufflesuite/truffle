@@ -69,9 +69,29 @@ export const schema = mergeSchemas({
       id: ID!
     }
 
+    input AbiInput {
+      json: String!
+      items: [String]
+    }
+
+    input ContractCompilationInput {
+      id: ID!
+    }
+
+    input ContractSourceContractCompilationInput {
+      id: ID!
+    }
+
+    input ContractSourceContractInput {
+      index: FileIndex
+      compilation: ContractSourceContractCompilationInput
+    }
+
     input ContractInput {
       name: String
-      source: ContractSourceInput!
+      abi: AbiInput
+      compilation: ContractCompilationInput
+      sourceContract: ContractSourceContractInput
     }
 
     input ContractsAddInput {
@@ -137,17 +157,12 @@ export const schema = mergeSchemas({
       value: Bytes!
     }
 
-    input AbiInput {
-      json: String!
-      items: [String]
-    }
 
     input ContractConstructorContractInput {
       id: ID!
     }
 
     input ContractConstructorInput {
-      abi: AbiInput
       createBytecode: ContractConstructorBytecodeInput!
       compilation: ContractConstructorCompilationInput
       linkValues: [LinkValueInput]
@@ -229,9 +244,17 @@ export const schema = mergeSchemas({
       }
     },
     Contract: {
-      source: {
-        resolve: ({ source }, _, { workspace }) => 
-          workspace.source(source)
+      compilation: {
+        resolve: ({ compilation }, _, { workspace }) => 
+          workspace.compilation(compilation)
+      }, 
+      sourceContract: {
+        resolve: async ({ sourceContract }, _, { workspace }) => 
+          {
+            const compilationData = await workspace.compilation(sourceContract.compilation);
+            const sourceContractData = compilationData.contracts[sourceContract.index];
+            return sourceContractData;
+          }
       }
     },
     SourceContract: {

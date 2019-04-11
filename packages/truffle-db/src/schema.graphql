@@ -30,7 +30,6 @@ type Contract {
   abi: ABI
   compilation: Compilation
   sourceContract: SourceContract
-  source: Source
 }
 
 type ABI {

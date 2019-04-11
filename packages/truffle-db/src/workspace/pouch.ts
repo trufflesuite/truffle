@@ -94,8 +94,9 @@ export class Workspace {
     return {
       contracts: Promise.all(contracts.map(
         async (contractInput) => {
-          const { name, source } = contractInput;
-          const id = name !== undefined ? soliditySha3(name, source.id) : soliditySha3(source.id);
+          const { name, abi, compilation, sourceContract } = contractInput;
+          //leaving this id as just a hash of the name for now, until we figure out what it should be
+          const id = soliditySha3(name);
           const contract = await this.contract( { id } );
           
           if(contract) {
@@ -106,7 +107,7 @@ export class Workspace {
             _id: id,
             });
            
-            return { name, source, id };
+            return { name, abi, compilation, sourceContract, id };
           }
         }
       ))
