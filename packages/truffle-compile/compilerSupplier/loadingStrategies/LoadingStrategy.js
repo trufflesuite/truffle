@@ -1,20 +1,29 @@
-const findCacheDir = require("find-cache-dir");
+const Config = require("truffle-config");
+const path = require("path");
 const fs = require("fs");
 
 class LoadingStrategy {
   constructor(options) {
     const defaultConfig = {
-      versionsUrl: "https://solc-bin.ethereum.org/bin/list.json",
-      compilerUrlRoot: "https://solc-bin.ethereum.org/bin/",
+      compilerRoots: [
+        "https://relay.trufflesuite.com/solc/bin/",
+        "https://solc-bin.ethereum.org/bin/",
+        "https://ethereum.github.io/solc-bin/bin/"
+      ],
       dockerTagsUrl:
         "https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/"
     };
     this.config = Object.assign({}, defaultConfig, options);
-    this.cachePath = findCacheDir({
-      name: "truffle",
-      cwd: __dirname,
-      create: true
-    });
+
+    const compilersDir = path.resolve(
+      Config.getTruffleDataDirectory(),
+      "compilers"
+    );
+    const compilerCachePath = path.resolve(compilersDir, "node_modules"); // because babel binds to require & does weird things
+    if (!fs.existsSync(compilersDir)) fs.mkdirSync(compilersDir);
+    if (!fs.existsSync(compilerCachePath)) fs.mkdirSync(compilerCachePath); // for 5.0.8 users
+
+    this.compilerCachePath = compilerCachePath;
   }
 
   addFileToCache(code, fileName) {
@@ -36,6 +45,7 @@ class LoadingStrategy {
         input +
         ". Are you connected to the internet?\n\n" +
         error,
+      noUrl: "compiler root URL missing",
       noDocker:
         "You are trying to run dockerized solc, but docker is not installed.",
       noImage:
@@ -82,12 +92,7 @@ class LoadingStrategy {
   }
 
   resolveCache(fileName) {
-    const thunk = findCacheDir({
-      name: "truffle",
-      cwd: __dirname,
-      thunk: true
-    });
-    return thunk(fileName);
+    return path.resolve(this.compilerCachePath, fileName);
   }
 }
 

@@ -1,50 +1,123 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:data:sagas"); // eslint-disable-line no-unused-vars
+const debug = debugModule("debugger:data:sagas");
 
-import { put, takeEvery, select, call, putResolve } from "redux-saga/effects";
+import { put, takeEvery, select } from "redux-saga/effects";
 
-import { prefixName, stableKeccak256 } from "lib/helpers";
+import { prefixName, stableKeccak256, makeAssignment } from "lib/helpers";
 
 import { TICK } from "lib/trace/actions";
 import * as actions from "../actions";
+import * as trace from "lib/trace/sagas";
 
 import data from "../selectors";
 
-import * as DecodeUtils from "truffle-decode-utils";
+import sum from "lodash.sum";
 
-import { getStorageAllocations, readStack } from "truffle-decoder";
+import * as DecodeUtils from "truffle-decode-utils";
+import {
+  getStorageAllocations,
+  getMemoryAllocations,
+  getCalldataAllocations,
+  readStack,
+  storageSize,
+  forEvmState
+} from "truffle-decoder";
+import BN from "bn.js";
 
 export function* scope(nodeId, pointer, parentId, sourceId) {
-  yield putResolve(actions.scope(nodeId, pointer, parentId, sourceId));
+  yield put(actions.scope(nodeId, pointer, parentId, sourceId));
 }
 
 export function* declare(node) {
-  yield putResolve(actions.declare(node));
+  yield put(actions.declare(node));
 }
 
 export function* defineType(node) {
-  yield putResolve(actions.defineType(node));
+  yield put(actions.defineType(node));
 }
 
 function* tickSaga() {
-  let node = (yield select(data.views.ast)).node;
-  let decode = yield select(data.views.decoder);
+  debug("got TICK");
+
+  yield* variablesAndMappingsSaga();
+  yield* trace.signalTickSagaCompletion();
+}
+
+export function* decode(definition, ref) {
+  let referenceDeclarations = yield select(data.views.referenceDeclarations);
+  let state = yield select(data.current.state);
+  let mappingKeys = yield select(data.views.mappingKeys);
+  let allocations = yield select(data.info.allocations);
+
+  let ZERO_WORD = new Uint8Array(DecodeUtils.EVM.WORD_SIZE);
+  ZERO_WORD.fill(0);
+
+  let decoder = forEvmState(definition, ref, {
+    referenceDeclarations,
+    state,
+    mappingKeys,
+    storageAllocations: allocations.storage,
+    memoryAllocations: allocations.memory,
+    calldataAllocations: allocations.calldata
+  });
+
+  let result = decoder.next();
+  while (!result.done) {
+    let request = result.value;
+    let response;
+    switch (request.type) {
+      //yes, this is a little silly right now
+      case "storage":
+        //the debugger supplies all storage it knows at the beginning.
+        //any storage it does not know is presumed to be zero.
+        response = ZERO_WORD;
+        break;
+      default:
+        debug("unrecognized request type!");
+    }
+    result = decoder.next(response);
+  }
+  //at this point, result.value holds the final value
+  //note: we're still using the old decoder output format, so we need to clean
+  //containers before returning something the debugger can use
+  return DecodeUtils.Conversion.cleanContainers(result.value);
+}
+
+function* variablesAndMappingsSaga() {
+  let node = yield select(data.current.node);
   let scopes = yield select(data.views.scopes.inlined);
+  let referenceDeclarations = yield select(data.views.referenceDeclarations);
   let allocations = yield select(data.info.allocations.storage);
   let currentAssignments = yield select(data.proc.assignments);
+  let mappedPaths = yield select(data.proc.mappedPaths);
   let currentDepth = yield select(data.current.functionDepth);
-  let address = yield select(data.current.address); //may be undefined
-  let dummyAddress = yield select(data.current.dummyAddress);
+  let address = yield select(data.current.address);
+  //storage address, not code address
 
-  debug("node %o", node);
+  let stack = yield select(data.next.state.stack); //note the use of next!
+  //in this saga we are interested in the *results* of the current instruction
+  //note that the decoder is still based on data.current.state; that's fine
+  //though.  There's already a delay between when we record things off the
+  //stack and when we decode them, after all.  Basically, nothing serious
+  //should happen after an index node but before the index access node that
+  //would cause storage, memory, or calldata to change, meaning that even if
+  //the literal we recorded was a pointer, it will still be valid at the time
+  //we use it.  (The other literals we make use of, for the base expressions,
+  //are not decoded, so no potential mismatch there would be relevant anyway.)
 
-  let stack = yield select(data.next.state.stack);
+  let alternateStack = yield select(data.nextMapped.state.stack);
+  //HACK: unfortunately, in some cases, data.next.state.stack gets the wrong
+  //results due to unmapped instructions intervening.  So, we get the stack at
+  //the next *mapped* stack instead.  This is something of a hack and won't
+  //work if we're about to change context, but it should work in the cases that
+  //need it.
+
   if (!stack) {
     return;
   }
 
   let top = stack.length - 1;
-  var assignment, assignments;
+  var assignment, assignments, preambleAssignments, baseExpression, slot, path;
 
   if (!node) {
     return;
@@ -61,34 +134,54 @@ function* tickSaga() {
     return;
   }
 
+  //HACK: modifier preamble
+  //modifier definitions are typically skipped (this includes constructor
+  //definitions when called as a base constructor); as such I've added this
+  //"modifier preamble" to catch them
+  if (yield select(data.current.aboutToModify)) {
+    let modifier = yield select(data.current.modifierBeingInvoked);
+    //may be either a modifier or base constructor
+    let currentIndex = yield select(data.current.modifierArgumentIndex);
+    debug("currentIndex %d", currentIndex);
+    let parameters = modifier.parameters.parameters;
+    //now: look at the parameters *after* the current index.  we'll need to
+    //adjust for those.
+    let parametersLeft = parameters.slice(currentIndex + 1);
+    let adjustment = sum(parametersLeft.map(DecodeUtils.Definition.stackSize));
+    debug("adjustment %d", adjustment);
+    preambleAssignments = assignParameters(
+      parameters,
+      top + adjustment,
+      currentDepth
+    );
+  } else {
+    preambleAssignments = {};
+  }
+
   switch (node.nodeType) {
     case "FunctionDefinition":
+    case "ModifierDefinition":
+      //NOTE: this will *not* catch most modifier definitions!
+      //the rest hopefully will be caught by the modifier preamble
+      //(in fact they won't all be, but...)
+
+      //HACK: filter out some garbage
+      //this filters out the case where we're really in an invocation of a
+      //modifier or base constructor, but have temporarily hit the definition
+      //node for some reason.  However this obviously can have a false positive
+      //in the case where a function has the same modifier twice.
+      let nextModifier = yield select(data.next.modifierBeingInvoked);
+      if (nextModifier && nextModifier.id === node.id) {
+        break;
+      }
+
       let parameters = node.parameters.parameters;
       //note that we do *not* include return parameters, since those are
       //handled by the VariableDeclaration case (no, I don't know why it
       //works out that way)
-      let reverseParameters = parameters.slice().reverse();
-      //reverse is in-place, so we use slice() to clone first
-      debug("reverseParameters %o", parameters);
 
-      let currentPosition = top;
-      assignments = { byId: {} };
-
-      for (let parameter of reverseParameters) {
-        let words = DecodeUtils.Definition.stackSize(parameter);
-        let pointer = {
-          stack: {
-            from: currentPosition - words + 1,
-            to: currentPosition
-          }
-        };
-        let assignment = makeAssignment(
-          { astId: parameter.id, stackframe: currentDepth },
-          pointer
-        );
-        assignments.byId[assignment.id] = assignment;
-        currentPosition -= words;
-      }
+      //we can skip preambleAssignments here, that isn't used in this case
+      assignments = assignParameters(parameters, top, currentDepth);
 
       debug("Function definition case");
       debug("assignments %O", assignments);
@@ -102,15 +195,10 @@ function* tickSaga() {
       debug("Contract definition case");
       debug("allocations %O", allocations);
       debug("allocation %O", allocation);
-      assignments = { byId: {} };
+      assignments = {};
       for (let id in allocation.members) {
         id = Number(id); //not sure why we're getting them as strings, but...
-        let idObj;
-        if (address !== undefined) {
-          idObj = { astId: id, address };
-        } else {
-          idObj = { astId: id, dummyAddress };
-        }
+        let idObj = { astId: id, address };
         let fullId = stableKeccak256(idObj);
         //we don't use makeAssignment here as we had to compute the ID anyway
         assignment = {
@@ -121,10 +209,11 @@ function* tickSaga() {
             ...allocation.members[id].pointer
           }
         };
-        assignments.byId[fullId] = assignment;
+        assignments[fullId] = assignment;
       }
       debug("assignments %O", assignments);
 
+      //this case doesn't need preambleAssignments either
       yield put(actions.assign(assignments));
       break;
 
@@ -144,9 +233,7 @@ function* tickSaga() {
       if (
         currentAssignments.byAstId[varId] !== undefined &&
         currentAssignments.byAstId[varId].some(
-          id =>
-            currentAssignments.byId[id].address !== undefined ||
-            currentAssignments.byId[id].dummyAddress !== undefined
+          id => currentAssignments.byId[id].address !== undefined
         )
       ) {
         break;
@@ -162,37 +249,69 @@ function* tickSaga() {
           }
         }
       );
-      assignments = { byId: { [assignment.id]: assignment } };
+      assignments = { [assignment.id]: assignment };
+      //this case doesn't need preambleAssignments either
       yield put(actions.assign(assignments));
       break;
 
     case "IndexAccess":
       // to track `mapping` types known indices
+      // (and also *some* known indices for arrays)
+
+      //HACK: we use the alternate stack in this case
 
       debug("Index access case");
 
-      let baseExpression = node.baseExpression;
-      let baseDeclarationId = baseExpression.referencedDeclaration;
+      //we're going to start by doing the same thing as in the default case
+      //(see below) -- getting things ready for an assignment.  Then we're
+      //going to forget this for a bit while we handle the rest...
+      assignments = {
+        ...preambleAssignments,
+        ...literalAssignments(node, alternateStack, currentDepth)
+      };
 
-      let baseDeclaration = scopes[baseDeclarationId].definition;
+      //we'll need this
+      baseExpression = node.baseExpression;
 
-      //if we're not dealing with a mapping, don't bother!
-      if (!DecodeUtils.Definition.isMapping(baseExpression)) {
+      //but first, a diversion -- is this something that could not *possibly*
+      //lead to a mapping?  i.e., either a bytes, or an array of non-reference
+      //types, or a non-storage array?
+      //if so, we'll just do the assign and quit out early
+      //(note: we write it this way because mappings aren't caught by
+      //isReference)
+      if (
+        DecodeUtils.Definition.typeClass(baseExpression) === "bytes" ||
+        (DecodeUtils.Definition.typeClass(baseExpression) === "array" &&
+          (DecodeUtils.Definition.isReference(node)
+            ? DecodeUtils.Definition.referenceType(baseExpression) !== "storage"
+            : !DecodeUtils.Definition.isMapping(node)))
+      ) {
+        debug("Index case bailed out early");
+        debug("typeClass %s", DecodeUtils.Definition.typeClass(baseExpression));
+        debug(
+          "referenceType %s",
+          DecodeUtils.Definition.referenceType(baseExpression)
+        );
+        debug("isReference(node) %o", DecodeUtils.Definition.isReference(node));
+        yield put(actions.assign(assignments));
         break;
       }
 
-      let keyDefinition =
-        baseDeclaration.keyType || baseDeclaration.typeName.keyType;
+      let keyDefinition = DecodeUtils.Definition.keyDefinition(
+        baseExpression,
+        scopes
+      );
+      //if we're dealing with an array, this will just hack up a uint definition
+      //:)
 
       //begin subsection: key decoding
       //(I tried factoring this out into its own saga but it didn't work when I
       //did :P )
-      yield put(actions.mapKeyDecoding(true));
 
       let indexValue;
       let indexDefinition = node.indexExpression;
 
-      //why the loop? see the end of the block it heads to for an explanatory
+      //why the loop? see the end of the block it heads for an explanatory
       //comment
       while (indexValue === undefined) {
         let indexId = indexDefinition.id;
@@ -211,7 +330,7 @@ function* tickSaga() {
           //value will go on the stack *left*-padded instead of right-padded,
           //so looking for a prior assignment will read the wrong value.
           //so instead it's preferable to use the constant directly.
-          indexValue = yield call(decode, keyDefinition, {
+          indexValue = yield* decode(keyDefinition, {
             definition: indexDefinition
           });
         } else if (indexReference) {
@@ -226,10 +345,12 @@ function* tickSaga() {
               keyDefinition,
               DecodeUtils.Definition.referenceType(indexDefinition)
             );
+            //we could put code here to add on the "_ptr" ending when absent,
+            //but we presently ignore that ending, so we'll skip that
           } else {
             splicedDefinition = keyDefinition;
           }
-          indexValue = yield call(decode, splicedDefinition, indexReference);
+          indexValue = yield* decode(splicedDefinition, indexReference);
         } else if (
           indexDefinition.referencedDeclaration &&
           scopes[indexDefinition.referenceDeclaration]
@@ -251,7 +372,7 @@ function* tickSaga() {
             if (
               DecodeUtils.Definition.isSimpleConstant(indexConstantDefinition)
             ) {
-              indexValue = yield call(decode, keyDefinition, {
+              indexValue = yield* decode(keyDefinition, {
                 definition: indexConstantDeclaration.value
               });
             }
@@ -280,18 +401,123 @@ function* tickSaga() {
         //now, as mentioned, retry in the typeConversion case
       }
 
-      yield put(actions.mapKeyDecoding(false));
       //end subsection: key decoding
 
       debug("index value %O", indexValue);
-      debug("keyDefinition %O", keyDefinition);
+      debug("keyDefinition %o", keyDefinition);
 
-      //if we succeeded at decoding it -- i.e. it's not null -- then map it!
+      //whew! But we're not done yet -- we need to turn this decoded key into
+      //an actual path (assuming we *did* decode it)
+      //OK, not an actual path -- we're just going to use a simple offset for
+      //the path.  But that's OK, because the mappedPaths reducer will turn
+      //it into an actual path.
       if (indexValue !== null) {
-        yield put(actions.mapKey(baseDeclarationId, indexValue));
+        path = fetchBasePath(
+          baseExpression,
+          mappedPaths,
+          currentAssignments,
+          currentDepth
+        );
+
+        let slot = { path };
+
+        //we need to do things differently depending on whether we're dealing
+        //with an array or mapping
+        switch (DecodeUtils.Definition.typeClass(baseExpression)) {
+          case "array":
+            slot.hashPath = DecodeUtils.Definition.isDynamicArray(
+              baseExpression
+            );
+            slot.offset = indexValue.muln(
+              storageSize(node, referenceDeclarations, allocations).words
+            );
+            break;
+          case "mapping":
+            slot.key = indexValue;
+            slot.keyEncoding = DecodeUtils.Definition.keyEncoding(
+              keyDefinition
+            );
+            slot.offset = new BN(0);
+            break;
+          default:
+            debug("unrecognized index access!");
+        }
+        debug("slot %O", slot);
+
+        //now, map it! (and do the assign as well)
+        yield put(
+          actions.mapPathAndAssign(
+            address,
+            slot,
+            assignments,
+            DecodeUtils.Definition.typeIdentifier(node),
+            DecodeUtils.Definition.typeIdentifier(baseExpression)
+          )
+        );
+      } else {
+        //if we failed to decode, just do the assign from above
+        debug("failed to decode, just assigning");
+        yield put(actions.assign(assignments));
       }
 
       break;
+
+    case "MemberAccess":
+      //HACK: we use the alternate stack in this case
+
+      //we're going to start by doing the same thing as in the default case
+      //(see below) -- getting things ready for an assignment.  Then we're
+      //going to forget this for a bit while we handle the rest...
+      assignments = {
+        ...preambleAssignments,
+        ...literalAssignments(node, alternateStack, currentDepth)
+      };
+
+      debug("Member access case");
+
+      //MemberAccess uses expression, not baseExpression
+      baseExpression = node.expression;
+
+      //if this isn't a storage struct, or the element isn't of reference type,
+      //we'll just do the assignment and quit out (again, note that mappings
+      //aren't caught by isReference)
+      if (
+        DecodeUtils.Definition.typeClass(baseExpression) !== "struct" ||
+        (DecodeUtils.Definition.isReference(node)
+          ? DecodeUtils.Definition.referenceType(baseExpression) !== "storage"
+          : !DecodeUtils.Definition.isMapping(node))
+      ) {
+        debug("Member case bailed out early");
+        yield put(actions.assign(assignments));
+        break;
+      }
+
+      //but if it is a storage struct, we have to map the path as well
+      path = fetchBasePath(
+        baseExpression,
+        mappedPaths,
+        currentAssignments,
+        currentDepth
+      );
+
+      slot = { path };
+
+      let structId = DecodeUtils.Definition.typeId(baseExpression);
+      let memberAllocation =
+        allocations[structId].members[node.referencedDeclaration];
+
+      slot.offset = memberAllocation.pointer.storage.from.slot.offset.clone();
+
+      debug("slot %o", slot);
+      yield put(
+        actions.mapPathAndAssign(
+          address,
+          slot,
+          assignments,
+          DecodeUtils.Definition.typeIdentifier(node),
+          DecodeUtils.Definition.typeIdentifier(baseExpression)
+        )
+      );
 
     default:
       if (node.typeDescriptions == undefined) {
@@ -299,19 +525,13 @@ function* tickSaga() {
       }
 
       debug("decoding expression value %O", node.typeDescriptions);
-      let literal = readStack(
-        stack,
-        top - DecodeUtils.Definition.stackSize(node) + 1,
-        top
-      );
-
       debug("default case");
       debug("currentDepth %d node.id %d", currentDepth, node.id);
-      assignment = makeAssignment(
-        { astId: node.id, stackframe: currentDepth },
-        { literal }
-      );
-      assignments = { byId: { [assignment.id]: assignment } };
+
+      assignments = {
+        ...preambleAssignments,
+        ...literalAssignments(node, stack, currentDepth)
+      };
       yield put(actions.assign(assignments));
       break;
   }
@@ -321,38 +541,89 @@ export function* reset() {
   yield put(actions.reset());
 }
 
-export function* learnAddressSaga(dummyAddress, address) {
-  debug("about to learn an address");
-  yield put(actions.learnAddress(dummyAddress, address));
-  debug("address learnt");
-}
-
 export function* recordAllocations() {
-  let contracts = yield select(data.views.userDefinedTypes.contractDefinitions);
+  const contracts = yield select(
+    data.views.userDefinedTypes.contractDefinitions
+  );
   debug("contracts %O", contracts);
-  let referenceDeclarations = yield select(data.views.referenceDeclarations);
+  const referenceDeclarations = yield select(data.views.referenceDeclarations);
   debug("referenceDeclarations %O", referenceDeclarations);
-  let storageAllocations = getStorageAllocations(
+  const storageAllocations = getStorageAllocations(
     referenceDeclarations,
     contracts
   );
   debug("storageAllocations %O", storageAllocations);
-  yield put(actions.allocate(storageAllocations));
+  const memoryAllocations = getMemoryAllocations(referenceDeclarations);
+  const calldataAllocations = getCalldataAllocations(referenceDeclarations);
+  yield put(
+    actions.allocate(storageAllocations, memoryAllocations, calldataAllocations)
+  );
 }
 
-function makeAssignment(idObj, ref) {
-  let id = stableKeccak256(idObj);
-  return { ...idObj, id, ref };
+function literalAssignments(node, stack, currentDepth) {
+  let top = stack.length - 1;
+
+  let literal = readStack(
+    stack,
+    top - DecodeUtils.Definition.stackSize(node) + 1,
+    top
+  );
+
+  let assignment = makeAssignment(
+    { astId: node.id, stackframe: currentDepth },
+    { literal }
+  );
+
+  return { [assignment.id]: assignment };
+}
+
+//takes a parameter list as given in the AST
+function assignParameters(parameters, top, functionDepth) {
+  let reverseParameters = parameters.slice().reverse();
+  //reverse is in-place, so we use slice() to clone first
+  debug("reverseParameters %o", parameters);
+
+  let currentPosition = top;
+  let assignments = {};
+
+  for (let parameter of reverseParameters) {
+    let words = DecodeUtils.Definition.stackSize(parameter);
+    let pointer = {
+      stack: {
+        from: currentPosition - words + 1,
+        to: currentPosition
+      }
+    };
+    let assignment = makeAssignment(
+      { astId: parameter.id, stackframe: functionDepth },
+      pointer
+    );
+    assignments[assignment.id] = assignment;
+    currentPosition -= words;
+  }
+  return assignments;
+}
+
+function fetchBasePath(
+  baseNode,
+  mappedPaths,
+  currentAssignments,
+  currentDepth
+) {
+  let fullId = stableKeccak256({
+    astId: baseNode.id,
+    stackframe: currentDepth
+  });
+  //base expression is an expression, and so has a literal assigned to
+  //it
+  let offset = DecodeUtils.Conversion.toBN(
+    currentAssignments.byId[fullId].ref.literal
+  );
+  return { offset };
 }
 
 export function* saga() {
-  yield takeEvery(TICK, function*() {
-    try {
-      yield* tickSaga();
-    } catch (e) {
-      debug("ERROR: %O", e);
-    }
-  });
+  yield takeEvery(TICK, tickSaga);
 }
 
 export default prefixName("data", saga);

@@ -1,21 +1,11 @@
-# truffle-artifactor (formerly ether-pudding)
+# truffle-artifactor
 
-This package saves contract artifacts into into Javascript files that can be `require`'d. i.e.,
+This package saves contract artifacts into JSON files
 
 ```javascript
-var artifactor = require("truffle-artifactor");
-artifactor.save({/*...*/}, "./MyContract.sol.js") // => a promise
-
-// Later...
-var MyContract = require("./MyContract.sol.js");
-MyContract.setProvider(myWeb3Provider);
-MyContract.deployed().then(function(instance) {
-  return instance.doStuff(); // <-- matches the doStuff() function within MyContract.sol.
-}).then(function(result) {
-  // We just made a transaction, and it's been mined!
-  // We're given transaction hash, logs (events) and receipt for further processing.
-  console.log(result.tx, result.logs, result.receipt);
-});
+const Artifactor = require("truffle-artifactor");
+const artifactor = new Artifactor(__dirname);
+artifactor.save({/*...*/}); // => a promise saving MyContract.json to a given destination
 ```
 
 👏
@@ -23,12 +13,10 @@ MyContract.deployed().then(function(instance) {
 ### Features
 
 * Manages contract ABIs, binaries and deployed addresses, so you don't have to.
-* Packages up build artifacts into `.sol.js` files, which can then be included in your project with a simple `require`.
-* Includes multiple versions of the same contract in a single package, automatically detecting which artifacts to use based on the network version (more on this below).
+* Packages up build artifacts into `.json` files, which can then be included in your project with a simple `require`.
 * Manages library addresses for linked libraries.
-* Manages events, making them available on a per-transaction basis (no more `event.watch()`!)
 
-The artifactor uses [truffle-contract](https://github.com/trufflesuite/truffle-contract), which provides features above and beyond `web3`:
+The artifactor can be used with [truffle-contract](https://github.com/trufflesuite/truffle/tree/develop/packages/truffle-contract), which provides features above and beyond `web3`:
 
 * Synchronized transactions for better control flow: transactions won't be considered finished until you're guaranteed they've been mined.
 * Promises. No more callback hell. Works well with `ES6` and `async/await`.
@@ -43,101 +31,71 @@ $ npm install truffle-artifactor
 
 ### Example
 
-Here, we'll generate a `.sol.js` files given a JSON object like [truffle-schema](https://github.com/trufflesuite/truffle-schema). This will give us a file which we can later `require` into other projects and contexts.
+Here, we'll generate a `.json` files given a JSON object like [truffle-contract-schema](https://github.com/trufflesuite/truffle/tree/develop/packages/truffle-contract-schema). This will give us a file which we can later `require` into other projects and contexts.
 
 ```javascript
-var artifactor = require("truffle-artifactor");
+const Artifactor = require("truffle-artifactor");
+const artifactor = new Artifactor(__dirname);
 
-// See truffle-schema for more info: https://github.com/trufflesuite/truffle-schema
-var contract_data = {
-  abi: ...,              // Array; required.
-  unlinked_binary: "..." // String; optional.
-  address: "..."         // String; optional.
+// See truffle-schema for more info: https://github.com/trufflesuite/truffle/tree/develop/packages/truffle-contract-schema
+const contractData = {
+  contractName: "...",        // String; optional.
+  abi: ...,                   // Array; required.
+  metadata: "...",            // String; optional.
+  bytecode: "...",            // String; optional.
+  "x-some-dependency": ...    // String, Number, Object, or Array: optional.
 };
 
-artifactor.save(contract_data, "./MyContract.sol.js").then(function() {
-  // The file ./MyContract.sol.js now exists, which you can
-  // import into your project like any other Javascript file.
-});
+artifactor.save(contractData);
+// The file ./MyContract.json now exists, which you can
+// import into your project like any other Javascript file.
 ```
+
 # API
 
-#### `artifactor.save(options, filename[, extra_options])`
+#### `artifactor.save(contractData)`
 
-Save contract data as a `.sol.js` file. Returns a Promise.
+Save contract data as a `.json` file. Returns a Promise.
 
-* `options`: Object. Data that represents this contract:
+* `contractData`: Object. Data that represents this contract:
 
     ```javascript
     {
-      contract_name: "MyContract",  // String; optional. Defaults to "Contract"
+      contractName: "MyContract",   // String; optional. Defaults to "Contract".
       abi: ...,                     // Array; required.  Application binary interface.
-      unlinked_binary: "...",       // String; optional. Binary without resolve library links.
-      address: "...",               // String; optional. Deployed address of contract.
-      network_id: "...",            // String; optional. ID of network being saved within abstraction.
-      default_network: "..."        // String; optional. ID of default network this abstraction should use.
+      metadata: "...",              // String; optional. Contract metadata.
+      bytecode: "...",              // String; optional. Contract-creation binary without resolve library links.
+      deployedBytecode: "...",      // String; optional. On-chain deployed binary without resolve library links.
+      sourceMap: "...",             // String; optional. Source mapping for bytecode.
+      deployedSourceMap: "...",     // String; optional. Source mapping for deployedBytecode.
+      source: "...",                // String; optional. Uncompiled source code for contract.
+      sourcePath: "...",            // String; optional. File path for uncompiled source code.
+      ast: ...,                     // Object; optional. JSON representation of contract source code, as output by compiler.
+      legacyAST: ...,               // Object; optional. Legacy JSON representation of contract source code, as output by compiler.
+      compiler: ...,                // Object; optional. Compiler "type" and "properties".
+      networks: ...,                // Object; optional. Mapping of network ID keys to network object values (address information, links to other contract instances, and/or contract event logs).
+      schemaVersion: "...",         // String; optional. Schema version used by contract object representation.
+      updatedAt: "...",             // String; optional. Time contract object representation was generated/most recently updated.
+      devdoc: "...",                // String; optional. Developer documentation.
+      userdoc: "...",               // String; optional. User documentation.
+      "x-custom-property": ...      // String, Number, Object, or Array: optional. Custom property. Keys must be prefixed with "x-".
     }
     ```
 
-    Note: `save()` will also accept an already `require`'d contract object. i.e.,
-
-    ```javascript
-    var MyContract = require("./path/to/MyContract.sol.js");
-
-    artifactor.save(MyContract, ...).then(...);
-    ```
-
-  In this case, you can use the `extra_options` parameter to specify options that aren't managed by the contract abstraction itself.
-
-* `filename`: Path to save contract file.
-* `extra_options`: Object. Used if you need to specify other options within a separate object, for instance, when a contract abstraction is passed instead of an `options` object.
-
-#### `artifactor.saveAll(contracts, directory, options)`
+#### `artifactor.saveAll(contracts)`
 
 Save many contracts to the filesystem at once. Returns a Promise.
 
-* `contracts`: Object. Keys are the contract names and the values are `contract_data` objects, as in the `save()` function above:
+* `contracts`: Object. Keys are the contract names and the values are `contractData` objects, as in the `save()` function above:
 
     ```javascript
     {
       "MyContract": {
         "abi": ...,
-        "unlinked_binary": ...
+        "bytecode": "..."
       }
       "AnotherContract": {
         // ...
-      }
-    }
-    ```
-
-* `directory`: String. Destination directory. Files will be saved via `<contract_name>.sol.js` within that directory.
-* `options`: Object. Same options listed in `save()` above.
-
-#### `artifactor.generate(options, networks)`
-
-Generate the source code that populates the `.sol.js` file. Returns a String.
-
-* `options`: Object. Subset of options listed in the `save()` function above. Expects:
-
-    ```javascript
-  {
-      abi: ...,
-      unlinked_binary: ...
-  }
-  ```
-
-* `networks`: Object. Contains the information about this contract for each network, keyed by the network id.
-
-    ```javascript
-    {
-      "1": {        // live network
-        "address": ...
-      },
-      "2": {        // morden network
-        "address": ...
-      },
-      "1337": {     // private network
-        "address": ...
       }
     }
     ```

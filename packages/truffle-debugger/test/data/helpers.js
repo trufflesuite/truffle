@@ -4,9 +4,9 @@ const debug = debugModule("test:data:decode");
 import Ganache from "ganache-core";
 import { assert } from "chai";
 import changeCase from "change-case";
-import BN from "bn.js";
 
 import { prepareContracts } from "test/helpers";
+import DebugUtils from "truffle-debug-utils";
 
 import Debugger from "lib/debugger";
 
@@ -77,9 +77,9 @@ async function prepareDebugger(testName, sources) {
     line: lastStatementLine(source)
   };
 
-  session.addBreakpoint(breakpoint);
+  await session.addBreakpoint(breakpoint);
 
-  session.continueUntilBreakpoint();
+  await session.continueUntilBreakpoint();
 
   return session;
 }
@@ -87,41 +87,7 @@ async function prepareDebugger(testName, sources) {
 async function decode(name) {
   let result = await this.session.variable(name);
 
-  if (Array.isArray(result)) {
-    result = result.map(element => {
-      if (BN.isBN(element)) {
-        // We're assuming these tests have small numbers
-        return element.toNumber();
-      } else if (typeof element.toString === "function") {
-        return element.toString();
-      } else {
-        return element;
-      }
-    });
-  } else if (typeof result === "object") {
-    switch (result.type) {
-      case "mapping": {
-        result = Object.assign(
-          {},
-          ...Object.entries(result.members).map(([key, value]) => {
-            if (BN.isBN(value)) {
-              // We're assuming these tests have small numbers
-              value = value.toNumber();
-            } else if (typeof value.toString === "function") {
-              value = value.toString();
-            }
-
-            return {
-              [key]: value
-            };
-          })
-        );
-        break;
-      }
-    }
-  }
-
-  return result;
+  return DebugUtils.nativize(result);
 }
 
 export function describeDecoding(testName, fixtures, selector, generateSource) {

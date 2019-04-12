@@ -84,7 +84,10 @@ TestSource.prototype.resolve = function(import_path, callback) {
               mapping[name] = address;
             });
 
-            return Deployed.makeSolidityDeployedAddressesLibrary(mapping);
+            return Deployed.makeSolidityDeployedAddressesLibrary(
+              mapping,
+              self.config.compilers
+            );
           })
           .then(function(addressSource) {
             callback(null, addressSource, import_path);

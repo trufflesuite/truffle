@@ -5,13 +5,11 @@ import { createSelectorTree, createLeaf } from "reselect-tree";
 import SolidityUtils from "truffle-solidity-utils";
 import CodeUtils from "truffle-code-utils";
 
-import * as DecodeUtils from "truffle-decode-utils";
 import { findRange } from "lib/ast/map";
 import jsonpointer from "json-pointer";
 
 import evm from "lib/evm/selectors";
-
-const semver = require("semver");
+import trace from "lib/trace/selectors";
 
 function getSourceRange(instruction = {}) {
   return {
@@ -30,6 +28,56 @@ function getSourceRange(instruction = {}) {
   };
 }
 
+//function to create selectors that need both a current and next version
+function createMultistepSelectors(stepSelector) {
+  return {
+    /**
+     * .instruction
+     */
+    instruction: createLeaf(
+      ["/current/instructionAtProgramCounter", stepSelector.programCounter],
+      //HACK: we use solidity.current.instructionAtProgramCounter
+      //even if we're looking at solidity.next.
+      //This is harmless... so long as the current instruction isn't a context
+      //change.  So, don't use solidity.next when it is.
+
+      (map, pc) => map[pc] || {}
+    ),
+
+    /**
+     * .source
+     */
+    source: createLeaf(
+      ["/info/sources", "./instruction"],
+
+      (sources, { file: id }) => sources[id] || {}
+    ),
+
+    /**
+     * .sourceRange
+     */
+    sourceRange: createLeaf(["./instruction"], getSourceRange),
+
+    /**
+     * .pointer
+     */
+    pointer: createLeaf(
+      ["./source", "./sourceRange"],
+
+      ({ ast }, range) => findRange(ast, range.start, range.length)
+    ),
+
+    /**
+     * .node
+     */
+    node: createLeaf(
+      ["./source", "./pointer"],
+      ({ ast }, pointer) =>
+        pointer ? jsonpointer.get(ast, pointer) : jsonpointer.get(ast, "")
+    )
+  };
+}
+
 let solidity = createSelectorTree({
   /**
    * solidity.state
@@ -43,12 +91,7 @@ let solidity = createSelectorTree({
     /**
      * solidity.info.sources
      */
-    sources: createLeaf(["/state"], state => state.info.sources.byId),
-
-    /**
-     * solidity.info.sourceMaps
-     */
-    sourceMaps: createLeaf(["/state"], state => state.info.sourceMaps.byContext)
+    sources: createLeaf(["/state"], state => state.info.sources.byId)
   },
 
   /**
@@ -59,15 +102,23 @@ let solidity = createSelectorTree({
      * solidity.current.sourceMap
      */
     sourceMap: createLeaf(
-      [evm.current.context, "/info/sourceMaps"],
+      [evm.current.context],
 
-      ({ context }, sourceMaps) => sourceMaps[context] || {}
+      ({ sourceMap }) => sourceMap
     ),
+
+    /**
+     * solidity.current.functionDepthStack
+     */
+    functionDepthStack: state => state.solidity.proc.functionDepthStack,
 
     /**
      * solidity.current.functionDepth
      */
-    functionDepth: state => state.solidity.proc.functionDepth,
+    functionDepth: createLeaf(
+      ["./functionDepthStack"],
+      stack => stack[stack.length - 1]
+    ),
 
     /**
      * solidity.current.instructions
@@ -75,25 +126,34 @@ let solidity = createSelectorTree({
     instructions: createLeaf(
       ["/info/sources", evm.current.context, "./sourceMap"],
 
-      (sources, { binary }, { sourceMap }) => {
+      (sources, { binary }, sourceMap) => {
         if (!binary) {
           return [];
         }
 
-        let instructions = CodeUtils.parseCode(binary);
+        let numInstructions;
+        if (sourceMap) {
+          numInstructions = sourceMap.split(";").length;
+        } else {
+          //HACK
+          numInstructions = (binary.length - 2) / 2;
+          //this is actually an overestimate, but that's OK
+        }
+
+        //because we might be dealing with a constructor with arguments, we do
+        //*not* remove metadata manually
+        let instructions = CodeUtils.parseCode(binary, numInstructions);
 
         if (!sourceMap) {
-          // Let's create a source map to use since none exists. This source map
-          // maps just as many ranges as there are instructions, and ensures every
-          // instruction is marked as "jumping out". This will ensure all
-          // available debugger commands step one instruction at a time.
-          //
-          // This is kindof a hack; perhaps this should be broken out into separate
-          // context types. TODO
-          sourceMap = "";
-          for (var i = 0; i < instructions.length; i++) {
-            sourceMap += i + ":" + i + ":1:-1;";
-          }
+          // HACK
+          // Let's create a source map to use since none exists. This source
+          // map maps just as many ranges as there are instructions (or
+          // possibly more), and marks them all as being Solidity-internal and
+          // not jumps.
+          sourceMap =
+            binary !== "0x"
+              ? "0:0:-1:-".concat(";".repeat(instructions.length - 1))
+              : "";
         }
 
         var lineAndColumnMappings = Object.assign(
@@ -170,46 +230,18 @@ let solidity = createSelectorTree({
       ["./instructions"],
 
       instructions => {
-        let map = [];
+        let map = {};
         instructions.forEach(function(instruction) {
           map[instruction.pc] = instruction;
         });
-
-        // fill in gaps in map by defaulting to the last known instruction
-        let lastSeen = null;
-        for (let [pc, instruction] of map.entries()) {
-          if (instruction) {
-            lastSeen = instruction;
-          } else {
-            map[pc] = lastSeen;
-          }
-        }
+        //note: this will have gaps in it.  That's OK!  Those gaps are the data
+        //portions of push instructions, which it is illegal to jump into.  We
+        //don't need to assign instructions to illegal PC values.
         return map;
       }
     ),
 
-    /**
-     * solidity.current.instruction
-     */
-    instruction: createLeaf(
-      ["./instructionAtProgramCounter", evm.current.step.programCounter],
-
-      (map, pc) => map[pc] || {}
-    ),
-
-    /**
-     * solidity.current.source
-     */
-    source: createLeaf(
-      ["/info/sources", "./instruction"],
-
-      (sources, { file: id }) => sources[id] || {}
-    ),
-
-    /**
-     * solidity.current.sourceRange
-     */
-    sourceRange: createLeaf(["./instruction"], getSourceRange),
+    ...createMultistepSelectors(evm.current.step),
 
     /**
      * solidity.current.isSourceRangeFinal
@@ -267,9 +299,12 @@ let solidity = createSelectorTree({
     willCreate: createLeaf([evm.current.step.isCreate], x => x),
 
     /**
-     * solidity.current.callsPrecompile
+     * solidity.current.callsPrecompileOrExternal
      */
-    callsPrecompile: createLeaf([evm.current.step.callsPrecompile], x => x),
+    callsPrecompileOrExternal: createLeaf(
+      [evm.current.step.callsPrecompileOrExternal],
+      x => x
+    ),
 
     /**
      * solidity.current.willReturn
@@ -279,67 +314,31 @@ let solidity = createSelectorTree({
       isHalting => isHalting
     ),
 
-    //HACK: DUPLICATE CODE FOLLOWS
-    //The following code duplicates some selectors in ast.
-    //This exists to suppor the solidity.current.contractCall workaround below.
-    //This should be cleaned up later.
-
     /**
-     * solidity.current.pointer
-     * HACK duplicates ast.current.pointer
+     * solidity.current.willFail
      */
-    pointer: createLeaf(
-      ["./source", "./sourceRange"],
+    willFail: createLeaf([evm.current.step.isExceptionalHalting], x => x),
 
-      ({ ast }, range) => findRange(ast, range.start, range.length)
-    ),
-
-    /**
-     * solidity.current.node
-     * HACK duplicates ast.current.node
+    /*
+     * solidity.current.nextMapped
+     * returns the next trace step after this one which is sourcemapped
+     * HACK: this assumes we're not about to change context! don't use this if
+     * we are!
+     * ALSO, this may return undefined, so be prepared for that
      */
-    node: createLeaf(
-      ["./source", "./pointer"],
-      ({ ast }, pointer) =>
-        pointer ? jsonpointer.get(ast, pointer) : jsonpointer.get(ast, "")
-    ),
-
-    /**
-     * solidity.current.isContractCall
-     * HACK WORKAROUND (only applies to solc version <0.5.1)
-     * this selector exists to work around a problem in solc
-     * it attempts to detect whether the current node is a contract method call
-     * (or library method call)
-     * it will not successfully detect this if the method was first placed in a
-     * function variable, only if it is being called directly
-     */
-    isContractCall: createLeaf(
-      ["./node"],
-      node =>
-        node !== undefined &&
-        node.nodeType === "FunctionCall" &&
-        node.expression !== undefined &&
-        node.expression.nodeType === "MemberAccess" &&
-        node.expression.expression !== undefined &&
-        (DecodeUtils.Definition.isContract(node.expression.expression) ||
-          DecodeUtils.Definition.isContractType(node.expression.expression))
-    ),
-
-    /**
-     * solidity.current.needsFunctionDepthWorkaround
-     * HACK
-     * Determines if the solidity version used for the contract about to be
-     * called was <0.5.1, to determine whether to use the above workaround
-     * Only call this if the current step is a call or create!
-     */
-    needsFunctionDepthWorkaround: createLeaf(
-      [evm.current.step.callContext],
-      context =>
-        context.compiler !== undefined && //would be undefined for e.g. a precompile
-        context.compiler.name === "solc" &&
-        semver.satisfies(context.compiler.version, "<0.5.1")
+    nextMapped: createLeaf(
+      ["./instructionAtProgramCounter", trace.steps, trace.index],
+      (map, steps, index) =>
+        steps.slice(index + 1).find(({ pc }) => map[pc] && map[pc].file !== -1)
     )
-  }
+  },
+
+  /**
+   * solidity.next
+   * HACK WARNING: do not use these selectors when the current instruction is a
+   * context change! (evm call or evm return)
+   */
+  next: createMultistepSelectors(evm.next.step)
 });
 
 export default solidity;

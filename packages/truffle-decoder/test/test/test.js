@@ -35,8 +35,7 @@ function validateStructS2(s2, values) {
   }
 }
 
-// eslint-disable-next-line no-unused-vars
-contract("DecodingSample", accounts => {
+contract("DecodingSample", _accounts => {
   it("should get the initial state properly", async () => {
     await DecodingSample.deployed();
     const decoder = TruffleDecoder.forContract(
@@ -45,6 +44,9 @@ contract("DecodingSample", accounts => {
       web3.currentProvider
     );
     decoder.init();
+
+    decoder.watchMappingKey("varMapping", 2);
+    decoder.watchMappingKey("varMapping", 3);
 
     const initialState = await decoder.state();
 
@@ -139,6 +141,7 @@ contract("DecodingSample", accounts => {
 
     // const fixedStructArray = variables.fixedArrayStructS.value;
 
-    // const mappingValue = await decoder.mapping(contractState.variables["myMap"].value.id, [17]);
+    assert.equal(variables.varMapping.value.members[2], 41);
+    assert.equal(variables.varMapping.value.members[3], 107);
   });
 });

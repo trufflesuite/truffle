@@ -2,9 +2,6 @@ dist: trusty
 sudo: required
 language: node_js
 
-services:
-  - docker
-
 before_install:
   - docker pull ethereum/client-go:latest
   - docker pull ethereum/solc:0.4.22
@@ -13,7 +10,9 @@ before_install:
   - sudo apt-get install -y dpkg
   - sudo apt-get install solc jq snapd
   - export PATH=$PATH:/snap/bin
-  - sudo snap install vyper --edge --devmode
+  - sudo snap install vyper --beta --devmode
+  - npm list -g lerna --depth=0 || npm install -g lerna
+  - npm install -g yarn
 
 matrix:
   fast_finish: true
@@ -24,23 +23,22 @@ matrix:
       env: PACKAGES=true
     - node_js: 8
       env: INTEGRATION=true
-    - node_js: 6
-      env: INTEGRATION=true
     - node_js: 8
       env: COVERAGE=true
   allow_failures:
     - node_js: 8
       env: GETH=true
-    - node_js: 6
-      env: INTEGRATION=true
     - node_js: 8
       env: COVERAGE=true
 
 
 install:
-  - npm install -g lerna
-  - npm install -g yarn
   - npm run bootstrap
+
+cache:
+  directories:
+    - node_modules
+    - $(npm config get prefix)/lib/node_modules # globally installed stuff (i.e. lerna)
 
 script:
   - npm run ci

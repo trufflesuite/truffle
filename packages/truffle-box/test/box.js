@@ -1,4 +1,5 @@
 const path = require("path");
+const regularFs = require("fs");
 const fs = require("fs-extra");
 const assert = require("assert");
 const inquirer = require("inquirer");
@@ -13,23 +14,30 @@ describe("truffle-box Box", () => {
   const destination = path.join(__dirname, ".truffle_test_tmp");
 
   beforeEach(() => {
-    sinon.stub(inquirer, "prompt").returns({ then: () => 1 });
     fs.ensureDirSync(destination);
   });
   afterEach(() => {
-    inquirer.prompt.restore();
     fs.removeSync(destination);
   });
 
   describe(".unbox()", () => {
-    it("unboxes truffle box from github", () => {
-      return Box.unbox(TRUFFLE_BOX_DEFAULT, destination).then(truffleConfig => {
+    beforeEach(() => {
+      sinon.stub(Box, "checkDir").returns(Promise.resolve());
+      fs.emptyDirSync(destination);
+    });
+    afterEach(() => {
+      Box.checkDir.restore();
+    });
+
+    it("unboxes truffle box from github", done => {
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination).then(truffleConfig => {
         assert.ok(truffleConfig);
 
         assert(
           fs.existsSync(path.join(destination, "truffle-config.js")),
           "Unboxed project should have truffle config."
         );
+        done();
       });
     });
 
@@ -79,6 +87,13 @@ describe("truffle-box Box", () => {
   });
 
   describe("--force", () => {
+    beforeEach(() => {
+      sinon.stub(inquirer, "prompt").returns(Promise.resolve(true));
+    });
+    afterEach(() => {
+      inquirer.prompt.restore();
+    });
+
     it("unboxes truffle box when used", done => {
       Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true }).then(
         truffleConfig => {
@@ -95,6 +110,7 @@ describe("truffle-box Box", () => {
 
     it("runs without a prompt", done => {
       Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true }).then(() => {
+        console.log("the inquirer value %o", inquirer.prompt.called);
         assert.strictEqual(inquirer.prompt.called, false);
         done();
       });
@@ -121,7 +137,10 @@ describe("truffle-box Box", () => {
           "truffle-config.js wasn't recreated!"
         );
         const newConfig = fs.readFileSync(truffleConfigPath, "utf8");
-        assert(newConfig !== mockConfig, "truffle-config.js wasn't overwritten!");
+        assert(
+          newConfig !== mockConfig,
+          "truffle-config.js wasn't overwritten!"
+        );
         done();
       });
     });
@@ -133,6 +152,9 @@ describe("truffle-box Box", () => {
     beforeEach(() => {
       options = { logger: { log: () => {} } };
       // preconditions
+      sinon
+        .stub(inquirer, "prompt")
+        .returns(Promise.resolve({ proceed: true }));
       fs.ensureDirSync(contractDirPath);
       assert(
         fs.existsSync(contractDirPath),
@@ -140,13 +162,14 @@ describe("truffle-box Box", () => {
       );
     });
     afterEach(() => {
+      inquirer.prompt.restore();
       fs.removeSync(contractDirPath);
     });
 
     it("prompts when redundant files/folders exist in target directory", done => {
       Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options).then(() => {
         assert.strictEqual(inquirer.prompt.called, true);
-        assert.strictEqual(inquirer.prompt.callCount, 1);
+        assert.strictEqual(inquirer.prompt.callCount, 2);
         done();
       });
     });
@@ -160,16 +183,43 @@ describe("truffle-box Box", () => {
         done();
       });
     });
+  });
 
-    it("default response is false (do not overwrite)", done => {
-      const expectedDefault = false;
+  describe("Box.checkDir()", () => {
+    beforeEach(() => {
+      sinon
+        .stub(inquirer, "prompt")
+        .returns(Promise.resolve({ proceed: true }));
+    });
+    afterEach(() => {
+      inquirer.prompt.restore();
+    });
 
-      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options).then(() => {
-        assert.strictEqual(
-          inquirer.prompt.getCall(0).args[0][0].default,
-          expectedDefault
-        );
-        done();
+    describe("when the directory is empty", () => {
+      beforeEach(() => {
+        sinon.stub(regularFs, "readdirSync").returns([]);
+      });
+      afterEach(() => {
+        regularFs.readdirSync.restore();
+      });
+
+      it("doesn't prompt the user", async () => {
+        await Box.checkDir();
+        assert.strictEqual(inquirer.prompt.called, false);
+      });
+    });
+
+    describe("when the directory is non-empty", () => {
+      beforeEach(() => {
+        sinon.stub(regularFs, "readdirSync").returns(["someCrappyFile.js"]);
+      });
+      afterEach(() => {
+        regularFs.readdirSync.restore();
+      });
+
+      it("prompts the user", () => {
+        Box.checkDir();
+        assert(inquirer.prompt.called);
       });
     });
   });

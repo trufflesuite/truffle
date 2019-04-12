@@ -98,7 +98,7 @@ describe("Contexts", function() {
     // run outer contract method
     let result = await outer.run();
 
-    assert.equal(2, result.receipt.rawLogs.length, "There should be two logs");
+    assert.equal(result.receipt.rawLogs.length, 2, "There should be two logs");
 
     let txHash = result.tx;
 
@@ -116,21 +116,19 @@ describe("Contexts", function() {
     );
     debug("affectedInstances: %o", affectedInstances);
 
-    let affectedAddresses = Object.keys(affectedInstances).map(address =>
-      address.toLowerCase()
-    );
+    let affectedAddresses = Object.keys(affectedInstances);
 
-    assert.equal(2, affectedAddresses.length);
+    assert.equal(affectedAddresses.length, 2);
 
     assert.include(
       affectedAddresses,
-      outer.address.toLowerCase(),
+      outer.address,
       "OuterContract should be an affected address"
     );
 
     assert.include(
       affectedAddresses,
-      inner.address.toLowerCase(),
+      inner.address,
       "InnerContract should be an affected address"
     );
   });

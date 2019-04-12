@@ -24,6 +24,7 @@ var command = {
     var safeEval = require("safe-eval");
     var util = require("util");
     const BN = require("bn.js");
+    const analytics = require("../services/analytics");
 
     // add custom inspect options for BNs
     BN.prototype[util.inspect.custom] = function(depth, options) {
@@ -94,7 +95,8 @@ var command = {
                 deployedBinary:
                   contract.deployedBinary || contract.deployedBytecode,
                 deployedSourceMap: contract.deployedSourceMap,
-                compiler: contract.compiler
+                compiler: contract.compiler,
+                abi: contract.abi
               };
             })
           });
@@ -172,12 +174,20 @@ var command = {
             var instruction = session.view(solidity.current.instruction);
             var step = session.view(trace.step);
             var traceIndex = session.view(trace.index);
+            var totalSteps = session.view(trace.steps).length;
 
             config.logger.log("");
             config.logger.log(
-              DebugUtils.formatInstruction(traceIndex, instruction)
+              DebugUtils.formatInstruction(
+                traceIndex + 1,
+                totalSteps,
+                instruction
+              )
             );
+            config.logger.log(DebugUtils.formatPC(step.pc));
             config.logger.log(DebugUtils.formatStack(step.stack));
+            config.logger.log("");
+            config.logger.log(step.gas + " gas remaining");
           }
 
           function select(expr) {
@@ -224,21 +234,46 @@ var command = {
             });
           }
 
+          function printBreakpoints() {
+            let sourceNames = Object.assign(
+              {},
+              ...Object.values(session.view(solidity.info.sources)).map(
+                ({ id, sourcePath }) => ({
+                  [id]: path.basename(sourcePath)
+                })
+              )
+            );
+            let breakpoints = session.view(controller.breakpoints);
+            if (breakpoints.length > 0) {
+              for (let breakpoint of session.view(controller.breakpoints)) {
+                let currentLocation = session.view(controller.current.location);
+                let locationMessage = DebugUtils.formatBreakpointLocation(
+                  breakpoint,
+                  currentLocation.node !== undefined &&
+                    breakpoint.node === currentLocation.node.id,
+                  currentLocation.source.id,
+                  sourceNames
+                );
+                config.logger.log("  Breakpoint at " + locationMessage);
+              }
+            } else {
+              config.logger.log("No breakpoints added.");
+            }
+          }
+
           async function printWatchExpressionsResults() {
             debug("enabledExpressions %o", enabledExpressions);
-            await Promise.all(
-              [...enabledExpressions].map(async expression => {
-                config.logger.log(expression);
-                // Add some padding. Note: This won't work with all loggers,
-                // meaning it's not portable. But doing this now so we can get something
-                // pretty until we can build more architecture around this.
-                // Note: Selector results already have padding, so this isn't needed.
-                if (expression[0] === ":") {
-                  process.stdout.write("  ");
-                }
-                await printWatchExpressionResult(expression);
-              })
-            );
+            for (let expression of enabledExpressions) {
+              config.logger.log(expression);
+              // Add some padding. Note: This won't work with all loggers,
+              // meaning it's not portable. But doing this now so we can get something
+              // pretty until we can build more architecture around this.
+              // Note: Selector results already have padding, so this isn't needed.
+              if (expression[0] === ":") {
+                process.stdout.write("  ");
+              }
+              await printWatchExpressionResult(expression);
+            }
           }
 
           async function printWatchExpressionResult(expression) {
@@ -275,7 +310,8 @@ var command = {
           }
 
           async function printVariables() {
-            var variables = await session.variables();
+            let variables = await session.variables();
+
             debug("variables %o", variables);
 
             // Get the length of the longest name.
@@ -328,16 +364,67 @@ var command = {
            *        :!<trace.step.stack>[1]
            */
           async function evalAndPrintExpression(raw, indent, suppress) {
+            let variables = await session.variables();
+
+            //if we're just dealing with a single variable, handle that case
+            //separately (so that we can do things in a better way for that
+            //case)
+
+            let variable = raw.trim();
+            if (variable in variables) {
+              let formatted = formatValue(variables[variable], indent);
+              config.logger.log(formatted);
+              config.logger.log();
+              return;
+            }
+
+            //HACK
+            //if we're not in the single-variable case, we'll need to do some
+            //things to Javascriptify our variables so that the JS syntax for
+            //using them is closer to the Solidity syntax
+            variables = DebugUtils.nativize(variables);
+
             var context = Object.assign(
               { $: select },
 
-              await session.variables()
+              variables
             );
 
-            const expr = preprocessSelectors(raw);
+            //HACK -- we can't use "this" as a variable name, so we're going to
+            //find an available replacement name, and then modify the context
+            //and expression appropriately
+            let pseudoThis = "_this";
+            while (pseudoThis in context) {
+              pseudoThis = "_" + pseudoThis;
+            }
+            //in addition to pseudoThis, which replaces this, we also have
+            //pseudoPseudoThis, which replaces pseudoThis in order to ensure
+            //that any uses of pseudoThis yield an error instead of showing this
+            let pseudoPseudoThis = "thereisnovariableofthatname";
+            while (pseudoPseudoThis in context) {
+              pseudoPseudoThis = "_" + pseudoPseudoThis;
+            }
+            context = DebugUtils.cleanThis(context, pseudoThis);
+            let expr = raw.replace(
+              //those characters in [] are the legal JS variable name characters
+              //note that pseudoThis contains no special characters
+              new RegExp(
+                "(?<![a-zA-Z0-9_$])" + pseudoThis + "(?![a-zA-Z0-9_$])"
+              ),
+              pseudoPseudoThis
+            );
+            expr = expr.replace(
+              //those characters in [] are the legal JS variable name characters
+              /(?<![a-zA-Z0-9_$])this(?![a-zA-Z0-9_$])/,
+              pseudoThis
+            );
+            //note that pseudoThis contains no dollar signs to screw things up
+
+            expr = preprocessSelectors(expr);
 
             try {
               var result = safeEval(expr, context);
+              result = DebugUtils.cleanConstructors(result); //HACK
               var formatted = formatValue(result, indent);
               config.logger.log(formatted);
               config.logger.log();
@@ -363,16 +450,30 @@ var command = {
             }
           }
 
-          function setOrClearBreakpoint(args, setOrClear) {
+          function watchExpressionAnalytics(raw) {
+            if (raw.includes("!<")) {
+              //don't send analytics for watch expressions involving selectors
+              return;
+            }
+            let expression = raw.trim();
+            //legal Solidity identifiers (= legal JS identifiers)
+            let identifierRegex = /^[a-zA-Z_$][a-zA-Z_$0-9]*$/;
+            let isVariable = expression.match(identifierRegex) !== null;
+            analytics.send({
+              command: "debug: watch expression",
+              args: { isVariable }
+            });
+          }
+
+          async function setOrClearBreakpoint(args, setOrClear) {
             //setOrClear: true for set, false for clear
             var currentLocation = session.view(controller.current.location);
             var breakpoints = session.view(controller.breakpoints);
 
-            var currentNode = currentLocation.node.id;
             var currentLine = currentLocation.sourceRange.lines.start.line;
             var currentSourceId = currentLocation.source.id;
-
-            var sourceName; //to be used if a source is entered
+            //don't get node id unless we have to as workaround to problem
+            //where it has sometimes turned up undefined
 
             var breakpoint = {};
 
@@ -381,7 +482,7 @@ var command = {
             if (args.length === 0) {
               //no arguments, want currrent node
               debug("node case");
-              breakpoint.node = currentNode;
+              breakpoint.node = currentLocation.node.id;
               breakpoint.line = currentLine;
               breakpoint.sourceId = currentSourceId;
             }
@@ -393,7 +494,7 @@ var command = {
                 config.logger.log("Cannot add breakpoint everywhere.\n");
                 return;
               }
-              session.removeAllBreakpoints();
+              await session.removeAllBreakpoints();
               config.logger.log("Removed all breakpoints.\n");
               return;
             }
@@ -454,7 +555,6 @@ var command = {
               }
 
               //otherwise, we found it!
-              sourceName = path.basename(matchingSources[0].sourcePath);
               breakpoint.sourceId = matchingSources[0].id;
               breakpoint.line = line - 1; //adjust for zero-indexing!
             }
@@ -474,21 +574,38 @@ var command = {
               breakpoint.line = line - 1; //adjust for zero-indexing!
             }
 
-            //having constructed the breakpoint, here's now a user-readable
-            //message describing its location
-            let locationMessage;
-            if (breakpoint.node !== undefined) {
-              locationMessage = `this point in line ${breakpoint.line + 1}`;
-              //+1 to adjust for zero-indexing
-            } else if (breakpoint.sourceId !== currentSourceId) {
-              //note: we should only be in this case if a source was entered!
-              //if no source as entered and we are here, something is wrong
-              locationMessage = `line ${breakpoint.line + 1} in ${sourceName}`;
-              //+1 to adjust for zero-indexing
-            } else {
-              locationMessage = `line ${breakpoint.line + 1}`;
-              //+1 to adjust for zero-indexing
+            //OK, we've constructed the breakpoint!  But if we're adding, we'll
+            //want to adjust to make sure we don't set it on an empty line or
+            //anything like that
+            if (setOrClear) {
+              let resolver = session.view(controller.breakpoints.resolver);
+              breakpoint = resolver(breakpoint);
+              //of course, this might result in finding that there's nowhere to
+              //add it after that point
+              if (breakpoint === null) {
+                config.logger.log(
+                  "Nowhere to add breakpoint at or beyond that location.\n"
+                );
+                return;
+              }
             }
+
+            //having constructed and adjusted breakpoint, here's now a
+            //user-readable message describing its location
+            let sourceNames = Object.assign(
+              {},
+              ...Object.values(session.view(solidity.info.sources)).map(
+                ({ id, sourcePath }) => ({
+                  [id]: path.basename(sourcePath)
+                })
+              )
+            );
+            let locationMessage = DebugUtils.formatBreakpointLocation(
+              breakpoint,
+              true,
+              currentSourceId,
+              sourceNames
+            );
 
             //one last check -- does this breakpoint already exist?
             let alreadyExists =
@@ -524,10 +641,10 @@ var command = {
             //finally, if we've reached this point, do it!
             //also report back to the user on what happened
             if (setOrClear) {
-              session.addBreakpoint(breakpoint);
+              await session.addBreakpoint(breakpoint);
               config.logger.log(`Breakpoint added at ${locationMessage}.\n`);
             } else {
-              session.removeBreakpoint(breakpoint);
+              await session.removeBreakpoint(breakpoint);
               config.logger.log(`Breakpoint removed at ${locationMessage}.\n`);
             }
             return;
@@ -557,6 +674,8 @@ var command = {
 
             if (cmd === "") {
               cmd = lastCommand;
+              cmdArgs = "";
+              splitArgs = [];
             }
 
             //quit if that's what we were given
@@ -571,22 +690,33 @@ var command = {
             if (!alreadyFinished) {
               switch (cmd) {
                 case "o":
-                  session.stepOver();
+                  await session.stepOver();
                   break;
                 case "i":
-                  session.stepInto();
+                  await session.stepInto();
                   break;
                 case "u":
-                  session.stepOut();
+                  await session.stepOut();
                   break;
                 case "n":
-                  session.stepNext();
+                  await session.stepNext();
                   break;
                 case ";":
-                  session.advance();
+                  //two cases -- parameterized and unparameterized
+                  if (cmdArgs !== "") {
+                    let count = parseInt(cmdArgs, 10);
+                    debug("cmdArgs=%s", cmdArgs);
+                    if (isNaN(count)) {
+                      config.logger.log("Number of steps must be an integer.");
+                      break;
+                    }
+                    await session.advance(count);
+                  } else {
+                    await session.advance();
+                  }
                   break;
                 case "c":
-                  session.continueUntilBreakpoint();
+                  await session.continueUntilBreakpoint();
                   break;
               }
             } //otherwise, inform the user we can't do that
@@ -604,7 +734,7 @@ var command = {
             }
             if (cmd === "r") {
               //reset if given the reset command
-              session.reset();
+              await session.reset();
             }
 
             // Check if execution has (just now) stopped.
@@ -627,6 +757,9 @@ var command = {
             // (we want to see if execution stopped before printing state).
             switch (cmd) {
               case "+":
+                if (cmdArgs[0] === ":") {
+                  watchExpressionAnalytics(cmdArgs.substring(1));
+                }
                 enabledExpressions.add(cmdArgs);
                 await printWatchExpressionResult(cmdArgs);
                 break;
@@ -638,18 +771,20 @@ var command = {
                 break;
               case "?":
                 printWatchExpressions();
+                printBreakpoints();
                 break;
               case "v":
                 await printVariables();
                 break;
               case ":":
+                watchExpressionAnalytics(cmdArgs);
                 evalAndPrintExpression(cmdArgs);
                 break;
               case "b":
-                setOrClearBreakpoint(splitArgs, true);
+                await setOrClearBreakpoint(splitArgs, true);
                 break;
               case "B":
-                setOrClearBreakpoint(splitArgs, false);
+                await setOrClearBreakpoint(splitArgs, false);
                 break;
               case ";":
               case "p":

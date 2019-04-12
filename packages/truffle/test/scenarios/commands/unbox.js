@@ -2,39 +2,43 @@ const assert = require("assert");
 const CommandRunner = require("../commandrunner");
 const MemoryLogger = require("../memorylogger");
 const fs = require("fs-extra");
+const tmp = require("tmp");
+const path = require("path");
 
 describe("truffle unbox", () => {
   let config;
   const logger = new MemoryLogger();
 
   beforeEach("set up config for logger", () => {
-    config = { working_directory: `${process.cwd()}/test/sources/unbox` };
+    tempDir = tmp.dirSync({ unsafeCleanup: true });
+    config = { working_directory: tempDir.name };
     config.logger = logger;
   });
 
   afterEach("clear working_directory", () => {
-    fs.emptyDirSync(`${process.cwd()}/test/sources/unbox`);
+    tempDir.removeCallback();
   });
 
   describe("when run without arguments", () => {
     it("unboxes truffle-init-default", done => {
-      CommandRunner.run("unbox", config, () => {
-        const output = logger.contents();
-        assert(output.includes("Unbox successful."));
+      CommandRunner.run("unbox --force", config, () => {
         assert(
           fs.pathExistsSync(
-            `${process.cwd()}/test/sources/unbox/contracts/ConvertLib.sol`
-          )
+            path.join(tempDir.name, "contracts", "ConvertLib.sol")
+          ),
+          "ConvertLib.sol does not exist"
         );
         assert(
           fs.pathExistsSync(
-            `${process.cwd()}/test/sources/unbox/contracts/Migrations.sol`
-          )
+            path.join(tempDir.name, "contracts", "Migrations.sol")
+          ),
+          "Migrations.sol does not exist"
         );
         assert(
           fs.pathExistsSync(
-            `${process.cwd()}/test/sources/unbox/contracts/MetaCoin.sol`
-          )
+            path.join(tempDir.name, "contracts", "MetaCoin.sol")
+          ),
+          "MetaCoin.sol does not exist"
         );
         done();
       });
@@ -43,10 +47,6 @@ describe("truffle unbox", () => {
 
   describe("when run with arguments", () => {
     describe("valid input", () => {
-      afterEach("clear working_directory", () => {
-        fs.emptyDirSync(`${process.cwd()}/test/sources/unbox`);
-      });
-
       describe("full url", () => {
         it("unboxes successfully", done => {
           CommandRunner.run(
@@ -78,7 +78,7 @@ describe("truffle unbox", () => {
       describe("full url + branch + relativePath", () => {
         it("unboxes successfully", done => {
           CommandRunner.run(
-            "unbox https://github.com/truffle-box/bare-box#truffle-test-branch:path/to/subDir",
+            "unbox https://github.com/truffle-box/bare-box#truffle-test-branch:path/to/subDir --force",
             config,
             () => {
               const output = logger.contents();
@@ -116,7 +116,7 @@ describe("truffle unbox", () => {
       describe("origin/master#branch:relativePath", () => {
         it("unboxes successfully", done => {
           CommandRunner.run(
-            "unbox truffle-box/bare-box#truffle-test-branch:path/to/subDir",
+            "unbox truffle-box/bare-box#truffle-test-branch:path/to/subDir --force",
             config,
             () => {
               const output = logger.contents();
@@ -150,7 +150,7 @@ describe("truffle unbox", () => {
       describe("official truffle box + branch + relativePath", () => {
         it("unboxes successfully", done => {
           CommandRunner.run(
-            "unbox bare#truffle-test-branch:path/to/subDir",
+            "unbox bare#truffle-test-branch:path/to/subDir --force",
             config,
             () => {
               const output = logger.contents();
@@ -206,7 +206,7 @@ describe("truffle unbox", () => {
       describe("git@ ssh + branch + relativePath", () => {
         it("unboxes successfully", done => {
           CommandRunner.run(
-            "unbox git@github.com:truffle-box/bare-box#truffle-test-branch:path/to/subDir",
+            "unbox git@github.com:truffle-box/bare-box#truffle-test-branch:path/to/subDir --force",
             config,
             () => {
               const output = logger.contents();
@@ -219,10 +219,6 @@ describe("truffle unbox", () => {
     });
 
     describe("with invalid input", () => {
-      afterEach("clear working_directory", () => {
-        fs.emptyDirSync(`${process.cwd()}/test/sources/unbox`);
-      });
-
       describe("invalid full url", () => {
         it("throws an error", done => {
           CommandRunner.run(

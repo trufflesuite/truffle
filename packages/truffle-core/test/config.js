@@ -39,7 +39,7 @@ describe("config", function() {
   });
 
   before("Compile contracts", function(done) {
-    this.timeout(5000);
+    this.timeout(10000);
     Contracts.compile(
       config.with({
         quiet: true

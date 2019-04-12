@@ -8,6 +8,7 @@ const TaskError = require("./lib/errors/taskerror");
 const analytics = require("./lib/services/analytics");
 const version = require("./lib/version");
 const versionInfo = version.info();
+const XRegExp = require("xregexp");
 
 // pre-flight check: Node version compatibility
 const minimumNodeVersion = "8.9.4";
@@ -83,6 +84,16 @@ command.run(inputArguments, options, function(err) {
         process.exit(err);
       } else {
         let error = err.stack || err.message || err.toString();
+        //remove identifying information if error stack is passed to analytics
+        if (error === err.stack) {
+          let directory = __dirname;
+          //making sure users' identifying information does not get sent to
+          //analytics by cutting off everything before truffle. Will not properly catch the user's info
+          //here if the user has truffle in their name.
+          let identifyingInfo = String.raw`${directory.split("truffle")[0]}`;
+          let removedInfo = new XRegExp(XRegExp.escape(identifyingInfo), "g");
+          error = error.replace(removedInfo, "");
+        }
         analytics.send({
           exception: "Other Error - " + error,
           version: versionInfo.bundle

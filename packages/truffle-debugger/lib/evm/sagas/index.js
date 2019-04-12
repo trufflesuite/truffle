@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:evm:sagas");
 
-import { call, put, take, select } from "redux-saga/effects";
+import { put, takeEvery, select } from "redux-saga/effects";
 import { prefixName, keccak256 } from "lib/helpers";
 
 import { TICK } from "lib/trace/actions";
@@ -9,26 +9,26 @@ import * as actions from "../actions";
 
 import evm from "../selectors";
 
-import * as data from "lib/data/sagas";
-
-import * as DecodeUtils from "truffle-decode-utils";
+import * as trace from "lib/trace/sagas";
 
 /**
  * Adds EVM bytecode context
  *
  * @return {string} ID (0x-prefixed keccak of binary)
  */
-export function* addContext(contractName, { address, binary }, compiler) {
-  const raw = binary || address;
-  const context = keccak256(raw);
+export function* addContext(context) {
+  const contextHash = keccak256({ type: "string", value: context.binary });
+  //NOTE: we take hash as *string*, not as bytes, because the binary may
+  //contain link references!
 
-  yield put(actions.addContext(contractName, raw, compiler));
+  debug("context %O", context);
+  yield put(actions.addContext(context));
 
-  if (binary) {
-    yield put(actions.addBinary(context, binary));
-  }
+  return contextHash;
+}
 
-  return context;
+export function* normalizeContexts() {
+  yield put(actions.normalizeContexts());
 }
 
 /**
@@ -39,91 +39,122 @@ export function* addContext(contractName, { address, binary }, compiler) {
  */
 export function* addInstance(address, binary) {
   let search = yield select(evm.info.binaries.search);
-  let { context } = search(binary);
+  let context = search(binary);
 
-  // in case binary is unknown, add context for address
-  if (!context) {
-    context = yield* addContext(undefined, { address }, undefined);
+  // in case binary is unknown, add a context for it
+  if (context === null) {
+    context = yield* addContext({
+      binary,
+      isConstructor: false
+      //addInstance is only used for adding deployed instances, so it will
+      //never be a constructor
+    });
   }
 
+  //now, whether we needed a new context or not, add the instance
   yield put(actions.addInstance(address, context, binary));
 
   return context;
 }
 
-export function* begin({ address, binary }) {
+export function* begin({
+  address,
+  binary,
+  data,
+  storageAddress,
+  sender,
+  value,
+  gasprice,
+  block
+}) {
+  yield put(actions.saveGlobals(sender, gasprice, block));
   if (address) {
-    yield put(actions.call(address));
+    yield put(actions.call(address, data, storageAddress, sender, value));
   } else {
-    yield put(actions.create(binary));
+    yield put(actions.create(binary, storageAddress, sender, value));
   }
 }
 
-export function* callstackSaga() {
-  while (true) {
-    yield take(TICK);
+function* tickSaga() {
+  debug("got TICK");
 
-    if (yield select(evm.current.step.isCall)) {
-      debug("got call");
-      let address = yield select(evm.current.step.callAddress);
+  yield* callstackAndCodexSaga();
+  yield* trace.signalTickSagaCompletion();
+}
 
-      debug("calling address %s", address);
+export function* callstackAndCodexSaga() {
+  if (yield select(evm.current.step.isExceptionalHalting)) {
+    //let's handle this case first so we can be sure everything else is *not*
+    //an exceptional halt
+    debug("exceptional halt!");
 
-      // if there is no binary (e.g. in the case of precompiled contracts),
-      // then there will be no trace steps for the called code, and so we
-      // shouldn't tell the debugger that we're entering another execution
-      // context
-      if (yield select(evm.current.step.callsPrecompile)) {
-        continue;
-      }
+    yield put(actions.fail());
+  } else if (yield select(evm.current.step.isCall)) {
+    debug("got call");
+    // if there is no binary (e.g. in the case of precompiled contracts or
+    // externally owned accounts), then there will be no trace steps for the
+    // called code, and so we shouldn't tell the debugger that we're entering
+    // another execution context
+    if (yield select(evm.current.step.callsPrecompileOrExternal)) {
+      return;
+    }
 
-      yield put(actions.call(address));
-    } else if (yield select(evm.current.step.isCreate)) {
-      debug("got create");
-      let binary = yield select(evm.current.step.createBinary);
+    let address = yield select(evm.current.step.callAddress);
+    let data = yield select(evm.current.step.callData);
 
-      yield put(actions.create(binary));
-    } else if (yield select(evm.current.step.isHalting)) {
-      debug("got return");
+    debug("calling address %s", address);
 
-      let callstack = yield select(evm.current.callstack);
+    if (yield select(evm.current.step.isDelegateCallStrict)) {
+      //if delegating, leave storageAddress, sender, and value the same
+      let { storageAddress, sender, value } = yield select(evm.current.call);
+      yield put(actions.call(address, data, storageAddress, sender, value));
+    } else {
+      //this branch covers CALL, CALLCODE, and STATICCALL
+      let currentCall = yield select(evm.current.call);
+      let storageAddress = (yield select(evm.current.step.isDelegateCallBroad))
+        ? currentCall.storageAddress //for CALLCODE
+        : address;
+      let sender = currentCall.storageAddress; //not the code address!
+      let value = yield select(evm.current.step.callValue); //0 if static
+      yield put(actions.call(address, data, storageAddress, sender, value));
+    }
+  } else if (yield select(evm.current.step.isCreate)) {
+    debug("got create");
+    let binary = yield select(evm.current.step.createBinary);
+    let createdAddress = yield select(evm.current.step.createdAddress);
+    let value = yield select(evm.current.step.createValue);
+    let sender = (yield select(evm.current.call)).storageAddress;
+    //not the code address!
 
-      //if the program's not ending, and we just returned from a constructor,
-      //learn the address of what we just initialized
-      //(do this before we put the return action to avoid off-by-one error)
-      if (
-        callstack.length > 1 &&
-        callstack[callstack.length - 1].address === undefined
-      ) {
-        let dummyAddress = yield select(evm.current.creationDepth);
-        debug("dummyAddress %d", dummyAddress);
+    yield put(actions.create(binary, createdAddress, sender, value));
+    //as above, storageAddress handles when calling from a creation call
+  } else if (yield select(evm.current.step.isHalting)) {
+    debug("got return");
 
-        //NOTE: the following logic, for getting the created address, really
-        //belongs in a selector.  However, every time I try to make it a
-        //selector, I get mysterious error messages.  So, we'll do it ourselves
-        //in the saga instead.
-
-        let stack = yield select(evm.next.state.stack);
-        let createdAddress = DecodeUtils.Conversion.toAddress(
-          stack[stack.length - 1]
-        );
-        debug("createdAddress %s", createdAddress);
-
-        yield* data.learnAddressSaga(dummyAddress, createdAddress);
-        debug("address learnt");
-      }
-
-      yield put(actions.returnCall());
+    yield put(actions.returnCall());
+  } else if (yield select(evm.current.step.touchesStorage)) {
+    let storageAddress = (yield select(evm.current.call)).storageAddress;
+    let slot = yield select(evm.current.step.storageAffected);
+    //note we get next storage, since we're updating to that
+    let storage = yield select(evm.next.state.storage);
+    //normally we'd need a 0 fallback for this next line, but in this case we
+    //can be sure the value will be there, since we're touching that storage
+    if (yield select(evm.current.step.isStore)) {
+      yield put(actions.store(storageAddress, slot, storage[slot]));
+    } else {
+      //otherwise, it's a load
+      yield put(actions.load(storageAddress, slot, storage[slot]));
     }
   }
 }
 
 export function* reset() {
-  yield put(actions.reset());
+  let initialAddress = (yield select(evm.current.callstack))[0].storageAddress;
+  yield put(actions.reset(initialAddress));
 }
 
 export function* saga() {
-  yield call(callstackSaga);
+  yield takeEvery(TICK, tickSaga);
 }
 
 export default prefixName("evm", saga);

@@ -1,11 +1,13 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:session"); //eslint-disable-line no-unused-vars
+const debug = debugModule("debugger:session");
 
 import configureStore from "lib/store";
 
 import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
 import data from "lib/data/selectors";
+import { decode } from "lib/data/sagas";
+import controllerSelector from "lib/controller/selectors";
 
 import rootSaga from "./sagas";
 import reducer from "./reducers";
@@ -25,7 +27,9 @@ export default class Session {
     /**
      * @private
      */
-    this._store = configureStore(reducer, rootSaga);
+    let { store, sagaMiddleware } = configureStore(reducer, rootSaga);
+    this._store = store;
+    this._sagaMiddleware = sagaMiddleware;
 
     let { contexts, sources } = Session.normalize(contracts, files);
 
@@ -35,7 +39,7 @@ export default class Session {
     this._store.dispatch(actions.start(txHash, provider));
   }
 
-  ready() {
+  async ready() {
     return new Promise((accept, reject) => {
       this._store.subscribe(() => {
         if (this.state.session.status == "ACTIVE") {
@@ -74,19 +78,36 @@ export default class Session {
         sourcePath,
         source,
         ast,
+        abi,
         compiler
       } = contract;
 
+      let contractNode = ast.nodes.find(
+        node =>
+          node.nodeType === "ContractDefinition" && node.name === contractName
+      ); //ideally we'd hold this off till later, but that would break the
+      //direction of the evm/solidity dependence, so we do it now
+
+      let contractId = contractNode.id;
+      let contractKind = contractNode.contractKind;
+
+      debug("contractName %s", contractName);
       debug("sourceMap %o", sourceMap);
       debug("compiler %o", compiler);
+      debug("abi %O", abi);
 
-      sourcesByPath[sourcePath] = { sourcePath, source, ast };
+      sourcesByPath[sourcePath] = { sourcePath, source, ast, compiler };
 
       if (binary && binary != "0x") {
         contexts.push({
           contractName,
           binary,
-          sourceMap
+          sourceMap,
+          abi,
+          compiler,
+          contractId,
+          contractKind,
+          isConstructor: true
         });
       }
 
@@ -95,7 +116,11 @@ export default class Session {
           contractName,
           binary: deployedBinary,
           sourceMap: deployedSourceMap,
-          compiler
+          abi,
+          compiler,
+          contractId,
+          contractKind,
+          isConstructor: false
         });
       }
     }
@@ -117,98 +142,119 @@ export default class Session {
     return selector(this.state);
   }
 
-  dispatch(action) {
+  async dispatch(action) {
     this._store.dispatch(action);
 
     return true;
   }
 
-  interrupt() {
+  /**
+   * @private
+   * Allows running any saga -- for internal use only!
+   * Using this could seriously screw up the debugger state if you
+   * don't know what you're doing!
+   */
+  async _runSaga(saga, ...args) {
+    return await this._sagaMiddleware.run(saga, ...args).toPromise();
+  }
+
+  async interrupt() {
     return this.dispatch(controller.interrupt());
   }
 
-  advance() {
-    return this.dispatch(controller.advance());
-  }
-
-  stepNext() {
-    return this.dispatch(controller.stepNext());
-  }
-
-  stepOver() {
-    return this.dispatch(controller.stepOver());
-  }
-
-  stepInto() {
-    return this.dispatch(controller.stepInto());
-  }
-
-  stepOut() {
-    return this.dispatch(controller.stepOut());
-  }
-
-  reset() {
-    return this.dispatch(controller.reset());
-  }
-
-  continueUntilBreakpoint() {
-    return this.dispatch(controller.continueUntilBreakpoint());
-  }
-
-  addBreakpoint(breakpoint) {
-    return this.dispatch(controller.addBreakpoint(breakpoint));
-  }
-
-  removeBreakpoint(breakpoint) {
-    return this.dispatch(controller.removeBreakpoint(breakpoint));
-  }
-
-  removeAllBreakpoints() {
-    return this.dispatch(controller.removeAllBreakpoints());
-  }
-
-  async decodeReady() {
+  async doneStepping(stepperAction) {
     return new Promise(resolve => {
-      let haveResolved = false;
+      let hasStarted = false;
+      let hasResolved = false;
       const unsubscribe = this._store.subscribe(() => {
-        const subscriptionDecodingStarted = this.view(
-          data.proc.decodingMappingKeys
-        );
+        const isStepping = this.view(controllerSelector.isStepping);
 
-        debug("following decoding started: %d", subscriptionDecodingStarted);
+        if (isStepping && !hasStarted) {
+          hasStarted = true;
+          debug("heard step start");
+          return;
+        }
 
-        if (subscriptionDecodingStarted <= 0 && !haveResolved) {
-          haveResolved = true;
+        if (!isStepping && hasStarted && !hasResolved) {
+          hasResolved = true;
+          debug("heard step stop");
           unsubscribe();
-          resolve();
+          resolve(true);
         }
       });
-
-      const decodingStarted = this.view(data.proc.decodingMappingKeys);
-
-      debug("initial decoding started: %d", decodingStarted);
-
-      if (decodingStarted <= 0) {
-        haveResolved = true;
-        unsubscribe();
-        resolve();
-      }
+      this.dispatch(stepperAction);
     });
   }
 
-  async variable(name) {
-    await this.decodeReady();
+  //Note: count is an optional argument; default behavior is to advance 1
+  async advance(count) {
+    return await this.doneStepping(controller.advance(count));
+  }
 
+  async stepNext() {
+    return await this.doneStepping(controller.stepNext());
+  }
+
+  async stepOver() {
+    return await this.doneStepping(controller.stepOver());
+  }
+
+  async stepInto() {
+    return await this.doneStepping(controller.stepInto());
+  }
+
+  async stepOut() {
+    return await this.doneStepping(controller.stepOut());
+  }
+
+  async reset() {
+    return await this.doneStepping(controller.reset());
+  }
+
+  //NOTE: breakpoints is an OPTIONAL argument for if you want to supply your
+  //own list of breakpoints; leave it out to use the internal one (as
+  //controlled by the functions below)
+  async continueUntilBreakpoint(breakpoints) {
+    return await this.doneStepping(
+      controller.continueUntilBreakpoint(breakpoints)
+    );
+  }
+
+  async addBreakpoint(breakpoint) {
+    this.dispatch(controller.addBreakpoint(breakpoint));
+  }
+
+  async removeBreakpoint(breakpoint) {
+    return this.dispatch(controller.removeBreakpoint(breakpoint));
+  }
+
+  async removeAllBreakpoints() {
+    return this.dispatch(controller.removeAllBreakpoints());
+  }
+
+  //deprecated -- decode is now *always* ready!
+  async decodeReady() {
+    return true;
+  }
+
+  async variable(name) {
     const definitions = this.view(data.current.identifiers.definitions);
     const refs = this.view(data.current.identifiers.refs);
 
-    const decode = this.view(data.views.decoder);
-    return await decode(definitions[name], refs[name]);
+    return await this._runSaga(decode, definitions[name], refs[name]);
   }
 
   async variables() {
-    await this.decodeReady();
-
-    return await this.view(data.current.identifiers.decoded);
+    let definitions = this.view(data.current.identifiers.definitions);
+    let refs = this.view(data.current.identifiers.refs);
+    let decoded = {};
+    for (let [identifier, ref] of Object.entries(refs)) {
+      decoded[identifier] = await this._runSaga(
+        decode,
+        definitions[identifier],
+        ref
+      );
+    }
+    return decoded;
   }
 }

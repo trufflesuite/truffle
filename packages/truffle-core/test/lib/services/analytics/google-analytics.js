@@ -2,9 +2,9 @@ const Config = require("truffle-config");
 const ua = require("universal-analytics");
 const assert = require("chai").assert;
 const sinon = require("sinon");
-const analytics = require("../lib/services/analytics/google");
+const analytics = require("../../../../lib/services/analytics/google");
 const inquirer = require("inquirer");
-const configCommand = require("../lib/commands/config");
+const configCommand = require("../../../../lib/commands/config");
 const Configstore = require("configstore");
 
 describe("analytics", function() {
@@ -95,10 +95,8 @@ describe("analytics", function() {
   });
   describe("#sendAnalyticsEvent", function() {
     it("sends an event object to google analytics", function() {
-      let checkAnalyticsStub = sinon
-        .stub(analytics, "checkIfAnalyticsEnabled")
-        .returns(true);
-      let sendingAnalyticsEvent = analytics.sendAnalyticsEvent({
+      sinon.stub(analytics, "checkIfAnalyticsEnabled").returns(true);
+      analytics.sendAnalyticsEvent({
         ec: "initialization",
         ea: "truffle unbox"
       });
