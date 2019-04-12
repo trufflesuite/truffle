@@ -57,6 +57,7 @@ export function* decode(definition, ref) {
 
   let ZERO_WORD = new Uint8Array(DecodeUtils.EVM.WORD_SIZE);
   ZERO_WORD.fill(0);
+  let NO_CODE = new Uint8Array(); //empty array
 
   let decoder = forEvmState(definition, ref, {
     referenceDeclarations,
@@ -83,6 +84,12 @@ export function* decode(definition, ref) {
         let address = request.address;
         if (address in instances) {
           response = DecodeUtils.Conversion.toBytes(instances[address]);
+        } else if (address === DecodeUtils.EVM.ZERO_ADDRESS) {
+          //HACK: to avoid displaying the zero address to the user as an
+          //affected address just because they decoded a contract or external
+          //function variable that hadn't been initialized yet, we give the
+          //zero address's codelessness its own private cache :P
+          response = NO_CODE;
         } else {
           //I don't want to write a new web3 saga, so let's just use
           //obtainBinaries with a one-element array
