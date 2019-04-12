@@ -1,13 +1,13 @@
 const debug = require("debug")("compile:parser"); // eslint-disable-line no-unused-vars
-var CompileError = require("./compileerror");
+const CompileError = require("./compileerror");
 
 // Warning issued by a pre-release compiler version, ignored by this component.
-var preReleaseCompilerWarning =
+const preReleaseCompilerWarning =
   "This is a pre-release compiler version, please do not use it in production.";
 
 module.exports = {
   // This needs to be fast! It is fast (as of this writing). Keep it fast!
-  parseImports: function(body, solc) {
+  parseImports(body, solc) {
     // WARNING: Kind of a hack (an expedient one).
 
     // So we don't have to maintain a separate parser, we'll get all the imports
@@ -21,14 +21,14 @@ module.exports = {
     if (solc.importsParser) solc = solc.importsParser;
 
     // Helper to detect import errors with an easy regex.
-    var importErrorKey = "not found: File";
+    const importErrorKey = "not found: File";
 
     // Inject failing import.
-    var failingImportFileName = "__Truffle__NotFound.sol";
+    const failingImportFileName = "__Truffle__NotFound.sol";
 
-    body = body + "\n\nimport '" + failingImportFileName + "';\n";
+    body = `${body}\n\nimport '${failingImportFileName}';\n`;
 
-    var solcStandardInput = {
+    const solcStandardInput = {
       language: "Solidity",
       sources: {
         "ParsedContract.sol": {
@@ -45,7 +45,7 @@ module.exports = {
     };
 
     // By compiling only with ParsedContract.sol as the source, solc.compile returns file import errors for each import path.
-    var output = solc.compile(JSON.stringify(solcStandardInput));
+    let output = solc.compile(JSON.stringify(solcStandardInput));
     output = JSON.parse(output);
 
     // Filter out the "pre-release compiler" warning, if present.
