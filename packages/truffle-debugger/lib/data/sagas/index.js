@@ -83,7 +83,7 @@ export function* decode(definition, ref) {
       case "code":
         let address = request.address;
         if (address in instances) {
-          response = DecodeUtils.Conversion.toBytes(instances[address]);
+          response = instances[address];
         } else if (address === DecodeUtils.EVM.ZERO_ADDRESS) {
           //HACK: to avoid displaying the zero address to the user as an
           //affected address just because they decoded a contract or external

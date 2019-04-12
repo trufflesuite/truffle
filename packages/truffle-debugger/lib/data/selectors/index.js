@@ -180,7 +180,7 @@ const data = createSelectorTree({
       Object.assign(
         {},
         ...Object.entries(instances).map(([address, { binary }]) => ({
-          [address]: binary
+          [address]: DecodeUtils.Conversion.toBytes(binary)
         }))
       )
     ),
