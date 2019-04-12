@@ -1,4 +1,4 @@
-var Test = artifacts.require('Test')
+var Example = artifacts.require('Example');
 
 contract('Example', function(accounts) {
   it("should assert true", function(done) {
