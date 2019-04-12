@@ -17,8 +17,9 @@ module.exports = {
     // statement right on the end; just to ensure it will error and we can parse
     // the imports speedily without doing extra work.
 
-    // If we're using docker/native, we'll still want to use solcjs to do this part.
-    // if (solc.importsParser) solc = solc.importsParser;
+    // If we're using docker/native, we'll use the provided importsParser object of methods.
+    if (solc.importsParser) solc = solc.importsParser;
+
     // Helper to detect import errors with an easy regex.
     var importErrorKey = "not found: File";
 
