@@ -13189,7 +13189,7 @@ web3-eth-abi@1.0.0-beta.48:
     lodash "^4.17.11"
     web3-utils "1.0.0-beta.48"
 
-web3-eth-abi@^1.0.0-beta.52:
+web3-eth-abi@1.0.0-beta.52:
   version "1.0.0-beta.52"
   resolved "https://registry.yarnpkg.com/web3-eth-abi/-/web3-eth-abi-1.0.0-beta.52.tgz#88dc2d36e2f99dfe255f8f64b6f613bad82779d8"
   dependencies:

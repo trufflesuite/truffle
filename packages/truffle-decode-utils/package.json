@@ -7,7 +7,7 @@
     "lodash.clonedeep": "^4.5.0",
     "lodash.escaperegexp": "^4.1.2",
     "web3": "1.0.0-beta.37",
-    "web3-eth-abi": "^1.0.0-beta.52"
+    "web3-eth-abi": "1.0.0-beta.52"
   },
   "main": "dist/index.js",
   "types": "src/index.ts",
