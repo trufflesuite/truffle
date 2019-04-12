@@ -237,6 +237,19 @@ function* variablesAndMappingsSaga() {
       yield put(actions.assign(assignments));
       break;
 
+    case "FunctionTypeName":
+      //HACK
+      //for some reasons, for declarations of local variables of function type,
+      //we land on the FunctionTypeName instead of the VariableDeclaration,
+      //so we replace the node with its parent (the VariableDeclaration)
+      node = scopes[scopes[node.id].parentId].definition;
+      //let's do a quick check that it *is* a VariableDeclaration before
+      //continuing
+      if (node.nodeType !== "VariableDeclaration") {
+        break;
+      }
+    //otherwise, deliberately fall through to the VariableDeclaration case
+    //NOTE: DELIBERATE FALL-THROUGH
     case "VariableDeclaration":
       let varId = node.id;
       debug("Variable declaration case");
@@ -256,6 +269,7 @@ function* variablesAndMappingsSaga() {
           id => currentAssignments.byId[id].address !== undefined
         )
       ) {
+        debug("already a contract variable!");
         break;
       }
 
@@ -271,6 +285,7 @@ function* variablesAndMappingsSaga() {
       );
       assignments = { [assignment.id]: assignment };
       //this case doesn't need preambleAssignments either
+      debug("assignments: %O", assignments);
       yield put(actions.assign(assignments));
       break;
 
