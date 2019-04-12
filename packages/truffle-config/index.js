@@ -248,20 +248,6 @@ function Config(truffle_directory, working_directory, network) {
           "Don't set config.timeoutBlocks directly. Instead, set config.networks and then config.networks[<network name>].timeoutBlocks"
         );
       }
-    },
-    skipDryRun: {
-      get: function() {
-        try {
-          return self.network_config.skipDryRun;
-        } catch (e) {
-          return false;
-        }
-      },
-      set: function() {
-        throw new Error(
-          "Don't set config.skipDryRun directly. Instead, set config.networks and then config.networks[<network name>].skipDryRun"
-        );
-      }
     }
   };
 
@@ -327,16 +313,17 @@ Config.prototype.with = function(obj) {
 };
 
 Config.prototype.merge = function(obj) {
-  var self = this;
-  var clone = this.normalize(obj);
+  let clone = this.normalize(obj);
 
   // Only set keys for values that don't throw.
-  Object.keys(obj).forEach(function(key) {
+  const propertyNames = Object.keys(obj);
+
+  propertyNames.forEach(key => {
     try {
-      if (typeof clone[key] === "object" && self._deepCopy.includes(key)) {
-        self[key] = _.merge(self[key], clone[key]);
+      if (typeof clone[key] === "object" && this._deepCopy.includes(key)) {
+        this[key] = _.merge(this[key], clone[key]);
       } else {
-        self[key] = clone[key];
+        this[key] = clone[key];
       }
     } catch (e) {
       // Do nothing.
@@ -371,14 +358,14 @@ Config.detect = (options = {}, filename) => {
 };
 
 Config.load = function(file, options) {
-  var config = new Config();
+  const config = new Config();
 
   config.working_directory = path.dirname(path.resolve(file));
 
   // The require-nocache module used to do this for us, but
   // it doesn't bundle very well. So we've pulled it out ourselves.
   delete require.cache[Module._resolveFilename(file, module)];
-  var static_config = originalrequire(file);
+  const static_config = originalrequire(file);
 
   config.merge(static_config);
   config.merge(options);
