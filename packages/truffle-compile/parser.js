@@ -44,8 +44,8 @@ module.exports = {
       }
     };
 
+    // By compiling only with ParsedContract.sol as the source, solc.compile returns file import errors for each import path.
     var output = solc.compile(JSON.stringify(solcStandardInput));
-
     output = JSON.parse(output);
 
     // Filter out the "pre-release compiler" warning, if present.
