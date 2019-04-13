@@ -9,10 +9,6 @@ const resources = {
     createIndexes: [
     ]
   },
-  contractConstructors: {
-    createIndexes: [
-    ]
-  },
   sources: {
     createIndexes: [
       { fields: ["contents"] },
@@ -34,7 +30,6 @@ export class Workspace {
   bytecodes: PouchDB.Database;
   compilations: PouchDB.Database;
   contracts: PouchDB.Database;
-  contractConstructors: PouchDB.Database;
 
   private ready: Promise<void>;
 
@@ -94,7 +89,7 @@ export class Workspace {
     return {
       contracts: Promise.all(contracts.map(
         async (contractInput) => {
-          const { name, abi, compilation, sourceContract } = contractInput;
+          const { name, abi, compilation, sourceContract, contractConstructor } = contractInput;
           //leaving this id as just a hash of the name for now, until we figure out what it should be
           const id = soliditySha3(name);
           const contract = await this.contract( { id } );
@@ -107,53 +102,7 @@ export class Workspace {
             _id: id,
             });
            
-            return { name, abi, compilation, sourceContract, id };
-          }
-        }
-      ))
-    }
-  }
-
-  async contractConstructor ({ id }: { id: string }) {
-    await this.ready;
-   
-    try {
-      const result = {
-        ...await this.contractConstructors.get(id), 
-
-        id
-      }
-
-      return result;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  async contractConstructorsAdd({input}) {
-    await this.ready;
-
-    const { contractConstructors } = input;
-    
-    return {
-      contractConstructors: Promise.all(contractConstructors.map(
-        async (contractConstructorInput) => {
-          const { createBytecode, contract  } = contractConstructorInput;
-          //just using createBytecode id for now until we figure out what the id should be comprised ofwork
-          const id = soliditySha3(createBytecode.id);
-         
-          const contractConstructor = await this.contractConstructor( { id } );
-         
-          if(contractConstructor) {
-            return contractConstructor;
-          } else {
-            let result = await this.contractConstructors.put({
-            ...contractConstructorInput, 
-            
-            _id: id,
-            });
-           
-            return await this.contractConstructor({ id });
+            return { name, abi, compilation, sourceContract, contractConstructor, id };
           }
         }
       ))

@@ -19,7 +19,6 @@ type ContractInstance {
 
 type ContractConstructor {
   createBytecode: Bytecode
-  contract: Contract
 }
 
 type Contract {
@@ -27,6 +26,7 @@ type Contract {
   abi: ABI
   compilation: Compilation
   sourceContract: SourceContract
+  contractConstructor: ContractConstructor
 }
 
 type ABI {
