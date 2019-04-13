@@ -203,7 +203,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.contractCode = await this.web3.eth.getCode(this.contractAddress);
   }
 
-  private async decodeVariable(variable: StorageMemberAllocation, block: BlockType): Promise<DecodedVariable> {
+  private async decodeVariable(variable: StorageMemberAllocation, block: number): Promise<DecodedVariable> {
     const info: EvmInfo = {
       state: {
         stack: [],
@@ -252,11 +252,17 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   public async state(block: BlockType = "latest"): Promise<ContractState | undefined> {
+    //let's immediately lock in the block number, in case a new block is mined
+    //during decoding
+    let blockNumber = typeof block === "number"
+      ? block
+      : (await this.web3.eth.getBlock(block)).number;
+
     let result: ContractState = {
       name: this.contract.contractName,
       code: this.contractCode,
-      balance: new BN(await this.web3.eth.getBalance(this.contractAddress, block)),
-      nonce: new BN(await this.web3.eth.getTransactionCount(this.contractAddress, block)),
+      balance: new BN(await this.web3.eth.getBalance(this.contractAddress, blockNumber)),
+      nonce: new BN(await this.web3.eth.getTransactionCount(this.contractAddress, blockNumber)),
       variables: {}
     };
 
@@ -265,7 +271,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     for(const variable of Object.values(this.stateVariableReferences)) {
 
       debug("about to decode %s", variable.definition.name);
-      const decodedVariable = await this.decodeVariable(variable, block);
+      const decodedVariable = await this.decodeVariable(variable, blockNumber);
       debug("decoded");
 
       result.variables[variable.definition.name] = decodedVariable;
@@ -277,6 +283,11 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   public async variable(nameOrId: string | number, block: BlockType = "latest"): Promise<DecodedVariable | undefined> {
+    //let's immediately lock in the block number, in case a new block is mined
+    //during decoding
+    let blockNumber = typeof block === "number"
+      ? block
+      : (await this.web3.eth.getBlock(block)).number;
 
     let variable: StorageMemberAllocation;
     if(typeof nameOrId === "number")
@@ -292,13 +303,10 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       return undefined;
     }
 
-    return await this.decodeVariable(variable, block);
+    return await this.decodeVariable(variable, blockNumber);
   }
 
-  private async getStorage(address: string, slot: BN, block: BlockType): Promise<string> {
-    let blockNumber = typeof block === "number"
-      ? block
-      : (await this.web3.eth.getBlock(block)).number;
+  private async getStorage(address: string, slot: BN, blockNumber: number): Promise<string> {
     if(blockNumber in this.storageCache
       && address in this.storageCache[blockNumber]
       && slot.toString() in this.storageCache[blockNumber][address]) {
@@ -321,7 +329,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     }
   }
 
-  private async getCode(address: string, block: BlockType): Promise<string> {
+  private async getCode(address: string, blockNumber: number): Promise<string> {
     let blockNumber = typeof block === "number"
       ? block
       : (await this.web3.eth.getBlock(block)).number;
