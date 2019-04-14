@@ -4,6 +4,8 @@ import PouchDBFind from "pouchdb-find";
 
 import { soliditySha3 } from "web3-utils";
 
+const jsonStableStringify = require('json-stable-stringify');
+
 const resources = {
   contracts: {
     createIndexes: [
@@ -90,8 +92,8 @@ export class Workspace {
       contracts: Promise.all(contracts.map(
         async (contractInput) => {
           const { name, abi, compilation, sourceContract, contractConstructor } = contractInput;
-          //leaving this id as just a hash of the name for now, until we figure out what it should be
-          const id = soliditySha3(name);
+          const id = soliditySha3(jsonStableStringify(name, abi, sourceContract, compilation)); 
+         
           const contract = await this.contract( { id } );
           
           if(contract) {
