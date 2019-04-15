@@ -7,23 +7,19 @@ class Native extends LoadingStrategy {
     const versionString = this.validateAndGetSolcVersion();
     const command = "solc --standard-json";
 
-    const versionRange = new VersionRange();
-    const commit = versionRange.getCommitFromVersion(versionString);
-    return versionRange
-      .getSolcByCommit(commit)
-      .then(solcjs => {
-        return {
+    return new Promise((resolve, reject) => {
+      try {
+        resolve({
           compile: options => String(execSync(command, { input: options })),
-          version: () => versionString,
-          importsParser: solcjs
-        };
-      })
-      .catch(error => {
+          version: () => versionString
+        });
+      } catch (error) {
         if (error.message === "No matching version found") {
-          throw this.errors("noVersion", versionString);
+          reject(this.errors("noVersion", versionString));
         }
-        throw new Error(error);
-      });
+        reject(new Error(error));
+      }
+    });
   }
 
   validateAndGetSolcVersion() {
