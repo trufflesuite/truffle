@@ -25,7 +25,7 @@ class Reporter {
   constructor() {
     this.deployer = null;
     this.migration = null;
-    this.currentGasTotal = 0;
+    this.currentGasTotal = new web3Utils.BN(0);
     this.currentCostTotal = new web3Utils.BN(0);
     this.finalCostTotal = new web3Utils.BN(0);
     this.deployments = 0;
@@ -91,15 +91,15 @@ class Reporter {
    * started running. Calling this method resets the gas counters for migrations totals
    */
   getTotals() {
-    const gas = this.currentGasTotal;
+    const gas = this.currentGasTotal.clone();
     const cost = web3Utils.fromWei(this.currentCostTotal, "ether");
     this.finalCostTotal = this.finalCostTotal.add(this.currentCostTotal);
 
-    this.currentGasTotal = 0;
+    this.currentGasTotal = new web3Utils.BN(0);
     this.currentCostTotal = new web3Utils.BN(0);
 
     return {
-      gas: gas,
+      gas: gas.toString(10),
       cost: cost,
       finalCost: web3Utils.fromWei(this.finalCostTotal, "ether"),
       deployments: this.deployments.toString()
@@ -309,6 +309,16 @@ class Reporter {
       const tx = await data.contract.web3.eth.getTransaction(
         data.receipt.transactionHash
       );
+
+      const block = await data.contract.web3.eth.getBlock(
+        data.receipt.blockNumber
+      );
+
+      // if geth returns null, try again!
+      if (!block) return this.postDeploy(data);
+
+      data.timestamp = block.timestamp;
+
       const balance = await data.contract.web3.eth.getBalance(tx.from);
 
       const gasPrice = new web3Utils.BN(tx.gasPrice);
@@ -317,13 +327,13 @@ class Reporter {
       const cost = gasPrice.mul(gas).add(value);
 
       data.gasPrice = web3Utils.fromWei(gasPrice, "gwei");
-      data.gas = data.receipt.gasUsed;
+      data.gas = gas.toString(10);
       data.from = tx.from;
       data.value = web3Utils.fromWei(value, "ether");
       data.cost = web3Utils.fromWei(cost, "ether");
       data.balance = web3Utils.fromWei(balance, "ether");
 
-      this.currentGasTotal += data.gas;
+      this.currentGasTotal = this.currentGasTotal.add(gas);
       this.currentCostTotal = this.currentCostTotal.add(cost);
       this.currentAddress = this.from;
       this.deployments++;

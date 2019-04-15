@@ -3,9 +3,9 @@ const debug = require("debug")("contract-sources");
 const path = require("path");
 const glob = require("glob");
 
-const DEFAULT_PATTERN = "**/*.sol";
+const DEFAULT_PATTERN = "**/*.{sol,vy}";
 
-module.exports = function(pattern, callback) {
+module.exports = (pattern, callback) => {
   // pattern is either a directory (contracts directory), or an absolute path
   // with a glob expression
   if (!glob.hasMagic(pattern)) {
@@ -13,7 +13,7 @@ module.exports = function(pattern, callback) {
   }
 
   const globOptions = {
-    follow: true  // follow symlinks
+    follow: true // follow symlinks
   };
 
   glob(pattern, globOptions, callback);

@@ -10,30 +10,30 @@ import { storageSize } from "../allocate/storage";
 import { slotAddress } from "../read/storage";
 import * as Types from "../types/storage";
 import BN from "bn.js";
-import Web3 from "web3";
 import { EvmStruct, EvmMapping } from "../interface/contract-decoder";
+import { DecoderRequest } from "../types/request";
 
-export default async function decodeStorage(definition: DecodeUtils.AstDefinition, pointer: StoragePointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
+export default function* decodeStorage(definition: DecodeUtils.AstDefinition, pointer: StoragePointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
   if(DecodeUtils.Definition.isReference(definition) || DecodeUtils.Definition.isMapping(definition)) {
     //note that mappings are not caught by isReference and must be checked for separately
-    return await decodeStorageReference(definition, pointer, info, web3, contractAddress);
+    return yield* decodeStorageReference(definition, pointer, info);
   }
   else {
-    return await decodeValue(definition, pointer, info, web3, contractAddress);
+    return yield* decodeValue(definition, pointer, info);
   }
 }
 
 //decodes storage at the address *read* from the pointer -- hence why this takes DataPointer rather than StoragePointer.
 //NOTE: ONLY for use with pointers to reference types!
 //Of course, pointers to value types don't exist in Solidity, so that warning is redundant, but...
-export async function decodeStorageByAddress(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise <any> {
+export function* decodeStorageReferenceByAddress(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
 
-  const rawValue: Uint8Array = await read(pointer, info.state, web3, contractAddress);
+  const rawValue: Uint8Array = yield* read(pointer, info.state);
   const startOffset = DecodeUtils.Conversion.toBN(rawValue);
   //we *know* the type being decoded must be sized in words, because it's a
   //reference type, but TypeScript doesn't, so we'll have to use a type
   //coercion
-  const size = (<{words: number}>storageSize(definition)).words;
+  const size = (<{words: number}>storageSize(definition, info.referenceDeclarations, info.storageAllocations)).words;
   //now, construct the storage pointer
   const newPointer = { storage: {
     from: {
@@ -50,10 +50,10 @@ export async function decodeStorageByAddress(definition: DecodeUtils.AstDefiniti
     }
   }};
   //dispatch to decodeStorageReference
-  return await decodeStorageReference(definition, newPointer, info, web3, contractAddress);
+  return yield* decodeStorageReference(definition, newPointer, info);
 }
 
-export async function decodeStorageReference(definition: DecodeUtils.AstDefinition, pointer: StoragePointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<any> {
+export function* decodeStorageReference(definition: DecodeUtils.AstDefinition, pointer: StoragePointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
   var data;
   var length;
 
@@ -65,7 +65,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
       if (DecodeUtils.Definition.isDynamicArray(definition)) {
         debug("dynamic array");
         debug("definition %O", definition);
-        data = await read(pointer, state, web3, contractAddress);
+        data = yield* read(pointer, state);
 
         length = DecodeUtils.Conversion.toBN(data).toNumber();
       }
@@ -162,19 +162,20 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
         }
       }
 
-      const decodePromises = ranges.map( (childRange, idx) => {
-        debug("childFrom %d, %o", idx, childRange.from);
-        return decodeStorage(baseDefinition, {
-          storage: childRange
-        }, info, web3, contractAddress);
-      });
+      let decodedChildren: any[] = [];
 
-      return await Promise.all(decodePromises);
+      for(let childRange of ranges) {
+        decodedChildren.push(
+          yield* decodeStorage(baseDefinition, {storage: childRange}, info)
+        );
+      }
+
+      return decodedChildren;
     }
 
     case "bytes":
     case "string": {
-      data = await read(pointer, state, web3, contractAddress);
+      data = yield* read(pointer, state);
       if (data == undefined) {
         return undefined;
       }
@@ -189,20 +190,17 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
         // string lives in word, length is last byte / 2
         length = lengthByte / 2;
         debug("in-word; length %o", length);
-        if (length == 0) {
-          return "";
-        }
 
-        return decodeValue(definition, { storage: {
+        return yield* decodeValue(definition, { storage: {
           from: { slot: pointer.storage.from.slot, index: 0 },
           to: { slot: pointer.storage.from.slot, index: length - 1}
-        }}, info, web3, contractAddress);
+        }}, info);
 
       } else {
         length = DecodeUtils.Conversion.toBN(data).subn(1).divn(2).toNumber();
         debug("new-word, length %o", length);
 
-        return decodeValue(definition, {
+        return yield* decodeValue(definition, {
           storage: {
             from: {
               slot: {
@@ -214,7 +212,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
             },
             length
           }
-        }, info, web3, contractAddress);
+        }, info);
       }
     }
 
@@ -234,12 +232,11 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
         members: {}
       };
 
-      const members: DecodeUtils.AstDefinition[] =
-        info.referenceDeclarations[referencedDeclaration].members;
-
       const structAllocation = info.storageAllocations[referencedDeclaration];
-      for (let memberDefinition of members) {
-        const memberAllocation = structAllocation.members[memberDefinition.id];
+      const members = Object.values(structAllocation.members);
+
+      for (let memberAllocation of members) {
+        let memberDefinition = memberAllocation.definition;
         const memberPointer = <StoragePointer>memberAllocation.pointer;
           //the type system thinks memberPointer might also be a constant
           //definition pointer.  However, structs can't contain constants,
@@ -263,9 +260,9 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
             index: memberPointer.storage.to.index
           },
         };
-        const val = await decodeStorage(
+        const val = yield* decodeStorage(
           memberDefinition,
-          {storage: childRange}, info, web3, contractAddress
+          {storage: childRange}, info
         );
 
         result.members[memberDefinition.name] = {
@@ -359,7 +356,7 @@ export async function decodeStorageReference(definition: DecodeUtils.AstDefiniti
         //note at this point, key could be a string, hex string,
         //BN, or boolean
         result.members[key.toString()] =
-          await decodeStorage(valueDefinition, valuePointer, info, web3, contractAddress);
+          yield* decodeStorage(valueDefinition, valuePointer, info);
       }
 
       return result;

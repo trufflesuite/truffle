@@ -66,12 +66,15 @@ describe("Error cases", function() {
         Abstract,
         Loops
       ],
+      networks: {
+        test: {}
+      },
       network: "test",
       network_id: networkId,
       provider: provider,
       logger: {
-        log: val => {},
-        error: val => {}
+        log: val => {}, // eslint-disable-line no-unused-vars
+        error: val => {} // eslint-disable-line no-unused-vars
       }
     };
     deployer = new Deployer(options);

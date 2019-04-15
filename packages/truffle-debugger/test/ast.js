@@ -8,7 +8,6 @@ import Ganache from "ganache-core";
 import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
 
-import ast from "lib/ast/selectors";
 import solidity from "lib/solidity/selectors";
 import trace from "lib/trace/selectors";
 
@@ -81,18 +80,17 @@ describe("AST", function() {
       });
 
       let session = bugger.connect();
-      debug("ast: %O", session.view(ast.current.tree));
 
       do {
         let { start, length } = session.view(solidity.current.sourceRange);
         let end = start + length;
 
-        let node = session.view(ast.current.node);
+        let node = session.view(solidity.current.node);
 
         let [nodeStart, nodeLength] = getRange(node);
         let nodeEnd = nodeStart + nodeLength;
 
-        let pointer = session.view(ast.current.pointer);
+        let pointer = session.view(solidity.current.pointer);
 
         assert.isAtMost(
           nodeStart,

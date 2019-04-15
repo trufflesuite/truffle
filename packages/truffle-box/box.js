@@ -3,6 +3,8 @@ const tmp = require("tmp");
 const path = require("path");
 const Config = require("truffle-config");
 const ora = require("ora");
+const fs = require("fs");
+const inquirer = require("inquirer");
 
 function parseSandboxOptions(options) {
   if (typeof options === "function") {
@@ -30,15 +32,17 @@ function parseSandboxOptions(options) {
 const Box = {
   unbox: async (url, destination, options = {}) => {
     let tempDirCleanup;
-    options.logger = options.logger || { log: () => {} };
+    logger = options.logger || { log: () => {} };
     const unpackBoxOptions = {
       logger: options.logger,
       force: options.force
     };
 
     try {
-      options.logger.log("");
+      logger.log("");
+      await Box.checkDir(options, destination);
       const tempDir = await utils.setUpTempDirectory();
+
       tempDirPath = tempDir.path;
       tempDirCleanup = tempDir.cleanupCallback;
 
@@ -66,13 +70,35 @@ const Box = {
     }
   },
 
+  checkDir: async (options = {}, destination) => {
+    let logger = options.logger || console;
+    if (!options.force) {
+      const unboxDir = fs.readdirSync(destination);
+      if (unboxDir.length) {
+        logger.log(`This directory is non-empty...`);
+        const prompt = [
+          {
+            type: "confirm",
+            name: "proceed",
+            message: `Proceed anyway?`,
+            default: true
+          }
+        ];
+        const answer = await inquirer.prompt(prompt);
+        if (!answer.proceed) {
+          logger.log("Unbox cancelled");
+          process.exit();
+        }
+      }
+    }
+  },
+
   // options.unsafeCleanup
   //   Recursively removes the created temporary directory, even when it's not empty. default is false
   // options.setGracefulCleanup
   //   Cleanup temporary files even when an uncaught exception occurs
   sandbox: function(options, callback) {
     var self = this;
-
     const { name, unsafeCleanup, setGracefulCleanup } = parseSandboxOptions(
       options
     );
@@ -86,12 +112,14 @@ const Box = {
     }
 
     tmp.dir({ unsafeCleanup }, function(err, dir) {
-      if (err) {
-        return callback(err);
-      }
+      if (err) return callback(err);
 
       self
-        .unbox("https://github.com/trufflesuite/truffle-init-" + name, dir)
+        .unbox(
+          "https://github.com/trufflesuite/truffle-init-" + name,
+          dir,
+          options
+        )
         .then(function() {
           var config = Config.load(path.join(dir, "truffle-config.js"), {});
           callback(null, config);

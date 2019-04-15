@@ -29,6 +29,9 @@ export function* saga() {
   debug("recording contract sources");
   yield* recordSources(...sources);
 
+  debug("normalizing contexts");
+  yield* evm.normalizeContexts();
+
   debug("waiting for start");
   // wait for start signal
   let { txHash, provider } = yield take(actions.START);
@@ -40,19 +43,20 @@ export function* saga() {
   if (err) {
     debug("error %o", err);
     yield* error(err);
-  } else {
-    debug("visiting ASTs");
-    // visit asts
-    yield* ast.visitAll();
-
-    //save allocation table
-    debug("saving allocation table");
-    yield* data.recordAllocations();
-
-    debug("readying");
-    // signal that stepping can begin
-    yield* ready();
+    return;
   }
+
+  debug("visiting ASTs");
+  // visit asts
+  yield* ast.visitAll();
+
+  //save allocation table
+  debug("saving allocation table");
+  yield* data.recordAllocations();
+
+  debug("readying");
+  // signal that stepping can begin
+  yield* ready();
 }
 
 export default prefixName("session", saga);
@@ -68,6 +72,7 @@ function* forkListeners() {
 
 function* fetchTx(txHash, provider) {
   let result = yield* web3.inspectTransaction(txHash, provider);
+  debug("result %o", result);
 
   if (result.error) {
     return result.error;
@@ -75,9 +80,19 @@ function* fetchTx(txHash, provider) {
 
   yield* evm.begin(result);
 
+  //get addresses created/called during transaction
   let addresses = yield* trace.processTrace(result.trace);
-  if (result.address && addresses.indexOf(result.address) == -1) {
+  //add in the address of the call itself (if a call)
+  if (result.address && !addresses.includes(result.address)) {
     addresses.push(result.address);
+  }
+  //if a create, only add in address if it was successful
+  if (
+    result.binary &&
+    result.status &&
+    !addresses.includes(result.storageAddress)
+  ) {
+    addresses.push(result.storageAddress);
   }
 
   let binaries = yield* web3.obtainBinaries(addresses);
@@ -88,23 +103,19 @@ function* fetchTx(txHash, provider) {
 }
 
 function* recordContexts(...contexts) {
-  for (let { contractName, binary, sourceMap, compiler } of contexts) {
-    yield* evm.addContext(contractName, { binary }, compiler);
-
-    if (sourceMap) {
-      yield* solidity.addSourceMap(binary, sourceMap);
-    }
+  for (let context of contexts) {
+    yield* evm.addContext(context);
   }
 }
 
 function* recordSources(...sources) {
-  for (let i = 0; i < sources.length; i++) {
-    const sourceData = sources[i];
+  for (let sourceData of sources) {
     if (sourceData !== undefined && sourceData !== null) {
       yield* solidity.addSource(
         sourceData.source,
         sourceData.sourcePath,
-        sourceData.ast
+        sourceData.ast,
+        sourceData.compiler
       );
     }
   }

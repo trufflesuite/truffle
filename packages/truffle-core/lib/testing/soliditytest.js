@@ -152,7 +152,7 @@ const SolidityTest = {
           });
 
           runner.config.artifactor
-            .saveAll(contracts, runner.config.contracts_build_directory)
+            .saveAll(contracts)
             .then(() => {
               callback();
             })

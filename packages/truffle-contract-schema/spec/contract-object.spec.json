@@ -15,6 +15,7 @@
       "allOf": [{ "$ref": "abi.spec.json#" }],
       "description": "Interface description returned by compiler for source"
     },
+    "metadata": { "$ref": "#/definitions/Metadata" },
     "bytecode": {
       "allOf": [{ "$ref": "#/definitions/Bytecode" }],
       "description": "Bytecode sent as contract-creation transaction data, with unresolved link references"
@@ -62,6 +63,7 @@
   "patternProperties": {
     "^x-": { "anyOf": [
       { "type": "string" },
+      { "type": "boolean" },
       { "type": "number" },
       { "type": "object" },
       { "type": "array" }
@@ -77,6 +79,10 @@
 
     "NatSpec": {
       "type": "object"
+    },
+
+    "Metadata": {
+      "type": "string"
     },
 
     "Bytecode": {

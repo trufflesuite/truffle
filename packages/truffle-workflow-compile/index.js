@@ -129,7 +129,8 @@ const Contracts = {
   reportCompilationStarted: options => {
     const logger = options.logger || console;
     if (!options.quiet) {
-      logger.log(OS.EOL + `Compiling your contracts` + OS.EOL);
+      logger.log(OS.EOL + `Compiling your contracts...`);
+      logger.log(`===========================`);
     }
   },
 
@@ -137,16 +138,21 @@ const Contracts = {
     const logger = options.logger || console;
     const { compilersInfo } = config;
     if (!options.quiet) {
-      logger.log(
-        `    > artifacts written to ${options.contracts_build_directory}`
-      );
       if (Object.keys(compilersInfo).length > 0) {
-        logger.log(OS.EOL + `Compiled successfully using:` + OS.EOL);
+        logger.log(
+          `> Artifacts written to ${options.contracts_build_directory}`
+        );
+        logger.log(`> Compiled successfully using:`);
+
+        const maxLength = Object.keys(compilersInfo)
+          .map(name => name.length)
+          .reduce((max, length) => (length > max ? length : max), 0);
+
         for (const name in compilersInfo) {
-          logger.log(`    > ${name}: ${compilersInfo[name].version}`);
+          const padding = " ".repeat(maxLength - name.length);
+
+          logger.log(`   - ${name}:${padding} ${compilersInfo[name].version}`);
         }
-      } else {
-        logger.log(OS.EOL + `Compilation successful`);
       }
       logger.log();
     }
@@ -155,16 +161,13 @@ const Contracts = {
   reportNothingToCompile: options => {
     const logger = options.logger || console;
     if (!options.quiet) {
-      logger.log(
-        `Everything is up to date, there is nothing to compile.` + OS.EOL
-      );
+      logger.log(`> Everything is up to date, there is nothing to compile.`);
     }
   },
 
   writeContracts: async (contracts, options) => {
     await promisify(mkdirp)(options.contracts_build_directory);
-    const extra_opts = { network_id: options.network_id };
-    await options.artifactor.saveAll(contracts, extra_opts);
+    await options.artifactor.saveAll(contracts);
   }
 };
 

@@ -1,7 +1,8 @@
-var emoji = require("node-emoji");
+const emoji = require("node-emoji");
 const mnemonicInfo = require("truffle-core/lib/mnemonics/mnemonic");
+const util = require("util");
 
-var command = {
+const command = {
   command: "develop",
   description: "Open a console with a local development blockchain",
   builder: {
@@ -14,104 +15,105 @@ var command = {
     usage: "truffle develop",
     options: []
   },
-  runConsole: function(config, ganacheOptions, done) {
-    var Console = require("../console");
-    var Environment = require("../environment");
+  runConsole: (config, ganacheOptions, done) => {
+    const Console = require("../console");
+    const Environment = require("../environment");
 
-    var commands = require("./index");
-    var excluded = ["console", "init", "develop"];
+    const commands = require("./index");
+    const excluded = ["console", "develop", "unbox", "init"];
 
-    var available_commands = Object.keys(commands).filter(function(name) {
-      return excluded.indexOf(name) === -1;
-    });
-
-    var console_commands = {};
-    available_commands.forEach(function(name) {
-      console_commands[name] = commands[name];
-    });
-
-    Environment.develop(config, ganacheOptions, function(err) {
-      if (err) return done(err);
-
-      var c = new Console(
-        console_commands,
-        config.with({
-          noAliases: true
-        })
-      );
-
-      c.start(done);
-      c.on("exit", function() {
-        process.exit();
-      });
-    });
-  },
-  run: function(options, done) {
-    var Config = require("truffle-config");
-    var Develop = require("../develop");
-
-    var config = Config.detect(options);
-    var customConfig = config.networks.develop;
-    let numAddresses = 10;
-    let defaultEtherBalance = 100;
-    let bTime = 0;
-
-    if (customConfig) {
-      numAddresses = customConfig.accounts ? customConfig.accounts : 10;
-      defaultEtherBalance = customConfig.defaultEtherBalance
-        ? customConfig.defaultEtherBalance
-        : 100;
-      bTime = customConfig.blockTime ? customConfig.blockTime : 0;
-    }
-
-    const { mnemonic, accounts, privateKeys } = mnemonicInfo.getAccountsInfo(
-      numAddresses
+    const available_commands = Object.keys(commands).filter(
+      name => !excluded.includes(name)
     );
 
-    var onMissing = function(name) {
-      return "**";
-    };
+    const console_commands = available_commands.reduce(
+      (acc, name) => Object.assign({}, acc, { [name]: commands[name] }),
+      {}
+    );
 
-    var warning =
+    const environmentDevelop = util.promisify(Environment.develop);
+    environmentDevelop(config, ganacheOptions)
+      .catch(err => done(err))
+      .then(() => {
+        const c = new Console(
+          console_commands,
+          config.with({ noAliases: true })
+        );
+        c.start(done);
+        c.on("exit", () => {
+          process.exit();
+        });
+      });
+  },
+  run: (options, done) => {
+    const Config = require("truffle-config");
+    const Develop = require("../develop");
+
+    const config = Config.detect(options);
+    const customConfig = config.networks.develop || {};
+
+    const { mnemonic, accounts, privateKeys } = mnemonicInfo.getAccountsInfo(
+      customConfig.accounts || 10
+    );
+
+    const onMissing = () => "**";
+
+    const warning =
       ":warning:  Important :warning:  : " +
       "This mnemonic was created for you by Truffle. It is not secure.\n" +
       "Ensure you do not use it on production blockchains, or else you risk losing funds.";
 
-    var ipcOptions = {
+    const ipcOptions = {
       log: options.log
     };
 
-    var ganacheOptions = {
-      host: "127.0.0.1",
-      port: 9545,
-      network_id: 4447,
-      total_accounts: numAddresses,
-      default_balance_ether: defaultEtherBalance,
-      blockTime: bTime,
-      mnemonic: mnemonic,
-      gasLimit: config.gas,
+    const ganacheOptions = {
+      host: customConfig.host || "127.0.0.1",
+      port: customConfig.port || 9545,
+      network_id: customConfig.network_id || 5777,
+      total_accounts: customConfig.accounts || 10,
+      default_balance_ether: customConfig.defaultEtherBalance || 100,
+      blockTime: customConfig.blockTime || 0,
+      mnemonic,
+      gasLimit: customConfig.gas || 0x6691b7,
+      gasPrice: customConfig.gasPrice || 0x77359400,
       noVMErrorsOnRPCResponse: true
     };
 
-    Develop.connectOrStart(ipcOptions, ganacheOptions, function(started) {
-      var url = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
+    if (customConfig.hardfork !== null && customConfig.hardfork !== undefined) {
+      ganacheOptions["hardfork"] = customConfig.hardfork;
+    }
+
+    function sanitizeNetworkID(network_id) {
+      if (network_id !== "*") {
+        if (!parseInt(network_id, 10)) {
+          const error =
+            `The network id specified in the truffle config ` +
+            `(${network_id}) is not valid. Please properly configure the network id as an integer value.`;
+          throw new Error(error);
+        }
+        return network_id;
+      } else {
+        // We have a "*" network. Return the default.
+        return 5777;
+      }
+    }
+
+    ganacheOptions.network_id = sanitizeNetworkID(ganacheOptions.network_id);
+
+    Develop.connectOrStart(ipcOptions, ganacheOptions, started => {
+      const url = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
 
       if (started) {
         config.logger.log(`Truffle Develop started at ${url}`);
         config.logger.log();
 
         config.logger.log(`Accounts:`);
-        for (var i = 0; i < accounts.length; i++) {
-          var account = accounts[i];
-          config.logger.log(`(${i}) ${account}`);
-        }
+        accounts.forEach((acct, idx) => config.logger.log(`(${idx}) ${acct}`));
         config.logger.log();
 
         config.logger.log(`Private Keys:`);
-        for (var i = 0; i < privateKeys.length; i++) {
-          var privateKey = privateKeys[i];
-          config.logger.log(`(${i}) ${privateKey}`);
-        }
+        privateKeys.forEach((key, idx) => config.logger.log(`(${idx}) ${key}`));
         config.logger.log();
 
         config.logger.log(`Mnemonic: ${mnemonic}`);
