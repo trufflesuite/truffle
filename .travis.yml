@@ -1,6 +1,8 @@
 dist: trusty
 sudo: required
 language: node_js
+node_js:
+  - "8"
 
 before_install:
   - docker pull ethereum/client-go:latest
@@ -17,25 +19,17 @@ before_install:
 matrix:
   fast_finish: true
   include:
-    - node_js: 8
-      env: GETH=true
+    - env: GETH=true
     - os: windows
-      node_js: 8
       env: PACKAGES=true
     - os: windows
-      node_js: 8
       env: INTEGRATION=true
-    - node_js: 8
-      env: PACKAGES=true
-    - node_js: 8
-      env: INTEGRATION=true
-    - node_js: 8
-      env: COVERAGE=true
+    - env: PACKAGES=true
+    - env: INTEGRATION=true
+    - env: COVERAGE=true
   allow_failures:
-    - node_js: 8
-      env: GETH=true
-    - node_js: 8
-      env: COVERAGE=true
+    - env: GETH=true
+    - env: COVERAGE=true
 
 
 install:
