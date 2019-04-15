@@ -19,6 +19,12 @@ matrix:
   include:
     - node_js: 8
       env: GETH=true
+    - os: windows
+      node_js: 8
+      env: PACKAGES=true
+    - os: windows
+      node_js: 8
+      env: INTEGRATION=true
     - node_js: 8
       env: PACKAGES=true
     - node_js: 8
