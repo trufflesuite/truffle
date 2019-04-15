@@ -20,10 +20,6 @@ var command = {
       describe: "Specify a migration number to run from",
       type: "number"
     },
-    "from": {
-      describe: "Specify a migration number to run from",
-      type: "number"
-    },
     "to": {
       describe: "Specify a migration number to run to",
       type: "number"
@@ -36,7 +32,9 @@ var command = {
   },
   help: {
     usage:
-      "truffle migrate [--reset] [--f <number> | --from <number>] [--to <number>] [--network <name>] [--compile-all] [--verbose-rpc] [--interactive]",
+      "truffle migrate [--reset] [--f <number>] [--to <number>] " +
+      "[--network <name>]\n                                [--compile-all] " +
+      "[--verbose-rpc] [--interactive] [--dry-run] [--skip-dry-run]",
     options: [
       {
         option: "--reset",
@@ -45,7 +43,7 @@ var command = {
           "completed migration."
       },
       {
-        option: "--f <number> | --from <number>",
+        option: "--f <number>",
         description:
           "Run contracts from a specific migration. The number refers to the prefix of " +
           "the migration file."
@@ -76,6 +74,14 @@ var command = {
         option: "--interactive",
         description:
           "Prompt to confirm that the user wants to proceed after the dry run."
+      },
+      {
+        option: "--dry-run",
+        description: "Only perform a test or 'dry run' migration."
+      },
+      {
+        option: "--skip-dry-run",
+        description: "Do not run a test or 'dry run' migration."
       }
     ]
   },
@@ -145,11 +151,8 @@ var command = {
     function runMigrations(config, callback) {
       Migrate.launchReporter();
 
-      // check --f && --from flag usage
-      const from = options.f || options.from;
-
-      if (from) {
-        Migrate.runFrom(from, config, done);
+      if (options.f) {
+        Migrate.runFrom(options.f, config, done);
       } else {
         Migrate.needsMigrating(config, function(err, needsMigrating) {
           if (err) return callback(err);
@@ -199,21 +202,20 @@ var command = {
       Environment.detect(conf, async function(err) {
         if (err) return done(err);
 
-        var dryRun = options.dryRun === true;
-        var production =
-          networkWhitelist.includes(conf.network_id) || conf.production;
+        const dryRunOnly = options.dryRun === true;
+        const production =
+          networkWhitelist.includes(parseInt(conf.network_id)) ||
+          conf.production;
+        const dryRunAndMigration = production && !conf.skipDryRun;
 
-        // Dry run only
-        if (dryRun) {
+        if (dryRunOnly) {
           try {
             await setupDryRunEnvironmentThenRunMigrations(conf);
             done();
           } catch (err) {
             done(err);
           }
-
-          // Production: dry-run then real run
-        } else if (production && !conf.skipDryRun) {
+        } else if (dryRunAndMigration) {
           const currentBuild = conf.contracts_build_directory;
           conf.dryRun = true;
 

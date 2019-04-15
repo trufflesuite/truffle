@@ -8,6 +8,7 @@ const Server = require("../server");
 describe("Typescript Tests", () => {
   const logger = new MemoryLogger();
   let config;
+  let options;
 
   function processErr(err, output) {
     if (err) {
@@ -22,7 +23,8 @@ describe("Typescript Tests", () => {
   before("set up sandbox", function(done) {
     this.timeout(10000);
 
-    Box.sandbox("default#typescript", (err, conf) => {
+    options = { name: "default#typescript", force: true };
+    Box.sandbox(options, (err, conf) => {
       if (err) return done(err);
       config = conf;
       config.logger = logger;

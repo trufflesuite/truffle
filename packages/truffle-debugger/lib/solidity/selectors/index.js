@@ -91,12 +91,7 @@ let solidity = createSelectorTree({
     /**
      * solidity.info.sources
      */
-    sources: createLeaf(["/state"], state => state.info.sources.byId),
-
-    /**
-     * solidity.info.sourceMaps
-     */
-    sourceMaps: createLeaf(["/state"], state => state.info.sourceMaps.byContext)
+    sources: createLeaf(["/state"], state => state.info.sources.byId)
   },
 
   /**
@@ -107,9 +102,9 @@ let solidity = createSelectorTree({
      * solidity.current.sourceMap
      */
     sourceMap: createLeaf(
-      [evm.current.context, "/info/sourceMaps"],
+      [evm.current.context],
 
-      ({ context }, sourceMaps) => sourceMaps[context] || {}
+      ({ sourceMap }) => sourceMap
     ),
 
     /**
@@ -131,19 +126,34 @@ let solidity = createSelectorTree({
     instructions: createLeaf(
       ["/info/sources", evm.current.context, "./sourceMap"],
 
-      (sources, { binary }, { sourceMap }) => {
+      (sources, { binary }, sourceMap) => {
         if (!binary) {
           return [];
         }
 
-        let instructions = CodeUtils.parseCode(binary);
+        let numInstructions;
+        if (sourceMap) {
+          numInstructions = sourceMap.split(";").length;
+        } else {
+          //HACK
+          numInstructions = (binary.length - 2) / 2;
+          //this is actually an overestimate, but that's OK
+        }
+
+        //because we might be dealing with a constructor with arguments, we do
+        //*not* remove metadata manually
+        let instructions = CodeUtils.parseCode(binary, numInstructions);
 
         if (!sourceMap) {
           // HACK
-          // Let's create a source map to use since none exists. This source map
-          // maps just as many ranges as there are instructions, and marks them
-          // all as being Solidity-internal and not jumps.
-          sourceMap = "0:0:-1:-".concat(";".repeat(instructions.length - 1));
+          // Let's create a source map to use since none exists. This source
+          // map maps just as many ranges as there are instructions (or
+          // possibly more), and marks them all as being Solidity-internal and
+          // not jumps.
+          sourceMap =
+            binary !== "0x"
+              ? "0:0:-1:-".concat(";".repeat(instructions.length - 1))
+              : "";
         }
 
         var lineAndColumnMappings = Object.assign(
@@ -220,20 +230,13 @@ let solidity = createSelectorTree({
       ["./instructions"],
 
       instructions => {
-        let map = [];
+        let map = {};
         instructions.forEach(function(instruction) {
           map[instruction.pc] = instruction;
         });
-
-        // fill in gaps in map by defaulting to the last known instruction
-        let lastSeen = null;
-        for (let [pc, instruction] of map.entries()) {
-          if (instruction) {
-            lastSeen = instruction;
-          } else {
-            map[pc] = lastSeen;
-          }
-        }
+        //note: this will have gaps in it.  That's OK!  Those gaps are the data
+        //portions of push instructions, which it is illegal to jump into.  We
+        //don't need to assign instructions to illegal PC values.
         return map;
       }
     ),

@@ -7,21 +7,21 @@ import decodeValue from "./value";
 import { MemoryPointer, DataPointer } from "../types/pointer";
 import { MemoryMemberAllocation } from "../types/allocation";
 import { EvmInfo } from "../types/evm";
-import range from "lodash.range";
+import { DecoderRequest } from "../types/request";
 
-export default async function decodeMemory(definition: DecodeUtils.AstDefinition, pointer: MemoryPointer, info: EvmInfo): Promise <any> {
+export default function* decodeMemory(definition: DecodeUtils.AstDefinition, pointer: MemoryPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
   if(DecodeUtils.Definition.isReference(definition)) {
-    return await decodeMemoryReferenceByAddress(definition, pointer, info);
+    return yield* decodeMemoryReferenceByAddress(definition, pointer, info);
   }
   else {
-    return await decodeValue(definition, pointer, info);
+    return yield* decodeValue(definition, pointer, info);
   }
 }
 
-export async function decodeMemoryReferenceByAddress(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo): Promise<any> {
+export function* decodeMemoryReferenceByAddress(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
   const { state } = info;
   // debug("pointer %o", pointer);
-  let rawValue: Uint8Array = await read(pointer, state);
+  let rawValue: Uint8Array = yield* read(pointer, state);
 
   let startPosition = DecodeUtils.Conversion.toBN(rawValue).toNumber();
   let length;
@@ -30,7 +30,7 @@ export async function decodeMemoryReferenceByAddress(definition: DecodeUtils.Ast
 
     case "bytes":
     case "string":
-      length = DecodeUtils.Conversion.toBN(await read({
+      length = DecodeUtils.Conversion.toBN(yield* read({
         memory: { start: startPosition, length: DecodeUtils.EVM.WORD_SIZE}
       }, state)).toNumber(); //initial word contains length
 
@@ -38,12 +38,12 @@ export async function decodeMemoryReferenceByAddress(definition: DecodeUtils.Ast
         memory: { start: startPosition + DecodeUtils.EVM.WORD_SIZE, length }
       }
 
-      return await decodeValue(definition, childPointer, info);
+      return yield* decodeValue(definition, childPointer, info);
 
     case "array":
 
       if (DecodeUtils.Definition.isDynamicArray(definition)) {
-        length = DecodeUtils.Conversion.toBN(await read({
+        length = DecodeUtils.Conversion.toBN(yield* read({
           memory: { start: startPosition, length: DecodeUtils.EVM.WORD_SIZE },
           }, state)).toNumber();  // initial word contains array length
         startPosition += DecodeUtils.EVM.WORD_SIZE; //increment startPosition to
@@ -60,14 +60,17 @@ export async function decodeMemoryReferenceByAddress(definition: DecodeUtils.Ast
       // replace erroneous `_storage_` type identifiers with `_memory_`
       baseDefinition = DecodeUtils.Definition.spliceLocation(baseDefinition, "memory");
 
-      return await Promise.all(range(length).map( (index: number) =>
-        decodeMemory(baseDefinition,
+      let decodedChildren = [];
+      for(let index = 0; index < length; index++) {
+        decodedChildren.push(yield* decodeMemory(
+          baseDefinition,
           { memory: {
             start: startPosition + index * DecodeUtils.EVM.WORD_SIZE,
             length: DecodeUtils.EVM.WORD_SIZE
           }},
-          info)
-      ));
+          info));
+      }
+      return decodedChildren;
 
     case "struct":
       const { referenceDeclarations, memoryAllocations } = info;
@@ -79,7 +82,8 @@ export async function decodeMemoryReferenceByAddress(definition: DecodeUtils.Ast
 
       debug("structAllocation %O", structAllocation);
 
-      const decodeAllocation = async (memberAllocation: MemoryMemberAllocation) => {
+      let decodedMembers: any = {};
+      for(let memberAllocation of Object.values(structAllocation.members)) {
         const memberPointer = memberAllocation.pointer;
         const childPointer: MemoryPointer = {
           memory: {
@@ -95,17 +99,11 @@ export async function decodeMemoryReferenceByAddress(definition: DecodeUtils.Ast
         //there also used to be code here to add on the "_ptr" ending when absent, but we
         //presently ignore that ending, so we'll skip that
 
-        let decoded = await decodeMemory(memberDefinition, childPointer, info);
+        let decoded = yield* decodeMemory(memberDefinition, childPointer, info);
 
-        return {
-          [memberDefinition.name]: decoded
-        };
+        decodedMembers[memberDefinition.name] = decoded;
       }
-
-      const decodings = Object.values(structAllocation.members).map(decodeAllocation);
-
-      return Object.assign({}, ...await Promise.all(decodings));
-
+      return decodedMembers;
 
     default:
       // debug("Unknown memory reference type: %s", DecodeUtils.typeIdentifier(definition));

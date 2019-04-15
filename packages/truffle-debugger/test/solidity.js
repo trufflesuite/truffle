@@ -9,6 +9,7 @@ import { prepareContracts, lineOf } from "./helpers";
 import Debugger from "lib/debugger";
 
 import solidity from "lib/solidity/selectors";
+import controller from "lib/controller/selectors";
 import trace from "lib/trace/selectors";
 
 const __SINGLE_CALL = `
@@ -92,10 +93,27 @@ contract RevertTest {
 }
 `;
 
+const __ADJUSTMENT = `
+pragma solidity ^0.5.0;
+
+contract AdjustTest {
+
+  function run() public returns (uint) {
+    //input 0
+    uint[] memory c;
+
+    uint w = 35; //output 0, input 1, output 1
+
+    return w + c.length;
+  } //input 2
+}
+`;
+
 let sources = {
   "SingleCall.sol": __SINGLE_CALL,
   "NestedCall.sol": __NESTED_CALL,
-  "FailedCall.sol": __FAILED_CALL
+  "FailedCall.sol": __FAILED_CALL,
+  "AdjustTest.sol": __ADJUSTMENT
 };
 
 describe("Solidity Debugging", function() {
@@ -176,6 +194,43 @@ describe("Solidity Debugging", function() {
         assert.equal(range.lines.start.line, breakLine);
       }
     } while (!session.view(trace.finished));
+  });
+
+  it("correctly resolves breakpoints", async function() {
+    // prepare
+    let instance = await abstractions.AdjustTest.deployed();
+    let receipt = await instance.run();
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      files,
+      contracts: artifacts
+    });
+
+    let session = bugger.connect();
+
+    let resolver = session.view(controller.breakpoints.resolver);
+    let source = session.view(solidity.current.source);
+
+    let breakpoints = [];
+    let expectedResolutions = [];
+
+    const NUM_TESTS = 3;
+
+    for (let i = 0; i < NUM_TESTS; i++) {
+      let inputLine = lineOf("input " + i, source.source);
+      breakpoints.push({ sourceId: source.id, line: inputLine });
+      let outputLine = lineOf("output " + i, source.source);
+      expectedResolutions.push(
+        outputLine !== -1 //lineOf will return -1 if no such line exists
+          ? { sourceId: source.id, line: outputLine }
+          : null
+      );
+    }
+
+    let resolutions = breakpoints.map(resolver);
+    assert.deepEqual(resolutions, expectedResolutions);
   });
 
   describe("Function Depth", function() {

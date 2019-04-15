@@ -1,6 +1,6 @@
 var command = {
-  command: 'opcode',
-  description: 'Print the compiled opcodes for a given contract',
+  command: "opcode",
+  description: "Print the compiled opcodes for a given contract",
   builder: {
     all: {
       type: "boolean",
@@ -12,11 +12,12 @@ var command = {
     options: [
       {
         option: "<contract_name>",
-        description: "Name of the contract to print opcodes for. Must be a contract name, not a file name. (required)",
+        description:
+          "Name of the contract to print opcodes for. Must be a contract name, not a file name. (required)"
       }
     ]
   },
-  run: function (options, done) {
+  run: function(options, done) {
     var Config = require("truffle-config");
     var TruffleError = require("truffle-error");
     var Contracts = require("truffle-workflow-compile");
@@ -35,18 +36,24 @@ var command = {
       try {
         Contract = config.resolver.require(contractName);
       } catch (e) {
-        return done(new TruffleError("Cannot find compiled contract with name \"" + contractName + "\""));
+        return done(
+          new TruffleError(
+            'Cannot find compiled contract with name "' + contractName + '"'
+          )
+        );
       }
 
       var bytecode = Contract.deployedBytecode;
+      var numInstructions = Contract.deployedSourceMap.split(";").length;
 
       if (options.creation) {
         bytecode = Contract.bytecode;
+        numInstructions = Contract.sourceMap.split(";").length;
       }
 
-      var opcodes = CodeUtils.parseCode(bytecode);
+      var opcodes = CodeUtils.parseCode(bytecode, numInstructions);
 
-      var indexLength = ((opcodes.length) + "").length;
+      var indexLength = (opcodes.length + "").length;
 
       opcodes.forEach(function(opcode, index) {
         var strIndex = index + ":";
@@ -55,7 +62,9 @@ var command = {
           strIndex += " ";
         }
 
-        console.log(strIndex + " " + opcode.name + " " + (opcode.pushData || ""));
+        console.log(
+          strIndex + " " + opcode.name + " " + (opcode.pushData || "")
+        );
       });
     });
   }

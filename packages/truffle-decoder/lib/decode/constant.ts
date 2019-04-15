@@ -6,9 +6,10 @@ import read from "../read";
 import decodeValue from "./value";
 import { ConstantDefinitionPointer} from "../types/pointer";
 import { EvmInfo } from "../types/evm";
+import { DecoderRequest } from "../types/request";
 import BN from "bn.js";
 
-export default async function decodeConstant(definition: DecodeUtils.AstDefinition, pointer: ConstantDefinitionPointer, info: EvmInfo): Promise <any> {
+export default function* decodeConstant(definition: DecodeUtils.AstDefinition, pointer: ConstantDefinitionPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
 
   debug("definition %O", definition);
   debug("pointer %o", pointer);
@@ -22,12 +23,12 @@ export default async function decodeConstant(definition: DecodeUtils.AstDefiniti
   if(DecodeUtils.Definition.typeClass(definition) === "bytes") {
     let size = DecodeUtils.Definition.specifiedSize(definition);
     if(size !== null) {
-      let word = await read(pointer, info.state);
+      let word = yield* read(pointer, info.state);
       let bytes = word.slice(DecodeUtils.EVM.WORD_SIZE - size);
       return DecodeUtils.Conversion.toHexString(bytes);
     }
   }
 
   //otherwise, as mentioned, just dispatch to decodeValue
-  return await decodeValue(definition, pointer, info);
+  return yield* decodeValue(definition, pointer, info);
 }

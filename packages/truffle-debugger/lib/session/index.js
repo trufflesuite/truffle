@@ -6,6 +6,7 @@ import configureStore from "lib/store";
 import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
 import data from "lib/data/selectors";
+import { decode } from "lib/data/sagas";
 import controllerSelector from "lib/controller/selectors";
 
 import rootSaga from "./sagas";
@@ -26,7 +27,9 @@ export default class Session {
     /**
      * @private
      */
-    this._store = configureStore(reducer, rootSaga);
+    let { store, sagaMiddleware } = configureStore(reducer, rootSaga);
+    this._store = store;
+    this._sagaMiddleware = sagaMiddleware;
 
     let { contexts, sources } = Session.normalize(contracts, files);
 
@@ -75,27 +78,36 @@ export default class Session {
         sourcePath,
         source,
         ast,
+        abi,
         compiler
       } = contract;
 
-      debug("sourceMap %o", sourceMap);
-      debug("compiler %o", compiler);
-
-      let contractId = ast.nodes.find(
+      let contractNode = ast.nodes.find(
         node =>
           node.nodeType === "ContractDefinition" && node.name === contractName
-      ).id; //could also record contractKind, but we don't need to
+      ); //ideally we'd hold this off till later, but that would break the
+      //direction of the evm/solidity dependence, so we do it now
 
-      debug("contractId %d", contractId);
+      let contractId = contractNode.id;
+      let contractKind = contractNode.contractKind;
 
-      sourcesByPath[sourcePath] = { sourcePath, source, ast };
+      debug("contractName %s", contractName);
+      debug("sourceMap %o", sourceMap);
+      debug("compiler %o", compiler);
+      debug("abi %O", abi);
+
+      sourcesByPath[sourcePath] = { sourcePath, source, ast, compiler };
 
       if (binary && binary != "0x") {
         contexts.push({
           contractName,
           binary,
           sourceMap,
-          contractId
+          abi,
+          compiler,
+          contractId,
+          contractKind,
+          isConstructor: true
         });
       }
 
@@ -104,8 +116,11 @@ export default class Session {
           contractName,
           binary: deployedBinary,
           sourceMap: deployedSourceMap,
+          abi,
           compiler,
-          contractId
+          contractId,
+          contractKind,
+          isConstructor: false
         });
       }
     }
@@ -131,6 +146,16 @@ export default class Session {
     this._store.dispatch(action);
 
     return true;
+  }
+
+  /**
+   * @private
+   * Allows running any saga -- for internal use only!
+   * Using this could seriously screw up the debugger state if you
+   * don't know what you're doing!
+   */
+  async _runSaga(saga, ...args) {
+    return await this._sagaMiddleware.run(saga, ...args).toPromise();
   }
 
   async interrupt() {
@@ -196,7 +221,7 @@ export default class Session {
   }
 
   async addBreakpoint(breakpoint) {
-    return this.dispatch(controller.addBreakpoint(breakpoint));
+    this.dispatch(controller.addBreakpoint(breakpoint));
   }
 
   async removeBreakpoint(breakpoint) {
@@ -207,49 +232,29 @@ export default class Session {
     return this.dispatch(controller.removeAllBreakpoints());
   }
 
+  //deprecated -- decode is now *always* ready!
   async decodeReady() {
-    return new Promise(resolve => {
-      let haveResolved = false;
-      const unsubscribe = this._store.subscribe(() => {
-        const subscriptionDecodingStarted = this.view(data.proc.decodingKeys);
-
-        debug("following decoding started: %d", subscriptionDecodingStarted);
-
-        if (subscriptionDecodingStarted <= 0 && !haveResolved) {
-          haveResolved = true;
-          unsubscribe();
-          resolve();
-        }
-      });
-
-      const decodingStarted = this.view(data.proc.decodingKeys);
-
-      debug("initial decoding started: %d", decodingStarted);
-
-      if (decodingStarted <= 0) {
-        haveResolved = true;
-        unsubscribe();
-        resolve();
-      }
-    });
+    return true;
   }
 
   async variable(name) {
-    await this.decodeReady();
-
     const definitions = this.view(data.current.identifiers.definitions);
     const refs = this.view(data.current.identifiers.refs);
 
-    const decode = this.view(data.views.decoder);
-    return await decode(definitions[name], refs[name]);
+    return await this._runSaga(decode, definitions[name], refs[name]);
   }
 
   async variables() {
-    debug("awaiting decodeReady");
-    await this.decodeReady();
-    debug("decode now ready");
-
-    return await this.view(data.current.identifiers.decoded);
-    debug("got variables");
+    let definitions = this.view(data.current.identifiers.definitions);
+    let refs = this.view(data.current.identifiers.refs);
+    let decoded = {};
+    for (let [identifier, ref] of Object.entries(refs)) {
+      decoded[identifier] = await this._runSaga(
+        decode,
+        definitions[identifier],
+        ref
+      );
+    }
+    return decoded;
   }
 }

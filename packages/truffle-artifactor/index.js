@@ -4,97 +4,73 @@ var path = require("path");
 var _ = require("lodash");
 var debug = require("debug")("artifactor");
 
-function Artifactor(destination) {
-  this.destination = destination;
-};
-
-Artifactor.prototype.save = function(object) {
-  var self = this;
-
-  return new Promise(function(accept, reject) {
-    object = Schema.normalize(object);
-
-    if (object.contractName == null) {
-      return reject(new Error("You must specify a contract name."));
-    }
-
-    var output_path = object.contractName;
-
-    // Create new path off of destination.
-    output_path = path.join(self.destination, output_path);
-    output_path = path.resolve(output_path);
-
-    // Add json extension.
-    output_path = output_path + ".json";
-
-    fs.readFile(output_path, {encoding: "utf8"}, function(err, json) {
-      // No need to handle the error. If the file doesn't exist then we'll start afresh
-      // with a new object.
-
-      var finalObject = object;
-
-      if (!err) {
-        var existingObjDirty;
-        try {
-          existingObjDirty = JSON.parse(json);
-        } catch (e) {
-          reject(e);
-        }
-
-        // normalize existing and merge into final
-        finalObject = Schema.normalize(existingObjDirty);
-
-        // merge networks
-        var finalNetworks = {};
-        _.merge(finalNetworks, finalObject.networks, object.networks);
-
-        // update existing with new
-        _.assign(finalObject, object);
-        finalObject.networks = finalNetworks;
-      }
-
-      // update timestamp
-      finalObject.updatedAt = new Date().toISOString();
-
-      // output object
-      fs.outputFile(output_path, JSON.stringify(finalObject, null, 2), "utf8", function(err) {
-        if (err) return reject(err);
-        accept();
-      });
-    });
-  });
-};
-
-Artifactor.prototype.saveAll = function(objects) {
-  var self = this;
-
-  if (Array.isArray(objects)) {
-    var array = objects;
-    objects = {};
-
-    array.forEach(function(item) {
-      objects[item.contract_name] = item;
-    });
+class Artifactor {
+  constructor(destination) {
+    this.destination = destination;
   }
 
-  return new Promise(function(accept, reject) {
-    fs.stat(self.destination, function(err, stat) {
-      if (err) {
-        return reject(new Error("Desination " + self.destination + " doesn't exist!"));
-      }
-      accept();
-    });
-  }).then(function() {
-    var promises = [];
+  async save(artifactObject) {
+    const normalizedArtifact = Schema.normalize(artifactObject);
+    const contractName = normalizedArtifact.contractName;
 
-    Object.keys(objects).forEach(function(contractName) {
-      var object = objects[contractName];
-      object.contractName = contractName;
-      promises.push(self.save(object));
-    });
+    if (!contractName) throw new Error("You must specify a contract name.");
 
-    return Promise.all(promises);
-  });
-};
+    const output_path = path.join(this.destination, `${contractName}.json`);
+    let completeArtifact = {};
+
+    // private helper for writing artifacts
+    const writeArtifact = _completeArtifact => {
+      _completeArtifact.updatedAt = new Date().toISOString();
+      fs.writeFileSync(
+        output_path,
+        JSON.stringify(_completeArtifact, null, 2),
+        "utf8"
+      );
+    };
+
+    try {
+      const existingArtifact = fs.readFileSync(output_path, "utf8"); // check if artifact already exists
+      const existingArtifactObject = JSON.parse(existingArtifact); // parse existing artifact
+      const normalizedExistingArtifact = Schema.normalize(
+        existingArtifactObject
+      );
+      _.merge(completeArtifact, normalizedExistingArtifact, normalizedArtifact);
+      writeArtifact(completeArtifact);
+    } catch (e) {
+      // if artifact doesn't already exist, write new file
+      if (e.code === "ENOENT") return writeArtifact(normalizedArtifact);
+      else if (e instanceof SyntaxError) throw new Error(e); // catches improperly formatted artifact json
+      throw new Error(e); // catch all other errors
+    }
+  }
+
+  async saveAll(artifactObjects) {
+    let newArtifactObjects = {};
+
+    if (Array.isArray(artifactObjects)) {
+      const tmpArtifactArray = artifactObjects;
+
+      tmpArtifactArray.forEach(artifactObj => {
+        newArtifactObjects[artifactObj.contract_name] = artifactObj;
+      });
+    } else {
+      newArtifactObjects = artifactObjects;
+    }
+
+    try {
+      fs.statSync(this.destination); // check if destination exists
+    } catch (e) {
+      if (e.code === "ENOENT")
+        // if destination doesn't exist, throw error
+        throw new Error(`Destination "${this.destination}" doesn't exist!`);
+      throw new Error(e); // throw on all other errors
+    }
+
+    Object.keys(newArtifactObjects).forEach(contractName => {
+      let artifactObject = newArtifactObjects[contractName];
+      this.save(artifactObject);
+    });
+  }
+}
 
 module.exports = Artifactor;

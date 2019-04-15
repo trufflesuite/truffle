@@ -71,6 +71,7 @@ module.exports = {
       setUpSpinner.succeed();
     } catch (error) {
       setUpSpinner.fail();
+      throw new Error(error);
     }
   }
 };
