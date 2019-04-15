@@ -377,13 +377,13 @@ Config.search = (options = {}, filename) => {
 };
 
 Config.detect = (options = {}, filename) => {
-  const file = Config.search(options, filename);
+  const configFile = Config.search(options, filename);
 
-  if (file === null) {
+  if (!configFile) {
     throw new TruffleError("Could not find suitable configuration file.");
   }
 
-  return Config.load(file, options);
+  return Config.load(configFile, options);
 };
 
 Config.load = function(file, options) {
