@@ -349,26 +349,31 @@ Config.prototype.merge = function(obj) {
 Config.default = () => new Config();
 
 Config.search = (options = {}, filename) => {
-  let file;
-
-  const searchOptions = {cwd: options.working_directory || options.workingDirectory};
+  const searchOptions = {
+    cwd: options.working_directory || options.workingDirectory
+  };
 
   if (!filename) {
-    const defaultFile = findUp.sync(DEFAULT_CONFIG_FILENAME, searchOptions);
-    const backupFile = findUp.sync(BACKUP_CONFIG_FILENAME, searchOptions);
-    if (defaultFile && backupFile) {
-      file = defaultFile;
-      console.warn(`Both ${BACKUP_CONFIG_FILENAME} and ${DEFAULT_CONFIG_FILENAME} were found. Using ${DEFAULT_CONFIG_FILENAME}`);
-    } else if (defaultFile) {
-      file = defaultFile;
-    } else if (backupFile) {
-      file = backupFile;
+    const isWin = /^win/.test(process.platform);
+    const defaultConfig = findUp.sync(DEFAULT_CONFIG_FILENAME, searchOptions);
+    const backupConfig = findUp.sync(BACKUP_CONFIG_FILENAME, searchOptions);
+    if (defaultConfig && backupConfig) {
+      console.warn(
+        `Warning: Both ${DEFAULT_CONFIG_FILENAME} and ${BACKUP_CONFIG_FILENAME} were found. Using ${DEFAULT_CONFIG_FILENAME}.`
+      );
+      return defaultConfig;
+    } else if (backupConfig && !defaultConfig) {
+      if (isWin)
+        console.warn(
+          `Warning: Please rename ${BACKUP_CONFIG_FILENAME} to ${DEFAULT_CONFIG_FILENAME} to ensure Windows compatibility.`
+        );
+      return backupConfig;
+    } else {
+      return defaultConfig;
     }
-  } else {
-    file = findUp.sync(filename, searchOptions);
   }
 
-  return file;
+  return findUp.sync(filename, searchOptions);
 };
 
 Config.detect = (options = {}, filename) => {
