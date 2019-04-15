@@ -139,7 +139,7 @@ export class Workspace {
          const sourceIds = sources.map(source => source.id);
          const sourcesObject = Object.assign({}, sourceIds);
 
-         const id = soliditySha3(compiler.id, sourcesObject);
+         const id = soliditySha3(jsonStableStringify(compiler, sourcesObject));
 
          const compilation = await this.compilation({ id }) || { ...compilationInput, id };
  

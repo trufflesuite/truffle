@@ -108,7 +108,6 @@ export const schema = mergeSchemas({
     }
       
     input CompilerInput {
-      id: String
       name: String
       version: String
       settings: Object
