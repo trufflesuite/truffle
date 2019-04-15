@@ -319,8 +319,6 @@ it("adds contracts", async () => {
       schema, AddContracts, null, { workspace }, variables
     );
 
-    console.debug(JSON.stringify(result, null, 2));
-
     const { data } = result;
   
     expect(data).toHaveProperty("contractsAdd");
