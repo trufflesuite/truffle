@@ -38,11 +38,31 @@ describe("Parser", function() {
     assert.deepEqual(imports, expected);
   });
 
-  it("should return correct imports with nat solc", function() {
+  it("should return correct imports with native solc", function() {
     const config = { version: "native" };
     const nativeSupplier = new CompilerSupplier(config);
     nativeSupplier.load().then(nativeSolc => {
       var imports = Parser.parseImports(source, nativeSolc);
+
+      // Note that this test is important because certain parts of the solidity
+      // output cuts off path prefixes like "./" and "../../../". If we get the
+      // imports list incorrectly, we'll have collisions.
+      var expected = [
+        "./Dependency.sol",
+        "./path/to/AnotherDep.sol",
+        "../../../path/to/AnotherDep.sol",
+        "ethpmpackage/Contract.sol"
+      ];
+
+      assert.deepEqual(imports, expected);
+    });
+  });
+
+  it("should return correct imports with docker solc", function() {
+    const config = { docker: true, version: "0.4.25" };
+    const dockerSupplier = new CompilerSupplier(config);
+    dockerSupplier.load().then(dockerSolc => {
+      var imports = Parser.parseImports(source, dockerSolc);
 
       // Note that this test is important because certain parts of the solidity
       // output cuts off path prefixes like "./" and "../../../". If we get the
