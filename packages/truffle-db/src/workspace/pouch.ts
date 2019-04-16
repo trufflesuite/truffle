@@ -91,7 +91,13 @@ export class Workspace {
     return {
       contracts: Promise.all(contracts.map(
         async (contractInput) => {
-          const { name, abi, compilation, sourceContract, constructor: contractConstructor } = contractInput;
+          const {
+            name,
+            abi,
+            compilation,
+            sourceContract,
+            constructor: contractConstructor
+          } = contractInput;
           const id = soliditySha3(jsonStableStringify(name, abi, sourceContract, compilation));
 
           const contract = await this.contract( { id } );
