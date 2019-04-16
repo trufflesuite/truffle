@@ -52,7 +52,7 @@ query GetContract($name:String!) {
 
 const GetContractConstructor = `
 query getContractConstructor($name:String!) {
-  artifacts {  
+  artifacts {
     contractConstructor(name: $name) {
       contract {
         name
@@ -71,7 +71,7 @@ query getContractConstructor($name:String!) {
       createBytecode {
         bytes
       }
-    }  
+    }
   }
 }`;
 
@@ -110,7 +110,7 @@ it("retrieves contract correctly", async () => {
   expect(sourceContract).toHaveProperty("ast");
   expect(sourceContract).toHaveProperty("source");
 
-  const { ast, source } = sourceContract; 
+  const { ast, source } = sourceContract;
   expect(source).toHaveProperty("contents");
   expect(source).toHaveProperty("sourcePath");
 });

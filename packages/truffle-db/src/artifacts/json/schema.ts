@@ -247,7 +247,7 @@ const translations = [
       }
     }
   }),
- 
+
   ({ contractObject, ...schemas }) => ({
     ...schemas,
 
@@ -255,11 +255,11 @@ const translations = [
       ...contractObject,
 
       properties: {
-        ...contractObject.properties, 
+        ...contractObject.properties,
         source: {
-          type: "object", 
+          type: "object",
           properties: {
-            contents: { type: "string" }, 
+            contents: { type: "string" },
             sourcePath: { type: "string" }
           }
         }

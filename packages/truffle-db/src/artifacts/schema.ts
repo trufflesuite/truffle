@@ -83,29 +83,29 @@ export const schema = mergeSchemas({
           deployedSourceMap: sourceMap
         }) => ({ bytes, sourceMap })
       },
-      
+
     },
 
     Contract: {
       name: {
         fragment: "... on ContractObject { name: contractName }"
-      }, 
+      },
       sourceContract: {
-        fragment: 
-        `... on ContractObject { 
+        fragment:
+        `... on ContractObject {
           ast,
           source { contents, sourcePath }
         }`,
         resolve: (obj) => {
           const { name, source, ast } = obj;
           const sourceContract = {
-            name: name, 
-            source: source, 
+            name: name,
+            source: source,
             ast: ast
           }
           return sourceContract;
         }
-      }, 
+      },
       constructor: {
         fragment: `... on ContractObject {
             bytecode
@@ -117,7 +117,7 @@ export const schema = mergeSchemas({
                 bytes: bytecode
               }
             }
-            return contractConstructor; 
+            return contractConstructor;
           }
         }
       },
