@@ -209,7 +209,7 @@ mutation addContracts($contractName: String, $compilationId: ID!, $bytecodeId:ID
           id: $compilationId
         }
       }
-      contractConstructor: {
+      constructor: {
         createBytecode: {
           id: $bytecodeId
         }
@@ -225,14 +225,14 @@ mutation addContracts($contractName: String, $compilationId: ID!, $bytecodeId:ID
           contents
         }
       }
-      contractConstructor {
+      constructor {
         createBytecode {
           bytes
         }
       }
     }
   }
-}`   
+}`
 
 const GetCompilation = `
 query GetCompilation($id: ID!) {

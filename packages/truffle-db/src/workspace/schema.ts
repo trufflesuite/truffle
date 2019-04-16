@@ -96,7 +96,7 @@ export const schema = mergeSchemas({
       abi: AbiInput
       compilation: ContractCompilationInput
       sourceContract: ContractSourceContractInput
-      contractConstructor: ContractConstructorInput
+      constructor: ContractConstructorInput
     }
 
     input ContractsAddInput {
