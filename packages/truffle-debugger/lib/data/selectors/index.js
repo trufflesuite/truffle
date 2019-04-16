@@ -457,6 +457,26 @@ const data = createSelectorTree({
     address: createLeaf([evm.current.call], call => call.storageAddress),
 
     /*
+     * data.current.functionsByPc
+     */
+    functionsByPc: createLeaf(
+      [solidity.current.functionsByPc],
+      functions => functions
+    ),
+
+    /*
+     * data.current.inConstructor
+     * are we currently in a constructor run, as opposed to a deployed run?
+     * Note: using evm.current.call would probably work just as well and be
+     * faster, but I figure I'll do it this way because it makes more sense
+     * structurally
+     */
+    inConstructor: createLeaf(
+      [evm.current.context],
+      ({ isConstructor }) => isConstructor
+    ),
+
+    /*
      * data.current.aboutToModify
      * HACK
      * This selector is used to catch those times when we go straight from a

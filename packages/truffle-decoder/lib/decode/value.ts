@@ -75,7 +75,16 @@ export default function* decodeValue(definition: DecodeUtils.AstDefinition, poin
           let selector = bytes.slice(DecodeUtils.EVM.ADDRESS_SIZE, DecodeUtils.EVM.ADDRESS_SIZE + DecodeUtils.EVM.SELECTOR_SIZE);
           return yield* decodeExternalFunction(address, selector, info);
         case "internal":
-          return decodeInternalFunction(bytes, info);
+          let pc: Uint8Array;
+          if(info.inConstructorContext) {
+            //get 2nd-to-last 4 bytes
+            pc = bytes.slice(-DecodeUtils.EVM.PC_SIZE * 2, -DecodeUtils.EVM.PC_SIZE);
+          }
+          else {
+            //get last 4 bytes
+            pc = bytes.slice(-DecodeUtils.EVM.PC_SIZE);
+          }
+          return decodeInternalFunction(pc, info);
         default:
           debug("unknown visibility: %s", DecodeUtils.Definition.visibility(definition));
       }
@@ -131,6 +140,25 @@ export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes:
 }
 
 export function decodeInternalFunction(pcBytes: Uint8Array, info: EvmInfo): string | undefined {
-  //Not implemented yet, sorry!  Coming soon!
-  return undefined;
+  let pc: number = DecodeUtils.Conversion.toBN(pcBytes).toNumber();
+  //before anything else: do we even have an internal functions table?
+  //if not, this is being (presumably) used from the contract decoder, and we don't
+  //support decoding internal functions there
+  if(!info.internalFunctionsTable) {
+    return "<decoding not supported>";
+  }
+  //also before we continue: is the PC zero? if so let's just return that
+  if(pc === 0) {
+    return "<zero>";
+  }
+  //otherwise, we get our function
+  let functionEntry = info.internalFunctionsTable[pc];
+  if(!functionEntry) {
+    //if it's not zero and there's no entry... we give up :P
+    return undefined;
+  }
+  if(functionEntry.isDesignatedInvalid) {
+    return "assert(false)";
+  }
+  return functionEntry.contractName + "." + functionEntry.name;
 }

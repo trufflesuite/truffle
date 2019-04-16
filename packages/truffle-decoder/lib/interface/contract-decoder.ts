@@ -196,7 +196,8 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       mappingKeys: this.mappingKeys,
       referenceDeclarations: this.referenceDeclarations,
       storageAllocations: this.storageAllocations,
-      contexts: this.contexts
+      contexts: this.contexts,
+      inConstructorContext: false
     };
 
     const decoder: IterableIterator<any> = decode(variable.definition, variable.pointer, info);
