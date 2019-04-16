@@ -98,7 +98,7 @@ export class Workspace {
             sourceContract,
             constructor: contractConstructor
           } = contractInput;
-          const id = soliditySha3(jsonStableStringify(name, abi, sourceContract, compilation));
+          const id = soliditySha3(jsonStableStringify({ name, abi, sourceContract, compilation }));
 
           const contract = await this.contract( { id } );
 
