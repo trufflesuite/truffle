@@ -57,6 +57,26 @@ function modifierForInvocation(invocation, scopes) {
   }
 }
 
+//see data.views.contexts for an explanation
+function debuggerContextToDecoderContext(context) {
+  let {
+    contractName,
+    binary,
+    contractId,
+    contractKind,
+    isConstructor,
+    abi
+  } = context;
+  return {
+    contractName,
+    binary,
+    contractId,
+    contractKind,
+    isConstructor,
+    abi: DecodeUtils.Contexts.abiToFunctionAbiWithSignatures(abi)
+  };
+}
+
 const data = createSelectorTree({
   state: state => state.data,
 
@@ -201,25 +221,9 @@ const data = createSelectorTree({
         {},
         ...Object.values(contexts)
           .filter(context => !context.isConstructor)
-          .map(
-            ({
-              contractName,
-              binary,
-              abi,
-              contractId,
-              contractKind,
-              isConstructor
-            }) => ({
-              [contractId]: {
-                contractName,
-                binary,
-                contractId,
-                contractKind,
-                isConstructor,
-                abi: DecodeUtils.Contexts.abiToFunctionAbiWithSignatures(abi)
-              }
-            })
-          )
+          .map(context => ({
+            [context.contractId]: debuggerContextToDecoderContext(context)
+          }))
       )
     )
   },
@@ -465,16 +469,9 @@ const data = createSelectorTree({
     ),
 
     /*
-     * data.current.inConstructor
-     * are we currently in a constructor run, as opposed to a deployed run?
-     * Note: using evm.current.call would probably work just as well and be
-     * faster, but I figure I'll do it this way because it makes more sense
-     * structurally
+     * data.current.context
      */
-    inConstructor: createLeaf(
-      [evm.current.context],
-      ({ isConstructor }) => isConstructor
-    ),
+    context: createLeaf([evm.current.context], debuggerContextToDecoderContext),
 
     /*
      * data.current.aboutToModify

@@ -24,8 +24,8 @@ export interface EvmInfo {
   calldataAllocations?: CalldataAllocations;
   memoryAllocations?: MemoryAllocations;
   contexts?: Contexts.DecoderContexts;
+  currentContext?: Contexts.DecoderContext;
   internalFunctionsTable?: InternalFunctions;
-  inConstructorContext?: boolean;
 }
 
 export interface InternalFunctions {

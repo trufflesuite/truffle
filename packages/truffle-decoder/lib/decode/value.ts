@@ -76,7 +76,7 @@ export default function* decodeValue(definition: DecodeUtils.AstDefinition, poin
           return yield* decodeExternalFunction(address, selector, info);
         case "internal":
           let pc: Uint8Array;
-          if(info.inConstructorContext) {
+          if(info.currentContext.isConstructor) {
             //get 2nd-to-last 4 bytes
             pc = bytes.slice(-DecodeUtils.EVM.PC_SIZE * 2, -DecodeUtils.EVM.PC_SIZE);
           }
