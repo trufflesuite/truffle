@@ -17,7 +17,6 @@ export const schema = mergeSchemas({
     `type Query {
       contractNames: [String]!
       contract(name: String!): Contract
-      contractConstructor(name: String!): ContractConstructor
       contractInstance(networkId: String!, name: String!): ContractInstance
     }`
   ],
@@ -34,16 +33,6 @@ export const schema = mergeSchemas({
         })
       },
       contract: {
-        resolve: (_, args, context, info) => info.mergeInfo.delegateToSchema({
-          schema: jsonSchema,
-          operation: "query",
-          fieldName: "contract",
-          args,
-          context,
-          info
-        })
-      },
-      contractConstructor: {
         resolve: (_, args, context, info) => info.mergeInfo.delegateToSchema({
           schema: jsonSchema,
           operation: "query",
@@ -117,40 +106,20 @@ export const schema = mergeSchemas({
           return sourceContract;
         }
       }, 
-    },
-
-    ContractConstructor: {
-      contract: {
-        fragment: 
-        `... on ContractObject { 
-          source { contents, sourcePath },
-          name: contractName, 
-          ast, 
-          abi { json, items }
-        }`,
-        resolve: (obj) => {
-          const { name, source, ast, abi } = obj;
-          const contract = {
-            name: name,
-            sourceContract: {
-              name: name,
-              source: source,
-              ast: ast
-            }, 
-            abi: abi
+      contractConstructor: {
+        fragment: `... on ContractObject {
+            bytecode
+          }`,
+          resolve: (obj) => {
+            const { bytecode } = obj;
+            const contractConstructor = {
+              createBytecode: {
+                bytes: bytecode
+              }
+            }
+            return contractConstructor; 
           }
-          return contract;
         }
       },
-      createBytecode: {
-        fragment: `... on ContractObject {
-          bytecode
-        }`,
-        resolve: ({
-          bytecode: bytes,
-        }) => ({ bytes })
-      },
-
     }
-  }
 });
