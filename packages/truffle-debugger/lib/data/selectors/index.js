@@ -222,7 +222,7 @@ const data = createSelectorTree({
         ...Object.values(contexts)
           .filter(context => !context.isConstructor)
           .map(context => ({
-            [context.contractId]: debuggerContextToDecoderContext(context)
+            [context.context]: debuggerContextToDecoderContext(context)
           }))
       )
     )
