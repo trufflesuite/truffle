@@ -8,7 +8,7 @@ const originalrequire = require("original-require");
 const Configstore = require("configstore");
 
 const DEFAULT_CONFIG_FILENAME = "truffle-config.js";
-const BACKUP_CONFIG_FILENAME = "truffle.js"; // For Windows + Command Prompt
+const BACKUP_CONFIG_FILENAME = "truffle.js"; // old config filename
 
 function Config(truffle_directory, working_directory, network) {
   var self = this;
