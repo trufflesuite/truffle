@@ -205,9 +205,6 @@ mutation addContracts($contractName: String, $compilationId: ID!, $bytecodeId:ID
       }
       sourceContract: {
         index: 0
-        compilation: {
-          id: $compilationId
-        }
       }
       constructor: {
         createBytecode: {

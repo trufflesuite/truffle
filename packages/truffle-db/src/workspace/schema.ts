@@ -74,13 +74,8 @@ export const schema = mergeSchemas({
       id: ID!
     }
 
-    input ContractSourceContractCompilationInput {
-      id: ID!
-    }
-
     input ContractSourceContractInput {
       index: FileIndex
-      compilation: ContractSourceContractCompilationInput
     }
 
     input ContractConstructorBytecodeInput {
@@ -216,12 +211,13 @@ export const schema = mergeSchemas({
           workspace.compilation(compilation)
       },
       sourceContract: {
-        resolve: async ({ sourceContract }, _, { workspace }) => 
-          {
-            const compilationData = await workspace.compilation(sourceContract.compilation);
-            const sourceContractData = compilationData.contracts[sourceContract.index];
-            return sourceContractData;
-          }
+        fragment: `... on Contract { compilation { id } }`,
+        resolve: async ({ sourceContract, compilation }, _, { workspace }) => {
+          const { contracts: sourceContracts } =
+            await workspace.compilation(compilation);
+
+          return sourceContracts[sourceContract.index];
+        }
       }
     },
     SourceContract: {
