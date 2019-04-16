@@ -2,7 +2,7 @@ import {
   mergeSchemas,
   transformSchema,
   FilterRootFields
-} from "graphql-tools";
+} from "@gnd/graphql-tools";
 
 import { schema as rootSchema } from "truffle-db/schema";
 import { schema as jsonSchema } from "./json";

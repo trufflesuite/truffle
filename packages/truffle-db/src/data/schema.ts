@@ -1,4 +1,4 @@
-import { transformSchema, FilterRootFields } from "graphql-tools";
+import { transformSchema, FilterRootFields } from "@gnd/graphql-tools";
 
 import { scopeSchemas } from "./utils";
 

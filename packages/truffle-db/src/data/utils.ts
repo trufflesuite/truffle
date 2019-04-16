@@ -1,5 +1,5 @@
 import { GraphQLSchema, GraphQLNamedType, GraphQLObjectType } from "graphql";
-import { mergeSchemas, IResolvers } from "graphql-tools";
+import { mergeSchemas, IResolvers } from "@gnd/graphql-tools";
 import {
   buildObjForSchema,
   buildOpsObjectForName,

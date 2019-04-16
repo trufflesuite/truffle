@@ -1,6 +1,6 @@
 const { default: convert } = require("@gnd/jsonschema2graphql");
 
-import { makeExecutableSchema } from "graphql-tools";
+import { makeExecutableSchema } from "@gnd/graphql-tools";
 
 import {
   printSchema, GraphQLObjectType, GraphQLNonNull, GraphQLList, GraphQLString

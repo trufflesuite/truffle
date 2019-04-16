@@ -1,6 +1,6 @@
 import {
   mergeSchemas,
-} from "graphql-tools";
+} from "@gnd/graphql-tools";
 
 import { schema as rootSchema } from "truffle-db/schema";
 
