@@ -41,7 +41,9 @@ query GetContract($name:String!) {
           contents
           sourcePath
         }
-        ast
+        ast {
+          json
+        }
       }
       abi {
         json
@@ -53,23 +55,22 @@ query GetContract($name:String!) {
 const GetContractConstructor = `
 query getContractConstructor($name:String!) {
   artifacts {
-    contractConstructor(name: $name) {
-      contract {
+    contract(name: $name) {
+      name
+      sourceContract {
         name
-        sourceContract {
-          name
-          ast
-          source {
-            contents
-            sourcePath
-          }
-        }
-        abi {
-          json
+        source {
+          contents
+          sourcePath
         }
       }
-      createBytecode {
-        bytes
+      constructor {
+        createBytecode {
+          bytes
+        }
+      }
+      abi {
+        json
       }
     }
   }
@@ -119,30 +120,27 @@ it("retrieves contract constructor object correctly", async() => {
   const result = await db.query(GetContractConstructor, {
     name: Migrations.contractName
   });
-console.debug("result in constructor test: " + JSON.stringify(result, null, 2))
   const { data } = result;
   expect(data).toHaveProperty("artifacts");
 
   const { artifacts } = data;
-  expect(artifacts).toHaveProperty("contractConstructor");
+  expect(artifacts).toHaveProperty("contract");
 
-  const { contractConstructor } = artifacts;
-  expect(contractConstructor).toHaveProperty("contract");
-  expect(contractConstructor).toHaveProperty("createBytecode");
-
-  const { contract } = contractConstructor;
+  const { contract } = artifacts;
+  expect(contract).toHaveProperty("constructor");
   expect(contract).toHaveProperty("name");
   expect(contract).toHaveProperty("abi");
   expect(contract).toHaveProperty("sourceContract");
 
+  const { constructor: contractConstructor } = contract;
+  expect(contractConstructor).toHaveProperty("createBytecode");
+
   const { name, sourceContract, abi } = contract;
   expect(name).toEqual(Migrations.contractName);
   expect(sourceContract).toHaveProperty("name");
-  expect(sourceContract).toHaveProperty("ast");
   expect(sourceContract).toHaveProperty("source");
 
-  const { ast, source } = sourceContract;
-  expect(ast).not.toEqual(null);
+  const { source } = sourceContract;
   expect(source).not.toEqual(null);
 
 });
