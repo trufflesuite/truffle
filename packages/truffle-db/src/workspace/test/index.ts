@@ -362,7 +362,7 @@ it("adds compilation", async () => {
     contractId: soliditySha3(Migrations.contractName, soliditySha3(Migrations.source, Migrations.sourcePath))
   }
 
-  const compilationId = soliditySha3(jsonStableStringify(Migrations.compiler, soliditySha3(Migrations.source, Migrations.sourcePath)))
+  const compilationId = soliditySha3(jsonStableStringify(Migrations.compiler, soliditySha3(Migrations.source, Migrations.sourcePath)}))
 
   // add compilation
   {
