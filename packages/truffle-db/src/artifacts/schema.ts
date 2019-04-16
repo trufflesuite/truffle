@@ -106,7 +106,7 @@ export const schema = mergeSchemas({
           return sourceContract;
         }
       }, 
-      contractConstructor: {
+      constructor: {
         fragment: `... on ContractObject {
             bytecode
           }`,

@@ -27,7 +27,7 @@ type Contract {
   abi: ABI
   compilation: Compilation
   sourceContract: SourceContract
-  contractConstructor: ContractConstructor
+  constructor: ContractConstructor
 }
 
 type ABI {
