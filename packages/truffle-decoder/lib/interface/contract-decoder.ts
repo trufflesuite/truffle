@@ -228,7 +228,6 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         }
       }
       //note: one of the above conditionals *must* be true by the type system.
-      //yes, right now there's only one such conditional.
       result = decoder.next(response);
     }
     //at this point, result.value holds the final value

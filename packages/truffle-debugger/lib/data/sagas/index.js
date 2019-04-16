@@ -99,6 +99,7 @@ export function* decode(definition, ref) {
           yield* evm.addInstance(address, binary);
           response = DecodeUtils.Conversion.toBytes(binary);
         }
+        break;
       default:
         debug("unrecognized request type!");
     }
