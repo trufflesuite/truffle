@@ -124,7 +124,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.relevantContracts = relevantContracts;
 
     if(address !== undefined) {
-      this.contractAddress === address;
+      this.contractAddress = address;
     }
     this.contractNode = getContractNode(this.contract);
 
