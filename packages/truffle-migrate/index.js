@@ -48,8 +48,6 @@ const Migrate = {
   },
 
   run: function(options, callback) {
-    const self = this;
-
     expect.options(options, [
       "working_directory",
       "migrations_directory",
@@ -67,12 +65,14 @@ const Migrate = {
       return this.runAll(options, callback);
     }
 
-    self.lastCompletedMigration(options, function(err, last_migration) {
-      if (err) return callback(err);
-
-      // Don't rerun the last completed migration.
-      self.runFrom(last_migration + 1, options, callback);
-    });
+    return this.lastCompletedMigration(options)
+      .then(lastMigration => {
+        // Don't rerun the last completed migration.
+        return this.runFrom(lastMigration + 1, options, callback);
+      })
+      .catch(error => {
+        return callback(error);
+      });
   },
 
   runFrom: function(number, options, callback) {
@@ -159,19 +159,19 @@ const Migrate = {
     };
   },
 
-  lastCompletedMigration: function(options, callback) {
+  lastCompletedMigration: async function(options) {
     let Migrations;
 
     try {
       Migrations = options.resolver.require("Migrations");
-    } catch (e) {
-      const message = `Could not find built Migrations contract: ${e.message}`;
-      return callback(new Error(message));
+    } catch (error) {
+      const message = `Could not find built Migrations contract: ${
+        error.message
+      }`;
+      throw new Error(message);
     }
 
-    if (Migrations.isDeployed() === false) {
-      return callback(null, 0);
-    }
+    if (Migrations.isDeployed() === false) return 0;
 
     const migrationsOnChain = async (migrationsAddress, callback) => {
       return (
@@ -184,23 +184,21 @@ const Migrate = {
     const lastCompletedMigration = migrationsInstance => {
       try {
         return migrationsInstance.last_completed_migration.call();
-      } catch (e) {
-        if (e instanceof TypeError)
+      } catch (error) {
+        if (error instanceof TypeError)
           return migrationsInstance.lastCompletedMigration.call();
-        throw new Error(e);
+        throw new Error(error);
       }
     };
 
-    Migrations.deployed()
-      .then(async function(migrations) {
-        return (await migrationsOnChain(migrations.address))
-          ? await lastCompletedMigration(migrations)
-          : 0;
-      })
-      .then(function(completed_migration) {
-        callback(null, parseInt(completed_migration));
-      })
-      .catch(callback);
+    const migrations = await Migrations.deployed();
+    let completedMigration;
+    if (await migrationsOnChain(migrations.address)) {
+      completedMigration = await lastCompletedMigration(migrations);
+    } else {
+      completedMigration = 0;
+    }
+    return parseInt(completedMigration);
   },
 
   needsMigrating: function(options, callback) {
@@ -210,23 +208,25 @@ const Migrate = {
       return callback(null, true);
     }
 
-    this.lastCompletedMigration(options, function(err, number) {
-      if (err) return callback(err);
+    return this.lastCompletedMigration(options)
+      .then(number => {
+        self.assemble(options, function(err, migrations) {
+          if (err) return callback(err);
 
-      self.assemble(options, function(err, migrations) {
-        if (err) return callback(err);
+          while (migrations.length > 0) {
+            if (migrations[0].number >= number) break;
+            migrations.shift();
+          }
 
-        while (migrations.length > 0) {
-          if (migrations[0].number >= number) break;
-          migrations.shift();
-        }
-
-        callback(
-          null,
-          migrations.length > 1 || (migrations.length && number === 0)
-        );
+          callback(
+            null,
+            migrations.length > 1 || (migrations.length && number === 0)
+          );
+        });
+      })
+      .catch(error => {
+        return callback(error);
       });
-    });
   }
 };
 
