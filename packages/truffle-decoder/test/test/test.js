@@ -37,13 +37,14 @@ function validateStructS2(s2, values) {
 
 contract("DecodingSample", _accounts => {
   it("should get the initial state properly", async () => {
-    await DecodingSample.deployed();
+    let deployedContract = await DecodingSample.deployed();
+    let address = deployedContract.address;
     const decoder = TruffleDecoder.forContract(
       DecodingSample,
       [],
       web3.currentProvider
     );
-    decoder.init();
+    await decoder.init();
 
     decoder.watchMappingKey("varMapping", 2);
     decoder.watchMappingKey("varMapping", 3);
@@ -143,5 +144,10 @@ contract("DecodingSample", _accounts => {
 
     assert.equal(variables.varMapping.value.members[2], 41);
     assert.equal(variables.varMapping.value.members[3], 107);
+
+    assert.equal(
+      variables.functionExternal.value,
+      "DecodingSample(" + address + ").example"
+    );
   });
 });

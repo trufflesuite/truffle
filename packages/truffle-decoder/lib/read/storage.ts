@@ -66,7 +66,7 @@ export function* read(storage: WordMapping, slot: Slot): IterableIterator<Uint8A
   // debug("reading slot: %o", DecodeUtils.toHexString(address));
 
   const hexAddress = DecodeUtils.Conversion.toHexString(address, DecodeUtils.EVM.WORD_SIZE);
-  let word = storage[hexAddress];
+  let word: Uint8Array = storage[hexAddress];
 
   //if we can't find the word in the map, we place a request to the invoker to supply it
   //(contract-decoder will look it up from the blockchain, while the debugger will just

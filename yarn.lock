@@ -813,6 +813,12 @@
   dependencies:
     "@types/lodash" "*"
 
+"@types/lodash.escaperegexp@^4.1.6":
+  version "4.1.6"
+  resolved "https://registry.yarnpkg.com/@types/lodash.escaperegexp/-/lodash.escaperegexp-4.1.6.tgz#3e2326aa33e95b2f3801de027f04a4f7aba2af4f"
+  dependencies:
+    "@types/lodash" "*"
+
 "@types/lodash.isequal@^4.5.4":
   version "4.5.5"
   resolved "https://registry.yarnpkg.com/@types/lodash.isequal/-/lodash.isequal-4.5.5.tgz#4fed1b1b00bef79e305de0352d797e9bb816c8ff"
@@ -4906,6 +4912,21 @@ ethers@4.0.0-beta.1:
 ethers@4.0.26, ethers@^4.0.0-beta.1:
   version "4.0.26"
   resolved "https://registry.yarnpkg.com/ethers/-/ethers-4.0.26.tgz#a4b17184a0ed3db9c88d1b6d28beaa7d0e0ba3e4"
+  dependencies:
+    "@types/node" "^10.3.2"
+    aes-js "3.0.0"
+    bn.js "^4.4.0"
+    elliptic "6.3.3"
+    hash.js "1.1.3"
+    js-sha3 "0.5.7"
+    scrypt-js "2.0.4"
+    setimmediate "1.0.4"
+    uuid "2.0.1"
+    xmlhttprequest "1.8.0"
+
+ethers@^4.0.27:
+  version "4.0.27"
+  resolved "https://registry.yarnpkg.com/ethers/-/ethers-4.0.27.tgz#e570b0da9d805ad65c83d81919abe02b2264c6bf"
   dependencies:
     "@types/node" "^10.3.2"
     aes-js "3.0.0"
@@ -13168,6 +13189,15 @@ web3-eth-abi@1.0.0-beta.48:
     lodash "^4.17.11"
     web3-utils "1.0.0-beta.48"
 
+web3-eth-abi@1.0.0-beta.52:
+  version "1.0.0-beta.52"
+  resolved "https://registry.yarnpkg.com/web3-eth-abi/-/web3-eth-abi-1.0.0-beta.52.tgz#88dc2d36e2f99dfe255f8f64b6f613bad82779d8"
+  dependencies:
+    "@babel/runtime" "^7.3.1"
+    ethers "^4.0.27"
+    lodash "^4.17.11"
+    web3-utils "1.0.0-beta.52"
+
 web3-eth-accounts@1.0.0-beta.35:
   version "1.0.0-beta.35"
   resolved "https://registry.yarnpkg.com/web3-eth-accounts/-/web3-eth-accounts-1.0.0-beta.35.tgz#7d0e5a69f510dc93874471599eb7abfa9ddf3e63"
@@ -13615,6 +13645,21 @@ web3-utils@1.0.0-beta.37:
 web3-utils@1.0.0-beta.48:
   version "1.0.0-beta.48"
   resolved "https://registry.yarnpkg.com/web3-utils/-/web3-utils-1.0.0-beta.48.tgz#faf9e4932030d78235efd5dcc17c397d8808fa45"
+  dependencies:
+    "@babel/runtime" "^7.3.1"
+    "@types/bn.js" "^4.11.4"
+    "@types/node" "^10.12.18"
+    bn.js "4.11.8"
+    eth-lib "0.2.8"
+    ethjs-unit "^0.1.6"
+    lodash "^4.17.11"
+    number-to-bn "1.7.0"
+    randomhex "0.1.5"
+    utf8 "2.1.1"
+
+web3-utils@1.0.0-beta.52:
+  version "1.0.0-beta.52"
+  resolved "https://registry.yarnpkg.com/web3-utils/-/web3-utils-1.0.0-beta.52.tgz#27f9beeac3e1ea981eba9824d79e2971f156eebc"
   dependencies:
     "@babel/runtime" "^7.3.1"
     "@types/bn.js" "^4.11.4"

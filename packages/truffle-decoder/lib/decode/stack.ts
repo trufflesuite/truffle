@@ -4,6 +4,7 @@ const debug = debugModule("decoder:decode:stack");
 import * as DecodeUtils from "truffle-decode-utils";
 import read from "../read";
 import decodeValue from "./value";
+import { decodeExternalFunction } from "./value";
 import { decodeMemoryReferenceByAddress } from "./memory";
 import { decodeStorageReferenceByAddress } from "./storage";
 import { decodeCalldataReferenceByAddress } from "./calldata";
@@ -11,7 +12,7 @@ import { StackPointer, StackLiteralPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest } from "../types/request";
 
-export function* decodeStack(definition: DecodeUtils.AstDefinition, pointer: StackPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
+export default function* decodeStack(definition: DecodeUtils.AstDefinition, pointer: StackPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
   const rawValue: Uint8Array = yield* read(pointer, info.state);
   const literalPointer: StackLiteralPointer = { literal: rawValue };
   return yield* decodeLiteral(definition, literalPointer, info);
@@ -72,8 +73,13 @@ export function* decodeLiteral(definition: DecodeUtils.AstDefinition, pointer: S
   }
 
   //next: do we have an external function?  these work differently on the stack
-  //than elsewhere, so we can't just pass it on to decodeValue.  However, we
-  //don't yet support this case, so let's just move on
+  //than elsewhere, so we can't just pass it on to decodeValue.
+  if(DecodeUtils.Definition.typeClass(definition) === "function"
+    && DecodeUtils.Definition.visibility(definition) === "external") {
+    let address = pointer.literal.slice(0, DecodeUtils.EVM.WORD_SIZE);
+    let selector = pointer.literal.slice(-DecodeUtils.EVM.SELECTOR_SIZE);
+    return yield* decodeExternalFunction(address, selector, info);
+  }
 
   //finally, if none of the above hold, we can just dispatch to decodeValue.
   return yield* decodeValue(definition, pointer, info);

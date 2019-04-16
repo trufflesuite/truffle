@@ -15,10 +15,11 @@ export function inspect(txHash) {
 }
 
 export const FETCH_BINARY = "FETCH_BINARY";
-export function fetchBinary(address) {
+export function fetchBinary(address, block) {
   return {
     type: FETCH_BINARY,
-    address
+    address,
+    block //optional
   };
 }
 
