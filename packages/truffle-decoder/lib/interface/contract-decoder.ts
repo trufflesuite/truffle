@@ -124,11 +124,9 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.contract = contract;
     this.relevantContracts = relevantContracts;
 
-    this.contractNetwork = Object.keys(this.contract.networks)[0];
-    this.contractAddress = address !== undefined
-      ? address
-      : this.contract.networks[this.contractNetwork].address;
-
+    if(address !== undefined) {
+      this.contractAddress = address;
+    }
     this.contractNode = getContractNode(this.contract);
 
     this.contracts[this.contractNode.id] = this.contract;
@@ -167,6 +165,11 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   public async init(): Promise<void> {
+    this.contractNetwork = (await this.web3.eth.net.getId()).toString();
+    if(this.contractAddress === undefined) {
+      this.contractAddress = this.contract.networks[this.contractNetwork].address;
+    }
+
     debug("init called");
     this.referenceDeclarations = general.getReferenceDeclarations(Object.values(this.contractNodes));
 
