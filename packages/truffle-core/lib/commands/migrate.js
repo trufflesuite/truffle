@@ -16,6 +16,11 @@ var command = {
       type: "boolean",
       default: false
     },
+    "skip-dry-run": {
+      describe: "Skip the test or 'dry run' migrations",
+      type: "boolean",
+      default: false
+    },
     "f": {
       describe: "Specify a migration number to run from",
       type: "number"
