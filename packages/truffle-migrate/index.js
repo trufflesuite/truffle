@@ -84,7 +84,9 @@ const Migrate = {
         );
       }
 
-      return this.runMigrations(migrations, options, callback);
+      return this.runMigrations(migrations, options)
+        .then(callback)
+        .catch(callback);
     } catch (error) {
       callback(error);
     }
@@ -94,7 +96,7 @@ const Migrate = {
     this.runFrom(0, options, callback);
   },
 
-  runMigrations: function(migrations, options, callback) {
+  runMigrations: function(migrations, options) {
     // Perform a shallow clone of the options object
     // so that we can override the provider option without
     // changing the original options object passed in.
@@ -120,16 +122,21 @@ const Migrate = {
       migrations[total - 1].isLast = true;
     }
 
-    async.eachSeries(
-      migrations,
-      function(migration, finished) {
-        migration.run(clone, function(err) {
-          if (err) return finished(err);
-          finished();
-        });
-      },
-      callback
-    );
+    return new Promise((resolve, reject) => {
+      return async.eachSeries(
+        migrations,
+        (migration, finished) => {
+          migration.run(clone, error => {
+            if (error) return finished(error);
+            finished();
+          });
+        },
+        error => {
+          if (error) return reject(error);
+          return resolve();
+        }
+      );
+    });
   },
 
   wrapProvider: function(provider) {
