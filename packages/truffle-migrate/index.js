@@ -22,29 +22,28 @@ const Migrate = {
     return Migrate.reporter.acceptDryRun();
   },
 
-  assemble: function(options, callback) {
-    var config = Config.detect(options);
-    dir.files(options.migrations_directory, function(err, files) {
-      if (err) return callback(err);
+  assemble: function(options) {
+    const config = Config.detect(options);
 
-      options.allowed_extensions = config.migrations_file_extension_regexp;
+    const files = dir.files(options.migrations_directory, { sync: true });
 
-      let migrations = files
-        .filter(file => isNaN(parseInt(path.basename(file))) === false)
-        .filter(
-          file => path.extname(file).match(options.allowed_extensions) != null
-        )
-        .map(file => new Migration(file, Migrate.reporter, options));
+    options.allowed_extensions = config.migrations_file_extension_regexp;
 
-      // Make sure to sort the prefixes as numbers and not strings.
-      migrations = migrations.sort((a, b) => {
-        if (a.number > b.number) return 1;
-        if (a.number < b.number) return -1;
-        return 0;
-      });
+    let migrations = files
+      .filter(file => isNaN(parseInt(path.basename(file))) === false)
+      .filter(
+        file => path.extname(file).match(options.allowed_extensions) != null
+      )
+      .map(file => new Migration(file, Migrate.reporter, options));
 
-      callback(null, migrations);
+    // Make sure to sort the prefixes as numbers and not strings.
+    migrations = migrations.sort((a, b) => {
+      if (a.number > b.number) return 1;
+      if (a.number < b.number) return -1;
+      return 0;
     });
+
+    return migrations;
   },
 
   run: function(options, callback) {
@@ -61,26 +60,19 @@ const Migrate = {
       "from" // address doing deployment
     ]);
 
-    if (options.reset === true) {
-      return this.runAll(options, callback);
-    }
+    if (options.reset === true) return this.runAll(options, callback);
 
     return this.lastCompletedMigration(options)
       .then(lastMigration => {
         // Don't rerun the last completed migration.
         return this.runFrom(lastMigration + 1, options, callback);
       })
-      .catch(error => {
-        return callback(error);
-      });
+      .catch(callback);
   },
 
   runFrom: function(number, options, callback) {
-    const self = this;
-
-    this.assemble(options, function(err, migrations) {
-      if (err) return callback(err);
-
+    try {
+      const migrations = this.assemble(options);
       while (migrations.length > 0) {
         if (migrations[0].number >= number) break;
         migrations.shift();
@@ -92,8 +84,10 @@ const Migrate = {
         );
       }
 
-      self.runMigrations(migrations, options, callback);
-    });
+      return this.runMigrations(migrations, options, callback);
+    } catch (error) {
+      callback(error);
+    }
   },
 
   runAll: function(options, callback) {
@@ -202,31 +196,22 @@ const Migrate = {
   },
 
   needsMigrating: function(options, callback) {
-    const self = this;
-
-    if (options.reset === true) {
-      return callback(null, true);
-    }
+    if (options.reset === true) return callback(null, true);
 
     return this.lastCompletedMigration(options)
       .then(number => {
-        self.assemble(options, function(err, migrations) {
-          if (err) return callback(err);
+        const migrations = this.assemble(options);
+        while (migrations.length > 0) {
+          if (migrations[0].number >= number) break;
+          migrations.shift();
+        }
 
-          while (migrations.length > 0) {
-            if (migrations[0].number >= number) break;
-            migrations.shift();
-          }
-
-          callback(
-            null,
-            migrations.length > 1 || (migrations.length && number === 0)
-          );
-        });
+        callback(
+          null,
+          migrations.length > 1 || (migrations.length && number === 0)
+        );
       })
-      .catch(error => {
-        return callback(error);
-      });
+      .catch(callback);
   }
 };
 
