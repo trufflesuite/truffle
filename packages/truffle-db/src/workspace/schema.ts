@@ -22,7 +22,7 @@ export const schema = mergeSchemas({
         }
         extend type Compilation {
           id: ID!
-        }  
+        }
         `,
       ]
     }),
@@ -106,7 +106,7 @@ export const schema = mergeSchemas({
     type ContractsAddPayload {
       contracts: [Contract]!
     }
-      
+
     input CompilerInput {
       name: String
       version: String
@@ -194,9 +194,9 @@ export const schema = mergeSchemas({
           workspace.bytecodesAdd({ input })
       },
       contractsAdd: {
-        resolve: (_, {input}, {workspace}) => 
+        resolve: (_, {input}, {workspace}) =>
         workspace.contractsAdd({ input })
-      }, 
+      },
       compilationsAdd: {
         resolve: (_, { input }, { workspace }) =>
           workspace.compilationsAdd({ input })
@@ -212,9 +212,9 @@ export const schema = mergeSchemas({
     },
     Contract: {
       compilation: {
-        resolve: ({ compilation }, _, { workspace }) => 
+        resolve: ({ compilation }, _, { workspace }) =>
           workspace.compilation(compilation)
-      }, 
+      },
       sourceContract: {
         resolve: async ({ sourceContract }, _, { workspace }) => 
           {

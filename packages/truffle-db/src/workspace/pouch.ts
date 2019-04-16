@@ -73,7 +73,7 @@ export class Workspace {
 
     try {
       const result = {
-        ...await this.contracts.get(id), 
+        ...await this.contracts.get(id),
 
         id
       }
@@ -87,7 +87,7 @@ export class Workspace {
     await this.ready;
 
     const { contracts } = input;
-    
+
     return {
       contracts: Promise.all(contracts.map(
         async (contractInput) => {
@@ -95,12 +95,12 @@ export class Workspace {
           const id = soliditySha3(jsonStableStringify(name, abi, sourceContract, compilation)); 
          
           const contract = await this.contract( { id } );
-          
+
           if(contract) {
             return contract;
           } else {
             await this.contracts.put({
-            ...contractInput, 
+            ...contractInput,
             _id: id,
             });
            
@@ -142,7 +142,7 @@ export class Workspace {
          const id = soliditySha3(jsonStableStringify(compiler, sourcesObject));
 
          const compilation = await this.compilation({ id }) || { ...compilationInput, id };
- 
+
           await this.compilations.put({
             ...compilation,
             ...compilationInput,

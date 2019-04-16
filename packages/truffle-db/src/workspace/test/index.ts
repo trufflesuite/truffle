@@ -264,7 +264,7 @@ mutation AddCompilation($compilerName: String!, $compilerVersion: String!, $sour
       }
       contracts: [
       {
-        name:"testing", 
+        name:"testing",
         ast: {
           json: "testing"
         }
@@ -395,7 +395,7 @@ it("adds compilation", async () => {
       }
 
       expect(contracts).toHaveLength(1);
-      
+
       for(let contract of contracts) {
         expect(contract).toHaveProperty("source");
         expect(contract).toHaveProperty("name");
