@@ -102,14 +102,10 @@ const Migrate = {
     // changing the original options object passed in.
     const clone = {};
 
-    Object.keys(options).forEach(function(key) {
-      clone[key] = options[key];
-    });
+    Object.keys(options).forEach(key => (clone[key] = options[key]));
 
     if (options.quiet) {
-      clone.logger = {
-        log: function() {}
-      };
+      clone.logger = { log: function() {} };
     }
 
     clone.provider = this.wrapProvider(options.provider, clone.logger);
