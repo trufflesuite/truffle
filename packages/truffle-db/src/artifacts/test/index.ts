@@ -12,8 +12,6 @@ const fixturesDirectory = path.join(
   "fixtures"
 );
 
-
-
 // minimal config
 const config = {
   contracts_build_directory: fixturesDirectory
@@ -114,6 +112,9 @@ it("retrieves contract correctly", async () => {
   const { ast, source } = sourceContract;
   expect(source).toHaveProperty("contents");
   expect(source).toHaveProperty("sourcePath");
+
+  expect(ast).toHaveProperty("json");
+  expect(ast.json).toEqual(JSON.stringify(Migrations.ast));
 });
 
 it("retrieves contract constructor object correctly", async() => {
