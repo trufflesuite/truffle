@@ -69,8 +69,9 @@ const Migrate = {
     return this.lastCompletedMigration(options)
       .then(lastMigration => {
         // Don't rerun the last completed migration.
-        return this.runFrom(lastMigration + 1, options, callback);
+        return this.runFrom(lastMigration + 1, options);
       })
+      .then(callback)
       .catch(callback);
   },
 
