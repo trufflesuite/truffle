@@ -210,7 +210,12 @@ const command = {
       Migrate.launchReporter();
 
       if (options.f) {
-        Migrate.runFrom(options.f, config, done);
+        try {
+          await Migrate.runFrom(options.f, config);
+          done();
+        } catch (error) {
+          done(error);
+        }
       } else {
         try {
           const needsMigrating = await Migrate.needsMigrating(config);

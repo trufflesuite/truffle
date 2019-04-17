@@ -60,7 +60,11 @@ const Migrate = {
       "from" // address doing deployment
     ]);
 
-    if (options.reset === true) return this.runAll(options, callback);
+    if (options.reset === true) {
+      return this.runAll(options)
+        .then(callback)
+        .catch(callback);
+    }
 
     return this.lastCompletedMigration(options)
       .then(lastMigration => {
@@ -70,30 +74,24 @@ const Migrate = {
       .catch(callback);
   },
 
-  runFrom: function(number, options, callback) {
-    try {
-      const migrations = this.assemble(options);
-      while (migrations.length > 0) {
-        if (migrations[0].number >= number) break;
-        migrations.shift();
-      }
-
-      if (options.to) {
-        migrations = migrations.filter(
-          migration => migration.number <= options.to
-        );
-      }
-
-      return this.runMigrations(migrations, options)
-        .then(callback)
-        .catch(callback);
-    } catch (error) {
-      callback(error);
+  runFrom: async function(number, options) {
+    const migrations = this.assemble(options);
+    while (migrations.length > 0) {
+      if (migrations[0].number >= number) break;
+      migrations.shift();
     }
+
+    if (options.to) {
+      migrations = migrations.filter(
+        migration => migration.number <= options.to
+      );
+    }
+
+    return await this.runMigrations(migrations, options);
   },
 
-  runAll: function(options, callback) {
-    this.runFrom(0, options, callback);
+  runAll: async function(options) {
+    return await this.runFrom(0, options);
   },
 
   runMigrations: function(migrations, options) {
@@ -128,6 +126,7 @@ const Migrate = {
           });
         },
         error => {
+          console.log("in the migration callback --> %o", error);
           if (error) return reject(error);
           return resolve();
         }
