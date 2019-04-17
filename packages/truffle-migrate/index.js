@@ -202,23 +202,24 @@ const Migrate = {
     return parseInt(completedMigration);
   },
 
-  needsMigrating: function(options, callback) {
-    if (options.reset === true) return callback(null, true);
+  needsMigrating: function(options) {
+    return new Promise((resolve, reject) => {
+      if (options.reset === true) return resolve(true);
 
-    return this.lastCompletedMigration(options)
-      .then(number => {
-        const migrations = this.assemble(options);
-        while (migrations.length > 0) {
-          if (migrations[0].number >= number) break;
-          migrations.shift();
-        }
+      return this.lastCompletedMigration(options)
+        .then(number => {
+          const migrations = this.assemble(options);
+          while (migrations.length > 0) {
+            if (migrations[0].number >= number) break;
+            migrations.shift();
+          }
 
-        callback(
-          null,
-          migrations.length > 1 || (migrations.length && number === 0)
-        );
-      })
-      .catch(callback);
+          return resolve(
+            migrations.length > 1 || (migrations.length && number === 0)
+          );
+        })
+        .catch(error => reject(error));
+    });
   }
 };
 

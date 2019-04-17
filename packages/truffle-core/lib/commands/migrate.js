@@ -206,14 +206,14 @@ const command = {
       });
     }
 
-    function runMigrations(config, callback) {
+    async function runMigrations(config, callback) {
       Migrate.launchReporter();
 
       if (options.f) {
         Migrate.runFrom(options.f, config, done);
       } else {
-        Migrate.needsMigrating(config, function(err, needsMigrating) {
-          if (err) return callback(err);
+        try {
+          const needsMigrating = await Migrate.needsMigrating(config);
 
           if (needsMigrating) {
             Migrate.run(config, callback);
@@ -221,7 +221,9 @@ const command = {
             config.logger.log("Network up to date.");
             callback();
           }
-        });
+        } catch (error) {
+          callback(error);
+        }
       }
     }
 
@@ -235,6 +237,7 @@ const command = {
 
       if (dryRunOnly) {
         try {
+          conf.dryRun = true;
           await setupDryRunEnvironmentThenRunMigrations(conf);
           done();
         } catch (err) {
