@@ -131,8 +131,7 @@ const Contracts = {
 
   writeContracts: async (contracts, options) => {
     await promisify(mkdirp)(options.contracts_build_directory);
-    const extra_opts = { network_id: options.network_id };
-    await options.artifactor.saveAll(contracts, extra_opts);
+    await options.artifactor.saveAll(contracts);
   }
 };
 

@@ -17,34 +17,6 @@ import {
   isNormalHaltingMnemonic
 } from "lib/helpers";
 
-function matchContext({ binary, isConstructor }, givenBinary) {
-  let lengthDifference = givenBinary.length - binary.length;
-  //first: if it's not a constructor, they'd better be equal in length.
-  //if it is a constructor, the given binary must be at least as long,
-  //and the difference must be a multiple of 64
-  if (
-    (!isConstructor && lengthDifference !== 0) ||
-    lengthDifference < 0 ||
-    lengthDifference % (2 * DecodeUtils.EVM.WORD_SIZE) !== 0
-  ) {
-    return false;
-  }
-  for (let i = 0; i < binary.length; i++) {
-    //note: using strings like arrays is kind of dangerous in general in JS,
-    //but everything here is ASCII so it's fine
-    //note that we need to compare case-insensitive, since Solidity will
-    //put addresses in checksum case in the compiled source
-    //(we don't actually need that second toLowerCase(), but whatever)
-    if (
-      binary[i] !== "." &&
-      binary[i].toLowerCase() !== givenBinary[i].toLowerCase()
-    ) {
-      return false;
-    }
-  }
-  return true;
-}
-
 /**
  * create EVM-level selectors for a given trace step selector
  * may specify additional selectors to include
@@ -312,14 +284,9 @@ const evm = createSelectorTree({
        * returns function (binary) => context (returns the *ID* of the context)
        * (returns null on no match)
        */
-      search: createLeaf(["/info/contexts"], contexts => binary => {
-        debug("binary %s", binary);
-        let context = Object.values(contexts).find(context =>
-          matchContext(context, binary)
-        );
-        debug("context found: %O", context);
-        return context !== undefined ? context.context : null;
-      })
+      search: createLeaf(["/info/contexts"], contexts => binary =>
+        DecodeUtils.Contexts.findDebuggerContext(contexts, binary)
+      )
     },
 
     /*

@@ -1,27 +1,23 @@
 ## truffle-solidity-loader
 
-A Webpack loader allows importing a solidity contract that return a truffle artifact json object. This allows you to develop your contracts with Hot Reloading support, and have your migrations automatically re-run on change. When you run a production build, the contracts will be bundled into your main bundle for easy deployment.
+A Webpack loader that allows importing a solidity contract directly. Importing returns a truffle artifact json object. This allows smart contract development with Hot Reloading support and enables migrations to automatically re-run on change. When running a production build, contracts will be bundled into main bundle for easy deployment.
 
 ## Example
 
 ```javascript
-var provider = new Web3.providers.HttpProvider("http://localhost:8545");
-var contract = require("truffle-contract");
+const Web3 = require("web3"); // currently compatible up to web3@1.0.0-beta.37
+const provider = new Web3.providers.HttpProvider("http://localhost:8545");
+const contract = require("truffle-contract");
 
-// Instead of including a built json file
-import myContract_artifacts from '../build/contracts/MyContract.json'
-var MyContract = contract(myContract_artifacts)
-
-//You can import the solidity contract directly
-import myContract_artifacts from '../contracts/MyContract.sol'
-var MyContract = contract(myContract_artifacts)
+import myContractArtifact from '../contracts/MyContract.sol';
+const MyContract = contract(myContractArtifact);
 
 MyContract.setProvider(provider);
 ```
 
 You can see this plugin in operation in the [Truffle+Webpack Demo App](https://github.com/ConsenSys/truffle-webpack-demo). The demo is for Truffle 4.0 & Webpack 4.
 
-This pacakge will re-run the migration script whenever a solidity file is modified. If you have multiple solidity files, the entire project will be overridden.
+This package will re-run migration scripts whenever solidity files are modified. If you have multiple solidity files, the entire project will be redeployed.
 
 ## Installation
 
@@ -71,7 +67,7 @@ The loader will auto detect a `truffle-config.js` (or `truffle.js`) config file 
       options: {
         network: 'ganache',
         migrations_directory: path.resolve(__dirname, './migrations'),
-        contracts_build_directory: path.resolve(__dirname, '../build/contracts')
+        contracts_build_directory: path.resolve(__dirname, './build/contracts')
       }
     }
   ]
@@ -81,7 +77,7 @@ The loader will auto detect a `truffle-config.js` (or `truffle.js`) config file 
 
 ## Contributing
 
-- Write issue in the Issue Tracker.
+- Open an issue to report bugs or provide feedback.
 - Submit PRs.
 - Respect the project coding style: StandardJS.
 

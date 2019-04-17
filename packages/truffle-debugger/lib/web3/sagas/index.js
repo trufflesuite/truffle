@@ -85,9 +85,9 @@ function* fetchTransactionInfo(adapter, { txHash }) {
   }
 }
 
-function* fetchBinary(adapter, { address }) {
+function* fetchBinary(adapter, { address, block }) {
   debug("fetching binary for %s", address);
-  let binary = yield apply(adapter, adapter.getDeployedCode, [address]);
+  let binary = yield apply(adapter, adapter.getDeployedCode, [address, block]);
 
   debug("received binary for %s", address);
   yield put(actions.receiveBinary(address, binary));
@@ -135,11 +135,12 @@ export function* inspectTransaction(txHash, provider) {
   };
 }
 
-export function* obtainBinaries(addresses) {
+//NOTE: the block argument is optional
+export function* obtainBinaries(addresses, block) {
   let tasks = yield all(addresses.map(address => fork(receiveBinary, address)));
 
   debug("requesting binaries");
-  yield all(addresses.map(address => put(actions.fetchBinary(address))));
+  yield all(addresses.map(address => put(actions.fetchBinary(address, block))));
 
   let binaries = [];
   binaries = yield all(tasks.map(task => join(task)));
