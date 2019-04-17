@@ -3,7 +3,9 @@
   "version": "5.0.10",
   "description": "Resolve contract dependencies given multiple configurable dependency sources",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "mocha"
+  },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-resolver",
   "keywords": [
     "ethereum",
@@ -26,7 +28,8 @@
     "truffle-provisioner": "^0.1.4"
   },
   "devDependencies": {
-    "mocha": "5.2.0"
+    "mocha": "5.2.0",
+    "sinon": "^7.3.1"
   },
   "publishConfig": {
     "access": "public"

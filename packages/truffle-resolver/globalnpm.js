@@ -1,7 +1,7 @@
 const path = require("path");
 const fs = require("fs");
 const detectInstalled = require("detect-installed");
-const { getInstalledPathSync } = require("get-installed-path");
+const get_installed_path = require("get-installed-path");
 function GlobalNPM() {}
 
 GlobalNPM.prototype.require = function(import_path) {
@@ -13,10 +13,9 @@ GlobalNPM.prototype.require = function(import_path) {
   let [package_name] = import_path.split("/", 1);
   if (detectInstalled.sync(package_name)) {
     const regex = new RegExp(`/${package_name}$`);
-    const global_package_path = getInstalledPathSync(package_name).replace(
-      regex,
-      ""
-    );
+    const global_package_path = get_installed_path
+      .getInstalledPathSync(package_name)
+      .replace(regex, "");
     const expected_path = path.join(
       global_package_path,
       package_name,
@@ -38,10 +37,9 @@ GlobalNPM.prototype.resolve = function(import_path, imported_from, callback) {
   let body;
   if (detectInstalled.sync(package_name)) {
     const regex = new RegExp(`/${package_name}$`);
-    const global_package_path = getInstalledPathSync(package_name).replace(
-      regex,
-      ""
-    );
+    const global_package_path = get_installed_path
+      .getInstalledPathSync(package_name)
+      .replace(regex, "");
     const expected_path = path.join(global_package_path, import_path);
     try {
       body = fs.readFileSync(expected_path, { encoding: "utf8" });
