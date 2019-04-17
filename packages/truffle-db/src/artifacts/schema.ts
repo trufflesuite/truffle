@@ -93,7 +93,7 @@ export const schema = mergeSchemas({
       sourceContract: {
         fragment:
         `... on ContractObject {
-          ast,
+          ast { json }
           source { contents, sourcePath }
         }`,
         resolve: (obj) => {
