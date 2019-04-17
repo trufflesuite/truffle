@@ -16,7 +16,9 @@ export namespace Contexts {
   export type Context = DecoderContext | DebuggerContext;
 
   export interface DecoderContexts {
-    [contractId: number]: DecoderContext;
+    [index: string]: DecoderContext;
+    //we'll allow this to be a hash *or* a contract ID; it's just an arbitrary
+    //identifier
   }
 
   export interface DebuggerContexts {

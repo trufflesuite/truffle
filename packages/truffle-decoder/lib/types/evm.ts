@@ -24,4 +24,24 @@ export interface EvmInfo {
   calldataAllocations?: CalldataAllocations;
   memoryAllocations?: MemoryAllocations;
   contexts?: Contexts.DecoderContexts;
+  currentContext?: Contexts.DecoderContext;
+  internalFunctionsTable?: InternalFunctions;
+}
+
+export interface InternalFunctions {
+  [pc: number]: InternalFunction
+}
+
+export interface InternalFunction {
+  source?: number;
+  pointer?: string;
+  node?: any; //sorry
+  name?: string;
+  id?: number;
+  contractPointer?: string;
+  contractNode?: any; //sorry
+  contractName?: string;
+  contractId?: number;
+  contractKind?: string;
+  isDesignatedInvalid: boolean;
 }

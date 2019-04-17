@@ -57,6 +57,26 @@ function modifierForInvocation(invocation, scopes) {
   }
 }
 
+//see data.views.contexts for an explanation
+function debuggerContextToDecoderContext(context) {
+  let {
+    contractName,
+    binary,
+    contractId,
+    contractKind,
+    isConstructor,
+    abi
+  } = context;
+  return {
+    contractName,
+    binary,
+    contractId,
+    contractKind,
+    isConstructor,
+    abi: DecodeUtils.Contexts.abiToFunctionAbiWithSignatures(abi)
+  };
+}
+
 const data = createSelectorTree({
   state: state => state.data,
 
@@ -201,25 +221,9 @@ const data = createSelectorTree({
         {},
         ...Object.values(contexts)
           .filter(context => !context.isConstructor)
-          .map(
-            ({
-              contractName,
-              binary,
-              abi,
-              contractId,
-              contractKind,
-              isConstructor
-            }) => ({
-              [contractId]: {
-                contractName,
-                binary,
-                contractId,
-                contractKind,
-                isConstructor,
-                abi: DecodeUtils.Contexts.abiToFunctionAbiWithSignatures(abi)
-              }
-            })
-          )
+          .map(context => ({
+            [context.context]: debuggerContextToDecoderContext(context)
+          }))
       )
     )
   },
@@ -455,6 +459,19 @@ const data = createSelectorTree({
      */
 
     address: createLeaf([evm.current.call], call => call.storageAddress),
+
+    /*
+     * data.current.functionsByProgramCounter
+     */
+    functionsByProgramCounter: createLeaf(
+      [solidity.current.functionsByProgramCounter],
+      functions => functions
+    ),
+
+    /*
+     * data.current.context
+     */
+    context: createLeaf([evm.current.context], debuggerContextToDecoderContext),
 
     /*
      * data.current.aboutToModify

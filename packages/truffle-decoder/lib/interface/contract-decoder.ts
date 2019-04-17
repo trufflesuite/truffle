@@ -102,6 +102,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   private contracts: ContractMapping = {};
   private contractNodes: AstReferences = {};
   private contexts: DecodeUtils.Contexts.DecoderContexts = {};
+  private context: DecodeUtils.Contexts.DecoderContext;
 
   private referenceDeclarations: AstReferences;
   private storageAllocations: StorageAllocations;
@@ -131,7 +132,8 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.contracts[this.contractNode.id] = this.contract;
     this.contractNodes[this.contractNode.id] = this.contractNode;
     if(this.contract.deployedBinary) { //just to be safe
-      this.contexts[this.contractNode.id] = this.makeContext(this.contract, this.contractNode);
+      this.context = this.makeContext(this.contract, this.contractNode);
+      this.contexts[this.contractNode.id] = this.context;
     }
     abiDecoder.addABI(this.contract.abi);
 
@@ -199,7 +201,8 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       mappingKeys: this.mappingKeys,
       referenceDeclarations: this.referenceDeclarations,
       storageAllocations: this.storageAllocations,
-      contexts: this.contexts
+      contexts: this.contexts,
+      currentContext: this.context
     };
 
     const decoder: IterableIterator<any> = decode(variable.definition, variable.pointer, info);
