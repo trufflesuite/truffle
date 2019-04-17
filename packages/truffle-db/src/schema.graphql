@@ -23,6 +23,7 @@ type Constructor {
 
 type Contract {
   name: String
+  source: Source
   abi: ABI
   compilation: Compilation
   sourceContract: SourceContract

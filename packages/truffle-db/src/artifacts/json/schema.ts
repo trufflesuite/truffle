@@ -1,6 +1,6 @@
 const { default: convert } = require("@gnd/jsonschema2graphql");
 
-import { makeExecutableSchema } from "graphql-tools";
+import { makeExecutableSchema } from "@gnd/graphql-tools";
 
 import {
   printSchema, GraphQLObjectType, GraphQLNonNull, GraphQLList, GraphQLString
@@ -212,6 +212,31 @@ const translations = [
     }
   }),
 
+  // override ast field to be object with json property
+  ({ contractObject, ...schemas }) => ({
+    ...schemas,
+
+    contractObject: {
+      ...contractObject,
+
+      properties: {
+        ...contractObject.properties,
+
+        ast: {
+          type: "object",
+          properties: {
+            json: {
+              type: "string",
+              description: "JSON-encoded AST"
+            },
+          },
+
+          required: ["json"]
+        }
+      }
+    }
+  }),
+
   // find all refs and remove leading `#/definitions/`
   searchReplace(
     (key) => key === "$ref",
@@ -246,8 +271,26 @@ const translations = [
         )
       }
     }
-  })
+  }),
 
+  ({ contractObject, ...schemas }) => ({
+    ...schemas,
+
+    contractObject: {
+      ...contractObject,
+
+      properties: {
+        ...contractObject.properties,
+        source: {
+          type: "object",
+          properties: {
+            contents: { type: "string" },
+            sourcePath: { type: "string" }
+          }
+        }
+      }
+    }
+  })
 ];
 
 
