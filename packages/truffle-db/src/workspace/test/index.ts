@@ -40,6 +40,26 @@ class WorkspaceClient {
 
 const Migrations = require(path.join(fixturesDirectory, "Migrations.json"));
 
+let sourceId;
+let bytecodeId;
+let compilationId;
+let contractId;
+
+beforeAll(() => {
+  sourceId = soliditySha3(Migrations.source, Migrations.sourcePath);
+  bytecodeId = soliditySha3(Migrations.bytecode);
+  compilationId = soliditySha3(jsonStableStringify({ 
+    compiler: Migrations.compiler, 
+    sourceIds: [{ id: sourceId }] 
+  }));
+  contractId = soliditySha3(jsonStableStringify({ 
+    name: Migrations.contractName, 
+    abi: { json: JSON.stringify(Migrations.abi) } , 
+    sourceContract: { index: 0 } ,
+    compilation: { id: compilationId }
+  }));
+
+});
 /*
  * root
  */
@@ -49,16 +69,17 @@ query GetContractNames {
   contractNames
 }`;
 
-it("queries contract names", async () => {
-  const client = new WorkspaceClient();
+describe("ContractNames", () => {
+  it("queries contract names", async () => {
+    const client = new WorkspaceClient();
 
-  const data = await client.execute(GetContractNames);
-  expect(data).toHaveProperty("contractNames");
+    const data = await client.execute(GetContractNames);
+    expect(data).toHaveProperty("contractNames");
 
-  const { contractNames } = data;
-  expect(contractNames).toEqual([]);
-});
-
+    const { contractNames } = data;
+    expect(contractNames).toEqual([]);
+  });
+})
 
 /*
  * Source
@@ -88,55 +109,55 @@ mutation AddSource($contents: String!, $sourcePath: String) {
   }
 }`;
 
-it("adds source", async () => {
-  const client = new WorkspaceClient();
+describe("Source", () => {
+  it("adds source", async () => {
+    const client = new WorkspaceClient();
 
-  const variables = {
-    contents: Migrations.source,
-    sourcePath: Migrations.sourcePath,
-    id: soliditySha3(Migrations.source, Migrations.sourcePath)
-  }
+    const variables = {
+      contents: Migrations.source,
+      sourcePath: Migrations.sourcePath,
+      id: soliditySha3(Migrations.source, Migrations.sourcePath)
+    }
 
-  // add source
-  {
-    const data = await client.execute(AddSource, variables);
-    expect(data).toHaveProperty("sourcesAdd");
+    // add source
+    {
+      const data = await client.execute(AddSource, variables);
+      expect(data).toHaveProperty("sourcesAdd");
 
-    const { sourcesAdd } = data;
-    expect(sourcesAdd).toHaveProperty("sources");
+      const { sourcesAdd } = data;
+      expect(sourcesAdd).toHaveProperty("sources");
 
-    const { sources } = sourcesAdd;
-    expect(sources).toHaveLength(1);
+      const { sources } = sourcesAdd;
+      expect(sources).toHaveLength(1);
 
-    const source = sources[0];
-    expect(source).toHaveProperty("id");
+      const source = sources[0];
+      expect(source).toHaveProperty("id");
 
-    const { id } = source;
-    expect(id).toEqual(variables.id);
-  }
+      const { id } = source;
+      expect(id).toEqual(variables.id);
+    }
 
-  // ensure retrieved as matching
-  {
-    const data = await client.execute(GetSource, { id: variables.id });
-    expect(data).toHaveProperty("source");
+    // ensure retrieved as matching
+    {
+      const data = await client.execute(GetSource, { id: variables.id });
+      expect(data).toHaveProperty("source");
 
-    const { source } = data;
-    expect(source).toHaveProperty("id");
-    expect(source).toHaveProperty("contents");
-    expect(source).toHaveProperty("sourcePath");
+      const { source } = data;
+      expect(source).toHaveProperty("id");
+      expect(source).toHaveProperty("contents");
+      expect(source).toHaveProperty("sourcePath");
 
-    const { id, contents, sourcePath } = source;
-    expect(id).toEqual(variables.id);
-    expect(contents).toEqual(variables.contents);
-    expect(sourcePath).toEqual(variables.sourcePath);
-  }
+      const { id, contents, sourcePath } = source;
+      expect(id).toEqual(variables.id);
+      expect(contents).toEqual(variables.contents);
+      expect(sourcePath).toEqual(variables.sourcePath);
+    }
+  });
 });
-
 
 /*
  * Bytecode
  */
-
 const GetBytecode = gql`
 query GetBytecode($id: ID!) {
   bytecode(id: $id) {
@@ -158,46 +179,47 @@ mutation AddBytecode($bytes: Bytes!) {
   }
 }`;
 
-it("adds bytecode", async () => {
-  const client = new WorkspaceClient();
-  const variables = {
-    id: soliditySha3(Migrations.bytecode),
-    bytes: Migrations.bytecode
-  }
+describe("Bytecode", () => {
+  it("adds bytecode", async () => {
+    const client = new WorkspaceClient();
+    const variables = {
+      id: soliditySha3(Migrations.bytecode),
+      bytes: Migrations.bytecode
+    }
 
-  // add bytecode
-  {
-    const data = await client.execute(AddBytecode, { bytes: variables.bytes });
-    expect(data).toHaveProperty("bytecodesAdd");
+    // add bytecode
+    {
+      const data = await client.execute(AddBytecode, { bytes: variables.bytes });
+      expect(data).toHaveProperty("bytecodesAdd");
 
-    const { bytecodesAdd } = data;
-    expect(bytecodesAdd).toHaveProperty("bytecodes");
+      const { bytecodesAdd } = data;
+      expect(bytecodesAdd).toHaveProperty("bytecodes");
 
-    const { bytecodes } = bytecodesAdd;
-    expect(bytecodes).toHaveLength(1);
+      const { bytecodes } = bytecodesAdd;
+      expect(bytecodes).toHaveLength(1);
 
-    const bytecode = bytecodes[0];
-    expect(bytecode).toHaveProperty("id");
+      const bytecode = bytecodes[0];
+      expect(bytecode).toHaveProperty("id");
 
-    const { id } = bytecode;
-    expect(id).toEqual(variables.id);
-  }
+      const { id } = bytecode;
+      expect(id).toEqual(variables.id);
+    }
 
-  // ensure retrieved as matching
-  {
-    const data = await client.execute(GetBytecode, { id: variables.id });
-    expect(data).toHaveProperty("bytecode");
+    // ensure retrieved as matching
+    {
+      const data = await client.execute(GetBytecode, { id: variables.id });
+      expect(data).toHaveProperty("bytecode");
 
-    const { bytecode } = data;
-    expect(bytecode).toHaveProperty("id");
-    expect(bytecode).toHaveProperty("bytes");
+      const { bytecode } = data;
+      expect(bytecode).toHaveProperty("id");
+      expect(bytecode).toHaveProperty("bytes");
 
-    const { id, bytes } = bytecode;
-    expect(id).toEqual(variables.id);
-    expect(bytes).toEqual(variables.bytes);
-  }
+      const { id, bytes } = bytecode;
+      expect(id).toEqual(variables.id);
+      expect(bytes).toEqual(variables.bytes);
+    }
+  });
 });
-
 
 /*
  * Compilation
@@ -270,88 +292,75 @@ mutation AddCompilation($compilerName: String!, $compilerVersion: String!, $sour
   }
 }`
 
-it("adds compilation", async () => {
-  const client = new WorkspaceClient();
+describe("Compilation", () => {
+  it("adds compilation", async () => {
+    const client = new WorkspaceClient();
 
-  const sourceId = soliditySha3(Migrations.source, Migrations.sourcePath);
-
-  const compilationId = soliditySha3(jsonStableStringify({ 
-    compiler: Migrations.compiler, 
-    sourceIds: [{ id: sourceId }] 
-  }))
- 
-  const contractId =  soliditySha3(jsonStableStringify({ 
-    name: Migrations.contractName, 
-    abi: { json: JSON.stringify(Migrations.abi) } , 
-    sourceContract: { index: 0 } ,
-    compilation: { id: compilationId }
-  }));
-
-  const variables = {
-    compilerName: Migrations.compiler.name,
-    compilerVersion: Migrations.compiler.version,
-    sourceId: sourceId,
-    id: compilationId,
-    contractId: contractId,
-    abi: JSON.stringify(Migrations.abi)
-  }
+    const variables = {
+      compilerName: Migrations.compiler.name,
+      compilerVersion: Migrations.compiler.version,
+      sourceId: sourceId,
+      id: compilationId,
+      contractId: contractId,
+      abi: JSON.stringify(Migrations.abi)
+    }
 
   // add compilation
-  {
-    const data = await client.execute(AddCompilation, variables);
-    expect(data).toHaveProperty("compilationsAdd");
+    {
+      const data = await client.execute(AddCompilation, variables);
+      expect(data).toHaveProperty("compilationsAdd");
 
-    const { compilationsAdd } = data;
-    expect(compilationsAdd).toHaveProperty("compilations");
+      const { compilationsAdd } = data;
+      expect(compilationsAdd).toHaveProperty("compilations");
 
-    const { compilations } = compilationsAdd;
-    expect(compilations).toHaveLength(1);
+      const { compilations } = compilationsAdd;
+      expect(compilations).toHaveLength(1);
 
-    for (let compilation of compilations) {
+      for (let compilation of compilations) {
+        expect(compilation).toHaveProperty("compiler");
+        expect(compilation).toHaveProperty("sources");
+        const { compiler, sources, contracts } = compilation;
+
+        expect(compiler).toHaveProperty("name");
+
+        expect(sources).toHaveLength(1);
+        for (let source of sources) {
+          expect(source).toHaveProperty("contents");
+        }
+
+        expect(contracts).toHaveLength(1);
+
+        for(let contract of contracts) {
+          expect(contract).toHaveProperty("source");
+          expect(contract).toHaveProperty("name");
+          expect(contract).toHaveProperty("ast");
+        }
+      }
+    }
+      //ensure retrieved as matching
+    {
+      const data = await client.execute(GetCompilation, {id: variables.id});
+      expect(data).toHaveProperty("compilation");
+
+      const { compilation } = data;
+      expect(compilation).toHaveProperty("id");
       expect(compilation).toHaveProperty("compiler");
       expect(compilation).toHaveProperty("sources");
-      const { compiler, sources, contracts } = compilation;
 
-      expect(compiler).toHaveProperty("name");
+      const { sources } = compilation;
 
-      expect(sources).toHaveLength(1);
       for (let source of sources) {
+        expect(source).toHaveProperty("id");
+        const { id } = source;
+        expect(id).not.toBeNull();
+
         expect(source).toHaveProperty("contents");
-      }
-
-      expect(contracts).toHaveLength(1);
-
-      for(let contract of contracts) {
-        expect(contract).toHaveProperty("source");
-        expect(contract).toHaveProperty("name");
-        expect(contract).toHaveProperty("ast");
+        const { contents } = source;
+        expect(contents).not.toBeNull();
       }
     }
-  }
-    //ensure retrieved as matching
-  {
-    const data = await client.execute(GetCompilation, {id: variables.id});
-    expect(data).toHaveProperty("compilation");
-
-    const { compilation } = data;
-    expect(compilation).toHaveProperty("id");
-    expect(compilation).toHaveProperty("compiler");
-    expect(compilation).toHaveProperty("sources");
-
-    const { sources } = compilation;
-
-    for (let source of sources) {
-      expect(source).toHaveProperty("id");
-      const { id } = source;
-      expect(id).not.toBeNull();
-
-      expect(source).toHaveProperty("contents");
-      const { contents } = source;
-      expect(contents).not.toBeNull();
-    }
-  }
+  });
 });
-
 
 /*
  * Contract
@@ -417,28 +426,13 @@ mutation addContracts($contractName: String, $compilationId: ID!, $bytecodeId:ID
   }
 }`
 
-
-it("adds contracts", async () => {
+describe("Contract", () => {
   const client = new WorkspaceClient();
-
-  const sourceId = soliditySha3(Migrations.source, Migrations.sourcePath);
-  const bytecodeId = soliditySha3(Migrations.bytecode);
-  const compilationId = soliditySha3(jsonStableStringify({ 
-    compiler: Migrations.compiler, 
-    sourceIds: [{ id: sourceId }] 
-  }))
-  
-  const id =  soliditySha3(jsonStableStringify({ 
-    name: Migrations.contractName, 
-    abi: { json: JSON.stringify(Migrations.abi) } , 
-    sourceContract: { index: 0 } ,
-    compilation: { id: compilationId }
-  }));
 
   const variables = {
     contractName: Migrations.contractName,
     compilationId: compilationId,
-    id: id,
+    id: contractId,
     compilerName: Migrations.compiler.name,
     compilerVersion: Migrations.compiler.version,
     sourceId: sourceId,
@@ -446,40 +440,57 @@ it("adds contracts", async () => {
     abi: JSON.stringify(Migrations.abi)
   }
 
-  // pre-cursor: add compilation
-  await client.execute(AddCompilation, variables);
+  beforeAll(async () => {
+    await client.execute(AddCompilation, variables);
+  });
 
-  // add contracts
-  {
-    const data = await client.execute(AddContracts, variables);
-    expect(data).toHaveProperty("contractsAdd");
+  it("adds contracts", async () => {
+    const client = new WorkspaceClient();
 
-    const { contractsAdd } = data;
-    expect(contractsAdd).toHaveProperty("contracts");
+    const variables = {
+      contractName: Migrations.contractName,
+      compilationId: compilationId,
+      id: contractId,
+      compilerName: Migrations.compiler.name,
+      compilerVersion: Migrations.compiler.version,
+      sourceId: sourceId,
+      bytecodeId: bytecodeId, 
+      abi: JSON.stringify(Migrations.abi)
+    }
 
-    const { contracts } = contractsAdd;
-    expect(contracts).toHaveLength(1);
+    // add contracts
+    {
+      const data = await client.execute(AddContracts, variables);
+      expect(data).toHaveProperty("contractsAdd");
 
-    const contract = contracts[0];
-    
-    expect(contract).toHaveProperty("id");
-    expect(contract).toHaveProperty("name");
-    expect(contract).toHaveProperty("sourceContract");
+      const { contractsAdd } = data;
+      expect(contractsAdd).toHaveProperty("contracts");
 
-    const { sourceContract } = contract;
-    expect(sourceContract).toHaveProperty("name");
-    expect(sourceContract).toHaveProperty("source");
-    expect(sourceContract).toHaveProperty("ast");
-  }
+      const { contracts } = contractsAdd;
+      expect(contracts).toHaveLength(1);
 
-  //ensure retrieved as matching
-  {
-    const data = await client.execute(GetContract, { id: id });
-    expect(data).toHaveProperty("contract");
+      const contract = contracts[0];
+      
+      expect(contract).toHaveProperty("id");
+      expect(contract).toHaveProperty("name");
+      expect(contract).toHaveProperty("sourceContract");
 
-    const { contract } = data;
-    expect(contract).toHaveProperty("name");
-    expect(contract).toHaveProperty("sourceContract");
-    expect(contract).toHaveProperty("abi");
-  }
+      const { sourceContract } = contract;
+      expect(sourceContract).toHaveProperty("name");
+      expect(sourceContract).toHaveProperty("source");
+      expect(sourceContract).toHaveProperty("ast");
+    }
+
+    //ensure retrieved as matching
+    {
+      const data = await client.execute(GetContract, { id: contractId });
+
+      expect(data).toHaveProperty("contract");
+
+      const { contract } = data;
+      expect(contract).toHaveProperty("name");
+      expect(contract).toHaveProperty("sourceContract");
+      expect(contract).toHaveProperty("abi");
+    }
+  });
 });
