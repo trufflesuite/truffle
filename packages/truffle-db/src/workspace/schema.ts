@@ -226,7 +226,7 @@ export const schema = mergeSchemas({
             workspace.source(source)
       },
     },
-    ContractConstructor: {
+    Constructor: {
       createBytecode: {
         resolve: ({ createBytecode }, _, { workspace }) =>
             workspace.bytecode(createBytecode)

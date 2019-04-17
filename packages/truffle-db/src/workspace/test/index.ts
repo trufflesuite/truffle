@@ -76,7 +76,8 @@ query GetSource($id: ID!) {
 const AddSource = gql`
 mutation AddSource($contents: String!, $sourcePath: String) {
   sourcesAdd(input: {
-    sources: [{
+    sources: [
+    {
       contents: $contents,
       sourcePath: $sourcePath,
     }]
@@ -223,7 +224,7 @@ query GetCompilation($id: ID!) {
 }`;
 
 const AddCompilation = gql`
-mutation AddCompilation($compilerName: String!, $compilerVersion: String!, $sourceId: ID!) {
+mutation AddCompilation($compilerName: String!, $compilerVersion: String!, $sourceId: ID!, $abi:String!) {
   compilationsAdd(input: {
     compilations: [{
       compiler: {
@@ -234,7 +235,7 @@ mutation AddCompilation($compilerName: String!, $compilerVersion: String!, $sour
       {
         name:"testing",
         ast: {
-          json: "testing"
+          json: $abi
         }
         source: {
           id: $sourceId
@@ -272,15 +273,28 @@ mutation AddCompilation($compilerName: String!, $compilerVersion: String!, $sour
 it("adds compilation", async () => {
   const client = new WorkspaceClient();
 
+  const sourceId = soliditySha3(Migrations.source, Migrations.sourcePath);
+
+  const compilationId = soliditySha3(jsonStableStringify({ 
+    compiler: Migrations.compiler, 
+    sourceIds: [{ id: sourceId }] 
+  }))
+ 
+  const contractId =  soliditySha3(jsonStableStringify({ 
+    name: Migrations.contractName, 
+    abi: { json: JSON.stringify(Migrations.abi) } , 
+    sourceContract: { index: 0 } ,
+    compilation: { id: compilationId }
+  }));
+
   const variables = {
     compilerName: Migrations.compiler.name,
     compilerVersion: Migrations.compiler.version,
-    sourceId: soliditySha3(Migrations.source, Migrations.sourcePath),
-    id: soliditySha3(jsonStableStringify(Migrations.compiler, soliditySha3(Migrations.source, Migrations.sourcePath))),
-    contractId: soliditySha3(Migrations.contractName, soliditySha3(Migrations.source, Migrations.sourcePath))
+    sourceId: sourceId,
+    id: compilationId,
+    contractId: contractId,
+    abi: JSON.stringify(Migrations.abi)
   }
-
-  const compilationId = soliditySha3(jsonStableStringify(Migrations.compiler, soliditySha3(Migrations.source, Migrations.sourcePath)}))
 
   // add compilation
   {
@@ -362,12 +376,12 @@ query getContract($id:ID!){
 }`
 
 const AddContracts = gql`
-mutation addContracts($contractName: String, $compilationId: ID!, $bytecodeId:ID!) {
+mutation addContracts($contractName: String, $compilationId: ID!, $bytecodeId:ID!, $abi:String!) {
   contractsAdd(input: {
     contracts: [{
       name: $contractName
       abi: {
-        json: "test"
+        json: $abi
       }
       compilation: {
         id: $compilationId
@@ -407,16 +421,29 @@ mutation addContracts($contractName: String, $compilationId: ID!, $bytecodeId:ID
 it("adds contracts", async () => {
   const client = new WorkspaceClient();
 
-  const id =  soliditySha3(jsonStableStringify(Migrations.contractName, Migrations.abi, 0, soliditySha3(jsonStableStringify(Migrations.compiler, soliditySha3(Migrations.source, Migrations.sourcePath)))));
+  const sourceId = soliditySha3(Migrations.source, Migrations.sourcePath);
+  const bytecodeId = soliditySha3(Migrations.bytecode);
+  const compilationId = soliditySha3(jsonStableStringify({ 
+    compiler: Migrations.compiler, 
+    sourceIds: [{ id: sourceId }] 
+  }))
+  
+  const id =  soliditySha3(jsonStableStringify({ 
+    name: Migrations.contractName, 
+    abi: { json: JSON.stringify(Migrations.abi) } , 
+    sourceContract: { index: 0 } ,
+    compilation: { id: compilationId }
+  }));
 
   const variables = {
     contractName: Migrations.contractName,
-    compilationId: soliditySha3(jsonStableStringify(Migrations.compiler, soliditySha3(Migrations.source, Migrations.sourcePath))),
+    compilationId: compilationId,
     id: id,
     compilerName: Migrations.compiler.name,
     compilerVersion: Migrations.compiler.version,
-    sourceId: soliditySha3(Migrations.source, Migrations.sourcePath),
-    bytecodeId: soliditySha3(Migrations.bytecode)
+    sourceId: sourceId,
+    bytecodeId: bytecodeId, 
+    abi: JSON.stringify(Migrations.abi)
   }
 
   // pre-cursor: add compilation
@@ -434,6 +461,7 @@ it("adds contracts", async () => {
     expect(contracts).toHaveLength(1);
 
     const contract = contracts[0];
+    
     expect(contract).toHaveProperty("id");
     expect(contract).toHaveProperty("name");
     expect(contract).toHaveProperty("sourceContract");
@@ -446,7 +474,7 @@ it("adds contracts", async () => {
 
   //ensure retrieved as matching
   {
-    const data = await client.execute(GetContract, { id: variables.id });
+    const data = await client.execute(GetContract, { id: id });
     expect(data).toHaveProperty("contract");
 
     const { contract } = data;

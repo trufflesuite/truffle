@@ -98,14 +98,13 @@ export class Workspace {
             sourceContract,
             constructor: contractConstructor
           } = contractInput;
-          const id = soliditySha3(jsonStableStringify({ name, abi, sourceContract, compilation }));
-
+          const id = soliditySha3(jsonStableStringify({ name: name, abi: abi, sourceContract: sourceContract, compilation: compilation }));
           const contract = await this.contract( { id } );
 
           if(contract) {
             return contract;
           } else {
-            await this.contracts.put({
+            const contractAdded = await this.contracts.put({
             ...contractInput,
             _id: id,
             });
@@ -145,7 +144,7 @@ export class Workspace {
          const sourceIds = sources.map(source => source.id);
          const sourcesObject = Object.assign({}, sourceIds);
 
-         const id = soliditySha3(jsonStableStringify(compiler, sourcesObject));
+         const id = soliditySha3(jsonStableStringify({ compiler: compiler, sourceIds: sources } ));
 
          const compilation = await this.compilation({ id }) || { ...compilationInput, id };
 
