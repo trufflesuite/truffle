@@ -54,7 +54,9 @@ export function* decode(definition, ref) {
   let instances = yield select(data.views.instances);
   let contexts = yield select(data.views.contexts);
   let currentContext = yield select(data.current.context);
-  let internalFunctionsTable = yield select(data.current.functionsByPc);
+  let internalFunctionsTable = yield select(
+    data.current.functionsByProgramCounter
+  );
   let blockNumber = yield select(data.views.blockNumber);
 
   let ZERO_WORD = new Uint8Array(DecodeUtils.EVM.WORD_SIZE);

@@ -267,9 +267,9 @@ let solidity = createSelectorTree({
     ),
 
     /*
-     * solidity.current.functionsByPc
+     * solidity.current.functionsByProgramCounter
      */
-    functionsByPc: createLeaf(
+    functionsByProgramCounter: createLeaf(
       ["./instructions", "/info/sources"],
       (instructions, sources) =>
         Object.assign(

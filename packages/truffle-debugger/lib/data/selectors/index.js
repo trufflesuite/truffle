@@ -461,10 +461,10 @@ const data = createSelectorTree({
     address: createLeaf([evm.current.call], call => call.storageAddress),
 
     /*
-     * data.current.functionsByPc
+     * data.current.functionsByProgramCounter
      */
-    functionsByPc: createLeaf(
-      [solidity.current.functionsByPc],
+    functionsByProgramCounter: createLeaf(
+      [solidity.current.functionsByProgramCounter],
       functions => functions
     ),
 
