@@ -1,6 +1,6 @@
 {
   "name": "truffle-resolver",
-  "version": "5.0.11",
+  "version": "5.0.10",
   "description": "Resolve contract dependencies given multiple configurable dependency sources",
   "main": "index.js",
   "scripts": {},
@@ -19,7 +19,7 @@
   "homepage": "https://github.com/trufflesuite/truffle-resolver#readme",
   "dependencies": {
     "async": "2.6.1",
-    "truffle-contract": "^4.0.12",
+    "truffle-contract": "^4.0.11",
     "truffle-expect": "^0.0.7",
     "truffle-provisioner": "^0.1.4"
   },
