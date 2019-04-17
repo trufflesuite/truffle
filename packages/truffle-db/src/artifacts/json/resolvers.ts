@@ -29,6 +29,9 @@ export const resolvers = {
             json: JSON.stringify(artifact.abi),
             items: artifact.abi
           },
+          ast: {
+            json: JSON.stringify(artifact.ast)
+          },
           source: { contents: artifact.source, sourcePath: artifact.sourcePath },
         };
 

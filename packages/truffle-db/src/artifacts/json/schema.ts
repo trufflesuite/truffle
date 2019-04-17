@@ -212,6 +212,31 @@ const translations = [
     }
   }),
 
+  // override ast field to be object with json property
+  ({ contractObject, ...schemas }) => ({
+    ...schemas,
+
+    contractObject: {
+      ...contractObject,
+
+      properties: {
+        ...contractObject.properties,
+
+        ast: {
+          type: "object",
+          properties: {
+            json: {
+              type: "string",
+              description: "JSON-encoded AST"
+            },
+          },
+
+          required: ["json"]
+        }
+      }
+    }
+  }),
+
   // find all refs and remove leading `#/definitions/`
   searchReplace(
     (key) => key === "$ref",
