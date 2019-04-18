@@ -27,7 +27,6 @@ export const resolvers = {
 
           abi: {
             json: JSON.stringify(artifact.abi),
-            items: artifact.abi
           },
           ast: {
             json: JSON.stringify(artifact.ast)
