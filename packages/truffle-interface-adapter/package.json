@@ -16,7 +16,7 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle#readme",
   "devDependencies": {
-    "ganache-core": "2.5.1"
+    "ganache-core": "2.5.5"
   },
   "dependencies": {
     "bn.js": "^4.11.8",
