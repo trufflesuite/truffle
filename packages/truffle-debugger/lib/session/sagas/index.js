@@ -95,7 +95,8 @@ function* fetchTx(txHash, provider) {
     addresses.push(result.storageAddress);
   }
 
-  let binaries = yield* web3.obtainBinaries(addresses);
+  let blockNumber = result.block.number.toString(); //a BN is not accepted
+  let binaries = yield* web3.obtainBinaries(addresses, blockNumber);
 
   yield all(
     addresses.map((address, i) => call(recordInstance, address, binaries[i]))

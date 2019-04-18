@@ -229,16 +229,13 @@ let solidity = createSelectorTree({
     instructionAtProgramCounter: createLeaf(
       ["./instructions"],
 
-      instructions => {
-        let map = {};
-        instructions.forEach(function(instruction) {
-          map[instruction.pc] = instruction;
-        });
-        //note: this will have gaps in it.  That's OK!  Those gaps are the data
-        //portions of push instructions, which it is illegal to jump into.  We
-        //don't need to assign instructions to illegal PC values.
-        return map;
-      }
+      instructions =>
+        Object.assign(
+          {},
+          ...instructions.map(instruction => ({
+            [instruction.pc]: instruction
+          }))
+        )
     ),
 
     ...createMultistepSelectors(evm.current.step),
@@ -267,6 +264,71 @@ let solidity = createSelectorTree({
           current.file != next.file
         );
       }
+    ),
+
+    /*
+     * solidity.current.functionsByProgramCounter
+     */
+    functionsByProgramCounter: createLeaf(
+      ["./instructions", "/info/sources"],
+      (instructions, sources) =>
+        Object.assign(
+          {},
+          ...instructions
+            .filter(instruction => instruction.name === "JUMPDEST")
+            .filter(instruction => instruction.file !== -1)
+            //note that the designated invalid function *does* have an associated
+            //file, so it *is* safe to just filter out the ones that don't
+            .map(instruction => {
+              debug("instruction %O", instruction);
+              let source = instruction.file;
+              debug("source %O", sources[source]);
+              let ast = sources[source].ast;
+              let range = getSourceRange(instruction);
+              let pointer = findRange(ast, range.start, range.length);
+              let node = pointer
+                ? jsonpointer.get(ast, pointer)
+                : jsonpointer.get(ast, "");
+              if (!node || node.nodeType !== "FunctionDefinition") {
+                //filter out JUMPDESTs that aren't function definitions...
+                //except for the designated invalid function
+                let nextInstruction = instructions[instruction.index + 1] || {};
+                if (nextInstruction.name === "INVALID") {
+                  //designated invalid, include it
+                  return {
+                    [instruction.pc]: {
+                      isDesignatedInvalid: true
+                    }
+                  };
+                } else {
+                  //not designated invalid, filter it out
+                  return {};
+                }
+              }
+              //otherwise, we're good to go, so let's find the contract node and
+              //put it all together
+              //to get the contract node, we go up twice from the function node;
+              //the path from one to the other should have a very specific form,
+              //so this is easy
+              let contractPointer = pointer.replace(/\/nodes\/\d+$/, "");
+              let contractNode = jsonpointer.get(ast, contractPointer);
+              return {
+                [instruction.pc]: {
+                  source,
+                  pointer,
+                  node,
+                  name: node.name,
+                  id: node.id,
+                  contractPointer,
+                  contractNode,
+                  contractName: contractNode.name,
+                  contractId: contractNode.id,
+                  contractKind: contractNode.contractKind,
+                  isDesignatedInvalid: false
+                }
+              };
+            })
+        )
     ),
 
     /**

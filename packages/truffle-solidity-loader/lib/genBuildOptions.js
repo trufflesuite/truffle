@@ -10,12 +10,12 @@ const genBuildOptions = buildOpts => {
   }
 
   const truffleConfig = getTruffleConfig();
-  if (truffleConfig) {
-    var config = TruffleConfig.load(truffleConfig, buildOpts);
-  } else {
+
+  if (!truffleConfig) {
     throw new Error("No Truffle Config file found!");
   }
 
+  const config = TruffleConfig.load(truffleConfig, buildOpts);
   config.reset = true; // TODO make this configurable
   config.logger = Logger; // NOTE: this will be used within truffle
   return config;

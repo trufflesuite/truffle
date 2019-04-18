@@ -58,6 +58,12 @@ contract DecodingSample {
   //S[2]       fixedArrayStructS;
   // S[]       dynamicArrayStructS;
 
+  function() external functionExternal;
+
+  function example() public {
+    functionExternal = this.example;
+  }
+
   constructor() public {
     varUint = 1;
     varString = "two";
@@ -143,5 +149,7 @@ contract DecodingSample {
 
     varMapping[2] = 41;
     varMapping[3] = 107;
+
+    functionExternal = this.example;
   }
 }
