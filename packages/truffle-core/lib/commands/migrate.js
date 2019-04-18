@@ -1,8 +1,3 @@
-const Config = require("truffle-config");
-const Migrate = require("truffle-migrate");
-const Resolver = require("truffle-resolver");
-const Artifactor = require("truffle-artifactor");
-
 const command = {
   command: "migrate",
   description: "Run migrations to deploy contracts",
@@ -135,6 +130,10 @@ const command = {
   },
 
   executePostDryRunMigration: async function(buildDir, options, done) {
+    const Artifactor = require("truffle-artifactor");
+    const Resolver = require("truffle-resolver");
+    const Migrate = require("truffle-migrate");
+    const Config = require("truffle-config");
     let accept = true;
 
     if (options.interactive) {
@@ -161,8 +160,12 @@ const command = {
   },
 
   run: function(options, done) {
+    const Artifactor = require("truffle-artifactor");
+    const Resolver = require("truffle-resolver");
+    const Migrate = require("truffle-migrate");
     const Contracts = require("truffle-workflow-compile");
     const Environment = require("../environment");
+    const Config = require("truffle-config");
     const temp = require("temp");
     const copy = require("../copy");
 
