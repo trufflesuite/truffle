@@ -190,8 +190,8 @@ export class Workspace {
           // hash includes sourcePath because two files can have same contents, but
           // should have different IDs
           const id = (sourcePath)
-            ? soliditySha3(contents, sourcePath)
-            : soliditySha3(contents)
+            ? soliditySha3(jsonStableStringify({ contents: contents, sourcePath: sourcePath }))
+            : soliditySha3(jsonStableStringify({ contents: contents }))
 
           const source = await this.source({ id }) || { ...sourceInput, id };
 
@@ -232,7 +232,7 @@ export class Workspace {
         async (bytecodeInput) => {
           const { bytes } = bytecodeInput;
 
-          const id = soliditySha3(bytes);
+          const id = soliditySha3(jsonStableStringify({ bytes: bytes }));
 
           const bytecode = await this.bytecode({ id }) || { ...bytecodeInput, id };
 

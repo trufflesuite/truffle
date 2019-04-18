@@ -40,26 +40,8 @@ class WorkspaceClient {
 
 const Migrations = require(path.join(fixturesDirectory, "Migrations.json"));
 
-let sourceId;
-let bytecodeId;
-let compilationId;
-let contractId;
+const generateId = (obj) => soliditySha3(jsonStableStringify(obj));
 
-beforeAll(() => {
-  sourceId = soliditySha3(Migrations.source, Migrations.sourcePath);
-  bytecodeId = soliditySha3(Migrations.bytecode);
-  compilationId = soliditySha3(jsonStableStringify({ 
-    compiler: Migrations.compiler, 
-    sourceIds: [{ id: sourceId }] 
-  }));
-  contractId = soliditySha3(jsonStableStringify({ 
-    name: Migrations.contractName, 
-    abi: { json: JSON.stringify(Migrations.abi) } , 
-    sourceContract: { index: 0 } ,
-    compilation: { id: compilationId }
-  }));
-
-});
 /*
  * root
  */
@@ -113,10 +95,13 @@ describe("Source", () => {
   it("adds source", async () => {
     const client = new WorkspaceClient();
 
+    const expectedId = generateId({
+      contents: Migrations.source,
+      sourcePath: Migrations.sourcePath
+    })
     const variables = {
       contents: Migrations.source,
       sourcePath: Migrations.sourcePath,
-      id: soliditySha3(Migrations.source, Migrations.sourcePath)
     }
 
     // add source
@@ -134,12 +119,12 @@ describe("Source", () => {
       expect(source).toHaveProperty("id");
 
       const { id } = source;
-      expect(id).toEqual(variables.id);
+      expect(id).toEqual(expectedId);
     }
 
     // ensure retrieved as matching
     {
-      const data = await client.execute(GetSource, { id: variables.id });
+      const data = await client.execute(GetSource, { id: expectedId });
       expect(data).toHaveProperty("source");
 
       const { source } = data;
@@ -148,7 +133,7 @@ describe("Source", () => {
       expect(source).toHaveProperty("sourcePath");
 
       const { id, contents, sourcePath } = source;
-      expect(id).toEqual(variables.id);
+      expect(id).toEqual(expectedId)
       expect(contents).toEqual(variables.contents);
       expect(sourcePath).toEqual(variables.sourcePath);
     }
@@ -182,8 +167,10 @@ mutation AddBytecode($bytes: Bytes!) {
 describe("Bytecode", () => {
   it("adds bytecode", async () => {
     const client = new WorkspaceClient();
+
+    const expectedId = generateId({ bytes: Migrations.bytecode })
+
     const variables = {
-      id: soliditySha3(Migrations.bytecode),
       bytes: Migrations.bytecode
     }
 
@@ -202,12 +189,12 @@ describe("Bytecode", () => {
       expect(bytecode).toHaveProperty("id");
 
       const { id } = bytecode;
-      expect(id).toEqual(variables.id);
+      expect(id).toEqual(expectedId);
     }
 
     // ensure retrieved as matching
     {
-      const data = await client.execute(GetBytecode, { id: variables.id });
+      const data = await client.execute(GetBytecode, { id: expectedId });
       expect(data).toHaveProperty("bytecode");
 
       const { bytecode } = data;
@@ -215,7 +202,7 @@ describe("Bytecode", () => {
       expect(bytecode).toHaveProperty("bytes");
 
       const { id, bytes } = bytecode;
-      expect(id).toEqual(variables.id);
+      expect(id).toEqual(expectedId);
       expect(bytes).toEqual(variables.bytes);
     }
   });
@@ -293,15 +280,30 @@ mutation AddCompilation($compilerName: String!, $compilerVersion: String!, $sour
 }`
 
 describe("Compilation", () => {
+  const client = new WorkspaceClient();
+
+  let sourceId;
+  
+  beforeEach(async () => {
+    //add source and get id
+    const sourceVariables = {
+      contents: Migrations.source,
+      sourcePath: Migrations.sourcePath
+    }
+    const sourceResult = await client.execute(AddSource, sourceVariables);
+    sourceId = sourceResult.sourcesAdd.sources[0].id;
+  })
+
   it("adds compilation", async () => {
-    const client = new WorkspaceClient();
+    const expectedId = generateId({ 
+      compiler: Migrations.compiler, 
+      sourceIds: [{ id: sourceId }] 
+    })
 
     const variables = {
       compilerName: Migrations.compiler.name,
       compilerVersion: Migrations.compiler.version,
       sourceId: sourceId,
-      id: compilationId,
-      contractId: contractId,
       abi: JSON.stringify(Migrations.abi)
     }
 
@@ -339,7 +341,7 @@ describe("Compilation", () => {
     }
       //ensure retrieved as matching
     {
-      const data = await client.execute(GetCompilation, {id: variables.id});
+      const data = await client.execute(GetCompilation, { id: expectedId });
       expect(data).toHaveProperty("compilation");
 
       const { compilation } = data;
@@ -429,31 +431,53 @@ mutation addContracts($contractName: String, $compilationId: ID!, $bytecodeId:ID
 describe("Contract", () => {
   const client = new WorkspaceClient();
 
-  const variables = {
-    contractName: Migrations.contractName,
-    compilationId: compilationId,
-    id: contractId,
-    compilerName: Migrations.compiler.name,
-    compilerVersion: Migrations.compiler.version,
-    sourceId: sourceId,
-    bytecodeId: bytecodeId, 
-    abi: JSON.stringify(Migrations.abi)
-  }
+  let compilationId;
+  let sourceId;
+  let bytecodeId;
+  let expectedId;
 
-  beforeAll(async () => {
-    await client.execute(AddCompilation, variables);
+  beforeEach(async () => {
+    //add source and get id
+    const sourceVariables = {
+      contents: Migrations.source,
+      sourcePath: Migrations.sourcePath
+    }
+    const sourceResult = await client.execute(AddSource, sourceVariables);
+    sourceId = sourceResult.sourcesAdd.sources[0].id;
+
+    //add bytecode and get id 
+    const bytecodeVariables = {
+      bytes: Migrations.bytecode
+    }
+    const bytecodeResult = await client.execute(AddBytecode, bytecodeVariables);
+    bytecodeId = bytecodeResult.bytecodesAdd.bytecodes[0].id
+
+    // add compilation and get id
+    const compilationVariables = {
+      compilerName: Migrations.compiler.name,
+      compilerVersion: Migrations.compiler.version,
+      sourceId: sourceId,
+      abi: JSON.stringify(Migrations.abi)
+    }
+    const compilationResult = await client.execute(AddCompilation, compilationVariables);
+    compilationId = compilationResult.compilationsAdd.compilations[0].id;
+
   });
+
 
   it("adds contracts", async () => {
     const client = new WorkspaceClient();
 
+    const expectedId = generateId({ 
+      name: Migrations.contractName, 
+      abi: { json: JSON.stringify(Migrations.abi) } , 
+      sourceContract: { index: 0 } ,
+      compilation: { id: compilationId }
+    });
+
     const variables = {
       contractName: Migrations.contractName,
       compilationId: compilationId,
-      id: contractId,
-      compilerName: Migrations.compiler.name,
-      compilerVersion: Migrations.compiler.version,
-      sourceId: sourceId,
       bytecodeId: bytecodeId, 
       abi: JSON.stringify(Migrations.abi)
     }
@@ -461,6 +485,7 @@ describe("Contract", () => {
     // add contracts
     {
       const data = await client.execute(AddContracts, variables);
+
       expect(data).toHaveProperty("contractsAdd");
 
       const { contractsAdd } = data;
@@ -483,7 +508,7 @@ describe("Contract", () => {
 
     //ensure retrieved as matching
     {
-      const data = await client.execute(GetContract, { id: contractId });
+      const data = await client.execute(GetContract, { id: expectedId });
 
       expect(data).toHaveProperty("contract");
 
