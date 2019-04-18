@@ -198,15 +198,9 @@ const translations = [
               type: "string",
               description: "JSON-encoded ABI"
             },
-            items: {
-              type: "array",
-              items: {
-                type: "object"
-              }
-            }
           },
 
-          required: ["json", "items"]
+          required: ["json"]
         }
       }
     }
