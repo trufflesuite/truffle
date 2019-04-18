@@ -107,7 +107,7 @@ const command = {
       61717561 // Aquachain
     ];
 
-    let dryRunOnly;
+    let dryRunOnly, skipDryRun;
     const networkSettingsInConfig = config.networks[config.network];
     if (networkSettingsInConfig) {
       dryRunOnly =

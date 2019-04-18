@@ -127,7 +127,6 @@ const Migrate = {
           });
         },
         error => {
-          console.log("in the migration callback --> %o", error);
           if (error) return reject(error);
           return resolve();
         }
