@@ -146,3 +146,61 @@ it("retrieves contract constructor object correctly", async() => {
 
 });
 
+const GetContractFromInstance = `
+query GetContractFromInstance($name: String!, $networkId: String!) {
+  artifacts {
+    contractInstance(name: $name, networkId: $networkId) {
+      contract {
+        name
+        sourceContract {
+          name
+          source {
+            contents
+            sourcePath
+          }
+          ast {
+            json
+          }
+        }
+        abi {
+          json
+        }
+      }
+    }
+  }
+}`;
+
+it("retrieves contract information for an instance", async () => {
+  const result = await db.query(GetContractFromInstance, {
+    name: Migrations.contractName,
+    networkId: Object.keys(Migrations.networks)[0]
+  });
+
+  const { data } = result;
+  expect(data).toHaveProperty("artifacts");
+
+  const { artifacts } = data;
+  expect(artifacts).toHaveProperty("contractInstance");
+
+  const { contractInstance } = artifacts;
+  expect(contractInstance).toHaveProperty("contract");
+
+  const { contract } = contractInstance;
+  expect(contract).toHaveProperty("name");
+  expect(contract).toHaveProperty("abi");
+  expect(contract).toHaveProperty("sourceContract");
+
+  const { name, sourceContract, abi } = contract;
+  expect(name).toEqual(Migrations.contractName);
+  expect(sourceContract).toHaveProperty("name");
+  expect(sourceContract).toHaveProperty("ast");
+  expect(sourceContract).toHaveProperty("source");
+
+  const { ast, source } = sourceContract;
+  expect(source).toHaveProperty("contents");
+  expect(source).toHaveProperty("sourcePath");
+  expect(name).toEqual(Migrations.contractName);
+
+  const { json } = abi;
+  expect(json).toEqual(JSON.stringify(Migrations.abi));
+});

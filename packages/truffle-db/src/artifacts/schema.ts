@@ -73,6 +73,18 @@ export const schema = mergeSchemas({
           return result;
         }
       },
+      contract: {
+        fragment: `... on ContractObject { name: contractName }`,
+        resolve: ({ name }, _, context, info) =>
+          info.mergeInfo.delegateToSchema({
+            schema: jsonSchema,
+            operation: "query",
+            fieldName: "contract",
+            args: { name },
+            context,
+            info
+          })
+      },
       callBytecode: {
         fragment: `... on ContractObject {
           deployedSourceMap,
@@ -83,16 +95,14 @@ export const schema = mergeSchemas({
           deployedSourceMap: sourceMap
         }) => ({ bytes, sourceMap })
       },
-
     },
 
     Contract: {
       name: {
-        fragment: "... on ContractObject { name: contractName }"
+        fragment: `... on ContractObject { name: contractName }`
       },
       sourceContract: {
-        fragment:
-        `... on ContractObject {
+        fragment: `... on ContractObject {
           ast { json }
           source { contents, sourcePath }
         }`,
