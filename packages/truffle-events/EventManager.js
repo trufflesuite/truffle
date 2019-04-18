@@ -1,5 +1,7 @@
 const { ReporterAggregator } = require("truffle-reporters");
 const Emittery = require("emittery");
+const Subscriber = require("./Subscriber");
+const subscribers = require("./subscribers");
 
 class EventManager {
   constructor(eventManagerOptions) {
@@ -38,6 +40,13 @@ class EventManager {
   initializeSubscribers(initializationOptions) {
     const { muteReporters } = initializationOptions;
     if (!muteReporters) this.initializeReporters(initializationOptions);
+
+    for (let subscriber in subscribers) {
+      new Subscriber({
+        emitter: this.emitter,
+        options: subscribers[subscriber]
+      });
+    }
   }
 }
 

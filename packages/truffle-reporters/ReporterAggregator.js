@@ -1,5 +1,5 @@
 const { unbox, compile, obtain } = require("./reporters");
-const Reporter = require("./Reporter");
+const Subscriber = require("./Subscriber.js");
 const defaultReporters = { compile, unbox, obtain };
 
 class ReporterAggregator {
@@ -10,14 +10,14 @@ class ReporterAggregator {
   initializeReporters(initializationOptions) {
     const { emitter, reporters } = initializationOptions;
     for (let reporterName in defaultReporters) {
-      new Reporter({
+      new Subscriber({
         options: defaultReporters[reporterName],
         emitter
       });
     }
     if (reporters) {
       for (let reporterName in reporters) {
-        new Reporter({
+        new Subscriber({
           options: reporters[reporterName],
           emitter
         });

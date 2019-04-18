@@ -1,4 +1,4 @@
-class Reporter {
+class Subscriber {
   constructor({ emitter, options }) {
     const { initialization, handlers } = options;
 
@@ -100,4 +100,4 @@ class Reporter {
   }
 }
 
-module.exports = Reporter;
+module.exports = Subscriber;
