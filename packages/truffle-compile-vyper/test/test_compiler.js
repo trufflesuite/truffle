@@ -1,6 +1,5 @@
 const path = require("path");
 const assert = require("assert");
-
 const Config = require("truffle-config");
 const compile = require("../index");
 
@@ -89,7 +88,7 @@ describe("vyper compiler", function() {
     });
   });
 
-  describe("with external optionas check", function() {
+  describe("with external options set", function() {
     const configWithSourceMap = new Config().merge(defaultSettings).merge({
       compilers: {
         vyper: {
@@ -99,7 +98,8 @@ describe("vyper compiler", function() {
         }
       }
     });
-    it("compiles with source_map option", function(done) {
+
+    it("compiles when sourceMap option set true", function(done) {
       compile.all(configWithSourceMap, function(err, contracts) {
         [
           contracts.VyperContract1,
