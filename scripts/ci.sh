@@ -32,6 +32,7 @@ if [ "$INTEGRATION" = true ]; then
 
 elif [ "$GETH" = true ]; then
 
+  docker pull ethereum/client-go:latest
   run_geth
   lerna run --scope truffle test --stream -- --exit
   lerna run --scope truffle-contract test --stream -- --exit
