@@ -8,5 +8,5 @@ set -o errexit
 if [ "$GETH" == true ]; then
   mocha --timeout 7000 --grep @geth --colors --exit $@
 else
-  mocha --no-warnings --timeout 7000 --colors --exit $@
+  mocha --no-warnings --timeout 7000 --grep @geth --invert --colors --exit $@
 fi
