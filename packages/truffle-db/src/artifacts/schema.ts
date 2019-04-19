@@ -2,7 +2,7 @@ import {
   mergeSchemas,
   transformSchema,
   FilterRootFields
-} from "graphql-tools";
+} from "@gnd/graphql-tools";
 
 import { schema as rootSchema } from "truffle-db/schema";
 import { schema as jsonSchema } from "./json";
@@ -16,6 +16,7 @@ export const schema = mergeSchemas({
     ]),
     `type Query {
       contractNames: [String]!
+      contract(name: String!): Contract
       contractInstance(networkId: String!, name: String!): ContractInstance
     }`
   ],
@@ -31,7 +32,16 @@ export const schema = mergeSchemas({
           info
         })
       },
-     
+      contract: {
+        resolve: (_, args, context, info) => info.mergeInfo.delegateToSchema({
+          schema: jsonSchema,
+          operation: "query",
+          fieldName: "contract",
+          args,
+          context,
+          info
+        })
+      },
       contractInstance: {
         resolve: (_, args, context, info) => info.mergeInfo.delegateToSchema({
           schema: jsonSchema,
@@ -63,6 +73,18 @@ export const schema = mergeSchemas({
           return result;
         }
       },
+      contract: {
+        fragment: `... on ContractObject { name: contractName }`,
+        resolve: ({ name }, _, context, info) =>
+          info.mergeInfo.delegateToSchema({
+            schema: jsonSchema,
+            operation: "query",
+            fieldName: "contract",
+            args: { name },
+            context,
+            info
+          })
+      },
       callBytecode: {
         fragment: `... on ContractObject {
           deployedSourceMap,
@@ -73,7 +95,41 @@ export const schema = mergeSchemas({
           deployedSourceMap: sourceMap
         }) => ({ bytes, sourceMap })
       },
-      
     },
-  }
+
+    Contract: {
+      name: {
+        fragment: `... on ContractObject { name: contractName }`
+      },
+      sourceContract: {
+        fragment: `... on ContractObject {
+          ast { json }
+          source { contents, sourcePath }
+        }`,
+        resolve: (obj) => {
+          const { name, source, ast } = obj;
+          const sourceContract = {
+            name: name,
+            source: source,
+            ast: ast
+          }
+          return sourceContract;
+        }
+      },
+      constructor: {
+        fragment: `... on ContractObject {
+            bytecode
+          }`,
+          resolve: (obj) => {
+            const { bytecode } = obj;
+            const contractConstructor = {
+              createBytecode: {
+                bytes: bytecode
+              }
+            }
+            return contractConstructor;
+          }
+        }
+      },
+    }
 });

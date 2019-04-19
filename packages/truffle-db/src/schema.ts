@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-import { makeExecutableSchema } from "graphql-tools";
+import { makeExecutableSchema } from "@gnd/graphql-tools";
 
 export function readSchema () {
   const schemaFile = path.join(__dirname, "schema.graphql");
