@@ -85,7 +85,10 @@ function checkVyper(callback) {
 // Execute vyper for single source file
 function execVyper(options, source_path, callback) {
   const formats = ["abi", "bytecode", "bytecode_runtime"];
-  if (options.vyper && options.vyper.source_map) {
+  if (
+    options.compilers.vyper.settings &&
+    options.compilers.vyper.settings.sourceMap
+  ) {
     formats.push("source_map");
   }
   const command = `vyper -f${formats.join(",")} ${source_path}`;

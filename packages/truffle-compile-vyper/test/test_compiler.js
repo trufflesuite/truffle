@@ -1,7 +1,5 @@
 const path = require("path");
 const assert = require("assert");
-const colors = require("colors");
-const exec = require("child_process").exec;
 
 const Config = require("truffle-config");
 const compile = require("../index");
@@ -9,11 +7,12 @@ const compile = require("../index");
 describe("vyper compiler", function() {
   this.timeout(10000);
 
-  const config = new Config().merge({
+  const defaultSettings = {
     contracts_directory: path.join(__dirname, "./sources/"),
     quiet: true,
     all: true
-  });
+  };
+  const config = new Config().merge(defaultSettings);
 
   it("compiles vyper contracts", function(done) {
     compile.all(config, function(err, contracts, paths) {
@@ -72,41 +71,6 @@ describe("vyper compiler", function() {
     });
   });
 
-  it("compiles with source_map option", function(done) {
-    // this test pass when vyper 0.1.0-b9 or higher
-    exec("vyper --version", function(err, stdout) {
-      let version;
-      if (!err) version = stdout.trim();
-
-      if (version === "0.1.0-b9") {
-        config.merge({
-          vyper: {
-            source_map: true
-          }
-        });
-        compile.all(config, function(err, contracts) {
-          [
-            contracts.VyperContract1,
-            contracts.VyperContract2,
-            contracts.VyperContract3
-          ].forEach((contract, index) => {
-            assert(
-              contract.sourceMap,
-              `source map have to not be empty. ${index + 1}`
-            );
-          });
-
-          done();
-        });
-      } else {
-        done();
-        console.log(
-          `${colors.cyan("Skip cause vyper version is lower:")}${version}`
-        );
-      }
-    });
-  });
-
   it("skips solidity contracts", function(done) {
     compile.all(config, function(err, contracts, paths) {
       assert.equal(err, null, "Compiles without error");
@@ -122,6 +86,33 @@ describe("vyper compiler", function() {
       );
 
       done();
+    });
+  });
+
+  describe("with external optionas check", function() {
+    const configWithSourceMap = new Config().merge(defaultSettings).merge({
+      compilers: {
+        vyper: {
+          settings: {
+            sourceMap: true
+          }
+        }
+      }
+    });
+    it("compiles with source_map option", function(done) {
+      compile.all(configWithSourceMap, function(err, contracts) {
+        [
+          contracts.VyperContract1,
+          contracts.VyperContract2,
+          contracts.VyperContract3
+        ].forEach((contract, index) => {
+          assert(
+            contract.sourceMap,
+            `source map have to not be empty. ${index + 1}`
+          );
+        });
+        done();
+      });
     });
   });
 });
