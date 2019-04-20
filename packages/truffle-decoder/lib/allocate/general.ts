@@ -3,8 +3,7 @@ import { AstDefinition, AstReferences } from "truffle-decode-utils";
 function getDeclarationsForTypes(contracts: AstDefinition[], types: string[]): AstReferences {
   let result: AstReferences = {};
 
-  for (let i = 0; i < contracts.length; i++) {
-    const contract = contracts[i];
+  for (let contract of contracts) {
     if (contract) {
       for (const node of contract.nodes) {
         if (types.includes(node.nodeType)) {
