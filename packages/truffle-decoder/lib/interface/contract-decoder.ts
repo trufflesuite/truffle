@@ -79,6 +79,20 @@ export interface ContractMapping {
   [nodeId: number]: ContractObject;
 };
 
+export interface StorageCache {
+  [block: number]: {
+    [address: string]: {
+      [slot: string]: Uint8Array;
+    };
+  };
+}
+
+export interface CodeCache {
+  [block: number]: {
+    [address: string]: Uint8Array;
+  };
+}
+
 //note: may return undefined
 function getContractNode(contract: ContractObject): AstDefinition {
   return (contract.ast || {nodes: []}).nodes.find(
@@ -115,6 +129,9 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   private stateVariableReferences: StorageMemberAllocations;
 
   private mappingKeys: Slot[] = [];
+
+  private storageCache: StorageCache = {};
+  private codeCache: CodeCache = {};
 
   constructor(contract: ContractObject, relevantContracts: ContractObject[], provider: Provider, address: string) {
     super();
@@ -191,7 +208,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.contractCode = await this.web3.eth.getCode(this.contractAddress);
   }
 
-  private async decodeVariable(variable: StorageMemberAllocation, block: BlockType): Promise<DecodedVariable> {
+  private async decodeVariable(variable: StorageMemberAllocation, block: number): Promise<DecodedVariable> {
     const info: EvmInfo = {
       state: {
         stack: [],
@@ -212,26 +229,10 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       let request = <DecoderRequest>(result.value);
       let response: Uint8Array;
       if(isStorageRequest(request)) {
-        response = DecodeUtils.Conversion.toBytes(
-          await this.web3.eth.getStorageAt(
-            this.contractAddress,
-            request.slot,
-            block
-          ),
-          DecodeUtils.EVM.WORD_SIZE);
+        response = await this.getStorage(this.contractAddress, request.slot, block);
       }
       else if(isCodeRequest(request)) {
-        if(request.address === this.contractAddress) {
-          response = DecodeUtils.Conversion.toBytes(this.contractCode);
-        }
-        else {
-          response = DecodeUtils.Conversion.toBytes(
-            await this.web3.eth.getCode(
-              request.address,
-              block
-            )
-          );
-        }
+        response = await this.getCode(request.address, block);
       }
       //note: one of the above conditionals *must* be true by the type system.
       result = decoder.next(response);
@@ -246,11 +247,15 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   public async state(block: BlockType = "latest"): Promise<ContractState | undefined> {
+    let blockNumber = typeof block === "number"
+      ? block
+      : (await this.web3.eth.getBlock(block)).number;
+
     let result: ContractState = {
       name: this.contract.contractName,
       code: this.contractCode,
-      balance: new BN(await this.web3.eth.getBalance(this.contractAddress, block)),
-      nonce: new BN(await this.web3.eth.getTransactionCount(this.contractAddress, block)),
+      balance: new BN(await this.web3.eth.getBalance(this.contractAddress, blockNumber)),
+      nonce: new BN(await this.web3.eth.getTransactionCount(this.contractAddress, blockNumber)),
       variables: {}
     };
 
@@ -259,7 +264,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     for(const variable of Object.values(this.stateVariableReferences)) {
 
       debug("about to decode %s", variable.definition.name);
-      const decodedVariable = await this.decodeVariable(variable, block);
+      const decodedVariable = await this.decodeVariable(variable, blockNumber);
       debug("decoded");
 
       result.variables[variable.definition.name] = decodedVariable;
@@ -271,6 +276,9 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   public async variable(nameOrId: string | number, block: BlockType = "latest"): Promise<DecodedVariable | undefined> {
+    let blockNumber = typeof block === "number"
+      ? block
+      : (await this.web3.eth.getBlock(block)).number;
 
     let variable: StorageMemberAllocation;
     if(typeof nameOrId === "number")
@@ -286,7 +294,52 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       return undefined;
     }
 
-    return await this.decodeVariable(variable, block);
+    return await this.decodeVariable(variable, blockNumber);
+  }
+
+  private async getStorage(address: string, slot: BN, block: number): Promise<Uint8Array> {
+    //first, set up any preliminary layers as needed
+    if(this.storageCache[block] === undefined) {
+      this.storageCache[block] = {};
+    }
+    if(this.storageCache[block][address] === undefined) {
+      this.storageCache[block][address] = {};
+    }
+    //now, if we have it cached, just return it
+    if(this.storageCache[block][address][slot.toString()] !== undefined) {
+      return this.storageCache[block][address][slot.toString()];
+    }
+    //otherwise, get it, cache it, and return it
+    let word = DecodeUtils.Conversion.toBytes(
+      await this.web3.eth.getStorageAt(
+        address,
+        slot,
+        block
+      ),
+      DecodeUtils.EVM.WORD_SIZE
+    );
+    this.storageCache[block][address][slot.toString()] = word;
+    return word;
+  }
+
+  private async getCode(address: string, block: number): Promise<Uint8Array> {
+    //first, set up any preliminary layers as needed
+    if(this.codeCache[block] === undefined) {
+      this.codeCache[block] = {};
+    }
+    //now, if we have it cached, just return it
+    if(this.codeCache[block][address] !== undefined) {
+      return this.codeCache[block][address];
+    }
+    //otherwise, get it, cache it, and return it
+    let code = DecodeUtils.Conversion.toBytes(
+      await this.web3.eth.getCode(
+        address,
+        block
+      )
+    );
+    this.codeCache[block][address] = code;
+    return code;
   }
 
   //EXAMPLE: to watch a.b.c[d][e], use watchMappingKey("a", "b", "c", d, e)
