@@ -87,7 +87,7 @@ function execVyper(source_path, callback) {
   const formats = ["abi", "bytecode", "bytecode_runtime"];
   const command = `vyper -f${formats.join(",")} ${source_path}`;
 
-  exec(command, function(err, stdout, stderr) {
+  exec(command, { maxBuffer: 600 * 1024 }, function(err, stdout, stderr) {
     if (err)
       return callback(
         `${stderr}\n${colors.red(
