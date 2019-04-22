@@ -270,11 +270,6 @@ const evm = createSelectorTree({
     contexts: createLeaf(["/state"], state => state.info.contexts.byContext),
 
     /**
-     * evm.info.instances
-     */
-    instances: createLeaf(["/state"], state => state.info.instances.byAddress),
-
-    /**
      * evm.info.binaries
      */
     binaries: {
@@ -287,20 +282,33 @@ const evm = createSelectorTree({
       search: createLeaf(["/info/contexts"], contexts => binary =>
         DecodeUtils.Contexts.findDebuggerContext(contexts, binary)
       )
-    },
+    }
+  },
+
+  /**
+   * evm.transaction
+   */
+  transaction: {
+    /**
+     * evm.tx.instances
+     */
+    instances: createLeaf(
+      ["/state"],
+      state => state.transaction.instances.byAddress
+    ),
 
     /*
-     * evm.info.globals
+     * evm.tx.globals
      */
     globals: {
       /*
        * evm.info.globals.tx
        */
-      tx: createLeaf(["/state"], state => state.info.globals.tx),
+      tx: createLeaf(["/state"], state => state.transaction.globals.tx),
       /*
        * evm.info.globals.block
        */
-      block: createLeaf(["/state"], state => state.info.globals.block)
+      block: createLeaf(["/state"], state => state.transaction.globals.block)
     }
   },
 
@@ -326,7 +334,7 @@ const evm = createSelectorTree({
      * evm.current.context
      */
     context: createLeaf(
-      ["./call", "/info/instances", "/info/binaries/search", "/info/contexts"],
+      ["./call", "/tx/instances", "/info/binaries/search", "/info/contexts"],
       ({ address, binary }, instances, search, contexts) => {
         let contextId;
         if (address) {

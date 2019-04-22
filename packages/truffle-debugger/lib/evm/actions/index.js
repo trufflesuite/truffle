@@ -111,3 +111,10 @@ export function reset(storageAddress) {
     storageAddress
   };
 }
+
+export const UNLOAD = "EVM_UNLOAD";
+export function unload() {
+  return {
+    type: UNLOAD
+  };
+}

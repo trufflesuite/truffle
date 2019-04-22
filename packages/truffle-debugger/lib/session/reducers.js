@@ -10,7 +10,6 @@ import * as actions from "./actions";
 
 export const WAITING = "WAITING";
 export const ACTIVE = "ACTIVE";
-export const ERROR = "ERROR";
 
 function status(state = WAITING, action) {
   switch (action.type) {
@@ -29,6 +28,8 @@ function transaction(state = {}, action) {
   switch (action.type) {
     case actions.SAVE_TRANSACTION:
       return action.transaction;
+    case actions.UNLOAD:
+      return {};
     default:
       return state;
   }
@@ -38,6 +39,8 @@ function receipt(state = {}, action) {
   switch (action.type) {
     case actions.SAVE_RECEIPT:
       return action.receipt;
+    case actions.UNLOAD:
+      return {};
     default:
       return state;
   }
@@ -47,6 +50,8 @@ function block(state = {}, action) {
   switch (action.type) {
     case actions.SAVE_BLOCK:
       return action.block;
+    case actions.UNLOAD:
+      return {};
     default:
       return state;
   }

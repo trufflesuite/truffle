@@ -1,4 +1,4 @@
-import debugModule from 'debug';
+import debugModule from "debug";
 import expect from "truffle-expect";
 
 import Session from "./session";
@@ -44,14 +44,13 @@ export default class Debugger {
    * @return {Debugger} instance
    */
   static async forTx(txHash, options = {}) {
-    expect.options(options, [
-      "contracts",
-      "provider"
-    ]);
+    expect.options(options, ["contracts", "provider"]);
 
     let session = new Session(
-      options.contracts, options.files,
-      txHash, options.provider
+      options.contracts,
+      options.files,
+      options.provider,
+      txHash
     );
 
     try {
@@ -63,6 +62,30 @@ export default class Debugger {
     return new this(session);
   }
 
+  /**
+   * Instantiates a Debugger for a given transaction hash.
+   *
+   * @param {String} txHash - transaction hash with leading "0x"
+   * @param {{contracts: Array<Contract>, files: Array<String>, provider: Web3Provider}} options -
+   * @return {Debugger} instance
+   */
+  static async forProject(options = {}) {
+    expect.options(options, ["contracts", "provider"]);
+
+    let session = new Session(
+      options.contracts,
+      options.files,
+      options.provider
+    );
+
+    try {
+      await session.ready();
+    } catch (e) {
+      throw e;
+    }
+
+    return new this(session);
+  }
 
   /**
    * Connects to the instantiated Debugger.
@@ -95,7 +118,7 @@ export default class Debugger {
       evm: evmSelector,
       solidity: soliditySelector,
       session: sessionSelector,
-      controller: controllerSelector,
+      controller: controllerSelector
     });
   }
 }

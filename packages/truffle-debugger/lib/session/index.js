@@ -6,6 +6,7 @@ import configureStore from "lib/store";
 import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
 import data from "lib/data/selectors";
+import session from "lib/session/selectors";
 import { decode } from "lib/data/sagas";
 import controllerSelector from "lib/controller/selectors";
 
@@ -19,11 +20,11 @@ export default class Session {
   /**
    * @param {Array<Contract>} contracts - contract definitions
    * @param {Array<String>} files - array of filenames for sourceMap indexes
-   * @param {string} txHash - transaction hash
    * @param {Web3Provider} provider - web3 provider
+   * txHash parameter is now optional!
    * @private
    */
-  constructor(contracts, files, txHash, provider) {
+  constructor(contracts, files, provider, txHash) {
     /**
      * @private
      */
@@ -36,7 +37,8 @@ export default class Session {
     // record contracts
     this._store.dispatch(actions.recordContracts(contexts, sources));
 
-    this._store.dispatch(actions.start(txHash, provider));
+    //note that txHash is now optional
+    this._store.dispatch(actions.start(provider, txHash));
   }
 
   async ready() {
@@ -186,28 +188,64 @@ export default class Session {
     });
   }
 
+  async load(txHash) {
+    let loaded = this.view(session.loaded);
+    if (loaded) {
+      await this.unload();
+    }
+    return this.dispatch(actions.load(txHash));
+  }
+
+  async unload() {
+    return this.dispatch(actions.unload());
+  }
+
   //Note: count is an optional argument; default behavior is to advance 1
   async advance(count) {
+    let loaded = this.view(session.loaded);
+    if (!loaded) {
+      return;
+    }
     return await this.doneStepping(controller.advance(count));
   }
 
   async stepNext() {
+    let loaded = this.view(session.loaded);
+    if (!loaded) {
+      return;
+    }
     return await this.doneStepping(controller.stepNext());
   }
 
   async stepOver() {
+    let loaded = this.view(session.loaded);
+    if (!loaded) {
+      return;
+    }
     return await this.doneStepping(controller.stepOver());
   }
 
   async stepInto() {
+    let loaded = this.view(session.loaded);
+    if (!loaded) {
+      return;
+    }
     return await this.doneStepping(controller.stepInto());
   }
 
   async stepOut() {
+    let loaded = this.view(session.loaded);
+    if (!loaded) {
+      return;
+    }
     return await this.doneStepping(controller.stepOut());
   }
 
   async reset() {
+    let loaded = this.view(session.loaded);
+    if (!loaded) {
+      return;
+    }
     return await this.doneStepping(controller.reset());
   }
 
@@ -215,6 +253,10 @@ export default class Session {
   //own list of breakpoints; leave it out to use the internal one (as
   //controlled by the functions below)
   async continueUntilBreakpoint(breakpoints) {
+    let loaded = this.view(session.loaded);
+    if (!loaded) {
+      return;
+    }
     return await this.doneStepping(
       controller.continueUntilBreakpoint(breakpoints)
     );

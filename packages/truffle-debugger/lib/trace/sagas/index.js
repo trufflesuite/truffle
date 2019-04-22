@@ -108,6 +108,10 @@ export function* reset() {
   yield put(actions.reset());
 }
 
+export function* unload() {
+  yield put(actions.unload());
+}
+
 export function* saga() {
   // wait for trace to be defined
   yield* waitForTrace();

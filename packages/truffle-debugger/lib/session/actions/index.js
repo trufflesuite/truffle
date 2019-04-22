@@ -1,9 +1,24 @@
 export const START = "SESSION_START";
-export function start(txHash, provider) {
+export function start(provider, txHash) {
   return {
     type: START,
-    txHash,
-    provider
+    provider,
+    txHash //OPTIONAL
+  };
+}
+
+export const LOAD = "LOAD";
+export function load(txHash) {
+  return {
+    type: LOAD,
+    txHash
+  };
+}
+
+export const UNLOAD = "SESSION_UNLOAD";
+export function unload() {
+  return {
+    type: UNLOAD
   };
 }
 

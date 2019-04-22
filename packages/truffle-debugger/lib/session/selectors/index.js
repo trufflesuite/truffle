@@ -15,7 +15,7 @@ const session = createSelectorTree({
      * session.info.affectedInstances
      */
     affectedInstances: createLeaf(
-      [evm.info.instances, evm.info.contexts, solidity.info.sources],
+      [evm.transaction.instances, evm.info.contexts, solidity.info.sources],
 
       (instances, contexts, sources) =>
         Object.assign(
@@ -61,7 +61,15 @@ const session = createSelectorTree({
      * contains the web3 block object
      */
     block: state => state.session.block
-  }
+  },
+
+  /*
+   * session.loaded
+   */
+  loaded: createLeaf(
+    ["/transaction"],
+    transaction => Object.keys(transaction).length === 0
+  )
 });
 
 export default session;

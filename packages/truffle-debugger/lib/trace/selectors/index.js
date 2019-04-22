@@ -33,7 +33,7 @@ let trace = createSelectorTree({
    *
    * all trace steps
    */
-  steps: state => state.trace.info.steps,
+  steps: state => state.trace.transaction.steps,
 
   /**
    * trace.stepsRemaining

@@ -15,6 +15,11 @@ import * as web3 from "lib/web3/sagas";
 
 import * as actions from "../actions";
 
+const TX_SAGAS = {
+  [actions.LOAD]: load,
+  [actions.UNLOAD]: unload
+};
+
 export function* saga() {
   debug("starting listeners");
   yield* forkListeners();
@@ -37,15 +42,6 @@ export function* saga() {
   let { txHash, provider } = yield take(actions.START);
   debug("starting");
 
-  // process transaction
-  debug("fetching transaction info");
-  let err = yield* fetchTx(txHash, provider);
-  if (err) {
-    debug("error %o", err);
-    yield* error(err);
-    return;
-  }
-
   debug("visiting ASTs");
   // visit asts
   yield* ast.visitAll();
@@ -54,9 +50,32 @@ export function* saga() {
   debug("saving allocation table");
   yield* data.recordAllocations();
 
+  //initialize web3 adapter
+  yield* web3.init(provider);
+
+  if (txHash !== undefined) {
+    yield* processTransaction(txHash);
+  }
+
+  //set up loading/unloading sagas
+  for (let action in TX_SAGAS) {
+    yield takeEvery(action, TX_SAGAS[action]);
+  }
+
   debug("readying");
   // signal that stepping can begin
   yield* ready();
+}
+
+export function* processTransaction(txHash) {
+  // process transaction
+  debug("fetching transaction info");
+  let err = yield* fetchTx(txHash);
+  if (err) {
+    debug("error %o", err);
+    yield* error(err);
+    return;
+  }
 }
 
 export default prefixName("session", saga);
@@ -70,8 +89,8 @@ function* forkListeners() {
   );
 }
 
-function* fetchTx(txHash, provider) {
-  let result = yield* web3.inspectTransaction(txHash, provider);
+function* fetchTx(txHash) {
+  let result = yield* web3.inspectTransaction(txHash);
   debug("result %o", result);
 
   if (result.error) {
@@ -132,4 +151,18 @@ function* ready() {
 
 function* error(err) {
   yield put(actions.error(err));
+}
+
+function* unload() {
+  yield* data.reset();
+  yield* solidity.reset();
+  yield* evm.unload();
+  yield* trace.unload();
+  yield put(actions.unload());
+}
+
+//noet that load takes an action as its argument, which is why it's separate
+//from processTransaction
+function* load({ txHash }) {
+  yield* processTransaction(txHash);
 }

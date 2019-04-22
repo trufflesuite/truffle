@@ -39,6 +39,11 @@ export function reset() {
   return { type: RESET };
 }
 
+export const UNLOAD = "TRACE_UNLOAD";
+export function unload() {
+  return { type: UNLOAD };
+}
+
 export const BACKTICK = "BACKTICK";
 export function subtock() {
   return { type: BACKTICK };
