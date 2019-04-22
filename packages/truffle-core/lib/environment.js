@@ -32,23 +32,7 @@ const Environment = {
       }
     }
 
-    const networkConfig = config.networks[config.network];
-
-    if (!networkConfig) {
-      throw new TruffleError(
-        `Unknown network "${config.network}` +
-          `". See your Truffle configuration file for available networks.`
-      );
-    }
-
-    const configNetworkId = config.networks[config.network].network_id;
-
-    if (configNetworkId == null) {
-      throw new Error(
-        `You must specify a network_id in your '` +
-          `${config.network}' configuration in order to use this network.`
-      );
-    }
+    helpers.validateNetworkConfig(config);
 
     const web3 = new Web3Shim({
       provider: config.provider,
@@ -133,23 +117,42 @@ const helpers = {
   },
 
   detectAndSetNetworkId: async (config, web3) => {
+    const configNetworkId = config.networks[config.network].network_id;
     const providerNetworkId = await web3.eth.net.getId();
-    if (network_id !== "*") {
+    if (configNetworkId !== "*") {
       // Ensure the network id matches the one in the config for safety
-      if (providerNetworkId.toString() !== network_id.toString()) {
+      if (providerNetworkId.toString() !== configNetworkId.toString()) {
         const error =
           `The network id specified in the truffle config ` +
-          `(${network_id}) does not match the one returned by the network ` +
+          `(${configNetworkId}) does not match the one returned by the network ` +
           `(${providerNetworkId}).  Ensure that both the network and the ` +
           `provider are properly configured.`;
         throw new Error(error);
       }
-      return network_id;
     } else {
       // We have a "*" network. Get the current network and replace it with the real one.
       // TODO: Should we replace this with the blockchain uri?
       config.networks[config.network].network_id = providerNetworkId;
-      return network_id;
+    }
+  },
+
+  validateNetworkConfig: config => {
+    const networkConfig = config.networks[config.network];
+
+    if (!networkConfig) {
+      throw new TruffleError(
+        `Unknown network "${config.network}` +
+          `". See your Truffle configuration file for available networks.`
+      );
+    }
+
+    const configNetworkId = config.networks[config.network].network_id;
+
+    if (configNetworkId == null) {
+      throw new Error(
+        `You must specify a network_id in your '` +
+          `${config.network}' configuration in order to use this network.`
+      );
     }
   }
 };
