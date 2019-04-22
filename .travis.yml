@@ -3,12 +3,9 @@ sudo: required
 language: node_js
 
 before_install:
-  - docker pull ethereum/solc:0.4.22
   - sudo add-apt-repository --yes ppa:ethereum/ethereum
   - sudo apt-get update
-  - sudo apt-get install -y dpkg solc jq snapd
-  - export PATH=$PATH:/snap/bin
-  - sudo snap install vyper --beta --devmode
+  - sudo apt-get install -y dpkg solc
   - npm list -g lerna --depth=0 || npm install -g lerna
   - npm install -g yarn
 
