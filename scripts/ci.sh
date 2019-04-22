@@ -43,6 +43,7 @@ elif [ "$PACKAGES" = true ]; then
 
   docker pull ethereum/solc:0.4.22
   sudo apt-get install -y snapd
+  export PATH=$PATH:/snap/bin
   sudo snap install vyper --beta --devmode
   lerna run --scope truffle-* test --stream --concurrency=1
 
@@ -50,6 +51,7 @@ elif [ "$COVERAGE" = true ]; then
 
   docker pull ethereum/solc:0.4.22
   sudo apt-get install -y jq snapd
+  export PATH=$PATH:/snap/bin
   sudo snap install vyper --beta --devmode
   cd packages/truffle-debugger && npm run test:coverage && \
   cd ../../ && nyc lerna run --ignore truffle-debugger test && \
