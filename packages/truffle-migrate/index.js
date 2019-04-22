@@ -62,7 +62,9 @@ const Migrate = {
 
     if (options.reset === true) {
       return this.runAll(options)
-        .then(callback)
+        .then(() => {
+          callback();
+        })
         .catch(callback);
     }
 

@@ -129,36 +129,6 @@ const command = {
     return { dryRunOnly, dryRunAndMigrations };
   },
 
-  executePostDryRunMigration: async function(buildDir, options, done) {
-    const Artifactor = require("truffle-artifactor");
-    const Resolver = require("truffle-resolver");
-    const Migrate = require("truffle-migrate");
-    const Config = require("truffle-config");
-    let accept = true;
-
-    if (options.interactive) {
-      accept = await Migrate.acceptDryRun();
-    }
-
-    if (accept) {
-      const environment = require("../environment");
-      const config = Config.detect(options);
-
-      config.contracts_build_directory = buildDir;
-      config.artifactor = new Artifactor(buildDir);
-      config.resolver = new Resolver(config);
-
-      environment.detect(config, err => {
-        if (err) return done(err);
-
-        config.dryRun = false;
-        runMigrations(config, done);
-      });
-    } else {
-      done();
-    }
-  },
-
   run: function(options, done) {
     const Artifactor = require("truffle-artifactor");
     const Resolver = require("truffle-resolver");
@@ -170,6 +140,36 @@ const command = {
     const copy = require("../copy");
 
     const conf = Config.detect(options);
+
+    async function executePostDryRunMigration(buildDir, options, done) {
+      const Artifactor = require("truffle-artifactor");
+      const Resolver = require("truffle-resolver");
+      const Migrate = require("truffle-migrate");
+      const Config = require("truffle-config");
+      let accept = true;
+
+      if (options.interactive) {
+        accept = await Migrate.acceptDryRun();
+      }
+
+      if (accept) {
+        const environment = require("../environment");
+        const config = Config.detect(options);
+
+        config.contracts_build_directory = buildDir;
+        config.artifactor = new Artifactor(buildDir);
+        config.resolver = new Resolver(config);
+
+        environment.detect(config, err => {
+          if (err) return done(err);
+
+          config.dryRun = false;
+          runMigrations(config, done);
+        });
+      } else {
+        done();
+      }
+    }
 
     function setupDryRunEnvironmentThenRunMigrations(config) {
       return new Promise((resolve, reject) => {
@@ -261,11 +261,11 @@ const command = {
           return done(err);
         }
 
-        this.executePostDryRunMigration(currentBuild, options, done);
+        executePostDryRunMigration(currentBuild, options, done);
 
         // Development
       } else {
-        runMigrations(conf, done);
+        await runMigrations(conf, done);
       }
     };
 
