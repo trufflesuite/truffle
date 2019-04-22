@@ -41,10 +41,12 @@ elif [ "$GETH" = true ]; then
 
 elif [ "$PACKAGES" = true ]; then
 
+  docker pull ethereum/solc:0.4.22
   lerna run --scope truffle-* test --stream --concurrency=1
 
 elif [ "$COVERAGE" = true ]; then
 
+  docker pull ethereum/solc:0.4.22
   sudo apt-get install -y jq
   cd packages/truffle-debugger && npm run test:coverage && \
   cd ../../ && nyc lerna run --ignore truffle-debugger test && \
