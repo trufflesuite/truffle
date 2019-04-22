@@ -160,12 +160,14 @@ const command = {
         config.artifactor = new Artifactor(buildDir);
         config.resolver = new Resolver(config);
 
-        environment.detect(config, err => {
-          if (err) return done(err);
+        try {
+          await environment.detect(config);
+        } catch (error) {
+          done(error);
+        }
 
-          config.dryRun = false;
-          runMigrations(config, done);
-        });
+        config.dryRun = false;
+        runMigrations(config, done);
       } else {
         done();
       }
@@ -272,7 +274,13 @@ const command = {
     const compileCallback = function(error) {
       if (error) return done(error);
 
-      Environment.detect(conf, detectCallback.bind(this));
+      Environment.detect(conf)
+        .then(() => {
+          detectCallback.bind(this);
+        })
+        .catch(error => {
+          detectCallback.bind(this, error);
+        });
     };
 
     Contracts.compile(conf, compileCallback.bind(this));

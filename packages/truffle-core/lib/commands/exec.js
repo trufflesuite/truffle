@@ -1,6 +1,6 @@
 var command = {
-  command: 'exec',
-  description: 'Execute a JS module within this Truffle environment',
+  command: "exec",
+  description: "Execute a JS module within this Truffle environment",
   builder: {
     file: {
       type: "string"
@@ -19,19 +19,23 @@ var command = {
     options: [
       {
         option: "<script.js>",
-        description: "JavaScript file to be executed. Can include path information if the script" +
-          " does not exist in the current\n                    directory. (required)",
-      },{
+        description:
+          "JavaScript file to be executed. Can include path information if the script" +
+          " does not exist in the current\n                    directory. (required)"
+      },
+      {
         option: "--network <name>",
-        description: "Specify the network to use, using artifacts specific to that network." +
-          " Network name must exist in the\n                    configuration.",
-      },{
+        description:
+          "Specify the network to use, using artifacts specific to that network." +
+          " Network name must exist in the\n                    configuration."
+      },
+      {
         option: "--compile",
         description: "Compile contracts before executing the script."
-      },
+      }
     ]
   },
-  run: function (options, done) {
+  run: function(options, done) {
     var Config = require("truffle-config");
     var Contracts = require("truffle-workflow-compile");
     var ConfigurationError = require("../errors/configurationerror");
@@ -49,7 +53,11 @@ var command = {
     }
 
     if (file == null) {
-      done(new ConfigurationError("Please specify a file, passing the path of the script you'd like the run. Note that all scripts *must* call process.exit() when finished."));
+      done(
+        new ConfigurationError(
+          "Please specify a file, passing the path of the script you'd like the run. Note that all scripts *must* call process.exit() when finished."
+        )
+      );
       return;
     }
 
@@ -57,29 +65,37 @@ var command = {
       file = path.join(process.cwd(), file);
     }
 
-    Environment.detect(config, function(err) {
-      if (err) return done(err);
+    Environment.detect(config)
+      .then(() => {
+        if (config.networkHint !== false) {
+          config.logger.log("Using network '" + config.network + "'." + OS.EOL);
+        }
 
-      if (config.networkHint !== false) {
-        config.logger.log("Using network '" + config.network + "'." + OS.EOL);
-      }
+        // `--compile`
+        if (options.c || options.compile) {
+          return Contracts.compile(config, function(err) {
+            if (err) return done(err);
 
-      // `--compile`
-      if (options.c || options.compile){
-        return Contracts.compile(config, function(err){
-          if(err) return done(err);
+            Require.exec(
+              config.with({
+                file: file
+              }),
+              done
+            );
+          });
+        }
 
-          Require.exec(config.with({
+        // Just exec
+        Require.exec(
+          config.with({
             file: file
-          }), done);
-        });
-      };
-
-      // Just exec
-      Require.exec(config.with({
-        file: file
-      }), done);
-    });
+          }),
+          done
+        );
+      })
+      .catch(error => {
+        done(error);
+      });
   }
 };
 

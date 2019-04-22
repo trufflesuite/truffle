@@ -5,11 +5,10 @@ const expect = require("truffle-expect");
 const Resolver = require("truffle-resolver");
 const Artifactor = require("truffle-artifactor");
 const Ganache = require("ganache-core");
-const { callbackify } = require("util");
 
 const Environment = {
   // It's important config is a Config object and not a vanilla object
-  detect: function(config, callback) {
+  detect: async function(config) {
     expect.options(config, ["networks"]);
 
     if (!config.resolver) {
@@ -33,74 +32,35 @@ const Environment = {
       }
     }
 
-    var network_config = config.networks[config.network];
+    const networkConfig = config.networks[config.network];
 
-    if (!network_config) {
-      return callback(
-        new TruffleError(
-          'Unknown network "' +
-            config.network +
-            '". See your Truffle configuration file for available networks.'
-        )
+    if (!networkConfig) {
+      throw new TruffleError(
+        `Unknown network "${config.network}` +
+          `". See your Truffle configuration file for available networks.`
       );
     }
 
-    var network_id = config.networks[config.network].network_id;
+    const configNetworkId = config.networks[config.network].network_id;
 
-    if (network_id == null) {
-      return callback(
-        new Error(
-          "You must specify a network_id in your '" +
-            config.network +
-            "' configuration in order to use this network."
-        )
+    if (configNetworkId == null) {
+      throw new Error(
+        `You must specify a network_id in your '` +
+          `${config.network}' configuration in order to use this network.`
       );
     }
 
-    var web3 = new Web3Shim({
+    const web3 = new Web3Shim({
       provider: config.provider,
       networkType: config.networks[config.network].type
     });
 
-    async function detectNetworkId() {
-      const providerNetworkId = await web3.eth.net.getId();
-      if (network_id !== "*") {
-        // Ensure the network id matches the one in the config for safety
-        if (providerNetworkId.toString() !== network_id.toString()) {
-          const error =
-            `The network id specified in the truffle config ` +
-            `(${network_id}) does not match the one returned by the network ` +
-            `(${providerNetworkId}).  Ensure that both the network and the ` +
-            `provider are properly configured.`;
-          throw new Error(error);
-        }
-        return network_id;
-      } else {
-        // We have a "*" network. Get the current network and replace it with the real one.
-        // TODO: Should we replace this with the blockchain uri?
-        config.networks[config.network].network_id = providerNetworkId;
-        return network_id;
-      }
+    try {
+      await helpers.detectAndSetNetworkId(config, web3);
+      await helpers.setFromOnConfig(config, web3);
+    } catch (error) {
+      throw new Error(error);
     }
-
-    function detectFromAddress(done) {
-      if (config.from) {
-        return done();
-      }
-
-      web3.eth
-        .getAccounts()
-        .then(accounts => {
-          config.networks[config.network].from = accounts[0];
-          done();
-        })
-        .catch(done);
-    }
-
-    callbackify(detectNetworkId)(err => {
-      if (err) return callback(err);
-      detectFromAddress(callback);
-    });
   },
 
   // Ensure you call Environment.detect() first.
@@ -154,7 +114,43 @@ const Environment = {
 
     config.network = network;
 
-    Environment.detect(config, callback);
+    Environment.detect(config)
+      .then(() => {
+        callback();
+      })
+      .catch(error => {
+        callback(error);
+      });
+  }
+};
+
+const helpers = {
+  setFromOnConfig: async (config, web3) => {
+    if (config.from) return;
+
+    const accounts = await web3.eth.getAccounts();
+    config.networks[config.network].from = accounts[0];
+  },
+
+  detectAndSetNetworkId: async (config, web3) => {
+    const providerNetworkId = await web3.eth.net.getId();
+    if (network_id !== "*") {
+      // Ensure the network id matches the one in the config for safety
+      if (providerNetworkId.toString() !== network_id.toString()) {
+        const error =
+          `The network id specified in the truffle config ` +
+          `(${network_id}) does not match the one returned by the network ` +
+          `(${providerNetworkId}).  Ensure that both the network and the ` +
+          `provider are properly configured.`;
+        throw new Error(error);
+      }
+      return network_id;
+    } else {
+      // We have a "*" network. Get the current network and replace it with the real one.
+      // TODO: Should we replace this with the blockchain uri?
+      config.networks[config.network].network_id = providerNetworkId;
+      return network_id;
+    }
   }
 };
 

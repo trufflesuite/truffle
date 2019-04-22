@@ -38,17 +38,17 @@ var command = {
       console_commands[name] = commands[name];
     });
 
-    Environment.detect(config, function(err) {
-      if (err) return done(err);
-
-      var c = new Console(
-        console_commands,
-        config.with({
-          noAliases: true
-        })
-      );
-      c.start(done);
-    });
+    Environment.detect(config)
+      .then(() => {
+        const c = new Console(
+          console_commands,
+          config.with({ noAliases: true })
+        );
+        c.start(done);
+      })
+      .catch(error => {
+        done(error);
+      });
   }
 };
 
