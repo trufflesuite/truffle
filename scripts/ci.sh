@@ -28,10 +28,12 @@ run_geth() {
 
 if [ "$INTEGRATION" = true ]; then
 
+  sudo apt-get install -y jq
   lerna run --scope truffle test --stream
 
 elif [ "$GETH" = true ]; then
 
+  sudo apt-get install -y jq
   docker pull ethereum/client-go:latest
   run_geth
   lerna run --scope truffle test --stream -- --exit
@@ -43,6 +45,7 @@ elif [ "$PACKAGES" = true ]; then
 
 elif [ "$COVERAGE" = true ]; then
 
+  sudo apt-get install -y jq
   cd packages/truffle-debugger && npm run test:coverage && \
   cd ../../ && nyc lerna run --ignore truffle-debugger test && \
   cat ./packages/truffle-debugger/coverage/lcov.info >> ./coverage/lcov.info && \
