@@ -172,6 +172,7 @@ describe("Error cases", function() {
       assert.fail();
     } catch (err) {
       assert(err.message.includes("UsesExample"));
+      assert(err.message.includes("out of gas"));
       assert(err.message.includes("value you set"));
       assert(err.message.includes("Block limit"));
       assert(err.message.includes("Gas sent"));
@@ -193,8 +194,8 @@ describe("Error cases", function() {
       assert.fail();
     } catch (err) {
       assert(err.message.includes("Loops"));
-      assert(err.message.includes("out of gas"));
-      assert(err.message.includes("constructor"));
+      assert(err.message.includes("code couldn't be stored"));
+      assert(err.message.includes("check your gas limit"));
     }
   });
 
@@ -212,13 +213,12 @@ describe("Error cases", function() {
       assert.fail();
     } catch (err) {
       assert(err.message.includes("Loops"));
-      assert(err.message.includes("out of gas"));
-      assert(err.message.includes("Gas sent"));
-      assert(err.message.includes("Block limit"));
+      assert(err.message.includes("code couldn't be stored"));
+      assert(err.message.includes("check your gas limit"));
     }
   });
 
-  it("revert", async function() {
+  it("constructor revert", async function() {
     migrate = function() {
       deployer.deploy(ExampleRevert);
     };
@@ -229,11 +229,13 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch (err) {
-      assert(err.message.includes("revert"));
+      assert(err.message.includes("ExampleRevert"));
+      assert(err.message.includes("code couldn't be stored"));
+      assert(err.message.includes("check your gas limit"));
     }
   });
 
-  it("assert", async function() {
+  it("failing constructor assert", async function() {
     migrate = function() {
       deployer.deploy(ExampleAssert);
     };
@@ -244,7 +246,9 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch (err) {
-      assert(err.message.includes("invalid opcode"));
+      assert(err.message.includes("ExampleAssert"));
+      assert(err.message.includes("code couldn't be stored"));
+      assert(err.message.includes("check your gas limit"));
     }
   });
 

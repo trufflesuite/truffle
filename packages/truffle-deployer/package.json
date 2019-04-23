@@ -26,7 +26,7 @@
     "truffle-expect": "^0.0.7"
   },
   "devDependencies": {
-    "ganache-core": "2.5.1",
+    "ganache-core": "2.5.5",
     "mocha": "5.2.0",
     "truffle-reporters": "^1.0.9",
     "truffle-workflow-compile": "^2.0.11",
