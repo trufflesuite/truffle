@@ -273,13 +273,12 @@ const command = {
 
     const compileCallback = function(error) {
       if (error) return done(error);
-
       Environment.detect(conf)
         .then(() => {
-          detectCallback.bind(this);
+          detectCallback.bind(this)();
         })
         .catch(error => {
-          detectCallback.bind(this, error);
+          detectCallback.bind(this, error)();
         });
     };
 
