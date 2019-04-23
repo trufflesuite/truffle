@@ -212,7 +212,7 @@ const command = {
 
         try {
           await setupDryRunEnvironmentThenRunMigrations(conf);
-          let { config, proceed } = this.prepareConfigForRealMigrations(
+          let { config, proceed } = await this.prepareConfigForRealMigrations(
             currentBuild,
             options
           );
@@ -231,35 +231,31 @@ const command = {
         Environment.fork(config)
           .then(() => {
             // Copy artifacts to a temporary directory
-            temp.mkdir("migrate-dry-run-", function(err, temporaryDirectory) {
-              if (err) return reject(err);
+            const temporaryDirectory = temp.mkdirSync("migrate-dry-run-");
 
-              function cleanup() {
-                var args = arguments;
+            function cleanup() {
+              var args = arguments;
 
-                // Ensure directory cleanup.
-                temp.cleanup(() => {
-                  args.length && args[0] !== null ? reject(args[0]) : resolve();
-                });
-              }
+              // Ensure directory cleanup.
+              temp.cleanup(() => {
+                args.length && args[0] !== null ? reject(args[0]) : resolve();
+              });
+            }
 
-              copy(
-                config.contracts_build_directory,
-                temporaryDirectory,
-                function(err) {
-                  if (err) return cleanup(err);
+            copy(config.contracts_build_directory, temporaryDirectory, function(
+              err
+            ) {
+              if (err) return cleanup(err);
 
-                  config.contracts_build_directory = temporaryDirectory;
+              config.contracts_build_directory = temporaryDirectory;
 
-                  // Note: Create a new artifactor and resolver with the updated config.
-                  // This is because the contracts_build_directory changed.
-                  // Ideally we could architect them to be reactive of the config changes.
-                  config.artifactor = new Artifactor(temporaryDirectory);
-                  config.resolver = new Resolver(config);
+              // Note: Create a new artifactor and resolver with the updated config.
+              // This is because the contracts_build_directory changed.
+              // Ideally we could architect them to be reactive of the config changes.
+              config.artifactor = new Artifactor(temporaryDirectory);
+              config.resolver = new Resolver(config);
 
-                  runMigrations(config, cleanup);
-                }
-              );
+              runMigrations(config, cleanup);
             });
           })
           .catch(error => {
