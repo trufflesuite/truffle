@@ -11,27 +11,7 @@ const Environment = {
   detect: async function(config) {
     expect.options(config, ["networks"]);
 
-    if (!config.resolver) {
-      config.resolver = new Resolver(config);
-    }
-
-    if (!config.artifactor) {
-      config.artifactor = new Artifactor(config.contracts_build_directory);
-    }
-
-    if (!config.network) {
-      if (config.networks["development"]) {
-        config.network = "development";
-      } else {
-        config.network = "ganache";
-        config.networks[config.network] = {
-          host: "127.0.0.1",
-          port: 7545,
-          network_id: 5777
-        };
-      }
-    }
-
+    helpers.setUpConfig(config);
     helpers.validateNetworkConfig(config);
 
     const web3 = new Web3Shim({
@@ -153,6 +133,29 @@ const helpers = {
         `You must specify a network_id in your '` +
           `${config.network}' configuration in order to use this network.`
       );
+    }
+  },
+
+  setUpConfig: config => {
+    if (!config.resolver) {
+      config.resolver = new Resolver(config);
+    }
+
+    if (!config.artifactor) {
+      config.artifactor = new Artifactor(config.contracts_build_directory);
+    }
+
+    if (!config.network) {
+      if (config.networks["development"]) {
+        config.network = "development";
+      } else {
+        config.network = "ganache";
+        config.networks[config.network] = {
+          host: "127.0.0.1",
+          port: 7545,
+          network_id: 5777
+        };
+      }
     }
   }
 };
