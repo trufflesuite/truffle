@@ -21,12 +21,27 @@ let trace = createSelectorTree({
    */
   index: state => state.trace.proc.index,
 
+  /*
+   * trace.loaded
+   * is a trace loaded?
+   */
+  loaded: createLeaf(["/steps"], steps => steps !== null),
+
   /**
    * trace.finished
-   *
    * is the trace finished?
    */
   finished: state => state.trace.proc.finished,
+
+  /**
+   * trace.finishedOrUnloaded
+   *
+   * is the trace finished, including if it's unloaded?
+   */
+  finishedOrUnloaded: createLeaf(
+    ["/finished", "/loaded"],
+    (finished, loaded) => finished || !loaded
+  ),
 
   /**
    * trace.steps

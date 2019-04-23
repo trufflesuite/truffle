@@ -6,7 +6,7 @@ import configureStore from "lib/store";
 import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
 import data from "lib/data/selectors";
-import session from "lib/session/selectors";
+import trace from "lib/trace/selectors";
 import { decode } from "lib/data/sagas";
 import controllerSelector from "lib/controller/selectors";
 
@@ -43,13 +43,36 @@ export default class Session {
 
   async ready() {
     return new Promise((accept, reject) => {
-      this._store.subscribe(() => {
-        if (this.state.session.status == "ACTIVE") {
+      const unsubscribe = this._store.subscribe(() => {
+        if (this.view(session.status.ready)) {
+          unsubscribe();
           accept();
-        } else if (typeof this.state.session.status == "object") {
-          reject(this.state.session.status.error);
+        } else if (this.view(session.status.isError)) {
+          unsubscribe();
+          reject(this.view(session.status.error));
         }
       });
+    });
+  }
+
+  async readyAgain() {
+    return new Promise((accept, reject) => {
+      let hasStartedWaiting = false;
+      const unsubscribe = this._store.subscribe(() => {
+        if (hasStartedWaiting) {
+          if (this.view(session.status.ready)) {
+            unsubscribe();
+            resolve();
+          } else if (this.view(session.status.isError)) {
+            unsubscribe();
+            reject(this.view(session.status.error));
+          }
+        } else {
+          hasStartedWaiting = this.view(session.status.waiting);
+          return;
+        }
+      });
+      this.dispatch(stepperAction);
     });
   }
 
@@ -188,12 +211,19 @@ export default class Session {
     });
   }
 
+  //returns true on success, an error object on failure
   async load(txHash) {
-    let loaded = this.view(session.loaded);
+    let loaded = this.view(trace.loaded);
     if (loaded) {
       await this.unload();
     }
-    return this.dispatch(actions.load(txHash));
+    this.dispatch(actions.load(txHash));
+    try {
+      await this.readyAgain();
+      return true;
+    } catch (e) {
+      return e;
+    }
   }
 
   async unload() {
@@ -202,7 +232,7 @@ export default class Session {
 
   //Note: count is an optional argument; default behavior is to advance 1
   async advance(count) {
-    let loaded = this.view(session.loaded);
+    let loaded = this.view(trace.loaded);
     if (!loaded) {
       return;
     }
@@ -210,7 +240,7 @@ export default class Session {
   }
 
   async stepNext() {
-    let loaded = this.view(session.loaded);
+    let loaded = this.view(trace.loaded);
     if (!loaded) {
       return;
     }
@@ -218,7 +248,7 @@ export default class Session {
   }
 
   async stepOver() {
-    let loaded = this.view(session.loaded);
+    let loaded = this.view(trace.loaded);
     if (!loaded) {
       return;
     }
@@ -226,7 +256,7 @@ export default class Session {
   }
 
   async stepInto() {
-    let loaded = this.view(session.loaded);
+    let loaded = this.view(trace.loaded);
     if (!loaded) {
       return;
     }
@@ -234,7 +264,7 @@ export default class Session {
   }
 
   async stepOut() {
-    let loaded = this.view(session.loaded);
+    let loaded = this.view(trace.loaded);
     if (!loaded) {
       return;
     }
@@ -242,7 +272,7 @@ export default class Session {
   }
 
   async reset() {
-    let loaded = this.view(session.loaded);
+    let loaded = this.view(trace.loaded);
     if (!loaded) {
       return;
     }
@@ -253,7 +283,7 @@ export default class Session {
   //own list of breakpoints; leave it out to use the internal one (as
   //controlled by the functions below)
   async continueUntilBreakpoint(breakpoints) {
-    let loaded = this.view(session.loaded);
+    let loaded = this.view(trace.loaded);
     if (!loaded) {
       return;
     }

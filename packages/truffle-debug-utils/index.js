@@ -22,7 +22,8 @@ var commandReference = {
   "B": "remove breakpoint",
   "c": "continue until breakpoint",
   "q": "quit",
-  "r": "reset"
+  "r": "reset",
+  "z": "load new transaction"
 };
 
 var DebugUtils = {
@@ -134,6 +135,7 @@ var DebugUtils = {
       ["+", "-"],
       ["?"],
       ["v", ":"]
+      //TODO: update for z
     ].map(function(shortcuts) {
       return shortcuts.map(DebugUtils.formatCommandDescription).join(", ");
     });

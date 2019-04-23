@@ -63,8 +63,8 @@ export function* saga() {
   }
 
   debug("readying");
-  // signal that stepping can begin
-  yield* ready();
+  // signal that commands can begin
+  yield* ready(txHash !== undefined);
 }
 
 export function* processTransaction(txHash) {
@@ -145,8 +145,8 @@ function* recordInstance(address, binary) {
   yield* evm.addInstance(address, binary);
 }
 
-function* ready() {
-  yield put(actions.ready());
+function* ready(withTransaction) {
+  yield put(actions.ready(withTransaction));
 }
 
 function* error(err) {
@@ -161,8 +161,9 @@ function* unload() {
   yield put(actions.unload());
 }
 
-//noet that load takes an action as its argument, which is why it's separate
+//note that load takes an action as its argument, which is why it's separate
 //from processTransaction
 function* load({ txHash }) {
   yield* processTransaction(txHash);
+  yield* ready(true);
 }

@@ -23,9 +23,10 @@ export function unload() {
 }
 
 export const READY = "SESSION_READY";
-export function ready() {
+export function ready(withTransaction) {
   return {
-    type: READY
+    type: READY,
+    withTransaction
   };
 }
 

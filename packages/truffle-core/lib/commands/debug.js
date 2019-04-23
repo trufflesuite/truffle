@@ -683,7 +683,8 @@ var command = {
               return await util.promisify(repl.stop.bind(repl))();
             }
 
-            let alreadyFinished = session.view(trace.finished);
+            let alreadyFinished = session.view(trace.finishedOrUnloaded);
+            let loadError = null;
 
             // If not finished, perform commands that require state changes
             // (other than quitting or resetting)
@@ -728,13 +729,35 @@ var command = {
                 case "n":
                 case ";":
                 case "c":
-                  config.logger.log("Transaction has halted; cannot advance.");
-                  config.logger.log("");
+                  //are we "finished" because we've reached the end, or because
+                  //nothing is loaded?
+                  if (session.view(trace.loaded)) {
+                    config.logger.log(
+                      "Transaction has halted; cannot advance."
+                    );
+                    config.logger.log("");
+                  } else {
+                    config.logger.log("No transaction loaded.");
+                    config.logger.log("");
+                  }
               }
             }
             if (cmd === "r") {
               //reset if given the reset command
-              await session.reset();
+              //(but not if nothing is loaded)
+              if (session.view(trace.loaded)) {
+                await session.reset();
+              } else {
+                config.logger.log("No transaction loaded.");
+                config.logger.log("");
+              }
+            }
+            if (cmd === "z") {
+              config.logger.log(`Loading transaction ${cmdArgs}...`);
+              let successOrError = await session.load(cmdArgs);
+              if (typeof successOrError === "object") {
+                loadError = successOrError;
+              }
             }
 
             // Check if execution has (just now) stopped.
@@ -809,10 +832,14 @@ var command = {
                 await printWatchExpressionsResults();
                 break;
               case "r":
-                printAddressesAffected();
-                printFile();
-                printState();
-                break;
+              case "z":
+                if (!loadError) {
+                  printAddressesAffected();
+                  printFile();
+                  printState();
+                } else {
+                  config.logger.log("Error: " + loadError.message);
+                }
               default:
                 printHelp();
             }
@@ -830,7 +857,8 @@ var command = {
               cmd !== ":" &&
               cmd !== "+" &&
               cmd !== "r" &&
-              cmd !== "-"
+              cmd !== "-" &&
+              cmd !== "z"
             ) {
               lastCommand = cmd;
             }

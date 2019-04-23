@@ -16,6 +16,9 @@ function status(state = WAITING, action) {
     case actions.READY:
       return ACTIVE;
 
+    case actions.LOAD:
+      return WAITING;
+
     case actions.ERROR:
       return { error: action.error };
 

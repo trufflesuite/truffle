@@ -64,12 +64,34 @@ const session = createSelectorTree({
   },
 
   /*
-   * session.loaded
+   * session.status (namespace)
    */
-  loaded: createLeaf(
-    ["/transaction"],
-    transaction => Object.keys(transaction).length === 0
-  )
+  status: {
+    /*
+     * session.status (selector)
+     */
+    _: state => state.session.status,
+
+    /*
+     * session.status.ready
+     */
+    ready: createLeaf(["./_"], status => status === "READY"),
+
+    /*
+     * session.status.waiting
+     */
+    waiting: createLeaf(["./_"], status => status === "WAITING"),
+
+    /*
+     * session.status.isError
+     */
+    isError: createLeaf(["./_"], status => typeof status === "object"),
+
+    /*
+     * session.status.error
+     */
+    error: createLeaf(["./_"], status => status.error)
+  }
 });
 
 export default session;
