@@ -24,39 +24,33 @@ const Environment = {
   },
 
   // Ensure you call Environment.detect() first.
-  fork: async function(config, callback) {
+  fork: async function(config) {
     expect.options(config, ["from", "provider", "networks", "network"]);
 
-    var web3 = new Web3Shim({
+    const web3 = new Web3Shim({
       provider: config.provider,
       networkType: config.networks[config.network].type
     });
 
-    try {
-      var accounts = await web3.eth.getAccounts();
-      var block = await web3.eth.getBlock("latest");
+    const accounts = await web3.eth.getAccounts();
+    const block = await web3.eth.getBlock("latest");
 
-      var upstreamNetwork = config.network;
-      var upstreamConfig = config.networks[upstreamNetwork];
-      var forkedNetwork = config.network + "-fork";
+    const upstreamNetwork = config.network;
+    const upstreamConfig = config.networks[upstreamNetwork];
+    const forkedNetwork = config.network + "-fork";
 
-      config.networks[forkedNetwork] = {
-        network_id: config.network_id,
-        provider: Ganache.provider({
-          fork: config.provider,
-          unlocked_accounts: accounts,
-          gasLimit: block.gasLimit
-        }),
-        from: config.from,
-        gas: upstreamConfig.gas,
-        gasPrice: upstreamConfig.gasPrice
-      };
-      config.network = forkedNetwork;
-
-      callback();
-    } catch (err) {
-      callback(err);
-    }
+    config.networks[forkedNetwork] = {
+      network_id: config.network_id,
+      provider: Ganache.provider({
+        fork: config.provider,
+        unlocked_accounts: accounts,
+        gasLimit: block.gasLimit
+      }),
+      from: config.from,
+      gas: upstreamConfig.gas,
+      gasPrice: upstreamConfig.gasPrice
+    };
+    config.network = forkedNetwork;
   },
 
   develop: function(config, ganacheOptions, callback) {
