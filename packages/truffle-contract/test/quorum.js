@@ -3,7 +3,6 @@ var util = require("./util");
 
 describe("Quorum", function() {
   var Example;
-  var accounts;
   var providerOptions = { vmErrorsOnRPCResponse: false };
 
   before(async function() {
@@ -11,12 +10,10 @@ describe("Quorum", function() {
 
     Example = await util.createExample();
 
-    return util.setUpProvider(Example, providerOptions).then(result => {
-      accounts = result.accounts;
-    });
+    return util.setUpProvider(Example, providerOptions);
   });
 
-  it("should accept tx params (send)", async function() {
+  it("privateFor accepted as valid tx_param (send)", async function() {
     const originalProvider = Example.currentProvider;
     const privateID = "ROAZBWtSacxXQrOe3FGAqJDyJjFePR5ce4TSIzmJ0Bc=";
 
@@ -36,12 +33,10 @@ describe("Quorum", function() {
 
     Example.setProvider(hookedProvider);
 
-    // Without `from` in the options, Web3 complains there are too many params!
     const example = await Example.new(1, {
-      from: accounts[0],
       privateFor: [privateID]
     });
-    await example.setValue(5, { from: accounts[0], privateFor: [privateID] });
+    await example.setValue(5, { privateFor: [privateID] });
 
     assert.equal(transactionPayloads.length, 2);
 
