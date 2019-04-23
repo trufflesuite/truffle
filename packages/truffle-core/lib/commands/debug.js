@@ -79,8 +79,11 @@ var command = {
       var sessionPromise = compilePromise
         .then(function(result) {
           config.logger.log(DebugUtils.formatStartMessage());
+          if (txHash !== undefined) {
+            config.logger.log(DebugUtils.formatTransactionStartMessage());
+          }
 
-          return Debugger.forTx(txHash, {
+          let debuggerOptions = {
             provider: config.provider,
             files: result.files,
             contracts: Object.keys(result.contracts).map(function(name) {
@@ -99,7 +102,11 @@ var command = {
                 abi: contract.abi
               };
             })
-          });
+          };
+
+          return txHash !== undefined
+            ? Debugger.forTx(txHash, debuggerOptions)
+            : Debugger.forProject(debuggerOptions);
         })
         .then(function(bugger) {
           return bugger.connect();
@@ -753,7 +760,7 @@ var command = {
               }
             }
             if (cmd === "z") {
-              config.logger.log(`Loading transaction ${cmdArgs}...`);
+              config.logger.log(formatTransactionStartMessage());
               let successOrError = await session.load(cmdArgs);
               if (typeof successOrError === "object") {
                 loadError = successOrError;
