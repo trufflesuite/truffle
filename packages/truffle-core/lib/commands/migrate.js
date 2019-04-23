@@ -129,6 +129,42 @@ const command = {
     return { dryRunOnly, dryRunAndMigrations };
   },
 
+  prepareConfigForRealMigrations: async function(buildDir, options, done) {
+    const Artifactor = require("truffle-artifactor");
+    const Resolver = require("truffle-resolver");
+    const Migrate = require("truffle-migrate");
+    const Config = require("truffle-config");
+    const Environment = require("../environment");
+
+    let accept = true;
+
+    if (options.interactive) {
+      accept = await Migrate.acceptDryRun();
+    }
+
+    if (accept) {
+      const config = Config.detect(options);
+
+      config.contracts_build_directory = buildDir;
+      config.artifactor = new Artifactor(buildDir);
+      config.resolver = new Resolver(config);
+
+      try {
+        await Environment.detect(config);
+      } catch (error) {
+        throw new Error(error);
+        done(error);
+      }
+
+      config.dryRun = false;
+      return { config, proceed: true };
+      this.runMigrations(config, done);
+    } else {
+      return { proceed: false };
+      done();
+    }
+  },
+
   run: function(options, done) {
     const Artifactor = require("truffle-artifactor");
     const Resolver = require("truffle-resolver");
@@ -141,7 +177,9 @@ const command = {
 
     const conf = Config.detect(options);
 
-    const compileCallback = function(error) {
+    Contracts.compile(conf, compileCallback.bind(this));
+
+    function compileCallback(error) {
       if (error) return done(error);
       Environment.detect(conf)
         .then(() => {
@@ -150,9 +188,9 @@ const command = {
         .catch(error => {
           detectCallback.bind(this, error)();
         });
-    };
+    }
 
-    const detectCallback = async function(error) {
+    async function detectCallback(error) {
       if (error) return done(error);
 
       const { dryRunOnly, dryRunAndMigrations } = this.determineDryRunSettings(
@@ -174,43 +212,17 @@ const command = {
 
         try {
           await setupDryRunEnvironmentThenRunMigrations(conf);
-        } catch (err) {
-          return done(err);
+          let { config, proceed } = this.prepareConfigForRealMigrations(
+            currentBuild,
+            options
+          );
+          if (proceed) await runMigrations(config, done);
+          return done();
+        } catch (error) {
+          return done(error);
         }
-
-        executePostDryRunMigration(currentBuild, options, done);
       } else {
         await runMigrations(conf, done);
-      }
-    };
-
-    Contracts.compile(conf, compileCallback.bind(this));
-
-    async function executePostDryRunMigration(buildDir, options, done) {
-      let accept = true;
-
-      if (options.interactive) {
-        accept = await Migrate.acceptDryRun();
-      }
-
-      if (accept) {
-        const environment = require("../environment");
-        const config = Config.detect(options);
-
-        config.contracts_build_directory = buildDir;
-        config.artifactor = new Artifactor(buildDir);
-        config.resolver = new Resolver(config);
-
-        try {
-          await environment.detect(config);
-        } catch (error) {
-          done(error);
-        }
-
-        config.dryRun = false;
-        runMigrations(config, done);
-      } else {
-        done();
       }
     }
 
