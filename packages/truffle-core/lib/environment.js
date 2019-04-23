@@ -19,12 +19,8 @@ const Environment = {
       networkType: config.networks[config.network].type
     });
 
-    try {
-      await helpers.detectAndSetNetworkId(config, web3);
-      await helpers.setFromOnConfig(config, web3);
-    } catch (error) {
-      throw new Error(error);
-    }
+    await helpers.detectAndSetNetworkId(config, web3);
+    await helpers.setFromOnConfig(config, web3);
   },
 
   // Ensure you call Environment.detect() first.
