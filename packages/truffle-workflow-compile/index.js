@@ -100,7 +100,7 @@ const Contracts = {
       return result;
     } catch (error) {
       if (callbackPassed) return callback(error);
-      return Promise.reject(new Error(error));
+      throw new Error(error);
     }
   },
 
