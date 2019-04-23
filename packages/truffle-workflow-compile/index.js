@@ -95,9 +95,9 @@ const Contracts = {
       if (numberOfCompiledContracts === 0) this.reportNothingToCompile(options);
 
       this.reportCompilationFinished(options, config);
-      await this.collectCompilations(compilations);
-      if (callbackPassed) return callback();
-      return;
+      const result = await this.collectCompilations(compilations);
+      if (callbackPassed) return callback(null, result);
+      return result;
     } catch (error) {
       if (callbackPassed) return callback(error);
       return Promise.reject(new Error(error));
