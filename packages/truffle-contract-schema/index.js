@@ -41,6 +41,8 @@ var properties = {
         } catch (e) {
           value = undefined;
         }
+      } else if (typeof value === "object") {
+        value.forEach(item => delete item.signature);
       }
       return value;
     }
