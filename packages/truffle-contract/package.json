@@ -1,6 +1,6 @@
 {
   "name": "truffle-contract",
-  "version": "4.0.13",
+  "version": "4.0.12",
   "description": "A better contract abstraction for Ethereum (formerly EtherPudding)",
   "main": "index.js",
   "scripts": {
@@ -28,9 +28,9 @@
     "bignumber.js": "^7.2.1",
     "ethers": "^4.0.0-beta.1",
     "truffle-blockchain-utils": "^0.0.8",
-    "truffle-contract-schema": "^3.0.7",
+    "truffle-contract-schema": "^3.0.6",
     "truffle-error": "^0.0.4",
-    "truffle-interface-adapter": "^0.1.3",
+    "truffle-interface-adapter": "^0.1.2",
     "web3": "1.0.0-beta.37",
     "web3-core-promievent": "1.0.0-beta.37",
     "web3-eth-abi": "1.0.0-beta.37",
@@ -48,7 +48,7 @@
     "mocha": "5.2.0",
     "solc": "0.5.0",
     "temp": "^0.8.3",
-    "truffle-compile": "^4.0.12",
+    "truffle-compile": "^4.0.11",
     "uglify-es": "^3.3.9"
   },
   "publishConfig": {
