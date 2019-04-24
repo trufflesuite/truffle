@@ -14,3 +14,16 @@ export class UnknownBaseContractIdError extends Error {
     this.baseId = baseId;
   }
 }
+
+export class UnknownUserDefinedTypeError extends Error {
+  public name: string;
+  public typeString: string;
+  public id: number;
+  constructor(id: number, typeString: string) {
+    const message = `Cannot locate definition for ${typeString}$ (ID ${id})`;
+    super(message);
+    this.name = "UnknownUserDefinedTypeError";
+    this.id = id;
+    this.typeString = typeString;
+  }
+}

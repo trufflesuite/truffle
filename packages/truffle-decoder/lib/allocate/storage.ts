@@ -4,7 +4,7 @@ const debug = debugModule("decoder:allocate:storage");
 import { StoragePointer } from "../types/pointer";
 import { StorageAllocations, StorageAllocation, StorageMemberAllocations } from "../types/allocation";
 import { StorageLength, isWordsLength, Range } from "../types/storage";
-import { UnknownBaseContractIdError } from "../types/errors";
+import { UnknownBaseContractIdError, UnknownUserDefinedTypeError } from "../types/errors";
 import { AstDefinition, AstReferences } from "truffle-decode-utils";
 import { readDefinition } from "../read/constant"
 import * as DecodeUtils from "truffle-decode-utils";
@@ -218,6 +218,10 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
         //should never need to worry about faked-up enum definitions, so just
         //checking the referencedDeclaration field would also work
       const referenceDeclaration: AstDefinition = referenceDeclarations[referenceId];
+      if(referenceDeclaration === undefined) {
+        let typeString = DecodeUtils.Definition.typeString(definition);
+        throw new UnknownUserDefinedTypeError(referenceId, typeString);
+      }
       const numValues: number = referenceDeclaration.members.length;
       return [{bytes: Math.ceil(Math.log2(numValues) / 8)}, existingAllocations];
     }
@@ -280,6 +284,10 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
       if(allocation === undefined) {
         //if we don't find an allocation, we'll have to do the allocation ourselves
         const referenceDeclaration: AstDefinition = referenceDeclarations[referenceId];
+        if(referenceDeclaration === undefined) {
+          let typeString = DecodeUtils.Definition.typeString(definition);
+          throw new UnknownUserDefinedTypeError(referenceId, typeString);
+        }
         debug("definition %O", definition);
         allocations = allocateStruct(referenceDeclaration, referenceDeclarations, existingAllocations);
         allocation = allocations[referenceId];
