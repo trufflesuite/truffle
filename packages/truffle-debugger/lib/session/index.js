@@ -45,10 +45,13 @@ export default class Session {
   async ready() {
     return new Promise((accept, reject) => {
       const unsubscribe = this._store.subscribe(() => {
-        if (this.view(session.status.ready)) {
+        //NOTE: do NOT use selectors in these conditionals.  It will not work!
+        if (this.state.session.status === "ACTIVE") {
+          debug("ready!");
           unsubscribe();
           accept();
-        } else if (this.view(session.status.isError)) {
+        } else if (typeof this.state.session.status === "object") {
+          debug("error!");
           unsubscribe();
           reject(this.view(session.status.error));
         }

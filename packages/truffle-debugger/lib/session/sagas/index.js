@@ -20,6 +20,12 @@ const TX_SAGAS = {
   [actions.UNLOAD]: unload
 };
 
+function* listenerSaga() {
+  yield all(
+    Object.entries(TX_SAGAS).map(([action, saga]) => takeEvery(action, saga))
+  );
+}
+
 export function* saga() {
   debug("starting listeners");
   yield* forkListeners();
@@ -53,13 +59,10 @@ export function* saga() {
   //initialize web3 adapter
   yield* web3.init(provider);
 
+  //process transaction (if there is one)
   if (txHash !== undefined) {
+    debug("fetching transaction info");
     yield* processTransaction(txHash);
-  }
-
-  //set up loading/unloading sagas
-  for (let action in TX_SAGAS) {
-    yield takeEvery(action, TX_SAGAS[action]);
   }
 
   debug("readying");
@@ -81,6 +84,7 @@ export function* processTransaction(txHash) {
 export default prefixName("session", saga);
 
 function* forkListeners() {
+  fork(listenerSaga); //session listener
   return yield all(
     [controller, data, evm, solidity, trace, web3].map(
       app => fork(app.saga)

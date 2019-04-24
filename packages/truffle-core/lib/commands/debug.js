@@ -95,17 +95,20 @@ var command = {
             })
           };
 
+          debug("txHash: %s", txHash);
           return txHash !== undefined
             ? Debugger.forTx(txHash, debuggerOptions)
             : Debugger.forProject(debuggerOptions);
         })
         .then(function(bugger) {
+          debug("about to connect");
           return bugger.connect();
         })
         .catch(done);
 
       sessionPromise
         .then(async function(session) {
+          debug("starting session function");
           if (err) return done(err);
 
           function splitLines(str) {
@@ -838,6 +841,7 @@ var command = {
                 } else {
                   config.logger.log("Error: " + loadError.message);
                 }
+                break;
               default:
                 printHelp();
             }

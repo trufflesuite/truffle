@@ -1,4 +1,5 @@
 import debugModule from "debug";
+const debug = debugModule("debugger");
 import expect from "truffle-expect";
 
 import Session from "./session";
@@ -12,8 +13,6 @@ import evmSelector from "./evm/selectors";
 import soliditySelector from "./solidity/selectors";
 import sessionSelector from "./session/selectors";
 import controllerSelector from "./controller/selectors";
-
-const debug = debugModule("debugger");
 
 /**
  * @example
@@ -55,6 +54,7 @@ export default class Debugger {
 
     try {
       await session.ready();
+      debug("session ready");
     } catch (e) {
       throw e;
     }
