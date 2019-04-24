@@ -1,4 +1,5 @@
 module.exports = {
   Subscriber: require("./Subscriber"),
-  EventManager: require("./EventManager")
+  EventManager: require("./EventManager"),
+  SubscriberAggregator: require("./SubscriberAggregator")
 };
