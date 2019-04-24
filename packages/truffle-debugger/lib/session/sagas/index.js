@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:session:sagas");
 
-import { call, all, fork, take, put } from "redux-saga/effects";
+import { call, all, fork, take, takeEvery, put } from "redux-saga/effects";
 
 import { prefixName } from "lib/helpers";
 

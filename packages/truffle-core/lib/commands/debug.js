@@ -49,16 +49,7 @@ var command = {
     Environment.detect(config, function(err) {
       if (err) return done(err);
 
-      if (config._.length === 0) {
-        return done(
-          new Error(
-            "Please specify a transaction hash as the first parameter in order to " +
-              "debug that transaction. i.e., truffle debug 0x1234..."
-          )
-        );
-      }
-
-      var txHash = config._[0];
+      var txHash = config._[0]; //may be undefined
 
       var lastCommand = "n";
       var enabledExpressions = new Set();

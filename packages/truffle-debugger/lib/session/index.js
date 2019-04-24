@@ -7,6 +7,7 @@ import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
 import data from "lib/data/selectors";
 import trace from "lib/trace/selectors";
+import session from "lib/session/selectors";
 import { decode } from "lib/data/sagas";
 import controllerSelector from "lib/controller/selectors";
 
