@@ -19,9 +19,9 @@
   "author": "Tim Coulter <tim.coulter@consensys.net>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-schema/issues"
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-schema#readme",
+  "homepage": "https://github.com/trufflesuite/truffle/blob/develop/packages/truffle-contract-schema#readme",
   "dependencies": {
     "ajv": "^5.1.1",
     "crypto-js": "^3.1.9-1",

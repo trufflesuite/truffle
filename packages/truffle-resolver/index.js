@@ -1,5 +1,6 @@
 var EPMSource = require("./epm");
 var NPMSource = require("./npm");
+var GlobalNPMSource = require("./globalnpm");
 var FSSource = require("./fs");
 var whilst = require("async/whilst");
 var contract = require("truffle-contract");
@@ -14,6 +15,7 @@ function Resolver(options) {
   this.sources = [
     new EPMSource(options.working_directory, options.contracts_build_directory),
     new NPMSource(options.working_directory),
+    new GlobalNPMSource(),
     new FSSource(options.working_directory, options.contracts_build_directory)
   ];
 }

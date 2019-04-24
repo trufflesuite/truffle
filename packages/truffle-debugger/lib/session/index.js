@@ -249,11 +249,13 @@ export default class Session {
     let refs = this.view(data.current.identifiers.refs);
     let decoded = {};
     for (let [identifier, ref] of Object.entries(refs)) {
-      decoded[identifier] = await this._runSaga(
-        decode,
-        definitions[identifier],
-        ref
-      );
+      if (identifier in definitions) {
+        decoded[identifier] = await this._runSaga(
+          decode,
+          definitions[identifier],
+          ref
+        );
+      }
     }
     return decoded;
   }

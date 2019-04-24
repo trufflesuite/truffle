@@ -391,10 +391,11 @@ module.exports = {
     const imports = Parser.parseImports(body, solc);
 
     // Convert explicitly relative dependencies of modules back into module paths.
-    return imports.map(dependencyPath =>
-      self.isExplicitlyRelative(dependencyPath)
-        ? source.resolve_dependency_path(file, dependencyPath)
-        : dependencyPath
+    return imports.map(
+      dependencyPath =>
+        self.isExplicitlyRelative(dependencyPath)
+          ? source.resolve_dependency_path(file, dependencyPath)
+          : dependencyPath
     );
   },
 

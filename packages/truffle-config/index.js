@@ -7,8 +7,8 @@ const findUp = require("find-up");
 const originalrequire = require("original-require");
 const Configstore = require("configstore");
 
-const DEFAULT_CONFIG_FILENAME = "truffle.js";
-const BACKUP_CONFIG_FILENAME = "truffle-config.js"; // For Windows + Command Prompt
+const DEFAULT_CONFIG_FILENAME = "truffle-config.js";
+const BACKUP_CONFIG_FILENAME = "truffle.js"; // old config filename
 
 function Config(truffle_directory, working_directory, network) {
   var self = this;
@@ -336,25 +336,41 @@ Config.prototype.merge = function(obj) {
 Config.default = () => new Config();
 
 Config.search = (options = {}, filename) => {
-  let search;
-
-  !filename
-    ? (search = [DEFAULT_CONFIG_FILENAME, BACKUP_CONFIG_FILENAME])
-    : (search = filename);
-
-  return findUp.sync(search, {
+  const searchOptions = {
     cwd: options.working_directory || options.workingDirectory
-  });
+  };
+
+  if (!filename) {
+    const isWin = /^win/.test(process.platform);
+    const defaultConfig = findUp.sync(DEFAULT_CONFIG_FILENAME, searchOptions);
+    const backupConfig = findUp.sync(BACKUP_CONFIG_FILENAME, searchOptions);
+    if (defaultConfig && backupConfig) {
+      console.warn(
+        `Warning: Both ${DEFAULT_CONFIG_FILENAME} and ${BACKUP_CONFIG_FILENAME} were found. Using ${DEFAULT_CONFIG_FILENAME}.`
+      );
+      return defaultConfig;
+    } else if (backupConfig && !defaultConfig) {
+      if (isWin)
+        console.warn(
+          `Warning: Please rename ${BACKUP_CONFIG_FILENAME} to ${DEFAULT_CONFIG_FILENAME} to ensure Windows compatibility.`
+        );
+      return backupConfig;
+    } else {
+      return defaultConfig;
+    }
+  }
+
+  return findUp.sync(filename, searchOptions);
 };
 
 Config.detect = (options = {}, filename) => {
-  const file = Config.search(options, filename);
+  const configFile = Config.search(options, filename);
 
-  if (file === null) {
+  if (!configFile) {
     throw new TruffleError("Could not find suitable configuration file.");
   }
 
-  return Config.load(file, options);
+  return Config.load(configFile, options);
 };
 
 Config.load = function(file, options) {

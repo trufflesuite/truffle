@@ -6,12 +6,11 @@ import { combineReducers } from "redux";
 import * as actions from "./actions";
 import { keccak256, extractPrimarySource } from "lib/helpers";
 import * as DecodeUtils from "truffle-decode-utils";
-import escapeRegExp from "lodash.escaperegexp";
 
 import BN from "bn.js";
 
 const DEFAULT_CONTEXTS = {
-  byContexts: {}
+  byContext: {}
 };
 
 function contexts(state = DEFAULT_CONTEXTS, action) {
@@ -19,7 +18,7 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
     /*
      * Adding a new context
      */
-    case actions.ADD_CONTEXT: {
+    case actions.ADD_CONTEXT:
       const {
         contractName,
         binary,
@@ -58,101 +57,11 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
           }
         }
       };
-    }
 
-    case actions.NORMALIZE_CONTEXTS: {
-      //unfortunately, due to our current link references format, we can't
-      //really use the binary frm the artifact directly -- neither for purposes
-      //of matching, nor for purposes of decoding internal functions.  So, we
-      //need to perform this normalization step on our contexts before using
-      //them.  Once we have truffle-db, this step should largely go away.
-
-      debug("normalizing contexts");
-
-      //first, let's clone the state; we're going to make some deep modifications,
-      //so we'll want more than a shallow clone here
-      let newState = {
-        byContext: Object.assign(
-          {},
-          ...Object.entries(state.byContext).map(([id, context]) => ({
-            [id]: {
-              ...context
-            }
-          }))
-        )
+    case actions.NORMALIZE_CONTEXTS:
+      return {
+        byContext: DecodeUtils.Contexts.normalizeContexts(state.byContext)
       };
-
-      debug("state cloned");
-
-      //next, we get all the contract names and sort them descending by length.
-      //We're going to want to go in descending order of length so that we
-      //don't run into problems when one name is a substring of another.
-      //For simplicity, we'll exclude names of length <38, because we can
-      //handle these with our more general check for link references at the end
-      const fillerLength = 2 * DecodeUtils.EVM.ADDRESS_SIZE;
-      let names = Object.values(newState.byContext)
-        .map(context => context.contractName)
-        .filter(name => name.length >= fillerLength - 3)
-        //the -3 is for 2 leading underscores and 1 trailing
-        .sort((name1, name2) => name2.length - name1.length);
-
-      debug("names sorted");
-
-      //now, we need to turn all these names into regular expressions, because,
-      //unfortunately, str.replace() will only replace all if you use a /g regexp;
-      //note that because names may contain '$', we need to escape them
-      //(also we prepend "__" because that's the placeholder format)
-      let regexps = names.map(
-        name => new RegExp(escapeRegExp("__" + name), "g")
-      );
-
-      debug("regexps prepared");
-
-      //having done so, we can do the replace for these names!
-      const replacement = ".".repeat(fillerLength);
-      for (let regexp of regexps) {
-        for (let context of Object.values(newState.byContext)) {
-          context.binary = context.binary.replace(regexp, replacement);
-        }
-      }
-
-      debug("long replacements complete");
-
-      //now we can do a generic replace that will catch all names of length
-      //<40, while also catching the Solidity compiler's link reference format
-      //as well as Truffle's.  Hooray!
-      const genericRegexp = new RegExp("_.{" + (fillerLength - 2) + "}_", "g");
-      //we're constructing the regexp /_.{38}_/g, but I didn't want to use a
-      //literal 38 :P
-      for (let context of Object.values(newState.byContext)) {
-        context.binary = context.binary.replace(genericRegexp, replacement);
-      }
-
-      debug("short replacements complete");
-      //but there's one more step -- libraries' deployedBytecode will include
-      //0s in place of their own address instead of a link reference at the
-      //beginning, so we need to account for that too
-      const pushAddressInstruction = (
-        0x60 +
-        DecodeUtils.EVM.ADDRESS_SIZE -
-        1
-      ).toString(16); //"73"
-      for (let context of Object.values(newState.byContext)) {
-        if (context.contractKind === "library" && !context.isConstructor) {
-          context.binary = context.binary.replace(
-            "0x" +
-              pushAddressInstruction +
-              "00".repeat(DecodeUtils.EVM.ADDRESS_SIZE),
-            "0x" + pushAddressInstruction + replacement
-          );
-        }
-      }
-
-      debug("extra library replacements complete");
-
-      //finally, return this mess!
-      return newState;
-    }
 
     /*
      * Default case
