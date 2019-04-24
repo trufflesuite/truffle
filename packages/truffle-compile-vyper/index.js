@@ -85,8 +85,14 @@ function checkVyper(callback) {
 }
 
 // Execute vyper for single source file
-function execVyper(source_path, callback) {
+function execVyper(options, source_path, callback) {
   const formats = ["abi", "bytecode", "bytecode_runtime"];
+  if (
+    options.compilers.vyper.settings &&
+    options.compilers.vyper.settings.sourceMap
+  ) {
+    formats.push("source_map");
+  }
   const command = `vyper -f${formats.join(",")} ${source_path}`;
 
   exec(command, function(err, stdout, stderr) {
@@ -116,7 +122,7 @@ function compileAll(options, callback) {
   async.map(
     options.paths,
     function(source_path, c) {
-      execVyper(source_path, function(err, compiled_contract) {
+      execVyper(options, source_path, function(err, compiled_contract) {
         if (err) return c(err);
 
         // remove first extension from filename
@@ -136,6 +142,7 @@ function compileAll(options, callback) {
           abi: compiled_contract.abi,
           bytecode: compiled_contract.bytecode,
           deployedBytecode: compiled_contract.bytecode_runtime,
+          sourceMap: compiled_contract.source_map,
 
           compiler: compiler
         };

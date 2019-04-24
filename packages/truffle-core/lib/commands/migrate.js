@@ -1,4 +1,4 @@
-var command = {
+const command = {
   command: "migrate",
   description: "Run migrations to deploy contracts",
   builder: {
@@ -13,6 +13,11 @@ var command = {
     },
     "dry-run": {
       describe: "Run migrations against an in-memory fork, for testing",
+      type: "boolean",
+      default: false
+    },
+    "skip-dry-run": {
+      describe: "Skip the test or 'dry run' migrations",
       type: "boolean",
       default: false
     },
@@ -85,18 +90,10 @@ var command = {
       }
     ]
   },
-  run: function(options, done) {
-    var Config = require("truffle-config");
-    var Contracts = require("truffle-workflow-compile");
-    var Resolver = require("truffle-resolver");
-    var Artifactor = require("truffle-artifactor");
-    var Migrate = require("truffle-migrate");
-    var Environment = require("../environment");
-    var temp = require("temp");
-    var copy = require("../copy");
 
+  determineDryRunSettings: (config, options) => {
     // Source: ethereum.stackexchange.com/questions/17051
-    var networkWhitelist = [
+    const networkWhitelist = [
       1, // Mainnet (ETH & ETC)
       2, // Morden (ETC)
       3, // Ropsten
@@ -109,6 +106,70 @@ var command = {
       7762959, // Musiccoin
       61717561 // Aquachain
     ];
+
+    let dryRunOnly, skipDryRun;
+    const networkSettingsInConfig = config.networks[config.network];
+    if (networkSettingsInConfig) {
+      dryRunOnly =
+        options.dryRun === true ||
+        networkSettingsInConfig.dryRun === true ||
+        networkSettingsInConfig["dry-run"] === true;
+      skipDryRun =
+        options.skipDryRun === true ||
+        networkSettingsInConfig.skipDryRun === true ||
+        networkSettingsInConfig["skip-dry-run"] === true;
+    } else {
+      dryRunOnly = options.dryRun === true;
+      skipDryRun = options.skipDryRun === true;
+    }
+    const production =
+      networkWhitelist.includes(parseInt(config.network_id)) ||
+      config.production;
+    const dryRunAndMigrations = production && !skipDryRun;
+    return { dryRunOnly, dryRunAndMigrations };
+  },
+
+  run: function(options, done) {
+    const Artifactor = require("truffle-artifactor");
+    const Resolver = require("truffle-resolver");
+    const Migrate = require("truffle-migrate");
+    const Contracts = require("truffle-workflow-compile");
+    const Environment = require("../environment");
+    const Config = require("truffle-config");
+    const temp = require("temp");
+    const copy = require("../copy");
+
+    const conf = Config.detect(options);
+
+    async function executePostDryRunMigration(buildDir, options, done) {
+      const Artifactor = require("truffle-artifactor");
+      const Resolver = require("truffle-resolver");
+      const Migrate = require("truffle-migrate");
+      const Config = require("truffle-config");
+      let accept = true;
+
+      if (options.interactive) {
+        accept = await Migrate.acceptDryRun();
+      }
+
+      if (accept) {
+        const environment = require("../environment");
+        const config = Config.detect(options);
+
+        config.contracts_build_directory = buildDir;
+        config.artifactor = new Artifactor(buildDir);
+        config.resolver = new Resolver(config);
+
+        environment.detect(config, err => {
+          if (err) return done(err);
+
+          config.dryRun = false;
+          runMigrations(config, done);
+        });
+      } else {
+        done();
+      }
+    }
 
     function setupDryRunEnvironmentThenRunMigrations(config) {
       return new Promise((resolve, reject) => {
@@ -148,14 +209,19 @@ var command = {
       });
     }
 
-    function runMigrations(config, callback) {
+    async function runMigrations(config, callback) {
       Migrate.launchReporter();
 
       if (options.f) {
-        Migrate.runFrom(options.f, config, done);
+        try {
+          await Migrate.runFrom(options.f, config);
+          done();
+        } catch (error) {
+          done(error);
+        }
       } else {
-        Migrate.needsMigrating(config, function(err, needsMigrating) {
-          if (err) return callback(err);
+        try {
+          const needsMigrating = await Migrate.needsMigrating(config);
 
           if (needsMigrating) {
             Migrate.run(config, callback);
@@ -163,76 +229,53 @@ var command = {
             config.logger.log("Network up to date.");
             callback();
           }
-        });
-      }
-    }
-
-    async function executePostDryRunMigration(buildDir) {
-      let accept = true;
-
-      if (options.interactive) {
-        accept = await Migrate.acceptDryRun();
-      }
-
-      if (accept) {
-        const environment = require("../environment");
-        const NewConfig = require("truffle-config");
-        const config = NewConfig.detect(options);
-
-        config.contracts_build_directory = buildDir;
-        config.artifactor = new Artifactor(buildDir);
-        config.resolver = new Resolver(config);
-
-        environment.detect(config, err => {
-          if (err) return done(err);
-
-          config.dryRun = false;
-          runMigrations(config, done);
-        });
-      } else {
-        done();
-      }
-    }
-
-    const conf = Config.detect(options);
-
-    Contracts.compile(conf, function(err) {
-      if (err) return done(err);
-
-      Environment.detect(conf, async function(err) {
-        if (err) return done(err);
-
-        const dryRunOnly = options.dryRun === true;
-        const production =
-          networkWhitelist.includes(parseInt(conf.network_id)) ||
-          conf.production;
-        const dryRunAndMigration = production && !conf.skipDryRun;
-
-        if (dryRunOnly) {
-          try {
-            await setupDryRunEnvironmentThenRunMigrations(conf);
-            done();
-          } catch (err) {
-            done(err);
-          }
-        } else if (dryRunAndMigration) {
-          const currentBuild = conf.contracts_build_directory;
-          conf.dryRun = true;
-
-          try {
-            await setupDryRunEnvironmentThenRunMigrations(conf);
-          } catch (err) {
-            return done(err);
-          }
-
-          executePostDryRunMigration(currentBuild);
-
-          // Development
-        } else {
-          runMigrations(conf, done);
+        } catch (error) {
+          callback(error);
         }
-      });
-    });
+      }
+    }
+
+    const detectCallback = async function(error) {
+      if (error) return done(error);
+
+      const { dryRunOnly, dryRunAndMigrations } = this.determineDryRunSettings(
+        conf,
+        options
+      );
+
+      if (dryRunOnly) {
+        try {
+          conf.dryRun = true;
+          await setupDryRunEnvironmentThenRunMigrations(conf);
+          done();
+        } catch (err) {
+          done(err);
+        }
+      } else if (dryRunAndMigrations) {
+        const currentBuild = conf.contracts_build_directory;
+        conf.dryRun = true;
+
+        try {
+          await setupDryRunEnvironmentThenRunMigrations(conf);
+        } catch (err) {
+          return done(err);
+        }
+
+        executePostDryRunMigration(currentBuild, options, done);
+
+        // Development
+      } else {
+        await runMigrations(conf, done);
+      }
+    };
+
+    const compileCallback = function(error) {
+      if (error) return done(error);
+
+      Environment.detect(conf, detectCallback.bind(this));
+    };
+
+    Contracts.compile(conf, compileCallback.bind(this));
   }
 };
 

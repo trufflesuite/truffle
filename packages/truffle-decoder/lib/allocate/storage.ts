@@ -4,6 +4,7 @@ const debug = debugModule("decoder:allocate:storage");
 import { StoragePointer } from "../types/pointer";
 import { StorageAllocations, StorageAllocation, StorageMemberAllocations } from "../types/allocation";
 import { StorageLength, isWordsLength, Range } from "../types/storage";
+import { UnknownBaseContractIdError } from "../types/errors";
 import { AstDefinition, AstReferences } from "truffle-decode-utils";
 import { readDefinition } from "../read/constant"
 import * as DecodeUtils from "truffle-decode-utils";
@@ -168,9 +169,13 @@ function allocateContract(contract: AstDefinition, referenceDeclarations: AstRef
   //clone with slice first
   let linearizedBaseContractsFromBase: number[] = contract.linearizedBaseContracts.slice().reverse();
 
-  let vars = [].concat(...linearizedBaseContractsFromBase.map( (id: number) =>
-    getStateVariables(referenceDeclarations[id])
-  ));
+  let vars = [].concat(...linearizedBaseContractsFromBase.map( (id: number) => {
+    let baseNode = referenceDeclarations[id];
+    if(baseNode === undefined) {
+      throw new UnknownBaseContractIdError(contract.id, contract.name, contract.contractKind, id);
+    }
+    return getStateVariables(baseNode);
+  }));
 
   return allocateMembers(contract, vars, referenceDeclarations, existingAllocations, true); 
     //size is not meaningful for contracts, so we pass suppressSize=true

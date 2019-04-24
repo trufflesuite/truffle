@@ -446,6 +446,20 @@ const data = createSelectorTree({
      */
     scope: createLeaf(["./node"], identity),
 
+    /*
+     * data.current.contract
+     * warning: may return null or similar, even though SourceUnit is included
+     * as fallback
+     */
+    contract: createLeaf(
+      ["./node", "/views/scopes/inlined"],
+      (node, scopes) => {
+        const types = ["ContractDefinition", "SourceUnit"];
+        //SourceUnit included as fallback
+        return findAncestorOfType(node, types, scopes);
+      }
+    ),
+
     /**
      * data.current.functionDepth
      */
@@ -680,9 +694,12 @@ const data = createSelectorTree({
               msg: DecodeUtils.Definition.MSG_DEFINITION,
               tx: DecodeUtils.Definition.TX_DEFINITION,
               block: DecodeUtils.Definition.BLOCK_DEFINITION,
-              this: thisDefinition,
               now: DecodeUtils.Definition.spoofUintDefinition("now")
             };
+            //only include this when it has a proper definition
+            if (thisDefinition) {
+              builtins.this = thisDefinition;
+            }
             return { ...variables, ...builtins };
           }
         ),
@@ -693,9 +710,14 @@ const data = createSelectorTree({
          * returns a spoofed definition for the this variable
          */
         this: createLeaf(
-          [evm.current.context],
-          ({ contractName, contractId }) =>
-            DecodeUtils.Definition.spoofThisDefinition(contractName, contractId)
+          ["/current/contract"],
+          contractNode =>
+            contractNode && contractNode.nodeType === "ContractDefinition"
+              ? DecodeUtils.Definition.spoofThisDefinition(
+                  contractNode.name,
+                  contractNode.id
+                )
+              : null
         )
       },
 
