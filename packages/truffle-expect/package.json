@@ -13,9 +13,9 @@
   "author": "Tim Coulter <tim.coulter@consensys.net>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-expect/issues"
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-expect#readme",
+  "homepage": "https://github.com/trufflesuite/truffle/blob/master/packages/truffle-expect/README.md",
   "publishConfig": {
     "access": "public"
   },
