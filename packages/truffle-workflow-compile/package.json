@@ -3,9 +3,7 @@
   "version": "2.0.12",
   "description": "Core workflow behavior for `truffle compile` command",
   "dependencies": {
-    "async": "2.6.1",
     "debug": "^4.1.0",
-    "lodash": "4.17.11",
     "mkdirp": "^0.5.1",
     "truffle-artifactor": "^4.0.12",
     "truffle-compile": "^4.0.12",
@@ -21,9 +19,9 @@
   "author": "Truffle Suite <inquiry@trufflesuite.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-workflow-compile/issues"
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-workflow-compile#readme",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-workflow-compile#readme",
   "publishConfig": {
     "access": "public"
   },
