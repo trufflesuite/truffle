@@ -4,6 +4,8 @@ import { scopeSchemas } from "./utils";
 
 import { abiSchema, schema as artifactsSchema } from "truffle-db/artifacts";
 import { schema as workspaceSchema } from "truffle-db/workspace";
+import { artifactsLoader } from "truffle-db/loaders";
+
 
 import { readInstructions } from "./bytecode";
 
@@ -11,6 +13,7 @@ export const schema = scopeSchemas({
   subschemas: {
     artifacts: artifactsSchema,
     workspace: workspaceSchema,
+    artifactsLoader: artifactsLoader
   },
   typeDefs: [
     // add types from abi schema
