@@ -3,7 +3,9 @@
   "version": "0.0.7",
   "description": "Simple module for ensuring specific options are passed to a function",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "mocha"
+  },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-expect",
   "keywords": [
     "truffle",
@@ -19,5 +21,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
+  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e",
+  "devDependencies": {
+    "mocha": "5.2.0"
+  }
 }
