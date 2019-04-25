@@ -28,6 +28,18 @@ var abiSchema = require("./spec/abi.spec.json");
  * The optional `transform` parameter standardizes value regardless of source,
  * for purposes of ensuring data type and/or string schemas.
  */
+
+// helper that ensures abi's do not contain function signatures
+const sanitizedValue = dirtyValueArray => {
+  let sanitizedValueArray = [];
+  dirtyValueArray.forEach(item => {
+    let sanitizedItem = Object.assign({}, item);
+    delete sanitizedItem.signature;
+    sanitizedValueArray.push(sanitizedItem);
+  });
+  return sanitizedValueArray;
+};
+
 var properties = {
   contractName: {
     sources: ["contractName", "contract_name"]
@@ -41,6 +53,9 @@ var properties = {
         } catch (e) {
           value = undefined;
         }
+      }
+      if (Array.isArray(value)) {
+        return sanitizedValue(value);
       }
       return value;
     }
