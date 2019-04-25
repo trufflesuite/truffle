@@ -1,16 +1,16 @@
-var Expect = {
-  options: function(options, expected_keys) {
-    expected_keys.forEach(function(key) {
+const Expect = {
+  options(options, expected_keys) {
+    expected_keys.forEach(key => {
       if (options[key] == null) {
-        throw new Error("Expected parameter '" + key + "' not passed to function.");
+        throw new Error(`Expected parameter '${key}' not passed to function.`);
       }
     });
   },
 
-  one: function(options, expected_keys) {
-    var found = [];
+  one(options, expected_keys) {
+    const found = [];
 
-    expected_keys.forEach(function(key) {
+    expected_keys.forEach(key => {
       if (options[key] != null) {
         found.push(1);
       } else {
@@ -18,15 +18,17 @@ var Expect = {
       }
     });
 
-    var total = found.reduce(function(t, value) {
-      return t + value;
-    });
+    const total = found.reduce((t, value) => t + value);
 
     // If this doesn't work in all cases, perhaps we should
     // create an expect.onlyOne() function.
     if (total >= 1) return;
 
-    throw new Error("Expected one of the following parameters, but found none: " + expected_keys.join(", "));
+    throw new Error(
+      `Expected one of the following parameters, but found none: ${expected_keys.join(
+        ", "
+      )}`
+    );
   }
 };
 
