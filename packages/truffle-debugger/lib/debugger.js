@@ -80,6 +80,7 @@ export default class Debugger {
 
     try {
       await session.ready();
+      debug("session ready");
     } catch (e) {
       throw e;
     }

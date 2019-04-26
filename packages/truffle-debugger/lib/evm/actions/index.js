@@ -112,9 +112,9 @@ export function reset(storageAddress) {
   };
 }
 
-export const UNLOAD = "EVM_UNLOAD";
-export function unload() {
+export const UNLOAD_TRANSACTION = "EVM_UNLOAD_TRANSACTION";
+export function unloadTransaction() {
   return {
-    type: UNLOAD
+    type: UNLOAD_TRANSACTION
   };
 }

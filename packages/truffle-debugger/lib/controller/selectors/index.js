@@ -69,7 +69,12 @@ const controller = createSelectorTree({
     /**
      * controller.current.finished
      */
-    finished: createLeaf([trace.finished], identity)
+    finished: createLeaf([trace.finished], identity),
+
+    /**
+     * controller.current.loaded
+     */
+    loaded: createLeaf([trace.loaded], identity)
   },
 
   /**

@@ -154,7 +154,7 @@ export function* reset() {
 }
 
 export function* unload() {
-  yield put(actions.unload());
+  yield put(actions.unloadTransaction());
 }
 
 export function* saga() {

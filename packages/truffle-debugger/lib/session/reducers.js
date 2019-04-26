@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("debugger:session:reducers");
+
 import { combineReducers } from "redux";
 
 import data from "lib/data/reducers";
@@ -14,9 +17,10 @@ export const ACTIVE = "ACTIVE";
 function status(state = WAITING, action) {
   switch (action.type) {
     case actions.READY:
+      debug("readying");
       return ACTIVE;
 
-    case actions.LOAD:
+    case actions.WAIT:
       return WAITING;
 
     case actions.ERROR:
@@ -31,7 +35,7 @@ function transaction(state = {}, action) {
   switch (action.type) {
     case actions.SAVE_TRANSACTION:
       return action.transaction;
-    case actions.UNLOAD:
+    case actions.BLANK_TRANSACTION:
       return {};
     default:
       return state;
@@ -42,7 +46,7 @@ function receipt(state = {}, action) {
   switch (action.type) {
     case actions.SAVE_RECEIPT:
       return action.receipt;
-    case actions.UNLOAD:
+    case actions.BLANK_TRANSACTION:
       return {};
     default:
       return state;
@@ -53,7 +57,7 @@ function block(state = {}, action) {
   switch (action.type) {
     case actions.SAVE_BLOCK:
       return action.block;
-    case actions.UNLOAD:
+    case actions.BLANK_TRANSACTION:
       return {};
     default:
       return state;

@@ -7,26 +7,41 @@ export function start(provider, txHash) {
   };
 }
 
-export const LOAD = "LOAD";
-export function load(txHash) {
+export const LOAD_TRANSACTION = "LOAD_TRANSACTION";
+export function loadTransaction(txHash) {
   return {
-    type: LOAD,
+    type: LOAD_TRANSACTION,
     txHash
   };
 }
 
-export const UNLOAD = "SESSION_UNLOAD";
-export function unload() {
+//triggers the unload() saga
+export const UNLOAD_TRANSACTION = "UNLOAD_TRANSACTION";
+export function unloadTransaction() {
   return {
-    type: UNLOAD
+    type: UNLOAD_TRANSACTION
+  };
+}
+
+//does the actual unloading
+export const BLANK_TRANSACTION = "BLANK_TRANSACTION";
+export function blankTransaction() {
+  return {
+    type: BLANK_TRANSACTION
   };
 }
 
 export const READY = "SESSION_READY";
-export function ready(withTransaction) {
+export function ready() {
   return {
-    type: READY,
-    withTransaction
+    type: READY
+  };
+}
+
+export const WAIT = "SESSION_WAIT";
+export function wait() {
+  return {
+    type: WAIT
   };
 }
 

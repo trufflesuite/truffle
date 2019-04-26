@@ -16,8 +16,8 @@ import * as web3 from "lib/web3/sagas";
 import * as actions from "../actions";
 
 const TX_SAGAS = {
-  [actions.LOAD]: load,
-  [actions.UNLOAD]: unload
+  [actions.LOAD_TRANSACTION]: load,
+  [actions.UNLOAD_TRANSACTION]: unload
 };
 
 function* listenerSaga() {
@@ -61,13 +61,12 @@ export function* saga() {
 
   //process transaction (if there is one)
   if (txHash !== undefined) {
-    debug("fetching transaction info");
     yield* processTransaction(txHash);
   }
 
   debug("readying");
   // signal that commands can begin
-  yield* ready(txHash !== undefined);
+  yield* ready();
 }
 
 export function* processTransaction(txHash) {
@@ -84,7 +83,7 @@ export function* processTransaction(txHash) {
 export default prefixName("session", saga);
 
 function* forkListeners() {
-  fork(listenerSaga); //session listener
+  yield fork(listenerSaga); //session listener
   return yield all(
     [controller, data, evm, solidity, trace, web3].map(
       app => fork(app.saga)
@@ -101,9 +100,11 @@ function* fetchTx(txHash) {
     return result.error;
   }
 
+  debug("sending initial call");
   yield* evm.begin(result);
 
   //get addresses created/called during transaction
+  debug("processing trace for addresses");
   let addresses = yield* trace.processTrace(result.trace);
   //add in the address of the call itself (if a call)
   if (result.address && !addresses.includes(result.address)) {
@@ -119,8 +120,10 @@ function* fetchTx(txHash) {
   }
 
   let blockNumber = result.block.number.toString(); //a BN is not accepted
+  debug("obtaining binaries");
   let binaries = yield* web3.obtainBinaries(addresses, blockNumber);
 
+  debug("recording instances");
   yield all(
     addresses.map((address, i) => call(recordInstance, address, binaries[i]))
   );
@@ -149,8 +152,12 @@ function* recordInstance(address, binary) {
   yield* evm.addInstance(address, binary);
 }
 
-function* ready(withTransaction) {
-  yield put(actions.ready(withTransaction));
+function* ready() {
+  yield put(actions.ready());
+}
+
+function* wait() {
+  yield put(actions.wait());
 }
 
 function* error(err) {
@@ -158,16 +165,20 @@ function* error(err) {
 }
 
 function* unload() {
+  debug("unloading");
   yield* data.reset();
   yield* solidity.reset();
   yield* evm.unload();
   yield* trace.unload();
-  yield put(actions.unload());
+  yield put(actions.blankTransaction());
 }
 
 //note that load takes an action as its argument, which is why it's separate
 //from processTransaction
 function* load({ txHash }) {
+  debug("sending wait signal");
+  yield* wait();
   yield* processTransaction(txHash);
-  yield* ready(true);
+  debug("sending ready signal");
+  yield* ready();
 }

@@ -23,7 +23,8 @@ var commandReference = {
   "c": "continue until breakpoint",
   "q": "quit",
   "r": "reset",
-  "z": "load new transaction"
+  "t": "load new transaction",
+  "T": "unload transaction"
 };
 
 var DebugUtils = {
@@ -96,6 +97,12 @@ var DebugUtils = {
     return "(" + commandId + ") " + commandReference[commandId];
   },
 
+  formatPrompt: function(network, txHash) {
+    return txHash !== undefined
+      ? `debug(${network}:${txHash.substring(0, 10)}...)> `
+      : `debug(${network})> `;
+  },
+
   formatAffectedInstances: function(instances) {
     var hasAllSource = true;
 
@@ -140,8 +147,8 @@ var DebugUtils = {
       ["b", "B", "c"],
       ["+", "-"],
       ["?"],
-      ["v", ":"]
-      //TODO: update for z
+      ["v", ":"],
+      ["t", "T"]
     ].map(function(shortcuts) {
       return shortcuts.map(DebugUtils.formatCommandDescription).join(", ");
     });

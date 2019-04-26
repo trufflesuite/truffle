@@ -104,7 +104,7 @@ function instances(state = DEFAULT_INSTANCES, action) {
           )
         }
       };
-    case actions.UNLOAD:
+    case actions.UNLOAD_TRANSACTION:
       return DEFAULT_INSTANCES;
 
     /*
@@ -125,7 +125,7 @@ function tx(state = DEFAULT_TX, action) {
     case actions.SAVE_GLOBALS:
       let { gasprice, origin } = action;
       return { gasprice, origin };
-    case actions.UNLOAD:
+    case actions.UNLOAD_TRANSACTION:
       return DEFAULT_TX;
     default:
       return state;
@@ -144,7 +144,7 @@ function block(state = DEFAULT_BLOCK, action) {
   switch (action.type) {
     case actions.SAVE_GLOBALS:
       return action.block;
-    case actions.UNLOAD:
+    case actions.UNLOAD_TRANSACTION:
       return DEFAULT_BLOCK;
     default:
       return state;
@@ -189,7 +189,7 @@ function callstack(state = [], action) {
     case actions.RESET:
       return [state[0]]; //leave the initial call still on the stack
 
-    case actions.UNLOAD:
+    case actions.UNLOAD_TRANSACTION:
       return [];
 
     default:
@@ -335,7 +335,7 @@ function codex(state = [], action) {
     case actions.RESET:
       return [defaultCodexFrame(action.storageAddress)];
 
-    case actions.UNLOAD:
+    case actions.UNLOAD_TRANSACTION:
       return [];
 
     default:

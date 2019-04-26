@@ -1,4 +1,5 @@
 import debugModule from "debug";
+//returns true on success, false on already unloadee
 const debug = debugModule("debugger:session");
 
 import configureStore from "lib/store";
@@ -38,12 +39,8 @@ export default class Session {
     // record contracts
     this._store.dispatch(actions.recordContracts(contexts, sources));
 
-    //note that txHash is now optional
-    this._store.dispatch(actions.start(provider, txHash));
-  }
-
-  async ready() {
-    return new Promise((accept, reject) => {
+    //set up the ready listener
+    this._ready = new Promise((accept, reject) => {
       const unsubscribe = this._store.subscribe(() => {
         //NOTE: do NOT use selectors in these conditionals.  It will not work!
         if (this.state.session.status === "ACTIVE") {
@@ -53,30 +50,44 @@ export default class Session {
         } else if (typeof this.state.session.status === "object") {
           debug("error!");
           unsubscribe();
-          reject(this.view(session.status.error));
+          reject(this.state.session.status.error);
         }
       });
     });
+
+    //note that txHash is now optional
+    this._store.dispatch(actions.start(provider, txHash));
   }
 
-  async readyAgain() {
+  async ready() {
+    await this._ready;
+  }
+
+  async readyAgainAfterLoading(txHash) {
     return new Promise((accept, reject) => {
       let hasStartedWaiting = false;
+      debug("reready listener set up");
       const unsubscribe = this._store.subscribe(() => {
+        debug("reready?");
         if (hasStartedWaiting) {
-          if (this.view(session.status.ready)) {
+          if (this.state.session.status === "ACTIVE") {
+            debug("reready!");
             unsubscribe();
-            resolve();
-          } else if (this.view(session.status.isError)) {
+            accept(true);
+          } else if (typeof this.state.session.status === "object") {
             unsubscribe();
+            debug("error!");
             reject(this.view(session.status.error));
           }
         } else {
-          hasStartedWaiting = this.view(session.status.waiting);
+          if (this.state.session.status === "WAITING") {
+            debug("started waiting");
+            hasStartedWaiting = true;
+          }
           return;
         }
       });
-      this.dispatch(stepperAction);
+      this.dispatch(actions.loadTransaction(txHash));
     });
   }
 
@@ -188,13 +199,12 @@ export default class Session {
   }
 
   async interrupt() {
-    return this.dispatch(controller.interrupt());
+    return await this.dispatch(controller.interrupt());
   }
 
   async doneStepping(stepperAction) {
     return new Promise(resolve => {
       let hasStarted = false;
-      let hasResolved = false;
       const unsubscribe = this._store.subscribe(() => {
         const isStepping = this.view(controllerSelector.isStepping);
 
@@ -204,8 +214,7 @@ export default class Session {
           return;
         }
 
-        if (!isStepping && hasStarted && !hasResolved) {
-          hasResolved = true;
+        if (!isStepping && hasStarted) {
           debug("heard step stop");
           unsubscribe();
           resolve(true);
@@ -215,23 +224,25 @@ export default class Session {
     });
   }
 
-  //returns true on success, an error object on failure
+  //returns true on success, false on already loaded, error object on failure
   async load(txHash) {
-    let loaded = this.view(trace.loaded);
-    if (loaded) {
-      await this.unload();
+    if (this.view(trace.loaded)) {
+      return false;
     }
-    this.dispatch(actions.load(txHash));
     try {
-      await this.readyAgain();
-      return true;
+      return await this.readyAgainAfterLoading(txHash);
     } catch (e) {
       return e;
     }
   }
 
+  //returns true on success, false on already unloaded
   async unload() {
-    return this.dispatch(actions.unload());
+    if (!this.view(trace.loaded)) {
+      return false;
+    }
+    debug("unloading");
+    return await this.dispatch(actions.unloadTransaction());
   }
 
   //Note: count is an optional argument; default behavior is to advance 1
@@ -297,15 +308,15 @@ export default class Session {
   }
 
   async addBreakpoint(breakpoint) {
-    this.dispatch(controller.addBreakpoint(breakpoint));
+    return await this.dispatch(controller.addBreakpoint(breakpoint));
   }
 
   async removeBreakpoint(breakpoint) {
-    return this.dispatch(controller.removeBreakpoint(breakpoint));
+    return await this.dispatch(controller.removeBreakpoint(breakpoint));
   }
 
   async removeAllBreakpoints() {
-    return this.dispatch(controller.removeAllBreakpoints());
+    return await this.dispatch(controller.removeAllBreakpoints());
   }
 
   //deprecated -- decode is now *always* ready!

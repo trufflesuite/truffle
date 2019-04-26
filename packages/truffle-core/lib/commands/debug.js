@@ -651,6 +651,16 @@ var command = {
             return;
           }
 
+          function setPrompt(prompt) {
+            repl.activate.bind(repl)({
+              prompt,
+              context: {},
+              //this argument only *adds* things, so it's safe to set it to {}
+              ignoreUndefined: true
+              //set to true because it's set to true below :P
+            });
+          }
+
           async function interpreter(cmd) {
             cmd = cmd.trim();
             var cmdArgs, splitArgs;
@@ -686,6 +696,7 @@ var command = {
 
             let alreadyFinished = session.view(trace.finishedOrUnloaded);
             let loadError = null;
+            let loadFailed = false;
 
             // If not finished, perform commands that require state changes
             // (other than quitting or resetting)
@@ -753,11 +764,32 @@ var command = {
                 config.logger.log("");
               }
             }
-            if (cmd === "z") {
-              config.logger.log(formatTransactionStartMessage());
-              let successOrError = await session.load(cmdArgs);
-              if (typeof successOrError === "object") {
-                loadError = successOrError;
+            if (cmd === "t") {
+              if (!session.view(trace.loaded)) {
+                config.logger.log(DebugUtils.formatTransactionStartMessage());
+                let successOrError = await session.load(cmdArgs);
+                if (typeof successOrError === "object") {
+                  loadFailed = true;
+                  loadError = successOrError;
+                } else {
+                  //if successful, change prompt
+                  setPrompt(DebugUtils.formatPrompt(config.network, cmdArgs));
+                }
+              } else {
+                loadFailed = true;
+                config.logger.log(
+                  "Please unload the current transaction before loading a new one."
+                );
+              }
+            }
+            if (cmd === "T") {
+              if (session.view(trace.loaded)) {
+                await session.unload();
+                config.logger.log("Transaction unloaded.");
+                setPrompt(DebugUtils.formatPrompt(config.network));
+              } else {
+                config.logger.log("No transaction to unload.");
+                config.logger.log("");
               }
             }
 
@@ -798,7 +830,9 @@ var command = {
                 printBreakpoints();
                 break;
               case "v":
-                await printVariables();
+                if (session.view(trace.loaded)) {
+                  await printVariables();
+                }
                 break;
               case ":":
                 watchExpressionAnalytics(cmdArgs);
@@ -812,9 +846,11 @@ var command = {
                 break;
               case ";":
               case "p":
-                printFile();
-                printInstruction();
-                printState();
+                if (session.view(trace.loaded)) {
+                  printFile();
+                  printInstruction();
+                  printState();
+                }
                 await printWatchExpressionsResults();
                 break;
               case "o":
@@ -822,7 +858,7 @@ var command = {
               case "u":
               case "n":
               case "c":
-                if (!session.view(trace.finished)) {
+                if (session.view(trace.loaded)) {
                   if (!session.view(solidity.current.source).source) {
                     printInstruction();
                   }
@@ -833,14 +869,27 @@ var command = {
                 await printWatchExpressionsResults();
                 break;
               case "r":
-              case "z":
                 if (!loadError) {
-                  printAddressesAffected();
-                  printFile();
-                  printState();
+                  if (session.view(trace.loaded)) {
+                    printAddressesAffected();
+                    printFile();
+                    printState();
+                  }
                 } else {
                   config.logger.log("Error: " + loadError.message);
                 }
+                break;
+              case "t":
+                if (!loadFailed) {
+                  printAddressesAffected();
+                  printFile();
+                  printState();
+                } else if (loadError !== null) {
+                  config.logger.log("Error: " + loadError.message);
+                }
+                break;
+              case "T":
+                //nothing to print
                 break;
               default:
                 printHelp();
@@ -860,29 +909,29 @@ var command = {
               cmd !== "+" &&
               cmd !== "r" &&
               cmd !== "-" &&
-              cmd !== "z"
+              cmd !== "t" &&
+              cmd !== "T"
             ) {
               lastCommand = cmd;
             }
           }
 
-          printAddressesAffected();
-          printHelp();
-          debug("Help printed");
-          printFile();
-          debug("File printed");
-          printState();
-          debug("State printed");
+          if (session.view(trace.loaded)) {
+            printAddressesAffected();
+            printHelp();
+            debug("Help printed");
+            printFile();
+            debug("File printed");
+            printState();
+            debug("State printed");
+          } else {
+            printHelp();
+          }
 
           var repl = options.repl || new ReplManager(config);
 
           repl.start({
-            prompt:
-              "debug(" +
-              config.network +
-              ":" +
-              txHash.substring(0, 10) +
-              "...)> ",
+            prompt: DebugUtils.formatPrompt(config.network, txHash),
             interpreter: util.callbackify(interpreter),
             ignoreUndefined: true,
             done: done
