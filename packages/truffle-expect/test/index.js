@@ -9,14 +9,8 @@ const options = {
 
 describe("expect.options", () => {
   it("does nothing when expected key values exist", () => {
-    assert.doesNotThrow(
-      () => expect.options(options, ["example", "another"]),
-      "Should not have thrown!"
-    );
-    assert.doesNotThrow(
-      () => expect.options(options, ["another", "example"]),
-      "Should not have thrown!"
-    );
+    expect.options(options, ["example", "another"]);
+    expect.options(options, ["another", "example"]);
   });
 
   it("throws when passed an undefined key value", () => {
@@ -35,15 +29,8 @@ describe("expect.options", () => {
 
 describe("expect.one", () => {
   it("does nothing when at least one key value exists", () => {
-    assert.doesNotThrow(
-      () => expect.one(options, ["example", "optional_key"]),
-      "Should not have thrown!"
-    );
-    assert.doesNotThrow(
-      () =>
-        expect.one(options, ["optional_key", "example", "other_optional_key"]),
-      "Should not have thrown!"
-    );
+    expect.one(options, ["example", "optional_key"]),
+      expect.one(options, ["optional_key", "example", "other_optional_key"]);
   });
 
   it("throws when all key values are undefined", () => {
