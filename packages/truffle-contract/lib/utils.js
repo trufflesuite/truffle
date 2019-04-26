@@ -26,7 +26,8 @@ var Utils = {
       gasPrice: true,
       value: true,
       data: true,
-      nonce: true
+      nonce: true,
+      privateFor: true
     };
 
     for (field_name of Object.keys(val)) {
