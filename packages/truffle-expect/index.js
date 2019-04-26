@@ -22,13 +22,13 @@ const Expect = {
 
     // If this doesn't work in all cases, perhaps we should
     // create an expect.onlyOne() function.
-    if (total >= 1) return;
-
-    throw new Error(
-      `Expected one of the following parameters, but found none: ${expected_keys.join(
-        ", "
-      )}`
-    );
+    if (total < 1) {
+      throw new Error(
+        `Expected one of the following parameters, but found none: ${expected_keys.join(
+          ", "
+        )}`
+      );
+    }
   }
 };
 
