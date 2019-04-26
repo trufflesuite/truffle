@@ -48,22 +48,34 @@ const controller = createSelectorTree({
       /**
        * controller.current.location.sourceRange
        */
-      sourceRange: createLeaf([solidity.current.sourceRange], identity),
+      sourceRange: createLeaf(
+        [solidity.current.sourceRange, "/current/loaded"],
+        (range, loaded) => (loaded ? range : null)
+      ),
 
       /**
        * controller.current.location.source
        */
-      source: createLeaf([solidity.current.source], identity),
+      source: createLeaf(
+        [solidity.current.source, "/current/loaded"],
+        (source, loaded) => (loaded ? source : null)
+      ),
 
       /**
        * controller.current.location.node
        */
-      node: createLeaf([solidity.current.node], identity),
+      node: createLeaf(
+        [solidity.current.node, "/current/loaded"],
+        (node, loaded) => (loaded ? node : null)
+      ),
 
       /**
        * controller.current.location.isMultiline
        */
-      isMultiline: createLeaf([solidity.current.isMultiline], identity)
+      isMultiline: createLeaf(
+        [solidity.current.isMultiline, "/current/loaded"],
+        (raw, loaded) => (loaded ? raw : false)
+      )
     },
 
     /**

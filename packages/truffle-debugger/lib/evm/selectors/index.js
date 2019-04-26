@@ -28,12 +28,18 @@ function createStepSelectors(step, state = null) {
      *
      * trace step info related to operation
      */
-    trace: createLeaf([step], ({ gasCost, op, pc }) => ({ gasCost, op, pc })),
+    trace: createLeaf([step], step => {
+      if (!step) {
+        return null;
+      }
+      let { gasCost, op, pc } = step;
+      return { gasCost, op, pc };
+    }),
 
     /**
      * .programCounter
      */
-    programCounter: createLeaf(["./trace"], step => step.pc),
+    programCounter: createLeaf(["./trace"], step => (step ? step.pc : null)),
 
     /**
      * .isJump
@@ -348,10 +354,13 @@ const evm = createSelectorTree({
           //from there; we don't need to do any further searching
           contextId = instances[address].context;
           binary = instances[address].binary;
-        } else {
+        } else if (binary) {
           //otherwise, if we're in a constructor, we'll need to actually do a
           //search
           contextId = search(binary);
+        } else {
+          //exceptional case: no transaction is loaded
+          return null;
         }
 
         let context = contexts[contextId];

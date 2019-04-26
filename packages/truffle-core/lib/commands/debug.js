@@ -471,10 +471,15 @@ var command = {
             var currentLocation = session.view(controller.current.location);
             var breakpoints = session.view(controller.breakpoints);
 
-            var currentLine = currentLocation.sourceRange.lines.start.line;
-            var currentSourceId = currentLocation.source.id;
-            //don't get node id unless we have to as workaround to problem
-            //where it has sometimes turned up undefined
+            var currentNode = currentLocation.node
+              ? currentLocation.node.id
+              : null;
+            var currentLine = currentLocation.sourceRange
+              ? currentLocation.sourceRange.lines.start.line
+              : null;
+            var currentSourceId = currentLocation.source
+              ? currentLocation.source.id
+              : null;
 
             var breakpoint = {};
 
@@ -483,7 +488,11 @@ var command = {
             if (args.length === 0) {
               //no arguments, want currrent node
               debug("node case");
-              breakpoint.node = currentLocation.node.id;
+              if (currentNode === null) {
+                config.logger.log("Cannot determine current location.");
+                return;
+              }
+              breakpoint.node = currentNode;
               breakpoint.line = currentLine;
               breakpoint.sourceId = currentSourceId;
             }
@@ -504,6 +513,10 @@ var command = {
             //line number
             else if (args[0][0] === "+" || args[0][0] === "-") {
               debug("relative case");
+              if (currentLine === null) {
+                config.logger.log("Cannot determine current location.");
+                return;
+              }
               let delta = parseInt(args[0], 10); //want an integer
               debug("delta %d", delta);
 
@@ -563,6 +576,10 @@ var command = {
             //otherwise, it's a simple line number
             else {
               debug("absolute case");
+              if (currentSourceId === null) {
+                config.logger.log("Cannot determine current file.");
+                return;
+              }
               let line = parseInt(args[0], 10); //want an integer
               debug("line %d", line);
 
@@ -869,14 +886,10 @@ var command = {
                 await printWatchExpressionsResults();
                 break;
               case "r":
-                if (!loadError) {
-                  if (session.view(trace.loaded)) {
-                    printAddressesAffected();
-                    printFile();
-                    printState();
-                  }
-                } else {
-                  config.logger.log("Error: " + loadError.message);
+                if (session.view(trace.loaded)) {
+                  printAddressesAffected();
+                  printFile();
+                  printState();
                 }
                 break;
               case "t":

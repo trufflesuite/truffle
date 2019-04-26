@@ -7,6 +7,11 @@ import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
 const session = createSelectorTree({
+  /*
+   * session.state
+   */
+  state: state => state.session,
+
   /**
    * session.info
    */
@@ -48,19 +53,19 @@ const session = createSelectorTree({
      * session.transaction (selector)
      * contains the web3 transaction object
      */
-    _: state => state.session.transaction,
+    _: createLeaf(["/state"], state => state.transaction),
 
     /**
      * session.transaction.receipt
      * contains the web3 receipt object
      */
-    receipt: state => state.session.receipt,
+    receipt: createLeaf(["/state"], state => state.receipt),
 
     /**
      * session.transaction.block
      * contains the web3 block object
      */
-    block: state => state.session.block
+    block: createLeaf(["/state"], state => state.block)
   },
 
   /*
@@ -70,7 +75,7 @@ const session = createSelectorTree({
     /*
      * session.status (selector)
      */
-    _: state => state.session.status,
+    _: createLeaf(["/state"], state => state.status),
 
     /*
      * session.status.ready

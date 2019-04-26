@@ -65,7 +65,10 @@ let trace = createSelectorTree({
    *
    * current trace step
    */
-  step: createLeaf(["./steps", "./index"], (steps, index) => steps[index]),
+  step: createLeaf(
+    ["./steps", "./index"],
+    (steps, index) => (steps ? steps[index] : null) //null if no tx loaded
+  ),
 
   /**
    * trace.next

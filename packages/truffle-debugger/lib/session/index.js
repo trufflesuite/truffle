@@ -247,42 +247,22 @@ export default class Session {
 
   //Note: count is an optional argument; default behavior is to advance 1
   async advance(count) {
-    let loaded = this.view(trace.loaded);
-    if (!loaded) {
-      return;
-    }
     return await this.doneStepping(controller.advance(count));
   }
 
   async stepNext() {
-    let loaded = this.view(trace.loaded);
-    if (!loaded) {
-      return;
-    }
     return await this.doneStepping(controller.stepNext());
   }
 
   async stepOver() {
-    let loaded = this.view(trace.loaded);
-    if (!loaded) {
-      return;
-    }
     return await this.doneStepping(controller.stepOver());
   }
 
   async stepInto() {
-    let loaded = this.view(trace.loaded);
-    if (!loaded) {
-      return;
-    }
     return await this.doneStepping(controller.stepInto());
   }
 
   async stepOut() {
-    let loaded = this.view(trace.loaded);
-    if (!loaded) {
-      return;
-    }
     return await this.doneStepping(controller.stepOut());
   }
 
@@ -298,10 +278,6 @@ export default class Session {
   //own list of breakpoints; leave it out to use the internal one (as
   //controlled by the functions below)
   async continueUntilBreakpoint(breakpoints) {
-    let loaded = this.view(trace.loaded);
-    if (!loaded) {
-      return;
-    }
     return await this.doneStepping(
       controller.continueUntilBreakpoint(breakpoints)
     );
