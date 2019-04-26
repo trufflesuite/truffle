@@ -14,7 +14,9 @@
     "truffle-resolver": "^5.0.12"
   },
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "mocha"
+  },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-workflow-compile",
   "author": "Truffle Suite <inquiry@trufflesuite.com>",
   "license": "MIT",
@@ -25,5 +27,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
+  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e",
+  "devDependencies": {
+    "mocha": "5.2.0"
+  }
 }
