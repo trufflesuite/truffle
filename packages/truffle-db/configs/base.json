@@ -11,7 +11,8 @@
     "outDir": "../dist",
     "paths": {
       "truffle-db": ["../src"],
-      "truffle-db/*": ["../src/*"]
+      "truffle-db/*": ["../src/*"],
+      "test/*": ["../test/*"]
     },
     "rootDir": "../src",
     "baseUrl": ".",
@@ -23,7 +24,8 @@
     ]
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "test/**/*"
   ],
   "exclude": [
     "node_modules"
