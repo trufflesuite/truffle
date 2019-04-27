@@ -20,7 +20,6 @@ const config = {
 
 const db = new TruffleDB(config);
 
-console.debug("db in test " + JSON.stringify(db));
 const Migrations = require(path.join(fixturesDirectory, "Migrations.json"));
 
 const GetContractNames = `
@@ -33,7 +32,6 @@ query GetContractNames {
 
 it("lists artifact contract names", async () => {
   const result = await db.query(GetContractNames);
-  console.debug("in test " + JSON.stringify(result));
   expect(result).toHaveProperty("data");
 
   const { data } = result;
@@ -60,6 +58,5 @@ query GetSource() {
 
 it("gets source correctly ", async () => {
   const result = await db.query(GetSource);
-console.debug("Result in getSource " + JSON.stringify(result));
   expect(result).toHaveProperty("data");
 });
