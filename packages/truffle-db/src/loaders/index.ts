@@ -1,5 +1,3 @@
-import { loaderDB } from "./artifacts/index"
-
 import { abiSchema, schema as artifactsLoaderSchema } from "truffle-db/artifacts";
 
 import {
