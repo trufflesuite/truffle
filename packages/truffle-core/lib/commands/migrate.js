@@ -129,7 +129,7 @@ const command = {
     return { dryRunOnly, dryRunAndMigrations };
   },
 
-  prepareConfigForRealMigrations: async function(buildDir, options, done) {
+  prepareConfigForRealMigrations: async function(buildDir, options) {
     const Artifactor = require("truffle-artifactor");
     const Resolver = require("truffle-resolver");
     const Migrate = require("truffle-migrate");
@@ -153,15 +153,12 @@ const command = {
         await Environment.detect(config);
       } catch (error) {
         throw new Error(error);
-        done(error);
       }
 
       config.dryRun = false;
       return { config, proceed: true };
-      this.runMigrations(config, done);
     } else {
       return { proceed: false };
-      done();
     }
   },
 
