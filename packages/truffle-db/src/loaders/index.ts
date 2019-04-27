@@ -40,7 +40,7 @@ export const artifactsLoader = mergeSchemas({
         resolve: (obj) => {
           const { source } = obj;
           const { contents } = source;
-          return contents;  
+          return contents;
         }
       }
     }

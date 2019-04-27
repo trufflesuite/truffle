@@ -280,7 +280,7 @@ describe("Compilation", () => {
   const client = new WorkspaceClient();
 
   let sourceId;
-  
+
   beforeEach(async () => {
     //add source and get id
     const sourceVariables = {
@@ -292,9 +292,9 @@ describe("Compilation", () => {
   })
 
   it("adds compilation", async () => {
-    const expectedId = generateId({ 
-      compiler: Migrations.compiler, 
-      sourceIds: [{ id: sourceId }] 
+    const expectedId = generateId({
+      compiler: Migrations.compiler,
+      sourceIds: [{ id: sourceId }]
     })
 
     const variables = {
@@ -442,7 +442,7 @@ describe("Contract", () => {
     const sourceResult = await client.execute(AddSource, sourceVariables);
     sourceId = sourceResult.sourcesAdd.sources[0].id;
 
-    //add bytecode and get id 
+    //add bytecode and get id
     const bytecodeVariables = {
       bytes: Migrations.bytecode
     }
@@ -465,9 +465,9 @@ describe("Contract", () => {
   it("adds contracts", async () => {
     const client = new WorkspaceClient();
 
-    const expectedId = generateId({ 
-      name: Migrations.contractName, 
-      abi: { json: JSON.stringify(Migrations.abi) } , 
+    const expectedId = generateId({
+      name: Migrations.contractName,
+      abi: { json: JSON.stringify(Migrations.abi) } ,
       sourceContract: { index: 0 } ,
       compilation: { id: compilationId }
     });
@@ -475,7 +475,7 @@ describe("Contract", () => {
     const variables = {
       contractName: Migrations.contractName,
       compilationId: compilationId,
-      bytecodeId: bytecodeId, 
+      bytecodeId: bytecodeId,
       abi: JSON.stringify(Migrations.abi)
     }
 
@@ -492,7 +492,7 @@ describe("Contract", () => {
       expect(contracts).toHaveLength(1);
 
       const contract = contracts[0];
-      
+
       expect(contract).toHaveProperty("id");
       expect(contract).toHaveProperty("name");
       expect(contract).toHaveProperty("sourceContract");
