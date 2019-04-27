@@ -2,12 +2,10 @@ import path from "path";
 
 import gql from "graphql-tag";
 import * as graphql from "graphql";
-import { soliditySha3 } from "web3-utils";
 
 import { Workspace, schema } from "truffle-db/workspace";
+import { generateId } from "test/helpers";
 
-
-const jsonStableStringify = require('json-stable-stringify');
 
 const fixturesDirectory = path.join(
   __dirname, // truffle-db/src/db/test
@@ -40,7 +38,6 @@ class WorkspaceClient {
 
 const Migrations = require(path.join(fixturesDirectory, "Migrations.json"));
 
-const generateId = (obj) => soliditySha3(jsonStableStringify(obj));
 
 /*
  * root
