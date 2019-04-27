@@ -8,7 +8,7 @@ describe('testRunner', () => {
     describe('* test without AppManager', () => {
       describe('test example_1 [local imports]', () => {
         const urlResolver = new TruffleURLResolver()
-        const fileName: string = '../truffle-url-resolver/tests/example_1/greeter.sol'
+        const fileName: string = './tests/example_1/greeter.sol'
         let results: object = {}
 
         before(done => {
