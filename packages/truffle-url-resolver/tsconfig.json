@@ -1,0 +1,21 @@
+{
+    "compileOnSave": false,
+    "include": ["./src"],
+    "compilerOptions": {
+      "baseUrl": "./src",
+      "outDir": "./dist",
+      "sourceMap": true,
+      "declaration": true,
+      "module": "commonjs",
+      "strict": true,
+      "noImplicitAny": false,
+      "strictPropertyInitialization": false,
+      "experimentalDecorators": true,
+      "target": "es5",
+      "typeRoots": ["node_modules/@types"],
+      "lib": ["dom", "es2018"],
+      "paths": {
+          "truffle-url-resolver": ["./"]
+      }
+    }
+  }

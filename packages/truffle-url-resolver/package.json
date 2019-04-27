@@ -1,0 +1,50 @@
+{
+  "name": "truffle-url-resolver",
+  "version": "0.0.5",
+  "description": "Truffle Solidity import url resolver engine a la remix team",
+  "main": "dist",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "lint": "standard",
+    "test": "standard && mocha --require ts-node/register tests/*.ts -t 300000",
+    "prepublish": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ethereum/truffle.git"
+  },
+  "keywords": [
+    "solidity",
+    "resolve",
+    "import",
+    "git",
+    "truffle",
+    "remix"
+  ],
+  "author": "Remix Team <3",
+  "license": "MIT",
+  "standard": {
+    "ignore": [
+      "tests/"
+    ]
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "solc": "^0.5.0",
+    "url": "^0.11.0",
+    "valid-url": "^1.0.9"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.12.18",
+    "chai": "^4.2.0",
+    "mocha": "^5.1.0",
+    "remix-plugin": "0.0.1-alpha.2",
+    "standard": "^12.0.1",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "typescript": "^3.1.6"
+  }
+}
