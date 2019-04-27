@@ -4,9 +4,8 @@ import path from "path";
 import { TruffleDB } from "truffle-db";
 
 const fixturesDirectory = path.join(
-  __dirname, // truffle-db/src/test
-  "..", // truffle-db/src/loaders/artifacts
-  "..", // truffle-db/src/loaders/artifacts
+  __dirname, // truffle-db/src/loaders/test
+  "..", // truffle-db/src/loaders
   "..", // truffle-db/src
   "..", // truffle-db
   "test",
@@ -56,7 +55,7 @@ query GetSource() {
   }
 }`;
 
-it("gets source correctly ", async () => {
+it.skip("gets source correctly ", async () => {
   const result = await db.query(GetSource);
   expect(result).toHaveProperty("data");
 });
