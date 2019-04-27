@@ -1,4 +1,10 @@
-import { graphql, GraphQLSchema } from "graphql";
+import {
+  GraphQLSchema,
+  DocumentNode,
+  parse,
+  execute
+} from "graphql";
+
 import { schema } from "truffle-db/data";
 
 import { Workspace } from "truffle-db/workspace";
@@ -23,8 +29,20 @@ export class TruffleDB {
     this.schema = schema;
   }
 
-  async query (query: string, variables: any): Promise<any> {
-    return await graphql(this.schema, query, null, this.context, variables);
+  async query (
+    query: DocumentNode | string,
+    variables: any = {}
+  ):
+    Promise<any>
+  {
+    const document: DocumentNode =
+      (typeof query !== "string")
+        ? query
+        : parse(query);
+
+    return await execute(
+      this.schema, document, null, this.context, variables
+    );
   }
 
   static createContext(config: IConfig): IContext {
