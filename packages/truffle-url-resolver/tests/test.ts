@@ -1,5 +1,5 @@
 import { TruffleURLResolver } from '../src'
-import * as fs from 'fs'
+import * as fs from 'fs-extra'
 import * as path from 'path'
 import * as assert from 'assert'
 
@@ -8,7 +8,7 @@ describe('testRunner', () => {
     describe('* test without AppManager', () => {
       describe('test example_1 [local imports]', () => {
         const urlResolver = new TruffleURLResolver()
-        const fileName: string = '../Truffle-url-resolver/tests/example_1/greeter.sol'
+        const fileName: string = '../truffle-url-resolver/tests/example_1/greeter.sol'
         let results: object = {}
 
         before(done => {
@@ -47,7 +47,7 @@ describe('testRunner', () => {
         it('should return contract content of given local path', () => {
           const expt = {
             content: 'pragma solidity ^0.5.0;\nimport "./mortal.sol";\n\ncontract Greeter is Mortal {\n    /* Define variable greeting of the type string */\n    string greeting;\n\n    /* This runs when the contract is executed */\n    constructor(string memory _greeting) public {\n        greeting = _greeting;\n    }\n\n    /* Main function */\n    function greet() public view returns (string memory) {\n        return greeting;\n    }\n}\n',
-            cleanURL: '../Truffle-url-resolver/tests/example_1/greeter.sol',
+            cleanURL: './tests/example_1/greeter.sol',
             type: 'local'
           }
           assert.deepEqual(results, expt)

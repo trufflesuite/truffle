@@ -35,6 +35,6 @@ urlResolver.resolve(fileName, urlHandler)
 
 #### References
 
+* [Remix-url-resolver](https://github.com/ethereum/remix/tree/master/remix-url-resolver)
 * [TypeScript Publishing](http://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html)
 * [DefinitelyTyped 'Create a new package' guide](https://github.com/DefinitelyTyped/DefinitelyTyped#create-a-new-package)
-* [Remix-url-resolver](https://github.com/ethereum/remix/tree/master/remix-url-resolver)

@@ -1,3 +1,5 @@
+declare const Buffer
+
 import axios, { AxiosResponse } from 'axios'
 
 export interface Imported {
