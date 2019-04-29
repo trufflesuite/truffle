@@ -15,19 +15,15 @@ export function loadTransaction(txHash) {
   };
 }
 
-//triggers the unload() saga
+export const INTERRUPT = "SESSION_INTERRUPT";
+export function interrupt() {
+  return { type: INTERRUPT };
+}
+
 export const UNLOAD_TRANSACTION = "UNLOAD_TRANSACTION";
 export function unloadTransaction() {
   return {
     type: UNLOAD_TRANSACTION
-  };
-}
-
-//does the actual unloading
-export const BLANK_TRANSACTION = "BLANK_TRANSACTION";
-export function blankTransaction() {
-  return {
-    type: BLANK_TRANSACTION
   };
 }
 

@@ -80,7 +80,7 @@ const session = createSelectorTree({
     /*
      * session.status.ready
      */
-    ready: createLeaf(["./_"], status => status === "READY"),
+    ready: createLeaf(["./_"], status => status === "ACTIVE"),
 
     /*
      * session.status.waiting

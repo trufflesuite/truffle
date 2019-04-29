@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:session:sagas");
 
-import { call, all, fork, take, takeEvery, put } from "redux-saga/effects";
+import { call, all, fork, take, put } from "redux-saga/effects";
 
 import { prefixName } from "lib/helpers";
 
@@ -15,15 +15,23 @@ import * as web3 from "lib/web3/sagas";
 
 import * as actions from "../actions";
 
-const TX_SAGAS = {
-  [actions.LOAD_TRANSACTION]: load,
-  [actions.UNLOAD_TRANSACTION]: unload
+const LOAD_SAGAS = {
+  [actions.LOAD_TRANSACTION]: load
+  //will also add reconstruct action/saga once it exists
 };
 
 function* listenerSaga() {
-  yield all(
-    Object.entries(TX_SAGAS).map(([action, saga]) => takeEvery(action, saga))
-  );
+  while (true) {
+    let action = yield take(Object.keys(LOAD_SAGAS));
+    let saga = LOAD_SAGAS[action.type];
+
+    yield put(actions.wait());
+    yield race({
+      exec: call(saga, action), //not all will use this
+      interrupt: take(actions.INTERRUPT)
+    });
+    yield put(actions.ready());
+  }
 }
 
 export function* saga() {
@@ -83,7 +91,8 @@ export function* processTransaction(txHash) {
 export default prefixName("session", saga);
 
 function* forkListeners() {
-  yield fork(listenerSaga); //session listener
+  yield fork(listenerSaga); //session listener; this one is separate, sorry
+  //(I didn't want to mess w/ the existing structure of defaults)
   return yield all(
     [controller, data, evm, solidity, trace, web3].map(
       app => fork(app.saga)
@@ -156,29 +165,21 @@ function* ready() {
   yield put(actions.ready());
 }
 
-function* wait() {
-  yield put(actions.wait());
-}
-
 function* error(err) {
   yield put(actions.error(err));
 }
 
-function* unload() {
+export function* unload() {
   debug("unloading");
   yield* data.reset();
   yield* solidity.reset();
   yield* evm.unload();
   yield* trace.unload();
-  yield put(actions.blankTransaction());
+  yield put(actions.unloadTransaction());
 }
 
 //note that load takes an action as its argument, which is why it's separate
 //from processTransaction
 function* load({ txHash }) {
-  debug("sending wait signal");
-  yield* wait();
   yield* processTransaction(txHash);
-  debug("sending ready signal");
-  yield* ready();
 }

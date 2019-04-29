@@ -14,25 +14,23 @@ import * as actions from "../actions";
 
 import controller from "../selectors";
 
-//NOTE: when updating this don't forget to update CONTROL_ACTIONS in
-//reducers.js as well!
-const CONTROL_SAGAS = {
+const STEP_SAGAS = {
   [actions.ADVANCE]: advance,
   [actions.STEP_NEXT]: stepNext,
   [actions.STEP_OVER]: stepOver,
   [actions.STEP_INTO]: stepInto,
   [actions.STEP_OUT]: stepOut,
-  [actions.CONTINUE]: continueUntilBreakpoint,
-  [actions.RESET]: reset
+  [actions.CONTINUE]: continueUntilBreakpoint
 };
 
 export function* saga() {
   while (true) {
     debug("waiting for control action");
-    let action = yield take(Object.keys(CONTROL_SAGAS));
+    let action = yield take(Object.keys(STEP_SAGAS));
     debug("got control action");
-    let saga = CONTROL_SAGAS[action.type];
+    let saga = STEP_SAGAS[action.type];
 
+    yield put(actions.startStepping());
     yield race({
       exec: call(saga, action), //not all will use this
       interrupt: take(actions.INTERRUPT)
@@ -266,7 +264,7 @@ function* continueUntilBreakpoint(action) {
 /**
  * reset -- reset the state of the debugger
  */
-function* reset() {
+export function* reset() {
   yield* data.reset();
   yield* evm.reset();
   yield* solidity.reset();

@@ -35,7 +35,7 @@ function transaction(state = {}, action) {
   switch (action.type) {
     case actions.SAVE_TRANSACTION:
       return action.transaction;
-    case actions.BLANK_TRANSACTION:
+    case actions.UNLOAD_TRANSACTION:
       return {};
     default:
       return state;
@@ -46,7 +46,7 @@ function receipt(state = {}, action) {
   switch (action.type) {
     case actions.SAVE_RECEIPT:
       return action.receipt;
-    case actions.BLANK_TRANSACTION:
+    case actions.UNLOAD_TRANSACTION:
       return {};
     default:
       return state;
@@ -57,7 +57,7 @@ function block(state = {}, action) {
   switch (action.type) {
     case actions.SAVE_BLOCK:
       return action.block;
-    case actions.BLANK_TRANSACTION:
+    case actions.UNLOAD_TRANSACTION:
       return {};
     default:
       return state;

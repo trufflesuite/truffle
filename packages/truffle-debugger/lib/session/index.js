@@ -9,7 +9,9 @@ import * as actions from "./actions";
 import data from "lib/data/selectors";
 import trace from "lib/trace/selectors";
 import session from "lib/session/selectors";
-import { decode } from "lib/data/sagas";
+import * as dataSagas from "lib/data/sagas";
+import * as controllerSagas from "lib/controller/sagas";
+import * as sagas from "./sagas";
 import controllerSelector from "lib/controller/selectors";
 
 import rootSaga from "./sagas";
@@ -42,15 +44,14 @@ export default class Session {
     //set up the ready listener
     this._ready = new Promise((accept, reject) => {
       const unsubscribe = this._store.subscribe(() => {
-        //NOTE: do NOT use selectors in these conditionals.  It will not work!
-        if (this.state.session.status === "ACTIVE") {
+        if (this.view(session.status.ready)) {
           debug("ready!");
           unsubscribe();
           accept();
-        } else if (typeof this.state.session.status === "object") {
+        } else if (this.view(session.status.isError)) {
           debug("error!");
           unsubscribe();
-          reject(this.state.session.status.error);
+          reject(this.view(session.status.error));
         }
       });
     });
@@ -63,31 +64,31 @@ export default class Session {
     await this._ready;
   }
 
-  async readyAgainAfterLoading(txHash) {
+  async readyAgainAfterLoading(sessionAction) {
     return new Promise((accept, reject) => {
       let hasStartedWaiting = false;
       debug("reready listener set up");
       const unsubscribe = this._store.subscribe(() => {
         debug("reready?");
         if (hasStartedWaiting) {
-          if (this.state.session.status === "ACTIVE") {
+          if (this.view(session.status.ready)) {
             debug("reready!");
             unsubscribe();
             accept(true);
-          } else if (typeof this.state.session.status === "object") {
+          } else if (this.view(session.status.isError)) {
             unsubscribe();
             debug("error!");
             reject(this.view(session.status.error));
           }
         } else {
-          if (this.state.session.status === "WAITING") {
+          if (this.view(session.status.waiting)) {
             debug("started waiting");
             hasStartedWaiting = true;
           }
           return;
         }
       });
-      this.dispatch(actions.loadTransaction(txHash));
+      this.dispatch(sessionAction);
     });
   }
 
@@ -199,7 +200,8 @@ export default class Session {
   }
 
   async interrupt() {
-    return await this.dispatch(controller.interrupt());
+    await this.dispatch(actions.interrupt());
+    await this.dispatch(controller.interrupt());
   }
 
   async doneStepping(stepperAction) {
@@ -230,7 +232,7 @@ export default class Session {
       return false;
     }
     try {
-      return await this.readyAgainAfterLoading(txHash);
+      return await this.readyAgainAfterLoading(actions.loadTransaction(txHash));
     } catch (e) {
       return e;
     }
@@ -242,7 +244,8 @@ export default class Session {
       return false;
     }
     debug("unloading");
-    return await this.dispatch(actions.unloadTransaction());
+    await this._runSaga(sagas.unload);
+    return true;
   }
 
   //Note: count is an optional argument; default behavior is to advance 1
@@ -271,7 +274,7 @@ export default class Session {
     if (!loaded) {
       return;
     }
-    return await this.doneStepping(controller.reset());
+    return await this._runSaga(controllerSagas.reset);
   }
 
   //NOTE: breakpoints is an OPTIONAL argument for if you want to supply your
@@ -304,7 +307,7 @@ export default class Session {
     const definitions = this.view(data.current.identifiers.definitions);
     const refs = this.view(data.current.identifiers.refs);
 
-    return await this._runSaga(decode, definitions[name], refs[name]);
+    return await this._runSaga(dataSagas.decode, definitions[name], refs[name]);
   }
 
   async variables() {
@@ -314,7 +317,7 @@ export default class Session {
     for (let [identifier, ref] of Object.entries(refs)) {
       if (identifier in definitions) {
         decoded[identifier] = await this._runSaga(
-          decode,
+          dataSagas.decode,
           definitions[identifier],
           ref
         );
