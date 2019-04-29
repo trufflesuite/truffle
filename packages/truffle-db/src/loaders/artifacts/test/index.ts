@@ -50,3 +50,39 @@ it("loads create bytecodes", async () => {
 
   expect(bytes).toEqual(Migrations.bytecode);
 });
+
+const GetWorkspaceSource: boolean = gql`
+query GetWorkspaceSource($id: ID!) {
+  workspace {
+    source(id: $id) {
+      id
+      contents
+    }
+  }
+}`;
+
+
+it("loads contract sources", async () => {
+  // arrange
+  const expectedId = generateId({
+    contents: Migrations.source,
+    sourcePath: Migrations.sourcePath
+  });
+  const loader = new ArtifactsLoader(db);
+
+  // act
+  await loader.load();
+
+  // assert
+  const {
+    data: {
+      workspace: {
+        source: {
+          contents
+        }
+      }
+    }
+  } = await db.query(GetWorkspaceSource, { id: expectedId });
+
+  expect(contents).toEqual(Migrations.source);
+});

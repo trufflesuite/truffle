@@ -41,6 +41,41 @@ mutation AddBytecodes($bytecodes: [BytecodeInput!]!) {
   }
 }`;
 
+const GetSource = gql`
+query GetSource($name: String!) {
+  artifacts {
+    contract(name: $name) {
+      sourceContract {
+        source {
+          contents
+          sourcePath
+        }
+      }
+    }
+  }
+}
+`;
+
+const AddSources = gql`
+input SourceInput {
+      contents: String!
+      sourcePath: String
+}
+
+mutation AddSource($sources: [SourceInput!]!) {
+  workspace {
+    sourcesAdd(input: {
+      sources: $sources
+    }) {
+      sources {
+        id
+        contents
+        sourcePath
+      }
+    }
+  }
+}`;
+
 
 
 export class ArtifactsLoader {
@@ -60,6 +95,7 @@ export class ArtifactsLoader {
     } = await this.db.query(GetContractNames);
 
     await this.loadBytecodes(contractNames);
+    await this.loadSources(contractNames);
   }
 
   async loadBytecodes(contractNames: string[]) {
@@ -76,5 +112,21 @@ export class ArtifactsLoader {
     const bytecodes = [...createBytecodes];
 
     await this.db.query(AddBytecodes, { bytecodes });
+  }
+
+  async loadSources(contractNames: string[]) {
+    const contractSources = await Promise.all(contractNames.map(
+      async (name) =>
+        (await this.db.query(GetSource, { name }))
+          .data
+          .artifacts
+          .contract
+          .sourceContract
+          .source
+    ));
+
+    const sources = [...contractSources];
+
+    await this.db.query(AddSources, { sources });
   }
 }
