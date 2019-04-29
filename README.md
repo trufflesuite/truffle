@@ -70,10 +70,10 @@ yarn add <npm-package> [--dev] # Use yarn
 If you'd like to update a dependency to the same version across all packages, you might find [this utility](https://www.npmjs.com/package/lerna-update-wizard) helpful.
 
 *Notes on project branches:*
-+    `master`: Stable, released version (v4)
-+    `beta`: Released beta version (v5.0.0-beta.x)
-+    `develop`: Work targeting stable release (v4)
-+    `next`: Upcoming feature development and most new work (v5)
++    `master`: Stable, released version (v5)
++    `beta`: Released beta version
++    `develop`: Work targeting stable release (v5)
++    `next`: Upcoming feature development and most new work
 
 Please make pull requests against `next` for any substantial changes. Small changes and bugfixes can be considered for `develop`.
 
