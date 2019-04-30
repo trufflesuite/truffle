@@ -5,7 +5,7 @@ const mocha = require("mocha"); // Used as an example of a locally installed mod
 
 describe("Require", function() {
   it("allows internal require statements for globally installed modules", function() {
-    Require.file({
+    const exports = Require.file({
       file: path.join(__dirname, "lib", "module_with_global_require.js")
     });
     // It should export a function. Call the function.
@@ -17,7 +17,7 @@ describe("Require", function() {
   });
 
   it("allows require statements for local files", function() {
-    Require.file({
+    const exports = Require.file({
       file: path.join(__dirname, "lib", "module_with_local_file_require.js")
     });
     // It should export a function, which, since we're using the global require in
@@ -34,7 +34,7 @@ describe("Require", function() {
   });
 
   it("allows require statements for locally install modules (node_modules)", function() {
-    Require.file({
+    const exports = Require.file({
       file: path.join(__dirname, "lib", "module_with_local_module_require.js")
     });
     // It should export a function. Call the function.
