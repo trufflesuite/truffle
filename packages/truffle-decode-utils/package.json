@@ -1,15 +1,18 @@
 {
   "name": "truffle-decode-utils",
-  "version": "1.0.4",
+  "version": "1.0.11",
   "description": "Utilities for decoding data from the EVM",
   "dependencies": {
     "bn.js": "^4.11.8",
     "lodash.clonedeep": "^4.5.0",
-    "web3": "1.0.0-beta.37"
+    "lodash.escaperegexp": "^4.1.2",
+    "web3": "1.0.0-beta.37",
+    "web3-eth-abi": "1.0.0-beta.52"
   },
   "main": "dist/index.js",
   "types": "src/index.ts",
   "scripts": {
+    "prepare": "npm run build",
     "build": "node_modules/.bin/tsc",
     "start": "node_modules/.bin/tsc --watch",
     "test": "echo \"No test specified\" && exit 0;"
@@ -27,6 +30,7 @@
   "devDependencies": {
     "@types/bn.js": "^4.11.2",
     "@types/lodash.clonedeep": "^4.5.4",
+    "@types/lodash.escaperegexp": "^4.1.6",
     "@types/web3": "^1.0.5",
     "typescript": "^3.1.3"
   },

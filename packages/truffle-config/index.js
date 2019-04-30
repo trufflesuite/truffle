@@ -7,8 +7,8 @@ const findUp = require("find-up");
 const originalrequire = require("original-require");
 const Configstore = require("configstore");
 
-const DEFAULT_CONFIG_FILENAME = "truffle.js";
-const BACKUP_CONFIG_FILENAME = "truffle-config.js"; // For Windows + Command Prompt
+const DEFAULT_CONFIG_FILENAME = "truffle-config.js";
+const BACKUP_CONFIG_FILENAME = "truffle.js"; // old config filename
 
 function Config(truffle_directory, working_directory, network) {
   var self = this;
@@ -248,20 +248,6 @@ function Config(truffle_directory, working_directory, network) {
           "Don't set config.timeoutBlocks directly. Instead, set config.networks and then config.networks[<network name>].timeoutBlocks"
         );
       }
-    },
-    skipDryRun: {
-      get: function() {
-        try {
-          return self.network_config.skipDryRun;
-        } catch (e) {
-          return false;
-        }
-      },
-      set: function() {
-        throw new Error(
-          "Don't set config.skipDryRun directly. Instead, set config.networks and then config.networks[<network name>].skipDryRun"
-        );
-      }
     }
   };
 
@@ -327,16 +313,17 @@ Config.prototype.with = function(obj) {
 };
 
 Config.prototype.merge = function(obj) {
-  var self = this;
-  var clone = this.normalize(obj);
+  let clone = this.normalize(obj);
 
   // Only set keys for values that don't throw.
-  Object.keys(obj).forEach(function(key) {
+  const propertyNames = Object.keys(obj);
+
+  propertyNames.forEach(key => {
     try {
-      if (typeof clone[key] === "object" && self._deepCopy.includes(key)) {
-        self[key] = _.merge(self[key], clone[key]);
+      if (typeof clone[key] === "object" && this._deepCopy.includes(key)) {
+        this[key] = _.merge(this[key], clone[key]);
       } else {
-        self[key] = clone[key];
+        this[key] = clone[key];
       }
     } catch (e) {
       // Do nothing.
@@ -349,36 +336,52 @@ Config.prototype.merge = function(obj) {
 Config.default = () => new Config();
 
 Config.search = (options = {}, filename) => {
-  let search;
-
-  !filename
-    ? (search = [DEFAULT_CONFIG_FILENAME, BACKUP_CONFIG_FILENAME])
-    : (search = filename);
-
-  return findUp.sync(search, {
+  const searchOptions = {
     cwd: options.working_directory || options.workingDirectory
-  });
+  };
+
+  if (!filename) {
+    const isWin = /^win/.test(process.platform);
+    const defaultConfig = findUp.sync(DEFAULT_CONFIG_FILENAME, searchOptions);
+    const backupConfig = findUp.sync(BACKUP_CONFIG_FILENAME, searchOptions);
+    if (defaultConfig && backupConfig) {
+      console.warn(
+        `Warning: Both ${DEFAULT_CONFIG_FILENAME} and ${BACKUP_CONFIG_FILENAME} were found. Using ${DEFAULT_CONFIG_FILENAME}.`
+      );
+      return defaultConfig;
+    } else if (backupConfig && !defaultConfig) {
+      if (isWin)
+        console.warn(
+          `Warning: Please rename ${BACKUP_CONFIG_FILENAME} to ${DEFAULT_CONFIG_FILENAME} to ensure Windows compatibility.`
+        );
+      return backupConfig;
+    } else {
+      return defaultConfig;
+    }
+  }
+
+  return findUp.sync(filename, searchOptions);
 };
 
 Config.detect = (options = {}, filename) => {
-  const file = Config.search(options, filename);
+  const configFile = Config.search(options, filename);
 
-  if (file === null) {
+  if (!configFile) {
     throw new TruffleError("Could not find suitable configuration file.");
   }
 
-  return Config.load(file, options);
+  return Config.load(configFile, options);
 };
 
 Config.load = function(file, options) {
-  var config = new Config();
+  const config = new Config();
 
   config.working_directory = path.dirname(path.resolve(file));
 
   // The require-nocache module used to do this for us, but
   // it doesn't bundle very well. So we've pulled it out ourselves.
   delete require.cache[Module._resolveFilename(file, module)];
-  var static_config = originalrequire(file);
+  const static_config = originalrequire(file);
 
   config.merge(static_config);
   config.merge(options);

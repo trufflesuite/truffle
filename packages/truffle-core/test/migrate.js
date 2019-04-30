@@ -219,43 +219,33 @@ describe("migrate", function() {
     });
   });
 
-  it("should ignore files that don't start with a number", function(done) {
+  it("should ignore files that don't start with a number", () => {
     fs.writeFileSync(
       path.join(config.migrations_directory, "~2_deploy_contracts.js"),
       "module.exports = function() {};",
       "utf8"
     );
 
-    Migrate.assemble(config, function(err, migrations) {
-      if (err) return done(err);
-
-      assert.equal(
-        migrations.length,
-        2,
-        "~2_deploy_contracts.js should have been ignored!"
-      );
-
-      done();
-    });
+    const migrations = Migrate.assemble(config);
+    assert.equal(
+      migrations.length,
+      2,
+      "~2_deploy_contracts.js should have been ignored!"
+    );
   });
 
-  it("should ignore non-js extensions", function(done) {
+  it("should ignore non-js extensions", () => {
     fs.writeFileSync(
       path.join(config.migrations_directory, "2_deploy_contracts.js~"),
       "module.exports = function() {};",
       "utf8"
     );
 
-    Migrate.assemble(config, function(err, migrations) {
-      if (err) return done(err);
-
-      assert.equal(
-        migrations.length,
-        2,
-        "2_deploy_contracts.js~ should have been ignored!"
-      );
-
-      done();
-    });
+    const migrations = Migrate.assemble(config);
+    assert.equal(
+      migrations.length,
+      2,
+      "2_deploy_contracts.js~ should have been ignored!"
+    );
   });
 });

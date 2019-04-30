@@ -15,11 +15,14 @@ class LoadingStrategy {
     };
     this.config = Object.assign({}, defaultConfig, options);
 
-    const compilerCachePath = path.resolve(
+    const compilersDir = path.resolve(
       Config.getTruffleDataDirectory(),
       "compilers"
     );
-    if (!fs.existsSync(compilerCachePath)) fs.mkdirSync(compilerCachePath);
+    const compilerCachePath = path.resolve(compilersDir, "node_modules"); // because babel binds to require & does weird things
+    if (!fs.existsSync(compilersDir)) fs.mkdirSync(compilersDir);
+    if (!fs.existsSync(compilerCachePath)) fs.mkdirSync(compilerCachePath); // for 5.0.8 users
+
     this.compilerCachePath = compilerCachePath;
   }
 

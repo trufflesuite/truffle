@@ -1,19 +1,21 @@
-const TruffleConfig = require('truffle-config');
-const Logger = require('./logDecorator');
-const getTruffleConfig = require('./getTruffleConfig');
+const TruffleConfig = require("truffle-config");
+const Logger = require("./logDecorator");
+const getTruffleConfig = require("./getTruffleConfig");
 
-const genBuildOptions = function (buildOpts) {
+const genBuildOptions = buildOpts => {
   if (!buildOpts.network) {
-    throw new Error('You must specify the network name to deploy to. (network)');
+    throw new Error(
+      "You must specify the network name to deploy to. (network)"
+    );
   }
 
-  var truffleConfig = getTruffleConfig();
-  if (truffleConfig) {
-    var config = TruffleConfig.load(truffleConfig, buildOpts);
-  } else {
-    throw new Error('No Truffle Config file found!');
+  const truffleConfig = getTruffleConfig();
+
+  if (!truffleConfig) {
+    throw new Error("No Truffle Config file found!");
   }
 
+  const config = TruffleConfig.load(truffleConfig, buildOpts);
   config.reset = true; // TODO make this configurable
   config.logger = Logger; // NOTE: this will be used within truffle
   return config;

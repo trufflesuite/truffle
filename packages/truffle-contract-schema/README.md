@@ -5,7 +5,7 @@
 | JSON Schema | [contract-object.spec.json](spec/contract-object.spec.json) |
 
 
-[truffle-contract](https://github.com/trufflesuite/truffle-contract) uses a
+[truffle-contract](https://github.com/trufflesuite/truffle/tree/develop/packages/truffle-contract) uses a
 formally specified<sup>[1](#footnote-1)</sup> JSON object format to represent
 Ethereum Virtual Machine (EVM) smart contracts. This representation is intended
 to facilitate the use of general purpose smart contract abstractions

@@ -3,6 +3,7 @@ var dir = require("node-dir");
 var path = require("path");
 var async = require("async");
 var debug = require("debug")("lib:debug");
+var BN = require("bn.js");
 
 var commandReference = {
   "o": "step over",
@@ -16,7 +17,7 @@ var commandReference = {
   ":": "evaluate expression - see `v`",
   "+": "add watch expression (`+:<expr>`)",
   "-": "remove watch expression (-:<expr>)",
-  "?": "list existing watch expressions",
+  "?": "list existing watch expressions and breakpoints",
   "b": "add breakpoint",
   "B": "remove breakpoint",
   "c": "continue until breakpoint",
@@ -64,6 +65,7 @@ var DebugUtils = {
                   sourceMap: contract.sourceMap,
                   sourcePath: contract.sourcePath,
                   binary: contract.binary,
+                  abi: contract.abi,
                   ast: contract.ast,
                   deployedBinary: contract.deployedBinary,
                   deployedSourceMap: contract.deployedSourceMap,
@@ -237,6 +239,29 @@ var DebugUtils = {
     return allLines.join(OS.EOL);
   },
 
+  formatBreakpointLocation: function(
+    breakpoint,
+    here,
+    currentSourceId,
+    sourceNames
+  ) {
+    let baseMessage;
+    if (breakpoint.node !== undefined) {
+      baseMessage = here
+        ? `this point in line ${breakpoint.line + 1}`
+        : `a point in line ${breakpoint.line + 1}`;
+      //note we always add 1 to adjust for zero-indexing
+    } else {
+      baseMessage = `line ${breakpoint.line + 1}`;
+    }
+    if (breakpoint.sourceId !== currentSourceId) {
+      let sourceName = sourceNames[breakpoint.sourceId];
+      return baseMessage + ` in ${sourceName}`;
+    } else {
+      return baseMessage;
+    }
+  },
+
   formatInstruction: function(traceIndex, traceLength, instruction) {
     return (
       "(" +
@@ -248,6 +273,14 @@ var DebugUtils = {
       " " +
       (instruction.pushData || "")
     );
+  },
+
+  formatPC: function(pc) {
+    let hex = pc.toString(16);
+    if (hex.length % 2 !== 0) {
+      hex = "0" + hex; //ensure even length
+    }
+    return "  PC = " + pc.toString() + " = 0x" + hex;
   },
 
   formatStack: function(stack) {
@@ -265,6 +298,114 @@ var DebugUtils = {
     }
 
     return formatted.join(OS.EOL);
+  },
+
+  //HACK
+  cleanConstructors: function(object) {
+    debug("object %o", object);
+
+    if (object && typeof object.map === "function") {
+      //array case
+      return object.map(DebugUtils.cleanConstructors);
+    }
+
+    if (object && object instanceof Map) {
+      //map case
+      return new Map(
+        Array.from(object.entries()).map(([key, value]) => [
+          key,
+          DebugUtils.cleanConstructors(value)
+        ])
+      );
+    }
+
+    //HACK -- due to safeEval altering things, it's possible for isBN() to
+    //throw an error here
+    try {
+      //we do not want to alter BNs!
+      //(or other special objects, but that's just BNs right now)
+      if (BN.isBN(object)) {
+        return object;
+      }
+    } catch (e) {
+      //if isBN threw an error, it's not a BN, so move on
+    }
+
+    if (object && typeof object === "object") {
+      //generic object case
+      return Object.assign(
+        {},
+        ...Object.entries(object)
+          .filter(
+            ([key, value]) => key !== "constructor" || value !== undefined
+          )
+          .map(([key, value]) => ({
+            [key]: DebugUtils.cleanConstructors(value)
+          }))
+      );
+    }
+
+    //for strings, numbers, etc
+    return object;
+  },
+
+  //HACK
+  cleanThis: function(variables, replacement) {
+    return Object.assign(
+      {},
+      ...Object.entries(variables).map(
+        ([variable, value]) =>
+          variable === "this" ? { [replacement]: value } : { [variable]: value }
+      )
+    );
+  },
+
+  //HACK
+  //replace maps with objects (POJSOs?) and BNs with numbers
+  //May cause errors if BNs are too big!  But I think this is the right
+  //tradeoff for now; note this is only used when dealing with *expressions*,
+  //not individual variables (it's used so you can add and index and etc like
+  //you would in Solidity)
+  nativize: function(object) {
+    if (object && typeof object.map === "function") {
+      //array case
+      return object.map(DebugUtils.nativize);
+    }
+
+    if (object && object instanceof Map) {
+      //map case
+      //HACK -- we apply toString() to all the keys; due to JS's use of weak
+      //comparison for indexing, this should still work
+      return Object.assign(
+        {},
+        ...Array.from(object.entries()).map(([key, value]) => ({
+          [key.toString()]: DebugUtils.nativize(value)
+        }))
+      );
+    }
+
+    //HACK -- due to safeEval altering things, it's possible for isBN() to
+    //throw an error here
+    try {
+      if (BN.isBN(object)) {
+        return object.toNumber();
+      }
+    } catch (e) {
+      //if isBN threw an error, it's not a BN, so move on
+    }
+
+    if (object && typeof object === "object") {
+      //generic object case
+      return Object.assign(
+        {},
+        ...Object.entries(object).map(([key, value]) => ({
+          [key]: DebugUtils.nativize(value)
+        }))
+      );
+    }
+
+    //default case for strings, numbers, etc
+    return object;
   }
 };
 

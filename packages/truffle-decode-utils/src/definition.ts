@@ -12,6 +12,10 @@ export namespace Definition {
     return definition.typeDescriptions.typeIdentifier;
   }
 
+  export function typeString(definition: AstDefinition): string {
+    return definition.typeDescriptions.typeString;
+  }
+
   /**
    * returns basic type class for a variable definition node
    * e.g.:
@@ -107,18 +111,8 @@ export namespace Definition {
     return typeIdentifier(definition).match(/^t_enum/) != null;
   }
 
-  export function isContract(definition: AstDefinition): boolean {
-    return typeIdentifier(definition).match(/^t_contract/) != null;
-  }
-
   export function isReference(definition: AstDefinition): boolean {
     return typeIdentifier(definition).match(/_(memory|storage|calldata)(_ptr)?$/) != null;
-  }
-
-  export function isContractType(definition: AstDefinition): boolean {
-    // checks whether the given node is a contract *type*, rather than whether
-    // it's a contract
-    return typeIdentifier(definition).match(/^t_type\$_t_contract/) != null;
   }
 
   //note: only use this on things already verified to be references
@@ -281,4 +275,91 @@ export namespace Definition {
         debug("unrecognized index access!");
     }
   }
+
+  //spoofed definitions we'll need
+  //we'll give them id -1 to indicate that they're spoofed
+
+  //id, name, nodeType, typeDescriptions.typeIdentifier
+  export function spoofUintDefinition(name: string): AstDefinition {
+    return {
+      id: -1,
+      name,
+      nodeType: "VariableDeclaration",
+      typeDescriptions: {
+        typeIdentifier: "t_uint256"
+      }
+    };
+  }
+
+  export function spoofAddressPayableDefinition(name: string): AstDefinition {
+    return {
+      id: -1,
+      name,
+      nodeType: "VariableDeclaration",
+      typeDescriptions: {
+        typeIdentifier: "t_address_payable"
+      }
+    };
+  }
+
+  export const MSG_SIG_DEFINITION: AstDefinition = {
+    id: -1,
+    name: "sig",
+    nodeType: "VariableDeclaration",
+    typeDescriptions: {
+      typeIdentifier: "t_bytes" + EVMUtils.SELECTOR_SIZE
+    }
+  };
+
+  export const MSG_DATA_DEFINITION: AstDefinition = {
+    id: -1,
+    name: "data",
+    nodeType: "VariableDeclaration",
+    typeDescriptions: {
+      typeIdentifier: "t_bytes_calldata_ptr"
+    }
+  };
+
+  export const MSG_DEFINITION: AstDefinition = {
+    id: -1,
+    name: "msg",
+    nodeType: "VariableDeclaration",
+    typeDescriptions: {
+      typeIdentifier: "t_magic_message"
+    }
+  };
+
+  export const TX_DEFINITION: AstDefinition = {
+    id: -1,
+    name: "tx",
+    nodeType: "VariableDeclaration",
+    typeDescriptions: {
+      typeIdentifier: "t_magic_transaction"
+    }
+  };
+
+  export const BLOCK_DEFINITION: AstDefinition = {
+    id: -1,
+    name: "block",
+    nodeType: "VariableDeclaration",
+    typeDescriptions: {
+      typeIdentifier: "t_magic_block"
+    }
+  };
+
+  export function spoofThisDefinition(contractName: string, contractId: number): AstDefinition {
+    let formattedName = contractName.replace(/\$/g, "$$".repeat(3));
+    //note that string.replace treats $'s specially in the replacement string;
+    //we want 3 $'s for each $ in the input, so we need to put *6* $'s in the
+    //replacement string
+    return {
+      id: -1,
+      name: "this",
+      nodeType: "VariableDeclaration",
+      typeDescriptions: {
+        typeIdentifier: "t_contract$_" + formattedName + "_$" + contractId
+      }
+    }
+  }
+
 }

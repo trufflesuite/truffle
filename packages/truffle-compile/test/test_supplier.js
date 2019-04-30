@@ -125,7 +125,7 @@ describe("CompilerSupplier", function() {
 
       const compilerCacheDirectory = path.resolve(
         Config.getTruffleDataDirectory(),
-        "compilers"
+        "compilers/node_modules"
       );
       const expectedCache = path.resolve(
         compilerCacheDirectory,

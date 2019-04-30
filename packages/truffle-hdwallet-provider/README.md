@@ -10,6 +10,7 @@ $ npm install truffle-hdwallet-provider
 ## Requirements
 ```
 Node >= 7.6
+Web3 1.0.0-beta.37
 ```
 
 ## General Usage
@@ -17,15 +18,23 @@ Node >= 7.6
 You can use this provider wherever a Web3 provider is needed, not just in Truffle. For Truffle-specific usage, see next section.
 
 ```javascript
-var HDWalletProvider = require("truffle-hdwallet-provider");
-var mnemonic = "mountains supernatural bird..."; // 12 word mnemonic
-var provider = new HDWalletProvider(mnemonic, "http://localhost:8545");
+const HDWalletProvider = require("truffle-hdwallet-provider");
+const Web3 = require("web3");
+const mnemonic = "mountains supernatural bird..."; // 12 word mnemonic
+let provider = new HDWalletProvider(mnemonic, "http://localhost:8545");
 
 // Or, alternatively pass in a zero-based address index.
-var provider = new HDWalletProvider(mnemonic, "http://localhost:8545", 5);
+provider = new HDWalletProvider(mnemonic, "http://localhost:8545", 5);
 
 // Or, use your own hierarchical derivation path
-var provider = new HDWalletProvider(mnemonic, "http://localhost:8545", 5, 1, "m/44'/137'/0'/0/");
+provider = new HDWalletProvider(mnemonic, "http://localhost:8545", 5, 1, "m/44'/137'/0'/0/");
+
+
+// HDWalletProvider is compatible with Web3. Use it at Web3 constructor, just like any other Web3 Provider
+const web3 = new Web3(provider);
+
+// Or, if web3 is alreay initialized, you can call the 'setProvider' on web3, web3.eth, web3.shh and/or web3.bzz
+web3.setProvider(provider)
 
 // ...
 // Write your code here.
@@ -54,16 +63,16 @@ Parameters:
 Instead of a mnemonic, you can alternatively provide a private key or array of private keys as the first parameter. When providing an array, `address_index` and `num_addresses` are fully supported.
 
 ```javascript
-var HDWalletProvider = require("truffle-hdwallet-provider");
+const HDWalletProvider = require("truffle-hdwallet-provider");
 //load single private key as string
-var provider = new HDWalletProvider("3f841bf589fdf83a521e55d51afddc34fa65351161eead24f064855fc29c9580", "http://localhost:8545");
+let provider = new HDWalletProvider("3f841bf589fdf83a521e55d51afddc34fa65351161eead24f064855fc29c9580", "http://localhost:8545");
 
 // Or, pass an array of private keys, and optionally use a certain subset of addresses
-var privateKeys = [
+const privateKeys = [
   "3f841bf589fdf83a521e55d51afddc34fa65351161eead24f064855fc29c9580",
   "9549f39decea7b7504e15572b2c6a72766df0281cea22bd1a3bc87166b1ca290",
 ];
-var provider = new HDWalletProvider(privateKeys, "http://localhost:8545", 0, 2); //start at address_index 0 and load both addresses
+provider = new HDWalletProvider(privateKeys, "http://localhost:8545", 0, 2); //start at address_index 0 and load both addresses
 ```
 **NOTE: This is just an example. NEVER hard code production/mainnet private keys in your code or commit them to git. They should always be loaded from environment variables or a secure secret management system.**
 
@@ -73,9 +82,9 @@ You can easily use this within a Truffle configuration. For instance:
 
 truffle-config.js
 ```javascript
-var HDWalletProvider = require("truffle-hdwallet-provider");
+const HDWalletProvider = require("truffle-hdwallet-provider");
 
-var mnemonic = "mountains supernatural bird ...";
+const mnemonic = "mountains supernatural bird ...";
 
 module.exports = {
   networks: {
@@ -87,7 +96,7 @@ module.exports = {
     ropsten: {
       // must be a thunk, otherwise truffle commands may hang in CI
       provider: () =>
-        new HDWalletProvider(mnemonic, "https://ropsten.infura.io/"),
+        new HDWalletProvider(mnemonic, "https://ropsten.infura.io/v3/YOUR-PROJECT-ID"),
       network_id: '3',
     }
   }

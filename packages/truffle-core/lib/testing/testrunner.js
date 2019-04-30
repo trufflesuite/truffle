@@ -37,7 +37,7 @@ function TestRunner(options = {}) {
   this.currentTestStartBlock = null;
 
   this.BEFORE_TIMEOUT = 120000;
-  this.TEST_TIMEOUT = 300000;
+  this.TEST_TIMEOUT = (options.mocha && options.mocha.timeout) || 300000;
 }
 
 TestRunner.prototype.initialize = function(callback) {

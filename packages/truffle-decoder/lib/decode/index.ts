@@ -4,51 +4,50 @@ const debug = debugModule("decoder:decode");
 import decodeValue from "./value";
 import decodeMemory from "./memory";
 import decodeStorage from "./storage";
-import { decodeStack, decodeLiteral } from "./stack";
+import decodeStack from "./stack";
+import { decodeLiteral } from "./stack";
 import decodeCalldata from "./calldata";
 import decodeConstant from "./constant";
+import decodeSpecial from "./special";
 import { AstDefinition } from "truffle-decode-utils";
 import * as Pointer from "../types/pointer";
 import { EvmInfo } from "../types/evm";
-import Web3 from "web3";
+import { DecoderRequest } from "../types/request";
 
-export default async function decode(definition: AstDefinition, pointer: Pointer.DataPointer, info: EvmInfo, web3?: Web3, contractAddress?: string): Promise<any> {
+export default function* decode(definition: AstDefinition, pointer: Pointer.DataPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
   debug("Decoding %s", definition.name);
   debug("pointer %O", pointer);
 
   if(Pointer.isStoragePointer(pointer)) {
-    return await decodeStorage(definition, pointer, info, web3, contractAddress)
+    return yield* decodeStorage(definition, pointer, info)
   }
 
   if(Pointer.isStackPointer(pointer)) {
-    return await decodeStack(definition, pointer, info, web3, contractAddress);
-    //stack may contain pointer to storage so may need web3 & contractAddress
+    return yield* decodeStack(definition, pointer, info);
   }
 
   if (Pointer.isStackLiteralPointer(pointer)) {
-    return await decodeLiteral(definition, pointer, info, web3, contractAddress);
-    //literal may contain pointer to storage so may need web3 & contractAddress
+    return yield* decodeLiteral(definition, pointer, info);
   }
 
   if(Pointer.isConstantDefinitionPointer(pointer)) {
-    return await decodeConstant(definition, pointer, info);
+    return yield* decodeConstant(definition, pointer, info);
     //I'd like to just use decodeValue, but unfortunately there are some special
     //cases to deal with
+  }
+
+  if(Pointer.isSpecialPointer(pointer)) {
+    return yield* decodeSpecial(definition, pointer, info);
   }
 
   //NOTE: the following two cases shouldn't come up but they've been left in as
   //fallback cases
 
   if(Pointer.isMemoryPointer(pointer)) {
-    return await decodeMemory(definition, pointer, info);
-    //memory does not need web3 & contractAddress
+    return yield* decodeMemory(definition, pointer, info);
   }
 
   if(Pointer.isCalldataPointer(pointer)) {
-    return await decodeCalldata(definition, pointer, info);
-    //calldata does not need web3 & contractAddress
+    return yield* decodeCalldata(definition, pointer, info);
   }
-
-
-  //the type system means we can't hit this point!
 }

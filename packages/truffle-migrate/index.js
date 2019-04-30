@@ -22,34 +22,31 @@ const Migrate = {
     return Migrate.reporter.acceptDryRun();
   },
 
-  assemble: function(options, callback) {
-    var config = Config.detect(options);
-    dir.files(options.migrations_directory, function(err, files) {
-      if (err) return callback(err);
+  assemble: function(options) {
+    const config = Config.detect(options);
 
-      options.allowed_extensions = config.migrations_file_extension_regexp;
+    const files = dir.files(options.migrations_directory, { sync: true });
 
-      let migrations = files
-        .filter(file => isNaN(parseInt(path.basename(file))) === false)
-        .filter(
-          file => path.extname(file).match(options.allowed_extensions) != null
-        )
-        .map(file => new Migration(file, Migrate.reporter, options));
+    options.allowed_extensions = config.migrations_file_extension_regexp;
 
-      // Make sure to sort the prefixes as numbers and not strings.
-      migrations = migrations.sort((a, b) => {
-        if (a.number > b.number) return 1;
-        if (a.number < b.number) return -1;
-        return 0;
-      });
+    let migrations = files
+      .filter(file => isNaN(parseInt(path.basename(file))) === false)
+      .filter(
+        file => path.extname(file).match(options.allowed_extensions) != null
+      )
+      .map(file => new Migration(file, Migrate.reporter, options));
 
-      callback(null, migrations);
+    // Make sure to sort the prefixes as numbers and not strings.
+    migrations = migrations.sort((a, b) => {
+      if (a.number > b.number) return 1;
+      if (a.number < b.number) return -1;
+      return 0;
     });
+
+    return migrations;
   },
 
   run: function(options, callback) {
-    const self = this;
-
     expect.options(options, [
       "working_directory",
       "migrations_directory",
@@ -64,56 +61,52 @@ const Migrate = {
     ]);
 
     if (options.reset === true) {
-      return this.runAll(options, callback);
+      return this.runAll(options)
+        .then(() => {
+          callback();
+        })
+        .catch(callback);
     }
 
-    self.lastCompletedMigration(options, function(err, last_migration) {
-      if (err) return callback(err);
-
-      // Don't rerun the last completed migration.
-      self.runFrom(last_migration + 1, options, callback);
-    });
+    return this.lastCompletedMigration(options)
+      .then(lastMigration => {
+        // Don't rerun the last completed migration.
+        return this.runFrom(lastMigration + 1, options);
+      })
+      .then(callback)
+      .catch(callback);
   },
 
-  runFrom: function(number, options, callback) {
-    const self = this;
+  runFrom: async function(number, options) {
+    const migrations = this.assemble(options);
+    while (migrations.length > 0) {
+      if (migrations[0].number >= number) break;
+      migrations.shift();
+    }
 
-    this.assemble(options, function(err, migrations) {
-      if (err) return callback(err);
+    if (options.to) {
+      migrations = migrations.filter(
+        migration => migration.number <= options.to
+      );
+    }
 
-      while (migrations.length > 0) {
-        if (migrations[0].number >= number) break;
-        migrations.shift();
-      }
-
-      if (options.to) {
-        migrations = migrations.filter(
-          migration => migration.number <= options.to
-        );
-      }
-
-      self.runMigrations(migrations, options, callback);
-    });
+    return await this.runMigrations(migrations, options);
   },
 
-  runAll: function(options, callback) {
-    this.runFrom(0, options, callback);
+  runAll: async function(options) {
+    return await this.runFrom(0, options);
   },
 
-  runMigrations: function(migrations, options, callback) {
+  runMigrations: function(migrations, options) {
     // Perform a shallow clone of the options object
     // so that we can override the provider option without
     // changing the original options object passed in.
     const clone = {};
 
-    Object.keys(options).forEach(function(key) {
-      clone[key] = options[key];
-    });
+    Object.keys(options).forEach(key => (clone[key] = options[key]));
 
     if (options.quiet) {
-      clone.logger = {
-        log: function() {}
-      };
+      clone.logger = { log: function() {} };
     }
 
     clone.provider = this.wrapProvider(options.provider, clone.logger);
@@ -126,16 +119,21 @@ const Migrate = {
       migrations[total - 1].isLast = true;
     }
 
-    async.eachSeries(
-      migrations,
-      function(migration, finished) {
-        migration.run(clone, function(err) {
-          if (err) return finished(err);
-          finished();
-        });
-      },
-      callback
-    );
+    return new Promise((resolve, reject) => {
+      return async.eachSeries(
+        migrations,
+        (migration, finished) => {
+          migration.run(clone, error => {
+            if (error) return finished(error);
+            finished();
+          });
+        },
+        error => {
+          if (error) return reject(error);
+          return resolve();
+        }
+      );
+    });
   },
 
   wrapProvider: function(provider) {
@@ -159,56 +157,65 @@ const Migrate = {
     };
   },
 
-  lastCompletedMigration: function(options, callback) {
+  lastCompletedMigration: async function(options) {
     let Migrations;
 
     try {
       Migrations = options.resolver.require("Migrations");
-    } catch (e) {
-      const message = `Could not find built Migrations contract: ${e.message}`;
-      return callback(new Error(message));
+    } catch (error) {
+      const message = `Could not find built Migrations contract: ${
+        error.message
+      }`;
+      throw new Error(message);
     }
 
-    if (Migrations.isDeployed() === false) {
-      return callback(null, 0);
-    }
+    if (Migrations.isDeployed() === false) return 0;
 
-    Migrations.deployed()
-      .then(function(migrations) {
-        // Two possible Migrations.sol's (lintable/unlintable)
-        return migrations.last_completed_migration
-          ? migrations.last_completed_migration.call()
-          : migrations.lastCompletedMigration.call();
-      })
-      .then(function(completed_migration) {
-        callback(null, parseInt(completed_migration));
-      })
-      .catch(callback);
+    const migrationsOnChain = async (migrationsAddress, callback) => {
+      return (
+        (await Migrations.web3.eth.getCode(migrationsAddress, callback)) !==
+        "0x"
+      );
+    };
+
+    // Two possible Migrations.sol's (lintable/unlintable)
+    const lastCompletedMigration = migrationsInstance => {
+      try {
+        return migrationsInstance.last_completed_migration.call();
+      } catch (error) {
+        if (error instanceof TypeError)
+          return migrationsInstance.lastCompletedMigration.call();
+        throw new Error(error);
+      }
+    };
+
+    const migrations = await Migrations.deployed();
+    let completedMigration;
+    if (await migrationsOnChain(migrations.address)) {
+      completedMigration = await lastCompletedMigration(migrations);
+    } else {
+      completedMigration = 0;
+    }
+    return parseInt(completedMigration);
   },
 
-  needsMigrating: function(options, callback) {
-    const self = this;
+  needsMigrating: function(options) {
+    return new Promise((resolve, reject) => {
+      if (options.reset === true) return resolve(true);
 
-    if (options.reset === true) {
-      return callback(null, true);
-    }
+      return this.lastCompletedMigration(options)
+        .then(number => {
+          const migrations = this.assemble(options);
+          while (migrations.length > 0) {
+            if (migrations[0].number >= number) break;
+            migrations.shift();
+          }
 
-    this.lastCompletedMigration(options, function(err, number) {
-      if (err) return callback(err);
-
-      self.assemble(options, function(err, migrations) {
-        if (err) return callback(err);
-
-        while (migrations.length > 0) {
-          if (migrations[0].number >= number) break;
-          migrations.shift();
-        }
-
-        callback(
-          null,
-          migrations.length > 1 || (migrations.length && number === 0)
-        );
-      });
+          return resolve(
+            migrations.length > 1 || (migrations.length && number === 0)
+          );
+        })
+        .catch(error => reject(error));
     });
   }
 };
