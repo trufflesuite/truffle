@@ -11,7 +11,7 @@
   "author": "g. nicholas d'andrea <gnidan@users.noreply.github.com>",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
   "license": "MIT",
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
   "directories": {
     "dist": "dist"
   },
@@ -88,6 +88,6 @@
     ]
   },
   "_moduleAliases": {
-    "truffle-db": "truffle-db/dist"
+    "truffle-db": "truffle-db/dist/src"
   }
 }
