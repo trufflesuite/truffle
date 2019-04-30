@@ -13,7 +13,7 @@ const Web3Shim = require("truffle-interface-adapter").Web3Shim;
 // options.context: Object containing any global variables you'd like set when this
 //   function is run.
 const Require = {
-  file: async options => {
+  file: options => {
     let source;
     const file = options.file;
 
@@ -108,17 +108,16 @@ const Require = {
       networkType: options.networks[options.network].type
     });
 
-    this.file({
-      file: options.file,
-      context: { web3 },
-      resolver: options.resolver
-    })
-      .then(fn => {
-        fn(done);
-      })
-      .done(error => {
-        done(error);
+    try {
+      const fn = this.file({
+        file: options.file,
+        context: { web3 },
+        resolver: options.resolver
       });
+      fn(done);
+    } catch (error) {
+      done(error);
+    }
   }
 };
 

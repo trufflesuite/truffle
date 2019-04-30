@@ -39,7 +39,7 @@ class Migration {
         args: [deployer]
       };
 
-      const fn = await Require.file(requireOptions);
+      const fn = Require.file(requireOptions);
 
       const unRunnable = !fn || !fn.length || fn.length == 0;
 
