@@ -33,7 +33,7 @@ class Migration {
     try {
       const accounts = await context.web3.eth.getAccounts();
       const requireOptions = {
-        file: self.file,
+        file: this.file,
         context: context,
         resolver: resolver,
         args: [deployer]
@@ -45,7 +45,7 @@ class Migration {
 
       if (unRunnable) {
         const msg = `Migration ${
-          self.file
+          this.file
         } invalid or does not take any parameters`;
         return callback(new Error(msg));
       }
@@ -53,7 +53,7 @@ class Migration {
       // `migrateFn` might be sync or async. We negotiate that difference in
       // `execute` through the deployer API.
       const migrateFn = fn(deployer, options.network, accounts);
-      await self._deploy(options, deployer, resolver, migrateFn, callback);
+      await this._deploy(options, deployer, resolver, migrateFn, callback);
     } catch (err) {
       callback(err);
     }
@@ -211,27 +211,21 @@ class Migration {
         web3.eth.getAccounts((err, accounts) => {
           if (err) return reject(err);
 
-          Require.file(
-            {
-              file: self.file,
-              context: context,
-              resolver: resolver,
-              args: [deployer]
-            },
-            (err, fn) => {
-              if (!fn || !fn.length || fn.length == 0) {
-                return reject(
-                  new Error(
-                    "Migration " +
-                      self.file +
-                      " invalid or does not take any parameters"
-                  )
-                );
-              }
-              fn(deployer, options.network, accounts);
-              resolve(finish());
-            }
-          );
+          const fn = Require.file({
+            file: self.file,
+            context: context,
+            resolver: resolver,
+            args: [deployer]
+          });
+
+          if (!fn || !fn.length || fn.length == 0) {
+            const message = `Migration ${
+              self.file
+            } invalid or does not take any parameters`;
+            return reject(new Error(message));
+          }
+          fn(deployer, options.network, accounts);
+          resolve(finish());
         });
       });
     };
