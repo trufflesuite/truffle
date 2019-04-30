@@ -311,6 +311,9 @@ export default class Session {
   }
 
   async variables() {
+    if (!this.view(session.status.loaded)) {
+      return {};
+    }
     let definitions = this.view(data.current.identifiers.definitions);
     let refs = this.view(data.current.identifiers.refs);
     let decoded = {};

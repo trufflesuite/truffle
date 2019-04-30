@@ -846,9 +846,7 @@ var command = {
                 printBreakpoints();
                 break;
               case "v":
-                if (session.view(selectors.session.status.loaded)) {
-                  await printVariables();
-                }
+                await printVariables();
                 break;
               case ":":
                 watchExpressionAnalytics(cmdArgs);
