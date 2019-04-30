@@ -60,7 +60,7 @@ npm install -g yarn
 yarn bootstrap
 
 # Test
-npm test
+yarn test
 
 # Adding dependencies to a package
 cd packages/<truffle-package>
