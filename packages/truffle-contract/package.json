@@ -1,29 +1,23 @@
 {
   "name": "truffle-contract",
-  "version": "4.0.13",
   "description": "A better contract abstraction for Ethereum (formerly EtherPudding)",
+  "license": "MIT",
+  "author": "Tim Coulter <tim.coulter@consensys.net>",
+  "homepage": "https://github.com/trufflesuite/truffle-contract#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-contract",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle-contract/issues"
+  },
+  "version": "4.0.13",
   "main": "index.js",
   "scripts": {
+    "compile": "mkdir -p dist && browserify ./index.js -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js",
     "prepare": "npm run compile",
     "publish:next": "node ../truffle/scripts/prereleaseVersion.js next next",
     "test": "./scripts/test.sh",
     "test:debug": "$(npm bin)/mocha --inspect-brk",
-    "test:trace": "$(npm bin)/mocha --trace-warnings",
-    "compile": "mkdir -p dist && browserify ./index.js -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js"
+    "test:trace": "$(npm bin)/mocha --trace-warnings"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-contract",
-  "keywords": [
-    "ethereum",
-    "truffle",
-    "contract",
-    "abstraction"
-  ],
-  "author": "Tim Coulter <tim.coulter@consensys.net>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-contract/issues"
-  },
-  "homepage": "https://github.com/trufflesuite/truffle-contract#readme",
   "dependencies": {
     "bignumber.js": "^7.2.1",
     "ethers": "^4.0.0-beta.1",
@@ -31,7 +25,7 @@
     "truffle-contract-schema": "^3.0.8",
     "truffle-error": "^0.0.4",
     "truffle-interface-adapter": "^0.1.3",
-    "web3": "1.0.0-beta.37",
+    "web3": "1.0.0-beta.53",
     "web3-core-promievent": "1.0.0-beta.37",
     "web3-eth-abi": "1.0.0-beta.37",
     "web3-utils": "1.0.0-beta.37"
@@ -51,6 +45,12 @@
     "truffle-compile": "^4.0.12",
     "uglify-es": "^3.3.9"
   },
+  "keywords": [
+    "abstraction",
+    "contract",
+    "ethereum",
+    "truffle"
+  ],
   "publishConfig": {
     "access": "public"
   },

@@ -1,22 +1,26 @@
 {
   "name": "truffle-interface-adapter",
-  "version": "0.1.3",
   "description": "A library that provides an adapter layer for Truffle to interace with different types of networks/ledgers.",
+  "license": "MIT",
+  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-interface-adapter",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "0.1.3",
   "main": "dist/index.js",
   "directories": {
     "lib": "lib"
   },
   "scripts": {
     "build": "node_modules/.bin/tsc",
-    "test": "mocha --exit -r ts-node/register test/**/*.test.ts",
-    "prepare": "yarn build"
+    "prepare": "yarn build",
+    "test": "mocha --exit -r ts-node/register test/**/*.test.ts"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-interface-adapter",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle/issues"
+  "dependencies": {
+    "bn.js": "^4.11.8",
+    "web3": "1.0.0-beta.53"
   },
-  "homepage": "https://github.com/trufflesuite/truffle#readme",
   "devDependencies": {
     "@types/bn.js": "^4.11.4",
     "@types/mocha": "^5.2.6",
@@ -25,9 +29,5 @@
     "mocha": "^6.0.2",
     "ts-node": "^8.0.3",
     "typescript": "^3.3.3333"
-  },
-  "dependencies": {
-    "bn.js": "^4.11.8",
-    "web3": "1.0.0-beta.37"
   }
 }
