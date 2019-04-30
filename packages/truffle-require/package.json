@@ -27,7 +27,7 @@
     "truffle-config": "^1.1.7",
     "truffle-expect": "^0.0.7",
     "truffle-interface-adapter": "^0.1.2",
-    "web3": "1.0.0-beta.52"
+    "web3": "1.0.0-beta.53"
   },
   "publishConfig": {
     "access": "public"

@@ -48,7 +48,7 @@
     "lodash.isequal": "^4.5.0",
     "lodash.merge": "^4.6.1",
     "lodash.range": "^3.2.0",
-    "web3": "1.0.0-beta.52",
+    "web3": "1.0.0-beta.53",
     "truffle-decode-utils": "^1.0.7"
   },
   "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"

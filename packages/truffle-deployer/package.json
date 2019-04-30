@@ -28,7 +28,7 @@
   "devDependencies": {
     "ganache-core": "2.5.1",
     "mocha": "5.2.0",
-    "web3": "1.0.0-beta.52",
+    "web3": "1.0.0-beta.53",
     "truffle-reporters": "^1.0.7",
     "truffle-workflow-compile": "^2.0.10"
   },
