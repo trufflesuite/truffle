@@ -3,9 +3,9 @@
 # The below tells bash to stop the script if any of the commands fail
 set -ex
 
-npm run lerna:bootstrap
-npm run build:interface-adapter
-npm run build:truffle-contract-schema # must come before decode-utils
-npm run build:decode-utils # must come before decoder
-npm run build:decoder # must come before debugger
-npm run build:debugger
+yarn lerna:bootstrap
+yarn build:interface-adapter
+yarn build:truffle-contract-schema # must come before decode-utils
+yarn build:decode-utils # must come before decoder
+yarn build:decoder # must come before debugger
+yarn build:debugger

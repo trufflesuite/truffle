@@ -5,7 +5,7 @@
   "main": "dist/debugger.js",
   "scripts": {
     "docs": "esdoc",
-    "prepare": "npm run build",
+    "prepare": "yarn build",
     "build": "webpack --config webpack/webpack.config.js",
     "start": "node ./webpack/dev-server.js",
     "test": "mocha-webpack --webpack-config webpack/webpack.config-test.js --recursive",

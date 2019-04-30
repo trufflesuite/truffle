@@ -42,8 +42,8 @@
   },
   "scripts": {
     "analyze": "./scripts/analyze.sh",
-    "prepare": "npm run build",
-    "build": "npm run build-cli",
+    "prepare": "yarn build",
+    "build": "yarn build-cli",
     "build-cli": "webpack --config ./cli.webpack.config.js",
     "test": "./scripts/test.sh",
     "publish:byoc": "node ./scripts/prereleaseVersion.js byoc-safe byoc",
