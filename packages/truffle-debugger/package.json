@@ -35,7 +35,7 @@
     "truffle-expect": "^0.0.7",
     "truffle-solidity-utils": "^1.2.2",
     "web3": "1.0.0-beta.53",
-    "web3-eth-abi": "1.0.0-beta.37"
+    "web3-eth-abi": "1.0.0-beta.53"
   },
   "devDependencies": {
     "async": "2.6.1",
