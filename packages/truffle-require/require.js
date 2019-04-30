@@ -13,7 +13,7 @@ const Web3Shim = require("truffle-interface-adapter").Web3Shim;
 // options.context: Object containing any global variables you'd like set when this
 //   function is run.
 const Require = {
-  file: (options, done) => {
+  file: async options => {
     let source;
     const file = options.file;
 
@@ -21,11 +21,7 @@ const Require = {
 
     options = Config.default().with(options);
 
-    try {
-      source = fs.readFileSync(options.file, { encoding: "utf8" });
-    } catch (error) {
-      return done(error);
-    }
+    source = fs.readFileSync(options.file, { encoding: "utf8" });
 
     // Modified from here: https://gist.github.com/anatoliychakkaev/1599423
     const m = new Module(file);
@@ -94,12 +90,10 @@ const Require = {
 
     process.chdir(old_cwd);
 
-    done(null, m.exports);
+    return m.exports;
   },
 
   exec: function(options, done) {
-    var self = this;
-
     expect.options(options, [
       "contracts_build_directory",
       "file",
@@ -109,24 +103,22 @@ const Require = {
       "network_id"
     ]);
 
-    var web3 = new Web3Shim({
+    const web3 = new Web3Shim({
       provider: options.provider,
       networkType: options.networks[options.network].type
     });
 
-    self.file(
-      {
-        file: options.file,
-        context: {
-          web3: web3
-        },
-        resolver: options.resolver
-      },
-      function(err, fn) {
-        if (err) return done(err);
+    this.file({
+      file: options.file,
+      context: { web3 },
+      resolver: options.resolver
+    })
+      .then(fn => {
         fn(done);
-      }
-    );
+      })
+      .done(error => {
+        done(error);
+      });
   }
 };
 
