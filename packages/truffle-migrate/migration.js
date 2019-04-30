@@ -29,8 +29,6 @@ class Migration {
    * @param  {Function} callback
    */
   async _load(options, context, deployer, resolver, callback) {
-    const self = this;
-
     // Load assets and run `execute`
     try {
       const accounts = await context.web3.eth.getAccounts();
@@ -41,27 +39,21 @@ class Migration {
         args: [deployer]
       };
 
-      Require.file(requireOptions, async (err, fn) => {
-        if (err) return callback(err);
+      const fn = await Require.file(requireOptions);
 
-        const unRunnable = !fn || !fn.length || fn.length == 0;
+      const unRunnable = !fn || !fn.length || fn.length == 0;
 
-        if (unRunnable) {
-          const msg = `Migration ${
-            self.file
-          } invalid or does not take any parameters`;
-          return callback(new Error(msg));
-        }
+      if (unRunnable) {
+        const msg = `Migration ${
+          self.file
+        } invalid or does not take any parameters`;
+        return callback(new Error(msg));
+      }
 
-        // `migrateFn` might be sync or async. We negotiate that difference in
-        // `execute` through the deployer API.
-        try {
-          const migrateFn = fn(deployer, options.network, accounts);
-          await self._deploy(options, deployer, resolver, migrateFn, callback);
-        } catch (err) {
-          callback(err);
-        }
-      });
+      // `migrateFn` might be sync or async. We negotiate that difference in
+      // `execute` through the deployer API.
+      const migrateFn = fn(deployer, options.network, accounts);
+      await self._deploy(options, deployer, resolver, migrateFn, callback);
     } catch (err) {
       callback(err);
     }
