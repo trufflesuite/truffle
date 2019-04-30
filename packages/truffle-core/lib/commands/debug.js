@@ -712,7 +712,6 @@ var command = {
             }
 
             let alreadyFinished = session.view(trace.finishedOrUnloaded);
-            let loadError = null;
             let loadFailed = false;
 
             // If not finished, perform commands that require state changes
@@ -784,13 +783,13 @@ var command = {
             if (cmd === "t") {
               if (!session.view(trace.loaded)) {
                 config.logger.log(DebugUtils.formatTransactionStartMessage());
-                let successOrError = await session.load(cmdArgs);
-                if (typeof successOrError === "object") {
-                  loadFailed = true;
-                  loadError = successOrError;
-                } else {
+                await session.load(cmdArgs);
+                //if load succeeded
+                if (session.view(selectors.session.status.success)) {
                   //if successful, change prompt
                   setPrompt(DebugUtils.formatPrompt(config.network, cmdArgs));
+                } else {
+                  loadFailed = true;
                 }
               } else {
                 loadFailed = true;
@@ -897,8 +896,9 @@ var command = {
                   printAddressesAffected();
                   printFile();
                   printState();
-                } else if (loadError !== null) {
-                  config.logger.log("Error: " + loadError.message);
+                } else if (session.view(selectors.session.status.isError)) {
+                  let loadError = session.view(selectors.session.status.error);
+                  config.logger.log(loadError);
                 }
                 break;
               case "T":
@@ -929,6 +929,16 @@ var command = {
             }
           }
 
+          let prompt;
+
+          debug("session state %O", session.view(selectors.session));
+          debug("session state %O", session.state.session);
+
+          if (session.view(selectors.session.status.isError)) {
+            let loadError = session.view(selectors.session.status.error);
+            config.logger.log(loadError);
+          }
+
           if (session.view(trace.loaded)) {
             printAddressesAffected();
             printHelp();
@@ -937,14 +947,16 @@ var command = {
             debug("File printed");
             printState();
             debug("State printed");
+            prompt = DebugUtils.formatPrompt(config.network, txHash);
           } else {
             printHelp();
+            prompt = DebugUtils.formatPrompt(config.network);
           }
 
           var repl = options.repl || new ReplManager(config);
 
           repl.start({
-            prompt: DebugUtils.formatPrompt(config.network, txHash),
+            prompt,
             interpreter: util.callbackify(interpreter),
             ignoreUndefined: true,
             done: done

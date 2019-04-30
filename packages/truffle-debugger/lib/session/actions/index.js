@@ -49,6 +49,13 @@ export function error(error) {
   };
 }
 
+export const CLEAR_ERROR = "CLEAR_ERROR";
+export function clearError() {
+  return {
+    type: CLEAR_ERROR
+  };
+}
+
 export const RECORD_CONTRACTS = "RECORD_CONTRACTS";
 export function recordContracts(contexts, sources) {
   return {

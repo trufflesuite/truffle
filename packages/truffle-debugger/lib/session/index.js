@@ -48,7 +48,7 @@ export default class Session {
           debug("ready!");
           unsubscribe();
           accept();
-        } else if (this.view(session.status.isError)) {
+        } else if (this.view(session.status.errored)) {
           debug("error!");
           unsubscribe();
           reject(this.view(session.status.error));
@@ -75,7 +75,7 @@ export default class Session {
             debug("reready!");
             unsubscribe();
             accept(true);
-          } else if (this.view(session.status.isError)) {
+          } else if (this.view(session.status.errored)) {
             unsubscribe();
             debug("error!");
             reject(this.view(session.status.error));
@@ -234,6 +234,7 @@ export default class Session {
     try {
       return await this.readyAgainAfterLoading(actions.loadTransaction(txHash));
     } catch (e) {
+      this._runSaga(sagas.unload);
       return e;
     }
   }

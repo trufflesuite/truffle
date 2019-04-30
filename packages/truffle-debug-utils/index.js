@@ -144,11 +144,11 @@ var DebugUtils = {
       ["o", "i", "u", "n"],
       [";", "p"],
       ["h", "q", "r"],
+      ["t", "T"],
       ["b", "B", "c"],
       ["+", "-"],
       ["?"],
-      ["v", ":"],
-      ["t", "T"]
+      ["v", ":"]
     ].map(function(shortcuts) {
       return shortcuts.map(DebugUtils.formatCommandDescription).join(", ");
     });

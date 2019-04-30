@@ -73,29 +73,45 @@ const session = createSelectorTree({
    */
   status: {
     /*
-     * session.status (selector)
+     * session.status.readyOrError
      */
-    _: createLeaf(["/state"], state => state.status),
+    readyOrError: createLeaf(["/state"], state => state.ready),
 
     /*
      * session.status.ready
      */
-    ready: createLeaf(["./_"], status => status === "ACTIVE"),
+    ready: createLeaf(
+      ["./readyOrError", "./isError"],
+      (readyOrError, error) => readyOrError && !error
+    ),
 
     /*
      * session.status.waiting
      */
-    waiting: createLeaf(["./_"], status => status === "WAITING"),
-
-    /*
-     * session.status.isError
-     */
-    isError: createLeaf(["./_"], status => typeof status === "object"),
+    waiting: createLeaf(["/state"], state => !state.ready),
 
     /*
      * session.status.error
      */
-    error: createLeaf(["./_"], status => status.error)
+    error: createLeaf(["/state"], state => state.lastLoadingError),
+
+    /*
+     * session.status.isError
+     */
+    isError: createLeaf(["./error"], error => error !== null),
+
+    /*
+     * session.status.success
+     */
+    success: createLeaf(["./error"], error => error === null),
+
+    /*
+     * session.status.errored
+     */
+    errored: createLeaf(
+      ["./readyOrError", "./isError"],
+      (readyOrError, error) => readyOrError && error
+    )
   }
 });
 

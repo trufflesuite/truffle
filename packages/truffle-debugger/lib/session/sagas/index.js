@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:session:sagas");
 
-import { call, all, fork, take, put } from "redux-saga/effects";
+import { call, all, fork, take, put, race } from "redux-saga/effects";
 
 import { prefixName } from "lib/helpers";
 
@@ -68,6 +68,7 @@ export function* saga() {
   yield* web3.init(provider);
 
   //process transaction (if there is one)
+  //(note: this part may also set the error state)
   if (txHash !== undefined) {
     yield* processTransaction(txHash);
   }
@@ -84,7 +85,6 @@ export function* processTransaction(txHash) {
   if (err) {
     debug("error %o", err);
     yield* error(err);
-    return;
   }
 }
 

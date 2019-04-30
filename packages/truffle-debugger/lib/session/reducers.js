@@ -14,17 +14,28 @@ import * as actions from "./actions";
 export const WAITING = "WAITING";
 export const ACTIVE = "ACTIVE";
 
-function status(state = WAITING, action) {
+function ready(state = false, action) {
   switch (action.type) {
     case actions.READY:
       debug("readying");
-      return ACTIVE;
+      return true;
 
     case actions.WAIT:
-      return WAITING;
+      return false;
 
+    default:
+      return state;
+  }
+}
+
+function lastLoadingError(state = null, action) {
+  switch (action.type) {
     case actions.ERROR:
-      return { error: action.error };
+      debug("error: %o", action.error);
+      return action.error;
+
+    case actions.WAIT:
+      return null;
 
     default:
       return state;
@@ -65,7 +76,8 @@ function block(state = {}, action) {
 }
 
 const session = combineReducers({
-  status,
+  ready,
+  lastLoadingError,
   transaction,
   receipt,
   block

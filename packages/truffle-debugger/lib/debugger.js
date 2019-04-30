@@ -56,7 +56,8 @@ export default class Debugger {
       await session.ready();
       debug("session ready");
     } catch (e) {
-      throw e;
+      debug("error occurred, unloaded");
+      session.unload();
     }
 
     return new this(session);
@@ -78,12 +79,7 @@ export default class Debugger {
       options.provider
     );
 
-    try {
-      await session.ready();
-      debug("session ready");
-    } catch (e) {
-      throw e;
-    }
+    await session.ready();
 
     return new this(session);
   }
