@@ -14,7 +14,7 @@
       "truffle-db/*": ["../src/*"],
       "test/*": ["../test/*"]
     },
-    "rootDir": "../src",
+    "rootDir": "..",
     "baseUrl": ".",
     "types": [
       "express",
