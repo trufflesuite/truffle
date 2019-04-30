@@ -7,5 +7,5 @@ if [ "$GETH" == true ]; then
 elif [ "$COVERAGE" == true ]; then
   NO_BUILD=true mocha --no-warnings --timeout 7000 --grep @geth --invert --colors $@
 else
-  yarn run build-cli && mocha --no-warnings --timeout 7000 --grep @geth --invert --colors $@
+  yarn build-cli && mocha --no-warnings --timeout 7000 --grep @geth --invert --colors $@
 fi
