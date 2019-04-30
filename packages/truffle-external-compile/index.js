@@ -1,7 +1,7 @@
-'use strict';
+"use strict";
 
 const debug = require("debug")("external-compile");
-const { exec, execSync } = require('child_process');
+const { exec, execSync } = require("child_process");
 const resolve = require("path").resolve;
 const { callbackify, promisify } = require("util");
 const glob = promisify(require("glob"));
@@ -11,11 +11,13 @@ const Schema = require("truffle-contract-schema");
 const web3 = {};
 web3.utils = require("web3-utils");
 
-const DEFAULT_ABI = [{
-  payable: true,
-  stateMutability: "payable",
-  type: "fallback"
-}];
+const DEFAULT_ABI = [
+  {
+    payable: true,
+    stateMutability: "payable",
+    type: "fallback"
+  }
+];
 
 /**
  * buffer a line of data, yielding each full line
@@ -38,7 +40,7 @@ const DEFAULT_ABI = [{
  *   // if done, value possibly contains string value with unterminated output
  *   // otherwise, value contains any/all complete lines
  */
-function *bufferLines() {
+function* bufferLines() {
   let buffer = [];
 
   while (true) {
@@ -49,9 +51,7 @@ function *bufferLines() {
     if (input == null) {
       const unterminated = buffer.join("");
 
-      return (unterminated)
-        ? [ `${unterminated}%` ]
-        : [];
+      return unterminated ? [`${unterminated}%`] : [];
     }
 
     // split lines
@@ -59,22 +59,21 @@ function *bufferLines() {
     const data = input.split("\n");
 
     // add first element to buffer
-    let [ first ] = data.slice(0);
+    let [first] = data.slice(0);
     buffer.push(first);
 
     if (data.length > 1) {
       // split off partial line to save as new buffer
-      const [ last ] = data.slice(-1);
-      const [ ...middle ] = data.slice(1, -1);
+      const [last] = data.slice(-1);
+      const [...middle] = data.slice(1, -1);
 
       // use buffer as first element (now complete line)
       // and yield all complete lines
-      const lines = [ buffer.join(""),  ...middle ];
+      const lines = [buffer.join(""), ...middle];
       yield lines;
 
       // reset buffer
       buffer = [last];
-
     } else {
       // nothing to see yet
       yield [];
@@ -86,15 +85,15 @@ function *bufferLines() {
  * run a command, forwarding data to arbitrary logger.
  * invokes callback when process exits, error on nonzero exit code.
  */
-const runCommand = promisify(function (command, options, callback) {
+const runCommand = promisify(function(command, options, callback) {
   const { cwd, logger, input } = options;
   const child = exec(command, { cwd, input });
 
   // wrap buffer generator for easy use
-  const buffer = (func) => {
+  const buffer = func => {
     const gen = bufferLines();
 
-    return (data) => {
+    return data => {
       gen.next();
 
       let { value: lines } = gen.next(data);
@@ -107,10 +106,10 @@ const runCommand = promisify(function (command, options, callback) {
   const log = buffer(logger.log);
   const warn = buffer(logger.warn || logger.log);
 
-  child.stdout.on('data', data => log(data.toString()));
-  child.stderr.on('data', data => warn(data.toString()));
+  child.stdout.on("data", data => log(data.toString()));
+  child.stderr.on("data", data => warn(data.toString()));
 
-  child.on('close', function(code) {
+  child.on("close", function(code) {
     // close streams to flush unterminated lines
     log(null);
     warn(null);
@@ -131,11 +130,13 @@ const runCommand = promisify(function (command, options, callback) {
  * 2. Hex string
  * 3. Raw binary data
  */
-function decodeContents (contents) {
+function decodeContents(contents) {
   // JSON
   try {
     return JSON.parse(contents);
-  } catch (e) { /* no-op */ }
+  } catch (e) {
+    /* no-op */
+  }
 
   // hex string
   if (contents.toString().startsWith("0x")) {
@@ -146,7 +147,7 @@ function decodeContents (contents) {
   return web3.utils.bytesToHex(contents);
 }
 
-async function processTargets (targets, cwd, logger) {
+async function processTargets(targets, cwd, logger) {
   const contracts = {};
   for (let target of targets) {
     let targetContracts = await processTarget(target, cwd, logger);
@@ -158,10 +159,10 @@ async function processTargets (targets, cwd, logger) {
   return contracts;
 }
 
-async function processTarget (target, cwd, logger) {
+async function processTarget(target, cwd, logger) {
   const usesPath = target.path != undefined;
   const usesCommand = target.command != undefined;
-  const usesStdin = target.stdin || target.stdin == undefined;  // default true
+  const usesStdin = target.stdin || target.stdin == undefined; // default true
   const usesProperties = target.properties || target.fileProperties;
 
   if (usesProperties && usesPath) {
@@ -175,7 +176,6 @@ async function processTarget (target, cwd, logger) {
       "External compilation target cannot define both properties and command"
     );
   }
-
 
   if (usesCommand && !usesPath) {
     // just run command
@@ -197,9 +197,7 @@ async function processTarget (target, cwd, logger) {
       execOptions = { cwd };
     }
 
-    const output = (usesCommand)
-      ? execSync(command, execOptions)
-      : input;
+    const output = usesCommand ? execSync(command, execOptions) : input;
 
     const contract = JSON.parse(output);
     return { [contract.contractName]: contract };
@@ -234,8 +232,9 @@ async function processTarget (target, cwd, logger) {
 
     if (!contract.bytecode && logger) {
       logger.log(
-        "Warning: contract " + contract.contractName +
-        " does not specify bytecode. You won't be able to deploy it."
+        "Warning: contract " +
+          contract.contractName +
+          " does not specify bytecode. You won't be able to deploy it."
       );
     }
 
@@ -248,18 +247,13 @@ const compile = callbackify(async function(options) {
     options.logger = console;
   }
 
-  expect.options(options, [
-    "compilers",
-    "working_directory"
-  ]);
+  expect.options(options, ["compilers"]);
   expect.options(options.compilers, ["external"]);
-  expect.options(options.compilers.external, [
-    "command",
-    "targets"
-  ]);
+  expect.options(options.compilers.external, ["command", "targets"]);
 
   const { command, targets } = options.compilers.external;
-  const cwd = options.working_directory;
+  const cwd =
+    options.compilers.external.working_directory || options.working_directory;
   const logger = options.logger;
 
   debug("running compile command: %s", command);
