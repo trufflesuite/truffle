@@ -10,9 +10,17 @@
     "baseUrl": ".",
     "lib": ["es2017", "esnext.asynciterable", "dom"],
     "paths": {
-      "web3": ["../../node_modules/@types/web3/index", "node_modules/web3/index"]
+      "web3": [
+        "../../node_modules/@types/web3/index",
+        "node_modules/web3/index"
+      ]
     },
-    "rootDir": "src"
+    "rootDir": "src",
+    "typeRoots": [
+      "../../**/node_modules/@types/bn.js",
+      "../../**/node_modules/@types/lodash.clonedeep",
+      "../../**/node_modules/@types/lodash.escaperegexp"
+    ]
   },
   "include": [
     "./src/*.ts"
