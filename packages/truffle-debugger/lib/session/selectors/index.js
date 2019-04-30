@@ -4,6 +4,7 @@ const debug = debugModule("debugger:session:selectors");
 import { createSelectorTree, createLeaf } from "reselect-tree";
 
 import evm from "lib/evm/selectors";
+import trace from "lib/trace/selectors";
 import solidity from "lib/solidity/selectors";
 
 const session = createSelectorTree({
@@ -111,7 +112,12 @@ const session = createSelectorTree({
     errored: createLeaf(
       ["./readyOrError", "./isError"],
       (readyOrError, error) => readyOrError && error
-    )
+    ),
+
+    /*
+     * session.status.loaded
+     */
+    loaded: createLeaf([trace.loaded], loaded => loaded)
   }
 });
 

@@ -7,7 +7,6 @@ import configureStore from "lib/store";
 import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
 import data from "lib/data/selectors";
-import trace from "lib/trace/selectors";
 import session from "lib/session/selectors";
 import * as dataSagas from "lib/data/sagas";
 import * as controllerSagas from "lib/controller/sagas";
@@ -228,7 +227,7 @@ export default class Session {
 
   //returns true on success, false on already loaded, error object on failure
   async load(txHash) {
-    if (this.view(trace.loaded)) {
+    if (this.view(session.status.loaded)) {
       return false;
     }
     try {
@@ -241,7 +240,7 @@ export default class Session {
 
   //returns true on success, false on already unloaded
   async unload() {
-    if (!this.view(trace.loaded)) {
+    if (!this.view(session.status.loaded)) {
       return false;
     }
     debug("unloading");
@@ -271,7 +270,7 @@ export default class Session {
   }
 
   async reset() {
-    let loaded = this.view(trace.loaded);
+    let loaded = this.view(session.status.loaded);
     if (!loaded) {
       return;
     }

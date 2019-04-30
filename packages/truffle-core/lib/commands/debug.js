@@ -759,7 +759,7 @@ var command = {
                 case "c":
                   //are we "finished" because we've reached the end, or because
                   //nothing is loaded?
-                  if (session.view(trace.loaded)) {
+                  if (session.view(selectors.session.status.loaded)) {
                     config.logger.log(
                       "Transaction has halted; cannot advance."
                     );
@@ -773,7 +773,7 @@ var command = {
             if (cmd === "r") {
               //reset if given the reset command
               //(but not if nothing is loaded)
-              if (session.view(trace.loaded)) {
+              if (session.view(selectors.session.status.loaded)) {
                 await session.reset();
               } else {
                 config.logger.log("No transaction loaded.");
@@ -781,7 +781,7 @@ var command = {
               }
             }
             if (cmd === "t") {
-              if (!session.view(trace.loaded)) {
+              if (!session.view(selectors.session.status.loaded)) {
                 config.logger.log(DebugUtils.formatTransactionStartMessage());
                 await session.load(cmdArgs);
                 //if load succeeded
@@ -799,7 +799,7 @@ var command = {
               }
             }
             if (cmd === "T") {
-              if (session.view(trace.loaded)) {
+              if (session.view(selectors.session.status.loaded)) {
                 await session.unload();
                 config.logger.log("Transaction unloaded.");
                 setPrompt(DebugUtils.formatPrompt(config.network));
@@ -846,7 +846,7 @@ var command = {
                 printBreakpoints();
                 break;
               case "v":
-                if (session.view(trace.loaded)) {
+                if (session.view(selectors.session.status.loaded)) {
                   await printVariables();
                 }
                 break;
@@ -862,7 +862,7 @@ var command = {
                 break;
               case ";":
               case "p":
-                if (session.view(trace.loaded)) {
+                if (session.view(selectors.session.status.loaded)) {
                   printFile();
                   printInstruction();
                   printState();
@@ -874,7 +874,7 @@ var command = {
               case "u":
               case "n":
               case "c":
-                if (session.view(trace.loaded)) {
+                if (session.view(selectors.session.status.loaded)) {
                   if (!session.view(solidity.current.source).source) {
                     printInstruction();
                   }
@@ -885,7 +885,7 @@ var command = {
                 await printWatchExpressionsResults();
                 break;
               case "r":
-                if (session.view(trace.loaded)) {
+                if (session.view(selectors.session.status.loaded)) {
                   printAddressesAffected();
                   printFile();
                   printState();
@@ -939,7 +939,7 @@ var command = {
             config.logger.log(loadError);
           }
 
-          if (session.view(trace.loaded)) {
+          if (session.view(selectors.session.status.loaded)) {
             printAddressesAffected();
             printHelp();
             debug("Help printed");
