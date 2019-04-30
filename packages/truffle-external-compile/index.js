@@ -253,7 +253,9 @@ const compile = callbackify(async function(options) {
 
   const { command, targets } = options.compilers.external;
   const cwd =
-    options.compilers.external.working_directory || options.working_directory;
+    options.compilers.external.workingDirectory ||
+    options.compilers.external.working_directory || // just in case
+    options.working_directory;
   const logger = options.logger;
 
   debug("running compile command: %s", command);
