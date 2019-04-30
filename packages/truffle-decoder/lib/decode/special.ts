@@ -5,24 +5,25 @@ import * as DecodeUtils from "truffle-decode-utils";
 import decodeValue from "./value";
 import { EvmInfo } from "../types/evm";
 import { SpecialPointer } from "../types/pointer";
+import { DecoderRequest } from "../types/request";
 
-export default async function decodeSpecial(definition: DecodeUtils.AstDefinition, pointer: SpecialPointer, info: EvmInfo): Promise <any> {
+export default function* decodeSpecial(definition: DecodeUtils.AstDefinition, pointer: SpecialPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
   if(DecodeUtils.Definition.typeClass(definition) === "magic") { //that's right, magic!
-    return await decodeMagic(definition, pointer, info);
+    return yield* decodeMagic(definition, pointer, info);
   }
   else {
-    return await decodeValue(definition, pointer, info);
+    return yield* decodeValue(definition, pointer, info);
   }
 }
 
-export async function decodeMagic(definition: DecodeUtils.AstDefinition, pointer: SpecialPointer, info: EvmInfo): Promise <any> {
+export function* decodeMagic(definition: DecodeUtils.AstDefinition, pointer: SpecialPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
 
   let {state} = info;
 
   switch(pointer.special) {
     case "msg":
       return {
-        data: await decodeValue(
+        data: yield* decodeValue(
           DecodeUtils.Definition.MSG_DATA_DEFINITION,
           {calldata: {
             start: 0,
@@ -30,7 +31,7 @@ export async function decodeMagic(definition: DecodeUtils.AstDefinition, pointer
           }},
           info
         ),
-        sig: await decodeValue(
+        sig: yield* decodeValue(
           DecodeUtils.Definition.MSG_SIG_DEFINITION,
           {calldata: {
             start: 0,
@@ -38,12 +39,12 @@ export async function decodeMagic(definition: DecodeUtils.AstDefinition, pointer
           }},
           info
         ),
-        sender: await decodeValue(
+        sender: yield* decodeValue(
           DecodeUtils.Definition.spoofAddressPayableDefinition("sender"),
           {special: "sender"},
           info
         ),
-        value: await decodeValue(
+        value: yield* decodeValue(
           DecodeUtils.Definition.spoofUintDefinition("value"),
           {special: "value"},
           info
@@ -51,39 +52,36 @@ export async function decodeMagic(definition: DecodeUtils.AstDefinition, pointer
       };
     case "tx":
       return {
-        origin: await decodeValue(
+        origin: yield* decodeValue(
           DecodeUtils.Definition.spoofAddressPayableDefinition("origin"),
           {special: "origin"},
           info
         ),
-        gasprice: await decodeValue(
+        gasprice: yield* decodeValue(
           DecodeUtils.Definition.spoofUintDefinition("gasprice"),
           {special: "gasprice"},
           info
         )
       };
     case "block":
-      return {
-        coinbase: await decodeValue(
+      let block: any = {
+        coinbase: yield* decodeValue(
           DecodeUtils.Definition.spoofAddressPayableDefinition("coinbase"),
           {special: "coinbase"},
           info
-        ),
-        //the other ones are all uint's, so let's handle them all at once
-        ...Object.assign({},
-          ...await Promise.all(
-            ["difficulty", "gaslimit", "number", "timestamp"].map(
-              async (variable) => ({
-                [variable]: await decodeValue(
-                  DecodeUtils.Definition.spoofUintDefinition(variable),
-                  {special: variable},
-                  info
-                )
-              })
-            )
-          )
         )
       };
+      //the other ones are all uint's, so let's handle them all at once; due to
+      //the lack of generator arrow functions, we do it by mutating block
+      const variables = ["difficulty", "gaslimit", "number", "timestamp"];
+      for (let variable of variables) {
+        block[variable] = yield* decodeValue(
+          DecodeUtils.Definition.spoofUintDefinition(variable),
+          {special: variable},
+          info
+        );
+      }
+    return block;
     default:
       debug("Unrecognized magic variable!");
   }

@@ -15,26 +15,18 @@ const session = createSelectorTree({
      * session.info.affectedInstances
      */
     affectedInstances: createLeaf(
-      [
-        evm.info.instances,
-        evm.info.contexts,
-        solidity.info.sources,
-        solidity.info.sourceMaps
-      ],
+      [evm.info.instances, evm.info.contexts, solidity.info.sources],
 
-      (instances, contexts, sources, sourceMaps) =>
+      (instances, contexts, sources) =>
         Object.assign(
           {},
-          ...Object.entries(instances).map(([address, { context }]) => {
+          ...Object.entries(instances).map(([address, { context, binary }]) => {
             debug("instances %O", instances);
             debug("contexts %O", contexts);
-            let { contractName, binary } = contexts[context];
-            let { sourceMap } = sourceMaps[context] || {};
+            let { contractName, primarySource } = contexts[context];
 
-            let { source } = sourceMap
-              ? // look for source ID between second and third colons (HACK)
-                sources[sourceMap.match(/^[^:]+:[^:]+:([^:]+):/)[1]]
-              : {};
+            let source =
+              primarySource !== undefined ? sources[primarySource] : undefined;
 
             return {
               [address]: {

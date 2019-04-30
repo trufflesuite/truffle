@@ -1,21 +1,28 @@
-const findUp = require('find-up');
-const Logger = require('./logDecorator');
+const findUp = require("find-up");
+const Logger = require("./logDecorator");
 
-const getTruffleConfig = function () {
+const DEFAULT_CONFIG_FILENAME = "truffle-config.js";
+const BACKUP_CONFIG_FILENAME = "truffle.js";
+
+const getTruffleConfig = () => {
   const isWin = /^win/.test(process.platform);
-  let file;
+  const defaultConfig = findUp.sync(DEFAULT_CONFIG_FILENAME);
+  const backupConfig = findUp.sync(BACKUP_CONFIG_FILENAME);
 
-  if (isWin) {
-    file = findUp.sync('truffle-config.js');
+  if (defaultConfig && backupConfig) {
+    Logger.log(
+      `Warning: Both ${DEFAULT_CONFIG_FILENAME} and ${BACKUP_CONFIG_FILENAME} were found. Using ${DEFAULT_CONFIG_FILENAME}.`
+    );
+    return defaultConfig;
+  } else if (backupConfig && !defaultConfig) {
+    if (isWin)
+      Logger.log(
+        `Warning: Please rename ${BACKUP_CONFIG_FILENAME} to ${DEFAULT_CONFIG_FILENAME} to ensure Windows compatibility.`
+      );
+    return backupConfig;
   } else {
-    file = findUp.sync('truffle.js');
+    return defaultConfig;
   }
-
-  if (file) {
-    return file;
-  }
-
-  Logger.log('No Truffle config file found.');
 };
 
 module.exports = getTruffleConfig;

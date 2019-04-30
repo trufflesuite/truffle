@@ -1,2 +1,2 @@
-# truffle-debug-utils
+# truffle-decode-utils
 Utilities for decoding data from the EVM

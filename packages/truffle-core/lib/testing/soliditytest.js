@@ -7,6 +7,7 @@ const abi = require("web3-eth-abi");
 const series = require("async").series;
 const path = require("path");
 const semver = require("semver");
+const Native = require("truffle-compile/compilerSupplier/loadingStrategies/Native");
 
 let SafeSend;
 
@@ -115,8 +116,10 @@ const SolidityTest = {
       if (err) return callback(err);
 
       const config = runner.config;
-      if (!config.compilers.solc.version) SafeSend = "NewSafeSend.sol";
-      else if (semver.lt(semver.coerce(config.compilers.solc.version), "0.5.0"))
+      let solcVersion = config.compilers.solc.version;
+      if (solcVersion === "native") solcVersion = new Native().load().version();
+      if (!solcVersion) SafeSend = "NewSafeSend.sol";
+      else if (semver.lt(semver.coerce(solcVersion), "0.5.0"))
         SafeSend = "OldSafeSend.sol";
       else SafeSend = "NewSafeSend.sol";
 
@@ -147,12 +150,12 @@ const SolidityTest = {
 
           // Set network values.
           Object.keys(contracts).forEach(name => {
-            contracts[name].network_id = runner.config.network_id;
-            contracts[name].default_network = runner.config.default_network;
+            contracts[name].network_id = config.network_id;
+            contracts[name].default_network = config.default_network;
           });
 
-          runner.config.artifactor
-            .saveAll(contracts, runner.config.contracts_build_directory)
+          config.artifactor
+            .saveAll(contracts)
             .then(() => {
               callback();
             })

@@ -1,13 +1,15 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:data:sagas");
 
-import { put, takeEvery, select, call } from "redux-saga/effects";
+import { put, takeEvery, select } from "redux-saga/effects";
 
 import { prefixName, stableKeccak256, makeAssignment } from "lib/helpers";
 
 import { TICK } from "lib/trace/actions";
 import * as actions from "../actions";
 import * as trace from "lib/trace/sagas";
+import * as evm from "lib/evm/sagas";
+import * as web3 from "lib/web3/sagas";
 
 import data from "../selectors";
 
@@ -19,7 +21,8 @@ import {
   getMemoryAllocations,
   getCalldataAllocations,
   readStack,
-  storageSize
+  storageSize,
+  forEvmState
 } from "truffle-decoder";
 import BN from "bn.js";
 
@@ -39,12 +42,82 @@ function* tickSaga() {
   debug("got TICK");
 
   yield* variablesAndMappingsSaga();
+  debug("about to SUBTOCK");
   yield* trace.signalTickSagaCompletion();
+}
+
+export function* decode(definition, ref) {
+  let referenceDeclarations = yield select(data.views.referenceDeclarations);
+  let state = yield select(data.current.state);
+  let mappingKeys = yield select(data.views.mappingKeys);
+  let allocations = yield select(data.info.allocations);
+  let instances = yield select(data.views.instances);
+  let contexts = yield select(data.views.contexts);
+  let currentContext = yield select(data.current.context);
+  let internalFunctionsTable = yield select(
+    data.current.functionsByProgramCounter
+  );
+  let blockNumber = yield select(data.views.blockNumber);
+
+  let ZERO_WORD = new Uint8Array(DecodeUtils.EVM.WORD_SIZE);
+  ZERO_WORD.fill(0);
+  let NO_CODE = new Uint8Array(); //empty array
+
+  let decoder = forEvmState(definition, ref, {
+    referenceDeclarations,
+    state,
+    mappingKeys,
+    storageAllocations: allocations.storage,
+    memoryAllocations: allocations.memory,
+    calldataAllocations: allocations.calldata,
+    contexts,
+    currentContext,
+    internalFunctionsTable
+  });
+
+  let result = decoder.next();
+  while (!result.done) {
+    let request = result.value;
+    let response;
+    switch (request.type) {
+      case "storage":
+        //the debugger supplies all storage it knows at the beginning.
+        //any storage it does not know is presumed to be zero.
+        response = ZERO_WORD;
+        break;
+      case "code":
+        let address = request.address;
+        if (address in instances) {
+          response = instances[address];
+        } else if (address === DecodeUtils.EVM.ZERO_ADDRESS) {
+          //HACK: to avoid displaying the zero address to the user as an
+          //affected address just because they decoded a contract or external
+          //function variable that hadn't been initialized yet, we give the
+          //zero address's codelessness its own private cache :P
+          response = NO_CODE;
+        } else {
+          //I don't want to write a new web3 saga, so let's just use
+          //obtainBinaries with a one-element array
+          debug("fetching binary");
+          let binary = (yield* web3.obtainBinaries([address], blockNumber))[0];
+          debug("adding instance");
+          yield* evm.addInstance(address, binary);
+          response = DecodeUtils.Conversion.toBytes(binary);
+        }
+        break;
+      default:
+        debug("unrecognized request type!");
+    }
+    result = decoder.next(response);
+  }
+  //at this point, result.value holds the final value
+  //note: we're still using the old decoder output format, so we need to clean
+  //containers before returning something the debugger can use
+  return DecodeUtils.Conversion.cleanContainers(result.value);
 }
 
 function* variablesAndMappingsSaga() {
   let node = yield select(data.current.node);
-  let decode = yield select(data.views.decoder);
   let scopes = yield select(data.views.scopes.inlined);
   let referenceDeclarations = yield select(data.views.referenceDeclarations);
   let allocations = yield select(data.info.allocations.storage);
@@ -177,6 +250,19 @@ function* variablesAndMappingsSaga() {
       yield put(actions.assign(assignments));
       break;
 
+    case "FunctionTypeName":
+      //HACK
+      //for some reasons, for declarations of local variables of function type,
+      //we land on the FunctionTypeName instead of the VariableDeclaration,
+      //so we replace the node with its parent (the VariableDeclaration)
+      node = scopes[scopes[node.id].parentId].definition;
+      //let's do a quick check that it *is* a VariableDeclaration before
+      //continuing
+      if (node.nodeType !== "VariableDeclaration") {
+        break;
+      }
+    //otherwise, deliberately fall through to the VariableDeclaration case
+    //NOTE: DELIBERATE FALL-THROUGH
     case "VariableDeclaration":
       let varId = node.id;
       debug("Variable declaration case");
@@ -196,6 +282,7 @@ function* variablesAndMappingsSaga() {
           id => currentAssignments.byId[id].address !== undefined
         )
       ) {
+        debug("already a contract variable!");
         break;
       }
 
@@ -211,6 +298,7 @@ function* variablesAndMappingsSaga() {
       );
       assignments = { [assignment.id]: assignment };
       //this case doesn't need preambleAssignments either
+      debug("assignments: %O", assignments);
       yield put(actions.assign(assignments));
       break;
 
@@ -267,7 +355,6 @@ function* variablesAndMappingsSaga() {
       //begin subsection: key decoding
       //(I tried factoring this out into its own saga but it didn't work when I
       //did :P )
-      yield put(actions.mapKeyDecoding(true));
 
       let indexValue;
       let indexDefinition = node.indexExpression;
@@ -291,7 +378,8 @@ function* variablesAndMappingsSaga() {
           //value will go on the stack *left*-padded instead of right-padded,
           //so looking for a prior assignment will read the wrong value.
           //so instead it's preferable to use the constant directly.
-          indexValue = yield call(decode, keyDefinition, {
+          debug("about to decode simple literal");
+          indexValue = yield* decode(keyDefinition, {
             definition: indexDefinition
           });
         } else if (indexReference) {
@@ -311,7 +399,8 @@ function* variablesAndMappingsSaga() {
           } else {
             splicedDefinition = keyDefinition;
           }
-          indexValue = yield call(decode, splicedDefinition, indexReference);
+          debug("about to decode");
+          indexValue = yield* decode(splicedDefinition, indexReference);
         } else if (
           indexDefinition.referencedDeclaration &&
           scopes[indexDefinition.referenceDeclaration]
@@ -333,7 +422,8 @@ function* variablesAndMappingsSaga() {
             if (
               DecodeUtils.Definition.isSimpleConstant(indexConstantDefinition)
             ) {
-              indexValue = yield call(decode, keyDefinition, {
+              debug("about to decode simple constant");
+              indexValue = yield* decode(keyDefinition, {
                 definition: indexConstantDeclaration.value
               });
             }
@@ -362,7 +452,6 @@ function* variablesAndMappingsSaga() {
         //now, as mentioned, retry in the typeConversion case
       }
 
-      yield put(actions.mapKeyDecoding(false));
       //end subsection: key decoding
 
       debug("index value %O", indexValue);

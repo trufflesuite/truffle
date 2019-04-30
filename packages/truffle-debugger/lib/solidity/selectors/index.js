@@ -91,12 +91,7 @@ let solidity = createSelectorTree({
     /**
      * solidity.info.sources
      */
-    sources: createLeaf(["/state"], state => state.info.sources.byId),
-
-    /**
-     * solidity.info.sourceMaps
-     */
-    sourceMaps: createLeaf(["/state"], state => state.info.sourceMaps.byContext)
+    sources: createLeaf(["/state"], state => state.info.sources.byId)
   },
 
   /**
@@ -107,9 +102,9 @@ let solidity = createSelectorTree({
      * solidity.current.sourceMap
      */
     sourceMap: createLeaf(
-      [evm.current.context, "/info/sourceMaps"],
+      [evm.current.context],
 
-      ({ context }, sourceMaps) => sourceMaps[context] || {}
+      ({ sourceMap }) => sourceMap
     ),
 
     /**
@@ -131,7 +126,7 @@ let solidity = createSelectorTree({
     instructions: createLeaf(
       ["/info/sources", evm.current.context, "./sourceMap"],
 
-      (sources, { binary }, { sourceMap }) => {
+      (sources, { binary }, sourceMap) => {
         if (!binary) {
           return [];
         }
@@ -155,7 +150,10 @@ let solidity = createSelectorTree({
           // map maps just as many ranges as there are instructions (or
           // possibly more), and marks them all as being Solidity-internal and
           // not jumps.
-          sourceMap = "0:0:-1:-".concat(";".repeat(instructions.length - 1));
+          sourceMap =
+            binary !== "0x"
+              ? "0:0:-1:-".concat(";".repeat(instructions.length - 1))
+              : "";
         }
 
         var lineAndColumnMappings = Object.assign(
@@ -231,23 +229,13 @@ let solidity = createSelectorTree({
     instructionAtProgramCounter: createLeaf(
       ["./instructions"],
 
-      instructions => {
-        let map = [];
-        instructions.forEach(function(instruction) {
-          map[instruction.pc] = instruction;
-        });
-
-        // fill in gaps in map by defaulting to the last known instruction
-        let lastSeen = null;
-        for (let [pc, instruction] of map.entries()) {
-          if (instruction) {
-            lastSeen = instruction;
-          } else {
-            map[pc] = lastSeen;
-          }
-        }
-        return map;
-      }
+      instructions =>
+        Object.assign(
+          {},
+          ...instructions.map(instruction => ({
+            [instruction.pc]: instruction
+          }))
+        )
     ),
 
     ...createMultistepSelectors(evm.current.step),
@@ -276,6 +264,71 @@ let solidity = createSelectorTree({
           current.file != next.file
         );
       }
+    ),
+
+    /*
+     * solidity.current.functionsByProgramCounter
+     */
+    functionsByProgramCounter: createLeaf(
+      ["./instructions", "/info/sources"],
+      (instructions, sources) =>
+        Object.assign(
+          {},
+          ...instructions
+            .filter(instruction => instruction.name === "JUMPDEST")
+            .filter(instruction => instruction.file !== -1)
+            //note that the designated invalid function *does* have an associated
+            //file, so it *is* safe to just filter out the ones that don't
+            .map(instruction => {
+              debug("instruction %O", instruction);
+              let source = instruction.file;
+              debug("source %O", sources[source]);
+              let ast = sources[source].ast;
+              let range = getSourceRange(instruction);
+              let pointer = findRange(ast, range.start, range.length);
+              let node = pointer
+                ? jsonpointer.get(ast, pointer)
+                : jsonpointer.get(ast, "");
+              if (!node || node.nodeType !== "FunctionDefinition") {
+                //filter out JUMPDESTs that aren't function definitions...
+                //except for the designated invalid function
+                let nextInstruction = instructions[instruction.index + 1] || {};
+                if (nextInstruction.name === "INVALID") {
+                  //designated invalid, include it
+                  return {
+                    [instruction.pc]: {
+                      isDesignatedInvalid: true
+                    }
+                  };
+                } else {
+                  //not designated invalid, filter it out
+                  return {};
+                }
+              }
+              //otherwise, we're good to go, so let's find the contract node and
+              //put it all together
+              //to get the contract node, we go up twice from the function node;
+              //the path from one to the other should have a very specific form,
+              //so this is easy
+              let contractPointer = pointer.replace(/\/nodes\/\d+$/, "");
+              let contractNode = jsonpointer.get(ast, contractPointer);
+              return {
+                [instruction.pc]: {
+                  source,
+                  pointer,
+                  node,
+                  name: node.name,
+                  id: node.id,
+                  contractPointer,
+                  contractNode,
+                  contractName: contractNode.name,
+                  contractId: contractNode.id,
+                  contractKind: contractNode.contractKind,
+                  isDesignatedInvalid: false
+                }
+              };
+            })
+        )
     ),
 
     /**

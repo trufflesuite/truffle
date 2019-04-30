@@ -8,28 +8,28 @@ import { CalldataPointer, DataPointer } from "../types/pointer";
 import { CalldataMemberAllocation } from "../types/allocation";
 import { calldataSize } from "../allocate/calldata";
 import { EvmInfo } from "../types/evm";
-import range from "lodash.range";
+import { DecoderRequest } from "../types/request";
 
-export default async function decodeCalldata(definition: DecodeUtils.AstDefinition, pointer: CalldataPointer, info: EvmInfo, base: number = 0): Promise <any> {
+export default function* decodeCalldata(definition: DecodeUtils.AstDefinition, pointer: CalldataPointer, info: EvmInfo, base: number = 0): IterableIterator<any | DecoderRequest> {
   if(DecodeUtils.Definition.isReference(definition)) {
     let dynamic = calldataSize(definition, info.referenceDeclarations, info.calldataAllocations)[1];
     if(dynamic) {
-      return await decodeCalldataReferenceByAddress(definition, pointer, info, base);
+      return yield* decodeCalldataReferenceByAddress(definition, pointer, info, base);
     }
     else {
-      return await decodeCalldataReferenceStatic(definition, pointer, info);
+      return yield* decodeCalldataReferenceStatic(definition, pointer, info);
     }
   }
   else {
     debug("pointer %o", pointer);
-    return await decodeValue(definition, pointer, info);
+    return yield* decodeValue(definition, pointer, info);
   }
 }
 
-export async function decodeCalldataReferenceByAddress(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo, base: number = 0): Promise<any> {
+export function* decodeCalldataReferenceByAddress(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo, base: number = 0): IterableIterator<any | DecoderRequest> {
   const { state } = info;
   debug("pointer %o", pointer);
-  let rawValue: Uint8Array = await read(pointer, state);
+  let rawValue: Uint8Array = yield* read(pointer, state);
 
   let startPosition = DecodeUtils.Conversion.toBN(rawValue).toNumber() + base;
   debug("startPosition %d", startPosition);
@@ -42,14 +42,14 @@ export async function decodeCalldataReferenceByAddress(definition: DecodeUtils.A
         length: size
       }
     }
-    return await decodeCalldataReferenceStatic(definition, staticPointer, info);
+    return yield* decodeCalldataReferenceStatic(definition, staticPointer, info);
   }
   let length;
   switch (DecodeUtils.Definition.typeClass(definition)) {
 
     case "bytes":
     case "string":
-      length = DecodeUtils.Conversion.toBN(await read({
+      length = DecodeUtils.Conversion.toBN(yield* read({
         calldata: { start: startPosition, length: DecodeUtils.EVM.WORD_SIZE}
       }, state)).toNumber(); //initial word contains length
 
@@ -57,12 +57,12 @@ export async function decodeCalldataReferenceByAddress(definition: DecodeUtils.A
         calldata: { start: startPosition + DecodeUtils.EVM.WORD_SIZE, length }
       }
 
-      return await decodeValue(definition, childPointer, info);
+      return yield* decodeValue(definition, childPointer, info);
 
     case "array":
 
       if (DecodeUtils.Definition.isDynamicArray(definition)) {
-        length = DecodeUtils.Conversion.toBN(await read({
+        length = DecodeUtils.Conversion.toBN(yield* read({
           calldata: { start: startPosition, length: DecodeUtils.EVM.WORD_SIZE },
           }, state)).toNumber();  // initial word contains array length
         startPosition += DecodeUtils.EVM.WORD_SIZE; //increment startPosition to
@@ -84,17 +84,20 @@ export async function decodeCalldataReferenceByAddress(definition: DecodeUtils.A
       baseDefinition = DecodeUtils.Definition.spliceLocation(baseDefinition, "calldata");
       let baseSize = calldataSize(baseDefinition, info.referenceDeclarations, info.calldataAllocations)[0];
 
-      return await Promise.all(range(length).map( (index: number) =>
-        decodeCalldata(baseDefinition,
+      let decodedChildren = [];
+      for(let index = 0; index < length; index++) {
+        decodedChildren.push(yield* decodeCalldata(
+          baseDefinition,
           { calldata: {
             start: startPosition + index * baseSize,
             length: baseSize
           }},
-          info, startPosition) //pointer base is always start of list, never the length
-      ));
+          info, startPosition)); //pointer base is always start of list, never the length
+      }
+      return decodedChildren;
 
     case "struct":
-      return await decodeCalldataStructByPosition(definition, startPosition, info);
+      return yield* decodeCalldataStructByPosition(definition, startPosition, info);
 
     default:
       // debug("Unknown calldata reference type: %s", DecodeUtils.typeIdentifier(definition));
@@ -102,7 +105,7 @@ export async function decodeCalldataReferenceByAddress(definition: DecodeUtils.A
   }
 }
 
-export async function decodeCalldataReferenceStatic(definition: DecodeUtils.AstDefinition, pointer: CalldataPointer, info: EvmInfo): Promise <any> {
+export function* decodeCalldataReferenceStatic(definition: DecodeUtils.AstDefinition, pointer: CalldataPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
   const { state } = info;
   debug("static");
   debug("pointer %o", pointer);
@@ -123,17 +126,20 @@ export async function decodeCalldataReferenceStatic(definition: DecodeUtils.AstD
       baseDefinition = DecodeUtils.Definition.spliceLocation(baseDefinition, "calldata");
       let baseSize = calldataSize(baseDefinition, info.referenceDeclarations, info.calldataAllocations)[0];
 
-      return await Promise.all(range(length).map( (index: number) =>
-        decodeCalldata(baseDefinition,
+      let decodedChildren = [];
+      for(let index = 0; index < length; index++) {
+        decodedChildren.push(yield* decodeCalldata(
+          baseDefinition,
           { calldata: {
             start: pointer.calldata.start + index * baseSize,
             length: baseSize
           }},
-          info) //static case so don't need base
-      ));
+          info)); //static case so don't need base
+      }
+      return decodedChildren;
 
     case "struct":
-      return await decodeCalldataStructByPosition(definition, pointer.calldata.start, info);
+      return yield* decodeCalldataStructByPosition(definition, pointer.calldata.start, info);
 
     default:
       // debug("Unknown calldata reference type: %s", DecodeUtils.typeIdentifier(definition));
@@ -142,7 +148,7 @@ export async function decodeCalldataReferenceStatic(definition: DecodeUtils.AstD
 }
 
 //note that this function takes the start position as a *number*; it does not take a calldata pointer
-async function decodeCalldataStructByPosition(definition: DecodeUtils.AstDefinition, startPosition: number, info: EvmInfo): Promise<any> {
+function* decodeCalldataStructByPosition(definition: DecodeUtils.AstDefinition, startPosition: number, info: EvmInfo): IterableIterator<any | DecoderRequest> {
   const { state, referenceDeclarations, calldataAllocations } = info;
 
   const referencedDeclaration = definition.typeName
@@ -154,7 +160,8 @@ async function decodeCalldataStructByPosition(definition: DecodeUtils.AstDefinit
     return undefined; //this should never happen
   }
 
-  const decodeAllocation = async (memberAllocation: CalldataMemberAllocation) => {
+  let decodedMembers: any = {};
+  for(let memberAllocation of Object.values(structAllocation.members)) {
     const memberPointer = memberAllocation.pointer;
     const childPointer: CalldataPointer = {
       calldata: {
@@ -170,16 +177,9 @@ async function decodeCalldataStructByPosition(definition: DecodeUtils.AstDefinit
     //there also used to be code here to add on the "_ptr" ending when absent, but we
     //presently ignore that ending, so we'll skip that
 
-    let decoded = await decodeCalldata(memberDefinition, childPointer, info, startPosition);
-    //note that if we are in the static case, then the last parameter is irrelevant,
-    //but we pass it anyway for simplicity
+    let decoded = yield* decodeCalldata(memberDefinition, childPointer, info);
 
-    return {
-      [memberDefinition.name]: decoded
-    };
+    decodedMembers[memberDefinition.name] = decoded;
   }
-
-  const decodings = Object.values(structAllocation.members).map(decodeAllocation);
-
-  return Object.assign({}, ...await Promise.all(decodings));
+  return decodedMembers;
 }

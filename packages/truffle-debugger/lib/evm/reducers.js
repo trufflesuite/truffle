@@ -4,14 +4,13 @@ const debug = debugModule("debugger:evm:reducers");
 import { combineReducers } from "redux";
 
 import * as actions from "./actions";
-import { keccak256 } from "lib/helpers";
+import { keccak256, extractPrimarySource } from "lib/helpers";
 import * as DecodeUtils from "truffle-decode-utils";
 
 import BN from "bn.js";
 
 const DEFAULT_CONTEXTS = {
-  byContext: {},
-  byBinary: {}
+  byContext: {}
 };
 
 function contexts(state = DEFAULT_CONTEXTS, action) {
@@ -19,56 +18,50 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
     /*
      * Adding a new context
      */
-    case actions.ADD_CONTEXT: {
-      const { contractName, raw, compiler, contractId } = action;
-      const context = keccak256(raw);
+    case actions.ADD_CONTEXT:
+      const {
+        contractName,
+        binary,
+        sourceMap,
+        compiler,
+        abi,
+        contractId,
+        contractKind,
+        isConstructor
+      } = action;
+      debug("action %O", action);
+      //NOTE: we take hash as *string*, not as bytes, because the binary may
+      //contain link references!
+      const context = keccak256({ type: "string", value: binary });
+      let primarySource;
+      if (sourceMap !== undefined) {
+        primarySource = extractPrimarySource(sourceMap);
+      }
+      //otherwise leave it undefined
 
       return {
         ...state,
-
         byContext: {
           ...state.byContext,
-
           [context]: {
-            ...(state.byContext[context] || {}),
-
             contractName,
             context,
+            binary,
+            sourceMap,
+            primarySource,
             compiler,
-            contractId
+            abi,
+            contractId,
+            contractKind,
+            isConstructor
           }
         }
       };
-    }
 
-    /*
-     * Adding binary for a context
-     */
-    case actions.ADD_BINARY: {
-      const { context, binary } = action;
-
-      if (state.byBinary[binary]) {
-        return state;
-      }
-
+    case actions.NORMALIZE_CONTEXTS:
       return {
-        byContext: {
-          ...state.byContext,
-
-          [context]: {
-            ...state.byContext[context],
-
-            binary
-          }
-        },
-
-        byBinary: {
-          ...state.byBinary,
-
-          [binary]: { context: context }
-        }
+        byContext: DecodeUtils.Contexts.normalizeContexts(state.byContext)
       };
-    }
 
     /*
      * Default case

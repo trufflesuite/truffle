@@ -1,13 +1,21 @@
-const Web3 = require("web3");
+import Web3 from "web3";
+import { Provider } from "web3/providers";
 
-const ethereumOverloads = require("./ethereum-overloads");
-const quorumOverloads = require("./quorum-overloads");
+import * as ethereumOverloads from "./ethereum-overloads";
+import * as quorumOverloads from "./quorum-overloads";
 
 // March 13, 2019 - Mike Seese:
 // This is a temporary shim to support the basic, Ethereum-based
 // multiledger integration. This whole adapter, including this shim,
 // will undergo better architecture before TruffleCon to support
 // other non-Ethereum-based ledgers.
+
+export type NetworkType = "ethereum" | "quorum";
+
+export interface Web3ShimOptions {
+  provider?: Provider;
+  networkType?: NetworkType;
+};
 
 // March 14, 2019 - Mike Seese:
 // This shim was intended to be temporary (see the above comment)
@@ -24,10 +32,11 @@ const quorumOverloads = require("./quorum-overloads");
 // should drive the development of the correct architecture of
 // `truffle-interface-adapter`that should use this work in a more
 // sane and organized manner.
-class Web3Shim extends Web3 {
-  constructor(options) {
-    const { provider } = options;
-    super(provider);
+export class Web3Shim extends Web3 {
+  public networkType: NetworkType;
+
+  constructor(options?: Web3ShimOptions) {
+    super();
 
     if (options) {
       this.networkType = options.networkType || "ethereum";
@@ -38,7 +47,7 @@ class Web3Shim extends Web3 {
     this.initInterface();
   }
 
-  setNetworkType(networkType) {
+  setNetworkType(networkType: NetworkType) {
     this.networkType = networkType;
     this.initInterface();
   }
@@ -72,5 +81,3 @@ class Web3Shim extends Web3 {
     quorumOverloads.getTransactionReceipt(this);
   }
 }
-
-module.exports = Web3Shim;

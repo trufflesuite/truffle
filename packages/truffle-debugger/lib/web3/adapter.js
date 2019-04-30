@@ -41,11 +41,13 @@ export default class Web3Adapter {
 
   /**
    * getDeployedCode - get the deployed code for an address from the client
+   * NOTE: the block argument is optional
    * @param  {String} address
    * @return {String}         deployedBinary
    */
-  async getDeployedCode(address) {
+  async getDeployedCode(address, block) {
     debug("getting deployed code for %s", address);
-    return await this.web3.eth.getCode(address);
+    let code = await this.web3.eth.getCode(address, block);
+    return code === "0x0" ? "0x" : code;
   }
 }
