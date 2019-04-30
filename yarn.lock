@@ -950,9 +950,10 @@
   version "1.8.13"
   resolved "https://registry.yarnpkg.com/@types/underscore/-/underscore-1.8.13.tgz#e1bf89141fbccb71dcb3bf12d86a923c007698e3"
 
-"@types/web3@^1.0.18", "@types/web3@^1.0.5":
+"@types/web3@1.0.18":
   version "1.0.18"
   resolved "https://registry.yarnpkg.com/@types/web3/-/web3-1.0.18.tgz#87a8651041d21fc37602ff02327df2c7ecf105d1"
+  integrity sha512-uXQL0LDszt2f476LEmYM6AvSv9F4vU4hWQvlUhwfLHNlIB6OyBXoYsCzWAIhhnc5U0HA7ZBcPybxRJ/yfA6THg==
   dependencies:
     "@types/bn.js" "*"
     "@types/underscore" "*"

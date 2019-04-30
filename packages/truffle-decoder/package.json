@@ -38,7 +38,7 @@
     "@types/lodash.clonedeep": "^4.5.4",
     "@types/lodash.isequal": "^4.5.4",
     "@types/lodash.merge": "^4.6.4",
-    "@types/web3": "^1.0.5",
+    "@types/web3": "1.0.18",
     "json-schema-to-typescript": "^5.5.0",
     "truffle": "^5.0.14",
     "truffle-contract-schema": "^3.0.8",
