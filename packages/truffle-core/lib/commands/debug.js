@@ -874,7 +874,7 @@ var command = {
               case "u":
               case "n":
               case "c":
-                if (session.view(selectors.session.status.loaded)) {
+                if (!session.view(trace.finishedOrUnloaded)) {
                   if (!session.view(solidity.current.source).source) {
                     printInstruction();
                   }
