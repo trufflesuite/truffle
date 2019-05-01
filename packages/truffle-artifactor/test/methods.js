@@ -32,6 +32,9 @@ describe("Artifactor.saveAll", () => {
         },
         "x-from-dependency": "somedep"
       })
-      .catch(e => assert(e.message.includes("doesn't exist!")));
+      .catch(e => {
+        assert(e.code === "ENOENT");
+        assert(e.message.includes("doesn't exist!"));
+      });
   });
 });
