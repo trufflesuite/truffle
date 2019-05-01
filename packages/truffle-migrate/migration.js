@@ -28,36 +28,31 @@ class Migration {
    * @param  {Object}   resolver truffle module
    * @param  {Function} callback
    */
-  async _load(options, context, deployer, resolver, callback) {
+  async _load(options, context, deployer, resolver) {
     // Load assets and run `execute`
-    try {
-      const accounts = await context.web3.eth.getAccounts();
-      const requireOptions = {
-        file: this.file,
-        context: context,
-        resolver: resolver,
-        args: [deployer]
-      };
+    const accounts = await context.web3.eth.getAccounts();
+    const requireOptions = {
+      file: this.file,
+      context: context,
+      resolver: resolver,
+      args: [deployer]
+    };
 
-      const fn = Require.file(requireOptions);
+    const fn = Require.file(requireOptions);
 
-      const unRunnable = !fn || !fn.length || fn.length == 0;
+    const unRunnable = !fn || !fn.length || fn.length == 0;
 
-      if (unRunnable) {
-        const msg = `Migration ${
-          this.file
-        } invalid or does not take any parameters`;
-        return callback(new Error(msg));
-      }
-
-      // `migrateFn` might be sync or async. We negotiate that difference in
-      // `execute` through the deployer API.
-      const migrateFn = fn(deployer, options.network, accounts);
-      await this._deploy(options, deployer, resolver, migrateFn);
-      callback();
-    } catch (error) {
-      callback(error);
+    if (unRunnable) {
+      const msg = `Migration ${
+        this.file
+      } invalid or does not take any parameters`;
+      throw new Error(msg);
     }
+
+    // `migrateFn` might be sync or async. We negotiate that difference in
+    // `execute` through the deployer API.
+    const migrateFn = fn(deployer, options.network, accounts);
+    await this._deploy(options, deployer, resolver, migrateFn);
   }
 
   /**
@@ -298,7 +293,12 @@ class Migration {
     };
 
     await self.emitter.emit("preMigrate", preMigrationsData);
-    await self._load(options, context, deployer, resolver, callback);
+    try {
+      await self._load(options, context, deployer, resolver, callback);
+      callback();
+    } catch (error) {
+      callback(error);
+    }
   }
 }
 
