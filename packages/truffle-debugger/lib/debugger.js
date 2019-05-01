@@ -83,6 +83,25 @@ export default class Debugger {
     return new this(session);
   }
 
+  /*
+   * Instantiates a Debugger WITHOUT waiting for it to be ready!
+   * WARNING: Only for those who know what they are doing!
+   * You probably do not want to use this!
+   * NOTE: txHash is an optional parameter
+   */
+  static async unreadyDebugger(options = {}, txHash) {
+    expect.options(options, ["contracts", "provider"]);
+
+    let session = new Session(
+      options.contracts,
+      options.files,
+      options.provider,
+      txHash
+    );
+
+    return new this(session);
+  }
+
   /**
    * Connects to the instantiated Debugger.
    *

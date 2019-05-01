@@ -11,9 +11,6 @@ import controller from "lib/controller/reducers";
 
 import * as actions from "./actions";
 
-export const WAITING = "WAITING";
-export const ACTIVE = "ACTIVE";
-
 function ready(state = false, action) {
   switch (action.type) {
     case actions.READY:
@@ -23,6 +20,15 @@ function ready(state = false, action) {
     case actions.WAIT:
       return false;
 
+    default:
+      return state;
+  }
+}
+
+function projectInfoComputed(state = false, action) {
+  switch (action.type) {
+    case actions.PROJECT_INFO_COMPUTED:
+      return true;
     default:
       return state;
   }
@@ -78,6 +84,7 @@ function block(state = {}, action) {
 const session = combineReducers({
   ready,
   lastLoadingError,
+  projectInfoComputed,
   transaction,
   receipt,
   block

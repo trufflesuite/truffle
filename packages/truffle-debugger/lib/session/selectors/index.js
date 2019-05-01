@@ -117,7 +117,15 @@ const session = createSelectorTree({
     /*
      * session.status.loaded
      */
-    loaded: createLeaf([trace.loaded], loaded => loaded)
+    loaded: createLeaf([trace.loaded], loaded => loaded),
+
+    /*
+     * session.status.projectInfoComputed
+     */
+    projectInfoComputed: createLeaf(
+      ["/state"],
+      state => state.projectInfoComputed
+    )
   }
 });
 

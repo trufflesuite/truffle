@@ -46,6 +46,8 @@ var command = {
 
     var config = Config.detect(options);
 
+    config.logger.log("Starting Truffle Debugger...");
+
     Environment.detect(config, function(err) {
       if (err) return done(err);
 
@@ -55,7 +57,13 @@ var command = {
       var enabledExpressions = new Set();
 
       let compilePromise = new Promise(function(accept, reject) {
-        compile.all(config, function(err, contracts, files) {
+        config.logger.log("Compiling your contracts...");
+
+        let compileConfig = {
+          ...config,
+          quiet: true
+        };
+        compile.all(compileConfig, function(err, contracts, files) {
           if (err) {
             return reject(err);
           }
@@ -69,11 +77,6 @@ var command = {
 
       var sessionPromise = compilePromise
         .then(function(result) {
-          config.logger.log(DebugUtils.formatStartMessage());
-          if (txHash !== undefined) {
-            config.logger.log(DebugUtils.formatTransactionStartMessage());
-          }
-
           let debuggerOptions = {
             provider: config.provider,
             files: result.files,
@@ -95,10 +98,13 @@ var command = {
             })
           };
 
-          debug("txHash: %s", txHash);
-          return txHash !== undefined
-            ? Debugger.forTx(txHash, debuggerOptions)
-            : Debugger.forProject(debuggerOptions);
+          //we use an unready debugger here so we can detect when it's done
+          //computing project info so this can be displayed to the user.  if
+          //you're not going to do something like that, we don't recommend
+          //using the unreadyDebugger interface.  Use forTx or forProject
+          //instead; these interfaces wait for the debugger to be ready, so you
+          //don't have to do that yourself
+          return Debugger.unreadyDebugger(debuggerOptions, txHash);
         })
         .then(function(bugger) {
           debug("about to connect");
@@ -927,15 +933,27 @@ var command = {
             }
           }
 
+          config.logger.log(DebugUtils.formatStartMessage());
+
+          //NOTE: this is only possible because we're using unreadyDebugger
+          await session.projectInfoComputed();
+
+          if (txHash !== undefined) {
+            config.logger.log(DebugUtils.formatTransactionStartMessage());
+          }
+
+          //NOTE: this is only necessary because we're using unreadyDebugger
+          try {
+            await session.ready();
+          } catch (loadError) {
+            config.logger.log(loadError);
+            session.unload();
+          }
+
           let prompt;
 
           debug("session state %O", session.view(selectors.session));
           debug("session state %O", session.state.session);
-
-          if (session.view(selectors.session.status.isError)) {
-            let loadError = session.view(selectors.session.status.error);
-            config.logger.log(loadError);
-          }
 
           if (session.view(selectors.session.status.loaded)) {
             printAddressesAffected();
