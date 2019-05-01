@@ -10,6 +10,7 @@ import * as TruffleDecodeUtils from "truffle-decode-utils";
 import Debugger from "lib/debugger";
 
 import trace from "lib/trace/selectors";
+import controller from "lib/controller/selectors";
 
 const __TWOCONTRACTS = `
 pragma solidity ^0.5.0;
@@ -111,5 +112,17 @@ describe("Loading and unloading transactions", function() {
     );
     expected = { y: 2 };
     assert.deepInclude(variables, expected);
+  });
+
+  it("Doesn't crash getting location when transactionless", async function() {
+    let bugger = await Debugger.forProject({
+      provider,
+      files,
+      contracts: artifacts
+    });
+
+    let session = bugger.connect();
+
+    assert.isDefined(session.view(controller.current.location));
   });
 });
