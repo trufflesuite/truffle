@@ -59,5 +59,5 @@ describe("Contracts.compile", () => {
           )
       );
     });
-  }).timeout(3000);
+  }).timeout(5000);
 });
