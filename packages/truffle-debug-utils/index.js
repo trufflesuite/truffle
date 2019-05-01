@@ -82,13 +82,13 @@ var DebugUtils = {
   },
 
   formatStartMessage: function() {
-    var lines = ["", "Gathering project data...", ""];
+    var lines = ["Gathering project data..."];
 
     return lines.join(OS.EOL);
   },
 
   formatTransactionStartMessage: function() {
-    var lines = ["Gathering transaction data...", ""];
+    var lines = ["Gathering transaction data..."];
 
     return lines.join(OS.EOL);
   },

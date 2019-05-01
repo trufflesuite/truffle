@@ -25,6 +25,7 @@ var command = {
     var util = require("util");
     const BN = require("bn.js");
     const analytics = require("../services/analytics");
+    const ora = require("ora");
 
     // add custom inspect options for BNs
     BN.prototype[util.inspect.custom] = function(depth, options) {
@@ -128,6 +129,7 @@ var command = {
               selectors.session.info.affectedInstances
             );
 
+            config.logger.log("");
             config.logger.log("Addresses affected:");
             config.logger.log(
               DebugUtils.formatAffectedInstances(affectedInstances)
@@ -788,13 +790,17 @@ var command = {
             }
             if (cmd === "t") {
               if (!session.view(selectors.session.status.loaded)) {
-                config.logger.log(DebugUtils.formatTransactionStartMessage());
+                let txSpinner = ora(
+                  DebugUtils.formatTransactionStartMessage()
+                ).start();
                 await session.load(cmdArgs);
                 //if load succeeded
                 if (session.view(selectors.session.status.success)) {
+                  txSpinner.succeed();
                   //if successful, change prompt
                   setPrompt(DebugUtils.formatPrompt(config.network, cmdArgs));
                 } else {
+                  txSpinner.fail();
                   loadFailed = true;
                 }
               } else {
@@ -933,27 +939,32 @@ var command = {
             }
           }
 
-          config.logger.log(DebugUtils.formatStartMessage());
+          let projectSpinner = ora(DebugUtils.formatStartMessage()).start();
 
           //NOTE: this is only possible because we're using unreadyDebugger
           await session.projectInfoComputed();
+          projectSpinner.succeed();
 
+          let txSpinner = null;
           if (txHash !== undefined) {
-            config.logger.log(DebugUtils.formatTransactionStartMessage());
+            txSpinner = ora(DebugUtils.formatTransactionStartMessage()).start();
           }
 
           //NOTE: this is only necessary because we're using unreadyDebugger
           try {
             await session.ready();
+            if (txSpinner) {
+              txSpinner.succeed();
+            }
           } catch (loadError) {
+            if (txSpinner) {
+              txSpinner.fail();
+            }
             config.logger.log(loadError);
             session.unload();
           }
 
           let prompt;
-
-          debug("session state %O", session.view(selectors.session));
-          debug("session state %O", session.state.session);
 
           if (session.view(selectors.session.status.loaded)) {
             printAddressesAffected();
