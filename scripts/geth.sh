@@ -19,5 +19,6 @@ docker run \
     --nodiscover \
     --dev \
     --dev.period 0 \
+    --allow-insecure-unlock \
     --targetgaslimit '7000000' \
     js ./scripts/geth-accounts.js
