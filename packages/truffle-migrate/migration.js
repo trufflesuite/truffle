@@ -53,9 +53,10 @@ class Migration {
       // `migrateFn` might be sync or async. We negotiate that difference in
       // `execute` through the deployer API.
       const migrateFn = fn(deployer, options.network, accounts);
-      await this._deploy(options, deployer, resolver, migrateFn, callback);
-    } catch (err) {
-      callback(err);
+      await this._deploy(options, deployer, resolver, migrateFn);
+      callback();
+    } catch (error) {
+      callback(error);
     }
   }
 
@@ -67,7 +68,7 @@ class Migration {
    * @param  {Object}   resolver    truffle module
    * @param  {[type]}   migrateFn   module.exports of a migrations.js
    */
-  async _deploy(options, deployer, resolver, migrateFn, callback) {
+  async _deploy(options, deployer, resolver, migrateFn) {
     const self = this;
 
     try {
@@ -120,17 +121,15 @@ class Migration {
           self.options.provider.engine.silent = true;
         }
       }
-      // Prevent errors thrown in the callback from triggering the below catch()
-      process.nextTick(callback);
-    } catch (e) {
+    } catch (error) {
       const payload = {
         type: "migrateErr",
-        error: e
+        error: error
       };
 
       await self.emitter.emit("error", payload);
       deployer.finish();
-      callback(e);
+      throw new Error(error);
     }
   }
 
