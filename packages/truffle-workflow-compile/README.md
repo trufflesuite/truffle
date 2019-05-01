@@ -20,13 +20,13 @@ const config = {
 
 // compiles contracts found in contracts_directory,
 // saves them in contracts_build_directory
-Contracts.compile(config, () => {
-  console.log("Compilation complete!");
-});
+Contracts.compile(config)
+  .then(() => console.log("Compilation complete!"))
+  .catch(e => console.error(e))
 
-// alternative making use of the expected callback
+// callback alternative
 Contracts.compile(config, (err, output) => {
   if (err) console.error(err);
-  else console.log(output)
+  console.log(output)
 });
 ```
