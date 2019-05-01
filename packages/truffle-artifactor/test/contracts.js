@@ -45,6 +45,12 @@ describe("artifactor + require", () => {
             evmVersion: "byzantium"
           }
         }
+      },
+      logger: {
+        log(stringToLog) {
+          this.loggedStuff = this.loggedStuff + stringToLog;
+        },
+        loggedStuff: ""
       }
     };
 
