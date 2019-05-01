@@ -29,6 +29,7 @@
   },
   "gitHead": "b207efb3c1409746537293b3e0fc27350029188e",
   "devDependencies": {
+    "fs-extra": "^7.0.1",
     "mocha": "5.2.0"
   }
 }
