@@ -725,6 +725,7 @@ var command = {
             // If not finished, perform commands that require state changes
             // (other than quitting or resetting)
             if (!alreadyFinished) {
+              let stepSpinner = ora("Stepping...").start();
               switch (cmd) {
                 case "o":
                   await session.stepOver();
@@ -756,6 +757,7 @@ var command = {
                   await session.continueUntilBreakpoint();
                   break;
               }
+              stepSpinner.stop();
             } //otherwise, inform the user we can't do that
             else {
               switch (cmd) {
