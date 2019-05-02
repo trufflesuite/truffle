@@ -165,37 +165,29 @@ class Migration {
       basePath: path.dirname(self.file)
     });
 
-    const finish = err => {
-      if (err) return callback(err);
-      deployer
-        .start()
-        .then(() => {
-          if (options.save === false) return;
+    const finish = async () => {
+      try {
+        await deployer.start();
+        if (options.save === false) return;
 
-          const Migrations = resolver.require("./Migrations.sol");
+        const Migrations = resolver.require("./Migrations.sol");
 
-          if (Migrations && Migrations.isDeployed()) {
-            logger.log("Saving successful migration to network...");
-            return Migrations.deployed().then(migrations => {
-              return migrations.setCompleted(self.number);
-            });
-          }
-        })
-        .then(() => {
-          if (options.save === false) return;
+        if (Migrations && Migrations.isDeployed()) {
+          logger.log("Saving successful migration to network...");
+          const migrations = await Migrations.deployed();
+          await migrations.setCompleted(self.number);
+        }
+        if (options.save !== false) {
           logger.log("Saving artifacts...");
-          return options.artifactor.saveAll(resolver.contracts());
-        })
-        .then(() => {
-          // Use process.nextTicK() to prevent errors thrown in the callback from triggering the below catch()
-          process.nextTick(callback);
-        })
-        .catch(e => {
-          logger.log(
-            "Error encountered, bailing. Network state unknown. Review successful transactions manually."
-          );
-          callback(e);
-        });
+          await options.artifactor.saveAll(resolver.contracts());
+        }
+        process.nextTick(callback);
+      } catch (error) {
+        logger.log(
+          "Error encountered, bailing. Network state unknown. Review successful transactions manually."
+        );
+        callback(error);
+      }
     };
 
     web3.eth.getAccountsAndMigrate = () => {
