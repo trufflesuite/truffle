@@ -234,6 +234,7 @@ class Migration {
   }
 
   prepareForMigrations(options) {
+    const logger = options.logger;
     const web3 = new Web3Shim({
       provider: options.provider,
       networkType: options.networks[options.network].type
