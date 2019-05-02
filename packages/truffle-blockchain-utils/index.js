@@ -29,9 +29,9 @@ const Blockchain = {
     const parsed = {};
     if (uri.indexOf("blockchain://") !== 0) return parsed;
 
-    uri = uri.replace("blockchain://", "");
+    const cleanUri = uri.replace("blockchain://", "");
 
-    const pieces = uri.split("/block/");
+    const pieces = cleanUri.split("/block/");
 
     parsed.genesis_hash = `0x${pieces[0]}`;
     parsed.block_hash = `0x${pieces[1]}`;
@@ -40,14 +40,13 @@ const Blockchain = {
   },
 
   asURI(provider, callback) {
-    const self = this;
-    let genesis;
+    let genesis, latest;
 
-    self.getBlockByNumber("0x0", provider, (err, { result }) => {
+    this.getBlockByNumber("0x0", provider, (err, { result }) => {
       if (err) return callback(err);
       genesis = result;
 
-      self.getBlockByNumber("latest", provider, (err, { result }) => {
+      this.getBlockByNumber("latest", provider, (err, { result }) => {
         if (err) return callback(err);
         latest = result;
         const url = `blockchain://${genesis.hash.replace(
@@ -60,18 +59,17 @@ const Blockchain = {
   },
 
   matches(uri, provider, callback) {
-    const self = this;
-    uri = self.parse(uri);
+    const parsedUri = this.parse(uri);
 
-    const expected_genesis = uri.genesis_hash;
-    const expected_block = uri.block_hash;
+    const expected_genesis = parsedUri.genesis_hash;
+    const expected_block = parsedUri.block_hash;
 
-    self.getBlockByNumber("0x0", provider, (err, { result }) => {
+    this.getBlockByNumber("0x0", provider, (err, { result }) => {
       if (err) return callback(err);
       const block = result;
       if (block.hash !== expected_genesis) return callback(null, false);
 
-      self.getBlockByHash(expected_block, provider, (err, { result }) => {
+      this.getBlockByHash(expected_block, provider, (err, { result }) => {
         // Treat an error as if the block didn't exist. This is because
         // some clients respond differently.
         const block = result;
