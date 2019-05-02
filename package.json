@@ -8,6 +8,7 @@
     "build:interface-adapter": "cd packages/truffle-interface-adapter && yarn build",
     "lerna:bootstrap": "lerna bootstrap",
     "bootstrap": "./scripts/bootstrap.sh",
+    "publish-release": "./scripts/publish-release.sh",
     "test": "lerna run test --stream --concurrency=1 -- --colors",
     "ci": "./scripts/ci.sh",
     "geth": "./scripts/geth.sh",
