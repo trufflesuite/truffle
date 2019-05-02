@@ -21,6 +21,7 @@ run_geth() {
     --nodiscover \
     --dev \
     --dev.period 0 \
+    --allow-insecure-unlock \
     --targetgaslimit '7000000' \
     js ./scripts/geth-accounts.js \
     > /dev/null &
@@ -53,7 +54,7 @@ elif [ "$COVERAGE" = true ]; then
   sudo apt-get install -y jq snapd solc
   export PATH=$PATH:/snap/bin
   sudo snap install vyper --beta --devmode
-  cd packages/truffle-debugger && npm run test:coverage && \
+  cd packages/truffle-debugger && yarn test:coverage && \
   cd ../../ && nyc lerna run --ignore truffle-debugger test && \
   cat ./packages/truffle-debugger/coverage/lcov.info >> ./coverage/lcov.info && \
   cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js

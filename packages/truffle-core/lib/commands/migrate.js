@@ -129,6 +129,39 @@ const command = {
     return { dryRunOnly, dryRunAndMigrations };
   },
 
+  prepareConfigForRealMigrations: async function(buildDir, options) {
+    const Artifactor = require("truffle-artifactor");
+    const Resolver = require("truffle-resolver");
+    const Migrate = require("truffle-migrate");
+    const Config = require("truffle-config");
+    const Environment = require("../environment");
+
+    let accept = true;
+
+    if (options.interactive) {
+      accept = await Migrate.acceptDryRun();
+    }
+
+    if (accept) {
+      const config = Config.detect(options);
+
+      config.contracts_build_directory = buildDir;
+      config.artifactor = new Artifactor(buildDir);
+      config.resolver = new Resolver(config);
+
+      try {
+        await Environment.detect(config);
+      } catch (error) {
+        throw new Error(error);
+      }
+
+      config.dryRun = false;
+      return { config, proceed: true };
+    } else {
+      return { proceed: false };
+    }
+  },
+
   run: function(options, done) {
     const Artifactor = require("truffle-artifactor");
     const Resolver = require("truffle-resolver");
@@ -141,44 +174,61 @@ const command = {
 
     const conf = Config.detect(options);
 
-    async function executePostDryRunMigration(buildDir, options, done) {
-      const Artifactor = require("truffle-artifactor");
-      const Resolver = require("truffle-resolver");
-      const Migrate = require("truffle-migrate");
-      const Config = require("truffle-config");
-      let accept = true;
+    Contracts.compile(conf, compileCallback.bind(this));
 
-      if (options.interactive) {
-        accept = await Migrate.acceptDryRun();
-      }
-
-      if (accept) {
-        const environment = require("../environment");
-        const config = Config.detect(options);
-
-        config.contracts_build_directory = buildDir;
-        config.artifactor = new Artifactor(buildDir);
-        config.resolver = new Resolver(config);
-
-        environment.detect(config, err => {
-          if (err) return done(err);
-
-          config.dryRun = false;
-          runMigrations(config, done);
+    function compileCallback(error) {
+      if (error) return done(error);
+      Environment.detect(conf)
+        .then(() => {
+          detectCallback.bind(this)();
+        })
+        .catch(error => {
+          detectCallback.bind(this, error)();
         });
+    }
+
+    async function detectCallback(error) {
+      if (error) return done(error);
+
+      const { dryRunOnly, dryRunAndMigrations } = this.determineDryRunSettings(
+        conf,
+        options
+      );
+
+      if (dryRunOnly) {
+        try {
+          conf.dryRun = true;
+          await setupDryRunEnvironmentThenRunMigrations(conf);
+          done();
+        } catch (err) {
+          done(err);
+        }
+      } else if (dryRunAndMigrations) {
+        const currentBuild = conf.contracts_build_directory;
+        conf.dryRun = true;
+
+        try {
+          await setupDryRunEnvironmentThenRunMigrations(conf);
+          let { config, proceed } = await this.prepareConfigForRealMigrations(
+            currentBuild,
+            options
+          );
+          if (proceed) await runMigrations(config, done);
+          return done();
+        } catch (error) {
+          return done(error);
+        }
       } else {
-        done();
+        await runMigrations(conf, done);
       }
     }
 
     function setupDryRunEnvironmentThenRunMigrations(config) {
       return new Promise((resolve, reject) => {
-        Environment.fork(config, function(err) {
-          if (err) return reject(err);
-
-          // Copy artifacts to a temporary directory
-          temp.mkdir("migrate-dry-run-", function(err, temporaryDirectory) {
-            if (err) return reject(err);
+        Environment.fork(config)
+          .then(() => {
+            // Copy artifacts to a temporary directory
+            const temporaryDirectory = temp.mkdirSync("migrate-dry-run-");
 
             function cleanup() {
               var args = arguments;
@@ -204,8 +254,10 @@ const command = {
 
               runMigrations(config, cleanup);
             });
+          })
+          .catch(error => {
+            reject(error);
           });
-        });
       });
     }
 
@@ -234,48 +286,6 @@ const command = {
         }
       }
     }
-
-    const detectCallback = async function(error) {
-      if (error) return done(error);
-
-      const { dryRunOnly, dryRunAndMigrations } = this.determineDryRunSettings(
-        conf,
-        options
-      );
-
-      if (dryRunOnly) {
-        try {
-          conf.dryRun = true;
-          await setupDryRunEnvironmentThenRunMigrations(conf);
-          done();
-        } catch (err) {
-          done(err);
-        }
-      } else if (dryRunAndMigrations) {
-        const currentBuild = conf.contracts_build_directory;
-        conf.dryRun = true;
-
-        try {
-          await setupDryRunEnvironmentThenRunMigrations(conf);
-        } catch (err) {
-          return done(err);
-        }
-
-        executePostDryRunMigration(currentBuild, options, done);
-
-        // Development
-      } else {
-        await runMigrations(conf, done);
-      }
-    };
-
-    const compileCallback = function(error) {
-      if (error) return done(error);
-
-      Environment.detect(conf, detectCallback.bind(this));
-    };
-
-    Contracts.compile(conf, compileCallback.bind(this));
   }
 };
 

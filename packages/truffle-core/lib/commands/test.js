@@ -141,7 +141,13 @@ var command = {
         };
 
         if (config.networks[config.network]) {
-          Environment.detect(config, environmentCallback);
+          Environment.detect(config)
+            .then(() => {
+              environmentCallback();
+            })
+            .catch(error => {
+              environmentCallback(error);
+            });
         } else {
           var ipcOptions = {
             network: "test"
