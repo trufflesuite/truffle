@@ -64,8 +64,6 @@ class Migration {
    * @param  {[type]}   migrateFn   module.exports of a migrations.js
    */
   async _deploy(options, deployer, resolver, migrateFn) {
-    const self = this;
-
     try {
       await deployer.start();
 
@@ -86,19 +84,19 @@ class Migration {
 
         if (!this.dryRun) {
           const data = { message: message };
-          await self.emitter.emit("startTransaction", data);
+          await this.emitter.emit("startTransaction", data);
         }
 
         const migrations = await Migrations.deployed();
-        const receipt = await migrations.setCompleted(self.number);
+        const receipt = await migrations.setCompleted(this.number);
 
         if (!this.dryRun) {
           const data = { receipt: receipt, message: message };
-          await self.emitter.emit("endTransaction", data);
+          await this.emitter.emit("endTransaction", data);
         }
       }
 
-      await self.emitter.emit("postMigrate", self.isLast);
+      await this.emitter.emit("postMigrate", this.isLast);
 
       // Save artifacts to local filesystem
       await options.artifactor.saveAll(resolver.contracts());
@@ -106,14 +104,14 @@ class Migration {
       deployer.finish();
 
       // Cleanup
-      if (self.isLast) {
-        self.emitter.clearListeners();
+      if (this.isLast) {
+        this.emitter.clearListeners();
 
         // Exiting w provider-engine appears to be hopeless. This hack on
         // our fork just swallows errors from eth-block-tracking
         // as we unwind the handlers downstream from here.
-        if (self.options.provider && self.options.provider.engine) {
-          self.options.provider.engine.silent = true;
+        if (this.options.provider && this.options.provider.engine) {
+          this.options.provider.engine.silent = true;
         }
       }
     } catch (error) {
@@ -122,7 +120,7 @@ class Migration {
         error: error
       };
 
-      await self.emitter.emit("error", payload);
+      await this.emitter.emit("error", payload);
       deployer.finish();
       throw new Error(error);
     }
