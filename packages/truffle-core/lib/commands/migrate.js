@@ -174,54 +174,35 @@ const command = {
 
     const conf = Config.detect(options);
 
-    Contracts.compile(conf, compileCallback.bind(this));
+    Contracts.compile(conf)
+      .then(async () => {
+        await Environment.detect(conf);
+        const {
+          dryRunOnly,
+          dryRunAndMigrations
+        } = this.determineDryRunSettings(conf, options);
 
-    function compileCallback(error) {
-      if (error) return done(error);
-      Environment.detect(conf)
-        .then(() => {
-          detectCallback.bind(this)();
-        })
-        .catch(error => {
-          detectCallback.bind(this, error)();
-        });
-    }
-
-    async function detectCallback(error) {
-      if (error) return done(error);
-
-      const { dryRunOnly, dryRunAndMigrations } = this.determineDryRunSettings(
-        conf,
-        options
-      );
-
-      if (dryRunOnly) {
-        try {
+        if (dryRunOnly) {
           conf.dryRun = true;
           await setupDryRunEnvironmentThenRunMigrations(conf);
           done();
-        } catch (err) {
-          done(err);
-        }
-      } else if (dryRunAndMigrations) {
-        const currentBuild = conf.contracts_build_directory;
-        conf.dryRun = true;
+        } else if (dryRunAndMigrations) {
+          const currentBuild = conf.contracts_build_directory;
+          conf.dryRun = true;
 
-        try {
           await setupDryRunEnvironmentThenRunMigrations(conf);
           let { config, proceed } = await this.prepareConfigForRealMigrations(
             currentBuild,
             options
           );
           if (proceed) await runMigrations(config, done);
-          return done();
-        } catch (error) {
-          return done(error);
+        } else {
+          await runMigrations(conf, done);
         }
-      } else {
-        await runMigrations(conf, done);
-      }
-    }
+      })
+      .catch(error => {
+        done(error);
+      });
 
     function setupDryRunEnvironmentThenRunMigrations(config) {
       return new Promise((resolve, reject) => {
