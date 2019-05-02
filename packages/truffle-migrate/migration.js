@@ -190,30 +190,23 @@ class Migration {
       }
     };
 
-    web3.eth.getAccountsAndMigrate = () => {
-      return new Promise((resolve, reject) => {
-        web3.eth.getAccounts((err, accounts) => {
-          if (err) return reject(err);
+    const accounts = await web3.eth.getAccounts();
 
-          const fn = Require.file({
-            file: self.file,
-            context: context,
-            resolver: resolver,
-            args: [deployer]
-          });
+    const fn = Require.file({
+      file: self.file,
+      context: context,
+      resolver: resolver,
+      args: [deployer]
+    });
 
-          if (!fn || !fn.length || fn.length == 0) {
-            const message = `Migration ${
-              self.file
-            } invalid or does not take any parameters`;
-            return reject(new Error(message));
-          }
-          fn(deployer, options.network, accounts);
-          resolve(finish());
-        });
-      });
-    };
-    web3.eth.getAccountsAndMigrate();
+    if (!fn || !fn.length || fn.length == 0) {
+      const message = `Migration ${
+        self.file
+      } invalid or does not take any parameters`;
+      throw new Error(message);
+    }
+    fn(deployer, options.network, accounts);
+    return finish();
   }
 
   // ------------------------------------- Public -------------------------------------------------
