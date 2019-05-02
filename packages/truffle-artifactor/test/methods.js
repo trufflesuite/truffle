@@ -35,7 +35,6 @@ describe("Artifactor.saveAll", () => {
       })
       .then(() => assert(false, "didn't throw!"))
       .catch(e => {
-        assert(e.code === "ENOENT");
         assert(e.message.includes("doesn't exist!"));
       });
   });
