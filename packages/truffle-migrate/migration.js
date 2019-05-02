@@ -26,7 +26,6 @@ class Migration {
    * @param  {Object}   context  web3
    * @param  {Object}   deployer truffle module
    * @param  {Object}   resolver truffle module
-   * @param  {Function} callback
    */
   async _load(options, context, deployer, resolver) {
     // Load assets and run `execute`
@@ -131,7 +130,6 @@ class Migration {
    * Runs the legacy migration sequence by used in Truffle v4,
    * but continues to use the concurrent Deployer and Web3 provider
    * @param  {Object}   options  config and command-line
-   * @param  {Function} callback
    */
   async runLegacyMigrations(options) {
     const {
@@ -192,45 +190,38 @@ class Migration {
    * Instantiates a deployer, connects this migration and its deployer to the reporter
    * and launches a migration file's deployment sequence
    * @param  {Object}   options  config and command-line
-   * @param  {Function} callback
    */
-  async run(options, callback) {
-    try {
-      if (options.networks[options.network].type === "quorum") {
-        await this.runLegacyMigrations(options);
-        return callback();
-      }
-
-      const { web3, resolver, context, deployer } = this.prepareForMigrations(
-        options
-      );
-
-      // Connect reporter to this migration
-      if (this.reporter) {
-        this.reporter.setMigration(this);
-        this.reporter.setDeployer(deployer);
-        this.reporter.confirmations = options.confirmations || 0;
-        this.reporter.listen();
-      }
-
-      // Get file path and emit pre-migration event
-      const file = path.relative(options.migrations_directory, this.file);
-      const block = await web3.eth.getBlock("latest");
-
-      const preMigrationsData = {
-        file: file,
-        isFirst: this.isFirst,
-        network: options.network,
-        networkId: options.network_id,
-        blockLimit: block.gasLimit
-      };
-
-      await this.emitter.emit("preMigrate", preMigrationsData);
-      await this._load(options, context, deployer, resolver, callback);
-      callback();
-    } catch (error) {
-      callback(error);
+  async run(options) {
+    if (options.networks[options.network].type === "quorum") {
+      return await this.runLegacyMigrations(options);
     }
+
+    const { web3, resolver, context, deployer } = this.prepareForMigrations(
+      options
+    );
+
+    // Connect reporter to this migration
+    if (this.reporter) {
+      this.reporter.setMigration(this);
+      this.reporter.setDeployer(deployer);
+      this.reporter.confirmations = options.confirmations || 0;
+      this.reporter.listen();
+    }
+
+    // Get file path and emit pre-migration event
+    const file = path.relative(options.migrations_directory, this.file);
+    const block = await web3.eth.getBlock("latest");
+
+    const preMigrationsData = {
+      file: file,
+      isFirst: this.isFirst,
+      network: options.network,
+      networkId: options.network_id,
+      blockLimit: block.gasLimit
+    };
+
+    await this.emitter.emit("preMigrate", preMigrationsData);
+    await this._load(options, context, deployer, resolver);
   }
 
   prepareForMigrations(options) {

@@ -123,10 +123,14 @@ const Migrate = {
       return async.eachSeries(
         migrations,
         (migration, finished) => {
-          migration.run(clone, error => {
-            if (error) return finished(error);
-            finished();
-          });
+          migration
+            .run(clone)
+            .then(() => {
+              finished();
+            })
+            .catch(error => {
+              finished(error);
+            });
         },
         error => {
           if (error) return reject(error);
