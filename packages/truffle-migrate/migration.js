@@ -134,41 +134,23 @@ class Migration {
    * @param  {Function} callback
    */
   async runLegacyMigrations(options) {
-    const self = this;
-    const logger = options.logger;
-
-    const web3 = new Web3Shim({
-      provider: options.provider,
-      networkType: options.networks[options.network].type
-    });
+    const {
+      logger,
+      web3,
+      resolver,
+      context,
+      deployer
+    } = this.prepareForMigrations(options);
 
     logger.log(
       "Running migration: " +
-        path.relative(options.migrations_directory, self.file)
+        path.relative(options.migrations_directory, this.file)
     );
-
-    const resolver = new ResolverIntercept(options.resolver);
-
-    // Initial context.
-    const context = {
-      web3: web3
-    };
-
-    const deployer = new Deployer({
-      logger: logger,
-      confirmations: options.confirmations,
-      timeoutBlocks: options.timeoutBlocks,
-      networks: options.networks,
-      network: options.network,
-      network_id: options.network_id,
-      provider: options.provider,
-      basePath: path.dirname(self.file)
-    });
 
     const accounts = await web3.eth.getAccounts();
 
     const fn = Require.file({
-      file: self.file,
+      file: this.file,
       context: context,
       resolver: resolver,
       args: [deployer]
@@ -176,7 +158,7 @@ class Migration {
 
     if (!fn || !fn.length || fn.length == 0) {
       const message = `Migration ${
-        self.file
+        this.file
       } invalid or does not take any parameters`;
       throw new Error(message);
     }
@@ -191,7 +173,7 @@ class Migration {
       if (Migrations && Migrations.isDeployed()) {
         logger.log("Saving successful migration to network...");
         const migrations = await Migrations.deployed();
-        await migrations.setCompleted(self.number);
+        await migrations.setCompleted(this.number);
       }
       if (options.save !== false) {
         logger.log("Saving artifacts...");
@@ -213,75 +195,67 @@ class Migration {
    * @param  {Function} callback
    */
   async run(options, callback) {
-    const self = this;
-
-    if (options.networks[options.network].type === "quorum") {
-      try {
-        await self.runLegacyMigrations(options);
+    try {
+      if (options.networks[options.network].type === "quorum") {
+        await this.runLegacyMigrations(options);
         return callback();
-      } catch (error) {
-        return callback(error);
       }
+
+      const { web3, resolver, context, deployer } = this.prepareForMigrations(
+        options
+      );
+
+      // Connect reporter to this migration
+      if (this.reporter) {
+        this.reporter.setMigration(this);
+        this.reporter.setDeployer(deployer);
+        this.reporter.confirmations = options.confirmations || 0;
+        this.reporter.listen();
+      }
+
+      // Get file path and emit pre-migration event
+      const file = path.relative(options.migrations_directory, this.file);
+      const block = await web3.eth.getBlock("latest");
+
+      const preMigrationsData = {
+        file: file,
+        isFirst: this.isFirst,
+        network: options.network,
+        networkId: options.network_id,
+        blockLimit: block.gasLimit
+      };
+
+      await this.emitter.emit("preMigrate", preMigrationsData);
+      await this._load(options, context, deployer, resolver, callback);
+      callback();
+    } catch (error) {
+      callback(error);
     }
+  }
 
-    const logger = options.logger;
-    const resolver = new ResolverIntercept(options.resolver);
-
+  prepareForMigrations(options) {
     const web3 = new Web3Shim({
       provider: options.provider,
       networkType: options.networks[options.network].type
     });
 
-    // Initial context.
-    const context = {
-      web3: web3
-    };
+    const resolver = new ResolverIntercept(options.resolver);
 
-    // Instantiate a Deployer
+    // Initial context.
+    const context = { web3 };
+
     const deployer = new Deployer({
-      logger: logger,
+      logger,
       confirmations: options.confirmations,
       timeoutBlocks: options.timeoutBlocks,
       networks: options.networks,
       network: options.network,
       network_id: options.network_id,
       provider: options.provider,
-      basePath: path.dirname(self.file)
+      basePath: path.dirname(this.file)
     });
 
-    // Connect reporter to this migration
-    if (self.reporter) {
-      self.reporter.setMigration(self);
-      self.reporter.setDeployer(deployer);
-      self.reporter.confirmations = options.confirmations || 0;
-      self.reporter.listen();
-    }
-
-    // Get file path and emit pre-migration event
-    const file = path.relative(options.migrations_directory, self.file);
-    let block;
-    try {
-      block = await web3.eth.getBlock("latest");
-    } catch (err) {
-      callback(err);
-      return;
-    }
-
-    const preMigrationsData = {
-      file: file,
-      isFirst: self.isFirst,
-      network: options.network,
-      networkId: options.network_id,
-      blockLimit: block.gasLimit
-    };
-
-    await self.emitter.emit("preMigrate", preMigrationsData);
-    try {
-      await self._load(options, context, deployer, resolver, callback);
-      callback();
-    } catch (error) {
-      callback(error);
-    }
+    return { logger, web3, resolver, context, deployer };
   }
 }
 
