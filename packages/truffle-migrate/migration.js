@@ -133,7 +133,7 @@ class Migration {
    * @param  {Object}   options  config and command-line
    * @param  {Function} callback
    */
-  async runLegacyMigrations(options, callback) {
+  async runLegacyMigrations(options) {
     const self = this;
     const logger = options.logger;
 
@@ -165,31 +165,6 @@ class Migration {
       basePath: path.dirname(self.file)
     });
 
-    const finish = async () => {
-      try {
-        await deployer.start();
-        if (options.save === false) return;
-
-        const Migrations = resolver.require("./Migrations.sol");
-
-        if (Migrations && Migrations.isDeployed()) {
-          logger.log("Saving successful migration to network...");
-          const migrations = await Migrations.deployed();
-          await migrations.setCompleted(self.number);
-        }
-        if (options.save !== false) {
-          logger.log("Saving artifacts...");
-          await options.artifactor.saveAll(resolver.contracts());
-        }
-        process.nextTick(callback);
-      } catch (error) {
-        logger.log(
-          "Error encountered, bailing. Network state unknown. Review successful transactions manually."
-        );
-        callback(error);
-      }
-    };
-
     const accounts = await web3.eth.getAccounts();
 
     const fn = Require.file({
@@ -206,7 +181,28 @@ class Migration {
       throw new Error(message);
     }
     fn(deployer, options.network, accounts);
-    return finish();
+
+    try {
+      await deployer.start();
+      if (options.save === false) return;
+
+      const Migrations = resolver.require("./Migrations.sol");
+
+      if (Migrations && Migrations.isDeployed()) {
+        logger.log("Saving successful migration to network...");
+        const migrations = await Migrations.deployed();
+        await migrations.setCompleted(self.number);
+      }
+      if (options.save !== false) {
+        logger.log("Saving artifacts...");
+        await options.artifactor.saveAll(resolver.contracts());
+      }
+    } catch (error) {
+      logger.log(
+        "Error encountered, bailing. Network state unknown. Review successful transactions manually."
+      );
+      throw new Error(error);
+    }
   }
 
   // ------------------------------------- Public -------------------------------------------------
@@ -220,8 +216,12 @@ class Migration {
     const self = this;
 
     if (options.networks[options.network].type === "quorum") {
-      await self.runLegacyMigrations(options, callback);
-      return;
+      try {
+        await self.runLegacyMigrations(options);
+        return callback();
+      } catch (error) {
+        return callback(error);
+      }
     }
 
     const logger = options.logger;
