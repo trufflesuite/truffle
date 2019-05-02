@@ -1,14 +1,14 @@
 {
   "name": "truffle-contract",
-  "version": "4.0.12",
+  "version": "4.0.13",
   "description": "A better contract abstraction for Ethereum (formerly EtherPudding)",
   "main": "index.js",
   "scripts": {
-    "prepare": "npm run compile",
+    "prepare": "yarn compile",
     "publish:next": "node ../truffle/scripts/prereleaseVersion.js next next",
     "test": "./scripts/test.sh",
-    "test:debug": "$(npm bin)/mocha --inspect-brk",
-    "test:trace": "$(npm bin)/mocha --trace-warnings",
+    "test:debug": "$(yarn bin)/mocha --inspect-brk",
+    "test:trace": "$(yarn bin)/mocha --trace-warnings",
     "compile": "mkdir -p dist && browserify ./index.js -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-contract",
@@ -28,9 +28,9 @@
     "bignumber.js": "^7.2.1",
     "ethers": "^4.0.0-beta.1",
     "truffle-blockchain-utils": "^0.0.8",
-    "truffle-contract-schema": "^3.0.6",
+    "truffle-contract-schema": "^3.0.8",
     "truffle-error": "^0.0.4",
-    "truffle-interface-adapter": "^0.1.2",
+    "truffle-interface-adapter": "^0.1.3",
     "web3": "1.0.0-beta.37",
     "web3-core-promievent": "1.0.0-beta.37",
     "web3-eth-abi": "1.0.0-beta.37",
@@ -48,7 +48,7 @@
     "mocha": "5.2.0",
     "solc": "0.5.0",
     "temp": "^0.8.3",
-    "truffle-compile": "^4.0.11",
+    "truffle-compile": "^4.0.12",
     "uglify-es": "^3.3.9"
   },
   "publishConfig": {
