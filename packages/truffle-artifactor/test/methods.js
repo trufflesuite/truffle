@@ -14,6 +14,7 @@ describe("Artifactor.save", () => {
         },
         "x-from-dependency": "somedep"
       })
+      .then(() => assert(false, "didn't throw!"))
       .catch(e => assert(e.message.includes("must specify a contract name")));
   });
 });
@@ -32,6 +33,7 @@ describe("Artifactor.saveAll", () => {
         },
         "x-from-dependency": "somedep"
       })
+      .then(() => assert(false, "didn't throw!"))
       .catch(e => {
         assert(e.code === "ENOENT");
         assert(e.message.includes("doesn't exist!"));
