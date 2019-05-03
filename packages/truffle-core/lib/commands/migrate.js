@@ -171,7 +171,7 @@ const command = {
     const Config = require("truffle-config");
     const temp = require("temp").track();
     const { promisify } = require("util");
-    const promisifiedCopy = promisify(require("../promisifiedCopy"));
+    const promisifiedCopy = promisify(require("../copy"));
 
     const conf = Config.detect(options);
 
