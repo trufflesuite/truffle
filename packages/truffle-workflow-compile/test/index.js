@@ -37,27 +37,21 @@ describe("Contracts.compileSources", () => {
 
 describe("Contracts.compile", () => {
   it("when config.all is true, all contracts in contracts_directory are recompiled", async () => {
-    let contractName;
-
     // initial compile
-    await Contracts.compile(config, (err, { contracts }) => {
-      if (err) assert.fail(err);
-      contractName = Object.keys(contracts)[0];
-      assert(
-        existsSync(`${config.contracts_build_directory}/${contractName}.json`)
-      );
-    });
+    const { contracts } = await Contracts.compile(config);
+    let contractName = await Object.keys(contracts)[0];
+    assert(
+      existsSync(`${config.contracts_build_directory}/${contractName}.json`)
+    );
 
     // compile again
     config.all = true;
-    await Contracts.compile(config, (err, { outputs }) => {
-      if (err) assert.fail(err);
-      assert(
-        outputs.solc[0] ===
-          join(
-            `${process.cwd()}/${config.contracts_directory}/${contractName}.sol`
-          )
-      );
-    });
-  }).timeout(5000);
+    const { outputs } = await Contracts.compile(config);
+    assert(
+      outputs.solc[0] ===
+        join(
+          `${process.cwd()}/${config.contracts_directory}/${contractName}.sol`
+        )
+    );
+  }).timeout(3000);
 });
