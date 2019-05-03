@@ -23,7 +23,7 @@
   "dependencies": {
     "fs-extra": "6.0.1",
     "lodash": "4.17.11",
-    "truffle-contract-schema": "^3.0.9",
+    "truffle-contract-schema": "^3.0.9"
   },
   "publishConfig": {
     "access": "public"
