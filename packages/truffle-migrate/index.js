@@ -78,7 +78,7 @@ const Migrate = {
   },
 
   runFrom: async function(number, options) {
-    const migrations = this.assemble(options);
+    let migrations = this.assemble(options);
     while (migrations.length > 0) {
       if (migrations[0].number >= number) break;
       migrations.shift();

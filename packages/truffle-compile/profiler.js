@@ -266,7 +266,7 @@ module.exports = {
                       solc
                     );
                   } catch (err) {
-                    err.message = `Error parsing ${currentFile}: ${e.message}`;
+                    err.message = `Error parsing ${currentFile}: ${err.message}`;
                     return fileFinished(err);
                   }
 

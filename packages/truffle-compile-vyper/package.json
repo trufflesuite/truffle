@@ -1,6 +1,6 @@
 {
   "name": "truffle-compile-vyper",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Vyper compiler support",
   "main": "index.js",
   "dependencies": {
@@ -8,11 +8,11 @@
     "colors": "^1.1.2",
     "eslint": "^5.5.0",
     "minimatch": "^3.0.4",
-    "truffle-compile": "^4.0.12"
+    "truffle-compile": "^4.0.13"
   },
   "devDependencies": {
     "mocha": "^5.2.0",
-    "truffle-config": "^1.1.9"
+    "truffle-config": "^1.1.10"
   },
   "scripts": {
     "test": "mocha"
