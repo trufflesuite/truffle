@@ -46,7 +46,7 @@ const Migrate = {
     return migrations;
   },
 
-  run: function(options, callback) {
+  run: async function(options) {
     expect.options(options, [
       "working_directory",
       "migrations_directory",
@@ -61,20 +61,12 @@ const Migrate = {
     ]);
 
     if (options.reset === true) {
-      return this.runAll(options)
-        .then(() => {
-          callback();
-        })
-        .catch(callback);
+      return await this.runAll(options);
     }
 
-    return this.lastCompletedMigration(options)
-      .then(lastMigration => {
-        // Don't rerun the last completed migration.
-        return this.runFrom(lastMigration + 1, options);
-      })
-      .then(callback)
-      .catch(callback);
+    const lastMigration = await this.lastCompletedMigration(options);
+    // Don't rerun the last completed migration.
+    return await this.runFrom(lastMigration + 1, options);
   },
 
   runFrom: async function(number, options) {
