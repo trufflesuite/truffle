@@ -153,7 +153,7 @@ describe("truffle-box Box", () => {
       // preconditions
       sinon
         .stub(inquirer, "prompt")
-        .returns(Promise.resolve({ proceed: true }));
+        .returns(Promise.resolve({ proceed: true, overwrite: true }));
       fs.ensureDirSync(contractDirPath);
       assert(
         fs.existsSync(contractDirPath),
@@ -178,6 +178,36 @@ describe("truffle-box Box", () => {
         assert(
           inquirer.prompt.getCall(0).args[0],
           "Prompt questions weren't called!"
+        );
+        done();
+      });
+    });
+
+    it("overwrites redundant files when prompted and user confirms", done => {
+      const truffleConfigPath = path.join(destination, "truffle-config.js");
+
+      // preconditions
+      fs.writeFileSync(
+        truffleConfigPath,
+        "this truffle-config.js file is different than the default box file",
+        "utf8"
+      );
+      assert(
+        fs.existsSync(truffleConfigPath),
+        "mock truffle-config.js wasn't created!"
+      );
+      const mockConfig = fs.readFileSync(truffleConfigPath, "utf8");
+
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options).then(() => {
+        assert(inquirer.prompt.called);
+        assert(
+          fs.existsSync(truffleConfigPath),
+          "truffle-config.js wasn't recreated!"
+        );
+        const newConfig = fs.readFileSync(truffleConfigPath, "utf8");
+        assert(
+          newConfig !== mockConfig,
+          "truffle-config.js wasn't overwritten!"
         );
         done();
       });
