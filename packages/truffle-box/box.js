@@ -113,7 +113,7 @@ const Box = {
     tmp.dir({ unsafeCleanup }, (err, dir) => {
       if (err) return callback(err);
 
-      this.unbox(
+      Box.unbox(
         `https://github.com/trufflesuite/truffle-init-${name}`,
         dir,
         options
