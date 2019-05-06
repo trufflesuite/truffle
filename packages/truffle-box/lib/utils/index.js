@@ -29,12 +29,7 @@ module.exports = {
       return path || (fs.existsSync(alt) && alt);
     }, undefined);
 
-    try {
-      const boxConfig = await config.read(configPath);
-      return boxConfig;
-    } catch (error) {
-      throw new Error(error);
-    }
+    return await config.read(configPath);
   },
 
   setUpTempDirectory: () => {
