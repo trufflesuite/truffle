@@ -22,7 +22,7 @@ describe("Compile - solidity ^0.4.0", function() {
             enabled: false,
             runs: 200
           },
-          evmVersion: "byzantium"
+          evmVersion: "constantinople"
         }
       }
     },

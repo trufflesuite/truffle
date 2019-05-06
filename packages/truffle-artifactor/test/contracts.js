@@ -42,7 +42,7 @@ describe("artifactor + require", () => {
               enabled: false,
               runs: 200
             },
-            evmVersion: "byzantium"
+            evmVersion: "constantinople"
           }
         }
       }

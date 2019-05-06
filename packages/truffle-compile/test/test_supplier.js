@@ -242,7 +242,7 @@ describe("CompilerSupplier", function() {
                   enabled: false,
                   runs: 200
                 },
-                evmVersion: "byzantium"
+                evmVersion: "constantinople"
               }
             }
           },
