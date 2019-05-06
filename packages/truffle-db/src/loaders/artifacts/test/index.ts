@@ -1,12 +1,9 @@
 import fs from "fs";
 import path from "path";
-
 import gql from "graphql-tag";
 import { TruffleDB } from "truffle-db";
 import { ArtifactsLoader } from "truffle-db/loaders/artifacts";
-import * as Contract from "truffle-workflow-compile";
-
-
+import * as Contracts from "truffle-workflow-compile";
 
 import { generateId } from "test/helpers";
 
@@ -37,30 +34,34 @@ query GetWorkspaceBytecode($id: ID!) {
   }
 }`;
 
+let loader;
+beforeEach(()=> {
+ loader = new ArtifactsLoader(db, compilationConfig);
+});
 
-it("loads create bytecodes", async () => {
-  // arrange
-  const expectedId = generateId({ bytes: Migrations.bytecode })
-  const loader = new ArtifactsLoader(db, {});
+describe("Bytecodes", () => {
+  it("loads create bytecodes", async () => {
+    // arrange
+    const expectedId = generateId({ bytes: Migrations.bytecode });
 
-  
+    // act
+    await loader.load();
 
-  // act
-  await loader.load();
-
-  // assert
-  const {
-    data: {
-      workspace: {
-        bytecode: {
-          bytes
+    // assert
+    const {
+      data: {
+        workspace: {
+          bytecode: {
+            bytes
+          }
         }
       }
-    }
-  } = await db.query(GetWorkspaceBytecode, { id: expectedId });
+    } = await db.query(GetWorkspaceBytecode, { id: expectedId });
 
-  expect(bytes).toEqual(Migrations.bytecode);
+    expect(bytes).toEqual(Migrations.bytecode);
+  });
 });
+
 
 const GetWorkspaceSource: boolean = gql`
 query GetWorkspaceSource($id: ID!) {
@@ -73,29 +74,30 @@ query GetWorkspaceSource($id: ID!) {
 }`;
 
 
-it("loads contract sources", async () => {
-  // arrange
-  const expectedId = generateId({
-    contents: Migrations.source,
-    sourcePath: Migrations.sourcePath
-  });
-  const loader = new ArtifactsLoader(db, {});
+describe("Sources", () => {
+  it("loads contract sources", async () => {
+    // arrange
+    const expectedId = generateId({
+      contents: Migrations.source,
+      sourcePath: Migrations.sourcePath
+    });
 
-  // act
-  await loader.load();
+    // act
+    await loader.load();
 
-  // assert
-  const {
-    data: {
-      workspace: {
-        source: {
-          contents
+    // assert
+    const {
+      data: {
+        workspace: {
+          source: {
+            contents
+          }
         }
       }
-    }
-  } = await db.query(GetWorkspaceSource, { id: expectedId });
+    } = await db.query(GetWorkspaceSource, { id: expectedId });
 
-  expect(contents).toEqual(Migrations.source);
+    expect(contents).toEqual(Migrations.source);
+  });
 });
 
 const GetWorkspaceCompilation = gql`
@@ -130,13 +132,7 @@ query getWorkspaceCompilation($id: ID!) {
 `;
 
 describe("Compilation", () => {
-  beforeEach(() => {
-    //mocking truffle-workflow-compile to avoid jest timing issues
-    jest.mock("truffle-workflow-compile", () =>({
-      compile: jest.fn((compilationConfig, callback) => callback(Build))
-    }));
-  });
-  it.only("loads compilations", async () => {
+  it("loads compilations", async () => {
     //arrange
     const expectedId = generateId({
       compiler: Build.compiler, 
@@ -148,11 +144,34 @@ describe("Compilation", () => {
       }]
     });
     
-    const loader = new ArtifactsLoader(db, compilationConfig);
-
+    //act
     await loader.load().then(async () => {
-      const { data } = await db.query(GetWorkspaceCompilation, { id: expectedId });
-      console.debug("testing " + JSON.stringify(data));
+
+    //assert  
+    const {
+      data: {
+        workspace: {
+          compilation: {
+            compiler: {
+              version
+            },
+            sources: [{
+              contents, 
+              sourcePath
+            }], 
+            contracts: [{
+              name,
+              source, 
+              ast
+            }]
+          }
+        }
+      }
+    } = await db.query(GetWorkspaceCompilation, { id: expectedId });
+
+    expect(version).toEqual(Build.compiler.version);
+    expect(contents).toEqual(Build.source);
+    expect(name).toEqual(Build.contractName);
     });
   })
 });

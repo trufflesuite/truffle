@@ -1,9 +1,6 @@
 import gql from "graphql-tag";
-
 import { TruffleDB } from "truffle-db/db";
-
 import * as Contracts from "truffle-workflow-compile";
-
 import { generateId } from "test/helpers";
 
 const GetContractNames = gql`
@@ -137,37 +134,6 @@ query GetWorkspaceSource($id: ID!) {
   }
 }`;
 
-const GetWorkspaceCompilation = gql`
-query getWorkspaceCompilation($id: ID!) {
-  workspace {
-    compilation(id: $id) {
-      compiler {
-        name
-        version
-      }
-      contracts {
-        name
-        source {
-          contents
-          sourcePath
-        }
-        ast {
-          json
-        }
-        sources {
-          contents
-          sourcePath
-        }
-      }
-      sources {
-        contents
-        sourcePath
-      }
-    }
-  }
-}
-`;
-
 export class ArtifactsLoader {
   private db: TruffleDB;
   private config: object;
@@ -229,11 +195,12 @@ export class ArtifactsLoader {
   async loadCompilations(compilationConfig) {
     let compilationsArray = [];
     let sources = [];
-     await Contracts.compile(compilationConfig, async (err, output) => {
+    await Contracts.compile(compilationConfig, async (err, output) => {
       if(err) console.error(err);
       else {
         const compilationsData = Object.values(output.contracts);
         for(let contract in compilationsData) {
+          //add source from compilation into workspace first, otherwise compilation addition will fail
           let sourceObject = {
             contents: compilationsData[contract]["source"], 
             sourcePath: compilationsData[contract]["sourcePath"]
@@ -273,8 +240,7 @@ export class ArtifactsLoader {
 
         await this.db.query(AddSources, { sources }).then(async () =>  await this.db.query(AddCompilations, { compilations: compilationsArray }));
       }  
-      
+
     });
   }
-
 }
