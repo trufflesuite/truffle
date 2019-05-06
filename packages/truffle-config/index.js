@@ -54,7 +54,7 @@ function Config(truffle_directory, working_directory, network) {
             enabled: false,
             runs: 200
           },
-          evmVersion: "byzantium"
+          evmVersion: "petersburg"
         }
       },
       vyper: {}
