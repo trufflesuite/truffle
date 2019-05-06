@@ -110,7 +110,6 @@ describe("truffle-box Box", () => {
 
     it("runs without a prompt", done => {
       Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true }).then(() => {
-        console.log("the inquirer value %o", inquirer.prompt.called);
         assert.strictEqual(inquirer.prompt.called, false);
         done();
       });
@@ -186,6 +185,15 @@ describe("truffle-box Box", () => {
   });
 
   describe("Box.checkDir()", () => {
+    let options = {
+      logger: {
+        log(stringToLog) {
+          this.loggedStuff = this.loggedStuff + stringToLog;
+        },
+        loggedStuff: ""
+      }
+    };
+
     beforeEach(() => {
       sinon
         .stub(inquirer, "prompt")
@@ -195,31 +203,53 @@ describe("truffle-box Box", () => {
       inquirer.prompt.restore();
     });
 
-    describe("when the directory is empty", () => {
-      beforeEach(() => {
+    describe("when directory is empty", () => {
+      before(() => {
         sinon.stub(regularFs, "readdirSync").returns([]);
       });
-      afterEach(() => {
+      after(() => {
         regularFs.readdirSync.restore();
       });
 
-      it("doesn't prompt the user", async () => {
+      it("doesn't prompt user", async () => {
         await Box.checkDir();
         assert.strictEqual(inquirer.prompt.called, false);
       });
     });
 
-    describe("when the directory is non-empty", () => {
-      beforeEach(() => {
+    describe("when directory is non-empty", () => {
+      before(() => {
         sinon.stub(regularFs, "readdirSync").returns(["someCrappyFile.js"]);
       });
-      afterEach(() => {
+      after(() => {
         regularFs.readdirSync.restore();
       });
 
-      it("prompts the user", () => {
-        Box.checkDir();
+      it("prompts user", () => {
+        Box.checkDir(options);
         assert(inquirer.prompt.called);
+      });
+    });
+
+    describe("when directory is non-empty and user declines to unbox", () => {
+      before(() => {
+        sinon.stub(regularFs, "readdirSync").returns(["someCrappyFile.js"]);
+        sinon.stub(process, "exit").returns(1);
+      });
+      after(() => {
+        regularFs.readdirSync.restore();
+        process.exit.restore();
+      });
+
+      it("Exits unbox process", async () => {
+        inquirer.prompt.restore();
+        sinon
+          .stub(inquirer, "prompt")
+          .returns(Promise.resolve({ proceed: false }));
+        await Box.checkDir(options);
+        assert(inquirer.prompt.called);
+        assert(options.logger.loggedStuff.includes("Unbox cancelled"));
+        assert(process.exit.called);
       });
     });
   });
