@@ -35,8 +35,8 @@
     "truffle-decoder": "^3.0.2",
     "truffle-expect": "^0.0.8",
     "truffle-solidity-utils": "^1.2.2",
-    "web3": "1.0.0-beta.53",
-    "web3-eth-abi": "1.0.0-beta.53"
+    "web3": "1.0.0-beta.54",
+    "web3-eth-abi": "1.0.0-beta.54"
   },
   "devDependencies": {
     "async": "2.6.1",
