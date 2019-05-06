@@ -57,10 +57,10 @@ We welcome pull requests. To get started, just fork this repo, clone it locally,
 # Install
 npm install -g lerna@3.4.3
 npm install -g yarn
-npm run bootstrap
+yarn bootstrap
 
 # Test
-npm test
+yarn test
 
 # Adding dependencies to a package
 cd packages/<truffle-package>
