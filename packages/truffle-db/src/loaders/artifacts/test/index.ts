@@ -34,15 +34,11 @@ query GetWorkspaceBytecode($id: ID!) {
   }
 }`;
 
-let loader;
-beforeEach(()=> {
- loader = new ArtifactsLoader(db, compilationConfig);
-});
-
 describe("Bytecodes", () => {
   it("loads create bytecodes", async () => {
     // arrange
     const expectedId = generateId({ bytes: Migrations.bytecode });
+    const loader = new ArtifactsLoader(db);
 
     // act
     await loader.load();
@@ -81,6 +77,7 @@ describe("Sources", () => {
       contents: Migrations.source,
       sourcePath: Migrations.sourcePath
     });
+    const loader = new ArtifactsLoader(db);
 
     // act
     await loader.load();
@@ -143,7 +140,8 @@ describe("Compilation", () => {
         })
       }]
     });
-    
+    const loader = new ArtifactsLoader(db, compilationConfig);
+
     //act
     await loader.load().then(async () => {
 

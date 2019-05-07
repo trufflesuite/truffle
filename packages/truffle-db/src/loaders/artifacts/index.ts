@@ -146,7 +146,7 @@ export class ArtifactsLoader {
   private db: TruffleDB;
   private config: object;
 
-  constructor (db: TruffleDB, config: object) {
+  constructor (db: TruffleDB, config?: object) {
     this.db = db;
     this.config = config;
   }
@@ -160,7 +160,7 @@ export class ArtifactsLoader {
       }
     } = await this.db.query(GetContractNames);
 
-    if(this.config["contracts_build_directory"]) {
+    if(this.config) {
       await this.loadCompilations(this.config);
     }
     await this.loadBytecodes(contractNames);
