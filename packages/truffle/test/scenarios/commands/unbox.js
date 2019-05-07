@@ -137,6 +137,16 @@ describe("truffle unbox", () => {
         }).timeout(20000);
       });
 
+      describe("official truffle-box", () => {
+        it("unboxes successfully", done => {
+          CommandRunner.run("unbox bare-box", config, () => {
+            const output = logger.contents();
+            assert(output.includes("Unbox successful."));
+            done();
+          });
+        }).timeout(20000);
+      });
+
       describe("official truffle box + branch", () => {
         it("unboxes successfully", done => {
           CommandRunner.run("unbox bare#truffle-test-branch", config, () => {
@@ -288,4 +298,14 @@ describe("truffle unbox", () => {
       });
     });
   });
+      describe("when truffle-box.json contains commands", () => {
+        it("unboxes successfully and outputs commands", done => {
+          CommandRunner.run("unbox bare", config, () => {
+            const output = logger.contents();
+            assert(output.includes("Unbox successful."));
+            assert(output.includes("Test contracts:"));
+            done();
+          });
+        }).timeout(20000);
+      });
 });
