@@ -116,23 +116,31 @@ mutation AddCompilation($compilations: [CompilationInput!]!) {
   workspace {
     compilationsAdd(input: {
       compilations: $compilations
-  }) {
-    compilations {
-      id
+    }) {
+      compilations {
+        id
+        compiler {
+          name
+          version
+        }
+        contracts {
+          name
+          source {
+            contents
+            sourcePath
+          }
+          ast {
+            json
+          }
+        }
+        sources {
+          contents
+          sourcePath
+        }
+      }
     }
-  }
   }
 }`
-
-const GetWorkspaceSource = gql`
-query GetWorkspaceSource($id: ID!) {
-  workspace {
-    source(id: $id) {
-      id
-      contents
-    }
-  }
-}`;
 
 export class ArtifactsLoader {
   private db: TruffleDB;
