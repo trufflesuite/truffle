@@ -8,11 +8,11 @@ var command = {
     }
   },
   help: {
-    usage: "truffle debug <transaction_hash>",
+    usage: "truffle debug [<transaction_hash>]",
     options: [
       {
         option: "<transaction_hash>",
-        description: "Transaction ID to use for debugging. (required)"
+        description: "Transaction ID to use for debugging."
       }
     ]
   },
@@ -932,6 +932,7 @@ var command = {
                     if (!session.view(solidity.current.source).source) {
                       printInstruction();
                     }
+                    printState();
                   }
                   await printWatchExpressionsResults();
                   break;
