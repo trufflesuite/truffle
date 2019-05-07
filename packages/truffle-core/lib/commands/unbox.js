@@ -25,7 +25,7 @@ function normalizeURL(
         url = `${url}-box`;
       } else {
         const index = url.indexOf("#");
-        url = url.substr(0, index) + "-box" + url.substr(index);
+        url = `${url.substr(0, index)}-box${url.substr(index)}`;
       }
     }
     return `https://github.com/truffle-box/${url}`;
@@ -44,7 +44,7 @@ function normalizeURL(
 function formatCommands(commands) {
   const names = Object.keys(commands);
 
-  const maxLength = Math.max.apply(null, names.map(name => name.length));
+  const maxLength = Math.max.apply(null, names.map(({length}) => length));
 
   return names.map(name => {
     const spacing = Array(maxLength - name.length + 1).join(" ");
@@ -126,17 +126,17 @@ const command = {
     const unboxOptions = Object.assign({}, options, { logger: config.logger });
 
     Box.unbox(url, destination, unboxOptions)
-      .then(boxConfig => {
-        config.logger.log("\nUnbox successful. Sweet!" + OS.EOL);
+      .then(({commands, epilogue}) => {
+        config.logger.log(`\nUnbox successful. Sweet!${OS.EOL}`);
 
-        const commandMessages = formatCommands(boxConfig.commands);
-        if (commandMessages.length > 0) config.logger.log("Commands:" + OS.EOL);
+        const commandMessages = formatCommands(commands);
+        if (commandMessages.length > 0) config.logger.log(`Commands:${OS.EOL}`);
 
         commandMessages.forEach(message => config.logger.log(message));
         config.logger.log("");
 
-        if (boxConfig.epilogue) {
-          config.logger.log(boxConfig.epilogue.replace("\n", OS.EOL));
+        if (epilogue) {
+          config.logger.log(epilogue.replace("\n", OS.EOL));
         }
 
         done();
