@@ -143,7 +143,6 @@ var command = {
         if (config.networks[config.network]) {
           Environment.detect(config)
             .then(() => {
-              console.log("IN the then from detect!!!!!!");
               environmentCallback();
             })
             .catch(error => {
