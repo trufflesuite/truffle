@@ -162,7 +162,6 @@ var command = {
             gasLimit: config.gas,
             noVMErrorsOnRPCResponse: true
           };
-          console.log("about to run Develop.connectOrStart");
           Develop.connectOrStart(ipcOptions, ganacheOptions, function(
             started,
             disconnect
