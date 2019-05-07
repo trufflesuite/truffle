@@ -39,6 +39,7 @@
     "@types/jest": "^23.3.11",
     "@types/node": "^10.12.18",
     "@types/pouchdb": "^6.3.2",
+    "@types/truffle-workflow-compile": "^2.0.12",
     "apollo-server": "^2.3.1",
     "gql2ts": "^1.10.1",
     "jest": "^23.6.0",

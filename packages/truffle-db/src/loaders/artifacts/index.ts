@@ -192,7 +192,7 @@ export class ArtifactsLoader {
     await this.db.query(AddSources, { sources });
   }
   
-  async loadCompilations(compilationConfig) {
+  async loadCompilations(compilationConfig: object) {
     let compilationsArray = [];
     let sources = [];
     await Contracts.compile(compilationConfig, async (err, output) => {
