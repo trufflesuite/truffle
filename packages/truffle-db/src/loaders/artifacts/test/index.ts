@@ -143,9 +143,8 @@ describe("Compilation", () => {
     const loader = new ArtifactsLoader(db, compilationConfig);
 
     //act
-    await loader.load().then(async () => {
+    await loader.load();
 
-    //assert  
     const {
       data: {
         workspace: {
@@ -153,23 +152,15 @@ describe("Compilation", () => {
             compiler: {
               version
             },
-            sources: [{
-              contents, 
-              sourcePath
-            }], 
-            contracts: [{
-              name,
-              source, 
-              ast
-            }]
+            sources,
+            contracts
           }
         }
       }
     } = await db.query(GetWorkspaceCompilation, { id: expectedId });
 
     expect(version).toEqual(Build.compiler.version);
-    expect(contents).toEqual(Build.source);
-    expect(name).toEqual(Build.contractName);
-    });
+    expect(sources[0].contents).toEqual(Build.source);
+    expect(contracts[0].name).toEqual(Build.contractName);
   })
 });

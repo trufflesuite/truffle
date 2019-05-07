@@ -246,7 +246,8 @@ export class ArtifactsLoader {
 
         }
 
-        await this.db.query(AddSources, { sources }).then(async () =>  await this.db.query(AddCompilations, { compilations: compilationsArray }));
+        await this.db.query(AddSources, { sources })
+        await this.db.query(AddCompilations, { compilations: compilationsArray });
       }  
 
     });
