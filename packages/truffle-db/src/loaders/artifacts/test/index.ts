@@ -3,6 +3,7 @@ import path from "path";
 import gql from "graphql-tag";
 import { TruffleDB } from "truffle-db";
 import { ArtifactsLoader } from "truffle-db/loaders/artifacts";
+import { generateId } from "test/helpers";
 import * as Contracts from "truffle-workflow-compile";
 
 import { generateId } from "test/helpers";
@@ -97,7 +98,7 @@ describe("Sources", () => {
   });
 });
 
-const GetWorkspaceCompilation = gql`
+const GetWorkspaceCompilation: boolean = gql`
 query getWorkspaceCompilation($id: ID!) {
   workspace {
     compilation(id: $id) {
@@ -114,10 +115,6 @@ query getWorkspaceCompilation($id: ID!) {
         ast {
           json
         }
-        sources {
-          contents
-          sourcePath
-        }
       }
       sources {
         contents
@@ -125,20 +122,18 @@ query getWorkspaceCompilation($id: ID!) {
       }
     }
   }
-}
-`;
+}`;
 
 describe("Compilation", () => {
   it("loads compilations", async () => {
     //arrange
+    const sourceId = generateId({
+      contents: Build.source,
+      sourcePath: Build.sourcePath
+    });
     const expectedId = generateId({
       compiler: Build.compiler, 
-      sourceIds: [{
-        id: generateId({
-          contents: Build.source, 
-          sourcePath: Build.sourcePath
-        })
-      }]
+      sourceIds: [{ id: sourceId }]
     });
     const loader = new ArtifactsLoader(db, compilationConfig);
 
