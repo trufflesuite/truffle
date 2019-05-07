@@ -151,8 +151,7 @@ describe("Library linking with contract objects", function() {
             optimizer: {
               enabled: false,
               runs: 200
-            },
-            evmVersion: "constantinople"
+            }
           }
         }
       }
