@@ -6,7 +6,19 @@ import { ArtifactsLoader } from "truffle-db/loaders/artifacts";
 import { generateId } from "test/helpers";
 import * as Contracts from "truffle-workflow-compile";
 
-import { generateId } from "test/helpers";
+// mocking the truffle-workflow-compile to avoid jest timing issues
+// and also to keep from adding more time to Travis testing
+jest.mock("truffle-workflow-compile", () => ({
+ compile: function(config, callback) {
+   const compilationData = require(path.join(__dirname, "build", "SimpleStorage.json"));
+   callback(null, {
+     "contracts": [{
+         "contract_name": "SimpleStorage",
+         ...compilationData
+         }]
+     });
+ }
+}));
 
 const fixturesDirectory = path.join(__dirname, "sources");
 
