@@ -107,8 +107,6 @@ var command = {
 
         sessionPromise
           .then(async function(session) {
-            if (err) return done(err);
-
             function splitLines(str) {
               // We were splitting on OS.EOL, but it turns out on Windows,
               // in some environments (perhaps?) line breaks are still denoted by just \n
