@@ -3,7 +3,9 @@
   "version": "3.0.15",
   "description": "On-chain migrations management",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "mocha ./test/* ./test/**/*"
+  },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-migrate",
   "keywords": [
     "ethereum",
@@ -21,6 +23,7 @@
     "async": "2.6.1",
     "emittery": "^0.4.0",
     "node-dir": "0.1.17",
+    "truffle-config": "^1.1.10",
     "truffle-deployer": "^3.0.15",
     "truffle-expect": "^0.0.8",
     "truffle-interface-adapter": "^0.1.4",
@@ -29,7 +32,8 @@
     "web3": "1.0.0-beta.37"
   },
   "devDependencies": {
-    "mocha": "5.2.0"
+    "mocha": "5.2.0",
+    "sinon": "^7.3.2"
   },
   "publishConfig": {
     "access": "public"

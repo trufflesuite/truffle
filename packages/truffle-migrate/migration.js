@@ -26,45 +26,32 @@ class Migration {
    * @param  {Object}   context  web3
    * @param  {Object}   deployer truffle module
    * @param  {Object}   resolver truffle module
-   * @param  {Function} callback
    */
-  async _load(options, context, deployer, resolver, callback) {
-    const self = this;
-
+  async _load(options, context, deployer, resolver) {
     // Load assets and run `execute`
-    try {
-      const accounts = await context.web3.eth.getAccounts();
-      const requireOptions = {
-        file: self.file,
-        context: context,
-        resolver: resolver,
-        args: [deployer]
-      };
+    const accounts = await context.web3.eth.getAccounts();
+    const requireOptions = {
+      file: this.file,
+      context: context,
+      resolver: resolver,
+      args: [deployer]
+    };
 
-      Require.file(requireOptions, async (err, fn) => {
-        if (err) return callback(err);
+    const fn = Require.file(requireOptions);
 
-        const unRunnable = !fn || !fn.length || fn.length == 0;
+    const unRunnable = !fn || !fn.length || fn.length == 0;
 
-        if (unRunnable) {
-          const msg = `Migration ${
-            self.file
-          } invalid or does not take any parameters`;
-          return callback(new Error(msg));
-        }
-
-        // `migrateFn` might be sync or async. We negotiate that difference in
-        // `execute` through the deployer API.
-        try {
-          const migrateFn = fn(deployer, options.network, accounts);
-          await self._deploy(options, deployer, resolver, migrateFn, callback);
-        } catch (err) {
-          callback(err);
-        }
-      });
-    } catch (err) {
-      callback(err);
+    if (unRunnable) {
+      const msg = `Migration ${
+        this.file
+      } invalid or does not take any parameters`;
+      throw new Error(msg);
     }
+
+    // `migrateFn` might be sync or async. We negotiate that difference in
+    // `execute` through the deployer API.
+    const migrateFn = fn(deployer, options.network, accounts);
+    await this._deploy(options, deployer, resolver, migrateFn);
   }
 
   /**
@@ -75,9 +62,7 @@ class Migration {
    * @param  {Object}   resolver    truffle module
    * @param  {[type]}   migrateFn   module.exports of a migrations.js
    */
-  async _deploy(options, deployer, resolver, migrateFn, callback) {
-    const self = this;
-
+  async _deploy(options, deployer, resolver, migrateFn) {
     try {
       await deployer.start();
 
@@ -98,19 +83,19 @@ class Migration {
 
         if (!this.dryRun) {
           const data = { message: message };
-          await self.emitter.emit("startTransaction", data);
+          await this.emitter.emit("startTransaction", data);
         }
 
         const migrations = await Migrations.deployed();
-        const receipt = await migrations.setCompleted(self.number);
+        const receipt = await migrations.setCompleted(this.number);
 
         if (!this.dryRun) {
           const data = { receipt: receipt, message: message };
-          await self.emitter.emit("endTransaction", data);
+          await this.emitter.emit("endTransaction", data);
         }
       }
 
-      await self.emitter.emit("postMigrate", self.isLast);
+      await this.emitter.emit("postMigrate", this.isLast);
 
       // Save artifacts to local filesystem
       await options.artifactor.saveAll(resolver.contracts());
@@ -118,27 +103,25 @@ class Migration {
       deployer.finish();
 
       // Cleanup
-      if (self.isLast) {
-        self.emitter.clearListeners();
+      if (this.isLast) {
+        this.emitter.clearListeners();
 
         // Exiting w provider-engine appears to be hopeless. This hack on
         // our fork just swallows errors from eth-block-tracking
         // as we unwind the handlers downstream from here.
-        if (self.options.provider && self.options.provider.engine) {
-          self.options.provider.engine.silent = true;
+        if (this.options.provider && this.options.provider.engine) {
+          this.options.provider.engine.silent = true;
         }
       }
-      // Prevent errors thrown in the callback from triggering the below catch()
-      process.nextTick(callback);
-    } catch (e) {
+    } catch (error) {
       const payload = {
         type: "migrateErr",
-        error: e
+        error: error
       };
 
-      await self.emitter.emit("error", payload);
+      await this.emitter.emit("error", payload);
       deployer.finish();
-      callback(e);
+      throw new Error(error);
     }
   }
 
@@ -147,103 +130,59 @@ class Migration {
    * Runs the legacy migration sequence by used in Truffle v4,
    * but continues to use the concurrent Deployer and Web3 provider
    * @param  {Object}   options  config and command-line
-   * @param  {Function} callback
    */
-  async runLegacyMigrations(options, callback) {
-    const self = this;
-    const logger = options.logger;
-
-    const web3 = new Web3Shim({
-      provider: options.provider,
-      networkType: options.networks[options.network].type
-    });
+  async runLegacyMigrations(options) {
+    const {
+      logger,
+      web3,
+      resolver,
+      context,
+      deployer
+    } = this.prepareForMigrations(options);
 
     logger.log(
       "Running migration: " +
-        path.relative(options.migrations_directory, self.file)
+        path.relative(options.migrations_directory, this.file)
     );
 
-    const resolver = new ResolverIntercept(options.resolver);
+    const accounts = await web3.eth.getAccounts();
 
-    // Initial context.
-    const context = {
-      web3: web3
-    };
-
-    const deployer = new Deployer({
-      logger: logger,
-      confirmations: options.confirmations,
-      timeoutBlocks: options.timeoutBlocks,
-      networks: options.networks,
-      network: options.network,
-      network_id: options.network_id,
-      provider: options.provider,
-      basePath: path.dirname(self.file)
+    const fn = Require.file({
+      file: this.file,
+      context: context,
+      resolver: resolver,
+      args: [deployer]
     });
 
-    const finish = err => {
-      if (err) return callback(err);
-      deployer
-        .start()
-        .then(() => {
-          if (options.save === false) return;
+    if (!fn || !fn.length || fn.length == 0) {
+      const message = `Migration ${
+        this.file
+      } invalid or does not take any parameters`;
+      throw new Error(message);
+    }
+    fn(deployer, options.network, accounts);
 
-          const Migrations = resolver.require("./Migrations.sol");
+    try {
+      await deployer.start();
+      if (options.save === false) return;
 
-          if (Migrations && Migrations.isDeployed()) {
-            logger.log("Saving successful migration to network...");
-            return Migrations.deployed().then(migrations => {
-              return migrations.setCompleted(self.number);
-            });
-          }
-        })
-        .then(() => {
-          if (options.save === false) return;
-          logger.log("Saving artifacts...");
-          return options.artifactor.saveAll(resolver.contracts());
-        })
-        .then(() => {
-          // Use process.nextTicK() to prevent errors thrown in the callback from triggering the below catch()
-          process.nextTick(callback);
-        })
-        .catch(e => {
-          logger.log(
-            "Error encountered, bailing. Network state unknown. Review successful transactions manually."
-          );
-          callback(e);
-        });
-    };
+      const Migrations = resolver.require("./Migrations.sol");
 
-    web3.eth.getAccountsAndMigrate = () => {
-      return new Promise((resolve, reject) => {
-        web3.eth.getAccounts((err, accounts) => {
-          if (err) return reject(err);
-
-          Require.file(
-            {
-              file: self.file,
-              context: context,
-              resolver: resolver,
-              args: [deployer]
-            },
-            (err, fn) => {
-              if (!fn || !fn.length || fn.length == 0) {
-                return reject(
-                  new Error(
-                    "Migration " +
-                      self.file +
-                      " invalid or does not take any parameters"
-                  )
-                );
-              }
-              fn(deployer, options.network, accounts);
-              resolve(finish());
-            }
-          );
-        });
-      });
-    };
-    web3.eth.getAccountsAndMigrate();
+      if (Migrations && Migrations.isDeployed()) {
+        logger.log("Saving successful migration to network...");
+        const migrations = await Migrations.deployed();
+        await migrations.setCompleted(this.number);
+      }
+      if (options.save !== false) {
+        logger.log("Saving artifacts...");
+        await options.artifactor.saveAll(resolver.contracts());
+      }
+    } catch (error) {
+      logger.log(
+        "Error encountered, bailing. Network state unknown. Review successful transactions manually."
+      );
+      throw new Error(error);
+    }
   }
 
   // ------------------------------------- Public -------------------------------------------------
@@ -251,69 +190,64 @@ class Migration {
    * Instantiates a deployer, connects this migration and its deployer to the reporter
    * and launches a migration file's deployment sequence
    * @param  {Object}   options  config and command-line
-   * @param  {Function} callback
    */
-  async run(options, callback) {
-    const self = this;
-
+  async run(options) {
     if (options.networks[options.network].type === "quorum") {
-      await self.runLegacyMigrations(options, callback);
-      return;
+      return await this.runLegacyMigrations(options);
     }
 
-    const logger = options.logger;
-    const resolver = new ResolverIntercept(options.resolver);
+    const { web3, resolver, context, deployer } = this.prepareForMigrations(
+      options
+    );
 
+    // Connect reporter to this migration
+    if (this.reporter) {
+      this.reporter.setMigration(this);
+      this.reporter.setDeployer(deployer);
+      this.reporter.confirmations = options.confirmations || 0;
+      this.reporter.listen();
+    }
+
+    // Get file path and emit pre-migration event
+    const file = path.relative(options.migrations_directory, this.file);
+    const block = await web3.eth.getBlock("latest");
+
+    const preMigrationsData = {
+      file: file,
+      isFirst: this.isFirst,
+      network: options.network,
+      networkId: options.network_id,
+      blockLimit: block.gasLimit
+    };
+
+    await this.emitter.emit("preMigrate", preMigrationsData);
+    await this._load(options, context, deployer, resolver);
+  }
+
+  prepareForMigrations(options) {
+    const logger = options.logger;
     const web3 = new Web3Shim({
       provider: options.provider,
       networkType: options.networks[options.network].type
     });
 
-    // Initial context.
-    const context = {
-      web3: web3
-    };
+    const resolver = new ResolverIntercept(options.resolver);
 
-    // Instantiate a Deployer
+    // Initial context.
+    const context = { web3 };
+
     const deployer = new Deployer({
-      logger: logger,
+      logger,
       confirmations: options.confirmations,
       timeoutBlocks: options.timeoutBlocks,
       networks: options.networks,
       network: options.network,
       network_id: options.network_id,
       provider: options.provider,
-      basePath: path.dirname(self.file)
+      basePath: path.dirname(this.file)
     });
 
-    // Connect reporter to this migration
-    if (self.reporter) {
-      self.reporter.setMigration(self);
-      self.reporter.setDeployer(deployer);
-      self.reporter.confirmations = options.confirmations || 0;
-      self.reporter.listen();
-    }
-
-    // Get file path and emit pre-migration event
-    const file = path.relative(options.migrations_directory, self.file);
-    let block;
-    try {
-      block = await web3.eth.getBlock("latest");
-    } catch (err) {
-      callback(err);
-      return;
-    }
-
-    const preMigrationsData = {
-      file: file,
-      isFirst: self.isFirst,
-      network: options.network,
-      networkId: options.network_id,
-      blockLimit: block.gasLimit
-    };
-
-    await self.emitter.emit("preMigrate", preMigrationsData);
-    await self._load(options, context, deployer, resolver, callback);
+    return { logger, web3, resolver, context, deployer };
   }
 }
 
