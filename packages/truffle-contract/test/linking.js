@@ -144,6 +144,7 @@ describe("Library linking with contract objects", function() {
 
     const options = {
       contracts_directory: path.join(__dirname, "sources"),
+      quiet: true,
       compilers: {
         solc: {
           version: "0.5.0",

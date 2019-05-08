@@ -42,12 +42,7 @@ var util = {
     };
     const options = {
       contracts_directory: path.join(__dirname, "sources"),
-      logger: {
-      log(stringToLog) {
-        this.loggedStuff = this.loggedStuff + stringToLog;
-      },
-      loggedStuff: ""
-    },
+      quiet: true,
       compilers: {
         solc: {
           version: "0.5.0",
