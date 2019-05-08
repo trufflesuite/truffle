@@ -41,8 +41,7 @@ describe("artifactor + require", () => {
             optimizer: {
               enabled: false,
               runs: 200
-            },
-            evmVersion: "byzantium"
+            }
           }
         }
       }

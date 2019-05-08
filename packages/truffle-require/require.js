@@ -1,108 +1,99 @@
-var fs = require("fs");
-var path = require("path");
-var Module = require("module");
-var vm = require("vm");
-var originalrequire = require("original-require");
-var expect = require("truffle-expect");
-var Config = require("truffle-config");
-var Web3Shim = require("truffle-interface-adapter").Web3Shim;
+const fs = require("fs");
+const path = require("path");
+const Module = require("module");
+const vm = require("vm");
+const originalrequire = require("original-require");
+const expect = require("truffle-expect");
+const Config = require("truffle-config");
+const Web3Shim = require("truffle-interface-adapter").Web3Shim;
 
 // options.file: path to file to execute. Must be a module that exports a function.
 // options.args: arguments passed to the exported function within file. If a callback
 //   is not included in args, exported function is treated as synchronous.
 // options.context: Object containing any global variables you'd like set when this
 //   function is run.
-var Require = {
-  file: function(options, done) {
-    var self = this; // eslint-disable-line no-unused-vars
-    var file = options.file;
+const Require = {
+  file: options => {
+    let source;
+    const file = options.file;
 
     expect.options(options, ["file"]);
 
     options = Config.default().with(options);
 
-    fs.readFile(options.file, { encoding: "utf8" }, function(err, source) {
-      if (err) return done(err);
+    source = fs.readFileSync(options.file, { encoding: "utf8" });
 
-      // Modified from here: https://gist.github.com/anatoliychakkaev/1599423
-      var m = new Module(file);
+    // Modified from here: https://gist.github.com/anatoliychakkaev/1599423
+    const m = new Module(file);
 
-      // Provide all the globals listed here: https://nodejs.org/api/globals.html
-      var context = {
-        Buffer: Buffer,
-        __dirname: path.dirname(file),
-        __filename: file,
-        clearImmediate: clearImmediate,
-        clearInterval: clearInterval,
-        clearTimeout: clearTimeout,
-        console: console,
-        exports: exports,
-        global: global,
-        module: m,
-        process: process,
-        require: function(pkgPath) {
-          // Ugh. Simulate a full require function for the file.
-          pkgPath = pkgPath.trim();
+    // Provide all the globals listed here: https://nodejs.org/api/globals.html
+    const context = {
+      Buffer: Buffer,
+      __dirname: path.dirname(file),
+      __filename: file,
+      clearImmediate: clearImmediate,
+      clearInterval: clearInterval,
+      clearTimeout: clearTimeout,
+      console: console,
+      exports: exports,
+      global: global,
+      module: m,
+      process: process,
+      require: pkgPath => {
+        // Ugh. Simulate a full require function for the file.
+        pkgPath = pkgPath.trim();
 
-          // If absolute, just require.
-          if (path.isAbsolute(pkgPath)) {
-            return originalrequire(pkgPath);
+        // If absolute, just require.
+        if (path.isAbsolute(pkgPath)) return originalrequire(pkgPath);
+
+        // If relative, it's relative to the file.
+        if (pkgPath[0] === ".") {
+          return originalrequire(path.join(path.dirname(file), pkgPath));
+        } else {
+          // Not absolute, not relative, must be a globally or locally installed module.
+          // Try local first.
+          // Here we have to require from the node_modules directory directly.
+
+          var moduleDir = path.dirname(file);
+          while (true) {
+            try {
+              return originalrequire(
+                path.join(moduleDir, "node_modules", pkgPath)
+              );
+            } catch (e) {}
+            var oldModuleDir = moduleDir;
+            moduleDir = path.join(moduleDir, "..");
+            if (moduleDir === oldModuleDir) break;
           }
 
-          // If relative, it's relative to the file.
-          if (pkgPath[0] === ".") {
-            return originalrequire(path.join(path.dirname(file), pkgPath));
-          } else {
-            // Not absolute, not relative, must be a globally or locally installed module.
+          // Try global, and let the error throw.
+          return originalrequire(pkgPath);
+        }
+      },
+      artifacts: options.resolver,
+      setImmediate: setImmediate,
+      setInterval: setInterval,
+      setTimeout: setTimeout
+    };
 
-            // Try local first.
-            // Here we have to require from the node_modules directory directly.
-
-            var moduleDir = path.dirname(file);
-            while (true) {
-              try {
-                return originalrequire(
-                  path.join(moduleDir, "node_modules", pkgPath)
-                );
-              } catch (e) {}
-              var oldModuleDir = moduleDir;
-              moduleDir = path.join(moduleDir, "..");
-              if (moduleDir === oldModuleDir) {
-                break;
-              }
-            }
-
-            // Try global, and let the error throw.
-            return originalrequire(pkgPath);
-          }
-        },
-        artifacts: options.resolver,
-        setImmediate: setImmediate,
-        setInterval: setInterval,
-        setTimeout: setTimeout
-      };
-
-      // Now add contract names.
-      Object.keys(options.context || {}).forEach(function(key) {
-        context[key] = options.context[key];
-      });
-
-      var old_cwd = process.cwd();
-
-      process.chdir(path.dirname(file));
-
-      var script = vm.createScript(source, file);
-      script.runInNewContext(context);
-
-      process.chdir(old_cwd);
-
-      done(null, m.exports);
+    // Now add contract names.
+    Object.keys(options.context || {}).forEach(key => {
+      context[key] = options.context[key];
     });
+
+    const old_cwd = process.cwd();
+
+    process.chdir(path.dirname(file));
+
+    const script = vm.createScript(source, file);
+    script.runInNewContext(context);
+
+    process.chdir(old_cwd);
+
+    return m.exports;
   },
 
   exec: function(options, done) {
-    var self = this;
-
     expect.options(options, [
       "contracts_build_directory",
       "file",
@@ -112,24 +103,21 @@ var Require = {
       "network_id"
     ]);
 
-    var web3 = new Web3Shim({
+    const web3 = new Web3Shim({
       provider: options.provider,
       networkType: options.networks[options.network].type
     });
 
-    self.file(
-      {
+    try {
+      const fn = this.file({
         file: options.file,
-        context: {
-          web3: web3
-        },
+        context: { web3 },
         resolver: options.resolver
-      },
-      function(err, fn) {
-        if (err) return done(err);
-        fn(done);
-      }
-    );
+      });
+      fn(done);
+    } catch (error) {
+      done(error);
+    }
   }
 };
 
