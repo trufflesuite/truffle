@@ -49,8 +49,7 @@ var util = {
             optimizer: {
               enabled: false,
               runs: 200
-            },
-            evmVersion: "byzantium"
+            }
           }
         }
       }
