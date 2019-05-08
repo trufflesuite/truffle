@@ -1,51 +1,45 @@
 const fs = require("fs-extra");
 const path = require("path");
 const ghdownload = require("github-download");
-const request = require("request");
+const rp = require("request-promise");
 const vcsurl = require("vcsurl");
 const parseURL = require("url").parse;
 const exec = require("child_process").exec;
 const inquirer = require("inquirer");
 
-function verifyURL(url) {
+async function verifyURL(url) {
   // Next let's see if the expected repository exists. If it doesn't, ghdownload
   // will fail spectacularly in a way we can't catch, so we have to do it ourselves.
-  return new Promise((accept, reject) => {
-    const configURL = parseURL(
-      `${vcsurl(url)
-        .replace("github.com", "raw.githubusercontent.com")
-        .replace(/#.*/, "")}/master/truffle-box.json`
-    );
+  const configURL = parseURL(
+    `${vcsurl(url)
+      .replace("github.com", "raw.githubusercontent.com")
+      .replace(/#.*/, "")}/master/truffle-box.json`
+  );
 
-    const options = {
-      method: "HEAD",
-      uri: `https://${configURL.host}${configURL.path}`
-    };
-    request(options, (error, { statusCode }) => {
-      if (error) {
-        return reject(
-          new Error(
-            `Error making request to ${options.uri}. Got error: ${
-              error.message
-            }. Please check the format of the requested resource.`
-          )
+  const options = {
+    method: "HEAD",
+    uri: `https://${configURL.host}${configURL.path}`,
+    resolveWithFullResponse: true
+  };
+
+  await rp(options)
+    .then(({ statusCode }) => {
+      if (statusCode === 404)
+        throw new Error(
+          `Truffle Box at URL ${url} doesn't exist. If you believe this is an error, please contact Truffle support.`
         );
-      } else if (statusCode === 404) {
-        return reject(
-          new Error(
-            `Truffle Box at URL ${url} doesn't exist. If you believe this is an error, please contact Truffle support.`
-          )
+      if (statusCode !== 200)
+        throw new Error(
+          "Error connecting to github.com. Please check your internet connection and try again."
         );
-      } else if (statusCode !== 200) {
-        return reject(
-          new Error(
-            "Error connecting to github.com. Please check your internet connection and try again."
-          )
-        );
-      }
-      accept();
+    })
+    .catch(error => {
+      throw new Error(
+        `Error making request to ${options.uri}. Got error: ${
+          error.message
+        }. Please check the format of the requested resource.`
+      );
     });
-  });
 }
 
 function fetchRepository(url, dir) {
