@@ -12641,18 +12641,6 @@ truffle-blockchain-utils@^0.0.5:
   version "0.0.5"
   resolved "https://registry.yarnpkg.com/truffle-blockchain-utils/-/truffle-blockchain-utils-0.0.5.tgz#a4e5c064dadd69f782a137f3d276d21095da7a47"
 
-truffle-config@^1.1.10:
-  version "1.1.10"
-  resolved "https://registry.yarnpkg.com/truffle-config/-/truffle-config-1.1.10.tgz#b3047bfdb95bb62959dcb7567624fb744acc5a33"
-  integrity sha512-tOXlZkjkIkSCKF6v3M+2qenFvgY/huEg3PC9Nl2lX18D5RJue+V8IHrR8WjwA2njY8kfUh8f1ln1bmjmXATzxw==
-  dependencies:
-    configstore "^4.0.0"
-    find-up "^2.1.0"
-    lodash "4.17.11"
-    original-require "1.0.1"
-    truffle-error "^0.0.4"
-    truffle-provider "^0.1.8"
-
 truffle-contract-schema@^0.0.5:
   version "0.0.5"
   resolved "https://registry.yarnpkg.com/truffle-contract-schema/-/truffle-contract-schema-0.0.5.tgz#5e9d20bd0bf2a27fe94310748249d484eee49961"
@@ -12705,23 +12693,6 @@ truffle-init@^1.0.7:
     rimraf "^2.5.4"
     temp "^0.8.3"
     truffle-config "^1.0.1"
-
-truffle-interface-adapter@^0.1.4:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/truffle-interface-adapter/-/truffle-interface-adapter-0.1.4.tgz#d2fabd01733991e1ba5df3f98142470c19a373cd"
-  integrity sha512-BVqHzsqHO1KKjTLLmkphmPxdeSvlpqPmDrAVg5QzOpAjqtBE0QV6bQOtBcZGCVY6eh37mfbNpaKKSXauziRr6w==
-  dependencies:
-    bn.js "^4.11.8"
-    web3 "1.0.0-beta.37"
-
-truffle-provider@^0.1.8:
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/truffle-provider/-/truffle-provider-0.1.8.tgz#0538484268d63f2f12349ca0762cc57b9a72b4a5"
-  integrity sha512-L7KAw9BOYJP2/b74LMw1iSXnG1vfQdahWIk5ueZ/6AEvwzlln2+fO6YnD6WHjs/K8sdIxhF9ZOgJ/8ydQ9ZZDQ==
-  dependencies:
-    truffle-error "^0.0.4"
-    truffle-interface-adapter "^0.1.4"
-    web3 "1.0.0-beta.37"
 
 tryer@^1.0.0:
   version "1.0.1"
@@ -13672,6 +13643,31 @@ web3-net@1.0.0-beta.48:
     web3-providers "1.0.0-beta.48"
     web3-utils "1.0.0-beta.48"
 
+web3-provider-engine@14.0.6, "web3-provider-engine@https://github.com/trufflesuite/provider-engine#web3-one":
+  version "14.0.6"
+  resolved "https://github.com/trufflesuite/provider-engine#3538c60bc4836b73ccae1ac3f64c8fed8ef19c1a"
+  dependencies:
+    async "^2.5.0"
+    backoff "^2.5.0"
+    clone "^2.0.0"
+    cross-fetch "^2.1.0"
+    eth-block-tracker "^3.0.0"
+    eth-json-rpc-infura "^3.1.0"
+    eth-sig-util "^1.4.2"
+    ethereumjs-block "^1.2.2"
+    ethereumjs-tx "^1.2.0"
+    ethereumjs-util "^5.1.5"
+    ethereumjs-vm "^2.3.4"
+    json-rpc-error "^2.0.0"
+    json-stable-stringify "^1.0.1"
+    promise-to-callback "^1.0.0"
+    readable-stream "^2.2.9"
+    request "^2.85.0"
+    semaphore "^1.0.3"
+    ws "^5.1.1"
+    xhr "^2.2.0"
+    xtend "^4.0.1"
+
 web3-provider-engine@14.1.0:
   version "14.1.0"
   resolved "https://registry.yarnpkg.com/web3-provider-engine/-/web3-provider-engine-14.1.0.tgz#91590020f8b8c1b65846321310cbfdb039090fc6"
@@ -13718,31 +13714,6 @@ web3-provider-engine@^13.3.2:
     semaphore "^1.0.3"
     solc "^0.4.2"
     tape "^4.4.0"
-    xhr "^2.2.0"
-    xtend "^4.0.1"
-
-web3-provider-engine@14.0.6, "web3-provider-engine@https://github.com/trufflesuite/provider-engine#web3-one":
-  version "14.0.6"
-  resolved "https://github.com/trufflesuite/provider-engine#3538c60bc4836b73ccae1ac3f64c8fed8ef19c1a"
-  dependencies:
-    async "^2.5.0"
-    backoff "^2.5.0"
-    clone "^2.0.0"
-    cross-fetch "^2.1.0"
-    eth-block-tracker "^3.0.0"
-    eth-json-rpc-infura "^3.1.0"
-    eth-sig-util "^1.4.2"
-    ethereumjs-block "^1.2.2"
-    ethereumjs-tx "^1.2.0"
-    ethereumjs-util "^5.1.5"
-    ethereumjs-vm "^2.3.4"
-    json-rpc-error "^2.0.0"
-    json-stable-stringify "^1.0.1"
-    promise-to-callback "^1.0.0"
-    readable-stream "^2.2.9"
-    request "^2.85.0"
-    semaphore "^1.0.3"
-    ws "^5.1.1"
     xhr "^2.2.0"
     xtend "^4.0.1"
 
