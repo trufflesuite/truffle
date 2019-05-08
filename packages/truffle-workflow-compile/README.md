@@ -23,10 +23,4 @@ const config = {
 Contracts.compile(config)
   .then(() => console.log("Compilation complete!"))
   .catch(e => console.error(e))
-
-// callback alternative
-Contracts.compile(config, (err, output) => {
-  if (err) console.error(err);
-  console.log(output)
-});
 ```
