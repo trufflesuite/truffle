@@ -21,8 +21,7 @@ describe("Compile - solidity ^0.4.0", function() {
           optimizer: {
             enabled: false,
             runs: 200
-          },
-          evmVersion: "byzantium"
+          }
         }
       }
     },
