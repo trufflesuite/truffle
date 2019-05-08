@@ -42,6 +42,12 @@ var util = {
     };
     const options = {
       contracts_directory: path.join(__dirname, "sources"),
+      logger: {
+      log(stringToLog) {
+        this.loggedStuff = this.loggedStuff + stringToLog;
+      },
+      loggedStuff: ""
+    },
       compilers: {
         solc: {
           version: "0.5.0",
