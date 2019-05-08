@@ -32,26 +32,22 @@ module.exports = {
     return await config.read(configPath);
   },
 
-  setUpTempDirectory: () => {
-    const prepareSpinner = ora("Preparing to download").start();
-    return new Promise((resolve, reject) => {
+  setUpTempDirectory: async() => {
+    const prepareSpinner = await ora("Preparing to download").start();
       const options = {
         dir: cwd,
         unsafeCleanup: true
       };
-      tmp.dir(options, (error, dir, cleanupCallback) => {
-        if (error) {
-          prepareSpinner.fail();
-          return reject(error);
-        }
-
-        prepareSpinner.succeed();
-        resolve({
-          path: path.join(dir, "box"),
-          cleanupCallback
-        });
-      });
-    });
+    try {
+      const tmpDir = await tmp.dirSync(options)
+      await prepareSpinner.succeed();
+      return { path: path.join(tmpDir.name, "box"),
+        cleanupCallback: tmpDir.removeCallback
+      }
+    } catch (e) {
+      await prepareSpinner.fail();
+      throw new Error(e)
+    }
   },
 
   unpackBox: async (tempDir, destination, boxConfig, unpackBoxOptions) => {
