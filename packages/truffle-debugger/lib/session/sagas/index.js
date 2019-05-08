@@ -67,9 +67,6 @@ export function* saga() {
   //initialize web3 adapter
   yield* web3.init(provider);
 
-  //declare that are done with project info
-  yield put(actions.projectInfoComputed());
-
   //process transaction (if there is one)
   //(note: this part may also set the error state)
   if (txHash !== undefined) {

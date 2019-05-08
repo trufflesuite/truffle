@@ -88,8 +88,3 @@ export function saveBlock(block) {
     block
   };
 }
-
-export const PROJECT_INFO_COMPUTED = "PROJECT_INFO_COMPUTED";
-export function projectInfoComputed() {
-  return { type: PROJECT_INFO_COMPUTED };
-}

@@ -55,27 +55,12 @@ export default class Session {
       });
     });
 
-    //set up the project info computed listener
-    this._projectInfoComputed = new Promise(accept => {
-      const unsubscribe = this._store.subscribe(() => {
-        if (this.view(session.status.projectInfoComputed)) {
-          unsubscribe();
-          accept();
-        }
-      });
-    });
-
     //note that txHash is now optional
     this._store.dispatch(actions.start(provider, txHash));
   }
 
   async ready() {
     await this._ready;
-  }
-
-  //only for those using the unreadyDebugger interface
-  async projectInfoComputed() {
-    await this._projectInfoComputed;
   }
 
   async readyAgainAfterLoading(sessionAction) {

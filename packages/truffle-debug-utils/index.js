@@ -81,16 +81,22 @@ var DebugUtils = {
     });
   },
 
-  formatStartMessage: function() {
-    var lines = ["Gathering project data..."];
-
-    return lines.join(OS.EOL);
+  formatStartMessage: function(withTransaction) {
+    if (withTransaction) {
+      return "Gathering information about your project and the transaction...";
+    } else {
+      return "Gathering information about your project...";
+    }
   },
 
   formatTransactionStartMessage: function() {
-    var lines = ["Gathering transaction data..."];
+    return "Gathering information about the transaction...";
+  },
 
-    return lines.join(OS.EOL);
+  abbreviateTxHash: function(txHash) {
+    //extract first 2 bytes and last 2 bytes;
+    //so that's first 6 chars and last 4 chars (because of 0x prefix)
+    return txHash.slice(0, 6) + "..." + txHash.slice(-4);
   },
 
   formatCommandDescription: function(commandId) {

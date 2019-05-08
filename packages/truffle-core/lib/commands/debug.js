@@ -55,6 +55,7 @@ var command = {
 
         var lastCommand = "n";
         var enabledExpressions = new Set();
+        var startSpinner; //apologies for the use of a global variable here
 
         let compilePromise = new Promise(function(accept, reject) {
           config.logger.log("Compiling your contracts...");
@@ -82,6 +83,11 @@ var command = {
 
         var sessionPromise = compilePromise
           .then(function(result) {
+            let startMessage = DebugUtils.formatStartMessage(
+              txHash !== undefined
+            );
+            startSpinner = ora(startMessage).start();
+
             let debuggerOptions = {
               provider: config.provider,
               files: result.files,
@@ -103,13 +109,9 @@ var command = {
               })
             };
 
-            //we use an unready debugger here so we can detect when it's done
-            //computing project info so this can be displayed to the user.  if
-            //you're not going to do something like that, we don't recommend
-            //using the unreadyDebugger interface.  Use forTx or forProject
-            //instead; these interfaces wait for the debugger to be ready, so you
-            //don't have to do that yourself
-            return Debugger.unreadyDebugger(debuggerOptions, txHash);
+            return txHash !== undefined
+              ? Debugger.forTx(txHash, debuggerOptions)
+              : Debugger.forProject(debuggerOptions);
           })
           .then(function(bugger) {
             debug("about to connect");
@@ -981,36 +983,10 @@ var command = {
               }
             }
 
-            let projectSpinner = ora(DebugUtils.formatStartMessage()).start();
-
-            //NOTE: this is only possible because we're using unreadyDebugger
-            await session.projectInfoComputed();
-            projectSpinner.succeed();
-
-            let txSpinner = null;
-            if (txHash !== undefined) {
-              txSpinner = ora(
-                DebugUtils.formatTransactionStartMessage()
-              ).start();
-            }
-
-            //NOTE: this is only necessary because we're using unreadyDebugger
-            try {
-              await session.ready();
-              if (txSpinner) {
-                txSpinner.succeed();
-              }
-            } catch (loadError) {
-              if (txSpinner) {
-                txSpinner.fail();
-              }
-              config.logger.log(loadError);
-              session.unload();
-            }
-
             let prompt;
 
             if (session.view(selectors.session.status.loaded)) {
+              startSpinner.succeed();
               printAddressesAffected();
               printHelp();
               debug("Help printed");
@@ -1020,6 +996,12 @@ var command = {
               debug("State printed");
               prompt = DebugUtils.formatPrompt(config.network, txHash);
             } else {
+              if (session.view(selectors.session.status.isError)) {
+                startSpinner.fail();
+                config.logger.log(session.view(selectors.session.status.error));
+              } else {
+                startSpinner.succeed();
+              }
               printHelp();
               prompt = DebugUtils.formatPrompt(config.network);
             }
