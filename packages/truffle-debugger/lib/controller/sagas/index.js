@@ -27,6 +27,9 @@ export function* saga() {
   while (true) {
     debug("waiting for control action");
     let action = yield take(Object.keys(STEP_SAGAS));
+    if (!(yield select(controller.current.trace.loaded))) {
+      continue; //while no trace is loaded, step actions are ignored
+    }
     debug("got control action");
     let saga = STEP_SAGAS[action.type];
 
@@ -46,15 +49,12 @@ export default prefixName("controller", saga);
  * (if no count given, advance 1)
  */
 function* advance(action) {
-  if (!(yield select(controller.current.loaded))) {
-    return;
-  }
   let count =
     action !== undefined && action.count !== undefined ? action.count : 1;
   //default is, as mentioned, to advance 1
   for (
     let i = 0;
-    i < count && !(yield select(controller.current.finished));
+    i < count && !(yield select(controller.current.trace.finished));
     i++
   ) {
     yield* trace.advance();
@@ -69,9 +69,6 @@ function* advance(action) {
  * instruction. See advance() if you'd like to advance by one instruction.
  */
 function* stepNext() {
-  if (!(yield select(controller.current.loaded))) {
-    return;
-  }
   const startingRange = yield select(controller.current.location.sourceRange);
 
   var upcoming, finished;
@@ -87,7 +84,7 @@ function* stepNext() {
       upcoming = null;
     }
 
-    finished = yield select(controller.current.finished);
+    finished = yield select(controller.current.trace.finished);
 
     // if the next step's source range is still the same, keep going
   } while (
@@ -113,9 +110,6 @@ function* stepNext() {
  * step.
  */
 function* stepInto() {
-  if (!(yield select(controller.current.loaded))) {
-    return;
-  }
   if (yield select(controller.current.willJump)) {
     yield* stepNext();
     return;
@@ -153,9 +147,6 @@ function* stepInto() {
  * This will run until the debugger encounters a decrease in function depth.
  */
 function* stepOut() {
-  if (!(yield select(controller.current.loaded))) {
-    return;
-  }
   if (yield select(controller.current.location.isMultiline)) {
     yield* stepOver();
     return;
@@ -178,9 +169,6 @@ function* stepOut() {
  * exists on a different line of code within the same function depth.
  */
 function* stepOver() {
-  if (!(yield select(controller.current.loaded))) {
-    return;
-  }
   const startingDepth = yield select(controller.current.functionDepth);
   const startingRange = yield select(controller.current.location.sourceRange);
   var currentDepth;
@@ -208,9 +196,6 @@ function* stepOver() {
  * continueUntilBreakpoint - step through execution until a breakpoint
  */
 function* continueUntilBreakpoint(action) {
-  if (!(yield select(controller.current.loaded))) {
-    return;
-  }
   var currentLocation, currentNode, currentLine, currentSourceId;
   var finished;
   var previousLine, previousSourceId;
@@ -237,7 +222,7 @@ function* continueUntilBreakpoint(action) {
     previousSourceId = currentSourceId;
 
     currentLocation = yield select(controller.current.location);
-    finished = yield select(controller.current.finished);
+    finished = yield select(controller.current.trace.finished);
     debug("finished %o", finished);
 
     currentNode = currentLocation.node.id;

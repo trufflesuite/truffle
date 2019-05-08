@@ -1,5 +1,4 @@
 import debugModule from "debug";
-//returns true on success, false on already unloadee
 const debug = debugModule("debugger:session");
 
 import configureStore from "lib/store";
