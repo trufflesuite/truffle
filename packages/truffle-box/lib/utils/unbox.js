@@ -19,10 +19,18 @@ async function verifyURL(url) {
   const options = {
     method: "HEAD",
     uri: `https://${configURL.host}${configURL.path}`,
+    simple: false,
     resolveWithFullResponse: true
   };
 
   await rp(options)
+    .catch(error => {
+      throw new Error(
+        `Error making request to ${options.uri}. Got error: ${
+          error.message
+        }. Please check the format of the requested resource.`
+      );
+    })
     .then(({ statusCode }) => {
       if (statusCode === 404)
         throw new Error(
@@ -32,13 +40,6 @@ async function verifyURL(url) {
         throw new Error(
           "Error connecting to github.com. Please check your internet connection and try again."
         );
-    })
-    .catch(error => {
-      throw new Error(
-        `Error making request to ${options.uri}. Got error: ${
-          error.message
-        }. Please check the format of the requested resource.`
-      );
     });
 }
 
