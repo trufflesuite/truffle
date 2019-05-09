@@ -3,7 +3,7 @@
 set -o errexit
 
 if [ "$GETH" == true ]; then
-  yarn build-cli && mocha --timeout 50000 --grep @ganache --invert --colors $@
+  yarn build-cli && mocha --timeout 50000 --grep '@ganache|@non-geth' --invert --colors $@
 elif [ "$COVERAGE" == true ]; then
   NO_BUILD=true mocha --no-warnings --timeout 7000 --grep @geth --invert --colors $@
 else
