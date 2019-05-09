@@ -14,25 +14,26 @@ import * as actions from "../actions";
 
 import controller from "../selectors";
 
-//NOTE: when updating this don't forget to update CONTROL_ACTIONS in
-//reducers.js as well!
-const CONTROL_SAGAS = {
+const STEP_SAGAS = {
   [actions.ADVANCE]: advance,
   [actions.STEP_NEXT]: stepNext,
   [actions.STEP_OVER]: stepOver,
   [actions.STEP_INTO]: stepInto,
   [actions.STEP_OUT]: stepOut,
-  [actions.CONTINUE]: continueUntilBreakpoint,
-  [actions.RESET]: reset
+  [actions.CONTINUE]: continueUntilBreakpoint
 };
 
 export function* saga() {
   while (true) {
     debug("waiting for control action");
-    let action = yield take(Object.keys(CONTROL_SAGAS));
+    let action = yield take(Object.keys(STEP_SAGAS));
+    if (!(yield select(controller.current.trace.loaded))) {
+      continue; //while no trace is loaded, step actions are ignored
+    }
     debug("got control action");
-    let saga = CONTROL_SAGAS[action.type];
+    let saga = STEP_SAGAS[action.type];
 
+    yield put(actions.startStepping());
     yield race({
       exec: call(saga, action), //not all will use this
       interrupt: take(actions.INTERRUPT)
@@ -49,10 +50,11 @@ export default prefixName("controller", saga);
  */
 function* advance(action) {
   let count =
-    action !== undefined && action.count !== undefined ? action.count : 1; //default is, as mentioned, to advance 1
+    action !== undefined && action.count !== undefined ? action.count : 1;
+  //default is, as mentioned, to advance 1
   for (
     let i = 0;
-    i < count && !(yield select(controller.current.finished));
+    i < count && !(yield select(controller.current.trace.finished));
     i++
   ) {
     yield* trace.advance();
@@ -82,7 +84,7 @@ function* stepNext() {
       upcoming = null;
     }
 
-    finished = yield select(controller.current.finished);
+    finished = yield select(controller.current.trace.finished);
 
     // if the next step's source range is still the same, keep going
   } while (
@@ -220,7 +222,7 @@ function* continueUntilBreakpoint(action) {
     previousSourceId = currentSourceId;
 
     currentLocation = yield select(controller.current.location);
-    finished = yield select(controller.current.finished);
+    finished = yield select(controller.current.trace.finished);
     debug("finished %o", finished);
 
     currentNode = currentLocation.node.id;
@@ -247,7 +249,7 @@ function* continueUntilBreakpoint(action) {
 /**
  * reset -- reset the state of the debugger
  */
-function* reset() {
+export function* reset() {
   yield* data.reset();
   yield* evm.reset();
   yield* solidity.reset();

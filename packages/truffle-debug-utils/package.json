@@ -8,7 +8,9 @@
     "node-dir": "0.1.17"
   },
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "mocha"
+  },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-debug-utils",
   "author": "Truffle Suite <inquiry@trufflesuite.com>",
   "license": "MIT",
@@ -19,5 +21,10 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
+  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.1.4",
+    "safe-eval": "^0.4.1"
+  }
 }
