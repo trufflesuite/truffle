@@ -56,10 +56,9 @@ var command = {
         var lastCommand = "n";
         var enabledExpressions = new Set();
         var startSpinner; //apologies for the use of a global variable here
+        var compileSpinner; //and here
 
         let compilePromise = new Promise(function(accept, reject) {
-          config.logger.log("Compiling your contracts...");
-
           //we need to set up a config object for the compiler.
           //it's the same as the existing config, but we turn on quiet.
           //unfortunately, we don't have Babel here, so cloning is annoying.
@@ -68,6 +67,8 @@ var command = {
             ...Object.entries(config).map(([key, value]) => ({ [key]: value }))
           ); //clone
           compileConfig.quiet = true;
+
+          compileSpinner = ora("Compiling your contracts...").start();
 
           compile.all(compileConfig, function(err, contracts, files) {
             if (err) {
@@ -83,6 +84,7 @@ var command = {
 
         var sessionPromise = compilePromise
           .then(function(result) {
+            compileSpinner.succeed();
             let startMessage = DebugUtils.formatStartMessage(
               txHash !== undefined
             );
