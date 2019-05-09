@@ -932,6 +932,7 @@ var command = {
                     if (!session.view(solidity.current.source).source) {
                       printInstruction();
                     }
+                    printFile();
                     printState();
                   }
                   await printWatchExpressionsResults();

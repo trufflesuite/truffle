@@ -93,12 +93,6 @@ var DebugUtils = {
     return "Gathering information about the transaction...";
   },
 
-  abbreviateTxHash: function(txHash) {
-    //extract first 2 bytes and last 2 bytes;
-    //so that's first 6 chars and last 4 chars (because of 0x prefix)
-    return txHash.slice(0, 6) + "..." + txHash.slice(-4);
-  },
-
   formatCommandDescription: function(commandId) {
     return "(" + commandId + ") " + commandReference[commandId];
   },
