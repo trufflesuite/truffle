@@ -15,7 +15,7 @@ module.exports = {
       downloadSpinner.succeed();
     } catch (error) {
       downloadSpinner.fail();
-      throw new Error(error);
+      throw error;
     }
   },
 
@@ -32,21 +32,22 @@ module.exports = {
     return await config.read(configPath);
   },
 
-  setUpTempDirectory: async() => {
+  setUpTempDirectory: async () => {
     const prepareSpinner = await ora("Preparing to download").start();
-      const options = {
-        dir: cwd,
-        unsafeCleanup: true
-      };
+    const options = {
+      dir: cwd,
+      unsafeCleanup: true
+    };
     try {
-      const tmpDir = await tmp.dirSync(options)
+      const tmpDir = await tmp.dirSync(options);
       await prepareSpinner.succeed();
-      return { path: path.join(tmpDir.name, "box"),
+      return {
+        path: path.join(tmpDir.name, "box"),
         cleanupCallback: tmpDir.removeCallback
-      }
-    } catch (e) {
+      };
+    } catch (error) {
       await prepareSpinner.fail();
-      throw new Error(e)
+      throw error;
     }
   },
 
@@ -62,7 +63,7 @@ module.exports = {
       setUpSpinner.succeed();
     } catch (error) {
       setUpSpinner.fail();
-      throw new Error(error);
+      throw error;
     }
   }
 };
