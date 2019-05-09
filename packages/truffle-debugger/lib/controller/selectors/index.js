@@ -150,7 +150,7 @@ const controller = createSelectorTree({
 
   /**
    * controller.finished
-   * deprecated alias for controller.current.finished
+   * deprecated alias for controller.current.trace.finished
    */
   finished: createLeaf(["/current/finished"], finished => finished),
 
