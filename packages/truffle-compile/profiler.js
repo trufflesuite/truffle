@@ -186,7 +186,7 @@ module.exports = {
     const resolver = options.resolver;
 
     // Fetch the whole contract set
-    find_contracts(options.contracts_directory, (err, allPaths) => {
+    find_contracts(options.contracts_directory, async (err, allPaths) => {
       if (err) return callback(err);
 
       // Solidity test files might have been injected. Include them in the known set.
@@ -207,7 +207,7 @@ module.exports = {
       const compilationTargets = [];
 
       // Get all the source code
-      const resolved = self.resolveAllSources(resolver, allPaths);
+      const resolved = await self.resolveAllSources(resolver, allPaths);
       // Generate hash of all sources including external packages - passed to solc inputs.
       const resolvedPaths = Object.keys(resolved);
       resolvedPaths.forEach(file => {
