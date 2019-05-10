@@ -5,7 +5,6 @@ const path = require("path");
 const async = require("async");
 const fs = require("fs");
 const Parser = require("./parser");
-const CompilerSupplier = require("./compilerSupplier");
 const expect = require("truffle-expect");
 const find_contracts = require("truffle-contract-sources");
 const semver = require("semver");
@@ -208,84 +207,70 @@ module.exports = {
       const allSources = {};
       const compilationTargets = [];
 
-      // Load compiler
-      const supplier = new CompilerSupplier(options.compilers.solc);
-      supplier
-        .load()
-        .then(async solc => {
-          // Get all the source code
-          const resolved = await self.resolveAllSources(resolver, allPaths);
-          // Generate hash of all sources including external packages - passed to solc inputs.
-          const resolvedPaths = Object.keys(resolved);
-          resolvedPaths.forEach(file => {
-            // Don't throw vyper files into solc!
-            if (path.extname(file) !== ".vy")
-              allSources[file] = resolved[file].body;
-          });
+      // Get all the source code
+      const resolved = self.resolveAllSources(resolver, allPaths);
+      // Generate hash of all sources including external packages - passed to solc inputs.
+      const resolvedPaths = Object.keys(resolved);
+      resolvedPaths.forEach(file => {
+        // Don't throw vyper files into solc!
+        if (path.extname(file) !== ".vy")
+          allSources[file] = resolved[file].body;
+      });
 
-          // Exit w/out minimizing if we've been asked to compile everything, or nothing.
-          if (self.listsEqual(options.paths, allPaths)) {
-            return callback(null, allSources, {});
-          } else if (!options.paths.length) {
-            return callback(null, {}, {});
-          }
+      // Exit w/out minimizing if we've been asked to compile everything, or nothing.
+      if (self.listsEqual(options.paths, allPaths)) {
+        return callback(null, allSources, {});
+      } else if (!options.paths.length) {
+        return callback(null, {}, {});
+      }
 
-          // Seed compilationTargets with known updates
-          updates.forEach(update => compilationTargets.push(update));
+      // Seed compilationTargets with known updates
+      updates.forEach(update => compilationTargets.push(update));
 
-          // While there are updated files in the queue, we take each one
-          // and search the entire file corpus to find any sources that import it.
-          // Those sources are added to list of compilation targets as well as
-          // the update queue because their own ancestors need to be discovered.
+      // While there are updated files in the queue, we take each one
+      // and search the entire file corpus to find any sources that import it.
+      // Those sources are added to list of compilation targets as well as
+      // the update queue because their own ancestors need to be discovered.
+      async.whilst(
+        () => updates.length > 0,
+        updateFinished => {
+          const currentUpdate = updates.shift();
+          const files = allPaths.slice();
+
+          // While files: dequeue and inspect their imports
           async.whilst(
-            () => updates.length > 0,
-            updateFinished => {
-              const currentUpdate = updates.shift();
-              const files = allPaths.slice();
+            () => files.length > 0,
+            fileFinished => {
+              const currentFile = files.shift();
 
-              // While files: dequeue and inspect their imports
-              async.whilst(
-                () => files.length > 0,
-                fileFinished => {
-                  const currentFile = files.shift();
+              // Ignore targets already selected.
+              if (compilationTargets.includes(currentFile)) {
+                return fileFinished();
+              }
 
-                  // Ignore targets already selected.
-                  if (compilationTargets.includes(currentFile)) {
-                    return fileFinished();
-                  }
+              let imports;
+              try {
+                imports = self.getImports(currentFile, resolved[currentFile]);
+              } catch (err) {
+                err.message = `Error parsing ${currentFile}: ${err.message}`;
+                return fileFinished(err);
+              }
 
-                  let imports;
-                  try {
-                    imports = self.getImports(
-                      currentFile,
-                      resolved[currentFile]
-                    );
-                  } catch (err) {
-                    err.message = `Error parsing ${currentFile}: ${
-                      err.message
-                    }`;
-                    return fileFinished(err);
-                  }
+              // If file imports a compilation target, add it
+              // to list of updates and compilation targets
+              if (imports.includes(currentUpdate)) {
+                updates.push(currentFile);
+                compilationTargets.push(currentFile);
+              }
 
-                  // If file imports a compilation target, add it
-                  // to list of updates and compilation targets
-                  if (imports.includes(currentUpdate)) {
-                    updates.push(currentFile);
-                    compilationTargets.push(currentFile);
-                  }
-
-                  fileFinished();
-                },
-                err => updateFinished(err)
-              );
+              fileFinished();
             },
-            err =>
-              err
-                ? callback(err)
-                : callback(null, allSources, compilationTargets)
+            err => updateFinished(err)
           );
-        })
-        .catch(callback);
+        },
+        err =>
+          err ? callback(err) : callback(null, allSources, compilationTargets)
+      );
     });
   },
 
