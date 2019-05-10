@@ -42,16 +42,17 @@ var command = {
     ]
   },
   run: function(options, done) {
-    var OS = require("os");
-    var dir = require("node-dir");
-    var temp = require("temp");
-    var Config = require("truffle-config");
-    var Artifactor = require("truffle-artifactor");
-    var Develop = require("../develop");
-    var Test = require("../test");
-    var fs = require("fs");
-    var copy = require("../copy");
-    var Environment = require("../environment");
+    const OS = require("os");
+    const dir = require("node-dir");
+    const temp = require("temp").track();
+    const Config = require("truffle-config");
+    const Artifactor = require("truffle-artifactor");
+    const Develop = require("../develop");
+    const Test = require("../test");
+    const fs = require("fs");
+    const { promisify } = require("util");
+    const promisifiedCopy = promisify(require("../copy"));
+    const Environment = require("../environment");
 
     var config = Config.detect(options);
 
@@ -92,16 +93,13 @@ var command = {
       temp.mkdir("test-", function(err, temporaryDirectory) {
         if (err) return done(err);
 
-        function cleanup() {
+        function runCallback() {
           var args = arguments;
           // Ensure directory cleanup.
-          temp.cleanup(() => {
-            // Ignore cleanup errors.
-            done.apply(null, args);
-            if (ipcDisconnect) {
-              ipcDisconnect();
-            }
-          });
+          done.apply(null, args);
+          if (ipcDisconnect) {
+            ipcDisconnect();
+          }
         }
 
         function run() {
@@ -114,7 +112,7 @@ var command = {
               test_files: files,
               contracts_build_directory: temporaryDirectory
             }),
-            cleanup
+            runCallback
           );
         }
 
@@ -123,21 +121,23 @@ var command = {
           // Copy all the built files over to a temporary directory, because we
           // don't want to save any tests artifacts. Only do this if the build directory
           // exists.
-          fs.stat(config.contracts_build_directory, function(err) {
-            if (err) return run();
+          try {
+            fs.statSync(config.contracts_build_directory);
+          } catch (_error) {
+            return run();
+          }
 
-            copy(config.contracts_build_directory, temporaryDirectory, function(
-              err
-            ) {
-              if (err) return done(err);
-
+          promisifiedCopy(config.contracts_build_directory, temporaryDirectory)
+            .then(() => {
               config.logger.log(
                 "Using network '" + config.network + "'." + OS.EOL
               );
 
               run();
+            })
+            .catch(error => {
+              done(error);
             });
-          });
         };
 
         if (config.networks[config.network]) {
@@ -162,7 +162,6 @@ var command = {
             gasLimit: config.gas,
             noVMErrorsOnRPCResponse: true
           };
-
           Develop.connectOrStart(ipcOptions, ganacheOptions, function(
             started,
             disconnect

@@ -1,72 +1,78 @@
-var Blockchain = {
-
-  getBlockByNumber: function(blockNumber, provider, callback){
-    var params = [blockNumber, true];
-    provider.send({
-      jsonrpc: '2.0',
-      method: 'eth_getBlockByNumber',
-      params: params,
-      id: Date.now(),
-    }, callback);
+const Blockchain = {
+  getBlockByNumber(blockNumber, provider, callback) {
+    const params = [blockNumber, true];
+    provider.send(
+      {
+        jsonrpc: "2.0",
+        method: "eth_getBlockByNumber",
+        params,
+        id: Date.now()
+      },
+      callback
+    );
   },
 
-  getBlockByHash: function(blockHash, provider, callback){
-    var params = [blockHash, true];
-    provider.send({
-      jsonrpc: '2.0',
-      method: 'eth_getBlockByHash',
-      params: params,
-      id: Date.now(),
-    }, callback);
+  getBlockByHash(blockHash, provider, callback) {
+    const params = [blockHash, true];
+    provider.send(
+      {
+        jsonrpc: "2.0",
+        method: "eth_getBlockByHash",
+        params,
+        id: Date.now()
+      },
+      callback
+    );
   },
 
-  parse: function(uri) {
-    var parsed = {};
+  parse(uri) {
+    const parsed = {};
     if (uri.indexOf("blockchain://") !== 0) return parsed;
 
-    uri = uri.replace("blockchain://", "");
+    const cleanUri = uri.replace("blockchain://", "");
 
-    var pieces = uri.split("/block/");
+    const pieces = cleanUri.split("/block/");
 
-    parsed.genesis_hash = "0x" + pieces[0];
-    parsed.block_hash = "0x" + pieces[1];
+    parsed.genesis_hash = `0x${pieces[0]}`;
+    parsed.block_hash = `0x${pieces[1]}`;
 
     return parsed;
   },
 
-  asURI: function(provider, callback) {
-    var self = this;
-    var genesis;
+  asURI(provider, callback) {
+    let genesis, latest;
 
-    self.getBlockByNumber("0x0", provider, function(err, response) {
+    this.getBlockByNumber("0x0", provider, (err, { result }) => {
       if (err) return callback(err);
-      genesis = response.result;
+      genesis = result;
 
-      self.getBlockByNumber("latest", provider, function(err, response) {
+      this.getBlockByNumber("latest", provider, (err, { result }) => {
         if (err) return callback(err);
-        latest = response.result;
-        var url = "blockchain://" + genesis.hash.replace("0x", "") + "/block/" + latest.hash.replace("0x", "");
+        latest = result;
+        const url = `blockchain://${genesis.hash.replace(
+          "0x",
+          ""
+        )}/block/${latest.hash.replace("0x", "")}`;
         callback(null, url);
       });
     });
   },
 
-  matches: function(uri, provider, callback) {
-    var self = this;
-    uri = self.parse(uri);
+  matches(uri, provider, callback) {
+    const parsedUri = this.parse(uri);
 
-    var expected_genesis = uri.genesis_hash;
-    var expected_block = uri.block_hash;
+    const expected_genesis = parsedUri.genesis_hash;
+    const expected_block = parsedUri.block_hash;
 
-    self.getBlockByNumber("0x0", provider, function(err, response) {
+    this.getBlockByNumber("0x0", provider, (err, { result }) => {
       if (err) return callback(err);
-      var block = response.result;
+      const block = result;
       if (block.hash !== expected_genesis) return callback(null, false);
 
-      self.getBlockByHash(expected_block, provider, function(err, response) {
+      this.getBlockByHash(expected_block, provider, (err, { result }) => {
         // Treat an error as if the block didn't exist. This is because
         // some clients respond differently.
-        var block = response.result;
+        const block = result;
         if (err || block == null) {
           return callback(null, false);
         }

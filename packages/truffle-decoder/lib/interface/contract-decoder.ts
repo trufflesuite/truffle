@@ -13,6 +13,7 @@ import { StoragePointer, isStoragePointer } from "../types/pointer";
 import { StorageAllocations, StorageMemberAllocations, StorageMemberAllocation } from "../types/allocation";
 import { Slot, isWordsLength } from "../types/storage";
 import { DecoderRequest, isStorageRequest, isCodeRequest } from "../types/request";
+import { ContractBeingDecodedHasNoNodeError } from "../types/errors";
 import decode from "../decode";
 import { Definition as DefinitionUtils, EVM, AstDefinition, AstReferences } from "truffle-decode-utils";
 import { BlockType, Transaction } from "web3/eth/types";
@@ -145,6 +146,9 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       this.contractAddress = address;
     }
     this.contractNode = getContractNode(this.contract);
+    if(this.contractNode === undefined) {
+      throw new ContractBeingDecodedHasNoNodeError();
+    }
 
     this.contracts[this.contractNode.id] = this.contract;
     this.contractNodes[this.contractNode.id] = this.contractNode;

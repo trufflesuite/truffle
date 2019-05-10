@@ -169,120 +169,74 @@ const command = {
     const Contracts = require("truffle-workflow-compile");
     const Environment = require("../environment");
     const Config = require("truffle-config");
-    const temp = require("temp");
-    const copy = require("../copy");
+    const temp = require("temp").track();
+    const { promisify } = require("util");
+    const promisifiedCopy = promisify(require("../copy"));
 
     const conf = Config.detect(options);
 
-    Contracts.compile(conf, compileCallback.bind(this));
+    Contracts.compile(conf)
+      .then(async () => {
+        await Environment.detect(conf);
+        const {
+          dryRunOnly,
+          dryRunAndMigrations
+        } = this.determineDryRunSettings(conf, options);
 
-    function compileCallback(error) {
-      if (error) return done(error);
-      Environment.detect(conf)
-        .then(() => {
-          detectCallback.bind(this)();
-        })
-        .catch(error => {
-          detectCallback.bind(this, error)();
-        });
-    }
-
-    async function detectCallback(error) {
-      if (error) return done(error);
-
-      const { dryRunOnly, dryRunAndMigrations } = this.determineDryRunSettings(
-        conf,
-        options
-      );
-
-      if (dryRunOnly) {
-        try {
+        if (dryRunOnly) {
           conf.dryRun = true;
           await setupDryRunEnvironmentThenRunMigrations(conf);
-          done();
-        } catch (err) {
-          done(err);
-        }
-      } else if (dryRunAndMigrations) {
-        const currentBuild = conf.contracts_build_directory;
-        conf.dryRun = true;
+        } else if (dryRunAndMigrations) {
+          const currentBuild = conf.contracts_build_directory;
+          conf.dryRun = true;
 
-        try {
           await setupDryRunEnvironmentThenRunMigrations(conf);
           let { config, proceed } = await this.prepareConfigForRealMigrations(
             currentBuild,
             options
           );
-          if (proceed) await runMigrations(config, done);
-          return done();
-        } catch (error) {
-          return done(error);
+          if (proceed) await runMigrations(config);
+        } else {
+          await runMigrations(conf);
         }
-      } else {
-        await runMigrations(conf, done);
-      }
-    }
-
-    function setupDryRunEnvironmentThenRunMigrations(config) {
-      return new Promise((resolve, reject) => {
-        Environment.fork(config)
-          .then(() => {
-            // Copy artifacts to a temporary directory
-            const temporaryDirectory = temp.mkdirSync("migrate-dry-run-");
-
-            function cleanup() {
-              var args = arguments;
-
-              // Ensure directory cleanup.
-              temp.cleanup(() => {
-                args.length && args[0] !== null ? reject(args[0]) : resolve();
-              });
-            }
-
-            copy(config.contracts_build_directory, temporaryDirectory, function(
-              err
-            ) {
-              if (err) return cleanup(err);
-
-              config.contracts_build_directory = temporaryDirectory;
-
-              // Note: Create a new artifactor and resolver with the updated config.
-              // This is because the contracts_build_directory changed.
-              // Ideally we could architect them to be reactive of the config changes.
-              config.artifactor = new Artifactor(temporaryDirectory);
-              config.resolver = new Resolver(config);
-
-              runMigrations(config, cleanup);
-            });
-          })
-          .catch(error => {
-            reject(error);
-          });
+        done();
+      })
+      .catch(error => {
+        done(error);
       });
+
+    async function setupDryRunEnvironmentThenRunMigrations(config) {
+      await Environment.fork(config);
+      // Copy artifacts to a temporary directory
+      const temporaryDirectory = temp.mkdirSync("migrate-dry-run-");
+
+      await promisifiedCopy(
+        config.contracts_build_directory,
+        temporaryDirectory
+      );
+
+      config.contracts_build_directory = temporaryDirectory;
+      // Note: Create a new artifactor and resolver with the updated config.
+      // This is because the contracts_build_directory changed.
+      // Ideally we could architect them to be reactive of the config changes.
+      config.artifactor = new Artifactor(temporaryDirectory);
+      config.resolver = new Resolver(config);
+
+      return await runMigrations(config);
     }
 
-    async function runMigrations(config, callback) {
+    async function runMigrations(config) {
       Migrate.launchReporter();
 
       if (options.f) {
-        try {
-          await Migrate.runFrom(options.f, config);
-          done();
-        } catch (error) {
-          done(error);
-        }
+        await Migrate.runFrom(options.f, config);
       } else {
-        try {
-          const needsMigrating = await Migrate.needsMigrating(config);
+        const needsMigrating = await Migrate.needsMigrating(config);
 
-          if (needsMigrating) {
-            Migrate.run(config, callback);
-          } else {
-            config.logger.log("Network up to date.");
-            callback();
-          }
-        } catch (error) {
-          callback(error);
+        if (needsMigrating) {
+          await Migrate.run(config);
+        } else {
+          config.logger.log("Network up to date.");
         }
       }
     }

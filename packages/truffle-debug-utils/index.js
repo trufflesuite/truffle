@@ -22,7 +22,9 @@ var commandReference = {
   "B": "remove breakpoint",
   "c": "continue until breakpoint",
   "q": "quit",
-  "r": "reset"
+  "r": "reset",
+  "t": "load new transaction",
+  "T": "unload transaction"
 };
 
 var DebugUtils = {
@@ -79,14 +81,26 @@ var DebugUtils = {
     });
   },
 
-  formatStartMessage: function() {
-    var lines = ["", "Gathering transaction data...", ""];
+  formatStartMessage: function(withTransaction) {
+    if (withTransaction) {
+      return "Gathering information about your project and the transaction...";
+    } else {
+      return "Gathering information about your project...";
+    }
+  },
 
-    return lines.join(OS.EOL);
+  formatTransactionStartMessage: function() {
+    return "Gathering information about the transaction...";
   },
 
   formatCommandDescription: function(commandId) {
     return "(" + commandId + ") " + commandReference[commandId];
+  },
+
+  formatPrompt: function(network, txHash) {
+    return txHash !== undefined
+      ? `debug(${network}:${txHash.substring(0, 10)}...)> `
+      : `debug(${network})> `;
   },
 
   formatAffectedInstances: function(instances) {
@@ -130,6 +144,7 @@ var DebugUtils = {
       ["o", "i", "u", "n"],
       [";", "p"],
       ["h", "q", "r"],
+      ["t", "T"],
       ["b", "B", "c"],
       ["+", "-"],
       ["?"],

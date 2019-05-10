@@ -27,3 +27,12 @@ export class UnknownUserDefinedTypeError extends Error {
     this.typeString = typeString;
   }
 }
+
+export class ContractBeingDecodedHasNoNodeError extends Error {
+  public name: string;
+  constructor() {
+    const message = "Contract does not appear to have been compiled with Solidity (cannot locate contract node)";
+    super(message);
+    this.name = "ContractBeingDecodedHasNoNodeError";
+  }
+}

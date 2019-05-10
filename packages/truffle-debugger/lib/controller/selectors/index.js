@@ -48,28 +48,50 @@ const controller = createSelectorTree({
       /**
        * controller.current.location.sourceRange
        */
-      sourceRange: createLeaf([solidity.current.sourceRange], identity),
+      sourceRange: createLeaf(
+        [solidity.current.sourceRange, "/current/trace/loaded"],
+        (range, loaded) => (loaded ? range : null)
+      ),
 
       /**
        * controller.current.location.source
        */
-      source: createLeaf([solidity.current.source], identity),
+      source: createLeaf(
+        [solidity.current.source, "/current/trace/loaded"],
+        (source, loaded) => (loaded ? source : null)
+      ),
 
       /**
        * controller.current.location.node
        */
-      node: createLeaf([solidity.current.node], identity),
+      node: createLeaf(
+        [solidity.current.node, "/current/trace/loaded"],
+        (node, loaded) => (loaded ? node : null)
+      ),
 
       /**
        * controller.current.location.isMultiline
        */
-      isMultiline: createLeaf([solidity.current.isMultiline], identity)
+      isMultiline: createLeaf(
+        [solidity.current.isMultiline, "/current/trace/loaded"],
+        (raw, loaded) => (loaded ? raw : false)
+      )
     },
 
-    /**
-     * controller.current.finished
+    /*
+     * controller.current.trace
      */
-    finished: createLeaf([trace.finished], identity)
+    trace: {
+      /**
+       * controller.current.trace.finished
+       */
+      finished: createLeaf([trace.finished], identity),
+
+      /**
+       * controller.current.trace.loaded
+       */
+      loaded: createLeaf([trace.loaded], identity)
+    }
   },
 
   /**
@@ -128,7 +150,7 @@ const controller = createSelectorTree({
 
   /**
    * controller.finished
-   * deprecated alias for controller.current.finished
+   * deprecated alias for controller.current.trace.finished
    */
   finished: createLeaf(["/current/finished"], finished => finished),
 

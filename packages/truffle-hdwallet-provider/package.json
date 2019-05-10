@@ -1,6 +1,6 @@
 {
   "name": "truffle-hdwallet-provider",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "HD Wallet-enabled Web3 provider",
   "main": "dist/index.js",
   "scripts": {
@@ -18,9 +18,9 @@
   "author": "Tim Coulter <tim.coulter@consensys.net>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-hdwallet-provider/issues"
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-hdwallet-provider#readme",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-hdwallet-provider#readme",
   "devDependencies": {
     "@babel/core": "^7.0.0-0",
     "bip39": "^2.2.0",
