@@ -150,11 +150,7 @@ const Migrate = {
 
   wrapProvider: function(provider) {
     return {
-      send: function(payload, callback) {
-        provider.send(payload, function(err, result) {
-          err ? callback(err) : callback(err, result);
-        });
-      }
+      send: (method, params) => provider.send(method, params)
     };
   },
 
