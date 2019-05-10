@@ -1,7 +1,7 @@
 {
   "name": "truffle-code-utils",
   "version": "1.2.2",
-  "description": "",
+  "description": "Utilities for parsing and managing EVM-compatible bytecode",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
