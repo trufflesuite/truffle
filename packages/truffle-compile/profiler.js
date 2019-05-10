@@ -214,11 +214,7 @@ module.exports = {
         .load()
         .then(async solc => {
           // Get all the source code
-          const resolved = await self.resolveAllSources(
-            resolver,
-            allPaths,
-            solc
-          );
+          const resolved = await self.resolveAllSources(resolver, allPaths);
           // Generate hash of all sources including external packages - passed to solc inputs.
           const resolvedPaths = Object.keys(resolved);
           resolvedPaths.forEach(file => {
@@ -262,8 +258,7 @@ module.exports = {
                   try {
                     imports = self.getImports(
                       currentFile,
-                      resolved[currentFile],
-                      solc
+                      resolved[currentFile]
                     );
                   } catch (err) {
                     err.message = `Error parsing ${currentFile}: ${
@@ -296,7 +291,7 @@ module.exports = {
 
   // Resolves sources in several async passes. For each resolved set it detects unknown
   // imports from external packages and adds them to the set of files to resolve.
-  async resolveAllSources(resolver, initialPaths, solc) {
+  async resolveAllSources(resolver, initialPaths) {
     const self = this;
     const mapping = {};
     const allPaths = initialPaths.slice();
@@ -345,7 +340,7 @@ module.exports = {
             // Inspect the imports
             let imports;
             try {
-              imports = self.getImports(result.file, result, solc);
+              imports = self.getImports(result.file, result);
             } catch (err) {
               if (err.message.includes("requires different compiler version")) {
                 const contractSolcPragma = err.message.match(
@@ -384,13 +379,13 @@ module.exports = {
     });
   },
 
-  getImports(file, { body, source }, solc) {
+  getImports(file, { body, source }) {
     const self = this;
 
     // No imports in vyper!
     if (path.extname(file) === ".vy") return [];
 
-    const imports = Parser.parseImports(body, solc);
+    const imports = Parser.parseImports(body);
 
     // Convert explicitly relative dependencies of modules back into module paths.
     return imports.map(
