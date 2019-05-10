@@ -153,6 +153,10 @@ export function* reset() {
   yield put(actions.reset(initialAddress));
 }
 
+export function* unload() {
+  yield put(actions.unloadTransaction());
+}
+
 export function* saga() {
   yield takeEvery(TICK, tickSaga);
 }

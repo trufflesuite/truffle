@@ -81,7 +81,6 @@ var Test = {
     var accounts = [];
     var runner;
     var test_resolver;
-
     this.getAccounts(web3)
       .then(function(accs) {
         accounts = accs;
@@ -211,12 +210,14 @@ var Test = {
           reset: true,
           resolver: resolver,
           quiet: true
-        }),
-        function(err) {
-          if (err) return reject(err);
+        })
+      )
+        .then(() => {
           accept();
-        }
-      );
+        })
+        .catch(error => {
+          reject(error);
+        });
     });
   },
 

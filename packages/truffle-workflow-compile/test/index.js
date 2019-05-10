@@ -1,14 +1,25 @@
 const Contracts = require("../index");
 const assert = require("assert");
-const { existsSync } = require("fs");
+const { existsSync, removeSync } = require("fs-extra");
+const { join } = require("path");
 
 let config;
 
 beforeEach(() => {
   config = {
     contracts_directory: "./test/sources",
-    contracts_build_directory: "./test/build"
+    contracts_build_directory: "./test/build",
+    logger: {
+      log(stringToLog) {
+        this.loggedStuff = this.loggedStuff + stringToLog;
+      },
+      loggedStuff: ""
+    }
   };
+});
+
+after(() => {
+  removeSync(join(`${process.cwd()}/${config.contracts_build_directory}`));
 });
 
 describe("Contracts.compileSources", () => {
@@ -25,30 +36,22 @@ describe("Contracts.compileSources", () => {
 });
 
 describe("Contracts.compile", () => {
-  it("when config.all is true, all contracts in contracts_directory are recompiled", () => {
-    let contractName;
-
+  it("when config.all is true, all contracts in contracts_directory are recompiled", async () => {
     // initial compile
-    Contracts.compile(config, (err, { contracts }) => {
-      if (err) assert.fail(err);
-      else {
-        contractName = Object.keys(contracts)[0];
-        assert(
-          existsSync(`${config.contracts_build_directory}/${contractName}.json`)
-        );
-      }
-    });
+    const { contracts } = await Contracts.compile(config);
+    let contractName = await Object.keys(contracts)[0];
+    assert(
+      existsSync(`${config.contracts_build_directory}/${contractName}.json`)
+    );
 
     // compile again
     config.all = true;
-    Contracts.compile(config, (err, output) => {
-      if (err) assert.fail(err);
-      else {
-        assert(
-          output.solc ===
-            `${process.cwd()}/${config.contracts_directory}/${contractName}.sol`
-        );
-      }
-    });
-  });
+    const { outputs } = await Contracts.compile(config);
+    assert(
+      outputs.solc[0] ===
+        join(
+          `${process.cwd()}/${config.contracts_directory}/${contractName}.sol`
+        )
+    );
+  }).timeout(3000);
 });

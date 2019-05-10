@@ -21,19 +21,34 @@ let trace = createSelectorTree({
    */
   index: state => state.trace.proc.index,
 
+  /*
+   * trace.loaded
+   * is a trace loaded?
+   */
+  loaded: createLeaf(["/steps"], steps => steps !== null),
+
   /**
    * trace.finished
-   *
    * is the trace finished?
    */
   finished: state => state.trace.proc.finished,
+
+  /**
+   * trace.finishedOrUnloaded
+   *
+   * is the trace finished, including if it's unloaded?
+   */
+  finishedOrUnloaded: createLeaf(
+    ["/finished", "/loaded"],
+    (finished, loaded) => finished || !loaded
+  ),
 
   /**
    * trace.steps
    *
    * all trace steps
    */
-  steps: state => state.trace.info.steps,
+  steps: state => state.trace.transaction.steps,
 
   /**
    * trace.stepsRemaining
@@ -50,7 +65,10 @@ let trace = createSelectorTree({
    *
    * current trace step
    */
-  step: createLeaf(["./steps", "./index"], (steps, index) => steps[index]),
+  step: createLeaf(
+    ["./steps", "./index"],
+    (steps, index) => (steps ? steps[index] : null) //null if no tx loaded
+  ),
 
   /**
    * trace.next

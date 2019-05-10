@@ -42,25 +42,16 @@ function breakpoints(state = [], action) {
   }
 }
 
-const CONTROL_ACTIONS = [
-  actions.ADVANCE,
-  actions.STEP_NEXT,
-  actions.STEP_OVER,
-  actions.STEP_INTO,
-  actions.STEP_OUT,
-  actions.CONTINUE,
-  actions.RESET
-];
-
 function isStepping(state = false, action) {
-  if (CONTROL_ACTIONS.includes(action.type)) {
-    debug("got step start action");
-    return true;
-  } else if (action.type === actions.DONE_STEPPING) {
-    debug("got step stop action");
-    return false;
-  } else {
-    return state;
+  switch (action.type) {
+    case actions.START_STEPPING:
+      debug("got step start action");
+      return true;
+    case actions.DONE_STEPPING:
+      debug("got step stop action");
+      return false;
+    default:
+      return state;
   }
 }
 
