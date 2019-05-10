@@ -1,5 +1,6 @@
 const debug = require("debug")("compile:parser"); // eslint-disable-line no-unused-vars
 const CompileError = require("./compileerror");
+const solc = require("solc");
 
 // Warning issued by a pre-release compiler version, ignored by this component.
 const preReleaseCompilerWarning =
@@ -7,7 +8,7 @@ const preReleaseCompilerWarning =
 
 module.exports = {
   // This needs to be fast! It is fast (as of this writing). Keep it fast!
-  parseImports(body, solc) {
+  parseImports(body) {
     // WARNING: Kind of a hack (an expedient one).
 
     // So we don't have to maintain a separate parser, we'll get all the imports
