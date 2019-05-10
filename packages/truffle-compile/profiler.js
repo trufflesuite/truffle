@@ -207,7 +207,13 @@ module.exports = {
       const compilationTargets = [];
 
       // Get all the source code
-      const resolved = await self.resolveAllSources(resolver, allPaths);
+      let resolved;
+      try {
+        resolved = await self.resolveAllSources(resolver, allPaths);
+      } catch (error) {
+        callback(error);
+      }
+
       // Generate hash of all sources including external packages - passed to solc inputs.
       const resolvedPaths = Object.keys(resolved);
       resolvedPaths.forEach(file => {
@@ -328,7 +334,6 @@ module.exports = {
             } catch (err) {
               return finished(err);
             }
-
             // Detect unknown external packages / add them to the list of files to resolve
             // Keep track of location of this import because we need to report that.
             imports.forEach(item => {
@@ -344,7 +349,7 @@ module.exports = {
 
     return new Promise((resolve, reject) => {
       async.whilst(() => allPaths.length, generateMapping, error => {
-        if (error) reject(new Error(error));
+        if (error) reject(error);
         resolve(mapping);
       });
     });
