@@ -13,9 +13,9 @@
   "author": "Tim Coulter <tim.coulter@consensys.net>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-config/issues"
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-config#readme",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-config#readme",
   "dependencies": {
     "configstore": "^4.0.0",
     "find-up": "^2.1.0",
