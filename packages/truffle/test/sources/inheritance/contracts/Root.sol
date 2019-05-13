@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.4.24;
 
 import "./Branch.sol";
 import "./LeafC.sol";
@@ -9,5 +9,9 @@ contract Root is Branch {
 
   function addToRoot(uint a, uint b) public {
     root = LibraryA.add(a, b);
+  }
+
+  function seeRoot() constant returns (uint) {
+    return root;
   }
 }
