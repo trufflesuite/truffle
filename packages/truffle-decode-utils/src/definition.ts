@@ -75,6 +75,15 @@ export namespace Definition {
     }
   }
 
+  /**
+   * for fixed-point types, obviously
+   */
+  export function decimalPlaces(definition: AstDefinition): number {
+    return parseInt(
+      typeIdentifier(definition).match(/t_[a-z]+[0-9]+x[0-9]+/)[1];
+    );
+  }
+
   export function isArray(definition: AstDefinition): boolean {
     return typeIdentifier(definition).match(/^t_array/) != null;
   }
@@ -95,8 +104,13 @@ export namespace Definition {
     //NOTE: we do this by parsing the type identifier, rather than by just
     //checking the length field, because we might be using this on a faked-up
     //definition
-    return parseInt(typeIdentifier(definition).match(
-      /\$(\d+)_(storage|memory|calldata)(_ptr)?$/)[1]);
+    return parseInt(staticLengthAsString(definition));
+  }
+
+  //see staticLength for explanation
+  export function staticLengthAsString(definition: AstDefinition): string {
+    return typeIdentifier(definition).match(
+      /\$(\d+)_(storage|memory|calldata)(_ptr)?$/)[1];
   }
 
   export function isStruct(definition: AstDefinition): boolean {
@@ -115,9 +129,18 @@ export namespace Definition {
     return typeIdentifier(definition).match(/_(memory|storage|calldata)(_ptr)?$/) != null;
   }
 
+  export function isAddressPayable(definition: AstDefinition): boolean {
+    return typeIdentifier(definition) === "t_address_payable";
+  }
+
   //note: only use this on things already verified to be references
   export function referenceType(definition: AstDefinition): string {
     return typeIdentifier(definition).match(/_([^_]+)(_ptr)?$/)[1];
+  }
+
+  //only for contract types, obviously! will yield nonsense otherwise!
+  export function contractKind(definition: AstDefinition): string {
+    return typeString(definition).split(" ")[0];
   }
 
   //stack size, in words, of a given type
@@ -235,7 +258,7 @@ export namespace Definition {
 
   //for use for mappings and arrays only!
   //for arrays, fakes up a uint definition
-  export function keyDefinition(definition: AstDefinition, scopes: Scopes): AstDefinition {
+  export function keyDefinition(definition: AstDefinition, scopes?: Scopes): AstDefinition {
     let result: AstDefinition;
     switch(typeClass(definition)) {
       case "mapping":
@@ -276,6 +299,23 @@ export namespace Definition {
     }
   }
 
+  //returns input parameters, then output parameters
+  export function parameters(definition: AstDefinition): [AstDefinition[], AstDefinition[]] {
+    let typeObject = definition.typeName || definition;
+    return [typeObject.parameterTypes.parameters, typeObject.returnParameterTypes.parameters];
+  }
+
+  //takes a contract definition and asks, does it have a payable fallback function?
+  export function isContractPayable(definition: AstDefinition): boolean {
+    let fallback = definition.nodes.find(
+      node => node.nodeType === "FunctionDefinition" && node.kind === "fallback"
+    );
+    if(!fallback) {
+      return false;
+    }
+    return fallback.stateMutability === "payable";
+  }
+
   //spoofed definitions we'll need
   //we'll give them id -1 to indicate that they're spoofed
 
@@ -283,6 +323,7 @@ export namespace Definition {
   export function spoofUintDefinition(name: string): AstDefinition {
     return {
       id: -1,
+      src: "0:0:-1",
       name,
       nodeType: "VariableDeclaration",
       typeDescriptions: {
@@ -294,6 +335,7 @@ export namespace Definition {
   export function spoofAddressPayableDefinition(name: string): AstDefinition {
     return {
       id: -1,
+      src: "0:0:-1",
       name,
       nodeType: "VariableDeclaration",
       typeDescriptions: {
@@ -304,6 +346,7 @@ export namespace Definition {
 
   export const MSG_SIG_DEFINITION: AstDefinition = {
     id: -1,
+    src: "0:0:-1",
     name: "sig",
     nodeType: "VariableDeclaration",
     typeDescriptions: {
@@ -313,6 +356,7 @@ export namespace Definition {
 
   export const MSG_DATA_DEFINITION: AstDefinition = {
     id: -1,
+    src: "0:0:-1",
     name: "data",
     nodeType: "VariableDeclaration",
     typeDescriptions: {
@@ -322,6 +366,7 @@ export namespace Definition {
 
   export const MSG_DEFINITION: AstDefinition = {
     id: -1,
+    src: "0:0:-1",
     name: "msg",
     nodeType: "VariableDeclaration",
     typeDescriptions: {
@@ -331,6 +376,7 @@ export namespace Definition {
 
   export const TX_DEFINITION: AstDefinition = {
     id: -1,
+    src: "0:0:-1",
     name: "tx",
     nodeType: "VariableDeclaration",
     typeDescriptions: {
@@ -340,6 +386,7 @@ export namespace Definition {
 
   export const BLOCK_DEFINITION: AstDefinition = {
     id: -1,
+    src: "0:0:-1",
     name: "block",
     nodeType: "VariableDeclaration",
     typeDescriptions: {
@@ -354,6 +401,7 @@ export namespace Definition {
     //replacement string
     return {
       id: -1,
+      src: "0:0:-1",
       name: "this",
       nodeType: "VariableDeclaration",
       typeDescriptions: {

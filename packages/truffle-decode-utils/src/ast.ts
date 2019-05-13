@@ -12,7 +12,7 @@ export interface AstDefinition {
   nodes?: any[]; //sorry
   nodeType: string;
   scope?: number;
-  src?: string;
+  src: string;
   stateVariable?: boolean;
   storageLocation?: string;
   typeDescriptions: AstTypeDescriptions;
