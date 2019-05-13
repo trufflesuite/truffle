@@ -7,7 +7,7 @@ const assert = require("assert");
 const Ganache = require("ganache-core");
 const Reporter = require("../reporter");
 
-describe("Cyclic Dependencies [ @non-geth ]", function() {
+describe("Cyclic Dependencies [ @truffle ]", function() {
   let config;
   let options;
   const logger = new MemoryLogger();

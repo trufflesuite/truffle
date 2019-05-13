@@ -15,7 +15,7 @@ const loadSandboxLogger = source => {
   });
 };
 
-describe("truffle run [ @non-geth ]", () => {
+describe("truffle run [ @truffle ]", () => {
   describe("when run without arguments", () => {
     beforeEach(() => {
       return loadSandboxLogger("../../sources/run/mockProjectWithPlugin");

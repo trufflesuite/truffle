@@ -7,7 +7,7 @@ var Reporter = require("../reporter");
 var sandbox = require("../sandbox");
 var log = console.log;
 
-describe("Solidity Imports [ @non-geth ]", function() {
+describe("Solidity Imports [ @truffle ]", function() {
   var config;
   var project = path.join(__dirname, "../../sources/monorepo");
   var logger = new MemoryLogger();

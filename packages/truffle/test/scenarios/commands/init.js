@@ -4,7 +4,7 @@ const path = require("path");
 const tmp = require("tmp");
 const fs = require("fs");
 
-describe("truffle init [ @non-geth ]", () => {
+describe("truffle init [ @truffle ]", () => {
   let tempDir, config;
 
   beforeEach(() => {
