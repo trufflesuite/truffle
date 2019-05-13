@@ -142,7 +142,7 @@ export function* obtainBinaries(addresses, block) {
   yield all(addresses.map(address => put(actions.fetchBinary(address, block))));
 
   let binaries = [];
-  binaries = yield all(tasks.map(task => join(task)));
+  binaries = yield join(tasks);
 
   debug("binaries %o", binaries);
 
