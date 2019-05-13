@@ -1,6 +1,5 @@
 const debug = require("debug")("compile:parser"); // eslint-disable-line no-unused-vars
 const solc = require("solc");
-const CompileError = require("./compileerror");
 
 // Warning issued by a pre-release compiler version, ignored by this component.
 const preReleaseCompilerWarning =
@@ -58,14 +57,8 @@ module.exports = {
 
         // Return the item between the quotes.
         if (matches) return matches[2];
-
-        // failsafe in case some really wonky code is thrown before a pragma,
-        // import, or contract/interface/library/etc definition
-        const nonImportErrors = errors
-          .map(({ formattedMessage }) => formattedMessage)
-          .join();
-        throw CompileError(nonImportErrors);
-      });
+      })
+      .filter(match => match !== undefined);
 
     return imports;
   }
