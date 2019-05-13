@@ -12,8 +12,6 @@ const BACKUP_CONFIG_FILENAME = "truffle.js"; // old config filename
 
 class Config {
   constructor(truffle_directory, working_directory, network) {
-    const self = this;
-
     const default_tx_values = {
       gas: 6721975,
       gasPrice: 20000000000, // 20 gwei,
@@ -65,7 +63,7 @@ class Config {
     };
 
     const resolveDirectory = value =>
-      path.resolve(self.working_directory, value);
+      path.resolve(this.working_directory, value);
 
     const props = {
       // These are already set.
@@ -82,39 +80,39 @@ class Config {
       compilers() {},
 
       build_directory: {
-        default: () => path.join(self.working_directory, "build"),
+        default: () => path.join(this.working_directory, "build"),
         transform: resolveDirectory
       },
       contracts_directory: {
-        default: () => path.join(self.working_directory, "contracts"),
+        default: () => path.join(this.working_directory, "contracts"),
         transform: resolveDirectory
       },
       contracts_build_directory: {
-        default: () => path.join(self.build_directory, "contracts"),
+        default: () => path.join(this.build_directory, "contracts"),
         transform: resolveDirectory
       },
       migrations_directory: {
-        default: () => path.join(self.working_directory, "migrations"),
+        default: () => path.join(this.working_directory, "migrations"),
         transform: resolveDirectory
       },
       migrations_file_extension_regexp() {
         return /^\.(js|es6?)$/;
       },
       test_directory: {
-        default: () => path.join(self.working_directory, "test"),
+        default: () => path.join(this.working_directory, "test"),
         transform: resolveDirectory
       },
       test_file_extension_regexp() {
         return /.*\.(js|ts|es|es6|jsx|sol)$/;
       },
       example_project_directory: {
-        default: () => path.join(self.truffle_directory, "example"),
+        default: () => path.join(this.truffle_directory, "example"),
         transform: resolveDirectory
       },
       network_id: {
         get() {
           try {
-            return self.network_config.network_id;
+            return this.network_config.network_id;
           } catch (e) {
             return null;
           }
@@ -127,7 +125,7 @@ class Config {
       },
       network_config: {
         get() {
-          const network = self.network;
+          const network = this.network;
 
           if (network === null || network === undefined) {
             throw new Error(
@@ -135,7 +133,7 @@ class Config {
             );
           }
 
-          let conf = self.networks[network];
+          let conf = this.networks[network];
 
           if (conf === null || conf === undefined) {
             config = {};
@@ -154,7 +152,7 @@ class Config {
       from: {
         get() {
           try {
-            return self.network_config.from;
+            return this.network_config.from;
           } catch (e) {
             return default_tx_values.from;
           }
@@ -168,7 +166,7 @@ class Config {
       gas: {
         get() {
           try {
-            return self.network_config.gas;
+            return this.network_config.gas;
           } catch (e) {
             return default_tx_values.gas;
           }
@@ -182,7 +180,7 @@ class Config {
       gasPrice: {
         get() {
           try {
-            return self.network_config.gasPrice;
+            return this.network_config.gasPrice;
           } catch (e) {
             return default_tx_values.gasPrice;
           }
@@ -195,12 +193,12 @@ class Config {
       },
       provider: {
         get() {
-          if (!self.network) {
+          if (!this.network) {
             return null;
           }
 
-          const options = self.network_config;
-          options.verboseRpc = self.verboseRpc;
+          const options = this.network_config;
+          options.verboseRpc = this.verboseRpc;
 
           return Provider.create(options);
         },
@@ -213,7 +211,7 @@ class Config {
       confirmations: {
         get() {
           try {
-            return self.network_config.confirmations;
+            return this.network_config.confirmations;
           } catch (e) {
             return 0;
           }
@@ -227,7 +225,7 @@ class Config {
       production: {
         get() {
           try {
-            return self.network_config.production;
+            return this.network_config.production;
           } catch (e) {
             return false;
           }
@@ -241,7 +239,7 @@ class Config {
       timeoutBlocks: {
         get() {
           try {
-            return self.network_config.timeoutBlocks;
+            return this.network_config.timeoutBlocks;
           } catch (e) {
             return 0;
           }
@@ -255,7 +253,7 @@ class Config {
     };
 
     Object.keys(props).forEach(prop => {
-      self.addProp(prop, props[prop]);
+      this.addProp(prop, props[prop]);
     });
   }
 
