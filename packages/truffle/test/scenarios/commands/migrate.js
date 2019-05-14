@@ -24,7 +24,8 @@ describe("truffle migrate", () => {
   describe("when run on the most basic truffle project", () => {
     it("doesn't throw", done => {
       CommandRunner.run("migrate", config, error => {
-        assert.isNotOk(error, "error should be falsy here");
+        console.log(error);
+        assert(error === undefined, "error should be undefined here");
         done();
       });
     }).timeout(20000);
