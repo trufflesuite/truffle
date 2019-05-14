@@ -1,61 +1,42 @@
 import fs from "fs";
 import path from "path";
+import gql from "graphql-tag";
 
 import { TruffleDB } from "truffle-db";
 
-const fixturesDirectory = path.join(
-  __dirname, // truffle-db/src/loaders/test
-  "..", // truffle-db/src/loaders
-  "..", // truffle-db/src
-  "..", // truffle-db
-  "test",
-  "fixtures"
-);
+
+const fixturesDirectory = path.join(__dirname, "..", "artifacts", "test");
 
 // minimal config
 const config = {
-  contracts_build_directory: fixturesDirectory
+  contracts_build_directory: path.join(fixturesDirectory, "build"),
+  contracts_directory: path.join(fixturesDirectory, "compilationSources"),
+  all: true
 };
 
 const db = new TruffleDB(config);
 
-const Migrations = require(path.join(fixturesDirectory, "Migrations.json"));
+const  Build = require(path.join(fixturesDirectory, "build", "SimpleStorage.json"));
 
-const GetContractNames = `
-query GetContractNames {
-  artifactsLoader {
-    contractNames
-  }
-}
-`;
-
-it("lists artifact contract names", async () => {
-  const result = await db.query(GetContractNames);
-  expect(result).toHaveProperty("data");
-
-  const { data } = result;
-  expect(data).toHaveProperty("artifactsLoader");
-
-  const { artifactsLoader } = data;
-  expect(artifactsLoader).toHaveProperty("contractNames");
-
-  const { contractNames } = artifactsLoader;
-  expect(contractNames).toContain("Migrations");
-});
-
-
-const GetSource = `
-query GetSource() {
-  artifactsLoader {
-    source {
-      id
-      contents
-      sourcePath
+const Load = gql `
+  mutation LoadArtifacts {
+    loaders {
+      artifactsLoad {
+        success
+      }
     }
   }
-}`;
+` 
 
-it.skip("gets source correctly ", async () => {
-  const result = await db.query(GetSource);
-  expect(result).toHaveProperty("data");
+it("loads artifacts and returns true ", async () => {
+  const {
+    data: {
+      loaders: {
+        artifactsLoad: {
+          success
+        }
+      }
+    }
+  } = await db.query(Load);
+  expect(success).toEqual(true); 
 });
