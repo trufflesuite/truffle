@@ -22,14 +22,17 @@ const resolvers = {
   Mutation: {
     loadArtifacts: {
       resolve: async (_, args, { artifactsDirectory, contractsDirectory, db }, info) => {
+        const tempDir = tmp.dirSync({ unsafeCleanup: true })
         const compilationConfig = {
           contracts_directory: contractsDirectory,
-          contracts_build_directory: tmp.dirSync({ unsafeCleanup: true }),
+          contracts_build_directory: tempDir.name,
           all: true
         }
       
         const loader = new ArtifactsLoader(db, compilationConfig);
-        loader.load();
+        await loader.load()
+        tempDir.removeCallback();
+        return true;
       } 
     }
   }
