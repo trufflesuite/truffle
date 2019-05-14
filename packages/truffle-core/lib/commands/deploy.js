@@ -9,7 +9,7 @@ var command = {
       "truffle deploy [--reset] [-f <number>] [--network <name>] [--compile-all] [--verbose-rpc]",
     options: migrate.help.options
   },
-  run: migrate.run
+  run: migrate.run.bind(migrate)
 };
 
 module.exports = command;
