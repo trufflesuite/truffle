@@ -32,6 +32,38 @@ describe("migrate", () => {
       });
     });
 
+    describe("when there is not config data for the currently used network", () => {
+      beforeEach(() => {
+        config = {
+          networks: {},
+          network: "currentlyUsedNetwork"
+        };
+      });
+
+      it("returns dryRunOnly as true if options specify it", () => {
+        options.dryRun = true;
+        options.skipDryRun = true; // dryRun option overrides skipDryRun
+        result = command.determineDryRunSettings(config, options);
+        assert(result.dryRunOnly === true);
+      });
+      it("returns dryRunOnly as false if option is not true", () => {
+        options.dryRun = undefined;
+        result = command.determineDryRunSettings(config, options);
+        assert(result.dryRunOnly === false);
+      });
+      it("returns dryRunAndMigrations as falsy when set to true", () => {
+        options.skipDryRun = true;
+        result = command.determineDryRunSettings(config, options);
+        assert.isNotOk(result.dryRunAndMigrations);
+      });
+      it("returns dryRunAndMigrations as true when option not set and production set", () => {
+        config.production = true;
+        options.dryRun = undefined;
+        result = command.determineDryRunSettings(config, options);
+        assert(result.dryRunOnly === false);
+      });
+    });
+
     describe("when the user is using a known network", () => {
       beforeEach(() => {
         config.network_id = 4;
