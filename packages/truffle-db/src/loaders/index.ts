@@ -10,8 +10,11 @@ import { gql } from "apollo-server";
 
 //dummy query here because of known issue with Apollo mutation-only schemas 
 const typeDefs = gql`
+  type ArtifactsLoadPayload {
+    success: Boolean
+  }
   type Mutation {
-    loadArtifacts: Boolean
+    artifactsLoad: ArtifactsLoadPayload
   }
   type Query {
     dummy: String
@@ -20,7 +23,7 @@ const typeDefs = gql`
 
 const resolvers = {
   Mutation: {
-    loadArtifacts: {
+    artifactsLoad: {
       resolve: async (_, args, { artifactsDirectory, contractsDirectory, db }, info) => {
         const tempDir = tmp.dirSync({ unsafeCleanup: true })
         const compilationConfig = {
@@ -28,12 +31,16 @@ const resolvers = {
           contracts_build_directory: tempDir.name,
           all: true
         }
-      
         const loader = new ArtifactsLoader(db, compilationConfig);
         await loader.load()
         tempDir.removeCallback();
         return true;
       } 
+    }
+  },
+  ArtifactsLoadPayload: {
+    success: {
+      resolve: () => true
     }
   }
 }
