@@ -63,6 +63,8 @@ var command = {
 
     if (!config.network) {
       config.network = "test";
+    } else {
+      Environment.detect(config).catch(done);
     }
 
     var ipcDisconnect;

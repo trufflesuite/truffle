@@ -111,7 +111,7 @@ describe("Deployments", function() {
         assert.fail();
       } catch (e) {
         const errorCorrect =
-          e.message.includes("exceeds gas limit") ||
+          e.message.includes("gas required exceeds allowance") ||
           e.message.includes("intrinsic gas too low");
 
         assert(errorCorrect, "Expected gas limit error");
@@ -127,7 +127,7 @@ describe("Deployments", function() {
         assert.fail();
       } catch (e) {
         const errorCorrect =
-          e.message.includes("exceeds gas limit") ||
+          e.message.includes("gas required exceeds allowance") ||
           e.message.includes("intrinsic gas too low");
 
         assert(errorCorrect, "Expected gas limit error");

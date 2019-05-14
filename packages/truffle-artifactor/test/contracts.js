@@ -44,6 +44,12 @@ describe("artifactor + require", () => {
             }
           }
         }
+      },
+      logger: {
+        log(stringToLog) {
+          this.loggedStuff = this.loggedStuff + stringToLog;
+        },
+        loggedStuff: ""
       }
     };
 

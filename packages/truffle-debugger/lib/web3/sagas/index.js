@@ -93,8 +93,7 @@ function* fetchBinary(adapter, { address, block }) {
   yield put(actions.receiveBinary(address, binary));
 }
 
-export function* inspectTransaction(txHash, provider) {
-  yield put(actions.init(provider));
+export function* inspectTransaction(txHash) {
   yield put(actions.inspect(txHash));
 
   let action = yield take([actions.RECEIVE_TRACE, actions.ERROR_WEB3]);
@@ -143,7 +142,7 @@ export function* obtainBinaries(addresses, block) {
   yield all(addresses.map(address => put(actions.fetchBinary(address, block))));
 
   let binaries = [];
-  binaries = yield all(tasks.map(task => join(task)));
+  binaries = yield join(tasks);
 
   debug("binaries %o", binaries);
 
@@ -157,6 +156,10 @@ function* receiveBinary(address) {
   debug("got binary for %s", address);
 
   return binary;
+}
+
+export function* init(provider) {
+  yield put(actions.init(provider));
 }
 
 export function* saga() {
