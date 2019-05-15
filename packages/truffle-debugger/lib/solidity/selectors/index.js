@@ -104,7 +104,7 @@ let solidity = createSelectorTree({
     sourceMap: createLeaf(
       [evm.current.context],
 
-      ({ sourceMap }) => sourceMap
+      context => (context ? context.sourceMap : null) //null when no tx loaded
     ),
 
     /**
@@ -126,7 +126,11 @@ let solidity = createSelectorTree({
     instructions: createLeaf(
       ["/info/sources", evm.current.context, "./sourceMap"],
 
-      (sources, { binary }, sourceMap) => {
+      (sources, context, sourceMap) => {
+        if (!context) {
+          return [];
+        }
+        let binary = context.binary;
         if (!binary) {
           return [];
         }

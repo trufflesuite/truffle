@@ -115,6 +115,13 @@ describe("CompilerSupplier", () => {
     });
 
     describe("when a user specifies the compiler url root", () => {
+      beforeEach(() => {
+        sinon.stub(VersionRange.prototype, "versionIsCached").returns(false);
+      });
+      afterEach(() => {
+        VersionRange.prototype.versionIsCached.restore();
+      });
+
       it("Uses the user specified url", done => {
         // This doesn't really verify that user provided list is being used but this in combination with next test does.
         // I am not sure what's the best way to check if user specified list is being used.
