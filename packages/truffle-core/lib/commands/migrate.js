@@ -181,7 +181,7 @@ const command = {
         const {
           dryRunOnly,
           dryRunAndMigrations
-        } = this.determineDryRunSettings(conf, options);
+        } = command.determineDryRunSettings(conf, options);
 
         if (dryRunOnly) {
           conf.dryRun = true;
@@ -191,7 +191,10 @@ const command = {
           conf.dryRun = true;
 
           await setupDryRunEnvironmentThenRunMigrations(conf);
-          let { config, proceed } = await this.prepareConfigForRealMigrations(
+          let {
+            config,
+            proceed
+          } = await command.prepareConfigForRealMigrations(
             currentBuild,
             options
           );

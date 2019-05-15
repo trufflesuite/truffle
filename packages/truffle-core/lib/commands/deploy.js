@@ -1,6 +1,6 @@
-var migrate = require("./migrate");
+const migrate = require("./migrate");
 
-var command = {
+const command = {
   command: "deploy",
   description: "(alias for migrate)",
   builder: migrate.builder,
@@ -9,7 +9,7 @@ var command = {
       "truffle deploy [--reset] [-f <number>] [--network <name>] [--compile-all] [--verbose-rpc]",
     options: migrate.help.options
   },
-  run: migrate.run.bind(migrate)
+  run: migrate.run
 };
 
 module.exports = command;
