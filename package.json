@@ -1,7 +1,6 @@
 {
   "private": true,
   "scripts": {
-    "lerna:bootstrap": "lerna bootstrap",
     "bootstrap": "lerna bootstrap",
     "prepare": "lerna run prepare --stream --concurrency=1",
     "test": "lerna run test --stream --concurrency=1 -- --colors",
