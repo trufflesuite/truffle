@@ -8,6 +8,8 @@ describe("utils", () => {
     utils
       .setUpBox(boxConfig)
       .then(() => assert(false, "didn't throw!"))
-      .catch(e => assert(e.stack.includes("Error")));
+      .catch(e =>
+        assert(e.stack.match(/(Error:).*(post-unpack).*(undefined)/g))
+      );
   });
 });
