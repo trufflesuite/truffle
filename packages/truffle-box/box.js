@@ -116,13 +116,17 @@ const Box = {
         `https://github.com/trufflesuite/truffle-init-${name}`,
         tmpDir.name,
         options
-      ).then(() => {
-        const config = Config.load(
-          path.join(tmpDir.name, "truffle-config.js"),
-          {}
-        );
-        return callback(null, config);
-      });
+      )
+        .then(() => {
+          const config = Config.load(
+            path.join(tmpDir.name, "truffle-config.js"),
+            {}
+          );
+          return callback(null, config);
+        })
+        .catch(err => {
+          throw err;
+        });
     } catch (err) {
       return callback(err);
     }
