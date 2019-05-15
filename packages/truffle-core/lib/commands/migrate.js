@@ -91,7 +91,7 @@ const command = {
     ]
   },
 
-  determineDryRunSettings: (config, options) => {
+  determineDryRunSettings: function(config, options) {
     // Source: ethereum.stackexchange.com/questions/17051
     const networkWhitelist = [
       1, // Mainnet (ETH & ETC)
@@ -191,6 +191,7 @@ const command = {
           conf.dryRun = true;
 
           await setupDryRunEnvironmentThenRunMigrations(conf);
+
           let {
             config,
             proceed
