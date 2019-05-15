@@ -7,7 +7,7 @@ const parseURL = require("url").parse;
 const exec = require("child_process").exec;
 const inquirer = require("inquirer");
 
-async function verifyURL(url) {
+function verifyURL(url) {
   // Next let's see if the expected repository exists. If it doesn't, ghdownload
   // will fail spectacularly in a way we can't catch, so we have to do it ourselves.
   const configURL = parseURL(
@@ -23,7 +23,7 @@ async function verifyURL(url) {
     resolveWithFullResponse: true
   };
 
-  await rp(options)
+  rp(options)
     .catch(error => {
       throw new Error(
         `Error making request to ${options.uri}. Got error: ${
