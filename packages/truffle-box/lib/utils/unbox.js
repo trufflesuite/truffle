@@ -1,4 +1,4 @@
-const fs = require("fs-extra");
+const fse = require("fs-extra");
 const path = require("path");
 const ghdownload = require("github-download");
 const rp = require("request-promise");
@@ -68,7 +68,7 @@ function prepareToCopyFiles(tempDir, { ignore }) {
     .map(
       filePath =>
         new Promise((resolve, reject) => {
-          fs.remove(filePath, error => {
+          fse.remove(filePath, error => {
             if (error) return reject(error);
             resolve();
           });
@@ -94,7 +94,7 @@ async function promptOverwrites(contentCollisions, logger = console) {
 
     await inquirer.prompt(overwriting).then(({ overwrite }) => {
       if (overwrite) {
-        fs.removeSync(file);
+        fse.removeSync(file);
         overwriteContents.push(file);
       }
     });
@@ -104,10 +104,10 @@ async function promptOverwrites(contentCollisions, logger = console) {
 }
 
 async function copyTempIntoDestination(tmpDir, destination, options) {
-  fs.ensureDirSync(destination);
+  fse.ensureDirSync(destination);
   const { force, logger } = options;
-  const boxContents = fs.readdirSync(tmpDir);
-  const destinationContents = fs.readdirSync(destination);
+  const boxContents = fse.readdirSync(tmpDir);
+  const destinationContents = fse.readdirSync(destination);
 
   const newContents = boxContents.filter(
     filename => !destinationContents.includes(filename)
@@ -126,7 +126,7 @@ async function copyTempIntoDestination(tmpDir, destination, options) {
   }
 
   for (const file of shouldCopy) {
-    fs.copySync(`${tmpDir}/${file}`, `${destination}/${file}`);
+    fse.copySync(`${tmpDir}/${file}`, `${destination}/${file}`);
   }
 }
 
