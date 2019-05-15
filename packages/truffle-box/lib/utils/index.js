@@ -32,21 +32,21 @@ module.exports = {
     return await config.read(configPath);
   },
 
-  setUpTempDirectory: async () => {
-    const prepareSpinner = await ora("Preparing to download").start();
+  setUpTempDirectory: () => {
+    const prepareSpinner = ora("Preparing to download").start();
     const options = {
       dir: cwd,
       unsafeCleanup: true
     };
     try {
-      const tmpDir = await tmp.dirSync(options);
-      await prepareSpinner.succeed();
+      const tmpDir = tmp.dirSync(options);
+      prepareSpinner.succeed();
       return {
         path: path.join(tmpDir.name, "box"),
         cleanupCallback: tmpDir.removeCallback
       };
     } catch (error) {
-      await prepareSpinner.fail();
+      prepareSpinner.fail();
       throw error;
     }
   },
