@@ -1,14 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "build:debugger": "cd packages/truffle-debugger && yarn build",
-    "build:decode-utils": "cd packages/truffle-decode-utils && yarn build",
-    "build:decoder": "cd packages/truffle-decoder && yarn build",
-    "build:truffle-contract-schema": "cd packages/truffle-contract-schema && yarn build",
-    "build:truffle-db": "cd packages/truffle-db && yarn build",
-    "build:interface-adapter": "cd packages/truffle-interface-adapter && yarn build",
-    "lerna:bootstrap": "lerna bootstrap",
-    "bootstrap": "./scripts/bootstrap.sh",
+    "bootstrap": "lerna bootstrap",
+    "prepare": "lerna run prepare --stream --concurrency=1",
     "test": "lerna run test --stream --concurrency=1 -- --colors",
     "ci": "./scripts/ci.sh",
     "geth": "./scripts/geth.sh",
