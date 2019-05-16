@@ -25,7 +25,10 @@ module.exports = {
         self
           .copyDirectory(source, dir)
           .then(() => {
-            const conf = config.load(path.join(dir, subPath, "truffle.js"), {});
+            const conf = config.load(
+              path.join(dir, subPath, "truffle-config.js"),
+              {}
+            );
             resolve(conf);
           })
           .catch(reject);
@@ -38,7 +41,7 @@ module.exports = {
       if (!fs.existsSync(source))
         return reject(`Sandbox failed: source: ${source} does not exist`);
 
-      const conf = config.load(path.join(source, "truffle.js"), {});
+      const conf = config.load(path.join(source, "truffle-config.js"), {});
       resolve(conf);
     });
   }
