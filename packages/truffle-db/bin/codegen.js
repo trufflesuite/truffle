@@ -3,7 +3,7 @@ const path = require("path");
 const { generateNamespace } = require("@gql2ts/from-schema");
 
 // for path setup
-require("../dist");
+require("truffle-db");
 
 const { schema } = require("truffle-db/data/schema");
 

@@ -3,8 +3,8 @@
 # stop if any commands fail
 set -ex
 
-mkdir -p dist
-cp ./src/schema.graphql ./dist/schema.graphql
+mkdir -p dist/src/
+cp ./src/schema.graphql ./dist/src/schema.graphql
 tsc --project tsconfig.codegen.json
 node ./bin/codegen.js
 tsc $@
