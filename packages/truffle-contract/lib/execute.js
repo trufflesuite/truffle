@@ -106,6 +106,7 @@ var execute = {
       var defaultBlock = "latest";
       var args = Array.prototype.slice.call(arguments);
       var lastArg = args[args.length - 1];
+      var originalStackTrace = new Error().stack;
 
       // Extract defaultBlock parameter
       if (execute.hasDefaultBlock(args, lastArg, methodABI.inputs)) {
@@ -133,6 +134,7 @@ var execute = {
           );
           resolve(result);
         } catch (err) {
+          err.stack += `\nOriginal stack: ${originalStackTrace}`;
           reject(err);
         }
       });
@@ -155,12 +157,19 @@ var execute = {
       var args = Array.prototype.slice.call(arguments);
       var params = utils.getTxParams.call(constructor, methodABI, args);
       var promiEvent = new Web3PromiEvent();
+      var originalStackTrace = new Error().stack;
 
       var context = {
         contract: constructor, // Can't name this field `constructor` or `_constructor`
         promiEvent: promiEvent,
-        params: params
+        params: params,
+        originalStackTrace: originalStackTrace
       };
+
+      function appendOriginalStackTrace(e) {
+        e.stack += `\nOriginal stack: ${originalStackTrace}`;
+        promiEvent.reject(e);
+      }
 
       constructor
         .detectNetwork()
@@ -179,7 +188,7 @@ var execute = {
             })
             .catch(promiEvent.reject);
         })
-        .catch(promiEvent.reject);
+        .catch(appendOriginalStackTrace);
 
       return promiEvent.eventEmitter;
     };

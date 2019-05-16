@@ -214,5 +214,49 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
         assert(e.message.includes("out of gas"));
       }
     });
+
+    it("should append original stacktrace for .calls", async function() {
+      const example = await Example.new(1);
+      try {
+        await example.getValue("apples", "oranges", "pineapples");
+        assert.fail();
+      } catch (e) {
+        assert(e.stack.includes("Original stack:"), "Should include original stack title");
+        assert(e.stack.includes("/test/errors.js:"), "Should include original stack details");
+      }
+    });
+
+    it("should append original stacktrace for .sends", async function() {
+      const example = await Example.new(1);
+      try {
+        await example.triggerRequireWithReasonError();
+        assert.fail();
+      } catch (e) {
+        assert(e.stack.includes("Original stack:"), "Should include original stack title");
+        assert(e.stack.includes("/test/errors.js:"), "Should include original stack details");
+      }
+    });
+
+    it("should append original stacktrace for argument parsing error", async function() {
+      const example = await Example.new(1);
+      try {
+        await example.setValue('foo');
+        assert.fail();
+      } catch (e) {
+        assert(e.stack.includes("Original stack:"), "Should include original stack title");
+        assert(e.stack.includes("/test/errors.js:"), "Should include original stack details");
+      }
+    });
+
+    it("should append original stacktrace for OOG errors", async function() {
+      const example = await Example.new(1);
+      try {
+        await example.setValue(10, { gas: 10 });
+        assert.fail();
+      } catch (e) {
+        assert(e.stack.includes("Original stack:"), "Should include original stack title");
+        assert(e.stack.includes("/test/errors.js:"), "Should include original stack details");
+      }
+    });
   });
 });
