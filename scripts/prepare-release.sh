@@ -8,6 +8,5 @@ LAST_PUBLISHED_TAG=$(awk -F\" '/"version":/ {print $4}' ./packages/truffle/packa
 git checkout develop
 git pull origin develop
 yarn bootstrap
-yarn build:truffle
 prs-merged-since --repo trufflesuite/truffle --tag v$LAST_PUBLISHED_TAG --format markdown
 lerna changed
