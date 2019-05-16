@@ -46,39 +46,47 @@ const Migrate = {
     return migrations;
   },
 
-  run: function(options, callback) {
-    expect.options(options, [
-      "working_directory",
-      "migrations_directory",
-      "contracts_build_directory",
-      "provider",
-      "artifactor",
-      "resolver",
-      "network",
-      "network_id",
-      "logger",
-      "from" // address doing deployment
-    ]);
+  run: async function(options, callback) {
+    const callbackPassed = typeof callback === "function";
+    try {
+      expect.options(options, [
+        "working_directory",
+        "migrations_directory",
+        "contracts_build_directory",
+        "provider",
+        "artifactor",
+        "resolver",
+        "network",
+        "network_id",
+        "logger",
+        "from" // address doing deployment
+      ]);
 
-    if (options.reset === true) {
-      return this.runAll(options)
-        .then(() => {
-          callback();
-        })
-        .catch(callback);
+      if (options.reset === true) {
+        await this.runAll(options);
+        if (callbackPassed) {
+          return callback();
+        }
+        return;
+      }
+
+      const lastMigration = await this.lastCompletedMigration(options);
+      // Don't rerun the last completed migration.
+      await this.runFrom(lastMigration + 1, options);
+      if (callbackPassed) {
+        return callback();
+      }
+      return;
+    } catch (error) {
+      if (callbackPassed) {
+        return callback(error);
+      }
+      throw new Error(error);
     }
-
-    return this.lastCompletedMigration(options)
-      .then(lastMigration => {
-        // Don't rerun the last completed migration.
-        return this.runFrom(lastMigration + 1, options);
-      })
-      .then(callback)
-      .catch(callback);
   },
 
   runFrom: async function(number, options) {
-    const migrations = this.assemble(options);
+    let migrations = this.assemble(options);
     while (migrations.length > 0) {
       if (migrations[0].number >= number) break;
       migrations.shift();
@@ -123,10 +131,14 @@ const Migrate = {
       return async.eachSeries(
         migrations,
         (migration, finished) => {
-          migration.run(clone, error => {
-            if (error) return finished(error);
-            finished();
-          });
+          migration
+            .run(clone)
+            .then(() => {
+              finished();
+            })
+            .catch(error => {
+              finished(error);
+            });
         },
         error => {
           if (error) return reject(error);

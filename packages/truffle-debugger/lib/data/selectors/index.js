@@ -187,7 +187,7 @@ const data = createSelectorTree({
      * data.views.blockNumber
      * returns block number as string
      */
-    blockNumber: createLeaf([evm.info.globals.block], block =>
+    blockNumber: createLeaf([evm.transaction.globals.block], block =>
       block.number.toString()
     ),
 
@@ -196,7 +196,7 @@ const data = createSelectorTree({
      * same as evm.info.instances, but we just map address => binary,
      * we don't bother with context
      */
-    instances: createLeaf([evm.info.instances], instances =>
+    instances: createLeaf([evm.transaction.instances], instances =>
       Object.assign(
         {},
         ...Object.entries(instances).map(([address, { binary }]) => ({
@@ -409,7 +409,7 @@ const data = createSelectorTree({
        * (FWIW: this = ADDRESS, sender = CALLER, value = CALLVALUE)
        */
       specials: createLeaf(
-        ["/current/address", evm.current.call, evm.info.globals],
+        ["/current/address", evm.current.call, evm.transaction.globals],
         (address, { sender, value }, { tx, block }) => ({
           this: DecodeUtils.Conversion.toBytes(address),
 

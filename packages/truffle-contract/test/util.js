@@ -42,6 +42,7 @@ var util = {
     };
     const options = {
       contracts_directory: path.join(__dirname, "sources"),
+      quiet: true,
       compilers: {
         solc: {
           version: "0.5.0",
@@ -49,8 +50,7 @@ var util = {
             optimizer: {
               enabled: false,
               runs: 200
-            },
-            evmVersion: "byzantium"
+            }
           }
         }
       }
