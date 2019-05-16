@@ -29,9 +29,9 @@ const config = {
 
 const compilationConfig =  {
     contracts_directory: path.join(__dirname, "compilationSources"),
-    contracts_build_directory: path.join(__dirname, "build"), 
+    contracts_build_directory: path.join(__dirname, "build"),
     all: true
-} 
+}
 
 const db = new TruffleDB(config);
 const Migrations = require(path.join(fixturesDirectory, "Migrations.json"));
@@ -144,7 +144,7 @@ describe("Compilation", () => {
       sourcePath: Build.sourcePath
     });
     const expectedId = generateId({
-      compiler: Build.compiler, 
+      compiler: Build.compiler,
       sourceIds: [{ id: sourceId }]
     });
     const loader = new ArtifactsLoader(db, compilationConfig);
@@ -169,5 +169,6 @@ describe("Compilation", () => {
     expect(version).toEqual(Build.compiler.version);
     expect(sources[0].contents).toEqual(Build.source);
     expect(contracts[0].name).toEqual(Build.contractName);
+    expect(sources.length).toEqual(1);
   })
 });

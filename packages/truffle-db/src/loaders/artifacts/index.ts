@@ -77,7 +77,7 @@ mutation AddSource($sources: [SourceInput!]!) {
   }
 }`;
 
-const AddCompilations = gql`
+const AddCompilation = gql`
 input CompilerInput {
   name: String
   version: String
@@ -106,7 +106,7 @@ input CompilationInput {
     compiler: CompilerInput!
     contracts: [CompilationSourceContractInput!]
     sources: [CompilationSourceInput!]!
-}  
+}
 input CompilationsAddInput {
   compilations: [CompilationInput!]!
 }
@@ -161,7 +161,7 @@ export class ArtifactsLoader {
     } = await this.db.query(GetContractNames);
 
     if(this.config) {
-      await this.loadCompilations(this.config);
+      await this.loadCompilation(this.config);
     }
     await this.loadBytecodes(contractNames);
     await this.loadSources(contractNames);
@@ -199,56 +199,74 @@ export class ArtifactsLoader {
 
     await this.db.query(AddSources, { sources });
   }
-  
-  async loadCompilations(compilationConfig: object) {
+
+  async loadCompilationSources(compilation: object) {
+    let sources = [];
+    let sourceIds = [];
+    for(let contract in compilation) {
+      //add source from compilation into workspace first, otherwise compilation addition will fail
+      let sourceObject = {
+        contents: compilation[contract]["source"],
+        sourcePath: compilation[contract]["sourcePath"]
+      };
+
+      let sourceId = generateId({
+        contents: compilation[contract]["source"],
+        sourcePath: compilation[contract]["sourcePath"]
+      });
+
+      sources.push({contents: compilation[contract]["source"], sourcePath: compilation[contract]["sourcePath"]});
+      sourceIds.push({id: sourceId});
+    }
+
+    await this.db.query(AddSources, { sources });
+    // only need to return array of sourceIds here
+    return sourceIds;
+  }
+
+  async compilationSourceContracts(compilation: object) {
+    let sourceContracts = [];
+    for(let contract in compilation) {
+      let sourceContract =
+      {
+        name: compilation[contract]["contract_name"],
+        source: {
+          id: generateId({
+            contents: compilation[contract]["source"],
+            sourcePath: compilation[contract]["sourcePath"]
+          })
+        },
+        ast: {
+          json: JSON.stringify(compilation[contract]["ast"]),
+        }
+      }
+      sourceContracts.push(sourceContract);
+    }
+
+    return sourceContracts;
+  }
+
+  async loadCompilation(compilationConfig: object) {
     let compilationsArray = [];
     let sources = [];
     await Contracts.compile(compilationConfig, async (err, output) => {
       if(err) console.error(err);
       else {
-        const compilationsData = Object.values(output.contracts);
-        for(let contract in compilationsData) {
-          //add source from compilation into workspace first, otherwise compilation addition will fail
-          let sourceObject = {
-            contents: compilationsData[contract]["source"], 
-            sourcePath: compilationsData[contract]["sourcePath"]
-          };
+        const compilationData = Object.values(output.contracts);
+        let sourceIds = await this.loadCompilationSources(compilationData);
+        let sourceContracts = await this.compilationSourceContracts(compilationData);
 
-          let sourceId = generateId({
-            contents: compilationsData[contract]["source"], 
-            sourcePath: compilationsData[contract]["sourcePath"]
-          });
-          
-          sources.push({contents: compilationsData[contract]["source"], sourcePath: compilationsData[contract]["sourcePath"]});
-
-          let compilationObject = {
-            compiler: {
-              name: compilationsData[contract]["compiler"]["name"],
-              version: compilationsData[contract]["compiler"]["version"]
-            },
-            contracts: [
-              {
-                name: compilationsData[contract]["contract_name"],
-                source: {
-                  id: sourceId
-                },
-                ast: {
-                  json: JSON.stringify(compilationsData[contract]["ast"]),
-                }
-              }
-            ],
-            sources: [
-              { id: sourceId }
-            ]
-          }
-
-          compilationsArray.push(compilationObject);
-
+        let compilationObject = {
+          compiler: {
+            name: compilationData[0]["compiler"]["name"],
+            version: compilationData[0]["compiler"]["version"]
+          },
+          contracts: sourceContracts,
+          sources: sourceIds
         }
 
-        await this.db.query(AddSources, { sources })
-        await this.db.query(AddCompilations, { compilations: compilationsArray });
-      }  
+        await this.db.query(AddCompilation, { compilations: [compilationObject] });
+      }
 
     });
   }
