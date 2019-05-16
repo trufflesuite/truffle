@@ -241,52 +241,43 @@ module.exports = {
           // and search the entire file corpus to find any sources that import it.
           // Those sources are added to list of compilation targets as well as
           // the update queue because their own ancestors need to be discovered.
-          async.whilst(
-            () => updates.length > 0,
-            updateFinished => {
-              const currentUpdate = updates.shift();
-              const files = allPaths.slice();
+          while (updates.length > 0) {
+            const currentUpdate = updates.shift();
+            const files = allPaths.slice();
 
-              // While files: dequeue and inspect their imports
-              async.whilst(
-                () => files.length > 0,
-                fileFinished => {
-                  const currentFile = files.shift();
+            // While files: dequeue and inspect their imports
+            while (files.length > 0) {
+              const currentFile = files.shift();
 
-                  // Ignore targets already selected.
-                  if (compilationTargets.includes(currentFile)) {
-                    return fileFinished();
-                  }
+              // Ignore targets already selected.
+              if (compilationTargets.includes(currentFile)) {
+                continue;
+              }
 
-                  let imports;
-                  try {
-                    imports = self.getImports(
-                      currentFile,
-                      resolved[currentFile],
-                      solc
-                    );
-                  } catch (err) {
-                    err.message = `Error parsing ${currentFile}: ${e.message}`;
-                    return fileFinished(err);
-                  }
+              let imports;
+              try {
+                imports = self.getImports(
+                  currentFile,
+                  resolved[currentFile],
+                  solc
+                );
+              } catch (err) {
+                err.message = `Error parsing ${currentFile}: ${
+                  err.message
+                }`;
+                throw err;
+              }
 
-                  // If file imports a compilation target, add it
-                  // to list of updates and compilation targets
-                  if (imports.includes(currentUpdate)) {
-                    updates.push(currentFile);
-                    compilationTargets.push(currentFile);
-                  }
+              // If file imports a compilation target, add it
+              // to list of updates and compilation targets
+              if (imports.includes(currentUpdate)) {
+                updates.push(currentFile);
+                compilationTargets.push(currentFile);
+              }
+            }
+          }
 
-                  fileFinished();
-                },
-                err => updateFinished(err)
-              );
-            },
-            err =>
-              err
-                ? callback(err)
-                : callback(null, allSources, compilationTargets)
-          );
+          callback(null, allSources, compilationTargets);
         })
         .catch(callback);
     });

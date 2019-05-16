@@ -41,10 +41,15 @@ describe("artifactor + require", () => {
             optimizer: {
               enabled: false,
               runs: 200
-            },
-            evmVersion: "byzantium"
+            }
           }
         }
+      },
+      logger: {
+        log(stringToLog) {
+          this.loggedStuff = this.loggedStuff + stringToLog;
+        },
+        loggedStuff: ""
       }
     };
 

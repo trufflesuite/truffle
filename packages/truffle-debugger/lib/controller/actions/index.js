@@ -28,7 +28,7 @@ export function reset() {
   return { type: RESET };
 }
 
-export const INTERRUPT = "INTERRUPT";
+export const INTERRUPT = "CONTROLLER_INTERRUPT";
 export function interrupt() {
   return { type: INTERRUPT };
 }
@@ -62,6 +62,13 @@ export const REMOVE_ALL_BREAKPOINTS = "REMOVE_ALL_BREAKPOINTS";
 export function removeAllBreakpoints() {
   return {
     type: REMOVE_ALL_BREAKPOINTS
+  };
+}
+
+export const START_STEPPING = "START_STEPPING";
+export function startStepping() {
+  return {
+    type: START_STEPPING
   };
 }
 

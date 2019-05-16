@@ -1,9 +1,11 @@
 {
   "name": "truffle-config",
-  "version": "1.1.10",
+  "version": "1.1.11",
   "description": "Utility for interacting with truffle-config.js files",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "mocha"
+  },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-config",
   "keywords": [
     "ethereum",
@@ -13,19 +15,22 @@
   "author": "Tim Coulter <tim.coulter@consensys.net>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-config/issues"
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-config#readme",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-config#readme",
   "dependencies": {
     "configstore": "^4.0.0",
     "find-up": "^2.1.0",
     "lodash": "4.17.11",
     "original-require": "1.0.1",
     "truffle-error": "^0.0.4",
-    "truffle-provider": "^0.1.8"
+    "truffle-provider": "^0.1.9"
   },
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
+  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e",
+  "devDependencies": {
+    "mocha": "5.2.0"
+  }
 }

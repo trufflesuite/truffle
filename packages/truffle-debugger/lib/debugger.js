@@ -1,4 +1,5 @@
-import debugModule from 'debug';
+import debugModule from "debug";
+const debug = debugModule("debugger");
 import expect from "truffle-expect";
 
 import Session from "./session";
@@ -12,8 +13,6 @@ import evmSelector from "./evm/selectors";
 import soliditySelector from "./solidity/selectors";
 import sessionSelector from "./session/selectors";
 import controllerSelector from "./controller/selectors";
-
-const debug = debugModule("debugger");
 
 /**
  * @example
@@ -44,25 +43,45 @@ export default class Debugger {
    * @return {Debugger} instance
    */
   static async forTx(txHash, options = {}) {
-    expect.options(options, [
-      "contracts",
-      "provider"
-    ]);
+    expect.options(options, ["contracts", "provider"]);
 
     let session = new Session(
-      options.contracts, options.files,
-      txHash, options.provider
+      options.contracts,
+      options.files,
+      options.provider,
+      txHash
     );
 
     try {
       await session.ready();
+      debug("session ready");
     } catch (e) {
-      throw e;
+      debug("error occurred, unloaded");
+      session.unload();
     }
 
     return new this(session);
   }
 
+  /*
+   * Instantiates a Debugger for a given project (with no transaction loaded)
+   *
+   * @param {{contracts: Array<Contract>, files: Array<String>, provider: Web3Provider}} options -
+   * @return {Debugger} instance
+   */
+  static async forProject(options = {}) {
+    expect.options(options, ["contracts", "provider"]);
+
+    let session = new Session(
+      options.contracts,
+      options.files,
+      options.provider
+    );
+
+    await session.ready();
+
+    return new this(session);
+  }
 
   /**
    * Connects to the instantiated Debugger.
@@ -95,7 +114,7 @@ export default class Debugger {
       evm: evmSelector,
       solidity: soliditySelector,
       session: sessionSelector,
-      controller: controllerSelector,
+      controller: controllerSelector
     });
   }
 }

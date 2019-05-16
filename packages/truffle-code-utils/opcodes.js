@@ -1,5 +1,3 @@
-"use strict";
-
 const codes = {
   0x00: "STOP",
   0x01: "ADD",
@@ -163,6 +161,4 @@ const codes = {
   0xff: "SELFDESTRUCT"
 };
 
-module.exports = function(op) {
-  return codes[op] ? codes[op] : "INVALID";
-};
+module.exports = op => (codes[op] ? codes[op] : "INVALID");
