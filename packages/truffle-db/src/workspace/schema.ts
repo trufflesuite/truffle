@@ -153,7 +153,6 @@ export const schema = mergeSchemas({
       bytecodesAdd(input: BytecodesAddInput!): BytecodesAddPayload
       contractsAdd(input: ContractsAddInput!): ContractsAddPayload
       compilationsAdd(input: CompilationsAddInput!): CompilationsAddPayload
-      contractsAdd(input: ContractsAddInput!): ContractsAddPayload
     } `
   ],
   resolvers: {
