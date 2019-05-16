@@ -1,7 +1,7 @@
 import gql from "graphql-tag";
 import { TruffleDB } from "truffle-db/db";
 import * as Contracts from "truffle-workflow-compile";
-import { generateId } from "test/helpers";
+import { generateId } from "truffle-db/helpers";
 
 const GetContractNames = gql`
 query GetContractNames {

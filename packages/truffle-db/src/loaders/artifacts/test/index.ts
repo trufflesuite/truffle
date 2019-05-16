@@ -3,7 +3,7 @@ import path from "path";
 import gql from "graphql-tag";
 import { TruffleDB } from "truffle-db";
 import { ArtifactsLoader } from "truffle-db/loaders/artifacts";
-import { generateId } from "test/helpers";
+import { generateId } from "truffle-db/helpers";
 import * as Contracts from "truffle-workflow-compile";
 
 // mocking the truffle-workflow-compile to avoid jest timing issues

@@ -11,13 +11,22 @@ import { Workspace } from "truffle-db/workspace";
 
 interface IConfig {
   contracts_build_directory: string,
+  contracts_directory: string,
   working_directory?: string
 }
 
 interface IContext {
   artifactsDirectory: string,
   workingDirectory: string,
-  workspace: Workspace
+  contractsDirectory: string,
+  workspace: Workspace,
+  db: ITruffleDB
+}
+
+interface ITruffleDB {
+  query: (query: DocumentNode | string,
+    variables: any) =>
+    Promise<any>
 }
 
 export class TruffleDB {
@@ -25,7 +34,7 @@ export class TruffleDB {
   context: IContext;
 
   constructor (config: IConfig) {
-    this.context = TruffleDB.createContext(config);
+    this.context = this.createContext(config);
     this.schema = schema;
   }
 
@@ -45,11 +54,13 @@ export class TruffleDB {
     );
   }
 
-  static createContext(config: IConfig): IContext {
+  createContext(config: IConfig): IContext {
     return {
       workspace: new Workspace(),
       artifactsDirectory: config.contracts_build_directory,
-      workingDirectory: config.working_directory || process.cwd()
+      workingDirectory: config.working_directory || process.cwd(),
+      contractsDirectory: config.contracts_directory,
+      db: this
     }
   }
 }

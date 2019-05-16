@@ -4,7 +4,7 @@ import gql from "graphql-tag";
 import * as graphql from "graphql";
 
 import { Workspace, schema } from "truffle-db/workspace";
-import { generateId } from "test/helpers";
+import { generateId } from "truffle-db/helpers";
 
 
 const fixturesDirectory = path.join(
