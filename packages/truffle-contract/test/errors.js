@@ -79,6 +79,16 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
         );
       }
     });
+
+    it("should append original stacktrace for OOG errors", async function() {
+      try {
+        await Example.new(1, { gas: 10 });
+        assert.fail();
+      } catch (e) {
+        assert(e.stack.includes("Original stack:"), "Should include original stack title");
+        assert(e.stack.includes("/test/errors.js:"), "Should include original stack details");
+      }
+    });
   });
 
   describe(".method(): errors", function() {

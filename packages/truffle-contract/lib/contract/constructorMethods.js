@@ -21,6 +21,7 @@ module.exports = Contract => {
     new: function() {
       var constructor = this;
       var promiEvent = new Web3PromiEvent();
+      var originalStackTrace = new Error().stack;
 
       if (!constructor.currentProvider) {
         var err =
@@ -46,7 +47,8 @@ module.exports = Contract => {
       var context = {
         contract: constructor,
         promiEvent: promiEvent,
-        onlyEmitReceipt: true
+        onlyEmitReceipt: true,
+        originalStackTrace: originalStackTrace
       };
 
       constructor
