@@ -1,4 +1,5 @@
-pragma solidity >=0.4.18;
+pragma solidity >=0.5.6;
+pragma experimental ABIEncoderV2;
 
 library SquareLib {
   struct MagicSquare {
@@ -7,7 +8,7 @@ library SquareLib {
   }
 
   function initialize(uint256 n)
-    internal
+    external
     pure
     returns (MagicSquare memory square)
   {
