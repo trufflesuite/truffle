@@ -39,10 +39,10 @@
     "@types/jest": "^23.3.11",
     "@types/node": "^10.12.18",
     "@types/pouchdb": "^6.3.2",
-    "truffle-workflow-compile": "^2.0.12",
     "apollo-server": "^2.3.1",
     "gql2ts": "^1.10.1",
     "jest": "^23.6.0",
+    "truffle-interface-adapter": "^0.1.5",
     "ts-jest": "^23.10.5",
     "ts-node-dev": "^1.0.0-pre.32",
     "tsconfig-paths": "^3.7.0",
@@ -59,6 +59,7 @@
     "pouchdb-adapter-memory": "^7.0.0",
     "pouchdb-find": "^7.0.0",
     "source-map-support": "^0.5.9",
+    "truffle-workflow-compile": "^2.0.12",
     "web3-utils": "^1.0.0-beta.37"
   },
   "jest": {
