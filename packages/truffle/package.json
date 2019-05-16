@@ -30,6 +30,7 @@
     "stream-buffers": "^3.0.1",
     "tmp": "0.0.33",
     "truffle-box": "^1.0.25",
+    "truffle-debugger": "^5.0.10",
     "truffle-contract": "^4.0.15",
     "truffle-core": "^5.0.16",
     "web3": "1.0.0-beta.37",
