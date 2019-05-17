@@ -1,5 +1,4 @@
 export class UnknownBaseContractIdError extends Error {
-  public name: string;
   public derivedId: number;
   public derivedName: string;
   public derivedKind: string;
@@ -16,7 +15,6 @@ export class UnknownBaseContractIdError extends Error {
 }
 
 export class UnknownUserDefinedTypeError extends Error {
-  public name: string;
   public typeString: string;
   public id: number;
   constructor(id: number, typeString: string) {
@@ -29,7 +27,6 @@ export class UnknownUserDefinedTypeError extends Error {
 }
 
 export class ContractBeingDecodedHasNoNodeError extends Error {
-  public name: string;
   constructor() {
     const message = "Contract does not appear to have been compiled with Solidity (cannot locate contract node)";
     super(message);

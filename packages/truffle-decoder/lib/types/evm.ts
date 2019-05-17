@@ -43,5 +43,6 @@ export interface InternalFunction {
   contractName?: string;
   contractId?: number;
   contractKind?: string;
+  contractPayable?: boolean;
   isDesignatedInvalid: boolean;
 }

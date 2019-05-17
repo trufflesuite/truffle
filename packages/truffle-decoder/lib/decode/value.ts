@@ -3,99 +3,113 @@ const debug = debugModule("decoder:decode:value");
 
 import read from "../read";
 import * as DecodeUtils from "truffle-decode-utils";
+import { Types, Values } from "truffle-decode-utils";
 import BN from "bn.js";
 import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { EvmEnum } from "../interface/contract-decoder";
 import { DecoderRequest } from "../types/request";
 
-export default function* decodeValue(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo): IterableIterator<undefined | boolean | BN | string | DecoderRequest | Uint8Array> {
+export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | Uint8Array> {
   //NOTE: this does not actually return a Uint8Aarray, but due to the use of yield* read,
   //we have to include it in the type :-/
   const { state } = info;
 
-  let bytes = yield* read(pointer, state);
-  if (bytes == undefined) {
+  let bytes: Uint8Array;
+  try {
+    bytes = yield* read(pointer, state);
+  }
+  catch(error) { //error: Values.DecodingError
     debug("segfault, pointer %o, state: %O", pointer, state);
-    return undefined;
+    return new Values.GenericError(error.error);
   }
 
-  debug("definition %O", definition);
+  debug("type %O", dataType);
   debug("pointer %o", pointer);
 
-  switch (DecodeUtils.Definition.typeClass(definition)) {
-    case "bool":
-      return !DecodeUtils.Conversion.toBN(bytes).isZero();
+  switch(dataType.typeClass) {
+
+    case "bool": {
+      const numeric = DecodeUtils.Conversion.toBN(bytes);
+      if(numeric.eqn(0)) {
+        return new Values.BoolValueProper(dataType, false);
+      }
+      else if(numeric.eqn(1)) {
+        return new Values.BoolValueProper(dataType, true);
+      }
+      else {
+        return new Values.BoolValueError(dataType,
+          new Values.BoolOutOfRangeError(numeric)
+        );
+      }
+    }
 
     case "uint":
-      return DecodeUtils.Conversion.toBN(bytes);
-
+      return new Values.UintValueProper(dataType, DecodeUtils.Conversion.toBN(bytes));
     case "int":
-      return DecodeUtils.Conversion.toSignedBN(bytes);
+      return new Values.IntValueProper(dataType, DecodeUtils.Conversion.toSignedBN(bytes));
 
     case "address":
-      return DecodeUtils.Conversion.toAddress(bytes);
+      return new Values.AddressValueProper(dataType, return DecodeUtils.Conversion.toAddress(bytes));
 
     case "contract":
-      return yield* decodeContract(bytes, info);
+      const fullType = <Types.ContractType>Types.fullType(dataType, info.userDefinedTypes);
+      const contractValueDirect = yield* decodeContract(fullType, bytes, info);
+      return new Values.ContractValueProper(fullType, contractValueDirect);
 
     case "bytes":
-      debug("typeIdentifier %s %o", DecodeUtils.Definition.typeIdentifier(definition), bytes);
-      //if there's a static size, we want to truncate to that length
-      let length = DecodeUtils.Definition.specifiedSize(definition);
-      if(length !== null) {
-        bytes = bytes.slice(0, length);
+      if(dataType.kind === "static") {
+        //if there's a static size, we want to truncate to that length
+        bytes = bytes.slice(0, dataType.length);
       }
-      //we don't need to pass in length here, since that's for *adding* padding
-      return DecodeUtils.Conversion.toHexString(bytes);
-
+      //we don't need to pass in length to the conversion, since that's for *adding* padding
+      return new Values.BytesValueProper(dataType, DecodeUtils.Conversion.toHexString(bytes));
     case "string":
-      debug("typeIdentifier %s %o", DecodeUtils.Definition.typeIdentifier(definition), bytes);
-      if (typeof bytes == "string") {
-        return bytes;
-      }
-      return String.fromCharCode.apply(undefined, bytes);
-
-    case "enum":
-      const numRepresentation = DecodeUtils.Conversion.toBN(bytes).toNumber();
-      debug("numRepresentation %d", numRepresentation);
-      const referenceId = definition.referencedDeclaration || (definition.typeName ? definition.typeName.referencedDeclaration : undefined);
-      const enumDeclaration = info.referenceDeclarations[referenceId];
-      const decodedValue = enumDeclaration.members[numRepresentation].name;
-
-      return <EvmEnum>{
-        type: enumDeclaration.name,
-        value: enumDeclaration.name + "." + decodedValue
-      }
+      return new Values.StringValueProper(dataType, String.fromCharCode.apply(undefined, bytes));
 
     case "function":
-      switch (DecodeUtils.Definition.visibility(definition)) {
+      switch(dataType.visibility) {
         case "external":
-          let address = bytes.slice(0, DecodeUtils.EVM.ADDRESS_SIZE);
-          let selector = bytes.slice(DecodeUtils.EVM.ADDRESS_SIZE, DecodeUtils.EVM.ADDRESS_SIZE + DecodeUtils.EVM.SELECTOR_SIZE);
-          return yield* decodeExternalFunction(address, selector, info);
+          const address = bytes.slice(0, DecodeUtils.EVM.ADDRESS_SIZE);
+          const selector = bytes.slice(DecodeUtils.EVM.ADDRESS_SIZE, DecodeUtils.EVM.ADDRESS_SIZE + DecodeUtils.EVM.SELECTOR_SIZE);
+          return yield* decodeExternalFunction(dataType, address, selector, info);
         case "internal":
-          let pc: Uint8Array;
-          if(info.currentContext.isConstructor) {
-            //get 2nd-to-last 4 bytes
-            pc = bytes.slice(-DecodeUtils.EVM.PC_SIZE * 2, -DecodeUtils.EVM.PC_SIZE);
-          }
-          else {
-            //get last 4 bytes
-            pc = bytes.slice(-DecodeUtils.EVM.PC_SIZE);
-          }
-          return decodeInternalFunction(pc, info);
-        default:
-          debug("unknown visibility: %s", DecodeUtils.Definition.visibility(definition));
+          const deployedPc = bytes.slice(-DecodeUtils.EVM.PC_SIZE);
+          const constructorPc = bytes.slice(-DecodeUtils.EVM.PC_SIZE * 2, -DecodeUtils.EVM.PC_SIZE);
+          return decodeInternalFunction(dataType, deployedPc, constructorPc, info);
       }
 
-    default:
-      debug("Unknown value type: %s", DecodeUtils.Definition.typeIdentifier(definition));
-      return undefined;
+    case "enum": {
+      const numeric = DecodeUtils.Conversion.toBN(bytes);
+      const fullType = <Types.EnumType>Types.fullType(dataType, info.userDefinedTypes);
+      if(!fullType.options) {
+        return new Values.EnumValueError(fullType,
+          new Values.EnumNotFoundDecodingError(fullType, numeric)
+        );
+      }
+      if(numeric.ltn(fullType.options.length)) {
+        const name = fullType.options[numeric.toNumber()];
+        return new Values.EnumValueProper(fullType, numeric, name);
+      }
+      else {
+        return new Values.EnumValueError(fullType,
+          new Values.EnumOutOfRangeError(fullType, numeric)
+        );
+      }
+    }
+
+    case "fixed": {
+      const numeric = DecodeUtils.Conversion.toBN(bytes);
+      return new Values.FixedValueError(dataType, numeric);
+    }
+    case "ufixed": {
+      const numeric = DecodeUtils.Conversion.toBN(bytes);
+      return new Values.UfixedValueError(dataType, numeric);
+    }
   }
 }
 
-export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): IterableIterator<string | DecoderRequest | Uint8Array> {
+export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): IterableIterator<Values.ContractValueDirect | DecoderRequest | Uint8Array> {
   let address = DecodeUtils.Conversion.toAddress(addressBytes);
   let codeBytes: Uint8Array = yield {
     type: "code",
@@ -104,61 +118,90 @@ export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): Iterab
   let code = DecodeUtils.Conversion.toHexString(codeBytes);
   let context = DecodeUtils.Contexts.findDecoderContext(info.contexts, code);
   if(context !== null && context.contractName !== undefined) {
-    return context.contractName + "(" + address + ")";
+    return new Values.ContractValueDirectKnown(address, {
+      typeClass: "contract",
+      id: context.contractId,
+      typeName: context.contractName,
+      contractKind: context.contractKind,
+      payayble: context.payable
+    });
   }
   else {
-    return address;
+    return new Values.ContractValueDirectUnknown(address);
   }
 }
 
 //note: address can have extra zeroes on the left like elsewhere, but selector should be exactly 4 bytes
-export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes: Uint8Array, info: EvmInfo): IterableIterator<string | DecoderRequest | Uint8Array> {
-  //note: yes, this shares a fair amount of code with decodeContract.
-  //I'm going to factor this in a later PR; I'm deliberately not doing that
-  //for now, though.
-  let address = DecodeUtils.Conversion.toAddress(addressBytes);
-  let selector = DecodeUtils.Conversion.toHexString(selectorBytes);
-  let codeBytes: Uint8Array = yield {
-    type: "code",
-    address
-  };
-  let code = DecodeUtils.Conversion.toHexString(codeBytes);
-  let context = DecodeUtils.Contexts.findDecoderContext(info.contexts, code);
-  if(context === null || context.contractName === undefined) {
-    //note: I'm assuming it never occurs that we have the ABI but not the
-    //contract name
-    return `${address}.call(${selector}...)`;
+export function* decodeExternalFunction(dataType: Types.FunctionType, addressBytes: Uint8Array, selectorBytes: Uint8Array, info: EvmInfo): IterableIterator<Values.FunctionValueExternal | DecoderRequest | Uint8Array> {
+  let contract = yield* decodeContract(addressBytes, info);
+  if(contract.kind === "unknown")
+    return new Values.FunctionValueExternalProperUnknown(dataType, contract, selector);
   }
+  let context = Object.values(info.contexts).find(
+    context => context.contractId === contract.class.id
+  );
   let abiEntry = context.abi !== undefined
     ? context.abi[selector]
     : undefined;
   if(abiEntry === undefined) {
-    return `${context.contractName}(${address}).call(${selector}...)`;
+    return new Values.FunctionValueExternalProperInvalid(dataType, contract, selector);
   }
   let functionName = abiEntry.name;
-  return `${context.contractName}(${address}).${functionName}`;
+  return new Values.FunctionValueExternalProperKnown(dataType, contract, selector, functionName);
 }
 
-export function decodeInternalFunction(pcBytes: Uint8Array, info: EvmInfo): string | undefined {
-  let pc: number = DecodeUtils.Conversion.toBN(pcBytes).toNumber();
+export function decodeInternalFunction(dataType: Types.FunctionType, deployedPcBytes: Uint8Array, constructorPcBytes: Uint8Array, info: EvmInfo): Values.FunctionValueInternal {
+  let deployedPc: number = DecodeUtils.Conversion.toBN(deployedPcBytes).toNumber();
+  let constructorPc: number = DecodeUtils.Conversion.toBN(constructorPcBytes).toNumber();
+  let context: Types.ContractType = {
+    typeClass: "contract",
+    id: info.currentContext.contractId,
+    typeName: info.currentContext.contractName,
+    contractKind: info.currentContext.contractKind,
+    payable: info.currentContext.payable
+  };
   //before anything else: do we even have an internal functions table?
-  //if not, this is being (presumably) used from the contract decoder, and we don't
-  //support decoding internal functions there
+  //if not, we'll just return the info we have without really attemting to decode
   if(!info.internalFunctionsTable) {
-    return "<decoding not supported>";
+    return new Values.FunctionValueInternalProperUnknown(context, deployedPc, constructorPc);
   }
   //also before we continue: is the PC zero? if so let's just return that
-  if(pc === 0) {
-    return "<zero>";
+  if(deployedPc === 0 && constructorPc === 0) {
+    return new Values.FunctionValueInternalProperException(context, deployedPc, constructorPc);
+  }
+  //another check: is only the deployed PC zero?
+  if(deployedPc === 0 && constructorPc !== 0) {
+    return new Values.FunctionValueInternalError(dataType,
+      new Values.MalformedInternalFunctionError(context, constructorPc)
+    );
+  }
+  //one last pre-check: is this a deployed-format pointer in a constructor?
+  if(info.currentContext.isConstructor && constructorPc === 0) {
+    return new Values.FunctionValueInternalError(dataType,
+      new Values.DeployedFunctionInConstructorError(context, deployedPc)
+    );
   }
   //otherwise, we get our function
+  let pc = info.currentContext.isConstructor
+    ? constructorPc
+    : deployedPc;
   let functionEntry = info.internalFunctionsTable[pc];
   if(!functionEntry) {
-    //if it's not zero and there's no entry... we give up :P
-    return undefined;
+    //if it's not zero and there's no entry... error!
+    return new Values.FunctionValueInternalError(dataType,
+      new Values.NoSuchInternalFunctionError(context, deployedPc, constructorPc)
+    );
   }
   if(functionEntry.isDesignatedInvalid) {
-    return "assert(false)";
+    return new Values.FunctionValueInternalProperException(context, deployedPc, constructorPc);
   }
-  return functionEntry.contractName + "." + functionEntry.name;
+  let name = functionEntry.name;
+  let definedIn: Types.ContractType = {
+    typeClass: "contract",
+    id: functionEntry.contractId,
+    typeName: functionEntry.contractName,
+    contractKind: functionEntry.contractKind,
+    payable: functionEntry.contractPayable
+  };
+  return new Values.FunctionValueInternalProperKnown(context, deployedPc, constructorPc, name, definedIn);
 }

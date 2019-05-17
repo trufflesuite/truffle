@@ -18,13 +18,7 @@ import BN from "bn.js";
 export function slotAddress(slot: Slot): BN {
   if (slot.key !== undefined && slot.path !== undefined) {
     // mapping reference
-    let key = slot.key;
-    let keyEncoding = slot.keyEncoding;
-    if(keyEncoding === undefined) { //HACK: booleans must be handled manually
-      key = key ? new BN(1) : new BN(0);
-      keyEncoding = "uint";
-    }
-    return DecodeUtils.EVM.keccak256({type: keyEncoding, value: key}, slotAddress(slot.path)).add(slot.offset);
+    return DecodeUtils.EVM.keccak256(slot.key.toSoliditySha3Input(), slotAddress(slot.path)).add(slot.offset);
   }
   else if (slot.path !== undefined) {
     const pathAddress = slotAddress(slot.path);
@@ -39,8 +33,8 @@ export function slotAddress(slot: Slot): BN {
 export function slotAddressPrintout(slot: Slot): string {
   if (slot.key !== undefined && slot.path !== undefined) {
     // mapping reference
-    let keyEncoding = slot.keyEncoding ? slot.keyEncoding : "uint"; //HACK for booleans
-    return "keccak(" + slot.key + " as " + keyEncoding + ", " + slotAddressPrintout(slot.path) + ") + " + slot.offset.toString();
+    let {type: keyEncoding} = slot.key.toSoliditySha3Input();
+    return "keccak(" + slot.key.toString() + " as " + keyEncoding + ", " + slotAddressPrintout(slot.path) + ") + " + slot.offset.toString();
   }
   else if (slot.path !== undefined) {
     const pathAddressPrintout = slotAddressPrintout(slot.path);
@@ -98,7 +92,7 @@ export function* read(storage: WordMapping, slot: Slot): IterableIterator<Uint8A
  * @param length - instead of `to`, number of bytes after `from`
  */
 export function* readRange(storage: WordMapping, range: Range): IterableIterator<Uint8Array | DecoderRequest> {
-  // debug("readRange %o", range);
+  debug("readRange %o", range);
 
   let { from, to, length } = range;
   if (typeof length === "undefined" && !to || length && to) {
@@ -127,14 +121,10 @@ export function* readRange(storage: WordMapping, range: Range): IterableIterator
     }
   }
 
-  // debug("normalized readRange %o", {from,to});
+  debug("normalized readRange %o", {from,to});
 
-  let totalWords: BN | number = to.slot.offset.sub(from.slot.offset).addn(1);
-  if (totalWords.bitLength() > 53) {
-    throw new Error("must specify range that is less than 53 bits");
-  }
-  totalWords = totalWords.toNumber();
-  // debug("totalWords %o", totalWords);
+  let totalWords: BN = to.slot.offset.sub(from.slot.offset).addn(1).toNumber();
+  debug("totalWords %o", totalWords);
 
   let data = new Uint8Array(totalWords * DecodeUtils.EVM.WORD_SIZE);
 
@@ -145,11 +135,11 @@ export function* readRange(storage: WordMapping, range: Range): IterableIterator
       data.set(word, i * DecodeUtils.EVM.WORD_SIZE);
     }
   }
-  // debug("words %o", data);
+  debug("words %o", data);
 
   data = data.slice(from.index, (totalWords - 1) * DecodeUtils.EVM.WORD_SIZE + to.index + 1);
 
-  // debug("data: %o", data);
+  debug("data: %o", data);
 
   return data;
 }

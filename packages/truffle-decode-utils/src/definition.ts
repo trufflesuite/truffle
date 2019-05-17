@@ -319,50 +319,17 @@ export namespace Definition {
   //spoofed definitions we'll need
   //we'll give them id -1 to indicate that they're spoofed
 
-  //id, name, nodeType, typeDescriptions.typeIdentifier
-  export function spoofUintDefinition(name: string): AstDefinition {
+  export function NOW_DEFINITION: AstDefiniton = {
     return {
       id: -1,
       src: "0:0:-1",
-      name,
+      name: "now",
       nodeType: "VariableDeclaration",
       typeDescriptions: {
         typeIdentifier: "t_uint256"
       }
     };
   }
-
-  export function spoofAddressPayableDefinition(name: string): AstDefinition {
-    return {
-      id: -1,
-      src: "0:0:-1",
-      name,
-      nodeType: "VariableDeclaration",
-      typeDescriptions: {
-        typeIdentifier: "t_address_payable"
-      }
-    };
-  }
-
-  export const MSG_SIG_DEFINITION: AstDefinition = {
-    id: -1,
-    src: "0:0:-1",
-    name: "sig",
-    nodeType: "VariableDeclaration",
-    typeDescriptions: {
-      typeIdentifier: "t_bytes" + EVMUtils.SELECTOR_SIZE
-    }
-  };
-
-  export const MSG_DATA_DEFINITION: AstDefinition = {
-    id: -1,
-    src: "0:0:-1",
-    name: "data",
-    nodeType: "VariableDeclaration",
-    typeDescriptions: {
-      typeIdentifier: "t_bytes_calldata_ptr"
-    }
-  };
 
   export const MSG_DEFINITION: AstDefinition = {
     id: -1,

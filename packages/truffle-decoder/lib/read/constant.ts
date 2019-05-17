@@ -3,6 +3,7 @@ const debug = debugModule("decoder:read:constant");
 
 import * as DecodeUtils from "truffle-decode-utils";
 import BN from "bn.js";
+import { Values } from "truffle-decode-utils";
 
 export function readDefinition(definition: DecodeUtils.AstDefinition): Uint8Array {
 
@@ -22,6 +23,8 @@ export function readDefinition(definition: DecodeUtils.AstDefinition): Uint8Arra
       //unfortunately, other types of constants are just too complicated to
       //handle right now.  sorry.
       debug("unsupported constant definition type");
-      return undefined;
+      throw new Values.GenericError(
+        new Values.UnsupportedConstantError(definition);
+      );
   }
 }

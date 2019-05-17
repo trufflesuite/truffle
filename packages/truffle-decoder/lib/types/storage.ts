@@ -32,8 +32,7 @@ export interface StoragePosition {
 };
 
 export interface Slot {
-  key?: any; // TODO:
-  keyEncoding?: string; //see decode/storage.ts for explanation of this
+  key?: DecodeUtils.Values.ElementaryValue;
   path?: Slot;
   hashPath?: boolean;
   offset: BN;
