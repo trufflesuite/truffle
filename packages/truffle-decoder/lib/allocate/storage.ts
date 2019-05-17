@@ -297,3 +297,72 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
     }
   }
 }
+
+//like storageSize, but for a Type object; also assumes you've already done allocation
+export function storageSizeForType(dataType: DecodeUtils.Types.Type, userDefinedTypes: DecodeUtils.Types.TypesById, allocations: StorageAllocations): StorageLength {
+  switch(dataType.typeClass) {
+    case "bool":
+      return {bytes: 1};
+    case "address":
+    case "contract":
+      return {bytes: DecodeUtils.EVM.ADDRESS_SIZE};
+    case "int":
+    case "uint":
+    case "fixed":
+    case "ufixed":
+      return {bytes: dataType.bits / 8 };
+    case "enum": {
+      let fullType = DecodeUtils.Types.fullType(dataType, userDefinedTypes);
+      if(!fullType.options) {
+        throw new DecodeUtils.Values.DecodingError(
+          new DecodeUtils.Values.UserDefinedTypeNotFoundError(dataType);
+        );
+      }
+      return {bytes: Math.ceil(Math.log2(fullType.options.length) / 8)};
+    }
+    case "function":
+      switch (dataType.visibility) {
+        case "internal":
+          return {bytes: DecodeUtils.EVM.PC_SIZE * 2};
+        case "external":
+          return {bytes: DecodeUtils.EVM.ADDRESS_SIZE + DecodeUtils.EVM.SELECTOR_SIZE};
+      }
+    case "bytes":
+      switch(dataType.kind) {
+        case "static":
+          return {bytes: dataType.length};
+        case "dynamic":
+          return {words: 1};
+      }
+    case "string":
+    case "mapping":
+      return {words: 1};
+    case "array": {
+      switch(dataType.kind) {
+        case "dynamic":
+          return {words: 1};
+        case "static":
+          let length = dataType.length.toNumber(); //warning! but if it's too big we have a problem
+          let baseSize = storageSizeForType(dataType.baseType, userDefinedTypes, allocations);
+          if(!isWordsLength(baseSize)) {
+            //bytes case
+            const perWord: number = Math.floor(DecodeUtils.EVM.WORD_SIZE / baseSize.bytes);
+            debug("length %o", length);
+            const numWords: number = Math.ceil(length / perWord);
+            return {words: numWords};
+          }
+          else {
+            return {words: baseSize.words * length};
+          }
+        }
+      }
+    case "struct":
+      let allocation = allocations[dataType.id];
+      if(!allocation) {
+        throw new DecodeUtils.Values.DecodingError(
+          new DecodeUtils.Values.UserDefinedTypeNotFoundError(dataType);
+        );
+      }
+      return allocation.size;
+  }
+}

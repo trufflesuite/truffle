@@ -2,87 +2,112 @@ import debugModule from "debug";
 const debug = debugModule("decoder:decode:special");
 
 import * as DecodeUtils from "truffle-decode-utils";
+import { Types, Values } from "truffle-decode-utils";
 import decodeValue from "./value";
 import { EvmInfo } from "../types/evm";
 import { SpecialPointer } from "../types/pointer";
 import { DecoderRequest } from "../types/request";
 
-export default function* decodeSpecial(definition: DecodeUtils.AstDefinition, pointer: SpecialPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
-  if(DecodeUtils.Definition.typeClass(definition) === "magic") { //that's right, magic!
-    return yield* decodeMagic(definition, pointer, info);
+export default function* decodeSpecial(dataType: Types.Type, pointer: SpecialPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | Uint8Array> {
+  if(dataType.typeClass === "magic") {
+    return yield* decodeMagic(dataType, pointer, info);
   }
   else {
-    return yield* decodeValue(definition, pointer, info);
+    return yield* decodeValue(dataType, pointer, info);
   }
 }
 
-export function* decodeMagic(definition: DecodeUtils.AstDefinition, pointer: SpecialPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
+export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer, info: EvmInfo): IterableIterator<Values.MagicValue | DecoderRequest | Uint8Array> {
 
   let {state} = info;
 
   switch(pointer.special) {
     case "msg":
-      return {
-        data: yield* decodeValue(
-          DecodeUtils.Definition.MSG_DATA_DEFINITION,
+      return new Values.MagicValueProper(dataType, {
+        data: <Values.BytesValue> yield* decodeValue(
+          {
+            typeClass: "bytes",
+            kind: "dynamic",
+            location: "calldata"
+          },
           {calldata: {
             start: 0,
             length: state.calldata.length
           }},
           info
         ),
-        sig: yield* decodeValue(
-          DecodeUtils.Definition.MSG_SIG_DEFINITION,
+        sig: <Values.BytesValue> yield* decodeValue(
+          {
+            typeClass: "bytes",
+            kind: "static",
+            length: DecodeUtils.EVM.SELECTOR_SIZE
+          },
           {calldata: {
             start: 0,
             length: DecodeUtils.EVM.SELECTOR_SIZE,
           }},
           info
         ),
-        sender: yield* decodeValue(
-          DecodeUtils.Definition.spoofAddressPayableDefinition("sender"),
+        sender: <Values.AddressValue> yield* decodeValue(
+          {
+            typeClass: "address",
+            payable: true
+          },
           {special: "sender"},
           info
         ),
-        value: yield* decodeValue(
-          DecodeUtils.Definition.spoofUintDefinition("value"),
+        value: <Values.UintValue> yield* decodeValue(
+          {
+            typeClass: "uint",
+            bits: 256
+          },
           {special: "value"},
           info
         )
-      };
+      });
     case "tx":
-      return {
-        origin: yield* decodeValue(
-          DecodeUtils.Definition.spoofAddressPayableDefinition("origin"),
+      return new Values.MagicValueProper(dataType, {
+        origin: <Values.AddressValue> yield* decodeValue(
+          {
+            typeClass: "address",
+            payable: true
+          },
           {special: "origin"},
           info
         ),
-        gasprice: yield* decodeValue(
-          DecodeUtils.Definition.spoofUintDefinition("gasprice"),
+        gasprice: <Values.UintValue> yield* decodeValue(
+          {
+            typeClass: "uint",
+            bits: 256
+          },
           {special: "gasprice"},
           info
         )
-      };
+      });
     case "block":
-      let block: any = {
-        coinbase: yield* decodeValue(
-          DecodeUtils.Definition.spoofAddressPayableDefinition("coinbase"),
+      let block = {
+        coinbase: <Values.AddressValue> yield* decodeValue(
+          {
+            typeClass: "address",
+            payable: true
+          },
           {special: "coinbase"},
           info
         )
-      };
+      });
       //the other ones are all uint's, so let's handle them all at once; due to
       //the lack of generator arrow functions, we do it by mutating block
       const variables = ["difficulty", "gaslimit", "number", "timestamp"];
       for (let variable of variables) {
-        block[variable] = yield* decodeValue(
-          DecodeUtils.Definition.spoofUintDefinition(variable),
+        block[variable] = <Values.UintValue> yield* decodeValue(
+          {
+            typeClass: "uint",
+            bits: 256
+          },
           {special: variable},
           info
         );
       }
-    return block;
-    default:
-      debug("Unrecognized magic variable!");
+      return new Values.MagicValueProper(dataType, block);
   }
 }

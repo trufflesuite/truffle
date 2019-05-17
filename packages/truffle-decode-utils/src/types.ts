@@ -20,56 +20,57 @@ const debug = debugModule("decode-utils:types");
 
 import BN from "bn.js";
 import { AstDefinition } from "./ast.ts";
+import DefinitionUtils from "./definition.ts";
 
-interface Type {
-  //maybe put stuff about language and version here in the future??
-}
+type Type = UintType | IntType | BoolType | BytesType | AddressType | FixedType
+  | UfixedType | StringType | ArrayType | MappingType | FunctionType
+  | StructType | EnumType | ContractType | MagicType;
 
-interface UintType extends Type {
+interface UintType {
   typeclass: "uint";
   bits: number;
 }
 
-interface IntType extends Type {
+interface IntType {
   typeclass: "int";
   bits: number;
 }
 
-interface BoolType extends Type {
+interface BoolType {
   typeClass: "bool";
 }
 
 type BytesType = BytesTypeStatic | BytesTypeDynamic;
 
-interface BytesTypeStatic extends Type {
+interface BytesTypeStatic {
   typeClass: "bytes";
-  dynamic: false;
+  kind: "static";
   length: number;
 }
 
-interface BytesTypeDynamic extends Type {
+interface BytesTypeDynamic {
   typeClass: "bytes";
-  dynamic: true;
+  kind: "dynamic";
   location?: string;
 }
 
-interface AddressType extends Type {
+interface AddressType {
   typeClass: "address";
   payable: boolean;
 }
 
-interface StringType extends Type {
+interface StringType {
   typeClass: "string";
   location?: string;
 }
 
-interface FixedType extends Type {
+interface FixedType {
   typeClass: "fixed";
   bits: number;
   places: number;
 }
 
-interface UfixedType extends Type {
+interface UfixedType {
   typeClass: "ufixed";
   bits: number;
   places: number;
@@ -77,35 +78,38 @@ interface UfixedType extends Type {
 
 type ArrayType = ArrayTypeStatic | ArrayTypeDynamic;
 
-interface ArrayTypeStatic extends Type {
+interface ArrayTypeStatic {
   typeClass: "array";
   baseType: Type;
-  dynamic: false;
+  kind: "static";
   length: BN;
   location?: string;
 }
 
-interface ArrayTypeDynamic extends Type {
+interface ArrayTypeDynamic {
   typeClass: "array";
   baseType: Type;
-  dynamic: true;
+  kind: "dynamic";
   location?: string;
 }
 
 type ElementaryType = UintType | IntType | BoolType | BytesType | FixedType
   | UfixedType | AddressType | StringType;
 
-interface MappingType extends Type {
+interface MappingType {
   typeClass: "mapping";
   keyType: ElementaryType;
   valueType: Type;
-  location?: "storage";
+  location?: string; //should only ever be storage
 }
 
-interface FunctionType extends Type {
+interface FunctionType {
   typeClass: "function";
-  visibility: string;
-  mutability: string;
+  visibility: string; //should be "internal" or "external", not weird
+  //solidity-internal visibilities (but for technical reasons I'm not
+  //putting that in the type requirements)
+  mutability: string; //similarly, should be "nonpayable", "pure", "view",
+  //or "payable"
   inputParameterTypes: Type[];
   outputParameterTypes: Type[];
   //we do not presently support bound functions
@@ -114,28 +118,28 @@ interface FunctionType extends Type {
 type ContractDefinedType = StructType | EnumType;
 type UserDefinedType = DefinedInContractType | ContractType;
 
-interface StructType extends Type {
+interface StructType {
   typeClass: "struct";
   id: number;
   typeName: string;
-  definingContract: string;
-  definingContractType?: ContractType;
+  definingContractName: string;
+  definingContract?: ContractType;
   memberTypes?: {
     [field: string]: Type
   };
   location?: string;
 }
 
-interface EnumType extends Type {
+interface EnumType {
   typeClass: "enum";
   id: number;
   typeName: string;
-  definingContract: string;
-  definingContractType?: ContractType;
+  definingContractName: string;
+  definingContract?: ContractType;
   options?: string[]; //these should be in order
 }
 
-interface ContractType extends Type {
+interface ContractType {
   typeClass: "contract";
   id: number;
   typeName: string;
@@ -145,11 +149,14 @@ interface ContractType extends Type {
   //now
 }
 
-interface MagicType extends Type {
+interface MagicType {
   typeClass: "magic";
   variable: string; //not putting this in the type annotation for technical
   //reasons, but this should be one of "message", "block", or "transaction";
   //we do *not* presently support abi or meta_type
+  memberTypes?: {
+    [field: string]: Type
+  };
 }
 
 type ReferenceType = ArrayType | MappingType | StructType | StringType | BytesTypeDynamic;
@@ -161,7 +168,9 @@ interface TypesById {
 //NOTE: the following function will *not* work for arbitrary nodes! It will,
 //however, work for the ones we need (i.e., variable definitions, and arbitrary
 //things of elementary type)
-function definitionToType(definition: AstDefinition, suppressLocation: boolean = false): Type {
+//NOTE: set forceLocation to *null* to force no location. leave it undefined
+//to not force a location.
+function definitionToType(definition: AstDefinition, forceLocation?: string | null): Type {
   let typeClass = DefinitionUtils.typeClass(definition);
   switch(typeClass) {
     case "bool":
@@ -194,12 +203,12 @@ function definitionToType(definition: AstDefinition, suppressLocation: boolean =
       };
     }
     case "string": {
-      if(suppressLocation) {
+      if(forceLocation === null) {
         return {
           typeClass
         };
       }
-      let location = DefinitionUtils.referenceType(definition);
+      let location = forceLocation || DefinitionUtils.referenceType(definition);
       return {
         typeClass,
         location
@@ -214,13 +223,13 @@ function definitionToType(definition: AstDefinition, suppressLocation: boolean =
           length
         }
       } else {
-        if(suppressLocation) {
+        if(forceLocation === null) {
           return {
             typeClass,
             dynamic: true
           };
         }
-        let location = DefinitionUtils.referenceType(definition);
+        let location = forceLocation || DefinitionUtils.referenceType(definition);
         return {
           typeClass,
           dynamic: true,
@@ -231,7 +240,7 @@ function definitionToType(definition: AstDefinition, suppressLocation: boolean =
     case "array": {
       let returnType = { typeClass };
       let baseDefinition = DefinitionUtils.baseDefinition(definition);
-      returnType.baseType = definitionToType(baseDefinition);
+      returnType.baseType = definitionToType(baseDefinition, forceLocation);
       if(DefinitionUtils.isDynamicArray(definition)) {
         returnType.dynamic = true;
       } else {
@@ -247,12 +256,12 @@ function definitionToType(definition: AstDefinition, suppressLocation: boolean =
       let keyDefinition = DefinitionUtils.keyDefinition(definition);
       //note that we can skip the scopes argument here! that's only needed when
       //a general node, rather than a declaration, is being passed in
-      let keyType = definitionToType(keyDefinition, true);
+      let keyType = definitionToType(keyDefinition, null);
       //suppress the location on the key type (it'll be given as memory but
       //this is meaningless)
       let valueDefinition = definition.valueType || definition.typeName.valueType;
-      let valueType = definitionToType(valueType);
-      if(suppressLocation) {
+      let valueType = definitionToType(valueType, forceLocation);
+      if(forceLocation === null) {
         return {
           typeClass,
           keyType,
@@ -285,21 +294,21 @@ function definitionToType(definition: AstDefinition, suppressLocation: boolean =
       let qualifiedName = definition.typeName
         ? definition.typeName.name
         : definition.name;
-      let [definingContract, typeName] = qualifiedName.split(".");
-      if(suppressLocation) {
+      let [definingContractName, typeName] = qualifiedName.split(".");
+      if(forceLocation === null) {
         return {
           typeClass,
           id,
           typeName,
-          definingContract
+          definingContractName
         };
       }
-      let location = DefinitionUtils.referenceType(definition);
+      let location = forceLocation || DefinitionUtils.referenceType(definition);
       return {
         typeClass,
         id,
         typeName,
-        definingContract,
+        definingContractName,
         location
       };
     }
@@ -308,12 +317,12 @@ function definitionToType(definition: AstDefinition, suppressLocation: boolean =
       let qualifiedName = definition.typeName
         ? definition.typeName.name
         : definition.name;
-      let [definingContract, typeName] = qualifiedName.split(".");
+      let [definingContractName, typeName] = qualifiedName.split(".");
       return {
         typeClass,
         id,
         typeName,
-        definingContract
+        definingContractName
       };
     }
     case "contract": {
@@ -337,36 +346,34 @@ function definitionToType(definition: AstDefinition, suppressLocation: boolean =
         variable
       }
     }
-    default:
-      debug("unrecognized type!");
   }
 }
 
 //whereas the above takes variable definitions, this takes the actual type
 //definition
-function definitionToReferenceType(definition: AstDefinition): Type {
+function definitionToStoredType(definition: AstDefinition): Type {
   switch(definition.nodeType) {
     case "StructDefinition": {
       let id = definition.id;
-      let [definingContract, typeName] = definition.canonicalName.split(".");
-      let memberTypes = definition.members.map(definitionToType, true);
+      let [definingContractName, typeName] = definition.canonicalName.split(".");
+      let memberTypes = definition.members.map(definitionToType, null);
       return {
         typeClass: "struct",
         id,
         typeName,
-        definingContract
+        definingContractName
         memberTypes
       };
     }
     case "EnumDefinition": {
       let id = definition.id;
-      let [definingContract, typeName] = definition.canonicalName.split(".");
+      let [definingContractName, typeName] = definition.canonicalName.split(".");
       let options = definition.members.map(member => member.name);
       return {
         typeClass: "enum",
         id,
         typeName,
-        definingContract,
+        definingContractName,
         options
       };
     }
@@ -383,8 +390,6 @@ function definitionToReferenceType(definition: AstDefinition): Type {
         payable
       };
     }
-    default:
-      debug("unrecognized reference type!");
   }
 }
 
@@ -396,12 +401,15 @@ function fullType(basicType: Type, userDefinedTypes: TypesById): Type {
   }
   let id = basicType.id;
   let storedType = userDefinedTypes[id];
-  let returnType = { ...storedType };
-  if((<ReferenceType>basicType).location !== undefined) {
-    returnType.location = basicType.location;
+  if(!storedType) {
+    return basicType;
+  }
+  let returnType = { ...basicType, ...storedType };
+  if(isReferenceType(basicType) && basicType.location !== undefined) {
+    returnType = specifyLocation(returnType, basicType.location);
   }
   if(isContractDefinedType(returnType)) {
-    returnType.definingContractType = Object.values(userDefinedTypes).find(
+    returnType.definingContract = Object.values(userDefinedTypes).find(
       referenceType => referenceType.typeClass === "contract"
         && referenceType.typeName === returnType.typeName
     );
@@ -409,28 +417,59 @@ function fullType(basicType: Type, userDefinedTypes: TypesById): Type {
   return returnType;
 }
 
-function isUserDefinedType(anyType: Type): anyType is UserDefinedType {
+function isUserDefinedType(anyType: Type): boolean {
   const userDefinedTypes = ["contract", "enum", "struct"];
   return userDefinedTypes.includes(anyType.typeClass);
 }
 
-function isContractDefinedType(anyType: Type): anyType is ContractDefinedType {
+function isContractDefinedType(anyType: Type): boolean {
   const contractDefinedTypes = ["enum", "struct"];
   return contractDefinedTypes.includes(anyType.typeClass);
 }
 
-function isReferenceType(anyType: Type): anyType is ReferenceType {
+function isReferenceType(anyType: Type): boolean {
   const alwaysReferenceTypes = ["array", "mapping", "struct", "string"];
   if(alwaysReferenceTypes.includes(anyType.typeClass)) {
     return true;
   }
-  else if(isBytesType(anyType)) {
-    return anyType.dynamic;
-  } else {
+  else if(anyType.typeClass === "bytes") {
+    return anyType.kind === "dynamic";
+  }
+  else {
     return false;
   }
 }
 
-function isBytesType(anyType: Type) anyType is BytesType {
-  return anyType.typeClass === "bytes";
+//the location argument here always forces, so passing undefined *will* force undefined
+function specifyLocation(dataType: Type, location?: string) {
+  if(isReferenceType(dataType)) {
+    switch(dataType.typeClass) {
+      case "string":
+      case "bytes":
+        return { ...dataType, location };
+      case "array":
+        return {
+          ...dataType,
+          location,
+          baseType: specifyLocation(dataType.baseType, location)
+        };
+      case "mapping":
+        return {
+          ...dataType,
+          location,
+          valueType: specifyLocation(dataType.valueType, location)
+        };
+      case "struct":
+        let returnType = { ...dataType, location };
+        if(returnType.memberTypes) {
+          for(let name in returnType.memberTypes) {
+            returnType.memberTypes[name] = specifyLocation(returnType.memberTypes[name], location);
+          }
+        }
+        return returnType;
+    }
+  }
+  else {
+    return dataType;
+  }
 }

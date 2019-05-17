@@ -146,3 +146,52 @@ function calldataSizeAndAllocate(definition: AstDefinition, referenceDeclaration
     }
   }
 }
+
+//like calldataSize, but for a Type object; also assumes you've already done allocation
+//(note: function for dynamic is separate, see below)
+//also, does not attempt to handle types that don't occur in calldata
+export function calldataSizeForType(dataType: DecodeUtils.Types.Type, allocations: CalldataAllocations): number {
+  switch(dataType.typeClass) {
+    case "array":
+      switch(dataType.kind) {
+        case "dynamic":
+          return DecodeUtils.EVM.WORD_SIZE;
+        case "static":
+          const length = dataType.length.toNumber(); //if this is too big, we have a problem!
+          const baseSize = calldataSizeForType(dataType.baseType, allocations);
+          return length * baseSize;
+      }
+    case "struct":
+      const allocation = allocations[dataType.id];
+      if(!allocation) {
+        throw new DecodeUtils.Values.DecodingError(
+          new DecodeUtils.Values.UserDefinedTypeNotFoundError(dataType);
+        );
+      }
+      return allocation.length;
+    default:
+      return DecodeUtils.EVM.WORD_SIZE;
+  }
+}
+
+//again, this function does not attempt to handle types that don't occur in calldata
+export function isTypeDynamic(dataType: DecodeUtils.Types.Type, allocations: CalldataAllocations): boolean {
+  switch(dataType.typeClass) {
+    case "string":
+      return true;
+    case "bytes":
+      return dataType.kind === "dynamic";
+    case "array":
+      return dataType.kind === "dynamic" || isTypeDynamic(dataType.baseType, userDefinedTypes, allocations);
+    case "struct":
+      const allocation = allocations[dataType.id];
+      if(!allocation) {
+        throw new DecodeUtils.Values.DecodingError(
+          new DecodeUtils.Values.UserDefinedTypeNotFoundError(dataType);
+        );
+      }
+      return allocation.dynamic;
+    default:
+      return false;
+  }
+}

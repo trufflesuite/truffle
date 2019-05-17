@@ -35,6 +35,7 @@ export namespace Contexts {
     contractId?: number;
     contractKind?: "contract" | "library"; //should never be "interface"
     abi?: FunctionAbiWithSignatures;
+    pyayable?: boolean
   }
 
   export interface DebuggerContext {
@@ -52,7 +53,8 @@ export namespace Contexts {
     compiler?: {
       name: string;
       version: string;
-    }
+    };
+    payable?: boolean
   }
 
   //really, we should import the ABI spec from truffle-contract-schema;
