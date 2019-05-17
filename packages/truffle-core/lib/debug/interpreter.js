@@ -7,7 +7,7 @@ const ora = require("ora");
 
 const DebugUtils = require("truffle-debug-utils");
 const selectors = require("truffle-debugger").selectors;
-const { session, solidity, trace, controller } = selectors;
+const { solidity, trace, controller } = selectors;
 
 const analytics = require("../services/analytics");
 const ReplManager = require("../repl");
@@ -116,7 +116,7 @@ class DebugInterpreter {
       }
 
       //search sources for given string
-      let sources = session.view(solidity.info.sources);
+      let sources = this.session.view(solidity.info.sources);
 
       //we will indeed need the sources here, not just IDs
       let matchingSources = Object.values(sources).filter(source =>
