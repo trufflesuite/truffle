@@ -11,6 +11,7 @@ const DebugUtils = require("truffle-debug-utils");
 
 const { DebugInterpreter } = require("./interpreter");
 const { DebugCompiler } = require("./compiler");
+const { DebugObjectCompiler } = require("./object-compiler");
 
 class CLIDebugger {
   constructor(config) {
@@ -38,7 +39,11 @@ class CLIDebugger {
   async compileSources() {
     const compileSpinner = ora("Compiling your contracts...").start();
 
-    const compilation = await new DebugCompiler(this.config).compile();
+    // if debugObjects we compile the files as properties of an object
+    // otherwise we debug them as files
+    const compilation = this.config.debugObjects
+      ? await new DebugObjectCompiler(this.config).compile()
+      : await new DebugCompiler(this.config).compile();
 
     compileSpinner.succeed();
 
