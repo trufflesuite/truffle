@@ -30,10 +30,9 @@ function watchExpressionAnalytics(raw) {
 }
 
 class DebugInterpreter {
-  constructor(config, session, spinner, txHash) {
+  constructor(config, session, txHash) {
     this.config = config;
     this.session = session;
-    this.spinner = spinner;
     this.printer = new DebugPrinter(config, session);
     this.txHash = txHash;
     this.lastCommand = "n";
@@ -242,7 +241,6 @@ class DebugInterpreter {
     let prompt;
 
     if (this.session.view(selectors.session.status.loaded)) {
-      this.spinner.succeed();
       this.printer.printAddressesAffected();
       this.printer.printHelp();
       debug("Help printed");
@@ -253,12 +251,10 @@ class DebugInterpreter {
       prompt = DebugUtils.formatPrompt(this.config.network, this.txHash);
     } else {
       if (this.session.view(selectors.session.status.isError)) {
-        this.spinner.fail();
         this.config.logger.log(
           this.session.view(selectors.session.status.error)
         );
       } else {
-        this.spinner.succeed();
       }
       this.printer.printHelp();
       prompt = DebugUtils.formatPrompt(this.config.network);
