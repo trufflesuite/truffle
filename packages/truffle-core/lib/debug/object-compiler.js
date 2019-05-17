@@ -1,4 +1,6 @@
+const { promisify } = require("util");
 const compile = require("truffle-compile");
+const find_contracts = require("truffle-contract-sources");
 const fs = require("fs");
 
 // this class copes with a directory of .sol files each if which
@@ -12,37 +14,25 @@ class DebugObjectCompiler {
   }
   async compile() {
     // all the file names
-    const fileNames = await new Promise((resolve, reject) =>
-      fs.readdir(this.config.contracts_directory, function(err, filePaths) {
-        if (err) {
-          return reject(err);
-        }
-        return resolve(filePaths);
-      })
+    const filePaths = await promisify(find_contracts)(
+      this.config.contracts_directory
     );
     // this is an object containing solidity code as properties
     // hence imports can be without the .sol extension
     const objectToCompile = await Promise.all(
-      fileNames.map(file =>
-        new Promise((resolve, reject) =>
-          fs.readFile(
-            `${this.config.contracts_directory}/${file}`,
-            (err, text) => {
-              if (err) {
-                return reject(err);
-              }
-              resolve(text);
-            }
-          )
-        ).then(text => ({
-          file,
+      filePaths.map(filePath =>
+        promisify(fs.readFile)(filePath).then(text => ({
+          filePath,
           text
         }))
       )
     ).then(files =>
-      files.reduce((acc, { file, text }) => {
+      files.reduce((acc, { filePath, text }) => {
         // nasty mutate as no object spread operator
-        acc[file.substring(0, file.indexOf(".sol"))] = text.toString();
+        // regexes just get filename from full path and strip extension
+        acc[
+          filePath.replace(/^.*[\\/]/, "").replace(/\.[^/.]+$/, "")
+        ] = text.toString();
         return acc;
       }, {})
     );
