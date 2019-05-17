@@ -1,14 +1,14 @@
 const LoadingStrategy = require("./LoadingStrategy");
 
-class Bundled extends LoadingStrategy {
+class Installed extends LoadingStrategy {
   load() {
-    return this.getBundledSolc();
+    return this.getInstalledSolc();
   }
 
-  getBundledSolc() {
+  getInstalledSolc() {
     this.removeListener();
     return require("solc");
   }
 }
 
-module.exports = Bundled;
+module.exports = Installed;

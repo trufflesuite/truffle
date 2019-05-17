@@ -3,7 +3,7 @@ const fs = require("fs");
 const semver = require("semver");
 
 const {
-  Bundled,
+  Installed,
   Docker,
   Local,
   Native,
@@ -50,7 +50,7 @@ class CompilerSupplier {
       let strategy;
       const useDocker = this.config.docker;
       const useNative = userSpecification === "native";
-      const useBundledSolc = !userSpecification;
+      const useInstalledSolc = !userSpecification;
       const useSpecifiedLocal =
         userSpecification && this.fileExists(userSpecification);
       const isValidVersionRange = semver.validRange(userSpecification);
@@ -59,8 +59,8 @@ class CompilerSupplier {
         strategy = new Docker(this.strategyOptions);
       } else if (useNative) {
         strategy = new Native(this.strategyOptions);
-      } else if (useBundledSolc) {
-        strategy = new Bundled(this.strategyOptions);
+      } else if (useInstalledSolc) {
+        strategy = new Installed(this.strategyOptions);
       } else if (useSpecifiedLocal) {
         strategy = new Local(this.strategyOptions);
       } else if (isValidVersionRange) {
