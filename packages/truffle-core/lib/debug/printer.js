@@ -1,5 +1,5 @@
 const debugModule = require("debug");
-const debug = debugModule("lib:debug");
+const debug = debugModule("lib:debug:printer");
 
 const path = require("path");
 const safeEval = require("safe-eval");
