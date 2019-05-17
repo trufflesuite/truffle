@@ -5,7 +5,7 @@ const ora = require("ora");
 const originalRequire = require("original-require");
 const request = require("request-promise");
 const semver = require("semver");
-const solcWrap = require("solc/wrapper");
+const solcWrap = require("truffle-solc-wrapper");
 const LoadingStrategy = require("./LoadingStrategy");
 
 class VersionRange extends LoadingStrategy {
