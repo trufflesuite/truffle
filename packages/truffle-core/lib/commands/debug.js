@@ -1,4 +1,4 @@
-var command = {
+const command = {
   command: "debug",
   description:
     "Interactively debug any transaction on the blockchain (experimental)",
@@ -17,12 +17,12 @@ var command = {
     ]
   },
   run: function(options, done) {
-    var OS = require("os");
-    var path = require("path");
-    var debugModule = require("debug");
-    var debug = debugModule("lib:commands:debug");
-    var safeEval = require("safe-eval");
-    var util = require("util");
+    const OS = require("os");
+    const path = require("path");
+    const debugModule = require("debug");
+    const debug = debugModule("lib:commands:debug");
+    const safeEval = require("safe-eval");
+    const util = require("util");
     const BN = require("bn.js");
     const analytics = require("../services/analytics");
     const ora = require("ora");
@@ -32,31 +32,31 @@ var command = {
       return options.stylize(this.toString(), "number");
     };
 
-    var compile = require("truffle-compile");
-    var Config = require("truffle-config");
-    var Debugger = require("truffle-debugger");
-    var DebugUtils = require("truffle-debug-utils");
-    var Environment = require("../environment");
-    var ReplManager = require("../repl");
-    var selectors = require("truffle-debugger").selectors;
+    const compile = require("truffle-compile");
+    const Config = require("truffle-config");
+    const Debugger = require("truffle-debugger");
+    const DebugUtils = require("truffle-debug-utils");
+    const Environment = require("../environment");
+    const ReplManager = require("../repl");
+    const selectors = require("truffle-debugger").selectors;
 
     // Debugger Session properties
-    var trace = selectors.trace;
-    var solidity = selectors.solidity;
-    var controller = selectors.controller;
+    const trace = selectors.trace;
+    const solidity = selectors.solidity;
+    const controller = selectors.controller;
 
-    var config = Config.detect(options);
+    const config = Config.detect(options);
 
     config.logger.log("Starting Truffle Debugger...");
 
     Environment.detect(config)
       .then(() => {
-        var txHash = config._[0]; //may be undefined
+        const txHash = config._[0]; //may be undefined
 
-        var lastCommand = "n";
-        var enabledExpressions = new Set();
-        var startSpinner; //apologies for the use of a global variable here
-        var compileSpinner; //and here
+        let lastCommand = "n";
+        const enabledExpressions = new Set();
+        let startSpinner; //apologies for the use of a global variable here
+        let compileSpinner; //and here
 
         let compilePromise = new Promise(function(accept, reject) {
           //we need to set up a config object for the compiler.
@@ -82,7 +82,7 @@ var command = {
           });
         });
 
-        var sessionPromise = compilePromise
+        const sessionPromise = compilePromise
           .then(function(result) {
             compileSpinner.succeed();
             let startMessage = DebugUtils.formatStartMessage(
@@ -94,7 +94,7 @@ var command = {
               provider: config.provider,
               files: result.files,
               contracts: Object.keys(result.contracts).map(function(name) {
-                var contract = result.contracts[name];
+                const contract = result.contracts[name];
                 return {
                   contractName: contract.contractName || contract.contract_name,
                   source: contract.source,
@@ -130,7 +130,7 @@ var command = {
             }
 
             function printAddressesAffected() {
-              var affectedInstances = session.view(
+              const affectedInstances = session.view(
                 selectors.session.info.affectedInstances
               );
 
@@ -147,10 +147,11 @@ var command = {
             }
 
             function printFile() {
-              var message = "";
+              let message = "";
 
               debug("about to determine sourcePath");
-              var sourcePath = session.view(solidity.current.source).sourcePath;
+              const sourcePath = session.view(solidity.current.source)
+                .sourcePath;
 
               if (sourcePath) {
                 message += path.basename(sourcePath);
@@ -163,7 +164,7 @@ var command = {
             }
 
             function printAddressesAffected() {
-              var affectedInstances = session.view(
+              const affectedInstances = session.view(
                 selectors.session.info.affectedInstances
               );
 
@@ -179,10 +180,11 @@ var command = {
             }
 
             function printFile() {
-              var message = "";
+              let message = "";
 
               debug("about to determine sourcePath");
-              var sourcePath = session.view(solidity.current.source).sourcePath;
+              const sourcePath = session.view(solidity.current.source)
+                .sourcePath;
 
               if (sourcePath) {
                 message += path.basename(sourcePath);
@@ -195,8 +197,8 @@ var command = {
             }
 
             function printState() {
-              var source = session.view(solidity.current.source).source;
-              var range = session.view(solidity.current.sourceRange);
+              const source = session.view(solidity.current.source).source;
+              const range = session.view(solidity.current.sourceRange);
               debug("source: %o", source);
               debug("range: %o", range);
 
@@ -207,7 +209,7 @@ var command = {
                 return;
               }
 
-              var lines = splitLines(source);
+              const lines = splitLines(source);
 
               config.logger.log("");
 
@@ -219,10 +221,10 @@ var command = {
             }
 
             function printInstruction() {
-              var instruction = session.view(solidity.current.instruction);
-              var step = session.view(trace.step);
-              var traceIndex = session.view(trace.index);
-              var totalSteps = session.view(trace.steps).length;
+              const instruction = session.view(solidity.current.instruction);
+              const step = session.view(trace.step);
+              const traceIndex = session.view(trace.index);
+              const totalSteps = session.view(trace.steps).length;
 
               config.logger.log("");
               config.logger.log(
@@ -264,8 +266,8 @@ var command = {
              * @param {string} selector
              */
             function printSelector(selector) {
-              var result = select(selector);
-              var debugSelector = debugModule(selector);
+              const result = select(selector);
+              const debugSelector = debugModule(selector);
               debugSelector.enabled = true;
               debugSelector("%O", result);
             }
@@ -327,8 +329,8 @@ var command = {
             }
 
             async function printWatchExpressionResult(expression) {
-              var type = expression[0];
-              var exprArgs = expression.substring(1);
+              const type = expression[0];
+              const exprArgs = expression.substring(1);
 
               if (type === "!") {
                 printSelector(exprArgs);
@@ -353,7 +355,7 @@ var command = {
                 .split(/\r?\n/g)
                 .map(function(line, i) {
                   // don't indent first line
-                  var padding = i > 0 ? Array(indent).join(" ") : "";
+                  const padding = i > 0 ? Array(indent).join(" ") : "";
                   return padding + line;
                 })
                 .join(OS.EOL);
@@ -365,7 +367,7 @@ var command = {
               debug("variables %o", variables);
 
               // Get the length of the longest name.
-              var longestNameLength = Math.max.apply(
+              const longestNameLength = Math.max.apply(
                 null,
                 Object.keys(variables).map(function(name) {
                   return name.length;
@@ -375,14 +377,14 @@ var command = {
               config.logger.log();
 
               Object.keys(variables).forEach(function(name) {
-                var paddedName = name + ":";
+                let paddedName = name + ":";
 
                 while (paddedName.length <= longestNameLength) {
                   paddedName = " " + paddedName;
                 }
 
-                var value = variables[name];
-                var formatted = formatValue(value, longestNameLength + 5);
+                const value = variables[name];
+                const formatted = formatValue(value, longestNameLength + 5);
 
                 config.logger.log("  " + paddedName, formatted);
               });
@@ -434,7 +436,7 @@ var command = {
               //using them is closer to the Solidity syntax
               variables = DebugUtils.nativize(variables);
 
-              var context = Object.assign(
+              let context = Object.assign(
                 { $: select },
 
                 variables
@@ -473,9 +475,9 @@ var command = {
               expr = preprocessSelectors(expr);
 
               try {
-                var result = safeEval(expr, context);
+                let result = safeEval(expr, context);
                 result = DebugUtils.cleanConstructors(result); //HACK
-                var formatted = formatValue(result, indent);
+                const formatted = formatValue(result, indent);
                 config.logger.log(formatted);
                 config.logger.log();
               } catch (e) {
@@ -517,20 +519,20 @@ var command = {
 
             async function setOrClearBreakpoint(args, setOrClear) {
               //setOrClear: true for set, false for clear
-              var currentLocation = session.view(controller.current.location);
-              var breakpoints = session.view(controller.breakpoints);
+              const currentLocation = session.view(controller.current.location);
+              const breakpoints = session.view(controller.breakpoints);
 
-              var currentNode = currentLocation.node
+              const currentNode = currentLocation.node
                 ? currentLocation.node.id
                 : null;
-              var currentLine = currentLocation.sourceRange
+              const currentLine = currentLocation.sourceRange
                 ? currentLocation.sourceRange.lines.start.line
                 : null;
-              var currentSourceId = currentLocation.source
+              const currentSourceId = currentLocation.source
                 ? currentLocation.source.id
                 : null;
 
-              var breakpoint = {};
+              let breakpoint = {};
 
               if (args.length === 0) {
                 //no arguments, want currrent node
@@ -729,7 +731,7 @@ var command = {
 
             async function interpreter(cmd) {
               cmd = cmd.trim();
-              var cmdArgs, splitArgs;
+              let cmdArgs, splitArgs;
               debug("cmd %s", cmd);
 
               if (cmd === ".exit") {
@@ -1009,7 +1011,7 @@ var command = {
               prompt = DebugUtils.formatPrompt(config.network);
             }
 
-            var repl = options.repl || new ReplManager(config);
+            const repl = options.repl || new ReplManager(config);
 
             repl.start({
               prompt,
