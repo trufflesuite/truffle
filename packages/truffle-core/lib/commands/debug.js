@@ -174,28 +174,6 @@ const command = {
               );
             }
 
-            function printHelp() {
-              config.logger.log("");
-              config.logger.log(DebugUtils.formatHelp());
-            }
-
-            function printFile() {
-              let message = "";
-
-              debug("about to determine sourcePath");
-              const sourcePath = session.view(solidity.current.source)
-                .sourcePath;
-
-              if (sourcePath) {
-                message += path.basename(sourcePath);
-              } else {
-                message += "?";
-              }
-
-              config.logger.log("");
-              config.logger.log(message + ":");
-            }
-
             function printState() {
               const source = session.view(solidity.current.source).source;
               const range = session.view(solidity.current.sourceRange);
