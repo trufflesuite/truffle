@@ -1,6 +1,6 @@
 {
   "name": "truffle-contract",
-  "version": "4.0.16",
+  "version": "4.0.17-beta.0",
   "description": "A better contract abstraction for Ethereum (formerly EtherPudding)",
   "main": "index.js",
   "scripts": {
@@ -48,7 +48,7 @@
     "mocha": "5.2.0",
     "solc": "0.5.0",
     "temp": "^0.8.3",
-    "truffle-compile": "^4.0.15",
+    "truffle-compile": "^4.0.16-beta.0",
     "uglify-es": "^3.3.9"
   },
   "publishConfig": {

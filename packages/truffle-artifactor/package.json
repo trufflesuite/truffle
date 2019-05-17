@@ -1,6 +1,6 @@
 {
   "name": "truffle-artifactor",
-  "version": "4.0.15",
+  "version": "4.0.16-beta.0",
   "description": "A contract packager for Ethereum and Javascript",
   "author": "Tim Coulter",
   "main": "./index.js",
@@ -17,7 +17,7 @@
     "mocha": "5.2.0",
     "require-nocache": "^1.0.0",
     "temp": "^0.8.3",
-    "truffle-contract": "^4.0.16",
+    "truffle-contract": "^4.0.17-beta.0",
     "web3": "1.0.0-beta.37"
   },
   "dependencies": {
