@@ -13,10 +13,7 @@ class DebugObjectCompiler {
   async compile() {
     // all the file names
     const fileNames = await new Promise((resolve, reject) =>
-      fs.readdir(`${this.config.working_directory}/contracts`, function(
-        err,
-        filePaths
-      ) {
+      fs.readdir(this.config.contracts_directory, function(err, filePaths) {
         if (err) {
           return reject(err);
         }
@@ -29,7 +26,7 @@ class DebugObjectCompiler {
       fileNames.map(file =>
         new Promise((resolve, reject) =>
           fs.readFile(
-            `${this.config.working_directory}/contracts/${file}`,
+            `${this.config.contracts_directory}/${file}`,
             (err, text) => {
               if (err) {
                 return reject(err);
