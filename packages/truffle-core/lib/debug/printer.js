@@ -195,7 +195,7 @@ class DebugPrinter {
 
     this.config.logger.log();
 
-    Object.keys(variables).forEach(function(name) {
+    Object.keys(variables).forEach(name => {
       let paddedName = name + ":";
 
       while (paddedName.length <= longestNameLength) {
