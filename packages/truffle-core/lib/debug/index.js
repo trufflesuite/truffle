@@ -76,7 +76,7 @@ class CLIDebugger {
 
     const session = bugger.connect();
 
-    // check
+    // check for error
     if (session.view(Debugger.selectors.session.status.isError)) {
       startSpinner.fail();
     } else {
