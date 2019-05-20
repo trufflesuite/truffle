@@ -314,8 +314,8 @@ class Config {
     return clone;
   }
 
-  with(obj) {
-    const normalized = this.normalize(obj);
+  with(options) {
+    const normalized = this.normalize(options);
     const current = this.normalize(this);
     attachNewEventManager(this, options);
 
