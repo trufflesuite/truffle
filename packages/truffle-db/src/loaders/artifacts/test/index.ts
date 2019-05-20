@@ -13,7 +13,7 @@ jest.mock("truffle-workflow-compile", () => ({
    const magicSquare= require(path.join(__dirname, "sources", "MagicSquare.json"));
    const migrations = require(path.join(__dirname, "sources", "Migrations.json"));
    const squareLib = require(path.join(__dirname, "sources", "SquareLib.json"));
-   callback(null, {
+   const returnValue = {
      "contracts": [{
        "contract_name": "MagicSquare",
        ...magicSquare
@@ -27,7 +27,8 @@ jest.mock("truffle-workflow-compile", () => ({
        ...squareLib
      }
      ]
-   });
+   }
+   return returnValue;
  }
 }));
 
