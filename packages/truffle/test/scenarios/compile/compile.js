@@ -8,7 +8,7 @@ var Reporter = require("../reporter");
 var sandbox = require("../sandbox");
 var log = console.log;
 
-describe("Repeated compilation of contracts with inheritance [ @truffle ]", function() {
+describe("Repeated compilation of contracts with inheritance [ @standalone ]", function() {
   var config;
   var sources;
   var sourcePaths;

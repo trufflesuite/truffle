@@ -8,7 +8,7 @@ var Reporter = require("../reporter");
 var sandbox = require("../sandbox");
 var log = console.log;
 
-describe("truffle exec [ @truffle ]", function() {
+describe("truffle exec [ @standalone ]", function() {
   var config;
   var project = path.join(__dirname, "../../sources/exec");
   var logger = new MemoryLogger();
