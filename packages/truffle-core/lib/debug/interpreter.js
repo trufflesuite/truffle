@@ -254,7 +254,6 @@ class DebugInterpreter {
         this.config.logger.log(
           this.session.view(selectors.session.status.error)
         );
-      } else {
       }
       this.printer.printHelp();
       prompt = DebugUtils.formatPrompt(this.config.network);
