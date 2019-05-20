@@ -1,4 +1,4 @@
-var opcodes = require("./opcodes");
+const opcodes = require("./opcodes");
 
 module.exports = {
   /**
@@ -17,7 +17,7 @@ module.exports = {
    * @param  {String} hexString Hex string representing the code
    * @return Array               Array of instructions
    */
-  parseCode: function(hexString, numInstructions = null) {
+  parseCode(hexString, numInstructions = null) {
     // Convert to an array of bytes
     let code = (hexString.slice(2).match(/(..?)/g) || []).map(hex =>
       parseInt(hex, 16)
@@ -43,7 +43,7 @@ module.exports = {
       opcode.pc = pc;
       opcode.name = opcodes(code[pc]);
       if (opcode.name.slice(0, 4) === "PUSH") {
-        var length = code[pc] - 0x60 + 1; //0x60 is code for PUSH1
+        const length = code[pc] - 0x60 + 1; //0x60 is code for PUSH1
         opcode.pushData = code.slice(pc + 1, pc + length + 1);
         if (opcode.pushData.length < length) {
           opcode.pushData = opcode.pushData.concat(
@@ -52,7 +52,7 @@ module.exports = {
         }
 
         // convert pushData to hex
-        opcode.pushData = "0x" + Buffer.from(opcode.pushData).toString("hex");
+        opcode.pushData = `0x${Buffer.from(opcode.pushData).toString("hex")}`;
 
         pc += length;
       }

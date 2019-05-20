@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:session:sagas");
 
-import { call, all, fork, take, put } from "redux-saga/effects";
+import { call, all, fork, take, put, race } from "redux-saga/effects";
 
 import { prefixName } from "lib/helpers";
 
@@ -14,6 +14,25 @@ import * as data from "lib/data/sagas";
 import * as web3 from "lib/web3/sagas";
 
 import * as actions from "../actions";
+
+const LOAD_SAGAS = {
+  [actions.LOAD_TRANSACTION]: load
+  //will also add reconstruct action/saga once it exists
+};
+
+function* listenerSaga() {
+  while (true) {
+    let action = yield take(Object.keys(LOAD_SAGAS));
+    let saga = LOAD_SAGAS[action.type];
+
+    yield put(actions.wait());
+    yield race({
+      exec: call(saga, action), //not all will use this
+      interrupt: take(actions.INTERRUPT)
+    });
+    yield put(actions.ready());
+  }
+}
 
 export function* saga() {
   debug("starting listeners");
@@ -37,15 +56,6 @@ export function* saga() {
   let { txHash, provider } = yield take(actions.START);
   debug("starting");
 
-  // process transaction
-  debug("fetching transaction info");
-  let err = yield* fetchTx(txHash, provider);
-  if (err) {
-    debug("error %o", err);
-    yield* error(err);
-    return;
-  }
-
   debug("visiting ASTs");
   // visit asts
   yield* ast.visitAll();
@@ -54,14 +64,35 @@ export function* saga() {
   debug("saving allocation table");
   yield* data.recordAllocations();
 
+  //initialize web3 adapter
+  yield* web3.init(provider);
+
+  //process transaction (if there is one)
+  //(note: this part may also set the error state)
+  if (txHash !== undefined) {
+    yield* processTransaction(txHash);
+  }
+
   debug("readying");
-  // signal that stepping can begin
+  // signal that commands can begin
   yield* ready();
+}
+
+export function* processTransaction(txHash) {
+  // process transaction
+  debug("fetching transaction info");
+  let err = yield* fetchTx(txHash);
+  if (err) {
+    debug("error %o", err);
+    yield* error(err);
+  }
 }
 
 export default prefixName("session", saga);
 
 function* forkListeners() {
+  yield fork(listenerSaga); //session listener; this one is separate, sorry
+  //(I didn't want to mess w/ the existing structure of defaults)
   return yield all(
     [controller, data, evm, solidity, trace, web3].map(
       app => fork(app.saga)
@@ -70,17 +101,19 @@ function* forkListeners() {
   );
 }
 
-function* fetchTx(txHash, provider) {
-  let result = yield* web3.inspectTransaction(txHash, provider);
+function* fetchTx(txHash) {
+  let result = yield* web3.inspectTransaction(txHash);
   debug("result %o", result);
 
   if (result.error) {
     return result.error;
   }
 
+  debug("sending initial call");
   yield* evm.begin(result);
 
   //get addresses created/called during transaction
+  debug("processing trace for addresses");
   let addresses = yield* trace.processTrace(result.trace);
   //add in the address of the call itself (if a call)
   if (result.address && !addresses.includes(result.address)) {
@@ -96,8 +129,10 @@ function* fetchTx(txHash, provider) {
   }
 
   let blockNumber = result.block.number.toString(); //a BN is not accepted
+  debug("obtaining binaries");
   let binaries = yield* web3.obtainBinaries(addresses, blockNumber);
 
+  debug("recording instances");
   yield all(
     addresses.map((address, i) => call(recordInstance, address, binaries[i]))
   );
@@ -132,4 +167,19 @@ function* ready() {
 
 function* error(err) {
   yield put(actions.error(err));
+}
+
+export function* unload() {
+  debug("unloading");
+  yield* data.reset();
+  yield* solidity.reset();
+  yield* evm.unload();
+  yield* trace.unload();
+  yield put(actions.unloadTransaction());
+}
+
+//note that load takes an action as its argument, which is why it's separate
+//from processTransaction
+function* load({ txHash }) {
+  yield* processTransaction(txHash);
 }

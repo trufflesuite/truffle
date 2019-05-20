@@ -2842,7 +2842,7 @@ center-align@^0.1.1:
     align-text "^0.1.3"
     lazy-cache "^1.0.3"
 
-chai@4.2.0:
+chai@4.2.0, chai@^4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/chai/-/chai-4.2.0.tgz#760aa72cf20e3795e84b12877ce0e83737aa29e5"
   dependencies:
@@ -8853,7 +8853,7 @@ mocha@^6.0.0:
     yargs-parser "11.1.1"
     yargs-unparser "1.5.0"
 
-mocha@^6.0.2:
+mocha@^6.0.2, mocha@^6.1.4:
   version "6.1.4"
   resolved "https://registry.yarnpkg.com/mocha/-/mocha-6.1.4.tgz#e35fada242d5434a7e163d555c705f6875951640"
   dependencies:
@@ -10961,9 +10961,10 @@ requires-port@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/requires-port/-/requires-port-1.0.0.tgz#925d2601d39ac485e091cf0da5c6e694dc3dcaff"
 
-reselect-tree@^1.3.0:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/reselect-tree/-/reselect-tree-1.3.0.tgz#baba80a04b855dcdec672a8c602ae13c337c2858"
+reselect-tree@^1.3.1:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/reselect-tree/-/reselect-tree-1.3.1.tgz#e721f4c110d0e3d50edf24f0347e9e85e7d3c617"
+  integrity sha512-odL2qQPc5Wu5fGLH0zAWn3vLh9IOvrWEckvQL/mDiKAV48t3mpsTYbIZsNcu0CcVYAvkDxvcMvRB+19TOgyODg==
   dependencies:
     debug "^3.1.0"
     esdoc "^1.0.4"

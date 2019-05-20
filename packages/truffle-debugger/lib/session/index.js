@@ -6,7 +6,10 @@ import configureStore from "lib/store";
 import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
 import data from "lib/data/selectors";
-import { decode } from "lib/data/sagas";
+import session from "lib/session/selectors";
+import * as dataSagas from "lib/data/sagas";
+import * as controllerSagas from "lib/controller/sagas";
+import * as sagas from "./sagas";
 import controllerSelector from "lib/controller/selectors";
 
 import rootSaga from "./sagas";
@@ -19,11 +22,11 @@ export default class Session {
   /**
    * @param {Array<Contract>} contracts - contract definitions
    * @param {Array<String>} files - array of filenames for sourceMap indexes
-   * @param {string} txHash - transaction hash
    * @param {Web3Provider} provider - web3 provider
+   * txHash parameter is now optional!
    * @private
    */
-  constructor(contracts, files, txHash, provider) {
+  constructor(contracts, files, provider, txHash) {
     /**
      * @private
      */
@@ -36,18 +39,54 @@ export default class Session {
     // record contracts
     this._store.dispatch(actions.recordContracts(contexts, sources));
 
-    this._store.dispatch(actions.start(txHash, provider));
+    //set up the ready listener
+    this._ready = new Promise((accept, reject) => {
+      const unsubscribe = this._store.subscribe(() => {
+        if (this.view(session.status.ready)) {
+          debug("ready!");
+          unsubscribe();
+          accept();
+        } else if (this.view(session.status.errored)) {
+          debug("error!");
+          unsubscribe();
+          reject(this.view(session.status.error));
+        }
+      });
+    });
+
+    //note that txHash is now optional
+    this._store.dispatch(actions.start(provider, txHash));
   }
 
   async ready() {
+    await this._ready;
+  }
+
+  async readyAgainAfterLoading(sessionAction) {
     return new Promise((accept, reject) => {
-      this._store.subscribe(() => {
-        if (this.state.session.status == "ACTIVE") {
-          accept();
-        } else if (typeof this.state.session.status == "object") {
-          reject(this.state.session.status.error);
+      let hasStartedWaiting = false;
+      debug("reready listener set up");
+      const unsubscribe = this._store.subscribe(() => {
+        debug("reready?");
+        if (hasStartedWaiting) {
+          if (this.view(session.status.ready)) {
+            debug("reready!");
+            unsubscribe();
+            accept(true);
+          } else if (this.view(session.status.errored)) {
+            unsubscribe();
+            debug("error!");
+            reject(this.view(session.status.error));
+          }
+        } else {
+          if (this.view(session.status.waiting)) {
+            debug("started waiting");
+            hasStartedWaiting = true;
+          }
+          return;
         }
       });
+      this.dispatch(sessionAction);
     });
   }
 
@@ -159,13 +198,13 @@ export default class Session {
   }
 
   async interrupt() {
-    return this.dispatch(controller.interrupt());
+    await this.dispatch(actions.interrupt());
+    await this.dispatch(controller.interrupt());
   }
 
   async doneStepping(stepperAction) {
     return new Promise(resolve => {
       let hasStarted = false;
-      let hasResolved = false;
       const unsubscribe = this._store.subscribe(() => {
         const isStepping = this.view(controllerSelector.isStepping);
 
@@ -175,8 +214,7 @@ export default class Session {
           return;
         }
 
-        if (!isStepping && hasStarted && !hasResolved) {
-          hasResolved = true;
+        if (!isStepping && hasStarted) {
           debug("heard step stop");
           unsubscribe();
           resolve(true);
@@ -184,6 +222,29 @@ export default class Session {
       });
       this.dispatch(stepperAction);
     });
+  }
+
+  //returns true on success, false on already loaded, error object on failure
+  async load(txHash) {
+    if (this.view(session.status.loaded)) {
+      return false;
+    }
+    try {
+      return await this.readyAgainAfterLoading(actions.loadTransaction(txHash));
+    } catch (e) {
+      this._runSaga(sagas.unload);
+      return e;
+    }
+  }
+
+  //returns true on success, false on already unloaded
+  async unload() {
+    if (!this.view(session.status.loaded)) {
+      return false;
+    }
+    debug("unloading");
+    await this._runSaga(sagas.unload);
+    return true;
   }
 
   //Note: count is an optional argument; default behavior is to advance 1
@@ -208,7 +269,11 @@ export default class Session {
   }
 
   async reset() {
-    return await this.doneStepping(controller.reset());
+    let loaded = this.view(session.status.loaded);
+    if (!loaded) {
+      return;
+    }
+    return await this._runSaga(controllerSagas.reset);
   }
 
   //NOTE: breakpoints is an OPTIONAL argument for if you want to supply your
@@ -221,15 +286,15 @@ export default class Session {
   }
 
   async addBreakpoint(breakpoint) {
-    this.dispatch(controller.addBreakpoint(breakpoint));
+    return await this.dispatch(controller.addBreakpoint(breakpoint));
   }
 
   async removeBreakpoint(breakpoint) {
-    return this.dispatch(controller.removeBreakpoint(breakpoint));
+    return await this.dispatch(controller.removeBreakpoint(breakpoint));
   }
 
   async removeAllBreakpoints() {
-    return this.dispatch(controller.removeAllBreakpoints());
+    return await this.dispatch(controller.removeAllBreakpoints());
   }
 
   //deprecated -- decode is now *always* ready!
@@ -241,17 +306,20 @@ export default class Session {
     const definitions = this.view(data.current.identifiers.definitions);
     const refs = this.view(data.current.identifiers.refs);
 
-    return await this._runSaga(decode, definitions[name], refs[name]);
+    return await this._runSaga(dataSagas.decode, definitions[name], refs[name]);
   }
 
   async variables() {
+    if (!this.view(session.status.loaded)) {
+      return {};
+    }
     let definitions = this.view(data.current.identifiers.definitions);
     let refs = this.view(data.current.identifiers.refs);
     let decoded = {};
     for (let [identifier, ref] of Object.entries(refs)) {
       if (identifier in definitions) {
         decoded[identifier] = await this._runSaga(
-          decode,
+          dataSagas.decode,
           definitions[identifier],
           ref
         );

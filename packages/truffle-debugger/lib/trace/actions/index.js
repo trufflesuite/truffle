@@ -6,14 +6,6 @@ export function saveSteps(steps) {
   };
 }
 
-export const RECEIVE_ADDRESSES = "RECEIVE_ADDRESSES";
-export function receiveAddresses(addresses) {
-  return {
-    type: RECEIVE_ADDRESSES,
-    addresses
-  };
-}
-
 export const NEXT = "NEXT";
 export function next() {
   return { type: NEXT };
@@ -39,7 +31,12 @@ export function reset() {
   return { type: RESET };
 }
 
+export const UNLOAD_TRANSACTION = "TRACE_UNLOAD_TRANSACTION";
+export function unloadTransaction() {
+  return { type: UNLOAD_TRANSACTION };
+}
+
 export const BACKTICK = "BACKTICK";
-export function subtock() {
+export function backtick() {
   return { type: BACKTICK };
 }

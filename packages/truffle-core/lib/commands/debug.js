@@ -8,11 +8,11 @@ var command = {
     }
   },
   help: {
-    usage: "truffle debug <transaction_hash>",
+    usage: "truffle debug [<transaction_hash>]",
     options: [
       {
         option: "<transaction_hash>",
-        description: "Transaction ID to use for debugging. (required)"
+        description: "Transaction ID to use for debugging."
       }
     ]
   },
@@ -25,6 +25,7 @@ var command = {
     var util = require("util");
     const BN = require("bn.js");
     const analytics = require("../services/analytics");
+    const ora = require("ora");
 
     // add custom inspect options for BNs
     BN.prototype[util.inspect.custom] = function(depth, options) {
@@ -46,24 +47,30 @@ var command = {
 
     var config = Config.detect(options);
 
+    config.logger.log("Starting Truffle Debugger...");
+
     Environment.detect(config)
       .then(() => {
-        if (config._.length === 0) {
-          return done(
-            new Error(
-              "Please specify a transaction hash as the first parameter in order to " +
-                "debug that transaction. i.e., truffle debug 0x1234..."
-            )
-          );
-        }
-
-        var txHash = config._[0];
+        var txHash = config._[0]; //may be undefined
 
         var lastCommand = "n";
         var enabledExpressions = new Set();
+        var startSpinner; //apologies for the use of a global variable here
+        var compileSpinner; //and here
 
         let compilePromise = new Promise(function(accept, reject) {
-          compile.all(config, function(err, contracts, files) {
+          //we need to set up a config object for the compiler.
+          //it's the same as the existing config, but we turn on quiet.
+          //unfortunately, we don't have Babel here, so cloning is annoying.
+          let compileConfig = Object.assign(
+            {},
+            ...Object.entries(config).map(([key, value]) => ({ [key]: value }))
+          ); //clone
+          compileConfig.quiet = true;
+
+          compileSpinner = ora("Compiling your contracts...").start();
+
+          compile.all(compileConfig, function(err, contracts, files) {
             if (err) {
               return reject(err);
             }
@@ -77,9 +84,13 @@ var command = {
 
         var sessionPromise = compilePromise
           .then(function(result) {
-            config.logger.log(DebugUtils.formatStartMessage());
+            compileSpinner.succeed();
+            let startMessage = DebugUtils.formatStartMessage(
+              txHash !== undefined
+            );
+            startSpinner = ora(startMessage).start();
 
-            return Debugger.forTx(txHash, {
+            let debuggerOptions = {
               provider: config.provider,
               files: result.files,
               contracts: Object.keys(result.contracts).map(function(name) {
@@ -98,9 +109,14 @@ var command = {
                   abi: contract.abi
                 };
               })
-            });
+            };
+
+            return txHash !== undefined
+              ? Debugger.forTx(txHash, debuggerOptions)
+              : Debugger.forProject(debuggerOptions);
           })
           .then(function(bugger) {
+            debug("about to connect");
             return bugger.connect();
           })
           .catch(done);
@@ -111,6 +127,39 @@ var command = {
               // We were splitting on OS.EOL, but it turns out on Windows,
               // in some environments (perhaps?) line breaks are still denoted by just \n
               return str.split(/\r?\n/g);
+            }
+
+            function printAddressesAffected() {
+              var affectedInstances = session.view(
+                selectors.session.info.affectedInstances
+              );
+
+              config.logger.log("");
+              config.logger.log("Addresses affected:");
+              config.logger.log(
+                DebugUtils.formatAffectedInstances(affectedInstances)
+              );
+            }
+
+            function printHelp() {
+              config.logger.log("");
+              config.logger.log(DebugUtils.formatHelp());
+            }
+
+            function printFile() {
+              var message = "";
+
+              debug("about to determine sourcePath");
+              var sourcePath = session.view(solidity.current.source).sourcePath;
+
+              if (sourcePath) {
+                message += path.basename(sourcePath);
+              } else {
+                message += "?";
+              }
+
+              config.logger.log("");
+              config.logger.log(message + ":");
             }
 
             function printAddressesAffected() {
@@ -471,19 +520,26 @@ var command = {
               var currentLocation = session.view(controller.current.location);
               var breakpoints = session.view(controller.breakpoints);
 
-              var currentLine = currentLocation.sourceRange.lines.start.line;
-              var currentSourceId = currentLocation.source.id;
-              //don't get node id unless we have to as workaround to problem
-              //where it has sometimes turned up undefined
+              var currentNode = currentLocation.node
+                ? currentLocation.node.id
+                : null;
+              var currentLine = currentLocation.sourceRange
+                ? currentLocation.sourceRange.lines.start.line
+                : null;
+              var currentSourceId = currentLocation.source
+                ? currentLocation.source.id
+                : null;
 
               var breakpoint = {};
-
-              debug("args %O", args);
 
               if (args.length === 0) {
                 //no arguments, want currrent node
                 debug("node case");
-                breakpoint.node = currentLocation.node.id;
+                if (currentNode === null) {
+                  config.logger.log("Cannot determine current location.");
+                  return;
+                }
+                breakpoint.node = currentNode;
                 breakpoint.line = currentLine;
                 breakpoint.sourceId = currentSourceId;
               }
@@ -504,6 +560,10 @@ var command = {
               //line number
               else if (args[0][0] === "+" || args[0][0] === "-") {
                 debug("relative case");
+                if (currentLine === null) {
+                  config.logger.log("Cannot determine current location.");
+                  return;
+                }
                 let delta = parseInt(args[0], 10); //want an integer
                 debug("delta %d", delta);
 
@@ -563,6 +623,10 @@ var command = {
               //otherwise, it's a simple line number
               else {
                 debug("absolute case");
+                if (currentSourceId === null) {
+                  config.logger.log("Cannot determine current file.");
+                  return;
+                }
                 let line = parseInt(args[0], 10); //want an integer
                 debug("line %d", line);
 
@@ -653,6 +717,16 @@ var command = {
               return;
             }
 
+            function setPrompt(prompt) {
+              repl.activate.bind(repl)({
+                prompt,
+                context: {},
+                //this argument only *adds* things, so it's safe to set it to {}
+                ignoreUndefined: true
+                //set to true because it's set to true below :P
+              });
+            }
+
             async function interpreter(cmd) {
               cmd = cmd.trim();
               var cmdArgs, splitArgs;
@@ -686,11 +760,13 @@ var command = {
                 return await util.promisify(repl.stop.bind(repl))();
               }
 
-              let alreadyFinished = session.view(trace.finished);
+              let alreadyFinished = session.view(trace.finishedOrUnloaded);
+              let loadFailed = false;
 
               // If not finished, perform commands that require state changes
               // (other than quitting or resetting)
               if (!alreadyFinished) {
+                let stepSpinner = ora("Stepping...").start();
                 switch (cmd) {
                   case "o":
                     await session.stepOver();
@@ -724,6 +800,7 @@ var command = {
                     await session.continueUntilBreakpoint();
                     break;
                 }
+                stepSpinner.stop();
               } //otherwise, inform the user we can't do that
               else {
                 switch (cmd) {
@@ -731,17 +808,61 @@ var command = {
                   case "i":
                   case "u":
                   case "n":
-                  case ";":
                   case "c":
-                    config.logger.log(
-                      "Transaction has halted; cannot advance."
-                    );
-                    config.logger.log("");
+                    //are we "finished" because we've reached the end, or because
+                    //nothing is loaded?
+                    if (session.view(selectors.session.status.loaded)) {
+                      config.logger.log(
+                        "Transaction has halted; cannot advance."
+                      );
+                      config.logger.log("");
+                    } else {
+                      config.logger.log("No transaction loaded.");
+                      config.logger.log("");
+                    }
                 }
               }
               if (cmd === "r") {
                 //reset if given the reset command
-                await session.reset();
+                //(but not if nothing is loaded)
+                if (session.view(selectors.session.status.loaded)) {
+                  await session.reset();
+                } else {
+                  config.logger.log("No transaction loaded.");
+                  config.logger.log("");
+                }
+              }
+              if (cmd === "t") {
+                if (!session.view(selectors.session.status.loaded)) {
+                  let txSpinner = ora(
+                    DebugUtils.formatTransactionStartMessage()
+                  ).start();
+                  await session.load(cmdArgs);
+                  //if load succeeded
+                  if (session.view(selectors.session.status.success)) {
+                    txSpinner.succeed();
+                    //if successful, change prompt
+                    setPrompt(DebugUtils.formatPrompt(config.network, cmdArgs));
+                  } else {
+                    txSpinner.fail();
+                    loadFailed = true;
+                  }
+                } else {
+                  loadFailed = true;
+                  config.logger.log(
+                    "Please unload the current transaction before loading a new one."
+                  );
+                }
+              }
+              if (cmd === "T") {
+                if (session.view(selectors.session.status.loaded)) {
+                  await session.unload();
+                  config.logger.log("Transaction unloaded.");
+                  setPrompt(DebugUtils.formatPrompt(config.network));
+                } else {
+                  config.logger.log("No transaction to unload.");
+                  config.logger.log("");
+                }
               }
 
               // Check if execution has (just now) stopped.
@@ -797,9 +918,11 @@ var command = {
                   break;
                 case ";":
                 case "p":
-                  printFile();
-                  printInstruction();
-                  printState();
+                  if (session.view(selectors.session.status.loaded)) {
+                    printFile();
+                    printInstruction();
+                    printState();
+                  }
                   await printWatchExpressionsResults();
                   break;
                 case "o":
@@ -807,20 +930,36 @@ var command = {
                 case "u":
                 case "n":
                 case "c":
-                  if (!session.view(trace.finished)) {
+                  if (!session.view(trace.finishedOrUnloaded)) {
                     if (!session.view(solidity.current.source).source) {
                       printInstruction();
                     }
-
                     printFile();
                     printState();
                   }
                   await printWatchExpressionsResults();
                   break;
                 case "r":
-                  printAddressesAffected();
-                  printFile();
-                  printState();
+                  if (session.view(selectors.session.status.loaded)) {
+                    printAddressesAffected();
+                    printFile();
+                    printState();
+                  }
+                  break;
+                case "t":
+                  if (!loadFailed) {
+                    printAddressesAffected();
+                    printFile();
+                    printState();
+                  } else if (session.view(selectors.session.status.isError)) {
+                    let loadError = session.view(
+                      selectors.session.status.error
+                    );
+                    config.logger.log(loadError);
+                  }
+                  break;
+                case "T":
+                  //nothing to print
                   break;
                 default:
                   printHelp();
@@ -839,29 +978,41 @@ var command = {
                 cmd !== ":" &&
                 cmd !== "+" &&
                 cmd !== "r" &&
-                cmd !== "-"
+                cmd !== "-" &&
+                cmd !== "t" &&
+                cmd !== "T"
               ) {
                 lastCommand = cmd;
               }
             }
 
-            printAddressesAffected();
-            printHelp();
-            debug("Help printed");
-            printFile();
-            debug("File printed");
-            printState();
-            debug("State printed");
+            let prompt;
+
+            if (session.view(selectors.session.status.loaded)) {
+              startSpinner.succeed();
+              printAddressesAffected();
+              printHelp();
+              debug("Help printed");
+              printFile();
+              debug("File printed");
+              printState();
+              debug("State printed");
+              prompt = DebugUtils.formatPrompt(config.network, txHash);
+            } else {
+              if (session.view(selectors.session.status.isError)) {
+                startSpinner.fail();
+                config.logger.log(session.view(selectors.session.status.error));
+              } else {
+                startSpinner.succeed();
+              }
+              printHelp();
+              prompt = DebugUtils.formatPrompt(config.network);
+            }
 
             var repl = options.repl || new ReplManager(config);
 
             repl.start({
-              prompt:
-                "debug(" +
-                config.network +
-                ":" +
-                txHash.substring(0, 10) +
-                "...)> ",
+              prompt,
               interpreter: util.callbackify(interpreter),
               ignoreUndefined: true,
               done: done
