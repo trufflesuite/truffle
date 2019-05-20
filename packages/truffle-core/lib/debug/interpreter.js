@@ -60,7 +60,7 @@ class DebugInterpreter {
       //no arguments, want currrent node
       debug("node case");
       if (currentNode === null) {
-        this.config.logger.log("Cannot determine current location.");
+        this.printer.print("Cannot determine current location.");
         return;
       }
       breakpoint.node = currentNode;
@@ -72,11 +72,11 @@ class DebugInterpreter {
     else if (args[0] === "all") {
       if (setOrClear) {
         // only "B all" is legal, not "b all"
-        this.config.logger.log("Cannot add breakpoint everywhere.\n");
+        this.printer.print("Cannot add breakpoint everywhere.\n");
         return;
       }
       await this.session.removeAllBreakpoints();
-      this.config.logger.log("Removed all breakpoints.\n");
+      this.printer.print("Removed all breakpoints.\n");
       return;
     }
 
@@ -85,14 +85,14 @@ class DebugInterpreter {
     else if (args[0][0] === "+" || args[0][0] === "-") {
       debug("relative case");
       if (currentLine === null) {
-        this.config.logger.log("Cannot determine current location.");
+        this.printer.print("Cannot determine current location.");
         return;
       }
       let delta = parseInt(args[0], 10); //want an integer
       debug("delta %d", delta);
 
       if (isNaN(delta)) {
-        this.config.logger.log("Offset must be an integer.\n");
+        this.printer.print("Offset must be an integer.\n");
         return;
       }
 
@@ -111,7 +111,7 @@ class DebugInterpreter {
       //first let's get the line number as usual
       let line = parseInt(lineArg, 10); //want an integer
       if (isNaN(line)) {
-        this.config.logger.log("Line number must be an integer.\n");
+        this.printer.print("Line number must be an integer.\n");
         return;
       }
 
@@ -124,16 +124,16 @@ class DebugInterpreter {
       );
 
       if (matchingSources.length === 0) {
-        this.config.logger.log(`No source file found matching ${sourceArg}.\n`);
+        this.printer.print(`No source file found matching ${sourceArg}.\n`);
         return;
       } else if (matchingSources.length > 1) {
-        this.config.logger.log(
+        this.printer.print(
           `Multiple source files found matching ${sourceArg}.  Which did you mean?`
         );
         matchingSources.forEach(source =>
-          this.config.logger.log(source.sourcePath)
+          this.printer.print(source.sourcePath)
         );
-        this.config.logger.log("");
+        this.printer.print("");
         return;
       }
 
@@ -146,14 +146,14 @@ class DebugInterpreter {
     else {
       debug("absolute case");
       if (currentSourceId === null) {
-        this.config.logger.log("Cannot determine current file.");
+        this.printer.print("Cannot determine current file.");
         return;
       }
       let line = parseInt(args[0], 10); //want an integer
       debug("line %d", line);
 
       if (isNaN(line)) {
-        this.config.logger.log("Line number must be an integer.\n");
+        this.printer.print("Line number must be an integer.\n");
         return;
       }
 
@@ -170,7 +170,7 @@ class DebugInterpreter {
       //of course, this might result in finding that there's nowhere to
       //add it after that point
       if (breakpoint === null) {
-        this.config.logger.log(
+        this.printer.print(
           "Nowhere to add breakpoint at or beyond that location.\n"
         );
         return;
@@ -213,14 +213,12 @@ class DebugInterpreter {
     //cleared, report back that we can't do that
     if (setOrClear === alreadyExists) {
       if (setOrClear) {
-        this.config.logger.log(
+        this.printer.print(
           `Breakpoint at ${locationMessage} already exists.\n`
         );
         return;
       } else {
-        this.config.logger.log(
-          `No breakpoint at ${locationMessage} to remove.\n`
-        );
+        this.printer.print(`No breakpoint at ${locationMessage} to remove.\n`);
         return;
       }
     }
@@ -229,10 +227,10 @@ class DebugInterpreter {
     //also report back to the user on what happened
     if (setOrClear) {
       await this.session.addBreakpoint(breakpoint);
-      this.config.logger.log(`Breakpoint added at ${locationMessage}.\n`);
+      this.printer.print(`Breakpoint added at ${locationMessage}.\n`);
     } else {
       await this.session.removeBreakpoint(breakpoint);
-      this.config.logger.log(`Breakpoint removed at ${locationMessage}.\n`);
+      this.printer.print(`Breakpoint removed at ${locationMessage}.\n`);
     }
     return;
   }
@@ -251,9 +249,7 @@ class DebugInterpreter {
       prompt = DebugUtils.formatPrompt(this.config.network, this.txHash);
     } else {
       if (this.session.view(selectors.session.status.isError)) {
-        this.config.logger.log(
-          this.session.view(selectors.session.status.error)
-        );
+        this.printer.print(this.session.view(selectors.session.status.error));
       }
       this.printer.printHelp();
       prompt = DebugUtils.formatPrompt(this.config.network);
@@ -336,7 +332,7 @@ class DebugInterpreter {
             let count = parseInt(cmdArgs, 10);
             debug("cmdArgs=%s", cmdArgs);
             if (isNaN(count)) {
-              this.config.logger.log("Number of steps must be an integer.");
+              this.printer.print("Number of steps must be an integer.");
               break;
             }
             await this.session.advance(count);
@@ -360,11 +356,11 @@ class DebugInterpreter {
           //are we "finished" because we've reached the end, or because
           //nothing is loaded?
           if (this.session.view(selectors.session.status.loaded)) {
-            this.config.logger.log("Transaction has halted; cannot advance.");
-            this.config.logger.log("");
+            this.printer.print("Transaction has halted; cannot advance.");
+            this.printer.print("");
           } else {
-            this.config.logger.log("No transaction loaded.");
-            this.config.logger.log("");
+            this.printer.print("No transaction loaded.");
+            this.printer.print("");
           }
       }
     }
@@ -374,8 +370,8 @@ class DebugInterpreter {
       if (this.session.view(selectors.session.status.loaded)) {
         await this.session.reset();
       } else {
-        this.config.logger.log("No transaction loaded.");
-        this.config.logger.log("");
+        this.printer.print("No transaction loaded.");
+        this.printer.print("");
       }
     }
     if (cmd === "t") {
@@ -393,7 +389,7 @@ class DebugInterpreter {
         }
       } else {
         loadFailed = true;
-        this.config.logger.log(
+        this.printer.print(
           "Please unload the current transaction before loading a new one."
         );
       }
@@ -401,27 +397,27 @@ class DebugInterpreter {
     if (cmd === "T") {
       if (this.session.view(selectors.session.status.loaded)) {
         await this.session.unload();
-        this.config.logger.log("Transaction unloaded.");
+        this.printer.print("Transaction unloaded.");
         this.setPrompt(DebugUtils.formatPrompt(this.config.network));
       } else {
-        this.config.logger.log("No transaction to unload.");
-        this.config.logger.log("");
+        this.printer.print("No transaction to unload.");
+        this.printer.print("");
       }
     }
 
     // Check if execution has (just now) stopped.
     if (this.session.view(trace.finished) && !alreadyFinished) {
-      this.config.logger.log("");
+      this.printer.print("");
       //check if transaction failed
       if (!this.session.view(selectors.session.transaction.receipt).status) {
-        this.config.logger.log("Transaction halted with a RUNTIME ERROR.");
-        this.config.logger.log("");
-        this.config.logger.log(
+        this.printer.print("Transaction halted with a RUNTIME ERROR.");
+        this.printer.print("");
+        this.printer.print(
           "This is likely due to an intentional halting expression, like assert(), require() or revert(). It can also be due to out-of-gas exceptions. Please inspect your transaction parameters and contract code to determine the meaning of this error."
         );
       } else {
         //case if transaction succeeded
-        this.config.logger.log("Transaction completed successfully.");
+        this.printer.print("Transaction completed successfully.");
       }
     }
 
@@ -499,7 +495,7 @@ class DebugInterpreter {
           this.printer.printState();
         } else if (this.session.view(selectors.session.status.isError)) {
           let loadError = this.session.view(selectors.session.status.error);
-          this.config.logger.log(loadError);
+          this.printer.print(loadError);
         }
         break;
       case "T":

@@ -32,6 +32,10 @@ class DebugPrinter {
     };
   }
 
+  print(...args) {
+    this.config.logger.log(...args);
+  }
+
   printAddressesAffected() {
     const affectedInstances = this.session.view(session.info.affectedInstances);
 
