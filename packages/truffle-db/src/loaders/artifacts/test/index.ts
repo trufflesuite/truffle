@@ -58,68 +58,64 @@ query GetWorkspaceBytecode($id: ID!) {
   }
 }`;
 
-describe("Bytecodes", () => {
-  it("loads create bytecodes", async () => {
-    // arrange
-    const expectedId = generateId({ bytes: Migrations.bytecode });
-    const loader = new ArtifactsLoader(db);
-
-    // act
-    await loader.load();
-
-    // assert
-    const {
-      data: {
-        workspace: {
-          bytecode: {
-            bytes
-          }
-        }
-      }
-    } = await db.query(GetWorkspaceBytecode, { id: expectedId });
-
-    expect(bytes).toEqual(Migrations.bytecode);
-  });
-});
-
-
 const GetWorkspaceSource: boolean = gql`
 query GetWorkspaceSource($id: ID!) {
   workspace {
     source(id: $id) {
       id
       contents
+      sourcePath
     }
   }
 }`;
 
-
-describe("Sources", () => {
-  it("loads contract sources", async () => {
-    // arrange
-    const expectedId = generateId({
-      contents: Migrations.source,
-      sourcePath: Migrations.sourcePath
-    });
-    const loader = new ArtifactsLoader(db);
-
-    // act
-    await loader.load();
-
-    // assert
-    const {
-      data: {
-        workspace: {
-          source: {
+const GetWorkspaceContract = gql`
+query GetWorkspaceContract($id:ID!){
+  workspace {
+    contract(id:$id) {
+      id
+      name
+      abi {
+        json
+      }
+      constructor {
+        createBytecode {
+          bytes
+        }
+      }
+      sourceContract {
+        source {
+          contents
+          sourcePath
+        }
+        ast {
+          json
+        }
+        source {
+          contents
+          sourcePath
+        }
+      }
+      compilation {
+        compiler {
+          name
+          version
+        }
+        sources {
+          contents
+          sourcePath
+        }
+        contracts {
+          name
+          source {
             contents
+            sourcePath
           }
         }
       }
-    } = await db.query(GetWorkspaceSource, { id: expectedId });
-
-    expect(contents).toEqual(Migrations.source);
-  });
-});
+    }
+  }
+}`;
 
 const GetWorkspaceCompilation: boolean = gql`
 query getWorkspaceCompilation($id: ID!) {
