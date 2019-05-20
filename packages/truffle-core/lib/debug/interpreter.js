@@ -31,8 +31,8 @@ function watchExpressionAnalytics(raw) {
 
 class DebugInterpreter {
   constructor(config, session, txHash) {
-    this.config = config;
     this.session = session;
+    this.network = config.network;
     this.printer = new DebugPrinter(config, session);
     this.txHash = txHash;
     this.lastCommand = "n";
@@ -246,13 +246,13 @@ class DebugInterpreter {
       debug("File printed");
       this.printer.printState();
       debug("State printed");
-      prompt = DebugUtils.formatPrompt(this.config.network, this.txHash);
+      prompt = DebugUtils.formatPrompt(this.network, this.txHash);
     } else {
       if (this.session.view(selectors.session.status.isError)) {
         this.printer.print(this.session.view(selectors.session.status.error));
       }
       this.printer.printHelp();
-      prompt = DebugUtils.formatPrompt(this.config.network);
+      prompt = DebugUtils.formatPrompt(this.network);
     }
 
     this.repl.start({
@@ -382,7 +382,7 @@ class DebugInterpreter {
         if (this.session.view(selectors.session.status.success)) {
           txSpinner.succeed();
           //if successful, change prompt
-          this.setPrompt(DebugUtils.formatPrompt(this.config.network, cmdArgs));
+          this.setPrompt(DebugUtils.formatPrompt(this.network, cmdArgs));
         } else {
           txSpinner.fail();
           loadFailed = true;
@@ -398,7 +398,7 @@ class DebugInterpreter {
       if (this.session.view(selectors.session.status.loaded)) {
         await this.session.unload();
         this.printer.print("Transaction unloaded.");
-        this.setPrompt(DebugUtils.formatPrompt(this.config.network));
+        this.setPrompt(DebugUtils.formatPrompt(this.network));
       } else {
         this.printer.print("No transaction to unload.");
         this.printer.print("");
