@@ -52,7 +52,7 @@ describe("Parser", () => {
       events: {
         emit: () => {}
       },
-      solcVersion: {
+      solcConfig: {
         version: "native"
       }
     };
