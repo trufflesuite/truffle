@@ -23,7 +23,7 @@ describe("Parser", () => {
       solcConfig: {
         version: null
       },
-      eventManager: {
+      events: {
         emit: () => {}
       }
     };
@@ -69,7 +69,7 @@ describe("Parser", () => {
 
   it("should return correct imports with docker solc", () => {
     const options = {
-      eventManager: {
+      events: {
         emit: () => {}
       },
       solcConfig: {

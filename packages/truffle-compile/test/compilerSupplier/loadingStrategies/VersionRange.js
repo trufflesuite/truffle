@@ -6,7 +6,7 @@ const { VersionRange } = require("../../../compilerSupplier/loadingStrategies");
 const Config = require("truffle-config");
 const config = Config.default();
 let versionRangeOptions = {
-  eventManager: config.eventManager,
+  events: config.events,
   solcConfig: config.compilers.solc
 };
 const instance = new VersionRange(versionRangeOptions);

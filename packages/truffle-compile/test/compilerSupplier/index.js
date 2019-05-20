@@ -11,7 +11,7 @@ const {
 } = require("../../compilerSupplier/loadingStrategies");
 let supplier;
 const supplierOptions = {
-  eventManager: {
+  events: {
     emit: () => {}
   }
 };

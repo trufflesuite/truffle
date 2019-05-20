@@ -42,7 +42,7 @@ describe("commands/unbox.js", () => {
         logger: { log: () => {} },
         working_directory: tempDir
       });
-      mockConfig.eventManager = {
+      mockConfig.events = {
         emit: () => {}
       };
       sinon.stub(Config, "default").returns({ with: () => mockConfig });

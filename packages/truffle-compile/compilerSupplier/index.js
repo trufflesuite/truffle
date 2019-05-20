@@ -11,9 +11,9 @@ const {
 } = require("./loadingStrategies");
 
 class CompilerSupplier {
-  constructor({ eventManager, solcConfig }) {
+  constructor({ events, solcConfig }) {
     const { version, docker, compilerRoots } = solcConfig;
-    this.eventManager = eventManager;
+    this.events = events;
     this.version = version;
     this.docker = docker;
     this.compilerRoots = compilerRoots;
@@ -21,7 +21,7 @@ class CompilerSupplier {
     if (version) this.strategyOptions.version = version;
     if (docker) this.strategyOptions.docker = compilerRoots;
     if (compilerRoots) this.strategyOptions.compilerRoots = compilerRoots;
-    if (eventManager) this.strategyOptions.eventManager = eventManager;
+    if (events) this.strategyOptions.events = events;
   }
 
   badInputError(userSpecification) {

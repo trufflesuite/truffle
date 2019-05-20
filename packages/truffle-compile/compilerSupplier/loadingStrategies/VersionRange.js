@@ -99,17 +99,17 @@ class VersionRange extends LoadingStrategy {
 
   async getSolcByUrlAndCache(fileName, index = 0) {
     const url = this.config.compilerRoots[index] + fileName;
-    const { eventManager } = this.config;
-    eventManager.emit("downloadCompiler:start", {
+    const { events } = this.config;
+    events.emit("downloadCompiler:start", {
       attemptNumber: index + 1
     });
     try {
       const response = await request.get(url);
-      eventManager.emit("downloadCompiler:succeed");
+      events.emit("downloadCompiler:succeed");
       this.addFileToCache(response, fileName);
       return this.compilerFromString(response);
     } catch (error) {
-      eventManager.emit("downloadCompiler:fail");
+      events.emit("downloadCompiler:fail");
       if (index >= this.config.compilerRoots.length - 1) {
         throw this.errors("noRequest", "compiler URLs", error);
       }
@@ -139,19 +139,19 @@ class VersionRange extends LoadingStrategy {
   }
 
   getSolcVersions(index = 0) {
-    const { eventManager } = this.config;
-    eventManager.emit("fetchSolcList:start", { attemptNumber: index + 1 });
+    const { events } = this.config;
+    events.emit("fetchSolcList:start", { attemptNumber: index + 1 });
     if (!this.config.compilerRoots || this.config.compilerRoots.length < 1) {
-      eventManager.emit("fetchSolcList:fail");
+      events.emit("fetchSolcList:fail");
       throw this.errors("noUrl");
     }
     return request(this.config.compilerRoots[index] + "list.json")
       .then(list => {
-        eventManager.emit("fetchSolcList:succeed");
+        events.emit("fetchSolcList:succeed");
         return JSON.parse(list);
       })
       .catch(error => {
-        eventManager.emit("fetchSolcList:fail");
+        events.emit("fetchSolcList:fail");
         spinner.stop();
         if (index >= this.config.compilerRoots.length - 1) {
           throw this.errors("noRequest", "version URLs", error);

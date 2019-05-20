@@ -54,7 +54,7 @@ const command = {
     const { CompilerSupplier } = require("truffle-compile");
     const supplier = new CompilerSupplier({
       solcConfig: config.compilers.solc,
-      eventManager: config.eventManager
+      events: config.events
     });
     config.list !== undefined
       ? command.listVersions(supplier, config, done)

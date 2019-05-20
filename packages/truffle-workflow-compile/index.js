@@ -90,9 +90,9 @@ const Contracts = {
       );
 
       if (numberOfCompiledContracts === 0)
-        options.eventManager.emit("compile:nothingToCompile");
+        options.events.emit("compile:nothingToCompile");
 
-      options.eventManager.emit("compile:finish", {
+      options.events.emit("compile:finish", {
         globalConfig: config,
         compilersInfo: config.compilersInfo
       });

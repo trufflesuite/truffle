@@ -105,11 +105,11 @@ const command = {
 
     const unboxOptions = Object.assign({}, options, { logger: config.logger });
 
-    config.eventManager.emit("unbox:start");
+    config.events.emit("unbox:start");
 
     Box.unbox(url, destination, unboxOptions, config)
       .then(boxConfig => {
-        config.eventManager.emit("unbox:succeed", { boxConfig });
+        config.events.emit("unbox:succeed", { boxConfig });
         // This is a timeout to give time to the eventManager
         // to handle the jobFinished event
         setTimeout(() => {

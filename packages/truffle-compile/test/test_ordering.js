@@ -13,8 +13,7 @@ let compileOptions = {
         optimizer: {
           enabled: false,
           runs: 200
-        },
-        evmVersion: "byzantium"
+        }
       }
     }
   },
@@ -22,7 +21,7 @@ let compileOptions = {
 };
 let supplierOptions = {
   solcConfig: compileOptions.compilers.solc,
-  eventManager: {
+  events: {
     emit: () => {}
   }
 };

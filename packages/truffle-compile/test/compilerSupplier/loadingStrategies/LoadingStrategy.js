@@ -8,7 +8,7 @@ describe("LoadingStrategy base class", () => {
   beforeEach(() => {
     loadingStrategyOptions = {
       version: null,
-      eventManager: {
+      events: {
         emit: () => {}
       }
     };

@@ -20,7 +20,7 @@ describe("CompilerSupplier", function() {
     let compileConfig;
 
     const options = {
-      eventManager: {
+      events: {
         emit: () => {}
       },
       contracts_directory: "",

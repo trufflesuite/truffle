@@ -24,7 +24,7 @@ class Config {
       logger: this.logger,
       globalConfig: this
     };
-    this.eventManager = new EventManager(eventManagerOptions);
+    this.events = new EventManager(eventManagerOptions);
 
     // This is a list of multi-level keys with defaults
     // we need to _.merge. Using this list for safety
@@ -388,7 +388,7 @@ Config.detect = (options = {}, filename) => {
 // When new options are passed in, a new eventManager needs to be
 // attached as it might override some options (e.g. { quiet: true })
 const attachNewEventManager = (config, newOptions) => {
-  const currentEventManagerOptions = config.eventManager.initializationOptions;
+  const currentEventManagerOptions = config.events.initializationOptions;
   const { quiet, logger, globalConfig, reporters } = newOptions;
   const optionsToMerge = {};
 
@@ -404,7 +404,7 @@ const attachNewEventManager = (config, newOptions) => {
     optionsToMerge
   );
 
-  config.eventManager = new EventManager(newEventManagerOptions);
+  config.events = new EventManager(newEventManagerOptions);
 };
 
 Config.load = (file, options) => {

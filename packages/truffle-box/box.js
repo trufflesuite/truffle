@@ -30,7 +30,7 @@ function parseSandboxOptions(options) {
 
 const Box = {
   unbox: async (url, destination, options = {}, config) => {
-    const { eventManager } = config;
+    const { events } = config;
     let tempDirCleanup;
     logger = options.logger || { log: () => {} };
     const unpackBoxOptions = {
@@ -40,11 +40,11 @@ const Box = {
 
     try {
       await Box.checkDir(options, destination);
-      const tempDir = await utils.setUpTempDirectory(eventManager);
+      const tempDir = await utils.setUpTempDirectory(events);
       tempDirPath = tempDir.path;
       tempDirCleanup = tempDir.cleanupCallback;
 
-      await utils.downloadBox(url, tempDirPath, eventManager);
+      await utils.downloadBox(url, tempDirPath, events);
 
       const boxConfig = await utils.readBoxConfig(tempDirPath);
 
@@ -55,16 +55,16 @@ const Box = {
         unpackBoxOptions
       );
 
-      eventManager.emit("unbox:cleaningTempFiles:start");
+      events.emit("unbox:cleaningTempFiles:start");
       tempDirCleanup();
-      eventManager.emit("unbox:cleaningTempFiles:succeed");
+      events.emit("unbox:cleaningTempFiles:succeed");
 
-      await utils.setUpBox(boxConfig, destination, eventManager);
+      await utils.setUpBox(boxConfig, destination, events);
 
       return boxConfig;
     } catch (error) {
       if (tempDirCleanup) tempDirCleanup();
-      eventManager.emit("unbox:fail");
+      events.emit("unbox:fail");
       throw new Error(error);
     }
   },

@@ -67,7 +67,7 @@ compile.display = function(paths, options) {
 
     return contract;
   });
-  options.eventManager.emit("compile:compiledSources", sourceFileNames);
+  options.events.emit("compile:compiledSources", sourceFileNames);
 };
 
 // -------- End of common with truffle-compile --------

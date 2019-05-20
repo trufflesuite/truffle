@@ -17,11 +17,11 @@ describe("truffle-box Box", () => {
   beforeEach(() => {
     fs.ensureDirSync(destination);
     config = Config.default();
-    sinon.stub(config.eventManager, "emit");
+    sinon.stub(config.events, "emit");
   });
   afterEach(() => {
     fs.removeSync(destination);
-    config.eventManager.emit.restore();
+    config.events.emit.restore();
   });
 
   describe(".unbox()", () => {

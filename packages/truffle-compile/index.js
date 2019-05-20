@@ -123,7 +123,7 @@ const compile = function(sources, options, callback) {
   // Load solc module only when compilation is actually required.
   const supplier = new CompilerSupplier({
     solcConfig: options.compilers.solc,
-    eventManager: options.eventManager
+    events: options.events
   });
 
   supplier
@@ -147,7 +147,7 @@ const compile = function(sources, options, callback) {
       }
 
       if (warnings.length > 0) {
-        options.eventManager.emit("compile:warnings", { warnings });
+        options.events.emit("compile:warnings", { warnings });
       }
 
       if (errors.length > 0) {
@@ -437,7 +437,7 @@ compile.display = (paths, options) => {
       return contract;
     })
     .filter(name => name);
-  options.eventManager.emit("compile:compiledSources", { sourceFileNames });
+  options.events.emit("compile:compiledSources", { sourceFileNames });
 };
 
 compile.CompilerSupplier = CompilerSupplier;

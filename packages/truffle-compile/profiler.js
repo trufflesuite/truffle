@@ -210,7 +210,7 @@ module.exports = {
 
       const supplierOptions = {
         solcConfig: options.compilers.solc,
-        eventManager: options.eventManager
+        events: options.events
       };
       // Load compiler
       const supplier = new CompilerSupplier(supplierOptions);

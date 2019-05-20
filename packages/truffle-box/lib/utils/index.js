@@ -6,14 +6,14 @@ const cwd = require("process").cwd();
 const path = require("path");
 
 module.exports = {
-  downloadBox: async (url, destination, eventManager) => {
-    eventManager.emit("unbox:downloadingBox:start");
+  downloadBox: async (url, destination, events) => {
+    events.emit("unbox:downloadingBox:start");
     try {
       await unbox.verifyURL(url);
       await unbox.fetchRepository(url, destination);
-      eventManager.emit("unbox:downloadingBox:succeed");
+      events.emit("unbox:downloadingBox:succeed");
     } catch (error) {
-      eventManager.emit("unbox:fail");
+      events.emit("unbox:fail");
       throw new Error(error);
     }
   },
@@ -36,8 +36,8 @@ module.exports = {
     }
   },
 
-  setUpTempDirectory: eventManager => {
-    eventManager.emit("unbox:preparingToDownload:start");
+  setUpTempDirectory: events => {
+    events.emit("unbox:preparingToDownload:start");
     return new Promise((resolve, reject) => {
       const options = {
         dir: cwd,
@@ -45,11 +45,11 @@ module.exports = {
       };
       tmp.dir(options, (error, dir, cleanupCallback) => {
         if (error) {
-          eventManager.emit("unbox:fail");
+          events.emit("unbox:fail");
           return reject(error);
         }
 
-        eventManager.emit("unbox:preparingToDownload:succeed");
+        events.emit("unbox:preparingToDownload:succeed");
         resolve({
           path: path.join(dir, "box"),
           cleanupCallback
@@ -63,13 +63,13 @@ module.exports = {
     await unbox.copyTempIntoDestination(tempDir, destination, unpackBoxOptions);
   },
 
-  setUpBox: async (boxConfig, destination, eventManager) => {
-    eventManager.emit("unbox:settingUpBox:start");
+  setUpBox: async (boxConfig, destination, events) => {
+    events.emit("unbox:settingUpBox:start");
     try {
       await unbox.installBoxDependencies(boxConfig, destination);
-      eventManager.emit("unbox:settingUpBox:succeed");
+      events.emit("unbox:settingUpBox:succeed");
     } catch (error) {
-      eventManager.emit("unbox:fail");
+      events.emit("unbox:fail");
       throw new Error(error);
     }
   }

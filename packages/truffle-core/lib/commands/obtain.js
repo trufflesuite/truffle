@@ -19,12 +19,12 @@ module.exports = {
     const Config = require("truffle-config");
     const config = Config.default().with(options);
     const supplierOptions = {
-      eventManager: config.eventManager,
+      events: config.events,
       solcConfig: config.compilers.solc
     };
     const supplier = new CompilerSupplier(supplierOptions);
 
-    config.eventManager.emit("obtain:start");
+    config.events.emit("obtain:start");
 
     if (options.solc) {
       return this.downloadAndCacheSolc({ config, options, supplier })
@@ -42,18 +42,18 @@ module.exports = {
   },
 
   downloadAndCacheSolc: async ({ config, options, supplier }) => {
-    const { eventManager } = config;
+    const { events } = config;
     const version = options.solc;
     try {
       const solc = await supplier.downloadAndCacheSolc(version);
-      return eventManager.emit("obtain:succeed", {
+      return events.emit("obtain:succeed", {
         compiler: {
           version: solc.version(),
           name: "Solidity"
         }
       });
     } catch (error) {
-      return eventManager.emit("obtain:fail");
+      return events.emit("obtain:fail");
     }
   }
 };
