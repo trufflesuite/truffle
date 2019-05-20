@@ -48,8 +48,15 @@ describe("Parser", () => {
   });
 
   it("should return correct imports with native solc", () => {
-    const config = { version: "native" };
-    const nativeSupplier = new CompilerSupplier(config);
+    const options = {
+      events: {
+        emit: () => {}
+      },
+      solcVersion: {
+        version: "native"
+      }
+    };
+    const nativeSupplier = new CompilerSupplier(options);
     nativeSupplier.load().then(nativeSolc => {
       const imports = Parser.parseImports(source, nativeSolc);
 
