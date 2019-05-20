@@ -3,14 +3,6 @@ import { TruffleDB } from "truffle-db/db";
 import * as Contracts from "truffle-workflow-compile";
 import { generateId } from "truffle-db/helpers";
 
-const GetContractNames = gql`
-query GetContractNames {
-  artifacts {
-    contractNames
-  }
-}
-`;
-
 const GetBytecode = gql`
 query GetBytecode($name: String!) {
   artifacts {
@@ -229,15 +221,6 @@ export class ArtifactsLoader {
   }
 
   async load (): Promise<void> {
-    const {
-      data: {
-        artifacts: {
-          contractNames
-        }
-      }
-    } = await this.db.query(GetContractNames);
-
-
     await this.loadCompilation(this.config);
   }
 
