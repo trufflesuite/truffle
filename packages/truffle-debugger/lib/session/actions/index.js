@@ -1,9 +1,29 @@
 export const START = "SESSION_START";
-export function start(txHash, provider) {
+export function start(provider, txHash) {
   return {
     type: START,
-    txHash,
-    provider
+    provider,
+    txHash //OPTIONAL
+  };
+}
+
+export const LOAD_TRANSACTION = "LOAD_TRANSACTION";
+export function loadTransaction(txHash) {
+  return {
+    type: LOAD_TRANSACTION,
+    txHash
+  };
+}
+
+export const INTERRUPT = "SESSION_INTERRUPT";
+export function interrupt() {
+  return { type: INTERRUPT };
+}
+
+export const UNLOAD_TRANSACTION = "UNLOAD_TRANSACTION";
+export function unloadTransaction() {
+  return {
+    type: UNLOAD_TRANSACTION
   };
 }
 
@@ -14,11 +34,25 @@ export function ready() {
   };
 }
 
+export const WAIT = "SESSION_WAIT";
+export function wait() {
+  return {
+    type: WAIT
+  };
+}
+
 export const ERROR = "SESSION_ERROR";
 export function error(error) {
   return {
     type: ERROR,
     error
+  };
+}
+
+export const CLEAR_ERROR = "CLEAR_ERROR";
+export function clearError() {
+  return {
+    type: CLEAR_ERROR
   };
 }
 

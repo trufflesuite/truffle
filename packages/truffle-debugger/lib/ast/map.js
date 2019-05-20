@@ -30,7 +30,12 @@ export function rangeNodes(node, pointer = "") {
   } else if (node instanceof Object) {
     let results = [];
 
-    if (node.src) {
+    if (node.src !== undefined && node.id !== undefined) {
+      //there are some "pseudo-nodes" with a src but no id.
+      //these will cause problems, so we want to exclude them.
+      //(to my knowledge this only happens with the externalReferences
+      //to an InlineAssembly node, so excluding them just means we find
+      //the InlineAssembly node instead, which is fine)
       results.push({ pointer, range: getRange(node) });
     }
 
@@ -51,11 +56,10 @@ export function findOverlappingRange(node, sourceStart, sourceLength) {
   let ranges = rangeNodes(node);
   let tree = new IntervalTree();
 
-  ranges.forEach(({ range, pointer }) => {
+  for (let { range, pointer } of ranges) {
     let [start, end] = range;
-
     tree.insert(start, end, { range, pointer });
-  });
+  }
 
   let sourceEnd = sourceStart + sourceLength;
 

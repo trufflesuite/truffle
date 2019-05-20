@@ -34,6 +34,22 @@ describe("Compile - solidity ^0.4.0", function() {
   let inheritedSource = null;
   let solc = null; // gets loaded via supplier
 
+  const compileOptions = {
+    contracts_directory: "",
+    compilers: {
+      solc: {
+        version: "0.4.25",
+        settings: {
+          optimizer: {
+            enabled: false,
+            runs: 200
+          }
+        }
+      }
+    },
+    quiet: true
+  };
+
   before("get solc", async function() {
     this.timeout(40000);
 

@@ -12,6 +12,10 @@ export namespace Definition {
     return definition.typeDescriptions.typeIdentifier;
   }
 
+  export function typeString(definition: AstDefinition): string {
+    return definition.typeDescriptions.typeString;
+  }
+
   /**
    * returns basic type class for a variable definition node
    * e.g.:

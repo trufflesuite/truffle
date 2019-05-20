@@ -407,14 +407,17 @@ describe("Methods", function() {
       });
     });
 
-    it("errors with receipt and revert message", async function() {
+    it("errors with failed tx message", async function() {
       const example = await Example.new(1);
       try {
         await example.triggerRequireError();
         assert.fail();
       } catch (e) {
-        assert(e.message.includes("revert"));
-        assert(e.receipt.status === false);
+        assert(
+          e.message.includes("failing transaction"),
+          "should return failed tx message!"
+        );
+        assert(e.receipt === undefined, "Expected no receipt");
       }
     });
 
@@ -429,18 +432,21 @@ describe("Methods", function() {
       }
     });
 
-    it("errors with receipt & assert message when gas not specified", async function() {
+    it("errors with failed tx message when gas not specified", async function() {
       const example = await Example.new(1);
       try {
         await example.triggerAssertError();
         assert.fail();
       } catch (e) {
-        assert(e.message.includes("invalid opcode"));
-        assert(e.receipt.status === false);
+        assert(
+          e.message.includes("failing transaction"),
+          "should return failed tx message!"
+        );
+        assert(e.receipt === undefined, "Excected no receipt");
       }
     });
 
-    it("errors with receipt & assert message on internal OOG", async function() {
+    it("errors with gas allowance error on internal OOG", async function() {
       this.timeout(25000);
 
       const example = await Example.new(1);
@@ -448,8 +454,11 @@ describe("Methods", function() {
         await example.runsOutOfGas();
         assert.fail();
       } catch (e) {
-        assert(e.message.includes("invalid opcode"));
-        assert(e.receipt.status === false);
+        assert(
+          e.message.includes("gas required exceeds allowance"),
+          "should return gas allowance error"
+        );
+        assert(e.receipt === undefined, "Expected no receipt");
       }
     });
 

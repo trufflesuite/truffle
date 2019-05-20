@@ -1,6 +1,6 @@
 const debug = require("debug")("workflow-compile");
 const mkdirp = require("mkdirp");
-const { callbackify, promisify } = require("util");
+const { promisify } = require("util");
 const Config = require("truffle-config");
 const solcCompile = require("truffle-compile");
 const vyperCompile = require("truffle-compile-vyper");
@@ -71,33 +71,39 @@ const Contracts = {
   // network_id: network id to link saved contract artifacts.
   // quiet: Boolean. Suppress output. Defaults to false.
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
-  compile: callbackify(async function(options) {
-    const config = prepareConfig(options);
+  compile: async function(options, callback) {
+    const callbackPassed = typeof callback === "function";
+    try {
+      const config = prepareConfig(options);
 
-    options.eventManager.emit("compile:start");
+      const compilers = config.compiler
+        ? [config.compiler]
+        : Object.keys(config.compilers);
 
-    const compilers = config.compiler
-      ? [config.compiler]
-      : Object.keys(config.compilers);
+      const compilations = await this.compileSources(config, compilers);
 
-    const compilations = await this.compileSources(config, compilers);
+      const numberOfCompiledContracts = compilations.reduce(
+        (number, compilation) => {
+          return number + Object.keys(compilation.contracts).length;
+        },
+        0
+      );
 
-    const numberOfCompiledContracts = compilations.reduce(
-      (number, compilation) => {
-        return number + Object.keys(compilation.contracts).length;
-      },
-      0
-    );
+      if (numberOfCompiledContracts === 0)
+        options.eventManager.emit("compile:nothingToCompile");
 
-    if (numberOfCompiledContracts === 0)
-      options.eventManager.emit("compile:nothingToCompile");
-
-    options.eventManager.emit("compile:finish", {
-      globalConfig: config,
-      compilersInfo: config.compilersInfo
-    });
-    return await this.collectCompilations(compilations);
-  }),
+      options.eventManager.emit("compile:finish", {
+        globalConfig: config,
+        compilersInfo: config.compilersInfo
+      });
+      const result = await this.collectCompilations(compilations);
+      if (callbackPassed) return callback(null, result);
+      return result;
+    } catch (error) {
+      if (callbackPassed) return callback(error);
+      throw new Error(error);
+    }
+  },
 
   compileSources: async function(config, compilers) {
     return Promise.all(

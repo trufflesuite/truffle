@@ -68,8 +68,16 @@ describe("Parser", () => {
   });
 
   it("should return correct imports with docker solc", () => {
-    const config = { docker: true, version: "0.4.25" };
-    const dockerSupplier = new CompilerSupplier(config);
+    const options = {
+      eventManager: {
+        emit: () => {}
+      },
+      solcConfig: {
+        docker: true,
+        version: "0.4.25"
+      }
+    };
+    const dockerSupplier = new CompilerSupplier(options);
     dockerSupplier.load().then(dockerSolc => {
       const imports = Parser.parseImports(source, dockerSolc);
 

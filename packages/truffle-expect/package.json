@@ -1,9 +1,11 @@
 {
   "name": "truffle-expect",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Simple module for ensuring specific options are passed to a function",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "mocha"
+  },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-expect",
   "keywords": [
     "truffle",
@@ -13,11 +15,14 @@
   "author": "Tim Coulter <tim.coulter@consensys.net>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-expect/issues"
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-expect#readme",
+  "homepage": "https://github.com/trufflesuite/truffle/blob/master/packages/truffle-expect#readme",
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
+  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e",
+  "devDependencies": {
+    "mocha": "5.2.0"
+  }
 }

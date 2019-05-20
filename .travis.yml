@@ -22,13 +22,10 @@ matrix:
       env: COVERAGE=true
   allow_failures:
     - node_js: 8
-      env: GETH=true
-    - node_js: 8
       env: COVERAGE=true
 
-
 install:
-  - npm run bootstrap
+  - yarn bootstrap
 
 cache:
   directories:
@@ -36,7 +33,7 @@ cache:
     - $(npm config get prefix)/lib/node_modules # globally installed stuff (i.e. lerna)
 
 script:
-  - npm run ci
+  - yarn ci
 
 notifications:
   slack:

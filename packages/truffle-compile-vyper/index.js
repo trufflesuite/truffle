@@ -95,7 +95,7 @@ function execVyper(options, source_path, callback) {
   }
   const command = `vyper -f${formats.join(",")} ${source_path}`;
 
-  exec(command, function(err, stdout, stderr) {
+  exec(command, { maxBuffer: 600 * 1024 }, function(err, stdout, stderr) {
     if (err)
       return callback(
         `${stderr}\n${colors.red(

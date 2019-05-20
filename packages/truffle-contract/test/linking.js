@@ -145,6 +145,7 @@ describe("Library linking with contract objects", function() {
 
     const config = Config.default().with({
       contracts_directory: path.join(__dirname, "sources"),
+      quiet: true,
       compilers: {
         solc: {
           version: "0.5.0",
@@ -152,8 +153,7 @@ describe("Library linking with contract objects", function() {
             optimizer: {
               enabled: false,
               runs: 200
-            },
-            evmVersion: "byzantium"
+            }
           }
         }
       }

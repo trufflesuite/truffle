@@ -244,8 +244,7 @@ describe("CompilerSupplier", function() {
                 optimizer: {
                   enabled: false,
                   runs: 200
-                },
-                evmVersion: "byzantium"
+                }
               }
             }
           },
