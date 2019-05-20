@@ -237,51 +237,54 @@ export class ArtifactsLoader {
       }
     } = await this.db.query(GetContractNames);
 
-    if(this.config) {
-      await this.loadCompilation(this.config);
-    }
-    await this.loadBytecodes(contractNames);
-    await this.loadSources(contractNames);
 
+    await this.loadCompilation(this.config);
   }
 
-  async loadBytecodes(contractNames: string[]) {
-    const createBytecodes = await Promise.all(contractNames.map(
-      async (name) =>
-        (await this.db.query(GetBytecode, { name }))
-          .data
-          .artifacts
-          .contract
-          .constructor
-          .createBytecode
-    ));
+  async loadCompilationContracts(compilation: object, compilationId: string) {
+    let contracts = [];
+    let contractIds = [];
+    for(let contract in compilation) {
+      let contractObject = {
+        name: compilation[contract]["contract_name"],
+        abi: {
+          json: JSON.stringify(compilation[contract]["abi"])
+        },
+        compilation: {
+          id: compilationId
+        },
+        sourceContract: {
+          index: +contract
+        },
+        constructor: {
+          createBytecode: { id: generateId({ bytes: compilation[contract]["bytecode"] }) }
+        }
+      };
 
-    const bytecodes = [...createBytecodes];
+      contracts.push(contractObject);
+    }
+
+    await this.db.query(AddContracts, { contracts });
+
+  }
+  async loadCompilationBytecodes(compilation: object) {
+    let bytecodes = [];
+    for(let contract in compilation) {
+      let bytecodeObject = {
+        bytes: compilation[contract]["bytecode"]
+      };
+
+      let bytecodeId = generateId({ bytes: compilation[contract]["bytecode"] })
+
+      bytecodes.push(bytecodeObject);
+    }
 
     await this.db.query(AddBytecodes, { bytecodes });
   }
-
-  async loadSources(contractNames: string[]) {
-    const contractSources = await Promise.all(contractNames.map(
-      async (name) =>
-        (await this.db.query(GetSource, { name }))
-          .data
-          .artifacts
-          .contract
-          .sourceContract
-          .source
-    ));
-
-    const sources = [...contractSources];
-
-    await this.db.query(AddSources, { sources });
-  }
-
   async loadCompilationSources(compilation: object) {
     let sources = [];
     let sourceIds = [];
     for(let contract in compilation) {
-      //add source from compilation into workspace first, otherwise compilation addition will fail
       let sourceObject = {
         contents: compilation[contract]["source"],
         sourcePath: compilation[contract]["sourcePath"]
@@ -292,12 +295,11 @@ export class ArtifactsLoader {
         sourcePath: compilation[contract]["sourcePath"]
       });
 
-      sources.push({contents: compilation[contract]["source"], sourcePath: compilation[contract]["sourcePath"]});
+      sources.push(sourceObject);
       sourceIds.push({id: sourceId});
     }
 
-    await this.db.query(AddSources, { sources });
-    // only need to return array of sourceIds here
+    await this.db.query(AddSources, { sources: sources });
     return sourceIds;
   }
 
@@ -326,25 +328,22 @@ export class ArtifactsLoader {
   async loadCompilation(compilationConfig: object) {
     let compilationsArray = [];
     let sources = [];
-    await Contracts.compile(compilationConfig, async (err, output) => {
-      if(err) console.error(err);
-      else {
-        const compilationData = Object.values(output.contracts);
-        let sourceIds = await this.loadCompilationSources(compilationData);
-        let sourceContracts = await this.compilationSourceContracts(compilationData);
 
-        let compilationObject = {
-          compiler: {
-            name: compilationData[0]["compiler"]["name"],
-            version: compilationData[0]["compiler"]["version"]
-          },
-          contracts: sourceContracts,
-          sources: sourceIds
-        }
+    const compilationOutput = await Contracts.compile(compilationConfig);
+    const compilationData = Object.values(compilationOutput.contracts);
+    let sourceIds = await this.loadCompilationSources(compilationData);
+    await this.loadCompilationBytecodes(compilationData);
+    let sourceContracts = await this.compilationSourceContracts(compilationData);
+    let compilationObject = {
+      compiler: {
+        name: compilationData[0]["compiler"]["name"],
+        version: compilationData[0]["compiler"]["version"]
+      },
+      contracts: sourceContracts,
+      sources: sourceIds
+    }
 
-        await this.db.query(AddCompilation, { compilations: [compilationObject] });
-      }
-
-    });
+    const compilation = await this.db.query(AddCompilation, { compilations: [compilationObject] });
+    await this.loadCompilationContracts(compilationData, compilation.data.workspace.compilationsAdd.compilations[0].id);
   }
 }
