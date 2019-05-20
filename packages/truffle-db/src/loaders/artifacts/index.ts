@@ -3,20 +3,6 @@ import { TruffleDB } from "truffle-db/db";
 import * as Contracts from "truffle-workflow-compile";
 import { generateId } from "truffle-db/helpers";
 
-const GetBytecode = gql`
-query GetBytecode($name: String!) {
-  artifacts {
-    contract(name: $name) {
-      constructor {
-        createBytecode {
-          bytes
-        }
-      }
-    }
-  }
-}
-`;
-
 const AddBytecodes = gql`
 input BytecodeInput {
   bytes: Bytes!
@@ -33,21 +19,6 @@ mutation AddBytecodes($bytecodes: [BytecodeInput!]!) {
     }
   }
 }`;
-
-const GetSource = gql`
-query GetSource($name: String!) {
-  artifacts {
-    contract(name: $name) {
-      sourceContract {
-        source {
-          contents
-          sourcePath
-        }
-      }
-    }
-  }
-}
-`;
 
 const AddSources = gql`
 input SourceInput {
