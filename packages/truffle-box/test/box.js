@@ -1,5 +1,4 @@
 const path = require("path");
-const fs = require("fs");
 const fse = require("fs-extra");
 const assert = require("assert");
 const inquirer = require("inquirer");
@@ -235,10 +234,10 @@ describe("truffle-box Box", () => {
 
     describe("when directory is empty", () => {
       before(() => {
-        sinon.stub(fs, "readdirSync").returns([]);
+        sinon.stub(fse, "readdirSync").returns([]);
       });
       after(() => {
-        fs.readdirSync.restore();
+        fse.readdirSync.restore();
       });
 
       it("doesn't prompt user", async () => {
@@ -249,10 +248,10 @@ describe("truffle-box Box", () => {
 
     describe("when directory is non-empty", () => {
       before(() => {
-        sinon.stub(fs, "readdirSync").returns(["someCrappyFile.js"]);
+        sinon.stub(fse, "readdirSync").returns(["someCrappyFile.js"]);
       });
       after(() => {
-        fs.readdirSync.restore();
+        fse.readdirSync.restore();
       });
 
       it("prompts user", () => {
@@ -263,11 +262,11 @@ describe("truffle-box Box", () => {
 
     describe("when directory is non-empty and user declines to unbox", () => {
       before(() => {
-        sinon.stub(fs, "readdirSync").returns(["someCrappyFile.js"]);
+        sinon.stub(fse, "readdirSync").returns(["someCrappyFile.js"]);
         sinon.stub(process, "exit").returns(1);
       });
       after(() => {
-        fs.readdirSync.restore();
+        fse.readdirSync.restore();
         process.exit.restore();
       });
 
