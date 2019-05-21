@@ -7,14 +7,13 @@ import { Types, Values } from "truffle-decode-utils";
 import decodeValue from "./value";
 import { StoragePointer, DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
-import { storageSize } from "../allocate/storage";
+import { storageSizeForType } from "../allocate/storage";
 import { slotAddress } from "../read/storage";
 import * as StorageTypes from "../types/storage";
 import BN from "bn.js";
-import { EvmStruct, EvmMapping } from "../interface/contract-decoder";
-import { DecoderRequest } from "../types/request";
+import { DecoderRequest, GeneratorJunk } from "../types/request";
 
-export default function* decodeStorage(dataType: Types.Type, pointer: StoragePointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | Uint8Array> {
+export default function* decodeStorage(dataType: Types.Type, pointer: StoragePointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
   if(Types.isReferenceType(dataType)) {
     return yield* decodeStorageReference(dataType, pointer, info);
   }
@@ -26,11 +25,11 @@ export default function* decodeStorage(dataType: Types.Type, pointer: StoragePoi
 //decodes storage at the address *read* from the pointer -- hence why this takes DataPointer rather than StoragePointer.
 //NOTE: ONLY for use with pointers to reference types!
 //Of course, pointers to value types don't exist in Solidity, so that warning is redundant, but...
-export function* decodeStorageReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | Uint8Array> {
+export function* decodeStorageReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
 
   let rawValue: Uint8Array;
   try {
-    rawValue = yield* read(pointer, state);
+    rawValue = yield* read(pointer, info.state);
   }
   catch(error) { //error: Values.DecodingError
     return new Values.GenericError(error.error);
@@ -66,7 +65,7 @@ export function* decodeStorageReferenceByAddress(dataType: Types.ReferenceType, 
   return yield* decodeStorageReference(dataType, newPointer, info);
 }
 
-export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: StoragePointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | Uint8Array> {
+export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: StoragePointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
   var data;
   var length;
 
@@ -78,7 +77,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
       switch(dataType.kind) {
         case "dynamic":
           debug("dynamic array");
-          debug("definition %O", definition);
+          debug("type %O", dataType);
           try {
             data = yield* read(pointer, state);
           }
@@ -86,9 +85,11 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
             return new Values.GenericError(error.error);
           }
           length = DecodeUtils.Conversion.toBN(data).toNumber();
+          break;
         case "static":
           debug("static array");
-          length = typeClass.length.toNumber();
+          length = dataType.length.toNumber();
+          break;
       }
       debug("length %o", length);
 
@@ -107,12 +108,12 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
       //we're in the words case or the bytes case, the second will not
       let ranges: StorageTypes.Range[] = [];
 
-      if(Types.isWordsLength(baseSize)) {
+      if(StorageTypes.isWordsLength(baseSize)) {
         //currentSlot will point to the start of the entry being decoded
         let currentSlot: StorageTypes.Slot = {
           path: pointer.storage.from.slot,
           offset: new BN(0),
-          hashPath: DecodeUtils.Definition.isDynamicArray(definition)
+          hashPath: dataType.kind === "dynamic"
         };
 
         for (let i = 0; i < length; i++) {
@@ -151,7 +152,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
           slot: {
             path: pointer.storage.from.slot,
             offset: new BN(0),
-            hashPath: DecodeUtils.Definition.isDynamicArray(definition)
+            hashPath: dataType.kind === "dynamic"
           },
           index: DecodeUtils.EVM.WORD_SIZE - baseSize.bytes //note the starting index!
         };
@@ -183,7 +184,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
 
       for(let childRange of ranges) {
         decodedChildren.push(
-          <Values.Value> yield* decodeStorage(baseType, {storage: childRange}, info)
+          <Values.Value> (yield* decodeStorage(dataType.baseType, {storage: childRange}, info))
         );
       }
 
@@ -207,7 +208,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
         length = lengthByte / 2;
         debug("in-word; length %o", length);
 
-        return yield* decodeValue(definition, { storage: {
+        return yield* decodeValue(dataType, { storage: {
           from: { slot: pointer.storage.from.slot, index: 0 },
           to: { slot: pointer.storage.from.slot, index: length - 1}
         }}, info);
@@ -216,7 +217,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
         length = DecodeUtils.Conversion.toBN(data).subn(1).divn(2).toNumber();
         debug("new-word, length %o", length);
 
-        return yield* decodeValue(definition, {
+        return yield* decodeValue(dataType, {
           storage: {
             from: {
               slot: {
@@ -271,16 +272,16 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
         };
 
         let memberName = memberAllocation.definition.name;
-        let storedType = <Types.StructType>userDefinedTypes[typeId];
+        let storedType = <Types.StructType>info.userDefinedTypes[typeId];
         if(!storedType) {
           return new Values.GenericError(
             new Values.UserDefinedTypeNotFoundError(dataType)
           );
         }
         let storedMemberType = storedType.memberTypes[memberName];
-        let memberType = specifyLocation(storedMemberType, "storage");
+        let memberType = Types.specifyLocation(storedMemberType, "storage");
 
-        decodedMembers[memberName] = <Values.Value> yield* decodeStorage(memberType, {storage: childRange}, info);
+        decodedMembers[memberName] = <Values.Value> (yield* decodeStorage(memberType, {storage: childRange}, info));
       }
 
       return new Values.StructValueProper(dataType, decodedMembers);
@@ -289,7 +290,6 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
     case "mapping": {
 
       debug("decoding mapping");
-      debug("name %s", definition.name);
 
       const valueType = dataType.valueType;
       let valueSize: StorageTypes.StorageLength;
@@ -302,7 +302,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
 
       let decodedEntries: [Values.ElementaryValue, Values.Value][] = [];
 
-      const baseSlot: Types.Slot = pointer.storage.from.slot;
+      const baseSlot: StorageTypes.Slot = pointer.storage.from.slot;
       debug("baseSlot %o", baseSlot);
       debug("base slot address %o", slotAddress(baseSlot));
 
@@ -313,7 +313,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
 
         let valuePointer: StoragePointer;
 
-        if(Types.isWordsLength(valueSize)) {
+        if(StorageTypes.isWordsLength(valueSize)) {
           valuePointer = {
             storage: {
               from: {
@@ -359,11 +359,11 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
         }
 
         decodedEntries.push(
-          [key, <Values.Value> yield* decodeStorage(valueDefinition, valuePointer, info)]
+          [key, <Values.Value> (yield* decodeStorage(valueType, valuePointer, info))]
         );
       }
 
-      return new MappingValueProper(dataType, decodedEntries);
+      return new Values.MappingValueProper(dataType, decodedEntries);
     }
   }
 }

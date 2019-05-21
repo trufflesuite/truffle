@@ -7,10 +7,9 @@ import { Types, Values } from "truffle-decode-utils";
 import BN from "bn.js";
 import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
-import { EvmEnum } from "../interface/contract-decoder";
-import { DecoderRequest } from "../types/request";
+import { DecoderRequest, GeneratorJunk } from "../types/request";
 
-export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | Uint8Array> {
+export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
   //NOTE: this does not actually return a Uint8Aarray, but due to the use of yield* read,
   //we have to include it in the type :-/
   const { state } = info;
@@ -50,11 +49,11 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       return new Values.IntValueProper(dataType, DecodeUtils.Conversion.toSignedBN(bytes));
 
     case "address":
-      return new Values.AddressValueProper(dataType, return DecodeUtils.Conversion.toAddress(bytes));
+      return new Values.AddressValueProper(dataType, DecodeUtils.Conversion.toAddress(bytes));
 
     case "contract":
       const fullType = <Types.ContractType>Types.fullType(dataType, info.userDefinedTypes);
-      const contractValueDirect = yield* decodeContract(fullType, bytes, info);
+      const contractValueDirect = <Values.ContractValueDirect> (yield* decodeContract(bytes, info));
       return new Values.ContractValueProper(fullType, contractValueDirect);
 
     case "bytes":
@@ -123,7 +122,7 @@ export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): Iterab
       id: context.contractId,
       typeName: context.contractName,
       contractKind: context.contractKind,
-      payayble: context.payable
+      payable: context.payable
     });
   }
   else {
@@ -132,13 +131,15 @@ export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): Iterab
 }
 
 //note: address can have extra zeroes on the left like elsewhere, but selector should be exactly 4 bytes
-export function* decodeExternalFunction(dataType: Types.FunctionType, addressBytes: Uint8Array, selectorBytes: Uint8Array, info: EvmInfo): IterableIterator<Values.FunctionValueExternal | DecoderRequest | Uint8Array> {
-  let contract = yield* decodeContract(addressBytes, info);
-  if(contract.kind === "unknown")
+export function* decodeExternalFunction(dataType: Types.FunctionType, addressBytes: Uint8Array, selectorBytes: Uint8Array, info: EvmInfo): IterableIterator<Values.FunctionValueExternal | DecoderRequest | GeneratorJunk> {
+  let contract = <Values.ContractValueDirect> (yield* decodeContract(addressBytes, info));
+  let selector = DecodeUtils.Conversion.toHexString(selectorBytes);
+  if(contract.kind === "unknown") {
     return new Values.FunctionValueExternalProperUnknown(dataType, contract, selector);
   }
+  let contractId = contract.class.id;
   let context = Object.values(info.contexts).find(
-    context => context.contractId === contract.class.id
+    context => context.contractId === contractId
   );
   let abiEntry = context.abi !== undefined
     ? context.abi[selector]
@@ -163,11 +164,11 @@ export function decodeInternalFunction(dataType: Types.FunctionType, deployedPcB
   //before anything else: do we even have an internal functions table?
   //if not, we'll just return the info we have without really attemting to decode
   if(!info.internalFunctionsTable) {
-    return new Values.FunctionValueInternalProperUnknown(context, deployedPc, constructorPc);
+    return new Values.FunctionValueInternalProperUnknown(dataType, context, deployedPc, constructorPc);
   }
   //also before we continue: is the PC zero? if so let's just return that
   if(deployedPc === 0 && constructorPc === 0) {
-    return new Values.FunctionValueInternalProperException(context, deployedPc, constructorPc);
+    return new Values.FunctionValueInternalProperException(dataType, context, deployedPc, constructorPc);
   }
   //another check: is only the deployed PC zero?
   if(deployedPc === 0 && constructorPc !== 0) {
@@ -193,7 +194,7 @@ export function decodeInternalFunction(dataType: Types.FunctionType, deployedPcB
     );
   }
   if(functionEntry.isDesignatedInvalid) {
-    return new Values.FunctionValueInternalProperException(context, deployedPc, constructorPc);
+    return new Values.FunctionValueInternalProperException(dataType, context, deployedPc, constructorPc);
   }
   let name = functionEntry.name;
   let definedIn: Types.ContractType = {
@@ -203,5 +204,5 @@ export function decodeInternalFunction(dataType: Types.FunctionType, deployedPcB
     contractKind: functionEntry.contractKind,
     payable: functionEntry.contractPayable
   };
-  return new Values.FunctionValueInternalProperKnown(context, deployedPc, constructorPc, name, definedIn);
+  return new Values.FunctionValueInternalProperKnown(dataType, context, deployedPc, constructorPc, name, definedIn);
 }

@@ -165,7 +165,7 @@ export function calldataSizeForType(dataType: DecodeUtils.Types.Type, allocation
       const allocation = allocations[dataType.id];
       if(!allocation) {
         throw new DecodeUtils.Values.DecodingError(
-          new DecodeUtils.Values.UserDefinedTypeNotFoundError(dataType);
+          new DecodeUtils.Values.UserDefinedTypeNotFoundError(dataType)
         );
       }
       return allocation.length;
@@ -182,12 +182,12 @@ export function isTypeDynamic(dataType: DecodeUtils.Types.Type, allocations: Cal
     case "bytes":
       return dataType.kind === "dynamic";
     case "array":
-      return dataType.kind === "dynamic" || isTypeDynamic(dataType.baseType, userDefinedTypes, allocations);
+      return dataType.kind === "dynamic" || isTypeDynamic(dataType.baseType, allocations);
     case "struct":
       const allocation = allocations[dataType.id];
       if(!allocation) {
         throw new DecodeUtils.Values.DecodingError(
-          new DecodeUtils.Values.UserDefinedTypeNotFoundError(dataType);
+          new DecodeUtils.Values.UserDefinedTypeNotFoundError(dataType)
         );
       }
       return allocation.dynamic;

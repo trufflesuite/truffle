@@ -312,10 +312,10 @@ export function storageSizeForType(dataType: DecodeUtils.Types.Type, userDefined
     case "ufixed":
       return {bytes: dataType.bits / 8 };
     case "enum": {
-      let fullType = DecodeUtils.Types.fullType(dataType, userDefinedTypes);
+      let fullType = <DecodeUtils.Types.EnumType>DecodeUtils.Types.fullType(dataType, userDefinedTypes);
       if(!fullType.options) {
         throw new DecodeUtils.Values.DecodingError(
-          new DecodeUtils.Values.UserDefinedTypeNotFoundError(dataType);
+          new DecodeUtils.Values.UserDefinedTypeNotFoundError(dataType)
         );
       }
       return {bytes: Math.ceil(Math.log2(fullType.options.length) / 8)};
@@ -327,6 +327,7 @@ export function storageSizeForType(dataType: DecodeUtils.Types.Type, userDefined
         case "external":
           return {bytes: DecodeUtils.EVM.ADDRESS_SIZE + DecodeUtils.EVM.SELECTOR_SIZE};
       }
+      break; //to satisfy typescript :P
     case "bytes":
       switch(dataType.kind) {
         case "static":
@@ -360,7 +361,7 @@ export function storageSizeForType(dataType: DecodeUtils.Types.Type, userDefined
       let allocation = allocations[dataType.id];
       if(!allocation) {
         throw new DecodeUtils.Values.DecodingError(
-          new DecodeUtils.Values.UserDefinedTypeNotFoundError(dataType);
+          new DecodeUtils.Values.UserDefinedTypeNotFoundError(dataType)
         );
       }
       return allocation.size;

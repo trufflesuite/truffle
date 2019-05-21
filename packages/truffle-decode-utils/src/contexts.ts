@@ -35,7 +35,7 @@ export namespace Contexts {
     contractId?: number;
     contractKind?: "contract" | "library"; //should never be "interface"
     abi?: FunctionAbiWithSignatures;
-    pyayable?: boolean
+    payable?: boolean
   }
 
   export interface DebuggerContext {

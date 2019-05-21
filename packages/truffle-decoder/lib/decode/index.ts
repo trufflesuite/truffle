@@ -12,15 +12,15 @@ import decodeSpecial from "./special";
 import { AstDefinition, Types, Values } from "truffle-decode-utils";
 import * as Pointer from "../types/pointer";
 import { EvmInfo } from "../types/evm";
-import { DecoderRequest } from "../types/request";
+import { DecoderRequest, GeneratorJunk } from "../types/request";
 
-export default function* decode(definition: AstDefinition, pointer: Pointer.DataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | Uint8Array> {
+export default function* decode(definition: AstDefinition, pointer: Pointer.DataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
   let dataType = Types.definitionToType(definition);
   debug("definition %O", definition);
   return yield* decodePointer(dataType, pointer, info);
 }
 
-export function* decodePointer(dataType: Types.Type, pointer: Pointer.DataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | Uint8Array> {
+export function* decodePointer(dataType: Types.Type, pointer: Pointer.DataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
   debug("type %O", dataType);
   debug("pointer %O", pointer);
 

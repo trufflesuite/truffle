@@ -6,9 +6,9 @@ import { Types, Values } from "truffle-decode-utils";
 import decodeValue from "./value";
 import { EvmInfo } from "../types/evm";
 import { SpecialPointer } from "../types/pointer";
-import { DecoderRequest } from "../types/request";
+import { DecoderRequest, GeneratorJunk } from "../types/request";
 
-export default function* decodeSpecial(dataType: Types.Type, pointer: SpecialPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | Uint8Array> {
+export default function* decodeSpecial(dataType: Types.Type, pointer: SpecialPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
   if(dataType.typeClass === "magic") {
     return yield* decodeMagic(dataType, pointer, info);
   }
@@ -17,14 +17,15 @@ export default function* decodeSpecial(dataType: Types.Type, pointer: SpecialPoi
   }
 }
 
-export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer, info: EvmInfo): IterableIterator<Values.MagicValue | DecoderRequest | Uint8Array> {
+export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+  //note: that's Values.Value and not Values.MagicValue due to some TypeScript generator jank
 
   let {state} = info;
 
   switch(pointer.special) {
     case "msg":
       return new Values.MagicValueProper(dataType, {
-        data: <Values.BytesValue> yield* decodeValue(
+        data: <Values.BytesValue> (yield* decodeValue(
           {
             typeClass: "bytes",
             kind: "dynamic",
@@ -35,8 +36,8 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
             length: state.calldata.length
           }},
           info
-        ),
-        sig: <Values.BytesValue> yield* decodeValue(
+        )),
+        sig: <Values.BytesValue> (yield* decodeValue(
           {
             typeClass: "bytes",
             kind: "static",
@@ -47,66 +48,66 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
             length: DecodeUtils.EVM.SELECTOR_SIZE,
           }},
           info
-        ),
-        sender: <Values.AddressValue> yield* decodeValue(
+        )),
+        sender: <Values.AddressValue> (yield* decodeValue(
           {
             typeClass: "address",
             payable: true
           },
           {special: "sender"},
           info
-        ),
-        value: <Values.UintValue> yield* decodeValue(
+        )),
+        value: <Values.UintValue> (yield* decodeValue(
           {
             typeClass: "uint",
             bits: 256
           },
           {special: "value"},
           info
-        )
+        ))
       });
     case "tx":
       return new Values.MagicValueProper(dataType, {
-        origin: <Values.AddressValue> yield* decodeValue(
+        origin: <Values.AddressValue> (yield* decodeValue(
           {
             typeClass: "address",
             payable: true
           },
           {special: "origin"},
           info
-        ),
-        gasprice: <Values.UintValue> yield* decodeValue(
+        )),
+        gasprice: <Values.UintValue> (yield* decodeValue(
           {
             typeClass: "uint",
             bits: 256
           },
           {special: "gasprice"},
           info
-        )
+        ))
       });
     case "block":
-      let block = {
-        coinbase: <Values.AddressValue> yield* decodeValue(
+      let block: {[field: string]: Values.Value} = {
+        coinbase: <Values.AddressValue> (yield* decodeValue(
           {
             typeClass: "address",
             payable: true
           },
           {special: "coinbase"},
           info
-        )
-      });
+        ))
+      };
       //the other ones are all uint's, so let's handle them all at once; due to
       //the lack of generator arrow functions, we do it by mutating block
       const variables = ["difficulty", "gaslimit", "number", "timestamp"];
       for (let variable of variables) {
-        block[variable] = <Values.UintValue> yield* decodeValue(
+        block[variable] = <Values.UintValue> (yield* decodeValue(
           {
             typeClass: "uint",
             bits: 256
           },
           {special: variable},
           info
-        );
+        ));
       }
       return new Values.MagicValueProper(dataType, block);
   }
