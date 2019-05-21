@@ -1,6 +1,6 @@
 {
   "name": "truffle-compile",
-  "version": "4.0.16-beta.0",
+  "version": "4.0.16-beta.1",
   "description": "Compiler helper and artifact manager",
   "main": "index.js",
   "dependencies": {
