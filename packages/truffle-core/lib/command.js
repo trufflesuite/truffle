@@ -1,13 +1,13 @@
-var TaskError = require("./errors/taskerror");
-var yargs = require("yargs/yargs");
+const TaskError = require("./errors/taskerror");
+const yargs = require("yargs/yargs");
 const { bundled, core } = require("../lib/version").info();
-var OS = require("os");
+const OS = require("os");
 const analytics = require("../lib/services/analytics");
 
 function Command(commands) {
   this.commands = commands;
 
-  var args = yargs();
+  let args = yargs();
 
   Object.keys(this.commands).forEach(function(command) {
     args = args.command(commands[command]);
@@ -17,30 +17,28 @@ function Command(commands) {
 }
 
 Command.prototype.getCommand = function(inputStrings, noAliases) {
-  var argv = this.args.parse(inputStrings);
+  const argv = this.args.parse(inputStrings);
 
   if (argv._.length === 0) {
     return null;
   }
 
-  var firstInputString = argv._[0];
-  var chosenCommand = null;
+  const firstInputString = argv._[0];
+  let chosenCommand = null;
 
   // If the command wasn't specified directly, go through a process
   // for inferring the command.
   if (this.commands[firstInputString]) {
     chosenCommand = firstInputString;
   } else if (noAliases !== true) {
-    var currentLength = 1;
-    var availableCommandNames = Object.keys(this.commands);
+    let currentLength = 1;
+    const availableCommandNames = Object.keys(this.commands);
 
     // Loop through each letter of the input until we find a command
     // that uniquely matches.
     while (currentLength <= firstInputString.length) {
       // Gather all possible commands that match with the current length
-      var possibleCommands = availableCommandNames.filter(function(
-        possibleCommand
-      ) {
+      const possibleCommands = availableCommandNames.filter(possibleCommand => {
         return (
           possibleCommand.substring(0, currentLength) ===
           firstInputString.substring(0, currentLength)
@@ -61,12 +59,12 @@ Command.prototype.getCommand = function(inputStrings, noAliases) {
     return null;
   }
 
-  var command = this.commands[chosenCommand];
+  const command = this.commands[chosenCommand];
 
   return {
     name: chosenCommand,
-    argv: argv,
-    command: command
+    argv,
+    command
   };
 };
 
@@ -81,12 +79,10 @@ Command.prototype.run = function(inputStrings, options, callback) {
     );
   }
 
-  var argv = result.argv;
+  const argv = result.argv;
 
   // Remove the task name itself.
-  if (argv._) {
-    argv._.shift();
-  }
+  if (argv._) argv._.shift();
 
   // We don't need this.
   delete argv["$0"];
