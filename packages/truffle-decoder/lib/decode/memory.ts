@@ -8,9 +8,9 @@ import decodeValue from "./value";
 import { MemoryPointer, DataPointer } from "../types/pointer";
 import { MemoryMemberAllocation } from "../types/allocation";
 import { EvmInfo } from "../types/evm";
-import { DecoderRequest } from "../types/request";
+import { DecoderRequest, GeneratorJunk } from "../types/request";
 
-export default function* decodeMemory(dataType: Types.Type, pointer: MemoryPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | Uint8Array> {
+export default function* decodeMemory(dataType: Types.Type, pointer: MemoryPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
   if(Types.isReferenceType(dataType)) {
     return yield* decodeMemoryReferenceByAddress(dataType, pointer, info);
   }
@@ -19,7 +19,7 @@ export default function* decodeMemory(dataType: Types.Type, pointer: MemoryPoint
   }
 }
 
-export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | Uint8Array> {
+export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
   const { state } = info;
   // debug("pointer %o", pointer);
   let rawValue: Uint8Array;
@@ -86,14 +86,14 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
       let decodedChildren: Values.Value[] = [];
       for(let index = 0; index < length; index++) {
         decodedChildren.push(
-          <Values.Value> yield* decodeMemory(
+          <Values.Value> (yield* decodeMemory(
             baseType,
             { memory: {
               start: startPosition + index * DecodeUtils.EVM.WORD_SIZE,
               length: DecodeUtils.EVM.WORD_SIZE
             }},
             info
-          )
+          ))
         );
       }
 
@@ -106,7 +106,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
       const structAllocation = memoryAllocations[typeId];
       if(!structAllocation) {
         return new Values.GenericError(
-          new Values.UserDefinedTypeNotFound(dataType)
+          new Values.UserDefinedTypeNotFoundError(dataType)
         );
       }
 
@@ -130,9 +130,9 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
           );
         }
         let storedMemberType = storedType.memberTypes[memberName];
-        let memberType = specifyLocation(storedMemberType, "memory");
+        let memberType = Types.specifyLocation(storedMemberType, "memory");
 
-        decodedMembers[memberName] = <Values.Value> yield* decodeMemory(memberType, childPointer, info);
+        decodedMembers[memberName] = <Values.Value> (yield* decodeMemory(memberType, childPointer, info));
       }
       return new Values.StructValueProper(dataType, decodedMembers);
   }

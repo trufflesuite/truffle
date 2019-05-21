@@ -7,10 +7,10 @@ import read from "../read";
 import decodeValue from "./value";
 import { ConstantDefinitionPointer} from "../types/pointer";
 import { EvmInfo } from "../types/evm";
-import { DecoderRequest } from "../types/request";
+import { DecoderRequest, GeneratorJunk } from "../types/request";
 import BN from "bn.js";
 
-export default function* decodeConstant(dataType: Types.Type, pointer: ConstantDefinitionPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | Uint8Array> {
+export default function* decodeConstant(dataType: Types.Type, pointer: ConstantDefinitionPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
 
   debug("pointer %o", pointer);
 
@@ -32,7 +32,7 @@ export default function* decodeConstant(dataType: Types.Type, pointer: ConstantD
     let bytes = word.slice(DecodeUtils.EVM.WORD_SIZE - size);
     return new Values.BytesValueProper(
       dataType,
-      DecodeUtils.Conversion.toHexString(bytes);
+      DecodeUtils.Conversion.toHexString(bytes)
     );
   }
 

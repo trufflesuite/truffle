@@ -11,9 +11,9 @@ import { decodeStorageReferenceByAddress } from "./storage";
 import { decodeCalldataReferenceByAddress } from "./calldata";
 import { StackPointer, StackLiteralPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
-import { DecoderRequest } from "../types/request";
+import { DecoderRequest, GeneratorJunk } from "../types/request";
 
-export default function* decodeStack(dataType: Types.Type, pointer: StackPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | Uint8Array> {
+export default function* decodeStack(dataType: Types.Type, pointer: StackPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
   let rawValue: Uint8Array;
   try {
    rawValue = yield* read(pointer, info.state);
@@ -22,10 +22,10 @@ export default function* decodeStack(dataType: Types.Type, pointer: StackPointer
     return new Values.GenericError(error.error);
   }
   const literalPointer: StackLiteralPointer = { literal: rawValue };
-  return yield* decodeLiteral(definition, literalPointer, info);
+  return yield* decodeLiteral(dataType, literalPointer, info);
 }
 
-export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | Uint8Array> {
+export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
 
   debug("type %O", dataType);
   debug("pointer %o", pointer);
@@ -40,7 +40,7 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
       case "storage":
         //next: do we have a storage pointer (which may be a mapping)? if so, we can
         //we dispatch to decodeStorageByAddress
-        return yield* decodeStorageReferenceByAddress(definition, pointer, info);
+        return yield* decodeStorageReferenceByAddress(dataType, pointer, info);
 
       case "calldata":
         //next: do we have a calldata pointer?

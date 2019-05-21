@@ -24,7 +24,7 @@ export function readDefinition(definition: DecodeUtils.AstDefinition): Uint8Arra
       //handle right now.  sorry.
       debug("unsupported constant definition type");
       throw new Values.GenericError(
-        new Values.UnsupportedConstantError(definition);
+        new Values.UnsupportedConstantError(definition)
       );
   }
 }

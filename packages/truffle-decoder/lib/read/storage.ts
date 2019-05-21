@@ -123,7 +123,7 @@ export function* readRange(storage: WordMapping, range: Range): IterableIterator
 
   debug("normalized readRange %o", {from,to});
 
-  let totalWords: BN = to.slot.offset.sub(from.slot.offset).addn(1).toNumber();
+  let totalWords: number = to.slot.offset.sub(from.slot.offset).addn(1).toNumber();
   debug("totalWords %o", totalWords);
 
   let data = new Uint8Array(totalWords * DecodeUtils.EVM.WORD_SIZE);

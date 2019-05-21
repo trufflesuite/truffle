@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("decoder:interface:contract-decoder");
 
 import * as DecodeUtils from "truffle-decode-utils";
+import { Types, Values } from "truffle-decode-utils";
 import AsyncEventEmitter from "async-eventemitter";
 import Web3 from "web3";
 import { ContractObject } from "truffle-contract-schema/spec";
@@ -95,6 +96,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   private context: DecodeUtils.Contexts.DecoderContext;
 
   private referenceDeclarations: AstReferences;
+  private userDefinedTypes: Types.TypesById;
   private storageAllocations: StorageAllocations;
 
   private eventDefinitions: AstReferences;
@@ -203,9 +205,9 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       currentContext: this.context
     };
 
-    const decoder: IterableIterator<Values.Value> = decode(variable.definition, variable.pointer, info);
+    const decoder = decode(variable.definition, variable.pointer, info);
 
-    let result: IteratorResult<Values.Value> = decoder.next();
+    let result = decoder.next();
     while(!result.done) {
       let request = <DecoderRequest>(result.value);
       let response: Uint8Array;
@@ -220,11 +222,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     }
     //at this point, result.value holds the final value
 
-    return {
-      name: variable.definition.name,
-      type: DefinitionUtils.typeClass(variable.definition),
-      value: result.value
-    };
+    return <Values.Value>result.value;
   }
 
   public async state(block: BlockType = "latest"): Promise<ContractState | undefined> {
