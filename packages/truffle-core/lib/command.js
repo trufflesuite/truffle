@@ -1,6 +1,5 @@
 var TaskError = require("./errors/taskerror");
 var yargs = require("yargs/yargs");
-var _ = require("lodash");
 const { bundled, core } = require("../lib/version").info();
 var OS = require("os");
 const analytics = require("../lib/services/analytics");
@@ -92,20 +91,10 @@ Command.prototype.run = function(inputStrings, options, callback) {
   // We don't need this.
   delete argv["$0"];
 
-  // Some options might throw if options is a Config object. If so, let's ignore those options.
-  var clone = {};
-  Object.keys(options).forEach(function(key) {
-    try {
-      clone[key] = options[key];
-    } catch (e) {
-      // Do nothing with values that throw.
-    }
-  });
-
-  options = _.extend(clone, argv);
+  const newOptions = Object.assign({}, options, argv);
 
   try {
-    result.command.run(options, callback);
+    result.command.run(newOptions, callback);
     analytics.send({
       command: result.name ? result.name : "other",
       args: result.argv._,
