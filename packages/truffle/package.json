@@ -46,6 +46,7 @@
     "build": "yarn build-cli",
     "build-cli": "webpack --config ./cli.webpack.config.js",
     "test": "./scripts/test.sh",
+    "postinstall": "node ./scripts/postinstall.js",
     "publish:byoc": "node ./scripts/prereleaseVersion.js byoc-safe byoc",
     "publish:external-compiler": "node ./scripts/prereleaseVersion.js external-compiler external-compiler",
     "publish:next": "node ./scripts/prereleaseVersion.js next next",
