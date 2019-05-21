@@ -3,7 +3,7 @@ const tmp = require("tmp");
 const path = require("path");
 const Config = require("truffle-config");
 const ora = require("ora");
-const fs = require("fs");
+const fse = require("fs-extra");
 const inquirer = require("inquirer");
 
 function parseSandboxOptions(options) {
@@ -73,7 +73,7 @@ const Box = {
   checkDir: async (options = {}, destination) => {
     let logger = options.logger || console;
     if (!options.force) {
-      const unboxDir = fs.readdirSync(destination);
+      const unboxDir = fse.readdirSync(destination);
       if (unboxDir.length) {
         logger.log(`This directory is non-empty...`);
         const prompt = [
