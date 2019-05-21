@@ -80,7 +80,7 @@ export namespace Definition {
    */
   export function decimalPlaces(definition: AstDefinition): number {
     return parseInt(
-      typeIdentifier(definition).match(/t_[a-z]+[0-9]+x[0-9]+/)[1];
+      typeIdentifier(definition).match(/t_[a-z]+[0-9]+x([0-9]+)/)[1]
     );
   }
 
@@ -319,16 +319,14 @@ export namespace Definition {
   //spoofed definitions we'll need
   //we'll give them id -1 to indicate that they're spoofed
 
-  export function NOW_DEFINITION: AstDefiniton = {
-    return {
-      id: -1,
-      src: "0:0:-1",
-      name: "now",
-      nodeType: "VariableDeclaration",
-      typeDescriptions: {
-        typeIdentifier: "t_uint256"
-      }
-    };
+  export const NOW_DEFINITION: AstDefinition = {
+    id: -1,
+    src: "0:0:-1",
+    name: "now",
+    nodeType: "VariableDeclaration",
+    typeDescriptions: {
+      typeIdentifier: "t_uint256"
+    }
   }
 
   export const MSG_DEFINITION: AstDefinition = {
