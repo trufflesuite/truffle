@@ -4,115 +4,119 @@ const { bundled, core } = require("../lib/version").info();
 const OS = require("os");
 const analytics = require("../lib/services/analytics");
 
-function Command(commands) {
-  this.commands = commands;
+class Command {
+  constructor(commands) {
+    this.commands = commands;
 
-  let args = yargs();
+    let args = yargs();
 
-  Object.keys(this.commands).forEach(function(command) {
-    args = args.command(commands[command]);
-  });
+    Object.keys(this.commands).forEach(function(command) {
+      args = args.command(commands[command]);
+    });
 
-  this.args = args;
-}
-
-Command.prototype.getCommand = function(inputStrings, noAliases) {
-  const argv = this.args.parse(inputStrings);
-
-  if (argv._.length === 0) {
-    return null;
+    this.args = args;
   }
 
-  const firstInputString = argv._[0];
-  let chosenCommand = null;
+  getCommand(inputStrings, noAliases) {
+    const argv = this.args.parse(inputStrings);
 
-  // If the command wasn't specified directly, go through a process
-  // for inferring the command.
-  if (this.commands[firstInputString]) {
-    chosenCommand = firstInputString;
-  } else if (noAliases !== true) {
-    let currentLength = 1;
-    const availableCommandNames = Object.keys(this.commands);
+    if (argv._.length === 0) {
+      return null;
+    }
 
-    // Loop through each letter of the input until we find a command
-    // that uniquely matches.
-    while (currentLength <= firstInputString.length) {
-      // Gather all possible commands that match with the current length
-      const possibleCommands = availableCommandNames.filter(possibleCommand => {
-        return (
-          possibleCommand.substring(0, currentLength) ===
-          firstInputString.substring(0, currentLength)
+    const firstInputString = argv._[0];
+    let chosenCommand = null;
+
+    // If the command wasn't specified directly, go through a process
+    // for inferring the command.
+    if (this.commands[firstInputString]) {
+      chosenCommand = firstInputString;
+    } else if (noAliases !== true) {
+      let currentLength = 1;
+      const availableCommandNames = Object.keys(this.commands);
+
+      // Loop through each letter of the input until we find a command
+      // that uniquely matches.
+      while (currentLength <= firstInputString.length) {
+        // Gather all possible commands that match with the current length
+        const possibleCommands = availableCommandNames.filter(
+          possibleCommand => {
+            return (
+              possibleCommand.substring(0, currentLength) ===
+              firstInputString.substring(0, currentLength)
+            );
+          }
         );
-      });
 
-      // Did we find only one command that matches? If so, use that one.
-      if (possibleCommands.length === 1) {
-        chosenCommand = possibleCommands[0];
-        break;
+        // Did we find only one command that matches? If so, use that one.
+        if (possibleCommands.length === 1) {
+          chosenCommand = possibleCommands[0];
+          break;
+        }
+
+        currentLength += 1;
       }
+    }
 
-      currentLength += 1;
+    if (chosenCommand == null) {
+      return null;
+    }
+
+    const command = this.commands[chosenCommand];
+
+    return {
+      name: chosenCommand,
+      argv,
+      command
+    };
+  }
+
+  run(inputStrings, options, callback) {
+    const result = this.getCommand(inputStrings, options.noAliases);
+
+    if (result == null) {
+      return callback(
+        new TaskError(
+          "Cannot find command based on input: " + JSON.stringify(inputStrings)
+        )
+      );
+    }
+
+    const argv = result.argv;
+
+    // Remove the task name itself.
+    if (argv._) argv._.shift();
+
+    // We don't need this.
+    delete argv["$0"];
+
+    const newOptions = Object.assign({}, options, argv);
+
+    try {
+      result.command.run(newOptions, callback);
+      analytics.send({
+        command: result.name ? result.name : "other",
+        args: result.argv._,
+        version: bundled || "(unbundled) " + core
+      });
+    } catch (err) {
+      callback(err);
     }
   }
 
-  if (chosenCommand == null) {
-    return null;
-  }
-
-  const command = this.commands[chosenCommand];
-
-  return {
-    name: chosenCommand,
-    argv,
-    command
-  };
-};
-
-Command.prototype.run = function(inputStrings, options, callback) {
-  const result = this.getCommand(inputStrings, options.noAliases);
-
-  if (result == null) {
-    return callback(
-      new TaskError(
-        "Cannot find command based on input: " + JSON.stringify(inputStrings)
+  displayGeneralHelp() {
+    this.args
+      .usage(
+        "Truffle v" +
+          (bundled || core) +
+          " - a development framework for Ethereum" +
+          OS.EOL +
+          OS.EOL +
+          "Usage: truffle <command> [options]"
       )
-    );
+      .epilog("See more at http://truffleframework.com/docs")
+      .showHelp();
   }
-
-  const argv = result.argv;
-
-  // Remove the task name itself.
-  if (argv._) argv._.shift();
-
-  // We don't need this.
-  delete argv["$0"];
-
-  const newOptions = Object.assign({}, options, argv);
-
-  try {
-    result.command.run(newOptions, callback);
-    analytics.send({
-      command: result.name ? result.name : "other",
-      args: result.argv._,
-      version: bundled || "(unbundled) " + core
-    });
-  } catch (err) {
-    callback(err);
-  }
-};
-
-Command.prototype.displayGeneralHelp = function() {
-  this.args
-    .usage(
-      "Truffle v" +
-        (bundled || core) +
-        " - a development framework for Ethereum" +
-        OS.EOL +
-        OS.EOL +
-        "Usage: truffle <command> [options]"
-    )
-    .epilog("See more at http://truffleframework.com/docs")
-    .showHelp();
-};
+}
 
 module.exports = Command;
