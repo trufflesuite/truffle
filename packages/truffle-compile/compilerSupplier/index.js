@@ -2,18 +2,12 @@ const path = require("path");
 const fs = require("fs");
 const semver = require("semver");
 
-const {
-  Installed,
-  Docker,
-  Local,
-  Native,
-  VersionRange
-} = require("./loadingStrategies");
+const { Docker, Local, Native, VersionRange } = require("./loadingStrategies");
 
 class CompilerSupplier {
   constructor(_config) {
     _config = _config || {};
-    const defaultConfig = { version: null };
+    const defaultConfig = { version: "0.5.0" };
     this.config = Object.assign({}, defaultConfig, _config);
     this.strategyOptions = { version: this.config.version };
   }
@@ -50,7 +44,6 @@ class CompilerSupplier {
       let strategy;
       const useDocker = this.config.docker;
       const useNative = userSpecification === "native";
-      const useInstalledSolc = !userSpecification;
       const useSpecifiedLocal =
         userSpecification && this.fileExists(userSpecification);
       const isValidVersionRange = semver.validRange(userSpecification);
@@ -59,8 +52,6 @@ class CompilerSupplier {
         strategy = new Docker(this.strategyOptions);
       } else if (useNative) {
         strategy = new Native(this.strategyOptions);
-      } else if (useInstalledSolc) {
-        strategy = new Installed(this.strategyOptions);
       } else if (useSpecifiedLocal) {
         strategy = new Local(this.strategyOptions);
       } else if (isValidVersionRange) {
