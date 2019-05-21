@@ -16,25 +16,22 @@ export interface AstDefinition {
   stateVariable?: boolean;
   storageLocation?: string;
   typeDescriptions: AstTypeDescriptions;
-  typeName?: {
-    id: number,
-    name: string;
-    nodeType: string;
-    src: string;
-    typeDescriptions: AstTypeDescriptions;
-    keyType?: any;
-    valueType?: any;
-    length?: any;
-    referencedDeclaration?: any;
-    baseType?: any;
-    visibility?: string;
-  };
+  typeName?: AstDefinition;
   expression?: {
     referencedDeclaration?: any;
   };
   value?: null | any;
   visibility?: string;
+  stateMutability?: string;
   referencedDeclaration?: any;
+  parameterTypes?: {
+    parameters: AstDefinition[];
+  };
+  returnParameterTypes?: {
+    parameters: AstDefinition[];
+  };
+  keyType?: AstDefinition;
+  valueType?: AstDefinition;
   [k: string]: any;
 }
 

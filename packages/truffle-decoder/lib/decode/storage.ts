@@ -238,7 +238,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
       const structAllocation = info.storageAllocations[typeId];
       if(!structAllocation) {
         return new Values.GenericError(
-          new Values.StructNotFoundError(dataType)
+          new Values.UserDefinedTypeNotFoundError(dataType)
         );
       }
 
@@ -274,7 +274,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
         let storedType = <Types.StructType>userDefinedTypes[typeId];
         if(!storedType) {
           return new Values.GenericError(
-            new Values.StructNotFoundError(dataType)
+            new Values.UserDefinedTypeNotFoundError(dataType)
           );
         }
         let storedMemberType = storedType.memberTypes[memberName];
