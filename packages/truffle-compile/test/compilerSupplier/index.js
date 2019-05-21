@@ -5,7 +5,6 @@ const {
   Docker,
   Native,
   Local,
-  Installed,
   VersionRange
 } = require("../../compilerSupplier/loadingStrategies");
 let supplier, config;
@@ -68,17 +67,19 @@ describe("CompilerSupplier", () => {
     describe("when no version is specified in the config", () => {
       beforeEach(() => {
         supplier = new CompilerSupplier();
-        sinon.stub(Installed.prototype, "load").returns("called Installed");
+        sinon
+          .stub(VersionRange.prototype, "load")
+          .returns("called VersionRange");
       });
       afterEach(() => {
-        Installed.prototype.load.restore();
+        VersionRange.prototype.load.restore();
       });
 
-      it("calls load on the Installed strategy", done => {
+      it("calls load on the VersionRange strategy", done => {
         supplier
           .load()
           .then(result => {
-            assert(result === "called Installed");
+            assert(result === "called VersionRange");
             done();
           })
           .catch(() => {
