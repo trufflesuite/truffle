@@ -189,7 +189,7 @@ describe("Globally-available variables", function() {
 
     await session.continueUntilBreakpoint(); //run till end
 
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = TruffleDecodeUtils.Conversion.nativize(
       await session.variables()
     );
 
@@ -223,7 +223,7 @@ describe("Globally-available variables", function() {
     });
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = TruffleDecodeUtils.Conversion.nativize(
       await session.variables()
     );
 
@@ -257,7 +257,7 @@ describe("Globally-available variables", function() {
     });
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = TruffleDecodeUtils.Conversion.nativize(
       await session.variables()
     );
 
@@ -291,7 +291,7 @@ describe("Globally-available variables", function() {
     });
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = TruffleDecodeUtils.Conversion.nativize(
       await session.variables()
     );
 
@@ -318,7 +318,7 @@ describe("Globally-available variables", function() {
 
     await session.continueUntilBreakpoint(); //run till end
 
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = TruffleDecodeUtils.Conversion.nativize(
       await session.variables()
     );
 
@@ -352,7 +352,7 @@ describe("Globally-available variables", function() {
     });
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = TruffleDecodeUtils.Conversion.nativize(
       await session.variables()
     );
 

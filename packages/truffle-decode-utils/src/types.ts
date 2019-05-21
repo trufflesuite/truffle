@@ -19,91 +19,91 @@ const debug = debugModule("decode-utils:types");
 //just intended for the future.
 
 import BN from "bn.js";
-import { AstDefinition } from "./ast.ts";
+import { AstDefinition, AstReferences } from "./ast.ts";
 import DefinitionUtils from "./definition.ts";
 
-type Type = UintType | IntType | BoolType | BytesType | AddressType | FixedType
+export type Type = UintType | IntType | BoolType | BytesType | AddressType | FixedType
   | UfixedType | StringType | ArrayType | MappingType | FunctionType
   | StructType | EnumType | ContractType | MagicType;
 
-interface UintType {
+export interface UintType {
   typeclass: "uint";
   bits: number;
 }
 
-interface IntType {
+export interface IntType {
   typeclass: "int";
   bits: number;
 }
 
-interface BoolType {
+export interface BoolType {
   typeClass: "bool";
 }
 
-type BytesType = BytesTypeStatic | BytesTypeDynamic;
+export type BytesType = BytesTypeStatic | BytesTypeDynamic;
 
-interface BytesTypeStatic {
+export interface BytesTypeStatic {
   typeClass: "bytes";
   kind: "static";
   length: number;
 }
 
-interface BytesTypeDynamic {
+export interface BytesTypeDynamic {
   typeClass: "bytes";
   kind: "dynamic";
   location?: string;
 }
 
-interface AddressType {
+export interface AddressType {
   typeClass: "address";
   payable: boolean;
 }
 
-interface StringType {
+export interface StringType {
   typeClass: "string";
   location?: string;
 }
 
-interface FixedType {
+export interface FixedType {
   typeClass: "fixed";
   bits: number;
   places: number;
 }
 
-interface UfixedType {
+export interface UfixedType {
   typeClass: "ufixed";
   bits: number;
   places: number;
 }
 
-type ArrayType = ArrayTypeStatic | ArrayTypeDynamic;
+export type ArrayType = ArrayTypeStatic | ArrayTypeDynamic;
 
-interface ArrayTypeStatic {
+export interface ArrayTypeStatic {
   typeClass: "array";
-  baseType: Type;
   kind: "static";
+  baseType: Type;
   length: BN;
   location?: string;
 }
 
-interface ArrayTypeDynamic {
+export interface ArrayTypeDynamic {
   typeClass: "array";
-  baseType: Type;
   kind: "dynamic";
+  baseType: Type;
   location?: string;
 }
 
-type ElementaryType = UintType | IntType | BoolType | BytesType | FixedType
+export type ElementaryType = UintType | IntType | BoolType | BytesType | FixedType
   | UfixedType | AddressType | StringType;
 
-interface MappingType {
+export interface MappingType {
   typeClass: "mapping";
   keyType: ElementaryType;
   valueType: Type;
   location?: string; //should only ever be storage
 }
 
-interface FunctionType {
+export interface FunctionType {
   typeClass: "function";
   visibility: string; //should be "internal" or "external", not weird
   //solidity-internal visibilities (but for technical reasons I'm not
@@ -115,10 +115,10 @@ interface FunctionType {
   //we do not presently support bound functions
 }
 
-type ContractDefinedType = StructType | EnumType;
-type UserDefinedType = DefinedInContractType | ContractType;
+export type ContractDefinedType = StructType | EnumType;
+export type UserDefinedType = DefinedInContractType | ContractType;
 
-interface StructType {
+export interface StructType {
   typeClass: "struct";
   id: number;
   typeName: string;
@@ -130,7 +130,7 @@ interface StructType {
   location?: string;
 }
 
-interface EnumType {
+export interface EnumType {
   typeClass: "enum";
   id: number;
   typeName: string;
@@ -139,7 +139,7 @@ interface EnumType {
   options?: string[]; //these should be in order
 }
 
-interface ContractType {
+export interface ContractType {
   typeClass: "contract";
   id: number;
   typeName: string;
@@ -149,7 +149,7 @@ interface ContractType {
   //now
 }
 
-interface MagicType {
+export interface MagicType {
   typeClass: "magic";
   variable: string; //not putting this in the type annotation for technical
   //reasons, but this should be one of "message", "block", or "transaction";
@@ -159,9 +159,9 @@ interface MagicType {
   };
 }
 
-type ReferenceType = ArrayType | MappingType | StructType | StringType | BytesTypeDynamic;
+export type ReferenceType = ArrayType | MappingType | StructType | StringType | BytesTypeDynamic;
 
-interface TypesById {
+export interface TypesById {
   [id: number]: UserDefinedType;
 };
 
@@ -170,7 +170,7 @@ interface TypesById {
 //things of elementary type)
 //NOTE: set forceLocation to *null* to force no location. leave it undefined
 //to not force a location.
-function definitionToType(definition: AstDefinition, forceLocation?: string | null): Type {
+export function definitionToType(definition: AstDefinition, forceLocation?: string | null): Type {
   let typeClass = DefinitionUtils.typeClass(definition);
   switch(typeClass) {
     case "bool":
@@ -351,7 +351,7 @@ function definitionToType(definition: AstDefinition, forceLocation?: string | nu
 
 //whereas the above takes variable definitions, this takes the actual type
 //definition
-function definitionToStoredType(definition: AstDefinition): Type {
+export function definitionToStoredType(definition: AstDefinition): UserDefinedType {
   switch(definition.nodeType) {
     case "StructDefinition": {
       let id = definition.id;
@@ -393,9 +393,17 @@ function definitionToStoredType(definition: AstDefinition): Type {
   }
 }
 
+export function definitionsToStoredTypes(definitions: AstReferences): TypesById {
+  return Object.assign({},
+    ...Object.entries(definitions).map(
+      ([id, definition]) => {[id]: definitionToStoredType(definition)}
+    )
+  );
+}
+
 //one could define a counterpart function that stripped all unnecessary information
 //from the type object, but at the moment I see no need for that
-function fullType(basicType: Type, userDefinedTypes: TypesById): Type {
+export function fullType(basicType: Type, userDefinedTypes: TypesById): Type {
   if(!isUserDefinedType(basicType)) {
     return basicType;
   }
@@ -417,17 +425,17 @@ function fullType(basicType: Type, userDefinedTypes: TypesById): Type {
   return returnType;
 }
 
-function isUserDefinedType(anyType: Type): boolean {
+export function isUserDefinedType(anyType: Type): boolean {
   const userDefinedTypes = ["contract", "enum", "struct"];
   return userDefinedTypes.includes(anyType.typeClass);
 }
 
-function isContractDefinedType(anyType: Type): boolean {
+export function isContractDefinedType(anyType: Type): boolean {
   const contractDefinedTypes = ["enum", "struct"];
   return contractDefinedTypes.includes(anyType.typeClass);
 }
 
-function isReferenceType(anyType: Type): boolean {
+export function isReferenceType(anyType: Type): boolean {
   const alwaysReferenceTypes = ["array", "mapping", "struct", "string"];
   if(alwaysReferenceTypes.includes(anyType.typeClass)) {
     return true;
@@ -441,7 +449,7 @@ function isReferenceType(anyType: Type): boolean {
 }
 
 //the location argument here always forces, so passing undefined *will* force undefined
-function specifyLocation(dataType: Type, location?: string) {
+export function specifyLocation(dataType: Type, location?: string) {
   if(isReferenceType(dataType)) {
     switch(dataType.typeClass) {
       case "string":

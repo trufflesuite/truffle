@@ -65,7 +65,8 @@ function debuggerContextToDecoderContext(context) {
     contractId,
     contractKind,
     isConstructor,
-    abi
+    abi,
+    payable
   } = context;
   return {
     contractName,
@@ -73,7 +74,8 @@ function debuggerContextToDecoderContext(context) {
     contractId,
     contractKind,
     isConstructor,
-    abi: DecodeUtils.Contexts.abiToFunctionAbiWithSignatures(abi)
+    abi: DecodeUtils.Contexts.abiToFunctionAbiWithSignatures(abi),
+    payable
   };
 }
 
@@ -143,6 +145,12 @@ const data = createSelectorTree({
      * data.views.userDefinedTypes
      */
     userDefinedTypes: {
+      //user-defined types for passing to the decoder
+      _: createLeaf(
+        ["../referenceDeclarations"],
+        DecodeUtils.Types.definitionsToStoredTypes
+      ),
+
       /*
        * data.views.userDefinedTypes.contractDefinitions
        * restrict to contracts only, and get their definitions

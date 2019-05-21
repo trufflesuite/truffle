@@ -214,7 +214,7 @@ describe("Variable IDs", function() {
 
     await session.continueUntilBreakpoint();
     while (!session.view(trace.finished)) {
-      values.push((await session.variable("nbang")).toNumber());
+      values.push((await session.variable("nbang")).nativize());
       await session.continueUntilBreakpoint();
     }
 

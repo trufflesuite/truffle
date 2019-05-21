@@ -242,7 +242,7 @@ describe("Further Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = TruffleDecodeUtils.Conversion.nativize(
       await session.variables()
     );
 
@@ -252,25 +252,13 @@ describe("Further Decoding", function() {
       localStorage: [107, 214],
       storageStructArray: [{ x: 107 }],
       storageArrayArray: [[2, 3]],
-      structMapping: new Map([["hello", { x: 107 }]]),
-      arrayMapping: new Map([["hello", [2, 3]]]),
-      signedMapping: new Map([["hello", -1]]),
+      structMapping: { hello: { x: 107 } },
+      arrayMapping: { hello: [2, 3] },
+      signedMapping: { hello: -1 },
       pointedAt: [107, 214]
     };
 
-    assert.containsAllKeys(variables, expectedResult);
-
-    for (let name in expectedResult) {
-      if (expectedResult[name] instanceof Map) {
-        //each map has "hello" as its only key
-        assert.deepEqual(
-          variables[name]["hello"],
-          expectedResult[name]["hello"]
-        );
-      } else {
-        assert.deepEqual(variables[name], expectedResult[name]);
-      }
-    }
+    assert.deepInclude(variables, expectedResult);
   });
 
   it("Decodes elementary types and mappings correctly", async function() {
@@ -298,39 +286,24 @@ describe("Further Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = TruffleDecodeUtils.Conversion.nativize(
       await session.variables()
-    ); //get rid of BNs to avoid Map problems
+    );
     debug("variables %O", variables);
 
     const expectedResult = {
-      boolMap: new Map([[true, true]]),
-      byteMap: new Map([["0x01", "0x01"]]),
-      bytesMap: new Map([["0x01", "0x01"]]),
-      uintMap: new Map([[1, 1]]),
-      intMap: new Map([[-1, -1]]),
-      stringMap: new Map([["0xdeadbeef", "0xdeadbeef"], ["12345", "12345"]]),
-      addressMap: new Map([[address, address]]),
+      boolMap: { true: true },
+      byteMap: { "0x01": "0x01" },
+      bytesMap: { "0x01": "0x01" },
+      uintMap: { "1": 1 },
+      intMap: { "-1": -1 },
+      stringMap: { "0xdeadbeef": "0xdeadbeef", "12345": "12345" },
+      addressMap: { [address]: address },
       oneByte: "0xff",
       severalBytes: ["0xff"]
     };
 
-    assert.containsAllKeys(variables, expectedResult);
-
-    for (let name in expectedResult) {
-      if (expectedResult[name] instanceof Map) {
-        assert.sameDeepMembers(
-          Array.from(variables[name].keys()),
-          Array.from(expectedResult[name].keys())
-        );
-        for (let key of expectedResult[name].keys()) {
-          //no mappings are nested so this will do fine
-          assert.deepEqual(variables[name][key], expectedResult[name][key]);
-        }
-      } else {
-        assert.deepEqual(variables[name], expectedResult[name]);
-      }
-    }
+    assert.deepInclude(variables, expectedResult);
   });
 
   it("Splices locations correctly", async function() {
@@ -357,12 +330,12 @@ describe("Further Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = TruffleDecodeUtils.Conversion.nativize(
       await session.variables()
     );
 
     const expectedResult = {
-      map: new Map([["key1", "value1"], ["key2", "value2"]]),
+      map: { key1: "value1", key2: "value2" },
       pointedAt: "key2",
       arrayArray: [[82]],
       arrayStruct: { x: [82] },
@@ -371,22 +344,7 @@ describe("Further Decoding", function() {
       pointedAt: "key2"
     };
 
-    assert.containsAllKeys(variables, expectedResult);
-
-    for (let name in expectedResult) {
-      if (expectedResult[name] instanceof Map) {
-        assert.sameDeepMembers(
-          Array.from(variables[name].keys()),
-          Array.from(expectedResult[name].keys())
-        );
-        for (let key of expectedResult[name].keys()) {
-          //no mappings are nested so this will do fine
-          assert.deepEqual(variables[name][key], expectedResult[name][key]);
-        }
-      } else {
-        assert.deepEqual(variables[name], expectedResult[name]);
-      }
-    }
+    assert.deepInclude(variables, expectedResult);
   });
 
   it("Decodes inner mappings correctly and keeps path info", async function() {
@@ -407,64 +365,25 @@ describe("Further Decoding", function() {
     //we're only testing storage so run till end
     await session.continueUntilBreakpoint();
 
-    const variables = await session.variables();
+    const variables = TruffleDecodeUtils.Conversion.nativize(
+      await session.variables()
+    );
 
     const expectedResult = {
-      mapArrayStatic: [new Map([["a", "0a"]])],
-      mapMap: new Map([["a", new Map([["c", "ac"]])]]),
+      mapArrayStatic: [{ a: "0a" }],
+      mapMap: { a: { c: "ac" } },
       mapStruct0: {
-        map: new Map([["a", "00a"]])
+        map: { a: "00a" }
       },
       mapStruct1: {
-        map: new Map([["e", "00e"]])
+        map: { e: "00e" }
       }
     };
 
     debug("variables %O", variables);
     debug("expectedResult %O", expectedResult);
 
-    assert.containsAllKeys(variables, expectedResult);
-
-    const simpleCases = ["mapArrayStatic", "mapStruct0", "mapStruct1"];
-
-    //first group: mappings in structs and arrays
-    for (let name of simpleCases) {
-      //need to use Object.keys in case it's an array
-      assert.hasAllKeys(variables[name], Object.keys(expectedResult[name]));
-      for (let objectKey in expectedResult[name]) {
-        assert.hasAllKeys(
-          variables[name][objectKey],
-          Array.from(expectedResult[name][objectKey].keys())
-        );
-        for (let mapKey of expectedResult[name][objectKey].keys()) {
-          //they're all strings, don't need deepEqual
-          assert.equal(
-            variables[name][objectKey][mapKey],
-            expectedResult[name][objectKey][mapKey]
-          );
-        }
-      }
-    }
-
-    //second group: mappings in mappings (just mapMap)
-    assert.containsAllKeys(
-      variables.mapMap,
-      Array.from(expectedResult.mapMap.keys())
-    );
-    debug("expectedResult.mapMap %O", expectedResult.mapMap);
-    for (let outerKey of expectedResult.mapMap.keys()) {
-      assert.hasAllKeys(
-        variables.mapMap.get(outerKey),
-        Array.from(expectedResult.mapMap.get(outerKey).keys())
-      );
-      for (let innerKey of expectedResult.mapMap.get(outerKey).keys()) {
-        //they're all strings, don't need deepEqual
-        assert.equal(
-          variables.mapMap.get(outerKey)[innerKey],
-          expectedResult.mapMap.get(outerKey)[innerKey]
-        );
-      }
-    }
+    assert.deepInclude(variables, expectedResult);
 
     //get offsets of top-level variables for this contract
     //converting to numbers for convenience

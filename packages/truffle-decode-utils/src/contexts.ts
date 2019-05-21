@@ -88,34 +88,45 @@ export namespace Contexts {
   }
 
   export function abiToFunctionAbiWithSignatures(abi: Abi | undefined): FunctionAbiWithSignatures | undefined {
-    return abi === undefined
-      ? undefined
-      : Object.assign({},
-        ...abi.filter(
-          abiEntry => abiEntry.type === "function"
-        ).map(
-          abiEntry => {
-            let signature: string;
-            //let's try forcing it and see if it already has a signature :P
-            signature = (<FunctionAbiEntryWithSignature>abiEntry).signature;
-            debug("signature read: %s", signature);
-            //if not, compute it ourselves
-            if(signature === undefined) {
-              signature = abiCoder.encodeFunctionSignature(<AbiItem>abiEntry);
-              //Notice the type coercion -- web3 and our schema describe things a little
-              //differently, and TypeScript complains.  I think we just have to force it,
-              //sorry.
-              debug("signature computed: %s", signature);
-            }
-            return {
-              [signature]: {
-                ...abiEntry,
-                signature
-              }
-            };
+    if(abi === undefined) {
+      return undefined;
+    }
+    return Object.assign({},
+      ...abi.filter(
+        abiEntry => abiEntry.type === "function"
+      ).map(
+        abiEntry => {
+          let signature: string;
+          //let's try forcing it and see if it already has a signature :P
+          signature = (<FunctionAbiEntryWithSignature>abiEntry).signature;
+          debug("signature read: %s", signature);
+          //if not, compute it ourselves
+          if(signature === undefined) {
+            signature = abiCoder.encodeFunctionSignature(<AbiItem>abiEntry);
+            //Notice the type coercion -- web3 and our schema describe things a little
+            //differently, and TypeScript complains.  I think we just have to force it,
+            //sorry.
+            debug("signature computed: %s", signature);
           }
-        )
+          return {
+            [signature]: {
+              ...abiEntry,
+              signature
+            }
+          };
+        }
       )
+    )
+  }
+
+  //does this ABI have a payable fallback function?
+  export function isABIPayable(abi: Abi | undefined): boolean | undefined {
+    if(abi === undefined) {
+      return undefined;
+    }
+    return abi.some(
+      abiEntry => abiEntry.type === "fallback" && abiEntry.payable
+    );
   }
 
   //I split these next two apart because the type system was giving me rouble
