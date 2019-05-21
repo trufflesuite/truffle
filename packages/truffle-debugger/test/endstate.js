@@ -102,7 +102,7 @@ describe("End State", function() {
     debug("proc.assignments %O", session.view(data.proc.assignments));
 
     assert.ok(session.view(sessionSelector.transaction.receipt).status);
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = TruffleDecodeUtils.Conversion.nativize(
       await session.variables()
     );
     assert.include(variables, { x: 107 });

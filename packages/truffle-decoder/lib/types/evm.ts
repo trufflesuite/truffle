@@ -1,4 +1,4 @@
-import { AstReferences, Contexts } from "truffle-decode-utils";
+import { AstReferences, Contexts, Types } from "truffle-decode-utils";
 import { StorageAllocations, CalldataAllocations, MemoryAllocations, StorageMemberAllocations } from "./allocation";
 import { Slot } from "./storage";
 
@@ -19,7 +19,7 @@ export interface WordMapping {
 export interface EvmInfo {
   state: EvmState;
   mappingKeys?: Slot[];
-  referenceDeclarations?: AstReferences;
+  userDefinedTypes?: Types.TypesById;
   storageAllocations?: StorageAllocations;
   calldataAllocations?: CalldataAllocations;
   memoryAllocations?: MemoryAllocations;

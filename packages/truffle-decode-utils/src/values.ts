@@ -15,9 +15,9 @@ const debug = debugModule("decode-utils:values");
 //NOTE: not all of these optional fields are actually implemented. Some are
 //just intended for the future.
 
-//Note: the errors defined here deliberately *don't* extend Error.  This is
-//because their intended use is a little different (even if we might throw
-//one).
+//Note: Many of the errors defined here deliberately *don't* extend Error.
+//This is because their intended use is a little different.  Only the ones
+//that are for throwing extend Error.
 
 import BN from "bn.js";
 import * as Types from "./types";
@@ -33,43 +33,56 @@ interface InspectOptions {
 }
 
 function formatCircular(loopLength: number, options: InspectOptions) {
-  return options.stylize(`[Circular (=up ${this.loopLength})]`, "special");
+  return options.stylize(`[/ircular (=up ${this.loopLength})]`, "special");
 }
 
-abstract class Value {
+export abstract class Value {
   type: Types.Type;
   reference?: number; //will be used in the future for circular values
+  nativize(): any; //HACK
+  //turns Value objects into Plain-Old JavaScript Objects
+  //May cause errors if numeric values are too big!
+  //only use this in testing or if you have no better option!
 };
 
-abstract class ValueProper extends Value {
+export abstract class ValueProper extends Value {
   value: any; //sorry -- at least it's an abstract class though!
 };
 //note: a ValueProper might still have errors within it!
 
-abstract class ElementaryValueProper extends ValueProper {
+export abstract class ElementaryValueProper extends ValueProper {
   toSoliditySha3Input(): {type: string; value: any};
   toString(): string {
     return this.value.toString();
   }
+  nativize() {
+    return this.value;
+  }
 }
 
-abstract class ValueError extends Value {
+export abstract class ValueError extends Value {
   error: DecoderError;
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     return util.inspect(this.error, options);
   }
+  toSoliditySha3Input(): {type: string; value: any} {
+    return undefined; //will cause an error! should not occur!
+  }
+  nativize() {
+    return undefined;
+  }
 };
 
-type DecoderError = DecodeError | GenericErrorDirect;
+export type DecoderError = DecodeError | GenericErrorDirect;
 
-class GenericError extends ValueError {
+export class GenericError extends ValueError {
   error: GenericErrorDirect;
   constructor(error: GenericErrorDirect) {
     this.error = error;
   }
 }
 
-abstract class GenericErrorDirect {
+export abstract class GenericErrorDirect {
   message(): string;
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     return this.message();
@@ -78,7 +91,7 @@ abstract class GenericErrorDirect {
 
 //this one is for throwing; apologies about the confusing name, but I
 //wanted something that would make sense should it not be caught
-class DecodingError extends Error {
+export class DecodingError extends Error {
   error: GenericErrorDirect;
   constructor(error: GenericErrorDirect) {
     super(error.message());
@@ -87,11 +100,11 @@ class DecodingError extends Error {
   }
 }
 
-type DecodeError = BoolDecodingError | EnumDecodingError | FunctionInternalDecodingError | StructDecodingError;
+export type DecodeError = BoolDecodingError | EnumDecodingError | FunctionInternalDecodingError | StructDecodingError;
 
-type UintValue = UintValueProper | GenericError;
+export type UintValue = UintValueProper | GenericError;
 
-class UintValueProper extends ElementaryValueProper {
+export class UintValueProper extends ElementaryValueProper {
   type: Types.UintType;
   value: BN;
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -109,9 +122,9 @@ class UintValueProper extends ElementaryValueProper {
   }
 }
 
-type IntValue = IntValueProper | GenericError;
+export type IntValue = IntValueProper | GenericError;
 
-class IntValueProper extends ValueProper {
+export class IntValueProper extends ElementaryValueProper {
   type: Types.IntType;
   value: BN;
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -129,9 +142,9 @@ class IntValueProper extends ValueProper {
   }
 }
 
-type BoolValue = BoolValueProper | BoolValueError | GenericError;
+export type BoolValue = BoolValueProper | BoolValueError | GenericError;
 
-class BoolValueProper extends ValueProper {
+export class BoolValueProper extends ElementaryValueProper {
   type: Types.BoolType;
   value: boolean;
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -149,7 +162,7 @@ class BoolValueProper extends ValueProper {
   }
 }
 
-class BoolValueError extends ValueError {
+export class BoolValueError extends ValueError {
   type: Types.BoolType;
   error: BoolDecodingError;
   constructor(boolType: Types.BoolType, error: BoolDecodingError) {
@@ -158,11 +171,11 @@ class BoolValueError extends ValueError {
   }
 }
 
-abstract class BoolDecodingError {
+export abstract class BoolDecodingError {
   raw: BN;
 }
 
-class BoolOutOfRangeError extends BoolDecodingError {
+export class BoolOutOfRangeError extends BoolDecodingError {
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     return `Invalid boolean (numeric value ${this.raw.toString()})`;
   }
@@ -171,9 +184,9 @@ class BoolOutOfRangeError extends BoolDecodingError {
   }
 }
 
-type BytesValue = BytesValueProper | GenericError;
+export type BytesValue = BytesValueProper | GenericError;
 
-class BytesValueProper extends ValueProper {
+export class BytesValueProper extends ElementaryValueProper {
   type: Types.BytesType;
   value: string; //should be hex-formatted, with leading "0x"
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -193,9 +206,9 @@ class BytesValueProper extends ValueProper {
   }
 }
 
-type AddressValue = AddressValueProper | GenericError;
+export type AddressValue = AddressValueProper | GenericError;
 
-class AddressValueProper extends ValueProper {
+export class AddressValueProper extends ElementaryValueProper {
   type: Types.AddressType;
   value: string; //should have 0x and be checksum-cased
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -213,9 +226,9 @@ class AddressValueProper extends ValueProper {
   }
 }
 
-type StringValue = StringValueProper | GenericError;
+export type StringValue = StringValueProper | GenericError;
 
-class StringValueProper extends ValueProper {
+export class StringValueProper extends ElementaryValueProper {
   type: Types.StringType;
   value: string;
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -235,16 +248,19 @@ class StringValueProper extends ValueProper {
 
 //I'm skipping FixedValue and UfixedValue for now
 
-type ArrayValue = ArrayValueProper | GenericError;
+export type ArrayValue = ArrayValueProper | GenericError;
 
-class ArrayValueProper extends ValueProper {
+export class ArrayValueProper extends ValueProper {
   type: Types.ArrayType;
   value: Value[];
   [util.inspect.custom](depth: number | null, options: InspectOptions): string | undefined {
     if(this.reference !== undefined) {
-      return formatLoopLength(this.reference, options);
+      return formatCircular(this.reference, options);
     }
-    return util.inspect(value, options)
+    return util.inspect(this.value, options)
+  }
+  nativize() {
+    return this.value.map(element => element.nativize());
   }
   constructor(arrayType: Types.ArrayType, value: Value[]) {
     this.type = arrayType;
@@ -252,16 +268,22 @@ class ArrayValueProper extends ValueProper {
   }
 }
 
-type ElementaryValue = UintValue | IntValue | BoolValue | BytesValue | AddressValue | StringValue;
+export type ElementaryValue = UintValue | IntValue | BoolValue | BytesValue | AddressValue | StringValue;
 //again, FixedValue and UfixedValue are excluded for now
 
-type MappingValue = MappingValueProper | GenericError;
+export type MappingValue = MappingValueProper | GenericError;
 
-class MappingValueProper extends ValueProper {
+export class MappingValueProper extends ValueProper {
   type: Types.MappingType;
   value: [ElementaryValue, Value][]; //order of key-value pairs is irrelevant
   [util.inspect.custom](depth: number | null, options: InspectOptions): string | undefined {
-    return util.inspect(new Map(value), options);
+    return util.inspect(new Map(this.value), options);
+  }
+  nativize() {
+    //if only I could use Object.fromEntries() here!
+    return Object.assign({}, ...this.value.map(([key, value]) =>
+      {[key.toString()]: value.nativize()}
+    );
   }
   constructor(mappingType: Types.MappingType, value: [ElementaryValue, Value][]) {
     this.type = mappingType;
@@ -269,23 +291,23 @@ class MappingValueProper extends ValueProper {
   }
 }
 
-type FunctionValue = FunctionValueExternal | FunctionValueInternal;
-type FunctionValueInternal = FunctionValueInternalProper | FunctionValueInternalError | GenericError;
-type FunctionValueExternal = FunctionValueExternalProper | GenericError;
-type FunctionValueExternalProper =
+export type FunctionValue = FunctionValueExternal | FunctionValueInternal;
+export type FunctionValueInternal = FunctionValueInternalProper | FunctionValueInternalError | GenericError;
+export type FunctionValueExternal = FunctionValueExternalProper | GenericError;
+export type FunctionValueExternalProper =
   FunctionValueExternalProperKnown
   | FunctionValueExternalProperInvalid
   | FunctionValueExternalProperUnknown;
-type FunctionValueInternalProper = 
+export type FunctionValueInternalProper = 
   | FunctionValueInternalKnown
   | FunctionValueInternalException
   | FunctionValueInternalUnknown
 
-class FunctionValueExternalProperKnown extends ValueProper {
+export class FunctionValueExternalProperKnown extends ValueProper {
   type: Types.FunctionType; //should be external, obviously
   value: {
-    contract: ContractValueDirectKnown;
     kind: "known";
+    contract: ContractValueDirectKnown;
     selector: string; //formatted as a bytes4
     name: string;
   };
@@ -295,17 +317,20 @@ class FunctionValueExternalProperKnown extends ValueProper {
     //now, put it together
     return options.stylize(`[Function: ${this.name} of ${contractString}]`, "special");
   }
+  nativize() {
+    return `${this.value.contract.nativize()}.${this.value.name}`
+  }
   constructor(functionType: Types.FunctionType, contract: ContractValueDirectKnown, selector: string, name: string) {
     this.type = functionType;
     this.value = { contract, selector, name, kind: "known" };
   }
 }
 
-class FunctionValueExternalProperInvalid extends ValueProper {
+export class FunctionValueExternalProperInvalid extends ValueProper {
   type: Types.FunctionType; //should be external, obviously
   value: {
-    contract: ContractValueDirectKnown;
     kind: "invalid";
+    contract: ContractValueDirectKnown;
     selector: string; //formatted as a bytes4
   };
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -314,6 +339,9 @@ class FunctionValueExternalProperInvalid extends ValueProper {
     let selectorString = `Unknown function 0x${this.selector.value}`;
     //now, put it together
     return options.stylize(`[Function: ${selectorString} of ${contractString}]`, "special");
+  }
+  nativize() {
+    return `${this.value.contract.nativize()}.call(${this.value.selector}...)`
   }
   constructor(functionType: Types.FunctionType, contract: ContractValueDirectKnown, selector: string) {
     this.type = functionType;
@@ -321,11 +349,11 @@ class FunctionValueExternalProperInvalid extends ValueProper {
   }
 }
 
-class FunctionValueExternalProperUnknown extends ValueProper {
+export class FunctionValueExternalProperUnknown extends ValueProper {
   type: Types.FunctionType; //should be external, obviously
   value: {
-    contract: ContractValueDirectUnknown;
     kind: "unknown";
+    contract: ContractValueDirectUnknown;
     selector: string; //formatted as a bytes4
   };
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -335,13 +363,16 @@ class FunctionValueExternalProperUnknown extends ValueProper {
     //now, put it together
     return options.stylize(`[Function: ${selectorString} of ${contractString}]`, "special");
   }
+  nativize() {
+    return `${this.value.contract.nativize()}.call(${this.value.selector}...)`
+  }
   constructor(functionType: Types.FunctionType, contract: ContractValueDirectUnknown, selector: string) {
     this.type = functionType;
     this.value = { contract, selector, kind: "unknown" };
   }
 }
 
-class FunctionValueInternalProperKnown extends ValueProper {
+export class FunctionValueInternalProperKnown extends ValueProper {
   type: Types.FunctionType; //should be internal, obviously
   value: {
     kind: "function"
@@ -353,6 +384,9 @@ class FunctionValueInternalProperKnown extends ValueProper {
   };
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     return options.stylize(`[Function: ${this.definedIn.typeName}.${this.name}]`, "special");
+  }
+  nativize() {
+    return `${this.value.definedIn.typeName}.${this.value.name}`;
   }
   constructor(
     functionType: Types.FunctionType,
@@ -374,7 +408,7 @@ class FunctionValueInternalProperKnown extends ValueProper {
   }
 }
 
-class FunctionValueInternalProperException extends ValueProper {
+export class FunctionValueInternalProperException extends ValueProper {
   type: Types.FunctionType; //should be internal, obviously
   value: {
     kind: "exception"
@@ -387,6 +421,11 @@ class FunctionValueInternalProperException extends ValueProper {
       ? options.stylize(`[Function: <zero>]`, "special")
       : options.stylize(`[Function: assert(false)]`, "special");
   }
+  nativize() {
+    return this.deployedProgramCounter === 0
+      ? `<zero>`
+      : `assert(false)`;
+  }
   constructor(
     functionType: Types.FunctionType,
     context: Types.ContractType,
@@ -398,7 +437,7 @@ class FunctionValueInternalProperException extends ValueProper {
   }
 }
 
-class FunctionValueInternalProperUnknown extends ValueProper {
+export class FunctionValueInternalProperUnknown extends ValueProper {
   type: Types.FunctionType; //should be internal, obviously
   value: {
     kind: "unknown"
@@ -408,6 +447,9 @@ class FunctionValueInternalProperUnknown extends ValueProper {
   };
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     return options.stylize(`[Function: decoding not supported (raw info: deployed PC=${this.deployedProgramCounter}, constructor PC=${this.constructorProgramCounter})]`, "special");
+  }
+  nativize() {
+    return `<decoding not supported>`;
   }
   constructor(
     functionType: Types.FunctionType,
@@ -420,7 +462,7 @@ class FunctionValueInternalProperUnknown extends ValueProper {
   }
 }
 
-class FunctionValueInternalError extends ValueError {
+export class FunctionValueInternalError extends ValueError {
   type: Types.FunctionType; //should be internal, obviously
   error: FunctionInternalDecodingError;
   constructor(functionType: Types.FunctionType, error: FunctionInternalDecodingError) {
@@ -429,13 +471,13 @@ class FunctionValueInternalError extends ValueError {
   }
 }
 
-abstract class FunctionInternalDecodingError {
+export abstract class FunctionInternalDecodingError {
   context: Types.ContractType;
   deployedProgramCounter: number;
   constructorProgramCounter: number;
 }
 
-class NoSuchInternalFunctionError extends FunctionInternalDecodingError {
+export class NoSuchInternalFunctionError extends FunctionInternalDecodingError {
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     return `Invalid function (Deployed PC=${this.deployedProgramCounter}, constructor PC=${this.constructorProgramCounter}) of contract ${this.context.typeName}`;
   }
@@ -446,7 +488,7 @@ class NoSuchInternalFunctionError extends FunctionInternalDecodingError {
   }
 }
 
-class DeployedFunctionInConstructorError extends FunctionInternalDecodingError {
+export class DeployedFunctionInConstructorError extends FunctionInternalDecodingError {
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     return `Deployed-style function (PC=${this.deployedProgramCounter}) in constructor`;
   }
@@ -457,7 +499,7 @@ class DeployedFunctionInConstructorError extends FunctionInternalDecodingError {
   }
 }
 
-class MalformedInternalFunctionError extends FunctionInternalDecodingError {
+export class MalformedInternalFunctionError extends FunctionInternalDecodingError {
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     return `Malformed internal function w/constructor PC only (value: ${this.constructorProgramCounter})`;
   }
@@ -468,18 +510,23 @@ class MalformedInternalFunctionError extends FunctionInternalDecodingError {
   }
 }
 
-type StructValue = StructValueProper | GenericError;
+export type StructValue = StructValueProper | GenericError;
 
-class StructValueProper extends ValueProper {
+export class StructValueProper extends ValueProper {
   type: Types.StructType;
   value: {
     [field: string]: Value;
   };
   [util.inspect.custom](depth: number | null, options: InspectOptions): string | undefined {
     if(this.reference !== undefined) {
-      return formatLoopLength(this.reference, options);
+      return formatCircular(this.reference, options);
     }
-    return util.inspect(value, options);
+    return util.inspect(this.value, options);
+  }
+  nativize() {
+    return Object.assign({}, ...Object.entries(this.value).map(
+      ([key, value]) => {[key]: value.nativize()}
+    );
   }
   constructor(structType: Types.StructType, value: {[field: string]: Value}) {
     this.type = structType;
@@ -487,7 +534,7 @@ class StructValueProper extends ValueProper {
   }
 }
 
-class StructNotFoundError extends StructDecodingError {
+export class StructNotFoundError extends StructDecodingError {
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     let typeName = this.type.definingContract.typeName + "." + this.type.typeName;
     return `Unknown struct type ${typeName} of id ${this.type.id}`;
@@ -497,9 +544,9 @@ class StructNotFoundError extends StructDecodingError {
   }
 }
 
-type EnumValue = EnumValueProper | EnumValueError | GenericError;
+export type EnumValue = EnumValueProper | EnumValueError | GenericError;
 
-class EnumValueProper extends ValueProper {
+export class EnumValueProper extends ValueProper {
   type: Types.EnumType;
   value: {
     name: string;
@@ -508,13 +555,16 @@ class EnumValueProper extends ValueProper {
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     return `${this.type.definingContract.typeName}.${this.type.typeName}.${this.name}`;
   }
+  nativize() {
+    return `${this.type.definingContract.typeName}.${this.type.typeName}.${this.name}`;
+  }
   constructor(enumType: Types.EnumType, numeric: BN, name: string) {
     this.type = enumType;
     this.value = { name, numeric };
   }
 };
 
-class EnumValueError extends ValueError {
+export class EnumValueError extends ValueError {
   type: Types.EnumType;
   error: EnumDecodingError;
   constructor(enumType: Types.EnumType, error: EnumDecodingError) {
@@ -523,12 +573,12 @@ class EnumValueError extends ValueError {
   }
 };
 
-abstract class EnumDecodingError {
+export abstract class EnumDecodingError {
   type: Types.EnumType;
   raw: BN;
 }
 
-class EnumOutOfRangeError extends EnumDecodingError {
+export class EnumOutOfRangeError extends EnumDecodingError {
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     let typeName = this.type.definingContract.typeName + "." + this.type.typeName;
     return `Invalid ${typeName} (numeric value ${this.raw.toString()})`;
@@ -539,7 +589,7 @@ class EnumOutOfRangeError extends EnumDecodingError {
   }
 }
 
-class EnumNotFoundDecodingError extends EnumDecodingError {
+export class EnumNotFoundDecodingError extends EnumDecodingError {
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     let typeName = this.type.definingContract.typeName + "." + this.type.typeName;
     return `Unknown enum type ${typeName} of id ${this.type.id} (numeric value ${this.raw.toString()})`;
@@ -550,13 +600,16 @@ class EnumNotFoundDecodingError extends EnumDecodingError {
   }
 }
 
-type ContractValue = ContractValueProper | GenericError;
+export type ContractValue = ContractValueProper | GenericError;
 
-class ContractValueProper extends ValueProper {
+export class ContractValueProper extends ValueProper {
   type: Types.ContractType;
   value: ContractValueDirect;
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     return util.inspect(this.value, options);
+  }
+  nativize() {
+    return this.value.nativize();
   }
   constructor(contractType: contractType, value: ContractValueDirect) {
     this.type = contractType;
@@ -564,9 +617,9 @@ class ContractValueProper extends ValueProper {
   }
 }
 
-type ContractValueDirect = ContractValueDirectKnown | ContractValueDirectUnkown;
+export type ContractValueDirect = ContractValueDirectKnown | ContractValueDirectUnkown;
 
-class ContractValueDirectKnown {
+export class ContractValueDirectKnown {
   address: string; //should be formatted as address
   //NOT an AddressValue, note
   kind: "known";
@@ -575,6 +628,9 @@ class ContractValueDirectKnown {
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     return options.stylize(this.address, "number") + ` (${this.class.typeName})`;
   }
+  nativize() {
+    return `${this.class.typeName}(${this.address})`;
+  }
   constructor(address: string, contractClass: Types.ContractType) {
     this.kind = "known";
     this.address = address;
@@ -582,12 +638,15 @@ class ContractValueDirectKnown {
   }
 }
 
-class ContractValueDirectUnknown {
+export class ContractValueDirectUnknown {
   address: string; //should be formatted as address
   //NOT an AddressValue, note
   kind: "unknown";
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     return options.stylize(this.address, "number") + " of unknown contract class";
+  }
+  nativize() {
+    return this.address;
   }
   constructor(address: string) {
     this.kind = "unknown";
@@ -595,15 +654,20 @@ class ContractValueDirectUnknown {
   }
 }
 
-type MagicValue = MagicValueProper | GenericError;
+export type MagicValue = MagicValueProper | GenericError;
 
-class MagicValueProper extends ValueProper {
+export class MagicValueProper extends ValueProper {
   type: Types.MagicType;
   value: {
     [field: string]: Value
   };
   [util.inspect.custom](depth: number | null, options: InspectOptions): string | undefined {
-    return util.inspect(value, options);
+    return util.inspect(this.value, options);
+  }
+  nativize() {
+    return Object.assign({}, ...Object.entries(this.value).map(
+      ([key, value]) => {[key]: value.nativize()}
+    );
   }
   constructor(magicType: Types.MagicType, value: {[field: string]: Value}) {
     this.type = magicType;
@@ -611,10 +675,10 @@ class MagicValueProper extends ValueProper {
   }
 }
 
-type FixedValue = FixedValueError; //FixedValueProper isn't ready yet, sorry!
-type UfixedValue = UfixedValueError; //FixedValueProper isn't ready yet, sorry!
+export type FixedValue = FixedValueError; //FixedValueProper isn't ready yet, sorry!
+export type UfixedValue = UfixedValueError; //FixedValueProper isn't ready yet, sorry!
 
-class FixedValueError extends ValueError {
+export class FixedValueError extends ValueError {
   type: Types.FixedType;
   error: FixedDecodingError;
   constructor(dataType: Types.FixedType, raw: BN) {
@@ -623,7 +687,7 @@ class FixedValueError extends ValueError {
   }
 }
 
-class UfixedValueError extends ValueError {
+export class UfixedValueError extends ValueError {
   type: Types.UfixedType;
   error: FixedDecodingError;
   constructor(dataType: Types.UfixedType, raw: BN) {
@@ -633,7 +697,7 @@ class UfixedValueError extends ValueError {
 }
 
 //not distinguishing fixed vs ufixed here
-class FixedDecodingError {
+export class FixedDecodingError {
   raw: BN;
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     return `Fixed-point decoding not yet supported (raw value: ${this.raw.toString()})`;
@@ -643,7 +707,7 @@ class FixedDecodingError {
   }
 }
 
-class UserDefinedTypeNotFoundError extends GenericErrorDirect {
+export class UserDefinedTypeNotFoundError extends GenericErrorDirect {
   type: Types.UserDefinedType;
   message(): string {
     let typeName = this.type.definingContract.typeName + "." + this.type.typeName;
@@ -654,7 +718,7 @@ class UserDefinedTypeNotFoundError extends GenericErrorDirect {
   }
 }
 
-class UnsupportedConstantError extends GenericErrorDirect {
+export class UnsupportedConstantError extends GenericErrorDirect {
   definition: AstDefinition;
   message(): string {
     return `Unsupported constant type ${DefinitionUtils.typeClass(this.definition)}$`;
@@ -664,7 +728,7 @@ class UnsupportedConstantError extends GenericErrorDirect {
   }
 }
 
-class ReadErrorStack extends GenericErrorDirect {
+export class ReadErrorStack extends GenericErrorDirect {
   from: number;
   to: number;
   message(): string {
@@ -673,5 +737,45 @@ class ReadErrorStack extends GenericErrorDirect {
   constructor(from: number, to: number) {
     this.from = from;
     this.to = to;
+  }
+}
+
+//WARNING: this function does not check its inputs! Please check before using!
+//How to use:
+//numbers may be BN, number, or numeric string
+//strings should be given as strings. duh.
+//bytes should be given as hex strings beginning with "0x"
+//addresses are like bytes; checksum case is not required
+//booleans may be given either as booleans, or as string "true" or "false"
+export function wrapElementaryValue(value: any, definition: AstDefinition): ElementaryValue {
+  let dataType = Types.definitionToType(definition);
+  switch(dataType.typeClass) {
+    case "string":
+      return new StringValueProper(dataType, value);
+    case "bytes":
+      return new BytesValueProper(dataType, value);
+    case "address":
+      return new AddressValueProper(dataType, value);
+    case "int":
+      if(value instanceof BN) {
+        value = value.clone();
+      }
+      else {
+        value = new BN(value);
+      }
+      return new IntValueProper(dataType, value);
+    case "uint":
+      if(value instanceof BN) {
+        value = value.clone();
+      }
+      else {
+        value = new BN(value);
+      }
+      return new UintValueProper(dataType, value);
+    case "bool":
+      if(typeof value === "string") {
+        value = value !== "false";
+      }
+      return new BoolValueProper(dataType, value);
   }
 }

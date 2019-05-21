@@ -1,9 +1,6 @@
 const debugModule = require("debug");
 const debug = debugModule("lib:debug");
 
-const util = require("util");
-
-const BN = require("bn.js");
 const ora = require("ora");
 
 const Debugger = require("truffle-debugger");
@@ -19,9 +16,6 @@ class CLIDebugger {
 
   async run(txHash) {
     this.config.logger.log("Starting Truffle Debugger...");
-
-    // override BN display
-    this._setupCustomInspect();
 
     // compile contracts
     const compilation = await this.compileSources();
@@ -88,13 +82,6 @@ class CLIDebugger {
 
   async buildInterpreter(session, txHash) {
     return new DebugInterpreter(this.config, session, txHash);
-  }
-
-  _setupCustomInspect() {
-    // add custom inspect options for BNs
-    BN.prototype[util.inspect.custom] = function(depth, options) {
-      return options.stylize(this.toString(), "number");
-    };
   }
 }
 

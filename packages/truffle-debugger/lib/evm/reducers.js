@@ -53,7 +53,8 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
             abi,
             contractId,
             contractKind,
-            isConstructor
+            isConstructor,
+            payable: DecodeUtils.Contexts.isABIPayable(abi)
           }
         }
       };

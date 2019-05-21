@@ -47,7 +47,7 @@ function* tickSaga() {
 }
 
 export function* decode(definition, ref) {
-  let referenceDeclarations = yield select(data.views.referenceDeclarations);
+  let userDefinedTypes = yield select(data.views.userDefinedTypes);
   let state = yield select(data.current.state);
   let mappingKeys = yield select(data.views.mappingKeys);
   let allocations = yield select(data.info.allocations);
@@ -64,7 +64,7 @@ export function* decode(definition, ref) {
   let NO_CODE = new Uint8Array(); //empty array
 
   let decoder = forEvmState(definition, ref, {
-    referenceDeclarations,
+    userDefinedTypes,
     state,
     mappingKeys,
     storageAllocations: allocations.storage,
@@ -111,9 +111,7 @@ export function* decode(definition, ref) {
     result = decoder.next(response);
   }
   //at this point, result.value holds the final value
-  //note: we're still using the old decoder output format, so we need to clean
-  //containers before returning something the debugger can use
-  return DecodeUtils.Conversion.cleanContainers(result.value);
+  return result.value;
 }
 
 function* variablesAndMappingsSaga() {
@@ -349,12 +347,10 @@ function* variablesAndMappingsSaga() {
         baseExpression,
         scopes
       );
-      //if we're dealing with an array, this will just hack up a uint definition
-      //:)
+      //if we're dealing with an array, this will just spoof up a uint
+      //definition :)
 
       //begin subsection: key decoding
-      //(I tried factoring this out into its own saga but it didn't work when I
-      //did :P )
 
       let indexValue;
       let indexDefinition = node.indexExpression;
@@ -485,9 +481,6 @@ function* variablesAndMappingsSaga() {
             break;
           case "mapping":
             slot.key = indexValue;
-            slot.keyEncoding = DecodeUtils.Definition.keyEncoding(
-              keyDefinition
-            );
             slot.offset = new BN(0);
             break;
           default:

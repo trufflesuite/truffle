@@ -22,36 +22,11 @@ import { Provider } from "web3/providers";
 import abiDecoder from "abi-decoder";
 import isEqual from "lodash.isequal"; //util.isDeepStrictEqual doesn't exist in Node 8
 
-export interface EvmMapping {
+interface EventVariable {
   name: string;
   type: string;
-  id: number;
-  keyType: string;
-  valueType: string;
-  members: {
-    [key: string]: EvmVariable;
-  };
-};
-
-export interface EvmStruct {
-  name: string;
-  type: string;
-  members: {
-    [name: string]: DecodedVariable;
-  };
-};
-
-export interface EvmEnum {
-  type: string;
-  value: string;
-};
-
-type EvmVariable = BN | string | boolean | EvmMapping | EvmStruct | EvmEnum;
-
-interface DecodedVariable {
-  name: string;
-  type: string;
-  value: EvmVariable;
+  value: string; //NOTE: this should change to be a decoded variable object
+  //(although really that would replace EventVariable entirely)
 };
 
 interface ContractState {
@@ -60,7 +35,7 @@ interface ContractState {
   nonce: BN;
   code: string;
   variables: {
-    [name: string]: DecodedVariable
+    [name: string]: Values.Value
   };
 };
 
@@ -72,7 +47,7 @@ interface ContractEvent {
   transactionHash: string;
   transactionIndex: number;
   variables: {
-    [name: string]: DecodedVariable
+    [name: string]: EventVariable
   }
 };
 
@@ -181,7 +156,8 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       contractId: node.id,
       contractKind: node.contractKind,
       isConstructor: false,
-      abi: DecodeUtils.Contexts.abiToFunctionAbiWithSignatures(contract.abi)
+      abi: DecodeUtils.Contexts.abiToFunctionAbiWithSignatures(contract.abi),
+      payable: DecodeUtils.Contexts.isABIPayable(contract.abi)
     };
   }
 
@@ -193,6 +169,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
     debug("init called");
     this.referenceDeclarations = general.getReferenceDeclarations(Object.values(this.contractNodes));
+    this.userDefinedTypes = Types.definitionsToStoredTypes(this.referenceDeclarations);
 
     this.eventDefinitions = general.getEventDefinitions(Object.values(this.contractNodes));
     this.eventDefinitionIdsByName = {};
@@ -212,7 +189,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.contractCode = await this.web3.eth.getCode(this.contractAddress);
   }
 
-  private async decodeVariable(variable: StorageMemberAllocation, block: number): Promise<DecodedVariable> {
+  private async decodeVariable(variable: StorageMemberAllocation, block: number): Promise<Values.Value> {
     const info: EvmInfo = {
       state: {
         stack: [],
@@ -220,15 +197,15 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         memory: new Uint8Array(0)
       },
       mappingKeys: this.mappingKeys,
-      referenceDeclarations: this.referenceDeclarations,
+      userDefinedTypes: this.userDefinedTypes,
       storageAllocations: this.storageAllocations,
       contexts: this.contexts,
       currentContext: this.context
     };
 
-    const decoder: IterableIterator<any> = decode(variable.definition, variable.pointer, info);
+    const decoder: IterableIterator<Values.Value> = decode(variable.definition, variable.pointer, info);
 
-    let result: IteratorResult<any> = decoder.next();
+    let result: IteratorResult<Values.Value> = decoder.next();
     while(!result.done) {
       let request = <DecoderRequest>(result.value);
       let response: Uint8Array;
@@ -279,7 +256,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     return result;
   }
 
-  public async variable(nameOrId: string | number, block: BlockType = "latest"): Promise<DecodedVariable | undefined> {
+  public async variable(nameOrId: string | number, block: BlockType = "latest"): Promise<Values.Value | undefined> {
     let blockNumber = typeof block === "number"
       ? block
       : (await this.web3.eth.getBlock(block)).number;
@@ -426,7 +403,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         const definition = argumentDefinitions[i];
 
         if (definition.nodeType === "VariableDeclaration") {
-          contractEvent.variables[definition.name] = <DecodedVariable>{
+          contractEvent.variables[definition.name] = {
             name: definition.name,
             type: DefinitionUtils.typeClass(definition),
             value: event.returnValues[definition.name] // TODO: this should be a decoded value, it currently is a string always
@@ -499,6 +476,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     }
     let rawIndex = indices[indices.length - 1];
     let index: any;
+    let key: Values.ElementaryValue;
     let slot: Slot;
     let definition: AstDefinition;
     switch(DefinitionUtils.typeClass(parentDefinition)) {
@@ -522,39 +500,11 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         break;
       case "mapping":
         let keyDefinition = parentDefinition.keyType || parentDefinition.typeName.keyType;
-        switch(DefinitionUtils.typeClass(keyDefinition)) {
-          case "string":
-          case "bytes":
-            index = rawIndex;
-            break;
-          case "address":
-            index = Web3.utils.toChecksumAddress(rawIndex);
-            break;
-          case "int":
-          case "uint":
-            if(rawIndex instanceof BN) {
-              index = rawIndex.clone();
-            }
-            else {
-              index = new BN(rawIndex);
-            }
-            break;
-          case "bool":
-            if(typeof rawIndex === "string") {
-              index = rawIndex !== "false";
-            }
-            else {
-              index = rawIndex;
-            }
-            break;
-          default: //there is no other case, except fixed and ufixed, but
-            return [undefined, undefined];
-        }
+        key = Values.wrapElementaryValue(rawIndex, keyDefinition);
         definition = parentDefinition.valueType || parentDefinition.typeName.valueType;
         slot = {
           path: parentSlot,
           key: index,
-          keyEncoding: DefinitionUtils.keyEncoding(keyDefinition),
           offset: new BN(0)
         }
         break;
