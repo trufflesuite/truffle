@@ -72,11 +72,6 @@ Command.prototype.getCommand = function(inputStrings, noAliases) {
 };
 
 Command.prototype.run = function(inputStrings, options, callback) {
-  if (typeof options === "function") {
-    callback = options;
-    options = {};
-  }
-
   const result = this.getCommand(inputStrings, options.noAliases);
 
   if (result == null) {
