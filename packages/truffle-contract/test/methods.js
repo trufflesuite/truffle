@@ -413,7 +413,10 @@ describe("Methods", function() {
         await example.triggerRequireError();
         assert.fail();
       } catch (e) {
-        assert(e.message.includes("failing transaction"), "should return failed tx message!");
+        assert(
+          e.message.includes("failing transaction"),
+          "should return failed tx message!"
+        );
         assert(e.receipt === undefined, "Expected no receipt");
       }
     });
@@ -435,7 +438,10 @@ describe("Methods", function() {
         await example.triggerAssertError();
         assert.fail();
       } catch (e) {
-        assert(e.message.includes("failing transaction"), "should return failed tx message!");
+        assert(
+          e.message.includes("failing transaction"),
+          "should return failed tx message!"
+        );
         assert(e.receipt === undefined, "Excected no receipt");
       }
     });
@@ -448,7 +454,10 @@ describe("Methods", function() {
         await example.runsOutOfGas();
         assert.fail();
       } catch (e) {
-        assert(e.message.includes("gas required exceeds allowance"), "should return gas allowance error");
+        assert(
+          e.message.includes("gas required exceeds allowance"),
+          "should return gas allowance error"
+        );
         assert(e.receipt === undefined, "Expected no receipt");
       }
     });

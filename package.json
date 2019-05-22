@@ -3,6 +3,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "prepare": "lerna run prepare --stream --concurrency=1",
+    "prepare-release": "./scripts/prepare-release.sh",
     "test": "lerna run test --stream --concurrency=1 -- --colors",
     "ci": "./scripts/ci.sh",
     "geth": "./scripts/geth.sh",
@@ -15,7 +16,8 @@
     "lerna": "^3.4.3",
     "lint-staged": "^7.3.0",
     "nyc": "^13.0.1",
-    "prettier": "1.14.3"
+    "prettier": "1.14.3",
+    "prs-merged-since": "^1.1.0"
   },
   "workspaces": {
     "packages": [
