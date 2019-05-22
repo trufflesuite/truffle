@@ -207,7 +207,7 @@ describe("Function Pointer Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.nativize(
+    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
       await session.variables()
     );
 
@@ -246,7 +246,7 @@ describe("Function Pointer Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.nativize(
+    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
       await session.variables()
     );
 

@@ -74,31 +74,31 @@ describe("Reset Button", function() {
     await session.addBreakpoint({ sourceId, line: lineOf("BREAK", source) });
 
     variables[0].push(
-      TruffleDecodeUtils.Conversion.nativize(await session.variables())
+      TruffleDecodeUtils.Conversion.nativizeVariables(await session.variables())
     );
     await session.continueUntilBreakpoint(); //advance to line 10
     variables[0].push(
-      TruffleDecodeUtils.Conversion.nativize(await session.variables())
+      TruffleDecodeUtils.Conversion.nativizeVariables(await session.variables())
     );
     await session.continueUntilBreakpoint(); //advance to the end
     variables[0].push(
-      TruffleDecodeUtils.Conversion.nativize(await session.variables())
+      TruffleDecodeUtils.Conversion.nativizeVariables(await session.variables())
     );
 
     //now, reset and do it again
     await session.reset();
 
     variables[1].push(
-      TruffleDecodeUtils.Conversion.nativize(await session.variables())
+      TruffleDecodeUtils.Conversion.nativizeVariables(await session.variables())
     );
     await session.addBreakpoint({ sourceId, line: lineOf("BREAK", source) });
     await session.continueUntilBreakpoint(); //advance to line 10
     variables[1].push(
-      TruffleDecodeUtils.Conversion.nativize(await session.variables())
+      TruffleDecodeUtils.Conversion.nativizeVariables(await session.variables())
     );
     await session.continueUntilBreakpoint(); //advance to the end
     variables[1].push(
-      TruffleDecodeUtils.Conversion.nativize(await session.variables())
+      TruffleDecodeUtils.Conversion.nativizeVariables(await session.variables())
     );
 
     assert.deepEqual(variables[1], variables[0]);

@@ -53,7 +53,7 @@ contract("DecodingSample", _accounts => {
     // );
 
     assert.equal(initialState.name, "DecodingSample");
-    const variables = TruffleDecodeUtils.Conversion.nativize(
+    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
       initialState.variables
     );
 

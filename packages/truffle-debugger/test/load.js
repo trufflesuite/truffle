@@ -71,7 +71,7 @@ describe("Loading and unloading transactions", function() {
     await session.load(txHash);
     assert.isTrue(session.view(trace.loaded));
     await session.continueUntilBreakpoint(); //continue to end
-    const variables = TruffleDecodeUtils.Conversion.nativize(
+    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
       await session.variables()
     );
     const expected = { x: 1 };
@@ -97,7 +97,7 @@ describe("Loading and unloading transactions", function() {
 
     assert.isTrue(session.view(trace.loaded));
     await session.continueUntilBreakpoint(); //continue to end
-    let variables = TruffleDecodeUtils.Conversion.nativize(
+    let variables = TruffleDecodeUtils.Conversion.nativizeVariables(
       await session.variables()
     );
     let expected = { x: 1 };
@@ -107,7 +107,7 @@ describe("Loading and unloading transactions", function() {
     await session.load(txHash2);
     assert.isTrue(session.view(trace.loaded));
     await session.continueUntilBreakpoint(); //continue to end
-    variables = TruffleDecodeUtils.Conversion.nativize(
+    variables = TruffleDecodeUtils.Conversion.nativizeVariables(
       await session.variables()
     );
     expected = { y: 2 };
