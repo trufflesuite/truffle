@@ -2,6 +2,7 @@ import gql from "graphql-tag";
 import { TruffleDB } from "truffle-db/db";
 import * as Contracts from "truffle-workflow-compile";
 import { generateId } from "truffle-db/helpers";
+import { ContractObject } from "truffle-contract-schema/spec";
 
 const AddBytecodes = gql`
 input BytecodeInput {
@@ -235,26 +236,21 @@ export class ArtifactsLoader {
 
     await this.db.query(AddBytecodes, { bytecodes });
   }
-  async loadCompilationSources(compilation: object) {
-    let sources = [];
-    let sourceIds = [];
-    for(let contract in compilation) {
-      let sourceObject = {
-        contents: compilation[contract]["source"],
-        sourcePath: compilation[contract]["sourcePath"]
-      };
 
-      let sourceId = generateId({
-        contents: compilation[contract]["source"],
-        sourcePath: compilation[contract]["sourcePath"]
-      });
+  async loadCompilationSources(contracts: Array<ContractObject>) {
+    // transform contract objects into data model source inputs
+    // and run mutation
+    const result = await this.db.query(AddSources, {
+      sources: contracts.map(
+        ({ source, sourcePath }) => ({ contents: source, sourcePath })
+      )
+    });
 
-      sources.push(sourceObject);
-      sourceIds.push({id: sourceId});
-    }
+    // extract sources
+    const sources = result.data.workspace.sourcesAdd.sources;
 
-    await this.db.query(AddSources, { sources: sources });
-    return sourceIds;
+    // return only array of objects { id }
+    return sources.map( ({ id }) => ({ id }) );
   }
 
   async compilationSourceContracts(compilation: object) {
@@ -284,7 +280,7 @@ export class ArtifactsLoader {
     let sources = [];
 
     const compilationOutput = await Contracts.compile(compilationConfig);
-    const compilationData = Object.values(compilationOutput.contracts);
+    const compilationData: ContractObject[] = Object.values(compilationOutput.contracts);
     let sourceIds = await this.loadCompilationSources(compilationData);
     await this.loadCompilationBytecodes(compilationData);
     let sourceContracts = await this.compilationSourceContracts(compilationData);
