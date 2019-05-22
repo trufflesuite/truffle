@@ -35,7 +35,7 @@ export namespace Values {
   }
 
   function formatCircular(loopLength: number, options: InspectOptions) {
-    return options.stylize(`[/ircular (=up ${this.loopLength})]`, "special");
+    return options.stylize(`[Circular (=up ${this.loopLength})]`, "special");
   }
 
   export abstract class Value {
@@ -56,9 +56,6 @@ export namespace Values {
     abstract toSoliditySha3Input(): {type: string; value: any};
     toString(): string {
       return this.value.toString();
-    }
-    nativize() {
-      return this.value;
     }
   }
 
@@ -119,6 +116,9 @@ export namespace Values {
         value: this.value
       }
     }
+    nativize() {
+      return this.value.toNumber(); //beware!
+    }
     constructor(uintType: Types.UintType, value: BN) {
       super();
       this.type = uintType;
@@ -140,6 +140,9 @@ export namespace Values {
         value: this.value
       }
     }
+    nativize() {
+      return this.value.toNumber(); //beware!
+    }
     constructor(intType: Types.IntType, value: BN) {
       super();
       this.type = intType;
@@ -160,6 +163,9 @@ export namespace Values {
         type: "uint",
         value: this.value ? new BN(1) : new BN(0)
       }
+    }
+    nativize() {
+      return this.value;
     }
     constructor(boolType: Types.BoolType, value: boolean) {
       super();
@@ -219,6 +225,9 @@ export namespace Values {
           };
       }
     }
+    nativize() {
+      return this.value;
+    }
     constructor(bytesType: Types.BytesType, value: string) {
       super();
       this.type = bytesType;
@@ -240,6 +249,9 @@ export namespace Values {
         value: this.value
       }
     }
+    nativize() {
+      return this.value;
+    }
     constructor(addressType: Types.AddressType, value: string) {
       super();
       this.type = addressType;
@@ -260,6 +272,9 @@ export namespace Values {
         type: "string",
         value: this.value
       }
+    }
+    nativize() {
+      return this.value;
     }
     constructor(stringType: Types.StringType, value: string) {
       super();
@@ -578,7 +593,7 @@ export namespace Values {
       numeric: BN;
     };
     fullName(): string {
-      return `${this.type.definingContract.typeName}.${this.type.typeName}.${this.value.name}`;
+      return `${this.type.definingContractName}.${this.type.typeName}.${this.value.name}`;
     }
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return this.fullName();
@@ -610,7 +625,7 @@ export namespace Values {
 
   export class EnumOutOfRangeError extends EnumDecodingError {
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      let typeName = this.type.definingContract.typeName + "." + this.type.typeName;
+      let typeName = this.type.definingContractName + "." + this.type.typeName;
       return `Invalid ${typeName} (numeric value ${this.raw.toString()})`;
     }
     constructor(enumType: Types.EnumType, raw: BN) {
@@ -622,7 +637,7 @@ export namespace Values {
 
   export class EnumNotFoundDecodingError extends EnumDecodingError {
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      let typeName = this.type.definingContract.typeName + "." + this.type.typeName;
+      let typeName = this.type.definingContractName + "." + this.type.typeName;
       return `Unknown enum type ${typeName} of id ${this.type.id} (numeric value ${this.raw.toString()})`;
     }
     constructor(enumType: Types.EnumType, raw: BN) {
@@ -747,7 +762,7 @@ export namespace Values {
     type: Types.UserDefinedType;
     message() {
       let typeName = Types.isContractDefinedType(this.type)
-        ? this.type.definingContract.typeName + "." + this.type.typeName
+        ? this.type.definingContractName + "." + this.type.typeName
         : this.type.typeName;
       return `Unknown ${this.type.typeClass} type ${typeName} of id ${this.type.id}`;
     }

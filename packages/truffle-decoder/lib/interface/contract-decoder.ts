@@ -328,6 +328,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   public watchMappingKey(variable: number | string, ...indices: any[]): void {
     let slot: Slot | undefined = this.constructSlot(variable, ...indices)[0];
     //add mapping key and all ancestors
+    debug("slot: %O", slot);
     while(slot !== undefined &&
       this.mappingKeys.every(existingSlot =>
       !isEqual(existingSlot,slot)
@@ -502,7 +503,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         definition = parentDefinition.valueType || parentDefinition.typeName.valueType;
         slot = {
           path: parentSlot,
-          key: index,
+          key,
           offset: new BN(0)
         }
         break;

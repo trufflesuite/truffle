@@ -376,7 +376,7 @@ describe("Further Decoding", function() {
         map: { a: "00a" }
       },
       mapStruct1: {
-        map: { e: "00e" }
+        map: { e: "10e" }
       }
     };
 
