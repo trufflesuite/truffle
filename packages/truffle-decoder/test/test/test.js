@@ -13,7 +13,7 @@ function validateStructS(struct, values) {
   assert.equal(struct.structBool, values[2]);
   assert.equal(struct.structAddress, values[3]);
 
-  const s2 = struct.members.structS2.value;
+  const s2 = struct.structS2;
   validateStructS2(s2, values[4]);
 }
 
@@ -68,7 +68,7 @@ contract("DecodingSample", _accounts => {
     );
     assert.equal(variables.varBytes7, "0x78554477331122");
     assert.equal(variables.varBytes, "0x01030307");
-    assert.equal(typeof variables.varEnum, "object");
+    assert.equal(typeof variables.varEnum, "string");
     assert.equal(variables.varEnum, "DecodingSample.E.EnumValTwo");
 
     const struct = variables.varStructS;

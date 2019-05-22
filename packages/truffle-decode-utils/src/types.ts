@@ -173,6 +173,7 @@ export namespace Types {
   //NOTE: set forceLocation to *null* to force no location. leave it undefined
   //to not force a location.
   export function definitionToType(definition: AstDefinition, forceLocation?: string | null): Type {
+    debug("definition %O", definition);
     let typeClass = DefinitionUtils.typeClass(definition);
     switch(typeClass) {
       case "bool":

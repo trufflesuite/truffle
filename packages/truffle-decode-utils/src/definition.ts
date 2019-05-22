@@ -325,7 +325,8 @@ export namespace Definition {
     name: "now",
     nodeType: "VariableDeclaration",
     typeDescriptions: {
-      typeIdentifier: "t_uint256"
+      typeIdentifier: "t_uint256",
+      typeString: "uint256"
     }
   }
 
@@ -335,7 +336,8 @@ export namespace Definition {
     name: "msg",
     nodeType: "VariableDeclaration",
     typeDescriptions: {
-      typeIdentifier: "t_magic_message"
+      typeIdentifier: "t_magic_message",
+      typeString: "msg"
     }
   };
 
@@ -345,7 +347,8 @@ export namespace Definition {
     name: "tx",
     nodeType: "VariableDeclaration",
     typeDescriptions: {
-      typeIdentifier: "t_magic_transaction"
+      typeIdentifier: "t_magic_transaction",
+      typeString: "tx"
     }
   };
 
@@ -355,11 +358,12 @@ export namespace Definition {
     name: "block",
     nodeType: "VariableDeclaration",
     typeDescriptions: {
-      typeIdentifier: "t_magic_block"
+      typeIdentifier: "t_magic_block",
+      typeString: "block"
     }
   };
 
-  export function spoofThisDefinition(contractName: string, contractId: number): AstDefinition {
+  export function spoofThisDefinition(contractName: string, contractId: number, contractKind: string): AstDefinition {
     let formattedName = contractName.replace(/\$/g, "$$".repeat(3));
     //note that string.replace treats $'s specially in the replacement string;
     //we want 3 $'s for each $ in the input, so we need to put *6* $'s in the
@@ -370,7 +374,8 @@ export namespace Definition {
       name: "this",
       nodeType: "VariableDeclaration",
       typeDescriptions: {
-        typeIdentifier: "t_contract$_" + formattedName + "_$" + contractId
+        typeIdentifier: "t_contract$_" + formattedName + "_$" + contractId,
+	typeString: contractKind + " " + contractName
       }
     }
   }

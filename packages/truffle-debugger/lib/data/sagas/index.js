@@ -475,7 +475,7 @@ function* variablesAndMappingsSaga() {
             slot.hashPath = DecodeUtils.Definition.isDynamicArray(
               baseExpression
             );
-            slot.offset = indexValue.muln(
+            slot.offset = indexValue.value.muln(
               storageSize(node, referenceDeclarations, allocations).words
             );
             break;
@@ -607,11 +607,17 @@ export function* recordAllocations() {
 function literalAssignments(node, stack, currentDepth) {
   let top = stack.length - 1;
 
-  let literal = readStack(
-    stack,
-    top - DecodeUtils.Definition.stackSize(node) + 1,
-    top
-  );
+  let literal;
+  try {
+    literal = readStack(
+      stack,
+      top - DecodeUtils.Definition.stackSize(node) + 1,
+      top
+    );
+  } catch (error) {
+    literal = undefined; //not sure if this is right, but this is what would
+    //happen before, so I figure it's safe?
+  }
 
   let assignment = makeAssignment(
     { astId: node.id, stackframe: currentDepth },

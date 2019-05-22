@@ -6,7 +6,6 @@ import { assert } from "chai";
 import changeCase from "change-case";
 
 import { prepareContracts } from "test/helpers";
-import TruffleDecodeUtils from "truffle-decode-utils";
 
 import Debugger from "lib/debugger";
 
@@ -87,7 +86,7 @@ async function prepareDebugger(testName, sources) {
 async function decode(name) {
   let result = await this.session.variable(name);
 
-  return TruffleDecodeUtils.Conversion.nativize(result);
+  return result.nativize();
 }
 
 export function describeDecoding(testName, fixtures, selector, generateSource) {

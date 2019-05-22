@@ -172,10 +172,10 @@ describe("Function Pointer Decoding", function() {
     );
     assert.equal(variables.storageFn.value.name, "doThing");
     assert.equal(
-      variables.memoryFns[0].value.contract.class.typeName,
+      variables.memoryFns.value[0].value.contract.class.typeName,
       "ExternalsDerived"
     );
-    assert.equal(variables.memoryFns[0].value.name, "doThing");
+    assert.equal(variables.memoryFns.value[0].value.name, "doThing");
     assert.equal(
       variables.stackFn.value.contract.class.typeName,
       "ExternalsDerived"

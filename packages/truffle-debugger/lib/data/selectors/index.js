@@ -702,7 +702,7 @@ const data = createSelectorTree({
               msg: DecodeUtils.Definition.MSG_DEFINITION,
               tx: DecodeUtils.Definition.TX_DEFINITION,
               block: DecodeUtils.Definition.BLOCK_DEFINITION,
-              now: DecodeUtils.Definition.spoofUintDefinition("now")
+              now: DecodeUtils.Definition.NOW_DEFINITION
             };
             //only include this when it has a proper definition
             if (thisDefinition) {
@@ -723,7 +723,8 @@ const data = createSelectorTree({
             contractNode && contractNode.nodeType === "ContractDefinition"
               ? DecodeUtils.Definition.spoofThisDefinition(
                   contractNode.name,
-                  contractNode.id
+                  contractNode.id,
+                  contractNode.contractKind
                 )
               : null
         )
