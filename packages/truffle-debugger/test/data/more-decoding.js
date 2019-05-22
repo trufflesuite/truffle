@@ -242,7 +242,7 @@ describe("Further Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.nativize(
+    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
       await session.variables()
     );
 
@@ -286,7 +286,7 @@ describe("Further Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.nativize(
+    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
       await session.variables()
     );
     debug("variables %O", variables);
@@ -330,7 +330,7 @@ describe("Further Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.nativize(
+    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
       await session.variables()
     );
 
@@ -365,7 +365,7 @@ describe("Further Decoding", function() {
     //we're only testing storage so run till end
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.nativize(
+    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
       await session.variables()
     );
 

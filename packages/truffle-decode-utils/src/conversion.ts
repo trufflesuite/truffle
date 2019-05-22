@@ -153,7 +153,7 @@ export namespace Conversion {
   }
 
   //for convenience: invokes the nativize method on all the given variables
-  export function nativize(variables: {[name: string]: Values.Value}): {[name: string]: any} {
+  export function nativizeVariables(variables: {[name: string]: Values.Value}): {[name: string]: any} {
     return Object.assign({}, ...Object.entries(variables).map(
       ([name, value]) => ({[name]: value.nativize()})
     ));
