@@ -30,12 +30,22 @@ export namespace Values {
   //we'll need to write a typing for the options type ourself, it seems; just
   //going to include the relevant properties here
   interface InspectOptions {
-    stylize(toMaybeColor: string, style?: string): string;
+    stylize?: (toMaybeColor: string, style?: string) => string;
     colors: boolean;
   }
 
   function formatCircular(loopLength: number, options: InspectOptions) {
     return options.stylize(`[Circular (=up ${this.loopLength})]`, "special");
+  }
+
+  //HACK -- inspect options are ridiculous, I swear >_>
+  function cleanStylize(options: InspectOptions) {
+    return Object.assign({}, ...Object.entries(options).map(
+      ([key,value]) =>
+        key === "stylize"
+          ? {}
+          : {[key]: value}
+    ));
   }
 
   export abstract class Value {
@@ -352,7 +362,7 @@ export namespace Values {
     };
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       //first, let's inspect that contract, but w/o color
-      let contractString = util.inspect(this.value.contract, { ...options, colors: false });
+      let contractString = util.inspect(this.value.contract, { ...cleanStylize(options), colors: false });
       //now, put it together
       return options.stylize(`[Function: ${this.value.name} of ${contractString}]`, "special");
     }
@@ -375,7 +385,7 @@ export namespace Values {
     };
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       //first, let's inspect that contract, but w/o color
-      let contractString = util.inspect(this.value.contract, { ...options, colors: false });
+      let contractString = util.inspect(this.value.contract, { ...cleanStylize(options), colors: false });
       let selectorString = `Unknown function 0x${this.value.selector}`;
       //now, put it together
       return options.stylize(`[Function: ${selectorString} of ${contractString}]`, "special");
@@ -399,7 +409,7 @@ export namespace Values {
     };
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       //first, let's inspect that contract, but w/o color
-      let contractString = util.inspect(this.value.contract, { ...options, colors: false });
+      let contractString = util.inspect(this.value.contract, { ...cleanStylize(options), colors: false });
       let selectorString = `Unknown function 0x${this.value.selector}`;
       //now, put it together
       return options.stylize(`[Function: ${selectorString} of ${contractString}]`, "special");
@@ -691,6 +701,7 @@ export namespace Values {
     //NOT an AddressValue, note
     kind: "unknown";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
+      debug("options: %O", options);
       return options.stylize(this.address, "number") + " of unknown contract class";
     }
     nativize() {
