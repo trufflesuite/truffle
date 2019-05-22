@@ -59,36 +59,40 @@ module.exports = Contract => ({
     return promiEvent.eventEmitter;
   },
 
-  at(address) {
+  async at(address) {
     const constructor = this;
 
-    return new Promise((accept, reject) => {
+    if (
+      address == null ||
+      typeof address !== "string" ||
+      address.length !== 42
+    ) {
+      const err = `Invalid address passed to ${
+        constructor.contractName
+      }.at(): ${address}`;
+      throw new Error(err);
+    }
+
+    const checkCode = onChainCode => {
       if (
-        address == null ||
-        typeof address !== "string" ||
-        address.length !== 42
-      ) {
-        const err = `Invalid address passed to ${
-          constructor.contractName
-        }.at(): ${address}`;
-        reject(new Error(err));
-      }
+        !onChainCode ||
+        onChainCode.replace("0x", "").replace(/0/g, "") === ""
+      )
+        throw new Error(
+          `Cannot create instance of ${
+            constructor.contractName
+          }; no code at address ${address}`
+        );
+    };
 
-      return constructor.detectNetwork().then(() => {
-        const instance = new constructor(address);
-
-        return constructor.web3.eth.getCode(address).then(code => {
-          if (!code || code.replace("0x", "").replace(/0/g, "") === "") {
-            const err = `Cannot create instance of ${
-              constructor.contractName
-            }; no code at address ${address}`;
-            reject(new Error(err));
-          }
-
-          accept(instance);
-        });
-      });
-    });
+    try {
+      await constructor.detectNetwork();
+      const onChainCode = await constructor.web3.eth.getCode(address);
+      await checkCode(onChainCode);
+      return new constructor(address);
+    } catch (error) {
+      throw error;
+    }
   },
 
   deployed() {
