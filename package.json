@@ -3,6 +3,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "prepare": "lerna run prepare --stream --concurrency=1",
+    "publish-release": "./scripts/publish-release.sh",
     "prepare-release": "./scripts/prepare-release.sh",
     "test": "lerna run test --stream --concurrency=1 -- --colors",
     "ci": "./scripts/ci.sh",
