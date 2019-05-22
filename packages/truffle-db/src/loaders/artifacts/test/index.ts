@@ -9,27 +9,27 @@ import * as Contracts from "truffle-workflow-compile";
 // mocking the truffle-workflow-compile to avoid jest timing issues
 // and also to keep from adding more time to Travis testing
 jest.mock("truffle-workflow-compile", () => ({
- compile: function(config, callback) {
-   const magicSquare= require(path.join(__dirname, "sources", "MagicSquare.json"));
-   const migrations = require(path.join(__dirname, "sources", "Migrations.json"));
-   const squareLib = require(path.join(__dirname, "sources", "SquareLib.json"));
-   const returnValue = {
-     "contracts": [{
-       "contract_name": "MagicSquare",
-       ...magicSquare
-     },
-     {
-       "contract_name": "Migrations",
-       ...migrations
-     },
-     {
-       "contract_name": "SquareLib",
-       ...squareLib
-     }
-     ]
-   }
-   return returnValue;
- }
+  compile: function(config, callback) {
+    const magicSquare= require(path.join(__dirname, "sources", "MagicSquare.json"));
+    const migrations = require(path.join(__dirname, "sources", "Migrations.json"));
+    const squareLib = require(path.join(__dirname, "sources", "SquareLib.json"));
+    const returnValue = {
+      "contracts": [{
+        "contract_name": "MagicSquare",
+        ...magicSquare
+      },
+      {
+        "contract_name": "Migrations",
+        ...migrations
+      },
+      {
+        "contract_name": "SquareLib",
+        ...squareLib
+      }
+      ]
+    }
+    return returnValue;
+  }
 }));
 
 const fixturesDirectory = path.join(__dirname, "sources");
@@ -40,9 +40,9 @@ const config = {
 };
 
 const compilationConfig =  {
-    contracts_directory: path.join(__dirname, "compilationSources"),
-    contracts_build_directory: path.join(__dirname, "sources"),
-    all: true
+  contracts_directory: path.join(__dirname, "compilationSources"),
+  contracts_build_directory: path.join(__dirname, "sources"),
+  all: true
 }
 
 const db = new TruffleDB(config);
@@ -168,8 +168,8 @@ describe("Compilation", () => {
       sourceIds: sourceIds
     });
 
-     const loader = new ArtifactsLoader(db, compilationConfig);
-     await loader.load();
+    const loader = new ArtifactsLoader(db, compilationConfig);
+    await loader.load();
   })
 
   it("loads compilations", async () => {
@@ -222,17 +222,17 @@ describe("Compilation", () => {
 
   it("loads bytecodes", async () => {
     for(let index in bytecodeIds) {
-     let {
-      data: {
-        workspace: {
-          bytecode: {
-            bytes
+      let {
+        data: {
+          workspace: {
+            bytecode: {
+              bytes
+            }
           }
         }
-      }
-    } = await db.query(GetWorkspaceBytecode, bytecodeIds[index]);
+      } = await db.query(GetWorkspaceBytecode, bytecodeIds[index]);
 
-    expect(bytes).toEqual(Build[index].bytecode);
+      expect(bytes).toEqual(Build[index].bytecode);
 
     }
   });
