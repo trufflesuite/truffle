@@ -300,7 +300,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
         return new Values.GenericError(error.error);
       }
 
-      let decodedEntries: [Values.ElementaryValue, Values.Value][] = [];
+      let decodedEntries: [Values.ElementaryValueProper, Values.Value][] = [];
 
       const baseSlot: StorageTypes.Slot = pointer.storage.from.slot;
       debug("baseSlot %o", baseSlot);
