@@ -183,6 +183,11 @@ const AddContracts = gql`
   }
 `;
 
+type WorkflowCompileResult = {
+  outputs: { [compilerName: string]: string[] },
+  contracts: { [contractName: string]: ContractObject }
+};
+
 export class ArtifactsLoader {
   private db: TruffleDB;
   private config: object;
@@ -270,13 +275,15 @@ export class ArtifactsLoader {
     return sourceContracts;
   }
 
-  async organizeContractsByCompiler ({ outputs, contracts }) {
+  async organizeContractsByCompiler (result: WorkflowCompileResult) {
+    const { outputs, contracts } = result;
+
     return Object.entries(outputs)
       .map( ([compilerName, sourcePaths]) => ({
         [compilerName]: sourcePaths.map(
-          (sourcePath) => contracts.filter(
-            (contract) => contract.sourcePath === sourcePath
-          )[0] || undefined
+          (sourcePath) => Object.values(contracts)
+            .filter( (contract) => contract.sourcePath === sourcePath)
+            [0] || undefined
         )
       }))
       .reduce((a, b) => ({ ...a, ...b }), {});
