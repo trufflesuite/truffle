@@ -155,76 +155,82 @@ module.exports = Contract => ({
     return !!this.network.address;
   },
 
-  detectNetwork() {
+  async detectNetwork() {
     const constructor = this;
 
-    return new Promise((accept, reject) => {
-      // Try to get the current blockLimit
-      constructor.web3.eth
-        .getBlock("latest")
-        .then(({ gasLimit }) => {
-          // Try to detect the network we have artifacts for.
-          if (constructor.network_id) {
-            // We have a network id and a configuration, let's go with it.
-            if (constructor.networks[constructor.network_id] != null) {
-              return accept({
-                id: constructor.network_id,
-                blockLimit: gasLimit
-              });
-            }
+    // private helper for parsing known artifact networks
+    const parseKnownNetworks = gasLimit => {
+      // go through all the networks that are listed as
+      // blockchain uris and see if they match
+      const uris = Object.keys(constructor._json.networks).filter(
+        network => network.indexOf("blockchain://") === 0
+      );
+      const matches = uris.map(uri =>
+        BlockchainUtils.matches.bind(
+          BlockchainUtils,
+          uri,
+          constructor.web3.currentProvider
+        )
+      );
+
+      utils.parallel(matches, (err, results) => {
+        if (err) throw new Error(err);
+
+        for (let i = 0; i < results.length; i++) {
+          if (results[i]) {
+            constructor.setNetwork(uris[i]);
+            return {
+              id: constructor.network_id,
+              blockLimit: gasLimit
+            };
           }
+        }
+      });
+    };
 
-          constructor.web3.eth.net
-            .getId()
-            .then(network_id => {
-              // If we found the network via a number, let's use that.
-              if (constructor.hasNetwork(network_id)) {
-                constructor.setNetwork(network_id);
-                return accept({
-                  id: constructor.network_id,
-                  blockLimit: gasLimit
-                });
-              }
+    // private helper used to set an artifact network ID
+    const setInstanceNetworkID = (chainNetworkID, gasLimit) => {
+      // if chainNetworkID already present as network configuration, use it
+      if (constructor.hasNetwork(chainNetworkID)) {
+        constructor.setNetwork(chainNetworkID);
+        return {
+          id: constructor.network_id,
+          blockLimit: gasLimit
+        };
+      }
+      // chainNetworkID not present,
+      // parse all known networks
+      const matchedNetwork = parseKnownNetworks(gasLimit);
+      if (matchedNetwork) return matchedNetwork;
 
-              // Otherwise, go through all the networks that are listed as
-              // blockchain uris and see if they match.
-              const uris = Object.keys(constructor._json.networks).filter(
-                network => network.indexOf("blockchain://") === 0
-              );
+      // network unknown, trust the provider and use given chainNetworkID
+      constructor.setNetwork(chainNetworkID);
+      return { id: constructor.network_id, blockLimit: gasLimit };
+    };
 
-              const matches = uris.map(uri =>
-                BlockchainUtils.matches.bind(
-                  BlockchainUtils,
-                  uri,
-                  constructor.web3.currentProvider
-                )
-              );
-
-              utils.parallel(matches, (err, results) => {
-                if (err) return reject(err);
-
-                for (let i = 0; i < results.length; i++) {
-                  if (results[i]) {
-                    constructor.setNetwork(uris[i]);
-                    return accept({
-                      id: constructor.network_id,
-                      blockLimit: gasLimit
-                    });
-                  }
-                }
-
-                // We found nothing. Set the network id to whatever the provider states.
-                constructor.setNetwork(network_id);
-                return accept({
-                  id: constructor.network_id,
-                  blockLimit: gasLimit
-                });
-              });
-            })
-            .catch(reject);
-        })
-        .catch(reject);
-    });
+    // if artifacts already have a network_id and network configuration synced,
+    // use that network and use latest block gasLimit
+    if (
+      constructor.network_id &&
+      constructor.networks[constructor.network_id] != null
+    ) {
+      try {
+        const { gasLimit } = await constructor.web3.eth.getBlock("latest");
+        return { id: constructor.network_id, blockLimit: gasLimit };
+      } catch (error) {
+        throw error;
+      }
+    } else {
+      // since artifacts don't have a network_id synced with a network configuration,
+      // poll chain for network_id and sync artifacts
+      try {
+        const chainNetworkID = await constructor.web3.eth.net.getId();
+        const { gasLimit } = await constructor.web3.eth.getBlock("latest");
+        return await setInstanceNetworkID(chainNetworkID, gasLimit);
+      } catch (error) {
+        throw error;
+      }
+    }
   },
 
   setNetwork(network_id) {
