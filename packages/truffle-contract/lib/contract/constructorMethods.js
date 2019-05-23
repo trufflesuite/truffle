@@ -22,21 +22,21 @@ module.exports = Contract => ({
     const promiEvent = new Web3PromiEvent();
 
     if (!constructor.currentProvider) {
-      var err = `${
-        constructor.contractName
-      } error: Please call setProvider() first before calling new().`;
-      throw new Error(err);
+      throw new Error(
+        `${
+          constructor.contractName
+        } error: Please call setProvider() first before calling new().`
+      );
     }
 
     if (!constructor.bytecode || constructor.bytecode === "0x") {
-      var err =
+      throw new Error(
         `${
           constructor.contractName
         } error: contract binary not set. Can't deploy new instance.\n` +
-        `This contract may be abstract, not implement an abstract parent's methods completely\n` +
-        `or not invoke an inherited contract's constructor correctly\n`;
-
-      throw new Error(err);
+          `This contract may be abstract, not implement an abstract parent's methods completely\n` +
+          `or not invoke an inherited contract's constructor correctly\n`
+      );
     }
 
     const args = Array.prototype.slice.call(arguments);
@@ -67,10 +67,9 @@ module.exports = Contract => ({
       typeof address !== "string" ||
       address.length !== 42
     ) {
-      const err = `Invalid address passed to ${
-        constructor.contractName
-      }.at(): ${address}`;
-      throw new Error(err);
+      throw new Error(
+        `Invalid address passed to ${constructor.contractName}.at(): ${address}`
+      );
     }
 
     const checkCode = onChainCode => {
@@ -100,21 +99,22 @@ module.exports = Contract => ({
     return constructor.detectNetwork().then(() => {
       // We don't have a network config for the one we found
       if (constructor._json.networks[constructor.network_id] == null) {
-        var error = `${
-          constructor.contractName
-        } has not been deployed to detected network (network/artifact mismatch)`;
-        throw new Error(error);
+        throw new Error(
+          `${
+            constructor.contractName
+          } has not been deployed to detected network (network/artifact mismatch)`
+        );
       }
 
       // If we found the network but it's not deployed
       if (!constructor.isDeployed()) {
-        var error = `${
-          constructor.contractName
-        } has not been deployed to detected network (${
-          constructor.network_id
-        })`;
-
-        throw new Error(error);
+        throw new Error(
+          `${
+            constructor.contractName
+          } has not been deployed to detected network (${
+            constructor.network_id
+          })`
+        );
       }
 
       return new constructor(constructor.address);
