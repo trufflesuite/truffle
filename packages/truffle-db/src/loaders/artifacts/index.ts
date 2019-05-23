@@ -222,19 +222,14 @@ export class ArtifactsLoader {
     await this.db.query(AddContracts, { contracts });
 
   }
-  async loadCompilationBytecodes(compilation: object) {
-    let bytecodes = [];
-    for(let contract in compilation) {
-      let bytecodeObject = {
-        bytes: compilation[contract]["bytecode"]
-      };
-
-      let bytecodeId = generateId({ bytes: compilation[contract]["bytecode"] })
-
-      bytecodes.push(bytecodeObject);
-    }
-
-    await this.db.query(AddBytecodes, { bytecodes });
+  async loadCompilationBytecodes(contracts: Array<ContractObject>) {
+    // transform contract objects into data model bytecode inputs
+    // and run mutation
+    const result = await this.db.query(AddBytecodes, {
+      bytecodes: contracts.map(
+        ({ bytecode }) => ({ bytes: bytecode })
+      )
+    });
   }
 
   async loadCompilationSources(contracts: Array<ContractObject>) {
