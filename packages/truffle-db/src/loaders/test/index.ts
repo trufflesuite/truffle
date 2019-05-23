@@ -10,20 +10,27 @@ jest.mock("truffle-workflow-compile", () => ({
    const migrations = require(path.join(__dirname, "..", "artifacts", "test", "sources", "Migrations.json"));
    const squareLib = require(path.join(__dirname, "..", "artifacts", "test", "sources", "SquareLib.json"));
    const returnValue = {
-     "contracts": [{
-       "contract_name": "MagicSquare",
-       ...magicSquare
-     },
-     {
-       "contract_name": "Migrations",
-       ...migrations
-     },
-     {
-       "contract_name": "SquareLib",
-       ...squareLib
-     }
-     ]
-   }
+    "outputs": {
+      "solc": [
+        "/Users/fainashalts/pet-shop-tutorial/contracts/Adoption.sol",
+        "/Users/fainashalts/pet-shop-tutorial/contracts/Migrations.sol"
+      ],
+      "vyper": []
+    },
+    "contracts": [{
+      "contract_name": "MagicSquare",
+      ...magicSquare
+    },
+    {
+      "contract_name": "Migrations",
+      ...migrations
+    },
+    {
+      "contract_name": "SquareLib",
+      ...squareLib
+    }
+    ]
+  }
    return returnValue;
  }
 }));
