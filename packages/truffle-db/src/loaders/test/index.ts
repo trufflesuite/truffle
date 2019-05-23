@@ -12,8 +12,9 @@ jest.mock("truffle-workflow-compile", () => ({
    const returnValue = {
     "outputs": {
       "solc": [
-        "/Users/fainashalts/pet-shop-tutorial/contracts/Adoption.sol",
-        "/Users/fainashalts/pet-shop-tutorial/contracts/Migrations.sol"
+        "/Users/fainashalts/solidity-magic-square/contracts/MagicSquare.sol",
+        "/Users/fainashalts/solidity-magic-square/contracts/Migrations.sol",
+        "/Users/fainashalts/solidity-magic-square/contracts/SquareLib.sol"
       ],
       "vyper": []
     },
