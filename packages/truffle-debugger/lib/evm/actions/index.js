@@ -70,10 +70,19 @@ export function create(binary, storageAddress, sender, value) {
   };
 }
 
-export const RETURN = "RETURN";
+export const RETURN_CALL = "RETURN_CALL";
 export function returnCall() {
   return {
-    type: RETURN
+    type: RETURN_CALL
+  };
+}
+
+export const RETURN_CREATE = "RETURN_CREATE";
+export function returnCreate(address, code) {
+  return {
+    type: RETURN_CREATE,
+    address,
+    code
   };
 }
 

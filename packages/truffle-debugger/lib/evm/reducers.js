@@ -206,7 +206,9 @@ function defaultCodexFrame(address) {
       accounts: {
         [address]: {
           //there will be more here in the future!
-          storage: {}
+          storage: {},
+          code: undefined //undefined code means no override, just look at
+          //evm.transaction.instances for the code
         }
       }
     };
@@ -238,6 +240,17 @@ function codex(state = [], action) {
     };
   };
 
+  const updateFrameCode = (frame, address, code) => ({
+    ...frame,
+    accounts: {
+      ...frame.accounts,
+      [address]: {
+        ...frame.accounts[address],
+        code: code
+      }
+    }
+  });
+
   switch (action.type) {
     case actions.CALL:
     case actions.CREATE:
@@ -266,7 +279,8 @@ function codex(state = [], action) {
         accounts: {
           ...topCodex.accounts,
           [action.storageAddress]: {
-            storage: {}
+            storage: {},
+            code: undefined //no override
             //there will be more here in the future!
           }
         }
@@ -319,7 +333,19 @@ function codex(state = [], action) {
       }
     }
 
-    case actions.RETURN:
+    case actions.RETURN_CREATE: {
+      //we're going to do the same things in this case as in the usual return
+      //case, but first we need to record the code that was returned
+      const { address, code } = action;
+      newState = state.slice(); //clone the state
+      //NOTE: since this is only for RETURN_CREATE, and not FAIL, we shouldn't
+      //have to worry about accidentally getting a zero address here
+      newState = updateFrameCode(state[state.length - 1], address, code); //update
+      state = newState; //store this back in the state variable so that the
+      //fall-through works
+    }
+    //NOTE: DELIBERATE FALL-THROUGH
+    case actions.RETURN_CALL:
       //we want to pop the top while making the new top a copy of the old top;
       //that is to say, we want to drop just the element *second* from the top
       //(although, HACK, if the stack only has one element, just leave it alone)

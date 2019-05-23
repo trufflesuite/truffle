@@ -131,7 +131,15 @@ export function* callstackAndCodexSaga() {
   } else if (yield select(evm.current.step.isHalting)) {
     debug("got return");
 
-    yield put(actions.returnCall());
+    if ((yield select(evm.current.call)).binary) {
+      //if we're returning from a successful creation call, let's log the
+      //result
+      let returnedAddress = yield select(evm.current.step.returnedAddress);
+      let returnedBinary = yield select(evm.current.step.returnValue);
+      yield put(actions.returnCreate(returnedAddress, returnedBinary));
+    } else {
+      yield put(actions.returnCall());
+    }
   } else if (yield select(evm.current.step.touchesStorage)) {
     let storageAddress = (yield select(evm.current.call)).storageAddress;
     let slot = yield select(evm.current.step.storageAffected);

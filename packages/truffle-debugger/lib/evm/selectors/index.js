@@ -253,6 +253,34 @@ function createStepSelectors(step, state = null) {
 
           return stack[stack.length - 1];
         }
+      ),
+
+      /*
+       * .returnValue
+       *
+       * for a RETURN instruction, the value returned
+       * we DO prepend "0x"
+       * (will also return "0x" for STOP or SELFDESTRUCT but
+       * null otherwise)
+       */
+      returnValue: createLeaf(
+        ["./trace", "./isHalting", state],
+
+        (step, matches, { stack, memory }) => {
+          if (!matches) {
+            return null;
+          }
+          if (step.op !== "RETURN") {
+            //STOP and SELFDESTRUCT return empty value
+            return "0x";
+          }
+          // Get the data from memory.
+          // Note we multiply by 2 because these offsets are in bytes.
+          const offset = parseInt(stack[stack.length - 1], 16) * 2;
+          const length = parseInt(stack[stack.length - 2], 16) * 2;
+
+          return "0x" + memory.join("").substring(offset, offset + length);
+        }
       )
     });
   }
@@ -342,16 +370,24 @@ const evm = createSelectorTree({
     context: createLeaf(
       [
         "./call",
+        "./codex/codeOverride",
         "/transaction/instances",
         "/info/binaries/search",
         "/info/contexts"
       ],
-      ({ address, binary }, instances, search, contexts) => {
+      ({ address, binary }, codeOverride, instances, search, contexts) => {
         let contextId;
+        if (codeOverride) {
+          //if we've got a code override going, we can't just consult the
+          //table, we'll have to do a search
+          binary = codeOverride;
+          contextId = search(binary);
+        }
         if (address) {
           //if we're in a call to a deployed contract, we *must* have recorded
-          //it in the instance table, so we just need to look up the context ID
-          //from there; we don't need to do any further searching
+          //it in the instance table, so (as long as there wasn't an override)
+          //we just need to look up the context ID from there; we don't need to
+          //do any further searching
           contextId = instances[address].context;
           binary = instances[address].binary;
         } else if (binary) {
@@ -400,6 +436,22 @@ const evm = createSelectorTree({
        */
       createdAddress: createLeaf(
         ["./isCreate", "/nextOfSameDepth/state/stack"],
+        (matches, stack) => {
+          if (!matches) {
+            return null;
+          }
+          let address = stack[stack.length - 1];
+          return DecodeUtils.Conversion.toAddress(address);
+        }
+      ),
+
+      /*
+       * evm.current.step.returnedAddress
+       *
+       * address created by the current return step
+       */
+      returnedAddress: createLeaf(
+        ["./isHalting", "/next/state/stack"],
         (matches, stack) => {
           if (!matches) {
             return null;
@@ -463,6 +515,16 @@ const evm = createSelectorTree({
           storageAddress === DecodeUtils.EVM.ZERO_ADDRESS
             ? rawStorage //HACK -- if zero address ignore the codex
             : codex[codex.length - 1].accounts[storageAddress].storage
+      ),
+
+      /*
+       * evm.current.codex.codeOverride
+       * current code listing, as fetched from the codex
+       * (may be undefined, in which case consult the instances table)
+       */
+      codeOverride: createLeaf(
+        ["./_", "../call"],
+        (codex, { address }) => codex[codex.length - 1].accounts[address].code
       )
     }
   },
