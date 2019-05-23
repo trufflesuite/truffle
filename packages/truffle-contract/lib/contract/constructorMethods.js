@@ -18,21 +18,20 @@ module.exports = Contract => ({
   },
 
   new() {
-    const constructor = this;
     const promiEvent = new Web3PromiEvent();
 
-    if (!constructor.currentProvider) {
+    if (!this.currentProvider) {
       throw new Error(
         `${
-          constructor.contractName
+          this.contractName
         } error: Please call setProvider() first before calling new().`
       );
     }
 
-    if (!constructor.bytecode || constructor.bytecode === "0x") {
+    if (!this.bytecode || this.bytecode === "0x") {
       throw new Error(
         `${
-          constructor.contractName
+          this.contractName
         } error: contract binary not set. Can't deploy new instance.\n` +
           `This contract may be abstract, not implement an abstract parent's methods completely\n` +
           `or not invoke an inherited contract's constructor correctly\n`
@@ -43,16 +42,15 @@ module.exports = Contract => ({
 
     // Promievent and flag that allows instance to resolve (rather than just receipt)
     const context = {
-      contract: constructor,
+      contract: this,
       promiEvent,
       onlyEmitReceipt: true
     };
 
-    constructor
-      .detectNetwork()
+    this.detectNetwork()
       .then(({ blockLimit }) => {
-        utils.checkLibraries.apply(constructor);
-        return execute.deploy.call(constructor, args, context, blockLimit);
+        utils.checkLibraries.apply(this);
+        return execute.deploy.call(this, args, context, blockLimit);
       })
       .catch(promiEvent.reject);
 
@@ -60,15 +58,13 @@ module.exports = Contract => ({
   },
 
   async at(address) {
-    const constructor = this;
-
     if (
       address == null ||
       typeof address !== "string" ||
       address.length !== 42
     ) {
       throw new Error(
-        `Invalid address passed to ${constructor.contractName}.at(): ${address}`
+        `Invalid address passed to ${this.contractName}.at(): ${address}`
       );
     }
 
@@ -79,45 +75,42 @@ module.exports = Contract => ({
       )
         throw new Error(
           `Cannot create instance of ${
-            constructor.contractName
+            this.contractName
           }; no code at address ${address}`
         );
     };
 
     try {
-      await constructor.detectNetwork();
-      const onChainCode = await constructor.web3.eth.getCode(address);
+      await this.detectNetwork();
+      const onChainCode = await this.web3.eth.getCode(address);
       await checkCode(onChainCode);
-      return new constructor(address);
+      return new this(address);
     } catch (error) {
       throw error;
     }
   },
 
   deployed() {
-    const constructor = this;
-    return constructor.detectNetwork().then(() => {
+    return this.detectNetwork().then(() => {
       // We don't have a network config for the one we found
-      if (constructor._json.networks[constructor.network_id] == null) {
+      if (this._json.networks[this.network_id] == null) {
         throw new Error(
           `${
-            constructor.contractName
+            this.contractName
           } has not been deployed to detected network (network/artifact mismatch)`
         );
       }
 
       // If we found the network but it's not deployed
-      if (!constructor.isDeployed()) {
+      if (!this.isDeployed()) {
         throw new Error(
-          `${
-            constructor.contractName
-          } has not been deployed to detected network (${
-            constructor.network_id
+          `${this.contractName} has not been deployed to detected network (${
+            this.network_id
           })`
         );
       }
 
-      return new constructor(constructor.address);
+      return new this(this.address);
     });
   },
 
@@ -130,10 +123,9 @@ module.exports = Contract => ({
       class_defaults = {};
     }
 
-    const constructor = this;
     Object.keys(class_defaults).forEach(key => {
       const value = class_defaults[key];
-      constructor.class_defaults[key] = value;
+      this.class_defaults[key] = value;
     });
 
     return this.class_defaults;
@@ -156,20 +148,18 @@ module.exports = Contract => ({
   },
 
   async detectNetwork() {
-    const constructor = this;
-
     // private helper for parsing known artifact networks
     const parseKnownNetworks = gasLimit => {
       // go through all the networks that are listed as
       // blockchain uris and see if they match
-      const uris = Object.keys(constructor._json.networks).filter(
+      const uris = Object.keys(this._json.networks).filter(
         network => network.indexOf("blockchain://") === 0
       );
       const matches = uris.map(uri =>
         BlockchainUtils.matches.bind(
           BlockchainUtils,
           uri,
-          constructor.web3.currentProvider
+          this.web3.currentProvider
         )
       );
 
@@ -178,9 +168,9 @@ module.exports = Contract => ({
 
         for (let i = 0; i < results.length; i++) {
           if (results[i]) {
-            constructor.setNetwork(uris[i]);
+            this.setNetwork(uris[i]);
             return {
-              id: constructor.network_id,
+              id: this.network_id,
               blockLimit: gasLimit
             };
           }
@@ -191,10 +181,10 @@ module.exports = Contract => ({
     // private helper used to set an artifact network ID
     const setInstanceNetworkID = (chainNetworkID, gasLimit) => {
       // if chainNetworkID already present as network configuration, use it
-      if (constructor.hasNetwork(chainNetworkID)) {
-        constructor.setNetwork(chainNetworkID);
+      if (this.hasNetwork(chainNetworkID)) {
+        this.setNetwork(chainNetworkID);
         return {
-          id: constructor.network_id,
+          id: this.network_id,
           blockLimit: gasLimit
         };
       }
@@ -204,19 +194,16 @@ module.exports = Contract => ({
       if (matchedNetwork) return matchedNetwork;
 
       // network unknown, trust the provider and use given chainNetworkID
-      constructor.setNetwork(chainNetworkID);
-      return { id: constructor.network_id, blockLimit: gasLimit };
+      this.setNetwork(chainNetworkID);
+      return { id: this.network_id, blockLimit: gasLimit };
     };
 
     // if artifacts already have a network_id and network configuration synced,
     // use that network and use latest block gasLimit
-    if (
-      constructor.network_id &&
-      constructor.networks[constructor.network_id] != null
-    ) {
+    if (this.network_id && this.networks[this.network_id] != null) {
       try {
-        const { gasLimit } = await constructor.web3.eth.getBlock("latest");
-        return { id: constructor.network_id, blockLimit: gasLimit };
+        const { gasLimit } = await this.web3.eth.getBlock("latest");
+        return { id: this.network_id, blockLimit: gasLimit };
       } catch (error) {
         throw error;
       }
@@ -224,8 +211,8 @@ module.exports = Contract => ({
       // since artifacts don't have a network_id synced with a network configuration,
       // poll chain for network_id and sync artifacts
       try {
-        const chainNetworkID = await constructor.web3.eth.net.getId();
-        const { gasLimit } = await constructor.web3.eth.getBlock("latest");
+        const chainNetworkID = await this.web3.eth.net.getId();
+        const { gasLimit } = await this.web3.eth.getBlock("latest");
         return await setInstanceNetworkID(chainNetworkID, gasLimit);
       } catch (error) {
         throw error;
@@ -257,8 +244,6 @@ module.exports = Contract => ({
   },
 
   link(name, address) {
-    const constructor = this;
-
     // Case: Contract.link(instance)
     if (typeof name === "function") {
       const contract = name;
@@ -271,7 +256,7 @@ module.exports = Contract => ({
 
       // Merge events so this contract knows about library's events
       Object.keys(contract.events).forEach(topic => {
-        constructor.network.events[topic] = contract.events[topic];
+        this.network.events[topic] = contract.events[topic];
       });
 
       return;
@@ -282,7 +267,7 @@ module.exports = Contract => ({
       const obj = name;
       Object.keys(obj).forEach(name => {
         const a = obj[name];
-        constructor.link(name, a);
+        this.link(name, a);
       });
       return;
     }
@@ -302,8 +287,6 @@ module.exports = Contract => ({
   // 1. Object with a bunch of data; this data will be merged with the json data of contract being cloned.
   // 2. network id; this will clone the contract and set a specific network id upon cloning.
   clone(json) {
-    const constructor = this;
-
     json = json || {};
 
     const temp = function TruffleContract() {
@@ -311,17 +294,17 @@ module.exports = Contract => ({
       return Contract.apply(this, arguments);
     };
 
-    temp.prototype = Object.create(constructor.prototype);
+    temp.prototype = Object.create(this.prototype);
 
     let network_id;
 
     // If we have a network id passed
     if (typeof json !== "object") {
       network_id = json;
-      json = constructor._json;
+      json = this._json;
     }
 
-    json = utils.merge({}, constructor._json || {}, json);
+    json = utils.merge({}, this._json || {}, json);
 
     temp._constructorMethods = this._constructorMethods;
     temp._properties = this._properties;
@@ -350,19 +333,17 @@ module.exports = Contract => ({
   },
 
   addProp(key, fn) {
-    const constructor = this;
-
     const getter = () => {
       if (fn.get != null) {
-        return fn.get.call(constructor);
+        return fn.get.call(this);
       }
 
-      return constructor._property_values[key] || fn.call(constructor);
+      return this._property_values[key] || fn.call(this);
     };
 
     const setter = val => {
       if (fn.set != null) {
-        fn.set.call(constructor, val);
+        fn.set.call(this, val);
         return;
       }
 
