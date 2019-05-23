@@ -32,6 +32,7 @@ export namespace Values {
   interface InspectOptions {
     stylize?: (toMaybeColor: string, style?: string) => string;
     colors: boolean;
+    breakLength: number;
   }
 
   function formatCircular(loopLength: number, options: InspectOptions) {
@@ -363,8 +364,11 @@ export namespace Values {
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       //first, let's inspect that contract, but w/o color
       let contractString = util.inspect(this.value.contract, { ...cleanStylize(options), colors: false });
+      let firstLine = `[Function: ${this.value.name} of`;
+      let secondLine = `${contractString}]`;
+      let breakingSpace = firstLine.length >= options.breakLength ? "\n" : " ";
       //now, put it together
-      return options.stylize(`[Function: ${this.value.name} of ${contractString}]`, "special");
+      return options.stylize(firstLine + breakingSpace + secondLine, "special");
     }
     nativize() {
       return `${this.value.contract.nativize()}.${this.value.name}`
@@ -386,9 +390,12 @@ export namespace Values {
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       //first, let's inspect that contract, but w/o color
       let contractString = util.inspect(this.value.contract, { ...cleanStylize(options), colors: false });
-      let selectorString = `Unknown function 0x${this.value.selector}`;
+      let selectorString = `Unknown selector 0x${this.value.selector}`;
+      let firstLine = `[Function: ${selectorString} of`;
+      let secondLine = `${contractString}]`;
+      let breakingSpace = firstLine.length >= options.breakLength ? "\n" : " ";
       //now, put it together
-      return options.stylize(`[Function: ${selectorString} of ${contractString}]`, "special");
+      return options.stylize(firstLine + breakingSpace + secondLine, "special");
     }
     nativize() {
       return `${this.value.contract.nativize()}.call(${this.value.selector}...)`
@@ -410,9 +417,12 @@ export namespace Values {
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       //first, let's inspect that contract, but w/o color
       let contractString = util.inspect(this.value.contract, { ...cleanStylize(options), colors: false });
-      let selectorString = `Unknown function 0x${this.value.selector}`;
+      let selectorString = `Unknown selector 0x${this.value.selector}`;
+      let firstLine = `[Function: ${selectorString} of`;
+      let secondLine = `${contractString}]`;
+      let breakingSpace = firstLine.length >= options.breakLength ? "\n" : " ";
       //now, put it together
-      return options.stylize(`[Function: ${selectorString} of ${contractString}]`, "special");
+      return options.stylize(firstLine + breakingSpace + secondLine, "special");
     }
     nativize() {
       return `${this.value.contract.nativize()}.call(${this.value.selector}...)`
@@ -702,7 +712,7 @@ export namespace Values {
     kind: "unknown";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       debug("options: %O", options);
-      return options.stylize(this.address, "number") + " of unknown contract class";
+      return options.stylize(this.address, "number") + " of unknown class";
     }
     nativize() {
       return this.address;
