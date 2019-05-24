@@ -2,7 +2,7 @@ const Schema = require("truffle-contract-schema");
 const fse = require("fs-extra");
 const path = require("path");
 const _ = require("lodash");
-const writeArtifact = require("./utils");
+const { writeArtifact } = require("./utils");
 const debug = require("debug")("artifactor");
 
 class Artifactor {
