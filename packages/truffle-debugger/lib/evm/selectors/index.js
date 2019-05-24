@@ -253,6 +253,34 @@ function createStepSelectors(step, state = null) {
 
           return stack[stack.length - 1];
         }
+      ),
+
+      /*
+       * .returnValue
+       *
+       * for a RETURN instruction, the value returned
+       * we DO prepend "0x"
+       * (will also return "0x" for STOP or SELFDESTRUCT but
+       * null otherwise)
+       */
+      returnValue: createLeaf(
+        ["./trace", "./isHalting", state],
+
+        (step, matches, { stack, memory }) => {
+          if (!matches) {
+            return null;
+          }
+          if (step.op !== "RETURN") {
+            //STOP and SELFDESTRUCT return empty value
+            return "0x";
+          }
+          // Get the data from memory.
+          // Note we multiply by 2 because these offsets are in bytes.
+          const offset = parseInt(stack[stack.length - 1], 16) * 2;
+          const length = parseInt(stack[stack.length - 2], 16) * 2;
+
+          return "0x" + memory.join("").substring(offset, offset + length);
+        }
       )
     });
   }
@@ -295,14 +323,6 @@ const evm = createSelectorTree({
    * evm.transaction
    */
   transaction: {
-    /**
-     * evm.transaction.instances
-     */
-    instances: createLeaf(
-      ["/state"],
-      state => state.transaction.instances.byAddress
-    ),
-
     /*
      * evm.transaction.globals
      */
@@ -315,7 +335,12 @@ const evm = createSelectorTree({
        * evm.transaction.globals.block
        */
       block: createLeaf(["/state"], state => state.transaction.globals.block)
-    }
+    },
+
+    /*
+     * evm.transaction.initialCall
+     */
+    initialCall: createLeaf(["/state"], state => state.transaction.initialCall)
   },
 
   /**
@@ -342,18 +367,17 @@ const evm = createSelectorTree({
     context: createLeaf(
       [
         "./call",
-        "/transaction/instances",
+        "./codex/instances",
         "/info/binaries/search",
         "/info/contexts"
       ],
       ({ address, binary }, instances, search, contexts) => {
         let contextId;
         if (address) {
-          //if we're in a call to a deployed contract, we *must* have recorded
-          //it in the instance table, so we just need to look up the context ID
-          //from there; we don't need to do any further searching
-          contextId = instances[address].context;
-          binary = instances[address].binary;
+          //if we're in a call to a deployed contract, we must have recorded
+          //the context in the codex, so we don't need to do any further
+          //searching
+          ({ context: contextId, binary } = instances[address]);
         } else if (binary) {
           //otherwise, if we're in a constructor, we'll need to actually do a
           //search
@@ -363,12 +387,22 @@ const evm = createSelectorTree({
           return null;
         }
 
-        let context = contexts[contextId];
-
-        return {
-          ...context,
-          binary
-        };
+        if (contextId != undefined) {
+          //if we found the context, use it
+          let context = contexts[contextId];
+          return {
+            ...context,
+            binary
+          };
+        } else {
+          //otherwise we'll construct something default
+          return {
+            binary,
+            isConstructor: address === undefined
+            //WARNING: we've mutated binary here, so
+            //instead we go by whether address is undefined
+          };
+        }
       }
     ),
 
@@ -400,6 +434,22 @@ const evm = createSelectorTree({
        */
       createdAddress: createLeaf(
         ["./isCreate", "/nextOfSameDepth/state/stack"],
+        (matches, stack) => {
+          if (!matches) {
+            return null;
+          }
+          let address = stack[stack.length - 1];
+          return DecodeUtils.Conversion.toAddress(address);
+        }
+      ),
+
+      /*
+       * evm.current.step.returnedAddress
+       *
+       * address created by the current return step
+       */
+      returnedAddress: createLeaf(
+        ["./isHalting", "/next/state/stack"],
         (matches, stack) => {
           if (!matches) {
             return null;
@@ -463,6 +513,20 @@ const evm = createSelectorTree({
           storageAddress === DecodeUtils.EVM.ZERO_ADDRESS
             ? rawStorage //HACK -- if zero address ignore the codex
             : codex[codex.length - 1].accounts[storageAddress].storage
+      ),
+
+      /*
+       * evm.current.codex.instances
+       */
+      instances: createLeaf(["./_"], codex =>
+        Object.assign(
+          {},
+          ...Object.entries(codex[codex.length - 1].accounts).map(
+            ([address, { code, context }]) => ({
+              [address]: { address, binary: code, context }
+            })
+          )
+        )
       )
     }
   },
