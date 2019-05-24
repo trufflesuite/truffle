@@ -10,8 +10,8 @@ class Artifactor {
   }
 
   async save(artifactObject) {
-    const normalizedArtifact = Schema.normalize(artifactObject);
-    const contractName = normalizedArtifact.contractName;
+    const normalizedNewArtifact = Schema.normalize(artifactObject);
+    const contractName = normalizedNewArtifact.contractName;
 
     if (!contractName) throw new Error("You must specify a contract name.");
 
@@ -37,12 +37,12 @@ class Artifactor {
       _.assign(
         completeArtifact,
         normalizedExistingArtifact,
-        normalizedArtifact
+        normalizedNewArtifact
       );
       writeArtifact(completeArtifact);
     } catch (e) {
       // if artifact doesn't already exist, write new file
-      if (e.code === "ENOENT") return writeArtifact(normalizedArtifact);
+      if (e.code === "ENOENT") return writeArtifact(normalizedNewArtifact);
       else if (e instanceof SyntaxError) throw e; // catches improperly formatted artifact json
       throw e; // catch all other errors
     }
