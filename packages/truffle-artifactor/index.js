@@ -34,7 +34,11 @@ class Artifactor {
       const normalizedExistingArtifact = Schema.normalize(
         existingArtifactObject
       );
-      _.merge(completeArtifact, normalizedExistingArtifact, normalizedArtifact);
+      _.assign(
+        completeArtifact,
+        normalizedExistingArtifact,
+        normalizedArtifact
+      );
       writeArtifact(completeArtifact);
     } catch (e) {
       // if artifact doesn't already exist, write new file
