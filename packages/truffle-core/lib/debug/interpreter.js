@@ -236,6 +236,10 @@ class DebugInterpreter {
   }
 
   start(terminate) {
+    if (terminate === undefined) {
+      return util.promisify(this.start.bind(this))();
+    }
+
     let prompt;
 
     if (this.session.view(selectors.session.status.loaded)) {
