@@ -281,6 +281,28 @@ var Utils = {
         }
       }
     });
+  },
+
+  setInstanceNetworkID(TruffleContractInstance, chainNetworkID, gasLimit) {
+    // if chainNetworkID already present as network configuration, use it
+    if (TruffleContractInstance.hasNetwork(chainNetworkID)) {
+      TruffleContractInstance.setNetwork(chainNetworkID);
+      return {
+        id: TruffleContractInstance.network_id,
+        blockLimit: gasLimit
+      };
+    }
+    // chainNetworkID not present,
+    // parse all known networks
+    const matchedNetwork = Utils.parseKnownNetworks(
+      TruffleContractInstance,
+      gasLimit
+    );
+    if (matchedNetwork) return matchedNetwork;
+
+    // network unknown, trust the provider and use given chainNetworkID
+    TruffleContractInstance.setNetwork(chainNetworkID);
+    return { id: TruffleContractInstance.network_id, blockLimit: gasLimit };
   }
 };
 

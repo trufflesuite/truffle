@@ -135,26 +135,6 @@ module.exports = Contract => ({
   },
 
   async detectNetwork() {
-    // private helper used to set an artifact network ID
-    const setInstanceNetworkID = (chainNetworkID, gasLimit) => {
-      // if chainNetworkID already present as network configuration, use it
-      if (this.hasNetwork(chainNetworkID)) {
-        this.setNetwork(chainNetworkID);
-        return {
-          id: this.network_id,
-          blockLimit: gasLimit
-        };
-      }
-      // chainNetworkID not present,
-      // parse all known networks
-      const matchedNetwork = utils.parseKnownNetworks(this, gasLimit);
-      if (matchedNetwork) return matchedNetwork;
-
-      // network unknown, trust the provider and use given chainNetworkID
-      this.setNetwork(chainNetworkID);
-      return { id: this.network_id, blockLimit: gasLimit };
-    };
-
     // if artifacts already have a network_id and network configuration synced,
     // use that network and use latest block gasLimit
     if (this.network_id && this.networks[this.network_id] != null) {
@@ -170,7 +150,7 @@ module.exports = Contract => ({
       try {
         const chainNetworkID = await this.web3.eth.net.getId();
         const { gasLimit } = await this.web3.eth.getBlock("latest");
-        return await setInstanceNetworkID(chainNetworkID, gasLimit);
+        return await utils.setInstanceNetworkID(this, chainNetworkID, gasLimit);
       } catch (error) {
         throw error;
       }
