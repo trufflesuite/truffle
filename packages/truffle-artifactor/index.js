@@ -15,20 +15,20 @@ class Artifactor {
 
     if (!contractName) throw new Error("You must specify a contract name.");
 
-    const output_path = path.join(this.destination, `${contractName}.json`);
+    const outputPath = path.join(this.destination, `${contractName}.json`);
 
     // private helper for writing artifacts
     const writeArtifact = _completeArtifact => {
       _completeArtifact.updatedAt = new Date().toISOString();
       fse.writeFileSync(
-        output_path,
+        outputPath,
         JSON.stringify(_completeArtifact, null, 2),
         "utf8"
       );
     };
 
     try {
-      const existingArtifact = fse.readFileSync(output_path, "utf8"); // check if artifact already exists
+      const existingArtifact = fse.readFileSync(outputPath, "utf8"); // check if artifact already exists
       const existingArtifactObject = JSON.parse(existingArtifact); // parse existing artifact
       const normalizedExistingArtifact = Schema.normalize(
         existingArtifactObject
