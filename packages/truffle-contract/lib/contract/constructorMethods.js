@@ -68,22 +68,10 @@ module.exports = Contract => ({
       );
     }
 
-    const checkCode = onChainCode => {
-      if (
-        !onChainCode ||
-        onChainCode.replace("0x", "").replace(/0/g, "") === ""
-      )
-        throw new Error(
-          `Cannot create instance of ${
-            this.contractName
-          }; no code at address ${address}`
-        );
-    };
-
     try {
       await this.detectNetwork();
       const onChainCode = await this.web3.eth.getCode(address);
-      await checkCode(onChainCode);
+      await utils.checkCode(onChainCode, this.contractName, address);
       return new this(address);
     } catch (error) {
       throw error;

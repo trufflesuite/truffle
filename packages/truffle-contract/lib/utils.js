@@ -245,6 +245,13 @@ var Utils = {
     const secondOperand = bigNumberify(numerator).div(denominator);
 
     return bignum.mul(secondOperand);
+  },
+
+  checkCode(onChainCode, contractName, address) {
+    if (!onChainCode || onChainCode.replace("0x", "").replace(/0/g, "") === "")
+      throw new Error(
+        `Cannot create instance of ${contractName}; no code at address ${address}`
+      );
   }
 };
 
