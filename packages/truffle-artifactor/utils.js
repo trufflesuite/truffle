@@ -9,4 +9,4 @@ const writeArtifact = (_completeArtifact, _outputPath) => {
   );
 };
 
-module.exports = writeArtifact;
+module.exports = { writeArtifact };
