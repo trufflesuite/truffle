@@ -16,7 +16,6 @@ class Artifactor {
     if (!contractName) throw new Error("You must specify a contract name.");
 
     const output_path = path.join(this.destination, `${contractName}.json`);
-    let completeArtifact = {};
 
     // private helper for writing artifacts
     const writeArtifact = _completeArtifact => {
@@ -34,10 +33,17 @@ class Artifactor {
       const normalizedExistingArtifact = Schema.normalize(
         existingArtifactObject
       );
-      _.assign(
-        completeArtifact,
+
+      const knownNetworks = _.merge(
+        {},
+        normalizedExistingArtifact.networks,
+        normalizedNewArtifact.networks
+      );
+      const completeArtifact = _.assign(
+        {},
         normalizedExistingArtifact,
-        normalizedNewArtifact
+        normalizedNewArtifact,
+        { networks: knownNetworks }
       );
       writeArtifact(completeArtifact);
     } catch (e) {
