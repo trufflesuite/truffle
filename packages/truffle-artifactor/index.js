@@ -43,8 +43,8 @@ class Artifactor {
     } catch (e) {
       // if artifact doesn't already exist, write new file
       if (e.code === "ENOENT") return writeArtifact(normalizedArtifact);
-      else if (e instanceof SyntaxError) throw new Error(e); // catches improperly formatted artifact json
-      throw new Error(e); // catch all other errors
+      else if (e instanceof SyntaxError) throw e; // catches improperly formatted artifact json
+      throw e; // catch all other errors
     }
   }
 
@@ -67,7 +67,7 @@ class Artifactor {
       if (e.code === "ENOENT")
         // if destination doesn't exist, throw error
         throw new Error(`Destination "${this.destination}" doesn't exist!`);
-      throw new Error(e); // throw on all other errors
+      throw e; // throw on all other errors
     }
 
     Object.keys(newArtifactObjects).forEach(contractName => {
