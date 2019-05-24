@@ -144,16 +144,15 @@ module.exports = Contract => ({
       } catch (error) {
         throw error;
       }
-    } else {
-      // since artifacts don't have a network_id synced with a network configuration,
-      // poll chain for network_id and sync artifacts
-      try {
-        const chainNetworkID = await this.web3.eth.net.getId();
-        const { gasLimit } = await this.web3.eth.getBlock("latest");
-        return await utils.setInstanceNetworkID(this, chainNetworkID, gasLimit);
-      } catch (error) {
-        throw error;
-      }
+    }
+    // since artifacts don't have a network_id synced with a network configuration,
+    // poll chain for network_id and sync artifacts
+    try {
+      const chainNetworkID = await this.web3.eth.net.getId();
+      const { gasLimit } = await this.web3.eth.getBlock("latest");
+      return await utils.setInstanceNetworkID(this, chainNetworkID, gasLimit);
+    } catch (error) {
+      throw error;
     }
   },
 
