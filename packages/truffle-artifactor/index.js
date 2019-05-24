@@ -1,8 +1,8 @@
-var Schema = require("truffle-contract-schema");
-var fs = require("fs-extra");
-var path = require("path");
-var _ = require("lodash");
-var debug = require("debug")("artifactor");
+const Schema = require("truffle-contract-schema");
+const fs = require("fs-extra");
+const path = require("path");
+const _ = require("lodash");
+const debug = require("debug")("artifactor");
 
 class Artifactor {
   constructor(destination) {
