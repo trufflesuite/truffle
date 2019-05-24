@@ -2,6 +2,7 @@ const Schema = require("truffle-contract-schema");
 const fse = require("fs-extra");
 const path = require("path");
 const _ = require("lodash");
+const writeArtifact = require("./utils");
 const debug = require("debug")("artifactor");
 
 class Artifactor {
@@ -16,16 +17,6 @@ class Artifactor {
     if (!contractName) throw new Error("You must specify a contract name.");
 
     const outputPath = path.join(this.destination, `${contractName}.json`);
-
-    // private helper for writing artifacts
-    const writeArtifact = _completeArtifact => {
-      _completeArtifact.updatedAt = new Date().toISOString();
-      fse.writeFileSync(
-        outputPath,
-        JSON.stringify(_completeArtifact, null, 2),
-        "utf8"
-      );
-    };
 
     try {
       const existingArtifact = fse.readFileSync(outputPath, "utf8"); // check if artifact already exists
@@ -45,10 +36,12 @@ class Artifactor {
         normalizedNewArtifact,
         { networks: knownNetworks }
       );
-      writeArtifact(completeArtifact);
+
+      writeArtifact(completeArtifact, outputPath);
     } catch (e) {
       // if artifact doesn't already exist, write new file
-      if (e.code === "ENOENT") return writeArtifact(normalizedNewArtifact);
+      if (e.code === "ENOENT")
+        return writeArtifact(normalizedNewArtifact, outputPath);
       else if (e instanceof SyntaxError) throw e; // catches improperly formatted artifact json
       throw e; // catch all other errors
     }
