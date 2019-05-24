@@ -1,5 +1,4 @@
 const Web3PromiEvent = require("web3-core-promievent");
-const BlockchainUtils = require("truffle-blockchain-utils");
 const Web3Shim = require("truffle-interface-adapter").Web3Shim;
 const utils = require("../utils");
 const execute = require("../execute");
@@ -136,36 +135,6 @@ module.exports = Contract => ({
   },
 
   async detectNetwork() {
-    // private helper for parsing known artifact networks
-    const parseKnownNetworks = gasLimit => {
-      // go through all the networks that are listed as
-      // blockchain uris and see if they match
-      const uris = Object.keys(this._json.networks).filter(
-        network => network.indexOf("blockchain://") === 0
-      );
-      const matches = uris.map(uri =>
-        BlockchainUtils.matches.bind(
-          BlockchainUtils,
-          uri,
-          this.web3.currentProvider
-        )
-      );
-
-      utils.parallel(matches, (err, results) => {
-        if (err) throw new Error(err);
-
-        for (let i = 0; i < results.length; i++) {
-          if (results[i]) {
-            this.setNetwork(uris[i]);
-            return {
-              id: this.network_id,
-              blockLimit: gasLimit
-            };
-          }
-        }
-      });
-    };
-
     // private helper used to set an artifact network ID
     const setInstanceNetworkID = (chainNetworkID, gasLimit) => {
       // if chainNetworkID already present as network configuration, use it
@@ -178,7 +147,7 @@ module.exports = Contract => ({
       }
       // chainNetworkID not present,
       // parse all known networks
-      const matchedNetwork = parseKnownNetworks(gasLimit);
+      const matchedNetwork = utils.parseKnownNetworks(this, gasLimit);
       if (matchedNetwork) return matchedNetwork;
 
       // network unknown, trust the provider and use given chainNetworkID

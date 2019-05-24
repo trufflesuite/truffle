@@ -2,6 +2,7 @@ const debug = require("debug")("contract:utils"); // eslint-disable-line no-unus
 var web3Utils = require("web3-utils");
 var bigNumberify = require("ethers/utils/bignumber").bigNumberify;
 var abi = require("web3-eth-abi");
+const BlockchainUtils = require("truffle-blockchain-utils");
 var reformat = require("./reformat");
 
 var Utils = {
@@ -252,6 +253,34 @@ var Utils = {
       throw new Error(
         `Cannot create instance of ${contractName}; no code at address ${address}`
       );
+  },
+
+  parseKnownNetworks(
+    { networks, currentProvider, setNetwork, network_id },
+    gasLimit
+  ) {
+    // go through all the networks that are listed as
+    // blockchain uris and see if they match
+    const uris = Object.keys(networks).filter(
+      network => network.indexOf("blockchain://") === 0
+    );
+    const matches = uris.map(uri =>
+      BlockchainUtils.matches.bind(BlockchainUtils, uri, currentProvider)
+    );
+
+    Utils.parallel(matches, (err, results) => {
+      if (err) throw new Error(err);
+
+      for (let i = 0; i < results.length; i++) {
+        if (results[i]) {
+          setNetwork(uris[i]);
+          return {
+            id: network_id,
+            blockLimit: gasLimit
+          };
+        }
+      }
+    });
   }
 };
 
