@@ -248,6 +248,7 @@ var Utils = {
     return bignum.mul(secondOperand);
   },
 
+  // checks if provided contract address has on-chain code
   checkCode(onChainCode, contractName, address) {
     if (!onChainCode || onChainCode.replace("0x", "").replace(/0/g, "") === "")
       throw new Error(
@@ -255,6 +256,7 @@ var Utils = {
       );
   },
 
+  // parses known contract instance networks
   parseKnownNetworks(
     { networks, currentProvider, setNetwork, network_id },
     gasLimit
@@ -283,6 +285,7 @@ var Utils = {
     });
   },
 
+  // sets a contract instance network ID
   setInstanceNetworkID(TruffleContractInstance, chainNetworkID, gasLimit) {
     // if chainNetworkID already present as network configuration, use it
     if (TruffleContractInstance.hasNetwork(chainNetworkID)) {
