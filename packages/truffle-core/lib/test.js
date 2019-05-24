@@ -105,7 +105,13 @@ const Test = {
       runner
     );
 
-    await this.setJSTestGlobals(web3, accounts, testResolver, runner);
+    await this.setJSTestGlobals(
+      config,
+      web3,
+      accounts,
+      testResolver,
+      runner
+    );
 
     // Finally, run mocha.
     process.on("unhandledRejection", reason => {
@@ -195,7 +201,7 @@ const Test = {
     });
   },
 
-  setJSTestGlobals: function(web3, accounts, testResolver, runner) {
+  setJSTestGlobals: function(config, web3, accounts, testResolver, runner) {
     return new Promise(function(accept) {
       global.web3 = web3;
       global.assert = chai.assert;
