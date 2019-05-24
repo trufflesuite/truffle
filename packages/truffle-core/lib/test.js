@@ -119,7 +119,7 @@ const Test = {
     });
 
     return new Promise(resolve => {
-      mocha.run(failures => {
+      this.mochaRunner = mocha.run(failures => {
         config.logger.warn = warn;
 
         resolve(failures);
@@ -203,12 +203,18 @@ const Test = {
     testResolver,
     runner
   }) {
-    return new Promise(function(accept) {
+    return new Promise(accept => {
       global.web3 = web3;
       global.assert = chai.assert;
       global.expect = chai.expect;
       global.artifacts = {
         require: import_path => testResolver.require(import_path)
+      };
+      global.__debug = async (...args) => {
+        // wrapped inside function so as not to load debugger on every test
+        const { CLIDebugHook } = require("./debug/mocha");
+
+        return await new CLIDebugHook(config, this.mochaRunner).debug(...args);
       };
 
       const template = function(tests) {
