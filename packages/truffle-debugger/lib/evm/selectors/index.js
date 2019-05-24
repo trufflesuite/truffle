@@ -323,14 +323,6 @@ const evm = createSelectorTree({
    * evm.transaction
    */
   transaction: {
-    /**
-     * evm.transaction.instances
-     */
-    instances: createLeaf(
-      ["/state"],
-      state => state.transaction.instances.byAddress
-    ),
-
     /*
      * evm.transaction.globals
      */
@@ -343,7 +335,12 @@ const evm = createSelectorTree({
        * evm.transaction.globals.block
        */
       block: createLeaf(["/state"], state => state.transaction.globals.block)
-    }
+    },
+
+    /*
+     * evm.transaction.initialCall
+     */
+    initialCall: createLeaf(["/state"], state => state.transaction.initialCall)
   },
 
   /**
@@ -370,26 +367,17 @@ const evm = createSelectorTree({
     context: createLeaf(
       [
         "./call",
-        "./codex/codeOverride",
-        "/transaction/instances",
+        "./codex/instances",
         "/info/binaries/search",
         "/info/contexts"
       ],
-      ({ address, binary }, codeOverride, instances, search, contexts) => {
+      ({ address, binary }, instances, search, contexts) => {
         let contextId;
-        if (codeOverride) {
-          //if we've got a code override going, we can't just consult the
-          //table, we'll have to do a search
-          binary = codeOverride;
-          contextId = search(binary);
-        }
         if (address) {
-          //if we're in a call to a deployed contract, we *must* have recorded
-          //it in the instance table, so (as long as there wasn't an override)
-          //we just need to look up the context ID from there; we don't need to
-          //do any further searching
-          contextId = instances[address].context;
-          binary = instances[address].binary;
+          //if we're in a call to a deployed contract, we must have recorded
+          //the context in the codex, so we don't need to do any further
+          //searching
+          ({ context: contextId, binary } = instances[address]);
         } else if (binary) {
           //otherwise, if we're in a constructor, we'll need to actually do a
           //search
@@ -399,12 +387,22 @@ const evm = createSelectorTree({
           return null;
         }
 
-        let context = contexts[contextId];
-
-        return {
-          ...context,
-          binary
-        };
+        if (contextId != undefined) {
+          //if we found the context, use it
+          let context = contexts[contextId];
+          return {
+            ...context,
+            binary
+          };
+        } else {
+          //otherwise we'll construct something default
+          return {
+            binary,
+            isConstructor: address === undefined
+            //WARNING: we've mutated binary here, so
+            //instead we go by whether address is undefined
+          };
+        }
       }
     ),
 
@@ -518,13 +516,17 @@ const evm = createSelectorTree({
       ),
 
       /*
-       * evm.current.codex.codeOverride
-       * current code listing, as fetched from the codex
-       * (may be undefined, in which case consult the instances table)
+       * evm.current.codex.instances
        */
-      codeOverride: createLeaf(
-        ["./_", "../call"],
-        (codex, { address }) => codex[codex.length - 1].accounts[address].code
+      instances: createLeaf(["./_"], codex =>
+        Object.assign(
+          {},
+          ...Object.entries(codex[codex.length - 1].accounts).map(
+            ([address, { code, context }]) => ({
+              [address]: { address, binary: code, context }
+            })
+          )
+        )
       )
     }
   },

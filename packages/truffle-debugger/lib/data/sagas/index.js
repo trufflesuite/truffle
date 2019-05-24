@@ -665,6 +665,10 @@ function fetchBasePath(
     astId: baseNode.id,
     stackframe: currentDepth
   });
+  debug("astId: %d", baseNode.id);
+  debug("stackframe: %d", currentDepth);
+  debug("fullId: %s", fullId);
+  debug("currentAssignments: %O", currentAssignments);
   //base expression is an expression, and so has a literal assigned to
   //it
   let offset = DecodeUtils.Conversion.toBN(

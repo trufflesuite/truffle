@@ -78,11 +78,12 @@ export function returnCall() {
 }
 
 export const RETURN_CREATE = "RETURN_CREATE";
-export function returnCreate(address, code) {
+export function returnCreate(address, code, context) {
   return {
     type: RETURN_CREATE,
     address,
-    code
+    code,
+    context
   };
 }
 
