@@ -1,5 +1,5 @@
 const Schema = require("truffle-contract-schema");
-const fs = require("fs-extra");
+const fse = require("fs-extra");
 const path = require("path");
 const _ = require("lodash");
 const debug = require("debug")("artifactor");
@@ -20,7 +20,7 @@ class Artifactor {
     // private helper for writing artifacts
     const writeArtifact = _completeArtifact => {
       _completeArtifact.updatedAt = new Date().toISOString();
-      fs.writeFileSync(
+      fse.writeFileSync(
         output_path,
         JSON.stringify(_completeArtifact, null, 2),
         "utf8"
@@ -28,7 +28,7 @@ class Artifactor {
     };
 
     try {
-      const existingArtifact = fs.readFileSync(output_path, "utf8"); // check if artifact already exists
+      const existingArtifact = fse.readFileSync(output_path, "utf8"); // check if artifact already exists
       const existingArtifactObject = JSON.parse(existingArtifact); // parse existing artifact
       const normalizedExistingArtifact = Schema.normalize(
         existingArtifactObject
@@ -68,7 +68,7 @@ class Artifactor {
     }
 
     try {
-      fs.statSync(this.destination); // check if destination exists
+      fse.statSync(this.destination); // check if destination exists
     } catch (e) {
       if (e.code === "ENOENT")
         // if destination doesn't exist, throw error
