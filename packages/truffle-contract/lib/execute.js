@@ -164,20 +164,26 @@ var execute = {
 
       constructor
         .detectNetwork()
-        .then(network => {
+        .then(async network => {
           args = utils.convertToEthersBN(args);
+
           params.to = address;
           params.data = fn ? fn(...args).encodeABI() : undefined;
 
-          execute.getGasEstimate
-            .call(constructor, params, network.blockLimit)
-            .then(gas => {
-              params.gas = gas;
-              deferred = web3.eth.sendTransaction(params);
-              deferred.catch(override.start.bind(constructor, context));
-              handlers.setup(deferred, context);
-            })
-            .catch(promiEvent.reject);
+          try {
+            params.gas = await execute.getGasEstimate.call(
+              constructor,
+              params,
+              network.blockLimit
+            );
+          } catch (error) {
+            promiEvent.reject(error);
+            return;
+          }
+
+          deferred = web3.eth.sendTransaction(params);
+          deferred.catch(override.start.bind(constructor, context));
+          handlers.setup(deferred, context);
         })
         .catch(promiEvent.reject);
 
