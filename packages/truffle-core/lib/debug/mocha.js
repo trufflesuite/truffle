@@ -1,5 +1,6 @@
 const { CLIDebugger } = require("./cli");
 const { DebugPrinter } = require("./printer");
+const execute = require("truffle-contract/lib/execute");
 
 class CLIDebugHook {
   constructor(config, runner) {
@@ -45,7 +46,22 @@ class CLIDebugHook {
     switch (action) {
       case "send": {
         const result = await operation;
-        const { tx: txHash } = result;
+
+        return { txHash: result.tx, method, result };
+      }
+      case "call": {
+        const { contract, fn, abi, args, address } = method;
+
+        // get the result of the call
+        const result = await operation;
+
+        // and replay it as a transaction so we can debug
+        const { tx: txHash } = await execute.send.call(
+          contract,
+          fn,
+          abi,
+          address
+        )(...args);
 
         return { txHash, method, result };
       }
@@ -57,14 +73,33 @@ class CLIDebugHook {
 
   detectMethod(promiEvent) {
     return new Promise(accept => {
-      promiEvent.on("execute:send:method", ({ abi, args, contract }) => {
-        accept({
-          abi,
-          args,
-          contract,
-          action: "send"
-        });
-      });
+      promiEvent.on(
+        "execute:send:method",
+        ({ fn, abi, args, contract, address }) => {
+          accept({
+            fn,
+            abi,
+            args,
+            address,
+            contract,
+            action: "send"
+          });
+        }
+      );
+
+      promiEvent.on(
+        "execute:call:method",
+        ({ fn, abi, args, contract, address }) => {
+          accept({
+            fn,
+            abi,
+            args,
+            address,
+            contract,
+            action: "call"
+          });
+        }
+      );
     });
   }
 }
