@@ -3,6 +3,8 @@ const debug = debugModule("lib:debug:printer");
 
 const path = require("path");
 const safeEval = require("safe-eval");
+const colors = require("colors");
+const util = require("util");
 
 const DebugUtils = require("truffle-debug-utils");
 
@@ -34,6 +36,49 @@ class DebugPrinter {
 
   print(...args) {
     this.config.logger.log(...args);
+  }
+
+  printStartTestHook({ contractName, methodName, args }) {
+    const formatOperation = (contractName, methodName, args) =>
+      colors.bold(
+        `${contractName}.${methodName}(${args.map(util.inspect).join(", ")})`
+      );
+
+    this.config.logger.log("");
+    this.config.logger.log("  ...");
+    this.config.logger.log(
+      colors.cyan(
+        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+      )
+    );
+    this.config.logger.log("  Test run interrupted.");
+    this.config.logger.log(
+      `  Debugging ${formatOperation(contractName, methodName, args)}`
+    );
+    this.config.logger.log(
+      colors.cyan(
+        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+      )
+    );
+    this.config.logger.log("");
+  }
+
+  printStopTestHook() {
+    this.config.logger.log("");
+    this.config.logger.log("");
+    this.config.logger.log(
+      colors.cyan(
+        "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+      )
+    );
+    this.config.logger.log("  Debugger stopped. Test resuming");
+    this.config.logger.log(
+      colors.cyan(
+        "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+      )
+    );
+    this.config.logger.log("  ...");
+    this.config.logger.log("");
   }
 
   printAddressesAffected() {

@@ -1,9 +1,11 @@
 const { CLIDebugger } = require("./cli");
+const { DebugPrinter } = require("./printer");
 
 class CLIDebugHook {
   constructor(config, runner) {
     this.config = config;
     this.runner = runner; // mocha runner (**not** lib/test/testrunner)
+    this.printer = new DebugPrinter(config);
   }
 
   async debug(operation) {
@@ -22,11 +24,12 @@ class CLIDebugHook {
       }
     } = await this.invoke(operation);
 
+    this.printer.printStartTestHook({ contractName, methodName, args });
 
-    this.config.logger.log("");
     const interpreter = await new CLIDebugger(this.config).run(txHash);
     await interpreter.start();
-    this.config.logger.log("");
+
+    this.printer.printStopTestHook(operation.method);
 
     return result;
   }
