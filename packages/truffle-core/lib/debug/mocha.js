@@ -1,5 +1,9 @@
+const colors = require("colors");
+const util = require("util");
+
 const { CLIDebugger } = require("./cli");
 const execute = require("truffle-contract/lib/execute");
+const { DebugPrinter } = require("./printer");
 
 class CLIDebugHook {
   constructor(config, runner) {
@@ -23,11 +27,12 @@ class CLIDebugHook {
       }
     } = await this.invoke(operation);
 
+    this.printStartTestHook({ contractName, methodName, args });
 
-    this.config.logger.log("");
     const interpreter = await new CLIDebugger(this.config).run(txHash);
     await interpreter.start();
-    this.config.logger.log("");
+
+    this.printStopTestHook(operation.method);
 
     return result;
   }
@@ -86,6 +91,49 @@ class CLIDebugHook {
         );
       }
     });
+  }
+
+  printStartTestHook({ contractName, methodName, args }) {
+    const formatOperation = (contractName, methodName, args) =>
+      colors.bold(
+        `${contractName}.${methodName}(${args.map(util.inspect).join(", ")})`
+      );
+
+    this.config.logger.log("");
+    this.config.logger.log("  ...");
+    this.config.logger.log(
+      colors.cyan(
+        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+      )
+    );
+    this.config.logger.log("  Test run interrupted.");
+    this.config.logger.log(
+      `  Debugging ${formatOperation(contractName, methodName, args)}`
+    );
+    this.config.logger.log(
+      colors.cyan(
+        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+      )
+    );
+    this.config.logger.log("");
+  }
+
+  printStopTestHook() {
+    this.config.logger.log("");
+    this.config.logger.log("");
+    this.config.logger.log(
+      colors.cyan(
+        "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+      )
+    );
+    this.config.logger.log("  Debugger stopped. Test resuming");
+    this.config.logger.log(
+      colors.cyan(
+        "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+      )
+    );
+    this.config.logger.log("  ...");
+    this.config.logger.log("");
   }
 }
 
