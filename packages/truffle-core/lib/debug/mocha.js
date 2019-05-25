@@ -6,13 +6,22 @@ class CLIDebugHook {
     this.runner = runner; // mocha runner (**not** lib/test/testrunner)
   }
 
-  async debug(method, ...args) {
+  async debug(operation) {
     // turn off timeouts for the current runnable
     // HACK we don't turn it back on because it doesn't work...
     // tests that take a long time _after_ debug break just won't timeout
     this.disableTimeout();
 
-    const { txHash, result } = await this.invoke(method, ...args);
+    const {
+      txHash,
+      result,
+      method: {
+        abi: { name: methodName },
+        args,
+        contract: { contractName }
+      }
+    } = await this.invoke(operation);
+
 
     this.config.logger.log("");
     const interpreter = await new CLIDebugger(this.config).run(txHash);
@@ -26,27 +35,32 @@ class CLIDebugHook {
     this.runner.currentRunnable.timeout(0);
   }
 
-  async invoke(method, ...args) {
-    if (method && typeof method.on === "function") {
-      return await this.catchPromiEvent(method);
-    } else if (method) {
-      const result = await method.sendTransaction(...args);
-      const { tx: txHash } = result;
+  async invoke(operation) {
+    const method = await this.detectMethod(operation);
+    const { action } = method;
 
-      return { txHash, result };
+    switch (action) {
+      case "send": {
+        const result = await operation;
+        const { tx: txHash } = result;
+
+        return { txHash, method, result };
+      }
+      default: {
+        throw new Error(`Unsupported action for debugging: ${action}`);
+      }
     }
   }
 
-  catchPromiEvent(promiEvent) {
-    return new Promise((accept, reject) => {
-      promiEvent.on("methodTransaction", info => {
-        promiEvent
-          .then(result => {
-            const { tx: txHash } = result;
-
-            accept({ txHash, info, result });
-          })
-          .catch(reject);
+  detectMethod(promiEvent) {
+    return new Promise(accept => {
+      promiEvent.on("execute:send:method", ({ abi, args, contract }) => {
+        accept({
+          abi,
+          args,
+          contract,
+          action: "send"
+        });
       });
     });
   }
