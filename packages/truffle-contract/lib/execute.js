@@ -170,6 +170,12 @@ var execute = {
           params.to = address;
           params.data = fn ? fn(...args).encodeABI() : undefined;
 
+          promiEvent.eventEmitter.emit("execute:send:method", {
+            abi: methodABI,
+            args: args,
+            contract: constructor
+          });
+
           try {
             params.gas = await execute.getGasEstimate.call(
               constructor,
