@@ -215,27 +215,11 @@ const Test = {
       global.artifacts = {
         require: import_path => testResolver.require(import_path)
       };
-      global.__debug = async (method, ...args) => {
-        const { CLIDebugger } = require("./debug");
+      global.__debug = async (...args) => {
+        // wrapped inside function so as not to load debugger on every test
+        const { CLIDebugHook } = require("./debug/mocha");
 
-        // HACK turn off timeouts for the current runnable
-        // note: we don't turn it back on because it doesn't work...
-        // tests that take a long time _after_ debugging won't timeout
-        this.mochaRunner.currentRunnable.timeout(0);
-
-        const invoke = async (method, ...args) => {
-          if (method) {
-            const { tx } = await method.sendTransaction(...args);
-            return tx;
-          }
-        };
-
-        const txHash = await invoke(method, ...args);
-
-        config.logger.log("");
-        const interpreter = await new CLIDebugger(config).run(txHash);
-        await interpreter.start();
-        config.logger.log("");
+        return await new CLIDebugHook(config, this.mochaRunner).debug(...args);
       };
 
       const template = function(tests) {
