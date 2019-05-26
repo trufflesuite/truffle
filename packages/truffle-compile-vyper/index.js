@@ -1,6 +1,6 @@
 const path = require("path");
 const exec = require("child_process").exec;
-const fse = require("fs-extra");
+const fs = require("fs");
 
 const async = require("async");
 const colors = require("colors");
@@ -113,7 +113,7 @@ function execVyper(options, source_path, callback) {
 }
 
 // compile all options.paths
-async function compileAll(options, callback) {
+function compileAll(options, callback) {
   options.logger = options.logger || console;
 
   compile.display(options.paths, options);
@@ -121,7 +121,7 @@ async function compileAll(options, callback) {
   async.map(
     options.paths,
     function(source_path, c) {
-      execVyper(options, source_path, async function(err, compiled_contract) {
+      execVyper(options, source_path, function(err, compiled_contract) {
         if (err) return c(err);
 
         // remove first extension from filename
@@ -134,7 +134,7 @@ async function compileAll(options, callback) {
             ? basename
             : path.basename(basename, path.extname(basename));
 
-        const source_buffer = await fse.readFile(source_path);
+        const source_buffer = fs.readFileSync(source_path);
         const source_contents = source_buffer.toString();
 
         const contract_definition = {
