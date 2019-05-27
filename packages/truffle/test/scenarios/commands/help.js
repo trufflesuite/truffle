@@ -3,7 +3,7 @@ const CommandRunner = require("../commandrunner");
 const MemoryLogger = require("../memorylogger");
 let config = {};
 
-describe("truffle help", function() {
+describe("truffle help [ @standalone ]", function() {
   const logger = new MemoryLogger();
   beforeEach("set up config for logger", function() {
     config.logger = logger;

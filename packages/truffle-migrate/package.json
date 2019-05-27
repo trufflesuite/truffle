@@ -1,6 +1,6 @@
 {
   "name": "truffle-migrate",
-  "version": "3.0.17",
+  "version": "3.0.18",
   "description": "On-chain migrations management",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "emittery": "^0.4.0",
     "node-dir": "0.1.17",
     "truffle-config": "^1.1.12",
-    "truffle-deployer": "^3.0.17",
+    "truffle-deployer": "^3.0.18",
     "truffle-expect": "^0.0.8",
     "truffle-interface-adapter": "^0.1.5",
     "truffle-reporters": "^1.0.9",
