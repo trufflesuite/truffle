@@ -41,16 +41,6 @@ export function* addInstance(address, binary) {
   let search = yield select(evm.info.binaries.search);
   let context = search(binary);
 
-  // in case binary is unknown, add a context for it
-  if (context === null) {
-    context = yield* addContext({
-      binary,
-      isConstructor: false
-      //addInstance is only used for adding deployed instances, so it will
-      //never be a constructor
-    });
-  }
-
   //now, whether we needed a new context or not, add the instance
   yield put(actions.addInstance(address, context, binary));
 
@@ -68,6 +58,7 @@ export function* begin({
   block
 }) {
   yield put(actions.saveGlobals(sender, gasprice, block));
+  debug("codex: %O", yield select(evm.current.codex));
   if (address) {
     yield put(actions.call(address, data, storageAddress, sender, value));
   } else {
@@ -131,7 +122,19 @@ export function* callstackAndCodexSaga() {
   } else if (yield select(evm.current.step.isHalting)) {
     debug("got return");
 
-    yield put(actions.returnCall());
+    if ((yield select(evm.current.call)).binary) {
+      //if we're returning from a successful creation call, let's log the
+      //result
+      let returnedAddress = yield select(evm.current.step.returnedAddress);
+      let returnedBinary = yield select(evm.current.step.returnValue);
+      let search = yield select(evm.info.binaries.search);
+      let returnedContext = search(returnedBinary);
+      yield put(
+        actions.returnCreate(returnedAddress, returnedBinary, returnedContext)
+      );
+    } else {
+      yield put(actions.returnCall());
+    }
   } else if (yield select(evm.current.step.touchesStorage)) {
     let storageAddress = (yield select(evm.current.call)).storageAddress;
     let slot = yield select(evm.current.step.storageAffected);
@@ -149,8 +152,9 @@ export function* callstackAndCodexSaga() {
 }
 
 export function* reset() {
-  let initialAddress = (yield select(evm.current.callstack))[0].storageAddress;
-  yield put(actions.reset(initialAddress));
+  let initialCall = yield select(evm.transaction.initialCall);
+  yield put(actions.reset());
+  yield put(initialCall);
 }
 
 export function* unload() {

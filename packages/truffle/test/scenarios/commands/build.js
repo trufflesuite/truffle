@@ -4,7 +4,7 @@ const MemoryLogger = require("../memorylogger");
 const sandbox = require("../sandbox");
 const path = require("path");
 
-describe("truffle build", () => {
+describe("truffle build [ @standalone ]", () => {
   const logger = new MemoryLogger();
   let config, project;
 
