@@ -1,12 +1,13 @@
+const colors = require("colors");
+const util = require("util");
+
 const { CLIDebugger } = require("./cli");
-const { DebugPrinter } = require("./printer");
 const execute = require("truffle-contract/lib/execute");
 
 class CLIDebugHook {
   constructor(config, runner) {
     this.config = config;
     this.runner = runner; // mocha runner (**not** lib/test/testrunner)
-    this.printer = new DebugPrinter(config);
   }
 
   async debug(operation) {
@@ -25,12 +26,12 @@ class CLIDebugHook {
       }
     } = await this.invoke(operation);
 
-    this.printer.printStartTestHook({ contractName, methodName, args });
+    this.printStartTestHook({ contractName, methodName, args });
 
     const interpreter = await new CLIDebugger(this.config).run(txHash);
     await interpreter.start();
 
-    this.printer.printStopTestHook(operation.method);
+    this.printStopTestHook(operation.method);
 
     return result;
   }
@@ -89,6 +90,49 @@ class CLIDebugHook {
         );
       }
     });
+  }
+
+  printStartTestHook({ contractName, methodName, args }) {
+    const formatOperation = (contractName, methodName, args) =>
+      colors.bold(
+        `${contractName}.${methodName}(${args.map(util.inspect).join(", ")})`
+      );
+
+    this.config.logger.log("");
+    this.config.logger.log("  ...");
+    this.config.logger.log(
+      colors.cyan(
+        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+      )
+    );
+    this.config.logger.log("  Test run interrupted.");
+    this.config.logger.log(
+      `  Debugging ${formatOperation(contractName, methodName, args)}`
+    );
+    this.config.logger.log(
+      colors.cyan(
+        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+      )
+    );
+    this.config.logger.log("");
+  }
+
+  printStopTestHook() {
+    this.config.logger.log("");
+    this.config.logger.log("");
+    this.config.logger.log(
+      colors.cyan(
+        "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+      )
+    );
+    this.config.logger.log("  Debugger stopped. Test resuming");
+    this.config.logger.log(
+      colors.cyan(
+        "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+      )
+    );
+    this.config.logger.log("  ...");
+    this.config.logger.log("");
   }
 }
 
