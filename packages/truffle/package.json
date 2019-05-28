@@ -7,7 +7,7 @@
     "app-module-path": "^2.2.0",
     "mocha": "^4.1.0",
     "original-require": "1.0.1",
-    "solc": "0.5.0"
+    "solc": "0.5.8"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^0.1.16",
