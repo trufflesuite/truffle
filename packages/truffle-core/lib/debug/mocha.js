@@ -73,33 +73,21 @@ class CLIDebugHook {
 
   detectMethod(promiEvent) {
     return new Promise(accept => {
-      promiEvent.on(
-        "execute:send:method",
-        ({ fn, abi, args, contract, address }) => {
-          accept({
-            fn,
-            abi,
-            args,
-            address,
-            contract,
-            action: "send"
-          });
-        }
-      );
-
-      promiEvent.on(
-        "execute:call:method",
-        ({ fn, abi, args, contract, address }) => {
-          accept({
-            fn,
-            abi,
-            args,
-            address,
-            contract,
-            action: "call"
-          });
-        }
-      );
+      for (let action of ["send", "call"]) {
+        promiEvent.on(
+          `execute:${action}:method`,
+          ({ fn, abi, args, contract, address }) => {
+            accept({
+              fn,
+              abi,
+              args,
+              address,
+              contract,
+              action
+            });
+          }
+        );
+      }
     });
   }
 }
