@@ -97,7 +97,7 @@ function createStepSelectors(step, state = null) {
      * .isHalting
      *
      * whether the instruction halts or returns from a calling context
-     * NOTE: this covers only orddinary halts, not exceptional halts;
+     * NOTE: this covers only ordinary halts, not exceptional halts;
      * but it doesn't check the return status, so any normal halting
      * instruction will qualify here
      */
@@ -144,8 +144,8 @@ function createStepSelectors(step, state = null) {
       callAddress: createLeaf(
         ["./isCall", state],
 
-        (matches, { stack }) => {
-          if (!matches) {
+        (isCall, { stack }) => {
+          if (!isCall) {
             return null;
           }
 
@@ -162,8 +162,8 @@ function createStepSelectors(step, state = null) {
       createBinary: createLeaf(
         ["./isCreate", state],
 
-        (matches, { stack, memory }) => {
-          if (!matches) {
+        (isCreate, { stack, memory }) => {
+          if (!isCreate) {
             return null;
           }
 
@@ -183,8 +183,8 @@ function createStepSelectors(step, state = null) {
        */
       callData: createLeaf(
         ["./isCall", "./isShortCall", state],
-        (matches, short, { stack, memory }) => {
-          if (!matches) {
+        (isCall, short, { stack, memory }) => {
+          if (!isCall) {
             return null;
           }
 
@@ -229,8 +229,8 @@ function createStepSelectors(step, state = null) {
        *
        * value for the create
        */
-      createValue: createLeaf(["./isCreate", state], (matches, { stack }) => {
-        if (!matches) {
+      createValue: createLeaf(["./isCreate", state], (isCreate, { stack }) => {
+        if (!isCreate) {
           return null;
         }
 
@@ -248,8 +248,8 @@ function createStepSelectors(step, state = null) {
       storageAffected: createLeaf(
         ["./touchesStorage", state],
 
-        (matches, { stack }) => {
-          if (!matches) {
+        (touchesStorage, { stack }) => {
+          if (!touchesStorage) {
             return null;
           }
 
@@ -268,8 +268,8 @@ function createStepSelectors(step, state = null) {
       returnValue: createLeaf(
         ["./trace", "./isHalting", state],
 
-        (step, matches, { stack, memory }) => {
-          if (!matches) {
+        (step, isHalting, { stack, memory }) => {
+          if (!isHalting) {
             return null;
           }
           if (step.op !== "RETURN") {
@@ -441,8 +441,8 @@ const evm = createSelectorTree({
        */
       createdAddress: createLeaf(
         ["./isCreate", "/nextOfSameDepth/state/stack"],
-        (matches, stack) => {
-          if (!matches) {
+        (isCreate, stack) => {
+          if (!isCreate) {
             return null;
           }
           let address = stack[stack.length - 1];
@@ -500,8 +500,8 @@ const evm = createSelectorTree({
           trace.stepsRemaining,
           "/transaction/status"
         ],
-        (matches, { stack }, remaining, finalStatus) => {
-          if (!matches) {
+        (isHalting, { stack }, remaining, finalStatus) => {
+          if (!isHalting) {
             return null; //not clear this'll do much good since this may get
             //read as false, but, oh well, may as well
           }
