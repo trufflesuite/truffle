@@ -84,7 +84,7 @@ const Test = {
     );
     testResolver.cache_on = false;
 
-    const dependencyPaths = await this.compileContractsWithTestFilesIfNeeded(
+    const compilation = await this.compileContractsWithTestFilesIfNeeded(
       solTests,
       config,
       testResolver
@@ -101,7 +101,7 @@ const Test = {
     await this.defineSolidityTests(
       mocha,
       testContracts,
-      dependencyPaths,
+      compilation.outputs.solc,
       runner
     );
 
@@ -110,7 +110,8 @@ const Test = {
       web3,
       accounts,
       testResolver,
-      runner
+      runner,
+      compilation
     });
 
     // Finally, run mocha.
@@ -174,8 +175,7 @@ const Test = {
         // Compile project contracts and test contracts
         Contracts.compile(compileConfig)
           .then(result => {
-            const paths = result.outputs.solc;
-            accept(paths);
+            accept(result);
           })
           .catch(reject);
       });
@@ -206,7 +206,8 @@ const Test = {
     web3,
     accounts,
     testResolver,
-    runner
+    runner,
+    compilation
   }) {
     return new Promise(accept => {
       global.web3 = web3;
@@ -215,11 +216,22 @@ const Test = {
       global.artifacts = {
         require: import_path => testResolver.require(import_path)
       };
-      global.__debug = async (...args) => {
+
+      global[config.debugGlobal] = async operation => {
+        if (!config.debug) {
+          config.logger.log(
+            "Warning: Attempting to use in-test debugger without the " +
+              "`truffle test --debug` flag"
+          );
+          return operation;
+        }
+
         // wrapped inside function so as not to load debugger on every test
         const { CLIDebugHook } = require("./debug/mocha");
 
-        return await new CLIDebugHook(config, this.mochaRunner).debug(...args);
+        const hook = new CLIDebugHook(config, compilation, this.mochaRunner);
+
+        return await hook.debug(operation);
       };
 
       const template = function(tests) {
