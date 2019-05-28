@@ -256,6 +256,22 @@ var Utils = {
       );
   },
 
+  // verifies current network has been assigned to contract instance
+  checkNetworkArtifactMatch({ networks, network_id, contractName }) {
+    if (networks[network_id] == null)
+      throw new Error(
+        `${contractName} has not been deployed to detected network (network/artifact mismatch)`
+      );
+  },
+
+  // verifies contract instance has been deployed
+  checkDeployment({ isDeployed, contractName, network_id }) {
+    if (!isDeployed())
+      throw new Error(
+        `${contractName} has not been deployed to detected network (${network_id})`
+      );
+  },
+
   // checks if provided contract address has on-chain code
   checkCode(onChainCode, contractName, address) {
     if (!onChainCode || onChainCode.replace("0x", "").replace(/0/g, "") === "")

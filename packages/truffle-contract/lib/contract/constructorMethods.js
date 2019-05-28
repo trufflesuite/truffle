@@ -75,23 +75,8 @@ module.exports = Contract => ({
     try {
       utils.checkProvider(this);
       await this.detectNetwork();
-      // We don't have a network config for the one we found
-      if (this._json.networks[this.network_id] == null) {
-        throw new Error(
-          `${
-            this.contractName
-          } has not been deployed to detected network (network/artifact mismatch)`
-        );
-      }
-
-      // If we found the network but it's not deployed
-      if (!this.isDeployed()) {
-        throw new Error(
-          `${this.contractName} has not been deployed to detected network (${
-            this.network_id
-          })`
-        );
-      }
+      utils.checkNetworkArtifactMatch(this);
+      utils.checkDeployment(this);
       return new this(this.address);
     } catch (error) {
       throw error;
