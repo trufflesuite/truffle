@@ -175,7 +175,11 @@ describe("Different networks: ", function() {
         );
       })
       .catch(function(err) {
-        if (err.message.indexOf("Provider not set or invalid") < 0)
+        if (
+          err.message.indexOf(
+            "Please call setProvider() first before calling new()"
+          ) < 0
+        )
           return done(new Error("Unexpected error received: " + err.message));
         done();
       });
