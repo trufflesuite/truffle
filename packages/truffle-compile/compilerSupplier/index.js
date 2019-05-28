@@ -7,7 +7,7 @@ const { Docker, Local, Native, VersionRange } = require("./loadingStrategies");
 class CompilerSupplier {
   constructor(_config) {
     _config = _config || {};
-    const defaultConfig = { version: "0.5.0" };
+    const defaultConfig = { version: "0.5.8" };
     this.config = Object.assign({}, defaultConfig, _config);
     this.strategyOptions = { version: this.config.version };
   }
