@@ -1,4 +1,5 @@
 const Mocha = require("mocha");
+const colors = require("colors");
 const chai = require("chai");
 const path = require("path");
 const Web3 = require("web3");
@@ -110,7 +111,8 @@ const Test = {
       web3,
       accounts,
       testResolver,
-      runner
+      runner,
+      compilation: compilations.solc
     });
 
     // Finally, run mocha.
@@ -201,7 +203,8 @@ const Test = {
     web3,
     accounts,
     testResolver,
-    runner
+    runner,
+    compilation
   }) {
     return new Promise(accept => {
       global.web3 = web3;
@@ -210,11 +213,24 @@ const Test = {
       global.artifacts = {
         require: import_path => testResolver.require(import_path)
       };
-      global.__debug = async (...args) => {
+
+      global[config.debugGlobal] = async operation => {
+        if (!config.debug) {
+          config.logger.log(
+            `${colors.bold(
+              "Warning:"
+            )} Invoked in-test debugger without --debug flag. ` +
+              `Try: \`truffle test --debug\``
+          );
+          return operation;
+        }
+
         // wrapped inside function so as not to load debugger on every test
         const { CLIDebugHook } = require("./debug/mocha");
 
-        return await new CLIDebugHook(config, this.mochaRunner).debug(...args);
+        const hook = new CLIDebugHook(config, compilation, this.mochaRunner);
+
+        return await hook.debug(operation);
       };
 
       const template = function(tests) {
