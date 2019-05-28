@@ -13,8 +13,9 @@ const { DebugInterpreter } = require("./interpreter");
 const { DebugCompiler } = require("./compiler");
 
 class CLIDebugger {
-  constructor(config) {
+  constructor(config, { compilation }) {
     this.config = config;
+    this.compilation = compilation;
   }
 
   async run(txHash) {
@@ -24,7 +25,7 @@ class CLIDebugger {
     this._setupCustomInspect();
 
     // compile contracts
-    const compilation = await this.compileSources();
+    const compilation = this.compilation || (await this.compileSources());
 
     // invoke truffle-debugger
     const session = await this.startDebugger(compilation, txHash);

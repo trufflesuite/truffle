@@ -5,8 +5,9 @@ const { CLIDebugger } = require("./cli");
 const execute = require("truffle-contract/lib/execute");
 
 class CLIDebugHook {
-  constructor(config, runner) {
+  constructor(config, compilation, runner) {
     this.config = config;
+    this.compilation = compilation;
     this.runner = runner; // mocha runner (**not** lib/test/testrunner)
   }
 
@@ -28,13 +29,17 @@ class CLIDebugHook {
 
     this.printStartTestHook({ contractName, methodName, args });
 
-    const interpreter = await new CLIDebugger(this.config).run(txHash);
+    const interpreter = await new CLIDebugger(this.config, {
+      compilation: this.compilation
+    }).run(txHash);
     await interpreter.start();
 
     this.printStopTestHook(operation.method);
 
     return result;
   }
+
+  async start() {}
 
   disableTimeout() {
     this.runner.currentRunnable.timeout(0);
