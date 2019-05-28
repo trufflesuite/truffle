@@ -248,6 +248,14 @@ var Utils = {
     return bignum.mul(secondOperand);
   },
 
+  // checks if given contract instance has a set provider
+  checkProvider({ currentProvider, contractName }) {
+    if (!currentProvider)
+      throw new Error(
+        `${contractName} error: Please call setProvider() first before calling new().`
+      );
+  },
+
   // checks if provided contract address has on-chain code
   checkCode(onChainCode, contractName, address) {
     if (!onChainCode || onChainCode.replace("0x", "").replace(/0/g, "") === "")

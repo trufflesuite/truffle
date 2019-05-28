@@ -19,13 +19,7 @@ module.exports = Contract => ({
   new() {
     const promiEvent = new Web3PromiEvent();
 
-    if (!this.currentProvider) {
-      throw new Error(
-        `${
-          this.contractName
-        } error: Please call setProvider() first before calling new().`
-      );
-    }
+    utils.checkProvider(this);
 
     if (!this.bytecode || this.bytecode === "0x") {
       throw new Error(
