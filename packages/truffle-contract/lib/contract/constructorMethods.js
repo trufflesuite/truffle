@@ -72,6 +72,8 @@ module.exports = Contract => ({
   },
 
   deployed() {
+    utils.checkProvider(this);
+
     return this.detectNetwork().then(() => {
       // We don't have a network config for the one we found
       if (this._json.networks[this.network_id] == null) {
