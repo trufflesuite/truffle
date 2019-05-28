@@ -71,10 +71,10 @@ module.exports = Contract => ({
     }
   },
 
-  deployed() {
-    utils.checkProvider(this);
-
-    return this.detectNetwork().then(() => {
+  async deployed() {
+    try {
+      utils.checkProvider(this);
+      await this.detectNetwork();
       // We don't have a network config for the one we found
       if (this._json.networks[this.network_id] == null) {
         throw new Error(
@@ -92,9 +92,10 @@ module.exports = Contract => ({
           })`
         );
       }
-
       return new this(this.address);
-    });
+    } catch (error) {
+      throw error;
+    }
   },
 
   defaults(class_defaults) {
