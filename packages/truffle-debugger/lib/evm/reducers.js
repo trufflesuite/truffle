@@ -116,6 +116,17 @@ const globals = combineReducers({
   block
 });
 
+function status(state = null, action) {
+  switch (action.type) {
+    case actions.SAVE_STATUS:
+      return action.status;
+    case actions.UNLOAD_TRANSACTION:
+      return null;
+    default:
+      return state;
+  }
+}
+
 function initialCall(state = null, action) {
   switch (action.type) {
     case actions.CALL:
@@ -137,6 +148,7 @@ function initialCall(state = null, action) {
 
 const transaction = combineReducers({
   globals,
+  status,
   initialCall
 });
 

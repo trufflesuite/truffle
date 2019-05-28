@@ -97,7 +97,9 @@ function createStepSelectors(step, state = null) {
      * .isHalting
      *
      * whether the instruction halts or returns from a calling context
-     * (covers only ordinary halds, not exceptional halts)
+     * NOTE: this covers only orddinary halts, not exceptional halts;
+     * but it doesn't check the return status, so any normal halting
+     * instruction will qualify here
      */
     isHalting: createLeaf(["./trace"], step =>
       isNormalHaltingMnemonic(step.op)
@@ -338,6 +340,11 @@ const evm = createSelectorTree({
     },
 
     /*
+     * evm.transaction.status
+     */
+    status: createLeaf(["/state"], state => state.transaction.status),
+
+    /*
      * evm.transaction.initialCall
      */
     initialCall: createLeaf(["/state"], state => state.transaction.initialCall)
@@ -443,22 +450,6 @@ const evm = createSelectorTree({
         }
       ),
 
-      /*
-       * evm.current.step.returnedAddress
-       *
-       * address created by the current return step
-       */
-      returnedAddress: createLeaf(
-        ["./isHalting", "/next/state/stack"],
-        (matches, stack) => {
-          if (!matches) {
-            return null;
-          }
-          let address = stack[stack.length - 1];
-          return DecodeUtils.Conversion.toAddress(address);
-        }
-      ),
-
       /**
        * evm.current.step.callsPrecompileOrExternal
        *
@@ -481,12 +472,46 @@ const evm = createSelectorTree({
 
       /**
        * evm.current.step.isExceptionalHalting
-       *
        */
       isExceptionalHalting: createLeaf(
-        ["./isHalting", "/current/state/depth", "/next/state/depth"],
-        (halting, currentDepth, nextDepth) =>
-          nextDepth < currentDepth && !halting
+        [
+          "./isHalting",
+          "/current/state/depth",
+          "/next/state/depth",
+          "./returnStatus"
+        ],
+        (halting, currentDepth, nextDepth, status) =>
+          halting
+            ? !status //if deliberately halting, check the return status
+            : nextDepth < currentDepth //if not on a deliberate halt, any halt
+        //is an exceptional halt
+      ),
+
+      /**
+       * evm.current.step.returnStatus
+       * checks the return status of the *current* halting instruction (for
+       * normal halts only)
+       * (returns a boolean -- true for success, false for failure)
+       */
+      returnStatus: createLeaf(
+        [
+          "./isHalting",
+          "/next/state",
+          trace.stepsRemaining,
+          "/transaction/status"
+        ],
+        (matches, { stack }, remaining, finalStatus) => {
+          if (!matches) {
+            return null; //not clear this'll do much good since this may get
+            //read as false, but, oh well, may as well
+          }
+          if (remaining <= 1) {
+            return finalStatus;
+          } else {
+            const ZERO_WORD = "00".repeat(DecodeUtils.EVM.WORD_SIZE);
+            return stack[stack.length - 1] !== ZERO_WORD;
+          }
+        }
       )
     },
 
