@@ -49,25 +49,7 @@ class CLIDebugger {
     const startMessage = DebugUtils.formatStartMessage(txHash !== undefined);
     const startSpinner = ora(startMessage).start();
 
-    let debuggerOptions = {
-      provider: this.config.provider,
-      files: compilation.files,
-      contracts: Object.keys(compilation.contracts).map(function(name) {
-        const contract = compilation.contracts[name];
-        return {
-          contractName: contract.contractName || contract.contract_name,
-          source: contract.source,
-          sourcePath: contract.sourcePath,
-          ast: contract.ast,
-          binary: contract.binary || contract.bytecode,
-          sourceMap: contract.sourceMap,
-          deployedBinary: contract.deployedBinary || contract.deployedBytecode,
-          deployedSourceMap: contract.deployedSourceMap,
-          compiler: contract.compiler,
-          abi: contract.abi
-        };
-      })
-    };
+    let debuggerOptions = this.getDebuggerOptions(compilation);
 
     const bugger =
       txHash !== undefined
@@ -84,6 +66,25 @@ class CLIDebugger {
     }
 
     return session;
+  }
+
+  getDebuggerOptions({ files, contracts }) {
+    return {
+      provider: this.config.provider,
+      files,
+      contracts: Object.values(contracts).map(contract => ({
+        contractName: contract.contractName || contract.contract_name,
+        source: contract.source,
+        sourcePath: contract.sourcePath,
+        ast: contract.ast,
+        binary: contract.binary || contract.bytecode,
+        sourceMap: contract.sourceMap,
+        deployedBinary: contract.deployedBinary || contract.deployedBytecode,
+        deployedSourceMap: contract.deployedSourceMap,
+        compiler: contract.compiler,
+        abi: contract.abi
+      }))
+    };
   }
 
   async buildInterpreter(session, txHash) {
