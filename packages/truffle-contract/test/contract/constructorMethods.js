@@ -1,4 +1,4 @@
-const TruffleContract = require("../");
+const TruffleContract = require("../../");
 const assert = require("assert");
 const Ganache = require("ganache-core");
 
