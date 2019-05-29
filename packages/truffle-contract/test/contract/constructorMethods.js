@@ -80,7 +80,7 @@ describe("TruffleContract.deployed()", () => {
     );
   });
 
-  it("throws if network exists, but contract not deployed", async () => {
+  it("throws if network & network record exists, but contract not deployed onchain", async () => {
     const provider = Ganache.provider();
     const freshTruffleContract = TruffleContract();
     freshTruffleContract.setProvider(provider);
