@@ -7,7 +7,7 @@ const ora = require("ora");
 
 const DebugUtils = require("truffle-debug-utils");
 const selectors = require("truffle-debugger").selectors;
-const { solidity, trace, controller } = selectors;
+const { solidity, trace, evm, controller } = selectors;
 
 const analytics = require("../services/analytics");
 const ReplManager = require("../repl");
@@ -409,7 +409,7 @@ class DebugInterpreter {
     if (this.session.view(trace.finished) && !alreadyFinished) {
       this.printer.print("");
       //check if transaction failed
-      if (!this.session.view(selectors.session.transaction.receipt).status) {
+      if (!this.session.view(evm.transaction.status)) {
         this.printer.print("Transaction halted with a RUNTIME ERROR.");
         this.printer.print("");
         this.printer.print(

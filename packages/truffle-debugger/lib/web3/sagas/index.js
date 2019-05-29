@@ -61,6 +61,7 @@ function* fetchTransactionInfo(adapter, { txHash }) {
         address: tx.to,
         data: tx.input,
         storageAddress: tx.to,
+        status: receipt.status,
         sender: tx.from,
         value: new BN(tx.value),
         gasprice: new BN(tx.gasPrice),

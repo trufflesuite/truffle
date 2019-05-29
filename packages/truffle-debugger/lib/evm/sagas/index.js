@@ -52,12 +52,14 @@ export function* begin({
   binary,
   data,
   storageAddress,
+  status,
   sender,
   value,
   gasprice,
   block
 }) {
   yield put(actions.saveGlobals(sender, gasprice, block));
+  yield put(actions.saveStatus(status));
   debug("codex: %O", yield select(evm.current.codex));
   if (address) {
     yield put(actions.call(address, data, storageAddress, sender, value));
@@ -122,15 +124,16 @@ export function* callstackAndCodexSaga() {
   } else if (yield select(evm.current.step.isHalting)) {
     debug("got return");
 
-    if ((yield select(evm.current.call)).binary) {
+    let { binary, storageAddress } = yield select(evm.current.call);
+
+    if (binary) {
       //if we're returning from a successful creation call, let's log the
       //result
-      let returnedAddress = yield select(evm.current.step.returnedAddress);
       let returnedBinary = yield select(evm.current.step.returnValue);
       let search = yield select(evm.info.binaries.search);
       let returnedContext = search(returnedBinary);
       yield put(
-        actions.returnCreate(returnedAddress, returnedBinary, returnedContext)
+        actions.returnCreate(storageAddress, returnedBinary, returnedContext)
       );
     } else {
       yield put(actions.returnCall());
