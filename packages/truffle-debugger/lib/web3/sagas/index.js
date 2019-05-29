@@ -61,6 +61,7 @@ function* fetchTransactionInfo(adapter, { txHash }) {
         address: tx.to,
         data: tx.input,
         storageAddress: tx.to,
+        status: receipt.status,
         sender: tx.from,
         value: new BN(tx.value),
         gasprice: new BN(tx.gasPrice),
@@ -142,7 +143,7 @@ export function* obtainBinaries(addresses, block) {
   yield all(addresses.map(address => put(actions.fetchBinary(address, block))));
 
   let binaries = [];
-  binaries = yield all(tasks.map(task => join(task)));
+  binaries = yield join(tasks);
 
   debug("binaries %o", binaries);
 

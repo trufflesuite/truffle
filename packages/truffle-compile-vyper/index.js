@@ -1,5 +1,6 @@
 const path = require("path");
 const exec = require("child_process").exec;
+const fs = require("fs");
 
 const async = require("async");
 const colors = require("colors");
@@ -133,10 +134,13 @@ function compileAll(options, callback) {
             ? basename
             : path.basename(basename, path.extname(basename));
 
+        const source_buffer = fs.readFileSync(source_path);
+        const source_contents = source_buffer.toString();
+
         const contract_definition = {
           contract_name: contract_name,
           sourcePath: source_path,
-
+          source: source_contents,
           abi: compiled_contract.abi,
           bytecode: compiled_contract.bytecode,
           deployedBytecode: compiled_contract.bytecode_runtime,

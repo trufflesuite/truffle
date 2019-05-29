@@ -413,7 +413,10 @@ describe("Methods", function() {
         await example.triggerRequireError();
         assert.fail();
       } catch (e) {
-        assert(e.message.includes("failing transaction"), "should return failed tx message!");
+        assert(
+          e.message.includes("failing transaction"),
+          "should return failed tx message!"
+        );
         assert(e.receipt === undefined, "Expected no receipt");
       }
     });
@@ -435,7 +438,10 @@ describe("Methods", function() {
         await example.triggerAssertError();
         assert.fail();
       } catch (e) {
-        assert(e.message.includes("failing transaction"), "should return failed tx message!");
+        assert(
+          e.message.includes("failing transaction"),
+          "should return failed tx message!"
+        );
         assert(e.receipt === undefined, "Excected no receipt");
       }
     });
@@ -448,8 +454,34 @@ describe("Methods", function() {
         await example.runsOutOfGas();
         assert.fail();
       } catch (e) {
-        assert(e.message.includes("gas required exceeds allowance"), "should return gas allowance error");
+        assert(
+          e.message.includes("gas required exceeds allowance"),
+          "should return gas allowance error"
+        );
         assert(e.receipt === undefined, "Expected no receipt");
+      }
+    });
+
+    it("errors with a revert reason", async function() {
+      const example = await Example.new(1);
+      try {
+        // At the moment, this test can't rely on truffle-contract's
+        // gas estimation when running with geth.
+        await example.triggerRequireWithReasonError({ gas: 1000000 });
+        assert.fail();
+      } catch (e) {
+        assert(
+          e.reason === "reasonstring",
+          "Triggered require result should have revert reason field"
+        );
+        assert(
+          e.message.includes("reasonstring"),
+          "Triggered require should include reason in error message"
+        );
+        assert(
+          e.receipt.status === false,
+          "Triggered require should have receipt status:`false`"
+        );
       }
     });
 

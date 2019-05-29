@@ -244,9 +244,12 @@ module.exports = {
         while (files.length > 0) {
           const currentFile = files.shift();
 
-          // Ignore targets already selected.
-          if (compilationTargets.includes(currentFile)) {
-            continue;
+          let imports;
+          try {
+            imports = self.getImports(currentFile, resolved[currentFile], solc);
+          } catch (err) {
+            err.message = `Error parsing ${currentFile}: ${err.message}`;
+            throw err;
           }
 
           let imports;
