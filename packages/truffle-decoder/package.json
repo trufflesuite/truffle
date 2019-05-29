@@ -29,25 +29,12 @@
   "devDependencies": {
     "@types/bn.js": "^4.11.2",
     "@types/debug": "^0.0.31",
-    "@types/lodash": "^4.14.116",
-    "@types/lodash.clonedeep": "^4.5.4",
-    "@types/lodash.isequal": "^4.5.4",
-    "@types/lodash.merge": "^4.6.4",
-    "@types/web3": "^1.0.5",
-    "json-schema-to-typescript": "^5.5.0",
-    "truffle-contract-schema": "^3.0.9",
     "typescript": "^3.1.3"
   },
   "dependencies": {
-    "abi-decoder": "^1.2.0",
-    "async-eventemitter": "^0.2.4",
     "bn.js": "^4.11.8",
     "debug": "^4.1.0",
-    "lodash.clonedeep": "^4.5.0",
-    "lodash.isequal": "^4.5.0",
-    "lodash.merge": "^4.6.1",
-    "truffle-decode-utils": "^1.0.12",
-    "web3": "1.0.0-beta.37"
+    "truffle-decode-utils": "^1.0.12"
   },
   "peerDependencies": {
     "truffle": "^5.0.14"
