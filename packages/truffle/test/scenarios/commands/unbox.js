@@ -6,7 +6,7 @@ const tmp = require("tmp");
 const path = require("path");
 const Config = require("truffle-config");
 
-describe("truffle unbox", () => {
+describe("truffle unbox [ @standalone ]", () => {
   let config;
   const logger = new MemoryLogger();
 

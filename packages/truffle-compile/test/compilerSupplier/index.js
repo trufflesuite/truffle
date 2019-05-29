@@ -6,7 +6,6 @@ const {
   Docker,
   Native,
   Local,
-  Bundled,
   VersionRange
 } = require("../../compilerSupplier/loadingStrategies");
 let supplier;
@@ -75,17 +74,19 @@ describe("CompilerSupplier", () => {
       beforeEach(() => {
         supplierOptions.solcConfig = { version: undefined };
         supplier = new CompilerSupplier(supplierOptions);
-        sinon.stub(Bundled.prototype, "load").returns("called Bundled");
+        sinon
+          .stub(VersionRange.prototype, "load")
+          .returns("called VersionRange");
       });
       afterEach(() => {
-        Bundled.prototype.load.restore();
+        VersionRange.prototype.load.restore();
       });
 
-      it("calls load on the Bundled strategy", done => {
+      it("calls load on the VersionRange strategy", done => {
         supplier
           .load()
           .then(result => {
-            assert(result === "called Bundled");
+            assert(result === "called VersionRange");
             done();
           })
           .catch(() => {

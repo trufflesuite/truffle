@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("debugger:trace:sagas");
 
 import { take, takeEvery, put, select } from "redux-saga/effects";
-import { prefixName, isCallMnemonic, isCreateMnemonic } from "lib/helpers";
+import { prefixName, isCallMnemonic } from "lib/helpers";
 
 import * as DecodeUtils from "truffle-decode-utils";
 
@@ -66,24 +66,14 @@ export function* processTrace(steps) {
   let addresses = [
     ...new Set(
       steps
-        .map(({ op, stack, depth }, index) => {
-          if (isCallMnemonic(op)) {
-            //if it's a call, just fetch the address off the stack
-            return DecodeUtils.Conversion.toAddress(stack[stack.length - 2]);
-          } else if (isCreateMnemonic(op)) {
-            //if it's a create, look ahead to when it returns and get the
-            //address off the stack
-            let returnStack = steps
-              .slice(index + 1)
-              .find(step => step.depth === depth).stack;
-            return DecodeUtils.Conversion.toAddress(
-              returnStack[returnStack.length - 1]
-            );
-          } else {
-            //if it's not a call or create, there's no address to get
-            return undefined;
-          }
-        })
+        .map(({ op, stack }) =>
+          isCallMnemonic(op)
+            ? //if it's a call, just fetch the address off the stack
+              DecodeUtils.Conversion.toAddress(stack[stack.length - 2])
+            : //if it's not a call, just return undefined (we've gone back to
+              //skipping creates)
+              undefined
+        )
         //filter out zero addresses from failed creates (as well as undefineds)
         .filter(
           address =>

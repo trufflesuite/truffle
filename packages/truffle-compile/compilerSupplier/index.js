@@ -2,23 +2,18 @@ const path = require("path");
 const fs = require("fs");
 const semver = require("semver");
 
-const {
-  Bundled,
-  Docker,
-  Local,
-  Native,
-  VersionRange
-} = require("./loadingStrategies");
+const { Docker, Local, Native, VersionRange } = require("./loadingStrategies");
 
 class CompilerSupplier {
   constructor({ events, solcConfig }) {
     const { version, docker, compilerRoots } = solcConfig;
+    const defaultSolcVersion = "0.5.8";
     this.events = events;
-    this.version = version;
+    this.version = version ? version : defaultSolcVersion;
     this.docker = docker;
     this.compilerRoots = compilerRoots;
     this.strategyOptions = {};
-    if (version) this.strategyOptions.version = version;
+    if (version) this.strategyOptions.version = this.version;
     if (docker) this.strategyOptions.docker = compilerRoots;
     if (compilerRoots) this.strategyOptions.compilerRoots = compilerRoots;
     if (events) this.strategyOptions.events = events;
@@ -56,7 +51,6 @@ class CompilerSupplier {
       let strategy;
       const useDocker = this.docker;
       const useNative = userSpecification === "native";
-      const useBundledSolc = !userSpecification;
       const useSpecifiedLocal =
         userSpecification && this.fileExists(userSpecification);
       const isValidVersionRange = semver.validRange(userSpecification);
@@ -65,8 +59,6 @@ class CompilerSupplier {
         strategy = new Docker(this.strategyOptions);
       } else if (useNative) {
         strategy = new Native(this.strategyOptions);
-      } else if (useBundledSolc) {
-        strategy = new Bundled(this.strategyOptions);
       } else if (useSpecifiedLocal) {
         strategy = new Local(this.strategyOptions);
       } else if (isValidVersionRange) {

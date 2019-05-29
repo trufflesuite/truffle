@@ -4,6 +4,7 @@ var path = require("path");
 var async = require("async");
 var debug = require("debug")("lib:debug");
 var BN = require("bn.js");
+var util = require("util");
 
 var commandReference = {
   "o": "step over",
@@ -315,6 +316,26 @@ var DebugUtils = {
     return formatted.join(OS.EOL);
   },
 
+  formatValue: function(value, indent) {
+    if (!indent) {
+      indent = 0;
+    }
+
+    return util
+      .inspect(value, {
+        colors: true,
+        depth: null,
+        breakLength: 30
+      })
+      .split(/\r?\n/g)
+      .map(function(line, i) {
+        // don't indent first line
+        const padding = i > 0 ? Array(indent).join(" ") : "";
+        return padding + line;
+      })
+      .join(OS.EOL);
+  },
+
   //HACK
   cleanConstructors: function(object) {
     debug("object %o", object);
@@ -368,9 +389,8 @@ var DebugUtils = {
   cleanThis: function(variables, replacement) {
     return Object.assign(
       {},
-      ...Object.entries(variables).map(
-        ([variable, value]) =>
-          variable === "this" ? { [replacement]: value } : { [variable]: value }
+      ...Object.entries(variables).map(([variable, value]) =>
+        variable === "this" ? { [replacement]: value } : { [variable]: value }
       )
     );
   },
