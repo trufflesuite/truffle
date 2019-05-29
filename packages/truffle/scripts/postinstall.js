@@ -2,7 +2,7 @@ const { statSync } = require("fs");
 const { execSync } = require("child_process");
 
 const bundledCLI = "./build/cli.bundled.js";
-const defaultSolc = "0.5.0";
+const defaultSolc = "0.5.8";
 
 const postinstallObtain = () => {
   try {
