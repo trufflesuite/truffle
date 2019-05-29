@@ -1,11 +1,11 @@
-import { AstDefinition } from "truffle-decode-utils";
+import { AstDefinition, Values } from "truffle-decode-utils";
 import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import decode from "../decode";
 import TruffleDecoder from "./contract-decoder";
 import { ContractObject } from "truffle-contract-schema/spec";
 import { Provider } from "web3/providers";
-import { DecoderRequest } from "../types/request";
+import { DecoderRequest, GeneratorJunk } from "../types/request";
 
 export { getStorageAllocations, storageSize } from "../allocate/storage";
 export { getCalldataAllocations } from "../allocate/calldata";
@@ -17,6 +17,6 @@ export function forContract(contract: ContractObject, relevantContracts: Contrac
   return new TruffleDecoder(contract, relevantContracts, provider, address);
 }
 
-export function* forEvmState(definition: AstDefinition, pointer: DataPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
+export function* forEvmState(definition: AstDefinition, pointer: DataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
   return yield* decode(definition, pointer, info);
 }
