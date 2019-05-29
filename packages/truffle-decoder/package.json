@@ -1,7 +1,7 @@
 {
   "name": "truffle-decoder",
   "version": "3.0.3",
-  "description": "A library that provides both high and low level decoding of Ethereum contract variables",
+  "description": "A decoder for Solidity variables of all sorts",
   "main": "dist/interface/index.js",
   "types": "lib/interface/index.ts",
   "directories": {
@@ -10,12 +10,12 @@
   "scripts": {
     "prepare": "yarn build",
     "build": "node_modules/.bin/tsc",
-    "start": "node_modules/.bin/tsc --watch",
-    "test": "cd test && truffle test"
+    "start": "node_modules/.bin/tsc --watch"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-decoder",
   "keywords": [
     "ethereum",
+    "solidity",
     "contract",
     "state",
     "decoder"
