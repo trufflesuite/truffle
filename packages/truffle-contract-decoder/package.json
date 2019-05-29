@@ -1,0 +1,10 @@
+{
+  "name": "truffle-contract-decoder",
+  "version": "0.1.0",
+  "description": "The Truffle contract decoder",
+  "main": "index.js",
+  "repository": "http://github.com/trufflesuite/truffle/",
+  "author": "Mike Seese and Harry Altman",
+  "license": "MIT",
+  "private": false
+}
