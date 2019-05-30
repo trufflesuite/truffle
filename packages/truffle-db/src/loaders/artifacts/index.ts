@@ -255,26 +255,20 @@ export class ArtifactsLoader {
     return sources.map( ({ id }) => ({ id }) );
   }
 
-  async compilationSourceContracts(compilation: object) {
-    let sourceContracts = [];
-    for(let contract in compilation) {
+  async compilationSourceContracts(compilation:Array<ContractObject>, sourceIds: Array<object>) {
+    const sourceContracts = compilation.map((contract, index) => {
       let sourceContract =
       {
-        name: compilation[contract]["contract_name"],
-        source: {
-          id: generateId({
-            contents: compilation[contract]["source"],
-            sourcePath: compilation[contract]["sourcePath"]
-          })
-        }
+        name: contract["contract_name"],
+        source: sourceIds[index]
       }
-      if(compilation[contract]["ast"]) {
+      if(contract["ast"]) {
         sourceContract["ast"] = {
-          json: JSON.stringify(compilation[contract]["ast"])
+          json: JSON.stringify(contract["ast"])
         }
       }
-      sourceContracts.push(sourceContract);
-    }
+      return sourceContract;
+    });
 
     return sourceContracts;
   }
@@ -294,8 +288,8 @@ export class ArtifactsLoader {
   }
 
   async setCompilation(organizedCompilation: Array<ContractObject>) {
-    const sourceContracts = await this.compilationSourceContracts(organizedCompilation);
     const sourceIds = await this.loadCompilationSources(organizedCompilation);
+    const sourceContracts = await this.compilationSourceContracts(organizedCompilation, sourceIds);
     const compilationObject = {
       compiler: {
         name: organizedCompilation[0]["compiler"]["name"],
