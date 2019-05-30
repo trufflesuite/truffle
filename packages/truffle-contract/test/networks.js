@@ -370,13 +370,11 @@ describe("Different networks: ", function() {
         from: ExampleTwo.defaults().from // Borrow the address from this one.
       });
 
-      NetworkExample.new(1)
-        .then(() => {
-          NetworkExample.deployed().then(instance => {
-            assert.equal(NetworkExample.network_id, uri);
-            assert.equal(instance.address, json.networks[uri].address);
-            done();
-          });
+      NetworkExample.deployed()
+        .then(instance => {
+          assert.equal(NetworkExample.network_id, uri);
+          assert.equal(instance.address, json.networks[uri].address);
+          done();
         })
         .catch(done);
     });
@@ -411,13 +409,11 @@ describe("Different networks: ", function() {
       // when the network id has been explicitly set.
       NetworkExample.setNetwork(network_two_id);
 
-      NetworkExample.new(1)
-        .then(() => {
-          NetworkExample.deployed().then(instance => {
-            assert.equal(NetworkExample.network_id, uri);
-            assert.equal(instance.address, json.networks[uri].address);
-            done();
-          });
+      NetworkExample.deployed()
+        .then(instance => {
+          assert.equal(NetworkExample.network_id, uri);
+          assert.equal(instance.address, json.networks[uri].address);
+          done();
         })
         .catch(done);
     });
@@ -474,13 +470,11 @@ describe("Different networks: ", function() {
             // We should get the address that's been saved as the URIs should match.
             NetworkExample.setNetwork(new_uri);
 
-            NetworkExample.new(1)
-              .then(() => {
-                NetworkExample.deployed().then(instance => {
-                  assert.equal(NetworkExample.network_id, uri);
-                  assert.equal(instance.address, json.networks[uri].address);
-                  done();
-                });
+            NetworkExample.deployed()
+              .then(instance => {
+                assert.equal(NetworkExample.network_id, uri);
+                assert.equal(instance.address, json.networks[uri].address);
+                done();
               })
               .catch(done);
           });
