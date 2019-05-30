@@ -13,6 +13,7 @@ jest.mock("truffle-workflow-compile", () => ({
     const magicSquare= require(path.join(__dirname, "sources", "MagicSquare.json"));
     const migrations = require(path.join(__dirname, "sources", "Migrations.json"));
     const squareLib = require(path.join(__dirname, "sources", "SquareLib.json"));
+    const vyperStorage = require(path.join(__dirname, "sources", "VyperStorage.json"));
     const returnValue = {
       "outputs": {
         "solc": [
@@ -20,7 +21,9 @@ jest.mock("truffle-workflow-compile", () => ({
           "/Users/fainashalts/solidity-magic-square/contracts/Migrations.sol",
           "/Users/fainashalts/solidity-magic-square/contracts/SquareLib.sol"
         ],
-        "vyper": []
+        "vyper": [
+           "/Users/fainashalts/truffle-six/testing2/contracts/VyperStorage.vy",
+        ]
       },
       "contracts": [{
         "contract_name": "MagicSquare",
@@ -33,7 +36,11 @@ jest.mock("truffle-workflow-compile", () => ({
       {
         "contract_name": "SquareLib",
         ...squareLib
-      }
+      },
+      {
+        "contract_name": "VyperStorage",
+        ...vyperStorage
+      },
       ]
     }
     return returnValue;
@@ -55,7 +62,11 @@ const compilationConfig =  {
 
 const db = new TruffleDB(config);
 const Migrations = require(path.join(fixturesDirectory, "Migrations.json"));
-const Build = [require(path.join(__dirname, "sources", "MagicSquare.json")), require(path.join(__dirname, "sources", "Migrations.json")), require(path.join(__dirname, "sources", "SquareLib.json")) ];
+const Build = [
+  require(path.join(__dirname, "sources", "MagicSquare.json")),
+  require(path.join(__dirname, "sources", "Migrations.json")),
+  require(path.join(__dirname, "sources", "SquareLib.json")),
+  require(path.join(__dirname, "sources", "VyperStorage.json")) ];
 
 const GetWorkspaceBytecode: boolean = gql`
 query GetWorkspaceBytecode($id: ID!) {
