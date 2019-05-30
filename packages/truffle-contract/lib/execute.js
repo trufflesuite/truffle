@@ -99,13 +99,13 @@ var execute = {
    * @return {Promise}             Return value of the call.
    */
   call: function(fn, methodABI, address) {
-    var constructor = this;
+    const constructor = this;
 
-    return function() {
-      var params = {};
-      var defaultBlock = "latest";
-      var args = Array.prototype.slice.call(arguments);
-      var lastArg = args[args.length - 1];
+    return async function() {
+      let params = {};
+      let defaultBlock = "latest";
+      let args = Array.prototype.slice.call(arguments);
+      const lastArg = args[args.length - 1];
 
       // Extract defaultBlock parameter
       if (execute.hasDefaultBlock(args, lastArg, methodABI.inputs)) {
@@ -113,29 +113,20 @@ var execute = {
       }
 
       // Extract tx params
-      if (execute.hasTxParams(lastArg)) {
-        params = args.pop();
-      }
+      if (execute.hasTxParams(lastArg)) params = args.pop();
 
       params.to = address;
       params = utils.merge(constructor.class_defaults, params);
 
-      return new Promise(async (resolve, reject) => {
-        let result;
-        try {
-          await constructor.detectNetwork();
-          args = utils.convertToEthersBN(args);
-          result = await fn(...args).call(params, defaultBlock);
-          result = reformat.numbers.call(
-            constructor,
-            result,
-            methodABI.outputs
-          );
-          resolve(result);
-        } catch (err) {
-          reject(err);
-        }
-      });
+      const { web3 } = constructor;
+      args = await utils.convertENSNames(params, methodABI, web3);
+
+      let result;
+      await constructor.detectNetwork();
+      args = utils.convertToEthersBN(args);
+      result = await fn(...args).call(params, defaultBlock);
+      result = reformat.numbers.call(constructor, result, methodABI.outputs);
+      return result;
     };
   },
 

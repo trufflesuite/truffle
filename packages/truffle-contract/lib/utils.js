@@ -3,6 +3,7 @@ var web3Utils = require("web3-utils");
 var bigNumberify = require("ethers/utils/bignumber").bigNumberify;
 var abi = require("web3-eth-abi");
 var reformat = require("./reformat");
+const ENS = require("ethereum-ens");
 
 var Utils = {
   is_object: function(val) {
@@ -198,6 +199,22 @@ var Utils = {
 
       throw new Error(error);
     }
+  },
+
+  convertENSNames: async (params, methodABI, web3) => {
+    const ens = new ENS(web3.currentProvider);
+    return params.map(async (param, index) => {
+      if (methodABI.inputs[index].type === "address") {
+        const isAddress = web3.utils.isAddress(param);
+        if (isAddress(param)) {
+          return param;
+        } else {
+          return await ens.resolver(param).addr();
+        }
+      } else {
+        return param;
+      }
+    });
   },
 
   convertToEthersBN: function(original) {
