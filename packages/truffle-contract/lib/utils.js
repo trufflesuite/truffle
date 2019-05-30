@@ -201,20 +201,21 @@ var Utils = {
     }
   },
 
-  convertENSNames: async (params, methodABI, web3) => {
+  convertENSNames: (args, methodABI, web3) => {
     const ens = new ENS(web3.currentProvider);
-    return params.map(async (param, index) => {
+    const convertedNames = args.map((argument, index) => {
       if (methodABI.inputs[index].type === "address") {
-        const isAddress = web3.utils.isAddress(param);
-        if (isAddress(param)) {
-          return param;
+        const isAddress = web3.utils.isAddress(argument);
+        if (isAddress) {
+          return argument;
         } else {
-          return await ens.resolver(param).addr();
+          return ens.resolver(argument).addr();
         }
       } else {
-        return param;
+        return argument;
       }
     });
+    return Promise.all(convertedNames);
   },
 
   convertToEthersBN: function(original) {
