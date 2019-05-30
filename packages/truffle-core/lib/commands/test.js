@@ -1,4 +1,4 @@
-var command = {
+const command = {
   command: "test",
   description: "Run JavaScript and Solidity tests",
   builder: {
@@ -118,7 +118,7 @@ var command = {
           );
         }
 
-        var environmentCallback = function(err) {
+        const environmentCallback = function(err) {
           if (err) return done(err);
           // Copy all the built files over to a temporary directory, because we
           // don't want to save any tests artifacts. Only do this if the build directory
@@ -137,25 +137,17 @@ var command = {
 
               run();
             })
-            .catch(error => {
-              done(error);
-            });
+            .catch(done);
         };
 
         if (config.networks[config.network]) {
           Environment.detect(config)
-            .then(() => {
-              environmentCallback();
-            })
-            .catch(error => {
-              environmentCallback(error);
-            });
+            .then(() => environmentCallback())
+            .catch(environmentCallback);
         } else {
-          var ipcOptions = {
-            network: "test"
-          };
+          const ipcOptions = { network: "test" };
 
-          var ganacheOptions = {
+          const ganacheOptions = {
             host: "127.0.0.1",
             port: 7545,
             network_id: 4447,
@@ -164,13 +156,16 @@ var command = {
             gasLimit: config.gas,
             noVMErrorsOnRPCResponse: true
           };
-          Develop.connectOrStart(ipcOptions, ganacheOptions, function(
-            started,
-            disconnect
-          ) {
-            ipcDisconnect = disconnect;
-            Environment.develop(config, ganacheOptions, environmentCallback);
-          });
+          Develop.connectOrStart(
+            ipcOptions,
+            ganacheOptions,
+            (started, disconnect) => {
+              ipcDisconnect = disconnect;
+              Environment.develop(config, ganacheOptions)
+                .then(() => environmentCallback())
+                .catch(environmentCallback);
+            }
+          );
         }
       });
     });
