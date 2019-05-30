@@ -291,25 +291,36 @@ export class ArtifactsLoader {
       .reduce((a, b) => ({ ...a, ...b }), {});
   }
 
-  async loadCompilation(compilationConfig: object) {
-    let compilationsArray = [];
-    let sources = [];
-
-    const compilationOutput = await Contracts.compile(compilationConfig);
-    const compilationData: ContractObject[] = Object.values(compilationOutput.contracts);
-    let sourceIds = await this.loadCompilationSources(compilationData);
-    await this.loadCompilationBytecodes(compilationData);
-    let sourceContracts = await this.compilationSourceContracts(compilationData);
-    let compilationObject = {
+  async setCompilation(organizedCompilation: Array<ContractObject>) {
+    const sourceContracts = await this.compilationSourceContracts(organizedCompilation);
+    const sourceIds = await this.loadCompilationSources(organizedCompilation);
+    const compilationObject = {
       compiler: {
-        name: compilationData[0]["compiler"]["name"],
-        version: compilationData[0]["compiler"]["version"]
+        name: organizedCompilation[0]["compiler"]["name"],
+        version: organizedCompilation[0]["compiler"]["version"]
       },
       contracts: sourceContracts,
       sources: sourceIds
     }
 
-    const compilation = await this.db.query(AddCompilation, { compilations: [compilationObject] });
-    await this.loadCompilationContracts(compilationData, compilation.data.workspace.compilationsAdd.compilations[0].id);
+    return compilationObject;
+  }
+
+  async loadCompilation(compilationConfig: object) {
+    const compilationOutput = await Contracts.compile(compilationConfig);
+    const contracts = await this.organizeContractsByCompiler(compilationOutput);
+
+    const compilationObjects = await Promise.all(Object.values(contracts)
+      .filter(contractsArray => contractsArray.length > 0)
+      .map(contractsArray =>
+        this.setCompilation(contractsArray))
+    );
+
+
+    const compilations = await this.db.query(AddCompilation, { compilations: compilationObjects });
+
+    //map contracts to the compilation they belong in before adding them to truffle-db
+    await Promise.all(compilations.data.workspace.compilationsAdd.compilations
+      .map(({ compiler, id }) => this.loadCompilationContracts(contracts[compiler.name], id) ));
   }
 }
