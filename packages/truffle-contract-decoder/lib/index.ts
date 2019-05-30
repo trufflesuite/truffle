@@ -133,7 +133,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   private async decodeVariable(variable: Decoder.StorageMemberAllocation, block: number): Promise<Values.Value> {
-    const info: EvmInfo = {
+    const info: Decoder.EvmInfo = {
       state: {
         stack: [],
         storage: {},
@@ -200,7 +200,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       ? block
       : (await this.web3.eth.getBlock(block)).number;
 
-    let variable: Deocder.StorageMemberAllocation;
+    let variable: Decoder.StorageMemberAllocation;
     if(typeof nameOrId === "number")
     {
       variable = this.stateVariableReferences[nameOrId];

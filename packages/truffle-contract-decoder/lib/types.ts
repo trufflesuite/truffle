@@ -1,3 +1,7 @@
+import BN from "bn.js";
+import { ContractObject } from "truffle-contract-schema/spec";
+import { Values } from "truffle-decode-utils";
+
 interface EventVariable {
   name: string;
   type: string;
