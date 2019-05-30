@@ -13,7 +13,7 @@ import { EventLog, Log } from "web3/types";
 import { Provider } from "web3/providers";
 import abiDecoder from "abi-decoder";
 import isEqual from "lodash.isequal"; //util.isDeepStrictEqual doesn't exist in Node 8
-import * as Decoder from "truffle-decoder";
+import * as Decoder from "truffle-decoder-core";
 import * as DecoderTypes from "./types";
 import * as Utils from "./utils";
 

@@ -1,7 +1,7 @@
 const assert = require("assert");
 const util = require("util"); // eslint-disable-line no-unused-vars
 
-const TruffleContractDecoder = require("../../../truffle-contract-decoder");
+const TruffleContractDecoder = require("../../../truffle-decoder");
 const TruffleDecodeUtils = require("../../../truffle-decode-utils");
 
 const DecodingSample = artifacts.require("DecodingSample");
