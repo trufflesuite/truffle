@@ -1,4 +1,5 @@
 const Mocha = require("mocha");
+const colors = require("colors");
 const chai = require("chai");
 const path = require("path");
 const Web3 = require("web3");
@@ -220,8 +221,10 @@ const Test = {
       global[config.debugGlobal] = async operation => {
         if (!config.debug) {
           config.logger.log(
-            "Warning: Attempting to use in-test debugger without the " +
-              "`truffle test --debug` flag"
+            `${colors.bold(
+              "Warning:"
+            )} Invoked in-test debugger without --debug flag. ` +
+              `Try: \`truffle test --debug\``
           );
           return operation;
         }
