@@ -1,5 +1,5 @@
 {
-  "id": "abi.spec.json",
+  "$id": "abi.spec.json",
   "$schema": "http://json-schema.org/schema#",
   "title": "ABI",
 
