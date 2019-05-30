@@ -234,6 +234,9 @@ export class ArtifactsLoader {
         ({ bytecode }) => ({ bytes: bytecode })
       )
     });
+    const bytecodeIds = result.data.workspace.bytecodesAdd.bytecodes
+
+    return bytecodeIds;
   }
 
   async loadCompilationSources(contracts: Array<ContractObject>) {
