@@ -201,31 +201,31 @@ export class ArtifactsLoader {
     await this.loadCompilation(this.config);
   }
 
-  async loadCompilationContracts(contracts: Array<ContractObject>, compilationId: String) {
-    let compilationContracts = [];
-    for(let contract in contracts) {
+  async loadCompilationContracts(contracts: Array<ContractObject>, compilationId:string) {
+    const bytecodeIds = await this.loadCompilationBytecodes(contracts);
+    const contractObjects = contracts.map((contract, index) =>
+    {
       let contractObject = {
-        name: contracts[contract]["contract_name"],
+        name: contract["contract_name"],
         abi: {
-          json: JSON.stringify(contracts[contract]["abi"])
+          json: JSON.stringify(contract["abi"])
         },
         compilation: {
           id: compilationId
         },
         sourceContract: {
-          index: +contract
+          index: +index
         },
         constructor: {
-          createBytecode: { id: generateId({ bytes: contracts[contract]["bytecode"] }) }
+          createBytecode: bytecodeIds[index]
         }
       };
+      return contractObject;
+    });
 
-      compilationContracts.push(contractObject);
-    }
-
-    await this.db.query(AddContracts, { contracts: compilationContracts });
-
+    await this.db.query(AddContracts, { contracts: contractObjects});
   }
+
   async loadCompilationBytecodes(contracts: Array<ContractObject>) {
     // transform contract objects into data model bytecode inputs
     // and run mutation
@@ -323,6 +323,6 @@ export class ArtifactsLoader {
 
     //map contracts to the compilation they belong in before adding them to truffle-db
     await Promise.all(compilations.data.workspace.compilationsAdd.compilations
-      .map(({ compiler, id }) => this.loadCompilationContracts(contracts[compiler.name], id) ));
+      .map(({ compiler, id }) => this.loadCompilationContracts(contracts[compiler.name], id)));
   }
 }
