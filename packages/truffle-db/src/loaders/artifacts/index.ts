@@ -201,14 +201,13 @@ export class ArtifactsLoader {
     await this.loadCompilation(this.config);
   }
 
-  async loadCompilationContracts(compilation: object, compilationId: string) {
-    let contracts = [];
-    let contractIds = [];
-    for(let contract in compilation) {
+  async loadCompilationContracts(contracts: Array<ContractObject>, compilationId: String) {
+    let compilationContracts = [];
+    for(let contract in contracts) {
       let contractObject = {
-        name: compilation[contract]["contract_name"],
+        name: contracts[contract]["contract_name"],
         abi: {
-          json: JSON.stringify(compilation[contract]["abi"])
+          json: JSON.stringify(contracts[contract]["abi"])
         },
         compilation: {
           id: compilationId
@@ -217,14 +216,14 @@ export class ArtifactsLoader {
           index: +contract
         },
         constructor: {
-          createBytecode: { id: generateId({ bytes: compilation[contract]["bytecode"] }) }
+          createBytecode: { id: generateId({ bytes: contracts[contract]["bytecode"] }) }
         }
       };
 
-      contracts.push(contractObject);
+      compilationContracts.push(contractObject);
     }
 
-    await this.db.query(AddContracts, { contracts });
+    await this.db.query(AddContracts, { contracts: compilationContracts });
 
   }
   async loadCompilationBytecodes(contracts: Array<ContractObject>) {
