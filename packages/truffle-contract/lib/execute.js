@@ -1,14 +1,14 @@
 const debug = require("debug")("contract:execute"); // eslint-disable-line no-unused-vars
-var Web3PromiEvent = require("web3-core-promievent");
-var EventEmitter = require("events");
-var utils = require("./utils");
-var StatusError = require("./statuserror");
-var Reason = require("./reason");
-var handlers = require("./handlers");
-var override = require("./override");
-var reformat = require("./reformat");
+const Web3PromiEvent = require("web3-core-promievent");
+const EventEmitter = require("events");
+const utils = require("./utils");
+const StatusError = require("./statuserror");
+const Reason = require("./reason");
+const handlers = require("./handlers");
+const override = require("./override");
+const reformat = require("./reformat");
 
-var execute = {
+const execute = {
   // -----------------------------------  Helpers --------------------------------------------------
   /**
    * Retrieves gas estimate multiplied by the set gas multiplier for a `sendTransaction` call.
@@ -138,16 +138,16 @@ var execute = {
    * @return {PromiEvent}          Resolves a transaction receipt (via the receipt handler)
    */
   send: function(fn, methodABI, address) {
-    var constructor = this;
-    var web3 = constructor.web3;
+    const constructor = this;
+    const web3 = constructor.web3;
 
     return function() {
-      var deferred;
-      var args = Array.prototype.slice.call(arguments);
-      var params = utils.getTxParams.call(constructor, methodABI, args);
-      var promiEvent = new Web3PromiEvent();
+      let deferred;
+      let args = Array.prototype.slice.call(arguments);
+      const params = utils.getTxParams.call(constructor, methodABI, args);
+      const promiEvent = new Web3PromiEvent();
 
-      var context = {
+      const context = {
         contract: constructor, // Can't name this field `constructor` or `_constructor`
         promiEvent: promiEvent,
         params: params
@@ -155,20 +155,21 @@ var execute = {
 
       constructor
         .detectNetwork()
-        .then(network => {
+        .then(async network => {
+          args = await utils.convertENSNames(params, methodABI, web3);
           args = utils.convertToEthersBN(args);
           params.to = address;
           params.data = fn ? fn(...args).encodeABI() : undefined;
 
-          execute.getGasEstimate
-            .call(constructor, params, network.blockLimit)
-            .then(gas => {
-              params.gas = gas;
-              deferred = web3.eth.sendTransaction(params);
-              deferred.catch(override.start.bind(constructor, context));
-              handlers.setup(deferred, context);
-            })
-            .catch(promiEvent.reject);
+          const gas = await execute.getGasEstimate.call(
+            constructor,
+            params,
+            network.blockLimit
+          );
+          params.gas = gas;
+          deferred = web3.eth.sendTransaction(params);
+          deferred.catch(override.start.bind(constructor, context));
+          handlers.setup(deferred, context);
         })
         .catch(promiEvent.reject);
 
