@@ -1,37 +1,15 @@
-# Truffle Contract Decoder
-This module provides interfaces for decoding contract state and events.
+# Truffle Decoder
+This module provides interfaces for decoding Solidity variables.  This is a
+fairly low-level interface meant to be used by e.g. a debugger; for a
+higher-level interface, see the `truffle-contract-decoder` package instead.
 
 ## Usage
 ```
-import decoder from 'truffle-contract-decoder';
+import { forEvmState } from 'truffle-decoder';
 
-const contractDecoder = await decoder.for(instance: TruffleContract);
+const decoder = forEvmState(definition, pointer, info);
 ```
 
-## Types
-
-### BlockNumber
-`number | "latest"`
-
-### ContractDecoder
-An instance of this `class` represents a decoder for a `TruffleContract` deployed instance.
-
-#### Methods
-
-##### state
-`contractDecoder.state(block: BlockNumber = "latest"): Promise<Interface ContractState>`
-
-##### variable
-`contractDecoder.variable(variable: string, block: BlockNumber = "latest"): Promise<Interface DecodedVariable>`
-
-##### events
-`contractDecoder.events(name: string | null = null, block: BlockNumber = "latest"): Promise<Interface ContractEvent[]>`
-
-##### onEvent
-`contractDecoder.onEvent(name: string, callback: Function(event: ContractEvent, callback: Function(err: Error | falsy = null)))`
-
-### ContractState
-
-### DecodedVariable
-
-### ContractEvent
+The variable `decoder` will then contain a generator you can use to decode your
+variable.  It may make requests for storage or for code; responses should be in
+the form of a `Uint8Array`.
