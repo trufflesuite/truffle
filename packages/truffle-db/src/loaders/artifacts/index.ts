@@ -264,9 +264,11 @@ export class ArtifactsLoader {
             contents: compilation[contract]["source"],
             sourcePath: compilation[contract]["sourcePath"]
           })
-        },
-        ast: {
-          json: JSON.stringify(compilation[contract]["ast"]),
+        }
+      }
+      if(compilation[contract]["ast"]) {
+        sourceContract["ast"] = {
+          json: JSON.stringify(compilation[contract]["ast"])
         }
       }
       sourceContracts.push(sourceContract);
