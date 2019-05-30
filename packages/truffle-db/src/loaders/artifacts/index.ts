@@ -1,7 +1,6 @@
 import gql from "graphql-tag";
 import { TruffleDB } from "truffle-db/db";
 import * as Contracts from "truffle-workflow-compile";
-import { generateId } from "truffle-db/helpers";
 import { ContractObject } from "truffle-contract-schema/spec";
 
 const AddBytecodes = gql`
