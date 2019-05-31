@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("decoder:decode");
+const debug = debugModule("decoder-core:decode");
 
 import decodeValue from "./value";
 import decodeMemory from "./memory";

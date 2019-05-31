@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("decoder:types:storage");
+const debug = debugModule("decoder-core:types:storage");
 
 import * as DecodeUtils from "truffle-decode-utils";
 import BN from "bn.js";

@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("decoder:allocate:storage");
+const debug = debugModule("decoder-core:allocate:storage");
 
 import { StoragePointer } from "../types/pointer";
 import { StorageAllocations, StorageAllocation, StorageMemberAllocations } from "../types/allocation";

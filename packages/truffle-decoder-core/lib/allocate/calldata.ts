@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("decoder:allocate:calldata");
+const debug = debugModule("decoder-core:allocate:calldata");
 
 import { CalldataPointer } from "../types/pointer";
 import { CalldataAllocations, CalldataAllocation, CalldataMemberAllocations } from "../types/allocation";
