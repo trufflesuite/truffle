@@ -167,58 +167,60 @@ query getWorkspaceCompilation($id: ID!) {
 describe("Compilation", () => {
   let sourceIds= [];
   let bytecodeIds = [];
-  let expectedCompilationId;
+  let compilationIds = [];
+  let expectedSolcCompilationId;
+  let expectedVyperCompilationId;
   beforeAll(async () => {
-    for(let contract in Build) {
+    Build.map((contract) => {
+
       let sourceId = generateId({
-        contents: Build[contract]["source"],
-        sourcePath: Build[contract]["sourcePath"]
+        contents: contract["source"],
+        sourcePath: contract["sourcePath"]
       });
       sourceIds.push({id: sourceId});
 
       let bytecodeId = generateId({
-        bytes: Build[contract]["bytecode"]
+        bytes: contract["bytecode"]
       });
       bytecodeIds.push({ id: bytecodeId });
-    }
-
-    expectedCompilationId = generateId({
-      compiler: Build[0].compiler,
-      sourceIds: sourceIds
     });
+
+    expectedSolcCompilationId = generateId({
+      compiler: Build[0].compiler,
+      sourceIds: [sourceIds[0], sourceIds[1], sourceIds[2]]
+    });
+    expectedVyperCompilationId = generateId({
+      compiler: Build[3].compiler,
+      sourceIds: [sourceIds[3]]
+    });
+    compilationIds.push({ id: expectedSolcCompilationId }, { id: expectedVyperCompilationId });
 
     const loader = new ArtifactsLoader(db, compilationConfig);
     await loader.load();
-  })
+  });
 
   it("loads compilations", async () => {
-    const expectedId = generateId({
-      compiler: Build[0].compiler,
-      sourceIds: sourceIds
+    const compilationsQuery = await Promise.all(compilationIds.map(
+      (compilationId) => {
+        let compilation = db.query(GetWorkspaceCompilation, compilationId);
+        return compilation;
+    }));
+
+    const solcCompilation = compilationsQuery[0].data.workspace.compilation;
+    expect(solcCompilation.compiler.version).toEqual(Build[0].compiler.version);
+    expect(solcCompilation.sources.length).toEqual(3);
+    solcCompilation.sources.map((source, index)=> {
+      expect(source.id).toEqual(sourceIds[index].id);
+      expect(source["contents"]).toEqual(Build[index].source);
+      expect(solcCompilation.contracts[index].name).toEqual(Build[index].contractName);
     });
 
-    const {
-      data: {
-        workspace: {
-          compilation: {
-            compiler: {
-              version
-            },
-            sources,
-            contracts
-          }
-        }
-      }
-    } = await db.query(GetWorkspaceCompilation, { id: expectedCompilationId });
-
-    expect(version).toEqual(Build[0].compiler.version);
-    expect(sources.length).toEqual(3);
-    for(let source in sources) {
-      expect(sources[source]["id"]).toEqual(sourceIds[source]["id"]);
-      expect(sources[source].contents).toEqual(Build[source].source);
-      expect(contracts[source].name).toEqual(Build[source].contractName);
-    }
-
+    const vyperCompilation =  compilationsQuery[1].data.workspace.compilation
+    expect(vyperCompilation.compiler.version).toEqual(Build[3].compiler.version);
+    expect(vyperCompilation.sources.length).toEqual(1);
+    expect(vyperCompilation.sources[0].id).toEqual(sourceIds[3].id);
+    expect(vyperCompilation.sources[0].contents).toEqual(Build[3].source);
+    expect(vyperCompilation.contracts[0].name).toEqual(Build[3].contractName);
   });
 
   it("loads contract sources", async () => {
@@ -256,14 +258,17 @@ describe("Compilation", () => {
     }
   });
 
-  it("loads contracts", async() => {
+  it("loads contracts", async () => {
     let contractIds = [];
+
     for(let index in Build) {
       let expectedId = generateId({
         name: Build[index].contractName,
         abi: { json: JSON.stringify(Build[index].abi) },
-        sourceContract: { index: +index },
-        compilation: { id: expectedCompilationId }
+        sourceContract: { index: Build[index].compiler.name === "solc" ? +index : 0},
+        compilation: {
+          id: Build[index].compiler.name === "solc" ? expectedSolcCompilationId : expectedVyperCompilationId
+        }
       });
 
       contractIds.push({ id: expectedId });
@@ -285,8 +290,7 @@ describe("Compilation", () => {
                 source: {
                   contents,
                   sourcePath
-                },
-                ast
+                }
               },
               compilation: {
                 compiler: {
@@ -303,7 +307,6 @@ describe("Compilation", () => {
       expect(name).toEqual(Build[index].contractName);
       expect(bytes).toEqual(Build[index].bytecode);
       expect(contents).toEqual(Build[index].source);
-      expect(ast.json).toEqual(JSON.stringify(Build[index].ast));
       expect(version).toEqual(Build[index].compiler.version);
       expect(id).toEqual(contractIds[index].id);
     }
