@@ -257,7 +257,7 @@ module.exports = {
 
               let imports;
               try {
-                imports = self.getImports(
+                imports = await self.getImports(
                   currentFile,
                   resolved[currentFile],
                   solc,
@@ -285,7 +285,7 @@ module.exports = {
 
   // Resolves sources in several async passes. For each resolved set it detects unknown
   // imports from external packages and adds them to the set of files to resolve.
-  async resolveAllSources(resolver, initialPaths, solc) {
+  async resolveAllSources(resolver, initialPaths, solc, options) {
     const self = this;
     const mapping = {};
     const allPaths = initialPaths.slice();
@@ -321,7 +321,7 @@ module.exports = {
       // Resolve everything known and add it to the map, then inspect each file's
       // imports and add those to the list of paths to resolve if we don't have it.
       Promise.all(promises)
-        .then(results => {
+        .then(async results => {
           // Generate the sources mapping
           results.forEach(
             item => (mapping[item.file] = Object.assign({}, item))
@@ -334,7 +334,12 @@ module.exports = {
             // Inspect the imports
             let imports;
             try {
-              imports = self.getImports(result.file, result, solc);
+              imports = await self.getImports(
+                result.file,
+                result,
+                solc,
+                options
+              );
             } catch (err) {
               if (err.message.includes("requires different compiler version")) {
                 const contractSolcPragma = err.message.match(
@@ -373,7 +378,16 @@ module.exports = {
     });
   },
 
-  async getImports(file, { body, source }, solc, { compilers: {solc: {parser}} } ) {
+  async getImports(
+    file,
+    { body, source },
+    solc,
+    {
+      compilers: {
+        solc: { parser }
+      }
+    }
+  ) {
     const self = this;
 
     // No imports in vyper!
@@ -394,9 +408,11 @@ module.exports = {
 
   setSolcParser(parser) {
     if (parser === "solcjs") {
-      return new CompilerSupplier().load()
+      return new CompilerSupplier().load();
     }
-    throw new Error(`Unsupported parser "${parser}" found in truffle-config.js`);
+    throw new Error(
+      `Unsupported parser "${parser}" found in truffle-config.js`
+    );
   },
 
   listsEqual(listA, listB) {
