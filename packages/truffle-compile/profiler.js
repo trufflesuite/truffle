@@ -390,6 +390,13 @@ module.exports = {
     );
   },
 
+  setSolcParser(parser) {
+    if (parser === "solcjs") {
+      return new CompilerSupplier().load()
+    }
+    throw new Error(`Unsupported parser "${parser}" found in truffle-config.js`);
+  },
+
   listsEqual(listA, listB) {
     const a = listA.sort();
     const b = listB.sort();
