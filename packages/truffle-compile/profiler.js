@@ -217,7 +217,8 @@ module.exports = {
           const resolved = await self.resolveAllSources(
             resolver,
             allPaths,
-            solc
+            solc,
+            options
           );
           // Generate hash of all sources including external packages - passed to solc inputs.
           const resolvedPaths = Object.keys(resolved);
@@ -259,7 +260,8 @@ module.exports = {
                 imports = self.getImports(
                   currentFile,
                   resolved[currentFile],
-                  solc
+                  solc,
+                  options
                 );
               } catch (err) {
                 err.message = `Error parsing ${currentFile}: ${err.message}`;
