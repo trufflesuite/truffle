@@ -55,8 +55,9 @@ module.exports = {
         );
 
         // Return the item between the quotes.
-        return matches[2];
-      });
+        if (matches) return matches[2];
+      })
+      .filter(match => match !== undefined);
 
     return imports;
   }
