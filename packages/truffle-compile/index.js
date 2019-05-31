@@ -4,7 +4,7 @@ const Profiler = require("./profiler");
 const CompileError = require("./compileerror");
 const CompilerSupplier = require("./compilerSupplier");
 const expect = require("truffle-expect");
-const find_contracts = require("truffle-contract-sources");
+const findContracts = require("truffle-contract-sources");
 const Config = require("truffle-config");
 const semver = require("semver");
 const debug = require("debug")("compile"); // eslint-disable-line no-unused-vars
@@ -170,8 +170,6 @@ const compile = function(sources, options, callback) {
         return callback(new CompileError(errors));
       }
 
-      var contracts = standardOutput.contracts;
-
       var files = [];
       Object.keys(standardOutput.sources).forEach(filename => {
         var source = standardOutput.sources[filename];
@@ -181,24 +179,24 @@ const compile = function(sources, options, callback) {
       var returnVal = {};
 
       // This block has comments in it as it's being prepared for solc > 0.4.10
-      Object.keys(contracts).forEach(source_path => {
-        var files_contracts = contracts[source_path];
+      Object.entries(standardOutput.contracts).forEach(entry => {
+        const [sourcePath, filesContracts] = entry;
 
-        Object.keys(files_contracts).forEach(contract_name => {
-          var contract = files_contracts[contract_name];
+        Object.entries(filesContracts).forEach(entry => {
+          var [contractName, contract] = entry;
 
           // All source will have a key, but only the compiled source will have
           // the evm output.
           if (!Object.keys(contract.evm).length) return;
 
           var contract_definition = {
-            contract_name: contract_name,
-            sourcePath: originalPathMappings[source_path], // Save original source path, not modified ones
-            source: operatingSystemIndependentSources[source_path],
+            contract_name: contractName,
+            sourcePath: originalPathMappings[sourcePath], // Save original source path, not modified ones
+            source: operatingSystemIndependentSources[sourcePath],
             sourceMap: contract.evm.bytecode.sourceMap,
             deployedSourceMap: contract.evm.deployedBytecode.sourceMap,
-            legacyAST: standardOutput.sources[source_path].legacyAST,
-            ast: standardOutput.sources[source_path].ast,
+            legacyAST: standardOutput.sources[sourcePath].legacyAST,
+            ast: standardOutput.sources[sourcePath].ast,
             abi: contract.abi,
             metadata: contract.metadata,
             bytecode: "0x" + contract.evm.bytecode.object,
@@ -258,7 +256,7 @@ const compile = function(sources, options, callback) {
             }
           );
 
-          returnVal[contract_name] = contract_definition;
+          returnVal[contractName] = contract_definition;
         });
       });
 
@@ -326,7 +324,7 @@ function orderABI({ abi, contract_name: contractName, ast }) {
 // quiet: Boolean. Suppress output. Defaults to false.
 // strict: Boolean. Return compiler warnings as errors. Defaults to false.
 compile.all = function(options, callback) {
-  find_contracts(options.contracts_directory, function(err, files) {
+  findContracts(options.contracts_directory, function(err, files) {
     if (err) return callback(err);
 
     options.paths = files;
