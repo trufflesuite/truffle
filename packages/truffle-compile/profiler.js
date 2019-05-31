@@ -373,13 +373,15 @@ module.exports = {
     });
   },
 
-  getImports(file, { body, source }, solc) {
+  async getImports(file, { body, source }, solc, { compilers: {solc: {parser}} } ) {
     const self = this;
 
     // No imports in vyper!
     if (path.extname(file) === ".vy") return [];
 
-    const imports = Parser.parseImports(body, solc);
+    if (parser) solc = await self.setSolcParser(parser);
+
+    const imports = await Parser.parseImports(body, solc);
 
     // Convert explicitly relative dependencies of modules back into module paths.
     return imports.map(
