@@ -279,27 +279,33 @@ const Utils = {
     { networks, currentProvider, setNetwork, network_id },
     gasLimit
   ) {
-    // go through all the networks that are listed as
-    // blockchain uris and see if they match
-    const uris = Object.keys(networks).filter(
-      network => network.indexOf("blockchain://") === 0
-    );
-    const matches = uris.map(uri =>
-      BlockchainUtils.matches.bind(BlockchainUtils, uri, currentProvider)
-    );
+    // wrap uri matching in a promise to allow provider.send time to resolve
+    // (.send call happens in BlockchainUtils.matches)
+    return new Promise((accept, reject) => {
+      // go through all the networks that are listed as
+      // blockchain uris and see if they match
+      const uris = Object.keys(networks).filter(
+        network => network.indexOf("blockchain://") === 0
+      );
+      const matches = uris.map(uri =>
+        BlockchainUtils.matches.bind(BlockchainUtils, uri, currentProvider)
+      );
 
-    Utils.parallel(matches, (err, results) => {
-      if (err) throw new Error(err);
+      Utils.parallel(matches, (err, results) => {
+        if (err) reject(err);
 
-      for (let i = 0; i < results.length; i++) {
-        if (results[i]) {
-          setNetwork(uris[i]);
-          return {
-            id: network_id,
-            blockLimit: gasLimit
-          };
+        for (let i = 0; i < results.length; i++) {
+          if (results[i]) {
+            setNetwork(uris[i]);
+            accept({
+              id: network_id,
+              blockLimit: gasLimit
+            });
+          }
         }
-      }
+        // no match found!
+        accept(false);
+      });
     });
   },
 
