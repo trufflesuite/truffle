@@ -6,16 +6,11 @@ const assert = require("assert");
 
 describe("Parser", () => {
   let source = null;
-  let erroneousSource = null;
   let solc;
 
   before("get code", async () => {
     source = fs.readFileSync(
       path.join(__dirname, "./sources/badSources/MyContract.sol"),
-      "utf-8"
-    );
-    erroneousSource = fs.readFileSync(
-      path.join(__dirname, "./sources/badSources/ShouldError.sol"),
       "utf-8"
     );
     const supplier = new CompilerSupplier();
@@ -76,22 +71,5 @@ describe("Parser", () => {
 
       assert.deepEqual(imports, expected);
     });
-  });
-
-  it("should throw an error when parsing imports if there's an actual parse error", () => {
-    let error = null;
-    try {
-      Parser.parseImports(erroneousSource, solc);
-    } catch (e) {
-      error = e;
-    }
-
-    if (!error) {
-      throw new Error("Expected a parse error but didn't get one!");
-    }
-
-    assert(
-      error.message.includes("Expected pragma, import directive or contract")
-    );
   });
 });
