@@ -1,5 +1,4 @@
 const debug = require("debug")("compile:parser"); // eslint-disable-line no-unused-vars
-const CompileError = require("./compileerror");
 
 // Warning issued by a pre-release compiler version, ignored by this component.
 const preReleaseCompilerWarning =
@@ -16,9 +15,6 @@ module.exports = {
     // compilation when a file has no import statements, we inject an import
     // statement right on the end; just to ensure it will error and we can parse
     // the imports speedily without doing extra work.
-
-    // Helper to detect import errors with an easy regex.
-    const importErrorKey = "not found: File";
 
     // Inject failing import.
     const failingImportFileName = "__Truffle__NotFound.sol";
@@ -50,19 +46,6 @@ module.exports = {
       ({ message }) => !message.includes(preReleaseCompilerWarning)
     );
 
-    // If the import error key is not found, we must not have an import error.
-    // This means we have a *different* parsing error which we should show to the user.
-    // Note: solc can return multiple parsing errors at once.
-    const nonImportErrors = errors.filter(
-      ({ formattedMessage }) => !formattedMessage.includes(importErrorKey)
-    );
-
-    // Should we try to throw more than one? (aside; we didn't before)
-    if (nonImportErrors.length > 0) {
-      throw new CompileError(nonImportErrors[0].formattedMessage);
-    }
-
-    // Now, all errors must be import errors.
     // Filter out our forced import, then get the import paths of the rest.
     const imports = errors
       .filter(({ message }) => !message.includes(failingImportFileName))
