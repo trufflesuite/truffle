@@ -304,7 +304,11 @@ const Utils = {
   },
 
   // sets a contract instance network ID
-  setInstanceNetworkID(TruffleContractInstance, chainNetworkID, gasLimit) {
+  async setInstanceNetworkID(
+    TruffleContractInstance,
+    chainNetworkID,
+    gasLimit
+  ) {
     // if chainNetworkID already present as network configuration, use it
     if (TruffleContractInstance.hasNetwork(chainNetworkID)) {
       TruffleContractInstance.setNetwork(chainNetworkID);
@@ -315,7 +319,7 @@ const Utils = {
     }
     // chainNetworkID not present,
     // parse all known networks
-    const matchedNetwork = Utils.parseKnownNetworks(
+    const matchedNetwork = await Utils.parseKnownNetworks(
       TruffleContractInstance,
       gasLimit
     );
