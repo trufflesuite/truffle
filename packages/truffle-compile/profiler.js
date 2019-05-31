@@ -364,15 +364,15 @@ module.exports = {
                 allPaths.push({ file: item, parent: result.file });
             });
           }
+          finished();
         })
-        .catch(finished)
-        .then(finished);
+        .catch(finished);
     }
     // End generateMapping
 
     return new Promise((resolve, reject) => {
       async.whilst(() => allPaths.length, generateMapping, error => {
-        if (error) reject(new Error(error));
+        if (error) reject(error);
         resolve(mapping);
       });
     });
