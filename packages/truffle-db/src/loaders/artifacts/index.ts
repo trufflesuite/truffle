@@ -202,25 +202,21 @@ export class ArtifactsLoader {
 
   async loadCompilationContracts(contracts: Array<ContractObject>, compilationId:string) {
     const bytecodeIds = await this.loadCompilationBytecodes(contracts);
-    const contractObjects = contracts.map((contract, index) =>
-    {
-      let contractObject = {
-        name: contract["contract_name"],
-        abi: {
-          json: JSON.stringify(contract["abi"])
-        },
-        compilation: {
-          id: compilationId
-        },
-        sourceContract: {
-          index: +index
-        },
-        constructor: {
-          createBytecode: bytecodeIds[index]
-        }
-      };
-      return contractObject;
-    });
+    const contractObjects = contracts.map((contract, index) => ({
+      name: contract["contract_name"],
+      abi: {
+        json: JSON.stringify(contract["abi"])
+      },
+      compilation: {
+        id: compilationId
+      },
+      sourceContract: {
+        index: index
+      },
+      constructor: {
+        createBytecode: bytecodeIds[index]
+      }
+    }));
 
     await this.db.query(AddContracts, { contracts: contractObjects});
   }
@@ -254,22 +250,12 @@ export class ArtifactsLoader {
     return sources.map( ({ id }) => ({ id }) );
   }
 
-  async compilationSourceContracts(compilation:Array<ContractObject>, sourceIds: Array<object>) {
-    const sourceContracts = compilation.map((contract, index) => {
-      let sourceContract =
-      {
-        name: contract["contract_name"],
-        source: sourceIds[index]
-      }
-      if(contract["ast"]) {
-        sourceContract["ast"] = {
-          json: JSON.stringify(contract["ast"])
-        }
-      }
-      return sourceContract;
-    });
-
-    return sourceContracts;
+  async compilationSourceContracts(compilation: Array<ContractObject>, sourceIds: Array<object>) {
+    return compilation.map(({ contract_name: name, ast }, index) => ({
+      name,
+      source: sourceIds[index],
+      ast: ast ? { json: JSON.stringify(ast) } : undefined
+    }));
   }
 
   async organizeContractsByCompiler (result: WorkflowCompileResult) {

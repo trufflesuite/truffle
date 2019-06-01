@@ -62,7 +62,7 @@ const compilationConfig =  {
 
 const db = new TruffleDB(config);
 const Migrations = require(path.join(fixturesDirectory, "Migrations.json"));
-const Build = [
+const artifacts = [
   require(path.join(__dirname, "sources", "MagicSquare.json")),
   require(path.join(__dirname, "sources", "Migrations.json")),
   require(path.join(__dirname, "sources", "SquareLib.json")),
@@ -171,7 +171,7 @@ describe("Compilation", () => {
   let expectedSolcCompilationId;
   let expectedVyperCompilationId;
   beforeAll(async () => {
-    Build.map((contract) => {
+    artifacts.map((contract) => {
 
       let sourceId = generateId({
         contents: contract["source"],
@@ -186,11 +186,11 @@ describe("Compilation", () => {
     });
 
     expectedSolcCompilationId = generateId({
-      compiler: Build[0].compiler,
+      compiler: artifacts[0].compiler,
       sourceIds: [sourceIds[0], sourceIds[1], sourceIds[2]]
     });
     expectedVyperCompilationId = generateId({
-      compiler: Build[3].compiler,
+      compiler: artifacts[3].compiler,
       sourceIds: [sourceIds[3]]
     });
     compilationIds.push({ id: expectedSolcCompilationId }, { id: expectedVyperCompilationId });
@@ -207,20 +207,20 @@ describe("Compilation", () => {
     }));
 
     const solcCompilation = compilationsQuery[0].data.workspace.compilation;
-    expect(solcCompilation.compiler.version).toEqual(Build[0].compiler.version);
+    expect(solcCompilation.compiler.version).toEqual(artifacts[0].compiler.version);
     expect(solcCompilation.sources.length).toEqual(3);
     solcCompilation.sources.map((source, index)=> {
       expect(source.id).toEqual(sourceIds[index].id);
-      expect(source["contents"]).toEqual(Build[index].source);
-      expect(solcCompilation.contracts[index].name).toEqual(Build[index].contractName);
+      expect(source["contents"]).toEqual(artifacts[index].source);
+      expect(solcCompilation.contracts[index].name).toEqual(artifacts[index].contractName);
     });
 
     const vyperCompilation =  compilationsQuery[1].data.workspace.compilation
-    expect(vyperCompilation.compiler.version).toEqual(Build[3].compiler.version);
+    expect(vyperCompilation.compiler.version).toEqual(artifacts[3].compiler.version);
     expect(vyperCompilation.sources.length).toEqual(1);
     expect(vyperCompilation.sources[0].id).toEqual(sourceIds[3].id);
-    expect(vyperCompilation.sources[0].contents).toEqual(Build[3].source);
-    expect(vyperCompilation.contracts[0].name).toEqual(Build[3].contractName);
+    expect(vyperCompilation.sources[0].contents).toEqual(artifacts[3].source);
+    expect(vyperCompilation.contracts[0].name).toEqual(artifacts[3].contractName);
   });
 
   it("loads contract sources", async () => {
@@ -236,8 +236,8 @@ describe("Compilation", () => {
         }
       } = await db.query(GetWorkspaceSource, sourceIds[index]);
 
-      expect(contents).toEqual(Build[index].source);
-      expect(sourcePath).toEqual(Build[index].sourcePath);
+      expect(contents).toEqual(artifacts[index].source);
+      expect(sourcePath).toEqual(artifacts[index].sourcePath);
     }
   });
 
@@ -253,7 +253,7 @@ describe("Compilation", () => {
         }
       } = await db.query(GetWorkspaceBytecode, bytecodeIds[index]);
 
-      expect(bytes).toEqual(Build[index].bytecode);
+      expect(bytes).toEqual(artifacts[index].bytecode);
 
     }
   });
@@ -261,13 +261,13 @@ describe("Compilation", () => {
   it("loads contracts", async () => {
     let contractIds = [];
 
-    for(let index in Build) {
+    for(let index in artifacts) {
       let expectedId = generateId({
-        name: Build[index].contractName,
-        abi: { json: JSON.stringify(Build[index].abi) },
-        sourceContract: { index: Build[index].compiler.name === "solc" ? +index : 0},
+        name: artifacts[index].contractName,
+        abi: { json: JSON.stringify(artifacts[index].abi) },
+        sourceContract: { index: artifacts[index].compiler.name === "solc" ? +index : 0},
         compilation: {
-          id: Build[index].compiler.name === "solc" ? expectedSolcCompilationId : expectedVyperCompilationId
+          id: artifacts[index].compiler.name === "solc" ? expectedSolcCompilationId : expectedVyperCompilationId
         }
       });
 
@@ -278,9 +278,6 @@ describe("Compilation", () => {
             contract: {
               id,
               name,
-              abi: {
-                json
-              },
               constructor: {
                 createBytecode: {
                   bytes
@@ -288,26 +285,23 @@ describe("Compilation", () => {
               },
               sourceContract: {
                 source: {
-                  contents,
-                  sourcePath
+                  contents
                 }
               },
               compilation: {
                 compiler: {
                   version
-                },
-                sources,
-                contracts
+                }
               }
             }
           }
         }
       } = await db.query(GetWorkspaceContract, contractIds[index]);
 
-      expect(name).toEqual(Build[index].contractName);
-      expect(bytes).toEqual(Build[index].bytecode);
-      expect(contents).toEqual(Build[index].source);
-      expect(version).toEqual(Build[index].compiler.version);
+      expect(name).toEqual(artifacts[index].contractName);
+      expect(bytes).toEqual(artifacts[index].bytecode);
+      expect(contents).toEqual(artifacts[index].source);
+      expect(version).toEqual(artifacts[index].compiler.version);
       expect(id).toEqual(contractIds[index].id);
     }
   });
