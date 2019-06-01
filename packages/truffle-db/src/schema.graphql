@@ -10,11 +10,15 @@ scalar FileIndex
 type ContractInstance {
   address: Address!
   network: Network!
+  creation: [ContractInstanceCreation]
   callBytecode: Bytecode
   contract: Contract
+}
+
+type ContractInstanceCreation {
   transactionHash: TransactionHash
   constructorArgs: [Value]
-  linkValues: [LinkValue]
+  contractConstructor: Constructor
 }
 
 type Constructor {
