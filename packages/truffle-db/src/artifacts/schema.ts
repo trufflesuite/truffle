@@ -60,6 +60,8 @@ export const schema = mergeSchemas({
           networks {
             networkObject {
               address
+              name
+              id
             }
           }
         }`,
@@ -69,6 +71,20 @@ export const schema = mergeSchemas({
             .map(
               ({ networkObject: { address } }) => address
             )[0];
+
+          return result;
+        }
+      },
+      network: {
+        fragment: `... on ContractObject {
+          networks {
+            networkId
+          }
+        }`,
+        resolve: (obj) => {
+          const { networks } = obj;
+          const result = networks
+            .map( ({ networkId }) => ({ networkID: networkId }))[0]
 
           return result;
         }
