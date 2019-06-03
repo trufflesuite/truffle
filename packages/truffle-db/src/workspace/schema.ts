@@ -23,6 +23,9 @@ export const schema = mergeSchemas({
         extend type Compilation {
           id: ID!
         }
+        extend type ContractInstance {
+          id: ID!
+        }
         `,
       ]
     }),
@@ -34,6 +37,7 @@ export const schema = mergeSchemas({
       compilation(id: ID!): Compilation
       source(id: ID!): Source
       bytecode(id: ID!): Bytecode
+      contractInstance(id: ID!): ContractInstance
     }
 
     input SourceInput {
@@ -50,6 +54,7 @@ export const schema = mergeSchemas({
     }
 
     input BytecodeInput {
+
       bytes: Bytes!
     }
 
@@ -147,12 +152,35 @@ export const schema = mergeSchemas({
       linkReference: LinkReferenceInput!
       value: Bytes!
     }
+    type ContractInstancesAddPayload {
+      contractInstances: [ContractInstance!]!
+    }
+
+    input ContractInstanceAddressInput {
+      address: Address!
+    }
+
+    input ContractInstanceNetworkInput {
+      name: String
+      networkID: NetworkID!
+    }
+
+    input ContractInstanceInput {
+      address: ContractInstanceAddressInput!
+      network: ContractInstanceNetworkInput!
+      contract: ContractInput
+    }
+
+    input ContractInstancesAddInput {
+      contractInstances: [ContractInstanceInput!]!
+    }
 
     type Mutation {
       sourcesAdd(input: SourcesAddInput!): SourcesAddPayload
       bytecodesAdd(input: BytecodesAddInput!): BytecodesAddPayload
       contractsAdd(input: ContractsAddInput!): ContractsAddPayload
       compilationsAdd(input: CompilationsAddInput!): CompilationsAddPayload
+      contractInstancesAdd(input: ContractInstancesAddInput!): ContractInstancesAddPayload
     } `
   ],
   resolvers: {
@@ -176,6 +204,10 @@ export const schema = mergeSchemas({
       compilation: {
         resolve: (_, { id }, { workspace }) =>
           workspace.compilation({ id })
+      },
+      contractInstance: {
+        resolve: (_, { id }, { workspace }) =>
+          workspace.contractInstance({ id })
       }
     },
     Mutation: {
@@ -194,6 +226,10 @@ export const schema = mergeSchemas({
       compilationsAdd: {
         resolve: (_, { input }, { workspace }) =>
           workspace.compilationsAdd({ input })
+      },
+      contractInstancesAdd: {
+        resolve: (_, { input }, { workspace }) =>
+          workspace.contractInstancesAdd({ input })
       }
     },
     Compilation: {

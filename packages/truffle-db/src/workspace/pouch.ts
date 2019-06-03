@@ -32,6 +32,7 @@ export class Workspace {
   bytecodes: PouchDB.Database;
   compilations: PouchDB.Database;
   contracts: PouchDB.Database;
+  contractInstances: PouchDB.Database;
 
   private ready: Promise<void>;
 
@@ -162,7 +163,49 @@ export class Workspace {
     };
   }
 
+  async contractInstance ({ id }: { id: string }) {
+    await this.ready;
 
+    try {
+      return {
+        ...await this.contractInstances.get(id),
+
+        id
+      };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async contractInstancesAdd ({ input }) {
+    await this.ready;
+
+    const { contractInstances } = input;
+
+    return {
+      contractInstances: Promise.all(contractInstances.map(
+        async (contractInstanceInput) => {
+          const { address, network, contract, callBytecode } = contractInstanceInput;
+          // hash includes address and network of this contractInstance
+          const id = soliditySha3(jsonStableStringify({
+            address: address,
+            network: network
+          }));
+
+          const contractInstance = await this.contractInstance({ id }) || { ...contractInstanceInput, id };
+
+          await this.sources.put({
+            ...contractInstance,
+            ...contractInstanceInput,
+
+            _id: id
+          });
+
+          return contractInstance;
+        }
+      ))
+    };
+  }
 
   async source ({ id }: { id: string }) {
     await this.ready;
