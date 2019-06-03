@@ -21,9 +21,9 @@
   "author": "Tim Coulter <tim.coulter@consensys.net>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-contract/issues"
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-contract#readme",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-contract#readme",
   "dependencies": {
     "bignumber.js": "^7.2.1",
     "ethers": "^4.0.0-beta.1",
@@ -38,9 +38,6 @@
   },
   "devDependencies": {
     "async": "2.6.1",
-    "babel-core": "^6.26.0",
-    "babel-polyfill": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
     "browserify": "^14.0.0",
     "chai": "4.2.0",
     "debug": "^4.1.0",
@@ -52,11 +49,6 @@
   },
   "publishConfig": {
     "access": "public"
-  },
-  "babel": {
-    "presets": [
-      "env"
-    ]
   },
   "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
 }
