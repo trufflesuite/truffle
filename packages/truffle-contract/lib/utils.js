@@ -1,21 +1,22 @@
 const debug = require("debug")("contract:utils"); // eslint-disable-line no-unused-vars
-var web3Utils = require("web3-utils");
-var bigNumberify = require("ethers/utils/bignumber").bigNumberify;
-var abi = require("web3-eth-abi");
-var reformat = require("./reformat");
+const web3Utils = require("web3-utils");
+const bigNumberify = require("ethers/utils/bignumber").bigNumberify;
+const abi = require("web3-eth-abi");
+const BlockchainUtils = require("truffle-blockchain-utils");
+const reformat = require("./reformat");
 
-var Utils = {
-  is_object: function(val) {
+const Utils = {
+  is_object(val) {
     return typeof val === "object" && !Array.isArray(val);
   },
 
-  is_big_number: function(val) {
+  is_big_number(val) {
     if (typeof val !== "object") return false;
 
     return web3Utils.isBN(val) || web3Utils.isBigNumber(val);
   },
 
-  is_tx_params: function(val) {
+  is_tx_params(val) {
     if (!Utils.is_object(val)) return false;
     if (Utils.is_big_number(val)) return false;
 
@@ -37,19 +38,19 @@ var Utils = {
     return false;
   },
 
-  decodeLogs: function(_logs, isSingle) {
-    var constructor = this;
-    var logs = Utils.toTruffleLog(_logs, isSingle);
+  decodeLogs(_logs, isSingle) {
+    const constructor = this;
+    const logs = Utils.toTruffleLog(_logs, isSingle);
 
     return logs
-      .map(function(log) {
-        var logABI = constructor.events[log.topics[0]];
+      .map(log => {
+        const logABI = constructor.events[log.topics[0]];
 
         if (logABI == null) {
           return null;
         }
 
-        var copy = Utils.merge({}, log);
+        const copy = Utils.merge({}, log);
 
         copy.event = logABI.name;
         copy.topics = logABI.anonymous ? copy.topics : copy.topics.slice(1);
@@ -66,18 +67,16 @@ var Utils = {
 
         return copy;
       })
-      .filter(function(log) {
-        return log != null;
-      });
+      .filter(log => log != null);
   },
 
-  toTruffleLog: function(events, isSingle) {
+  toTruffleLog(events, isSingle) {
     // Transform singletons (from event listeners) to the kind of
     // object we find on the receipt
     if (isSingle && typeof isSingle === "boolean") {
-      var temp = [];
+      const temp = [];
       temp.push(events);
-      return temp.map(function(log) {
+      return temp.map(log => {
         log.data = log.raw.data;
         log.topics = log.raw.topics;
         return log;
@@ -95,34 +94,33 @@ var Utils = {
     return events;
   },
 
-  merge: function() {
-    var merged = {};
-    var args = Array.prototype.slice.call(arguments);
+  merge() {
+    const merged = {};
+    const args = Array.prototype.slice.call(arguments);
 
-    for (var i = 0; i < args.length; i++) {
-      var object = args[i];
-      var keys = Object.keys(object);
-      for (var j = 0; j < keys.length; j++) {
-        var key = keys[j];
-        var value = object[key];
+    for (let i = 0; i < args.length; i++) {
+      const object = args[i];
+      const keys = Object.keys(object);
+      for (let j = 0; j < keys.length; j++) {
+        const key = keys[j];
+        const value = object[key];
         merged[key] = value;
       }
     }
 
     return merged;
   },
-  parallel: function(arr, callback) {
-    callback = callback || function() {};
+  parallel(arr, callback = () => {}) {
     if (!arr.length) {
       return callback(null, []);
     }
-    var index = 0;
-    var results = new Array(arr.length);
-    arr.forEach(function(fn, position) {
-      fn(function(err, result) {
+    let index = 0;
+    const results = new Array(arr.length);
+    arr.forEach((fn, position) => {
+      fn((err, result) => {
         if (err) {
           callback(err);
-          callback = function() {};
+          callback = () => {};
         } else {
           index++;
           results[position] = result;
@@ -134,10 +132,10 @@ var Utils = {
     });
   },
 
-  linkBytecode: function(bytecode, links) {
-    Object.keys(links).forEach(function(library_name) {
-      var library_address = links[library_name];
-      var regex = new RegExp("__" + library_name + "_+", "g");
+  linkBytecode(bytecode, links) {
+    Object.keys(links).forEach(library_name => {
+      const library_address = links[library_name];
+      const regex = new RegExp(`__${library_name}_+`, "g");
 
       bytecode = bytecode.replace(regex, library_address.replace("0x", ""));
     });
@@ -146,13 +144,13 @@ var Utils = {
   },
 
   // Extracts optional tx params from a list of fn arguments
-  getTxParams: function(methodABI, args) {
-    var constructor = this;
+  getTxParams(methodABI, args) {
+    const constructor = this;
 
-    var expected_arg_count = methodABI ? methodABI.inputs.length : 0;
+    const expected_arg_count = methodABI ? methodABI.inputs.length : 0;
 
     tx_params = {};
-    var last_arg = args[args.length - 1];
+    const last_arg = args[args.length - 1];
 
     if (
       args.length === expected_arg_count + 1 &&
@@ -166,19 +164,18 @@ var Utils = {
 
   // Verifies that a contracts libraries have been linked correctly.
   // Throws on error
-  checkLibraries: function() {
-    var constructor = this;
-    var regex = /__[^_]+_+/g;
-    var unlinked_libraries = constructor.binary.match(regex);
+  checkLibraries() {
+    const constructor = this;
+    const regex = /__[^_]+_+/g;
+    let unlinked_libraries = constructor.binary.match(regex);
 
     if (unlinked_libraries !== null) {
       unlinked_libraries = unlinked_libraries
-        .map(function(name) {
-          // Remove underscores
-          return name.replace(/_/g, "");
-        })
+        .map((
+          name // Remove underscores
+        ) => name.replace(/_/g, ""))
         .sort()
-        .filter(function(name, index, arr) {
+        .filter((name, index, arr) => {
           // Remove duplicates
           if (index + 1 >= arr.length) {
             return true;
@@ -188,19 +185,17 @@ var Utils = {
         })
         .join(", ");
 
-      var error =
-        constructor.contractName +
-        " contains unresolved libraries. You must deploy and link" +
-        " the following libraries before you can deploy a new version of " +
-        constructor.contractName +
-        ": " +
-        unlinked_libraries;
+      const error = `${
+        constructor.contractName
+      } contains unresolved libraries. You must deploy and link the following libraries before you can deploy a new version of ${
+        constructor.contractName
+      }: ${unlinked_libraries}`;
 
       throw new Error(error);
     }
   },
 
-  convertToEthersBN: function(original) {
+  convertToEthersBN(original) {
     const converted = [];
     original.forEach(item => {
       // Recurse for arrays
@@ -230,7 +225,7 @@ var Utils = {
    *                                       `decimal` can have. (default: 5)
    * @return {BigNumber}                   floor(bignum * decimal)
    */
-  multiplyBigNumberByDecimal: function(bignum, decimal, maxPrecision) {
+  multiplyBigNumberByDecimal(bignum, decimal, maxPrecision) {
     if (typeof maxPrecision === "undefined") {
       maxPrecision = 5;
     }
@@ -245,6 +240,100 @@ var Utils = {
     const secondOperand = bigNumberify(numerator).div(denominator);
 
     return bignum.mul(secondOperand);
+  },
+
+  // checks if given contract instance has a set provider
+  checkProvider({ currentProvider, contractName }) {
+    if (!currentProvider)
+      throw new Error(
+        `${contractName} error: Please call setProvider() first before calling new().`
+      );
+  },
+
+  // verifies current network has been assigned to contract instance
+  checkNetworkArtifactMatch({ networks, network_id, contractName }) {
+    if (networks[network_id] == null)
+      throw new Error(
+        `${contractName} has not been deployed to detected network (network/artifact mismatch)`
+      );
+  },
+
+  // verifies contract instance has been deployed
+  checkDeployment({ isDeployed, contractName, network_id }) {
+    if (!isDeployed())
+      throw new Error(
+        `${contractName} has not been deployed to detected network (${network_id})`
+      );
+  },
+
+  // checks if provided contract address has on-chain code
+  checkCode(onChainCode, contractName, address) {
+    if (!onChainCode || onChainCode.replace("0x", "").replace(/0/g, "") === "")
+      throw new Error(
+        `Cannot create instance of ${contractName}; no code at address ${address}`
+      );
+  },
+
+  // parses known contract instance networks
+  parseKnownNetworks(
+    { networks, currentProvider, setNetwork, network_id },
+    gasLimit
+  ) {
+    // wrap uri matching in a promise to allow provider.send time to resolve
+    // (.send call happens in BlockchainUtils.matches)
+    return new Promise((accept, reject) => {
+      // go through all the networks that are listed as
+      // blockchain uris and see if they match
+      const uris = Object.keys(networks).filter(
+        network => network.indexOf("blockchain://") === 0
+      );
+      const matches = uris.map(uri =>
+        BlockchainUtils.matches.bind(BlockchainUtils, uri, currentProvider)
+      );
+
+      Utils.parallel(matches, (err, results) => {
+        if (err) reject(err);
+
+        for (let i = 0; i < results.length; i++) {
+          if (results[i]) {
+            setNetwork(uris[i]);
+            accept({
+              id: network_id,
+              blockLimit: gasLimit
+            });
+          }
+        }
+        // no match found!
+        accept(false);
+      });
+    });
+  },
+
+  // sets a contract instance network ID
+  async setInstanceNetworkID(
+    TruffleContractInstance,
+    chainNetworkID,
+    gasLimit
+  ) {
+    // if chainNetworkID already present as network configuration, use it
+    if (TruffleContractInstance.hasNetwork(chainNetworkID)) {
+      TruffleContractInstance.setNetwork(chainNetworkID);
+      return {
+        id: TruffleContractInstance.network_id,
+        blockLimit: gasLimit
+      };
+    }
+    // chainNetworkID not present,
+    // parse all known networks
+    const matchedNetwork = await Utils.parseKnownNetworks(
+      TruffleContractInstance,
+      gasLimit
+    );
+    if (matchedNetwork) return matchedNetwork;
+
+    // network unknown, trust the provider and use given chainNetworkID
+    TruffleContractInstance.setNetwork(chainNetworkID);
+    return { id: TruffleContractInstance.network_id, blockLimit: gasLimit };
   }
 };
 
