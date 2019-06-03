@@ -10,7 +10,7 @@ scalar FileIndex
 type ContractInstance {
   address: Address!
   network: Network!
-  creation: [ContractInstanceCreation]
+  creation: ContractInstanceCreation
   callBytecode: Bytecode
   contract: Contract
 }
