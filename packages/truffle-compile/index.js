@@ -280,21 +280,22 @@ function replaceLinkReferences(bytecode, linkReferences, libraryName) {
   return bytecode;
 }
 
-function orderABI({ abi, contract_name: contractName, legacyAST }) {
+function orderABI({ abi, contract_name: contractName, ast }) {
   // AST can have multiple contract definitions, make sure we have the
   // one that matches our contract
-  const contractDefinition = legacyAST.children.filter(
-    ({ name: nodeType, attributes: { name } }) =>
+  const contractDefinition = ast.nodes.filter(
+    ({ nodeType, name }) =>
       nodeType === "ContractDefinition" && name === contractName
   )[0];
 
-  if (!contractDefinition || !contractDefinition.children) {
+  if (!contractDefinition || !contractDefinition.nodes) {
     return abi;
   }
 
-  const orderedFunctionNames = contractDefinition.children
-    .filter(({ name: nodeType }) => nodeType === "FunctionDefinition")
-    .map(({ attributes: { name: functionName } }) => functionName);
+  // Find all function definitions
+  const orderedFunctionNames = contractDefinition.nodes
+    .filter(({ nodeType }) => nodeType === "FunctionDefinition")
+    .map(({ name: functionName }) => functionName);
 
   // Put function names in a hash with their order, lowest first, for speed.
   const functionIndexes = orderedFunctionNames
