@@ -26,6 +26,10 @@ export namespace Definition {
     return typeIdentifier(definition).match(/t_([^$_0-9]+)/)[1];
   }
 
+  export function typeClassLongForm(definition: AstDefinition): string {
+    return typeIdentifier(definition).match(/t_([^$_]+)/)[1];
+  }
+
   //for user-defined types -- structs, enums, contracts
   //often you can get these from referencedDeclaration, but not
   //always
@@ -314,6 +318,36 @@ export namespace Definition {
       return false;
     }
     return fallback.stateMutability === "payable";
+  }
+
+  //note: this is only meant for types that can go in the ABI
+  //TODO add error handling
+  export function toAbiType(defintion: AstDefinition, referenceDeclarations: AstReferences): string {
+    let basicType = typeClassLongForm(definition); //get that whole first segment!
+    switch(basicType) {
+      case "contract":
+        return "address";
+      case "struct":
+        return "tuple"; //the more detailed checking will be handled elsewhere
+      case "enum":
+        let id = typeId(definition);
+        let referenceDeclaration = referenceDeclarations[id];
+        let numOptions = referenceDeclaration.members.length;
+        let bits = 8 * Math.ceil(Math.log2(numOptions) / 8);
+        return `uint${bits}`;
+      case "array":
+        let baseType = toAbiType(baseDefinition(definition), referenceDeclarations);
+        return isDynamicArray(definition)
+          ? `${baseType}[]`
+          : `${baseType}[${staticLength(definition)}]`;
+      default:
+        return basicType;
+        //note that: int/uint/fixed/ufixed/bytes will have their size and such left on;
+        //address will have "payable" left off;
+        //external functions will be reduced to "function" (and internal functions shouldn't
+        //be passed in!)
+        //(mappings shouldn't be passed in either obviously)
+    }
   }
 
   //spoofed definitions we'll need

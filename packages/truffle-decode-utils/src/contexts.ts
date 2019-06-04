@@ -16,9 +16,7 @@ export namespace Contexts {
   export type Context = DecoderContext | DebuggerContext;
 
   export interface DecoderContexts {
-    [index: string]: DecoderContext;
-    //we'll allow this to be a hash *or* a contract ID; it's just an arbitrary
-    //identifier
+    [context: string]: DecoderContext;
   }
 
   export interface DebuggerContexts {
@@ -261,4 +259,63 @@ export namespace Contexts {
     //finally, return this mess!
     return newContexts;
   }
+
+  export function matchesAbi(abiEntry: abiItem, node: AstDefinition, referenceDeclarations: AstReferences): boolean {
+    //first: does the basic type match?
+    switch(node.nodeType) {
+      case "FunctionDefinition":
+        if(node.visibility !== "external" && node.visibility !== "public") {
+          return false;
+        }
+        if(abiEntry.type !== node.kind) {
+          return false;
+        }
+        break;
+      case "EventDefinition":
+        if(abiEntry.type !== "event") {
+          return false;
+        }
+        break;
+      default:
+        return false;
+    }
+    //if we've made it this far, the next question is, does the name match?
+    if(node.name !== abiEntry.name) {
+      return false;
+    }
+    //finally, we've got to start checking input types (we don't check output types)
+    return matchesAbiParameters(abiEntry.inputs, node.parameters.parameters, referenceDeclarations);
+  }
+
+  function matchesAbiParameters(abiParameters: AbiParameter[], nodeParameters: AstDefinition[], referenceDeclarations: AstReferences): boolean {
+    if(abiParameters.length !== nodeParameters.length) {
+      return false;
+    }
+    for(let i = 0; i < abiParameters.length; i++) {
+      if(!matchesAbiType(abiParameters[i], nodeParameters[i], referenceDeclarations) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  //TODO: add error-handling
+  function matchesAbiType(abiParameter: AbiParameter, nodeParameter: AstDefinition, referenceDeclarations: AstReferences): boolean {
+    if(DefinitionUtils.toAbiType(nodeParameter, referenceDeclarations) !== abiParameter.type) {
+      return false;
+    }
+    if(abiParameter.type.beginsWith("tuple")) {
+      let referenceDeclaration = referenceDeclarations[DefinitionUtils.typeId(nodeParameter)];
+      return matchesAbiParameters(abiParameter.components, referenceDeclaration.members, referenceDeclarations);
+    }
+    else {
+      return true;
+    }
+  }
+
+  function isNoArgumentConstructor(abiEntry: AbiItem) {
+    return abiEntry.type === "constructor" && abiEntry.inputs.length === 0;
+  }
+
+
 }

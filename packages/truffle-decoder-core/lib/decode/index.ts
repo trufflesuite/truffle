@@ -9,51 +9,46 @@ import { decodeLiteral } from "./stack";
 import decodeCalldata from "./calldata";
 import decodeConstant from "./constant";
 import decodeSpecial from "./special";
-import { AstDefinition, Types, Values } from "truffle-decode-utils";
+import decodeTopic from "./event";
+import { Types, Values } from "truffle-decode-utils";
 import * as Pointer from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 
-export default function* decode(definition: AstDefinition, pointer: Pointer.DataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
-  let dataType = Types.definitionToType(definition);
-  debug("definition %O", definition);
-  return yield* decodePointer(dataType, pointer, info);
-}
-
-export function* decodePointer(dataType: Types.Type, pointer: Pointer.DataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+export default function* decode(dataType: Types.Type, pointer: Pointer.DataPointer, info: EvmInfo, base: number = 0): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
   debug("type %O", dataType);
   debug("pointer %O", pointer);
 
-  if(Pointer.isStoragePointer(pointer)) {
-    return yield* decodeStorage(dataType, pointer, info)
-  }
+  switch(pointer.location) {
 
-  if(Pointer.isStackPointer(pointer)) {
-    return yield* decodeStack(dataType, pointer, info);
-  }
+    case "storage":
+      return yield* decodeStorage(dataType, pointer, info)
 
-  if (Pointer.isStackLiteralPointer(pointer)) {
-    return yield* decodeLiteral(dataType, pointer, info);
-  }
+    case "stack":
+      return yield* decodeStack(dataType, pointer, info);
 
-  if(Pointer.isConstantDefinitionPointer(pointer)) {
-    return yield* decodeConstant(dataType, pointer, info);
-    //I'd like to just use decodeValue, but unfortunately there are some special
-    //cases to deal with
-  }
+    case "stackliteral":
+      return yield* decodeLiteral(dataType, pointer, info);
 
-  if(Pointer.isSpecialPointer(pointer)) {
-    return yield* decodeSpecial(dataType, pointer, info);
-  }
+    case "definition":
+      return yield* decodeConstant(dataType, pointer, info);
 
-  //NOTE: the following two cases shouldn't come up but they've been left in as
-  //fallback cases
+    case "special":
+      return yield* decodeSpecial(dataType, pointer, info);
 
-  if(Pointer.isMemoryPointer(pointer)) {
-    return yield* decodeMemory(dataType, pointer, info);
-  }
+    case "calldata":
+    case "eventdata":
+      return yield* decodeAbi(dataType, pointer, info, base);
 
-  if(Pointer.isCalldataPointer(pointer)) {
-    return yield* decodeCalldata(dataType, pointer, info);
+    case "eventtopic":
+      return yield* decodeTopic(dataType, pointer, info);
+
+    case "memory":
+      //NOTE: this case should never actually occur, but I'm including it
+      //anyway as a fallback
+      return yield* decodeMemory(dataType, pointer, info);
+
+    //...and in case "abi", which shouldn't happen, we'll just run off the end
+    //and cause a problem :P
   }
 }

@@ -21,7 +21,7 @@ export default function* decodeStack(dataType: Types.Type, pointer: StackPointer
   catch(error) { //error: Values.DecodingError
     return new Values.GenericError(error.error);
   }
-  const literalPointer: StackLiteralPointer = { literal: rawValue };
+  const literalPointer: StackLiteralPointer = { location: "stackliteral", literal: rawValue };
   return yield* decodeLiteral(dataType, literalPointer, info);
 }
 
@@ -51,7 +51,7 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
         if(dataType.typeClass === "bytes" || dataType.typeClass === "string") {
           let start = DecodeUtils.Conversion.toBN(pointer.literal.slice(0, DecodeUtils.EVM.WORD_SIZE)).toNumber();
           let length = DecodeUtils.Conversion.toBN(pointer.literal.slice(DecodeUtils.EVM.WORD_SIZE)).toNumber();
-          let newPointer = { calldata: { start, length }};
+          let newPointer = { location: "calldata", start, length };
           return yield* decodeValue(dataType, newPointer, info);
         }
 
@@ -64,7 +64,7 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
           //HACK -- in order to read the correct location, we need to add an offset
           //of -32 (since, again, we're throwing away the length info), so we pass
           //that in as the "base" value
-          return yield* decodeCalldataReferenceByAddress(dataType, {literal: locationOnly}, info, -DecodeUtils.EVM.WORD_SIZE);
+          return yield* decodeCalldataReferenceByAddress(dataType, {location: "stackliteral", literal: locationOnly}, info, -DecodeUtils.EVM.WORD_SIZE);
         }
         else {
           //multivalue case -- this case is straightforward

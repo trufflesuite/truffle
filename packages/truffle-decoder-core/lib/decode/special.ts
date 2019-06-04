@@ -31,10 +31,11 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
             kind: "dynamic",
             location: "calldata"
           },
-          {calldata: {
+          {
+            location: "calldata",
             start: 0,
             length: state.calldata.length
-          }},
+          },
           info
         )),
         sig: <Values.BytesValue> (yield* decodeValue(
@@ -43,10 +44,11 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
             kind: "static",
             length: DecodeUtils.EVM.SELECTOR_SIZE
           },
-          {calldata: {
+          {
+            location: "calldata",
             start: 0,
             length: DecodeUtils.EVM.SELECTOR_SIZE,
-          }},
+          },
           info
         )),
         sender: <Values.AddressValue> (yield* decodeValue(
@@ -54,7 +56,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
             typeClass: "address",
             payable: true
           },
-          {special: "sender"},
+          {location: "special", special: "sender"},
           info
         )),
         value: <Values.UintValue> (yield* decodeValue(
@@ -62,7 +64,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
             typeClass: "uint",
             bits: 256
           },
-          {special: "value"},
+          {location: "special", special: "value"},
           info
         ))
       });
@@ -73,7 +75,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
             typeClass: "address",
             payable: true
           },
-          {special: "origin"},
+          {location: "special", special: "origin"},
           info
         )),
         gasprice: <Values.UintValue> (yield* decodeValue(
@@ -81,7 +83,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
             typeClass: "uint",
             bits: 256
           },
-          {special: "gasprice"},
+          {location: "special", special: "gasprice"},
           info
         ))
       });
@@ -92,7 +94,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
             typeClass: "address",
             payable: true
           },
-          {special: "coinbase"},
+          {location: "special", special: "coinbase"},
           info
         ))
       };
@@ -105,7 +107,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
             typeClass: "uint",
             bits: 256
           },
-          {special: variable},
+          {location: "special", special: variable},
           info
         ));
       }

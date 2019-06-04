@@ -11,7 +11,6 @@ import { Definition as DefinitionUtils, EVM, AstDefinition, AstReferences } from
 import { BlockType, Transaction } from "web3/eth/types";
 import { EventLog, Log } from "web3/types";
 import { Provider } from "web3/providers";
-import abiDecoder from "abi-decoder";
 import isEqual from "lodash.isequal"; //util.isDeepStrictEqual doesn't exist in Node 8
 import * as Decoder from "truffle-decoder-core";
 import * as DecoderTypes from "./types";
@@ -31,14 +30,15 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   private contractNodes: AstReferences = {};
   private contexts: DecodeUtils.Contexts.DecoderContexts = {};
   private context: DecodeUtils.Contexts.DecoderContext;
+  private constructorContext: DecodeUtils.Contexts.DecoderContext;
 
   private referenceDeclarations: AstReferences;
   private userDefinedTypes: Types.TypesById;
-  private storageAllocations: Decoder.StorageAllocations;
-
-  private eventDefinitions: AstReferences;
-  private eventDefinitionIdsByName: {
-    [name: string]: number
+  private allocations: {
+    storage: Decoder.StorageAllocations;
+    abi: Decoder.AbiAllocations;
+    calldata: Decoder.CalldataAllocations;
+    event: Decoder.EventAllocations;
   };
 
   private stateVariableReferences: Decoder.StorageMemberAllocations;
@@ -66,38 +66,47 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
     this.contracts[this.contractNode.id] = this.contract;
     this.contractNodes[this.contractNode.id] = this.contractNode;
-    if(this.contract.deployedBinary) { //just to be safe
-      this.context = this.makeContext(this.contract, this.contractNode);
-      this.contexts[this.contractNode.id] = this.context;
+    if(this.contract.deployedBytecode) { //just to be safe
+      const context = makeContext(this.contract, this.contractNode);
+      const hash = DecodeUtils.Conversion.toHexString(
+        DecodeUtils.EVM.keccak256({type: "string",
+          value: context.binary
+        })
+      );
+      this.contextHash = hash;
+      this.contexts[hash] = this.context;
     }
-    abiDecoder.addABI(this.contract.abi);
+    if(this.contract.bytecode) { //now the constructor version
+      const constructorContext = makeContext(this.contract, this.contractNode, true);
+      const hash = DecodeUtils.Conversion.toHexString(
+        DecodeUtils.EVM.keccak256({type: "string",
+          value: constructorContext.binary
+        })
+      );
+      this.constructorContextHash = hash;
+      this.contexts[hash] = this.constructorContext;
+    }
 
     for(let relevantContract of this.relevantContracts) {
-      abiDecoder.addABI(relevantContract.abi);
       let node: AstDefinition = Utils.getContractNode(relevantContract);
       if(node !== undefined) {
         this.contracts[node.id] = relevantContract;
         this.contractNodes[node.id] = node;
-        if(relevantContract.deployedBinary) {
-          this.contexts[node.id] = this.makeContext(relevantContract, node);
+        if(relevantContract.deployedBytecode) {
+          const context = makeContext(relevantContract, node);
+          const hash = DecodeUtils.Conversion.toHexString(
+            DecodeUtils.EVM.keccak256({type: "string",
+              value: context.binary
+            })
+          );
+          this.contexts[hash] = context;
         }
       }
     }
 
     this.contexts = <DecodeUtils.Contexts.DecoderContexts>DecodeUtils.Contexts.normalizeContexts(this.contexts);
-  }
-
-  private makeContext(contract: ContractObject, node: AstDefinition) {
-    //we want the non-constructor context here
-    return {
-      contractName: contract.contractName,
-      binary: contract.deployedBytecode,
-      contractId: node.id,
-      contractKind: node.contractKind,
-      isConstructor: false,
-      abi: DecodeUtils.Contexts.abiToFunctionAbiWithSignatures(contract.abi),
-      payable: DecodeUtils.Contexts.isABIPayable(contract.abi)
-    };
+    this.context = this.contexts[this.contextHash];
+    this.constructorContext = this.contexts[this.constructorContextHash];
   }
 
   public async init(): Promise<void> {
@@ -110,17 +119,21 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.referenceDeclarations = Utils.getReferenceDeclarations(Object.values(this.contractNodes));
     this.userDefinedTypes = Types.definitionsToStoredTypes(this.referenceDeclarations);
 
-    this.eventDefinitions = Utils.getEventDefinitions(Object.values(this.contractNodes));
-    this.eventDefinitionIdsByName = {};
-    for (let id in this.eventDefinitions) {
-      this.eventDefinitionIdsByName[this.eventDefinitions[id].name] = parseInt(id);
-        //this parseInt shouldn't be necessary, but TypeScript refuses to believe
-        //that id must be a number even though the definition of AstReferences
-        //says so
-    }
-    debug("done with event definitions");
-
-    this.storageAllocations = Decoder.getStorageAllocations(this.referenceDeclarations, {[this.contractNode.id]: this.contractNode});
+    this.allocations.storage = Decoder.getStorageAllocations(this.referenceDeclarations, {[this.contractNode.id]: this.contractNode});
+    this.allocations.abi = Decoder.getAbiAllocations(this.referenceDeclarations);
+    this.allocations.event[this.contractNode.id] = Decoder.getEventAllocations(
+      this.contract.abi,
+      this.referenceDeclarations,
+      this.contractNode.linearizedBaseContracts,
+      this.allocations.abi
+    );
+    this.allocations.calldata[this.contractNode.id] = Decoder.getCalldataAllocations(
+      this.contract.abi,
+      this.referenceDeclarations,
+      this.contractNode.linearizedBaseContracts,
+      this.allocations.abi,
+      this.constructorContext;
+    );
     debug("done with allocation");
     this.stateVariableReferences = this.storageAllocations[this.contractNode.id].members;
     debug("stateVariableReferences %O", this.stateVariableReferences);
@@ -131,18 +144,16 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   private async decodeVariable(variable: Decoder.StorageMemberAllocation, block: number): Promise<Values.Value> {
     const info: Decoder.EvmInfo = {
       state: {
-        stack: [],
         storage: {},
-        memory: new Uint8Array(0)
       },
       mappingKeys: this.mappingKeys,
       userDefinedTypes: this.userDefinedTypes,
-      storageAllocations: this.storageAllocations,
+      allocations: this.allocations,
       contexts: this.contexts,
       currentContext: this.context
     };
 
-    const decoder = Decoder.forEvmState(variable.definition, variable.pointer, info);
+    const decoder = Decoder.decodeVariable(variable.definition, variable.pointer, info);
 
     let result = decoder.next();
     while(!result.done) {
@@ -301,70 +312,100 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   //all descendants, you'll need to alter watchMappingKey to use an if rather
   //than a while
 
-  public decodeTransaction(transaction: Transaction): any {
-    const decodedData = abiDecoder.decodeMethod(transaction.input);
-
-    return decodedData;
-  }
-
-  public decodeLog(log: Log): any {
-    const decodedLogs = this.decodeLogs([log]);
-
-    return decodedLogs[0];
-  }
-
-  public decodeLogs(logs: Log[]): any[] {
-    const decodedLogs = abiDecoder.decodeLogs(logs);
-
-    return decodedLogs;
-  }
-
-  private decodeEvent(event: EventLog): DecoderTypes.ContractEvent {
-    let contractEvent: DecoderTypes.ContractEvent = {
-      logIndex: event.logIndex,
-      name: event.event,
-      blockHash: event.blockHash,
-      blockNumber: event.blockNumber,
-      transactionHash: event.transactionHash,
-      transactionIndex: event.transactionIndex,
-      variables: {}
+  //NOTE: will only work with transactions to-or-creating this address!
+  public async decodeTransaction(transaction: Transaction): DecodedTransaction {
+    const block = transaction.blockNumber;
+    const data = DecodeUtils.Conversion.toBytes(transaction.input);
+    const info: Decoder.EvmInfo = {
+      state: {
+        storage: {},
+        calldata: data,
+      },
+      mappingKeys: this.mappingKeys,
+      userDefinedTypes: this.userDefinedTypes,
+      allocations: this.allocations,
+      contexts: this.contexts
     };
+    const decoder = Decoder.decodeCalldata(info, this.contractNode.id);
 
-    const eventDefinition = this.eventDefinitions[this.eventDefinitionIdsByName[contractEvent.name]];
-
-    if (typeof eventDefinition.parameters !== "undefined" && typeof eventDefinition.parameters.parameters !== "undefined") {
-      const argumentDefinitions = eventDefinition.parameters.parameters;
-
-      for (let i = 0; i < argumentDefinitions.length; i++) {
-        const definition = argumentDefinitions[i];
-
-        if (definition.nodeType === "VariableDeclaration") {
-          contractEvent.variables[definition.name] = {
-            name: definition.name,
-            type: DefinitionUtils.typeClass(definition),
-            value: event.returnValues[definition.name] // TODO: this should be a decoded value, it currently is a string always
-          };
-        }
+    let result = decoder.next();
+    while(!result.done) {
+      let request = <Decoder.DecoderRequest>(result.value);
+      let response: Uint8Array;
+      //only code requests should occur here
+      if(Decoder.isCodeRequest(request)) {
+        response = await this.getCode(request.address, block);
       }
+      result = decoder.next(response);
     }
-
-    return contractEvent;
+    //at this point, result.value holds the final value
+    const decoding = <CalldataDecoding>result.value;
+    
+    return {
+      ...transaction,
+      decoding
+    };
   }
 
-  public async events(name: string | null = null, block: BlockType = "latest"): Promise<DecoderTypes.ContractEvent[]> {
-    const web3Contract = new this.web3.eth.Contract(this.contract.abi, this.contractAddress);
-    const events = await web3Contract.getPastEvents(name, {
-      fromBlock: block,
-      toBlock: block
+  //NOTE: will only work with logs for this address!
+  public async decodeLog(log: Log): DecodedEvent {
+    const block = log.blockNumber;
+    const data = DecodeUtils.Conversion.toBytes(log.data);
+    const topics = log.topics.map(DecodeUtils.Conversion.toBytes);
+    const info: Decoder.EvmInfo = {
+      state: {
+        storage: {},
+        eventdata: data,
+        eventtopics: topics
+      },
+      mappingKeys: this.mappingKeys,
+      userDefinedTypes: this.userDefinedTypes,
+      allocations: this.allocations,
+      contexts: this.contexts
+    };
+    const decoder = Decoder.decodeEvent(info, this.contractNode.id);
+
+    let result = decoder.next();
+    while(!result.done) {
+      let request = <Decoder.DecoderRequest>(result.value);
+      let response: Uint8Array;
+      //only code requests should occur here
+      if(Decoder.isCodeRequest(request)) {
+        response = await this.getCode(request.address, block);
+      }
+      result = decoder.next(response);
+    }
+    //at this point, result.value holds the final value
+    const decoding = <EventDecoding>result.value;
+    
+    return {
+      ...log,
+      decoding
+    };
+  }
+
+  //NOTE: will only work with logs for this address!
+  public async decodeLogs(logs: Log[]): DecodedEvent[] {
+    return await Promise.all(logs.map(this.decodeLog));
+  }
+
+  public async events(name: string | null = null, fromBlock: BlockType = "latest", toBlock: BlockType = "latest"): Promise<DecoderTypes.DecodedEvent[]> {
+    const logs = await web3.eth.getPastLogs({
+      address: this.address,
+      fromBlock,
+      toBlock,
     });
 
-    let contractEvents: DecoderTypes.ContractEvent[] = [];
+    let events = this.decodeLogs(logs);
 
-    for (let i = 0; i < events.length; i++) {
-      contractEvents.push(this.decodeEvent(events[i]));
+    if(name !== null) {
+      events = events.filter(event =>
+        event.decoding.kind === "event"
+        && event.decoding.name === name
+      );
     }
 
-    return contractEvents;
+    return events;
   }
 
   public onEvent(name: string, callback: Function): void {

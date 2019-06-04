@@ -316,9 +316,9 @@ const data = createSelectorTree({
       memory: createLeaf(["/state"], state => state.info.allocations.memory),
 
       /*
-       * data.info.allocations.calldata
+       * data.info.allocations.abi
        */
-      calldata: createLeaf(["/state"], state => state.info.allocations.calldata)
+      abi: createLeaf(["/state"], state => state.info.allocations.abi)
     },
 
     /**

@@ -1,15 +1,17 @@
 import { AstReferences, Contexts, Types } from "truffle-decode-utils";
-import { StorageAllocations, CalldataAllocations, MemoryAllocations, StorageMemberAllocations } from "./allocation";
+import * as Allocations from "./allocation";
 import { Slot } from "./storage";
 
 export interface EvmState {
-  stack: Uint8Array[];
   storage: WordMapping;
-  memory: Uint8Array;
+  stack?: Uint8Array[];
+  memory?: Uint8Array;
   calldata?: Uint8Array;
   specials?: {
     [builtin: string]: Uint8Array //sorry
-  }
+  };
+  eventdata?: Uint8Array;
+  eventtopics?: Uint8Array[];
 }
 
 export interface WordMapping {
@@ -20,9 +22,13 @@ export interface EvmInfo {
   state: EvmState;
   mappingKeys?: Slot[];
   userDefinedTypes?: Types.TypesById;
-  storageAllocations?: StorageAllocations;
-  calldataAllocations?: CalldataAllocations;
-  memoryAllocations?: MemoryAllocations;
+  allocations: {
+    storage?: Allocations.StorageAllocations;
+    memory?: Allocations.MemoryAllocations;
+    abi?: Allocations.AbiAllocations;
+    calldata?: Allocations.CalldataAllocations;
+    event?: Allocations.EventAllocations;
+  }
   contexts?: Contexts.DecoderContexts;
   currentContext?: Contexts.DecoderContext;
   internalFunctionsTable?: InternalFunctions;

@@ -1,5 +1,5 @@
 import * as storage from "./storage";
-import * as memory from "./memory";
+import * as bytes from "./bytes";
 import * as stack from "./stack";
 import * as constant from "./constant";
 import * as Pointer from "../types/pointer";
@@ -8,21 +8,49 @@ import { DecoderRequest } from "../types/request";
 import { Values } from "truffle-decode-utils";
 
 export default function* read(pointer: Pointer.DataPointer, state: EvmState): IterableIterator<Uint8Array | DecoderRequest> {
-  if (Pointer.isStackPointer(pointer) && state.stack) {
-    return stack.readStack(state.stack, pointer.stack.from, pointer.stack.to);
-  } else if (Pointer.isStoragePointer(pointer) && state.storage) {
-    return yield* storage.readRange(state.storage, pointer.storage);
-  } else if (Pointer.isMemoryPointer(pointer) && state.memory) {
-    return memory.readBytes(state.memory, pointer.memory.start, pointer.memory.length);
-  } else if (Pointer.isCalldataPointer(pointer) && state.calldata) {
-    return memory.readBytes(state.calldata, pointer.calldata.start, pointer.calldata.length);
-    //there is no need for a separate calldata read function; the existing memory read function
-    //will do fine
-  } else if (Pointer.isStackLiteralPointer(pointer)) {
-    return pointer.literal;
-  } else if (Pointer.isConstantDefinitionPointer(pointer)) {
-    return constant.readDefinition(pointer.definition);
-  } else if (Pointer.isSpecialPointer(pointer)) {
-    return state.specials[pointer.special];
+  switch(pointer.location) {
+
+    case "stack":
+      return stack.readStack(state.stack, pointer.from, pointer.to);
+
+    case "storage":
+      return yield* storage.readRange(state.storage, pointer.range);
+
+    case "memory":
+      return bytes.readBytes(state.memory, pointer.start, pointer.length);
+
+    case "calldata":
+      return bytes.readBytes(state.calldata, pointer.start, pointer.length);
+
+    case "eventdata":
+      //similarly with eventdata
+      return bytes.readBytes(state.eventdata, pointer.start, pointer.length);
+
+    case "stackliteral":
+      return pointer.literal;
+
+    case "definition":
+      return constant.readDefinition(pointer.definition);
+
+    case "special":
+      //not bothering with error handling on this oen as I don't expect errors
+      return state.specials[pointer.special];
+
+    case "eventtopic":
+      return readTopic(state.eventTopics, pointer.topic);
+
+    //...and in the case of "abi", which shouldn't happen, we'll just fall off
+    //the end and cause a problem :P
   }
+}
+
+//this one is simple enough I'm keeping it in the same file
+function readTopic(topics: Uint8Array[], index: number) {
+  let topic = topics[index];
+  if(topic === undefined) {
+    throw new Values.DecodingError(
+      new Values.ReadErrorTopic(index);
+    );
+  }
+  return topic;
 }

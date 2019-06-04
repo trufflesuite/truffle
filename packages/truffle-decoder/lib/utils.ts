@@ -45,3 +45,15 @@ export function getEventDefinitions(contracts: AstDefinition[]): AstReferences {
 
   return getDeclarationsForTypes(contracts, types);
 }
+
+export function makeContext(contract: ContractObject, node: AstDefinition, isConstructor = false): DecoderContext {
+  return {
+    contractName: contract.contractName,
+    binary: isConstructor ? contract.bytecode : contract.deployedBytecode,
+    contractId: node.id,
+    contractKind: node.contractKind,
+    isConstructor,
+    abi: DecodeUtils.Contexts.abiToFunctionAbiWithSignatures(contract.abi),
+    payable: DecodeUtils.Contexts.isABIPayable(contract.abi)
+  };
+}

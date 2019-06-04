@@ -2,13 +2,6 @@ import BN from "bn.js";
 import { ContractObject } from "truffle-contract-schema/spec";
 import { Values } from "truffle-decode-utils";
 
-interface EventVariable {
-  name: string;
-  type: string;
-  value: string; //NOTE: this should change to be a decoded variable object
-  //(although really that would replace EventVariable entirely)
-};
-
 export interface ContractState {
   name: string;
   balance: BN;
@@ -19,17 +12,13 @@ export interface ContractState {
   };
 };
 
-export interface ContractEvent {
-  logIndex: number;
-  name: string;
-  blockHash: string;
-  blockNumber: number;
-  transactionHash: string;
-  transactionIndex: number;
-  variables: {
-    [name: string]: EventVariable
-  }
-};
+export interface DecodedTransaction extends Transaction {
+  decoding: CalldataDecoding;
+}
+
+export interface DecodedEvent extends Log {
+  decoding: EventDecoding;
+}
 
 export interface ContractMapping {
   [nodeId: number]: ContractObject;

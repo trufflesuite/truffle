@@ -41,10 +41,9 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
       //initial word contains length
       try {
         rawLength = yield* read({
-          memory: {
-            start: startPosition,
-            length: DecodeUtils.EVM.WORD_SIZE
-          }
+          location: "memory",
+          start: startPosition,
+          length: DecodeUtils.EVM.WORD_SIZE
         }, state);
       }
       catch(error) { //error: Values.DecodingError
@@ -53,7 +52,9 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
       length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
 
       let childPointer: MemoryPointer = {
-        memory: { start: startPosition + DecodeUtils.EVM.WORD_SIZE, length }
+        location: "memory",
+        start: startPosition + DecodeUtils.EVM.WORD_SIZE,
+        length
       }
 
       return yield* decodeValue(dataType, childPointer, info);
@@ -64,10 +65,9 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         //initial word contains array length
         try {
           rawLength = yield* read({
-            memory: {
-              start: startPosition,
-              length: DecodeUtils.EVM.WORD_SIZE
-            }
+            location: "memory",
+            start: startPosition,
+            length: DecodeUtils.EVM.WORD_SIZE
           }, state);
         }
         catch(error) { //error: Values.DecodingError
@@ -88,10 +88,11 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         decodedChildren.push(
           <Values.Value> (yield* decodeMemory(
             baseType,
-            { memory: {
+            {
+              location: "memory",
               start: startPosition + index * DecodeUtils.EVM.WORD_SIZE,
               length: DecodeUtils.EVM.WORD_SIZE
-            }},
+            },
             info
           ))
         );
@@ -100,10 +101,10 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
       return new Values.ArrayValueProper(dataType, decodedChildren);
 
     case "struct":
-      const { memoryAllocations, userDefinedTypes } = info;
+      const { allocations: { memory: allocations }, userDefinedTypes } = info;
 
       const typeId = dataType.id;
-      const structAllocation = memoryAllocations[typeId];
+      const structAllocation = allocations[typeId];
       if(!structAllocation) {
         return new Values.GenericError(
           new Values.UserDefinedTypeNotFoundError(dataType)
@@ -116,10 +117,9 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
       for(let memberAllocation of Object.values(structAllocation.members)) {
         const memberPointer = memberAllocation.pointer;
         const childPointer: MemoryPointer = {
-          memory: {
-            start: startPosition + memberPointer.memory.start,
-            length: memberPointer.memory.length //always equals WORD_SIZE
-          }
+          location: "memory",
+          start: startPosition + memberPointer.start,
+          length: memberPointer.length //always equals WORD_SIZE
         };
 
         let memberName = memberAllocation.definition.name;

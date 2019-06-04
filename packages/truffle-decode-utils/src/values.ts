@@ -955,6 +955,19 @@ export namespace Values {
     }
   }
 
+  export class IndexedReferenceTypeError extends GenericErrorDirect {
+    type: Types.ReferenceType;
+    raw: BN;
+    message() {
+      return `Cannot decode indexed parameter of reference type ${this.type.typeClass} (raw value ${this.raw.toString()})`;
+    }
+    constructor(referenceType: Types.ReferenceType, raw: BN) {
+      super();
+      this.type = referenceType;
+      this.raw = raw;
+    }
+  }
+
   //Read errors
   export class UnsupportedConstantError extends GenericErrorDirect {
     definition: AstDefinition;
@@ -977,6 +990,17 @@ export namespace Values {
       super();
       this.from = from;
       this.to = to;
+    }
+  }
+
+  export class ReadErrorTopic extends GenericErrorDirect {
+    topic: number;
+    message() {
+      return `Can't read event topic ${this.topic}`;
+    }
+    constructor(topic: number) {
+      super();
+      this.topic = topic;
     }
   }
 }

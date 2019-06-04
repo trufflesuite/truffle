@@ -67,9 +67,7 @@ export function* decode(definition, ref) {
     userDefinedTypes,
     state,
     mappingKeys,
-    storageAllocations: allocations.storage,
-    memoryAllocations: allocations.memory,
-    calldataAllocations: allocations.calldata,
+    allocations,
     contexts,
     currentContext,
     internalFunctionsTable
@@ -288,10 +286,9 @@ function* variablesAndMappingsSaga() {
       assignment = makeAssignment(
         { astId: varId, stackframe: currentDepth },
         {
-          stack: {
-            from: top - DecodeUtils.Definition.stackSize(node) + 1,
-            to: top
-          }
+          location: "stack",
+          from: top - DecodeUtils.Definition.stackSize(node) + 1,
+          to: top
         }
       );
       assignments = { [assignment.id]: assignment };
@@ -550,7 +547,7 @@ function* variablesAndMappingsSaga() {
       let memberAllocation =
         allocations[structId].members[node.referencedDeclaration];
 
-      slot.offset = memberAllocation.pointer.storage.from.slot.offset.clone();
+      slot.offset = memberAllocation.pointer.range.from.slot.offset.clone();
 
       debug("slot %o", slot);
       yield put(
@@ -639,10 +636,9 @@ function assignParameters(parameters, top, functionDepth) {
   for (let parameter of reverseParameters) {
     let words = DecodeUtils.Definition.stackSize(parameter);
     let pointer = {
-      stack: {
-        from: currentPosition - words + 1,
-        to: currentPosition
-      }
+      location: "stack",
+      from: currentPosition - words + 1,
+      to: currentPosition
     };
     let assignment = makeAssignment(
       { astId: parameter.id, stackframe: functionDepth },
