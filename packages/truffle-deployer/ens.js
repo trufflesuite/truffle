@@ -6,19 +6,36 @@ class ENS {
     this.resolver = resolver;
   }
 
-  async deployNewENSRegistry() {
+  async deployNewENSRegistry(from) {
     const ENS = this.resolver.require("@ensdomains/ens/ENSRegistry");
-    const ens = await ENS.new();
-    const ensOwnerAddress = await ens.owner("0x0");
-
+    ENS.setProvider(this.provider);
+    const ens = await ENS.new({ from });
+    const registryOwnerAddress = await ens.owner("0x0");
     return {
-      ensOwnerAddress,
-      ensRegistryAddress: ens.address
+      registryOwnerAddress,
+      registryAddress: ens.address
     };
   }
 
   async register(address, name, from) {
-    const ensjs = new ENSJS(provider);
+    let ensjs = new ENSJS(this.provider);
+
+    try {
+      // See if registry exists on network
+      registryOwnerAddress = await ensjs.owner("0x0");
+    } catch (error) {
+      // If no registry, deploy one
+      const noRegistryFound =
+        error.message ===
+        "This contract object doesn't have address set yet, please set an address first.";
+      if (noRegistryFound) {
+        const registryInfo = await this.deployNewENSRegistry(from);
+        const registryAddress = registryInfo.registryAddress;
+        ensjs = new ENSJS(this.provider, registryAddress);
+      } else {
+        throw error;
+      }
+    }
 
     // Find the owner of the name and compare it to the "from" field let nameOwner = await ensjs.owner(name);
     let nameOwner = await ensjs.owner(name);
