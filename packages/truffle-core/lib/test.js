@@ -106,8 +106,9 @@ var Test = {
       .then(function(paths) {
         dependency_paths = paths;
 
-        testContracts = sol_tests.map(function(test_file_path) {
-          return test_resolver.require(test_file_path);
+        testContracts = sol_tests.map(function(testFilePath) {
+          const artifactName = path.basename(testFilePath).replace(".sol", "");
+          return test_resolver.require(artifactName);
         });
 
         runner = new TestRunner(config);
