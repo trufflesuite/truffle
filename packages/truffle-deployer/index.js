@@ -5,6 +5,7 @@ const Deployment = require("./src/deployment");
 const link = require("./src/actions/link");
 const create = require("./src/actions/new");
 const Legacy = require("truffle-legacy-system");
+const ENS = require("./ens");
 
 class Deployer extends Deployment {
   constructor(options) {
@@ -23,6 +24,10 @@ class Deployer extends Deployment {
     this.provider = options.provider;
     this.basePath = options.basePath || process.cwd();
     this.known_contracts = {};
+    this.ens = new ENS({
+      provider: options.provider,
+      resolver: options.resolver
+    });
 
     (options.contracts || []).forEach(
       contract => (this.known_contracts[contract.contract_name] = contract)
