@@ -93,7 +93,7 @@ export namespace Values {
   export abstract class ValueError implements Value {
     type: Types.Type;
     kind: "error";
-    error: any; //sorry!
+    error: DecoderError;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return util.inspect(this.error, options);
     }
@@ -124,9 +124,14 @@ export namespace Values {
     }
   }
 
-  //and here's the type definition for those errors themselves
+  //meanwhile, here's the class for the error objects themselves
+  export abstract class DecoderError {
+    kind: string;
+  }
+
+  //and here's the class for the generic ones specifically.
   //See section 8 for the actual generic errors.
-  export abstract class GenericError {
+  export abstract class GenericError extends DecoderError {
     abstract message(): string;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return this.message();
@@ -298,17 +303,19 @@ export namespace Values {
     }
   }
 
-  export abstract class BoolDecodingError {
+  export abstract class BoolDecodingError extends DecoderError {
     raw: BN;
   }
 
   export class BoolOutOfRangeError extends BoolDecodingError {
+    kind: "BoolOutOfRangeError";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return `Invalid boolean (numeric value ${this.raw.toString()})`;
     }
     constructor(raw: BN) {
       super();
       this.raw = raw;
+      this.kind = "BoolOutOfRangeError";
     }
   }
 
@@ -481,31 +488,37 @@ export namespace Values {
   export class FixedValueErrorDecoding extends ValueError implements FixedValueError {
     type: Types.FixedType;
     error: FixedDecodingError;
-    constructor(dataType: Types.FixedType, raw: string) {
+    constructor(fixedType: Types.FixedType, error: FixedDecodingError) {
       super();
-      this.type = dataType;
-      this.error = new FixedDecodingError(raw);
+      this.type = fixedType;
+      this.error = error;
     }
   }
 
   export class UfixedValueErrorDecoding extends ValueError implements UfixedValueError {
     type: Types.UfixedType;
     error: FixedDecodingError;
-    constructor(dataType: Types.UfixedType, raw: string) {
+    constructor(ufixedType: Types.UfixedType, error: FixedDecodingError) {
       super();
-      this.type = dataType;
-      this.error = new FixedDecodingError(raw);
+      this.type = ufixedType;
+      this.error = error;
     }
   }
 
   //not distinguishing fixed vs ufixed here
-  export class FixedDecodingError {
+  export class FixedDecodingError extends DecoderError {
     raw: string; //should be hex string
+  }
+
+  export class FixedPointNotYetSupportedError extends FixedDecodingError {
+    kind: "FixedPointNotYetSupportedError";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return `Fixed-point decoding not yet supported (raw value: ${this.raw})`;
     }
     constructor(raw: string) {
+      super();
       this.raw = raw;
+      this.kind = "FixedPointNotYetSupportedError";
     }
   }
 
@@ -776,12 +789,13 @@ export namespace Values {
     }
   };
 
-  export abstract class EnumDecodingError {
+  export abstract class EnumDecodingError extends DecoderError {
     type: Types.EnumType;
     raw: BN;
   }
 
   export class EnumOutOfRangeError extends EnumDecodingError {
+    kind: "EnumOutOfRangeError";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       let typeName = this.type.definingContractName + "." + this.type.typeName;
       return `Invalid ${typeName} (numeric value ${this.raw.toString()})`;
@@ -790,10 +804,12 @@ export namespace Values {
       super();
       this.type = enumType;
       this.raw = raw;
+      this.kind = "EnumOutOfRangeError";
     }
   }
 
   export class EnumNotFoundDecodingError extends EnumDecodingError {
+    kind: "EnumNotFoundDecodingError";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       let typeName = this.type.definingContractName + "." + this.type.typeName;
       return `Unknown enum type ${typeName} of id ${this.type.id} (numeric value ${this.raw.toString()})`;
@@ -802,6 +818,7 @@ export namespace Values {
       super();
       this.type = enumType;
       this.raw = raw;
+      this.kind = "EnumNotFoundDecodingError";
     }
   }
 
@@ -1149,13 +1166,14 @@ export namespace Values {
     }
   }
 
-  export abstract class FunctionInternalDecodingError {
+  export abstract class FunctionInternalDecodingError extends DecoderError {
     context: Types.ContractType;
     deployedProgramCounter: number;
     constructorProgramCounter: number;
   }
 
   export class NoSuchInternalFunctionError extends FunctionInternalDecodingError {
+    kind: "NoSuchInternalFunctionError";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return `Invalid function (Deployed PC=${this.deployedProgramCounter}, constructor PC=${this.constructorProgramCounter}) of contract ${this.context.typeName}`;
     }
@@ -1164,10 +1182,12 @@ export namespace Values {
       this.context = context;
       this.deployedProgramCounter = deployedProgramCounter;
       this.constructorProgramCounter = constructorProgramCounter;
+      this.kind = "NoSuchInternalFunctionError";
     }
   }
 
   export class DeployedFunctionInConstructorError extends FunctionInternalDecodingError {
+    kind: "DeployedFunctionInConstructorError";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return `Deployed-style function (PC=${this.deployedProgramCounter}) in constructor`;
     }
@@ -1176,10 +1196,12 @@ export namespace Values {
       this.context = context;
       this.deployedProgramCounter = deployedProgramCounter;
       this.constructorProgramCounter = 0;
+      this.kind = "DeployedFunctionInConstructorError";
     }
   }
 
   export class MalformedInternalFunctionError extends FunctionInternalDecodingError {
+    kind: "MalformedInternalFunctionError";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return `Malformed internal function w/constructor PC only (value: ${this.constructorProgramCounter})`;
     }
@@ -1188,6 +1210,7 @@ export namespace Values {
       this.context = context;
       this.deployedProgramCounter = 0;
       this.constructorProgramCounter = constructorProgramCounter;
+      this.kind = "MalformedInternalFunctionError";
     }
   }
 
@@ -1197,6 +1220,7 @@ export namespace Values {
 
   //type-location error
   export class UserDefinedTypeNotFoundError extends GenericError {
+    kind: "UserDefinedTypeNotFoundError";
     type: Types.UserDefinedType;
     message() {
       let typeName = Types.isContractDefinedType(this.type)
@@ -1207,11 +1231,13 @@ export namespace Values {
     constructor(unknownType: Types.UserDefinedType) {
       super();
       this.type = unknownType;
+      this.kind = "UserDefinedTypeNotFoundError";
     }
   }
 
   //Read errors
   export class UnsupportedConstantError extends GenericError {
+    kind: "UnsupportedConstantError";
     definition: AstDefinition;
     message() {
       return `Unsupported constant type ${DefinitionUtils.typeClass(this.definition)}$`;
@@ -1219,10 +1245,12 @@ export namespace Values {
     constructor(definition: AstDefinition) {
       super();
       this.definition = definition;
+      this.kind = "UnsupportedConstantError";
     }
   }
 
   export class ReadErrorStack extends GenericError {
+    kind: "ReadErrorStack";
     from: number;
     to: number;
     message() {
@@ -1232,6 +1260,7 @@ export namespace Values {
       super();
       this.from = from;
       this.to = to;
+      this.kind = "ReadErrorStack";
     }
   }
 

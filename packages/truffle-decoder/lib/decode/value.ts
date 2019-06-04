@@ -102,11 +102,17 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
 
     case "fixed": {
       const hex = DecodeUtils.Conversion.toHexString(bytes);
-      return new Values.FixedValueErrorDecoding(dataType, hex);
+      return new Values.FixedValueErrorDecoding(
+        dataType,
+        new Values.FixedPointNotYetSupportedError(hex)
+      );
     }
     case "ufixed": {
       const hex = DecodeUtils.Conversion.toHexString(bytes);
-      return new Values.UfixedValueErrorDecoding(dataType, hex);
+      return new Values.UfixedValueErrorDecoding(
+        dataType,
+        new Values.FixedPointNotYetSupportedError(hex)
+      );
     }
   }
 }
