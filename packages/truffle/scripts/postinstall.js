@@ -19,5 +19,5 @@ const postinstallObtain = () => {
 try {
   postinstallObtain();
 } catch (error) {
-  throw error;
+  console.error(error);
 }
