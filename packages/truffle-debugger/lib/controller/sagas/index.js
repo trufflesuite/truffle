@@ -196,10 +196,6 @@ function* stepOver() {
  * continueUntilBreakpoint - step through execution until a breakpoint
  */
 function* continueUntilBreakpoint(action) {
-  var currentLocation, currentNode, currentLine, currentSourceId;
-  var finished;
-  var previousLine, previousSourceId;
-
   //if breakpoints was not specified, use the stored list from the state.
   //if it was, override that with the specified list.
   //note that explicitly specifying an empty list will advance to the end.
@@ -210,19 +206,22 @@ function* continueUntilBreakpoint(action) {
 
   let breakpointHit = false;
 
-  currentLocation = yield select(controller.current.location);
-  currentLine = currentLocation.sourceRange.lines.start.line;
-  currentSourceId = currentLocation.source.id;
+  let currentLocation = yield select(controller.current.location);
+  let currentLine = currentLocation.sourceRange.lines.start.line;
+  let currentSourceId = currentLocation.source.id;
 
   do {
     yield* stepNext();
 
-    previousLine = currentLine;
-    previousSourceId = currentSourceId;
+    //note these two have not been updated yet; they'll be updated a
+    //few lines down.  but at this point these are still the previous
+    //values.
+    let previousLine = currentLine;
+    let previousSourceId = currentSourceId;
 
     currentLocation = yield select(controller.current.location);
     debug("currentLocation: %O", currentLocation);
-    finished = yield select(controller.current.trace.finished);
+    let finished = yield select(controller.current.trace.finished);
     if (finished) {
       break; //can break immediately if finished
     }
@@ -231,7 +230,7 @@ function* continueUntilBreakpoint(action) {
     if (currentSourceId === undefined) {
       continue; //never stop on an unmapped instruction
     }
-    currentNode = currentLocation.node.id;
+    let currentNode = currentLocation.node.id;
     currentLine = currentLocation.sourceRange.lines.start.line;
 
     breakpointHit =
