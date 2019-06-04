@@ -21,6 +21,11 @@ class ENS {
     const ensjs = new ENSJS(provider);
 
     // Find the owner of the name and compare it to the "from" field let nameOwner = await ensjs.owner(name);
+    let nameOwner = await ensjs.owner(name);
+    // Handle case where there is no owner and we try to register it for the user
+    // if (nameOwner === "0x0000000000000000000000000000000000000000") {
+    //   this.attemptNameRegistration();
+    // }
     if (nameOwner !== from) {
       const message =
         `The default address or address provided in the "from" ` +
@@ -38,9 +43,11 @@ class ENS {
       resolverAddress = await ensjs.resolver(name);
     } catch (error) {
       if (error.message !== "ENS name not found") throw error;
-      await ensjs.setResolver(name, address, { from });
+      resolverAddress = null;
     }
-    console.log(resolverAddress);
+    if (resolverAddress !== address) {
+      return await ensjs.setResolver(name, address, { from });
+    }
   }
 }
 
