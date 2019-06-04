@@ -26,6 +26,7 @@
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-contract#readme",
   "dependencies": {
     "bignumber.js": "^7.2.1",
+    "ethereum-ens": "^0.7.7",
     "ethers": "^4.0.0-beta.1",
     "truffle-blockchain-utils": "^0.0.10",
     "truffle-contract-schema": "^3.0.10",
