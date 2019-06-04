@@ -72,49 +72,9 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
   }
 }
 
-const DEFAULT_INSTANCES = {
-  byAddress: {},
-  byContext: {}
-};
-
-function instances(state = DEFAULT_INSTANCES, action) {
-  switch (action.type) {
-    /*
-     * Adding a new address for context
-     */
-    case actions.ADD_INSTANCE:
-      let { address, context, binary } = action;
-
-      // get known addresses for this context
-      let otherInstances = state.byContext[context] || [];
-      let otherAddresses = otherInstances.map(({ address }) => address);
-
-      return {
-        byAddress: {
-          ...state.byAddress,
-
-          [address]: { address, context, binary }
-        },
-
-        byContext: {
-          ...state.byContext,
-
-          // reconstruct context instances to include new address
-          [context]: Array.from(new Set(otherAddresses).add(address)).map(
-            address => ({ address })
-          )
-        }
-      };
-    case actions.UNLOAD_TRANSACTION:
-      return DEFAULT_INSTANCES;
-
-    /*
-     * Default case
-     */
-    default:
-      return state;
-  }
-}
+const info = combineReducers({
+  contexts
+});
 
 const DEFAULT_TX = {
   gasprice: new BN(0),
@@ -157,13 +117,40 @@ const globals = combineReducers({
   block
 });
 
-const info = combineReducers({
-  contexts
-});
+function status(state = null, action) {
+  switch (action.type) {
+    case actions.SAVE_STATUS:
+      return action.status;
+    case actions.UNLOAD_TRANSACTION:
+      return null;
+    default:
+      return state;
+  }
+}
+
+function initialCall(state = null, action) {
+  switch (action.type) {
+    case actions.CALL:
+    case actions.CREATE:
+      //we only want to save the initial call, so return
+      //the current state if it's not null
+      if (state !== null) {
+        return state;
+      } else {
+        //we'll just store the action itself in the state
+        return action;
+      }
+    case actions.UNLOAD_TRANSACTION:
+      return null;
+    default:
+      return state;
+  }
+}
 
 const transaction = combineReducers({
-  instances,
-  globals
+  globals,
+  status,
+  initialCall
 });
 
 function callstack(state = [], action) {
@@ -181,15 +168,14 @@ function callstack(state = [], action) {
       );
     }
 
-    case actions.RETURN:
+    case actions.RETURN_CALL:
+    case actions.RETURN_CREATE:
     case actions.FAIL:
       //pop the stack... unless (HACK) that would leave it empty (this will
       //only happen at the end when we want to keep the last one around)
       return state.length > 1 ? state.slice(0, -1) : state;
 
     case actions.RESET:
-      return [state[0]]; //leave the initial call still on the stack
-
     case actions.UNLOAD_TRANSACTION:
       return [];
 
@@ -198,31 +184,31 @@ function callstack(state = [], action) {
   }
 }
 
-//default codex stackframe with a single address (or none if address not
-//supplied)
-function defaultCodexFrame(address) {
-  if (address !== undefined) {
-    return {
-      //there will be more here in the future!
-      accounts: {
-        [address]: {
-          //there will be more here in the future!
-          storage: {}
-        }
-      }
-    };
-  } else {
-    return {
-      //there will be more here in the future!
-      accounts: {}
-    };
+const DEFAULT_CODEX = [
+  {
+    accounts: {}
+    //will be more here in the future!
   }
-}
+];
 
-function codex(state = [], action) {
+function codex(state = DEFAULT_CODEX, action) {
   let newState, topCodex;
 
-  const updateFrameStorage = (frame, address, slot, value) => {
+  const updateFrameStorage = (frame, address, slot, value) => ({
+    ...frame,
+    accounts: {
+      ...frame.accounts,
+      [address]: {
+        ...frame.accounts[address],
+        storage: {
+          ...frame.accounts[address].storage,
+          [slot]: value
+        }
+      }
+    }
+  });
+
+  const updateFrameCode = (frame, address, code, context) => {
     let existingPage = frame.accounts[address] || { storage: {} };
     return {
       ...frame,
@@ -230,28 +216,38 @@ function codex(state = [], action) {
         ...frame.accounts,
         [address]: {
           ...existingPage,
-          storage: {
-            ...existingPage.storage,
-            [slot]: value
-          }
+          code: code,
+          context: context
         }
       }
     };
   };
 
+  //later: will add "force" parameter
+  const safePop = array => (array.length > 2 ? array.slice(0, -1) : array);
+
+  //later: will add "force" parameter
+  const safeSave = array =>
+    array.length > 2
+      ? array.slice(0, -2).concat([array[array.length - 1]])
+      : array;
+
   switch (action.type) {
     case actions.CALL:
+      debug("call action");
+      debug("codex: %O", state);
+      //on a call, we can just make a new stackframe by cloning the top
+      //stackframe; there should already be an account for the address we're
+      //calling into, so we don't need to make one
+      return [...state, state[state.length - 1]];
+
     case actions.CREATE:
-      //on a call or create, make a new stackframe, then add a new pages to the
+      //on a create, make a new stackframe, then add a new pages to the
       //codex if necessary; don't add a zero page though (or pages that already
       //exist)
 
-      //first, add a new stackframe; if there's an existing stackframe, clone
-      //that, otherwise make one from scratch
-      newState =
-        state.length > 0
-          ? [...state, state[state.length - 1]]
-          : [defaultCodexFrame()];
+      //first, add a new stackframe by cloning the top one
+      newState = [...state, state[state.length - 1]];
       topCodex = newState[newState.length - 1];
       //now, do we need to add a new address to this stackframe?
       if (
@@ -267,7 +263,9 @@ function codex(state = [], action) {
         accounts: {
           ...topCodex.accounts,
           [action.storageAddress]: {
-            storage: {}
+            storage: {},
+            code: "0x",
+            context: null
             //there will be more here in the future!
           }
         }
@@ -320,24 +318,49 @@ function codex(state = [], action) {
       }
     }
 
-    case actions.RETURN:
+    case actions.RETURN_CALL:
       //we want to pop the top while making the new top a copy of the old top;
       //that is to say, we want to drop just the element *second* from the top
-      //(although, HACK, if the stack only has one element, just leave it alone)
-      return state.length > 1
-        ? state.slice(0, -2).concat([state[state.length - 1]])
-        : state;
+      //NOTE: we don't ever go down to 1 element!
+      return safeSave(state);
+
+    case actions.RETURN_CREATE: {
+      //we're going to do the same things in this case as in the usual return
+      //case, but first we need to record the code that was returned
+      const { address, code, context } = action;
+      newState = state.slice(); //clone the state
+      //NOTE: since this is only for RETURN_CREATE, and not FAIL, we shouldn't
+      //have to worry about accidentally getting a zero address here
+      newState[newState.length - 1] = updateFrameCode(
+        newState[newState.length - 1],
+        address,
+        code,
+        context
+      );
+      debug("newState: %O", newState);
+      return safeSave(newState);
+    }
 
     case actions.FAIL:
-      //pop the stack... unless (HACK) that would leave it empty (this will
-      //only happen at the end when we want to keep the last one around)
-      return state.length > 1 ? state.slice(0, -1) : state;
+      //pop the stack
+      //NOTE: we don't ever go down to 1 element!
+      return safePop(state);
 
     case actions.RESET:
-      return [defaultCodexFrame(action.storageAddress)];
+      return [state[0]]; //leave the -1 frame on the stack
 
     case actions.UNLOAD_TRANSACTION:
-      return [];
+      return DEFAULT_CODEX;
+
+    case actions.ADD_INSTANCE: {
+      //add the instance to every frame
+      //(this is a little HACKy, but it *should* be fine)
+      debug("adding instance");
+      const { address, binary, context } = action;
+      return state.map(frame =>
+        updateFrameCode(frame, address, binary, context)
+      );
+    }
 
     default:
       return state;

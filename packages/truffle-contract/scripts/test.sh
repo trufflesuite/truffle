@@ -6,7 +6,7 @@ set -o errexit
 # when it's done running. Because we're running geth as a separate client in CI,
 # the provider connections stay open and everything hangs. Hence the `--exit` flag.
 if [ "$GETH" == true ]; then
-  mocha --timeout 7000 --grep @geth --colors --exit $@
+  mocha ./test/** --timeout 7000 --grep @geth --colors --exit $@
 else
-  mocha --no-warnings --timeout 7000 --grep @geth --invert --colors --exit $@
+  mocha ./test/** --no-warnings --timeout 7000 --grep @geth --invert --colors --exit $@
 fi

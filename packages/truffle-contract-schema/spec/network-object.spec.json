@@ -1,5 +1,5 @@
 {
-  "id": "network-object.spec.json",
+  "$id": "network-object.spec.json",
   "$schema": "http://json-schema.org/schema#",
   "title": "Network Object",
 

@@ -1,6 +1,5 @@
 const emoji = require("node-emoji");
 const mnemonicInfo = require("truffle-core/lib/mnemonics/mnemonic");
-const util = require("util");
 
 const command = {
   command: "develop",
@@ -31,19 +30,16 @@ const command = {
       {}
     );
 
-    const environmentDevelop = util.promisify(Environment.develop);
-    environmentDevelop(config, ganacheOptions)
-      .catch(err => done(err))
+    Environment.develop(config, ganacheOptions)
       .then(() => {
         const c = new Console(
           console_commands,
           config.with({ noAliases: true })
         );
         c.start(done);
-        c.on("exit", () => {
-          process.exit();
-        });
-      });
+        c.on("exit", () => process.exit());
+      })
+      .catch(err => done(err));
   },
   run: (options, done) => {
     const Config = require("truffle-config");
@@ -63,9 +59,7 @@ const command = {
       "This mnemonic was created for you by Truffle. It is not secure.\n" +
       "Ensure you do not use it on production blockchains, or else you risk losing funds.";
 
-    const ipcOptions = {
-      log: options.log
-    };
+    const ipcOptions = { log: options.log };
 
     const ganacheOptions = {
       host: customConfig.host || "127.0.0.1",
