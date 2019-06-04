@@ -90,7 +90,17 @@ class Command {
     // We don't need this.
     delete argv["$0"];
 
-    const newOptions = Object.assign({}, options, argv);
+    // Some options might throw if options is a Config object. If so, let's ignore those options.
+    const clone = {};
+    Object.keys(options).forEach(key => {
+      try {
+        clone[key] = options[key];
+      } catch (e) {
+        // Do nothing with values that throw.
+      }
+    });
+
+    const newOptions = Object.assign({}, clone, argv);
 
     try {
       result.command.run(newOptions, callback);
