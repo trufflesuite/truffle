@@ -358,7 +358,7 @@ export namespace Values {
   export class FixedValueError extends ValueError {
     type: Types.FixedType;
     error: FixedDecodingError;
-    constructor(dataType: Types.FixedType, raw: BN) {
+    constructor(dataType: Types.FixedType, raw: string) {
       super();
       this.type = dataType;
       this.error = new FixedDecodingError(raw);
@@ -368,7 +368,7 @@ export namespace Values {
   export class UfixedValueError extends ValueError {
     type: Types.UfixedType;
     error: FixedDecodingError;
-    constructor(dataType: Types.UfixedType, raw: BN) {
+    constructor(dataType: Types.UfixedType, raw: string) {
       super();
       this.type = dataType;
       this.error = new FixedDecodingError(raw);
@@ -377,11 +377,11 @@ export namespace Values {
 
   //not distinguishing fixed vs ufixed here
   export class FixedDecodingError {
-    raw: BN;
+    raw: string; //should be hex string
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return `Fixed-point decoding not yet supported (raw value: ${this.raw.toString()})`;
+      return `Fixed-point decoding not yet supported (raw value: ${this.raw})`;
     }
-    constructor(raw: BN) {
+    constructor(raw: string) {
       this.raw = raw;
     }
   }

@@ -198,36 +198,6 @@ export namespace Definition {
     return isNegative? new BN(absoluteValue).neg() : new BN(absoluteValue);
   }
 
-  //keyEncoding is used to let soliditySha3 know how to interpret the
-  //key for hashing... but if you just give it the honest type, it
-  //won't pad, and for value types we need it to pad.
-  //Thus, ints and value bytes become the *largest* size of that type
-  //addresses are treated by Solidity as uint160, so we mark them uint
-  //to get the correct padding
-  //bool... I can't get soliditySha3 to pad a bool no matter what, so
-  //we'll leave it undefined and handle it manually
-  //note that while fixed and ufixed don't exist yet, they would
-  //presumably use fixed256xM and ufixed256xM, where M is the precision
-  export function keyEncoding(keyDefinition: AstDefinition): string | undefined {
-    switch(typeClass(keyDefinition)) {
-      case "string":
-        return "string";
-      case "bytes":
-        if(specifiedSize(keyDefinition) === null) {
-          return "bytes";
-        }
-        return "bytes32";
-      case "uint":
-      case "address":
-        return "uint";
-      case "int":
-        return "int";
-      case "bool":
-        return undefined; //HACK
-        break;
-    }
-  }
-
   export function baseDefinition(definition: AstDefinition): AstDefinition {
     if (definition.typeName && definition.typeName.baseType) {
       return definition.typeName.baseType;

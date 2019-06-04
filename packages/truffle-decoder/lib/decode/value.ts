@@ -98,12 +98,12 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
     }
 
     case "fixed": {
-      const numeric = DecodeUtils.Conversion.toBN(bytes);
-      return new Values.FixedValueError(dataType, numeric);
+      const hex = DecodeUtils.Conversion.toHexString(bytes);
+      return new Values.FixedValueError(dataType, hex);
     }
     case "ufixed": {
-      const numeric = DecodeUtils.Conversion.toBN(bytes);
-      return new Values.UfixedValueError(dataType, numeric);
+      const hex = DecodeUtils.Conversion.toHexString(bytes);
+      return new Values.UfixedValueError(dataType, hex);
     }
   }
 }
