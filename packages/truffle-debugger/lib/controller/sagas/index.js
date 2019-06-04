@@ -211,7 +211,6 @@ function* continueUntilBreakpoint(action) {
   let breakpointHit = false;
 
   currentLocation = yield select(controller.current.location);
-  currentNode = currentLocation.node.id;
   currentLine = currentLocation.sourceRange.lines.start.line;
   currentSourceId = currentLocation.source.id;
 
@@ -222,17 +221,22 @@ function* continueUntilBreakpoint(action) {
     previousSourceId = currentSourceId;
 
     currentLocation = yield select(controller.current.location);
+    debug("currentLocation: %O", currentLocation);
     finished = yield select(controller.current.trace.finished);
-    debug("finished %o", finished);
+    if (finished) {
+      break; //can break immediately if finished
+    }
 
+    currentSourceId = currentLocation.source.id;
+    if (currentSourceId === undefined) {
+      continue; //never stop on an unmapped instruction
+    }
     currentNode = currentLocation.node.id;
     currentLine = currentLocation.sourceRange.lines.start.line;
-    currentSourceId = currentLocation.source.id;
 
     breakpointHit =
       breakpoints.filter(({ sourceId, line, node }) => {
         if (node !== undefined) {
-          debug("node %d currentNode %d", node, currentNode);
           return sourceId === currentSourceId && node === currentNode;
         }
         //otherwise, we have a line-style breakpoint; we want to stop at the
@@ -243,7 +247,7 @@ function* continueUntilBreakpoint(action) {
           (currentSourceId !== previousSourceId || currentLine !== previousLine)
         );
       }).length > 0;
-  } while (!breakpointHit && !finished);
+  } while (!breakpointHit);
 }
 
 /**
