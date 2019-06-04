@@ -20,7 +20,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
   }
   catch(error) { //error: Values.DecodingError
     debug("segfault, pointer %o, state: %O", pointer, state);
-    return new Values.GenericError(error.error);
+    return Values.makeGenericValueError(dataType, error.error);
   }
 
   debug("type %O", dataType);
@@ -37,7 +37,8 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         return new Values.BoolValueProper(dataType, true);
       }
       else {
-        return new Values.BoolValueError(dataType,
+        return new Values.BoolValueErrorDecoding(
+          dataType,
           new Values.BoolOutOfRangeError(numeric)
         );
       }
@@ -82,7 +83,8 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       const numeric = DecodeUtils.Conversion.toBN(bytes);
       const fullType = <Types.EnumType>Types.fullType(dataType, info.userDefinedTypes);
       if(!fullType.options) {
-        return new Values.EnumValueError(fullType,
+        return new Values.EnumValueErrorDecoding(
+          fullType,
           new Values.EnumNotFoundDecodingError(fullType, numeric)
         );
       }
@@ -91,7 +93,8 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         return new Values.EnumValueProper(fullType, numeric, name);
       }
       else {
-        return new Values.EnumValueError(fullType,
+        return new Values.EnumValueErrorDecoding(
+          fullType,
           new Values.EnumOutOfRangeError(fullType, numeric)
         );
       }
@@ -99,11 +102,11 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
 
     case "fixed": {
       const hex = DecodeUtils.Conversion.toHexString(bytes);
-      return new Values.FixedValueError(dataType, hex);
+      return new Values.FixedValueErrorDecoding(dataType, hex);
     }
     case "ufixed": {
       const hex = DecodeUtils.Conversion.toHexString(bytes);
-      return new Values.UfixedValueError(dataType, hex);
+      return new Values.UfixedValueErrorDecoding(dataType, hex);
     }
   }
 }
@@ -172,13 +175,15 @@ export function decodeInternalFunction(dataType: Types.FunctionType, deployedPcB
   }
   //another check: is only the deployed PC zero?
   if(deployedPc === 0 && constructorPc !== 0) {
-    return new Values.FunctionValueInternalError(dataType,
+    return new Values.FunctionValueInternalErrorDecoding(
+      dataType,
       new Values.MalformedInternalFunctionError(context, constructorPc)
     );
   }
   //one last pre-check: is this a deployed-format pointer in a constructor?
   if(info.currentContext.isConstructor && constructorPc === 0) {
-    return new Values.FunctionValueInternalError(dataType,
+    return new Values.FunctionValueInternalErrorDecoding(
+      dataType,
       new Values.DeployedFunctionInConstructorError(context, deployedPc)
     );
   }
@@ -189,7 +194,8 @@ export function decodeInternalFunction(dataType: Types.FunctionType, deployedPcB
   let functionEntry = info.internalFunctionsTable[pc];
   if(!functionEntry) {
     //if it's not zero and there's no entry... error!
-    return new Values.FunctionValueInternalError(dataType,
+    return new Values.FunctionValueInternalErrorDecoding(
+      dataType,
       new Values.NoSuchInternalFunctionError(context, deployedPc, constructorPc)
     );
   }

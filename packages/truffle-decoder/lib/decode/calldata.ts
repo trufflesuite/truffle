@@ -18,7 +18,7 @@ export default function* decodeCalldata(dataType: Types.Type, pointer: CalldataP
       dynamic = isTypeDynamic(dataType, info.calldataAllocations);
     }
     catch(error) { //error: Values.DecodingError
-      return new Values.GenericError(error.error);
+      return Values.makeGenericValueError(dataType, error.error);
     }
     if(dynamic) {
       return yield* decodeCalldataReferenceByAddress(dataType, pointer, info, base);
@@ -41,7 +41,7 @@ export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType,
     rawValue = yield* read(pointer, state);
   }
   catch(error) { //error: Values.DecodingError
-    return new Values.GenericError(error.error);
+    return Values.makeGenericValueError(dataType, error.error);
   }
 
   let startPosition = DecodeUtils.Conversion.toBN(rawValue).toNumber() + base;
@@ -52,7 +52,7 @@ export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType,
     dynamic = isTypeDynamic(dataType, info.calldataAllocations);
   }
   catch(error) { //error: Values.DecodingError
-    return new Values.GenericError(error.error);
+    return Values.makeGenericValueError(dataType, error.error);
   }
   if(!dynamic) { //this will only come up when called from stack.ts
     let size: number;
@@ -60,7 +60,7 @@ export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType,
       size = calldataSizeForType(dataType, info.calldataAllocations);
     }
     catch(error) { //error: Values.DecodingError
-      return new Values.GenericError(error.error);
+      return Values.makeGenericValueError(dataType, error.error);
     }
     let staticPointer = {
       calldata: {
@@ -86,7 +86,7 @@ export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType,
         }, state));
       }
       catch(error) { //error: Values.DecodingError
-        return new Values.GenericError(error.error);
+        return Values.makeGenericValueError(dataType, error.error);
       }
       length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
 
@@ -110,7 +110,7 @@ export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType,
             }, state));
           }
           catch(error) { //error: Values.DecodingError
-            return new Values.GenericError(error.error);
+            return Values.makeGenericValueError(dataType, error.error);
           }
           length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
           startPosition += DecodeUtils.EVM.WORD_SIZE; //increment startPosition
@@ -130,7 +130,7 @@ export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType,
         baseSize = calldataSizeForType(dataType.baseType, info.calldataAllocations);
       }
       catch(error) { //error: Values.DecodingError
-        return new Values.GenericError(error.error);
+        return Values.makeGenericValueError(dataType, error.error);
       }
 
       let decodedChildren: Values.Value[] = [];
@@ -167,7 +167,7 @@ export function* decodeCalldataReferenceStatic(dataType: Types.ReferenceType, po
         baseSize = calldataSizeForType(dataType.baseType, info.calldataAllocations);
       }
       catch(error) { //error: Values.DecodingError
-        return new Values.GenericError(error.error);
+        return Values.makeGenericValueError(dataType, error.error);
       }
 
       let decodedChildren: Values.Value[] = [];
@@ -197,7 +197,8 @@ function* decodeCalldataStructByPosition(dataType: Types.StructType, startPositi
   const typeId = dataType.id;
   const structAllocation = calldataAllocations[typeId];
   if(!structAllocation) {
-    return new Values.GenericError(
+    return new Values.StructValueErrorGeneric(
+      dataType,
       new Values.UserDefinedTypeNotFoundError(dataType)
     );
   }
@@ -215,7 +216,8 @@ function* decodeCalldataStructByPosition(dataType: Types.StructType, startPositi
     let memberName = memberAllocation.definition.name;
     let storedType = <Types.StructType>userDefinedTypes[typeId];
     if(!storedType) {
-      return new Values.GenericError(
+      return new Values.StructValueErrorGeneric(
+        dataType,
         new Values.UserDefinedTypeNotFoundError(dataType)
       );
     }

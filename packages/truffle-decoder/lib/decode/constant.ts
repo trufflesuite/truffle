@@ -27,7 +27,7 @@ export default function* decodeConstant(dataType: Types.Type, pointer: ConstantD
       word = yield* read(pointer, info.state);
     }
     catch(error) { //error: Values.DecodingError
-      return new Values.GenericError(error.error);
+      return Values.makeGenericValueError(dataType, error.error);
     }
     let bytes = word.slice(DecodeUtils.EVM.WORD_SIZE - size);
     return new Values.BytesValueProper(
