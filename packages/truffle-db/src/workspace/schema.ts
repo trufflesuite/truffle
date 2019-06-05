@@ -26,6 +26,9 @@ export const schema = mergeSchemas({
         extend type ContractInstance {
           id: ID!
         }
+        extend type Network {
+          id: ID!
+        }
         `,
       ]
     }),
@@ -38,6 +41,7 @@ export const schema = mergeSchemas({
       source(id: ID!): Source
       bytecode(id: ID!): Bytecode
       contractInstance(id: ID!): ContractInstance
+      network(id: ID!): Network
     }
 
     input SourceInput {
@@ -161,8 +165,7 @@ export const schema = mergeSchemas({
     }
 
     input ContractInstanceNetworkInput {
-      name: String
-      networkID: NetworkID!
+      id: ID!
     }
 
     input ContractInstanceInput {
@@ -175,12 +178,33 @@ export const schema = mergeSchemas({
       contractInstances: [ContractInstanceInput!]!
     }
 
+    type NetworksAddPayload {
+      networks: [Network!]!
+    }
+
+    input BlockInput {
+      height: Int
+      hash: String
+    }
+
+    input NetworkInput {
+      name: String
+      networkID: NetworkID!
+      historicBlock: BlockInput
+      fork: NetworkInput
+    }
+
+    input NetworksAddInput {
+      networks: [NetworkInput!]!
+    }
+
     type Mutation {
       sourcesAdd(input: SourcesAddInput!): SourcesAddPayload
       bytecodesAdd(input: BytecodesAddInput!): BytecodesAddPayload
       contractsAdd(input: ContractsAddInput!): ContractsAddPayload
       compilationsAdd(input: CompilationsAddInput!): CompilationsAddPayload
       contractInstancesAdd(input: ContractInstancesAddInput!): ContractInstancesAddPayload
+      networksAdd(input: NetworksAddInput!): NetworksAddPayload
     } `
   ],
   resolvers: {
@@ -208,6 +232,10 @@ export const schema = mergeSchemas({
       contractInstance: {
         resolve: (_, { id }, { workspace }) =>
           workspace.contractInstance({ id })
+      },
+      network: {
+        resolve: (_, { id }, { workspace }) =>
+          workspace.network({ id })
       }
     },
     Mutation: {
@@ -230,7 +258,11 @@ export const schema = mergeSchemas({
       contractInstancesAdd: {
         resolve: (_, { input }, { workspace }) =>
           workspace.contractInstancesAdd({ input })
-      }
+      },
+      networksAdd: {
+        resolve: (_, { input }, { workspace }) =>
+          workspace.networksAdd({ input })
+      },
     },
     Compilation: {
       sources: {

@@ -24,6 +24,10 @@ const resources = {
   bytecodes: {
     createIndexes: [
     ]
+  },
+  networks: {
+    createIndexes: [
+    ]
   }
 }
 
@@ -33,6 +37,7 @@ export class Workspace {
   compilations: PouchDB.Database;
   contracts: PouchDB.Database;
   contractInstances: PouchDB.Database;
+  networks: PouchDB.Database;
 
   private ready: Promise<void>;
 
@@ -202,6 +207,52 @@ export class Workspace {
           });
 
           return contractInstance;
+        }
+      ))
+    };
+  }
+
+  async network ({ id }: { id: string }) {
+    await this.ready;
+
+    try {
+      return {
+        ...await this.networks.get(id),
+
+        id
+      };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async networksAdd ({ input }) {
+    await this.ready;
+
+    const { networks } = input;
+
+    return {
+      networks: Promise.all(networks.map(
+        async (networkInput) => {
+          const { networkID } = networkInput;
+          //for now only have a hash of the networkID for an ID here, but this is insufficient
+          // will be using a hash of historicBlock + height for the network id
+          const id = soliditySha3(jsonStableStringify({
+            networkID: networkID
+          }));
+
+          const network = await this.network({ id });
+
+          if(network) {
+            return network;
+          } else {
+            const networkAdded = await this.networks.put({
+              ...networkInput,
+              _id: id
+            });
+
+            return { networkID: networkID };
+          }
         }
       ))
     };
