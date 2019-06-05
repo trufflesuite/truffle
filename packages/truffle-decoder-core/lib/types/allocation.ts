@@ -84,9 +84,11 @@ export interface MemoryMemberAllocation {
 //indicating the overall start position.
 //Also, we index by contract ID and then selector rather than by function ID
 //(and have a special one for the constructor)
+//also, arguments are in an array by position, rather than being given by
+//node ID
 
 export interface CalldataAllocations {
-  [id: number]: CalldataContractAllocation
+  [contractId: number]: CalldataContractAllocation
 }
 
 export interface CalldataContractAllocations {
@@ -95,13 +97,9 @@ export interface CalldataContractAllocations {
 }
 
 export interface CalldataAllocation {
-  definition?: AstDefinition; //may be omitted for implciit constructor
+  definition?: AstDefinition; //may be omitted for implicit constructor
   offset: number; //measured in bytes
-  arguments: CalldataArgumentAllocations;
-}
-
-export interface CalldataArgumentAllocations {
-  [contractId: number]: CalldataArgumentAllocation
+  arguments: CalldataArgumentAllocation[];
 }
 
 export interface CalldataArgumentAllocation {
@@ -113,8 +111,6 @@ export interface CalldataArgumentAllocation {
 //there's no need for an offset, and the ultimate pointer can
 //be either an event data pointer or an event topic pointer
 //(also, there's no constructor)
-//also, we want to know event argument positions, so that's
-//included, too
 
 export interface EventAllocations {
   [contractId: number]: EventContractAllocations
@@ -126,15 +122,10 @@ export interface EventContractAllocations {
 
 export interface EventAllocation {
   definition: AstDefinition;
-  arguments: EventMemberAllocations;
-}
-
-export interface EventArgumentAllocations {
-  [id: number]: EventArgumentAllocation
+  arguments: EventArgumentAllocation[];
 }
 
 export interface EventArgumentAllocation {
-  position: number;
   definition: AstDefinition;
   pointer: Pointer.EventDataPointer | Pointer.EventTopicPointer;
 }

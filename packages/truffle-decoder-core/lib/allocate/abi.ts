@@ -258,21 +258,24 @@ function allocateCalldata(
   //now: perform the allocation!
   const abiAllocation = allocateMembers(node, node.parameters.parameters, referenceDeclarations, abiAllocations, offset)[node.id];
   //finally: transform it appropriately
+  let argumentsAllocation = [];
+  for(const member of abiAllocation.members) {
+    const position = rawParameters.findIndex(
+      parameter => parameter.id === member.definition.id
+    );
+    argumentsAllocation[position] = {
+      definition: member.definition,
+      pointer: {
+        location: "calldata",
+        start: member.pointer.start,
+        length: member.pointer.length
+      }
+    };
+  }
   return {
     definition: abiAllocation.definition,
     offset,
-    arguments: Object.assign({}, ...Object.entries(abiAllocation.members).map(
-      ([id, { definition, { start, length }}]) => ({
-        [id]: {
-          definition,
-          pointer: {
-            location: "calldata",
-            start,
-            length
-          }
-        }
-      })
-    ))
+    arguments: argumentsAllocation
   };
 }
 
@@ -309,40 +312,39 @@ function allocateEvent(
   //now: perform the allocation for the non-indexed parameters!
   const abiAllocation = allocateMembers(node, nonIndexed, referenceDeclarations, abiAllocations)[node.id];
   //now: transform it appropriately
-  let eventAllocation = {
+  let argumentsAllocation = [];
+  for(const member of abiAllocation.members) {
+    const position = rawParameters.findIndex(
+      parameter => parameter.id === member.definition.id
+    );
+    argumentsAllocation[position] = {
+      definition: member.definition,
+      pointer: {
+        location: "eventdata",
+        start: member.pointer.start,
+        length: member.pointer.length
+      }
+    };
+  }
+  //finally: add in the indexed parameters...
+  for(let positionInIndexed = 0; positionInIndexed < indexed.length; positionInIndexed++) {
+    const node = indexed[positionInIndexed];
+    const position = rawParameters.findIndex(
+      parameter => parameter.id === node.id
+    );
+    argumentsAllocation[position] = {
+      definition: node,
+      pointer: {
+        location: "eventtopic",
+        topic: positionInIndexed + 1 //signature takes up topic 0, so we skip that, hence +1
+      }
+    };
+  }
+  //...and return
+  return {
     definition: abiAllocation.definition,
-    arguments: Object.assign({}, ...Object.entries(abiAllocation.members).map(
-      ([id, { definition, { start, length }}]) => ({
-        [id]: {
-          definition,
-          position: rawParameters.findIndex(
-            parameter => parameter.id === definition.id
-          ),
-          pointer: {
-            location: "eventdata",
-            start,
-            length
-          }
-        }
-      })
-    ))
+    arguments: argumentsAllocation
   };
-  //finally: add in the indexed parameters and return
-  Object.assign(eventAllocation.arguments,
-    ...indexed.map( (node, position) => //yes, that's the two-argument map style!
-      ({[node.id]: {
-        definition: node,
-        position: rawParameters.findIndex(
-          parameter => parameter.id === definition.id
-        ),
-        pointer: {
-          location: "eventtopic",
-          topic: position + 1 //signature takes up topic 0, so we skip that
-        }
-      }})
-    )
-  );
-  return eventAllocation;
 }
 
 //NOTE: this is for a single contract!

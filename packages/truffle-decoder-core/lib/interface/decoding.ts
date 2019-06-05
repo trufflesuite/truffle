@@ -15,7 +15,13 @@ export function* decodeVariable(definition: AstDefinition, pointer: Pointer.Data
   return yield* decode(dataType, pointer, info); //no need to pass an offset
 }
 
-export function* decodeCalldata(info: EvmInfo, contractId: number): IterableIterator<CalldataDecoding | DecoderRequest | Values.Value | GeneratorJunk> {
+export function* decodeCalldata(info: EvmInfo, contractId: number | null): IterableIterator<CalldataDecoding | DecoderRequest | Values.Value | GeneratorJunk> {
+  if(contractId === null) {
+    //if we don't know the contract ID, we can't decode
+    return {
+      kind: "unknown";
+    }
+  }
   const allocations = info.allocations.calldata[contractId];
   let allocation: CalldataAllocation;
   let isConstructor: boolean = info.currentContext.isConstructor;
@@ -35,19 +41,21 @@ export function* decodeCalldata(info: EvmInfo, contractId: number): IterableIter
     allocation = allocations[selector];
   }
   if(allocation === undefined) {
-    return { kind: "unknown" };
+    return { kind: "fallback" };
   }
-  let decodedArguments = Object.assign({},
-    ...Object.values(allocation).map(argumentAllocation =>
-      ({ [argumentAllocation.definition.name]:
-        decode(
-          Types.definitionToType(argumentAllocation.definition),
-          argumentAllocation.pointer,
-          info,
-          allocation.offset //note the use of the offset for decoding pointers!
-        )
-      })
-    )
+  let decodedArguments = allocation.arguments.map(
+    argumentAllocation => {
+      const value = decode(
+        Types.definitionToType(argumentAllocation.definition),
+        argumentAllocation.pointer,
+        info,
+        allocation.offset //note the use of the offset for decoding pointers!
+      );
+      const name = argumentAllocation.definition.name;
+      return name === undefined
+        ? { value }
+        : { name, value };
+    }
   );
   if(isConstructor) {
     return {
@@ -64,7 +72,13 @@ export function* decodeCalldata(info: EvmInfo, contractId: number): IterableIter
   }
 }
 
-export function* decodeEvent(info: EvmInfo, contractId: number): IterableIterator<EventDecoding | DecoderRequest | Values.Value | GeneratorJunk> {
+export function* decodeEvent(info: EvmInfo, contractId: number | null): IterableIterator<EventDecoding | DecoderRequest | Values.Value | GeneratorJunk> {
+  if(contractId === null) {
+    //if we don't know the contract ID, we can't decode
+    return {
+      kind: "unknown";
+    }
+  }
   const allocations = info.allocations.event[contractId];
   //TODO: error-handling here
   let rawSelector = read(info.state,
@@ -76,22 +90,22 @@ export function* decodeEvent(info: EvmInfo, contractId: number): IterableIterato
   allocation = allocations[selector];
   if(allocation === undefined) {
     //we can't decode
-    return { kind: "unknown" };
+    return { kind: "anonymous" };
   }
-  let decodedArguments: EventDecodingArgument[];
-  for(argumentAllocation of Object.values(allocation)) {
-    const value = decode(
-      Types.definitionToType(argumentAllocation.definition),
-      argumentAllocation.pointer,
-      info,
-      0 //offset is always 0 but let's be explicit
-    );
-    const name = argumentAllocation.definition.name;
-    const position = argumentAllocation.position;
-    decodedArguments[position] = name === undefined
-      ? { value }
-      : { name, value };
-  }
+  let decodedArguments = allocation.arguments.map(
+    argumentAllocation => {
+      const value = decode(
+        Types.definitionToType(argumentAllocation.definition),
+        argumentAllocation.pointer,
+        info,
+        0 //offset is always 0 but let's be explicit
+      );
+      const name = argumentAllocation.definition.name;
+      return name === undefined
+        ? { value }
+        : { name, value };
+    }
+  );
   return {
     kind: "event",
     name: allocation.definition.name,

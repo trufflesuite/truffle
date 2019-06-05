@@ -124,14 +124,6 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
 
   public decodeTransaction(transaction: Transaction): DecodedTransaction {
     const contractId = await this.getContractIdByAddress(transaction.to, transaction.blockNumber, transaction.input);
-    if(contractId === null) {
-      return {
-        ...transaction,
-        decoding: {
-          kind: "fallback"
-        }
-      };
-    }
 
     const data = DecodeUtils.Conversion.toBytes(transaction.input);
     const info: Decoder.EvmInfo = {
@@ -167,14 +159,6 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
 
   public decodeLog(log: Log): DecodedEvent {
     const contractId = await this.getContractIdByAddress(log.address, log.blockNumber);
-    if(contractId === null) {
-      return {
-        ...transaction,
-        decoding: {
-          kind: "anonymous"
-        }
-      };
-    }
 
     const data = DecodeUtils.Conversion.toBytes(log.data);
     const topics = log.topics.map(DecodeUtils.Conversion.toBytes);
