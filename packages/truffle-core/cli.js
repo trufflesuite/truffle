@@ -33,6 +33,11 @@ const Command = require("./lib/command");
 
 const command = new Command(require("./lib/commands"));
 
+// This should be removed when issue is resolved upstream:
+// https://github.com/ethereum/web3.js/issues/1648
+const listeners = process.listeners("warning");
+listeners.forEach(listener => process.removeListener("warning", listener));
+
 let options = { logger: console };
 
 const inputArguments = process.argv.slice(2);
