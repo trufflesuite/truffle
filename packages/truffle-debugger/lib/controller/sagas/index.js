@@ -196,10 +196,6 @@ function* stepOver() {
  * continueUntilBreakpoint - step through execution until a breakpoint
  */
 function* continueUntilBreakpoint(action) {
-  var currentLocation, currentNode, currentLine, currentSourceId;
-  var finished;
-  var previousLine, previousSourceId;
-
   //if breakpoints was not specified, use the stored list from the state.
   //if it was, override that with the specified list.
   //note that explicitly specifying an empty list will advance to the end.
@@ -210,29 +206,36 @@ function* continueUntilBreakpoint(action) {
 
   let breakpointHit = false;
 
-  currentLocation = yield select(controller.current.location);
-  currentNode = currentLocation.node.id;
-  currentLine = currentLocation.sourceRange.lines.start.line;
-  currentSourceId = currentLocation.source.id;
+  let currentLocation = yield select(controller.current.location);
+  let currentLine = currentLocation.sourceRange.lines.start.line;
+  let currentSourceId = currentLocation.source.id;
 
   do {
     yield* stepNext();
 
-    previousLine = currentLine;
-    previousSourceId = currentSourceId;
+    //note these two have not been updated yet; they'll be updated a
+    //few lines down.  but at this point these are still the previous
+    //values.
+    let previousLine = currentLine;
+    let previousSourceId = currentSourceId;
 
     currentLocation = yield select(controller.current.location);
-    finished = yield select(controller.current.trace.finished);
-    debug("finished %o", finished);
+    debug("currentLocation: %O", currentLocation);
+    let finished = yield select(controller.current.trace.finished);
+    if (finished) {
+      break; //can break immediately if finished
+    }
 
-    currentNode = currentLocation.node.id;
-    currentLine = currentLocation.sourceRange.lines.start.line;
     currentSourceId = currentLocation.source.id;
+    if (currentSourceId === undefined) {
+      continue; //never stop on an unmapped instruction
+    }
+    let currentNode = currentLocation.node.id;
+    currentLine = currentLocation.sourceRange.lines.start.line;
 
     breakpointHit =
       breakpoints.filter(({ sourceId, line, node }) => {
         if (node !== undefined) {
-          debug("node %d currentNode %d", node, currentNode);
           return sourceId === currentSourceId && node === currentNode;
         }
         //otherwise, we have a line-style breakpoint; we want to stop at the
@@ -243,7 +246,7 @@ function* continueUntilBreakpoint(action) {
           (currentSourceId !== previousSourceId || currentLine !== previousLine)
         );
       }).length > 0;
-  } while (!breakpointHit && !finished);
+  } while (!breakpointHit);
 }
 
 /**
