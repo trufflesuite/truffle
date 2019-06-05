@@ -37,9 +37,9 @@ const reason = {
    */
   get: function(params, web3){
     const packet = {
-      jsonrpc: "2.0",
-      method: "eth_call",
-      params: [params],
+      jsonrpc: '2.0',
+      method: 'eth_call',
+      params: [params, 'latest'],
       id: new Date().getTime(),
     };
 
