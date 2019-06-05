@@ -1235,13 +1235,13 @@ export namespace Values {
     }
   }
 
-  export class IndexedReferenceTypeError extends GenericErrorDirect {
+  export class IndexedReferenceTypeError extends GenericError {
     type: Types.ReferenceType;
-    raw: BN;
+    raw: string; //should be hex string
     message() {
-      return `Cannot decode indexed parameter of reference type ${this.type.typeClass} (raw value ${this.raw.toString()})`;
+      return `Cannot decode indexed parameter of reference type ${this.type.typeClass} (raw value ${this.raw})`;
     }
-    constructor(referenceType: Types.ReferenceType, raw: BN) {
+    constructor(referenceType: Types.ReferenceType, raw: string) {
       super();
       this.type = referenceType;
       this.raw = raw;

@@ -15,10 +15,10 @@ export default function* decode(dataType: Types.Type, pointer: EventTopicPointer
       bytes = yield* read(pointer, state);
     }
     catch(error) { //error: Values.DecodingError
-      return new Values.GenericError(error.error);
+      return new Values.ValueErrorGeneric(error.error);
     }
-    let raw: BN = ConversionUtils.toBN(bytes);
-    return new Values.GenericError(
+    let raw: string = ConversionUtils.toHexString(bytes);
+    return new Values.ValueErrorGeneric(
       new Values.IndexedReferenceTypeError(
         dataType,
         raw
