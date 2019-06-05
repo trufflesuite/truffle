@@ -916,58 +916,63 @@ export namespace Values {
     type: Types.FunctionType; //should be external, obviously!
   }
 
-  //abstract because external functions come in multiple types
-  export abstract class FunctionValueExternalProper extends ValueProper implements FunctionValueExternal {
+  export class FunctionValueExternalProper extends ValueProper implements FunctionValueExternal {
     type: Types.FunctionType;
-    value: {
-      kind: "known" | "invalid" | "unknown";
-      contract: ContractValueDirect;
-      selector: string; //formatted as a bytes4
-    };
+    value: FunctionValueExternalDirect;
+    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
+      return util.inspect(this.value, options);
+    }
+    nativize() {
+      return this.value.nativize();
+    }
+    constructor(functionType: Types.FunctionType, value: FunctionValueExternalDirect) {
+      super();
+      this.type = functionType;
+      this.value = value;
+    }
   }
 
   //External function values come in 3 types:
+  export type FunctionValueExternalDirect =
+    FunctionValueExternalDirectKnown //known function of known class
+    | FunctionValueExternalDirectInvalid //known class, but can't locate function
+    | FunctionValueExternalDirectUnknown; //can't determine class
 
   //known function of known class
-  export class FunctionValueExternalProperKnown extends FunctionValueExternalProper {
-    type: Types.FunctionType; //should be external, obviously
-    value: {
-      kind: "known";
-      contract: ContractValueDirectKnown;
-      selector: string; //formatted as a bytes4
-      name: string;
-    };
+  export class FunctionValueExternalDirectKnown {
+    kind: "known";
+    contract: ContractValueDirectKnown;
+    selector: string; //formatted as a bytes4
+    name: string;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       //first, let's inspect that contract, but w/o color
-      let contractString = util.inspect(this.value.contract, { ...cleanStylize(options), colors: false });
-      let firstLine = `[Function: ${this.value.name} of`;
+      let contractString = util.inspect(this.contract, { ...cleanStylize(options), colors: false });
+      let firstLine = `[Function: ${this.name} of`;
       let secondLine = `${contractString}]`;
       let breakingSpace = firstLine.length >= options.breakLength ? "\n" : " ";
       //now, put it together
       return options.stylize(firstLine + breakingSpace + secondLine, "special");
     }
     nativize() {
-      return `${this.value.contract.nativize()}.${this.value.name}`
+      return `${this.contract.nativize()}.${this.name}`
     }
-    constructor(functionType: Types.FunctionType, contract: ContractValueDirectKnown, selector: string, name: string) {
-      super();
-      this.type = functionType;
-      this.value = { contract, selector, name, kind: "known" };
+    constructor(contract: ContractValueDirectKnown, selector: string, name: string) {
+      this.kind = "known";
+      this.contract = contract;
+      this.selector = selector;
+      this.name = name;
     }
   }
 
   //known class but can't locate function
-  export class FunctionValueExternalProperInvalid extends FunctionValueExternalProper {
-    type: Types.FunctionType; //should be external, obviously
-    value: {
-      kind: "invalid";
-      contract: ContractValueDirectKnown;
-      selector: string; //formatted as a bytes4
-    };
+  export class FunctionValueExternalDirectInvalid {
+    kind: "invalid";
+    contract: ContractValueDirectKnown;
+    selector: string; //formatted as a bytes4
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       //first, let's inspect that contract, but w/o color
-      let contractString = util.inspect(this.value.contract, { ...cleanStylize(options), colors: false });
-      let selectorString = `Unknown selector 0x${this.value.selector}`;
+      let contractString = util.inspect(this.contract, { ...cleanStylize(options), colors: false });
+      let selectorString = `Unknown selector 0x${this.selector}`;
       let firstLine = `[Function: ${selectorString} of`;
       let secondLine = `${contractString}]`;
       let breakingSpace = firstLine.length >= options.breakLength ? "\n" : " ";
@@ -975,27 +980,24 @@ export namespace Values {
       return options.stylize(firstLine + breakingSpace + secondLine, "special");
     }
     nativize() {
-      return `${this.value.contract.nativize()}.call(${this.value.selector}...)`
+      return `${this.contract.nativize()}.call(${this.selector}...)`
     }
-    constructor(functionType: Types.FunctionType, contract: ContractValueDirectKnown, selector: string) {
-      super();
-      this.type = functionType;
-      this.value = { contract, selector, kind: "invalid" };
+    constructor(contract: ContractValueDirectKnown, selector: string) {
+      this.kind = "invalid";
+      this.contract = contract;
+      this.selector = selector;
     }
   }
 
   //can't even locate class
-  export class FunctionValueExternalProperUnknown extends FunctionValueExternalProper {
-    type: Types.FunctionType; //should be external, obviously
-    value: {
-      kind: "unknown";
-      contract: ContractValueDirectUnknown;
-      selector: string; //formatted as a bytes4
-    };
+  export class FunctionValueExternalDirectUnknown {
+    kind: "unknown";
+    contract: ContractValueDirectUnknown;
+    selector: string; //formatted as a bytes4
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       //first, let's inspect that contract, but w/o color
-      let contractString = util.inspect(this.value.contract, { ...cleanStylize(options), colors: false });
-      let selectorString = `Unknown selector 0x${this.value.selector}`;
+      let contractString = util.inspect(this.contract, { ...cleanStylize(options), colors: false });
+      let selectorString = `Unknown selector 0x${this.selector}`;
       let firstLine = `[Function: ${selectorString} of`;
       let secondLine = `${contractString}]`;
       let breakingSpace = firstLine.length >= options.breakLength ? "\n" : " ";
@@ -1003,12 +1005,12 @@ export namespace Values {
       return options.stylize(firstLine + breakingSpace + secondLine, "special");
     }
     nativize() {
-      return `${this.value.contract.nativize()}.call(${this.value.selector}...)`
+      return `${this.contract.nativize()}.call(${this.selector}...)`
     }
-    constructor(functionType: Types.FunctionType, contract: ContractValueDirectUnknown, selector: string) {
-      super();
-      this.type = functionType;
-      this.value = { contract, selector, kind: "unknown" };
+    constructor(contract: ContractValueDirectUnknown, selector: string) {
+      this.kind = "unknown";
+      this.contract = contract;
+      this.selector = selector;
     }
   }
 
@@ -1035,110 +1037,107 @@ export namespace Values {
     type: Types.FunctionType; //should be internal, obviously!
   }
 
-  //abstract because internal functions come in multiple types
-  export abstract class FunctionValueInternalProper extends ValueProper implements FunctionValueInternal {
+  export class FunctionValueInternalProper extends ValueProper implements FunctionValueInternal {
     type: Types.FunctionType;
-    value: {
-      kind: "function" | "exception" | "unknown";
-      context: Types.ContractType;
-      deployedProgramCounter: number;
-      constructorProgramCounter: number;
-    };
-  }
-
-  //actual function
-  export class FunctionValueInternalProperKnown extends FunctionValueInternalProper {
-    type: Types.FunctionType; //should be internal, obviously
-    value: {
-      kind: "function"
-      context: Types.ContractType;
-      deployedProgramCounter: number;
-      constructorProgramCounter: number;
-      name: string;
-      definedIn: Types.ContractType;
-    };
+    value: FunctionValueInternalDirect;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return options.stylize(`[Function: ${this.value.definedIn.typeName}.${this.value.name}]`, "special");
+      return util.inspect(this.value, options);
     }
     nativize() {
-      return `${this.value.definedIn.typeName}.${this.value.name}`;
+      return this.value.nativize();
+    }
+    constructor(functionType: Types.FunctionType, value: FunctionValueInternalDirect) {
+      super();
+      this.type = functionType;
+      this.value = value;
+    }
+  }
+
+  //these also come in 3 types
+  export type FunctionValueInternalDirect =
+    FunctionValueInternalDirectKnown //actual function
+    | FunctionValueInternalDirectException //default value
+    | FunctionValueInternalDirectUnknown; //decoding not supported in this context
+
+  //actual function
+  export class FunctionValueInternalDirectKnown {
+    kind: "function"
+    context: Types.ContractType;
+    deployedProgramCounter: number;
+    constructorProgramCounter: number;
+    name: string;
+    definedIn: Types.ContractType;
+    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
+      return options.stylize(`[Function: ${this.definedIn.typeName}.${this.name}]`, "special");
+    }
+    nativize() {
+      return `${this.definedIn.typeName}.${this.name}`;
     }
     constructor(
-      functionType: Types.FunctionType,
       context: Types.ContractType,
       deployedProgramCounter: number,
       constructorProgramCounter: number,
       name: string,
       definedIn: Types.ContractType
     ) {
-      super();
-      this.type = functionType;
-      this.value = {
-        context,
-        deployedProgramCounter,
-        constructorProgramCounter,
-        name,
-        definedIn,
-        kind: "function"
-      };
+      this.kind = "function";
+      this.context = context;
+      this.deployedProgramCounter = deployedProgramCounter;
+      this.constructorProgramCounter = constructorProgramCounter;
+      this.name = name;
+      this.definedIn = definedIn;
     }
   }
 
   //default value
-  export class FunctionValueInternalProperException extends FunctionValueInternalProper {
-    type: Types.FunctionType; //should be internal, obviously
-    value: {
-      kind: "exception"
-      context: Types.ContractType;
-      deployedProgramCounter: number;
-      constructorProgramCounter: number;
-    };
+  export class FunctionValueInternalDirectException {
+    kind: "exception"
+    context: Types.ContractType;
+    deployedProgramCounter: number;
+    constructorProgramCounter: number;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return this.value.deployedProgramCounter === 0
+      return this.deployedProgramCounter === 0
         ? options.stylize(`[Function: <zero>]`, "special")
         : options.stylize(`[Function: assert(false)]`, "special");
     }
     nativize() {
-      return this.value.deployedProgramCounter === 0
+      return this.deployedProgramCounter === 0
         ? `<zero>`
         : `assert(false)`;
     }
     constructor(
-      functionType: Types.FunctionType,
       context: Types.ContractType,
       deployedProgramCounter: number,
       constructorProgramCounter: number
     ) {
-      super();
-      this.type = functionType;
-      this.value = { context, deployedProgramCounter, constructorProgramCounter, kind: "exception" };
+      this.kind = "exception";
+      this.context = context;
+      this.deployedProgramCounter = deployedProgramCounter;
+      this.constructorProgramCounter = constructorProgramCounter;
     }
   }
 
   //value returned to indicate that decoding is not supported outside the debugger
-  export class FunctionValueInternalProperUnknown extends FunctionValueInternalProper {
-    type: Types.FunctionType; //should be internal, obviously
-    value: {
-      kind: "unknown"
-      context: Types.ContractType;
-      deployedProgramCounter: number;
-      constructorProgramCounter: number;
-    };
+  export class FunctionValueInternalDirectUnknown {
+    kind: "unknown"
+    context: Types.ContractType;
+    deployedProgramCounter: number;
+    constructorProgramCounter: number;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return options.stylize(`[Function: decoding not supported (raw info: deployed PC=${this.value.deployedProgramCounter}, constructor PC=${this.value.constructorProgramCounter})]`, "special");
+      return options.stylize(`[Function: decoding not supported (raw info: deployed PC=${this.deployedProgramCounter}, constructor PC=${this.constructorProgramCounter})]`, "special");
     }
     nativize() {
       return `<decoding not supported>`;
     }
     constructor(
-      functionType: Types.FunctionType,
       context: Types.ContractType,
       deployedProgramCounter: number,
       constructorProgramCounter: number
     ) {
-      super();
-      this.type = functionType;
-      this.value = { context, deployedProgramCounter, constructorProgramCounter, kind: "unknown" };
+      this.kind = "unknown";
+      this.context = context;
+      this.deployedProgramCounter = deployedProgramCounter;
+      this.constructorProgramCounter = constructorProgramCounter;
     }
   }
 

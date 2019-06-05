@@ -79,7 +79,10 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
   if(dataType.typeClass === "function" && dataType.visibility === "external") {
     let address = pointer.literal.slice(0, DecodeUtils.EVM.WORD_SIZE);
     let selector = pointer.literal.slice(-DecodeUtils.EVM.SELECTOR_SIZE);
-    return yield* decodeExternalFunction(dataType, address, selector, info);
+    return new Values.FunctionValueExternalProper(
+      dataType,
+      <Values.FunctionValueExternalDirect> (yield* decodeExternalFunction(address, selector, info))
+    );
   }
 
   //finally, if none of the above hold, we can just dispatch to decodeValue.

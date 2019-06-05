@@ -72,7 +72,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         case "external":
           const address = bytes.slice(0, DecodeUtils.EVM.ADDRESS_SIZE);
           const selector = bytes.slice(DecodeUtils.EVM.ADDRESS_SIZE, DecodeUtils.EVM.ADDRESS_SIZE + DecodeUtils.EVM.SELECTOR_SIZE);
-          return yield* decodeExternalFunction(dataType, address, selector, info);
+          return new Values.FunctionValueExternalProper(dataType,
+            <Values.FunctionValueExternalDirect> (yield* decodeExternalFunction(address, selector, info))
+          );
         case "internal":
           const deployedPc = bytes.slice(-DecodeUtils.EVM.PC_SIZE);
           const constructorPc = bytes.slice(-DecodeUtils.EVM.PC_SIZE * 2, -DecodeUtils.EVM.PC_SIZE);
@@ -117,6 +119,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
   }
 }
 
+//NOTE that this function returns a ContractValueDirect, not a ContractValue
 export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): IterableIterator<Values.ContractValueDirect | DecoderRequest | Uint8Array> {
   let address = DecodeUtils.Conversion.toAddress(addressBytes);
   let codeBytes: Uint8Array = yield {
@@ -140,11 +143,12 @@ export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): Iterab
 }
 
 //note: address can have extra zeroes on the left like elsewhere, but selector should be exactly 4 bytes
-export function* decodeExternalFunction(dataType: Types.FunctionType, addressBytes: Uint8Array, selectorBytes: Uint8Array, info: EvmInfo): IterableIterator<Values.FunctionValueExternal | DecoderRequest | GeneratorJunk> {
+//NOTE this again returns a FunctionValueExternalDirect, not a FunctionValueExternal
+export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes: Uint8Array, info: EvmInfo): IterableIterator<Values.FunctionValueExternalDirect | DecoderRequest | GeneratorJunk> {
   let contract = <Values.ContractValueDirect> (yield* decodeContract(addressBytes, info));
   let selector = DecodeUtils.Conversion.toHexString(selectorBytes);
   if(contract.kind === "unknown") {
-    return new Values.FunctionValueExternalProperUnknown(dataType, contract, selector);
+    return new Values.FunctionValueExternalDirectUnknown(contract, selector)
   }
   let contractId = contract.class.id;
   let context = Object.values(info.contexts).find(
@@ -154,12 +158,13 @@ export function* decodeExternalFunction(dataType: Types.FunctionType, addressByt
     ? context.abi[selector]
     : undefined;
   if(abiEntry === undefined) {
-    return new Values.FunctionValueExternalProperInvalid(dataType, contract, selector);
+    return new Values.FunctionValueExternalDirectInvalid(contract, selector)
   }
   let functionName = abiEntry.name;
-  return new Values.FunctionValueExternalProperKnown(dataType, contract, selector, functionName);
+  return new Values.FunctionValueExternalDirectKnown(contract, selector, functionName)
 }
 
+//this one works a bit differently -- in order to handle errors, it *does* return a FunctionValueInternal
 export function decodeInternalFunction(dataType: Types.FunctionType, deployedPcBytes: Uint8Array, constructorPcBytes: Uint8Array, info: EvmInfo): Values.FunctionValueInternal {
   let deployedPc: number = DecodeUtils.Conversion.toBN(deployedPcBytes).toNumber();
   let constructorPc: number = DecodeUtils.Conversion.toBN(constructorPcBytes).toNumber();
@@ -173,11 +178,17 @@ export function decodeInternalFunction(dataType: Types.FunctionType, deployedPcB
   //before anything else: do we even have an internal functions table?
   //if not, we'll just return the info we have without really attemting to decode
   if(!info.internalFunctionsTable) {
-    return new Values.FunctionValueInternalProperUnknown(dataType, context, deployedPc, constructorPc);
+    return new Values.FunctionValueInternalProper(
+      dataType,
+      new Values.FunctionValueInternalDirectUnknown(context, deployedPc, constructorPc)
+    );
   }
   //also before we continue: is the PC zero? if so let's just return that
   if(deployedPc === 0 && constructorPc === 0) {
-    return new Values.FunctionValueInternalProperException(dataType, context, deployedPc, constructorPc);
+    return new Values.FunctionValueInternalProper(
+      dataType,
+      new Values.FunctionValueInternalDirectException(context, deployedPc, constructorPc)
+    );
   }
   //another check: is only the deployed PC zero?
   if(deployedPc === 0 && constructorPc !== 0) {
@@ -206,7 +217,10 @@ export function decodeInternalFunction(dataType: Types.FunctionType, deployedPcB
     );
   }
   if(functionEntry.isDesignatedInvalid) {
-    return new Values.FunctionValueInternalProperException(dataType, context, deployedPc, constructorPc);
+    return new Values.FunctionValueInternalProper(
+      dataType,
+      new Values.FunctionValueInternalDirectException(context, deployedPc, constructorPc)
+    );
   }
   let name = functionEntry.name;
   let definedIn: Types.ContractType = {
@@ -216,5 +230,8 @@ export function decodeInternalFunction(dataType: Types.FunctionType, deployedPcB
     contractKind: functionEntry.contractKind,
     payable: functionEntry.contractPayable
   };
-  return new Values.FunctionValueInternalProperKnown(dataType, context, deployedPc, constructorPc, name, definedIn);
+  return new Values.FunctionValueInternalProper(
+    dataType,
+    new Values.FunctionValueInternalDirectKnown(context, deployedPc, constructorPc, name, definedIn)
+  );
 }
