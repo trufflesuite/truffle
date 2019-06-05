@@ -9,24 +9,28 @@ const reason = {
    * @param  {Web3}             web3 a helpful friend
    * @return {String|Undefined}      decoded reason string
    */
-  _extract: function(res, web3){
+  _extract: function(res, web3) {
     if (!res || (!res.error && !res.result)) return;
 
-    const errorStringHash = '0x08c379a0';
+    const errorStringHash = "0x08c379a0";
 
-    const isObject = res && typeof res === 'object' && res.error && res.error.data;
-    const isString = res && typeof res === 'object' && typeof res.result === 'string';
+    const isObject =
+      res && typeof res === "object" && res.error && res.error.data;
+    const isString =
+      res && typeof res === "object" && typeof res.result === "string";
 
     if (isObject) {
       const data = res.error.data;
       const hash = Object.keys(data)[0];
 
-      if (data[hash].return && data[hash].return.includes(errorStringHash)){
-        return web3.eth.abi.decodeParameter('string', data[hash].return.slice(10));
+      if (data[hash].return && data[hash].return.includes(errorStringHash)) {
+        return web3.eth.abi.decodeParameter(
+          "string",
+          data[hash].return.slice(10)
+        );
       }
-
-    } else if (isString && res.result.includes(errorStringHash)){
-      return web3.eth.abi.decodeParameter('string', res.result.slice(10));
+    } else if (isString && res.result.includes(errorStringHash)) {
+      return web3.eth.abi.decodeParameter("string", res.result.slice(10));
     }
   },
 
@@ -35,12 +39,12 @@ const reason = {
    * @param  {Object} web3
    * @return {String|Undefined}
    */
-  get: function(params, web3){
+  get: function(params, web3) {
     const packet = {
       jsonrpc: "2.0",
       method: "eth_call",
-      params: [params],
-      id: new Date().getTime(),
+      params: [params, "latest"],
+      id: new Date().getTime()
     };
 
     return new Promise(resolve => {
@@ -49,7 +53,7 @@ const reason = {
         resolve(reasonString);
       });
     });
-  },
+  }
 };
 
 module.exports = reason;

@@ -19,17 +19,21 @@ module.exports = {
       if (!fs.existsSync(source))
         return reject(`Sandbox failed: source: ${source} does not exist`);
 
-      tmp.dir((err, dir) => {
-        if (err) return reject(err);
-
+      try {
+        const tempDir = tmp.dirSync({ unsafeCleanup: true });
         self
-          .copyDirectory(source, dir)
+          .copyDirectory(source, tempDir.name)
           .then(() => {
-            const conf = config.load(path.join(dir, subPath, "truffle.js"), {});
+            const conf = config.load(
+              path.join(tempDir.name, subPath, "truffle-config.js"),
+              {}
+            );
             resolve(conf);
           })
           .catch(reject);
-      });
+      } catch (error) {
+        reject(error);
+      }
     });
   },
 
@@ -38,7 +42,7 @@ module.exports = {
       if (!fs.existsSync(source))
         return reject(`Sandbox failed: source: ${source} does not exist`);
 
-      const conf = config.load(path.join(source, "truffle.js"), {});
+      const conf = config.load(path.join(source, "truffle-config.js"), {});
       resolve(conf);
     });
   }
