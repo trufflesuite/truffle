@@ -41,7 +41,7 @@ class DebugPrinter {
     const affectedInstances = this.session.view(session.info.affectedInstances);
 
     this.config.logger.log("");
-    this.config.logger.log("Addresses affected:");
+    this.config.logger.log("Addresses called: (not created)");
     this.config.logger.log(
       DebugUtils.formatAffectedInstances(affectedInstances)
     );

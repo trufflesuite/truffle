@@ -27,7 +27,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
     rawValue = yield* read(pointer, state);
   }
   catch(error) { //error: Values.DecodingError
-    return new Values.GenericError(error.error);
+    return Values.makeGenericValueError(dataType, error.error);
   }
 
   let startPosition = DecodeUtils.Conversion.toBN(rawValue).toNumber();
@@ -47,7 +47,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         }, state);
       }
       catch(error) { //error: Values.DecodingError
-        return new Values.GenericError(error.error);
+        return Values.makeGenericValueError(dataType, error.error);
       }
       length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
 
@@ -71,7 +71,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
           }, state);
         }
         catch(error) { //error: Values.DecodingError
-          return new Values.GenericError(error.error);
+          return Values.makeGenericValueError(dataType, error.error);
         }
         length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
         startPosition += DecodeUtils.EVM.WORD_SIZE; //increment startPosition
@@ -106,7 +106,8 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
       const typeId = dataType.id;
       const structAllocation = allocations[typeId];
       if(!structAllocation) {
-        return new Values.GenericError(
+        return new Values.StructValueErrorGeneric(
+          dataType,
           new Values.UserDefinedTypeNotFoundError(dataType)
         );
       }
@@ -125,7 +126,8 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         let memberName = memberAllocation.definition.name;
         let storedType = <Types.StructType>userDefinedTypes[typeId];
         if(!storedType) {
-          return new Values.GenericError(
+          return new Values.StructValueErrorGeneric(
+            dataType,
             new Values.UserDefinedTypeNotFoundError(dataType)
           );
         }

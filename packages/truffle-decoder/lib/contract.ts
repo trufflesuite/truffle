@@ -453,7 +453,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     }
     let rawIndex = indices[indices.length - 1];
     let index: any;
-    let key: Values.ElementaryValueProper;
+    let key: Values.ElementaryValue;
     let slot: Decoder.Slot;
     let definition: AstDefinition;
     switch(DefinitionUtils.typeClass(parentDefinition)) {

@@ -18,7 +18,7 @@ export default function* decodeAbi(dataType: Types.Type, pointer: AbiPointer, in
       dynamic = isTypeDynamic(dataType, info.allocations.abi);
     }
     catch(error) { //error: Values.DecodingError
-      return new Values.GenericError(error.error);
+      return Values.makeGenericValueError(dataType, error.error);
     }
     if(dynamic) {
       return yield* decodeAbiReferenceByAddress(dataType, pointer, info, base);
@@ -46,7 +46,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
     rawValue = yield* read(pointer, state);
   }
   catch(error) { //error: Values.DecodingError
-    return new Values.GenericError(error.error);
+    return Values.makeGenericValueError(dataType, error.error);
   }
 
   let startPosition = DecodeUtils.Conversion.toBN(rawValue).toNumber() + base;
@@ -57,7 +57,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
     dynamic = isTypeDynamic(dataType, allocations);
   }
   catch(error) { //error: Values.DecodingError
-    return new Values.GenericError(error.error);
+    return Values.makeGenericValueError(dataType, error.error);
   }
   if(!dynamic) { //this will only come up when called from stack.ts
     let size: number;
@@ -65,7 +65,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
       size = abiSizeForType(dataType, allocations);
     }
     catch(error) { //error: Values.DecodingError
-      return new Values.GenericError(error.error);
+      return Values.makeGenericValueError(dataType, error.error);
     }
     let staticPointer = {
       location,
@@ -89,7 +89,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
         }, state));
       }
       catch(error) { //error: Values.DecodingError
-        return new Values.GenericError(error.error);
+        return Values.makeGenericValueError(dataType, error.error);
       }
       length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
 
@@ -114,7 +114,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
             }, state));
           }
           catch(error) { //error: Values.DecodingError
-            return new Values.GenericError(error.error);
+            return Values.makeGenericValueError(dataType, error.error);
           }
           length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
           startPosition += DecodeUtils.EVM.WORD_SIZE; //increment startPosition
@@ -134,7 +134,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
         baseSize = abiSizeForType(dataType.baseType, allocations);
       }
       catch(error) { //error: Values.DecodingError
-        return new Values.GenericError(error.error);
+        return Values.makeGenericValueError(dataType, error.error);
       }
 
       let decodedChildren: Values.Value[] = [];
@@ -173,7 +173,7 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer
         baseSize = abiSizeForType(dataType.baseType, info.allocations.abi);
       }
       catch(error) { //error: Values.DecodingError
-        return new Values.GenericError(error.error);
+        return Values.makeGenericValueError(dataType, error.error);
       }
 
       let decodedChildren: Values.Value[] = [];
@@ -210,7 +210,8 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
   const typeId = dataType.id;
   const structAllocation = allocations[typeId];
   if(!structAllocation) {
-    return new Values.GenericError(
+    return new Values.StructValueErrorGeneric(
+      dataType,
       new Values.UserDefinedTypeNotFoundError(dataType)
     );
   }
@@ -227,7 +228,8 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
     let memberName = memberAllocation.definition.name;
     let storedType = <Types.StructType>userDefinedTypes[typeId];
     if(!storedType) {
-      return new Values.GenericError(
+      return new Values.StructValueErrorGeneric(
+        dataType,
         new Values.UserDefinedTypeNotFoundError(dataType)
       );
     }

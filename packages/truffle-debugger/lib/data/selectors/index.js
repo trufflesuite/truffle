@@ -201,10 +201,10 @@ const data = createSelectorTree({
 
     /*
      * data.views.instances
-     * same as evm.info.instances, but we just map address => binary,
-     * we don't bother with context
+     * same as evm.current.codex.instances, but we just map address => binary,
+     * we don't bother with context, and also the code is a Uint8Array
      */
-    instances: createLeaf([evm.transaction.instances], instances =>
+    instances: createLeaf([evm.current.codex.instances], instances =>
       Object.assign(
         {},
         ...Object.entries(instances).map(([address, { binary }]) => ({
@@ -230,7 +230,7 @@ const data = createSelectorTree({
         ...Object.values(contexts)
           .filter(context => !context.isConstructor)
           .map(context => ({
-            [context.context]: debuggerContextToDecoderContext(context)
+            [context.contractId]: debuggerContextToDecoderContext(context)
           }))
       )
     )
