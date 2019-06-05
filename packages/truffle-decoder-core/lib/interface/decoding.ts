@@ -15,14 +15,6 @@ export function* decodeVariable(definition: AstDefinition, pointer: Pointer.Data
   return yield* decode(dataType, pointer, info); //no need to pass an offset
 }
 
-export interface CalldataDecoding {
-  kind: "function" | "constructor" | "fallback"
-  name: string;
-  arguments?: {
-    [name: string]: Values.Value;
-  }
-}
-
 export function* decodeCalldata(info: EvmInfo, contractId: number): IterableIterator<CalldataDecoding | DecoderRequest | Values.Value | GeneratorJunk> {
   const allocations = info.allocations.calldata[contractId];
   let allocation: CalldataAllocation;
@@ -43,7 +35,7 @@ export function* decodeCalldata(info: EvmInfo, contractId: number): IterableIter
     allocation = allocations[selector];
   }
   if(allocation === undefined) {
-    return { kind: "fallback" };
+    return { kind: "unknown" };
   }
   let decodedArguments = Object.assign({},
     ...Object.values(allocation).map(argumentAllocation =>
@@ -72,17 +64,6 @@ export function* decodeCalldata(info: EvmInfo, contractId: number): IterableIter
   }
 }
 
-export interface EventDecoding {
-  kind: "event" | "anonymous";
-  name?: string;
-  arguments?: EventDecodingArgument[];
-}
-
-export interface EventDecodingArgument {
-  name?: string;
-  value: Values.Value;
-}
-
 export function* decodeEvent(info: EvmInfo, contractId: number): IterableIterator<EventDecoding | DecoderRequest | Values.Value | GeneratorJunk> {
   const allocations = info.allocations.event[contractId];
   //TODO: error-handling here
@@ -95,7 +76,7 @@ export function* decodeEvent(info: EvmInfo, contractId: number): IterableIterato
   allocation = allocations[selector];
   if(allocation === undefined) {
     //we can't decode
-    return { kind: "anonymous" };
+    return { kind: "unknown" };
   }
   let decodedArguments: EventDecodingArgument[];
   for(argumentAllocation of Object.values(allocation)) {

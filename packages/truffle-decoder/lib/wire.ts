@@ -244,17 +244,17 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
   //however, if this fails and constructorBinary is passed in, it will then also
   //attempt to determine it from that
   private async getContractIdByAddress(address: string, block: number, constructorBinary?: string): Promise<number | null> {
-    let code = DecodeUtils.Conversion.toHexString(
-      await this.getCode(address, block)
-    );
-    let context: DecoderContext;
-    if(code.length === 0 && constructorBinary) {
-      let 
-      context = DecodeUtils.Contexts.findDecoderContext(this.contexts, constructorBinary);
+    let code: string;
+    if(address !== null) {
+      code = DecodeUtils.Conversion.toHexString(
+        await this.getCode(address, block)
+      );
     }
-    else {
-      context = DecodeUtils.Contexts.findDecoderContext(this.contexts, code);
+    else if(constructorBinary) {
+      code = constructorBinary;
     }
+    //otherwise... we have a problem
+    let context = DecodeUtils.Contexts.findDecoderContext(this.contexts, code);
     if(context === null) {
       return null;
     }
