@@ -63,9 +63,10 @@ export namespace Values {
   //A. for testing, or
   //B. if you really have to, which we unfortunately do in some cases.
   //See below for more.
-  export abstract class Value {
+  export interface Value {
     type: Types.Type;
-    abstract nativize(): any; //HACK
+    kind: "value" | "error";
+    nativize(): any; //HACK
     //turns Value objects into Plain-Old JavaScript Objects
     //May cause errors if numeric values are too big!
     //only use this in testing or if you have no better option!
@@ -76,23 +77,34 @@ export namespace Values {
   //of the individual values within it to be errors!
   //The exact type of the value field depends on the type of the Value; don't
   //worry, the more specific types will have more specific type annotations.
-  export abstract class ValueProper extends Value {
+  export abstract class ValueProper implements Value {
+    type: Types.Type;
+    kind: "value";
     value: any; //sorry -- at least it's an abstract class though!
+    abstract nativize(): any;
+    constructor() {
+      this.kind = "value";
+    }
   };
 
   //A ValueError, on the other hand, encodes an error.  Rather than a value field,
   //it has an error field, of type ValueErrorDirect.
   //See section 2 regarding the toSoliditySha3Input method.
-  export abstract class ValueError extends Value {
-    error: ValueErrorDirect;
+  export abstract class ValueError implements Value {
+    type: Types.Type;
+    kind: "error";
+    error: DecoderError;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return util.inspect(this.error, options);
+    }
+    nativize(): any {
+      return undefined;
     }
     toSoliditySha3Input(): {type: string; value: any} {
       return undefined; //will cause an error! should not occur!
     }
-    nativize(): any {
-      return undefined;
+    constructor() {
+      this.kind = "error";
     }
   };
 
@@ -102,40 +114,36 @@ export namespace Values {
   //meanwhile, the underlying errors themselves come in two types:
   //1. errors that are specific to decoding a particular type, and
   //2. generic errors such as read errors.
-  export type ValueErrorDirect = DecodeErrorDirect | GenericErrorDirect;
 
   //in fact, here's a subclass of ValueError just for holding those generic errors.
-  export class GenericError extends ValueError {
-    error: GenericErrorDirect;
-    constructor(error: GenericErrorDirect) {
+  export abstract class ValueErrorGeneric extends ValueError {
+    error: GenericError;
+    constructor(error: GenericError) {
       super();
       this.error = error;
     }
   }
 
-  //and here's the type definition for those errors themselves
+  //meanwhile, here's the class for the error objects themselves
+  export abstract class DecoderError {
+    kind: string;
+  }
+
+  //and here's the class for the generic ones specifically.
   //See section 8 for the actual generic errors.
-  export abstract class GenericErrorDirect {
+  export abstract class GenericError extends DecoderError {
     abstract message(): string;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return this.message();
     }
   }
 
-  //meanwhile, there are 5 types that can have (non-generic) errors occur
-  //during their decoding
-  //(FixedDecodingError covers both fixed and ufixed; it's only a temporary measure
-  //so I figure it's OK)
-  //WARNING: note the loss of the "Direct" suffix here; it was getting annoying
-  //to add it everywhere.
-  export type DecodeErrorDirect = BoolDecodingError | EnumDecodingError | FunctionInternalDecodingError | FixedDecodingError;
-
   //Finally, for when we need to throw an error, here's a wrapper class that extends Error.
   //Apologies about the confusing name, but I wanted something that would make
   //sense should it not be caught and thus accidentally exposed to the outside.
   export class DecodingError extends Error {
-    error: GenericErrorDirect;
-    constructor(error: GenericErrorDirect) {
+    error: GenericError;
+    constructor(error: GenericError) {
       super(error.message());
       this.error = error;
       this.name = "DecodingError";
@@ -146,16 +154,17 @@ export namespace Values {
    * SECTION 2: Elementary values
    */
 
-  //the type ElementaryValue will just be defined as a union type.  Again,
-  //note this includes errors.
-  export type ElementaryValue = UintValue | IntValue | BoolValue | BytesValue | AddressValue | StringValue | FixedValue | UfixedValue;
-
-  //However, here's a class representing *proper* elementary values.
   //A key thing about elementary values is that they can be used as mapping keys,
   //and so they have a method that gives what input to soliditySha3() they correspond
   //to.  Note that errors, above, also have this method, but for them it just
   //returns undefined.
-  export abstract class ElementaryValueProper extends ValueProper {
+  export interface ElementaryValue extends Value {
+    type: Types.ElementaryType;
+    toSoliditySha3Input(): {type: string; value: any};
+  }
+
+  export abstract class ElementaryValueProper extends ValueProper implements ElementaryValue {
+    type: Types.ElementaryType;
     abstract toSoliditySha3Input(): {type: string; value: any};
     toString(): string {
       return this.value.toString();
@@ -163,9 +172,11 @@ export namespace Values {
   }
 
   //Uints
-  export type UintValue = UintValueProper | GenericError;
+  export interface UintValue extends ElementaryValue {
+    type: Types.UintType;
+  }
 
-  export class UintValueProper extends ElementaryValueProper {
+  export class UintValueProper extends ElementaryValueProper implements UintValue {
     type: Types.UintType;
     value: BN;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -187,10 +198,25 @@ export namespace Values {
     }
   }
 
-  //Ints
-  export type IntValue = IntValueProper | GenericError;
+  export interface UintValueError extends ValueError, UintValue {
+    kind: "error";
+    type: Types.UintType;
+  }
 
-  export class IntValueProper extends ElementaryValueProper {
+  export class UintValueErrorGeneric extends ValueErrorGeneric implements UintValueError {
+    type: Types.UintType;
+    constructor(uintType: Types.UintType, error: GenericError) {
+      super(error);
+      this.type = uintType;
+    }
+  }
+
+  //Ints
+  export interface IntValue extends ElementaryValue {
+    type: Types.IntType;
+  }
+
+  export class IntValueProper extends ElementaryValueProper implements IntValue {
     type: Types.IntType;
     value: BN;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -212,10 +238,25 @@ export namespace Values {
     }
   }
 
-  //Bools
-  export type BoolValue = BoolValueProper | BoolValueError | GenericError;
+  export interface IntValueError extends ValueError, IntValue {
+    kind: "error";
+    type: Types.IntType;
+  }
 
-  export class BoolValueProper extends ElementaryValueProper {
+  export class IntValueErrorGeneric extends ValueErrorGeneric implements IntValueError {
+    type: Types.IntType;
+    constructor(intType: Types.IntType, error: GenericError) {
+      super(error);
+      this.type = intType;
+    }
+  }
+
+  //Bools
+  export interface BoolValue extends ElementaryValue {
+    type: Types.BoolType;
+  }
+
+  export class BoolValueProper extends ElementaryValueProper implements BoolValue {
     type: Types.BoolType;
     value: boolean;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -238,7 +279,21 @@ export namespace Values {
   }
 
   //errors for bools
-  export class BoolValueError extends ValueError {
+
+  export interface BoolValueError extends ValueError, BoolValue {
+    kind: "error";
+    type: Types.BoolType;
+  }
+
+  export class BoolValueErrorGeneric extends ValueErrorGeneric implements BoolValueError {
+    type: Types.BoolType;
+    constructor(boolType: Types.BoolType, error: GenericError) {
+      super(error);
+      this.type = boolType;
+    }
+  }
+
+  export class BoolValueErrorDecoding extends ValueError implements BoolValueError {
     type: Types.BoolType;
     error: BoolDecodingError;
     constructor(boolType: Types.BoolType, error: BoolDecodingError) {
@@ -248,24 +303,28 @@ export namespace Values {
     }
   }
 
-  export abstract class BoolDecodingError {
+  export abstract class BoolDecodingError extends DecoderError {
     raw: BN;
   }
 
   export class BoolOutOfRangeError extends BoolDecodingError {
+    kind: "BoolOutOfRangeError";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return `Invalid boolean (numeric value ${this.raw.toString()})`;
     }
     constructor(raw: BN) {
       super();
       this.raw = raw;
+      this.kind = "BoolOutOfRangeError";
     }
   }
 
   //bytes
-  export type BytesValue = BytesValueProper | GenericError;
+  export interface BytesValue extends ElementaryValue {
+    type: Types.BytesType;
+  }
 
-  export class BytesValueProper extends ElementaryValueProper {
+  export class BytesValueProper extends ElementaryValueProper implements BytesValue {
     type: Types.BytesType;
     value: string; //should be hex-formatted, with leading "0x"
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -300,10 +359,25 @@ export namespace Values {
     }
   }
 
-  //addresses
-  export type AddressValue = AddressValueProper | GenericError;
+  export interface BytesValueError extends ValueError, BytesValue {
+    kind: "error";
+    type: Types.BytesType;
+  }
 
-  export class AddressValueProper extends ElementaryValueProper {
+  export class BytesValueErrorGeneric extends ValueErrorGeneric implements BytesValueError {
+    type: Types.BytesType;
+    constructor(bytesType: Types.BytesType, error: GenericError) {
+      super(error);
+      this.type = bytesType;
+    }
+  }
+
+  //addresses
+  export interface AddressValue extends ElementaryValue {
+    type: Types.AddressType;
+  }
+
+  export class AddressValueProper extends ElementaryValueProper implements AddressValue {
     type: Types.AddressType;
     value: string; //should have 0x and be checksum-cased
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -325,8 +399,23 @@ export namespace Values {
     }
   }
 
+  export interface AddressValueError extends ValueError, AddressValue {
+    kind: "error";
+    type: Types.AddressType;
+  }
+
+  export class AddressValueErrorGeneric extends ValueErrorGeneric implements AddressValueError {
+    type: Types.AddressType;
+    constructor(addressType: Types.AddressType, error: GenericError) {
+      super(error);
+      this.type = addressType;
+    }
+  }
+
   //strings
-  export type StringValue = StringValueProper | GenericError;
+  export interface StringValue extends ElementaryValue {
+    type: Types.StringType;
+  }
 
   export class StringValueProper extends ElementaryValueProper {
     type: Types.StringType;
@@ -350,39 +439,86 @@ export namespace Values {
     }
   }
 
-  //Fixed & Ufixed
-  //These don't have a value format yet, so they just decode to errors for now!
-  export type FixedValue = FixedValueError;
-  export type UfixedValue = UfixedValueError;
+  export interface StringValueError extends ValueError, StringValue {
+    kind: "error";
+    type: Types.StringType;
+  }
 
-  export class FixedValueError extends ValueError {
-    type: Types.FixedType;
-    error: FixedDecodingError;
-    constructor(dataType: Types.FixedType, raw: BN) {
-      super();
-      this.type = dataType;
-      this.error = new FixedDecodingError(raw);
+  export class StringValueErrorGeneric extends ValueErrorGeneric implements StringValueError {
+    type: Types.StringType;
+    constructor(stringType: Types.StringType, error: GenericError) {
+      super(error);
+      this.type = stringType;
     }
   }
 
-  export class UfixedValueError extends ValueError {
+  //Fixed & Ufixed
+  //These don't have a value format yet, so they just decode to errors for now!
+  export interface FixedValue extends ElementaryValue {
+    type: Types.FixedType;
+  }
+  export interface UfixedValue extends ElementaryValue {
+    type: Types.UfixedType;
+  }
+
+  export interface FixedValueError extends ValueError, FixedValue {
+    kind: "error";
+    type: Types.FixedType;
+  }
+  export interface UfixedValueError extends ValueError, UfixedValue {
+    kind: "error";
+    type: Types.UfixedType;
+  }
+
+  export class FixedValueErrorGeneric extends ValueErrorGeneric implements FixedValueError {
+    type: Types.FixedType;
+    constructor(fixedType: Types.FixedType, error: GenericError) {
+      super(error);
+      this.type = fixedType;
+    }
+  }
+  export class UfixedValueErrorGeneric extends ValueErrorGeneric implements UfixedValueError {
+    type: Types.UfixedType;
+    constructor(ufixedType: Types.UfixedType, error: GenericError) {
+      super(error);
+      this.type = ufixedType;
+    }
+  }
+
+  export class FixedValueErrorDecoding extends ValueError implements FixedValueError {
+    type: Types.FixedType;
+    error: FixedDecodingError;
+    constructor(fixedType: Types.FixedType, error: FixedDecodingError) {
+      super();
+      this.type = fixedType;
+      this.error = error;
+    }
+  }
+
+  export class UfixedValueErrorDecoding extends ValueError implements UfixedValueError {
     type: Types.UfixedType;
     error: FixedDecodingError;
-    constructor(dataType: Types.UfixedType, raw: BN) {
+    constructor(ufixedType: Types.UfixedType, error: FixedDecodingError) {
       super();
-      this.type = dataType;
-      this.error = new FixedDecodingError(raw);
+      this.type = ufixedType;
+      this.error = error;
     }
   }
 
   //not distinguishing fixed vs ufixed here
-  export class FixedDecodingError {
-    raw: BN;
+  export class FixedDecodingError extends DecoderError {
+    raw: string; //should be hex string
+  }
+
+  export class FixedPointNotYetSupportedError extends FixedDecodingError {
+    kind: "FixedPointNotYetSupportedError";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return `Fixed-point decoding not yet supported (raw value: ${this.raw.toString()})`;
+      return `Fixed-point decoding not yet supported (raw value: ${this.raw})`;
     }
-    constructor(raw: BN) {
+    constructor(raw: string) {
+      super();
       this.raw = raw;
+      this.kind = "FixedPointNotYetSupportedError";
     }
   }
 
@@ -438,9 +574,11 @@ export namespace Values {
   }
 
   //Arrays
-  export type ArrayValue = ArrayValueProper | GenericError;
+  export interface ArrayValue extends Value {
+    type: Types.ArrayType;
+  }
 
-  export class ArrayValueProper extends ValueProper {
+  export class ArrayValueProper extends ValueProper implements ArrayValue {
     type: Types.ArrayType;
     reference?: number; //will be used in the future for circular values
     value: Value[];
@@ -461,14 +599,29 @@ export namespace Values {
     }
   }
 
-  //Mappings
-  export type MappingValue = MappingValueProper | GenericError;
+  export interface ArrayValueError extends ValueError, ArrayValue {
+    kind: "error";
+    type: Types.ArrayType;
+  }
 
-  export class MappingValueProper extends ValueProper {
+  export class ArrayValueErrorGeneric extends ValueErrorGeneric implements ArrayValueError {
+    type: Types.ArrayType;
+    constructor(arrayType: Types.ArrayType, error: GenericError) {
+      super(error);
+      this.type = arrayType;
+    }
+  }
+
+  //Mappings
+  export interface MappingValue extends Value {
+    type: Types.MappingType;
+  }
+
+  export class MappingValueProper extends ValueProper implements MappingValue {
     type: Types.MappingType;
     //note that since mappings live in storage, a circular
     //mapping is impossible
-    value: [ElementaryValueProper, Value][]; //order of key-value pairs is irrelevant
+    value: [ElementaryValue, Value][]; //order of key-value pairs is irrelevant
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return util.inspect(new Map(this.value), options);
     }
@@ -478,17 +631,32 @@ export namespace Values {
         ({[key.toString()]: value.nativize()})
       ));
     }
-    constructor(mappingType: Types.MappingType, value: [ElementaryValueProper, Value][]) {
+    constructor(mappingType: Types.MappingType, value: [ElementaryValue, Value][]) {
       super();
       this.type = mappingType;
       this.value = value;
     }
   }
 
-  //Structs
-  export type StructValue = StructValueProper | GenericError;
+  export interface MappingValueError extends ValueError, MappingValue {
+    kind: "error";
+    type: Types.MappingType;
+  }
 
-  export class StructValueProper extends ValueProper {
+  export class MappingValueErrorGeneric extends ValueErrorGeneric implements MappingValueError {
+    type: Types.MappingType;
+    constructor(mappingType: Types.MappingType, error: GenericError) {
+      super(error);
+      this.type = mappingType;
+    }
+  }
+
+  //Structs
+  export interface StructValue extends Value {
+    type: Types.StructType;
+  }
+
+  export class StructValueProper extends ValueProper implements StructValue {
     type: Types.StructType;
     reference?: number; //will be used in the future for circular values
     value: {
@@ -513,10 +681,25 @@ export namespace Values {
     }
   }
 
-  //Magic variables
-  export type MagicValue = MagicValueProper | GenericError;
+  export interface StructValueError extends ValueError, StructValue {
+    kind: "error";
+    type: Types.StructType;
+  }
 
-  export class MagicValueProper extends ValueProper {
+  export class StructValueErrorGeneric extends ValueErrorGeneric implements StructValueError {
+    type: Types.StructType;
+    constructor(structType: Types.StructType, error: GenericError) {
+      super(error);
+      this.type = structType;
+    }
+  }
+
+  //Magic variables
+  export interface MagicValue extends Value {
+    type: Types.MagicType;
+  }
+
+  export class MagicValueProper extends ValueProper implements MagicValue {
     type: Types.MagicType;
     //a magic variable can't be circular, duh!
     value: {
@@ -537,6 +720,18 @@ export namespace Values {
     }
   }
 
+  export interface MagicValueError extends ValueError, MagicValue {
+    kind: "error";
+    type: Types.MagicType;
+  }
+
+  export class MagicValueErrorGeneric extends ValueErrorGeneric implements MagicValueError {
+    type: Types.MagicType;
+    constructor(magicType: Types.MagicType, error: GenericError) {
+      super(error);
+      this.type = magicType;
+    }
+  }
 
   /*
    * SECTION 4: ENUMS
@@ -544,9 +739,11 @@ export namespace Values {
    */
 
   //Enums
-  export type EnumValue = EnumValueProper | EnumValueError | GenericError;
+  export interface EnumValue extends Value {
+    type: Types.EnumType;
+  }
 
-  export class EnumValueProper extends ValueProper {
+  export class EnumValueProper extends ValueProper implements EnumValue {
     type: Types.EnumType;
     value: {
       name: string;
@@ -569,7 +766,20 @@ export namespace Values {
   };
 
   //Enum errors
-  export class EnumValueError extends ValueError {
+  export interface EnumValueError extends ValueError, EnumValue {
+    kind: "error";
+    type: Types.EnumType;
+  }
+
+  export class EnumValueErrorGeneric extends ValueErrorGeneric implements EnumValueError {
+    type: Types.EnumType;
+    constructor(enumType: Types.EnumType, error: GenericError) {
+      super(error);
+      this.type = enumType;
+    }
+  }
+
+  export class EnumValueErrorDecoding extends ValueError implements EnumValueError {
     type: Types.EnumType;
     error: EnumDecodingError;
     constructor(enumType: Types.EnumType, error: EnumDecodingError) {
@@ -579,12 +789,13 @@ export namespace Values {
     }
   };
 
-  export abstract class EnumDecodingError {
+  export abstract class EnumDecodingError extends DecoderError {
     type: Types.EnumType;
     raw: BN;
   }
 
   export class EnumOutOfRangeError extends EnumDecodingError {
+    kind: "EnumOutOfRangeError";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       let typeName = this.type.definingContractName + "." + this.type.typeName;
       return `Invalid ${typeName} (numeric value ${this.raw.toString()})`;
@@ -593,10 +804,12 @@ export namespace Values {
       super();
       this.type = enumType;
       this.raw = raw;
+      this.kind = "EnumOutOfRangeError";
     }
   }
 
   export class EnumNotFoundDecodingError extends EnumDecodingError {
+    kind: "EnumNotFoundDecodingError";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       let typeName = this.type.definingContractName + "." + this.type.typeName;
       return `Unknown enum type ${typeName} of id ${this.type.id} (numeric value ${this.raw.toString()})`;
@@ -605,6 +818,7 @@ export namespace Values {
       super();
       this.type = enumType;
       this.raw = raw;
+      this.kind = "EnumNotFoundDecodingError";
     }
   }
 
@@ -613,10 +827,12 @@ export namespace Values {
    */
 
   //Contracts
-  export type ContractValue = ContractValueProper | GenericError;
+  export interface ContractValue extends Value {
+    type: Types.ContractType;
+  }
 
   //Contract values have a special new type as their value: ContractValueDirect.
-  export class ContractValueProper extends ValueProper {
+  export class ContractValueProper extends ValueProper implements ContractValue {
     type: Types.ContractType;
     value: ContractValueDirect;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -674,6 +890,20 @@ export namespace Values {
     }
   }
 
+  //errors for contracts
+  export interface ContractValueError extends ValueError, ContractValue {
+    kind: "error";
+    type: Types.ContractType;
+  }
+
+  export class ContractValueErrorGeneric extends ValueErrorGeneric implements ContractValueError {
+    type: Types.ContractType;
+    constructor(contractType: Types.ContractType, error: GenericError) {
+      super(error);
+      this.type = contractType;
+    }
+  }
+
   /*
    * SECTION 6: External functions
    */
@@ -681,17 +911,25 @@ export namespace Values {
   //functions can be external or internal, but let's include this union type here
   export type FunctionValue = FunctionValueExternal | FunctionValueInternal;
 
-  //External functions
-  export type FunctionValueExternal = FunctionValueExternalProper | GenericError;
+  //external functions
+  export interface FunctionValueExternal extends Value {
+    type: Types.FunctionType; //should be external, obviously!
+  }
+
+  //abstract because external functions come in multiple types
+  export abstract class FunctionValueExternalProper extends ValueProper implements FunctionValueExternal {
+    type: Types.FunctionType;
+    value: {
+      kind: "known" | "invalid" | "unknown";
+      contract: ContractValueDirect;
+      selector: string; //formatted as a bytes4
+    };
+  }
 
   //External function values come in 3 types:
-  export type FunctionValueExternalProper =
-    FunctionValueExternalProperKnown //it's a known function of a known class
-    | FunctionValueExternalProperInvalid //known class but can't locate function
-    | FunctionValueExternalProperUnknown; //don't even know the class
 
   //known function of known class
-  export class FunctionValueExternalProperKnown extends ValueProper {
+  export class FunctionValueExternalProperKnown extends FunctionValueExternalProper {
     type: Types.FunctionType; //should be external, obviously
     value: {
       kind: "known";
@@ -719,7 +957,7 @@ export namespace Values {
   }
 
   //known class but can't locate function
-  export class FunctionValueExternalProperInvalid extends ValueProper {
+  export class FunctionValueExternalProperInvalid extends FunctionValueExternalProper {
     type: Types.FunctionType; //should be external, obviously
     value: {
       kind: "invalid";
@@ -747,7 +985,7 @@ export namespace Values {
   }
 
   //can't even locate class
-  export class FunctionValueExternalProperUnknown extends ValueProper {
+  export class FunctionValueExternalProperUnknown extends FunctionValueExternalProper {
     type: Types.FunctionType; //should be external, obviously
     value: {
       kind: "unknown";
@@ -774,21 +1012,42 @@ export namespace Values {
     }
   }
 
+  //errors for external functions
+  export interface FunctionValueExternalError extends ValueError, FunctionValueExternal {
+    kind: "error";
+    type: Types.FunctionType;
+  }
+
+  export class FunctionValueExternalErrorGeneric extends ValueErrorGeneric implements FunctionValueExternalError {
+    type: Types.FunctionType;
+    constructor(functionType: Types.FunctionType, error: GenericError) {
+      super(error);
+      this.type = functionType;
+    }
+  }
+
   /*
    * SECTION 7: INTERNAL FUNCTIONS
    */
 
   //Internal functions
-  export type FunctionValueInternal = FunctionValueInternalProper | FunctionValueInternalError | GenericError;
+  export interface FunctionValueInternal extends Value {
+    type: Types.FunctionType; //should be internal, obviously!
+  }
 
-  //Internal function values (proper) come in 3 types:
-  export type FunctionValueInternalProper = 
-    | FunctionValueInternalProperKnown //valid function;
-    | FunctionValueInternalProperException //default value (not a real function);
-    | FunctionValueInternalProperUnknown //value returne to indicate that decoding is not supported outside of debugger.
+  //abstract because internal functions come in multiple types
+  export abstract class FunctionValueInternalProper extends ValueProper implements FunctionValueInternal {
+    type: Types.FunctionType;
+    value: {
+      kind: "function" | "exception" | "unknown";
+      context: Types.ContractType;
+      deployedProgramCounter: number;
+      constructorProgramCounter: number;
+    };
+  }
 
   //actual function
-  export class FunctionValueInternalProperKnown extends ValueProper {
+  export class FunctionValueInternalProperKnown extends FunctionValueInternalProper {
     type: Types.FunctionType; //should be internal, obviously
     value: {
       kind: "function"
@@ -826,7 +1085,7 @@ export namespace Values {
   }
 
   //default value
-  export class FunctionValueInternalProperException extends ValueProper {
+  export class FunctionValueInternalProperException extends FunctionValueInternalProper {
     type: Types.FunctionType; //should be internal, obviously
     value: {
       kind: "exception"
@@ -857,7 +1116,7 @@ export namespace Values {
   }
 
   //value returned to indicate that decoding is not supported outside the debugger
-  export class FunctionValueInternalProperUnknown extends ValueProper {
+  export class FunctionValueInternalProperUnknown extends FunctionValueInternalProper {
     type: Types.FunctionType; //should be internal, obviously
     value: {
       kind: "unknown"
@@ -884,7 +1143,20 @@ export namespace Values {
   }
 
   //Internal function errors
-  export class FunctionValueInternalError extends ValueError {
+  export interface FunctionValueInternalError extends ValueError, FunctionValueInternal {
+    kind: "error";
+    type: Types.FunctionType;
+  }
+
+  export class FunctionValueInternalErrorGeneric extends ValueErrorGeneric implements FunctionValueInternalError {
+    type: Types.FunctionType;
+    constructor(functionType: Types.FunctionType, error: GenericError) {
+      super(error);
+      this.type = functionType;
+    }
+  }
+
+  export class FunctionValueInternalErrorDecoding extends ValueError implements FunctionValueInternalError {
     type: Types.FunctionType; //should be internal, obviously
     error: FunctionInternalDecodingError;
     constructor(functionType: Types.FunctionType, error: FunctionInternalDecodingError) {
@@ -894,13 +1166,14 @@ export namespace Values {
     }
   }
 
-  export abstract class FunctionInternalDecodingError {
+  export abstract class FunctionInternalDecodingError extends DecoderError {
     context: Types.ContractType;
     deployedProgramCounter: number;
     constructorProgramCounter: number;
   }
 
   export class NoSuchInternalFunctionError extends FunctionInternalDecodingError {
+    kind: "NoSuchInternalFunctionError";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return `Invalid function (Deployed PC=${this.deployedProgramCounter}, constructor PC=${this.constructorProgramCounter}) of contract ${this.context.typeName}`;
     }
@@ -909,10 +1182,12 @@ export namespace Values {
       this.context = context;
       this.deployedProgramCounter = deployedProgramCounter;
       this.constructorProgramCounter = constructorProgramCounter;
+      this.kind = "NoSuchInternalFunctionError";
     }
   }
 
   export class DeployedFunctionInConstructorError extends FunctionInternalDecodingError {
+    kind: "DeployedFunctionInConstructorError";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return `Deployed-style function (PC=${this.deployedProgramCounter}) in constructor`;
     }
@@ -921,10 +1196,12 @@ export namespace Values {
       this.context = context;
       this.deployedProgramCounter = deployedProgramCounter;
       this.constructorProgramCounter = 0;
+      this.kind = "DeployedFunctionInConstructorError";
     }
   }
 
   export class MalformedInternalFunctionError extends FunctionInternalDecodingError {
+    kind: "MalformedInternalFunctionError";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return `Malformed internal function w/constructor PC only (value: ${this.constructorProgramCounter})`;
     }
@@ -933,6 +1210,7 @@ export namespace Values {
       this.context = context;
       this.deployedProgramCounter = 0;
       this.constructorProgramCounter = constructorProgramCounter;
+      this.kind = "MalformedInternalFunctionError";
     }
   }
 
@@ -941,7 +1219,8 @@ export namespace Values {
    */
 
   //type-location error
-  export class UserDefinedTypeNotFoundError extends GenericErrorDirect {
+  export class UserDefinedTypeNotFoundError extends GenericError {
+    kind: "UserDefinedTypeNotFoundError";
     type: Types.UserDefinedType;
     message() {
       let typeName = Types.isContractDefinedType(this.type)
@@ -952,11 +1231,13 @@ export namespace Values {
     constructor(unknownType: Types.UserDefinedType) {
       super();
       this.type = unknownType;
+      this.kind = "UserDefinedTypeNotFoundError";
     }
   }
 
   //Read errors
-  export class UnsupportedConstantError extends GenericErrorDirect {
+  export class UnsupportedConstantError extends GenericError {
+    kind: "UnsupportedConstantError";
     definition: AstDefinition;
     message() {
       return `Unsupported constant type ${DefinitionUtils.typeClass(this.definition)}$`;
@@ -964,10 +1245,12 @@ export namespace Values {
     constructor(definition: AstDefinition) {
       super();
       this.definition = definition;
+      this.kind = "UnsupportedConstantError";
     }
   }
 
-  export class ReadErrorStack extends GenericErrorDirect {
+  export class ReadErrorStack extends GenericError {
+    kind: "ReadErrorStack";
     from: number;
     to: number;
     message() {
@@ -977,6 +1260,48 @@ export namespace Values {
       super();
       this.from = from;
       this.to = to;
+      this.kind = "ReadErrorStack";
+    }
+  }
+
+  //finally, a convenience function for constructing generic errors
+  export function makeGenericValueError(dataType: Types.Type, error: GenericError): ValueErrorGeneric {
+    switch(dataType.typeClass) {
+      case "uint":
+        return new UintValueErrorGeneric(dataType, error);
+      case "int":
+        return new IntValueErrorGeneric(dataType, error);
+      case "bool":
+        return new BoolValueErrorGeneric(dataType, error);
+      case "bytes":
+        return new BytesValueErrorGeneric(dataType, error);
+      case "address":
+        return new AddressValueErrorGeneric(dataType, error);
+      case "fixed":
+        return new FixedValueErrorGeneric(dataType, error);
+      case "ufixed":
+        return new UfixedValueErrorGeneric(dataType, error);
+      case "string":
+        return new StringValueErrorGeneric(dataType, error);
+      case "array":
+        return new ArrayValueErrorGeneric(dataType, error);
+      case "mapping":
+        return new MappingValueErrorGeneric(dataType, error);
+      case "struct":
+        return new StructValueErrorGeneric(dataType, error);
+      case "enum":
+        return new EnumValueErrorGeneric(dataType, error);
+      case "contract":
+        return new ContractValueErrorGeneric(dataType, error);
+      case "magic":
+        return new MagicValueErrorGeneric(dataType, error);
+      case "function":
+        switch(dataType.visibility) {
+          case "external":
+        return new FunctionValueExternalErrorGeneric(dataType, error);
+          case "internal":
+        return new FunctionValueInternalErrorGeneric(dataType, error);
+        }
     }
   }
 }

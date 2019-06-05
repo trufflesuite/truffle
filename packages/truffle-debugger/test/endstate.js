@@ -8,7 +8,7 @@ import Ganache from "ganache-core";
 import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
 
-import sessionSelector from "lib/session/selectors";
+import evm from "lib/evm/selectors";
 import data from "lib/data/selectors";
 
 import * as TruffleDecodeUtils from "truffle-decode-utils";
@@ -79,7 +79,7 @@ describe("End State", function() {
 
     let session = bugger.connect();
 
-    assert.ok(!session.view(sessionSelector.transaction.receipt).status);
+    assert.ok(!session.view(evm.transaction.status));
   });
 
   it("Gets vars at end of successful contract (and marks it successful)", async function() {
@@ -101,7 +101,7 @@ describe("End State", function() {
     debug("DCIR %O", session.view(data.current.identifiers.refs));
     debug("proc.assignments %O", session.view(data.proc.assignments));
 
-    assert.ok(session.view(sessionSelector.transaction.receipt).status);
+    assert.ok(session.view(evm.transaction.status));
     const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
       await session.variables()
     );

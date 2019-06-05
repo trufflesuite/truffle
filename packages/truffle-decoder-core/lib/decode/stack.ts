@@ -19,7 +19,7 @@ export default function* decodeStack(dataType: Types.Type, pointer: StackPointer
    rawValue = yield* read(pointer, info.state);
   }
   catch(error) { //error: Values.DecodingError
-    return new Values.GenericError(error.error);
+    return Values.makeGenericValueError(dataType, error.error);
   }
   const literalPointer: StackLiteralPointer = { literal: rawValue };
   return yield* decodeLiteral(dataType, literalPointer, info);

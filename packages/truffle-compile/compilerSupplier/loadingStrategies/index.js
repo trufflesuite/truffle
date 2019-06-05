@@ -1,5 +1,4 @@
 module.exports = {
-  Bundled: require("./Bundled"),
   Docker: require("./Docker"),
   LoadingStrategy: require("./LoadingStrategy"),
   Local: require("./Local"),
