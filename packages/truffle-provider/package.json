@@ -1,6 +1,6 @@
 {
   "name": "truffle-provider",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Beefed up provider module for Truffle",
   "main": "index.js",
   "scripts": {
@@ -20,8 +20,8 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle-provider#readme",
   "dependencies": {
-    "truffle-error": "^0.0.4",
-    "truffle-interface-adapter": "^0.1.5",
+    "truffle-error": "^0.0.5",
+    "truffle-interface-adapter": "^0.1.6",
     "web3": "1.0.0-beta.37"
   },
   "devDependencies": {

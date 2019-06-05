@@ -1,13 +1,12 @@
 {
   "name": "truffle",
   "namespace": "consensys",
-  "version": "5.0.19",
+  "version": "5.0.21",
   "description": "Truffle - Simple development framework for Ethereum",
   "dependencies": {
     "app-module-path": "^2.2.0",
     "mocha": "^4.1.0",
-    "original-require": "1.0.1",
-    "solc": "0.5.0"
+    "original-require": "1.0.1"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^0.1.16",
@@ -29,10 +28,10 @@
     "shebang-loader": "0.0.1",
     "stream-buffers": "^3.0.1",
     "tmp": "0.0.33",
-    "truffle-box": "^1.0.26",
-    "truffle-contract": "^4.0.17",
-    "truffle-core": "^5.0.19",
-    "truffle-debugger": "^5.0.12",
+    "truffle-box": "^1.0.27",
+    "truffle-contract": "^4.0.19",
+    "truffle-core": "^5.0.21",
+    "truffle-debugger": "^5.0.14",
     "web3": "1.0.0-beta.37",
     "webpack": "^2.5.1",
     "webpack-bundle-analyzer": "^3.0.3",
@@ -47,6 +46,7 @@
     "build": "yarn build-cli",
     "build-cli": "webpack --config ./cli.webpack.config.js",
     "test": "./scripts/test.sh",
+    "postinstall": "node ./scripts/postinstall.js",
     "publish:byoc": "node ./scripts/prereleaseVersion.js byoc-safe byoc",
     "publish:external-compiler": "node ./scripts/prereleaseVersion.js external-compiler external-compiler",
     "publish:next": "node ./scripts/prereleaseVersion.js next next",

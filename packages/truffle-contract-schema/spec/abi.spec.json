@@ -1,5 +1,5 @@
 {
-  "id": "abi.spec.json",
+  "$id": "abi.spec.json",
   "$schema": "http://json-schema.org/schema#",
   "title": "ABI",
 
@@ -26,7 +26,8 @@
         { "type": "string", "pattern": "^bytes(0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32)(\\[[0-9]*\\])*$" },
         { "type": "string", "pattern": "^bytes(\\[[0-9]*\\])*$" },
         { "type": "string", "pattern": "^function(\\[[0-9]*\\])*$" },
-        { "type": "string", "pattern": "^string(\\[[0-9]*\\])*$" }
+        { "type": "string", "pattern": "^string(\\[[0-9]*\\])*$" },
+        { "type": "string", "pattern": "^tuple$" }
       ]
     },
 
@@ -128,9 +129,23 @@
       "type": "object",
       "properties": {
         "name": { "$ref": "#/definitions/Name" },
-        "type": { "$ref": "#/definitions/Type" }
+        "type": { "$ref": "#/definitions/Type" },
+        "components": {
+          "type": "array",
+          "items": { "type": "object" }
+        }
       },
-      "required": ["name", "type"]
+      "if": {
+        "properties": {
+          "type": {
+            "oneOf": [
+              { "pattern": "^tuple$" }
+            ]
+          }
+        }
+      },
+      "then": { "required": ["name", "type", "components"] },
+      "else": { "required": ["name", "type"] }
     },
 
     "EventParameter": {

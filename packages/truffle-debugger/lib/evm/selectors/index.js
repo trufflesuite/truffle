@@ -97,7 +97,9 @@ function createStepSelectors(step, state = null) {
      * .isHalting
      *
      * whether the instruction halts or returns from a calling context
-     * (covers only ordinary halds, not exceptional halts)
+     * NOTE: this covers only ordinary halts, not exceptional halts;
+     * but it doesn't check the return status, so any normal halting
+     * instruction will qualify here
      */
     isHalting: createLeaf(["./trace"], step =>
       isNormalHaltingMnemonic(step.op)
@@ -142,8 +144,8 @@ function createStepSelectors(step, state = null) {
       callAddress: createLeaf(
         ["./isCall", state],
 
-        (matches, { stack }) => {
-          if (!matches) {
+        (isCall, { stack }) => {
+          if (!isCall) {
             return null;
           }
 
@@ -160,8 +162,8 @@ function createStepSelectors(step, state = null) {
       createBinary: createLeaf(
         ["./isCreate", state],
 
-        (matches, { stack, memory }) => {
-          if (!matches) {
+        (isCreate, { stack, memory }) => {
+          if (!isCreate) {
             return null;
           }
 
@@ -181,8 +183,8 @@ function createStepSelectors(step, state = null) {
        */
       callData: createLeaf(
         ["./isCall", "./isShortCall", state],
-        (matches, short, { stack, memory }) => {
-          if (!matches) {
+        (isCall, short, { stack, memory }) => {
+          if (!isCall) {
             return null;
           }
 
@@ -227,8 +229,8 @@ function createStepSelectors(step, state = null) {
        *
        * value for the create
        */
-      createValue: createLeaf(["./isCreate", state], (matches, { stack }) => {
-        if (!matches) {
+      createValue: createLeaf(["./isCreate", state], (isCreate, { stack }) => {
+        if (!isCreate) {
           return null;
         }
 
@@ -246,8 +248,8 @@ function createStepSelectors(step, state = null) {
       storageAffected: createLeaf(
         ["./touchesStorage", state],
 
-        (matches, { stack }) => {
-          if (!matches) {
+        (touchesStorage, { stack }) => {
+          if (!touchesStorage) {
             return null;
           }
 
@@ -266,8 +268,8 @@ function createStepSelectors(step, state = null) {
       returnValue: createLeaf(
         ["./trace", "./isHalting", state],
 
-        (step, matches, { stack, memory }) => {
-          if (!matches) {
+        (step, isHalting, { stack, memory }) => {
+          if (!isHalting) {
             return null;
           }
           if (step.op !== "RETURN") {
@@ -336,6 +338,11 @@ const evm = createSelectorTree({
        */
       block: createLeaf(["/state"], state => state.transaction.globals.block)
     },
+
+    /*
+     * evm.transaction.status
+     */
+    status: createLeaf(["/state"], state => state.transaction.status),
 
     /*
      * evm.transaction.initialCall
@@ -434,24 +441,8 @@ const evm = createSelectorTree({
        */
       createdAddress: createLeaf(
         ["./isCreate", "/nextOfSameDepth/state/stack"],
-        (matches, stack) => {
-          if (!matches) {
-            return null;
-          }
-          let address = stack[stack.length - 1];
-          return DecodeUtils.Conversion.toAddress(address);
-        }
-      ),
-
-      /*
-       * evm.current.step.returnedAddress
-       *
-       * address created by the current return step
-       */
-      returnedAddress: createLeaf(
-        ["./isHalting", "/next/state/stack"],
-        (matches, stack) => {
-          if (!matches) {
+        (isCreate, stack) => {
+          if (!isCreate) {
             return null;
           }
           let address = stack[stack.length - 1];
@@ -481,12 +472,46 @@ const evm = createSelectorTree({
 
       /**
        * evm.current.step.isExceptionalHalting
-       *
        */
       isExceptionalHalting: createLeaf(
-        ["./isHalting", "/current/state/depth", "/next/state/depth"],
-        (halting, currentDepth, nextDepth) =>
-          nextDepth < currentDepth && !halting
+        [
+          "./isHalting",
+          "/current/state/depth",
+          "/next/state/depth",
+          "./returnStatus"
+        ],
+        (halting, currentDepth, nextDepth, status) =>
+          halting
+            ? !status //if deliberately halting, check the return status
+            : nextDepth < currentDepth //if not on a deliberate halt, any halt
+        //is an exceptional halt
+      ),
+
+      /**
+       * evm.current.step.returnStatus
+       * checks the return status of the *current* halting instruction (for
+       * normal halts only)
+       * (returns a boolean -- true for success, false for failure)
+       */
+      returnStatus: createLeaf(
+        [
+          "./isHalting",
+          "/next/state",
+          trace.stepsRemaining,
+          "/transaction/status"
+        ],
+        (isHalting, { stack }, remaining, finalStatus) => {
+          if (!isHalting) {
+            return null; //not clear this'll do much good since this may get
+            //read as false, but, oh well, may as well
+          }
+          if (remaining <= 1) {
+            return finalStatus;
+          } else {
+            const ZERO_WORD = "00".repeat(DecodeUtils.EVM.WORD_SIZE);
+            return stack[stack.length - 1] !== ZERO_WORD;
+          }
+        }
       )
     },
 

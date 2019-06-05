@@ -47,6 +47,14 @@ export function saveGlobals(origin, gasprice, block) {
   };
 }
 
+export const SAVE_STATUS = "SAVE_STATUS";
+export function saveStatus(status) {
+  return {
+    type: SAVE_STATUS,
+    status
+  };
+}
+
 export const CALL = "CALL";
 export function call(address, data, storageAddress, sender, value) {
   return {
