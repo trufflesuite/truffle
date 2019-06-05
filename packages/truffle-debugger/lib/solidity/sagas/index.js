@@ -18,6 +18,7 @@ function* tickSaga() {
   debug("got TICK");
 
   yield* functionDepthSaga();
+  debug("instruction: %O", yield select(solidity.current.instruction));
   yield* trace.signalTickSagaCompletion();
 }
 

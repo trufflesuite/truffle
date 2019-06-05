@@ -26,11 +26,13 @@ matrix:
 
 install:
   - yarn bootstrap
+  - truffle obtain --solc=0.5.8
 
 cache:
   directories:
     - node_modules
     - $(npm config get prefix)/lib/node_modules # globally installed stuff (i.e. lerna)
+    - ~/.config/truffle/compilers
 
 script:
   - yarn ci

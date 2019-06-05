@@ -175,7 +175,11 @@ describe("Different networks: ", function() {
         );
       })
       .catch(function(err) {
-        if (err.message.indexOf("Provider not set or invalid") < 0)
+        if (
+          err.message.indexOf(
+            "Please call setProvider() first before calling new()"
+          ) < 0
+        )
           return done(new Error("Unexpected error received: " + err.message));
         done();
       });
@@ -367,7 +371,7 @@ describe("Different networks: ", function() {
       });
 
       NetworkExample.deployed()
-        .then(function(instance) {
+        .then(instance => {
           assert.equal(NetworkExample.network_id, uri);
           assert.equal(instance.address, json.networks[uri].address);
           done();
@@ -406,7 +410,7 @@ describe("Different networks: ", function() {
       NetworkExample.setNetwork(network_two_id);
 
       NetworkExample.deployed()
-        .then(function(instance) {
+        .then(instance => {
           assert.equal(NetworkExample.network_id, uri);
           assert.equal(instance.address, json.networks[uri].address);
           done();
@@ -467,7 +471,7 @@ describe("Different networks: ", function() {
             NetworkExample.setNetwork(new_uri);
 
             NetworkExample.deployed()
-              .then(function(instance) {
+              .then(instance => {
                 assert.equal(NetworkExample.network_id, uri);
                 assert.equal(instance.address, json.networks[uri].address);
                 done();

@@ -1,15 +1,16 @@
-var expect = require("truffle-expect");
-var TruffleError = require("truffle-error");
-var Networks = require("./networks");
-var EthPM = require("ethpm");
-var EthPMRegistry = require("ethpm-registry");
-var Web3Shim = require("truffle-interface-adapter").Web3Shim;
-var async = require("async");
-var path = require("path");
-var fs = require("fs");
-var OS = require("os");
+const expect = require("truffle-expect");
+const TruffleError = require("truffle-error");
+const Networks = require("./networks");
+const EthPM = require("ethpm");
+const EthPMRegistry = require("ethpm-registry");
+const Web3 = require("web3");
+const Web3Shim = require("truffle-interface-adapter").Web3Shim;
+const async = require("async");
+const path = require("path");
+const fs = require("fs");
+const OS = require("os");
 
-var Package = {
+const Package = {
   install: async function(options, callback) {
     expect.options(options, ["working_directory", "ethpm"]);
 
@@ -19,12 +20,12 @@ var Package = {
 
     // ipfs_port and ipfs_protocol are optinal.
 
-    var provider =
+    const provider =
       options.ethpm.provider ||
       new Web3.providers.HttpProvider(options.ethpm.install_provider_uri, {
         keepAlive: false
       });
-    var host = options.ethpm.ipfs_host;
+    let host = options.ethpm.ipfs_host;
 
     if (host instanceof EthPM.hosts.IPFS === false) {
       host = new EthPM.hosts.IPFSWithLocalReader(
@@ -37,9 +38,9 @@ var Package = {
     // When installing, we use infura to make a bunch of eth_call's.
     // We don't make any transactions. To satisfy APIs we'll put a from address,
     // but it doesn't really matter in this case.
-    var fakeAddress = "0x1234567890123456789012345678901234567890";
+    const fakeAddress = "0x1234567890123456789012345678901234567890";
 
-    var registry = options.ethpm.registry;
+    let registry = options.ethpm.registry;
 
     if (typeof registry === "string") {
       registry = await EthPMRegistry.use(
@@ -49,24 +50,31 @@ var Package = {
       );
     }
 
-    var pkg = new EthPM(options.working_directory, host, registry);
+    const pkg = new EthPM(options.working_directory, host, registry);
 
     if (options.packages) {
-      var promises = options.packages.map(function(package_name) {
-        var pieces = package_name.split("@");
+      const promises = options.packages.map(package_name => {
+        const pieces = package_name.split("@");
         package_name = pieces[0];
 
-        var version = "*";
+        let version = "*";
 
-        if (pieces.length > 1) {
-          version = pieces[1];
-        }
+        if (pieces.length > 1) version = pieces[1];
 
         return pkg.installDependency(package_name, version);
       });
 
       Promise.all(promises)
-        .then(function() {
+        .then(() => {
+          if (options.packages.length > 0) {
+            console.log("");
+            console.log("Successfully installed the following package(s)...");
+            console.log("==================================================");
+            options.packages.forEach(singlePackage => {
+              console.log(`> ${singlePackage}`);
+            });
+            console.log("");
+          }
           callback();
         })
         .catch(callback);
@@ -74,17 +82,15 @@ var Package = {
       fs.access(
         path.join(options.working_directory, "ethpm.json"),
         fs.constants.R_OK,
-        function(err) {
-          var manifest;
+        error => {
+          let manifest;
 
           // If the ethpm.json file doesn't exist, use the config as the manifest.
-          if (err) {
-            manifest = options;
-          }
+          if (error) manifest = options;
 
           pkg
             .install(manifest)
-            .then(function() {
+            .then(() => {
               callback();
             })
             .catch(callback);

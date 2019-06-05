@@ -62,11 +62,6 @@ module.exports = {
         return callback(null, "commonjs original-require");
       }
 
-      // We want to leave solc as an eternal dependency as well (for now)
-      if (/^solc$/.test(request)) {
-        return callback(null, "commonjs solc");
-      }
-
       // Mocha doesn't seem to bundle well either. This is a stop-gap until
       // I can look into it further.
       if (/^mocha$/.test(request)) {
