@@ -5,7 +5,7 @@ const fs = require("fs-extra");
 const tmp = require("tmp");
 const path = require("path");
 
-describe("truffle unbox", () => {
+describe("truffle unbox [ @standalone ]", () => {
   let config;
   const logger = new MemoryLogger();
 
