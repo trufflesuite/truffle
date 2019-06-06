@@ -1,29 +1,7 @@
 import gql from "graphql-tag";
 import { TruffleDB } from "truffle-db/db";
 import * as Contracts from "truffle-workflow-compile";
-import { generateId } from "truffle-db/helpers";
-
-const GetContractNames = gql`
-query GetContractNames {
-  artifacts {
-    contractNames
-  }
-}
-`;
-
-const GetBytecode = gql`
-query GetBytecode($name: String!) {
-  artifacts {
-    contract(name: $name) {
-      constructor {
-        createBytecode {
-          bytes
-        }
-      }
-    }
-  }
-}
-`;
+import { ContractObject } from "truffle-contract-schema/spec";
 
 const AddBytecodes = gql`
 input BytecodeInput {
@@ -41,21 +19,6 @@ mutation AddBytecodes($bytecodes: [BytecodeInput!]!) {
     }
   }
 }`;
-
-const GetSource = gql`
-query GetSource($name: String!) {
-  artifacts {
-    contract(name: $name) {
-      sourceContract {
-        source {
-          contents
-          sourcePath
-        }
-      }
-    }
-  }
-}
-`;
 
 const AddSources = gql`
 input SourceInput {
@@ -140,7 +103,89 @@ mutation AddCompilation($compilations: [CompilationInput!]!) {
       }
     }
   }
-}`
+}
+`;
+
+const AddContracts = gql`
+  input AbiInput {
+    json: String!
+    items: [String]
+  }
+  input ContractCompilationInput {
+    id: ID!
+  }
+  input ContractSourceContractInput {
+    index: FileIndex
+  }
+  input ContractConstructorBytecodeInput {
+    id: ID!
+  }
+  input ContractConstructorInput {
+    createBytecode: ContractConstructorBytecodeInput!
+  }
+  input ContractInput {
+    name: String
+    abi: AbiInput
+    compilation: ContractCompilationInput
+    sourceContract: ContractSourceContractInput
+    constructor: ContractConstructorInput
+  }
+  mutation AddContracts($contracts: [ContractInput!]!) {
+    workspace {
+      contractsAdd(input: {
+        contracts: $contracts
+      }) {
+        contracts {
+          id
+          name
+          abi {
+            json
+          }
+          sourceContract {
+            name
+            source {
+              contents
+              sourcePath
+            }
+            ast {
+              json
+            }
+          }
+          compilation {
+            compiler {
+              name
+              version
+            }
+            contracts {
+              name
+              source {
+                contents
+                sourcePath
+              }
+              ast {
+                json
+              }
+            }
+            sources {
+              contents
+              sourcePath
+            }
+          }
+          constructor {
+            createBytecode {
+              bytes
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+type WorkflowCompileResult = {
+  outputs: { [compilerName: string]: string[] },
+  contracts: { [contractName: string]: ContractObject }
+};
 
 export class ArtifactsLoader {
   private db: TruffleDB;
@@ -152,122 +197,111 @@ export class ArtifactsLoader {
   }
 
   async load (): Promise<void> {
-    const {
-      data: {
-        artifacts: {
-          contractNames
-        }
+    await this.loadCompilation(this.config);
+  }
+
+  async loadCompilationContracts(contracts: Array<ContractObject>, compilationId:string) {
+    const bytecodeIds = await this.loadCompilationBytecodes(contracts);
+    const contractObjects = contracts.map((contract, index) => ({
+      name: contract["contract_name"],
+      abi: {
+        json: JSON.stringify(contract["abi"])
+      },
+      compilation: {
+        id: compilationId
+      },
+      sourceContract: {
+        index: index
+      },
+      constructor: {
+        createBytecode: bytecodeIds[index]
       }
-    } = await this.db.query(GetContractNames);
+    }));
 
-    if(this.config) {
-      await this.loadCompilation(this.config);
-    }
-    await this.loadBytecodes(contractNames);
-    await this.loadSources(contractNames);
-
+    await this.db.query(AddContracts, { contracts: contractObjects});
   }
 
-  async loadBytecodes(contractNames: string[]) {
-    const createBytecodes = await Promise.all(contractNames.map(
-      async (name) =>
-        (await this.db.query(GetBytecode, { name }))
-          .data
-          .artifacts
-          .contract
-          .constructor
-          .createBytecode
-    ));
+  async loadCompilationBytecodes(contracts: Array<ContractObject>) {
+    // transform contract objects into data model bytecode inputs
+    // and run mutation
+    const result = await this.db.query(AddBytecodes, {
+      bytecodes: contracts.map(
+        ({ bytecode }) => ({ bytes: bytecode })
+      )
+    });
+    const bytecodeIds = result.data.workspace.bytecodesAdd.bytecodes
 
-    const bytecodes = [...createBytecodes];
-
-    await this.db.query(AddBytecodes, { bytecodes });
+    return bytecodeIds;
   }
 
-  async loadSources(contractNames: string[]) {
-    const contractSources = await Promise.all(contractNames.map(
-      async (name) =>
-        (await this.db.query(GetSource, { name }))
-          .data
-          .artifacts
-          .contract
-          .sourceContract
-          .source
-    ));
+  async loadCompilationSources(contracts: Array<ContractObject>) {
+    // transform contract objects into data model source inputs
+    // and run mutation
+    const result = await this.db.query(AddSources, {
+      sources: contracts.map(
+        ({ source, sourcePath }) => ({ contents: source, sourcePath })
+      )
+    });
 
-    const sources = [...contractSources];
+    // extract sources
+    const sources = result.data.workspace.sourcesAdd.sources;
 
-    await this.db.query(AddSources, { sources });
+    // return only array of objects { id }
+    return sources.map( ({ id }) => ({ id }) );
   }
 
-  async loadCompilationSources(compilation: object) {
-    let sources = [];
-    let sourceIds = [];
-    for(let contract in compilation) {
-      //add source from compilation into workspace first, otherwise compilation addition will fail
-      let sourceObject = {
-        contents: compilation[contract]["source"],
-        sourcePath: compilation[contract]["sourcePath"]
-      };
-
-      let sourceId = generateId({
-        contents: compilation[contract]["source"],
-        sourcePath: compilation[contract]["sourcePath"]
-      });
-
-      sources.push({contents: compilation[contract]["source"], sourcePath: compilation[contract]["sourcePath"]});
-      sourceIds.push({id: sourceId});
-    }
-
-    await this.db.query(AddSources, { sources });
-    // only need to return array of sourceIds here
-    return sourceIds;
+  async compilationSourceContracts(compilation: Array<ContractObject>, sourceIds: Array<object>) {
+    return compilation.map(({ contract_name: name, ast }, index) => ({
+      name,
+      source: sourceIds[index],
+      ast: ast ? { json: JSON.stringify(ast) } : undefined
+    }));
   }
 
-  async compilationSourceContracts(compilation: object) {
-    let sourceContracts = [];
-    for(let contract in compilation) {
-      let sourceContract =
-      {
-        name: compilation[contract]["contract_name"],
-        source: {
-          id: generateId({
-            contents: compilation[contract]["source"],
-            sourcePath: compilation[contract]["sourcePath"]
-          })
-        },
-        ast: {
-          json: JSON.stringify(compilation[contract]["ast"]),
-        }
-      }
-      sourceContracts.push(sourceContract);
+  async organizeContractsByCompiler (result: WorkflowCompileResult) {
+    const { outputs, contracts } = result;
+
+    return Object.entries(outputs)
+      .map( ([compilerName, sourcePaths]) => ({
+        [compilerName]: sourcePaths.map(
+          (sourcePath) => Object.values(contracts)
+            .filter( (contract) => contract.sourcePath === sourcePath)
+            [0] || undefined
+        )
+      }))
+      .reduce((a, b) => ({ ...a, ...b }), {});
+  }
+
+  async setCompilation(organizedCompilation: Array<ContractObject>) {
+    const sourceIds = await this.loadCompilationSources(organizedCompilation);
+    const sourceContracts = await this.compilationSourceContracts(organizedCompilation, sourceIds);
+    const compilationObject = {
+      compiler: {
+        name: organizedCompilation[0]["compiler"]["name"],
+        version: organizedCompilation[0]["compiler"]["version"]
+      },
+      contracts: sourceContracts,
+      sources: sourceIds
     }
 
-    return sourceContracts;
+    return compilationObject;
   }
 
   async loadCompilation(compilationConfig: object) {
-    let compilationsArray = [];
-    let sources = [];
-    await Contracts.compile(compilationConfig, async (err, output) => {
-      if(err) console.error(err);
-      else {
-        const compilationData = Object.values(output.contracts);
-        let sourceIds = await this.loadCompilationSources(compilationData);
-        let sourceContracts = await this.compilationSourceContracts(compilationData);
+    const compilationOutput = await Contracts.compile(compilationConfig);
+    const contracts = await this.organizeContractsByCompiler(compilationOutput);
 
-        let compilationObject = {
-          compiler: {
-            name: compilationData[0]["compiler"]["name"],
-            version: compilationData[0]["compiler"]["version"]
-          },
-          contracts: sourceContracts,
-          sources: sourceIds
-        }
+    const compilationObjects = await Promise.all(Object.values(contracts)
+      .filter(contractsArray => contractsArray.length > 0)
+      .map(contractsArray =>
+        this.setCompilation(contractsArray))
+    );
 
-        await this.db.query(AddCompilation, { compilations: [compilationObject] });
-      }
 
-    });
+    const compilations = await this.db.query(AddCompilation, { compilations: compilationObjects });
+
+    //map contracts to the compilation they belong in before adding them to truffle-db
+    await Promise.all(compilations.data.workspace.compilationsAdd.compilations
+      .map(({ compiler, id }) => this.loadCompilationContracts(contracts[compiler.name], id)));
   }
 }
