@@ -78,7 +78,7 @@ const Test = {
     let testContracts = [];
     let accounts = [];
     let runner, testResolver;
-    this.getAccounts(web3)
+    return this.getAccounts(web3)
       .then(function(accs) {
         accounts = accs;
 
@@ -126,10 +126,12 @@ const Test = {
           throw reason;
         });
 
-        mocha.run(function(failures) {
-          config.logger.warn = warn;
+        return new Promise(resolve => {
+          mocha.run(function(failures) {
+            config.logger.warn = warn;
 
-          callback(failures);
+            resolve(failures);
+          });
         });
       })
       .catch(callback);

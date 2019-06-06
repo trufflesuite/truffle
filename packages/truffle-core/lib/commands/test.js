@@ -111,9 +111,10 @@ const command = {
         config.with({
           test_files: files,
           contracts_build_directory: temporaryDirectory
-        }),
-        runCallback
-      );
+        })
+      )
+        .then(runCallback)
+        .catch(runCallback);
     }
 
     const environmentCallback = function() {
