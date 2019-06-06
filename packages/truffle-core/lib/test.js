@@ -16,9 +16,9 @@ var originalrequire = require("original-require");
 
 chai.use(require("./assertions"));
 
-var Test = {
+const Test = {
   run: function(options, callback) {
-    var self = this;
+    const self = this;
 
     expect.options(options, [
       "contracts_directory",
@@ -30,44 +30,42 @@ var Test = {
       "provider"
     ]);
 
-    var config = Config.default().merge(options);
+    const config = Config.default().merge(options);
 
-    config.test_files = config.test_files.map(function(test_file) {
-      return path.resolve(test_file);
+    config.test_files = config.test_files.map(testFile => {
+      return path.resolve(testFile);
     });
 
     // `accounts` will be populated before each contract() invocation
     // and passed to it so tests don't have to call it themselves.
-    var web3 = new Web3();
+    const web3 = new Web3();
     web3.setProvider(config.provider);
 
     // Override console.warn() because web3 outputs gross errors to it.
     // e.g., https://github.com/ethereum/web3.js/blob/master/lib/web3/allevents.js#L61
     // Output looks like this during tests: https://gist.github.com/tcoulter/1988349d1ec65ce6b958
-    var warn = config.logger.warn;
-    config.logger.warn = function(message) {
+    const warn = config.logger.warn;
+    config.logger.warn = message => {
       if (message === "cannot find event for log") {
         return;
       } else {
-        if (warn) {
-          warn.apply(console, arguments);
-        }
+        if (warn) warn.apply(console, arguments);
       }
     };
 
     var mocha = this.createMocha(config);
 
-    var js_tests = config.test_files.filter(function(file) {
+    const jsTests = config.test_files.filter(file => {
       return path.extname(file) !== ".sol";
     });
 
-    var sol_tests = config.test_files.filter(function(file) {
+    const solTests = config.test_files.filter(file => {
       return path.extname(file) === ".sol";
     });
 
     // Add Javascript tests because there's nothing we need to do with them.
     // Solidity tests will be handled later.
-    js_tests.forEach(function(file) {
+    jsTests.forEach(file => {
       // There's an idiosyncracy in Mocha where the same file can't be run twice
       // unless we delete the `require` cache.
       // https://github.com/mochajs/mocha/issues/995
@@ -76,58 +74,55 @@ var Test = {
       mocha.addFile(file);
     });
 
-    var dependency_paths = [];
-    var testContracts = [];
-    var accounts = [];
-    var runner;
-    var test_resolver;
+    let dependencyPaths = [];
+    let testContracts = [];
+    let accounts = [];
+    let runner, testResolver;
     this.getAccounts(web3)
       .then(function(accs) {
         accounts = accs;
 
-        if (!config.resolver) {
-          config.resolver = new Resolver(config);
-        }
+        if (!config.resolver) config.resolver = new Resolver(config);
 
-        var test_source = new TestSource(config);
-        test_resolver = new TestResolver(
+        const testSource = new TestSource(config);
+        testResolver = new TestResolver(
           config.resolver,
-          test_source,
+          testSource,
           config.contracts_build_directory
         );
-        test_resolver.cache_on = false;
+        testResolver.cache_on = false;
 
         return self.compileContractsWithTestFilesIfNeeded(
-          sol_tests,
+          solTests,
           config,
-          test_resolver
+          testResolver
         );
       })
       .then(function(paths) {
-        dependency_paths = paths;
+        dependencyPaths = paths;
 
-        testContracts = sol_tests.map(function(test_file_path) {
-          return test_resolver.require(test_file_path);
+        testContracts = solTests.map(test_file_path => {
+          return testResolver.require(test_file_path);
         });
 
         runner = new TestRunner(config);
 
-        return self.performInitialDeploy(config, test_resolver);
+        return self.performInitialDeploy(config, testResolver);
       })
       .then(function() {
         return self.defineSolidityTests(
           mocha,
           testContracts,
-          dependency_paths,
+          dependencyPaths,
           runner
         );
       })
       .then(function() {
-        return self.setJSTestGlobals(web3, accounts, test_resolver, runner);
+        return self.setJSTestGlobals(web3, accounts, testResolver, runner);
       })
       .then(function() {
         // Finally, run mocha.
-        process.on("unhandledRejection", function(reason) {
+        process.on("unhandledRejection", reason => {
           throw reason;
         });
 
@@ -160,23 +155,18 @@ var Test = {
   },
 
   getAccounts: function(web3) {
-    return new Promise(function(accept, reject) {
-      web3.eth.getAccounts(function(err, accs) {
-        if (err) return reject(err);
-        accept(accs);
-      });
-    });
+    return web3.eth.getAccounts();
   },
 
   compileContractsWithTestFilesIfNeeded: function(
-    solidity_test_files,
+    solidityTestFiles,
     config,
-    test_resolver
+    testResolver
   ) {
     return new Promise(function(accept, reject) {
       Profiler.updated(
         config.with({
-          resolver: test_resolver
+          resolver: testResolver
         }),
         function(err, updated) {
           if (err) return reject(err);
@@ -187,8 +177,8 @@ var Test = {
           Contracts.compile(
             config.with({
               all: config.compileAll === true,
-              files: updated.concat(solidity_test_files),
-              resolver: test_resolver,
+              files: updated.concat(solidityTestFiles),
+              resolver: testResolver,
               quiet: false,
               quietWrite: true
             }),
