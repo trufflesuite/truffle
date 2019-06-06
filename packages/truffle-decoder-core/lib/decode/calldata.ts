@@ -197,7 +197,7 @@ function* decodeCalldataStructByPosition(dataType: Types.StructType, startPositi
   const typeId = dataType.id;
   const structAllocation = calldataAllocations[typeId];
   if(!structAllocation) {
-    return new Values.StructValueErrorGeneric(
+    return new Values.StructValueError(
       dataType,
       new Values.UserDefinedTypeNotFoundError(dataType)
     );
@@ -216,7 +216,7 @@ function* decodeCalldataStructByPosition(dataType: Types.StructType, startPositi
     let memberName = memberAllocation.definition.name;
     let storedType = <Types.StructType>userDefinedTypes[typeId];
     if(!storedType) {
-      return new Values.StructValueErrorGeneric(
+      return new Values.StructValueError(
         dataType,
         new Values.UserDefinedTypeNotFoundError(dataType)
       );
