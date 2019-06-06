@@ -116,8 +116,7 @@ const command = {
       );
     }
 
-    const environmentCallback = function(err) {
-      if (err) return done(err);
+    const environmentCallback = function() {
       // Copy all the built files over to a temporary directory, because we
       // don't want to save any tests artifacts. Only do this if the build directory
       // exists.
@@ -139,7 +138,7 @@ const command = {
     if (config.networks[config.network]) {
       Environment.detect(config)
         .then(() => environmentCallback())
-        .catch(environmentCallback);
+        .catch(done);
     } else {
       const ipcOptions = { network: "test" };
 
@@ -159,7 +158,7 @@ const command = {
           ipcDisconnect = disconnect;
           Environment.develop(config, ganacheOptions)
             .then(() => environmentCallback())
-            .catch(environmentCallback);
+            .catch(done);
         }
       );
     }
