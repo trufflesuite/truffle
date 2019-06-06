@@ -177,21 +177,12 @@ const Test = {
   },
 
   performInitialDeploy: function(config, resolver) {
-    return new Promise(function(accept, reject) {
-      Migrate.run(
-        config.with({
-          reset: true,
-          resolver: resolver,
-          quiet: true
-        })
-      )
-        .then(() => {
-          accept();
-        })
-        .catch(error => {
-          reject(error);
-        });
+    const migrateConfig = config.with({
+      reset: true,
+      resolver: resolver,
+      quiet: true
     });
+    return Migrate.run(migrateConfig);
   },
 
   defineSolidityTests: function(mocha, contracts, dependency_paths, runner) {
