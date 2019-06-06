@@ -17,7 +17,7 @@ var originalrequire = require("original-require");
 chai.use(require("./assertions"));
 
 const Test = {
-  run: function(options, callback) {
+  run: async function(options) {
     const self = this;
 
     expect.options(options, [
@@ -74,67 +74,54 @@ const Test = {
       mocha.addFile(file);
     });
 
-    let dependencyPaths = [];
-    let testContracts = [];
-    let accounts = [];
     let runner, testResolver;
-    return this.getAccounts(web3)
-      .then(function(accs) {
-        accounts = accs;
+    const accounts = await this.getAccounts(web3);
 
-        if (!config.resolver) config.resolver = new Resolver(config);
+    if (!config.resolver) config.resolver = new Resolver(config);
 
-        const testSource = new TestSource(config);
-        testResolver = new TestResolver(
-          config.resolver,
-          testSource,
-          config.contracts_build_directory
-        );
-        testResolver.cache_on = false;
+    const testSource = new TestSource(config);
+    testResolver = new TestResolver(
+      config.resolver,
+      testSource,
+      config.contracts_build_directory
+    );
+    testResolver.cache_on = false;
 
-        return self.compileContractsWithTestFilesIfNeeded(
-          solTests,
-          config,
-          testResolver
-        );
-      })
-      .then(function(paths) {
-        dependencyPaths = paths;
+    const dependencyPaths = await self.compileContractsWithTestFilesIfNeeded(
+      solTests,
+      config,
+      testResolver
+    );
 
-        testContracts = solTests.map(test_file_path => {
-          return testResolver.require(test_file_path);
-        });
+    const testContracts = solTests.map(test_file_path => {
+      return testResolver.require(test_file_path);
+    });
 
-        runner = new TestRunner(config);
+    runner = new TestRunner(config);
 
-        return self.performInitialDeploy(config, testResolver);
-      })
-      .then(function() {
-        return self.defineSolidityTests(
-          mocha,
-          testContracts,
-          dependencyPaths,
-          runner
-        );
-      })
-      .then(function() {
-        return self.setJSTestGlobals(web3, accounts, testResolver, runner);
-      })
-      .then(function() {
-        // Finally, run mocha.
-        process.on("unhandledRejection", reason => {
-          throw reason;
-        });
+    await self.performInitialDeploy(config, testResolver);
 
-        return new Promise(resolve => {
-          mocha.run(function(failures) {
-            config.logger.warn = warn;
+    await self.defineSolidityTests(
+      mocha,
+      testContracts,
+      dependencyPaths,
+      runner
+    );
 
-            resolve(failures);
-          });
-        });
-      })
-      .catch(callback);
+    await self.setJSTestGlobals(web3, accounts, testResolver, runner);
+
+    // Finally, run mocha.
+    process.on("unhandledRejection", reason => {
+      throw reason;
+    });
+
+    return new Promise(resolve => {
+      mocha.run(function(failures) {
+        config.logger.warn = warn;
+
+        resolve(failures);
+      });
+    });
   },
 
   createMocha: function(config) {
