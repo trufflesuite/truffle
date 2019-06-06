@@ -54,7 +54,7 @@ const command = {
     const promisifiedCopy = promisify(require("../copy"));
     const Environment = require("../environment");
 
-    var config = Config.detect(options);
+    const config = Config.detect(options);
 
     // if "development" exists, default to using that for testing
     if (!config.network && config.networks.development) {
@@ -67,8 +67,7 @@ const command = {
       Environment.detect(config).catch(done);
     }
 
-    var ipcDisconnect;
-
+    let ipcDisconnect;
     let files = [];
 
     if (options.file) {
@@ -100,9 +99,7 @@ const command = {
       var args = arguments;
       // Ensure directory cleanup.
       done.apply(null, args);
-      if (ipcDisconnect) {
-        ipcDisconnect();
-      }
+      if (ipcDisconnect) ipcDisconnect();
     }
 
     function run() {
