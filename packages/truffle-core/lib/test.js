@@ -51,7 +51,7 @@ const Test = {
       }
     };
 
-    var mocha = this.createMocha(config);
+    const mocha = this.createMocha(config);
 
     const jsTests = config.test_files.filter(file => {
       return path.extname(file) !== ".sol";
@@ -72,13 +72,12 @@ const Test = {
       mocha.addFile(file);
     });
 
-    let runner, testResolver;
     const accounts = await this.getAccounts(web3);
 
     if (!config.resolver) config.resolver = new Resolver(config);
 
     const testSource = new TestSource(config);
-    testResolver = new TestResolver(
+    const testResolver = new TestResolver(
       config.resolver,
       testSource,
       config.contracts_build_directory
@@ -95,7 +94,7 @@ const Test = {
       return testResolver.require(test_file_path);
     });
 
-    runner = new TestRunner(config);
+    const runner = new TestRunner(config);
 
     await this.performInitialDeploy(config, testResolver);
 
