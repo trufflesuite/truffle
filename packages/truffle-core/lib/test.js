@@ -1,18 +1,18 @@
-var Mocha = require("mocha");
-var chai = require("chai");
-var path = require("path");
-var Web3 = require("web3");
-var Config = require("truffle-config");
-var Contracts = require("truffle-workflow-compile");
-var Resolver = require("truffle-resolver");
-var TestRunner = require("./testing/testrunner");
-var TestResolver = require("./testing/testresolver");
-var TestSource = require("./testing/testsource");
-var SolidityTest = require("./testing/soliditytest");
-var expect = require("truffle-expect");
-var Migrate = require("truffle-migrate");
-var Profiler = require("truffle-compile/profiler.js");
-var originalrequire = require("original-require");
+const Mocha = require("mocha");
+const chai = require("chai");
+const path = require("path");
+const Web3 = require("web3");
+const Config = require("truffle-config");
+const Contracts = require("truffle-workflow-compile");
+const Resolver = require("truffle-resolver");
+const TestRunner = require("./testing/testrunner");
+const TestResolver = require("./testing/testresolver");
+const TestSource = require("./testing/testsource");
+const SolidityTest = require("./testing/soliditytest");
+const expect = require("truffle-expect");
+const Migrate = require("truffle-migrate");
+const Profiler = require("truffle-compile/profiler.js");
+const originalrequire = require("original-require");
 
 chai.use(require("./assertions"));
 
@@ -150,32 +150,29 @@ const Test = {
     testResolver
   ) {
     return new Promise(function(accept, reject) {
-      Profiler.updated(
-        config.with({
-          resolver: testResolver
-        }),
-        function(err, updated) {
-          if (err) return reject(err);
+      Profiler.updated(config.with({ resolver: testResolver }), function(
+        err,
+        updated
+      ) {
+        if (err) return reject(err);
 
-          updated = updated || [];
+        updated = updated || [];
 
-          // Compile project contracts and test contracts
-          Contracts.compile(
-            config.with({
-              all: config.compileAll === true,
-              files: updated.concat(solidityTestFiles),
-              resolver: testResolver,
-              quiet: false,
-              quietWrite: true
-            }),
-            function(err, result) {
-              if (err) return reject(err);
-              const paths = result.outputs.solc;
-              accept(paths);
-            }
-          );
-        }
-      );
+        const compileConfig = config.with({
+          all: config.compileAll === true,
+          files: updated.concat(solidityTestFiles),
+          resolver: testResolver,
+          quiet: false,
+          quietWrite: true
+        });
+        // Compile project contracts and test contracts
+        Contracts.compile(compileConfig)
+          .then(result => {
+            const paths = result.outputs.solc;
+            accept(paths);
+          })
+          .catch(reject);
+      });
     });
   },
 
