@@ -210,7 +210,7 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
   const typeId = dataType.id;
   const structAllocation = allocations[typeId];
   if(!structAllocation) {
-    return new Values.StructValueErrorGeneric(
+    return new Values.StructValueError(
       dataType,
       new Values.UserDefinedTypeNotFoundError(dataType)
     );
@@ -228,7 +228,7 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
     let memberName = memberAllocation.definition.name;
     let storedType = <Types.StructType>userDefinedTypes[typeId];
     if(!storedType) {
-      return new Values.StructValueErrorGeneric(
+      return new Values.StructValueError(
         dataType,
         new Values.UserDefinedTypeNotFoundError(dataType)
       );

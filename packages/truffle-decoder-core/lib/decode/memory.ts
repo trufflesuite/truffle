@@ -106,7 +106,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
       const typeId = dataType.id;
       const structAllocation = allocations[typeId];
       if(!structAllocation) {
-        return new Values.StructValueErrorGeneric(
+        return new Values.StructValueError(
           dataType,
           new Values.UserDefinedTypeNotFoundError(dataType)
         );
@@ -126,7 +126,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         let memberName = memberAllocation.definition.name;
         let storedType = <Types.StructType>userDefinedTypes[typeId];
         if(!storedType) {
-          return new Values.StructValueErrorGeneric(
+          return new Values.StructValueError(
             dataType,
             new Values.UserDefinedTypeNotFoundError(dataType)
           );

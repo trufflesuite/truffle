@@ -22,4 +22,4 @@ export function isCodeRequest(request: DecoderRequest): request is CodeRequest {
 }
 
 //HACK -- to help mitigate the generator problem
-export type GeneratorJunk = Uint8Array | Values.ContractValueDirect;
+export type GeneratorJunk = Uint8Array | Values.ContractValueDirect | Values.FunctionValueExternalDirect;
