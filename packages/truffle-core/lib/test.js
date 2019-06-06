@@ -18,8 +18,6 @@ chai.use(require("./assertions"));
 
 const Test = {
   run: async function(options) {
-    const self = this;
-
     expect.options(options, [
       "contracts_directory",
       "contracts_build_directory",
@@ -87,7 +85,7 @@ const Test = {
     );
     testResolver.cache_on = false;
 
-    const dependencyPaths = await self.compileContractsWithTestFilesIfNeeded(
+    const dependencyPaths = await this.compileContractsWithTestFilesIfNeeded(
       solTests,
       config,
       testResolver
@@ -99,16 +97,16 @@ const Test = {
 
     runner = new TestRunner(config);
 
-    await self.performInitialDeploy(config, testResolver);
+    await this.performInitialDeploy(config, testResolver);
 
-    await self.defineSolidityTests(
+    await this.defineSolidityTests(
       mocha,
       testContracts,
       dependencyPaths,
       runner
     );
 
-    await self.setJSTestGlobals(web3, accounts, testResolver, runner);
+    await this.setJSTestGlobals(web3, accounts, testResolver, runner);
 
     // Finally, run mocha.
     process.on("unhandledRejection", reason => {
