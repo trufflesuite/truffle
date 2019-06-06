@@ -107,12 +107,11 @@ const command = {
       // TODO: Make the test artifactor configurable.
       config.artifactor = new Artifactor(temporaryDirectory);
 
-      Test.run(
-        config.with({
-          test_files: files,
-          contracts_build_directory: temporaryDirectory
-        })
-      )
+      const testConfig = config.with({
+        test_files: files,
+        contracts_build_directory: temporaryDirectory
+      });
+      Test.run(testConfig)
         .then(runCallback)
         .catch(runCallback);
     }
