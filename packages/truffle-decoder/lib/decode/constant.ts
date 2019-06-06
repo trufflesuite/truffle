@@ -29,6 +29,7 @@ export default function* decodeConstant(dataType: Types.Type, pointer: ConstantD
     catch(error) { //error: Values.DecodingError
       return Values.makeGenericValueError(dataType, error.error);
     }
+    //not bothering to check padding; shouldn't be necessary
     let bytes = word.slice(DecodeUtils.EVM.WORD_SIZE - size);
     return new Values.BytesValueProper(
       dataType,

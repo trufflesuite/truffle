@@ -103,8 +103,9 @@ export namespace Values {
     toSoliditySha3Input(): {type: string; value: any} {
       return undefined; //will cause an error! should not occur!
     }
-    constructor() {
+    constructor(error: DecoderError) {
       this.kind = "error";
+      this.error = error;
     }
   };
 
@@ -115,16 +116,8 @@ export namespace Values {
   //1. errors that are specific to decoding a particular type, and
   //2. generic errors such as read errors.
 
-  //in fact, here's a subclass of ValueError just for holding those generic errors.
-  export abstract class ValueErrorGeneric extends ValueError {
-    error: GenericError;
-    constructor(error: GenericError) {
-      super();
-      this.error = error;
-    }
-  }
-
-  //meanwhile, here's the class for the error objects themselves
+  //here's the class for the error objects themselves; the only thing they require
+  //is a "kind" saying what sort of error they are
   export abstract class DecoderError {
     kind: string;
   }
@@ -198,16 +191,25 @@ export namespace Values {
     }
   }
 
-  export interface UintValueError extends ValueError, UintValue {
-    kind: "error";
+  //errors for uints
+  export class UintValueError extends ValueError implements UintValue {
     type: Types.UintType;
-  }
-
-  export class UintValueErrorGeneric extends ValueErrorGeneric implements UintValueError {
-    type: Types.UintType;
-    constructor(uintType: Types.UintType, error: GenericError) {
+    constructor(uintType: Types.UintType, error: DecoderError) {
       super(error);
       this.type = uintType;
+    }
+  }
+
+  export class UintPaddingError extends DecoderError {
+    raw: string; //hex string
+    kind: "UintPaddingError";
+    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
+      return `Uint has extra leading bytes (padding error) (raw value ${this.raw})`;
+    }
+    constructor(raw: string) {
+      super();
+      this.raw = raw;
+      this.kind = "UintPaddingError";
     }
   }
 
@@ -238,16 +240,25 @@ export namespace Values {
     }
   }
 
-  export interface IntValueError extends ValueError, IntValue {
-    kind: "error";
+  //errors for ints
+  export class IntValueError extends ValueError implements IntValue {
     type: Types.IntType;
-  }
-
-  export class IntValueErrorGeneric extends ValueErrorGeneric implements IntValueError {
-    type: Types.IntType;
-    constructor(intType: Types.IntType, error: GenericError) {
+    constructor(intType: Types.IntType, error: DecoderError) {
       super(error);
       this.type = intType;
+    }
+  }
+
+  export class IntPaddingError extends DecoderError {
+    raw: string; //hex string
+    kind: "IntPaddingError";
+    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
+      return `Int out of range (padding error) (numeric value ${this.raw})`;
+    }
+    constructor(raw: string) {
+      super();
+      this.raw = raw;
+      this.kind = "IntPaddingError";
     }
   }
 
@@ -279,35 +290,29 @@ export namespace Values {
   }
 
   //errors for bools
-
-  export interface BoolValueError extends ValueError, BoolValue {
-    kind: "error";
+  export class BoolValueError extends ValueError implements BoolValue {
     type: Types.BoolType;
-  }
-
-  export class BoolValueErrorGeneric extends ValueErrorGeneric implements BoolValueError {
-    type: Types.BoolType;
-    constructor(boolType: Types.BoolType, error: GenericError) {
+    constructor(boolType: Types.BoolType, error: DecoderError) {
       super(error);
       this.type = boolType;
     }
   }
 
-  export class BoolValueErrorDecoding extends ValueError implements BoolValueError {
-    type: Types.BoolType;
-    error: BoolDecodingError;
-    constructor(boolType: Types.BoolType, error: BoolDecodingError) {
+  export class BoolPaddingError extends DecoderError {
+    raw: string; //should be hex string
+    kind: "BoolPaddingError";
+    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
+      return `Bool has extra leading bytes (padding error) (raw value ${this.raw})`;
+    }
+    constructor(raw: string) {
       super();
-      this.type = boolType;
-      this.error = error;
+      this.raw = raw;
+      this.kind = "BoolPaddingError";
     }
   }
 
-  export abstract class BoolDecodingError extends DecoderError {
+  export class BoolOutOfRangeError extends DecoderError {
     raw: BN;
-  }
-
-  export class BoolOutOfRangeError extends BoolDecodingError {
     kind: "BoolOutOfRangeError";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return `Invalid boolean (numeric value ${this.raw.toString()})`;
@@ -359,16 +364,24 @@ export namespace Values {
     }
   }
 
-  export interface BytesValueError extends ValueError, BytesValue {
-    kind: "error";
+  export class BytesValueError extends ValueError implements BytesValue {
     type: Types.BytesType;
-  }
-
-  export class BytesValueErrorGeneric extends ValueErrorGeneric implements BytesValueError {
-    type: Types.BytesType;
-    constructor(bytesType: Types.BytesType, error: GenericError) {
+    constructor(bytesType: Types.BytesType, error: DecoderError) {
       super(error);
       this.type = bytesType;
+    }
+  }
+
+  export class BytesPaddingError extends DecoderError {
+    raw: string; //should be hex string
+    kind: "BytesPaddingError";
+    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
+      return `Bytestring has extra trailing bytes (padding error) (raw value ${this.raw})`;
+    }
+    constructor(raw: string) {
+      super();
+      this.raw = raw;
+      this.kind = "BytesPaddingError";
     }
   }
 
@@ -399,16 +412,24 @@ export namespace Values {
     }
   }
 
-  export interface AddressValueError extends ValueError, AddressValue {
-    kind: "error";
+  export class AddressValueError extends ValueError implements AddressValue {
     type: Types.AddressType;
-  }
-
-  export class AddressValueErrorGeneric extends ValueErrorGeneric implements AddressValueError {
-    type: Types.AddressType;
-    constructor(addressType: Types.AddressType, error: GenericError) {
+    constructor(addressType: Types.AddressType, error: DecoderError) {
       super(error);
       this.type = addressType;
+    }
+  }
+
+  export class AddressPaddingError extends DecoderError {
+    raw: string; //should be hex string
+    kind: "AddressPaddingError";
+    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
+      return `Address has extra leading bytes (padding error) (raw value ${this.raw})`;
+    }
+    constructor(raw: string) {
+      super();
+      this.raw = raw;
+      this.kind = "AddressPaddingError";
     }
   }
 
@@ -439,18 +460,14 @@ export namespace Values {
     }
   }
 
-  export interface StringValueError extends ValueError, StringValue {
-    kind: "error";
+  export class StringValueError extends ValueError implements StringValue {
     type: Types.StringType;
-  }
-
-  export class StringValueErrorGeneric extends ValueErrorGeneric implements StringValueError {
-    type: Types.StringType;
-    constructor(stringType: Types.StringType, error: GenericError) {
+    constructor(stringType: Types.StringType, error: DecoderError) {
       super(error);
       this.type = stringType;
     }
   }
+  //no padding error for strings
 
   //Fixed & Ufixed
   //These don't have a value format yet, so they just decode to errors for now!
@@ -461,56 +478,23 @@ export namespace Values {
     type: Types.UfixedType;
   }
 
-  export interface FixedValueError extends ValueError, FixedValue {
-    kind: "error";
+  export class FixedValueError extends ValueError implements FixedValue {
     type: Types.FixedType;
-  }
-  export interface UfixedValueError extends ValueError, UfixedValue {
-    kind: "error";
-    type: Types.UfixedType;
-  }
-
-  export class FixedValueErrorGeneric extends ValueErrorGeneric implements FixedValueError {
-    type: Types.FixedType;
-    constructor(fixedType: Types.FixedType, error: GenericError) {
+    constructor(fixedType: Types.FixedType, error: DecoderError) {
       super(error);
       this.type = fixedType;
     }
   }
-  export class UfixedValueErrorGeneric extends ValueErrorGeneric implements UfixedValueError {
+  export class UfixedValueError extends ValueError implements UfixedValue {
     type: Types.UfixedType;
-    constructor(ufixedType: Types.UfixedType, error: GenericError) {
+    constructor(ufixedType: Types.UfixedType, error: DecoderError) {
       super(error);
       this.type = ufixedType;
     }
   }
 
-  export class FixedValueErrorDecoding extends ValueError implements FixedValueError {
-    type: Types.FixedType;
-    error: FixedDecodingError;
-    constructor(fixedType: Types.FixedType, error: FixedDecodingError) {
-      super();
-      this.type = fixedType;
-      this.error = error;
-    }
-  }
-
-  export class UfixedValueErrorDecoding extends ValueError implements UfixedValueError {
-    type: Types.UfixedType;
-    error: FixedDecodingError;
-    constructor(ufixedType: Types.UfixedType, error: FixedDecodingError) {
-      super();
-      this.type = ufixedType;
-      this.error = error;
-    }
-  }
-
-  //not distinguishing fixed vs ufixed here
-  export class FixedDecodingError extends DecoderError {
-    raw: string; //should be hex string
-  }
-
-  export class FixedPointNotYetSupportedError extends FixedDecodingError {
+  export class FixedPointNotYetSupportedError extends DecoderError {
+    raw: string; //hex string
     kind: "FixedPointNotYetSupportedError";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return `Fixed-point decoding not yet supported (raw value: ${this.raw})`;
@@ -521,6 +505,7 @@ export namespace Values {
       this.kind = "FixedPointNotYetSupportedError";
     }
   }
+  //no separate padding error here, that would be pointless right now; will make later
 
   //Function for wrapping a value as an ElementaryValueProper
   //WARNING: this function does not check its inputs! Please check before using!
@@ -599,14 +584,9 @@ export namespace Values {
     }
   }
 
-  export interface ArrayValueError extends ValueError, ArrayValue {
-    kind: "error";
+  export class ArrayValueError extends ValueError implements ArrayValue {
     type: Types.ArrayType;
-  }
-
-  export class ArrayValueErrorGeneric extends ValueErrorGeneric implements ArrayValueError {
-    type: Types.ArrayType;
-    constructor(arrayType: Types.ArrayType, error: GenericError) {
+    constructor(arrayType: Types.ArrayType, error: DecoderError) {
       super(error);
       this.type = arrayType;
     }
@@ -638,14 +618,9 @@ export namespace Values {
     }
   }
 
-  export interface MappingValueError extends ValueError, MappingValue {
-    kind: "error";
+  export class MappingValueError extends ValueError implements MappingValue {
     type: Types.MappingType;
-  }
-
-  export class MappingValueErrorGeneric extends ValueErrorGeneric implements MappingValueError {
-    type: Types.MappingType;
-    constructor(mappingType: Types.MappingType, error: GenericError) {
+    constructor(mappingType: Types.MappingType, error: DecoderError) {
       super(error);
       this.type = mappingType;
     }
@@ -681,14 +656,9 @@ export namespace Values {
     }
   }
 
-  export interface StructValueError extends ValueError, StructValue {
-    kind: "error";
+  export class StructValueError extends ValueError implements StructValue {
     type: Types.StructType;
-  }
-
-  export class StructValueErrorGeneric extends ValueErrorGeneric implements StructValueError {
-    type: Types.StructType;
-    constructor(structType: Types.StructType, error: GenericError) {
+    constructor(structType: Types.StructType, error: DecoderError) {
       super(error);
       this.type = structType;
     }
@@ -720,14 +690,9 @@ export namespace Values {
     }
   }
 
-  export interface MagicValueError extends ValueError, MagicValue {
-    kind: "error";
+  export class MagicValueError extends ValueError implements MagicValue {
     type: Types.MagicType;
-  }
-
-  export class MagicValueErrorGeneric extends ValueErrorGeneric implements MagicValueError {
-    type: Types.MagicType;
-    constructor(magicType: Types.MagicType, error: GenericError) {
+    constructor(magicType: Types.MagicType, error: DecoderError) {
       super(error);
       this.type = magicType;
     }
@@ -766,36 +731,34 @@ export namespace Values {
   };
 
   //Enum errors
-  export interface EnumValueError extends ValueError, EnumValue {
-    kind: "error";
+  export class EnumValueError extends ValueError implements EnumValue {
     type: Types.EnumType;
-  }
-
-  export class EnumValueErrorGeneric extends ValueErrorGeneric implements EnumValueError {
-    type: Types.EnumType;
-    constructor(enumType: Types.EnumType, error: GenericError) {
+    constructor(enumType: Types.EnumType, error: DecoderError) {
       super(error);
       this.type = enumType;
     }
   }
 
-  export class EnumValueErrorDecoding extends ValueError implements EnumValueError {
+  export class EnumPaddingError extends DecoderError {
+    kind: "EnumPaddingError";
     type: Types.EnumType;
-    error: EnumDecodingError;
-    constructor(enumType: Types.EnumType, error: EnumDecodingError) {
+    raw: string; //should be hex string
+    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
+      let typeName = this.type.definingContractName + "." + this.type.typeName;
+      return `${typeName} has extra leading bytes (padding error) (raw value ${this.raw})`;
+    }
+    constructor(enumType: Types.EnumType, raw: string) {
       super();
       this.type = enumType;
-      this.error = error;
+      this.raw = raw;
+      this.kind = "EnumPaddingError";
     }
-  };
-
-  export abstract class EnumDecodingError extends DecoderError {
-    type: Types.EnumType;
-    raw: BN;
   }
 
-  export class EnumOutOfRangeError extends EnumDecodingError {
+  export class EnumOutOfRangeError extends DecoderError {
     kind: "EnumOutOfRangeError";
+    type: Types.EnumType;
+    raw: BN;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       let typeName = this.type.definingContractName + "." + this.type.typeName;
       return `Invalid ${typeName} (numeric value ${this.raw.toString()})`;
@@ -808,8 +771,10 @@ export namespace Values {
     }
   }
 
-  export class EnumNotFoundDecodingError extends EnumDecodingError {
+  export class EnumNotFoundDecodingError extends DecoderError {
     kind: "EnumNotFoundDecodingError";
+    type: Types.EnumType;
+    raw: BN;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       let typeName = this.type.definingContractName + "." + this.type.typeName;
       return `Unknown enum type ${typeName} of id ${this.type.id} (numeric value ${this.raw.toString()})`;
@@ -891,16 +856,24 @@ export namespace Values {
   }
 
   //errors for contracts
-  export interface ContractValueError extends ValueError, ContractValue {
-    kind: "error";
+  export class ContractValueError extends ValueError implements ContractValue {
     type: Types.ContractType;
-  }
-
-  export class ContractValueErrorGeneric extends ValueErrorGeneric implements ContractValueError {
-    type: Types.ContractType;
-    constructor(contractType: Types.ContractType, error: GenericError) {
+    constructor(contractType: Types.ContractType, error: DecoderError) {
       super(error);
       this.type = contractType;
+    }
+  }
+
+  export class ContractPaddingError extends DecoderError {
+    raw: string; //should be hex string
+    kind: "ContractPaddingError";
+    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
+      return `Contract address has extra leading bytes (padding error) (raw value ${this.raw})`;
+    }
+    constructor(raw: string) {
+      super();
+      this.raw = raw;
+      this.kind = "ContractPaddingError";
     }
   }
 
@@ -1015,16 +988,39 @@ export namespace Values {
   }
 
   //errors for external functions
-  export interface FunctionValueExternalError extends ValueError, FunctionValueExternal {
-    kind: "error";
+  export class FunctionValueExternalError extends ValueError implements FunctionValueExternal {
     type: Types.FunctionType;
-  }
-
-  export class FunctionValueExternalErrorGeneric extends ValueErrorGeneric implements FunctionValueExternalError {
-    type: Types.FunctionType;
-    constructor(functionType: Types.FunctionType, error: GenericError) {
+    constructor(functionType: Types.FunctionType, error: DecoderError) {
       super(error);
       this.type = functionType;
+    }
+  }
+
+  export class FunctionExternalNonStackPaddingError extends DecoderError {
+    raw: string; //should be hex string
+    kind: "FunctionExternalNonStackPaddingError";
+    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
+      return `External function has extra trailing bytes (padding error) (raw value ${this.raw})`;
+    }
+    constructor(raw: string) {
+      super();
+      this.raw = raw;
+      this.kind = "FunctionExternalNonStackPaddingError";
+    }
+  }
+
+  export class FunctionExternalStackPaddingError extends DecoderError {
+    rawAddress: string;
+    rawSelector: string;
+    kind: "FunctionExternalStackPaddingError";
+    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
+      return `External function address or selector has extra leading bytes (padding error) (raw address ${this.rawAddress}, raw selector ${this.rawSelector})`;
+    }
+    constructor(rawAddress: string, rawSelector: string) {
+      super();
+      this.rawAddress = rawAddress;
+      this.rawSelector = rawSelector;
+      this.kind = "FunctionExternalStackPaddingError";
     }
   }
 
@@ -1142,37 +1138,32 @@ export namespace Values {
   }
 
   //Internal function errors
-  export interface FunctionValueInternalError extends ValueError, FunctionValueInternal {
-    kind: "error";
+  export class FunctionValueInternalError extends ValueError implements FunctionValueInternal {
     type: Types.FunctionType;
-  }
-
-  export class FunctionValueInternalErrorGeneric extends ValueErrorGeneric implements FunctionValueInternalError {
-    type: Types.FunctionType;
-    constructor(functionType: Types.FunctionType, error: GenericError) {
+    constructor(functionType: Types.FunctionType, error: DecoderError) {
       super(error);
       this.type = functionType;
     }
   }
 
-  export class FunctionValueInternalErrorDecoding extends ValueError implements FunctionValueInternalError {
-    type: Types.FunctionType; //should be internal, obviously
-    error: FunctionInternalDecodingError;
-    constructor(functionType: Types.FunctionType, error: FunctionInternalDecodingError) {
+  export class FunctionInternalPaddingError extends DecoderError {
+    raw: string; //should be hex string
+    kind: "FunctionInternalPaddingError";
+    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
+      return `Internal function has extra leading bytes (padding error) (raw value ${this.raw})`;
+    }
+    constructor(raw: string) {
       super();
-      this.type = functionType;
-      this.error = error;
+      this.raw = raw;
+      this.kind = "FunctionInternalPaddingError";
     }
   }
 
-  export abstract class FunctionInternalDecodingError extends DecoderError {
+  export class NoSuchInternalFunctionError extends DecoderError {
+    kind: "NoSuchInternalFunctionError";
     context: Types.ContractType;
     deployedProgramCounter: number;
     constructorProgramCounter: number;
-  }
-
-  export class NoSuchInternalFunctionError extends FunctionInternalDecodingError {
-    kind: "NoSuchInternalFunctionError";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return `Invalid function (Deployed PC=${this.deployedProgramCounter}, constructor PC=${this.constructorProgramCounter}) of contract ${this.context.typeName}`;
     }
@@ -1185,8 +1176,11 @@ export namespace Values {
     }
   }
 
-  export class DeployedFunctionInConstructorError extends FunctionInternalDecodingError {
+  export class DeployedFunctionInConstructorError extends DecoderError {
     kind: "DeployedFunctionInConstructorError";
+    context: Types.ContractType;
+    deployedProgramCounter: number;
+    constructorProgramCounter: number;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return `Deployed-style function (PC=${this.deployedProgramCounter}) in constructor`;
     }
@@ -1199,8 +1193,11 @@ export namespace Values {
     }
   }
 
-  export class MalformedInternalFunctionError extends FunctionInternalDecodingError {
+  export class MalformedInternalFunctionError extends DecoderError {
     kind: "MalformedInternalFunctionError";
+    context: Types.ContractType;
+    deployedProgramCounter: number;
+    constructorProgramCounter: number;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return `Malformed internal function w/constructor PC only (value: ${this.constructorProgramCounter})`;
     }
@@ -1264,42 +1261,42 @@ export namespace Values {
   }
 
   //finally, a convenience function for constructing generic errors
-  export function makeGenericValueError(dataType: Types.Type, error: GenericError): ValueErrorGeneric {
+  export function makeGenericValueError(dataType: Types.Type, error: GenericError): ValueError {
     switch(dataType.typeClass) {
       case "uint":
-        return new UintValueErrorGeneric(dataType, error);
+        return new UintValueError(dataType, error);
       case "int":
-        return new IntValueErrorGeneric(dataType, error);
+        return new IntValueError(dataType, error);
       case "bool":
-        return new BoolValueErrorGeneric(dataType, error);
+        return new BoolValueError(dataType, error);
       case "bytes":
-        return new BytesValueErrorGeneric(dataType, error);
+        return new BytesValueError(dataType, error);
       case "address":
-        return new AddressValueErrorGeneric(dataType, error);
+        return new AddressValueError(dataType, error);
       case "fixed":
-        return new FixedValueErrorGeneric(dataType, error);
+        return new FixedValueError(dataType, error);
       case "ufixed":
-        return new UfixedValueErrorGeneric(dataType, error);
+        return new UfixedValueError(dataType, error);
       case "string":
-        return new StringValueErrorGeneric(dataType, error);
+        return new StringValueError(dataType, error);
       case "array":
-        return new ArrayValueErrorGeneric(dataType, error);
+        return new ArrayValueError(dataType, error);
       case "mapping":
-        return new MappingValueErrorGeneric(dataType, error);
+        return new MappingValueError(dataType, error);
       case "struct":
-        return new StructValueErrorGeneric(dataType, error);
+        return new StructValueError(dataType, error);
       case "enum":
-        return new EnumValueErrorGeneric(dataType, error);
+        return new EnumValueError(dataType, error);
       case "contract":
-        return new ContractValueErrorGeneric(dataType, error);
+        return new ContractValueError(dataType, error);
       case "magic":
-        return new MagicValueErrorGeneric(dataType, error);
+        return new MagicValueError(dataType, error);
       case "function":
         switch(dataType.visibility) {
           case "external":
-        return new FunctionValueExternalErrorGeneric(dataType, error);
+        return new FunctionValueExternalError(dataType, error);
           case "internal":
-        return new FunctionValueInternalErrorGeneric(dataType, error);
+        return new FunctionValueInternalError(dataType, error);
         }
     }
   }

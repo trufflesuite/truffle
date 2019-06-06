@@ -5,7 +5,7 @@ import * as DecodeUtils from "truffle-decode-utils";
 import { Types, Values } from "truffle-decode-utils";
 import read from "../read";
 import decodeValue from "./value";
-import { decodeExternalFunction } from "./value";
+import { decodeExternalFunction, checkPaddingLeft } from "./value";
 import { decodeMemoryReferenceByAddress } from "./memory";
 import { decodeStorageReferenceByAddress } from "./storage";
 import { decodeCalldataReferenceByAddress } from "./calldata";
@@ -78,7 +78,18 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
   //than elsewhere, so we can't just pass it on to decodeValue.
   if(dataType.typeClass === "function" && dataType.visibility === "external") {
     let address = pointer.literal.slice(0, DecodeUtils.EVM.WORD_SIZE);
-    let selector = pointer.literal.slice(-DecodeUtils.EVM.SELECTOR_SIZE);
+    let selectorWord = pointer.literal.slice(-DecodeUtils.EVM.WORD_SIZE);
+    if(!checkPaddingLeft(address, DecodeUtils.EVM.ADDRESS_SIZE)
+      ||!checkPaddingLeft(selectorWord, DecodeUtils.EVM.SELECTOR_SIZE)) {
+      return new Values.FunctionValueExternalError(
+        dataType,
+        new Values.FunctionExternalStackPaddingError(
+          DecodeUtils.Conversion.toHexString(address),
+          DecodeUtils.Conversion.toHexString(selectorWord)
+        )
+      );
+    }
+    let selector = selectorWord.slice(-DecodeUtils.EVM.SELECTOR_SIZE);
     return new Values.FunctionValueExternalProper(
       dataType,
       <Values.FunctionValueExternalDirect> (yield* decodeExternalFunction(address, selector, info))
