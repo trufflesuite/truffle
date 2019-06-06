@@ -89,82 +89,83 @@ const command = {
       return file.match(config.test_file_extension_regexp) != null;
     });
 
-    temp.mkdir("test-", function(err, temporaryDirectory) {
+    let temporaryDirectory;
+    try {
+      temporaryDirectory = temp.mkdirSync("test-");
+    } catch (error) {
+      return done(error);
+    }
+
+    function runCallback() {
+      var args = arguments;
+      // Ensure directory cleanup.
+      done.apply(null, args);
+      if (ipcDisconnect) {
+        ipcDisconnect();
+      }
+    }
+
+    function run() {
+      // Set a new artifactor; don't rely on the one created by Environments.
+      // TODO: Make the test artifactor configurable.
+      config.artifactor = new Artifactor(temporaryDirectory);
+
+      Test.run(
+        config.with({
+          test_files: files,
+          contracts_build_directory: temporaryDirectory
+        }),
+        runCallback
+      );
+    }
+
+    const environmentCallback = function(err) {
       if (err) return done(err);
-
-      function runCallback() {
-        var args = arguments;
-        // Ensure directory cleanup.
-        done.apply(null, args);
-        if (ipcDisconnect) {
-          ipcDisconnect();
-        }
+      // Copy all the built files over to a temporary directory, because we
+      // don't want to save any tests artifacts. Only do this if the build directory
+      // exists.
+      try {
+        fs.statSync(config.contracts_build_directory);
+      } catch (_error) {
+        return run();
       }
 
-      function run() {
-        // Set a new artifactor; don't rely on the one created by Environments.
-        // TODO: Make the test artifactor configurable.
-        config.artifactor = new Artifactor(temporaryDirectory);
+      promisifiedCopy(config.contracts_build_directory, temporaryDirectory)
+        .then(() => {
+          config.logger.log("Using network '" + config.network + "'." + OS.EOL);
 
-        Test.run(
-          config.with({
-            test_files: files,
-            contracts_build_directory: temporaryDirectory
-          }),
-          runCallback
-        );
-      }
+          run();
+        })
+        .catch(done);
+    };
 
-      const environmentCallback = function(err) {
-        if (err) return done(err);
-        // Copy all the built files over to a temporary directory, because we
-        // don't want to save any tests artifacts. Only do this if the build directory
-        // exists.
-        try {
-          fs.statSync(config.contracts_build_directory);
-        } catch (_error) {
-          return run();
-        }
+    if (config.networks[config.network]) {
+      Environment.detect(config)
+        .then(() => environmentCallback())
+        .catch(environmentCallback);
+    } else {
+      const ipcOptions = { network: "test" };
 
-        promisifiedCopy(config.contracts_build_directory, temporaryDirectory)
-          .then(() => {
-            config.logger.log(
-              "Using network '" + config.network + "'." + OS.EOL
-            );
-
-            run();
-          })
-          .catch(done);
+      const ganacheOptions = {
+        host: "127.0.0.1",
+        port: 7545,
+        network_id: 4447,
+        mnemonic:
+          "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
+        gasLimit: config.gas,
+        noVMErrorsOnRPCResponse: true
       };
-
-      if (config.networks[config.network]) {
-        Environment.detect(config)
-          .then(() => environmentCallback())
-          .catch(environmentCallback);
-      } else {
-        const ipcOptions = { network: "test" };
-
-        const ganacheOptions = {
-          host: "127.0.0.1",
-          port: 7545,
-          network_id: 4447,
-          mnemonic:
-            "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
-          gasLimit: config.gas,
-          noVMErrorsOnRPCResponse: true
-        };
-        Develop.connectOrStart(
-          ipcOptions,
-          ganacheOptions,
-          (started, disconnect) => {
-            ipcDisconnect = disconnect;
-            Environment.develop(config, ganacheOptions)
-              .then(() => environmentCallback())
-              .catch(environmentCallback);
-          }
-        );
-      }
-    });
+      Develop.connectOrStart(
+        ipcOptions,
+        ganacheOptions,
+        (started, disconnect) => {
+          ipcDisconnect = disconnect;
+          Environment.develop(config, ganacheOptions)
+            .then(() => environmentCallback())
+            .catch(environmentCallback);
+        }
+      );
+    }
   }
 };
 
