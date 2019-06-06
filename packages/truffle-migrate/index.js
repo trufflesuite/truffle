@@ -1,3 +1,4 @@
+const fs = require("fs");
 const dir = require("node-dir");
 const path = require("path");
 const async = require("async");
@@ -25,25 +26,32 @@ const Migrate = {
   assemble: function(options) {
     const config = Config.detect(options);
 
-    const files = dir.files(options.migrations_directory, { sync: true });
+    if (
+      fs.existsSync(options.migrations_directory) &&
+      fs.readdirSync(options.migrations_directory).length > 0
+    ) {
+      const files = dir.files(options.migrations_directory, { sync: true });
+      if (!files) return [];
 
-    options.allowed_extensions = config.migrations_file_extension_regexp;
+      options.allowed_extensions = config.migrations_file_extension_regexp;
 
-    let migrations = files
-      .filter(file => isNaN(parseInt(path.basename(file))) === false)
-      .filter(
-        file => path.extname(file).match(options.allowed_extensions) != null
-      )
-      .map(file => new Migration(file, Migrate.reporter, options));
+      let migrations = files
+        .filter(file => isNaN(parseInt(path.basename(file))) === false)
+        .filter(
+          file => path.extname(file).match(options.allowed_extensions) != null
+        )
+        .map(file => new Migration(file, Migrate.reporter, options));
 
-    // Make sure to sort the prefixes as numbers and not strings.
-    migrations = migrations.sort((a, b) => {
-      if (a.number > b.number) return 1;
-      if (a.number < b.number) return -1;
-      return 0;
-    });
-
-    return migrations;
+      // Make sure to sort the prefixes as numbers and not strings.
+      migrations = migrations.sort((a, b) => {
+        if (a.number > b.number) return 1;
+        if (a.number < b.number) return -1;
+        return 0;
+      });
+      return migrations;
+    } else {
+      return [];
+    }
   },
 
   run: async function(options, callback) {
@@ -87,6 +95,7 @@ const Migrate = {
 
   runFrom: async function(number, options) {
     let migrations = this.assemble(options);
+
     while (migrations.length > 0) {
       if (migrations[0].number >= number) break;
       migrations.shift();

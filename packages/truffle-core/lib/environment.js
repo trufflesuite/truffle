@@ -53,11 +53,11 @@ const Environment = {
     config.network = forkedNetwork;
   },
 
-  develop: function(config, ganacheOptions, callback) {
+  develop: async (config, ganacheOptions) => {
     expect.options(config, ["networks"]);
 
-    var network = config.network || "develop";
-    var url = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
+    const network = config.network || "develop";
+    const url = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
 
     config.networks[network] = {
       network_id: ganacheOptions.network_id,
@@ -68,13 +68,7 @@ const Environment = {
 
     config.network = network;
 
-    Environment.detect(config)
-      .then(() => {
-        callback();
-      })
-      .catch(error => {
-        callback(error);
-      });
+    return await Environment.detect(config);
   }
 };
 

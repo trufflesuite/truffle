@@ -109,9 +109,6 @@ function* fetchTx(txHash) {
     return result.error;
   }
 
-  debug("sending initial call");
-  yield* evm.begin(result);
-
   //get addresses created/called during transaction
   debug("processing trace for addresses");
   let addresses = yield* trace.processTrace(result.trace);
@@ -136,6 +133,9 @@ function* fetchTx(txHash) {
   yield all(
     addresses.map((address, i) => call(recordInstance, address, binaries[i]))
   );
+
+  debug("sending initial call");
+  yield* evm.begin(result);
 }
 
 function* recordContexts(...contexts) {
