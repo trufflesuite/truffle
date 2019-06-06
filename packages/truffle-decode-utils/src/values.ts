@@ -1231,6 +1231,7 @@ export namespace Values {
     }
   }
 
+  //attempted to decode an indexed parameter of reference type error
   export class IndexedReferenceTypeError extends GenericError {
     type: Types.ReferenceType;
     raw: string; //should be hex string
