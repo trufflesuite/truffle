@@ -168,10 +168,18 @@ export const schema = mergeSchemas({
       id: ID!
     }
 
+    input ContractInstanceBytecodeInput {
+      id: ID!
+    }
+    input ContractInstanceContractInput {
+      id: ID!
+    }
+
     input ContractInstanceInput {
-      address: ContractInstanceAddressInput!
-      network: ContractInstanceNetworkInput!
-      contract: ContractInput
+      address: Address!
+      network: ContractInstanceNetworkInput
+      contract: ContractInstanceContractInput
+      callBytecode: ContractInstanceBytecodeInput
     }
 
     input ContractInstancesAddInput {
@@ -285,6 +293,20 @@ export const schema = mergeSchemas({
 
           return sourceContracts[sourceContract.index];
         }
+      }
+    },
+    ContractInstance: {
+      network: {
+        resolve: async ({ network }, _, { workspace }) =>
+          await workspace.network(network)
+      },
+      contract: {
+        resolve: ({ contract }, _, { workspace }) =>
+          workspace.contract(contract)
+      },
+      callBytecode: {
+        resolve: ({ callBytecode }, _, { workspace }) =>
+          workspace.bytecode(callBytecode)
       }
     },
     SourceContract: {
