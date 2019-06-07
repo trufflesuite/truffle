@@ -44,7 +44,7 @@ const reason = {
     };
 
     return new Promise(resolve => {
-      web3.currentProvider.send(packet, (err, response) => {
+      web3.currentProvider.sendAsync(packet, (err, response) => {
         const reasonString = reason._extract(response, web3);
         resolve(reasonString);
       });
