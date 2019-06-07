@@ -460,9 +460,9 @@ describe("Further Decoding", function() {
 
       await session.continueUntilBreakpoint();
 
-      const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+      const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
         await session.variables()
-      ); //get rid of BNs for simplicity
+      );
       debug("variables %O", variables);
 
       const expectedResult = {
@@ -496,9 +496,9 @@ describe("Further Decoding", function() {
 
       await session.continueUntilBreakpoint();
 
-      const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+      const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
         await session.variables()
-      ); //get rid of BNs for simplicity
+      );
       debug("variables %O", variables);
 
       const expectedResult = {
@@ -532,7 +532,9 @@ describe("Further Decoding", function() {
 
       await session.continueUntilBreakpoint();
 
-      const variables = await session.variables();
+      const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+        await session.variables()
+      );
       debug("variables %O", variables);
 
       const expectedResult = {
