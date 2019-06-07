@@ -13,12 +13,12 @@ TestSource.prototype.require = function() {
 };
 
 TestSource.prototype.resolve = function(import_path, callback) {
-  var self = this;
+  const self = this;
 
   if (import_path === "truffle/DeployedAddresses.sol") {
     return find_contracts(this.config.contracts_directory, function(
       err,
-      source_files
+      sourceFiles
     ) {
       // Ignore this error. Continue on.
 
@@ -31,25 +31,25 @@ TestSource.prototype.resolve = function(import_path, callback) {
         return callback(error);
       }
 
-      var mapping = {};
+      const mapping = {};
 
-      var blacklist = ["Assert", "DeployedAddresses"];
+      const blacklist = ["Assert", "DeployedAddresses"];
 
       // Ensure we have a mapping for source files and abstraction files
       // to prevent any compile errors in tests.
-      source_files.forEach(function(file) {
-        var name = path.basename(file, ".sol");
+      sourceFiles.forEach(file => {
+        const name = path.basename(file, ".sol");
         if (blacklist.indexOf(name) >= 0) return;
         mapping[name] = false;
       });
 
       abstraction_files.forEach(file => {
-        var name = path.basename(file, ".json");
+        const name = path.basename(file, ".json");
         if (blacklist.indexOf(name) >= 0) return;
         mapping[name] = false;
       });
 
-      var promises = abstraction_files.map(file => {
+      const promises = abstraction_files.map(file => {
         return new Promise((accept, reject) => {
           fs.readFile(
             path.join(self.config.contracts_build_directory, file),
@@ -63,8 +63,8 @@ TestSource.prototype.resolve = function(import_path, callback) {
       });
 
       Promise.all(promises)
-        .then(files_data => {
-          const addresses = files_data
+        .then(filesData => {
+          const addresses = filesData
             .map(data => JSON.parse(data))
             .map(json => contract(json))
             .map(c => {
