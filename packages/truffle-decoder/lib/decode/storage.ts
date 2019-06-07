@@ -4,7 +4,7 @@ const debug = debugModule("decoder:decode:storage");
 import read from "../read";
 import * as DecodeUtils from "truffle-decode-utils";
 import { Types, Values } from "truffle-decode-utils";
-import decodeResult from "./value";
+import decodeValue from "./value";
 import { StoragePointer, DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { storageSizeForType } from "../allocate/storage";
@@ -18,7 +18,7 @@ export default function* decodeStorage(dataType: Types.Type, pointer: StoragePoi
     return yield* decodeStorageReference(dataType, pointer, info);
   }
   else {
-    return yield* decodeResult(dataType, pointer, info);
+    return yield* decodeValue(dataType, pointer, info);
   }
 }
 
@@ -27,14 +27,14 @@ export default function* decodeStorage(dataType: Types.Type, pointer: StoragePoi
 //Of course, pointers to value types don't exist in Solidity, so that warning is redundant, but...
 export function* decodeStorageReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
 
-  let rawResult: Uint8Array;
+  let rawValue: Uint8Array;
   try {
-    rawResult = yield* read(pointer, info.state);
+    rawValue = yield* read(pointer, info.state);
   }
   catch(error) { //error: Values.DecodingError
     return Values.makeGenericErrorResult(dataType, error.error);
   }
-  const startOffset = DecodeUtils.Conversion.toBN(rawResult);
+  const startOffset = DecodeUtils.Conversion.toBN(rawValue);
   let rawSize: StorageTypes.StorageLength;
   try {
     rawSize = storageSizeForType(dataType, info.userDefinedTypes, info.storageAllocations);
@@ -208,7 +208,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
         length = lengthByte / 2;
         debug("in-word; length %o", length);
 
-        return yield* decodeResult(dataType, { storage: {
+        return yield* decodeValue(dataType, { storage: {
           from: { slot: pointer.storage.from.slot, index: 0 },
           to: { slot: pointer.storage.from.slot, index: length - 1}
         }}, info);
@@ -217,7 +217,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
         length = DecodeUtils.Conversion.toBN(data).subn(1).divn(2).toNumber();
         debug("new-word, length %o", length);
 
-        return yield* decodeResult(dataType, {
+        return yield* decodeValue(dataType, {
           storage: {
             from: {
               slot: {

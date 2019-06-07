@@ -3,7 +3,7 @@ const debug = debugModule("decoder:decode:special");
 
 import * as DecodeUtils from "truffle-decode-utils";
 import { Types, Values } from "truffle-decode-utils";
-import decodeResult from "./value";
+import decodeValue from "./value";
 import { EvmInfo } from "../types/evm";
 import { SpecialPointer } from "../types/pointer";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
@@ -13,7 +13,7 @@ export default function* decodeSpecial(dataType: Types.Type, pointer: SpecialPoi
     return yield* decodeMagic(dataType, pointer, info);
   }
   else {
-    return yield* decodeResult(dataType, pointer, info);
+    return yield* decodeValue(dataType, pointer, info);
   }
 }
 
@@ -25,7 +25,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
   switch(pointer.special) {
     case "msg":
       return new Values.MagicValue(dataType, {
-        data: <Values.BytesResult> (yield* decodeResult(
+        data: <Values.BytesResult> (yield* decodeValue(
           {
             typeClass: "bytes",
             kind: "dynamic",
@@ -37,7 +37,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
           }},
           info
         )),
-        sig: <Values.BytesResult> (yield* decodeResult(
+        sig: <Values.BytesResult> (yield* decodeValue(
           {
             typeClass: "bytes",
             kind: "static",
@@ -49,7 +49,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
           }},
           info
         )),
-        sender: <Values.AddressResult> (yield* decodeResult(
+        sender: <Values.AddressResult> (yield* decodeValue(
           {
             typeClass: "address",
             payable: true
@@ -57,7 +57,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
           {special: "sender"},
           info
         )),
-        value: <Values.UintResult> (yield* decodeResult(
+        value: <Values.UintResult> (yield* decodeValue(
           {
             typeClass: "uint",
             bits: 256
@@ -68,7 +68,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
       });
     case "tx":
       return new Values.MagicValue(dataType, {
-        origin: <Values.AddressResult> (yield* decodeResult(
+        origin: <Values.AddressResult> (yield* decodeValue(
           {
             typeClass: "address",
             payable: true
@@ -76,7 +76,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
           {special: "origin"},
           info
         )),
-        gasprice: <Values.UintResult> (yield* decodeResult(
+        gasprice: <Values.UintResult> (yield* decodeValue(
           {
             typeClass: "uint",
             bits: 256
@@ -87,7 +87,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
       });
     case "block":
       let block: {[field: string]: Values.Result} = {
-        coinbase: <Values.AddressResult> (yield* decodeResult(
+        coinbase: <Values.AddressResult> (yield* decodeValue(
           {
             typeClass: "address",
             payable: true
@@ -100,7 +100,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
       //the lack of generator arrow functions, we do it by mutating block
       const variables = ["difficulty", "gaslimit", "number", "timestamp"];
       for (let variable of variables) {
-        block[variable] = <Values.UintResult> (yield* decodeResult(
+        block[variable] = <Values.UintResult> (yield* decodeValue(
           {
             typeClass: "uint",
             bits: 256
