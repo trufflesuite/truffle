@@ -185,28 +185,26 @@ const Test = {
     return Migrate.run(migrateConfig);
   },
 
-  defineSolidityTests: function(mocha, contracts, dependency_paths, runner) {
-    return new Promise(function(accept) {
-      contracts.forEach(function(contract) {
-        SolidityTest.define(contract, dependency_paths, runner, mocha);
+  defineSolidityTests: function(mocha, contracts, dependencyPaths, runner) {
+    return new Promise(resolve => {
+      contracts.forEach(contract => {
+        SolidityTest.define(contract, dependencyPaths, runner, mocha);
       });
 
-      accept();
+      resolve();
     });
   },
 
-  setJSTestGlobals: function(web3, accounts, test_resolver, runner) {
+  setJSTestGlobals: function(web3, accounts, testResolver, runner) {
     return new Promise(function(accept) {
       global.web3 = web3;
       global.assert = chai.assert;
       global.expect = chai.expect;
       global.artifacts = {
-        require: function(import_path) {
-          return test_resolver.require(import_path);
-        }
+        require: import_path => testResolver.require(import_path)
       };
 
-      var template = function(tests) {
+      const template = function(tests) {
         this.timeout(runner.TEST_TIMEOUT);
 
         before("prepare suite", function(done) {
