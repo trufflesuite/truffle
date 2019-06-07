@@ -28,6 +28,10 @@ const resources = {
   networks: {
     createIndexes: [
     ]
+  },
+  contractInstances: {
+    createIndexes: [
+    ]
   }
 }
 
@@ -199,7 +203,7 @@ export class Workspace {
 
           const contractInstance = await this.contractInstance({ id }) || { ...contractInstanceInput, id };
 
-          await this.sources.put({
+          await this.contractInstances.put({
             ...contractInstance,
             ...contractInstanceInput,
 
