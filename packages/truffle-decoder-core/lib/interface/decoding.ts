@@ -15,13 +15,14 @@ export function* decodeVariable(definition: AstDefinition, pointer: Pointer.Data
   return yield* decode(dataType, pointer, info); //no need to pass an offset
 }
 
-export function* decodeCalldata(info: EvmInfo, contractId: number | null): IterableIterator<CalldataDecoding | DecoderRequest | Values.Value | GeneratorJunk> {
-  if(contractId === null) {
+export function* decodeCalldata(info: EvmInfo, contractType: DecodeUtils.Types.ContractType | null): IterableIterator<CalldataDecoding | DecoderRequest | Values.Value | GeneratorJunk> {
+  if(contractType === null) {
     //if we don't know the contract ID, we can't decode
     return {
       kind: "unknown";
     }
   }
+  const contractId = contractType.id;
   const allocations = info.allocations.calldata[contractId];
   let allocation: CalldataAllocation;
   let isConstructor: boolean = info.currentContext.isConstructor;
@@ -41,7 +42,10 @@ export function* decodeCalldata(info: EvmInfo, contractId: number | null): Itera
     allocation = allocations[selector];
   }
   if(allocation === undefined) {
-    return { kind: "fallback" };
+    return {
+      kind: "fallback",
+      class: contractType
+    };
   }
   let decodedArguments = allocation.arguments.map(
     argumentAllocation => {
@@ -60,25 +64,28 @@ export function* decodeCalldata(info: EvmInfo, contractId: number | null): Itera
   if(isConstructor) {
     return {
       kind: "constructor",
+      class: contractType,
       arguments: decodedArguments
     };
   }
   else {
     return {
       kind: "function",
+      class: contractType
       name: allocation.definition.name,
       arguments: decodedArguments
     };
   }
 }
 
-export function* decodeEvent(info: EvmInfo, contractId: number | null): IterableIterator<EventDecoding | DecoderRequest | Values.Value | GeneratorJunk> {
-  if(contractId === null) {
+export function* decodeEvent(info: EvmInfo, contractType: DecodeUtils.Types.ContractType | null): IterableIterator<EventDecoding | DecoderRequest | Values.Value | GeneratorJunk> {
+  if(contractType === null) {
     //if we don't know the contract ID, we can't decode
     return {
       kind: "unknown";
     }
   }
+  const contractId = contractType.id;
   const allocations = info.allocations.event[contractId];
   //TODO: error-handling here
   let rawSelector = read(info.state,
@@ -90,7 +97,10 @@ export function* decodeEvent(info: EvmInfo, contractId: number | null): Iterable
   allocation = allocations[selector];
   if(allocation === undefined) {
     //we can't decode
-    return { kind: "anonymous" };
+    return {
+      kind: "anonymous",
+      class: contractType
+    };
   }
   let decodedArguments = allocation.arguments.map(
     argumentAllocation => {
@@ -108,6 +118,7 @@ export function* decodeEvent(info: EvmInfo, contractId: number | null): Iterable
   );
   return {
     kind: "event",
+    class: contractType,
     name: allocation.definition.name,
     arguments: decodedArguments
   };

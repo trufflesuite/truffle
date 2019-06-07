@@ -31,6 +31,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   private contexts: DecodeUtils.Contexts.DecoderContexts = {};
   private context: DecodeUtils.Contexts.DecoderContext;
   private constructorContext: DecodeUtils.Contexts.DecoderContext;
+  private contractType: DecodeUtils.Types.ContractType;
 
   private referenceDeclarations: AstReferences;
   private userDefinedTypes: Types.TypesById;
@@ -107,6 +108,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.contexts = <DecodeUtils.Contexts.DecoderContexts>DecodeUtils.Contexts.normalizeContexts(this.contexts);
     this.context = this.contexts[this.contextHash];
     this.constructorContext = this.contexts[this.constructorContextHash];
+    this.contractType = DecodeUtils.Contexts.contextToType(this.context);
   }
 
   public async init(): Promise<void> {
@@ -314,6 +316,18 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   //NOTE: will only work with transactions to-or-creating this address!
   public async decodeTransaction(transaction: Transaction): DecodedTransaction {
+    if(transaction.to !== this.contractAddress) {
+      if(transaction.to !== null) {
+        throw new EventOrTransactionIsNotForThisContract(transaction.to, this.contractAddress);
+      }
+      else {
+        //OK, it's not *to* this address, but maybe it *created* it?
+        const receipt = await web3.eth.getTransactionReceipt(transaction.hash);
+        if(receipt.contractAddress !== this.contractAddress) {
+          throw new EventOrTransactionIsNotForThisContract(receipt.contractAddress, this.contractAddress);
+        }
+      }
+    }
     const block = transaction.blockNumber;
     const data = DecodeUtils.Conversion.toBytes(transaction.input);
     const info: Decoder.EvmInfo = {
@@ -326,7 +340,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       allocations: this.allocations,
       contexts: this.contexts
     };
-    const decoder = Decoder.decodeCalldata(info, this.contractNode.id);
+    const decoder = Decoder.decodeCalldata(info, this.contractType);
 
     let result = decoder.next();
     while(!result.done) {
@@ -349,6 +363,9 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   //NOTE: will only work with logs for this address!
   public async decodeLog(log: Log): DecodedEvent {
+    if(log.address !== this.contractAddress) {
+      throw new EventOrTransactionIsNotForThisContract(log.address, this.contractAddress);
+    }
     const block = log.blockNumber;
     const data = DecodeUtils.Conversion.toBytes(log.data);
     const topics = log.topics.map(DecodeUtils.Conversion.toBytes);
@@ -363,7 +380,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       allocations: this.allocations,
       contexts: this.contexts
     };
-    const decoder = Decoder.decodeEvent(info, this.contractNode.id);
+    const decoder = Decoder.decodeEvent(info, this.contractType);
 
     let result = decoder.next();
     while(!result.done) {

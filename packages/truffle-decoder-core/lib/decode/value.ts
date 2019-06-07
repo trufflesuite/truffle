@@ -198,13 +198,10 @@ export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): Iterab
   let code = DecodeUtils.Conversion.toHexString(codeBytes);
   let context = DecodeUtils.Contexts.findDecoderContext(info.contexts, code);
   if(context !== null && context.contractName !== undefined) {
-    return new Values.ContractValueDirectKnown(address, {
-      typeClass: "contract",
-      id: context.contractId,
-      typeName: context.contractName,
-      contractKind: context.contractKind,
-      payable: context.payable
-    });
+    return new Values.ContractValueDirectKnown(
+      address,
+      DecodeUtils.Contexts.contextToType(context)
+    );
   }
   else {
     return new Values.ContractValueDirectUnknown(address);

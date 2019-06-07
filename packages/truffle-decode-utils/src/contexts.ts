@@ -8,6 +8,7 @@ const abiCoder = new AbiCoder();
 import escapeRegExp from "lodash.escaperegexp";
 
 import { EVM } from "./evm";
+import { Types } from "./types";
 
 export namespace Contexts {
 
@@ -292,7 +293,7 @@ export namespace Contexts {
       return false;
     }
     for(let i = 0; i < abiParameters.length; i++) {
-      if(!matchesAbiType(abiParameters[i], nodeParameters[i], referenceDeclarations) {
+      if(!matchesAbiType(abiParameters[i], nodeParameters[i], referenceDeclarations)) {
         return false;
       }
     }
@@ -317,5 +318,14 @@ export namespace Contexts {
     return abiEntry.type === "constructor" && abiEntry.inputs.length === 0;
   }
 
+  export function contextToType(context: DecoderContext | DebuggerContext): Types.ContractType {
+    return {
+      typeClass: "contract",
+      id: context.contractId,
+      typeName: context.contractName,
+      contractKind: context.contractKind,
+      payable: context.payable
+    };
+  }
 
 }

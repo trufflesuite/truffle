@@ -45,3 +45,15 @@ export class ContractBeingDecodedHasNoNodeError extends Error {
     this.name = "ContractBeingDecodedHasNoNodeError";
   }
 }
+
+export class EventOrTransactionIsNotForThisContract extends Error {
+  thisAddress: string;
+  decoderAddress: string;
+  constructor(thisAddress: string, decoderAddress: string) {
+    const message = "This event or transaction's address does not match that of the contract decoder";
+    super(message);
+    this.name = "EventOrTransactionIsNotForThisContract";
+    this.thisAddress = thisAddress;
+    this.decoderAddress = decoderAddress;
+  }
+}

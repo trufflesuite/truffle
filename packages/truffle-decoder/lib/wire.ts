@@ -122,8 +122,8 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     return code;
   }
 
-  public decodeTransaction(transaction: Transaction): DecodedTransaction {
-    const contractId = await this.getContractIdByAddress(transaction.to, transaction.blockNumber, transaction.input);
+  public async decodeTransaction(transaction: Transaction): DecodedTransaction {
+    const contractType = await this.getContractTypeByAddress(transaction.to, transaction.blockNumber, transaction.input);
 
     const data = DecodeUtils.Conversion.toBytes(transaction.input);
     const info: Decoder.EvmInfo = {
@@ -136,7 +136,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       allocations: this.allocations,
       contexts: this.contexts
     };
-    const decoder = Decoder.decodeCalldata(info, contractId);
+    const decoder = Decoder.decodeCalldata(info, contractType);
 
     let result = decoder.next();
     while(!result.done) {
@@ -157,8 +157,8 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     };
   }
 
-  public decodeLog(log: Log): DecodedEvent {
-    const contractId = await this.getContractIdByAddress(log.address, log.blockNumber);
+  public async decodeLog(log: Log): DecodedEvent {
+    const contractType = await this.getContractTypeByAddress(log.address, log.blockNumber);
 
     const data = DecodeUtils.Conversion.toBytes(log.data);
     const topics = log.topics.map(DecodeUtils.Conversion.toBytes);
@@ -173,7 +173,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       allocations: this.allocations,
       contexts: this.contexts
     };
-    const decoder = Decoder.decodeEvent(info, this.contractNode.id);
+    const decoder = Decoder.decodeEvent(info, contractType);
 
     let result = decoder.next();
     while(!result.done) {
@@ -194,8 +194,8 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     };
   }
 
-  public decodeLogs(logs: Log[]): DecodedEvent[] {
-    return logs.map(this.decodeLog);
+  public async decodeLogs(logs: Log[]): DecodedEvent[] {
+    return await Promise.all(logs.map(this.decodeLog));
   }
 
   public async events(name: string | null = null, fromBlock: BlockType = "latest", toBlock: BlockType = "latest"): Promise<DecoderTypes.DecodedEvent[]> {
@@ -224,10 +224,10 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
   }
 
   //normally, this function gets the code of the given address at the given block,
-  //and checks this against the known contexts to determine the contract ID
+  //and checks this against the known contexts to determine the contract type
   //however, if this fails and constructorBinary is passed in, it will then also
   //attempt to determine it from that
-  private async getContractIdByAddress(address: string, block: number, constructorBinary?: string): Promise<number | null> {
+  private async getContractTypeByAddress(address: string, block: number, constructorBinary?: string): Promise<number | null> {
     let code: string;
     if(address !== null) {
       code = DecodeUtils.Conversion.toHexString(
@@ -242,7 +242,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     if(context === null) {
       return null;
     }
-    return context.contractId;
+    return DecodeUtils.Contexts.contextToType(context);
   }
 
 }
