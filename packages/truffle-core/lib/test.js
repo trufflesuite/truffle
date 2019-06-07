@@ -90,8 +90,8 @@ const Test = {
       testResolver
     );
 
-    const testContracts = solTests.map(test_file_path => {
-      return testResolver.require(test_file_path);
+    const testContracts = solTests.map(testFilePath => {
+      return testResolver.require(testFilePath);
     });
 
     const runner = new TestRunner(config);
@@ -113,7 +113,7 @@ const Test = {
     });
 
     return new Promise(resolve => {
-      mocha.run(function(failures) {
+      mocha.run(failures => {
         config.logger.warn = warn;
 
         resolve(failures);
