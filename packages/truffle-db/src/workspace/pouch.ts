@@ -255,7 +255,7 @@ export class Workspace {
               _id: id
             });
 
-            return { networkID: networkID };
+            return { networkID, id };
           }
         }
       ))

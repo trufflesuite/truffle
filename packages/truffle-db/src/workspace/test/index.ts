@@ -516,3 +516,168 @@ describe("Contract", () => {
     }
   });
 });
+
+/*
+ * Network
+ */
+const GetNetwork = gql`
+query GetNetwork($id: ID!) {
+  network(id: $id) {
+    networkID
+    id
+  }
+}`;
+
+const AddNetworks = gql`
+mutation AddNetworks($networkID: NetworkID!) {
+  networksAdd(input: {
+    networks: [{
+      networkID: $networkID
+    }]
+  }) {
+    networks {
+      networkID
+      id
+    }
+  }
+}`;
+
+describe("Network", () => {
+  it("adds network", async () => {
+    const client = new WorkspaceClient();
+    const expectedId = generateId({ networkID: Object.keys(Migrations.networks)[0] })
+    const variables = {
+      networkID: Object.keys(Migrations.networks)[0]
+    }
+
+    //add network
+    {
+      const data = await client.execute(AddNetworks, { networkID: variables.networkID });
+      expect(data).toHaveProperty("networksAdd");
+
+      const { networksAdd } = data;
+      expect(networksAdd).toHaveProperty("networks");
+
+      const { networks } = networksAdd;
+      expect(networks).toHaveLength(1);
+
+      const network = networks[0];
+      expect(network).toHaveProperty("id");
+
+      const { id } = network;
+      expect(id).toEqual(expectedId);
+    }
+
+    // // ensure retrieved as matching
+    {
+      const data = await client.execute(GetNetwork, { id: expectedId });
+      expect(data).toHaveProperty("network");
+
+      const { network } = data;
+      expect(network).toHaveProperty("id");
+      expect(network).toHaveProperty("networkID");
+
+      const { id, networkID } = network;
+      expect(id).toEqual(expectedId);
+      expect(networkID).toEqual(variables.networkID);
+    }
+  });
+});
+
+/*
+ * Contract Instance
+ */
+const GetContractInstance = gql`
+query GetContractInstance($id: ID!) {
+  contractInstance(id: $id) {
+    address
+    network {
+      networkID
+    }
+  }
+}`;
+
+const AddContractInstances = gql`
+mutation AddContractInstances($address: String!, $networkId: ID!) {
+  contractInstancesAdd(input: {
+    contractInstances: [{
+      address: $address
+      network: {
+        id: $networkId
+      }
+    }]
+  }) {
+    contractInstances {
+      address
+      network {
+        networkID
+      }
+    }
+  }
+}`;
+
+describe("Contract Instance", () => {
+  const client = new WorkspaceClient();
+  let variables;
+  let expectedId;
+  let networkAdded;
+
+  beforeEach(async () => {
+    const network = { networkID: Object.keys(Migrations.networks)[0]};
+    const address = Object.values(Migrations.networks)[0]["address"];
+    networkAdded = await client.execute(AddNetworks, {
+      networkID: Object.keys(Migrations.networks)[0]
+    });
+    expectedId = generateId({ address: address, network: { id: networkAdded.networksAdd.networks[0].id }})
+
+    variables = {
+      networkId: networkAdded.networksAdd.networks[0].id,
+      address: address,
+      contractId: generateId({
+        name: Migrations.contractName,
+        abi: { json: JSON.stringify(Migrations.abi) } ,
+        sourceContract: { index: 0 } ,
+        compilation: { id: "1234" }
+      }),
+      bytecodeId: generateId({ bytes: Migrations.bytecode })
+    }
+  });
+
+  it("adds contract instance", async () => {
+    //add network
+    {
+      const data = await client.execute(AddContractInstances, variables);
+      expect(data).toHaveProperty("contractInstancesAdd");
+
+      const { contractInstancesAdd } = data;
+      expect(contractInstancesAdd).toHaveProperty("contractInstances");
+
+      const { contractInstances } = contractInstancesAdd;
+      expect(contractInstances[0]).toHaveProperty("address");
+      expect(contractInstances[0]).toHaveProperty("network");
+
+      const { address, network } = contractInstances[0];
+      expect(address).toEqual(Object.values(Migrations.networks)[0]["address"]);
+      expect(network).toHaveProperty("networkID");
+
+      const { networkID } = network;
+      expect(networkID).toEqual(Object.keys(Migrations.networks)[0]);
+    }
+
+    // // ensure retrieved as matching
+    {
+      const data = await client.execute(GetContractInstance, { id: expectedId });
+      expect(data).toHaveProperty("contractInstance");
+
+      const { contractInstance } = data;
+      expect(contractInstance).toHaveProperty("address");
+      expect(contractInstance).toHaveProperty("network");
+
+      const { address, network } = contractInstance;
+      expect(address).toEqual(variables.address);
+
+      const { networkID } = network;
+      expect(networkID).toEqual(networkAdded.networksAdd.networks[0].networkID);
+    }
+  });
+});
