@@ -4,7 +4,7 @@ const debug = debugModule("decoder-core:decode:calldata");
 import read from "../read";
 import * as DecodeUtils from "truffle-decode-utils";
 import { Types, Values } from "truffle-decode-utils";
-import decodeResult from "./value";
+import decodeValue from "./value";
 import { CalldataPointer, DataPointer } from "../types/pointer";
 import { CalldataMemberAllocation } from "../types/allocation";
 import { calldataSizeForType, isTypeDynamic } from "../allocate/calldata";
@@ -29,22 +29,22 @@ export default function* decodeCalldata(dataType: Types.Type, pointer: CalldataP
   }
   else {
     debug("pointer %o", pointer);
-    return yield* decodeResult(dataType, pointer, info);
+    return yield* decodeValue(dataType, pointer, info);
   }
 }
 
 export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo, base: number = 0): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   const { state } = info;
   debug("pointer %o", pointer);
-  let rawResult: Uint8Array;
+  let rawValue: Uint8Array;
   try {
-    rawResult = yield* read(pointer, state);
+    rawValue = yield* read(pointer, state);
   }
   catch(error) { //error: Values.DecodingError
     return Values.makeGenericErrorResult(dataType, error.error);
   }
 
-  let startPosition = DecodeUtils.Conversion.toBN(rawResult).toNumber() + base;
+  let startPosition = DecodeUtils.Conversion.toBN(rawValue).toNumber() + base;
   debug("startPosition %d", startPosition);
 
   let dynamic: boolean;
@@ -94,7 +94,7 @@ export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType,
         calldata: { start: startPosition + DecodeUtils.EVM.WORD_SIZE, length }
       }
 
-      return yield* decodeResult(dataType, childPointer, info);
+      return yield* decodeValue(dataType, childPointer, info);
 
     case "array":
 

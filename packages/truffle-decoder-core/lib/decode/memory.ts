@@ -4,7 +4,7 @@ const debug = debugModule("decoder-core:decode:memory");
 import read from "../read";
 import * as DecodeUtils from "truffle-decode-utils";
 import { Types, Values } from "truffle-decode-utils";
-import decodeResult from "./value";
+import decodeValue from "./value";
 import { MemoryPointer, DataPointer } from "../types/pointer";
 import { MemoryMemberAllocation } from "../types/allocation";
 import { EvmInfo } from "../types/evm";
@@ -15,22 +15,22 @@ export default function* decodeMemory(dataType: Types.Type, pointer: MemoryPoint
     return yield* decodeMemoryReferenceByAddress(dataType, pointer, info);
   }
   else {
-    return yield* decodeResult(dataType, pointer, info);
+    return yield* decodeValue(dataType, pointer, info);
   }
 }
 
 export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   const { state } = info;
   // debug("pointer %o", pointer);
-  let rawResult: Uint8Array;
+  let rawValue: Uint8Array;
   try {
-    rawResult = yield* read(pointer, state);
+    rawValue = yield* read(pointer, state);
   }
   catch(error) { //error: Values.DecodingError
     return Values.makeGenericErrorResult(dataType, error.error);
   }
 
-  let startPosition = DecodeUtils.Conversion.toBN(rawResult).toNumber();
+  let startPosition = DecodeUtils.Conversion.toBN(rawValue).toNumber();
   let rawLength: Uint8Array;
   let length: number;
 
@@ -56,7 +56,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         memory: { start: startPosition + DecodeUtils.EVM.WORD_SIZE, length }
       }
 
-      return yield* decodeResult(dataType, childPointer, info);
+      return yield* decodeValue(dataType, childPointer, info);
 
     case "array":
 
