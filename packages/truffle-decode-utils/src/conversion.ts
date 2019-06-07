@@ -1,7 +1,7 @@
 import BN from "bn.js";
 import Web3 from "web3";
 import { Constants } from "./constants";
-import { Values } from "./values";
+import { Values } from "./types/values";
 
 export namespace Conversion {
 

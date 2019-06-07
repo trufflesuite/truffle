@@ -23,8 +23,8 @@ const debug = debugModule("decode-utils:values");
 import BN from "bn.js";
 import { Types } from "./types";
 import util from "util";
-import { AstDefinition } from "./ast";
-import { Definition as DefinitionUtils } from "./definition";
+import { AstDefinition } from "../ast";
+import { Definition as DefinitionUtils } from "../definition";
 
 export namespace Values {
 
