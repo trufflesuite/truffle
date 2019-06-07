@@ -8,7 +8,7 @@ export interface ContractState {
   nonce: BN;
   code: string;
   variables: {
-    [name: string]: Values.Value
+    [name: string]: Values.Result
   };
 };
 

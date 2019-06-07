@@ -9,7 +9,7 @@ import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 
-export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, permissivePadding: boolean = false): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, permissivePadding: boolean = false): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   //NOTE: this does not actually return a Uint8Aarray, but due to the use of yield* read,
   //we have to include it in the type :-/
   const { state } = info;
@@ -20,7 +20,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
   }
   catch(error) { //error: Values.DecodingError
     debug("segfault, pointer %o, state: %O", pointer, state);
-    return Values.makeGenericValueError(dataType, error.error);
+    return Values.makeGenericErrorResult(dataType, error.error);
   }
 
   debug("type %O", dataType);
@@ -30,20 +30,20 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
 
     case "bool": {
       if(!checkPaddingLeft(bytes, 1)) {
-        return new Values.BoolValueError(
+        return new Values.BoolErrorResult(
           dataType,
           new Values.BoolPaddingError(DecodeUtils.Conversion.toHexString(bytes))
         );
       }
       const numeric = DecodeUtils.Conversion.toBN(bytes);
       if(numeric.eqn(0)) {
-        return new Values.BoolValueProper(dataType, false);
+        return new Values.BoolValue(dataType, false);
       }
       else if(numeric.eqn(1)) {
-        return new Values.BoolValueProper(dataType, true);
+        return new Values.BoolValue(dataType, true);
       }
       else {
-        return new Values.BoolValueError(
+        return new Values.BoolErrorResult(
           dataType,
           new Values.BoolOutOfRangeError(numeric)
         );
@@ -53,51 +53,51 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
     case "uint":
       //first, check padding (if needed)
       if(!permissivePadding && !checkPaddingLeft(bytes, dataType.bits/8)) {
-        return new Values.UintValueError(
+        return new Values.UintErrorResult(
           dataType,
           new Values.UintPaddingError(DecodeUtils.Conversion.toHexString(bytes))
         );
       }
       //now, truncate to appropriate length (keeping the bytes on the right)
       bytes = bytes.slice(-dataType.bits/8);
-      return new Values.UintValueProper(dataType, DecodeUtils.Conversion.toBN(bytes));
+      return new Values.UintValue(dataType, DecodeUtils.Conversion.toBN(bytes));
     case "int":
       //first, check padding (if needed)
       if(!permissivePadding && !checkPaddingSigned(bytes, dataType.bits/8)) {
-        return new Values.IntValueError(
+        return new Values.IntErrorResult(
           dataType,
           new Values.IntPaddingError(DecodeUtils.Conversion.toHexString(bytes))
         );
       }
       //now, truncate to appropriate length (keeping the bytes on the right)
       bytes = bytes.slice(-dataType.bits/8);
-      return new Values.IntValueProper(dataType, DecodeUtils.Conversion.toSignedBN(bytes));
+      return new Values.IntValue(dataType, DecodeUtils.Conversion.toSignedBN(bytes));
 
     case "address":
       if(!checkPaddingLeft(bytes, DecodeUtils.EVM.ADDRESS_SIZE)) {
-        return new Values.AddressValueError(
+        return new Values.AddressErrorResult(
           dataType,
           new Values.AddressPaddingError(DecodeUtils.Conversion.toHexString(bytes))
         );
       }
-      return new Values.AddressValueProper(dataType, DecodeUtils.Conversion.toAddress(bytes));
+      return new Values.AddressValue(dataType, DecodeUtils.Conversion.toAddress(bytes));
 
     case "contract":
       if(!checkPaddingLeft(bytes, DecodeUtils.EVM.ADDRESS_SIZE)) {
-        return new Values.ContractValueError(
+        return new Values.ContractErrorResult(
           dataType,
           new Values.ContractPaddingError(DecodeUtils.Conversion.toHexString(bytes))
         );
       }
       const fullType = <Types.ContractType>Types.fullType(dataType, info.userDefinedTypes);
-      const contractValueDirect = <Values.ContractValueDirect> (yield* decodeContract(bytes, info));
-      return new Values.ContractValueProper(fullType, contractValueDirect);
+      const contractValueInfo = <Values.ContractValueInfo> (yield* decodeContract(bytes, info));
+      return new Values.ContractValue(fullType, contractValueInfo);
 
     case "bytes":
       if(dataType.kind === "static") {
         //first, check padding (if needed)
         if(!permissivePadding && !checkPaddingRight(bytes, dataType.length)) {
-          return new Values.BytesValueError(
+          return new Values.BytesErrorResult(
             dataType,
             new Values.BytesPaddingError(DecodeUtils.Conversion.toHexString(bytes))
           );
@@ -107,29 +107,29 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       }
       //we don't need to pass in length to the conversion, since that's for *adding* padding
       //(there is also no padding check for dynamic bytes)
-      return new Values.BytesValueProper(dataType, DecodeUtils.Conversion.toHexString(bytes));
+      return new Values.BytesValue(dataType, DecodeUtils.Conversion.toHexString(bytes));
 
     case "string":
       //there is no padding check for strings
-      return new Values.StringValueProper(dataType, String.fromCharCode.apply(undefined, bytes));
+      return new Values.StringValue(dataType, String.fromCharCode.apply(undefined, bytes));
 
     case "function":
       switch(dataType.visibility) {
         case "external":
           if(!checkPaddingRight(bytes, DecodeUtils.EVM.ADDRESS_SIZE + DecodeUtils.EVM.SELECTOR_SIZE)) {
-            return new Values.FunctionValueExternalError(
+            return new Values.FunctionExternalErrorResult(
               dataType,
               new Values.FunctionExternalNonStackPaddingError(DecodeUtils.Conversion.toHexString(bytes))
             );
           }
           const address = bytes.slice(0, DecodeUtils.EVM.ADDRESS_SIZE);
           const selector = bytes.slice(DecodeUtils.EVM.ADDRESS_SIZE, DecodeUtils.EVM.ADDRESS_SIZE + DecodeUtils.EVM.SELECTOR_SIZE);
-          return new Values.FunctionValueExternalProper(dataType,
-            <Values.FunctionValueExternalDirect> (yield* decodeExternalFunction(address, selector, info))
+          return new Values.FunctionExternalValue(dataType,
+            <Values.FunctionExternalValueInfo> (yield* decodeExternalFunction(address, selector, info))
           );
         case "internal":
           if(!checkPaddingLeft(bytes, 2 * DecodeUtils.EVM.PC_SIZE)) {
-            return new Values.FunctionValueInternalError(
+            return new Values.FunctionInternalErrorResult(
               dataType,
               new Values.FunctionInternalPaddingError(DecodeUtils.Conversion.toHexString(bytes))
             );
@@ -144,7 +144,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       const numeric = DecodeUtils.Conversion.toBN(bytes);
       const fullType = <Types.EnumType>Types.fullType(dataType, info.userDefinedTypes);
       if(!fullType.options) {
-        return new Values.EnumValueError(
+        return new Values.EnumErrorResult(
           fullType,
           new Values.EnumNotFoundDecodingError(fullType, numeric)
         );
@@ -152,17 +152,17 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       const numOptions = fullType.options.length;
       const numBytes = Math.ceil(Math.log2(numOptions) / 8);
       if(!checkPaddingLeft(bytes, numBytes)) {
-        return new Values.EnumValueError(
+        return new Values.EnumErrorResult(
           fullType,
           new Values.EnumPaddingError(fullType, DecodeUtils.Conversion.toHexString(bytes))
         );
       }
       if(numeric.ltn(numOptions)) {
         const name = fullType.options[numeric.toNumber()];
-        return new Values.EnumValueProper(fullType, numeric, name);
+        return new Values.EnumValue(fullType, numeric, name);
       }
       else {
-        return new Values.EnumValueError(
+        return new Values.EnumErrorResult(
           fullType,
           new Values.EnumOutOfRangeError(fullType, numeric)
         );
@@ -172,7 +172,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
     case "fixed": {
       //skipping padding check as we don't support this anyway
       const hex = DecodeUtils.Conversion.toHexString(bytes);
-      return new Values.FixedValueError(
+      return new Values.FixedErrorResult(
         dataType,
         new Values.FixedPointNotYetSupportedError(hex)
       );
@@ -180,7 +180,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
     case "ufixed": {
       //skipping padding check as we don't support this anyway
       const hex = DecodeUtils.Conversion.toHexString(bytes);
-      return new Values.UfixedValueError(
+      return new Values.UfixedErrorResult(
         dataType,
         new Values.FixedPointNotYetSupportedError(hex)
       );
@@ -188,8 +188,8 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
   }
 }
 
-//NOTE that this function returns a ContractValueDirect, not a ContractValue
-export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): IterableIterator<Values.ContractValueDirect | DecoderRequest | Uint8Array> {
+//NOTE that this function returns a ContractValueInfo, not a ContractResult
+export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): IterableIterator<Values.ContractValueInfo | DecoderRequest | Uint8Array> {
   let address = DecodeUtils.Conversion.toAddress(addressBytes);
   let codeBytes: Uint8Array = yield {
     type: "code",
@@ -198,23 +198,23 @@ export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): Iterab
   let code = DecodeUtils.Conversion.toHexString(codeBytes);
   let context = DecodeUtils.Contexts.findDecoderContext(info.contexts, code);
   if(context !== null && context.contractName !== undefined) {
-    return new Values.ContractValueDirectKnown(
+    return new Values.ContractValueInfoKnown(
       address,
       DecodeUtils.Contexts.contextToType(context)
     );
   }
   else {
-    return new Values.ContractValueDirectUnknown(address);
+    return new Values.ContractValueInfoUnknown(address);
   }
 }
 
 //note: address can have extra zeroes on the left like elsewhere, but selector should be exactly 4 bytes
-//NOTE this again returns a FunctionValueExternalDirect, not a FunctionValueExternal
-export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes: Uint8Array, info: EvmInfo): IterableIterator<Values.FunctionValueExternalDirect | DecoderRequest | GeneratorJunk> {
-  let contract = <Values.ContractValueDirect> (yield* decodeContract(addressBytes, info));
+//NOTE this again returns a FunctionExternalValueInfo, not a FunctionExternalResult
+export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes: Uint8Array, info: EvmInfo): IterableIterator<Values.FunctionExternalValueInfo | DecoderRequest | GeneratorJunk> {
+  let contract = <Values.ContractValueInfo> (yield* decodeContract(addressBytes, info));
   let selector = DecodeUtils.Conversion.toHexString(selectorBytes);
   if(contract.kind === "unknown") {
-    return new Values.FunctionValueExternalDirectUnknown(contract, selector)
+    return new Values.FunctionExternalValueInfoUnknown(contract, selector)
   }
   let contractId = contract.class.id;
   let context = Object.values(info.contexts).find(
@@ -224,14 +224,14 @@ export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes:
     ? context.abi[selector]
     : undefined;
   if(abiEntry === undefined) {
-    return new Values.FunctionValueExternalDirectInvalid(contract, selector)
+    return new Values.FunctionExternalValueInfoInvalid(contract, selector)
   }
   let functionName = abiEntry.name;
-  return new Values.FunctionValueExternalDirectKnown(contract, selector, functionName)
+  return new Values.FunctionExternalValueInfoKnown(contract, selector, functionName)
 }
 
-//this one works a bit differently -- in order to handle errors, it *does* return a FunctionValueInternal
-export function decodeInternalFunction(dataType: Types.FunctionType, deployedPcBytes: Uint8Array, constructorPcBytes: Uint8Array, info: EvmInfo): Values.FunctionValueInternal {
+//this one works a bit differently -- in order to handle errors, it *does* return a FunctionInternalResult
+export function decodeInternalFunction(dataType: Types.FunctionType, deployedPcBytes: Uint8Array, constructorPcBytes: Uint8Array, info: EvmInfo): Values.FunctionInternalResult {
   let deployedPc: number = DecodeUtils.Conversion.toBN(deployedPcBytes).toNumber();
   let constructorPc: number = DecodeUtils.Conversion.toBN(constructorPcBytes).toNumber();
   let context: Types.ContractType = {
@@ -244,28 +244,28 @@ export function decodeInternalFunction(dataType: Types.FunctionType, deployedPcB
   //before anything else: do we even have an internal functions table?
   //if not, we'll just return the info we have without really attemting to decode
   if(!info.internalFunctionsTable) {
-    return new Values.FunctionValueInternalProper(
+    return new Values.FunctionInternalValue(
       dataType,
-      new Values.FunctionValueInternalDirectUnknown(context, deployedPc, constructorPc)
+      new Values.FunctionInternalValueInfoUnknown(context, deployedPc, constructorPc)
     );
   }
   //also before we continue: is the PC zero? if so let's just return that
   if(deployedPc === 0 && constructorPc === 0) {
-    return new Values.FunctionValueInternalProper(
+    return new Values.FunctionInternalValue(
       dataType,
-      new Values.FunctionValueInternalDirectException(context, deployedPc, constructorPc)
+      new Values.FunctionInternalValueInfoException(context, deployedPc, constructorPc)
     );
   }
   //another check: is only the deployed PC zero?
   if(deployedPc === 0 && constructorPc !== 0) {
-    return new Values.FunctionValueInternalError(
+    return new Values.FunctionInternalErrorResult(
       dataType,
       new Values.MalformedInternalFunctionError(context, constructorPc)
     );
   }
   //one last pre-check: is this a deployed-format pointer in a constructor?
   if(info.currentContext.isConstructor && constructorPc === 0) {
-    return new Values.FunctionValueInternalError(
+    return new Values.FunctionInternalErrorResult(
       dataType,
       new Values.DeployedFunctionInConstructorError(context, deployedPc)
     );
@@ -277,15 +277,15 @@ export function decodeInternalFunction(dataType: Types.FunctionType, deployedPcB
   let functionEntry = info.internalFunctionsTable[pc];
   if(!functionEntry) {
     //if it's not zero and there's no entry... error!
-    return new Values.FunctionValueInternalError(
+    return new Values.FunctionInternalErrorResult(
       dataType,
       new Values.NoSuchInternalFunctionError(context, deployedPc, constructorPc)
     );
   }
   if(functionEntry.isDesignatedInvalid) {
-    return new Values.FunctionValueInternalProper(
+    return new Values.FunctionInternalValue(
       dataType,
-      new Values.FunctionValueInternalDirectException(context, deployedPc, constructorPc)
+      new Values.FunctionInternalValueInfoException(context, deployedPc, constructorPc)
     );
   }
   let name = functionEntry.name;
@@ -296,9 +296,9 @@ export function decodeInternalFunction(dataType: Types.FunctionType, deployedPcB
     contractKind: functionEntry.contractKind,
     payable: functionEntry.contractPayable
   };
-  return new Values.FunctionValueInternalProper(
+  return new Values.FunctionInternalValue(
     dataType,
-    new Values.FunctionValueInternalDirectKnown(context, deployedPc, constructorPc, name, definedIn)
+    new Values.FunctionInternalValueInfoKnown(context, deployedPc, constructorPc, name, definedIn)
   );
 }
 

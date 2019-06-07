@@ -11,14 +11,14 @@ import { abiSizeForType, isTypeDynamic } from "../allocate/abi";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 
-export default function* decodeAbi(dataType: Types.Type, pointer: AbiPointer, info: EvmInfo, base: number = 0): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+export default function* decodeAbi(dataType: Types.Type, pointer: AbiPointer, info: EvmInfo, base: number = 0): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   if(Types.isReferenceType(dataType)) {
     let dynamic: boolean;
     try {
       dynamic = isTypeDynamic(dataType, info.allocations.abi);
     }
     catch(error) { //error: Values.DecodingError
-      return Values.makeGenericValueError(dataType, error.error);
+      return Values.makeGenericErrorResult(dataType, error.error);
     }
     if(dynamic) {
       return yield* decodeAbiReferenceByAddress(dataType, pointer, info, base);
@@ -33,7 +33,7 @@ export default function* decodeAbi(dataType: Types.Type, pointer: AbiPointer, in
   }
 }
 
-export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo, base: number = 0): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo, base: number = 0): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   const { allocations: { abi: allocations }, state } = info;
   debug("pointer %o", pointer);
   //this variable holds the location we should look to *next*
@@ -46,7 +46,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
     rawValue = yield* read(pointer, state);
   }
   catch(error) { //error: Values.DecodingError
-    return Values.makeGenericValueError(dataType, error.error);
+    return Values.makeGenericErrorResult(dataType, error.error);
   }
 
   let startPosition = DecodeUtils.Conversion.toBN(rawValue).toNumber() + base;
@@ -57,7 +57,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
     dynamic = isTypeDynamic(dataType, allocations);
   }
   catch(error) { //error: Values.DecodingError
-    return Values.makeGenericValueError(dataType, error.error);
+    return Values.makeGenericErrorResult(dataType, error.error);
   }
   if(!dynamic) { //this will only come up when called from stack.ts
     let size: number;
@@ -65,7 +65,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
       size = abiSizeForType(dataType, allocations);
     }
     catch(error) { //error: Values.DecodingError
-      return Values.makeGenericValueError(dataType, error.error);
+      return Values.makeGenericErrorResult(dataType, error.error);
     }
     let staticPointer = {
       location,
@@ -89,7 +89,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
         }, state));
       }
       catch(error) { //error: Values.DecodingError
-        return Values.makeGenericValueError(dataType, error.error);
+        return Values.makeGenericErrorResult(dataType, error.error);
       }
       length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
 
@@ -114,7 +114,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
             }, state));
           }
           catch(error) { //error: Values.DecodingError
-            return Values.makeGenericValueError(dataType, error.error);
+            return Values.makeGenericErrorResult(dataType, error.error);
           }
           length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
           startPosition += DecodeUtils.EVM.WORD_SIZE; //increment startPosition
@@ -134,13 +134,13 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
         baseSize = abiSizeForType(dataType.baseType, allocations);
       }
       catch(error) { //error: Values.DecodingError
-        return Values.makeGenericValueError(dataType, error.error);
+        return Values.makeGenericErrorResult(dataType, error.error);
       }
 
-      let decodedChildren: Values.Value[] = [];
+      let decodedChildren: Values.Result[] = [];
       for(let index = 0; index < length; index++) {
         decodedChildren.push(
-          <Values.Value> (yield* decodeAbi(
+          <Values.Result> (yield* decodeAbi(
             dataType.baseType,
             {
               location,
@@ -151,14 +151,14 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
           ))
         ); //pointer base is always start of list, never the length
       }
-      return new Values.ArrayValueProper(dataType, decodedChildren);
+      return new Values.ArrayValue(dataType, decodedChildren);
 
     case "struct":
       return yield* decodeAbiStructByPosition(dataType, startPosition, info);
   }
 }
 
-export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer: AbiPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer: AbiPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   debug("static");
   debug("pointer %o", pointer);
   const location = pointer.location;
@@ -173,13 +173,13 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer
         baseSize = abiSizeForType(dataType.baseType, info.allocations.abi);
       }
       catch(error) { //error: Values.DecodingError
-        return Values.makeGenericValueError(dataType, error.error);
+        return Values.makeGenericErrorResult(dataType, error.error);
       }
 
-      let decodedChildren: Values.Value[] = [];
+      let decodedChildren: Values.Result[] = [];
       for(let index = 0; index < length; index++) {
         decodedChildren.push(
-          <Values.Value> (yield* decodeAbi(
+          <Values.Result> (yield* decodeAbi(
             dataType.baseType,
             {
               location,
@@ -190,7 +190,7 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer
           ))
         ); //static case so don't need base
       }
-      return new Values.ArrayValueProper(dataType, decodedChildren);
+      return new Values.ArrayValue(dataType, decodedChildren);
 
     case "struct":
       return yield* decodeAbiStructByPosition(dataType, location, pointer.start, info);
@@ -200,7 +200,7 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer
 type AbiLocation = "calldata" | "eventdata" | "abi";
 
 //note that this function takes the start position as a *number*; it does not take a pointer
-function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLocation, startPosition: number, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLocation, startPosition: number, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   const { userDefinedTypes, allocations: { abi: allocations } } = info;
 
   const typeLocation = location === "eventdata"
@@ -210,13 +210,13 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
   const typeId = dataType.id;
   const structAllocation = allocations[typeId];
   if(!structAllocation) {
-    return new Values.StructValueError(
+    return new Values.StructErrorResult(
       dataType,
       new Values.UserDefinedTypeNotFoundError(dataType)
     );
   }
 
-  let decodedMembers: {[field: string]: Values.Value} = {};
+  let decodedMembers: {[field: string]: Values.Result} = {};
   for(let memberAllocation of Object.values(structAllocation.members)) {
     const memberPointer = memberAllocation.pointer;
     const childPointer: AbiPointer = {
@@ -228,7 +228,7 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
     let memberName = memberAllocation.definition.name;
     let storedType = <Types.StructType>userDefinedTypes[typeId];
     if(!storedType) {
-      return new Values.StructValueError(
+      return new Values.StructErrorResult(
         dataType,
         new Values.UserDefinedTypeNotFoundError(dataType)
       );
@@ -236,7 +236,7 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
     let storedMemberType = storedType.memberTypes[memberName];
     let memberType = Types.specifyLocation(storedMemberType, typeLocation);
 
-    decodedMembers[memberName] = <Values.Value> (yield* decodeAbi(memberType, childPointer, info));
+    decodedMembers[memberName] = <Values.Result> (yield* decodeAbi(memberType, childPointer, info));
   }
-  return new Values.StructValueProper(dataType, decodedMembers);
+  return new Values.StructValue(dataType, decodedMembers);
 }

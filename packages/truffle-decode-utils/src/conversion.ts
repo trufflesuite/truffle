@@ -1,7 +1,7 @@
 import BN from "bn.js";
 import Web3 from "web3";
 import { Constants } from "./constants";
-import { Values } from "./values";
+import { Values } from "./types/values";
 
 export namespace Conversion {
 
@@ -153,7 +153,7 @@ export namespace Conversion {
   }
 
   //for convenience: invokes the nativize method on all the given variables
-  export function nativizeVariables(variables: {[name: string]: Values.Value}): {[name: string]: any} {
+  export function nativizeVariables(variables: {[name: string]: Values.Result}): {[name: string]: any} {
     return Object.assign({}, ...Object.entries(variables).map(
       ([name, value]) => ({[name]: value.nativize()})
     ));

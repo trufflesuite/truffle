@@ -15,7 +15,7 @@ import * as Pointer from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 
-export default function* decode(dataType: Types.Type, pointer: Pointer.DataPointer, info: EvmInfo, base: number = 0): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+export default function* decode(dataType: Types.Type, pointer: Pointer.DataPointer, info: EvmInfo, base: number = 0): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   debug("type %O", dataType);
   debug("pointer %O", pointer);
 
