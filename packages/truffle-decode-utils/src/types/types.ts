@@ -19,8 +19,8 @@ const debug = debugModule("decode-utils:types");
 //just intended for the future.
 
 import BN from "bn.js";
-import { AstDefinition, AstReferences } from "./ast";
-import { Definition as DefinitionUtils } from "./definition";
+import { AstDefinition, AstReferences } from "../ast";
+import { Definition as DefinitionUtils } from "../definition";
 
 export namespace Types {
 

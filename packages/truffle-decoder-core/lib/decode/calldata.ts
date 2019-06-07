@@ -4,21 +4,21 @@ const debug = debugModule("decoder-core:decode:calldata");
 import read from "../read";
 import * as DecodeUtils from "truffle-decode-utils";
 import { Types, Values } from "truffle-decode-utils";
-import decodeValue from "./value";
+import decodeResult from "./value";
 import { CalldataPointer, DataPointer } from "../types/pointer";
 import { CalldataMemberAllocation } from "../types/allocation";
 import { calldataSizeForType, isTypeDynamic } from "../allocate/calldata";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 
-export default function* decodeCalldata(dataType: Types.Type, pointer: CalldataPointer, info: EvmInfo, base: number = 0): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+export default function* decodeCalldata(dataType: Types.Type, pointer: CalldataPointer, info: EvmInfo, base: number = 0): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   if(Types.isReferenceType(dataType)) {
     let dynamic: boolean;
     try {
       dynamic = isTypeDynamic(dataType, info.calldataAllocations);
     }
     catch(error) { //error: Values.DecodingError
-      return Values.makeGenericValueError(dataType, error.error);
+      return Values.makeGenericErrorResult(dataType, error.error);
     }
     if(dynamic) {
       return yield* decodeCalldataReferenceByAddress(dataType, pointer, info, base);
@@ -29,22 +29,22 @@ export default function* decodeCalldata(dataType: Types.Type, pointer: CalldataP
   }
   else {
     debug("pointer %o", pointer);
-    return yield* decodeValue(dataType, pointer, info);
+    return yield* decodeResult(dataType, pointer, info);
   }
 }
 
-export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo, base: number = 0): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo, base: number = 0): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   const { state } = info;
   debug("pointer %o", pointer);
-  let rawValue: Uint8Array;
+  let rawResult: Uint8Array;
   try {
-    rawValue = yield* read(pointer, state);
+    rawResult = yield* read(pointer, state);
   }
   catch(error) { //error: Values.DecodingError
-    return Values.makeGenericValueError(dataType, error.error);
+    return Values.makeGenericErrorResult(dataType, error.error);
   }
 
-  let startPosition = DecodeUtils.Conversion.toBN(rawValue).toNumber() + base;
+  let startPosition = DecodeUtils.Conversion.toBN(rawResult).toNumber() + base;
   debug("startPosition %d", startPosition);
 
   let dynamic: boolean;
@@ -52,7 +52,7 @@ export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType,
     dynamic = isTypeDynamic(dataType, info.calldataAllocations);
   }
   catch(error) { //error: Values.DecodingError
-    return Values.makeGenericValueError(dataType, error.error);
+    return Values.makeGenericErrorResult(dataType, error.error);
   }
   if(!dynamic) { //this will only come up when called from stack.ts
     let size: number;
@@ -60,7 +60,7 @@ export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType,
       size = calldataSizeForType(dataType, info.calldataAllocations);
     }
     catch(error) { //error: Values.DecodingError
-      return Values.makeGenericValueError(dataType, error.error);
+      return Values.makeGenericErrorResult(dataType, error.error);
     }
     let staticPointer = {
       calldata: {
@@ -86,7 +86,7 @@ export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType,
         }, state));
       }
       catch(error) { //error: Values.DecodingError
-        return Values.makeGenericValueError(dataType, error.error);
+        return Values.makeGenericErrorResult(dataType, error.error);
       }
       length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
 
@@ -94,7 +94,7 @@ export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType,
         calldata: { start: startPosition + DecodeUtils.EVM.WORD_SIZE, length }
       }
 
-      return yield* decodeValue(dataType, childPointer, info);
+      return yield* decodeResult(dataType, childPointer, info);
 
     case "array":
 
@@ -110,7 +110,7 @@ export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType,
             }, state));
           }
           catch(error) { //error: Values.DecodingError
-            return Values.makeGenericValueError(dataType, error.error);
+            return Values.makeGenericErrorResult(dataType, error.error);
           }
           length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
           startPosition += DecodeUtils.EVM.WORD_SIZE; //increment startPosition
@@ -130,13 +130,13 @@ export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType,
         baseSize = calldataSizeForType(dataType.baseType, info.calldataAllocations);
       }
       catch(error) { //error: Values.DecodingError
-        return Values.makeGenericValueError(dataType, error.error);
+        return Values.makeGenericErrorResult(dataType, error.error);
       }
 
-      let decodedChildren: Values.Value[] = [];
+      let decodedChildren: Values.Result[] = [];
       for(let index = 0; index < length; index++) {
         decodedChildren.push(
-          <Values.Value> (yield* decodeCalldata(
+          <Values.Result> (yield* decodeCalldata(
             dataType.baseType,
             { calldata: {
               start: startPosition + index * baseSize,
@@ -146,14 +146,14 @@ export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType,
           ))
         ); //pointer base is always start of list, never the length
       }
-      return new Values.ArrayValueProper(dataType, decodedChildren);
+      return new Values.ArrayValue(dataType, decodedChildren);
 
     case "struct":
       return yield* decodeCalldataStructByPosition(dataType, startPosition, info);
   }
 }
 
-export function* decodeCalldataReferenceStatic(dataType: Types.ReferenceType, pointer: CalldataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+export function* decodeCalldataReferenceStatic(dataType: Types.ReferenceType, pointer: CalldataPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   debug("static");
   debug("pointer %o", pointer);
 
@@ -167,13 +167,13 @@ export function* decodeCalldataReferenceStatic(dataType: Types.ReferenceType, po
         baseSize = calldataSizeForType(dataType.baseType, info.calldataAllocations);
       }
       catch(error) { //error: Values.DecodingError
-        return Values.makeGenericValueError(dataType, error.error);
+        return Values.makeGenericErrorResult(dataType, error.error);
       }
 
-      let decodedChildren: Values.Value[] = [];
+      let decodedChildren: Values.Result[] = [];
       for(let index = 0; index < length; index++) {
         decodedChildren.push(
-          <Values.Value> (yield* decodeCalldata(
+          <Values.Result> (yield* decodeCalldata(
             dataType.baseType,
             { calldata: {
               start: pointer.calldata.start + index * baseSize,
@@ -183,7 +183,7 @@ export function* decodeCalldataReferenceStatic(dataType: Types.ReferenceType, po
           ))
         ); //static case so don't need base
       }
-      return new Values.ArrayValueProper(dataType, decodedChildren);
+      return new Values.ArrayValue(dataType, decodedChildren);
 
     case "struct":
       return yield* decodeCalldataStructByPosition(dataType, pointer.calldata.start, info);
@@ -191,19 +191,19 @@ export function* decodeCalldataReferenceStatic(dataType: Types.ReferenceType, po
 }
 
 //note that this function takes the start position as a *number*; it does not take a calldata pointer
-function* decodeCalldataStructByPosition(dataType: Types.StructType, startPosition: number, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+function* decodeCalldataStructByPosition(dataType: Types.StructType, startPosition: number, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   const { userDefinedTypes, calldataAllocations } = info;
 
   const typeId = dataType.id;
   const structAllocation = calldataAllocations[typeId];
   if(!structAllocation) {
-    return new Values.StructValueError(
+    return new Values.StructErrorResult(
       dataType,
       new Values.UserDefinedTypeNotFoundError(dataType)
     );
   }
 
-  let decodedMembers: {[field: string]: Values.Value} = {};
+  let decodedMembers: {[field: string]: Values.Result} = {};
   for(let memberAllocation of Object.values(structAllocation.members)) {
     const memberPointer = memberAllocation.pointer;
     const childPointer: CalldataPointer = {
@@ -216,7 +216,7 @@ function* decodeCalldataStructByPosition(dataType: Types.StructType, startPositi
     let memberName = memberAllocation.definition.name;
     let storedType = <Types.StructType>userDefinedTypes[typeId];
     if(!storedType) {
-      return new Values.StructValueError(
+      return new Values.StructErrorResult(
         dataType,
         new Values.UserDefinedTypeNotFoundError(dataType)
       );
@@ -224,7 +224,7 @@ function* decodeCalldataStructByPosition(dataType: Types.StructType, startPositi
     let storedMemberType = storedType.memberTypes[memberName];
     let memberType = Types.specifyLocation(storedMemberType, "calldata");
 
-    decodedMembers[memberName] = <Values.Value> (yield* decodeCalldata(memberType, childPointer, info));
+    decodedMembers[memberName] = <Values.Result> (yield* decodeCalldata(memberType, childPointer, info));
   }
-  return new Values.StructValueProper(dataType, decodedMembers);
+  return new Values.StructValue(dataType, decodedMembers);
 }

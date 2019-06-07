@@ -15,6 +15,6 @@ export { Slot, isWordsLength } from "../types/storage";
 export { DecoderRequest, isStorageRequest, isCodeRequest } from "../types/request";
 export { EvmInfo } from "../types/evm";
 
-export function* forEvmState(definition: AstDefinition, pointer: DataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+export function* forEvmState(definition: AstDefinition, pointer: DataPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   return yield* decode(definition, pointer, info);
 }

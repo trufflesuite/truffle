@@ -4,33 +4,33 @@ const debug = debugModule("decoder-core:decode:memory");
 import read from "../read";
 import * as DecodeUtils from "truffle-decode-utils";
 import { Types, Values } from "truffle-decode-utils";
-import decodeValue from "./value";
+import decodeResult from "./value";
 import { MemoryPointer, DataPointer } from "../types/pointer";
 import { MemoryMemberAllocation } from "../types/allocation";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 
-export default function* decodeMemory(dataType: Types.Type, pointer: MemoryPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+export default function* decodeMemory(dataType: Types.Type, pointer: MemoryPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   if(Types.isReferenceType(dataType)) {
     return yield* decodeMemoryReferenceByAddress(dataType, pointer, info);
   }
   else {
-    return yield* decodeValue(dataType, pointer, info);
+    return yield* decodeResult(dataType, pointer, info);
   }
 }
 
-export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   const { state } = info;
   // debug("pointer %o", pointer);
-  let rawValue: Uint8Array;
+  let rawResult: Uint8Array;
   try {
-    rawValue = yield* read(pointer, state);
+    rawResult = yield* read(pointer, state);
   }
   catch(error) { //error: Values.DecodingError
-    return Values.makeGenericValueError(dataType, error.error);
+    return Values.makeGenericErrorResult(dataType, error.error);
   }
 
-  let startPosition = DecodeUtils.Conversion.toBN(rawValue).toNumber();
+  let startPosition = DecodeUtils.Conversion.toBN(rawResult).toNumber();
   let rawLength: Uint8Array;
   let length: number;
 
@@ -48,7 +48,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         }, state);
       }
       catch(error) { //error: Values.DecodingError
-        return Values.makeGenericValueError(dataType, error.error);
+        return Values.makeGenericErrorResult(dataType, error.error);
       }
       length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
 
@@ -56,7 +56,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         memory: { start: startPosition + DecodeUtils.EVM.WORD_SIZE, length }
       }
 
-      return yield* decodeValue(dataType, childPointer, info);
+      return yield* decodeResult(dataType, childPointer, info);
 
     case "array":
 
@@ -71,7 +71,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
           }, state);
         }
         catch(error) { //error: Values.DecodingError
-          return Values.makeGenericValueError(dataType, error.error);
+          return Values.makeGenericErrorResult(dataType, error.error);
         }
         length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
         startPosition += DecodeUtils.EVM.WORD_SIZE; //increment startPosition
@@ -83,10 +83,10 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
 
       let baseType = dataType.baseType;
 
-      let decodedChildren: Values.Value[] = [];
+      let decodedChildren: Values.Result[] = [];
       for(let index = 0; index < length; index++) {
         decodedChildren.push(
-          <Values.Value> (yield* decodeMemory(
+          <Values.Result> (yield* decodeMemory(
             baseType,
             { memory: {
               start: startPosition + index * DecodeUtils.EVM.WORD_SIZE,
@@ -97,7 +97,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         );
       }
 
-      return new Values.ArrayValueProper(dataType, decodedChildren);
+      return new Values.ArrayValue(dataType, decodedChildren);
 
     case "struct":
       const { memoryAllocations, userDefinedTypes } = info;
@@ -105,7 +105,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
       const typeId = dataType.id;
       const structAllocation = memoryAllocations[typeId];
       if(!structAllocation) {
-        return new Values.StructValueError(
+        return new Values.StructErrorResult(
           dataType,
           new Values.UserDefinedTypeNotFoundError(dataType)
         );
@@ -113,7 +113,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
 
       debug("structAllocation %O", structAllocation);
 
-      let decodedMembers: {[field: string]: Values.Value} = {};
+      let decodedMembers: {[field: string]: Values.Result} = {};
       for(let memberAllocation of Object.values(structAllocation.members)) {
         const memberPointer = memberAllocation.pointer;
         const childPointer: MemoryPointer = {
@@ -126,7 +126,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         let memberName = memberAllocation.definition.name;
         let storedType = <Types.StructType>userDefinedTypes[typeId];
         if(!storedType) {
-          return new Values.StructValueError(
+          return new Values.StructErrorResult(
             dataType,
             new Values.UserDefinedTypeNotFoundError(dataType)
           );
@@ -134,8 +134,8 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         let storedMemberType = storedType.memberTypes[memberName];
         let memberType = Types.specifyLocation(storedMemberType, "memory");
 
-        decodedMembers[memberName] = <Values.Value> (yield* decodeMemory(memberType, childPointer, info));
+        decodedMembers[memberName] = <Values.Result> (yield* decodeMemory(memberType, childPointer, info));
       }
-      return new Values.StructValueProper(dataType, decodedMembers);
+      return new Values.StructValue(dataType, decodedMembers);
   }
 }
