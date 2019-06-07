@@ -22,78 +22,80 @@ TestSource.prototype.resolve = function(import_path, callback) {
     ) {
       // Ignore this error. Continue on.
 
-      fs.readdir(self.config.contracts_build_directory, function(
-        err,
-        abstraction_files
-      ) {
-        if (err) return callback(err);
+      let abstraction_files;
+      try {
+        abstraction_files = fs.readdirSync(
+          self.config.contracts_build_directory
+        );
+      } catch (error) {
+        return callback(error);
+      }
 
-        var mapping = {};
+      var mapping = {};
 
-        var blacklist = ["Assert", "DeployedAddresses"];
+      var blacklist = ["Assert", "DeployedAddresses"];
 
-        // Ensure we have a mapping for source files and abstraction files
-        // to prevent any compile errors in tests.
-        source_files.forEach(function(file) {
-          var name = path.basename(file, ".sol");
-          if (blacklist.indexOf(name) >= 0) return;
-          mapping[name] = false;
+      // Ensure we have a mapping for source files and abstraction files
+      // to prevent any compile errors in tests.
+      source_files.forEach(function(file) {
+        var name = path.basename(file, ".sol");
+        if (blacklist.indexOf(name) >= 0) return;
+        mapping[name] = false;
+      });
+
+      abstraction_files.forEach(function(file) {
+        var name = path.basename(file, ".json");
+        if (blacklist.indexOf(name) >= 0) return;
+        mapping[name] = false;
+      });
+
+      var promises = abstraction_files.map(function(file) {
+        return new Promise(function(accept, reject) {
+          fs.readFile(
+            path.join(self.config.contracts_build_directory, file),
+            "utf8",
+            function(err, body) {
+              if (err) return reject(err);
+              accept(body);
+            }
+          );
         });
+      });
 
-        abstraction_files.forEach(function(file) {
-          var name = path.basename(file, ".json");
-          if (blacklist.indexOf(name) >= 0) return;
-          mapping[name] = false;
-        });
-
-        var promises = abstraction_files.map(function(file) {
-          return new Promise(function(accept, reject) {
-            fs.readFile(
-              path.join(self.config.contracts_build_directory, file),
-              "utf8",
-              function(err, body) {
-                if (err) return reject(err);
-                accept(body);
+      Promise.all(promises)
+        .then(function(files_data) {
+          var addresses = files_data
+            .map(function(data) {
+              return JSON.parse(data);
+            })
+            .map(function(json) {
+              return contract(json);
+            })
+            .map(function(c) {
+              c.setNetwork(self.config.network_id);
+              if (c.isDeployed()) {
+                return c.address;
               }
-            );
-          });
-        });
-
-        Promise.all(promises)
-          .then(function(files_data) {
-            var addresses = files_data
-              .map(function(data) {
-                return JSON.parse(data);
-              })
-              .map(function(json) {
-                return contract(json);
-              })
-              .map(function(c) {
-                c.setNetwork(self.config.network_id);
-                if (c.isDeployed()) {
-                  return c.address;
-                }
-                return null;
-              });
-
-            addresses.forEach(function(address, i) {
-              var name = path.basename(abstraction_files[i], ".json");
-
-              if (blacklist.indexOf(name) >= 0) return;
-
-              mapping[name] = address;
+              return null;
             });
 
-            return Deployed.makeSolidityDeployedAddressesLibrary(
-              mapping,
-              self.config.compilers
-            );
-          })
-          .then(function(addressSource) {
-            callback(null, addressSource, import_path);
-          })
-          .catch(callback);
-      });
+          addresses.forEach(function(address, i) {
+            var name = path.basename(abstraction_files[i], ".json");
+
+            if (blacklist.indexOf(name) >= 0) return;
+
+            mapping[name] = address;
+          });
+
+          return Deployed.makeSolidityDeployedAddressesLibrary(
+            mapping,
+            self.config.compilers
+          );
+        })
+        .then(function(addressSource) {
+          callback(null, addressSource, import_path);
+        })
+        .catch(callback);
     });
   }
   const assertLibraries = [
