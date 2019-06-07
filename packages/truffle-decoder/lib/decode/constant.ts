@@ -10,7 +10,7 @@ import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 import BN from "bn.js";
 
-export default function* decodeConstant(dataType: Types.Type, pointer: ConstantDefinitionPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+export default function* decodeConstant(dataType: Types.Type, pointer: ConstantDefinitionPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
 
   debug("pointer %o", pointer);
 
@@ -27,11 +27,11 @@ export default function* decodeConstant(dataType: Types.Type, pointer: ConstantD
       word = yield* read(pointer, info.state);
     }
     catch(error) { //error: Values.DecodingError
-      return Values.makeGenericValueError(dataType, error.error);
+      return Values.makeGenericErrorResult(dataType, error.error);
     }
     //not bothering to check padding; shouldn't be necessary
     let bytes = word.slice(DecodeUtils.EVM.WORD_SIZE - size);
-    return new Values.BytesValueProper(
+    return new Values.BytesValue(
       dataType,
       DecodeUtils.Conversion.toHexString(bytes)
     );

@@ -13,19 +13,19 @@ import { StackPointer, StackLiteralPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 
-export default function* decodeStack(dataType: Types.Type, pointer: StackPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+export default function* decodeStack(dataType: Types.Type, pointer: StackPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   let rawValue: Uint8Array;
   try {
    rawValue = yield* read(pointer, info.state);
   }
   catch(error) { //error: Values.DecodingError
-    return Values.makeGenericValueError(dataType, error.error);
+    return Values.makeGenericErrorResult(dataType, error.error);
   }
   const literalPointer: StackLiteralPointer = { literal: rawValue };
   return yield* decodeLiteral(dataType, literalPointer, info);
 }
 
-export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
 
   debug("type %O", dataType);
   debug("pointer %o", pointer);
@@ -81,7 +81,7 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
     let selectorWord = pointer.literal.slice(-DecodeUtils.EVM.WORD_SIZE);
     if(!checkPaddingLeft(address, DecodeUtils.EVM.ADDRESS_SIZE)
       ||!checkPaddingLeft(selectorWord, DecodeUtils.EVM.SELECTOR_SIZE)) {
-      return new Values.FunctionValueExternalError(
+      return new Values.FunctionExternalErrorResult(
         dataType,
         new Values.FunctionExternalStackPaddingError(
           DecodeUtils.Conversion.toHexString(address),
@@ -90,9 +90,9 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
       );
     }
     let selector = selectorWord.slice(-DecodeUtils.EVM.SELECTOR_SIZE);
-    return new Values.FunctionValueExternalProper(
+    return new Values.FunctionExternalValue(
       dataType,
-      <Values.FunctionValueExternalDirect> (yield* decodeExternalFunction(address, selector, info))
+      <Values.FunctionExternalValueInfo> (yield* decodeExternalFunction(address, selector, info))
     );
   }
 

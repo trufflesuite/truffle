@@ -55,29 +55,29 @@ export namespace Values {
    * SECTION 1: Generic types for values in general (including errors).
    */
 
-  //This is the overall Value type.  It may encode an actual value (ValueProper) or
-  //an error value (ValueError).  Every value has a type.
+  //This is the overall Result type.  It may encode an actual value (Value) or
+  //an error value (ErrorResult).  Every value has a type.
   //The reference field is for future use for encoding circular structures; you can
   //ignore it for now.
   //The nativize method is a HACK that you should not use except
   //A. for testing, or
   //B. if you really have to, which we unfortunately do in some cases.
   //See below for more.
-  export interface Value {
+  export interface Result {
     type: Types.Type;
     kind: "value" | "error";
     nativize(): any; //HACK
-    //turns Value objects into Plain-Old JavaScript Objects
+    //turns Result objects into Plain-Old JavaScript Objects
     //May cause errors if numeric values are too big!
     //only use this in testing or if you have no better option!
   };
 
-  //A ValueProper encodes an actual value, not an error.  HOWEVER, if it is a
+  //A Value encodes an actual value, not an error.  HOWEVER, if it is a
   //container type (Array, Struct, or Mapping), it is still possible for some
   //of the individual values within it to be errors!
-  //The exact type of the value field depends on the type of the Value; don't
+  //The exact type of the value field depends on the type of the Result; don't
   //worry, the more specific types will have more specific type annotations.
-  export abstract class ValueProper implements Value {
+  export abstract class Value implements Result {
     type: Types.Type;
     kind: "value";
     value: any; //sorry -- at least it's an abstract class though!
@@ -87,10 +87,10 @@ export namespace Values {
     }
   };
 
-  //A ValueError, on the other hand, encodes an error.  Rather than a value field,
-  //it has an error field, of type ValueErrorDirect.
+  //A ErrorResult, on the other hand, encodes an error.  Rather than a value field,
+  //it has an error field, of type ErrorValueInfo.
   //See section 2 regarding the toSoliditySha3Input method.
-  export abstract class ValueError implements Value {
+  export abstract class ErrorResult implements Result {
     type: Types.Type;
     kind: "error";
     error: DecoderError;
@@ -151,12 +151,12 @@ export namespace Values {
   //and so they have a method that gives what input to soliditySha3() they correspond
   //to.  Note that errors, above, also have this method, but for them it just
   //returns undefined.
-  export interface ElementaryValue extends Value {
+  export interface ElementaryResult extends Result {
     type: Types.ElementaryType;
     toSoliditySha3Input(): {type: string; value: any};
   }
 
-  export abstract class ElementaryValueProper extends ValueProper implements ElementaryValue {
+  export abstract class ElementaryValue extends Value implements ElementaryResult {
     type: Types.ElementaryType;
     abstract toSoliditySha3Input(): {type: string; value: any};
     toString(): string {
@@ -165,11 +165,11 @@ export namespace Values {
   }
 
   //Uints
-  export interface UintValue extends ElementaryValue {
+  export interface UintResult extends ElementaryResult {
     type: Types.UintType;
   }
 
-  export class UintValueProper extends ElementaryValueProper implements UintValue {
+  export class UintValue extends ElementaryValue implements UintResult {
     type: Types.UintType;
     value: BN;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -192,7 +192,7 @@ export namespace Values {
   }
 
   //errors for uints
-  export class UintValueError extends ValueError implements UintValue {
+  export class UintErrorResult extends ErrorResult implements UintResult {
     type: Types.UintType;
     constructor(uintType: Types.UintType, error: DecoderError) {
       super(error);
@@ -214,11 +214,11 @@ export namespace Values {
   }
 
   //Ints
-  export interface IntValue extends ElementaryValue {
+  export interface IntResult extends ElementaryResult {
     type: Types.IntType;
   }
 
-  export class IntValueProper extends ElementaryValueProper implements IntValue {
+  export class IntValue extends ElementaryValue implements IntResult {
     type: Types.IntType;
     value: BN;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -241,7 +241,7 @@ export namespace Values {
   }
 
   //errors for ints
-  export class IntValueError extends ValueError implements IntValue {
+  export class IntErrorResult extends ErrorResult implements IntResult {
     type: Types.IntType;
     constructor(intType: Types.IntType, error: DecoderError) {
       super(error);
@@ -263,11 +263,11 @@ export namespace Values {
   }
 
   //Bools
-  export interface BoolValue extends ElementaryValue {
+  export interface BoolResult extends ElementaryResult {
     type: Types.BoolType;
   }
 
-  export class BoolValueProper extends ElementaryValueProper implements BoolValue {
+  export class BoolValue extends ElementaryValue implements BoolResult {
     type: Types.BoolType;
     value: boolean;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -290,7 +290,7 @@ export namespace Values {
   }
 
   //errors for bools
-  export class BoolValueError extends ValueError implements BoolValue {
+  export class BoolErrorResult extends ErrorResult implements BoolResult {
     type: Types.BoolType;
     constructor(boolType: Types.BoolType, error: DecoderError) {
       super(error);
@@ -325,11 +325,11 @@ export namespace Values {
   }
 
   //bytes
-  export interface BytesValue extends ElementaryValue {
+  export interface BytesResult extends ElementaryResult {
     type: Types.BytesType;
   }
 
-  export class BytesValueProper extends ElementaryValueProper implements BytesValue {
+  export class BytesValue extends ElementaryValue implements BytesResult {
     type: Types.BytesType;
     value: string; //should be hex-formatted, with leading "0x"
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -364,7 +364,7 @@ export namespace Values {
     }
   }
 
-  export class BytesValueError extends ValueError implements BytesValue {
+  export class BytesErrorResult extends ErrorResult implements BytesResult {
     type: Types.BytesType;
     constructor(bytesType: Types.BytesType, error: DecoderError) {
       super(error);
@@ -386,11 +386,11 @@ export namespace Values {
   }
 
   //addresses
-  export interface AddressValue extends ElementaryValue {
+  export interface AddressResult extends ElementaryResult {
     type: Types.AddressType;
   }
 
-  export class AddressValueProper extends ElementaryValueProper implements AddressValue {
+  export class AddressValue extends ElementaryValue implements AddressResult {
     type: Types.AddressType;
     value: string; //should have 0x and be checksum-cased
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -412,7 +412,7 @@ export namespace Values {
     }
   }
 
-  export class AddressValueError extends ValueError implements AddressValue {
+  export class AddressErrorResult extends ErrorResult implements AddressResult {
     type: Types.AddressType;
     constructor(addressType: Types.AddressType, error: DecoderError) {
       super(error);
@@ -434,11 +434,11 @@ export namespace Values {
   }
 
   //strings
-  export interface StringValue extends ElementaryValue {
+  export interface StringResult extends ElementaryResult {
     type: Types.StringType;
   }
 
-  export class StringValueProper extends ElementaryValueProper {
+  export class StringValue extends ElementaryValue {
     type: Types.StringType;
     value: string;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -460,7 +460,7 @@ export namespace Values {
     }
   }
 
-  export class StringValueError extends ValueError implements StringValue {
+  export class StringErrorResult extends ErrorResult implements StringResult {
     type: Types.StringType;
     constructor(stringType: Types.StringType, error: DecoderError) {
       super(error);
@@ -471,21 +471,21 @@ export namespace Values {
 
   //Fixed & Ufixed
   //These don't have a value format yet, so they just decode to errors for now!
-  export interface FixedValue extends ElementaryValue {
+  export interface FixedResult extends ElementaryResult {
     type: Types.FixedType;
   }
-  export interface UfixedValue extends ElementaryValue {
+  export interface UfixedResult extends ElementaryResult {
     type: Types.UfixedType;
   }
 
-  export class FixedValueError extends ValueError implements FixedValue {
+  export class FixedErrorResult extends ErrorResult implements FixedResult {
     type: Types.FixedType;
     constructor(fixedType: Types.FixedType, error: DecoderError) {
       super(error);
       this.type = fixedType;
     }
   }
-  export class UfixedValueError extends ValueError implements UfixedValue {
+  export class UfixedErrorResult extends ErrorResult implements UfixedResult {
     type: Types.UfixedType;
     constructor(ufixedType: Types.UfixedType, error: DecoderError) {
       super(error);
@@ -507,7 +507,7 @@ export namespace Values {
   }
   //no separate padding error here, that would be pointless right now; will make later
 
-  //Function for wrapping a value as an ElementaryValueProper
+  //Function for wrapping a value as an ElementaryValue
   //WARNING: this function does not check its inputs! Please check before using!
   //How to use:
   //numbers may be BN, number, or numeric string
@@ -515,15 +515,15 @@ export namespace Values {
   //bytes should be given as hex strings beginning with "0x"
   //addresses are like bytes; checksum case is not required
   //booleans may be given either as booleans, or as string "true" or "false"
-  export function wrapElementaryValue(value: any, definition: AstDefinition): ElementaryValueProper {
+  export function wrapElementaryValue(value: any, definition: AstDefinition): ElementaryValue {
     let dataType = Types.definitionToType(definition, null); //force location to undefined
     switch(dataType.typeClass) {
       case "string":
-        return new StringValueProper(dataType, value);
+        return new StringValue(dataType, value);
       case "bytes":
-        return new BytesValueProper(dataType, value);
+        return new BytesValue(dataType, value);
       case "address":
-        return new AddressValueProper(dataType, value);
+        return new AddressValue(dataType, value);
       case "int":
         if(value instanceof BN) {
           value = value.clone();
@@ -531,7 +531,7 @@ export namespace Values {
         else {
           value = new BN(value);
         }
-        return new IntValueProper(dataType, value);
+        return new IntValue(dataType, value);
       case "uint":
         if(value instanceof BN) {
           value = value.clone();
@@ -539,12 +539,12 @@ export namespace Values {
         else {
           value = new BN(value);
         }
-        return new UintValueProper(dataType, value);
+        return new UintValue(dataType, value);
       case "bool":
         if(typeof value === "string") {
           value = value !== "false";
         }
-        return new BoolValueProper(dataType, value);
+        return new BoolValue(dataType, value);
     }
   }
 
@@ -559,14 +559,14 @@ export namespace Values {
   }
 
   //Arrays
-  export interface ArrayValue extends Value {
+  export interface ArrayResult extends Result {
     type: Types.ArrayType;
   }
 
-  export class ArrayValueProper extends ValueProper implements ArrayValue {
+  export class ArrayValue extends Value implements ArrayResult {
     type: Types.ArrayType;
     reference?: number; //will be used in the future for circular values
-    value: Value[];
+    value: Result[];
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       if(this.reference !== undefined) {
         return formatCircular(this.reference, options);
@@ -576,7 +576,7 @@ export namespace Values {
     nativize() {
       return this.value.map(element => element.nativize());
     }
-    constructor(arrayType: Types.ArrayType, value: Value[], reference?: number) {
+    constructor(arrayType: Types.ArrayType, value: Result[], reference?: number) {
       super();
       this.type = arrayType;
       this.value = value;
@@ -584,7 +584,7 @@ export namespace Values {
     }
   }
 
-  export class ArrayValueError extends ValueError implements ArrayValue {
+  export class ArrayErrorResult extends ErrorResult implements ArrayResult {
     type: Types.ArrayType;
     constructor(arrayType: Types.ArrayType, error: DecoderError) {
       super(error);
@@ -593,15 +593,15 @@ export namespace Values {
   }
 
   //Mappings
-  export interface MappingValue extends Value {
+  export interface MappingResult extends Result {
     type: Types.MappingType;
   }
 
-  export class MappingValueProper extends ValueProper implements MappingValue {
+  export class MappingValue extends Value implements MappingResult {
     type: Types.MappingType;
     //note that since mappings live in storage, a circular
     //mapping is impossible
-    value: [ElementaryValue, Value][]; //order of key-value pairs is irrelevant
+    value: [ElementaryResult, Result][]; //order of key-value pairs is irrelevant
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return util.inspect(new Map(this.value), options);
     }
@@ -611,14 +611,14 @@ export namespace Values {
         ({[key.toString()]: value.nativize()})
       ));
     }
-    constructor(mappingType: Types.MappingType, value: [ElementaryValue, Value][]) {
+    constructor(mappingType: Types.MappingType, value: [ElementaryResult, Result][]) {
       super();
       this.type = mappingType;
       this.value = value;
     }
   }
 
-  export class MappingValueError extends ValueError implements MappingValue {
+  export class MappingErrorResult extends ErrorResult implements MappingResult {
     type: Types.MappingType;
     constructor(mappingType: Types.MappingType, error: DecoderError) {
       super(error);
@@ -627,15 +627,15 @@ export namespace Values {
   }
 
   //Structs
-  export interface StructValue extends Value {
+  export interface StructResult extends Result {
     type: Types.StructType;
   }
 
-  export class StructValueProper extends ValueProper implements StructValue {
+  export class StructValue extends Value implements StructResult {
     type: Types.StructType;
     reference?: number; //will be used in the future for circular values
     value: {
-      [field: string]: Value;
+      [field: string]: Result;
     };
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       if(this.reference !== undefined) {
@@ -648,7 +648,7 @@ export namespace Values {
         ([key, value]) => ({[key]: value.nativize()})
       ));
     }
-    constructor(structType: Types.StructType, value: {[field: string]: Value}, reference?: number) {
+    constructor(structType: Types.StructType, value: {[field: string]: Result}, reference?: number) {
       super();
       this.type = structType;
       this.value = value;
@@ -656,7 +656,7 @@ export namespace Values {
     }
   }
 
-  export class StructValueError extends ValueError implements StructValue {
+  export class StructErrorResult extends ErrorResult implements StructResult {
     type: Types.StructType;
     constructor(structType: Types.StructType, error: DecoderError) {
       super(error);
@@ -665,15 +665,15 @@ export namespace Values {
   }
 
   //Magic variables
-  export interface MagicValue extends Value {
+  export interface MagicResult extends Result {
     type: Types.MagicType;
   }
 
-  export class MagicValueProper extends ValueProper implements MagicValue {
+  export class MagicValue extends Value implements MagicResult {
     type: Types.MagicType;
     //a magic variable can't be circular, duh!
     value: {
-      [field: string]: Value
+      [field: string]: Result
     };
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return util.inspect(this.value, options);
@@ -683,14 +683,14 @@ export namespace Values {
         ([key, value]) => ({[key]: value.nativize()})
       ));
     }
-    constructor(magicType: Types.MagicType, value: {[field: string]: Value}) {
+    constructor(magicType: Types.MagicType, value: {[field: string]: Result}) {
       super();
       this.type = magicType;
       this.value = value;
     }
   }
 
-  export class MagicValueError extends ValueError implements MagicValue {
+  export class MagicErrorResult extends ErrorResult implements MagicResult {
     type: Types.MagicType;
     constructor(magicType: Types.MagicType, error: DecoderError) {
       super(error);
@@ -704,11 +704,11 @@ export namespace Values {
    */
 
   //Enums
-  export interface EnumValue extends Value {
+  export interface EnumResult extends Result {
     type: Types.EnumType;
   }
 
-  export class EnumValueProper extends ValueProper implements EnumValue {
+  export class EnumValue extends Value implements EnumResult {
     type: Types.EnumType;
     value: {
       name: string;
@@ -731,7 +731,7 @@ export namespace Values {
   };
 
   //Enum errors
-  export class EnumValueError extends ValueError implements EnumValue {
+  export class EnumErrorResult extends ErrorResult implements EnumResult {
     type: Types.EnumType;
     constructor(enumType: Types.EnumType, error: DecoderError) {
       super(error);
@@ -792,21 +792,21 @@ export namespace Values {
    */
 
   //Contracts
-  export interface ContractValue extends Value {
+  export interface ContractResult extends Result {
     type: Types.ContractType;
   }
 
-  //Contract values have a special new type as their value: ContractValueDirect.
-  export class ContractValueProper extends ValueProper implements ContractValue {
+  //Contract values have a special new type as their value: ContractValueInfo.
+  export class ContractValue extends Value implements ContractResult {
     type: Types.ContractType;
-    value: ContractValueDirect;
+    value: ContractValueInfo;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return util.inspect(this.value, options);
     }
     nativize() {
       return this.value.nativize();
     }
-    constructor(contractType: Types.ContractType, value: ContractValueDirect) {
+    constructor(contractType: Types.ContractType, value: ContractValueInfo) {
       super();
       this.type = contractType;
       this.value = value;
@@ -815,12 +815,12 @@ export namespace Values {
 
   //There are two types -- one for contracts whose class we can identify, and one
   //for when we can't identify the class.
-  export type ContractValueDirect = ContractValueDirectKnown | ContractValueDirectUnknown;
+  export type ContractValueInfo = ContractValueInfoKnown | ContractValueInfoUnknown;
 
   //when we can identify the class
-  export class ContractValueDirectKnown {
+  export class ContractValueInfoKnown {
     address: string; //should be formatted as address
-    //NOT an AddressValue, note
+    //NOT an AddressResult, note
     kind: "known";
     class: Types.ContractType;
     //may have more optional members defined later, but I'll leave these out for now
@@ -838,9 +838,9 @@ export namespace Values {
   }
 
   //when we can't
-  export class ContractValueDirectUnknown {
+  export class ContractValueInfoUnknown {
     address: string; //should be formatted as address
-    //NOT an AddressValue, note
+    //NOT an AddressResult, note
     kind: "unknown";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       debug("options: %O", options);
@@ -856,7 +856,7 @@ export namespace Values {
   }
 
   //errors for contracts
-  export class ContractValueError extends ValueError implements ContractValue {
+  export class ContractErrorResult extends ErrorResult implements ContractResult {
     type: Types.ContractType;
     constructor(contractType: Types.ContractType, error: DecoderError) {
       super(error);
@@ -881,24 +881,21 @@ export namespace Values {
    * SECTION 6: External functions
    */
 
-  //functions can be external or internal, but let's include this union type here
-  export type FunctionValue = FunctionValueExternal | FunctionValueInternal;
-
   //external functions
-  export interface FunctionValueExternal extends Value {
+  export interface FunctionExternalResult extends Result {
     type: Types.FunctionType; //should be external, obviously!
   }
 
-  export class FunctionValueExternalProper extends ValueProper implements FunctionValueExternal {
+  export class FunctionExternalValue extends Value implements FunctionExternalResult {
     type: Types.FunctionType;
-    value: FunctionValueExternalDirect;
+    value: FunctionExternalValueInfo;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return util.inspect(this.value, options);
     }
     nativize() {
       return this.value.nativize();
     }
-    constructor(functionType: Types.FunctionType, value: FunctionValueExternalDirect) {
+    constructor(functionType: Types.FunctionType, value: FunctionExternalValueInfo) {
       super();
       this.type = functionType;
       this.value = value;
@@ -906,15 +903,15 @@ export namespace Values {
   }
 
   //External function values come in 3 types:
-  export type FunctionValueExternalDirect =
-    FunctionValueExternalDirectKnown //known function of known class
-    | FunctionValueExternalDirectInvalid //known class, but can't locate function
-    | FunctionValueExternalDirectUnknown; //can't determine class
+  export type FunctionExternalValueInfo =
+    FunctionExternalValueInfoKnown //known function of known class
+    | FunctionExternalValueInfoInvalid //known class, but can't locate function
+    | FunctionExternalValueInfoUnknown; //can't determine class
 
   //known function of known class
-  export class FunctionValueExternalDirectKnown {
+  export class FunctionExternalValueInfoKnown {
     kind: "known";
-    contract: ContractValueDirectKnown;
+    contract: ContractValueInfoKnown;
     selector: string; //formatted as a bytes4
     name: string;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -929,7 +926,7 @@ export namespace Values {
     nativize() {
       return `${this.contract.nativize()}.${this.name}`
     }
-    constructor(contract: ContractValueDirectKnown, selector: string, name: string) {
+    constructor(contract: ContractValueInfoKnown, selector: string, name: string) {
       this.kind = "known";
       this.contract = contract;
       this.selector = selector;
@@ -938,9 +935,9 @@ export namespace Values {
   }
 
   //known class but can't locate function
-  export class FunctionValueExternalDirectInvalid {
+  export class FunctionExternalValueInfoInvalid {
     kind: "invalid";
-    contract: ContractValueDirectKnown;
+    contract: ContractValueInfoKnown;
     selector: string; //formatted as a bytes4
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       //first, let's inspect that contract, but w/o color
@@ -955,7 +952,7 @@ export namespace Values {
     nativize() {
       return `${this.contract.nativize()}.call(${this.selector}...)`
     }
-    constructor(contract: ContractValueDirectKnown, selector: string) {
+    constructor(contract: ContractValueInfoKnown, selector: string) {
       this.kind = "invalid";
       this.contract = contract;
       this.selector = selector;
@@ -963,9 +960,9 @@ export namespace Values {
   }
 
   //can't even locate class
-  export class FunctionValueExternalDirectUnknown {
+  export class FunctionExternalValueInfoUnknown {
     kind: "unknown";
-    contract: ContractValueDirectUnknown;
+    contract: ContractValueInfoUnknown;
     selector: string; //formatted as a bytes4
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       //first, let's inspect that contract, but w/o color
@@ -980,7 +977,7 @@ export namespace Values {
     nativize() {
       return `${this.contract.nativize()}.call(${this.selector}...)`
     }
-    constructor(contract: ContractValueDirectUnknown, selector: string) {
+    constructor(contract: ContractValueInfoUnknown, selector: string) {
       this.kind = "unknown";
       this.contract = contract;
       this.selector = selector;
@@ -988,7 +985,7 @@ export namespace Values {
   }
 
   //errors for external functions
-  export class FunctionValueExternalError extends ValueError implements FunctionValueExternal {
+  export class FunctionExternalErrorResult extends ErrorResult implements FunctionExternalResult {
     type: Types.FunctionType;
     constructor(functionType: Types.FunctionType, error: DecoderError) {
       super(error);
@@ -1029,20 +1026,20 @@ export namespace Values {
    */
 
   //Internal functions
-  export interface FunctionValueInternal extends Value {
+  export interface FunctionInternalResult extends Result {
     type: Types.FunctionType; //should be internal, obviously!
   }
 
-  export class FunctionValueInternalProper extends ValueProper implements FunctionValueInternal {
+  export class FunctionInternalValue extends Value implements FunctionInternalResult {
     type: Types.FunctionType;
-    value: FunctionValueInternalDirect;
+    value: FunctionInternalValueInfo;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return util.inspect(this.value, options);
     }
     nativize() {
       return this.value.nativize();
     }
-    constructor(functionType: Types.FunctionType, value: FunctionValueInternalDirect) {
+    constructor(functionType: Types.FunctionType, value: FunctionInternalValueInfo) {
       super();
       this.type = functionType;
       this.value = value;
@@ -1050,13 +1047,13 @@ export namespace Values {
   }
 
   //these also come in 3 types
-  export type FunctionValueInternalDirect =
-    FunctionValueInternalDirectKnown //actual function
-    | FunctionValueInternalDirectException //default value
-    | FunctionValueInternalDirectUnknown; //decoding not supported in this context
+  export type FunctionInternalValueInfo =
+    FunctionInternalValueInfoKnown //actual function
+    | FunctionInternalValueInfoException //default value
+    | FunctionInternalValueInfoUnknown; //decoding not supported in this context
 
   //actual function
-  export class FunctionValueInternalDirectKnown {
+  export class FunctionInternalValueInfoKnown {
     kind: "function"
     context: Types.ContractType;
     deployedProgramCounter: number;
@@ -1086,7 +1083,7 @@ export namespace Values {
   }
 
   //default value
-  export class FunctionValueInternalDirectException {
+  export class FunctionInternalValueInfoException {
     kind: "exception"
     context: Types.ContractType;
     deployedProgramCounter: number;
@@ -1114,7 +1111,7 @@ export namespace Values {
   }
 
   //value returned to indicate that decoding is not supported outside the debugger
-  export class FunctionValueInternalDirectUnknown {
+  export class FunctionInternalValueInfoUnknown {
     kind: "unknown"
     context: Types.ContractType;
     deployedProgramCounter: number;
@@ -1138,7 +1135,7 @@ export namespace Values {
   }
 
   //Internal function errors
-  export class FunctionValueInternalError extends ValueError implements FunctionValueInternal {
+  export class FunctionInternalErrorResult extends ErrorResult implements FunctionInternalResult {
     type: Types.FunctionType;
     constructor(functionType: Types.FunctionType, error: DecoderError) {
       super(error);
@@ -1261,42 +1258,42 @@ export namespace Values {
   }
 
   //finally, a convenience function for constructing generic errors
-  export function makeGenericValueError(dataType: Types.Type, error: GenericError): ValueError {
+  export function makeGenericErrorResult(dataType: Types.Type, error: GenericError): ErrorResult {
     switch(dataType.typeClass) {
       case "uint":
-        return new UintValueError(dataType, error);
+        return new UintErrorResult(dataType, error);
       case "int":
-        return new IntValueError(dataType, error);
+        return new IntErrorResult(dataType, error);
       case "bool":
-        return new BoolValueError(dataType, error);
+        return new BoolErrorResult(dataType, error);
       case "bytes":
-        return new BytesValueError(dataType, error);
+        return new BytesErrorResult(dataType, error);
       case "address":
-        return new AddressValueError(dataType, error);
+        return new AddressErrorResult(dataType, error);
       case "fixed":
-        return new FixedValueError(dataType, error);
+        return new FixedErrorResult(dataType, error);
       case "ufixed":
-        return new UfixedValueError(dataType, error);
+        return new UfixedErrorResult(dataType, error);
       case "string":
-        return new StringValueError(dataType, error);
+        return new StringErrorResult(dataType, error);
       case "array":
-        return new ArrayValueError(dataType, error);
+        return new ArrayErrorResult(dataType, error);
       case "mapping":
-        return new MappingValueError(dataType, error);
+        return new MappingErrorResult(dataType, error);
       case "struct":
-        return new StructValueError(dataType, error);
+        return new StructErrorResult(dataType, error);
       case "enum":
-        return new EnumValueError(dataType, error);
+        return new EnumErrorResult(dataType, error);
       case "contract":
-        return new ContractValueError(dataType, error);
+        return new ContractErrorResult(dataType, error);
       case "magic":
-        return new MagicValueError(dataType, error);
+        return new MagicErrorResult(dataType, error);
       case "function":
         switch(dataType.visibility) {
           case "external":
-        return new FunctionValueExternalError(dataType, error);
+        return new FunctionExternalErrorResult(dataType, error);
           case "internal":
-        return new FunctionValueInternalError(dataType, error);
+        return new FunctionInternalErrorResult(dataType, error);
         }
     }
   }

@@ -14,13 +14,13 @@ import * as Pointer from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 
-export default function* decode(definition: AstDefinition, pointer: Pointer.DataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+export default function* decode(definition: AstDefinition, pointer: Pointer.DataPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   let dataType = Types.definitionToType(definition);
   debug("definition %O", definition);
   return yield* decodePointer(dataType, pointer, info);
 }
 
-export function* decodePointer(dataType: Types.Type, pointer: Pointer.DataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+export function* decodePointer(dataType: Types.Type, pointer: Pointer.DataPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   debug("type %O", dataType);
   debug("pointer %O", pointer);
 

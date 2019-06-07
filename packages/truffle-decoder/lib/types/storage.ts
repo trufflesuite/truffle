@@ -32,7 +32,7 @@ export interface StoragePosition {
 };
 
 export interface Slot {
-  key?: DecodeUtils.Values.ElementaryValue;
+  key?: DecodeUtils.Values.ElementaryResult;
   path?: Slot;
   hashPath?: boolean;
   offset: BN;

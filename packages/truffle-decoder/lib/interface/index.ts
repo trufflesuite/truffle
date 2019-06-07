@@ -17,6 +17,6 @@ export function forContract(contract: ContractObject, relevantContracts: Contrac
   return new TruffleDecoder(contract, relevantContracts, provider, address);
 }
 
-export function* forEvmState(definition: AstDefinition, pointer: DataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+export function* forEvmState(definition: AstDefinition, pointer: DataPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   return yield* decode(definition, pointer, info);
 }

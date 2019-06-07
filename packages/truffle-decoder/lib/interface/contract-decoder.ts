@@ -36,7 +36,7 @@ interface ContractState {
   nonce: BN;
   code: string;
   variables: {
-    [name: string]: Values.Value
+    [name: string]: Values.Result
   };
 };
 
@@ -191,7 +191,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.contractCode = await this.web3.eth.getCode(this.contractAddress);
   }
 
-  private async decodeVariable(variable: StorageMemberAllocation, block: number): Promise<Values.Value> {
+  private async decodeVariable(variable: StorageMemberAllocation, block: number): Promise<Values.Result> {
     const info: EvmInfo = {
       state: {
         stack: [],
@@ -222,7 +222,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     }
     //at this point, result.value holds the final value
 
-    return <Values.Value>result.value;
+    return <Values.Result>result.value;
   }
 
   public async state(block: BlockType = "latest"): Promise<ContractState | undefined> {
@@ -254,7 +254,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     return result;
   }
 
-  public async variable(nameOrId: string | number, block: BlockType = "latest"): Promise<Values.Value | undefined> {
+  public async variable(nameOrId: string | number, block: BlockType = "latest"): Promise<Values.Result | undefined> {
     let blockNumber = typeof block === "number"
       ? block
       : (await this.web3.eth.getBlock(block)).number;
@@ -475,7 +475,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     }
     let rawIndex = indices[indices.length - 1];
     let index: any;
-    let key: Values.ElementaryValue;
+    let key: Values.ElementaryResult;
     let slot: Slot;
     let definition: AstDefinition;
     switch(DefinitionUtils.typeClass(parentDefinition)) {
