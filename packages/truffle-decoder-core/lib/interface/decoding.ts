@@ -9,13 +9,13 @@ import { DecoderRequest, GeneratorJunk } from "../types/request";
 import { CalldataAllocation, EventAllocation } from "../types/allocation";
 import decode from "../decode";
 
-export function* decodeVariable(definition: AstDefinition, pointer: Pointer.DataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+export function* decodeVariable(definition: AstDefinition, pointer: Pointer.DataPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   let dataType = Types.definitionToType(definition);
   debug("definition %O", definition);
   return yield* decode(dataType, pointer, info); //no need to pass an offset
 }
 
-export function* decodeCalldata(info: EvmInfo, contractType: DecodeUtils.Types.ContractType | null): IterableIterator<CalldataDecoding | DecoderRequest | Values.Value | GeneratorJunk> {
+export function* decodeCalldata(info: EvmInfo, contractType: DecodeUtils.Types.ContractType | null): IterableIterator<CalldataDecoding | DecoderRequest | Values.Result | GeneratorJunk> {
   if(contractType === null) {
     //if we don't know the contract ID, we can't decode
     return {
@@ -78,7 +78,7 @@ export function* decodeCalldata(info: EvmInfo, contractType: DecodeUtils.Types.C
   }
 }
 
-export function* decodeEvent(info: EvmInfo, contractType: DecodeUtils.Types.ContractType | null): IterableIterator<EventDecoding | DecoderRequest | Values.Value | GeneratorJunk> {
+export function* decodeEvent(info: EvmInfo, contractType: DecodeUtils.Types.ContractType | null): IterableIterator<EventDecoding | DecoderRequest | Values.Result | GeneratorJunk> {
   if(contractType === null) {
     //if we don't know the contract ID, we can't decode
     return {

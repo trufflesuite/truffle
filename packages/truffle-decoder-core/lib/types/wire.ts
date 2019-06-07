@@ -12,5 +12,5 @@ export interface EventDecoding {
 
 export interface AbiArgument {
   name?: string; //included if parameter is named
-  value: Values.Value;
+  value: Values.Result;
 }

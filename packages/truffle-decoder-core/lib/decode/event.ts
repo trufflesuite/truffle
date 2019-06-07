@@ -7,7 +7,7 @@ import { EventTopicPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 
-export default function* decode(dataType: Types.Type, pointer: EventTopicPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+export default function* decode(dataType: Types.Type, pointer: EventTopicPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   if(Types.isReferenceType(dataType)) {
     //we cannot decode reference types "stored" in topics; we have to just return an error
     let bytes: Uint8Array;
@@ -15,10 +15,10 @@ export default function* decode(dataType: Types.Type, pointer: EventTopicPointer
       bytes = yield* read(pointer, state);
     }
     catch(error) { //error: Values.DecodingError
-      return Values.makeGenericValueError(dataType, error.error);
+      return Values.makeGenericErrorResult(dataType, error.error);
     }
     let raw: string = ConversionUtils.toHexString(bytes);
-    return Values.makeGenericValueError(
+    return Values.makeGenericErrorResult(
       dataType,
       new Values.IndexedReferenceTypeError(
         dataType,
