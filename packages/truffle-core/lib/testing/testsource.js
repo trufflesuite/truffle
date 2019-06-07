@@ -43,14 +43,14 @@ TestSource.prototype.resolve = function(import_path, callback) {
         mapping[name] = false;
       });
 
-      abstraction_files.forEach(function(file) {
+      abstraction_files.forEach(file => {
         var name = path.basename(file, ".json");
         if (blacklist.indexOf(name) >= 0) return;
         mapping[name] = false;
       });
 
-      var promises = abstraction_files.map(function(file) {
-        return new Promise(function(accept, reject) {
+      var promises = abstraction_files.map(file => {
+        return new Promise((accept, reject) => {
           fs.readFile(
             path.join(self.config.contracts_build_directory, file),
             "utf8",
@@ -63,24 +63,18 @@ TestSource.prototype.resolve = function(import_path, callback) {
       });
 
       Promise.all(promises)
-        .then(function(files_data) {
-          var addresses = files_data
-            .map(function(data) {
-              return JSON.parse(data);
-            })
-            .map(function(json) {
-              return contract(json);
-            })
-            .map(function(c) {
+        .then(files_data => {
+          const addresses = files_data
+            .map(data => JSON.parse(data))
+            .map(json => contract(json))
+            .map(c => {
               c.setNetwork(self.config.network_id);
-              if (c.isDeployed()) {
-                return c.address;
-              }
+              if (c.isDeployed()) return c.address;
               return null;
             });
 
-          addresses.forEach(function(address, i) {
-            var name = path.basename(abstraction_files[i], ".json");
+          addresses.forEach((address, i) => {
+            const name = path.basename(abstraction_files[i], ".json");
 
             if (blacklist.indexOf(name) >= 0) return;
 
@@ -92,7 +86,7 @@ TestSource.prototype.resolve = function(import_path, callback) {
             self.config.compilers
           );
         })
-        .then(function(addressSource) {
+        .then(addressSource => {
           callback(null, addressSource, import_path);
         })
         .catch(callback);
