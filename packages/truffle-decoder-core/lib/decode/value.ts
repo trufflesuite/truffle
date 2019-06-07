@@ -9,7 +9,7 @@ import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 
-export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
+export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, permissivePadding: boolean = false): IterableIterator<Values.Value | DecoderRequest | GeneratorJunk> {
   //NOTE: this does not actually return a Uint8Aarray, but due to the use of yield* read,
   //we have to include it in the type :-/
   const { state } = info;
@@ -51,20 +51,26 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
     }
 
     case "uint":
-      if(!checkPaddingLeft(bytes, dataType.bits/8)) {
+      //first, check padding (if needed)
+      if(!permissivePadding && !checkPaddingLeft(bytes, dataType.bits/8)) {
         return new Values.UintValueError(
           dataType,
           new Values.UintPaddingError(DecodeUtils.Conversion.toHexString(bytes))
         );
       }
+      //now, truncate to appropriate length (keeping the bytes on the right)
+      bytes = bytes.slice(-dataType.bits/8);
       return new Values.UintValueProper(dataType, DecodeUtils.Conversion.toBN(bytes));
     case "int":
-      if(!checkPaddingSigned(bytes, dataType.bits/8)) {
+      //first, check padding (if needed)
+      if(!permissivePadding && !checkPaddingSigned(bytes, dataType.bits/8)) {
         return new Values.IntValueError(
           dataType,
           new Values.IntPaddingError(DecodeUtils.Conversion.toHexString(bytes))
         );
       }
+      //now, truncate to appropriate length (keeping the bytes on the right)
+      bytes = bytes.slice(-dataType.bits/8);
       return new Values.IntValueProper(dataType, DecodeUtils.Conversion.toSignedBN(bytes));
 
     case "address":
@@ -89,8 +95,8 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
 
     case "bytes":
       if(dataType.kind === "static") {
-        //first, check padding
-        if(!checkPaddingRight(bytes, dataType.length)) {
+        //first, check padding (if needed)
+        if(!permissivePadding && !checkPaddingRight(bytes, dataType.length)) {
           return new Values.BytesValueError(
             dataType,
             new Values.BytesPaddingError(DecodeUtils.Conversion.toHexString(bytes))
