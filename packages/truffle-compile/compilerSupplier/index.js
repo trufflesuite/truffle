@@ -74,6 +74,17 @@ class CompilerSupplier {
     });
   }
 
+  async loadParserSolc(parser, solcVersion) {
+    if (parser) {
+      this.checkParser(parser);
+      const normalizedSolcVersion = semver.coerce(solcVersion).version;
+      return await new VersionRange({ version: normalizedSolcVersion }).load(
+        normalizedSolcVersion
+      );
+    }
+    return false;
+  }
+
   checkParser(parser) {
     if (parser !== "solcjs")
       throw new Error(
