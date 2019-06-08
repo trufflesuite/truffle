@@ -212,13 +212,13 @@ module.exports = {
       const supplier = new CompilerSupplier(options.compilers.solc);
       supplier
         .load()
-        .then(async solc => {
+        .then(async ([solc, parserSolc]) => {
           // Get all the source code
           const resolved = await self.resolveAllSources(
             resolver,
             allPaths,
             solc,
-            options
+            parserSolc
           );
           // Generate hash of all sources including external packages - passed to solc inputs.
           const resolvedPaths = Object.keys(resolved);
@@ -261,7 +261,7 @@ module.exports = {
                   currentFile,
                   resolved[currentFile],
                   solc,
-                  options
+                  parserSolc
                 );
               } catch (err) {
                 err.message = `Error parsing ${currentFile}: ${err.message}`;
@@ -285,7 +285,7 @@ module.exports = {
 
   // Resolves sources in several async passes. For each resolved set it detects unknown
   // imports from external packages and adds them to the set of files to resolve.
-  async resolveAllSources(resolver, initialPaths, solc, options) {
+  async resolveAllSources(resolver, initialPaths, solc, parserSolc) {
     const self = this;
     const mapping = {};
     const allPaths = initialPaths.slice();
@@ -338,7 +338,7 @@ module.exports = {
                 result.file,
                 result,
                 solc,
-                options
+                parserSolc
               );
             } catch (err) {
               if (err.message.includes("requires different compiler version")) {
@@ -382,20 +382,16 @@ module.exports = {
     file,
     { body, source },
     solc,
-    {
-      compilers: {
-        solc: { parser }
-      }
-    }
+    parserSolc
   ) {
     const self = this;
+    let imports;
 
     // No imports in vyper!
     if (path.extname(file) === ".vy") return [];
 
-    if (parser) solc = await self.setSolcParser(parser);
-
-    const imports = await Parser.parseImports(body, solc);
+    if (parserSolc) imports = await Parser.parseImports(body, parserSolc);
+    else imports = await Parser.parseImports(body, solc);
 
     // Convert explicitly relative dependencies of modules back into module paths.
     return imports.map(
