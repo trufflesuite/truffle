@@ -74,6 +74,13 @@ class CompilerSupplier {
     });
   }
 
+  checkParser(parser) {
+    if (parser !== "solcjs")
+      throw new Error(
+        `Unsupported parser "${parser}" found in truffle-config.js`
+      );
+  }
+
   fileExists(localPath) {
     return fs.existsSync(localPath) || path.isAbsolute(localPath);
   }
