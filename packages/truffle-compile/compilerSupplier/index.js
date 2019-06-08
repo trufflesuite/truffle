@@ -64,7 +64,11 @@ class CompilerSupplier {
       if (strategy) {
         try {
           const solc = await strategy.load(userSpecification);
-          resolve(solc);
+          const parserSolc = await this.loadParserSolc(
+            this.config.parser,
+            solc.version()
+          );
+          resolve([solc, parserSolc]);
         } catch (error) {
           reject(error);
         }
