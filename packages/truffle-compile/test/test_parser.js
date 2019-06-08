@@ -14,7 +14,7 @@ describe("Parser", () => {
       "utf-8"
     );
     const supplier = new CompilerSupplier();
-    solc = await supplier.load();
+    ({ solc } = await supplier.load());
   });
 
   it("should return correct imports with solcjs", () => {
@@ -36,8 +36,8 @@ describe("Parser", () => {
   it("should return correct imports with native solc", () => {
     const config = { version: "native" };
     const nativeSupplier = new CompilerSupplier(config);
-    nativeSupplier.load().then(nativeSolc => {
-      const imports = Parser.parseImports(source, nativeSolc);
+    nativeSupplier.load().then(({ solc }) => {
+      const imports = Parser.parseImports(source, solc);
 
       // Note that this test is important because certain parts of the solidity
       // output cuts off path prefixes like "./" and "../../../". If we get the
@@ -56,8 +56,8 @@ describe("Parser", () => {
   it("should return correct imports with docker solc", () => {
     const config = { docker: true, version: "0.4.25" };
     const dockerSupplier = new CompilerSupplier(config);
-    dockerSupplier.load().then(dockerSolc => {
-      const imports = Parser.parseImports(source, dockerSolc);
+    dockerSupplier.load().then(({ solc }) => {
+      const imports = Parser.parseImports(source, solc);
 
       // Note that this test is important because certain parts of the solidity
       // output cuts off path prefixes like "./" and "../../../". If we get the
