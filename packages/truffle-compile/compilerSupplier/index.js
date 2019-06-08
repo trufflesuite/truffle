@@ -66,7 +66,7 @@ class CompilerSupplier {
           const solc = await strategy.load(userSpecification);
           const parserSolc = await this.loadParserSolc(
             this.config.parser,
-            solc.version()
+            solc
           );
           resolve([solc, parserSolc]);
         } catch (error) {
@@ -78,9 +78,10 @@ class CompilerSupplier {
     });
   }
 
-  async loadParserSolc(parser, solcVersion) {
+  async loadParserSolc(parser, solc) {
     if (parser) {
       this.checkParser(parser);
+      const solcVersion = solc.version();
       const normalizedSolcVersion = semver.coerce(solcVersion).version;
       return await new VersionRange({ version: normalizedSolcVersion }).load(
         normalizedSolcVersion
