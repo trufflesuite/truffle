@@ -378,12 +378,7 @@ module.exports = {
     });
   },
 
-  async getImports(
-    file,
-    { body, source },
-    solc,
-    parserSolc
-  ) {
+  async getImports(file, { body, source }, solc, parserSolc) {
     const self = this;
     let imports;
 
@@ -399,15 +394,6 @@ module.exports = {
         self.isExplicitlyRelative(dependencyPath)
           ? source.resolve_dependency_path(file, dependencyPath)
           : dependencyPath
-    );
-  },
-
-  setSolcParser(parser) {
-    if (parser === "solcjs") {
-      return new CompilerSupplier().load();
-    }
-    throw new Error(
-      `Unsupported parser "${parser}" found in truffle-config.js`
     );
   },
 
