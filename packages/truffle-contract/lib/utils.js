@@ -197,15 +197,20 @@ const Utils = {
   },
 
   convertENSNames(args, methodABI, web3) {
+    const { isAddress } = web3.utils;
     const ens = new ENS(web3.currentProvider);
     const convertedNames = args.map((argument, index) => {
       if (methodABI.inputs[index].type === "address") {
-        const isAddress = web3.utils.isAddress(argument);
-        if (isAddress) {
-          return argument;
-        } else {
+        // Check all address args for ENS names
+        const argIsAddress = isAddress(argument);
+        if (argIsAddress) return argument;
+        return ens.resolver(argument).addr();
+      } else if (index === methodABI.inputs.length) {
+        // Check the from field on the last argument if present
+        if (argument.from && !isAddress(argument.from)) {
           return ens.resolver(argument).addr();
         }
+        return argument;
       } else {
         return argument;
       }
