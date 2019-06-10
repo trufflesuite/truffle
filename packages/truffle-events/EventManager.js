@@ -20,7 +20,7 @@ class EventManager {
   }
 
   emit(event, data) {
-    this.emitter.emit(event, data);
+    return this.emitter.emit(event, data);
   }
 
   initializeSubscribers(initializationOptions) {
