@@ -2,8 +2,9 @@ const path = require("path");
 const assert = require("assert");
 const Resolver = require("truffle-resolver");
 const compile = require("../index");
+const { findOne } = require("./helpers");
 
-describe("Profiler", () => {
+describe("JSparser", () => {
   const options = {
     compilers: {
       solc: {
@@ -21,8 +22,8 @@ describe("Profiler", () => {
     working_directory: __dirname
   };
 
-  it("resolves imports quickly when using solcjs parser instead of docker", done => {
-    options.compilers.solc.version = "0.4.25";
+  it("resolves imports when using solcjs parser instead of docker", async () => {
+    options.compilers.solc.version = "0.4.22";
     options.compilers.solc.docker = true;
     options.contracts_directory = path.join(__dirname, "./sources/v0.4.x");
 
@@ -33,19 +34,17 @@ describe("Profiler", () => {
     options.paths = paths;
     options.resolver = new Resolver(options);
 
-    compile.with_dependencies(options, (err, result) => {
-      if (err) return done(err);
+    const { contracts } = await compile.with_dependencies(options);
+    const ComplexOrdered = findOne("ComplexOrdered", contracts);
 
-      // This contract imports / inherits
-      assert(
-        result["ComplexOrdered"].contract_name === "ComplexOrdered",
-        "Should have compiled"
-      );
-      done();
-    });
-  }).timeout(3000);
+    // This contract imports / inherits
+    assert(
+      ComplexOrdered.contractName === "ComplexOrdered",
+      "Should have compiled"
+    );
+  });
 
-  it("resolves imports quickly when using solcjs parser instead of nativ solc", done => {
+  it("resolves imports when using solcjs parser instead of native solc", async () => {
     options.compilers.solc.version = "native";
     delete options.compilers.solc.docker;
     options.contracts_directory = path.join(__dirname, "./sources/v0.5.x");
@@ -57,19 +56,17 @@ describe("Profiler", () => {
     options.paths = paths;
     options.resolver = new Resolver(options);
 
-    compile.with_dependencies(options, (err, result) => {
-      if (err) return done(err);
+    const { contracts } = await compile.with_dependencies(options);
+    const ComplexOrdered = findOne("ComplexOrdered", contracts);
 
-      // This contract imports / inherits
-      assert(
-        result["ComplexOrdered"].contract_name === "ComplexOrdered",
-        "Should have compiled"
-      );
-      done();
-    });
-  }).timeout(3000);
+    // This contract imports / inherits
+    assert(
+      ComplexOrdered.contractName === "ComplexOrdered",
+      "Should have compiled"
+    );
+  });
 
-  it("properly throws when passed an invalid parser value", done => {
+  it("properly throws when passed an invalid parser value", async () => {
     options.compilers.solc.parser = "badParser";
     options.contracts_directory = path.join(__dirname, "./sources/v0.5.x");
 
@@ -80,14 +77,11 @@ describe("Profiler", () => {
     options.paths = paths;
     options.resolver = new Resolver(options);
 
-    compile.with_dependencies(options, (err, result) => {
-      if (result) {
-        assert(false, "should have failed!");
-        done();
-      }
-
-      assert(err.message.match(/(Unsupported parser)/));
-      done();
-    });
-  }).timeout(3000);
+    try {
+      await compile.with_dependencies(options);
+      assert(false, "should not compiled!");
+    } catch ({ message }) {
+      assert(message.match(/(Unsupported parser)/));
+    }
+  });
 });
