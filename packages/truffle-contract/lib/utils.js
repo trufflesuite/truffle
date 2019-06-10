@@ -208,7 +208,15 @@ const Utils = {
       } else if (index === methodABI.inputs.length) {
         // Check the from field on the last argument if present
         if (argument.from && !isAddress(argument.from)) {
-          return ens.resolver(argument).addr();
+          return ens
+            .resolver(argument.from)
+            .addr()
+            .then(fromAddress => {
+              return Object.assign({}, { from: fromAddress }, argument);
+            })
+            .catch(error => {
+              throw error;
+            });
         }
         return argument;
       } else {
