@@ -58,78 +58,79 @@ class Console extends EventEmitter {
     // passed down to commands.
     this.options.repl = this.repl;
 
-    this.provision(function(err, abstractions) {
-      if (err) {
+    this.provision()
+      .then(abstractions => {
+        self.repl.start({
+          prompt: "truffle(" + self.options.network + ")> ",
+          context: {
+            web3: self.web3
+          },
+          interpreter: self.interpret.bind(self),
+          done: callback
+        });
+
+        self.resetContractsInConsoleContext(abstractions);
+      })
+      .catch(error => {
         self.options.logger.log(
           "Unexpected error: Cannot provision contracts while instantiating the console."
         );
-        self.options.logger.log(err.stack || err.message || err);
-      }
-
-      self.repl.start({
-        prompt: "truffle(" + self.options.network + ")> ",
-        context: {
-          web3: self.web3
-        },
-        interpreter: self.interpret.bind(self),
-        done: callback
+        self.options.logger.log(error.stack || error.message || error);
       });
-
-      self.resetContractsInConsoleContext(abstractions);
-    });
   }
 
-  provision(callback) {
+  async provision() {
     var self = this;
 
-    fs.readdir(this.options.contracts_build_directory, function(err, files) {
-      if (err) {
-        // Error reading the build directory? Must mean it doesn't exist or we don't have access to it.
-        // Couldn't provision the contracts if we wanted. It's possible we're hiding very rare FS
-        // errors, but that's better than showing the user error messages that will be "build folder
-        // doesn't exist" 99.9% of the time.
-      }
+    let files;
+    try {
+      files = fs.readdirSync(this.options.contracts_build_directory);
+    } catch (error) {
+      // Error reading the build directory? Must mean it doesn't exist or we don't have access to it.
+      // Couldn't provision the contracts if we wanted. It's possible we're hiding very rare FS
+      // errors, but that's better than showing the user error messages that will be "build folder
+      // doesn't exist" 99.9% of the time.
+    }
 
-      var promises = [];
-      files = files || [];
+    var promises = [];
+    files = files || [];
 
-      files.forEach(function(file) {
-        promises.push(
-          new Promise(function(accept, reject) {
-            fs.readFile(
+    files.forEach(file => {
+      promises.push(
+        new Promise((accept, reject) => {
+          let body;
+          try {
+            body = fs.readFileSync(
               path.join(self.options.contracts_build_directory, file),
-              "utf8",
-              function(err, body) {
-                if (err) return reject(err);
-                try {
-                  body = JSON.parse(body);
-                } catch (e) {
-                  return reject(
-                    new Error("Cannot parse " + file + ": " + e.message)
-                  );
-                }
-
-                accept(body);
-              }
+              "utf8"
             );
-          })
-        );
-      });
+          } catch (error) {
+            reject(error);
+          }
 
-      Promise.all(promises)
-        .then(function(json_blobs) {
-          var abstractions = json_blobs.map(function(json) {
-            var abstraction = contract(json);
-            provision(abstraction, self.options);
-            return abstraction;
-          });
+          try {
+            body = JSON.parse(body);
+          } catch (error) {
+            return reject(
+              new Error("Cannot parse " + file + ": " + error.message)
+            );
+          }
 
-          self.resetContractsInConsoleContext(abstractions);
-
-          callback(null, abstractions);
+          accept(body);
         })
-        .catch(callback);
+      );
     });
+
+    const jsonBlobs = await Promise.all(promises);
+    const abstractions = jsonBlobs.map(json => {
+      const abstraction = contract(json);
+      provision(abstraction, self.options);
+      return abstraction;
+    });
+
+    self.resetContractsInConsoleContext(abstractions);
+
+    return abstractions;
   }
 
   resetContractsInConsoleContext(abstractions) {
@@ -163,11 +164,14 @@ class Console extends EventEmitter {
         }
 
         // Reprovision after each command as it may change contracts.
-        self.provision(function(err) {
-          // Don't pass abstractions to the callback if they're there or else
-          // they'll get printed in the repl.
-          callback(err);
-        });
+        self
+          .provision()
+          .then(() => callback())
+          .catch(error => {
+            // Don't pass abstractions to the callback if they're there or else
+            // they'll get printed in the repl.
+            callback(error);
+          });
       });
     }
 
