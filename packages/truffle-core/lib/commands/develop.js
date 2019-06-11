@@ -21,11 +21,11 @@ const command = {
     const commands = require("./index");
     const excluded = ["console", "develop", "unbox", "init"];
 
-    const available_commands = Object.keys(commands).filter(
+    const availableCommands = Object.keys(commands).filter(
       name => !excluded.includes(name)
     );
 
-    const console_commands = available_commands.reduce(
+    const consoleCommands = availableCommands.reduce(
       (acc, name) => Object.assign({}, acc, { [name]: commands[name] }),
       {}
     );
@@ -33,7 +33,7 @@ const command = {
     Environment.develop(config, ganacheOptions)
       .then(() => {
         const c = new Console(
-          console_commands,
+          consoleCommands,
           config.with({ noAliases: true })
         );
         c.start(done);
