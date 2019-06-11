@@ -124,16 +124,20 @@ function* stepInto() {
   const startingRange = yield select(controller.current.location.sourceRange);
   var currentDepth;
   var currentRange;
+  var finished;
 
   do {
     yield* stepNext();
 
     currentDepth = yield select(controller.current.functionDepth);
     currentRange = yield select(controller.current.location.sourceRange);
+    finished = yield select(controller.current.trace.finished);
   } while (
+    //we aren't finished,
+    !finished &&
     // the function stack has not increased,
     currentDepth <= startingDepth &&
-    // the current source range begins on or after the starting range
+    // the current source range begins on or after the starting range,
     currentRange.start >= startingRange.start &&
     // and the current range ends on or before the starting range ends
     currentRange.start + currentRange.length <=
@@ -144,7 +148,8 @@ function* stepInto() {
 /**
  * Step out of the current function
  *
- * This will run until the debugger encounters a decrease in function depth.
+ * This will run until the debugger encounters a decrease in function depth
+ * (or finishes)
  */
 function* stepOut() {
   if (yield select(controller.current.location.isMultiline)) {
@@ -154,12 +159,14 @@ function* stepOut() {
 
   const startingDepth = yield select(controller.current.functionDepth);
   var currentDepth;
+  var finished;
 
   do {
     yield* stepNext();
 
     currentDepth = yield select(controller.current.functionDepth);
-  } while (currentDepth >= startingDepth);
+    finished = yield select(controller.current.trace.finished);
+  } while (!finished && currentDepth >= startingDepth);
 }
 
 /**
@@ -173,15 +180,19 @@ function* stepOver() {
   const startingRange = yield select(controller.current.location.sourceRange);
   var currentDepth;
   var currentRange;
+  var finished;
 
   do {
     yield* stepNext();
 
     currentDepth = yield select(controller.current.functionDepth);
     currentRange = yield select(controller.current.location.sourceRange);
+    finished = yield select(controller.current.trace.finished);
   } while (
     // keep stepping provided:
     //
+    // we haven't finished
+    !finished &&
     // we haven't jumped out
     !(currentDepth < startingDepth) &&
     // either: function depth is greater than starting (ignore function calls)
