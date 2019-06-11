@@ -9,12 +9,10 @@ const TruffleError = require("truffle-error");
 const fs = require("fs");
 const path = require("path");
 const EventEmitter = require("events");
-const { inherits } = require("util");
 
-inherits(Console, EventEmitter);
-
-class Console {
+class Console extends EventEmitter {
   constructor(tasks, options) {
+    super();
     EventEmitter.call(this);
 
     var self = this;
