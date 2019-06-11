@@ -6,6 +6,11 @@ var debug = require("debug")("lib:debug");
 var BN = require("bn.js");
 var util = require("util");
 
+var chromafi = require("chromafi");
+var hljs = require("highlight.js");
+var hljsDefineSolidity = require("highlightjs-solidity");
+hljsDefineSolidity(hljs);
+
 var commandReference = {
   "o": "step over",
   "i": "step into",
@@ -334,6 +339,18 @@ var DebugUtils = {
         return padding + line;
       })
       .join(OS.EOL);
+  },
+
+  colorize: function(code) {
+    let options = {
+      lang: "solidity",
+      lineNumbers: false, //we're handling this manually for now
+      highlight: true,
+      stripIndent: false
+      //TODO: may have to play with the options some more
+    };
+    return chromafi(code, options);
+    //TODO: this will only work once solidity is in hljs
   },
 
   //HACK

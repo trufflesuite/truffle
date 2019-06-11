@@ -4,7 +4,10 @@
   "description": "Integration utils for truffle/truffle-debugger",
   "dependencies": {
     "async": "2.6.1",
+    "chromafi": "^2.1.0",
     "debug": "^4.1.0",
+    "highlight.js": "^9.15.8",
+    "highlightjs-solidity": "^1.0.6",
     "node-dir": "0.1.17"
   },
   "main": "index.js",
