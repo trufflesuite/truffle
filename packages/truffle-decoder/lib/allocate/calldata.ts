@@ -119,6 +119,10 @@ function calldataSizeAndAllocate(definition: AstDefinition, referenceDeclaration
       else {
         //static array case
         const length: number = DecodeUtils.Definition.staticLength(definition);
+        if(length === 0) {
+          //arrays of length 0 are static regardless of base type
+          return [0, false, existingAllocations];
+        }
         const baseDefinition: AstDefinition = definition.baseType || definition.typeName.baseType;
         const [baseSize, dynamic, allocations] = calldataSizeAndAllocate(baseDefinition, referenceDeclarations, existingAllocations);
         return [length * baseSize, dynamic, allocations];
