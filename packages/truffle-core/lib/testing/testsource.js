@@ -12,19 +12,19 @@ TestSource.prototype.require = function() {
   return null; // FSSource will get it.
 };
 
-TestSource.prototype.resolve = function(import_path, callback) {
+TestSource.prototype.resolve = function(importPath, callback) {
   const self = this;
 
-  if (import_path === "truffle/DeployedAddresses.sol") {
+  if (importPath === "truffle/DeployedAddresses.sol") {
     return find_contracts(this.config.contracts_directory, function(
       err,
       sourceFiles
     ) {
       // Ignore this error. Continue on.
 
-      let abstraction_files;
+      let abstractionFiles;
       try {
-        abstraction_files = fse.readdirSync(
+        abstractionFiles = fse.readdirSync(
           self.config.contracts_build_directory
         );
       } catch (error) {
@@ -43,13 +43,13 @@ TestSource.prototype.resolve = function(import_path, callback) {
         mapping[name] = false;
       });
 
-      abstraction_files.forEach(file => {
+      abstractionFiles.forEach(file => {
         const name = path.basename(file, ".json");
         if (blacklist.indexOf(name) >= 0) return;
         mapping[name] = false;
       });
 
-      const promises = abstraction_files.map(file => {
+      const promises = abstractionFiles.map(file => {
         return fse.readFile(
           path.join(self.config.contracts_build_directory, file),
           "utf8"
@@ -68,7 +68,7 @@ TestSource.prototype.resolve = function(import_path, callback) {
             });
 
           addresses.forEach((address, i) => {
-            const name = path.basename(abstraction_files[i], ".json");
+            const name = path.basename(abstractionFiles[i], ".json");
 
             if (blacklist.indexOf(name) >= 0) return;
 
@@ -81,7 +81,7 @@ TestSource.prototype.resolve = function(import_path, callback) {
           );
         })
         .then(addressSource => {
-          callback(null, addressSource, import_path);
+          callback(null, addressSource, importPath);
         })
         .catch(callback);
     });
@@ -104,22 +104,19 @@ TestSource.prototype.resolve = function(import_path, callback) {
   ];
 
   for (const lib of assertLibraries) {
-    if (import_path === `truffle/${lib}.sol`)
+    if (importPath === `truffle/${lib}.sol`)
       return fse.readFile(
         path.resolve(path.join(__dirname, `${lib}.sol`)),
         { encoding: "utf8" },
-        (err, body) => callback(err, body, import_path)
+        (err, body) => callback(err, body, importPath)
       );
   }
 
   return callback();
 };
 
-TestSource.prototype.resolve_dependency_path = function(
-  import_path,
-  dependency_path
-) {
-  return dependency_path;
+TestSource.prototype.resolve_dependency_path = (importPath, dependencyPath) => {
+  return dependencyPath;
 };
 
 module.exports = TestSource;
