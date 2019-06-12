@@ -1,8 +1,8 @@
-var Deployed = require("./deployed");
-var path = require("path");
-var fs = require("fs");
-var contract = require("truffle-contract");
-var find_contracts = require("truffle-contract-sources");
+const Deployed = require("./deployed");
+const path = require("path");
+const fse = require("fs-extra");
+const contract = require("truffle-contract");
+const find_contracts = require("truffle-contract-sources");
 
 function TestSource(config) {
   this.config = config;
@@ -24,7 +24,7 @@ TestSource.prototype.resolve = function(import_path, callback) {
 
       let abstraction_files;
       try {
-        abstraction_files = fs.readdirSync(
+        abstraction_files = fse.readdirSync(
           self.config.contracts_build_directory
         );
       } catch (error) {
@@ -50,16 +50,10 @@ TestSource.prototype.resolve = function(import_path, callback) {
       });
 
       const promises = abstraction_files.map(file => {
-        return new Promise((accept, reject) => {
-          fs.readFile(
-            path.join(self.config.contracts_build_directory, file),
-            "utf8",
-            function(err, body) {
-              if (err) return reject(err);
-              accept(body);
-            }
-          );
-        });
+        return fse.readFile(
+          path.join(self.config.contracts_build_directory, file),
+          "utf8"
+        );
       });
 
       Promise.all(promises)
@@ -111,7 +105,7 @@ TestSource.prototype.resolve = function(import_path, callback) {
 
   for (const lib of assertLibraries) {
     if (import_path === `truffle/${lib}.sol`)
-      return fs.readFile(
+      return fse.readFile(
         path.resolve(path.join(__dirname, `${lib}.sol`)),
         { encoding: "utf8" },
         (err, body) => callback(err, body, import_path)
