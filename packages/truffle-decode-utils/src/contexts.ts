@@ -262,29 +262,33 @@ export namespace Contexts {
   }
 
   export function matchesAbi(abiEntry: abiItem, node: AstDefinition, referenceDeclarations: AstReferences): boolean {
-    //first: does the basic type match?
+    //first: does the basic name and type match?
     switch(node.nodeType) {
       case "FunctionDefinition":
         if(node.visibility !== "external" && node.visibility !== "public") {
           return false;
         }
-        if(abiEntry.type !== node.kind) {
+        if(abiEntry.type !== DefinitionUtils.functionKind(node)) {
           return false;
         }
+	if(DefinitionUtils.functionKind(node) === "function") {
+	  if(node.name !== abiEntry.name) {
+	    return false;
+	  }
+	}
         break;
       case "EventDefinition":
         if(abiEntry.type !== "event") {
           return false;
         }
+	if(node.name !== abiEntry.name) {
+	  return false;
+	}
         break;
       default:
         return false;
     }
-    //if we've made it this far, the next question is, does the name match?
-    if(node.name !== abiEntry.name) {
-      return false;
-    }
-    //finally, we've got to start checking input types (we don't check output types)
+    //if so, we've got to start checking input types (we don't check output types)
     return matchesAbiParameters(abiEntry.inputs, node.parameters.parameters, referenceDeclarations);
   }
 
