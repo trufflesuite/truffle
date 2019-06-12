@@ -1,15 +1,15 @@
 {
   "name": "truffle-workflow-compile",
-  "version": "2.0.18",
+  "version": "2.0.19",
   "description": "Core workflow behavior for `truffle compile` command",
   "dependencies": {
     "mkdirp": "^0.5.1",
-    "truffle-artifactor": "^4.0.18",
+    "truffle-artifactor": "^4.0.19",
     "truffle-compile": "^4.1.0",
     "truffle-compile-vyper": "^1.0.17",
     "truffle-config": "^1.1.13",
     "truffle-expect": "^0.0.9",
-    "truffle-external-compile": "^1.0.10",
+    "truffle-external-compile": "^1.0.11",
     "truffle-resolver": "^5.0.14"
   },
   "main": "index.js",
