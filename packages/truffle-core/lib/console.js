@@ -122,17 +122,15 @@ class Console extends EventEmitter {
   }
 
   resetContractsInConsoleContext(abstractions) {
-    var self = this;
-
     abstractions = abstractions || [];
 
-    var contextVars = {};
+    const contextVars = {};
 
-    abstractions.forEach(function(abstraction) {
+    abstractions.forEach(abstraction => {
       contextVars[abstraction.contract_name] = abstraction;
     });
 
-    self.repl.setContextVars(contextVars);
+    this.repl.setContextVars(contextVars);
   }
 
   interpret(cmd, context, filename, callback) {
