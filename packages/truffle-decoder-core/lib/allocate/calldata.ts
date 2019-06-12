@@ -119,6 +119,10 @@ function calldataSizeAndAllocate(definition: AstDefinition, referenceDeclaration
       else {
         //static array case
         const length: number = DecodeUtils.Definition.staticLength(definition);
+        if(length === 0) {
+          //arrays of length 0 are static regardless of base type
+          return [0, false, existingAllocations];
+        }
         const baseDefinition: AstDefinition = definition.baseType || definition.typeName.baseType;
         const [baseSize, dynamic, allocations] = calldataSizeAndAllocate(baseDefinition, referenceDeclarations, existingAllocations);
         return [length * baseSize, dynamic, allocations];
@@ -182,7 +186,7 @@ export function isTypeDynamic(dataType: DecodeUtils.Types.Type, allocations: Cal
     case "bytes":
       return dataType.kind === "dynamic";
     case "array":
-      return dataType.kind === "dynamic" || isTypeDynamic(dataType.baseType, allocations);
+      return dataType.kind === "dynamic" || (dataType.length.gtn(0) && isTypeDynamic(dataType.baseType, allocations));
     case "struct":
       const allocation = allocations[dataType.id];
       if(!allocation) {
