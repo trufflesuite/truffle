@@ -186,7 +186,7 @@ export function isTypeDynamic(dataType: DecodeUtils.Types.Type, allocations: Cal
     case "bytes":
       return dataType.kind === "dynamic";
     case "array":
-      return dataType.kind === "dynamic" || isTypeDynamic(dataType.baseType, allocations);
+      return dataType.kind === "dynamic" || (dataType.length.gtn(0) && isTypeDynamic(dataType.baseType, allocations));
     case "struct":
       const allocation = allocations[dataType.id];
       if(!allocation) {

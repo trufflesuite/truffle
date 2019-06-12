@@ -354,6 +354,9 @@ export function storageSizeForType(dataType: DecodeUtils.Types.Type, userDefined
           return {words: 1};
         case "static":
           let length = dataType.length.toNumber(); //warning! but if it's too big we have a problem
+          if(length === 0) {
+            return {words: 1};
+          }
           let baseSize = storageSizeForType(dataType.baseType, userDefinedTypes, allocations);
           if(!isWordsLength(baseSize)) {
             //bytes case
