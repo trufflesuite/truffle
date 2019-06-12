@@ -279,10 +279,30 @@ export namespace Definition {
     return [typeObject.parameterTypes.parameters, typeObject.returnParameterTypes.parameters];
   }
 
+  //compatibility function, since pre-0.5.0 functions don't have node.kind
+  //returns undefined if you don't put in a function node
+  export function functionKind(node: AstDefinition): string | undefined {
+    if(node.nodeType !== "FunctionDefinition") {
+      return undefined;
+    }
+    if(node.kind !== undefined) {
+      //if we're dealing with 0.5.x, we can just read node.kind
+      return node.kind;
+    }
+    //otherwise, we need this little shim
+    if(node.isConstructor) {
+      return "constructor";
+    }
+    return node.name === ""
+      ? "fallback"
+      : "function";
+  }
+
   //takes a contract definition and asks, does it have a payable fallback function?
   export function isContractPayable(definition: AstDefinition): boolean {
     let fallback = definition.nodes.find(
-      node => node.nodeType === "FunctionDefinition" && node.kind === "fallback"
+      node => node.nodeType === "FunctionDefinition" &&
+        functionKind(node) === "fallback"
     );
     if(!fallback) {
       return false;

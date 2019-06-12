@@ -74,7 +74,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       return new Values.IntValue(dataType, DecodeUtils.Conversion.toSignedBN(bytes));
 
     case "address":
-      if(!checkPaddingLeft(bytes, DecodeUtils.EVM.ADDRESS_SIZE)) {
+      if(!permissivePadding && !checkPaddingLeft(bytes, DecodeUtils.EVM.ADDRESS_SIZE)) {
         return new Values.AddressErrorResult(
           dataType,
           new Values.AddressPaddingError(DecodeUtils.Conversion.toHexString(bytes))
@@ -83,7 +83,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       return new Values.AddressValue(dataType, DecodeUtils.Conversion.toAddress(bytes));
 
     case "contract":
-      if(!checkPaddingLeft(bytes, DecodeUtils.EVM.ADDRESS_SIZE)) {
+      if(!permissivePadding && !checkPaddingLeft(bytes, DecodeUtils.EVM.ADDRESS_SIZE)) {
         return new Values.ContractErrorResult(
           dataType,
           new Values.ContractPaddingError(DecodeUtils.Conversion.toHexString(bytes))
