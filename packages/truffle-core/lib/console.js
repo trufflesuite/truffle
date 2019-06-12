@@ -6,7 +6,7 @@ const { Web3Shim } = require("truffle-interface-adapter");
 const vm = require("vm");
 const expect = require("truffle-expect");
 const TruffleError = require("truffle-error");
-const fs = require("fs");
+const fse = require("fs-extra");
 const path = require("path");
 const EventEmitter = require("events");
 
@@ -80,11 +80,9 @@ class Console extends EventEmitter {
   }
 
   async provision() {
-    var self = this;
-
     let files;
     try {
-      files = fs.readdirSync(this.options.contracts_build_directory);
+      files = fse.readdirSync(this.options.contracts_build_directory);
     } catch (error) {
       // Error reading the build directory? Must mean it doesn't exist or we don't have access to it.
       // Couldn't provision the contracts if we wanted. It's possible we're hiding very rare FS
@@ -92,43 +90,33 @@ class Console extends EventEmitter {
       // doesn't exist" 99.9% of the time.
     }
 
-    var promises = [];
+    let promises = [];
     files = files || [];
 
     files.forEach(file => {
       promises.push(
-        new Promise((accept, reject) => {
-          let body;
-          try {
-            body = fs.readFileSync(
-              path.join(self.options.contracts_build_directory, file),
-              "utf8"
+        fse
+          .readFile(
+            path.join(this.options.contracts_build_directory, file),
+            "utf8"
+          )
+          .then(body => JSON.parse(body))
+          .catch(error => {
+            throw new Error(
+              `Error parsing or reading ${file}: ${error.message}`
             );
-          } catch (error) {
-            reject(error);
-          }
-
-          try {
-            body = JSON.parse(body);
-          } catch (error) {
-            return reject(
-              new Error("Cannot parse " + file + ": " + error.message)
-            );
-          }
-
-          accept(body);
-        })
+          })
       );
     });
 
     const jsonBlobs = await Promise.all(promises);
     const abstractions = jsonBlobs.map(json => {
       const abstraction = contract(json);
-      provision(abstraction, self.options);
+      provision(abstraction, this.options);
       return abstraction;
     });
 
-    self.resetContractsInConsoleContext(abstractions);
+    this.resetContractsInConsoleContext(abstractions);
 
     return abstractions;
   }
