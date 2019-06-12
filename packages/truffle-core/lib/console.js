@@ -15,8 +15,6 @@ class Console extends EventEmitter {
     super();
     EventEmitter.call(this);
 
-    var self = this;
-
     expect.options(options, [
       "working_directory",
       "contracts_directory",
@@ -41,17 +39,11 @@ class Console extends EventEmitter {
     });
 
     // Bubble the ReplManager's exit event
-    this.repl.on("exit", function() {
-      self.emit("exit");
-    });
+    this.repl.on("exit", () => this.emit("exit"));
   }
 
   start(callback) {
-    var self = this;
-
-    if (!this.repl) {
-      this.repl = new Repl(this.options);
-    }
+    if (!this.repl) this.repl = new Repl(this.options);
 
     // TODO: This should probalby be elsewhere.
     // It's here to ensure the repl manager instance gets
@@ -60,22 +52,22 @@ class Console extends EventEmitter {
 
     this.provision()
       .then(abstractions => {
-        self.repl.start({
-          prompt: "truffle(" + self.options.network + ")> ",
+        this.repl.start({
+          prompt: "truffle(" + this.options.network + ")> ",
           context: {
-            web3: self.web3
+            web3: this.web3
           },
-          interpreter: self.interpret.bind(self),
+          interpreter: this.interpret.bind(this),
           done: callback
         });
 
-        self.resetContractsInConsoleContext(abstractions);
+        this.resetContractsInConsoleContext(abstractions);
       })
       .catch(error => {
-        self.options.logger.log(
+        this.options.logger.log(
           "Unexpected error: Cannot provision contracts while instantiating the console."
         );
-        self.options.logger.log(error.stack || error.message || error);
+        this.options.logger.log(error.stack || error.message || error);
       });
   }
 
@@ -134,24 +126,21 @@ class Console extends EventEmitter {
   }
 
   interpret(cmd, context, filename, callback) {
-    var self = this;
-
     if (this.command.getCommand(cmd.trim(), this.options.noAliases) != null) {
-      return self.command.run(cmd.trim(), this.options, function(err) {
-        if (err) {
+      return this.command.run(cmd.trim(), this.options, error => {
+        if (error) {
           // Perform error handling ourselves.
-          if (err instanceof TruffleError) {
-            console.log(err.message);
+          if (error instanceof TruffleError) {
+            console.log(error.message);
           } else {
             // Bubble up all other unexpected errors.
-            console.log(err.stack || err.toString());
+            console.log(error.stack || error.toString());
           }
           return callback();
         }
 
         // Reprovision after each command as it may change contracts.
-        self
-          .provision()
+        this.provision()
           .then(() => callback())
           .catch(error => {
             // Don't pass abstractions to the callback if they're there or else
@@ -198,36 +187,34 @@ class Console extends EventEmitter {
         : null;
     }
 
-    var runScript = function(s) {
+    const runScript = script => {
       const options = {
         displayErrors: true,
         breakOnSigint: true,
         filename: filename
       };
-      return s.runInContext(context, options);
+      return script.runInContext(context, options);
     };
 
+    let script;
     try {
       const options = { displayErrors: true, lineOffset: -1 };
-      var script = vm.createScript(source, options);
-    } catch (e) {
+      script = vm.createScript(source, options);
+    } catch (error) {
       // If syntax error, or similar, bail.
-      return callback(e);
+      return callback(error);
     }
 
     // Ensure our script returns a promise whether we're using an
     // async function or not. If our script is an async function,
     // this will ensure the console waits until that await is finished.
     Promise.resolve(runScript(script))
-      .then(function(value) {
+      .then(value => {
         // If there's an assignment to run, run that.
-        if (assignment) {
-          return runScript(vm.createScript(assignment));
-        } else {
-          return value;
-        }
+        if (assignment) return runScript(vm.createScript(assignment));
+        return value;
       })
-      .then(function(value) {
+      .then(value => {
         // All good? Return the value (e.g., eval'd script or assignment)
         callback(null, value);
       })
