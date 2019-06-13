@@ -1,8 +1,6 @@
 
 NewTruffle is a fork which support NewChain. 
 
-| ℹ️ **Contributors**: Please see the [Development](#development) section of this README. |
-| --- |
 
 ### Install
 
