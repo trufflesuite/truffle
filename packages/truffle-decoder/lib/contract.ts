@@ -31,7 +31,6 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   private contexts: DecodeUtils.Contexts.DecoderContexts = {};
   private context: DecodeUtils.Contexts.DecoderContext;
   private constructorContext: DecodeUtils.Contexts.DecoderContext;
-  private contractType: DecodeUtils.Types.ContractType;
 
   private referenceDeclarations: AstReferences;
   private userDefinedTypes: Types.TypesById;
@@ -108,7 +107,6 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.contexts = <DecodeUtils.Contexts.DecoderContexts>DecodeUtils.Contexts.normalizeContexts(this.contexts);
     this.context = this.contexts[this.contextHash];
     this.constructorContext = this.contexts[this.constructorContextHash];
-    this.contractType = DecodeUtils.Contexts.contextToType(this.context);
   }
 
   public async init(): Promise<void> {
@@ -123,19 +121,29 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
     this.allocations.storage = Decoder.getStorageAllocations(this.referenceDeclarations, {[this.contractNode.id]: this.contractNode});
     this.allocations.abi = Decoder.getAbiAllocations(this.referenceDeclarations);
-    this.allocations.event[this.contractNode.id] = Decoder.getEventAllocations(
-      this.contract.abi,
-      this.referenceDeclarations,
-      this.contractNode.linearizedBaseContracts,
-      this.allocations.abi
-    );
     this.allocations.calldata[this.contractNode.id] = Decoder.getCalldataAllocations(
       this.contract.abi,
+      this.contractNode.id,
       this.referenceDeclarations,
-      this.contractNode.linearizedBaseContracts,
       this.allocations.abi,
-      this.constructorContext;
+      this.constructorContext
     );
+    this.allocations.event = {};
+    for(let id in this.contractNodes) {
+      if(this.contractNodes[id].contractKind !== "library"
+        && id !== this.contractNode.id) {
+        continue; //only allocate for this contract and libraries
+      }
+      let contract = this.contracts[id];
+      Object.assign(this.allocations.event,
+        Decoder.getEventAllocations(
+          contract.abi
+          id,
+          this.referenceDeclarations,
+          this.allocations.abi
+        )
+      );
+    }
     debug("done with allocation");
     this.stateVariableReferences = this.storageAllocations[this.contractNode.id].members;
     debug("stateVariableReferences %O", this.stateVariableReferences);
@@ -340,7 +348,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       allocations: this.allocations,
       contexts: this.contexts
     };
-    const decoder = Decoder.decodeCalldata(info, this.contractType);
+    const decoder = Decoder.decodeCalldata(info, this.context);
 
     let result = decoder.next();
     while(!result.done) {
@@ -380,7 +388,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       allocations: this.allocations,
       contexts: this.contexts
     };
-    const decoder = Decoder.decodeEvent(info, this.contractType);
+    const decoder = Decoder.decodeEvent(info);
 
     let result = decoder.next();
     while(!result.done) {

@@ -7,6 +7,7 @@ export interface CalldataDecoding {
 
 export interface EventDecoding {
   kind: "event" | "unknown";
+  class?: DecodeUtils.Types.ContractType; //included only if event
   name?: string; //included only if event
   arguments?: AbiArgument[]; //included only if event
 }

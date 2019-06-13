@@ -109,21 +109,18 @@ export interface CalldataArgumentAllocation {
   pointer: Pointer.CalldataPointer;
 }
 
-//finally we have events.  these work like calldata, except that
-//there's no need for an offset, and the ultimate pointer can
-//be either an event data pointer or an event topic pointer
-//(also, there's no constructor)
+//finally we have events.  these work like calldata, except that there's no
+//need for an offset, the ultimate pointer can be either an event data pointer
+//or an event topic pointer, and, they're given *only* by selector -- not by
+//contract ID!  Instead the contract ID is included in the allocation
 
 export interface EventAllocations {
-  [contractId: number]: EventContractAllocations
-}
-
-export interface EventContractAllocations {
-  [selector: string]: EventAllocation
+  [selector: string]: EventAllocations
 }
 
 export interface EventAllocation {
   definition: AstDefinition;
+  contractId: number;
   arguments: EventArgumentAllocation[];
 }
 

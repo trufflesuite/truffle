@@ -79,18 +79,8 @@ export function* decodeCalldata(info: EvmInfo, context: DecodeUtils.Contexts.Dec
   }
 }
 
-export function* decodeEvent(info: EvmInfo, context: DecodeUtils.Contexts.DecoderContext | null): IterableIterator<EventDecoding | DecoderRequest | Values.Result | GeneratorJunk> {
-  if(context === null) {
-    //if we don't know the contract ID, we can't decode
-    return {
-      kind: "unknown";
-    }
-  }
-  let contractId = context.contractId;
-  let contractType = DecodeUtils.Contexts.contextToType(context);
-  let allocations = info.allocations.event[contractId];
-  const libraryEventsTable = info.libraryEventsTable;
-  //TODO: error-handling here
+export function* decodeEvent(info: EvmInfo): IterableIterator<EventDecoding | DecoderRequest | Values.Result | GeneratorJunk> {
+  let allocations = info.allocations.event;
   const rawSelector = read(info.state,
     { location: "eventdata",
       topic: 0
@@ -99,20 +89,16 @@ export function* decodeEvent(info: EvmInfo, context: DecodeUtils.Contexts.Decode
   const selector = DecodeUtils.EVM.toHexString(rawSelector);
   let allocation = allocations[selector];
   if(allocation === undefined) {
-    //check the library events table
-    let libraryContext = libraryEventsTable[selector];
-    if(libraryContext === undefined) {
-      //if that still doesn't find it, we can't decode
-      return {
-        kind: "unknown",
-      };
-    }
-    //otherwise, we've found it, right?
-    contractId = libraryContext.contractId;
-    contractType = DecodeUtils.Contexts.contextToType(libraryContext);
-    allocations = info.allocations.event[contractId];
-    allocation = allocations[selector];
+    //we can't decode
+    return {
+      kind: "unknown",
+    };
   }
+  let context = info.contexts.find(
+    context => context.contractId === allocation.contractId
+      && !context.isConstructor
+  );
+  let contractType = DecodeUtils.Contexts.contextToType(context);
   let decodedArguments = allocation.arguments.map(
     argumentAllocation => {
       const value = decode(

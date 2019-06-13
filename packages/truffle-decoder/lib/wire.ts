@@ -33,9 +33,6 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     event: Decoder.EventAllocations;
   };
 
-  //maps libraries' event selectors to the corresponding library
-  private libraryEventsTable: Decoder.LibraryEvents;
-
   private codeCache: DecoderTypes.CodeCache = {};
 
   constructor(contracts: ContractObject[], provider: Provider) {
@@ -81,14 +78,17 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
 
     this.allocations.storage = Decoder.getStorageAllocations(this.referenceDeclarations, {[this.contractNode.id]: this.contractNode});
     this.allocations.abi = Decoder.getAbiAllocations(this.referenceDeclarations);
+    this.allocations.event = {};
     for(let contractNode of Object.values(this.contractNodes)) {
       let id = contractNode.id;
       let contract = this.contracts[id];
-      this.allocations.event[id] = Decoder.getEventAllocations(
-        contract.abi,
-        this.referenceDeclarations,
-        contractNode.linearizedBaseContracts,
-        this.allocations.abi
+      Object.assign(this.allocations.event,
+        Decoder.getEventAllocations(
+          contract.abi,
+          id,
+          this.referenceDeclarations,
+          this.allocations.abi
+        )
       );
       let constructorContext = Object.values(contexts).find(
         ({ contractId, isConstructor }) =>
@@ -96,28 +96,13 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       );
       this.allocations.calldata[id] = Decoder.getCalldataAllocations(
         contract.abi,
+        id,
         this.referenceDeclarations,
-        contractNode.linearizedBaseContracts,
-        allocations.abi,
-        constructorContext;
+        this.allocations.abi,
+        constructorContext
       );
     }
     debug("done with allocation");
-
-    //set up library event mapping
-    this.libraryEventsTable = Object.assign({}, ...Object.entries(this.allocations.event).map(
-      ([id, allocation]) => {
-        let context = this.contexts.find(
-          context => context.contractId === id && !context.isConstructor
-        );
-        if(context.contractKind !== "library") {
-          return {};
-        }
-        return Object.assign({}, ...Object.keys(allocation).map(
-          selector => ({[selector]: context})
-        ));
-      }
-    );
   }
 
   private async getCode(address: string, block: number): Promise<Uint8Array> {
@@ -176,8 +161,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
   }
 
   public async decodeLog(log: Log): DecodedEvent {
-    const context = await this.getContextByAddress(log.address, log.blockNumber);
-
+    const block = log.blockNumber;
     const data = DecodeUtils.Conversion.toBytes(log.data);
     const topics = log.topics.map(DecodeUtils.Conversion.toBytes);
     const info: Decoder.EvmInfo = {
@@ -192,7 +176,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       contexts: this.contexts,
       libraryEventsTable: this.libraryEventsTable
     };
-    const decoder = Decoder.decodeEvent(info, context);
+    const decoder = Decoder.decodeEvent(info);
 
     let result = decoder.next();
     while(!result.done) {
