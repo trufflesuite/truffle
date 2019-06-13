@@ -294,6 +294,33 @@ export namespace Definition {
       : "function";
   }
 
+  //similar compatibility function for mutability for pre-0.4.16 versions
+  //returns undefined if you don't give it a FunctionDefinition or
+  //VariableDeclaration
+  export function mutability(node: AstDefinition): string | undefined {
+    if(node.typeName) {
+      //for variable declarations, e.g.
+      node = node.typeName;
+    }
+    if(node.nodeType !== "FunctionDefinition" && node.nodeType !== "FunctionTypeName") {
+      return undefined;
+    }
+    if(node.stateMutability !== undefined) {
+      //if we're dealing with 0.4.16 or later, we can just read node.stateMutability
+      return node.stateMutability;
+    }
+    //otherwise, we need this little shim
+    if(node.payable) {
+      return "payable";
+    }
+    if(node.constant) {
+      //yes, it means "view" even if you're looking at a variable declaration!
+      //old Solidity was weird!
+      return "view";
+    }
+    return "nonpayable";
+  }
+
   //takes a contract definition and asks, does it have a payable fallback function?
   export function isContractPayable(definition: AstDefinition): boolean {
     let fallback = definition.nodes.find(
@@ -303,7 +330,7 @@ export namespace Definition {
     if(!fallback) {
       return false;
     }
-    return fallback.stateMutability === "payable";
+    return mutability(fallback) === "payable";
   }
 
   //spoofed definitions we'll need
