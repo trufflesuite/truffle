@@ -39,7 +39,7 @@ export function* decodeCalldata(info: EvmInfo, contractType: DecodeUtils.Types.C
       }
     );
     let selector = DecodeUtils.EVM.toHexString(rawSelector);
-    allocation = allocations[selector];
+    allocation = allocations.functionAllocations[selector];
   }
   if(allocation === undefined) {
     return {

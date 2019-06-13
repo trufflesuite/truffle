@@ -92,8 +92,10 @@ export interface CalldataAllocations {
 }
 
 export interface CalldataContractAllocations {
-  constructorAllocation: CalldataAllocation,
-  [selector: string]: CalldataAllocation
+  constructorAllocation: CalldataAllocation;
+  functionAllocations: {
+    [selector: string]: CalldataAllocation;
+  };
 }
 
 export interface CalldataAllocation {

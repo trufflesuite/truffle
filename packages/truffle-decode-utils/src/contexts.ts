@@ -318,10 +318,6 @@ export namespace Contexts {
     }
   }
 
-  function isNoArgumentConstructor(abiEntry: AbiItem) {
-    return abiEntry.type === "constructor" && abiEntry.inputs.length === 0;
-  }
-
   export function contextToType(context: DecoderContext | DebuggerContext): Types.ContractType {
     return {
       typeClass: "contract",

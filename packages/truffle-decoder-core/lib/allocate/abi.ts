@@ -213,47 +213,42 @@ function allocateCalldata(
   constructorContext?: DecodeUtils.Contexts.DecoderContext
 ): Allocations.CalldataAllocation {
   //first: determine the corresponding function node
+  //(simultaneously: determine the offset)
   let node: AstDefinition;
-  //base contracts are listed from most derived to most base, so we
-  //have to reverse before processing, but reverse() is in place, so we
-  //clone with slice first
-  let linearizedBaseContractsFromBase: number[] = contract.linearizedBaseContracts.slice().reverse();
-  for(const contractId of linearizedBaseContractsFromBase) {
-    node = referenceDeclarations[contractId].nodes.find(
-      functionNode => DecodeUtils.Contexts.matchesAbi(
-        abiEntry, functionNode, referenceDeclarations
-      )
-    );
-    if(node !== undefined) {
-      break;
-    }
-  }
-  if(node === undefined) {
-    //before we declare this an error-case... maybe it's just an implicit constructor?
-    //and we can return an empty allocation?
-    if(isNoArgumentConstructor(abiEntry)) {
-      let rawLength = constructorContext.binary.length;
-      offset = (rawLength - 2)/2; //number of bytes in 0x-prefixed bytestring
-      return {
-        offset,
-        arguments: {}
-      };
-    }
-    else {
-     //TODO: error-handling
-    }
-  }
-  //now: determine the offset
   let offset: number;
   switch(abiEntry.type) {
-    case "function":
-      offset = DecodeUtils.EVM.SELECTOR_SIZE;
-      break;
     case "constructor":
       let rawLength = constructorContext.binary.length;
       offset = (rawLength - 2)/2; //number of bytes in 0x-prefixed bytestring
+      //for a constructor, we only want to search the particular contract, which
+      //is the last (most derived) contract in the linearized base contracts
+      let contractId = linearizedBaseContracts[linearizedBaseContracts.length - 1];
+      let contractNode = referenceDeclarations[contractId];
+      node = contractNode.nodes.find(
+        functionNode => DecodeUtils.Contexts.matchesAbi(
+          abiEntry, functionNode, referenceDeclarations
+        )
+      );
+      if(node === undefined) {
+          //TODO: error case
+        }
+      }
       break;
-    //we'll ignore event and fallback, which are not applicable here
+    case "function":
+      offset = DecodeUtils.EVM.SELECTOR_SIZE;
+      //search through base contracts, from most derived (right) to most base (left)
+      node = linearizedBaseContracts.reduceRight(
+        (foundNode, contractId) => foundNode || referenceDeclarations[contractId].nodes.find(
+          functionNode => DecodeUtils.Contexts.matchesAbi(
+            abiEntry, functionNode, referenceDeclarations
+          )
+        ),
+        undefined
+      );
+      if(node === undefined) {
+        //TODO: error case
+      }
+      break;
   }
   //now: perform the allocation!
   const abiAllocation = allocateMembers(node, node.parameters.parameters, referenceDeclarations, abiAllocations, offset)[node.id];
@@ -289,22 +284,16 @@ function allocateEvent(
   linearizedBaseContracts: number[],
   abiAllocations: AbiAllocations
 ): Allocations.EventAllocation {
-  //first: determine the corresponding function node
-  let node: AstDefinition;
-  //base contracts are listed from most derived to most base, so we
-  //have to reverse before processing, but reverse() is in place, so we
-  //clone with slice first
-  const linearizedBaseContractsFromBase: number[] = contract.linearizedBaseContracts.slice().reverse();
-  for(const contractId of linearizedBaseContractsFromBase) {
-    node = referenceDeclarations[contractId].nodes.find(
-      functionNode => DecodeUtils.Contexts.matchesAbi(
-        abiEntry, functionNode, referenceDeclarations
+  //first: determine the corresponding event node
+  //search through base contracts, from most derived (right) to most base (left)
+  const node: AstDefinition = linearizedBaseContracts.reduceRight(
+    (foundNode, contractId) => foundNode || referenceDeclarations[contractId].nodes.find(
+      eventNode => DecodeUtils.Contexts.matchesAbi(
+        abiEntry, eventNode, referenceDeclarations
       )
-    );
-    if(node !== undefined) {
-      break;
-    }
-  }
+    ),
+    undefined
+  );
   //now: split the list of parameters into indexed and non-indexed
   //but first attach positions so we can reconstruct the list later
   const rawParameters = node.parameters.parameters;
@@ -356,16 +345,43 @@ export function getCalldataAllocations(
   abiAllocations: Allocations.AbiAllocations,
   constructorContext: DecoderContext
 ): Allocations.CalldataContractAllocations {
-  return Object.assign({}, ...abi
-    .filter(abiEntry => abiEntry.type === "function" || abiEntry.type === "constructor")
-    .map(abiEntry =>
-      abiEntry.type === "constructor"
-      ? { constructorAllocation: allocateCalldata(abiEntry, referenceDeclarations, linearizedBaseContracts, abiAllocations, constructorContext) }
-      : { [abiCoder.encodeFunctionSignature(abiEntry)] :
-        allocateCalldata(abiEntry, referenceDeclarations, linearizedBaseContracts, abiAllocations)
-      };
-    )
-  );
+  let allocations: Allocations.CalldataContractAllocations;
+  for(let abiEntry in abi) {
+    if(abiEntry.type === "constructor") {
+      allocations.constructorAllocation = allocateCalldata(
+        abiEntry,
+        referenceDeclarations,
+        linearizedBaseContracts,
+        abiAllocations,
+        constructorContext
+      );
+    }
+    else if(abiEntry.type === "function") {
+      allocations.functionAllocations[abiCoder.encodeFunctionSignature(abiEntry)] =
+        allocateCalldata(
+          abiEntry,
+          referenceDeclarations,
+          linearizedBaseContracts,
+          abiAllocations,
+          constructorContext
+        );
+    }
+    //skip over fallback and event
+  }
+  //now: did we allocate a constructor? if not, allocate a default one
+  if(allocations.constructorAllocation === undefined) {
+    allocations.constructorAllocation = defaultConstructorAllocation(constructorContext);
+  }
+  return allocations;
+}
+
+function defaultConstructorAllocation(constructorContext: DecoderContext) {
+  let rawLength = constructorContext.binary.length;
+  let offset = (rawLength - 2)/2; //number of bytes in 0x-prefixed bytestring
+  return {
+    offset,
+    arguments: {}
+  };
 }
 
 //NOTE: this is for a single contract!
