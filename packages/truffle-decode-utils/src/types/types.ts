@@ -322,7 +322,7 @@ export namespace Types {
       }
       case "function": {
         let visibility = DefinitionUtils.visibility(definition);
-        let mutability = definition.stateMutability || definition.typeName.stateMutability;
+        let mutability = DefinitionUtils.mutability(definition);
         let [inputParameters, outputParameters] = DefinitionUtils.parameters(definition);
         //In JS I could just write `let x = y.map(definitionToType)`, but that won't work
         //in TypeScript
