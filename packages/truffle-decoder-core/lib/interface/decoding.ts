@@ -15,14 +15,15 @@ export function* decodeVariable(definition: AstDefinition, pointer: Pointer.Data
   return yield* decode(dataType, pointer, info); //no need to pass an offset
 }
 
-export function* decodeCalldata(info: EvmInfo, contractType: DecodeUtils.Types.ContractType | null): IterableIterator<CalldataDecoding | DecoderRequest | Values.Result | GeneratorJunk> {
-  if(contractType === null) {
+export function* decodeCalldata(info: EvmInfo, context: DecodeUtils.Contexts.DecoderContext | null): IterableIterator<CalldataDecoding | DecoderRequest | Values.Result | GeneratorJunk> {
+  if(context === null) {
     //if we don't know the contract ID, we can't decode
     return {
       kind: "unknown";
     }
   }
-  const contractId = contractType.id;
+  const contractId = context.contractId;
+  const contractType = DecodeUtils.Contexts.contextToType(context);
   const allocations = info.allocations.calldata[contractId];
   let allocation: CalldataAllocation;
   let isConstructor: boolean = info.currentContext.isConstructor;
@@ -78,29 +79,39 @@ export function* decodeCalldata(info: EvmInfo, contractType: DecodeUtils.Types.C
   }
 }
 
-export function* decodeEvent(info: EvmInfo, contractType: DecodeUtils.Types.ContractType | null): IterableIterator<EventDecoding | DecoderRequest | Values.Result | GeneratorJunk> {
-  if(contractType === null) {
+export function* decodeEvent(info: EvmInfo, context: DecodeUtils.Contexts.DecoderContext | null): IterableIterator<EventDecoding | DecoderRequest | Values.Result | GeneratorJunk> {
+  if(context === null) {
     //if we don't know the contract ID, we can't decode
     return {
       kind: "unknown";
     }
   }
-  const contractId = contractType.id;
-  const allocations = info.allocations.event[contractId];
+  let contractId = context.contractId;
+  let contractType = DecodeUtils.Contexts.contextToType(context);
+  let allocations = info.allocations.event[contractId];
+  const libraryEventsTable = info.libraryEventsTable;
   //TODO: error-handling here
-  let rawSelector = read(info.state,
+  const rawSelector = read(info.state,
     { location: "eventdata",
       topic: 0
     }
   );
-  let selector = DecodeUtils.EVM.toHexString(rawSelector);
-  allocation = allocations[selector];
+  const selector = DecodeUtils.EVM.toHexString(rawSelector);
+  let allocation = allocations[selector];
   if(allocation === undefined) {
-    //we can't decode
-    return {
-      kind: "anonymous",
-      class: contractType
-    };
+    //check the library events table
+    let libraryContext = libraryEventsTable[selector];
+    if(libraryContext === undefined) {
+      //if that still doesn't find it, we can't decode
+      return {
+        kind: "unknown",
+      };
+    }
+    //otherwise, we've found it, right?
+    contractId = libraryContext.contractId;
+    contractType = DecodeUtils.Contexts.contextToType(libraryContext);
+    allocations = info.allocations.event[contractId];
+    allocation = allocations[selector];
   }
   let decodedArguments = allocation.arguments.map(
     argumentAllocation => {

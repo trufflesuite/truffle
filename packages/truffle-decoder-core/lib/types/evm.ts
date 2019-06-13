@@ -32,6 +32,13 @@ export interface EvmInfo {
   contexts?: Contexts.DecoderContexts;
   currentContext?: Contexts.DecoderContext;
   internalFunctionsTable?: InternalFunctions;
+  libraryEventsTable?: LibraryEvents;
+}
+
+//yes, this is basically DecoderContexts, but I want
+//to keep it separate as it means something different
+export interface LibraryEvents {
+  [selector: string]: Contexts.DecoderContext;
 }
 
 export interface InternalFunctions {

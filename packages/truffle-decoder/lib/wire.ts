@@ -33,6 +33,9 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     event: Decoder.EventAllocations;
   };
 
+  //maps libraries' event selectors to the corresponding library
+  private libraryEventsTable: Decoder.LibraryEvents;
+
   private codeCache: DecoderTypes.CodeCache = {};
 
   constructor(contracts: ContractObject[], provider: Provider) {
@@ -100,6 +103,21 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       );
     }
     debug("done with allocation");
+
+    //set up library event mapping
+    this.libraryEventsTable = Object.assign({}, ...Object.entries(this.allocations.event).map(
+      ([id, allocation]) => {
+        let context = this.contexts.find(
+          context => context.contractId === id && !context.isConstructor
+        );
+        if(context.contractKind !== "library") {
+          return {};
+        }
+        return Object.assign({}, ...Object.keys(allocation).map(
+          selector => ({[selector]: context})
+        ));
+      }
+    );
   }
 
   private async getCode(address: string, block: number): Promise<Uint8Array> {
@@ -123,7 +141,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
   }
 
   public async decodeTransaction(transaction: Transaction): DecodedTransaction {
-    const contractType = await this.getContractTypeByAddress(transaction.to, transaction.blockNumber, transaction.input);
+    const context = await this.getContextByAddress(transaction.to, transaction.blockNumber, transaction.input);
 
     const data = DecodeUtils.Conversion.toBytes(transaction.input);
     const info: Decoder.EvmInfo = {
@@ -136,7 +154,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       allocations: this.allocations,
       contexts: this.contexts
     };
-    const decoder = Decoder.decodeCalldata(info, contractType);
+    const decoder = Decoder.decodeCalldata(info, context);
 
     let result = decoder.next();
     while(!result.done) {
@@ -158,7 +176,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
   }
 
   public async decodeLog(log: Log): DecodedEvent {
-    const contractType = await this.getContractTypeByAddress(log.address, log.blockNumber);
+    const context = await this.getContextByAddress(log.address, log.blockNumber);
 
     const data = DecodeUtils.Conversion.toBytes(log.data);
     const topics = log.topics.map(DecodeUtils.Conversion.toBytes);
@@ -171,9 +189,10 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       mappingKeys: this.mappingKeys,
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
-      contexts: this.contexts
+      contexts: this.contexts,
+      libraryEventsTable: this.libraryEventsTable
     };
-    const decoder = Decoder.decodeEvent(info, contractType);
+    const decoder = Decoder.decodeEvent(info, context);
 
     let result = decoder.next();
     while(!result.done) {
@@ -227,7 +246,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
   //and checks this against the known contexts to determine the contract type
   //however, if this fails and constructorBinary is passed in, it will then also
   //attempt to determine it from that
-  private async getContractTypeByAddress(address: string, block: number, constructorBinary?: string): Promise<number | null> {
+  private async getContextByAddress(address: string, block: number, constructorBinary?: string): Promise<number | null> {
     let code: string;
     if(address !== null) {
       code = DecodeUtils.Conversion.toHexString(
@@ -238,11 +257,6 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       code = constructorBinary;
     }
     //otherwise... we have a problem
-    let context = DecodeUtils.Contexts.findDecoderContext(this.contexts, code);
-    if(context === null) {
-      return null;
-    }
-    return DecodeUtils.Contexts.contextToType(context);
+    return DecodeUtils.Contexts.findDecoderContext(this.contexts, code);
   }
-
 }
