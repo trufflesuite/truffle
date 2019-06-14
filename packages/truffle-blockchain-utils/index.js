@@ -1,28 +1,21 @@
+const defaultJSONQuery = {
+  jsonrpc: "2.0",
+  method: "",
+  params: [],
+  id: Date.now()
+};
+
 const Blockchain = {
   getBlockByNumber(blockNumber, provider, callback) {
-    const params = [blockNumber, true];
-    provider.send(
-      {
-        jsonrpc: "2.0",
-        method: "eth_getBlockByNumber",
-        params,
-        id: Date.now()
-      },
-      callback
-    );
+    defaultJSONQuery.params = [blockNumber, true];
+    defaultJSONQuery.method = "eth_getBlockByNumber";
+    provider.send(defaultJSONQuery, callback);
   },
 
   getBlockByHash(blockHash, provider, callback) {
-    const params = [blockHash, true];
-    provider.send(
-      {
-        jsonrpc: "2.0",
-        method: "eth_getBlockByHash",
-        params,
-        id: Date.now()
-      },
-      callback
-    );
+    defaultJSONQuery.params = [blockHash, true];
+    defaultJSONQuery.method = "eth_getBlockByHash";
+    provider.send(defaultJSONQuery, callback);
   },
 
   parse(uri) {
