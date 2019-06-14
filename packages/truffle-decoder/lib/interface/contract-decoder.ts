@@ -159,7 +159,8 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       contractKind: node.contractKind,
       isConstructor: false,
       abi: DecodeUtils.Contexts.abiToFunctionAbiWithSignatures(contract.abi),
-      payable: DecodeUtils.Contexts.isABIPayable(contract.abi)
+      payable: DecodeUtils.Contexts.isABIPayable(contract.abi),
+      compiler: contract.compiler
     };
   }
 
@@ -171,7 +172,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
     debug("init called");
     this.referenceDeclarations = general.getReferenceDeclarations(Object.values(this.contractNodes));
-    this.userDefinedTypes = Types.definitionsToStoredTypes(this.referenceDeclarations);
+    this.userDefinedTypes = Types.definitionsToStoredTypes(this.referenceDeclarations, this.contract.compiler);
 
     this.eventDefinitions = general.getEventDefinitions(Object.values(this.contractNodes));
     this.eventDefinitionIdsByName = {};
