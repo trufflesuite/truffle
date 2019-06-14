@@ -443,14 +443,6 @@ export namespace Types {
     }
   }
 
-  export function definitionsToStoredTypes(definitions: AstReferences, compiler: Contexts.CompilerVersion): TypesById {
-    return Object.assign({},
-      ...Object.entries(definitions).map(
-        ([id, definition]) => ({[id]: definitionToStoredType(definition, compiler)})
-      )
-    );
-  }
-
   //one could define a counterpart function that stripped all unnecessary information
   //from the type object, but at the moment I see no need for that
   export function fullType(basicType: Type, userDefinedTypes: TypesById): Type {

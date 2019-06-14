@@ -149,18 +149,21 @@ const data = createSelectorTree({
      */
     userDefinedTypes: {
       //user-defined types for passing to the decoder
-      //HACK: we use the *current* context to determine the
-      //compiler version to use for the conversion!  This should work
-      //in all cases we currently care about but will have to change
-      //eventually (ideally we would, for each reference declaration,
-      //find which contract it is from and use that one)
       _: createLeaf(
-        ["../referenceDeclarations", "/current/context"],
-        (referenceDeclarations, { compiler }) =>
-          DecodeUtils.Types.definitionsToStoredTypes(
-            referenceDeclarations,
-            compiler
-          )
+        ["../referenceDeclarations", "../scopes/inlined", "../contexts"],
+        (referenceDeclarations, scopes, contexts) => {
+          const types = ["ContractDefinition", "SourceUnit"];
+          //SourceUnit included as fallback
+          return Object.assign(
+            {},
+            ...Object.entries(referenceDeclarations).map(([id, node]) => ({
+              [id]: DecodeUtils.Types.definitionToStoredType(
+                node,
+                contexts[findAncestorOfType(node, types, scopes).id].compiler
+              )
+            }))
+          );
+        }
       ),
 
       /*
