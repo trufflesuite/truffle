@@ -67,7 +67,8 @@ function debuggerContextToDecoderContext(context) {
     contractKind,
     isConstructor,
     abi,
-    payable
+    payable,
+    compiler
   } = context;
   return {
     contractName,
@@ -76,7 +77,8 @@ function debuggerContextToDecoderContext(context) {
     contractKind,
     isConstructor,
     abi: DecodeUtils.Contexts.abiToFunctionAbiWithSignatures(abi),
-    payable
+    payable,
+    compiler
   };
 }
 
@@ -147,9 +149,18 @@ const data = createSelectorTree({
      */
     userDefinedTypes: {
       //user-defined types for passing to the decoder
+      //HACK: we use the *current* context to determine the
+      //compiler version to use for the conversion!  This should work
+      //in all cases we currently care about but will have to change
+      //eventually (ideally we would, for each reference declaration,
+      //find which contract it is from and use that one)
       _: createLeaf(
-        ["../referenceDeclarations"],
-        DecodeUtils.Types.definitionsToStoredTypes
+        ["../referenceDeclarations", "/current/context"],
+        (referenceDeclarations, { compiler }) =>
+          DecodeUtils.Types.definitionsToStoredTypes(
+            referenceDeclarations,
+            compiler
+          )
       ),
 
       /*
@@ -219,7 +230,7 @@ const data = createSelectorTree({
      * same as evm.info.contexts, but:
      * 0. we only include non-constructor contexts
      * 1. we now index by contract ID rather than hash
-     * 2. we strip out context, sourceMap, primarySource, and compiler
+     * 2. we strip out context, sourceMap, and primarySource
      * 3. we alter abi in several ways:
      * 3a. we strip abi down to just (ordinary) functions
      * 3b. we augment these functions with signatures (here meaning selectors)

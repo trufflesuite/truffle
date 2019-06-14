@@ -15,7 +15,8 @@ import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 
 export default function* decode(definition: AstDefinition, pointer: Pointer.DataPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
-  let dataType = Types.definitionToType(definition);
+  let compiler = info.currentContext.compiler;
+  let dataType = Types.definitionToType(definition, compiler);
   debug("definition %O", definition);
   return yield* decodePointer(dataType, pointer, info);
 }

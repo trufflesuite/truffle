@@ -21,6 +21,7 @@ const debug = debugModule("decode-utils:types");
 import BN from "bn.js";
 import { AstDefinition, AstReferences } from "../ast";
 import { Definition as DefinitionUtils } from "../definition";
+import { Contexts } from "../contexts";
 
 export namespace Types {
 
@@ -172,7 +173,7 @@ export namespace Types {
   //things of elementary type)
   //NOTE: set forceLocation to *null* to force no location. leave it undefined
   //to not force a location.
-  export function definitionToType(definition: AstDefinition, forceLocation?: string | null): Type {
+  export function definitionToType(definition: AstDefinition, compiler: Contexts.CompilerVersion, forceLocation?: string | null): Type {
     debug("definition %O", definition);
     let typeClass = DefinitionUtils.typeClass(definition);
     switch(typeClass) {
@@ -181,7 +182,7 @@ export namespace Types {
           typeClass
         };
       case "address": {
-        let payable = DefinitionUtils.isAddressPayable(definition);
+        let payable = DefinitionUtils.isAddressPayable(definition, compiler);
         return {
           typeClass,
           payable
@@ -256,7 +257,7 @@ export namespace Types {
       }
       case "array": {
         let baseDefinition = DefinitionUtils.baseDefinition(definition);
-        let baseType = definitionToType(baseDefinition, forceLocation);
+        let baseType = definitionToType(baseDefinition, compiler, forceLocation);
         let location = forceLocation || DefinitionUtils.referenceType(definition);
         if(DefinitionUtils.isDynamicArray(definition)) {
           if(forceLocation !== null) {
@@ -299,13 +300,13 @@ export namespace Types {
         let keyDefinition = DefinitionUtils.keyDefinition(definition);
         //note that we can skip the scopes argument here! that's only needed when
         //a general node, rather than a declaration, is being passed in
-        let keyType = <ElementaryType>definitionToType(keyDefinition, null);
+        let keyType = <ElementaryType>definitionToType(keyDefinition, compiler, null);
         //suppress the location on the key type (it'll be given as memory but
         //this is meaningless)
         //also, we have to tell TypeScript ourselves that this will be an elementary
         //type; it has no way of knowing that
         let valueDefinition = definition.valueType || definition.typeName.valueType;
-        let valueType = definitionToType(valueDefinition, forceLocation);
+        let valueType = definitionToType(valueDefinition, compiler, forceLocation);
         if(forceLocation === null) {
           return {
             typeClass,
@@ -324,11 +325,9 @@ export namespace Types {
         let visibility = DefinitionUtils.visibility(definition);
         let mutability = DefinitionUtils.mutability(definition);
         let [inputParameters, outputParameters] = DefinitionUtils.parameters(definition);
-        //In JS I could just write `let x = y.map(definitionToType)`, but that won't work
-        //in TypeScript
         //note: don't force a location on these! use the listed location!
-        let inputParameterTypes = inputParameters.map(parameter => definitionToType(parameter));
-        let outputParameterTypes = outputParameters.map(parameter => definitionToType(parameter));
+        let inputParameterTypes = inputParameters.map(parameter => definitionToType(parameter, compiler));
+        let outputParameterTypes = outputParameters.map(parameter => definitionToType(parameter, compiler));
         return {
           typeClass,
           visibility,
@@ -399,13 +398,13 @@ export namespace Types {
 
   //whereas the above takes variable definitions, this takes the actual type
   //definition
-  export function definitionToStoredType(definition: AstDefinition): UserDefinedType {
+  export function definitionToStoredType(definition: AstDefinition, compiler: Contexts.CompilerVersion): UserDefinedType {
     switch(definition.nodeType) {
       case "StructDefinition": {
         let id = definition.id;
         let [definingContractName, typeName] = definition.canonicalName.split(".");
         let memberTypes = Object.assign({}, ...definition.members.map(
-          member => ({[member.name]: definitionToType(member, null)})
+          member => ({[member.name]: definitionToType(member, compiler, null)})
         ));
         return {
           typeClass: "struct",
@@ -443,10 +442,10 @@ export namespace Types {
     }
   }
 
-  export function definitionsToStoredTypes(definitions: AstReferences): TypesById {
+  export function definitionsToStoredTypes(definitions: AstReferences, compiler: Contexts.CompilerVersion): TypesById {
     return Object.assign({},
       ...Object.entries(definitions).map(
-        ([id, definition]) => ({[id]: definitionToStoredType(definition)})
+        ([id, definition]) => ({[id]: definitionToStoredType(definition, compiler)})
       )
     );
   }
