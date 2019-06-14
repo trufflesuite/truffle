@@ -31,7 +31,7 @@ export default function* decodeConstant(dataType: Types.Type, pointer: ConstantD
     }
     //not bothering to check padding; shouldn't be necessary
     let bytes = word.slice(DecodeUtils.EVM.WORD_SIZE - size);
-    return new Values.BytesStaticValue(
+    return new Values.BytesValue(
       dataType,
       DecodeUtils.Conversion.toHexString(bytes)
     );

@@ -324,51 +324,64 @@ export namespace Values {
     }
   }
 
-  //bytes (static)
-  export interface BytesStaticResult extends ElementaryResult {
-    type: Types.BytesTypeStatic;
+  //bytes
+  export interface BytesResult extends ElementaryResult {
+    type: Types.BytesType;
   }
 
-  export class BytesStaticValue extends ElementaryValue implements BytesStaticResult {
-    type: Types.BytesTypeStatic;
+  export class BytesValue extends ElementaryValue implements BytesResult {
+    type: Types.BytesType;
     value: string; //should be hex-formatted, with leading "0x"
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return options.stylize(this.value, "number");
+      switch(this.type.kind) {
+        case "static":
+            return options.stylize(this.value, "number");
+        case "dynamic":
+            return options.stylize(`hex'${this.value.slice(2)}'`, "string")
+      }
     }
     toSoliditySha3Input() {
-      return {
-        type: "bytes32", //used to achieve right-padding
-        value: this.value
-      };
+      switch(this.type.kind) {
+        case "static":
+          return {
+            type: "bytes32", //used to achieve right-padding
+            value: this.value
+          };
+        case "dynamic":
+          return {
+            type: "bytes",
+            value: this.value
+          };
+      }
     }
     nativize() {
       return this.value;
     }
-    constructor(bytesType: Types.BytesTypeStatic, value: string) {
+    constructor(bytesType: Types.BytesType, value: string) {
       super();
       this.type = bytesType;
       this.value = value;
     }
   }
 
-  export class BytesStaticErrorResult extends ErrorResult implements BytesStaticResult {
-    type: Types.BytesTypeStatic;
-    constructor(bytesType: Types.BytesTypeStatic, error: DecoderError) {
+  export class BytesErrorResult extends ErrorResult implements BytesResult {
+    type: Types.BytesType;
+    constructor(bytesType: Types.BytesType, error: DecoderError) {
       super(error);
       this.type = bytesType;
     }
   }
 
-  export class BytesStaticPaddingError extends DecoderError {
+  export class BytesPaddingError extends DecoderError {
     raw: string; //should be hex string
-    kind: "BytesStaticPaddingError";
+    kind: "BytesPaddingError";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return `Bytestring has extra trailing bytes (padding error) (raw value ${this.raw})`;
     }
     constructor(raw: string) {
       super();
       this.raw = raw;
-      this.kind = "BytesStaticPaddingError";
+      this.kind = "BytesPaddingError";
     }
   }
 
@@ -456,43 +469,6 @@ export namespace Values {
   }
   //no padding error for strings
 
-  //bytes (dynamic)
-  export interface BytesDynamicResult extends ElementaryResult {
-    type: Types.BytesTypeDynamic;
-  }
-
-  export class BytesDynamicValue extends ElementaryValue implements BytesDynamicResult {
-    type: Types.BytesTypeDynamic;
-    value: string; //should be hex-formatted, with leading "0x"
-    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return options.stylize(`hex'${this.value.slice(2)}'`, "string");
-    }
-    toSoliditySha3Input() {
-      return {
-        type: "bytes",
-        value: this.value
-      };
-    }
-    nativize() {
-      return this.value;
-    }
-    constructor(bytesType: Types.BytesTypeDynamic, value: string) {
-      super();
-      this.type = bytesType;
-      this.value = value;
-    }
-  }
-
-  export class BytesDynamicErrorResult extends ErrorResult implements BytesDynamicResult {
-    type: Types.BytesTypeDynamic;
-    constructor(bytesType: Types.BytesTypeDynamic, error: DecoderError) {
-      super(error);
-      this.type = bytesType;
-    }
-  }
-
-  //no padding error for dynamic bytestrings
-
   //Fixed & Ufixed
   //These don't have a value format yet, so they just decode to errors for now!
   export interface FixedResult extends ElementaryResult {
@@ -545,12 +521,7 @@ export namespace Values {
       case "string":
         return new StringValue(dataType, value);
       case "bytes":
-	switch(dataType.kind) {
-	  case "static":
-            return new BytesStaticValue(dataType, value);
-	  case "dynamic":
-            return new BytesDynamicValue(dataType, value);
-	}
+        return new BytesValue(dataType, value);
       case "address":
         return new AddressValue(dataType, value);
       case "int":
@@ -1296,12 +1267,7 @@ export namespace Values {
       case "bool":
         return new BoolErrorResult(dataType, error);
       case "bytes":
-	switch(dataType.kind) {
-	  case "static":
-            return new BytesStaticErrorResult(dataType, error);
-	  case "dynamic":
-            return new BytesDynamicErrorResult(dataType, error);
-	}
+        return new BytesErrorResult(dataType, error);
       case "address":
         return new AddressErrorResult(dataType, error);
       case "fixed":
