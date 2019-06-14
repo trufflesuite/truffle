@@ -97,17 +97,20 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       if(dataType.kind === "static") {
         //first, check padding (if needed)
         if(!permissivePadding && !checkPaddingRight(bytes, dataType.length)) {
-          return new Values.BytesErrorResult(
+          return new Values.BytesStaticErrorResult(
             dataType,
-            new Values.BytesPaddingError(DecodeUtils.Conversion.toHexString(bytes))
+            new Values.BytesStaticPaddingError(DecodeUtils.Conversion.toHexString(bytes))
           );
         }
         //now, truncate to appropriate length
         bytes = bytes.slice(0, dataType.length);
+        //we don't need to pass in length to the conversion, since that's for *adding* padding
+        return new Values.BytesStaticValue(dataType, DecodeUtils.Conversion.toHexString(bytes));
       }
-      //we don't need to pass in length to the conversion, since that's for *adding* padding
-      //(there is also no padding check for dynamic bytes)
-      return new Values.BytesValue(dataType, DecodeUtils.Conversion.toHexString(bytes));
+      else {
+        //there is no padding check for dynamic bytes
+        return new Values.BytesDynamicValue(dataType, DecodeUtils.Conversion.toHexString(bytes));
+      }
 
     case "string":
       //there is no padding check for strings
