@@ -516,7 +516,10 @@ export namespace Values {
   //addresses are like bytes; checksum case is not required
   //booleans may be given either as booleans, or as string "true" or "false"
   export function wrapElementaryValue(value: any, definition: AstDefinition): ElementaryValue {
-    let dataType = Types.definitionToType(definition, null); //force location to undefined
+    //force location to undefined, force address to nonpayable
+    //(we force address to nonpayable since address payable can't be declared
+    //as a mapping key type)
+    let dataType = Types.definitionToType(definition, null, null);
     switch(dataType.typeClass) {
       case "string":
         return new StringValue(dataType, value);

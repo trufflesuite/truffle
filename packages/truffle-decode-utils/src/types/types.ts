@@ -173,7 +173,8 @@ export namespace Types {
   //things of elementary type)
   //NOTE: set forceLocation to *null* to force no location. leave it undefined
   //to not force a location.
-  export function definitionToType(definition: AstDefinition, compiler: Contexts.CompilerVersion, forceLocation?: string | null): Type {
+  //NOTE: set compiler to null to force addresses to *not* be payable (HACK)?
+  export function definitionToType(definition: AstDefinition, compiler: Contexts.CompilerVersion | null, forceLocation?: string | null): Type {
     debug("definition %O", definition);
     let typeClass = DefinitionUtils.typeClass(definition);
     switch(typeClass) {

@@ -46,7 +46,7 @@ function* tickSaga() {
   yield* trace.signalTickSagaCompletion();
 }
 
-export function* decode(definition, ref) {
+export function* decode(definition, ref, forceNonPayable = false) {
   let userDefinedTypes = yield select(data.views.userDefinedTypes);
   let state = yield select(data.current.state);
   let mappingKeys = yield select(data.views.mappingKeys);
@@ -62,6 +62,13 @@ export function* decode(definition, ref) {
   let ZERO_WORD = new Uint8Array(DecodeUtils.EVM.WORD_SIZE);
   ZERO_WORD.fill(0);
   let NO_CODE = new Uint8Array(); //empty array
+
+  if (forceNonPayable) {
+    //HACK
+    //this option is passed when decoding mapping keys.
+    //it forces addresses to always be decoed as nonpayable
+    currentContext = { ...currentContext, compiler: null };
+  }
 
   let decoder = forEvmState(definition, ref, {
     userDefinedTypes,
@@ -375,9 +382,13 @@ function* variablesAndMappingsSaga() {
           //so looking for a prior assignment will read the wrong value.
           //so instead it's preferable to use the constant directly.
           debug("about to decode simple literal");
-          indexValue = yield* decode(keyDefinition, {
-            definition: indexDefinition
-          });
+          indexValue = yield* decode(
+            keyDefinition,
+            {
+              definition: indexDefinition
+            },
+            true
+          );
         } else if (indexReference) {
           //if a prior assignment is found
           let splicedDefinition;
@@ -396,7 +407,7 @@ function* variablesAndMappingsSaga() {
             splicedDefinition = keyDefinition;
           }
           debug("about to decode");
-          indexValue = yield* decode(splicedDefinition, indexReference);
+          indexValue = yield* decode(splicedDefinition, indexReference, true);
         } else if (
           indexDefinition.referencedDeclaration &&
           scopes[indexDefinition.referenceDeclaration]
@@ -419,9 +430,13 @@ function* variablesAndMappingsSaga() {
               DecodeUtils.Definition.isSimpleConstant(indexConstantDefinition)
             ) {
               debug("about to decode simple constant");
-              indexValue = yield* decode(keyDefinition, {
-                definition: indexConstantDeclaration.value
-              });
+              indexValue = yield* decode(
+                keyDefinition,
+                {
+                  definition: indexConstantDeclaration.value
+                },
+                true
+              );
             }
           }
         }
