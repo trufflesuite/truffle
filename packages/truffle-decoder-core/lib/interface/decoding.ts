@@ -10,12 +10,14 @@ import { CalldataAllocation, EventAllocation } from "../types/allocation";
 import decode from "../decode";
 
 export function* decodeVariable(definition: AstDefinition, pointer: Pointer.DataPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
-  let dataType = Types.definitionToType(definition);
+  let compiler = info.currentContext.compiler;
+  let dataType = Types.definitionToType(definition, compiler);
   debug("definition %O", definition);
   return yield* decode(dataType, pointer, info); //no need to pass an offset
 }
 
 export function* decodeCalldata(info: EvmInfo, context: DecodeUtils.Contexts.DecoderContext | null): IterableIterator<CalldataDecoding | DecoderRequest | Values.Result | GeneratorJunk> {
+  const compiler = info.currentContext.compiler;
   if(context === null) {
     //if we don't know the contract ID, we can't decode
     return {
@@ -51,7 +53,7 @@ export function* decodeCalldata(info: EvmInfo, context: DecodeUtils.Contexts.Dec
   let decodedArguments = allocation.arguments.map(
     argumentAllocation => {
       const value = decode(
-        Types.definitionToType(argumentAllocation.definition),
+        Types.definitionToType(argumentAllocation.definition, compiler),
         argumentAllocation.pointer,
         info,
         allocation.offset //note the use of the offset for decoding pointers!
@@ -80,14 +82,15 @@ export function* decodeCalldata(info: EvmInfo, context: DecodeUtils.Contexts.Dec
 }
 
 export function* decodeEvent(info: EvmInfo): IterableIterator<EventDecoding | DecoderRequest | Values.Result | GeneratorJunk> {
-  let allocations = info.allocations.event;
+  const compiler = info.currentContext.compiler;
+  const allocations = info.allocations.event;
   const rawSelector = read(info.state,
     { location: "eventdata",
       topic: 0
     }
   );
   const selector = DecodeUtils.EVM.toHexString(rawSelector);
-  let allocation = allocations[selector];
+  const allocation = allocations[selector];
   if(allocation === undefined) {
     //we can't decode
     return {
@@ -102,7 +105,7 @@ export function* decodeEvent(info: EvmInfo): IterableIterator<EventDecoding | De
   let decodedArguments = allocation.arguments.map(
     argumentAllocation => {
       const value = decode(
-        Types.definitionToType(argumentAllocation.definition),
+        Types.definitionToType(argumentAllocation.definition, compiler),
         argumentAllocation.pointer,
         info,
         0 //offset is always 0 but let's be explicit

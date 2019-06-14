@@ -54,6 +54,7 @@ export function makeContext(contract: ContractObject, node: AstDefinition, isCon
     contractKind: node.contractKind,
     isConstructor,
     abi: DecodeUtils.Contexts.abiToFunctionAbiWithSignatures(contract.abi),
-    payable: DecodeUtils.Contexts.isABIPayable(contract.abi)
+    payable: DecodeUtils.Contexts.isABIPayable(contract.abi),
+    compiler: contract.compiler
   };
 }

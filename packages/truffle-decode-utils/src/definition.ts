@@ -3,8 +3,10 @@ const debug = debugModule("decode-utils:definition");
 
 import { EVM as EVMUtils } from "./evm";
 import { AstDefinition, Scopes } from "./ast";
+import { Contexts } from "./contexts";
 import BN from "bn.js";
 import cloneDeep from "lodash.clonedeep";
+import semver from "semver";
 
 export namespace Definition {
 
@@ -133,8 +135,13 @@ export namespace Definition {
     return typeIdentifier(definition).match(/_(memory|storage|calldata)(_ptr)?$/) != null;
   }
 
-  export function isAddressPayable(definition: AstDefinition): boolean {
-    return typeIdentifier(definition) === "t_address_payable";
+  export function isAddressPayable(definition: AstDefinition, compiler: Contexts.CompilerVersion): boolean {
+    if(semver.satisfies(compiler.version, ">=0.5.0", {includePrerelease: true})) {
+      return typeIdentifier(definition) === "t_address_payable";
+    }
+    else {
+      return true;
+    }
   }
 
   //note: only use this on things already verified to be references

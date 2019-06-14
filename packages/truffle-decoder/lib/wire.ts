@@ -74,7 +74,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
 
     debug("init called");
     this.referenceDeclarations = Utils.getReferenceDeclarations(Object.values(this.contractNodes));
-    this.userDefinedTypes = Types.definitionsToStoredTypes(this.referenceDeclarations);
+    this.userDefinedTypes = Types.definitionsToStoredTypes(this.referenceDeclarations); //TODO
 
     this.allocations.storage = Decoder.getStorageAllocations(this.referenceDeclarations, {[this.contractNode.id]: this.contractNode});
     this.allocations.abi = Decoder.getAbiAllocations(this.referenceDeclarations);
@@ -138,6 +138,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
       contexts: this.contexts
+      //TODO set up current context
     };
     const decoder = Decoder.decodeCalldata(info, context);
 
