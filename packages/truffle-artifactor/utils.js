@@ -1,12 +1,31 @@
 const fse = require("fs-extra");
+const _ = require("lodash");
 
-const writeArtifact = (_completeArtifact, _outputPath) => {
-  _completeArtifact.updatedAt = new Date().toISOString();
+const writeArtifact = (completeArtifact, outputPath) => {
+  completeArtifact.updatedAt = new Date().toISOString();
   fse.writeFileSync(
-    _outputPath,
-    JSON.stringify(_completeArtifact, null, 2),
+    outputPath,
+    JSON.stringify(completeArtifact, null, 2),
     "utf8"
   );
 };
 
-module.exports = { writeArtifact };
+const finalizeArtifact = (
+  normalizedExistingArtifact,
+  normalizedNewArtifact
+) => {
+  const knownNetworks = _.merge(
+    {},
+    normalizedExistingArtifact.networks,
+    normalizedNewArtifact.networks
+  );
+  const completeArtifact = _.assign(
+    {},
+    normalizedExistingArtifact,
+    normalizedNewArtifact,
+    { networks: knownNetworks }
+  );
+  return completeArtifact;
+};
+
+module.exports = { writeArtifact, finalizeArtifact };
