@@ -116,8 +116,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     }
 
     debug("init called");
-    this.referenceDeclarations = Utils.getReferenceDeclarations(Object.values(this.contractNodes));
-    this.userDefinedTypes = Types.definitionsToStoredTypes(this.referenceDeclarations, this.contract.compiler);
+    [this.referenceDeclarations, this.userDefinedTypes] = this.getUserDefinedTypes();
 
     this.allocations.storage = Decoder.getStorageAllocations(this.referenceDeclarations, {[this.contractNode.id]: this.contractNode});
     this.allocations.abi = Decoder.getAbiAllocations(this.referenceDeclarations);
@@ -149,6 +148,26 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     debug("stateVariableReferences %O", this.stateVariableReferences);
 
     this.contractCode = await this.web3.eth.getCode(this.contractAddress);
+  }
+
+  private getUserDefinedTypes(): [AstReferences, Types.TypesById] {
+    let references: AstReferences = {};
+    let types: Types.TypesById = {};
+    for(const id in this.contracts) {
+      const compiler = this.contracts[id].compiler;
+      //first, add the contract itself
+      const contractNode = this.contractNodes[id];
+      references[id] = contractNode;
+      types[id] = Types.definitionToStoredType(contractNode, compiler);
+      //now, add its struct and enum definitions
+      for(const node of contractNode.nodes) {
+	if(node.nodeType === "StructDefinition" || node.nodeType === "EnumDefinition") {
+	  references[node.id] = node;
+	  types[node.id] = Types.definitionToStoredType(node, compiler);
+	}
+      }
+    }
+    return [references, types];
   }
 
   private async decodeVariable(variable: Decoder.StorageMemberAllocation, block: number): Promise<Values.Result> {

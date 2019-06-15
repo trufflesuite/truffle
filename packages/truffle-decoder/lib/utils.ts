@@ -26,18 +26,6 @@ function getDeclarationsForTypes(contracts: AstDefinition[], types: string[]): A
   return result;
 }
 
-export function getReferenceDeclarations(contracts: AstDefinition[]): AstReferences {
-  const types = [
-    "EnumDefinition",
-    "StructDefinition",
-  ];
-
-  let contractsObject: AstReferences = Object.assign({}, ...contracts.map(
-    (node: AstDefinition) => ({[node.id]: node})));
-
-  return {...getDeclarationsForTypes(contracts, types), ...contractsObject};
-}
-
 export function getEventDefinitions(contracts: AstDefinition[]): AstReferences {
   const types = [
     "EventDefinition"

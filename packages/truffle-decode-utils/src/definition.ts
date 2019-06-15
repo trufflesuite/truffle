@@ -135,7 +135,11 @@ export namespace Definition {
     return typeIdentifier(definition).match(/_(memory|storage|calldata)(_ptr)?$/) != null;
   }
 
-  export function isAddressPayable(definition: AstDefinition, compiler: Contexts.CompilerVersion): boolean {
+  //HACK: you can set compiler to null to force nonpayable
+  export function isAddressPayable(definition: AstDefinition, compiler: Contexts.CompilerVersion | null): boolean {
+    if(compiler === null) {
+      return false;
+    }
     if(semver.satisfies(compiler.version, ">=0.5.0", {includePrerelease: true})) {
       return typeIdentifier(definition) === "t_address_payable";
     }
