@@ -29,6 +29,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   private contracts: DecoderTypes.ContractMapping = {};
   private contractNodes: AstReferences = {};
   private contexts: DecodeUtils.Contexts.DecoderContexts = {};
+  private contextsById: DecodeUtils.Contexts.DecoderContextsById = {}; //deployed contexts only
   private context: DecodeUtils.Contexts.DecoderContext;
   private constructorContext: DecodeUtils.Contexts.DecoderContext;
 
@@ -107,6 +108,11 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.contexts = <DecodeUtils.Contexts.DecoderContexts>DecodeUtils.Contexts.normalizeContexts(this.contexts);
     this.context = this.contexts[this.contextHash];
     this.constructorContext = this.contexts[this.constructorContextHash];
+    this.contextsById = Object.assign({}, ...Object.values(this.contexts).filter(
+      ({isConstructor}) => !isConstructor
+    ).map(context =>
+      ({[context.contractId]: context})
+    ));
   }
 
   public async init(): Promise<void> {
@@ -178,7 +184,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       mappingKeys: this.mappingKeys,
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
-      contexts: this.contexts,
+      contexts: this.contextsById,
       currentContext: this.context
     };
 
@@ -365,7 +371,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       mappingKeys: this.mappingKeys,
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
-      contexts: this.contexts
+      contexts: this.contextsById
     };
     const decoder = Decoder.decodeCalldata(info, this.context);
 
@@ -405,7 +411,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       mappingKeys: this.mappingKeys,
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
-      contexts: this.contexts
+      contexts: this.contextsById
     };
     const decoder = Decoder.decodeEvent(info);
 

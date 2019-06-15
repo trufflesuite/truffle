@@ -23,6 +23,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
   private contracts: DecoderTypes.ContractMapping = {};
   private contractNodes: AstReferences = {};
   private contexts: DecodeUtils.Contexts.DecoderContexts = {};
+  private contextsById: DecodeUtils.Contexts.DecoderContextsById = {}; //deployed contexts only
 
   private referenceDeclarations: AstReferences;
   private userDefinedTypes: Types.TypesById;
@@ -67,14 +68,18 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     }
 
     this.contexts = <DecodeUtils.Contexts.DecoderContexts>DecodeUtils.Contexts.normalizeContexts(this.contexts);
+    this.contextsById = Object.assign({}, ...Object.values(this.contexts).filter(
+      ({isConstructor}) => !isConstructor
+    ).map(context =>
+      ({[context.contractId]: context})
+    ));
   }
 
   public async init(): Promise<void> {
     this.contractNetwork = (await this.web3.eth.net.getId()).toString();
 
     debug("init called");
-    this.referenceDeclarations = Utils.getReferenceDeclarations(Object.values(this.contractNodes));
-    this.userDefinedTypes = Types.definitionsToStoredTypes(this.referenceDeclarations); //TODO
+    [this.referenceDeclarations, this.userDefinedTypes] = this.getUserDefinedTypes();
 
     this.allocations.storage = Decoder.getStorageAllocations(this.referenceDeclarations, {[this.contractNode.id]: this.contractNode});
     this.allocations.abi = Decoder.getAbiAllocations(this.referenceDeclarations);
@@ -103,6 +108,26 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       );
     }
     debug("done with allocation");
+  }
+
+  private getUserDefinedTypes(): [AstReferences, Types.TypesById] {
+    let references: AstReferences = {};
+    let types: Types.TypesById = {};
+    for(const id in this.contracts) {
+      const compiler = this.contracts[id].compiler;
+      //first, add the contract itself
+      const contractNode = this.contractNodes[id];
+      references[id] = contractNode;
+      types[id] = Types.definitionToStoredType(contractNode, compiler);
+      //now, add its struct and enum definitions
+      for(const node of contractNode.nodes) {
+	if(node.nodeType === "StructDefinition" || node.nodeType === "EnumDefinition") {
+	  references[node.id] = node;
+	  types[node.id] = Types.definitionToStoredType(node, compiler);
+	}
+      }
+    }
+    return [references, types];
   }
 
   private async getCode(address: string, block: number): Promise<Uint8Array> {
@@ -137,9 +162,10 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       mappingKeys: this.mappingKeys,
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
-      contexts: this.contexts
-      //TODO set up current context
+      contexts: this.contextsById,
+      currentContext: context
     };
+    //TODO: remove redundancy here
     const decoder = Decoder.decodeCalldata(info, context);
 
     let result = decoder.next();
@@ -174,7 +200,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       mappingKeys: this.mappingKeys,
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
-      contexts: this.contexts,
+      contexts: this.contextsById,
       libraryEventsTable: this.libraryEventsTable
     };
     const decoder = Decoder.decodeEvent(info);

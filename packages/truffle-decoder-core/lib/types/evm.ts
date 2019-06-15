@@ -29,7 +29,7 @@ export interface EvmInfo {
     calldata?: Allocations.CalldataAllocations;
     event?: Allocations.EventAllocations;
   }
-  contexts?: Contexts.DecoderContexts;
+  contexts?: Contexts.DecoderContextsById;
   currentContext?: Contexts.DecoderContext;
   internalFunctionsTable?: InternalFunctions;
 }

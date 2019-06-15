@@ -20,6 +20,10 @@ export namespace Contexts {
     [context: string]: DecoderContext;
   }
 
+  export interface DecoderContextsById {
+    [id: number]: DecoderContext;
+  }
+
   export interface DebuggerContexts {
     [context: string]: DebuggerContext;
   }

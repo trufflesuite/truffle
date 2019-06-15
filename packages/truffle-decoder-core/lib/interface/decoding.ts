@@ -101,13 +101,14 @@ export function* decodeEvent(info: EvmInfo): IterableIterator<EventDecoding | De
     context => context.contractId === allocation.contractId
       && !context.isConstructor
   );
+  let newInfo = { ...info, currentContext: context };
   let contractType = DecodeUtils.Contexts.contextToType(context);
   let decodedArguments = allocation.arguments.map(
     argumentAllocation => {
       const value = decode(
         Types.definitionToType(argumentAllocation.definition, compiler),
         argumentAllocation.pointer,
-        info,
+        newInfo,
         0 //offset is always 0 but let's be explicit
       );
       const name = argumentAllocation.definition.name;
