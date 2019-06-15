@@ -379,13 +379,13 @@ function processContracts({
           deployedSourceMap,
           ast,
           legacyAST,
-          bytecode: replaceAllLinkReferences({
-            bytecode,
-            linkReferences
+          bytecode: zeroLinkReferences({
+            bytes: bytecode,
+            linkReferences: formatLinkReferences(linkReferences)
           }),
-          deployedBytecode: replaceAllLinkReferences({
-            bytecode: deployedBytecode,
-            linkReferences: deployedLinkReferences
+          deployedBytecode: zeroLinkReferences({
+            bytes: deployedBytecode,
+            linkReferences: formatLinkReferences(deployedLinkReferences)
           }),
           compiler: {
             name: "solc",
@@ -396,42 +396,50 @@ function processContracts({
   );
 }
 
-function replaceAllLinkReferences({ bytecode, linkReferences }) {
+function formatLinkReferences(linkReferences) {
   // convert to flat list
   const libraryLinkReferences = Object.values(linkReferences)
     .map(fileLinks =>
-      Object.entries(fileLinks).map(([libraryName, links]) => ({
-        libraryName,
+      Object.entries(fileLinks).map(([name, links]) => ({
+        name,
         links
       }))
     )
     .reduce((a, b) => [...a, ...b], []);
 
-  const unprefixed = libraryLinkReferences.reduce(
-    (bytecode, { libraryName, links }) =>
-      replaceLinkReferences(bytecode, links, libraryName),
-    bytecode
-  );
-
-  return `0x${unprefixed}`;
+  // convert to { offsets, length, name } format
+  return libraryLinkReferences.map(({ name, links }) => ({
+    offsets: links.map(({ start }) => start),
+    length: links[0].length, // HACK just assume they're going to be the same
+    name
+  }));
 }
 
-function replaceLinkReferences(bytecode, linkReferences, libraryName) {
-  var linkId = "__" + libraryName;
+// takes linkReferences in output format (not Solidity's format)
+function zeroLinkReferences({ bytes, linkReferences }) {
+  // inline link references - start by flattening the offsets
+  const flattenedLinkReferences = linkReferences
+    // map each link ref to array of link refs with only one offset
+    .map(({ offsets, length, name }) =>
+      offsets.map(offset => ({ offset, length, name }))
+    )
+    // flatten
+    .reduce((a, b) => [...a, ...b], []);
 
-  while (linkId.length < 40) {
-    linkId += "_";
-  }
+  // then overwite bytes with zeroes
+  bytes = flattenedLinkReferences.reduce((bytes, { offset, length }) => {
+    // length is a byte offset
+    const characterLength = length * 2;
+    const start = offset * 2;
 
-  linkReferences.forEach(function(ref) {
-    // ref.start is a byte offset. Convert it to character offset.
-    var start = ref.start * 2 + 2;
+    const zeroes = "0".repeat(characterLength);
 
-    bytecode =
-      bytecode.substring(0, start) + linkId + bytecode.substring(start + 40);
-  });
+    return `${bytes.substring(0, start)}${zeroes}${bytes.substring(
+      start + characterLength
+    )}`;
+  }, bytes);
 
-  return bytecode;
+  return { bytes, linkReferences };
 }
 
 module.exports = { run };
