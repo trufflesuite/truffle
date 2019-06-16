@@ -1,21 +1,16 @@
-const defaultJSONQuery = {
-  jsonrpc: "2.0",
-  method: "",
-  params: [],
-  id: Date.now()
-};
-
 const Blockchain = {
   getBlockByNumber(blockNumber, provider, callback) {
-    defaultJSONQuery.params = [blockNumber, true];
-    defaultJSONQuery.method = "eth_getBlockByNumber";
-    provider.send(defaultJSONQuery, callback);
+    provider.send(
+      { params: [blockNumber, true], method: "eth_getBlockByNumber" },
+      callback
+    );
   },
 
   getBlockByHash(blockHash, provider, callback) {
-    defaultJSONQuery.params = [blockHash, true];
-    defaultJSONQuery.method = "eth_getBlockByHash";
-    provider.send(defaultJSONQuery, callback);
+    provider.send(
+      { params: [blockHash, true], method: "eth_getBlockByHash" },
+      callback
+    );
   },
 
   parse(uri) {
