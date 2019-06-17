@@ -11,7 +11,7 @@ import { EvmInfo } from "../types/evm";
 import * as general from "../allocate/general";
 import * as storage from "../allocate/storage";
 import { StoragePointer, isStoragePointer } from "../types/pointer";
-import { StorageAllocations, StorageMemberAllocations, StorageMemberAllocation } from "../types/allocation";
+import { StorageAllocations, StorageMemberAllocation } from "../types/allocation";
 import { Slot, isWordsLength } from "../types/storage";
 import { DecoderRequest, isStorageRequest, isCodeRequest } from "../types/request";
 import { ContractBeingDecodedHasNoNodeError } from "../types/errors";
@@ -104,7 +104,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     [name: string]: number
   };
 
-  private stateVariableReferences: StorageMemberAllocations;
+  private stateVariableReferences: StorageMemberAllocation[];
 
   private mappingKeys: Slot[] = [];
 
@@ -260,7 +260,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
     debug("state called");
 
-    for(const variable of Object.values(this.stateVariableReferences)) {
+    for(const variable of this.stateVariableReferences) {
 
       debug("about to decode %s", variable.definition.name);
       const decodedVariable = await this.decodeVariable(variable, blockNumber);
@@ -280,14 +280,10 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       : (await this.web3.eth.getBlock(block)).number;
 
     let variable: StorageMemberAllocation;
-    if(typeof nameOrId === "number")
-    {
-      variable = this.stateVariableReferences[nameOrId];
-    }
-    else { //search by name
-      variable = Object.values(this.stateVariableReferences)
-      .find(({definition}) => definition.name === nameOrId); //there should be exactly one
-    }
+    variable = this.stateVariableReferences.find(
+      ({definition}) => definition.name === nameOrId || definition.id == nameOrId
+    ); //there should be exactly one
+    //note: deliberate use of == in that second one to allow numeric strings to work
 
     if(variable === undefined) { //if user put in a bad name
       return undefined;
@@ -460,7 +456,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   //in addition to returning the slot we want, it also returns a definition
   //used in the recursive call
   //HOW TO USE:
-  //variable may be either a variable id (number) or name (string)
+  //variable may be either a variable id (number or numeric string) or name (string)
   //struct members may be given either by id (number) or name (string)
   //array indices and numeric mapping keys may be BN, number, or numeric string
   //string mapping keys should be given as strings. duh.
@@ -471,13 +467,10 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     //base case: we need to locate the variable and its definition
     if(indices.length === 0) {
       let allocation: StorageMemberAllocation;
-      if(typeof variable === "number") {
-        allocation = this.stateVariableReferences[variable];
-      }
-      else {
-        allocation = Object.values(this.stateVariableReferences)
-        .find(({definition}) => definition.name === variable);
-      }
+      allocation = this.stateVariableReferences.find(
+        ({definition}) => definition.name === variable || definition.id == variable
+      ); //there should be exactly one
+      //note: deliberate use of == in that second one to allow numeric strings to work
 
       let definition = allocation.definition;
       let pointer = allocation.pointer;

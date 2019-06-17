@@ -127,9 +127,7 @@ export namespace Types {
     typeName: string;
     definingContractName: string;
     definingContract?: ContractType;
-    memberTypes?: {
-      [field: string]: Type
-    };
+    memberTypes?: [string, Type][];
     location?: string;
   }
 
@@ -404,9 +402,9 @@ export namespace Types {
       case "StructDefinition": {
         let id = definition.id;
         let [definingContractName, typeName] = definition.canonicalName.split(".");
-        let memberTypes = Object.assign({}, ...definition.members.map(
-          member => ({[member.name]: definitionToType(member, compiler, null)})
-        ));
+        let memberTypes: [string, Type][] = definition.members.map(
+          member => [member.name, definitionToType(member, compiler, null)]
+        );
         return {
           typeClass: "struct",
           id,
@@ -513,9 +511,9 @@ export namespace Types {
         case "struct":
           let returnType = { ...dataType, location };
           if(returnType.memberTypes) {
-            for(let name in returnType.memberTypes) {
-              returnType.memberTypes[name] = specifyLocation(returnType.memberTypes[name], location);
-            }
+            returnType.memberTypes = returnType.memberTypes.map(
+              ([memberName, memberType]) => [memberName, specifyLocation(memberType, location)]
+            );
           }
           return returnType;
       }

@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("decoder:allocate:storage");
 
 import { StoragePointer } from "../types/pointer";
-import { StorageAllocations, StorageAllocation, StorageMemberAllocations } from "../types/allocation";
+import { StorageAllocations, StorageAllocation, StorageMemberAllocation } from "../types/allocation";
 import { StorageLength, isWordsLength, Range } from "../types/storage";
 import { UnknownBaseContractIdError, UnknownUserDefinedTypeError } from "../types/errors";
 import { AstDefinition, AstReferences } from "truffle-decode-utils";
@@ -41,7 +41,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
   let allocations = {...existingAllocations}; //otherwise, we'll be adding to this, so we better clone
 
   //otherwise, we need to allocate
-  let memberAllocations: StorageMemberAllocations = {}
+  let memberAllocations: StorageMemberAllocation[] = []
 
   for(const node of definitions)
   {
@@ -51,10 +51,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
       let pointer = { definition: node.value };
       //HACK restrict ourselves to the types of constants we know how to handle
       if(DecodeUtils.Definition.isSimpleConstant(node.value)) {
-        memberAllocations[node.id] = {
-          definition: node,
-          pointer
-        };
+        memberAllocations.push({definition: node, pointer});
       }
       //if we don't know how to handle it, we just ignore it
       continue;
@@ -110,12 +107,12 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
       };
     }
   
-    memberAllocations[node.id] = {
+    memberAllocations.push({
       definition: node,
       pointer: {
         storage: range
       }
-    };
+    });
   
     //finally, adjust the current position.
     //if it was sized in words, move down that many slots and reset position w/in slot

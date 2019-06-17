@@ -637,21 +637,24 @@ export namespace Values {
   export class StructValue extends Value implements StructResult {
     type: Types.StructType;
     reference?: number; //will be used in the future for circular values
-    value: {
-      [field: string]: Result;
-    };
+    value: [string, Result][]; //these should be stored in order!
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       if(this.reference !== undefined) {
         return formatCircular(this.reference, options);
       }
-      return util.inspect(this.value, options);
+      return util.inspect(
+        Object.assign({}, ...this.value.map(
+          ([key, value]) => ({[key]: value})
+        )),
+        options
+      );
     }
     nativize() {
-      return Object.assign({}, ...Object.entries(this.value).map(
+      return Object.assign({}, ...this.value.map(
         ([key, value]) => ({[key]: value.nativize()})
       ));
     }
-    constructor(structType: Types.StructType, value: {[field: string]: Result}, reference?: number) {
+    constructor(structType: Types.StructType, value: [string, Result][], reference?: number) {
       super();
       this.type = structType;
       this.value = value;

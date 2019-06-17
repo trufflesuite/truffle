@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("decoder:allocate:calldata");
 
 import { CalldataPointer } from "../types/pointer";
-import { CalldataAllocations, CalldataAllocation, CalldataMemberAllocations } from "../types/allocation";
+import { CalldataAllocations, CalldataAllocation, CalldataMemberAllocation } from "../types/allocation";
 import { AstDefinition, AstReferences } from "truffle-decode-utils";
 import * as DecodeUtils from "truffle-decode-utils";
 
@@ -29,7 +29,7 @@ function allocateStruct(definition: AstDefinition, referenceDeclarations: AstRef
 
   let allocations = {...existingAllocations}; //otherwise, we'll be adding to this, so we better clone
 
-  let memberAllocations: CalldataMemberAllocations = {}
+  let memberAllocations: CalldataMemberAllocation[] = [];
 
   for(const member of definition.members)
   {
@@ -50,10 +50,10 @@ function allocateStruct(definition: AstDefinition, referenceDeclarations: AstRef
       }
     };
 
-    memberAllocations[member.id] = {
+    memberAllocations.push({
       definition: member,
       pointer
-    }
+    });
 
     start += length;
     dynamic = dynamic || dynamicMember;

@@ -203,8 +203,9 @@ function* decodeCalldataStructByPosition(dataType: Types.StructType, startPositi
     );
   }
 
-  let decodedMembers: {[field: string]: Values.Result} = {};
-  for(let memberAllocation of Object.values(structAllocation.members)) {
+  let decodedMembers: [string, Values.Result][] = [];
+  for(let index = 0; index < structAllocation.members.length; index++) {
+    const memberAllocation = structAllocation.members[index];
     const memberPointer = memberAllocation.pointer;
     const childPointer: CalldataPointer = {
       calldata: {
@@ -221,10 +222,13 @@ function* decodeCalldataStructByPosition(dataType: Types.StructType, startPositi
         new Values.UserDefinedTypeNotFoundError(dataType)
       );
     }
-    let storedMemberType = storedType.memberTypes[memberName];
+    let storedMemberType = storedType.memberTypes[index][1];
     let memberType = Types.specifyLocation(storedMemberType, "calldata");
 
-    decodedMembers[memberName] = <Values.Result> (yield* decodeCalldata(memberType, childPointer, info));
+    decodedMembers.push([
+      memberName,
+      <Values.Result> (yield* decodeCalldata(memberType, childPointer, info))
+    ]);
   }
   return new Values.StructValue(dataType, decodedMembers);
 }
