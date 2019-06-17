@@ -181,6 +181,36 @@ describe("truffle-box Box", () => {
         done();
       });
     });
+
+    it("overwrites redundant files when prompted and user confirms", done => {
+      const truffleConfigPath = path.join(destination, "truffle-config.js");
+
+      // preconditions
+      fse.writeFileSync(
+        truffleConfigPath,
+        "this truffle-config.js file is different than the default box file",
+        "utf8"
+      );
+      assert(
+        fse.existsSync(truffleConfigPath),
+        "mock truffle-config.js wasn't created!"
+      );
+      const mockConfig = fse.readFileSync(truffleConfigPath, "utf8");
+
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options).then(() => {
+        assert(inquirer.prompt.called);
+        assert(
+          fse.existsSync(truffleConfigPath),
+          "truffle-config.js wasn't recreated!"
+        );
+        const newConfig = fse.readFileSync(truffleConfigPath, "utf8");
+        assert(
+          newConfig !== mockConfig,
+          "truffle-config.js wasn't overwritten!"
+        );
+        done();
+      });
+    });
   });
 
   describe("Box.checkDir()", () => {
