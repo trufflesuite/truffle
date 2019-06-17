@@ -110,20 +110,20 @@ const Box = {
       tmp.setGracefulCleanup();
     }
 
-    tmp.dir({ unsafeCleanup }, (err, dir) => {
-      if (err) return callback(err);
-
-      Box.unbox(
-        `https://github.com/trufflesuite/truffle-init-${name}`,
-        dir,
-        options
-      )
-        .then(() => {
-          const config = Config.load(path.join(dir, "truffle-config.js"), {});
-          callback(null, config);
-        })
-        .catch(callback);
-    });
+    const tmpDir = tmp.dirSync({ unsafeCleanup });
+    Box.unbox(
+      `https://github.com/trufflesuite/truffle-init-${name}`,
+      tmpDir.name,
+      options
+    )
+      .then(() => {
+        const config = Config.load(
+          path.join(tmpDir.name, "truffle-config.js"),
+          {}
+        );
+        callback(null, config);
+      })
+      .catch(callback);
   }
 };
 
