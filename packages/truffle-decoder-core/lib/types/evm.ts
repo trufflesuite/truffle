@@ -1,5 +1,5 @@
 import { AstReferences, Contexts, Types } from "truffle-decode-utils";
-import { StorageAllocations, CalldataAllocations, MemoryAllocations, StorageMemberAllocations } from "./allocation";
+import { StorageAllocations, CalldataAllocations, MemoryAllocations } from "./allocation";
 import { Slot } from "./storage";
 
 export interface EvmState {

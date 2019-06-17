@@ -125,7 +125,7 @@ function* variablesAndMappingsSaga() {
   let node = yield select(data.current.node);
   let scopes = yield select(data.views.scopes.inlined);
   let referenceDeclarations = yield select(data.views.referenceDeclarations);
-  let allocations = yield select(data.info.allocations.storage);
+  let allocations = yield select(data.info.allocations.storage.byId);
   let currentAssignments = yield select(data.proc.assignments);
   let mappedPaths = yield select(data.proc.mappedPaths);
   let currentDepth = yield select(data.current.functionDepth);
@@ -491,6 +491,8 @@ function* variablesAndMappingsSaga() {
               baseExpression
             );
             slot.offset = indexValue.value.muln(
+              //HACK: the allocation format here is wrong (object rather than
+              //array), but it doesn't matter because we're not using that here
               storageSize(node, referenceDeclarations, allocations).words
             );
             break;

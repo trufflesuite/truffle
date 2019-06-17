@@ -113,9 +113,13 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
 
       debug("structAllocation %O", structAllocation);
 
-      let decodedMembers: {[field: string]: Values.Result} = {};
-      for(let memberAllocation of Object.values(structAllocation.members)) {
+      let decodedMembers: [string, Values.Result][] = [];
+      for(let index = 0; index < structAllocation.members.length; index++) {
+        const memberAllocation = structAllocation.members[index];
         const memberPointer = memberAllocation.pointer;
+        if(!memberPointer) {
+          continue; //memberPointer may be null due to mappings; skip these
+        }
         const childPointer: MemoryPointer = {
           memory: {
             start: startPosition + memberPointer.memory.start,
@@ -131,10 +135,13 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
             new Values.UserDefinedTypeNotFoundError(dataType)
           );
         }
-        let storedMemberType = storedType.memberTypes[memberName];
+        let storedMemberType = storedType.memberTypes[index][1];
         let memberType = Types.specifyLocation(storedMemberType, "memory");
 
-        decodedMembers[memberName] = <Values.Result> (yield* decodeMemory(memberType, childPointer, info));
+        decodedMembers.push([
+          memberName,
+          <Values.Result> (yield* decodeMemory(memberType, childPointer, info))
+        ]);
       }
       return new Values.StructValue(dataType, decodedMembers);
   }

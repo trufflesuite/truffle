@@ -244,10 +244,11 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
         );
       }
 
-      let decodedMembers: {[field: string]: Values.Result} = {};
-      const members = Object.values(structAllocation.members);
+      let decodedMembers: [string, Values.Result][] = [];
+      const members = structAllocation.members;
 
-      for (let memberAllocation of members) {
+      for(let index = 0; index < members.length; index++) {
+        const memberAllocation = members[index];
         const memberPointer = <StoragePointer>memberAllocation.pointer;
           //the type system thinks memberPointer might also be a constant
           //definition pointer.  However, structs can't contain constants,
@@ -280,10 +281,13 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
             new Values.UserDefinedTypeNotFoundError(dataType)
           );
         }
-        let storedMemberType = storedType.memberTypes[memberName];
+        let storedMemberType = storedType.memberTypes[index][1];
         let memberType = Types.specifyLocation(storedMemberType, "storage");
 
-        decodedMembers[memberName] = <Values.Result> (yield* decodeStorage(memberType, {storage: childRange}, info));
+        decodedMembers.push([
+          memberName,
+          <Values.Result> (yield* decodeStorage(memberType, {storage: childRange}, info))
+        ]);
       }
 
       return new Values.StructValue(dataType, decodedMembers);
