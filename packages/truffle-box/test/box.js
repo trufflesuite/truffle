@@ -259,5 +259,27 @@ describe("truffle-box Box", () => {
         assert(inquirer.prompt.called);
       });
     });
+
+    describe("when directory is non-empty and user declines to unbox", () => {
+      before(() => {
+        sinon.stub(fse, "readdirSync").returns(["someCrappyFile.js"]);
+        sinon.stub(process, "exit").returns(1);
+      });
+      after(() => {
+        fse.readdirSync.restore();
+        process.exit.restore();
+      });
+
+      it("Exits unbox process", async () => {
+        inquirer.prompt.restore();
+        sinon
+          .stub(inquirer, "prompt")
+          .returns(Promise.resolve({ proceed: false }));
+        await Box.checkDir(options);
+        assert(inquirer.prompt.called);
+        assert(options.logger.loggedStuff.includes("Unbox cancelled"));
+        assert(process.exit.called);
+      });
+    });
   });
 });
