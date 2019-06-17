@@ -214,6 +214,15 @@ describe("truffle-box Box", () => {
   });
 
   describe("Box.checkDir()", () => {
+    let options = {
+      logger: {
+        log(stringToLog) {
+          this.loggedStuff = this.loggedStuff + stringToLog;
+        },
+        loggedStuff: ""
+      }
+    };
+
     beforeEach(() => {
       sinon
         .stub(inquirer, "prompt")
