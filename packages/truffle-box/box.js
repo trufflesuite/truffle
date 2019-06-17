@@ -98,7 +98,6 @@ const Box = {
   // options.setGracefulCleanup
   //   Cleanup temporary files even when an uncaught exception occurs
   sandbox: (options, callback) => {
-    const self = this;
     const { name, unsafeCleanup, setGracefulCleanup } = parseSandboxOptions(
       options
     );
@@ -114,12 +113,11 @@ const Box = {
     tmp.dir({ unsafeCleanup }, (err, dir) => {
       if (err) return callback(err);
 
-      self
-        .unbox(
-          `https://github.com/trufflesuite/truffle-init-${name}`,
-          dir,
-          options
-        )
+      Box.unbox(
+        `https://github.com/trufflesuite/truffle-init-${name}`,
+        dir,
+        options
+      )
         .then(() => {
           const config = Config.load(path.join(dir, "truffle-config.js"), {});
           callback(null, config);
