@@ -66,7 +66,7 @@ const Box = {
       return boxConfig;
     } catch (error) {
       if (tempDirCleanup) tempDirCleanup();
-      throw new Error(error);
+      throw error;
     }
   },
 
