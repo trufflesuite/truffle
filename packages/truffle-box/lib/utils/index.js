@@ -15,7 +15,7 @@ module.exports = {
       downloadSpinner.succeed();
     } catch (error) {
       downloadSpinner.fail();
-      throw new Error(error);
+      throw error;
     }
   },
 
@@ -71,7 +71,7 @@ module.exports = {
       setUpSpinner.succeed();
     } catch (error) {
       setUpSpinner.fail();
-      throw new Error(error);
+      throw error;
     }
   }
 };
