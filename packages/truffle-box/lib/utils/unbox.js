@@ -86,12 +86,11 @@ async function promptOverwrites(contentCollisions, logger = console) {
       }
     ];
 
-    await inquirer.prompt(overwriting).then(({ overwrite }) => {
-      if (overwrite) {
-        fse.removeSync(file);
-        overwriteContents.push(file);
-      }
-    });
+    const { overwrite } = await inquirer.prompt(overwriting);
+    if (overwrite) {
+      fse.removeSync(file);
+      overwriteContents.push(file);
+    }
   }
 
   return overwriteContents;
