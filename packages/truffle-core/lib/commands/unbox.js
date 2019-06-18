@@ -126,7 +126,7 @@ const command = {
     const unboxOptions = Object.assign({}, options, { logger: config.logger });
 
     Box.unbox(url, destination, unboxOptions)
-      .then(({ commands, epilogue }) => {
+      .then(({ commands }) => {
         config.logger.log(`\nUnbox successful. Sweet!${OS.EOL}`);
 
         const commandMessages = formatCommands(commands);
@@ -134,10 +134,6 @@ const command = {
 
         commandMessages.forEach(message => config.logger.log(message));
         config.logger.log("");
-
-        if (epilogue) {
-          config.logger.log(epilogue.replace("\n", OS.EOL));
-        }
 
         done();
       })
