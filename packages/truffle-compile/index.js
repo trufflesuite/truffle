@@ -283,10 +283,10 @@ function replaceLinkReferences(bytecode, linkReferences, libraryName) {
 function orderABI({ abi, contract_name: contractName, ast }) {
   // AST can have multiple contract definitions, make sure we have the
   // one that matches our contract
-  const contractDefinition = ast.nodes.filter(
+  const contractDefinition = ast.nodes.find(
     ({ nodeType, name }) =>
       nodeType === "ContractDefinition" && name === contractName
-  )[0];
+  );
 
   if (!contractDefinition || !contractDefinition.nodes) {
     return abi;
