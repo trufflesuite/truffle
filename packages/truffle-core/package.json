@@ -14,7 +14,6 @@
     "cpr": "^3.0.1",
     "debug": "^4.1.0",
     "del": "^2.2.0",
-    "diff": "1.4.0",
     "ethereumjs-wallet": "^0.6.2",
     "ethpm": "0.0.16",
     "ethpm-registry": "0.1.0-next.2",
