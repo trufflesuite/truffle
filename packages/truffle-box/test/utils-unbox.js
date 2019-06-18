@@ -3,39 +3,32 @@ const utils = require("../lib/utils/unbox");
 
 describe("utils", () => {
   describe("installBoxDependencies", () => {
-    it("promise resolves properly if 'post-unpack' key passed w/ empty string value", () => {
+    it("returns properly if 'post-unpack' key passed w/ empty string value", () => {
       let boxConfig = { hooks: { "post-unpack": "" } };
 
-      try {
+      assert.doesNotThrow(() => {
         utils.installBoxDependencies(boxConfig);
-        assert(true);
-      } catch (error) {
-        assert(false, "threw an error!");
-      }
+      }, "should not throw!");
     });
 
-    it("promise rejects and exec fails if 'post-unpack' key passed unexecutable value", () => {
+    it("throws if 'post-unpack' key passed unexecutable value", () => {
       let boxConfig = { hooks: { "post-unpack": "doBadStuff" } };
 
-      try {
+      assert.throws(() => {
         utils.installBoxDependencies(boxConfig);
-        assert(false, "should have thrown!");
-      } catch ({ stack }) {
-        assert(stack.includes("Error: Command failed"));
-      }
+      }, "should have thrown!");
     });
   });
 
   describe("fetchRepository", () => {
-    it("throw when passed non-strings and non-objects", () => {
-      utils
-        .fetchRepository(false)
-        .then(() => assert(false, "should have thrown!"))
-        .catch(({ stack }) => assert(stack.includes("Invalid parameter type")));
-      utils
-        .fetchRepository(123214)
-        .then(() => assert(false, "should have thrown!"))
-        .catch(({ stack }) => assert(stack.includes("Invalid parameter type")));
+    it("rejects when passed non-strings and non-objects", () => {
+      assert.rejects(async () => {
+        await utils.fetchRepository(false);
+      }, "should have rejected!");
+
+      assert.rejects(async () => {
+        await utils.fetchRepository(123214);
+      }, "should have rejected!");
     });
   });
 });
