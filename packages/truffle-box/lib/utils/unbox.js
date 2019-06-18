@@ -62,7 +62,7 @@ function fetchRepository(url, dir) {
 }
 
 function prepareToCopyFiles(tempDir, { ignore }) {
-  const needingRemoval = ignore || [];
+  const needingRemoval = ignore;
 
   // remove box config file
   needingRemoval.push("truffle-box.json");
