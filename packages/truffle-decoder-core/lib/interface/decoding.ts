@@ -16,14 +16,15 @@ export function* decodeVariable(definition: AstDefinition, pointer: Pointer.Data
   return yield* decode(dataType, pointer, info); //no need to pass an offset
 }
 
-export function* decodeCalldata(info: EvmInfo, context: DecodeUtils.Contexts.DecoderContext | null): IterableIterator<CalldataDecoding | DecoderRequest | Values.Result | GeneratorJunk> {
-  const compiler = info.currentContext.compiler;
+export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecoding | DecoderRequest | Values.Result | GeneratorJunk> {
+  const context = info.currentContext;
   if(context === null) {
     //if we don't know the contract ID, we can't decode
     return {
       kind: "unknown";
     }
   }
+  const compiler = info.currentContext.compiler;
   const contractId = context.contractId;
   const contractType = DecodeUtils.Contexts.contextToType(context);
   const allocations = info.allocations.calldata[contractId];

@@ -165,8 +165,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       contexts: this.contextsById,
       currentContext: context
     };
-    //TODO: remove redundancy here
-    const decoder = Decoder.decodeCalldata(info, context);
+    const decoder = Decoder.decodeCalldata(info);
 
     let result = decoder.next();
     while(!result.done) {
