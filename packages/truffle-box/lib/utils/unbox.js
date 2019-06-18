@@ -1,51 +1,42 @@
 const fse = require("fs-extra");
 const path = require("path");
 const ghdownload = require("github-download");
-const request = require("request");
+const rp = require("request-promise-native");
 const vcsurl = require("vcsurl");
 const parseURL = require("url").parse;
 const execSync = require("child_process").execSync;
 const inquirer = require("inquirer");
 
-function verifyURL(url) {
+async function verifyURL(url) {
   // Next let's see if the expected repository exists. If it doesn't, ghdownload
   // will fail spectacularly in a way we can't catch, so we have to do it ourselves.
-  return new Promise((accept, reject) => {
-    const configURL = parseURL(
-      `${vcsurl(url)
-        .replace("github.com", "raw.githubusercontent.com")
-        .replace(/#.*/, "")}/master/truffle-box.json`
-    );
+  const configURL = parseURL(
+    `${vcsurl(url)
+      .replace("github.com", "raw.githubusercontent.com")
+      .replace(/#.*/, "")}/master/truffle-box.json`
+  );
 
-    const options = {
-      method: "HEAD",
-      uri: `https://${configURL.host}${configURL.path}`
-    };
-    request(options, (error, { statusCode }) => {
-      if (error) {
-        return reject(
-          new Error(
-            `Error making request to ${options.uri}. Got error: ${
-              error.message
-            }. Please check the format of the requested resource.`
-          )
-        );
-      } else if (statusCode === 404) {
-        return reject(
-          new Error(
-            `Truffle Box at URL ${url} doesn't exist. If you believe this is an error, please contact Truffle support.`
-          )
-        );
-      } else if (statusCode !== 200) {
-        return reject(
-          new Error(
-            "Error connecting to github.com. Please check your internet connection and try again."
-          )
-        );
-      }
-      accept();
-    });
-  });
+  const options = {
+    method: "HEAD",
+    uri: `https://${configURL.host}${configURL.path}`,
+    resolveWithFullResponse: true,
+    simple: false
+  };
+
+  try {
+    const { statusCode } = await rp(options);
+    if (statusCode === 404) {
+      throw new Error(
+        `Truffle Box at URL ${url} doesn't exist. If you believe this is an error, please contact Truffle support.`
+      );
+    } else if (statusCode !== 200) {
+      throw new Error(
+        "Error connecting to github.com. Please check your internet connection and try again."
+      );
+    }
+  } catch (error) {
+    throw error;
+  }
 }
 
 function fetchRepository(url, dir) {
