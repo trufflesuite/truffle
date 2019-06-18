@@ -128,7 +128,8 @@ export namespace Contexts {
       return undefined;
     }
     return abi.some(
-      abiEntry => abiEntry.type === "fallback" && abiEntry.payable
+      abiEntry => abiEntry.type === "fallback" && 
+        (abiEntry.stateMutability === "payable" || abiEntry.payable)
     );
   }
 
