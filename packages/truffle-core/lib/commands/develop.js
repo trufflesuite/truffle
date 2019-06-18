@@ -43,7 +43,7 @@ const command = {
   },
   run: (options, done) => {
     const Config = require("truffle-config");
-    const Develop = require("../develop");
+    const Develop = require("truffle-environment").develop;
 
     const config = Config.detect(options);
     const customConfig = config.networks.develop || {};
