@@ -129,10 +129,6 @@ export namespace Contexts {
     )
   }
 
-  export function abiToWeb3Abi(abi: Abi): AbiItem[] {
-    return <AbiItem[]>abi; //yup. just a type coercion :P
-  }
-
   //does this ABI have a payable fallback function?
   export function isABIPayable(abi: Abi | undefined): boolean | undefined {
     if(abi === undefined) {

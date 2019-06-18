@@ -8,7 +8,7 @@ import * as DecodeUtils from "truffle-decode-utils";
 import partition from "lodash.partition";
 
 import { AbiCoder } from "web3-eth-abi";
-import { AbiItem, AbiInput } from "web3-utils";
+import { AbiItem } from "web3-utils";
 const abiCoder = new AbiCoder();
 
 export function getAbiAllocations(referenceDeclarations: AstReferences): Allocations.AbiAllocations {
@@ -340,14 +340,12 @@ function allocateEvent(
   };
 }
 
-//NOTE: this is for a single contract!
-//run multiple times to handle multiple contracts
-export function getCalldataAllocations(
+function getCalldataAllocationsForContract(
   abi: AbiItem[],
   contractId: number,
+  constructorContext: DecodeUtils.Contexts.DecoderContext,
   referenceDeclarations: AstReferences,
-  abiAllocations: Allocations.AbiAllocations,
-  constructorContext: DecodeUtils.Contexts.DecoderContext
+  abiAllocations: Allocations.AbiAllocations
 ): Allocations.CalldataContractAllocation {
   let allocations: Allocations.CalldataContractAllocation;
   for(let abiEntry of abi) {
@@ -388,9 +386,18 @@ function defaultConstructorAllocation(constructorContext: DecodeUtils.Contexts.D
   };
 }
 
-//NOTE: this is for a single contract!
-//run multiple times to handle multiple contracts
-export function getEventAllocations(
+//note: contract allocation info should include constructor context
+export function getCalldataAllocations(contracts: Allocations.ContractAllocationInfo[], referenceDeclarations: AstReferences, abiAllocations: Allocations.AbiAllocations): Allocations.CalldataAllocations {
+  return Object.assign({}, ...contracts.map(
+    ({abi, id, constructorContext}) => ({
+      [id]: getCalldataAllocationsForContract(
+        <AbiItem[]>abi, id, constructorContext, referenceDeclarations, abiAllocations
+      )
+    })
+  ));
+}
+
+function getEventAllocationsForContract(
   abi: AbiItem[],
   contractId: number,
   referenceDeclarations: AstReferences,
@@ -404,4 +411,11 @@ export function getEventAllocations(
       })
     )
   );
+}
+
+//note: constructor context is ignored by this function; no need to pass it in
+export function getEventAllocations(contracts: Allocations.ContractAllocationInfo[], referenceDeclarations: AstReferences, abiAllocations: Allocations.AbiAllocations): Allocations.EventAllocations {
+  return Object.assign({}, ...contracts.map(
+    ({abi, id}) => getEventAllocationsForContract(<AbiItem[]>abi, id, referenceDeclarations, abiAllocations)
+  ));
 }

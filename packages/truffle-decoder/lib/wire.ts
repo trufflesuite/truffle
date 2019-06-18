@@ -24,6 +24,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
   private contractNodes: AstReferences = {};
   private contexts: DecodeUtils.Contexts.DecoderContexts = {};
   private contextsById: DecodeUtils.Contexts.DecoderContextsById = {}; //deployed contexts only
+  private constructorContextsById: DecodeUtils.Contexts.DecoderContextsById = {};
 
   private referenceDeclarations: AstReferences;
   private userDefinedTypes: Types.TypesById;
@@ -73,6 +74,11 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     ).map(context =>
       ({[context.contractId]: context})
     ));
+    this.constructorContextsById = Object.assign({}, ...Object.values(this.contexts).filter(
+      ({isConstructor}) => isConstructor
+    ).map(context =>
+      ({[context.contractId]: context})
+    ));
   }
 
   public async init(): Promise<void> {
@@ -81,32 +87,18 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     debug("init called");
     [this.referenceDeclarations, this.userDefinedTypes] = this.getUserDefinedTypes();
 
+    let allocationInfo: Decoder.ContractAllocationInfo[] = Object.entries(this.contracts).map(
+      ([id, { abi }]) => ({
+        abi,
+        id: parseInt(id),
+        constructorContext: this.constructorContextsById[parseInt(id)]
+      })
+    );
+
     this.allocations.storage = Decoder.getStorageAllocations(this.referenceDeclarations, this.contractNodes);
     this.allocations.abi = Decoder.getAbiAllocations(this.referenceDeclarations);
-    this.allocations.event = {};
-    for(let contractNode of Object.values(this.contractNodes)) {
-      let id = contractNode.id;
-      let contract = this.contracts[id];
-      Object.assign(this.allocations.event,
-        Decoder.getEventAllocations(
-          DecodeUtils.Contexts.abiToWeb3Abi(contract.abi),
-          id,
-          this.referenceDeclarations,
-          this.allocations.abi
-        )
-      );
-      let constructorContext = Object.values(this.contexts).find(
-        ({ contractId, isConstructor }) =>
-          contractId === id && isConstructor
-      );
-      this.allocations.calldata[id] = Decoder.getCalldataAllocations(
-        DecodeUtils.Contexts.abiToWeb3Abi(contract.abi),
-        id,
-        this.referenceDeclarations,
-        this.allocations.abi,
-        constructorContext
-      );
-    }
+    this.allocations.calldata = Decoder.getCalldataAllocations(allocationInfo, this.referenceDeclarations, this.allocations.abi);
+    this.allocations.event = Decoder.getEventAllocations(allocationInfo, this.referenceDeclarations, this.allocations.abi);
     debug("done with allocation");
   }
 

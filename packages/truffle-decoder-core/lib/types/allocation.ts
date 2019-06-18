@@ -1,6 +1,14 @@
 import { StorageLength } from "./storage";
 import * as Pointer from "./pointer";
-import { AstDefinition } from "truffle-decode-utils";
+import { AstDefinition, Contexts } from "truffle-decode-utils";
+import { Abi } from "truffle-contract-schema/spec";
+
+//for passing to calldata/event allocation functions
+export interface ContractAllocationInfo {
+  abi: Abi;
+  id: number;
+  constructorContext?: Contexts.DecoderContext;
+}
 
 //holds a collection of storage allocations for structs and contracts, indexed
 //by the ID of the struct or contract

@@ -126,31 +126,29 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     debug("init called");
     [this.referenceDeclarations, this.userDefinedTypes] = this.getUserDefinedTypes();
 
-    this.allocations.storage = Decoder.getStorageAllocations(this.referenceDeclarations, {[this.contractNode.id]: this.contractNode});
-    this.allocations.abi = Decoder.getAbiAllocations(this.referenceDeclarations);
-    this.allocations.calldata[this.contractNode.id] = Decoder.getCalldataAllocations(
-      DecodeUtils.Contexts.abiToWeb3Abi(this.contract.abi),
-      this.contractNode.id,
+    this.allocations.storage = Decoder.getStorageAllocations(
       this.referenceDeclarations,
-      this.allocations.abi,
-      this.constructorContext
+      {[this.contractNode.id]: this.contractNode}
     );
-    this.allocations.event = {};
-    for(let id in this.contractNodes) {
-      if(this.contractNodes[id].contractKind !== "library"
-        && parseInt(id) !== this.contractNode.id) {
-        continue; //only allocate for this contract and libraries
-      }
-      let contract = this.contracts[id];
-      Object.assign(this.allocations.event,
-        Decoder.getEventAllocations(
-          DecodeUtils.Contexts.abiToWeb3Abi(contract.abi),
-          parseInt(id),
-          this.referenceDeclarations,
-          this.allocations.abi
-        )
-      );
-    }
+    this.allocations.abi = Decoder.getAbiAllocations(this.referenceDeclarations);
+    this.allocations.calldata = Decoder.getCalldataAllocations(
+      [{
+        abi: this.contract.abi,
+        id: this.contractNode.id,
+        constructorContext: this.constructorContext
+      }],
+      this.referenceDeclarations,
+      this.allocations.abi
+    );
+    this.allocations.event = Decoder.getEventAllocations(
+      [{
+        abi: this.contract.abi,
+        id: this.contractNode.id
+      }],
+      this.referenceDeclarations,
+      this.allocations.abi
+    );
+
     debug("done with allocation");
     this.stateVariableReferences = this.allocations.storage[this.contractNode.id].members;
     debug("stateVariableReferences %O", this.stateVariableReferences);
