@@ -34,24 +34,21 @@ module.exports = {
 
   setUpTempDirectory: () => {
     const prepareSpinner = ora("Preparing to download").start();
-    return new Promise((resolve, reject) => {
-      const options = {
-        dir: cwd,
-        unsafeCleanup: true
+    const options = {
+      dir: cwd,
+      unsafeCleanup: true
+    };
+    try {
+      const tmpDir = tmp.dirSync(options);
+      prepareSpinner.succeed();
+      return {
+        path: path.join(tmpDir.name, "box"),
+        cleanupCallback: tmpDir.removeCallback
       };
-      tmp.dir(options, (error, dir, cleanupCallback) => {
-        if (error) {
-          prepareSpinner.fail();
-          return reject(error);
-        }
-
-        prepareSpinner.succeed();
-        resolve({
-          path: path.join(dir, "box"),
-          cleanupCallback
-        });
-      });
-    });
+    } catch (error) {
+      prepareSpinner.fail();
+      throw error;
+    }
   },
 
   unpackBox: async (tempDir, destination, boxConfig, unpackBoxOptions) => {
