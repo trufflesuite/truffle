@@ -77,7 +77,7 @@ export interface CalldataAllocations {
   [contractId: number]: CalldataContractAllocation
 }
 
-export interface CalldataContractAllocations {
+export interface CalldataContractAllocation {
   constructorAllocation: CalldataAllocation;
   functionAllocations: {
     [selector: string]: CalldataAllocation;
@@ -101,7 +101,7 @@ export interface CalldataArgumentAllocation {
 //contract ID!  Instead the contract ID is included in the allocation
 
 export interface EventAllocations {
-  [selector: string]: EventAllocations
+  [selector: string]: EventAllocation
 }
 
 export interface EventAllocation {

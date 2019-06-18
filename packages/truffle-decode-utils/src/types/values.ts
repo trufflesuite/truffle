@@ -1277,6 +1277,17 @@ export namespace Values {
     }
   }
 
+  export class ReadErrorTopic extends GenericError {
+    topic: number;
+    message() {
+      return `Can't read event topic ${this.topic}`;
+    }
+    constructor(topic: number) {
+      super();
+      this.topic = topic;
+    }
+  }
+
   //finally, a convenience function for constructing generic errors
   export function makeGenericErrorResult(dataType: Types.Type, error: GenericError): ErrorResult {
     switch(dataType.typeClass) {
@@ -1315,17 +1326,6 @@ export namespace Values {
           case "internal":
         return new FunctionInternalErrorResult(dataType, error);
         }
-    }
-  }
-
-  export class ReadErrorTopic extends GenericErrorDirect {
-    topic: number;
-    message() {
-      return `Can't read event topic ${this.topic}`;
-    }
-    constructor(topic: number) {
-      super();
-      this.topic = topic;
     }
   }
 }

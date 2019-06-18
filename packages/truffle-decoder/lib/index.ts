@@ -7,6 +7,6 @@ export function forContract(contract: ContractObject, relevantContracts: Contrac
   return new TruffleContractDecoder(contract, relevantContracts, provider, address);
 }
 
-export function forProject(contracts: ContractObject[], provider: Provider): TruffleContractDecoder {
-  return new TruffleWireDecoder(contracts, provider, address);
+export function forProject(contracts: ContractObject[], provider: Provider): TruffleWireDecoder {
+  return new TruffleWireDecoder(contracts, provider);
 }

@@ -8,7 +8,7 @@ import decodeValue from "./value";
 import { decodeExternalFunction, checkPaddingLeft } from "./value";
 import { decodeMemoryReferenceByAddress } from "./memory";
 import { decodeStorageReferenceByAddress } from "./storage";
-import { decodeCalldataReferenceByAddress } from "./calldata";
+import { decodeAbiReferenceByAddress } from "./abi";
 import { StackPointer, StackLiteralPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
@@ -51,7 +51,7 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
         if(dataType.typeClass === "bytes" || dataType.typeClass === "string") {
           let start = DecodeUtils.Conversion.toBN(pointer.literal.slice(0, DecodeUtils.EVM.WORD_SIZE)).toNumber();
           let length = DecodeUtils.Conversion.toBN(pointer.literal.slice(DecodeUtils.EVM.WORD_SIZE)).toNumber();
-          let newPointer = { location: "calldata", start, length };
+          let newPointer = { location: "calldata" as "calldata", start, length };
           return yield* decodeValue(dataType, newPointer, info);
         }
 
@@ -64,12 +64,12 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
           //HACK -- in order to read the correct location, we need to add an offset
           //of -32 (since, again, we're throwing away the length info), so we pass
           //that in as the "base" value
-          return yield* decodeCalldataReferenceByAddress(dataType, {location: "stackliteral", literal: locationOnly}, info, -DecodeUtils.EVM.WORD_SIZE);
+          return yield* decodeAbiReferenceByAddress(dataType, {location: "stackliteral", literal: locationOnly}, info, -DecodeUtils.EVM.WORD_SIZE);
         }
         else {
           //multivalue case -- this case is straightforward
           //pass in 0 as the base since this is an absolute pointer
-          return yield* decodeCalldataReferenceByAddress(dataType, pointer, info, 0);
+          return yield* decodeAbiReferenceByAddress(dataType, pointer, info, 0);
         }
     }
   }

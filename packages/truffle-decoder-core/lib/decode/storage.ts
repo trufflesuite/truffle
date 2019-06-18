@@ -49,7 +49,7 @@ export function* decodeStorageReferenceByAddress(dataType: Types.ReferenceType, 
   //coercion
   const size = (<{words: number}>rawSize).words;
   //now, construct the storage pointer
-  const newPointer = { location: "storage", range: {
+  const newPointer = { location: "storage" as "storage", range: {
     from: {
       slot: {
         offset: startOffset
@@ -72,6 +72,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
   var length;
 
   const { state } = info;
+  const allocations = info.allocations.storage;
 
   switch (dataType.typeClass) {
     case "array": {
@@ -350,6 +351,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
         }
         else {
           valuePointer = {
+            location: "storage",
             range: {
               from: {
                 slot: {

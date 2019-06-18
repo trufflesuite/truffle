@@ -37,7 +37,7 @@ export default function* read(pointer: Pointer.DataPointer, state: EvmState): It
       return state.specials[pointer.special];
 
     case "eventtopic":
-      return readTopic(state.eventTopics, pointer.topic);
+      return readTopic(state.eventtopics, pointer.topic);
 
     //...and in the case of "abi", which shouldn't happen, we'll just fall off
     //the end and cause a problem :P
@@ -49,7 +49,7 @@ function readTopic(topics: Uint8Array[], index: number) {
   let topic = topics[index];
   if(topic === undefined) {
     throw new Values.DecodingError(
-      new Values.ReadErrorTopic(index);
+      new Values.ReadErrorTopic(index)
     );
   }
   return topic;

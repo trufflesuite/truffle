@@ -6,7 +6,9 @@ import * as DecodeUtils from "truffle-decode-utils";
 import * as Pointer from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
-import { CalldataAllocation, EventAllocation } from "../types/allocation";
+import { CalldataAllocation, EventAllocation, EventArgumentAllocation } from "../types/allocation";
+import { CalldataDecoding, EventDecoding } from "../types/wire";
+import read from "../read";
 import decode from "../decode";
 
 export function* decodeVariable(definition: AstDefinition, pointer: Pointer.DataPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
@@ -21,7 +23,7 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
   if(context === null) {
     //if we don't know the contract ID, we can't decode
     return {
-      kind: "unknown";
+      kind: "unknown"
     }
   }
   const compiler = info.currentContext.compiler;
@@ -36,13 +38,14 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
   }
   else {
     //TODO: error-handling here
-    let rawSelector = read(info.state,
+    let rawSelector = <Uint8Array> read(
       { location: "calldata",
         start: 0,
         length: DecodeUtils.EVM.SELECTOR_SIZE
-      }
-    );
-    let selector = DecodeUtils.EVM.toHexString(rawSelector);
+      },
+      info.state
+    ).next().value; //no requests should occur, we can just get the first value
+    let selector = DecodeUtils.Conversion.toHexString(rawSelector);
     allocation = allocations.functionAllocations[selector];
   }
   if(allocation === undefined) {
@@ -75,7 +78,7 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
   else {
     return {
       kind: "function",
-      class: contractType
+      class: contractType,
       name: allocation.definition.name,
       arguments: decodedArguments
     };
@@ -85,12 +88,13 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
 export function* decodeEvent(info: EvmInfo): IterableIterator<EventDecoding | DecoderRequest | Values.Result | GeneratorJunk> {
   const compiler = info.currentContext.compiler;
   const allocations = info.allocations.event;
-  const rawSelector = read(info.state,
-    { location: "eventdata",
+  const rawSelector = <Uint8Array> read(
+    { location: "eventtopic",
       topic: 0
-    }
-  );
-  const selector = DecodeUtils.EVM.toHexString(rawSelector);
+    },
+    info.state
+  ).next().value; //no requests should occur, we can just get the first value
+  const selector = DecodeUtils.Conversion.toHexString(rawSelector);
   const allocation = allocations[selector];
   if(allocation === undefined) {
     //we can't decode
@@ -98,14 +102,14 @@ export function* decodeEvent(info: EvmInfo): IterableIterator<EventDecoding | De
       kind: "unknown",
     };
   }
-  let context = info.contexts.find(
+  let context = Object.values(info.contexts).find(
     context => context.contractId === allocation.contractId
       && !context.isConstructor
   );
   let newInfo = { ...info, currentContext: context };
   let contractType = DecodeUtils.Contexts.contextToType(context);
   let decodedArguments = allocation.arguments.map(
-    argumentAllocation => {
+    (argumentAllocation: EventArgumentAllocation) => {
       const value = decode(
         Types.definitionToType(argumentAllocation.definition, compiler),
         argumentAllocation.pointer,

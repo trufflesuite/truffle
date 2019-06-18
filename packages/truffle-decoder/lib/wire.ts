@@ -47,7 +47,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
         this.contracts[node.id] = contract;
         this.contractNodes[node.id] = node;
         if(contract.deployedBytecode) {
-          const context = makeContext(contract, node);
+          const context = Utils.makeContext(contract, node);
           const hash = DecodeUtils.Conversion.toHexString(
             DecodeUtils.EVM.keccak256({type: "string",
               value: context.binary
@@ -56,7 +56,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
           this.contexts[hash] = context;
         }
         if(contract.byteCode) {
-          const constructorContext = makeContext(contract, node, true);
+          const constructorContext = Utils.makeContext(contract, node, true);
           const hash = DecodeUtils.Conversion.toHexString(
             DecodeUtils.EVM.keccak256({type: "string",
               value: constructorContext.binary
@@ -76,12 +76,12 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
   }
 
   public async init(): Promise<void> {
-    this.contractNetwork = (await this.web3.eth.net.getId()).toString();
+    //note: this doesn't need to be async, but is for consistency
 
     debug("init called");
     [this.referenceDeclarations, this.userDefinedTypes] = this.getUserDefinedTypes();
 
-    this.allocations.storage = Decoder.getStorageAllocations(this.referenceDeclarations, {[this.contractNode.id]: this.contractNode});
+    this.allocations.storage = Decoder.getStorageAllocations(this.referenceDeclarations, this.contractNodes);
     this.allocations.abi = Decoder.getAbiAllocations(this.referenceDeclarations);
     this.allocations.event = {};
     for(let contractNode of Object.values(this.contractNodes)) {
@@ -89,18 +89,18 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       let contract = this.contracts[id];
       Object.assign(this.allocations.event,
         Decoder.getEventAllocations(
-          contract.abi,
+          DecodeUtils.Contexts.abiToWeb3Abi(contract.abi),
           id,
           this.referenceDeclarations,
           this.allocations.abi
         )
       );
-      let constructorContext = Object.values(contexts).find(
+      let constructorContext = Object.values(this.contexts).find(
         ({ contractId, isConstructor }) =>
           contractId === id && isConstructor
       );
       this.allocations.calldata[id] = Decoder.getCalldataAllocations(
-        contract.abi,
+        DecodeUtils.Contexts.abiToWeb3Abi(contract.abi),
         id,
         this.referenceDeclarations,
         this.allocations.abi,
@@ -150,8 +150,9 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     return code;
   }
 
-  public async decodeTransaction(transaction: Transaction): DecodedTransaction {
-    const context = await this.getContextByAddress(transaction.to, transaction.blockNumber, transaction.input);
+  public async decodeTransaction(transaction: Transaction): Promise<DecoderTypes.DecodedTransaction> {
+    const block = transaction.blockNumber;
+    const context = await this.getContextByAddress(transaction.to, block, transaction.input);
 
     const data = DecodeUtils.Conversion.toBytes(transaction.input);
     const info: Decoder.EvmInfo = {
@@ -159,7 +160,6 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
         storage: {},
         calldata: data,
       },
-      mappingKeys: this.mappingKeys,
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
       contexts: this.contextsById,
@@ -178,7 +178,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       result = decoder.next(response);
     }
     //at this point, result.value holds the final value
-    const decoding = <CalldataDecoding>result.value;
+    const decoding = <Decoder.CalldataDecoding>result.value;
     
     return {
       ...transaction,
@@ -186,7 +186,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     };
   }
 
-  public async decodeLog(log: Log): DecodedEvent {
+  public async decodeLog(log: Log): Promise<DecoderTypes.DecodedEvent> {
     const block = log.blockNumber;
     const data = DecodeUtils.Conversion.toBytes(log.data);
     const topics = log.topics.map(DecodeUtils.Conversion.toBytes);
@@ -196,11 +196,9 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
         eventdata: data,
         eventtopics: topics
       },
-      mappingKeys: this.mappingKeys,
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
-      contexts: this.contextsById,
-      libraryEventsTable: this.libraryEventsTable
+      contexts: this.contextsById
     };
     const decoder = Decoder.decodeEvent(info);
 
@@ -215,7 +213,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       result = decoder.next(response);
     }
     //at this point, result.value holds the final value
-    const decoding = <EventDecoding>result.value;
+    const decoding = <Decoder.EventDecoding>result.value;
     
     return {
       ...log,
@@ -223,17 +221,17 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     };
   }
 
-  public async decodeLogs(logs: Log[]): DecodedEvent[] {
+  public async decodeLogs(logs: Log[]): Promise<DecoderTypes.DecodedEvent[]> {
     return await Promise.all(logs.map(this.decodeLog));
   }
 
   public async events(name: string | null = null, fromBlock: BlockType = "latest", toBlock: BlockType = "latest"): Promise<DecoderTypes.DecodedEvent[]> {
-    const logs = await web3.eth.getPastLogs({
+    const logs = await this.web3.eth.getPastLogs({
       fromBlock,
       toBlock,
     });
 
-    let events = this.decodeLogs(logs);
+    let events = await this.decodeLogs(logs);
 
     if(name !== null) {
       events = events.filter(event =>
@@ -256,7 +254,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
   //and checks this against the known contexts to determine the contract type
   //however, if this fails and constructorBinary is passed in, it will then also
   //attempt to determine it from that
-  private async getContextByAddress(address: string, block: number, constructorBinary?: string): Promise<number | null> {
+  private async getContextByAddress(address: string, block: number, constructorBinary?: string): Promise<DecodeUtils.Contexts.DecoderContext | null> {
     let code: string;
     if(address !== null) {
       code = DecodeUtils.Conversion.toHexString(

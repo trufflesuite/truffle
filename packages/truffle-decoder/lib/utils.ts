@@ -1,4 +1,4 @@
-import { AstDefinition, AstReferences } from "truffle-decode-utils";
+import { AstDefinition, AstReferences, Contexts as ContextsUtils } from "truffle-decode-utils";
 import { ContractObject } from "truffle-contract-schema/spec";
 
 export function getContractNode(contract: ContractObject): AstDefinition {
@@ -10,15 +10,15 @@ export function getContractNode(contract: ContractObject): AstDefinition {
   );
 }
 
-export function makeContext(contract: ContractObject, node: AstDefinition, isConstructor = false): DecoderContext {
+export function makeContext(contract: ContractObject, node: AstDefinition, isConstructor = false): ContextsUtils.DecoderContext {
   return {
     contractName: contract.contractName,
     binary: isConstructor ? contract.bytecode : contract.deployedBytecode,
     contractId: node.id,
     contractKind: node.contractKind,
     isConstructor,
-    abi: DecodeUtils.Contexts.abiToFunctionAbiWithSignatures(contract.abi),
-    payable: DecodeUtils.Contexts.isABIPayable(contract.abi),
+    abi: ContextsUtils.abiToFunctionAbiWithSignatures(contract.abi),
+    payable: ContextsUtils.isABIPayable(contract.abi),
     compiler: contract.compiler
   };
 }

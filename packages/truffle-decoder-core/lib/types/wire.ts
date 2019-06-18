@@ -1,3 +1,5 @@
+import * as DecodeUtils from "truffle-decode-utils";
+
 export interface CalldataDecoding {
   kind: "function" | "constructor" | "fallback" | "unknown";
   class?: DecodeUtils.Types.ContractType; //included only if not unknown
@@ -14,5 +16,5 @@ export interface EventDecoding {
 
 export interface AbiArgument {
   name?: string; //included if parameter is named
-  value: Values.Result;
+  value: DecodeUtils.Values.Result;
 }

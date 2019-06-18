@@ -32,6 +32,8 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   private contextsById: DecodeUtils.Contexts.DecoderContextsById = {}; //deployed contexts only
   private context: DecodeUtils.Contexts.DecoderContext;
   private constructorContext: DecodeUtils.Contexts.DecoderContext;
+  private contextHash: string;
+  private constructorContextHash: string;
 
   private referenceDeclarations: AstReferences;
   private userDefinedTypes: Types.TypesById;
@@ -68,7 +70,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.contracts[this.contractNode.id] = this.contract;
     this.contractNodes[this.contractNode.id] = this.contractNode;
     if(this.contract.deployedBytecode) { //just to be safe
-      const context = makeContext(this.contract, this.contractNode);
+      const context = Utils.makeContext(this.contract, this.contractNode);
       const hash = DecodeUtils.Conversion.toHexString(
         DecodeUtils.EVM.keccak256({type: "string",
           value: context.binary
@@ -78,7 +80,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       this.contexts[hash] = this.context;
     }
     if(this.contract.bytecode) { //now the constructor version
-      const constructorContext = makeContext(this.contract, this.contractNode, true);
+      const constructorContext = Utils.makeContext(this.contract, this.contractNode, true);
       const hash = DecodeUtils.Conversion.toHexString(
         DecodeUtils.EVM.keccak256({type: "string",
           value: constructorContext.binary
@@ -94,7 +96,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         this.contracts[node.id] = relevantContract;
         this.contractNodes[node.id] = node;
         if(relevantContract.deployedBytecode) {
-          const context = makeContext(relevantContract, node);
+          const context = Utils.makeContext(relevantContract, node);
           const hash = DecodeUtils.Conversion.toHexString(
             DecodeUtils.EVM.keccak256({type: "string",
               value: context.binary
@@ -127,7 +129,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.allocations.storage = Decoder.getStorageAllocations(this.referenceDeclarations, {[this.contractNode.id]: this.contractNode});
     this.allocations.abi = Decoder.getAbiAllocations(this.referenceDeclarations);
     this.allocations.calldata[this.contractNode.id] = Decoder.getCalldataAllocations(
-      this.contract.abi,
+      DecodeUtils.Contexts.abiToWeb3Abi(this.contract.abi),
       this.contractNode.id,
       this.referenceDeclarations,
       this.allocations.abi,
@@ -136,21 +138,21 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.allocations.event = {};
     for(let id in this.contractNodes) {
       if(this.contractNodes[id].contractKind !== "library"
-        && id !== this.contractNode.id) {
+        && parseInt(id) !== this.contractNode.id) {
         continue; //only allocate for this contract and libraries
       }
       let contract = this.contracts[id];
       Object.assign(this.allocations.event,
         Decoder.getEventAllocations(
-          contract.abi
-          id,
+          DecodeUtils.Contexts.abiToWeb3Abi(contract.abi),
+          parseInt(id),
           this.referenceDeclarations,
           this.allocations.abi
         )
       );
     }
     debug("done with allocation");
-    this.stateVariableReferences = this.storageAllocations[this.contractNode.id].members;
+    this.stateVariableReferences = this.allocations.storage[this.contractNode.id].members;
     debug("stateVariableReferences %O", this.stateVariableReferences);
 
     this.contractCode = await this.web3.eth.getCode(this.contractAddress);
@@ -344,16 +346,16 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   //than a while
 
   //NOTE: will only work with transactions to-or-creating this address!
-  public async decodeTransaction(transaction: Transaction): DecodedTransaction {
+  public async decodeTransaction(transaction: Transaction): Promise<DecoderTypes.DecodedTransaction> {
     if(transaction.to !== this.contractAddress) {
       if(transaction.to !== null) {
-        throw new EventOrTransactionIsNotForThisContract(transaction.to, this.contractAddress);
+        throw new DecoderTypes.EventOrTransactionIsNotForThisContractError(transaction.to, this.contractAddress);
       }
       else {
         //OK, it's not *to* this address, but maybe it *created* it?
-        const receipt = await web3.eth.getTransactionReceipt(transaction.hash);
+        const receipt = await this.web3.eth.getTransactionReceipt(transaction.hash);
         if(receipt.contractAddress !== this.contractAddress) {
-          throw new EventOrTransactionIsNotForThisContract(receipt.contractAddress, this.contractAddress);
+          throw new DecoderTypes.EventOrTransactionIsNotForThisContractError(receipt.contractAddress, this.contractAddress);
         }
       }
     }
@@ -364,7 +366,6 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         storage: {},
         calldata: data,
       },
-      mappingKeys: this.mappingKeys,
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
       contexts: this.contextsById,
@@ -383,7 +384,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       result = decoder.next(response);
     }
     //at this point, result.value holds the final value
-    const decoding = <CalldataDecoding>result.value;
+    const decoding = <Decoder.CalldataDecoding>result.value;
     
     return {
       ...transaction,
@@ -392,9 +393,9 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   //NOTE: will only work with logs for this address!
-  public async decodeLog(log: Log): DecodedEvent {
+  public async decodeLog(log: Log): Promise<DecoderTypes.DecodedEvent> {
     if(log.address !== this.contractAddress) {
-      throw new EventOrTransactionIsNotForThisContract(log.address, this.contractAddress);
+      throw new DecoderTypes.EventOrTransactionIsNotForThisContractError(log.address, this.contractAddress);
     }
     const block = log.blockNumber;
     const data = DecodeUtils.Conversion.toBytes(log.data);
@@ -405,7 +406,6 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         eventdata: data,
         eventtopics: topics
       },
-      mappingKeys: this.mappingKeys,
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
       contexts: this.contextsById
@@ -423,7 +423,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       result = decoder.next(response);
     }
     //at this point, result.value holds the final value
-    const decoding = <EventDecoding>result.value;
+    const decoding = <Decoder.EventDecoding>result.value;
     
     return {
       ...log,
@@ -432,18 +432,18 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   //NOTE: will only work with logs for this address!
-  public async decodeLogs(logs: Log[]): DecodedEvent[] {
+  public async decodeLogs(logs: Log[]): Promise<DecoderTypes.DecodedEvent[]> {
     return await Promise.all(logs.map(this.decodeLog));
   }
 
   public async events(name: string | null = null, fromBlock: BlockType = "latest", toBlock: BlockType = "latest"): Promise<DecoderTypes.DecodedEvent[]> {
-    const logs = await web3.eth.getPastLogs({
-      address: this.address,
+    const logs = await this.web3.eth.getPastLogs({
+      address: this.contractAddress,
       fromBlock,
       toBlock,
     });
 
-    let events = this.decodeLogs(logs);
+    let events = await this.decodeLogs(logs);
 
     if(name !== null) {
       events = events.filter(event =>
@@ -483,10 +483,10 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
       let definition = allocation.definition;
       let pointer = allocation.pointer;
-      if(!Decoder.isStoragePointer(pointer)) { //if it's a constant
+      if(pointer.location !== "storage") { //i.e., if it's a constant
         return [undefined, undefined];
       }
-      return [pointer.storage.from.slot, definition];
+      return [pointer.range.from.slot, definition];
     }
 
     //main case
@@ -509,7 +509,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
           index = new BN(rawIndex);
         }
         definition = parentDefinition.baseType || parentDefinition.typeName.baseType;
-        let size = Decoder.storageSize(definition, this.referenceDeclarations, this.storageAllocations);
+        let size = Decoder.storageSize(definition, this.referenceDeclarations, this.allocations.storage);
         if(!Decoder.isWordsLength(size)) {
           return [undefined, undefined];
         }
@@ -534,11 +534,11 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         let allocation: Decoder.StorageMemberAllocation;
         if(typeof rawIndex === "number") {
           index = rawIndex;
-          allocation = this.storageAllocations[parentId].members[index];
+          allocation = this.allocations.storage[parentId].members[index];
           definition = allocation.definition;
         }
         else {
-          allocation = Object.values(this.storageAllocations[parentId].members)
+          allocation = Object.values(this.allocations.storage[parentId].members)
           .find(({definition}) => definition.name === rawIndex); //there should be exactly one
           definition = allocation.definition;
           index = definition.id; //not really necessary, but may as well
@@ -546,7 +546,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         slot = {
           path: parentSlot,
           //need type coercion here -- we know structs don't contain constants but the compiler doesn't
-          offset: (<Decoder.StoragePointer>allocation.pointer).storage.from.slot.offset.clone()
+          offset: (<Decoder.StoragePointer>allocation.pointer).range.from.slot.offset.clone()
         }
         break;
       default:

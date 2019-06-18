@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("decode-utils:definition");
 
 import { EVM as EVMUtils } from "./evm";
-import { AstDefinition, Scopes } from "./ast";
+import { AstDefinition, AstReferences, Scopes } from "./ast";
 import { Contexts } from "./contexts";
 import BN from "bn.js";
 import cloneDeep from "lodash.clonedeep";
@@ -199,7 +199,7 @@ export namespace Definition {
   }
 
   //adds "_ptr" on to the end of type identifiers that might need it; note that
-  //this operats on identifiers, not defintions
+  //this operats on identifiers, not definitions
   export function restorePtr(identifier: string): string {
     return identifier.replace(/(?<=_(storage|memory|calldata))$/, "_ptr");
   }
@@ -349,8 +349,10 @@ export namespace Definition {
   }
 
   //note: this is only meant for types that can go in the ABI
+  //it returns how that type is notated in the ABI -- just the string,
+  //to be clear, not components of tuples
   //TODO add error handling
-  export function toAbiType(defintion: AstDefinition, referenceDeclarations: AstReferences): string {
+  export function toAbiType(definition: AstDefinition, referenceDeclarations: AstReferences): string {
     let basicType = typeClassLongForm(definition); //get that whole first segment!
     switch(basicType) {
       case "contract":

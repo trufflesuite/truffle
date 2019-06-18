@@ -1,6 +1,8 @@
 import BN from "bn.js";
 import { ContractObject } from "truffle-contract-schema/spec";
 import { Values } from "truffle-decode-utils";
+import { CalldataDecoding, EventDecoding } from "truffle-decoder-core";
+import { Transaction, Log } from "web3-core";
 
 export interface ContractState {
   name: string;
@@ -46,13 +48,13 @@ export class ContractBeingDecodedHasNoNodeError extends Error {
   }
 }
 
-export class EventOrTransactionIsNotForThisContract extends Error {
+export class EventOrTransactionIsNotForThisContractError extends Error {
   thisAddress: string;
   decoderAddress: string;
   constructor(thisAddress: string, decoderAddress: string) {
     const message = "This event or transaction's address does not match that of the contract decoder";
     super(message);
-    this.name = "EventOrTransactionIsNotForThisContract";
+    this.name = "EventOrTransactionIsNotForThisContractError";
     this.thisAddress = thisAddress;
     this.decoderAddress = decoderAddress;
   }

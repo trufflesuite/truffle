@@ -32,6 +32,7 @@ export interface AstDefinition {
   };
   keyType?: AstDefinition;
   valueType?: AstDefinition;
+  indexed?: boolean;
   [k: string]: any;
 }
 

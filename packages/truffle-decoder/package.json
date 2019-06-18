@@ -44,6 +44,7 @@
     "@types/debug": "^4.1.4",
     "@types/lodash.isequal": "^4.5.5",
     "@types/web3": "1.0.18",
-    "typescript": "^3.5.1"
+    "typescript": "^3.5.1",
+    "web3-core": "1.0.0-beta.37"
   }
 }

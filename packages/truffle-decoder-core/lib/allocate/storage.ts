@@ -48,7 +48,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
 
     //first off: is this a constant? if so we use a different, simpler process
     if(node.constant) {
-      let pointer = { definition: node.value };
+      let pointer = { location: "definition" as "definition", definition: node.value };
       //HACK restrict ourselves to the types of constants we know how to handle
       if(DecodeUtils.Definition.isSimpleConstant(node.value)) {
         memberAllocations.push({definition: node, pointer});
@@ -110,7 +110,8 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
     memberAllocations.push({
       definition: node,
       pointer: {
-        storage: range
+        location: "storage",
+        range
       }
     });
   

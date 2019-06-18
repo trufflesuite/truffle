@@ -7,6 +7,10 @@ import { AstDefinition, AstReferences } from "truffle-decode-utils";
 import * as DecodeUtils from "truffle-decode-utils";
 import partition from "lodash.partition";
 
+import { AbiCoder } from "web3-eth-abi";
+import { AbiItem, AbiInput } from "web3-utils";
+const abiCoder = new AbiCoder();
+
 export function getAbiAllocations(referenceDeclarations: AstReferences): Allocations.AbiAllocations {
   let allocations: Allocations.AbiAllocations = {};
   for(const node of Object.values(referenceDeclarations)) {
@@ -44,7 +48,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
 
     //vomit on illegal types in calldata -- note the short-circuit!
     if(length === undefined) {
-      allocations[definition.id] = null;
+      allocations[parentNode.id] = null;
       return allocations;
     }
 
@@ -63,8 +67,8 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
     dynamic = dynamic || dynamicMember;
   }
 
-  allocations[definition.id] = {
-    definition,
+  allocations[parentNode.id] = {
+    definition: parentNode,
     members: memberAllocations,
     length: dynamic ? DecodeUtils.EVM.WORD_SIZE : start,
     dynamic
@@ -209,7 +213,7 @@ function allocateCalldata(
   abiEntry: AbiItem,
   contractId: number,
   referenceDeclarations: AstReferences,
-  abiAllocations: AbiAllocations,
+  abiAllocations: Allocations.AbiAllocations,
   constructorContext?: DecodeUtils.Contexts.DecoderContext
 ): Allocations.CalldataAllocation {
   const linearizedBaseContracts = referenceDeclarations[contractId].linearizedBaseContracts;
@@ -228,10 +232,7 @@ function allocateCalldata(
           abiEntry, functionNode, referenceDeclarations
         )
       );
-      if(node === undefined) {
-          //TODO: error case
-        }
-      }
+      //TODO: handle case if node undefined
       break;
     case "function":
       offset = DecodeUtils.EVM.SELECTOR_SIZE;
@@ -244,9 +245,7 @@ function allocateCalldata(
         ),
         undefined
       );
-      if(node === undefined) {
-        //TODO: error case
-      }
+      //TODO: handle case if node undefined
       break;
   }
   //now: perform the allocation!
@@ -254,13 +253,13 @@ function allocateCalldata(
   //finally: transform it appropriately
   let argumentsAllocation = [];
   for(const member of abiAllocation.members) {
-    const position = rawParameters.findIndex(
-      parameter => parameter.id === member.definition.id
+    const position = node.parameters.parameters.findIndex(
+      (parameter: AstDefinition) => parameter.id === member.definition.id
     );
     argumentsAllocation[position] = {
       definition: member.definition,
       pointer: {
-        location: "calldata",
+        location: "calldata" as "calldata",
         start: member.pointer.start,
         length: member.pointer.length
       }
@@ -279,9 +278,9 @@ function allocateCalldata(
 //TODO: check accesses to abi & node members
 function allocateEvent(
   abiEntry: AbiItem,
-  referenceDeclarations: AstReferences,
   contractId: number,
-  abiAllocations: AbiAllocations
+  referenceDeclarations: AstReferences,
+  abiAllocations: Allocations.AbiAllocations
 ): Allocations.EventAllocation {
   const linearizedBaseContracts = referenceDeclarations[contractId].linearizedBaseContracts;
   //first: determine the corresponding event node
@@ -297,19 +296,19 @@ function allocateEvent(
   //now: split the list of parameters into indexed and non-indexed
   //but first attach positions so we can reconstruct the list later
   const rawParameters = node.parameters.parameters;
-  const [indexed, nonIndexed] = rawParameters.partition(parameter => parameter.indexed);
+  const [indexed, nonIndexed] = rawParameters.partition((parameter: AstDefinition) => parameter.indexed);
   //now: perform the allocation for the non-indexed parameters!
   const abiAllocation = allocateMembers(node, nonIndexed, referenceDeclarations, abiAllocations)[node.id];
   //now: transform it appropriately
   let argumentsAllocation = [];
   for(const member of abiAllocation.members) {
     const position = rawParameters.findIndex(
-      parameter => parameter.id === member.definition.id
+      (parameter: AstDefinition) => parameter.id === member.definition.id
     );
     argumentsAllocation[position] = {
       definition: member.definition,
       pointer: {
-        location: "eventdata",
+        location: "eventdata" as "eventdata",
         start: member.pointer.start,
         length: member.pointer.length
       }
@@ -319,12 +318,12 @@ function allocateEvent(
   for(let positionInIndexed = 0; positionInIndexed < indexed.length; positionInIndexed++) {
     const node = indexed[positionInIndexed];
     const position = rawParameters.findIndex(
-      parameter => parameter.id === node.id
+      (parameter: AstDefinition) => parameter.id === node.id
     );
     argumentsAllocation[position] = {
       definition: node,
       pointer: {
-        location: "eventtopic",
+        location: "eventtopic" as "eventtopic",
         topic: positionInIndexed + 1 //signature takes up topic 0, so we skip that, hence +1
       }
     };
@@ -340,14 +339,14 @@ function allocateEvent(
 //NOTE: this is for a single contract!
 //run multiple times to handle multiple contracts
 export function getCalldataAllocations(
-  abi: Abi,
+  abi: AbiItem[],
   contractId: number,
   referenceDeclarations: AstReferences,
   abiAllocations: Allocations.AbiAllocations,
-  constructorContext: DecoderContext
-): Allocations.CalldataContractAllocations {
-  let allocations: Allocations.CalldataContractAllocations;
-  for(let abiEntry in abi) {
+  constructorContext: DecodeUtils.Contexts.DecoderContext
+): Allocations.CalldataContractAllocation {
+  let allocations: Allocations.CalldataContractAllocation;
+  for(let abiEntry of abi) {
     if(abiEntry.type === "constructor") {
       allocations.constructorAllocation = allocateCalldata(
         abiEntry,
@@ -376,19 +375,19 @@ export function getCalldataAllocations(
   return allocations;
 }
 
-function defaultConstructorAllocation(constructorContext: DecoderContext) {
+function defaultConstructorAllocation(constructorContext: DecodeUtils.Contexts.DecoderContext) {
   let rawLength = constructorContext.binary.length;
   let offset = (rawLength - 2)/2; //number of bytes in 0x-prefixed bytestring
   return {
     offset,
-    arguments: {}
+    arguments: [] as Allocations.CalldataArgumentAllocation[]
   };
 }
 
 //NOTE: this is for a single contract!
 //run multiple times to handle multiple contracts
 export function getEventAllocations(
-  abi: Abi,
+  abi: AbiItem[],
   contractId: number,
   referenceDeclarations: AstReferences,
   abiAllocations: Allocations.AbiAllocations

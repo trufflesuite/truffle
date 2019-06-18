@@ -6,7 +6,7 @@ import decodeMemory from "./memory";
 import decodeStorage from "./storage";
 import decodeStack from "./stack";
 import { decodeLiteral } from "./stack";
-import decodeCalldata from "./calldata";
+import decodeAbi from "./abi";
 import decodeConstant from "./constant";
 import decodeSpecial from "./special";
 import decodeTopic from "./event";

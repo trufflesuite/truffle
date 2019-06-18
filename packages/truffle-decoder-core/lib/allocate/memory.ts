@@ -32,10 +32,9 @@ function allocateStruct(definition: AstDefinition): MemoryAllocation {
       memberAllocations.push({
         definition: member,
         pointer: {
-          memory: {
-            start: nonMappingIndex * DecodeUtils.EVM.WORD_SIZE,
-            length: DecodeUtils.EVM.WORD_SIZE
-          }
+          location: "memory",
+          start: nonMappingIndex * DecodeUtils.EVM.WORD_SIZE,
+          length: DecodeUtils.EVM.WORD_SIZE
         }
       });
       nonMappingIndex++;

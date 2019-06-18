@@ -3,12 +3,14 @@ const debug = debugModule("decode-utils:contexts");
 
 import { Abi } from "truffle-contract-schema/spec";
 import { AbiCoder } from "web3-eth-abi";
-import { AbiItem } from "web3-utils";
+import { AbiItem, AbiInput } from "web3-utils";
 const abiCoder = new AbiCoder();
 import escapeRegExp from "lodash.escaperegexp";
 
 import { EVM } from "./evm";
-import { Types } from "./types";
+import { Types } from "./types/types";
+import { AstDefinition, AstReferences } from "./ast";
+import { Definition as DefinitionUtils } from "./definition";
 
 export namespace Contexts {
 
@@ -127,6 +129,10 @@ export namespace Contexts {
     )
   }
 
+  export function abiToWeb3Abi(abi: Abi): AbiItem[] {
+    return <AbiItem[]>abi; //yup. just a type coercion :P
+  }
+
   //does this ABI have a payable fallback function?
   export function isABIPayable(abi: Abi | undefined): boolean | undefined {
     if(abi === undefined) {
@@ -138,7 +144,7 @@ export namespace Contexts {
   }
 
   //I split these next two apart because the type system was giving me rouble
-  export function findDecoderContext(contexts: DecoderContexts, binary: string): DecoderContext | null {
+  export function findDecoderContext(contexts: DecoderContexts | DecoderContextsById, binary: string): DecoderContext | null {
     debug("binary %s", binary);
     let context = Object.values(contexts).find(context =>
       matchContext(context, binary)
@@ -270,7 +276,7 @@ export namespace Contexts {
     return newContexts;
   }
 
-  export function matchesAbi(abiEntry: abiItem, node: AstDefinition, referenceDeclarations: AstReferences): boolean {
+  export function matchesAbi(abiEntry: AbiItem, node: AstDefinition, referenceDeclarations: AstReferences): boolean {
     //first: does the basic name and type match?
     switch(node.nodeType) {
       case "FunctionDefinition":
@@ -301,7 +307,7 @@ export namespace Contexts {
     return matchesAbiParameters(abiEntry.inputs, node.parameters.parameters, referenceDeclarations);
   }
 
-  function matchesAbiParameters(abiParameters: AbiParameter[], nodeParameters: AstDefinition[], referenceDeclarations: AstReferences): boolean {
+  function matchesAbiParameters(abiParameters: AbiInput[], nodeParameters: AstDefinition[], referenceDeclarations: AstReferences): boolean {
     if(abiParameters.length !== nodeParameters.length) {
       return false;
     }
@@ -314,11 +320,11 @@ export namespace Contexts {
   }
 
   //TODO: add error-handling
-  function matchesAbiType(abiParameter: AbiParameter, nodeParameter: AstDefinition, referenceDeclarations: AstReferences): boolean {
+  function matchesAbiType(abiParameter: AbiInput, nodeParameter: AstDefinition, referenceDeclarations: AstReferences): boolean {
     if(DefinitionUtils.toAbiType(nodeParameter, referenceDeclarations) !== abiParameter.type) {
       return false;
     }
-    if(abiParameter.type.beginsWith("tuple")) {
+    if(abiParameter.type.startsWith("tuple")) {
       let referenceDeclaration = referenceDeclarations[DefinitionUtils.typeId(nodeParameter)];
       return matchesAbiParameters(abiParameter.components, referenceDeclaration.members, referenceDeclarations);
     }

@@ -37,9 +37,9 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
   const { allocations: { abi: allocations }, state } = info;
   debug("pointer %o", pointer);
   //this variable holds the location we should look to *next*
-  const location = pointer.location === "eventdata"
+  const location: AbiLocation = pointer.location === "eventdata"
     ? "eventdata"
-    : "calldata"; //stack pointers point to calldata, not the stack
+    : "calldata"; //stack pointers (& stack literal pointers) point to calldata, not the stack
 
   let rawValue: Uint8Array;
   try {
@@ -154,7 +154,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
       return new Values.ArrayValue(dataType, decodedChildren);
 
     case "struct":
-      return yield* decodeAbiStructByPosition(dataType, startPosition, info);
+      return yield* decodeAbiStructByPosition(dataType, location, startPosition, info);
   }
 }
 

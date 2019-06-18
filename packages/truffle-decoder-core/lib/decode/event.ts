@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("decoder-core:decode:event");
 
 import decodeValue from "./value";
+import read from "../read";
 import { Types, Values, Conversion as ConversionUtils } from "truffle-decode-utils";
 import { EventTopicPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
@@ -12,7 +13,7 @@ export default function* decode(dataType: Types.Type, pointer: EventTopicPointer
     //we cannot decode reference types "stored" in topics; we have to just return an error
     let bytes: Uint8Array;
     try {
-      bytes = yield* read(pointer, state);
+      bytes = yield* read(pointer, info.state);
     }
     catch(error) { //error: Values.DecodingError
       return Values.makeGenericErrorResult(dataType, error.error);
