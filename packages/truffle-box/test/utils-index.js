@@ -7,12 +7,9 @@ describe("utils", () => {
   it("setUpBox throws when passed an invalid boxConfig", () => {
     let boxConfig = {};
 
-    try {
+    assert.throws(() => {
       utils.setUpBox(boxConfig);
-      assert(false, "didn't throw!");
-    } catch (error) {
-      assert(error.stack.match(/(Error:).*(post-unpack).*(undefined)/g));
-    }
+    }, "should have thrown!");
   });
 
   it("setUpTempDirectory throws when tmpDir creation fails", () => {
