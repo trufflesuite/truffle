@@ -4,7 +4,6 @@
   "description": "Truffle project boilerplate utility",
   "main": "box.js",
   "scripts": {
-    "lint": "eslint ./index.js ./lib || true",
     "test": "mocha --timeout 10000"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-box",
@@ -17,10 +16,8 @@
   "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
   "license": "MIT",
   "devDependencies": {
-    "eslint": "^4.0.0",
     "mocha": "5.2.0",
-    "sinon": "^6.3.4",
-    "truffle-config": "^1.1.13"
+    "sinon": "^6.3.4"
   },
   "dependencies": {
     "fs-extra": "6.0.1",
@@ -28,6 +25,7 @@
     "ora": "^3.0.0",
     "request": "^2.85.0",
     "tmp": "0.0.33",
+    "truffle-config": "^1.1.13",
     "vcsurl": "^0.1.1"
   },
   "publishConfig": {
