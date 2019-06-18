@@ -16,7 +16,7 @@ const command = {
   },
   runConsole: (config, ganacheOptions, done) => {
     const Console = require("../console");
-    const Environment = require("../environment");
+    const Environment = require("truffle-environment").environment;
 
     const commands = require("./index");
     const excluded = ["console", "develop", "unbox", "init"];

@@ -52,7 +52,7 @@ const command = {
     const fs = require("fs");
     const { promisify } = require("util");
     const promisifiedCopy = promisify(require("../copy"));
-    const Environment = require("../environment");
+    const Environment = require("truffle-environment").environment;
 
     var config = Config.detect(options);
 

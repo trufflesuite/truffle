@@ -21,7 +21,7 @@ const command = {
     const debug = debugModule("lib:commands:debug");
 
     const Config = require("truffle-config");
-    const Environment = require("../environment");
+    const Environment = require("truffle-environment").environment;
 
     const { CLIDebugger } = require("../debug");
 
