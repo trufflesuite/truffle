@@ -70,15 +70,13 @@ function prepareToCopyFiles(tempDir, { ignore }) {
 
   const promises = needingRemoval
     .map(fileName => path.join(tempDir, fileName))
-    .map(
-      filePath =>
-        new Promise((resolve, reject) => {
-          fse.remove(filePath, error => {
-            if (error) return reject(error);
-            resolve();
-          });
-        })
-    );
+    .map(async filePath => {
+      try {
+        fse.removeSync(filePath);
+      } catch (error) {
+        throw error;
+      }
+    });
 
   return Promise.all(promises);
 }
