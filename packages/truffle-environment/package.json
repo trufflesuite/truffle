@@ -1,0 +1,9 @@
+{
+  "name": "truffle-environment",
+  "version": "1.0.0",
+  "description": "This package contains the code needed to determine environment-specific data",
+  "main": "index.js",
+  "author": "Faina Shalts",
+  "license": "MIT",
+  "private": false
+}
