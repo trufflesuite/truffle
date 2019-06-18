@@ -34,7 +34,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
 
   let allocations = {...existingAllocations}; //otherwise, we'll be adding to this, so we better clone
 
-  let memberAllocations: Allocations.AbiMemberAllocations = {}
+  let memberAllocations: Allocations.AbiMemberAllocation[] = [];
 
   for(const member of definitions)
   {
@@ -54,10 +54,10 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
       length,
     };
 
-    memberAllocations[member.id] = {
+    memberAllocations.push({
       definition: member,
       pointer
-    }
+    });
 
     start += length;
     dynamic = dynamic || dynamicMember;

@@ -13,14 +13,7 @@ export interface StorageAllocations {
 export interface StorageAllocation {
   definition: AstDefinition;
   size?: StorageLength; //only used for structs
-  members: StorageMemberAllocations;
-}
-
-//a collection of the individual storage references for (the members of) a
-//struct or (the state variables of) a contract, indexed by the ID of the
-//member or state variable
-export interface StorageMemberAllocations {
-  [id: number]: StorageMemberAllocation
+  members: StorageMemberAllocation[];
 }
 
 //an individual storage reference for a member of a struct or a state variable
@@ -44,11 +37,7 @@ export interface AbiAllocation {
   definition: AstDefinition;
   length: number; //measured in bytes
   dynamic: boolean;
-  members: AbiMemberAllocations;
-}
-
-export interface AbiMemberAllocations {
-  [id: number]: AbiMemberAllocation
+  members: AbiMemberAllocation[];
 }
 
 export interface AbiMemberAllocation {
@@ -58,6 +47,7 @@ export interface AbiMemberAllocation {
 
 //memory works the same as abi except we don't bother keeping track of size
 //(it's always 1 word) or dynamicity (meaningless in memory)
+//Also, we allow pointers to be null to indicate that they're omitted
 
 export interface MemoryAllocations {
   [id: number]: MemoryAllocation
@@ -65,16 +55,12 @@ export interface MemoryAllocations {
 
 export interface MemoryAllocation {
   definition: AstDefinition;
-  members: MemoryMemberAllocations;
-}
-
-export interface MemoryMemberAllocations {
-  [id: number]: MemoryMemberAllocation
+  members: MemoryMemberAllocation[];
 }
 
 export interface MemoryMemberAllocation {
   definition: AstDefinition;
-  pointer: Pointer.MemoryPointer;
+  pointer: Pointer.MemoryPointer | null;
 }
 
 //next we have calldata, used for the input to an external function;

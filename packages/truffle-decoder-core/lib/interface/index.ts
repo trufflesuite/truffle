@@ -4,7 +4,7 @@ export { getMemoryAllocations } from "../allocate/memory";
 export { readStack } from "../read/stack";
 export { slotAddress } from "../read/storage";
 export { StoragePointer, isStoragePointer } from "../types/pointer";
-export { StorageAllocations, StorageMemberAllocations, StorageMemberAllocation } from "../types/allocation";
+export { StorageAllocations, StorageMemberAllocation } from "../types/allocation";
 export { Slot, isWordsLength } from "../types/storage";
 export { DecoderRequest, isStorageRequest, isCodeRequest } from "../types/request";
 export { EvmInfo } from "../types/evm";

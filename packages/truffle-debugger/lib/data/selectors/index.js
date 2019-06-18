@@ -321,9 +321,38 @@ const data = createSelectorTree({
      */
     allocations: {
       /*
-       * data.info.allocations.storage
+       * data.info.allocations.storage (namespace)
        */
-      storage: createLeaf(["/state"], state => state.info.allocations.storage),
+      storage: {
+        /*
+         * data.info.allocations.storage (selector)
+         */
+        _: createLeaf(["/state"], state => state.info.allocations.storage),
+
+        /*
+         * data.info.allocations.storage.byId
+         * Same as data.info.allocations.storage, but uses the old allocation
+         * format (more convenient for debugger) where members are stored by ID
+         * in an object instead of by index in an array
+         */
+        byId: createLeaf(["./_"], allocations =>
+          Object.assign(
+            {},
+            ...Object.entries(allocations).map(([id, allocation]) => ({
+              [id]: {
+                definition: allocation.definition,
+                size: allocation.size,
+                members: Object.assign(
+                  {},
+                  ...allocation.members.map(memberAllocation => ({
+                    [memberAllocation.definition.id]: memberAllocation
+                  }))
+                )
+              }
+            }))
+          )
+        )
+      },
 
       /*
        * data.info.allocations.memory
