@@ -279,6 +279,7 @@ describe("truffle-box Box", () => {
         assert(inquirer.prompt.called);
         assert(options.logger.loggedStuff.includes("Unbox cancelled"));
         assert(process.exit.called);
+        assert.deepStrictEqual(fse.readdirSync(), ["someCrappyFile.js"]);
       });
     });
   });
