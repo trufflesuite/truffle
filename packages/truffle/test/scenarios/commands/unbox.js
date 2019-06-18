@@ -298,4 +298,14 @@ describe("truffle unbox [ @standalone ]", () => {
       });
     });
   });
+  describe("when truffle-box.json contains commands", () => {
+    it("unboxes successfully and outputs commands", done => {
+      CommandRunner.run("unbox bare", config, () => {
+        const output = logger.contents();
+        assert(output.includes("Unbox successful."));
+        assert(output.includes("Test contracts:"));
+        done();
+      });
+    }).timeout(20000);
+  });
 });
