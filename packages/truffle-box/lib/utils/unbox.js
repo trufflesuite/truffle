@@ -4,7 +4,7 @@ const ghdownload = require("github-download");
 const request = require("request");
 const vcsurl = require("vcsurl");
 const parseURL = require("url").parse;
-const exec = require("child_process").exec;
+const execSync = require("child_process").execSync;
 const inquirer = require("inquirer");
 
 function verifyURL(url) {
@@ -136,16 +136,15 @@ async function copyTempIntoDestination(tmpDir, destination, options) {
 function installBoxDependencies({ hooks }, destination) {
   const postUnpack = hooks["post-unpack"];
 
-  return new Promise((accept, reject) => {
-    if (postUnpack.length === 0) {
-      return accept();
-    }
+  if (postUnpack.length === 0) {
+    return;
+  }
 
-    exec(postUnpack, { cwd: destination }, (err, stdout, stderr) => {
-      if (err) return reject(err);
-      accept(stdout, stderr);
-    });
-  });
+  try {
+    execSync(postUnpack, { cwd: destination });
+  } catch (error) {
+    throw error;
+  }
 }
 
 module.exports = {
