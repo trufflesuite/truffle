@@ -56,10 +56,10 @@ module.exports = {
     await unbox.copyTempIntoDestination(tempDir, destination, unpackBoxOptions);
   },
 
-  setUpBox: async (boxConfig, destination) => {
+  setUpBox: (boxConfig, destination) => {
     const setUpSpinner = ora("Setting up box").start();
     try {
-      await unbox.installBoxDependencies(boxConfig, destination);
+      unbox.installBoxDependencies(boxConfig, destination);
       setUpSpinner.succeed();
     } catch (error) {
       setUpSpinner.fail();
