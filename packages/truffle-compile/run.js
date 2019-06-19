@@ -4,6 +4,11 @@ const CompilerSupplier = require("./compilerSupplier");
 const semver = require("semver");
 
 async function run(rawSources, options) {
+  // Nothing to compile? Bail.
+  if (Object.keys(rawSources).length === 0) {
+    return [[], []];
+  }
+
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
   const { sources, targets, originalSourcePaths } = collectSources(
@@ -42,11 +47,6 @@ async function run(rawSources, options) {
       outputSelection
     }
   };
-
-  // Nothing to compile? Bail.
-  if (Object.keys(sources).length === 0) {
-    return [[], []];
-  }
 
   Object.keys(sources).forEach(file_path => {
     solcStandardInput.sources[file_path] = {
