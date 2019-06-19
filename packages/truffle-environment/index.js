@@ -1,4 +1,4 @@
-const environment = require("./environment");
-const develop = require("./develop");
+const Environment = require("./environment");
+const Develop = require("./develop");
 
-module.exports = { environment, develop };
+module.exports = { Environment, Develop };

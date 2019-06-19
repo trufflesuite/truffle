@@ -21,7 +21,7 @@ const command = {
   run: function(options, done) {
     const Config = require("truffle-config");
     const Console = require("../console");
-    const Environment = require("truffle-environment").environment;
+    const { Environment } = require("truffle-environment");
 
     const config = Config.detect(options);
 
