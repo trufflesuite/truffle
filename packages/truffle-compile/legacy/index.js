@@ -26,7 +26,9 @@ const compile = function(sources, options, callback) {
 
   options = normalizeOptions(options);
 
-  run(sources, options, callback);
+  run(sources, options)
+    .then(([...returnVals]) => callback(null, ...returnVals))
+    .catch(callback);
 };
 
 // contracts_directory: String. Directory where .sol files can be found.
