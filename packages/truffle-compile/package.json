@@ -1,8 +1,18 @@
 {
   "name": "truffle-compile",
-  "version": "4.1.0",
   "description": "Compiler helper and artifact manager",
+  "license": "MIT",
+  "author": "Tim Coulter <tim.coulter@consensys.net>",
+  "homepage": "https://github.com/trufflesuite/truffle-compile#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-compile",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle-compile/issues"
+  },
+  "version": "4.1.0",
   "main": "index.js",
+  "scripts": {
+    "test": "./scripts/test.sh"
+  },
   "dependencies": {
     "async": "2.6.1",
     "colors": "^1.1.2",
@@ -23,34 +33,24 @@
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
-    "mocha": "5.2.0",
+    "mocha": "^6.1.4",
     "sinon": "^7.2.2",
     "tmp": "0.0.33",
     "truffle-resolver": "^5.0.14"
+  },
+  "keywords": [
+    "compile",
+    "ethereum",
+    "solidity",
+    "truffle"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "babel": {
     "presets": [
       "env"
     ]
-  },
-  "scripts": {
-    "test": "./scripts/test.sh"
-  },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-compile",
-  "keywords": [
-    "ethereum",
-    "truffle",
-    "compile",
-    "solidity"
-  ],
-  "author": "Tim Coulter <tim.coulter@consensys.net>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-compile/issues"
-  },
-  "homepage": "https://github.com/trufflesuite/truffle-compile#readme",
-  "publishConfig": {
-    "access": "public"
   },
   "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
 }

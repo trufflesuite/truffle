@@ -28,7 +28,7 @@
     "ethereumjs-wallet": "^0.6.2",
     "ganache-core": "2.5.5",
     "js-scrypt": "^0.2.0",
-    "mocha": "5.2.0",
+    "mocha": "^6.1.4",
     "web3": "1.0.0-beta.37",
     "web3-provider-engine": "https://github.com/trufflesuite/provider-engine#web3-one",
     "webpack": "^4.24.0",

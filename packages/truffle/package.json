@@ -1,11 +1,32 @@
 {
   "name": "truffle",
-  "namespace": "consensys",
-  "version": "5.0.22",
   "description": "Truffle - Simple development framework for Ethereum",
+  "author": "consensys.net",
+  "homepage": "https://github.com/trufflesuite/truffle/",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "5.0.22",
+  "bin": {
+    "truffle": "./build/cli.bundled.js"
+  },
+  "scripts": {
+    "analyze": "./scripts/analyze.sh",
+    "build": "yarn build-cli",
+    "build-cli": "webpack --config ./cli.webpack.config.js",
+    "postinstall": "node ./scripts/postinstall.js",
+    "prepare": "yarn build",
+    "publish:byoc": "node ./scripts/prereleaseVersion.js byoc-safe byoc",
+    "publish:external-compiler": "node ./scripts/prereleaseVersion.js external-compiler external-compiler",
+    "publish:next": "node ./scripts/prereleaseVersion.js next next",
+    "publish:user-level-mnemonic": "node ./scripts/prereleaseVersion.js user-level-mnemonic user-level-mnemonic",
+    "test": "./scripts/test.sh",
+    "test:raw": "NO_BUILD=true mocha"
+  },
   "dependencies": {
     "app-module-path": "^2.2.0",
-    "mocha": "5.2.0",
+    "mocha": "^6.1.4",
     "original-require": "1.0.1"
   },
   "devDependencies": {
@@ -36,28 +57,9 @@
     "webpack-bundle-analyzer": "^3.0.3",
     "yargs": "^8.0.2"
   },
-  "bin": {
-    "truffle": "./build/cli.bundled.js"
+  "publishConfig": {
+    "access": "public"
   },
-  "scripts": {
-    "analyze": "./scripts/analyze.sh",
-    "prepare": "yarn build",
-    "build": "yarn build-cli",
-    "build-cli": "webpack --config ./cli.webpack.config.js",
-    "test": "./scripts/test.sh",
-    "postinstall": "node ./scripts/postinstall.js",
-    "publish:byoc": "node ./scripts/prereleaseVersion.js byoc-safe byoc",
-    "publish:external-compiler": "node ./scripts/prereleaseVersion.js external-compiler external-compiler",
-    "publish:next": "node ./scripts/prereleaseVersion.js next next",
-    "publish:user-level-mnemonic": "node ./scripts/prereleaseVersion.js user-level-mnemonic user-level-mnemonic",
-    "test:raw": "NO_BUILD=true mocha"
-  },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle",
-  "homepage": "https://github.com/trufflesuite/truffle/",
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle/issues"
-  },
-  "author": "consensys.net",
   "authors": [
     {
       "name": "Tim Coulter",
@@ -65,8 +67,6 @@
       "url": "https://github.com/tcoulter"
     }
   ],
-  "publishConfig": {
-    "access": "public"
-  },
-  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
+  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e",
+  "namespace": "consensys"
 }
